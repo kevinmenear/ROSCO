@@ -82,6 +82,8 @@ state/
 model.ini
 include.ini
 kgen.log
+elapsedtime/
+model/
 baseline_output.txt
 integrated_output.txt
 
