@@ -80,7 +80,7 @@ CONTAINS
 
         ! Initialize strings for external controller
         aviFAIL     = 0
-        avcMSG     = TRANSFER( C_NULL_CHAR,                            avcMSG     )
+        avcMSG     = C_NULL_CHAR
         avcOUTNAME = TRANSFER( TRIM(ExtRootName)//C_NULL_CHAR,   avcOUTNAME )
         accINFILE  = TRANSFER( TRIM(CntrPar%DLL_InFile)//C_NULL_CHAR, accINFILE  )
                 
