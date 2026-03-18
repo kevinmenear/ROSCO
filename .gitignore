@@ -70,6 +70,21 @@ _build
 *.dll.*
 *.bts
 
+# VIT — kernel build artifacts (golden state data is tracked)
+kernel/**/*.o
+kernel/**/*.exe
+kernel/**/*.csv
+kernel/**/*_cpp.cpp
+kernel/**/*_impl.hpp
+
+# VIT — extraction intermediates
+state/
+model.ini
+include.ini
+kgen.log
+baseline_output.txt
+integrated_output.txt
+
 # Other
 .pytest_cache
 examples/cp_ct_cq_lut.p
