@@ -30,21 +30,51 @@ MODULE Functions
 
 USE Constants
 
+USE ISO_C_BINDING
 IMPLICIT NONE
+
+
+    ! Auto-generated interface for C++ implementation of saturate
+    INTERFACE
+        FUNCTION saturate_c(inputValue, minValue, maxValue) BIND(C, NAME='saturate_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: inputValue
+            REAL(C_DOUBLE), VALUE :: minValue
+            REAL(C_DOUBLE), VALUE :: maxValue
+            REAL(C_DOUBLE) :: saturate_c
+        END FUNCTION saturate_c
+    END INTERFACE
+
+
+    ! Auto-generated interface for C++ implementation of wrap_180
+    INTERFACE
+        FUNCTION wrap_180_c(x) BIND(C, NAME='wrap_180_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: x
+            REAL(C_DOUBLE) :: wrap_180_c
+        END FUNCTION wrap_180_c
+    END INTERFACE
+
+
+    ! Auto-generated interface for C++ implementation of wrap_360
+    INTERFACE
+        FUNCTION wrap_360_c(x) BIND(C, NAME='wrap_360_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: x
+            REAL(C_DOUBLE) :: wrap_360_c
+        END FUNCTION wrap_360_c
+    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION saturate(inputValue, minValue, maxValue)
-    ! Saturates inputValue. Makes sure it is not smaller than minValue and not larger than maxValue
-
+    FUNCTION saturate(inputValue, minValue, maxValue) RESULT(saturate_result)
+        USE ISO_C_BINDING
         IMPLICIT NONE
-
-        REAL(DbKi), INTENT(IN)     :: inputValue
-        REAL(DbKi), INTENT(IN)     :: minValue
-        REAL(DbKi), INTENT(IN)     :: maxValue
-
-        saturate = REAL(MIN(MAX(inputValue,minValue), maxValue),DbKi)
-
+        REAL(DbKi), INTENT(IN) :: inputValue
+        REAL(DbKi), INTENT(IN) :: minValue
+        REAL(DbKi), INTENT(IN) :: maxValue
+        REAL(DbKi) :: saturate_result
+        saturate_result = REAL(saturate_c(REAL(inputValue, C_DOUBLE), REAL(minValue, C_DOUBLE), REAL(maxValue, C_DOUBLE)), DbKi)
     END FUNCTION saturate
     
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -449,32 +479,20 @@ CONTAINS
         
     END FUNCTION AeroDynTorque
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION wrap_180(x) 
-    ! Function modifies input angle, x, such that -180<=x<=180, preventing windup
-        REAL(DbKi), INTENT(IN) :: x         ! angle, degrees
-
-        IF (x .le. -180.0) THEN
-            wrap_180 = x + 360.0
-        ELSEIF (x .gt. 180.0) THEN
-            wrap_180 = x - 360.0
-        ELSE
-            wrap_180 = x
-        ENDIF
-
+    FUNCTION wrap_180(x) RESULT(wrap_180_result)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        REAL(DbKi), INTENT(IN) :: x
+        REAL(DbKi) :: wrap_180_result
+        wrap_180_result = REAL(wrap_180_c(REAL(x, C_DOUBLE)), DbKi)
     END FUNCTION wrap_180
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION wrap_360(x) 
-    ! Function modifies input angle, x, such that 0<=x<=360, preventing windup
-        REAL(DbKi), INTENT(IN) :: x         ! angle, degrees
-
-        IF (x .lt. 0.0) THEN
-            wrap_360 = x + 360.0
-        ELSEIF (x .ge. 360.0) THEN
-            wrap_360 = x - 360.0
-        ELSE
-            wrap_360 = x
-        ENDIF
-
+    FUNCTION wrap_360(x) RESULT(wrap_360_result)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        REAL(DbKi), INTENT(IN) :: x
+        REAL(DbKi) :: wrap_360_result
+        wrap_360_result = REAL(wrap_360_c(REAL(x, C_DOUBLE)), DbKi)
     END FUNCTION wrap_360
 !-------------------------------------------------------------------------------------------------------------------------------
     REAL(DbKi) FUNCTION sigma(x, x0, x1, y0, y1, ErrVar)

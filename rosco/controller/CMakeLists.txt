@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
 project(ROSCO VERSION 2.9.0 LANGUAGES Fortran C)
+enable_language(CXX)
 
 set(CMAKE_Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/ftnmods")
 
@@ -42,6 +43,9 @@ set(SOURCES
     src/ROSCO_IO.f90
     src/ZeroMQInterface.f90
     src/ExtControl.f90
+    src/saturate_cpp.cpp
+    src/wrap_180_cpp.cpp
+    src/wrap_360_cpp.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
@@ -97,6 +101,7 @@ if(PC_ZeroMQ_FOUND)
 endif()
 
 add_library(discon SHARED ${SOURCES})
+target_link_libraries(discon PRIVATE stdc++)
 
 if(PC_ZeroMQ_FOUND)
 	target_include_directories(discon PUBLIC ${ZeroMQ_INCLUDE_DIR})
