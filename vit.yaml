@@ -47,3 +47,24 @@ translations:
   interp1d:
     status: blocked
     cpp_file: translations/Functions/interp1d.cpp
+  identity:
+    status: integrated
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    cpp_file: translations/Functions/identity.cpp
+    kernel_dir: kernel/identity
+  ColemanTransform:
+    status: integrated
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    cpp_file: translations/Functions/colemantransform.cpp
+    kernel_dir: kernel/ColemanTransform
+  ColemanTransformInverse:
+    status: integrated
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    cpp_file: translations/Functions/colemantransforminverse.cpp
+    kernel_dir: kernel/ColemanTransformInverse

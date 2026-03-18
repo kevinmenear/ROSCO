@@ -65,6 +65,43 @@ IMPLICIT NONE
         END FUNCTION wrap_360_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of ColemanTransform
+    INTERFACE
+        SUBROUTINE colemantransform_c(rootMOOP, aziAngle, nHarmonic, axTOut, axYOut) BIND(C, NAME='colemantransform_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), INTENT(IN) :: rootMOOP(*)
+            REAL(C_DOUBLE), VALUE :: aziAngle
+            INTEGER(C_INT), VALUE :: nHarmonic
+            REAL(C_DOUBLE), INTENT(OUT) :: axTOut
+            REAL(C_DOUBLE), INTENT(OUT) :: axYOut
+        END SUBROUTINE colemantransform_c
+    END INTERFACE
+
+
+    ! Auto-generated interface for C++ implementation of ColemanTransformInverse
+    INTERFACE
+        SUBROUTINE colemantransforminverse_c(axTIn, axYIn, aziAngle, nHarmonic, aziOffset, PitComIPC) BIND(C, NAME='colemantransforminverse_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: axTIn
+            REAL(C_DOUBLE), VALUE :: axYIn
+            REAL(C_DOUBLE), VALUE :: aziAngle
+            INTEGER(C_INT), VALUE :: nHarmonic
+            REAL(C_DOUBLE), VALUE :: aziOffset
+            REAL(C_DOUBLE), INTENT(OUT) :: PitComIPC(*)
+        END SUBROUTINE colemantransforminverse_c
+    END INTERFACE
+
+
+    ! Auto-generated interface for C++ implementation of identity
+    INTERFACE
+        SUBROUTINE identity_c(n, identity_result) BIND(C, NAME='identity_c')
+            USE ISO_C_BINDING
+            INTEGER(C_INT), VALUE :: n
+            REAL(C_DOUBLE), INTENT(OUT) :: identity_result(*)
+        END SUBROUTINE identity_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION saturate(inputValue, minValue, maxValue) RESULT(saturate_result)
@@ -357,69 +394,36 @@ CONTAINS
 
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION identity(n) RESULT(A)
-    ! Produces an identity matrix of size n x n
-
-        INTEGER, INTENT(IN)         :: n
-        REAL(DbKi), DIMENSION(n, n)    :: A
-        INTEGER                     :: i
-        INTEGER                     :: j
-
-        ! Build identity matrix 
-        DO i=1,n  
-            DO j = 1,n
-                IF (i == j) THEN 
-                    A(i,j) = 1.0
-                ELSE
-                    A(i,j) = 0.0
-                ENDIF
-            ENDDO
-        ENDDO
-    
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: n
+        REAL(DbKi), DIMENSION(N, N) :: A
+        CALL identity_c(n, A)
     END FUNCTION identity
 
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE ColemanTransform(rootMOOP, aziAngle, nHarmonic, axTOut, axYOut)
-    ! The Coleman or d-q axis transformation transforms the root out of plane bending moments of each turbine blade
-    ! to a direct axis and a quadrature axis
-
+        USE ISO_C_BINDING
         IMPLICIT NONE
-        ! Inputs
-        REAL(DbKi), INTENT(IN)     :: rootMOOP(3)                      ! Root out of plane bending moments of each blade
-        REAL(DbKi), INTENT(IN)     :: aziAngle                         ! Rotor azimuth angle
-        INTEGER(IntKi), INTENT(IN)  :: nHarmonic                        ! The harmonic number, nP
-        ! Outputs
-        REAL(DbKi), INTENT(OUT)    :: axTOut, axYOut               ! Direct axis and quadrature axis outputted by this transform
-        ! Local
-        REAL(DbKi), PARAMETER      :: phi2 = 2.0/3.0*PI                ! Phase difference from first to second blade
-        REAL(DbKi), PARAMETER      :: phi3 = 4.0/3.0*PI                ! Phase difference from first to third blade
-
-        ! Body
-        axTOut  = 2.0/3.0 * (cos(nHarmonic*(aziAngle))*rootMOOP(1) + cos(nHarmonic*(aziAngle+phi2))*rootMOOP(2) + cos(nHarmonic*(aziAngle+phi3))*rootMOOP(3))
-        axYOut  = 2.0/3.0 * (sin(nHarmonic*(aziAngle))*rootMOOP(1) + sin(nHarmonic*(aziAngle+phi2))*rootMOOP(2) + sin(nHarmonic*(aziAngle+phi3))*rootMOOP(3))
-        
+        REAL(DbKi), INTENT(IN) :: rootMOOP(3)
+        REAL(DbKi), INTENT(IN) :: aziAngle
+        INTEGER(IntKi), INTENT(IN) :: nHarmonic
+        REAL(DbKi), INTENT(OUT) :: axTOut
+        REAL(DbKi), INTENT(OUT) :: axYOut
+        CALL colemantransform_c(rootMOOP, REAL(aziAngle, C_DOUBLE), INT(nHarmonic, C_INT), axTOut, axYOut)
     END SUBROUTINE ColemanTransform
 
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE ColemanTransformInverse(axTIn, axYIn, aziAngle, nHarmonic, aziOffset, PitComIPC)
-    ! The inverse Coleman or d-q axis transformation transforms the direct axis and quadrature axis
-    ! back to root out of plane bending moments of each turbine blade
+        USE ISO_C_BINDING
         IMPLICIT NONE
-        ! Inputs
-        REAL(DbKi), INTENT(IN)     :: axTIn, axYIn         ! Direct axis and quadrature axis
-        REAL(DbKi), INTENT(IN)     :: aziAngle                     ! Rotor azimuth angle
-        REAL(DbKi), INTENT(IN)     :: aziOffset                    ! Phase shift added to the azimuth angle
-        INTEGER(IntKi), INTENT(IN)  :: nHarmonic                    ! The harmonic number, nP
-        ! Outputs
-        REAL(DbKi), INTENT(OUT)    :: PitComIPC(3)                   ! Commanded individual pitch (deg)
-        ! Local
-        REAL(DbKi), PARAMETER      :: phi2 = 2.0/3.0*PI                ! Phase difference from first to second blade
-        REAL(DbKi), PARAMETER      :: phi3 = 4.0/3.0*PI                ! Phase difference from first to third blade
-
-        ! Body
-        PitComIPC(1) = cos(nHarmonic*(aziAngle+aziOffset))*axTIn + sin(nHarmonic*(aziAngle+aziOffset))*axYIn
-        PitComIPC(2) = cos(nHarmonic*(aziAngle+aziOffset+phi2))*axTIn + sin(nHarmonic*(aziAngle+aziOffset+phi2))*axYIn
-        PitComIPC(3) = cos(nHarmonic*(aziAngle+aziOffset+phi3))*axTIn + sin(nHarmonic*(aziAngle+aziOffset+phi3))*axYIn
-
+        REAL(DbKi), INTENT(IN) :: axTIn
+        REAL(DbKi), INTENT(IN) :: axYIn
+        REAL(DbKi), INTENT(IN) :: aziAngle
+        INTEGER(IntKi), INTENT(IN) :: nHarmonic
+        REAL(DbKi), INTENT(IN) :: aziOffset
+        REAL(DbKi), INTENT(OUT) :: PitComIPC(3)
+        CALL colemantransforminverse_c(REAL(axTIn, C_DOUBLE), REAL(axYIn, C_DOUBLE), REAL(aziAngle, C_DOUBLE), INT(nHarmonic, C_INT), REAL(aziOffset, C_DOUBLE), PitComIPC)
     END SUBROUTINE ColemanTransformInverse
 
 !-------------------------------------------------------------------------------------------------------------------------------

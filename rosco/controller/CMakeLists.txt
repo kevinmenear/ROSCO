@@ -46,6 +46,9 @@ set(SOURCES
     src/saturate_cpp.cpp
     src/wrap_180_cpp.cpp
     src/wrap_360_cpp.cpp
+    src/colemantransform_cpp.cpp
+    src/colemantransforminverse_cpp.cpp
+    src/identity_cpp.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
