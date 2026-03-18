@@ -25,46 +25,25 @@ verification:
 translations:
   saturate:
     status: integrated
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
     cpp_file: translations/Functions/saturate.cpp
-    kernel_dir: kernel/saturate
   wrap_180:
     status: integrated
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
     cpp_file: translations/Functions/wrap_180.cpp
-    kernel_dir: kernel/wrap_180
   wrap_360:
     status: integrated
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
     cpp_file: translations/Functions/wrap_360.cpp
-    kernel_dir: kernel/wrap_360
   interp1d:
     status: blocked
     cpp_file: translations/Functions/interp1d.cpp
   identity:
     status: integrated
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
     cpp_file: translations/Functions/identity.cpp
-    kernel_dir: kernel/identity
   ColemanTransform:
     status: integrated
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
     cpp_file: translations/Functions/colemantransform.cpp
-    kernel_dir: kernel/ColemanTransform
   ColemanTransformInverse:
     status: integrated
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
     cpp_file: translations/Functions/colemantransforminverse.cpp
-    kernel_dir: kernel/ColemanTransformInverse
+  ratelimit:
+    status: integrated
+    cpp_file: translations/Functions/ratelimit.cpp
