@@ -212,7 +212,7 @@ CONTAINS
                         '------------------------------------------------------------------------------'
             ! Specifically save accINFILE info (DISCON.IN)
             LocalVar%ACC_INFILE_SIZE = NINT(avrSWAP(50))
-            ! Allocate(LocalVar%ACC_INFILE(LocalVar%ACC_INFILE_SIZE))  ! VIT: removed (fixed-length CHARACTER array)
+            ! Allocate(LocalVar%ACC_INFILE(LocalVar%ACC_INFILE_SIZE))  ! VIT: removed (fixed-length CHARACTER)
             LocalVar%ACC_INFILE = accINFILE
 
             ! Read Control Parameter File

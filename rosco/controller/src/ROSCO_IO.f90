@@ -601,7 +601,7 @@ SUBROUTINE ReadRestartFile(avrSWAP, LocalVar, CntrPar, objInst, PerfData, RootNa
         READ( Un, IOSTAT=ErrStat) LocalVar%RootMyb_Last(2)
         READ( Un, IOSTAT=ErrStat) LocalVar%RootMyb_Last(3)
         READ( Un, IOSTAT=ErrStat) LocalVar%ACC_INFILE_SIZE
-        ! ALLOCATE(LocalVar%ACC_INFILE(LocalVar%ACC_INFILE_SIZE))  ! VIT: removed (fixed-length CHARACTER array)
+        ! ALLOCATE(LocalVar%ACC_INFILE(LocalVar%ACC_INFILE_SIZE))  ! VIT: removed (fixed-length CHARACTER)
         READ( Un, IOSTAT=ErrStat) LocalVar%ACC_INFILE
         READ( Un, IOSTAT=ErrStat) LocalVar%restart
         READ( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle_re(1)
