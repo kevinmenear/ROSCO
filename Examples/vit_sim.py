@@ -258,7 +258,10 @@ def run_scenario_3(turbine, controller, cp_filename):
         # NotchFilterSlopes: enable IPC (1P mode)
         'IPC_ControlMode': 1,
         # SecLPFilter_Vel: enable cable control loop
-        # CC_Mode stays at 0 (safe — avoids hardcoded CC_DesiredL out-of-bounds)
+        # CC_Mode=1 required so DISCON calls CableControl (gated by CC_Mode > 0).
+        # CC_DesiredL is fixed-size(12) initialized to 0; with CC_Group_N=1 and
+        # tlen=400 < 500, the filter processes zero input the entire run.
+        'CC_Mode': 1,
         'CC_Group_N': 1,
         'CC_GroupIndex': '2601',
     })

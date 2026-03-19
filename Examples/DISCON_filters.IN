@@ -31,7 +31,7 @@
 0                   ! AWC_Mode        - Active wake control (0 - not used, 1 - complex number method, 2 - Coleman transform method)
 0                   ! Ext_Mode        - External control mode (0 - not used, 1 - call external dynamic library)
 0                   ! ZMQ_Mode        - Fuse ZeroMQ interface (0: unused, 1: Yaw Control)
-0                   ! CC_Mode         - Cable control mode [0- unused, 1- User defined, 2- Open loop control]
+1                   ! CC_Mode         - Cable control mode [0- unused, 1- User defined, 2- Open loop control]
 0                   ! StC_Mode        - Structural control mode [0- unused, 1- User defined, 2- Open loop control]
 
 !------- FILTERS ----------------------------------------------------------

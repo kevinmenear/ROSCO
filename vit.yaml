@@ -20,107 +20,52 @@ fortran:
     SiKi: REAL(4)
     IntKi: INTEGER(4)
   compiler: gfortran
+  flags: -fdefault-real-8 -fdefault-double-8
 verification:
   tolerance: 1.0e-14
 translations:
   saturate:
     status: integrated
     cpp_file: translations/Functions/saturate.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/saturate
   wrap_180:
     status: integrated
     cpp_file: translations/Functions/wrap_180.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/wrap_180
   wrap_360:
     status: integrated
     cpp_file: translations/Functions/wrap_360.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/wrap_360
   interp1d:
     status: integrated
     cpp_file: translations/Functions/interp1d.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/interp1d
   identity:
     status: integrated
     cpp_file: translations/Functions/identity.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/identity
   ColemanTransform:
     status: integrated
     cpp_file: translations/Functions/colemantransform.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/ColemanTransform
   ColemanTransformInverse:
     status: integrated
     cpp_file: translations/Functions/colemantransforminverse.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/ColemanTransformInverse
   ratelimit:
     status: integrated
     cpp_file: translations/Functions/ratelimit.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/ratelimit
   sigma:
     status: integrated
     cpp_file: translations/Functions/sigma.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/sigma
   LPFilter:
     status: integrated
     cpp_file: translations/Filters/lpfilter.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/LPFilter
   HPFilter:
     status: integrated
     cpp_file: translations/Filters/hpfilter.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/HPFilter
   SecLPFilter:
     status: integrated
     cpp_file: translations/Filters/seclpfilter.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/SecLPFilter
   NotchFilter:
     status: integrated
     cpp_file: translations/Filters/notchfilter.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/NotchFilter
   NotchFilterSlopes:
     status: integrated
     cpp_file: translations/Filters/notchfilterslopes.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/NotchFilterSlopes
   SecLPFilter_Vel:
     status: integrated
     cpp_file: translations/Filters/seclpfilter_vel.cpp
