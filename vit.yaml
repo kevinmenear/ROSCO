@@ -50,3 +50,12 @@ translations:
   sigma:
     status: integrated
     cpp_file: translations/Functions/sigma.cpp
+  LPFilter:
+    status: integrated
+    cpp_file: translations/Filters/lpfilter.cpp
+  HPFilter:
+    status: integrated
+    cpp_file: translations/Filters/hpfilter.cpp
+  SecLPFilter:
+    status: integrated
+    cpp_file: translations/Filters/seclpfilter.cpp
