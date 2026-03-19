@@ -120,6 +120,36 @@ IMPLICIT NONE
         END SUBROUTINE identity_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of sigma
+    INTERFACE
+        FUNCTION sigma_c(x, x0, x1, y0, y1, ErrVar) BIND(C, NAME='sigma_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: x
+            REAL(C_DOUBLE), VALUE :: x0
+            REAL(C_DOUBLE), VALUE :: x1
+            REAL(C_DOUBLE), VALUE :: y0
+            REAL(C_DOUBLE), VALUE :: y1
+            TYPE(C_PTR), VALUE :: ErrVar
+            REAL(C_DOUBLE) :: sigma_c
+        END FUNCTION sigma_c
+    END INTERFACE
+
+
+    ! Auto-generated interface for C++ implementation of interp1d
+    INTERFACE
+        FUNCTION interp1d_c(xData, n_xData, yData, n_yData, xq, ErrVar) BIND(C, NAME='interp1d_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), INTENT(IN) :: xData(*)
+            INTEGER(C_INT), VALUE :: n_xData
+            REAL(C_DOUBLE), INTENT(IN) :: yData(*)
+            INTEGER(C_INT), VALUE :: n_yData
+            REAL(C_DOUBLE), VALUE :: xq
+            TYPE(C_PTR), VALUE :: ErrVar
+            REAL(C_DOUBLE) :: interp1d_c
+        END FUNCTION interp1d_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION saturate(inputValue, minValue, maxValue) RESULT(saturate_result)
@@ -161,64 +191,16 @@ CONTAINS
     END FUNCTION ratelimit
 
 
-    REAL(DbKi) FUNCTION interp1d(xData, yData, xq, ErrVar)
-    ! interp1d 1-D interpolation (table lookup), xData should be strictly increasing
-        
+    FUNCTION interp1d(xData, yData, xq, ErrVar) RESULT(interp1d_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : ErrorVariables
         IMPLICIT NONE
-
-        ! Inputs
-        REAL(DbKi), DIMENSION(:), INTENT(IN)       :: xData        ! Provided x data (vector), to be interpolated
-        REAL(DbKi), DIMENSION(:), INTENT(IN)       :: yData        ! Provided y data (vector), to be interpolated
-        REAL(DbKi), INTENT(IN)                     :: xq           ! x-value for which the y value has to be interpolated
-        INTEGER(IntKi)                              :: I            ! Iteration index
-
-        ! Error Catching
-        TYPE(ErrorVariables), INTENT(INOUT)     :: ErrVar
-        INTEGER(IntKi)                              :: I_DIFF
-
-        CHARACTER(*), PARAMETER                 :: RoutineName = 'interp1d'
-
-        
-        ! Catch Errors
-        ! Are xData and yData the same size?
-        IF (SIZE(xData) .NE. SIZE(yData)) THEN
-            ErrVar%aviFAIL = -1
-            ErrVar%ErrMsg  = ' xData and yData are not the same size'
-            WRITE(ErrVar%ErrMsg,"(A,I2,A,I2,A)") " SIZE(xData) =", SIZE(xData), & 
-            ' and SIZE(yData) =', SIZE(yData),' are not the same'
-        END IF
-
-        ! Is xData non decreasing
-        DO I_DIFF = 1, size(xData) - 1
-            IF (xData(I_DIFF + 1) - xData(I_DIFF) <= 0) THEN
-                ErrVar%aviFAIL = -1
-                ErrVar%ErrMsg  = ' xData is not strictly increasing'
-                EXIT 
-            END IF
-        END DO
-        
-        ! Interpolate
-        IF (xq <= MINVAL(xData)) THEN
-            interp1d = yData(1)
-        ELSEIF (xq >= MAXVAL(xData)) THEN
-            interp1d = yData(SIZE(xData))
-        ELSE
-            DO I = 1, SIZE(xData)
-                IF (xq <= xData(I)) THEN
-                    interp1d = yData(I-1) + (yData(I) - yData(I-1))/(xData(I) - xData(I-1))*(xq - xData(I-1))
-                    EXIT
-                ELSE
-                    CONTINUE
-                END IF
-            END DO
-        END IF
-
-        ! Add RoutineName to error message
-        IF (ErrVar%aviFAIL < 0) THEN
-            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
-        ENDIF
-        
+        REAL(DbKi), INTENT(IN) :: xData(:)
+        REAL(DbKi), INTENT(IN) :: yData(:)
+        REAL(DbKi), INTENT(IN) :: xq
+        TYPE(ErrorVariables), INTENT(INOUT), TARGET :: ErrVar
+        REAL(DbKi) :: interp1d_result
+        interp1d_result = REAL(interp1d_c(xData, SIZE(xData), yData, SIZE(yData), REAL(xq, C_DOUBLE), C_LOC(ErrVar)), DbKi)
     END FUNCTION interp1d
 
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -502,40 +484,18 @@ CONTAINS
         wrap_360_result = REAL(wrap_360_c(REAL(x, C_DOUBLE)), DbKi)
     END FUNCTION wrap_360
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION sigma(x, x0, x1, y0, y1, ErrVar)
-    ! Generic sigma function
+    FUNCTION sigma(x, x0, x1, y0, y1, ErrVar) RESULT(sigma_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : ErrorVariables
         IMPLICIT NONE
-    
-        ! Inputs
-        TYPE(ErrorVariables), INTENT(INOUT) :: ErrVar
-
-        REAL(DbKi), Intent(IN)  :: x, x0, x1
-        REAL(DbKi), Intent(IN)  :: y0, y1
-            
-        ! Local
-        REAL(DbKi) :: a3, a2, a1, a0
-
-        CHARACTER(*), PARAMETER                 :: RoutineName = 'sigma'
-
-        a3 = 2/(x0-x1)**3
-        a2 = -3*(x0+x1)/(x0-x1)**3
-        a1 = 6*x1*x0/(x0-x1)**3
-        a0 = (x0-3*x1)*x0**2/(x0-x1)**3
-
-        IF (x < x0) THEN
-            sigma = y0
-        ELSEIF (x > x1) THEN
-            sigma = y1
-        ELSE
-            sigma = (a3*x**3 + a2*x**2 + a1*x + a0)*(y1-y0) + y0
-        ENDIF 
-
-        ! Add RoutineName to error message
-        IF (ErrVar%aviFAIL < 0) THEN
-            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
-        ENDIF
-        
+        REAL(DbKi), INTENT(IN) :: x
+        REAL(DbKi), INTENT(IN) :: x0
+        REAL(DbKi), INTENT(IN) :: x1
+        REAL(DbKi), INTENT(IN) :: y0
+        REAL(DbKi), INTENT(IN) :: y1
+        TYPE(ErrorVariables), INTENT(INOUT), TARGET :: ErrVar
+        REAL(DbKi) :: sigma_result
+        sigma_result = REAL(sigma_c(REAL(x, C_DOUBLE), REAL(x0, C_DOUBLE), REAL(x1, C_DOUBLE), REAL(y0, C_DOUBLE), REAL(y1, C_DOUBLE), C_LOC(ErrVar)), DbKi)
     END FUNCTION sigma
 
 

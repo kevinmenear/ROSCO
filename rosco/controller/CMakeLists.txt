@@ -50,6 +50,8 @@ set(SOURCES
     src/colemantransform_cpp.cpp
     src/colemantransforminverse_cpp.cpp
     src/identity_cpp.cpp
+    src/sigma_cpp.cpp
+    src/interp1d_cpp.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
