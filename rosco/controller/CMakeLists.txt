@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
 project(ROSCO VERSION 2.9.0 LANGUAGES Fortran C)
+enable_language(CXX)
 
 set(CMAKE_Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/ftnmods")
 
@@ -17,7 +18,11 @@ elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "Flang")
 add_definitions(-DFLANG_COMPILER)
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DIMPLICIT_DLLEXPORT -fno-backslash -cpp -fdefault-real-8")  
 else()
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DIMPLICIT_DLLEXPORT -ffree-line-length-0 -fdefault-real-8 -fdefault-double-8 -cpp")  
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DIMPLICIT_DLLEXPORT -ffree-line-length-0 -fdefault-real-8 -fdefault-double-8 -cpp -ffp-contract=off")
+# VIT: -ffp-contract=off disables FMA contraction so that gfortran and g++
+# produce bit-identical results for equivalent expressions. Without this,
+# FMA scheduling differences cause 1-ULP drift that accumulates in feedback loops.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffp-contract=off")
 endif()
 elseif (WIN32)
 if (CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
@@ -42,6 +47,21 @@ set(SOURCES
     src/ROSCO_IO.f90
     src/ZeroMQInterface.f90
     src/ExtControl.f90
+    src/saturate_cpp.cpp
+    src/wrap_180_cpp.cpp
+    src/wrap_360_cpp.cpp
+    src/ratelimit_cpp.cpp
+    src/colemantransform_cpp.cpp
+    src/colemantransforminverse_cpp.cpp
+    src/identity_cpp.cpp
+    src/sigma_cpp.cpp
+    src/interp1d_cpp.cpp
+    src/lpfilter_cpp.cpp
+    src/hpfilter_cpp.cpp
+    src/seclpfilter_cpp.cpp
+    src/seclpfilter_vel_cpp.cpp
+    src/notchfilter_cpp.cpp
+    src/notchfilterslopes_cpp.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
@@ -97,6 +117,7 @@ if(PC_ZeroMQ_FOUND)
 endif()
 
 add_library(discon SHARED ${SOURCES})
+target_link_libraries(discon PRIVATE stdc++)
 
 if(PC_ZeroMQ_FOUND)
 	target_include_directories(discon PUBLIC ${ZeroMQ_INCLUDE_DIR})
