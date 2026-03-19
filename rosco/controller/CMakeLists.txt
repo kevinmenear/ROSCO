@@ -17,7 +17,10 @@ elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "Flang")
 add_definitions(-DFLANG_COMPILER)
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DIMPLICIT_DLLEXPORT -fno-backslash -cpp -fdefault-real-8")  
 else()
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DIMPLICIT_DLLEXPORT -ffree-line-length-0 -fdefault-real-8 -fdefault-double-8 -cpp")  
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DIMPLICIT_DLLEXPORT -ffree-line-length-0 -fdefault-real-8 -fdefault-double-8 -cpp -ffp-contract=off")
+# VIT: -ffp-contract=off disables FMA contraction so that gfortran and g++
+# produce bit-identical results for equivalent expressions during translation verification.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffp-contract=off")
 endif()
 elseif (WIN32)
 if (CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
