@@ -100,7 +100,7 @@ CONTAINS
         
         ! Lookup table for speed setpoint (PRC_Mode 1)
         IF (CntrPar%PRC_Mode == 1) THEN
-            LocalVar%PRC_WSE_F = LPFilter(LocalVar%WE_Vw, LocalVar%DT,CntrPar%PRC_LPF_Freq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF) 
+            LocalVar%PRC_WSE_F = LPFilter(LocalVar%WE_Vw, LocalVar%DT,CntrPar%PRC_LPF_Freq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF) 
             LocalVar%PC_RefSpd_PRC = interp1d(CntrPar%PRC_WindSpeeds,CntrPar%PRC_GenSpeeds,LocalVar%PRC_WSE_F,ErrVar)
         ENDIF
 
@@ -149,7 +149,7 @@ CONTAINS
 
 
         ! Filter reference signal
-        LocalVar%VS_RefSpd = LPFilter(LocalVar%VS_RefSpd_TSR, LocalVar%DT, CntrPar%F_VSRefSpdCornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
+        LocalVar%VS_RefSpd = LPFilter(LocalVar%VS_RefSpd_TSR, LocalVar%DT, CntrPar%F_VSRefSpdCornerFreq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF)
 
 
         ! Exclude reference speeds specified by user
@@ -374,7 +374,7 @@ CONTAINS
 
         ! Filter the wind speed at hub height regardless, only use if WE_Mode = 0 or WE_Op = 0
         ! Re-initialize at WE_Vw if leaving operational wind, WE_Vw is initialized at HorWindV
-        LocalVar%HorWindV_F = cos(LocalVar%NacVaneF*D2R) * LPFilter(LocalVar%HorWindV, LocalVar%DT, CntrPar%F_WECornerFreq/10, LocalVar%FP, LocalVar%RestartWSE, LocalVar%restart, objInst%instLPF, LocalVar%WE_Vw)
+        LocalVar%HorWindV_F = cos(LocalVar%NacVaneF*D2R) * LPFilter(LocalVar%HorWindV, LocalVar%DT, CntrPar%F_WECornerFreq/10, LocalVar%FP, LocalVar%RestartWSE, (LocalVar%restart /= 0), objInst%instLPF, LocalVar%WE_Vw)
 
         ! ---- Debug Inputs ------
         DebugVar%WE_b   = WE_Inp_Pitch
@@ -509,7 +509,7 @@ CONTAINS
             DelOmega = ((LocalVar%BlPitchCMeas - LocalVar%PC_MinPit)/0.524) * CntrPar%SS_VSGain - ((CntrPar%VS_RtPwr * R_Total - LocalVar%VS_LastGenPwr))/CntrPar%VS_RtPwr * CntrPar%SS_PCGain ! Normalize to 30 degrees for now
             DelOmega = DelOmega * CntrPar%PC_RefSpd
             ! Filter
-            LocalVar%SS_DelOmegaF = LPFilter(DelOmega, LocalVar%DT, CntrPar%F_SSCornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF) 
+            LocalVar%SS_DelOmegaF = LPFilter(DelOmega, LocalVar%DT, CntrPar%F_SSCornerFreq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF) 
         ELSE
             LocalVar%SS_DelOmegaF = 0 ! No setpoint smoothing
         ENDIF
@@ -569,7 +569,7 @@ CONTAINS
         ! SU_Stage = 0  (startup complete, normal operation)
         
         !Filterd rotor speed
-        LocalVar%SU_RotSpeedF = LPFilter(LocalVar%RotSpeed, LocalVar%DT, CntrPar%SU_RotorSpeedCornerFreq, LocalVar%FP,LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
+        LocalVar%SU_RotSpeedF = LPFilter(LocalVar%RotSpeed, LocalVar%DT, CntrPar%SU_RotorSpeedCornerFreq, LocalVar%FP,LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF)
 
         !Initialize startup stage (SU_Stage)
         IF (LocalVar%iStatus == 0) THEN
@@ -658,13 +658,13 @@ CONTAINS
         
 
         ! Filter pitch signal
-        LocalVar%SD_BlPitchF = LPFilter(LocalVar%BlPitchCMeas, LocalVar%DT, CntrPar%SD_PitchCornerFreq, LocalVar%FP,LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
+        LocalVar%SD_BlPitchF = LPFilter(LocalVar%BlPitchCMeas, LocalVar%DT, CntrPar%SD_PitchCornerFreq, LocalVar%FP,LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF)
         ! Filter generator speed
-        LocalVar%SD_GenSpeedF = LPFilter(LocalVar%Genspeed, LocalVar%DT, CntrPar%SD_GenSpdCornerFreq, LocalVar%FP,LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
+        LocalVar%SD_GenSpeedF = LPFilter(LocalVar%Genspeed, LocalVar%DT, CntrPar%SD_GenSpdCornerFreq, LocalVar%FP,LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF)
 
         ! Filter yaw error signal (NacVane)
-        SD_NacVaneCosF = LPFilter(cos(LocalVar%NacVane*D2R), LocalVar%DT, CntrPar%SD_YawErrorCornerFreq, LocalVar%FP,LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
-        SD_NacVaneSinF = LPFilter(sin(LocalVar%NacVane*D2R), LocalVar%DT, CntrPar%SD_YawErrorCornerFreq, LocalVar%FP,LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
+        SD_NacVaneCosF = LPFilter(cos(LocalVar%NacVane*D2R), LocalVar%DT, CntrPar%SD_YawErrorCornerFreq, LocalVar%FP,LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF)
+        SD_NacVaneSinF = LPFilter(sin(LocalVar%NacVane*D2R), LocalVar%DT, CntrPar%SD_YawErrorCornerFreq, LocalVar%FP,LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF)
         LocalVar%SD_NacVaneF = wrap_180(atan2(SD_NacVaneSinF, SD_NacVaneCosF) * R2D) ! (in deg)
         
         ! See if we should shutdown
@@ -786,7 +786,7 @@ CONTAINS
         END IF
 
         ! Initialize last reference speed state
-        IF (LocalVar%restart) THEN
+        IF (LocalVar%restart /= 0) THEN
             ! If starting in hist band
             IF (LocalVar%FA_Hist > 0) THEN
                 IF (VS_RefSpeed_LSS > CntrPar%TRA_ExclSpeed) THEN
@@ -810,7 +810,7 @@ CONTAINS
         LocalVar%TRA_LastRefSpd = LocalVar%VS_RefSpd_TRA
 
         ! Rate limit reference speed
-        LocalVar%VS_RefSpd_RL = ratelimit(LocalVar%VS_RefSpd_TRA, -CntrPar%TRA_RateLimit, CntrPar%TRA_RateLimit, LocalVar%DT, LocalVar%restart, LocalVar%rlP,objInst%instRL)
+        LocalVar%VS_RefSpd_RL = ratelimit(LocalVar%VS_RefSpd_TRA, -CntrPar%TRA_RateLimit, CntrPar%TRA_RateLimit, LocalVar%DT, (LocalVar%restart /= 0), LocalVar%rlP,objInst%instRL)
         LocalVar%VS_RefSpd = LocalVar%VS_RefSpd_RL * CntrPar%WE_GearboxRatio
 
 

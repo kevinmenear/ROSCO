@@ -121,9 +121,9 @@ CONTAINS
         LocalVar%BlPitchCMeas = (1 / REAL(LocalVar%NumBl)) * (LocalVar%BlPitch(1) + LocalVar%BlPitch(2) + LocalVar%BlPitch(3)) 
 
         IF (LocalVar%iStatus == 0) THEN     ! TODO: Technically, LocalVar%Time > 0, too, but this restart is in many places as a reset
-            LocalVar%restart = .True.
+            LocalVar%restart = 1
         ELSE
-            LocalVar%restart = .False.
+            LocalVar%restart = 0
         ENDIF
 
         ! FA_Acc_TT is in the non-rotating tower-top frame, so we need to convert it to the rotating (nacelle) frame of reference
@@ -212,7 +212,7 @@ CONTAINS
                         '------------------------------------------------------------------------------'
             ! Specifically save accINFILE info (DISCON.IN)
             LocalVar%ACC_INFILE_SIZE = NINT(avrSWAP(50))
-            Allocate(LocalVar%ACC_INFILE(LocalVar%ACC_INFILE_SIZE))
+            ! Allocate(LocalVar%ACC_INFILE(LocalVar%ACC_INFILE_SIZE))  ! VIT: removed (fixed-length CHARACTER array)
             LocalVar%ACC_INFILE = accINFILE
 
             ! Read Control Parameter File
@@ -286,7 +286,7 @@ CONTAINS
             ! Wind speed, OL_BP_Mode = 1
             LocalVar%OL_Index = LocalVar%WE_Vw
             IF (CntrPar%OL_BP_FiltFreq > 0) THEN
-                LocalVar%OL_Index = LPFilter(LocalVar%WE_Vw, LocalVar%DT,CntrPar%OL_BP_FiltFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
+                LocalVar%OL_Index = LPFilter(LocalVar%WE_Vw, LocalVar%DT,CntrPar%OL_BP_FiltFreq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF)
             ENDIF
 
         ENDIF

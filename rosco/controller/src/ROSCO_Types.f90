@@ -225,7 +225,7 @@ TYPE, PUBLIC :: ControlParameters
     REAL(DbKi)                    :: VS_MinOMTq                  ! Minimum torque at the beginning of the below-rated region 2, [Nm]
 END TYPE ControlParameters
 
-TYPE, PUBLIC :: WE
+TYPE, BIND(C), PUBLIC :: WE
     REAL(DbKi)                    :: om_r                        ! Estimated rotor speed [rad/s]
     REAL(DbKi)                    :: v_t                         ! Estimated wind speed, turbulent component [m/s]
     REAL(DbKi)                    :: v_m                         ! Estimated wind speed, 10-minute averaged [m/s]
@@ -235,7 +235,7 @@ TYPE, PUBLIC :: WE
     REAL(DbKi), DIMENSION(3,1)     :: K                           ! Kalman gain matrix
 END TYPE WE
 
-TYPE, PUBLIC :: FilterParameters
+TYPE, BIND(C), PUBLIC :: FilterParameters
     REAL(DbKi), DIMENSION(1024)     :: lpf1_a1                     ! First order filter - Denominator coefficient 1
     REAL(DbKi), DIMENSION(1024)     :: lpf1_a0                     ! First order filter - Denominator coefficient 0
     REAL(DbKi), DIMENSION(1024)     :: lpf1_b1                     ! First order filter - Numerator coefficient 1
@@ -284,11 +284,11 @@ TYPE, PUBLIC :: FilterParameters
     REAL(DbKi), DIMENSION(1024)     :: nf_a0                       ! Notch filter denominator coefficient 0
 END TYPE FilterParameters
 
-TYPE, PUBLIC :: rlParams
+TYPE, BIND(C), PUBLIC :: rlParams
     REAL(DbKi), DIMENSION(1024)     :: LastSignal                  ! Last input signal
 END TYPE rlParams
 
-TYPE, PUBLIC :: piParams
+TYPE, BIND(C), PUBLIC :: piParams
     REAL(DbKi), DIMENSION(1024)     :: ITerm                       ! Integrator term
     REAL(DbKi), DIMENSION(1024)     :: ITermLast                   ! Previous integrator term
     REAL(DbKi), DIMENSION(1024)     :: ITerm2                      ! Integrator term - second integrator
@@ -296,20 +296,20 @@ TYPE, PUBLIC :: piParams
     REAL(DbKi), DIMENSION(1024)     :: ELast                       ! Previous error term for derivative
 END TYPE piParams
 
-TYPE, PUBLIC :: resParams
+TYPE, BIND(C), PUBLIC :: resParams
     REAL(DbKi), DIMENSION(1024)     :: res_OutputSignalLast1       ! Previous output signal
     REAL(DbKi), DIMENSION(1024)     :: res_OutputSignalLast2       ! Previous output signal - second integrator
     REAL(DbKi), DIMENSION(1024)     :: res_InputSignalLast1        ! Previous input signal
     REAL(DbKi), DIMENSION(1024)     :: res_InputSignalLast2        ! Previous input signal - second integrator
 END TYPE resParams
 
-TYPE, PUBLIC :: LocalVariables
+TYPE, BIND(C), PUBLIC :: LocalVariables
     INTEGER(IntKi)                :: iStatus                     ! Initialization status
-    INTEGER(IntKi)                :: AlreadyInitialized = 0      ! Has ROSCO already been initialized (0-no, 1-yes)
+    INTEGER(IntKi)                :: AlreadyInitialized           ! Has ROSCO already been initialized (0-no, 1-yes)
     INTEGER(IntKi)                :: RestartWSE                  ! Restart WSE flag, 0 - restart, 1- not, to mirror iStatus
     REAL(DbKi)                    :: Time                        ! Time [s]
     REAL(DbKi)                    :: DT                          ! Time step [s]
-    LOGICAL                       :: WriteThisStep               ! Write an output line this time step
+    INTEGER(C_INT)                :: WriteThisStep ! Write an output line this time step
     INTEGER(IntKi)                :: n_DT                        ! number of timesteps since start
     REAL(DbKi)                    :: Time_Last                   ! Last time [s]
     REAL(DbKi)                    :: VS_GenPwr                   ! Generator power [W]
@@ -454,9 +454,10 @@ TYPE, PUBLIC :: LocalVariables
     REAL(DbKi)                    :: Flp_Angle(3)                ! Flap Angle (rad)
     REAL(DbKi)                    :: RootMyb_Last(3)             ! Last blade root bending moment (Nm)
     INTEGER(IntKi)                :: ACC_INFILE_SIZE             ! Length of parameter input filename
-    CHARACTER, DIMENSION(:), ALLOCATABLE     :: ACC_INFILE                  ! Parameter input filename
-    LOGICAL                       :: restart                     ! Restart flag
-    COMPLEX(DbKi)                 :: AWC_complexangle(3)         ! Complex angle for each blade, sum of modes?
+    CHARACTER                         :: ACC_INFILE(1024) ! Parameter input filename
+    INTEGER(C_INT)                :: restart ! Restart flag
+    REAL(DbKi)                 :: AWC_complexangle_re(3)          ! Complex angle for each blade, sum of modes?
+    REAL(DbKi)                 :: AWC_complexangle_im(3)         ! Imaginary part
     REAL(DbKi)                    :: TiltMean                    ! Mean tilt blade moment [Nm]
     REAL(DbKi)                    :: YawMean                     ! Mean yaw blade moment [Nm]
     INTEGER(IntKi)                :: ZMQ_ID                      ! 0000 - 9999, Identifier of the rosco, used for zeromq interface only

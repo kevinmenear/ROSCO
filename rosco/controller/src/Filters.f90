@@ -343,11 +343,11 @@ CONTAINS
         ! Filter the HSS (generator) and LSS (rotor) speed measurement:
         ! Apply Low-Pass Filter (choice between first- and second-order low-pass filter)
         IF (CntrPar%F_LPFType == 1) THEN
-            LocalVar%GenSpeedF = LPFilter(LocalVar%GenSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
-            LocalVar%RotSpeedF = LPFilter(LocalVar%RotSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
+            LocalVar%GenSpeedF = LPFilter(LocalVar%GenSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF)
+            LocalVar%RotSpeedF = LPFilter(LocalVar%RotSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF)
         ELSEIF (CntrPar%F_LPFType == 2) THEN   
-            LocalVar%GenSpeedF = SecLPFilter(LocalVar%GenSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, CntrPar%F_LPFDamping, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF) ! Second-order low-pass filter on generator speed
-            LocalVar%RotSpeedF = SecLPFilter(LocalVar%RotSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, CntrPar%F_LPFDamping, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF) ! Second-order low-pass filter on generator speed
+            LocalVar%GenSpeedF = SecLPFilter(LocalVar%GenSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, CntrPar%F_LPFDamping, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instSecLPF) ! Second-order low-pass filter on generator speed
+            LocalVar%RotSpeedF = SecLPFilter(LocalVar%RotSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, CntrPar%F_LPFDamping, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instSecLPF) ! Second-order low-pass filter on generator speed
         ENDIF
         
         ! Apply Notch Fitler to Gen Speed 
@@ -356,7 +356,7 @@ CONTAINS
                                             CntrPar%F_NotchFreqs(CntrPar%F_GenSpdNotch_Ind(n)), &
                                             CntrPar%F_NotchBetaNum(CntrPar%F_GenSpdNotch_Ind(n)), &
                                             CntrPar%F_NotchBetaDen(CntrPar%F_GenSpdNotch_Ind(n)), &
-                                            LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotch)
+                                            LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instNotch)
         END DO
 
         ! Filtering the tower fore-aft acceleration signal 
@@ -367,12 +367,12 @@ CONTAINS
         ENDIF 
 
         ! Low pass
-        LocalVar%NacIMU_FA_AccF = SecLPFilter(LocalVar%NacIMU_FA_RAcc, LocalVar%DT, CntrPar%F_FlCornerFreq(1), CntrPar%F_FlCornerFreq(2), LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF) ! Fixed Damping
-        LocalVar%FA_AccF = SecLPFilter(LocalVar%FA_Acc_Nac, LocalVar%DT, CntrPar%F_FlCornerFreq(1), CntrPar%F_FlCornerFreq(2), LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF) ! Fixed Damping
+        LocalVar%NacIMU_FA_AccF = SecLPFilter(LocalVar%NacIMU_FA_RAcc, LocalVar%DT, CntrPar%F_FlCornerFreq(1), CntrPar%F_FlCornerFreq(2), LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instSecLPF) ! Fixed Damping
+        LocalVar%FA_AccF = SecLPFilter(LocalVar%FA_Acc_Nac, LocalVar%DT, CntrPar%F_FlCornerFreq(1), CntrPar%F_FlCornerFreq(2), LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instSecLPF) ! Fixed Damping
         
         ! High pass
-        LocalVar%NacIMU_FA_AccF = HPFilter(LocalVar%NacIMU_FA_AccF, LocalVar%DT, CntrPar%F_FlHighPassFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instHPF) 
-        LocalVar%FA_AccF = HPFilter(LocalVar%FA_AccF, LocalVar%DT, CntrPar%F_FlHighPassFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instHPF) 
+        LocalVar%NacIMU_FA_AccF = HPFilter(LocalVar%NacIMU_FA_AccF, LocalVar%DT, CntrPar%F_FlHighPassFreq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instHPF) 
+        LocalVar%FA_AccF = HPFilter(LocalVar%FA_AccF, LocalVar%DT, CntrPar%F_FlHighPassFreq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instHPF) 
         
         ! Notch filters
         DO n = 1,CntrPar%F_TwrTopNotch_N
@@ -380,39 +380,39 @@ CONTAINS
                                                   CntrPar%F_NotchFreqs(CntrPar%F_TwrTopNotch_Ind(n)), &
                                                   CntrPar%F_NotchBetaNum(CntrPar%F_TwrTopNotch_Ind(n)), &
                                                   CntrPar%F_NotchBetaDen(CntrPar%F_TwrTopNotch_Ind(n)), &
-                                                  LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotch)
+                                                  LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instNotch)
             
             LocalVar%FA_AccF = NotchFilter(LocalVar%FA_AccF, LocalVar%DT, &
                                            CntrPar%F_NotchFreqs(CntrPar%F_TwrTopNotch_Ind(n)), &
                                            CntrPar%F_NotchBetaNum(CntrPar%F_TwrTopNotch_Ind(n)), &
                                            CntrPar%F_NotchBetaDen(CntrPar%F_TwrTopNotch_Ind(n)), &
-                                           LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotch)
+                                           LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instNotch)
         END DO
         
         ! FA acc for ForeAft damping, condition matches whether it's used in Controllers.f90
         IF (CntrPar%TD_Mode > 0) THEN
-            LocalVar%FA_AccHPF = HPFilter(LocalVar%FA_Acc_Nac, LocalVar%DT, CntrPar%FA_HPFCornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instHPF)
+            LocalVar%FA_AccHPF = HPFilter(LocalVar%FA_Acc_Nac, LocalVar%DT, CntrPar%FA_HPFCornerFreq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instHPF)
         ENDIF
         
         ! Filter Wind Speed Estimator Signal
-        LocalVar%We_Vw_F = LPFilter(LocalVar%WE_Vw, LocalVar%DT,CntrPar%F_WECornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF) 
+        LocalVar%We_Vw_F = LPFilter(LocalVar%WE_Vw, LocalVar%DT,CntrPar%F_WECornerFreq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF) 
 
         ! Blade root bending moment for IPC
         DO K = 1,LocalVar%NumBl
             IF ((CntrPar%IPC_ControlMode > 0) .OR. (CntrPar%Flp_Mode == 3)) THEN
                 ! Moving inverted notch at rotor speed to isolate 1P
-                LocalVar%RootMOOPF(K) = NotchFilterSlopes(LocalVar%rootMOOP(K), LocalVar%DT, LocalVar%RotSpeedF, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotchSlopes, .TRUE.)
+                LocalVar%RootMOOPF(K) = NotchFilterSlopes(LocalVar%rootMOOP(K), LocalVar%DT, LocalVar%RotSpeedF, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instNotchSlopes, .TRUE.)
             ELSEIF ( CntrPar%Flp_Mode == 2 ) THEN
                 ! Filter Blade root bending moments
-                LocalVar%RootMOOPF(K) = SecLPFilter(LocalVar%rootMOOP(K),LocalVar%DT, CntrPar%F_FlpCornerFreq(1), CntrPar%F_FlpCornerFreq(2), LocalVar%FP, LocalVar%iStatus, LocalVar%restart,objInst%instSecLPF)
-                LocalVar%RootMOOPF(K) = HPFilter(LocalVar%rootMOOPF(K),LocalVar%DT, 0.1_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart,objInst%instHPF)
+                LocalVar%RootMOOPF(K) = SecLPFilter(LocalVar%rootMOOP(K),LocalVar%DT, CntrPar%F_FlpCornerFreq(1), CntrPar%F_FlpCornerFreq(2), LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0),objInst%instSecLPF)
+                LocalVar%RootMOOPF(K) = HPFilter(LocalVar%rootMOOPF(K),LocalVar%DT, 0.1_DbKi, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0),objInst%instHPF)
                 
                 ! Use same as generator speed signal because that's how it was before
                 LocalVar%RootMOOPF(K) = NotchFilter(LocalVar%RootMOOPF(K), LocalVar%DT, &
                                                     CntrPar%F_NotchFreqs(CntrPar%F_GenSpdNotch_Ind(n)), &
                                                     CntrPar%F_NotchBetaNum(CntrPar%F_GenSpdNotch_Ind(n)), &
                                                     CntrPar%F_NotchBetaDen(CntrPar%F_GenSpdNotch_Ind(n)), &
-                                                    LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotch)
+                                                    LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instNotch)
             ELSE
                 LocalVar%RootMOOPF(K) = LocalVar%rootMOOP(K)
             ENDIF     
@@ -420,8 +420,8 @@ CONTAINS
 
 
         ! Control commands (used by WSE, mostly)
-        LocalVar%VS_LastGenTrqF = SecLPFilter(LocalVar%VS_LastGenTrq, LocalVar%DT, CntrPar%F_LPFCornerFreq, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF)
-        LocalVar%BlPitchCMeasF    = SecLPFilter(LocalVar%BlPitchCMeas, LocalVar%DT, CntrPar%F_LPFCornerFreq*0.25, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF)
+        LocalVar%VS_LastGenTrqF = SecLPFilter(LocalVar%VS_LastGenTrq, LocalVar%DT, CntrPar%F_LPFCornerFreq, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instSecLPF)
+        LocalVar%BlPitchCMeasF    = SecLPFilter(LocalVar%BlPitchCMeas, LocalVar%DT, CntrPar%F_LPFCornerFreq*0.25, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instSecLPF)
 
         ! Wind vane signal
         NacVaneCosF = LPFilter(cos(LocalVar%NacVane*D2R), LocalVar%DT, CntrPar%F_YawErr, LocalVar%FP, LocalVar%iStatus, .FALSE., objInst%instLPF) ! (-)

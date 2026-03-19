@@ -257,9 +257,12 @@ SUBROUTINE WriteRestartFile(LocalVar, CntrPar, ErrVar, objInst, RootName, size_a
         WRITE( Un, IOSTAT=ErrStat) LocalVar%ACC_INFILE_SIZE
         WRITE( Un, IOSTAT=ErrStat) LocalVar%ACC_INFILE
         WRITE( Un, IOSTAT=ErrStat) LocalVar%restart
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle(3)
+        WRITE( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle_re(1)
+        WRITE( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle_im(1)
+        WRITE( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle_re(2)
+        WRITE( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle_im(2)
+        WRITE( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle_re(3)
+        WRITE( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle_im(3)
         WRITE( Un, IOSTAT=ErrStat) LocalVar%TiltMean
         WRITE( Un, IOSTAT=ErrStat) LocalVar%YawMean
         WRITE( Un, IOSTAT=ErrStat) LocalVar%ZMQ_ID
@@ -598,12 +601,15 @@ SUBROUTINE ReadRestartFile(avrSWAP, LocalVar, CntrPar, objInst, PerfData, RootNa
         READ( Un, IOSTAT=ErrStat) LocalVar%RootMyb_Last(2)
         READ( Un, IOSTAT=ErrStat) LocalVar%RootMyb_Last(3)
         READ( Un, IOSTAT=ErrStat) LocalVar%ACC_INFILE_SIZE
-        ALLOCATE(LocalVar%ACC_INFILE(LocalVar%ACC_INFILE_SIZE))
+        ! ALLOCATE(LocalVar%ACC_INFILE(LocalVar%ACC_INFILE_SIZE))  ! VIT: removed (fixed-length CHARACTER array)
         READ( Un, IOSTAT=ErrStat) LocalVar%ACC_INFILE
         READ( Un, IOSTAT=ErrStat) LocalVar%restart
-        READ( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle(1)
-        READ( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle(2)
-        READ( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle(3)
+        READ( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle_re(1)
+        READ( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle_im(1)
+        READ( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle_re(2)
+        READ( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle_im(2)
+        READ( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle_re(3)
+        READ( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle_im(3)
         READ( Un, IOSTAT=ErrStat) LocalVar%TiltMean
         READ( Un, IOSTAT=ErrStat) LocalVar%YawMean
         READ( Un, IOSTAT=ErrStat) LocalVar%ZMQ_ID
@@ -925,7 +931,7 @@ SUBROUTINE Debug(LocalVar, CntrPar, DebugVar, ErrVar, avrSWAP, RootName, size_av
     LocalVarOutData(147) = LocalVar%Flp_Angle(1)
     LocalVarOutData(148) = LocalVar%RootMyb_Last(1)
     LocalVarOutData(149) = LocalVar%ACC_INFILE_SIZE
-    LocalVarOutData(150) = LocalVar%AWC_complexangle(1)
+    LocalVarOutData(150) = LocalVar%AWC_complexangle_re(1)
     LocalVarOutData(151) = LocalVar%TiltMean
     LocalVarOutData(152) = LocalVar%YawMean
     LocalVarOutData(153) = LocalVar%ZMQ_ID
