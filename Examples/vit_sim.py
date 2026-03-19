@@ -7,9 +7,11 @@ Runs multiple simulation scenarios to exercise all controller code paths needed
 for VIT translation verification:
 
   1. Standard 1-DOF step-wind simulation (same as 04_simple_sim.py)
-     - Exercises: saturate, wrap_180, interp1d, and most other functions
+     - Exercises: saturate, wrap_180, interp1d, LPFilter, HPFilter, SecLPFilter
   2. Yaw-by-IPC simulation with Y_ControlMode=2
      - Exercises: wrap_360 (via synthetic NacHeading/NacVane signals)
+  3. Filter coverage simulation with IPC + notch + cable control enabled
+     - Exercises: NotchFilter, NotchFilterSlopes, SecLPFilter_Vel
 
 All scenarios use the same compiled libdiscon.so, so KGen instrumentation
 captures state from whichever function is being extracted.
@@ -18,6 +20,7 @@ Usage:
     python3 vit_sim.py              # Run all scenarios
     python3 vit_sim.py --scenario 1 # Standard sim only
     python3 vit_sim.py --scenario 2 # Yaw-by-IPC sim only
+    python3 vit_sim.py --scenario 3 # Filter coverage sim only
 """
 
 import argparse
@@ -226,15 +229,74 @@ def run_scenario_2(turbine, controller, cp_filename):
 
 
 # ---------------------------------------------------------------------------
+# Scenario 3: Filter coverage (IPC + notch + cable control)
+# ---------------------------------------------------------------------------
+def run_scenario_3(turbine, controller, cp_filename):
+    """Sim with IPC, notch filters, and cable control enabled.
+
+    Exercises filter functions not active in the standard config:
+    - NotchFilter: F_GenSpdNotch_N=1 adds a notch at 1.0 rad/s on gen speed
+    - NotchFilterSlopes: IPC_ControlMode=1 enables 1P blade root filtering
+    - SecLPFilter_Vel: CC_Group_N=1 enables the cable control filter loop
+
+    All three are safe: notch is purely additive filtering, IPC processes
+    zero blade loads (1-DOF sim), cable control filters zero with CC_Mode=0.
+    """
+    print("=" * 60)
+    print("Scenario 3: Filter coverage (IPC + notch + cable control)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_filters.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        # NotchFilter: 1 notch filter on generator speed
+        'F_NumNotchFilts': 1,
+        'F_NotchFreqs': '1.0000',
+        'F_NotchBetaNum': '0.0000',
+        'F_NotchBetaDen': '0.2500',
+        'F_GenSpdNotch_N': 1,
+        'F_GenSpdNotch_Ind': '1',
+        # NotchFilterSlopes: enable IPC (1P mode)
+        'IPC_ControlMode': 1,
+        # SecLPFilter_Vel: enable cable control loop
+        # CC_Mode stays at 0 (safe — avoids hardcoded CC_DesiredL out-of-bounds)
+        'CC_Group_N': 1,
+        'CC_GroupIndex': '2601',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim3'
+    )
+
+    sim_3 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_3.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    print("Scenario 3: PASSED (NotchFilter + NotchFilterSlopes + SecLPFilter_Vel exercised)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description='VIT simulation runner')
     parser.add_argument('--scenario', type=int, default=0,
-                        help='Run specific scenario (1 or 2). Default 0 = run all.')
+                        help='Run specific scenario (1, 2, or 3). Default 0 = run all.')
     args = parser.parse_args()
 
     turbine, controller, cp_filename = load_turbine_and_controller()
+
+    # Scenario 3 runs first so KGen's early invocations (1-20) capture
+    # filter code paths that are inactive in Scenario 1's default config
+    # (NotchFilter, NotchFilterSlopes, SecLPFilter_Vel).
+    if args.scenario == 0 or args.scenario == 3:
+        run_scenario_3(turbine, controller, cp_filename)
 
     if args.scenario == 0 or args.scenario == 1:
         run_scenario_1(turbine, controller, cp_filename)

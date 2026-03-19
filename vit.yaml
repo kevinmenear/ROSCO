@@ -59,3 +59,12 @@ translations:
   SecLPFilter:
     status: integrated
     cpp_file: translations/Filters/seclpfilter.cpp
+  NotchFilter:
+    status: integrated
+    cpp_file: translations/Filters/notchfilter.cpp
+  NotchFilterSlopes:
+    status: integrated
+    cpp_file: translations/Filters/notchfilterslopes.cpp
+  SecLPFilter_Vel:
+    status: integrated
+    cpp_file: translations/Filters/seclpfilter_vel.cpp
