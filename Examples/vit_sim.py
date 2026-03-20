@@ -312,9 +312,12 @@ def run_scenario_4(turbine, controller, cp_filename):
     write_discon(turbine, controller, cp_filename, param_filename, patches={
         'Flp_Mode': 2,
         'IPC_ControlMode': 0,  # Mutual exclusion with Flp_Mode > 0
-        # Nonzero gains so PIIController produces nontrivial output
-        'Flp_Kp': '-0.01',
-        'Flp_Ki': '-0.005',
+        # F_FlpCornerFreq(1) must be > 0 when Flp_Mode > 0
+        # (validation in CheckInputs sets aviFAIL=-1 otherwise)
+        'F_FlpCornerFreq': '0.5000  0.7000',
+        # Small nonzero gains so PIIController runs without instability
+        'Flp_Kp': '-0.001',
+        'Flp_Ki': '-0.0005',
     })
 
     controller_int = ROSCO_ci.ControllerInterface(
@@ -324,7 +327,7 @@ def run_scenario_4(turbine, controller, cp_filename):
     sim_4 = ROSCO_sim.Sim(turbine, controller_int)
 
     dt = 0.025
-    tlen = 400
+    tlen = 100
     ws0 = 9
     t = np.arange(0, tlen, dt)
     ws = np.ones_like(t) * ws0
