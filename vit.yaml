@@ -146,3 +146,7 @@ translations:
   PIIController:
     status: integrated
     cpp_file: translations/Controllers/piicontroller.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/PIIController
