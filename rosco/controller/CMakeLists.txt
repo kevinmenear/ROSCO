@@ -61,6 +61,9 @@ set(SOURCES
     src/seclpfilter_vel_cpp.cpp
     src/notchfilter_cpp.cpp
     src/notchfilterslopes_cpp.cpp
+    src/picontroller_cpp.cpp
+    src/piicontroller_cpp.cpp
+    src/rescontroller_cpp.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

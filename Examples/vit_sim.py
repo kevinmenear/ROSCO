@@ -12,6 +12,10 @@ for VIT translation verification:
      - Exercises: wrap_360 (via synthetic NacHeading/NacVane signals)
   3. Filter coverage simulation with IPC + notch + cable control enabled
      - Exercises: NotchFilter, NotchFilterSlopes, SecLPFilter_Vel
+  4. Flap control simulation with Flp_Mode=2
+     - Exercises: PIIController (dual-integral flap controller)
+  5. Active wake control simulation with AWC_Mode=4
+     - Exercises: ResController (proportional-resonant controller)
 
 All scenarios use the same compiled libdiscon.so, so KGen instrumentation
 captures state from whichever function is being extracted.
@@ -21,6 +25,8 @@ Usage:
     python3 vit_sim.py --scenario 1 # Standard sim only
     python3 vit_sim.py --scenario 2 # Yaw-by-IPC sim only
     python3 vit_sim.py --scenario 3 # Filter coverage sim only
+    python3 vit_sim.py --scenario 4 # Flap control sim only
+    python3 vit_sim.py --scenario 5 # Active wake control sim only
 """
 
 import argparse
@@ -85,7 +91,8 @@ def write_discon(turbine, controller, cp_filename, param_filename, patches=None)
             text = f.read()
         for param, value in patches.items():
             # Match lines like "0                   ! Y_ControlMode   - description"
-            pattern = rf'^(\S+)(\s+! {param}\b.*)$'
+            # Also handles multi-value lines like "0.0 0.0   ! AWC_CntrGains ..."
+            pattern = rf'^(.+?)(\s+! {param}\b.*)$'
             replacement = rf'{value}\2'
             text, count = re.subn(pattern, replacement, text, flags=re.MULTILINE)
             if count == 0:
@@ -285,19 +292,113 @@ def run_scenario_3(turbine, controller, cp_filename):
 
 
 # ---------------------------------------------------------------------------
+# Scenario 4: Flap control (Flp_Mode=2 → PIIController)
+# ---------------------------------------------------------------------------
+def run_scenario_4(turbine, controller, cp_filename):
+    """Sim with Flp_Mode=2 to exercise PIIController.
+
+    Flp_Mode=2 enables proportional flap control using PIIController
+    (dual-integral variant of PIController). IPC must be disabled
+    (mutual exclusion: IPC_ControlMode=0 when Flp_Mode > 0).
+
+    In the 1-DOF sim, blade root moments are near-zero, so the flap
+    controller processes small signals. This is fine for state capture.
+    """
+    print("=" * 60)
+    print("Scenario 4: Flap control (Flp_Mode=2, PIIController)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_flp.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'Flp_Mode': 2,
+        'IPC_ControlMode': 0,  # Mutual exclusion with Flp_Mode > 0
+        # Nonzero gains so PIIController produces nontrivial output
+        'Flp_Kp': '-0.01',
+        'Flp_Ki': '-0.005',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim4'
+    )
+
+    sim_4 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_4.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    print("Scenario 4: PASSED (PIIController exercised)")
+
+
+# ---------------------------------------------------------------------------
+# Scenario 5: Active wake control (AWC_Mode=4 → ResController)
+# ---------------------------------------------------------------------------
+def run_scenario_5(turbine, controller, cp_filename):
+    """Sim with AWC_Mode=4 to exercise ResController.
+
+    AWC_Mode=4 enables closed-loop proportional-resonant active wake
+    control. The ResController uses Tustin-discretized resonant filter
+    equations. AWC_Mode > 1 requires individual pitch control
+    (avrSWAP(28)=1, already set by ControllerInterface).
+
+    In the 1-DOF sim, ColemanTransformed blade root moments are
+    near-zero, so the resonant controller processes small error signals.
+    """
+    print("=" * 60)
+    print("Scenario 5: Active wake control (AWC_Mode=4, ResController)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_awc.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'AWC_Mode': 4,
+        # Nonzero gains so ResController produces nontrivial output
+        'AWC_CntrGains': '0.0100 0.0050',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim5'
+    )
+
+    sim_5 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_5.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    print("Scenario 5: PASSED (ResController exercised)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description='VIT simulation runner')
     parser.add_argument('--scenario', type=int, default=0,
-                        help='Run specific scenario (1, 2, or 3). Default 0 = run all.')
+                        help='Run specific scenario (1-5). Default 0 = run all.')
     args = parser.parse_args()
 
     turbine, controller, cp_filename = load_turbine_and_controller()
 
-    # Scenario 3 runs first so KGen's early invocations (1-20) capture
-    # filter code paths that are inactive in Scenario 1's default config
-    # (NotchFilter, NotchFilterSlopes, SecLPFilter_Vel).
+    # Scenarios 4 and 5 run first so KGen's early invocations (1-20) capture
+    # PIIController and ResController code paths (gated by Flp_Mode=2 and
+    # AWC_Mode=4 respectively, inactive in default config).
+    # Scenario 3 runs next for filter coverage (NotchFilter, etc.).
+    if args.scenario == 0 or args.scenario == 4:
+        run_scenario_4(turbine, controller, cp_filename)
+
+    if args.scenario == 0 or args.scenario == 5:
+        run_scenario_5(turbine, controller, cp_filename)
+
     if args.scenario == 0 or args.scenario == 3:
         run_scenario_3(turbine, controller, cp_filename)
 

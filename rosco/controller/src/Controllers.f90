@@ -21,6 +21,65 @@ MODULE Controllers
 
     IMPLICIT NONE
 
+
+    ! Auto-generated interface for C++ implementation of PIController
+    INTERFACE
+        FUNCTION picontroller_c(error, kp, ki, minValue, maxValue, DT, I0, piP, reset, inst) BIND(C, NAME='picontroller_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: error
+            REAL(C_DOUBLE), VALUE :: kp
+            REAL(C_DOUBLE), VALUE :: ki
+            REAL(C_DOUBLE), VALUE :: minValue
+            REAL(C_DOUBLE), VALUE :: maxValue
+            REAL(C_DOUBLE), VALUE :: DT
+            REAL(C_DOUBLE), VALUE :: I0
+            TYPE(C_PTR), VALUE :: piP
+            LOGICAL(C_BOOL), VALUE :: reset
+            INTEGER(C_INT), INTENT(INOUT) :: inst
+            REAL(C_DOUBLE) :: picontroller_c
+        END FUNCTION picontroller_c
+    END INTERFACE
+
+
+    ! Auto-generated interface for C++ implementation of PIIController
+    INTERFACE
+        FUNCTION piicontroller_c(error, error2, kp, ki, ki2, minValue, maxValue, DT, I0, piP, reset, inst) BIND(C, NAME='piicontroller_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: error
+            REAL(C_DOUBLE), VALUE :: error2
+            REAL(C_DOUBLE), VALUE :: kp
+            REAL(C_DOUBLE), VALUE :: ki
+            REAL(C_DOUBLE), VALUE :: ki2
+            REAL(C_DOUBLE), VALUE :: minValue
+            REAL(C_DOUBLE), VALUE :: maxValue
+            REAL(C_DOUBLE), VALUE :: DT
+            REAL(C_DOUBLE), VALUE :: I0
+            TYPE(C_PTR), VALUE :: piP
+            LOGICAL(C_BOOL), VALUE :: reset
+            INTEGER(C_INT), INTENT(INOUT) :: inst
+            REAL(C_DOUBLE) :: piicontroller_c
+        END FUNCTION piicontroller_c
+    END INTERFACE
+
+
+    ! Auto-generated interface for C++ implementation of ResController
+    INTERFACE
+        FUNCTION rescontroller_c(error, kp, ki, freq, minValue, maxValue, DT, resP, reset, inst) BIND(C, NAME='rescontroller_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: error
+            REAL(C_DOUBLE), VALUE :: kp
+            REAL(C_DOUBLE), VALUE :: ki
+            REAL(C_DOUBLE), VALUE :: freq
+            REAL(C_DOUBLE), VALUE :: minValue
+            REAL(C_DOUBLE), VALUE :: maxValue
+            REAL(C_DOUBLE), VALUE :: DT
+            TYPE(C_PTR), VALUE :: resP
+            LOGICAL(C_BOOL), VALUE :: reset
+            INTEGER(C_INT), INTENT(INOUT) :: inst
+            REAL(C_DOUBLE) :: rescontroller_c
+        END FUNCTION rescontroller_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE PitchControl(avrSWAP, CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -1028,43 +1087,22 @@ SUBROUTINE StructuralControl(avrSWAP, CntrPar, LocalVar, objInst, ErrVar)
 
     END SUBROUTINE StructuralControl
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION PIController(error, kp, ki, minValue, maxValue, DT, I0, piP, reset, inst)
+    FUNCTION PIController(error, kp, ki, minValue, maxValue, DT, I0, piP, reset, inst) RESULT(PIController_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : piParams
-
-    ! PI controller, with output saturation
-
         IMPLICIT NONE
-        ! Allocate Inputs
-        REAL(DbKi),    INTENT(IN)         :: error
-        REAL(DbKi),    INTENT(IN)         :: kp
-        REAL(DbKi),    INTENT(IN)         :: ki
-        REAL(DbKi),    INTENT(IN)         :: minValue
-        REAL(DbKi),    INTENT(IN)         :: maxValue
-        REAL(DbKi),    INTENT(IN)         :: DT
-        INTEGER(IntKi), INTENT(INOUT)      :: inst
-        REAL(DbKi),    INTENT(IN)         :: I0
-        TYPE(piParams), INTENT(INOUT)  :: piP
-        LOGICAL,    INTENT(IN)         :: reset     
-        ! Allocate local variables
-        INTEGER(IntKi)                      :: i                                            ! Counter for making arrays
-        REAL(DbKi)                         :: PTerm                                        ! Proportional term
-
-        ! Initialize persistent variables/arrays, and set inital condition for integrator term
-        IF (reset) THEN
-            piP%ITerm(inst) = I0
-            piP%ITermLast(inst) = I0
-            
-            PIController = I0
-        ELSE
-            PTerm = kp*error
-            piP%ITerm(inst) = piP%ITerm(inst) + DT*ki*error
-            piP%ITerm(inst) = saturate(piP%ITerm(inst), minValue, maxValue)
-            PIController = saturate(PTerm + piP%ITerm(inst), minValue, maxValue)
-        
-            piP%ITermLast(inst) = piP%ITerm(inst)
-        END IF
-        inst = inst + 1
-        
+        REAL(DbKi), INTENT(IN) :: error
+        REAL(DbKi), INTENT(IN) :: kp
+        REAL(DbKi), INTENT(IN) :: ki
+        REAL(DbKi), INTENT(IN) :: minValue
+        REAL(DbKi), INTENT(IN) :: maxValue
+        REAL(DbKi), INTENT(IN) :: DT
+        REAL(DbKi), INTENT(IN) :: I0
+        TYPE(piParams), INTENT(INOUT), TARGET :: piP
+        LOGICAL, INTENT(IN) :: reset
+        INTEGER(IntKi), INTENT(INOUT) :: inst
+        REAL(DbKi) :: PIController_result
+        PIController_result = REAL(picontroller_c(REAL(error, C_DOUBLE), REAL(kp, C_DOUBLE), REAL(ki, C_DOUBLE), REAL(minValue, C_DOUBLE), REAL(maxValue, C_DOUBLE), REAL(DT, C_DOUBLE), REAL(I0, C_DOUBLE), C_LOC(piP), LOGICAL(reset, C_BOOL), inst), DbKi)
     END FUNCTION PIController
 
 
@@ -1128,102 +1166,43 @@ SUBROUTINE StructuralControl(avrSWAP, CntrPar, LocalVar, objInst, ErrVar)
     END FUNCTION PIDController
 
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION PIIController(error, error2, kp, ki, ki2, minValue, maxValue, DT, I0, piP, reset, inst)
-    ! PI controller, with output saturation. 
-    ! Added error2 term for additional integral control input
+    FUNCTION PIIController(error, error2, kp, ki, ki2, minValue, maxValue, DT, I0, piP, reset, inst) RESULT(PIIController_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : piParams
-        
         IMPLICIT NONE
-        ! Allocate Inputs
-        REAL(DbKi), INTENT(IN)         :: error
-        REAL(DbKi), INTENT(IN)         :: error2
-        REAL(DbKi), INTENT(IN)         :: kp
-        REAL(DbKi), INTENT(IN)         :: ki2
-        REAL(DbKi), INTENT(IN)         :: ki
-        REAL(DbKi), INTENT(IN)         :: minValue
-        REAL(DbKi), INTENT(IN)         :: maxValue
-        REAL(DbKi), INTENT(IN)         :: DT
-        INTEGER(IntKi), INTENT(INOUT)   :: inst
-        REAL(DbKi), INTENT(IN)         :: I0
-        TYPE(piParams), INTENT(INOUT) :: piP
-        LOGICAL, INTENT(IN)         :: reset     
-        ! Allocate local variables
-        INTEGER(IntKi)                      :: i                                            ! Counter for making arrays
-        REAL(DbKi)                         :: PTerm                                        ! Proportional term
-
-        ! Initialize persistent variables/arrays, and set inital condition for integrator term
-        IF (reset) THEN
-            piP%ITerm(inst) = I0
-            piP%ITermLast(inst) = I0
-            piP%ITerm2(inst) = I0
-            piP%ITermLast2(inst) = I0
-            
-            PIIController = I0
-        ELSE
-            PTerm = kp*error
-            piP%ITerm(inst) = piP%ITerm(inst) + DT*ki*error
-            piP%ITerm2(inst) = piP%ITerm2(inst) + DT*ki2*error2
-            piP%ITerm(inst) = saturate(piP%ITerm(inst), minValue, maxValue)
-            piP%ITerm2(inst) = saturate(piP%ITerm2(inst), minValue, maxValue)
-            PIIController = PTerm + piP%ITerm(inst) + piP%ITerm2(inst)
-            PIIController = saturate(PIIController, minValue, maxValue)
-        
-            piP%ITermLast(inst) = piP%ITerm(inst)
-        END IF
-        inst = inst + 1
-        
+        REAL(DbKi), INTENT(IN) :: error
+        REAL(DbKi), INTENT(IN) :: error2
+        REAL(DbKi), INTENT(IN) :: kp
+        REAL(DbKi), INTENT(IN) :: ki
+        REAL(DbKi), INTENT(IN) :: ki2
+        REAL(DbKi), INTENT(IN) :: minValue
+        REAL(DbKi), INTENT(IN) :: maxValue
+        REAL(DbKi), INTENT(IN) :: DT
+        REAL(DbKi), INTENT(IN) :: I0
+        TYPE(piParams), INTENT(INOUT), TARGET :: piP
+        LOGICAL, INTENT(IN) :: reset
+        INTEGER(IntKi), INTENT(INOUT) :: inst
+        REAL(DbKi) :: PIIController_result
+        PIIController_result = REAL(piicontroller_c(REAL(error, C_DOUBLE), REAL(error2, C_DOUBLE), REAL(kp, C_DOUBLE), REAL(ki, C_DOUBLE), REAL(ki2, C_DOUBLE), REAL(minValue, C_DOUBLE), REAL(maxValue, C_DOUBLE), REAL(DT, C_DOUBLE), REAL(I0, C_DOUBLE), C_LOC(piP), LOGICAL(reset, C_BOOL), inst), DbKi)
     END FUNCTION PIIController
 
         !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION ResController(error, kp, ki, freq, minValue, maxValue, DT, resP, reset, inst)
+    FUNCTION ResController(error, kp, ki, freq, minValue, maxValue, DT, resP, reset, inst) RESULT(ResController_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : resParams
-
-    ! PI controller, with output saturation
-
         IMPLICIT NONE
-        ! Allocate Inputs
-        REAL(DbKi),    INTENT(IN)         :: error
-        REAL(DbKi),    INTENT(IN)         :: kp
-        REAL(DbKi),    INTENT(IN)         :: ki
-        REAL(DbKi),    INTENT(IN)         :: freq
-        REAL(DbKi),    INTENT(IN)         :: minValue
-        REAL(DbKi),    INTENT(IN)         :: maxValue
-        REAL(DbKi),    INTENT(IN)         :: DT
-        INTEGER(IntKi), INTENT(INOUT)     :: inst
-        TYPE(resParams), INTENT(INOUT)    :: resP
-        LOGICAL,    INTENT(IN)            :: reset
-        ! Allocate local variables
-        REAL(DbKi)                        :: omega                                        ! Frequency
-        REAL(DbKi)                        :: a0, a1, a2, b0, b1, b2
-
-        omega = 2*PI*freq
-
-        !! Tustin RC
-        b0 = 4+omega**2*DT**2
-        b1 = -8+2*omega**2*DT**2
-        b2 = 4+omega**2*DT**2
-        a0 = b0*kp + 2*DT*ki
-        a1 = b1*kp 
-        a2 = b2*kp - 2*DT*ki
-        ! Initialize persistent variables/arrays, and set initial condition for integrator term
-        IF (reset) THEN
-            resP%res_OutputSignalLast1(inst)  = 0
-            resP%res_OutputSignalLast2(inst)  = 0
-            resP%res_InputSignalLast1(inst)   = 0
-            resP%res_InputSignalLast2(inst)   = 0
-        ELSE
-            ResController = 1/b0*( -b1*resP%res_OutputSignalLast1(inst) - b2*resP%res_OutputSignalLast2(inst) &
-                                    + a0*error + a1*resP%res_InputSignalLast1(inst) + a2*resP%res_InputSignalLast2(inst))
-            ResController = saturate(ResController, minValue, maxValue)
-        
-            ! Save signals for next time step
-            resP%res_InputSignalLast2(inst)   = resP%res_InputSignalLast1(inst)
-            resP%res_InputSignalLast1(inst)   = error
-            resP%res_OutputSignalLast2(inst)  = resP%res_OutputSignalLast1(inst)
-            resP%res_OutputSignalLast1(inst)  = ResController
-        END IF
-        inst = inst + 1
-        
+        REAL(DbKi), INTENT(IN) :: error
+        REAL(DbKi), INTENT(IN) :: kp
+        REAL(DbKi), INTENT(IN) :: ki
+        REAL(DbKi), INTENT(IN) :: freq
+        REAL(DbKi), INTENT(IN) :: minValue
+        REAL(DbKi), INTENT(IN) :: maxValue
+        REAL(DbKi), INTENT(IN) :: DT
+        TYPE(resParams), INTENT(INOUT), TARGET :: resP
+        LOGICAL, INTENT(IN) :: reset
+        INTEGER(IntKi), INTENT(INOUT) :: inst
+        REAL(DbKi) :: ResController_result
+        ResController_result = REAL(rescontroller_c(REAL(error, C_DOUBLE), REAL(kp, C_DOUBLE), REAL(ki, C_DOUBLE), REAL(freq, C_DOUBLE), REAL(minValue, C_DOUBLE), REAL(maxValue, C_DOUBLE), REAL(DT, C_DOUBLE), C_LOC(resP), LOGICAL(reset, C_BOOL), inst), DbKi)
     END FUNCTION ResController
 
 !-------------------------------------------------------------------------------------------------------------------------------

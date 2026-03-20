@@ -129,3 +129,20 @@ translations:
     cases_total: 40
     cases_skipped: 0
     kernel_dir: kernel/SecLPFilter_Vel
+  PIController:
+    status: integrated
+    cpp_file: translations/Controllers/picontroller.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/PIController
+  ResController:
+    status: integrated
+    cpp_file: translations/Controllers/rescontroller.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/ResController
+  PIIController:
+    status: integrated
+    cpp_file: translations/Controllers/piicontroller.cpp
