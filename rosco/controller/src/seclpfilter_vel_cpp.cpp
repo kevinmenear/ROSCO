@@ -70,7 +70,7 @@ typedef struct {
 // Fortran: FUNCTION SecLPFilter_Vel(InputSignal, DT, CornerFreq, Damp, FP, iStatus, reset, inst, InitialValue)
 // Source MD5: f4f0ae146c7d
 // VIT: 0.1.0
-// Status: unverified
+// Status: verified
 // Generated: 2026-03-19T03:19:26Z
 
 // Auto-generated C struct for Fortran TYPE(FilterParameters)
