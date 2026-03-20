@@ -213,7 +213,11 @@ CONTAINS
             ! Specifically save accINFILE info (DISCON.IN)
             LocalVar%ACC_INFILE_SIZE = NINT(avrSWAP(50))
             ! Allocate(LocalVar%ACC_INFILE(LocalVar%ACC_INFILE_SIZE))  ! VIT: removed (fixed-length CHARACTER)
-            LocalVar%ACC_INFILE = accINFILE
+            ! VIT: Transfer C_CHAR array to fixed-length CHARACTER string
+            LocalVar%ACC_INFILE = ' '
+            DO i = 1, MIN(LocalVar%ACC_INFILE_SIZE, 1024)
+                LocalVar%ACC_INFILE(i:i) = accINFILE(i)
+            END DO
 
             ! Read Control Parameter File
             CALL ReadControlParameterFileSub(CntrPar, LocalVar, accINFILE, NINT(avrSWAP(50)), RootName, ErrVar)
