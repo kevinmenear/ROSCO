@@ -150,3 +150,10 @@ translations:
     cases_total: 40
     cases_skipped: 0
     kernel_dir: kernel/PIIController
+types:
+  ControlParameters:
+    strategy: view
+  PerformanceData:
+    strategy: view
+  ExtControlType:
+    strategy: view
