@@ -157,3 +157,8 @@ types:
     strategy: view
   ExtControlType:
     strategy: view
+allocatable:
+  helpers:
+  - name: ParseAry
+    array_arg: 3
+    size_arg: 4
