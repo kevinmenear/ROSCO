@@ -262,8 +262,11 @@ def run_scenario_3(turbine, controller, cp_filename):
         'F_NotchBetaDen': '0.2500',
         'F_GenSpdNotch_N': 1,
         'F_GenSpdNotch_Ind': '1',
-        # NotchFilterSlopes: enable IPC (1P mode)
-        'IPC_ControlMode': 1,
+        # NotchFilterSlopes: IPC is exercised by default (PC_ControlMode=1 activates
+        # PitchControl which calls IPC when IPC_ControlMode>0). Use default IPC mode
+        # to avoid conflict with Flp_Mode (ROSCO rejects IPC + Flp_Mode simultaneously).
+        # IPC_ControlMode uses the default from the tuning.
+
         # SecLPFilter_Vel: enable cable control loop
         # CC_Mode=1 required so DISCON calls CableControl (gated by CC_Mode > 0).
         # CC_DesiredL is fixed-size(12) initialized to 0; with CC_Group_N=1 and
@@ -284,10 +287,13 @@ def run_scenario_3(turbine, controller, cp_filename):
         # Uses fixed hardcoded step — processes zero input in 1-DOF sim.
         'StC_Mode': 1,
         'StC_Group_N': 1,
-        'StC_GroupIndex': '2601',
+        'StC_GroupIndex': '2801',
         # FlapControl: enable IPC-based flap control (Flp_Mode=1).
         # Blade root bending moments are 0 in 1-DOF sim — fine for extraction.
         'Flp_Mode': 1,
+        'F_FlpCornerFreq': '1.0 0.7',  # Required when Flp_Mode > 0
+        # FloatingFeedback: required when Fl_Mode > 0
+        'F_FlCornerFreq': '1.0 0.7',  # Filter corner freq + damping for floating feedback
     })
 
     controller_int = ROSCO_ci.ControllerInterface(
