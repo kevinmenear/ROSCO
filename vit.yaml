@@ -11,6 +11,11 @@ kgen:
   invocation: 0:0:1-20
   assumed_size_arrays:
     avrSWAP: 2000
+  dll_persistence:
+    init_condition: "NINT(avrSWAP(1)) == 0"
+    resets:
+      - anchor: "CALL ReadAvrSWAP"
+        code: "LocalVar%AlreadyInitialized = 0"
 build_system:
   type: cmake
   cmake_file: rosco/controller/CMakeLists.txt
