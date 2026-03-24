@@ -666,7 +666,7 @@ extern "C" {
                           double I0, piparams_t* piP, int reset, int* inst);
 }
 
-void cablecontrol(double* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar) {
+void cablecontrol(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar) {
     // CableControl: cable length control
     //   CC_Mode = 1: user-defined step inputs
     //   CC_Mode = 2: open-loop from lookup table

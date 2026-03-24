@@ -687,7 +687,7 @@ extern "C" {
                       double xq, errorvariables_t* ErrVar);
 }
 
-void variablespeedcontrol(double* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar) {
+void variablespeedcontrol(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar) {
     // VariableSpeedControl: generator torque controller
     // State machine with K*Omega^2 law, PI transitions, constant torque/power modes
 

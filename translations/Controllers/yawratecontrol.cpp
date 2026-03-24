@@ -697,7 +697,7 @@ extern "C" {
                       double xq, errorvariables_t* ErrVar);
 }
 
-void yawratecontrol(double* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar) {
+void yawratecontrol(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar) {
     // YawRateControl: yaw rate control using yaw drive
     //   Y_ControlMode = 1: active yaw rate control
 

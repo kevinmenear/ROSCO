@@ -12,17 +12,17 @@ kgen:
   assumed_size_arrays:
     avrSWAP: 2000
   dll_persistence:
-    init_condition: "NINT(avrSWAP(1)) == 0"
+    init_condition: NINT(avrSWAP(1)) == 0
     resets:
-      - anchor: "CALL ReadAvrSWAP"
-        code: "LocalVar%AlreadyInitialized = 0"
+    - anchor: CALL ReadAvrSWAP
+      code: LocalVar%AlreadyInitialized = 0
 build_system:
   type: cmake
   cmake_file: rosco/controller/CMakeLists.txt
   target_name: discon
 fortran:
   kind_aliases:
-    ReKi: REAL(8)
+    ReKi: REAL(4)
     DbKi: REAL(8)
     SiKi: REAL(4)
     IntKi: INTEGER(4)
@@ -100,12 +100,24 @@ translations:
   FlapControl:
     status: integrated
     cpp_file: translations/Controllers/flapcontrol.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/FlapControl
   YawRateControl:
     status: integrated
     cpp_file: translations/Controllers/yawratecontrol.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/YawRateControl
   VariableSpeedControl:
     status: integrated
     cpp_file: translations/Controllers/variablespeedcontrol.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/VariableSpeedControl
   IPC:
     status: integrated
     cpp_file: translations/Controllers/ipc.cpp
@@ -115,6 +127,10 @@ translations:
   PitchControl:
     status: integrated
     cpp_file: translations/Controllers/pitchcontrol.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/PitchControl
 types:
   ControlParameters:
     strategy: view
