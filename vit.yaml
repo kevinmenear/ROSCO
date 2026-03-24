@@ -150,6 +150,9 @@ translations:
     cases_total: 40
     cases_skipped: 0
     kernel_dir: kernel/PIIController
+  ForeAftDamping:
+    status: integrated
+    cpp_file: translations/Controllers/foreaftdamping.cpp
 types:
   ControlParameters:
     strategy: view

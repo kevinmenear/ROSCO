@@ -30,6 +30,7 @@ double notchfilterslopes_c(double InputSignal, double DT, double CornerFreq, dou
 double picontroller_c(double error, double kp, double ki, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int reset, int* inst);
 double piicontroller_c(double error, double error2, double kp, double ki, double ki2, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int reset, int* inst);
 double rescontroller_c(double error, double kp, double ki, double freq, double minValue, double maxValue, double DT, resparams_t* resP, int reset, int* inst);
+void foreaftdamping_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst);
 
 #ifdef __cplusplus
 }

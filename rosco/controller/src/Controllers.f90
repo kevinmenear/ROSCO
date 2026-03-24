@@ -21,6 +21,17 @@ MODULE Controllers
 
     IMPLICIT NONE
 
+
+    ! Auto-generated interface for C++ implementation of ForeAftDamping
+    INTERFACE
+        SUBROUTINE foreaftdamping_c(CntrPar, LocalVar, objInst) BIND(C, NAME='foreaftdamping_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: objInst
+        END SUBROUTINE foreaftdamping_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE PitchControl(avrSWAP, CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -584,25 +595,17 @@ CONTAINS
     END SUBROUTINE IPC
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE ForeAftDamping(CntrPar, LocalVar, objInst)
-        ! Fore-aft damping controller, reducing the tower fore-aft vibrations using pitch
-
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : ControlParameters, LocalVariables, ObjectInstances
-        
-        ! Local variables
-        INTEGER(IntKi) :: K    ! Integer used to loop through turbine blades
-
-        TYPE(ControlParameters), INTENT(INOUT)  :: CntrPar
-        TYPE(LocalVariables), INTENT(INOUT)     :: LocalVar
-        TYPE(ObjectInstances), INTENT(INOUT)    :: objInst
-        
-        ! Body
-        LocalVar%FA_AccHPFI = PIController(LocalVar%FA_AccHPF, 0.0_DbKi, CntrPar%FA_KI, -CntrPar%FA_IntSat, CntrPar%FA_IntSat, LocalVar%DT, 0.0_DbKi, LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI)
-        
-        ! Store the fore-aft pitch contribution to LocalVar data type
-        DO K = 1,LocalVar%NumBl
-            LocalVar%FA_PitCom(K) = LocalVar%FA_AccHPFI
-        END DO
-        
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters
+        IMPLICIT NONE
+        TYPE(ControlParameters), INTENT(INOUT), TARGET :: CntrPar
+        TYPE(LocalVariables), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(ObjectInstances), INTENT(INOUT), TARGET :: objInst
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL foreaftdamping_c(C_LOC(CntrPar_view), C_LOC(LocalVar), C_LOC(objInst))
     END SUBROUTINE ForeAftDamping
 !-------------------------------------------------------------------------------------------------------------------------------
     REAL(DbKi) FUNCTION FloatingFeedback(LocalVar, CntrPar, objInst, ErrVar) 

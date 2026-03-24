@@ -64,6 +64,8 @@ set(SOURCES
     src/picontroller_cpp.cpp
     src/piicontroller_cpp.cpp
     src/rescontroller_cpp.cpp
+    src/vit_controlparameters_view.f90
+    src/foreaftdamping_cpp.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

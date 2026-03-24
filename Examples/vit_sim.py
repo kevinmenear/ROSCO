@@ -271,6 +271,9 @@ def run_scenario_3(turbine, controller, cp_filename):
         'CC_Mode': 1,
         'CC_Group_N': 1,
         'CC_GroupIndex': '2601',
+        # ForeAftDamping: enable tower damper (TD_Mode=1).
+        # FA_AccHPF is 0 in 1-DOF sim, so output is 0 — fine for view type verification.
+        'TD_Mode': 1,
     })
 
     controller_int = ROSCO_ci.ControllerInterface(
