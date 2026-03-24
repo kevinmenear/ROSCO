@@ -285,6 +285,9 @@ def run_scenario_3(turbine, controller, cp_filename):
         'StC_Mode': 1,
         'StC_Group_N': 1,
         'StC_GroupIndex': '2601',
+        # FlapControl: enable IPC-based flap control (Flp_Mode=1).
+        # Blade root bending moments are 0 in 1-DOF sim — fine for extraction.
+        'Flp_Mode': 1,
     })
 
     controller_int = ROSCO_ci.ControllerInterface(
@@ -406,18 +409,20 @@ def main():
 
     turbine, controller, cp_filename = load_turbine_and_controller()
 
-    # Scenarios 4 and 5 run first so KGen's early invocations (1-20) capture
-    # PIIController and ResController code paths (gated by Flp_Mode=2 and
-    # AWC_Mode=4 respectively, inactive in default config).
-    # Scenario 3 runs next for filter coverage (NotchFilter, etc.).
+    # Scenario 3 runs first so KGen's early invocations (1-20) capture all
+    # mode-gated code paths: CC_Mode=1 (CableControl), StC_Mode=1
+    # (StructuralControl), Fl_Mode=1 (FloatingFeedback), Flp_Mode=1
+    # (FlapControl), Y_ControlMode=1 (YawRateControl), TD_Mode=1
+    # (ForeAftDamping). Scenarios 4 and 5 follow for PIIController
+    # (Flp_Mode=2) and ResController (AWC_Mode=4).
+    if args.scenario == 0 or args.scenario == 3:
+        run_scenario_3(turbine, controller, cp_filename)
+
     if args.scenario == 0 or args.scenario == 4:
         run_scenario_4(turbine, controller, cp_filename)
 
     if args.scenario == 0 or args.scenario == 5:
         run_scenario_5(turbine, controller, cp_filename)
-
-    if args.scenario == 0 or args.scenario == 3:
-        run_scenario_3(turbine, controller, cp_filename)
 
     if args.scenario == 0 or args.scenario == 1:
         run_scenario_1(turbine, controller, cp_filename)
