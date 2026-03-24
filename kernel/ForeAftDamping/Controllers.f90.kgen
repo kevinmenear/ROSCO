@@ -18,23 +18,11 @@
 MODULE Controllers
 
     USE controllerblocks 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
-    USE ISO_C_BINDING
     IMPLICIT NONE 
     PUBLIC pitchcontrol 
-
-
-    ! Auto-generated interface for C++ implementation of ForeAftDamping
-    INTERFACE
-        SUBROUTINE foreaftdamping_c(CntrPar, LocalVar, objInst) BIND(C, NAME='foreaftdamping_c')
-            USE ISO_C_BINDING
-            TYPE(C_PTR), VALUE :: CntrPar
-            TYPE(C_PTR), VALUE :: LocalVar
-            TYPE(C_PTR), VALUE :: objInst
-        END SUBROUTINE foreaftdamping_c
-    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -44,8 +32,8 @@ SUBROUTINE pitchcontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath,
     !       PC_State = PC_State_Disabled (1), is gain scheduled PI controller 
     USE rosco_types, ONLY: controlparameters, localvariables, objectinstances 
         ! Inputs
-    USE kgen_utils_mod
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
+    USE kgen_utils_mod, ONLY: kgen_perturb_real 
     USE rosco_types, ONLY: kr_rosco_types_controlparameters 
     USE rosco_types, ONLY: kr_rosco_types_localvariables 
     USE rosco_types, ONLY: kr_rosco_types_objectinstances 
@@ -124,7 +112,7 @@ SUBROUTINE pitchcontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath,
             IF (kgen_mainstage) THEN 
                   
                 !verify init 
-                CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=100) 
+                CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=1) 
                 CALL kgen_init_check(check_status, rank=kgen_mpirank) 
                   
                 !extern verify variables 
@@ -227,17 +215,31 @@ END SUBROUTINE pitchcontrol
 
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE ForeAftDamping(CntrPar, LocalVar, objInst)
-        USE ISO_C_BINDING
-        USE ROSCO_Types, ONLY : ControlParameters, LocalVariables, ObjectInstances
-        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters
-        IMPLICIT NONE
-        TYPE(ControlParameters), INTENT(INOUT), TARGET :: CntrPar
-        TYPE(LocalVariables), INTENT(INOUT), TARGET :: LocalVar
-        TYPE(ObjectInstances), INTENT(INOUT), TARGET :: objInst
-        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
-        ! Populate view structs from Fortran types
-        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
-        CALL foreaftdamping_c(C_LOC(CntrPar_view), C_LOC(LocalVar), C_LOC(objInst))
+        ! Fore-aft damping controller, reducing the tower fore-aft vibrations using pitch
+
+        USE rosco_types, ONLY: controlparameters, localvariables, objectinstances 
+        ! Local variables
+        USE rosco_types, ONLY: kr_rosco_types_controlparameters 
+        USE rosco_types, ONLY: kr_rosco_types_localvariables 
+        USE rosco_types, ONLY: kr_rosco_types_objectinstances 
+        USE rosco_types, ONLY: kv_rosco_types_controlparameters 
+        USE rosco_types, ONLY: kv_rosco_types_localvariables 
+        USE rosco_types, ONLY: kv_rosco_types_objectinstances 
+        
+        INTEGER(IntKi) :: K    ! Integer used to loop through turbine blades
+
+        TYPE(ControlParameters), INTENT(INOUT)  :: CntrPar
+        TYPE(LocalVariables), INTENT(INOUT)     :: LocalVar
+        TYPE(ObjectInstances), INTENT(INOUT)    :: objInst
+        ! Body
+        
+        LocalVar%FA_AccHPFI = PIController(LocalVar%FA_AccHPF, 0.0_DbKi, CntrPar%FA_KI, -CntrPar%FA_IntSat, CntrPar%FA_IntSat, LocalVar%DT, 0.0_DbKi, LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI)
+        ! Store the fore-aft pitch contribution to LocalVar data type
+        
+        DO K = 1,LocalVar%NumBl
+            LocalVar%FA_PitCom(K) = LocalVar%FA_AccHPFI
+        END DO
+        
     END SUBROUTINE ForeAftDamping
 !-------------------------------------------------------------------------------------------------------------------------------
 
