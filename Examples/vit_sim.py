@@ -274,6 +274,17 @@ def run_scenario_3(turbine, controller, cp_filename):
         # ForeAftDamping: enable tower damper (TD_Mode=1).
         # FA_AccHPF is 0 in 1-DOF sim, so output is 0 — fine for view type verification.
         'TD_Mode': 1,
+        # FloatingFeedback: enable floating-specific feedback (Fl_Mode=1).
+        # NacIMU_FA_Acc is 0 in 1-DOF sim — output is 0, fine for verification.
+        'Fl_Mode': 1,
+        # YawRateControl: enable yaw rate control (Y_ControlMode=1).
+        # NacHeading/NacVane are 0 in 1-DOF — yaw error is 0, fine for verification.
+        'Y_ControlMode': 1,
+        # StructuralControl: enable structural control (StC_Mode=1).
+        # Uses fixed hardcoded step — processes zero input in 1-DOF sim.
+        'StC_Mode': 1,
+        'StC_Group_N': 1,
+        'StC_GroupIndex': '2601',
     })
 
     controller_int = ROSCO_ci.ControllerInterface(
