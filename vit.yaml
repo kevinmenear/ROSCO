@@ -10,7 +10,7 @@ kgen:
   install_cmd: cp /workspace/ROSCO/rosco/controller/build/libdiscon.so /workspace/ROSCO/rosco/lib/libdiscon.so
   invocation: 0:0:1-20
   assumed_size_arrays:
-    avrSWAP: 2000
+    avrSWAP: 3000
   dll_persistence:
     init_condition: NINT(avrSWAP(1)) == 0
     resets:
@@ -34,15 +34,27 @@ translations:
   saturate:
     status: integrated
     cpp_file: translations/Functions/saturate.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/saturate
   wrap_180:
     status: integrated
     cpp_file: translations/Functions/wrap_180.cpp
   wrap_360:
     status: integrated
     cpp_file: translations/Functions/wrap_360.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/wrap_360
   interp1d:
     status: integrated
     cpp_file: translations/Functions/interp1d.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/interp1d
   identity:
     status: integrated
     cpp_file: translations/Functions/identity.cpp
@@ -55,6 +67,10 @@ translations:
   ratelimit:
     status: integrated
     cpp_file: translations/Functions/ratelimit.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/ratelimit
   sigma:
     status: integrated
     cpp_file: translations/Functions/sigma.cpp
@@ -76,9 +92,17 @@ translations:
   SecLPFilter_Vel:
     status: integrated
     cpp_file: translations/Filters/seclpfilter_vel.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/SecLPFilter_Vel
   PIController:
     status: integrated
     cpp_file: translations/Controllers/picontroller.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/PIController
   ResController:
     status: integrated
     cpp_file: translations/Controllers/rescontroller.cpp
@@ -109,8 +133,8 @@ translations:
   CableControl:
     status: integrated
     cpp_file: translations/Controllers/cablecontrol.cpp
-    cases_passed: 2
-    cases_total: 2
+    cases_passed: 40
+    cases_total: 40
     cases_skipped: 0
     kernel_dir: kernel/CableControl
   FlapControl:
