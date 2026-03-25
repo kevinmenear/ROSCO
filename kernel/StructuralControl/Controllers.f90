@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-24 09:47:57 
+!Generated at : 2026-03-24 18:24:23 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -18,10 +18,24 @@
 MODULE Controllers
 
     USE controllerblocks 
-    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
+    USE kgen_utils_mod
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
+    USE ISO_C_BINDING
     IMPLICIT NONE 
+
+
+    ! Auto-generated interface for C++ implementation of StructuralControl
+    INTERFACE
+        SUBROUTINE structuralcontrol_c(avrSWAP, CntrPar, LocalVar, objInst, ErrVar) BIND(C, NAME='structuralcontrol_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), INTENT(INOUT) :: avrSWAP(*)
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: objInst
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE structuralcontrol_c
+    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -51,74 +65,27 @@ CONTAINS
 
 !-------------------------------------------------------------------------------------------------------------------------------
 
-SUBROUTINE StructuralControl(avrSWAP, CntrPar, LocalVar, objInst, ErrVar)
-        ! Cable controller
-        !       StC_Mode = 0, No cable control, this code not executed
-        !       StC_Mode = 1, User-defined cable control
-        !       StC_Mode = 2, Ballast-like control, not yet implemented
-        ! Note that LocalVar%StC_Input() has a fixed max size of 12, which can be increased in rosco_types.yaml
-        !
-        !
-    USE rosco_types, ONLY: controlparameters, localvariables, objectinstances, errorvariables 
-    USE rosco_types, ONLY: kr_rosco_types_controlparameters 
-    USE rosco_types, ONLY: kr_rosco_types_localvariables 
-    USE rosco_types, ONLY: kr_rosco_types_objectinstances 
-    USE rosco_types, ONLY: kr_rosco_types_errorvariables 
-    USE rosco_types, ONLY: kv_rosco_types_controlparameters 
-    USE rosco_types, ONLY: kv_rosco_types_localvariables 
-    USE rosco_types, ONLY: kv_rosco_types_objectinstances 
-    USE rosco_types, ONLY: kv_rosco_types_errorvariables 
-    
-        REAL(ReKi), INTENT(INOUT) :: avrSWAP(*) ! The swap array, used to pass data to, and receive data from, the DLL controller.
-    
-        TYPE(ControlParameters), INTENT(INOUT)    :: CntrPar
-        TYPE(LocalVariables), INTENT(INOUT)       :: LocalVar
-        TYPE(ObjectInstances), INTENT(INOUT)      :: objInst
-        TYPE(ErrorVariables), INTENT(INOUT)      :: ErrVar
-        ! Internal Variables
-
-        
-        Integer(IntKi)                            :: I_GROUP
-        CHARACTER(*),               PARAMETER           :: RoutineName = 'StructuralControl'
-
-
-        IF (CntrPar%StC_Mode == 1) THEN
-            ! User defined control, step example
-
-            IF (LocalVar%Time > 500) THEN
-                ! Step change in input of -4500 N
-                LocalVar%StC_Input(1) = -1.234e+06
-                LocalVar%StC_Input(2) = 2.053e+06
-                LocalVar%StC_Input(3) = -7.795e+05
-
-            END IF
-
-
-        ELSEIF (CntrPar%StC_Mode == 2) THEN
-
-
-            DO I_GROUP = 1,CntrPar%StC_Group_N
-                IF (CntrPar%Ind_StructControl(I_GROUP) > 0) THEN
-                    LocalVar%StC_Input(I_GROUP) =  interp1d(CntrPar%OL_Breakpoints, &
-                                                            CntrPar%OL_StructControl(I_GROUP,:), &
-                                                            LocalVar%Time,ErrVar)
-                ENDIF
-            ENDDO
-
-
-        END IF
-        ! Assign to avrSWAP
-
-
-        DO I_GROUP = 1, CntrPar%StC_Group_N
-            avrSWAP(CntrPar%StC_GroupIndex(I_GROUP)) = LocalVar%StC_Input(I_GROUP)
-        END DO
-        ! Add RoutineName to error message
-
-        IF (ErrVar%aviFAIL < 0) THEN
-            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
-        ENDIF
-
+    SUBROUTINE StructuralControl(avrSWAP, CntrPar, LocalVar, objInst, ErrVar)
+        USE ISO_C_BINDING
+        USE ROSCO_Types, ONLY : ControlParameters, LocalVariables, ObjectInstances, ErrorVariables
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_original_controlparameters
+        IMPLICIT NONE
+        REAL(ReKi), INTENT(INOUT) :: avrSWAP(*)
+        TYPE(ControlParameters), INTENT(INOUT), TARGET :: CntrPar
+        TYPE(LocalVariables), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(ObjectInstances), INTENT(INOUT), TARGET :: objInst
+        TYPE(ErrorVariables), INTENT(INOUT), TARGET :: ErrVar
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        ! Stash original Fortran pointers for callee bridges
+        vit_original_controlparameters => CntrPar
+        BLOCK
+            REAL(C_DOUBLE) :: vit_tmp_avrswap(2000)
+            vit_tmp_avrswap = REAL(avrSWAP(1:2000), C_DOUBLE)
+            CALL structuralcontrol_c(vit_tmp_avrswap, C_LOC(CntrPar_view), C_LOC(LocalVar), C_LOC(objInst), C_LOC(ErrVar))
+            avrSWAP(1:2000) = REAL(vit_tmp_avrswap, KIND(avrSWAP))
+        END BLOCK
     END SUBROUTINE StructuralControl
 !-------------------------------------------------------------------------------------------------------------------------------
 

@@ -88,15 +88,31 @@ translations:
   ForeAftDamping:
     status: integrated
     cpp_file: translations/Controllers/foreaftdamping.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/ForeAftDamping
   FloatingFeedback:
     status: integrated
     cpp_file: translations/Controllers/floatingfeedback.cpp
   StructuralControl:
     status: integrated
     cpp_file: translations/Controllers/structuralcontrol.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/StructuralControl
   CableControl:
     status: integrated
     cpp_file: translations/Controllers/cablecontrol.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/CableControl
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/CableControl
   FlapControl:
     status: integrated
     cpp_file: translations/Controllers/flapcontrol.cpp

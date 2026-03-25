@@ -739,7 +739,7 @@ void cablecontrol(float* avrSWAP, controlparameters_view_t* CntrPar, localvariab
     // Prepend routine name to error message if aviFAIL < 0
     if (ErrVar->aviFAIL < 0) {
         char tmp[1024];
-        snprintf(tmp, sizeof(tmp), "StructuralControl:%s", ErrVar->ErrMsg);
+        snprintf(tmp, sizeof(tmp), "CableControl:%s", ErrVar->ErrMsg);
         strncpy(ErrVar->ErrMsg, tmp, sizeof(ErrVar->ErrMsg) - 1);
         ErrVar->ErrMsg[sizeof(ErrVar->ErrMsg) - 1] = '\0';
     }
