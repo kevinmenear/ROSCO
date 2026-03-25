@@ -27,7 +27,7 @@ fortran:
     SiKi: REAL(4)
     IntKi: INTEGER(4)
   compiler: gfortran
-  flags: -fdefault-real-8 -fdefault-double-8
+  flags: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
 verification:
   tolerance: 1.0e-14
 translations:
@@ -95,6 +95,10 @@ translations:
   FloatingFeedback:
     status: integrated
     cpp_file: translations/Controllers/floatingfeedback.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/FloatingFeedback
   StructuralControl:
     status: integrated
     cpp_file: translations/Controllers/structuralcontrol.cpp
@@ -105,12 +109,8 @@ translations:
   CableControl:
     status: integrated
     cpp_file: translations/Controllers/cablecontrol.cpp
-    cases_passed: 40
-    cases_total: 40
-    cases_skipped: 0
-    kernel_dir: kernel/CableControl
-    cases_passed: 40
-    cases_total: 40
+    cases_passed: 2
+    cases_total: 2
     cases_skipped: 0
     kernel_dir: kernel/CableControl
   FlapControl:
@@ -137,9 +137,17 @@ translations:
   IPC:
     status: integrated
     cpp_file: translations/Controllers/ipc.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/IPC
   ActiveWakeControl:
     status: integrated
     cpp_file: translations/Controllers/activewakecontrol.cpp
+    cases_passed: 40
+    cases_total: 40
+    cases_skipped: 0
+    kernel_dir: kernel/ActiveWakeControl
   PitchControl:
     status: integrated
     cpp_file: translations/Controllers/pitchcontrol.cpp

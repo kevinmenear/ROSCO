@@ -649,9 +649,8 @@ typedef struct {
 #include <cstring>
 #include <cstdio>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+// Use ROSCO's PI from Constants.f90 — NOT PI (which has more digits)
+const double PI = 3.14159265359;
 
 // Callee entry points
 extern "C" {
@@ -704,7 +703,7 @@ void cablecontrol(float* avrSWAP, controlparameters_view_t* CntrPar, localvariab
         LocalVar->CC_ActuatedDL[I_GROUP] = seclpfilter_vel_c(
             LocalVar->CC_DesiredL[I_GROUP],
             LocalVar->DT,
-            2.0 * M_PI / CntrPar->CC_ActTau,   // CornerFreq
+            2.0 * PI / CntrPar->CC_ActTau,   // CornerFreq
             1.0,                                  // Damp
             &LocalVar->FP,
             LocalVar->iStatus,

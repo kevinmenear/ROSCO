@@ -49,3 +49,20 @@ If in doubt, check the generated struct in the scaffold header — the field nam
 there are authoritative.
 
 *Discovered in Phase 7B: IPC and PitchControl field name mismatches.*
+
+---
+
+## Use Fortran's constant values, not C/C++ standard library values
+
+Fortran projects define their own mathematical constants (PI, D2R, R2D, etc.)
+in parameter modules. These may have fewer digits than C's `M_PI`. Use the
+**exact value from the Fortran source**, not the C standard library.
+
+**ROSCO Constants.f90:** `PI = 3.14159265359`
+**Wrong C++:** `M_PI` (= 3.14159265358979323846, differs by 2.07e-13)
+**Correct C++:** `const double PI = 3.14159265359;`
+
+The difference is small but propagates through filter coefficients and trig
+computations, producing IN_TOL differences instead of IDENTICAL.
+
+*Discovered investigating CableControl and ActiveWakeControl IN_TOL fields.*

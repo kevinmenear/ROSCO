@@ -669,9 +669,8 @@ typedef struct {
 
 #include <cmath>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+// Use ROSCO's PI from Constants.f90 — NOT PI (which has more digits)
+static const double PI = 3.14159265359;
 
 static const double D2R = 0.01745329251;
 
@@ -699,8 +698,8 @@ void activewakecontrol(controlparameters_view_t* CntrPar, localvariables_t* Loca
     //   AWC_Mode 5: Strouhal transformation closed-loop
 
     static const double phi1 = 0.0;
-    static const double phi2 = 2.0 / 3.0 * M_PI;
-    static const double phi3 = 4.0 / 3.0 * M_PI;
+    static const double phi2 = 2.0 / 3.0 * PI;
+    static const double phi3 = 4.0 / 3.0 * PI;
 
     double AWC_angle[3] = {0, 0, 0};
     double AWC_TiltYaw[2] = {0.0, 0.0};
@@ -718,13 +717,13 @@ void activewakecontrol(controlparameters_view_t* CntrPar, localvariables_t* Loca
         LocalVar->AWC_complexangle_im[2] = 0.0;
 
         for (int Imode = 0; Imode < CntrPar->AWC_NumModes; Imode++) {
-            double clockang = CntrPar->AWC_clockangle[Imode] * M_PI / 180.0;
-            double omega = CntrPar->AWC_freq[Imode] * M_PI * 2.0;
+            double clockang = CntrPar->AWC_clockangle[Imode] * PI / 180.0;
+            double omega = CntrPar->AWC_freq[Imode] * PI * 2.0;
             AWC_angle[0] = omega * LocalVar->Time - CntrPar->AWC_n[Imode] * (LocalVar->Azimuth + phi1 + clockang);
             AWC_angle[1] = omega * LocalVar->Time - CntrPar->AWC_n[Imode] * (LocalVar->Azimuth + phi2 + clockang);
             AWC_angle[2] = omega * LocalVar->Time - CntrPar->AWC_n[Imode] * (LocalVar->Azimuth + phi3 + clockang);
 
-            double amp = CntrPar->AWC_amp[Imode] * M_PI / 180.0;
+            double amp = CntrPar->AWC_amp[Imode] * PI / 180.0;
             for (int K = 0; K < LocalVar->NumBl; K++) {
                 LocalVar->AWC_complexangle_re[K] += amp * cos(AWC_angle[K]);
                 LocalVar->AWC_complexangle_im[K] += amp * sin(AWC_angle[K]);
@@ -741,11 +740,11 @@ void activewakecontrol(controlparameters_view_t* CntrPar, localvariables_t* Loca
         AWC_TiltYaw[1] = 0.0;
         for (int Imode = 0; Imode < CntrPar->AWC_NumModes; Imode++) {
             AWC_TiltYaw[Imode] = D2R * CntrPar->AWC_amp[Imode] *
-                sin(LocalVar->Time * 2.0 * M_PI * CntrPar->AWC_freq[Imode] +
+                sin(LocalVar->Time * 2.0 * PI * CntrPar->AWC_freq[Imode] +
                     CntrPar->AWC_clockangle[Imode] * D2R);
             if (CntrPar->AWC_NumModes == 1) {
                 AWC_TiltYaw[1] = D2R * CntrPar->AWC_amp[0] *
-                    sin(LocalVar->Time * 2.0 * M_PI * CntrPar->AWC_freq[0] +
+                    sin(LocalVar->Time * 2.0 * PI * CntrPar->AWC_freq[0] +
                         2.0 * CntrPar->AWC_clockangle[0] * D2R);
             }
 
@@ -780,7 +779,7 @@ void activewakecontrol(controlparameters_view_t* CntrPar, localvariables_t* Loca
         if (LocalVar->Time > StartTime) {
             for (int Imode = 0; Imode < CntrPar->AWC_NumModes; Imode++) {
                 Error[Imode] = CntrPar->AWC_amp[Imode] *
-                    sin(LocalVar->Time * 2.0 * M_PI * CntrPar->AWC_freq[Imode] +
+                    sin(LocalVar->Time * 2.0 * PI * CntrPar->AWC_freq[Imode] +
                         CntrPar->AWC_clockangle[Imode] * D2R) +
                     (FixedFrameM[Imode] - LocalVar->TiltMean / (LocalVar->n_DT + 1));
 
@@ -817,7 +816,7 @@ void activewakecontrol(controlparameters_view_t* CntrPar, localvariables_t* Loca
         DebugVar->axisTilt_1P = AWC_TiltYaw[0];
         DebugVar->axisYaw_1P = -FixedFrameM[0] + LocalVar->TiltMean / (LocalVar->n_DT + 1);
         DebugVar->axisTilt_2P = CntrPar->AWC_amp[0] *
-            sin(LocalVar->Time * 2.0 * M_PI * CntrPar->AWC_freq[0] +
+            sin(LocalVar->Time * 2.0 * PI * CntrPar->AWC_freq[0] +
                 CntrPar->AWC_clockangle[0] * D2R);
         DebugVar->axisYaw_2P = Error[0];
 
