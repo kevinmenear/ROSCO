@@ -30,6 +30,7 @@ Usage:
 """
 
 import argparse
+import hashlib
 import os
 import re
 import sys
@@ -38,6 +39,27 @@ import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 import numpy as np
+
+
+def save_and_print_results(arrays, scenario_num, output_dir):
+    """Save simulation arrays to .npz and print MD5 checksums.
+
+    Args:
+        arrays: dict of {name: numpy_array} — the simulation outputs
+        scenario_num: int — scenario number (1-6)
+        output_dir: str or None — directory to save .npz files (skip if None)
+    """
+    # Always print checksums to stdout
+    for name, arr in sorted(arrays.items()):
+        md5 = hashlib.md5(arr.tobytes()).hexdigest()
+        print(f"  scenario_{scenario_num} {name}: md5={md5} n={len(arr)}")
+
+    # Save .npz if output_dir specified
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+        path = os.path.join(output_dir, f'scenario_{scenario_num}.npz')
+        np.savez(path, **arrays)
+        print(f"  Saved: {path}")
 
 from rosco import discon_lib_path as lib_name
 from rosco.toolbox import controller as ROSCO_controller
@@ -104,7 +126,7 @@ def write_discon(turbine, controller, cp_filename, param_filename, patches=None)
 # ---------------------------------------------------------------------------
 # Scenario 1: Standard step-wind simulation (same as 04_simple_sim.py)
 # ---------------------------------------------------------------------------
-def run_scenario_1(turbine, controller, cp_filename):
+def run_scenario_1(turbine, controller, cp_filename, output_dir=None):
     """Standard 1-DOF sim. Exercises saturate, wrap_180, interp1d, etc."""
     print("=" * 60)
     print("Scenario 1: Standard step-wind simulation")
@@ -137,13 +159,18 @@ def run_scenario_1(turbine, controller, cp_filename):
     sim_1b.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
 
     np.testing.assert_almost_equal(sim_1.gen_speed, sim_1b.gen_speed)
+    save_and_print_results({
+        'gen_torque': sim_1.gen_torque, 'bld_pitch': sim_1.bld_pitch,
+        'gen_speed': sim_1.gen_speed, 'gen_power': sim_1.gen_power,
+        'nac_yaw': sim_1.nac_yaw,
+    }, 1, output_dir)
     print("Scenario 1: PASSED (deterministic, deallocated correctly)")
 
 
 # ---------------------------------------------------------------------------
 # Scenario 2: Yaw-by-IPC simulation (Y_ControlMode=2 → wrap_360)
 # ---------------------------------------------------------------------------
-def run_scenario_2(turbine, controller, cp_filename):
+def run_scenario_2(turbine, controller, cp_filename, output_dir=None):
     """Sim with Y_ControlMode=2 to exercise wrap_360.
 
     Sets synthetic NacHeading and NacVane values on avrSWAP so that
@@ -232,13 +259,17 @@ def run_scenario_2(turbine, controller, cp_filename):
         gen_torque[i], bld_pitch[i], _ = controller_int.call_controller(turbine_state)
 
     controller_int.kill_discon()
+    save_and_print_results({
+        'gen_torque': gen_torque, 'bld_pitch': bld_pitch,
+        'gen_speed': gen_speed,
+    }, 2, output_dir)
     print("Scenario 2: PASSED (wrap_360 exercised)")
 
 
 # ---------------------------------------------------------------------------
 # Scenario 3: Filter coverage (IPC + notch + cable control)
 # ---------------------------------------------------------------------------
-def run_scenario_3(turbine, controller, cp_filename):
+def run_scenario_3(turbine, controller, cp_filename, output_dir=None):
     """Sim with notch filters, cable control, and multiple mode flags enabled.
 
     Exercises filter/controller functions not active in the standard config:
@@ -311,13 +342,18 @@ def run_scenario_3(turbine, controller, cp_filename):
         ws[i] = ws[i] + t[i] // 100
 
     sim_3.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_3.gen_torque, 'bld_pitch': sim_3.bld_pitch,
+        'gen_speed': sim_3.gen_speed, 'gen_power': sim_3.gen_power,
+        'nac_yaw': sim_3.nac_yaw,
+    }, 3, output_dir)
     print("Scenario 3: PASSED (NotchFilter + SecLPFilter_Vel + mode flags exercised)")
 
 
 # ---------------------------------------------------------------------------
 # Scenario 4: Flap control (Flp_Mode=2 → PIIController)
 # ---------------------------------------------------------------------------
-def run_scenario_4(turbine, controller, cp_filename):
+def run_scenario_4(turbine, controller, cp_filename, output_dir=None):
     """Sim with Flp_Mode=2 to exercise PIIController.
 
     Flp_Mode=2 enables proportional flap control using PIIController
@@ -358,13 +394,18 @@ def run_scenario_4(turbine, controller, cp_filename):
         ws[i] = ws[i] + t[i] // 100
 
     sim_4.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_4.gen_torque, 'bld_pitch': sim_4.bld_pitch,
+        'gen_speed': sim_4.gen_speed, 'gen_power': sim_4.gen_power,
+        'nac_yaw': sim_4.nac_yaw,
+    }, 4, output_dir)
     print("Scenario 4: PASSED (PIIController exercised)")
 
 
 # ---------------------------------------------------------------------------
 # Scenario 5: Active wake control (AWC_Mode=4 → ResController)
 # ---------------------------------------------------------------------------
-def run_scenario_5(turbine, controller, cp_filename):
+def run_scenario_5(turbine, controller, cp_filename, output_dir=None):
     """Sim with AWC_Mode=4 to exercise ResController.
 
     AWC_Mode=4 enables closed-loop proportional-resonant active wake
@@ -401,13 +442,18 @@ def run_scenario_5(turbine, controller, cp_filename):
         ws[i] = ws[i] + t[i] // 100
 
     sim_5.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_5.gen_torque, 'bld_pitch': sim_5.bld_pitch,
+        'gen_speed': sim_5.gen_speed, 'gen_power': sim_5.gen_power,
+        'nac_yaw': sim_5.nac_yaw,
+    }, 5, output_dir)
     print("Scenario 5: PASSED (ResController exercised)")
 
 
 # ---------------------------------------------------------------------------
 # Scenario 6: IPC (IPC_ControlMode=1 → NotchFilterSlopes)
 # ---------------------------------------------------------------------------
-def run_scenario_6(turbine, controller, cp_filename):
+def run_scenario_6(turbine, controller, cp_filename, output_dir=None):
     """Sim with IPC_ControlMode=1 to exercise NotchFilterSlopes.
 
     IPC_ControlMode=1 enables Individual Pitch Control, which calls
@@ -447,6 +493,11 @@ def run_scenario_6(turbine, controller, cp_filename):
         ws[i] = ws[i] + t[i] // 100
 
     sim_6.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_6.gen_torque, 'bld_pitch': sim_6.bld_pitch,
+        'gen_speed': sim_6.gen_speed, 'gen_power': sim_6.gen_power,
+        'nac_yaw': sim_6.nac_yaw,
+    }, 6, output_dir)
     print("Scenario 6: PASSED (NotchFilterSlopes exercised)")
 
 
@@ -457,9 +508,12 @@ def main():
     parser = argparse.ArgumentParser(description='VIT simulation runner')
     parser.add_argument('--scenario', type=int, default=0,
                         help='Run specific scenario (1-6). Default 0 = run all.')
+    parser.add_argument('--output-dir', type=str, default=None,
+                        help='Save simulation output arrays to .npz files in this directory.')
     args = parser.parse_args()
 
     turbine, controller, cp_filename = load_turbine_and_controller()
+    od = args.output_dir
 
     # Scenario 3 runs first so KGen's early invocations (1-20) capture all
     # mode-gated code paths: CC_Mode=1 (CableControl), StC_Mode=1
@@ -468,22 +522,22 @@ def main():
     # (ForeAftDamping). Scenarios 4 and 5 follow for PIIController
     # (Flp_Mode=2) and ResController (AWC_Mode=4).
     if args.scenario == 0 or args.scenario == 3:
-        run_scenario_3(turbine, controller, cp_filename)
+        run_scenario_3(turbine, controller, cp_filename, od)
 
     if args.scenario == 0 or args.scenario == 4:
-        run_scenario_4(turbine, controller, cp_filename)
+        run_scenario_4(turbine, controller, cp_filename, od)
 
     if args.scenario == 0 or args.scenario == 5:
-        run_scenario_5(turbine, controller, cp_filename)
+        run_scenario_5(turbine, controller, cp_filename, od)
 
     if args.scenario == 0 or args.scenario == 1:
-        run_scenario_1(turbine, controller, cp_filename)
+        run_scenario_1(turbine, controller, cp_filename, od)
 
     if args.scenario == 0 or args.scenario == 2:
-        run_scenario_2(turbine, controller, cp_filename)
+        run_scenario_2(turbine, controller, cp_filename, od)
 
     if args.scenario == 0 or args.scenario == 6:
-        run_scenario_6(turbine, controller, cp_filename)
+        run_scenario_6(turbine, controller, cp_filename, od)
 
     print("\n" + "=" * 60)
     print("All scenarios complete.")
