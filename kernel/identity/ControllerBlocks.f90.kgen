@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-18 12:30:56 
+!Generated at : 2026-03-25 20:36:06 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -23,8 +23,7 @@ MODULE ControllerBlocks
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
     IMPLICIT NONE 
-    PUBLIC windspeedestimator 
-
+! VIT: removed invalid PUBLIC statement
 CONTAINS
 
 

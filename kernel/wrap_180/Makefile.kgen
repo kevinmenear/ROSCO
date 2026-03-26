@@ -1,17 +1,24 @@
 FC_0 ?= gfortran
-FC_FLAGS_SET_0 ?= -O2 -ffree-form -ffree-line-length-none -fdefault-real-8 -fdefault-double-8
+FC_FLAGS_SET_0 ?= -O2 -ffree-form -ffree-line-length-none -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
 # Makefile for KGEN-generated kernel
 
 
-ALL_OBJS := Controllers.o ROSCO_Types.o Constants.o ControllerBlocks.o SysIFL.o Filters.o Functions.o kernel_driver.o kgen_utils.o tprof_mod.o
+ALL_OBJS := wrap_180_cpp.o Filters.o ROSCO_Types.o Constants.o Functions.o kernel_driver.o kgen_utils.o tprof_mod.o
+
+# VIT: C++ compilation support
+CXX ?= g++
+CXXFLAGS ?= -O2 -fPIC -ffp-contract=off
+
+wrap_180_cpp.o: wrap_180_cpp.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 build: ${ALL_OBJS}
-	${FC_0} ${FC_FLAGS_SET_0} -o kernel.exe $^
+	${FC_0} ${FC_FLAGS_SET_0} -o kernel.exe -lstdc++ $^  
 
 run: build
 	./kernel.exe
 
-Controllers.o: Controllers.f90 ROSCO_Types.o Constants.o ControllerBlocks.o SysIFL.o Filters.o Functions.o kgen_utils.o tprof_mod.o
+Filters.o: Filters.f90 ROSCO_Types.o Constants.o Functions.o kgen_utils.o tprof_mod.o
 	${FC_0} ${FC_FLAGS_SET_0} -c -o $@ $<
 
 ROSCO_Types.o: ROSCO_Types.f90 kgen_utils.o tprof_mod.o Constants.o
@@ -20,19 +27,10 @@ ROSCO_Types.o: ROSCO_Types.f90 kgen_utils.o tprof_mod.o Constants.o
 Constants.o: Constants.f90 kgen_utils.o tprof_mod.o
 	${FC_0} ${FC_FLAGS_SET_0} -c -o $@ $<
 
-ControllerBlocks.o: ControllerBlocks.f90 kgen_utils.o tprof_mod.o SysIFL.o Filters.o
+Functions.o: Functions.f90 kgen_utils.o tprof_mod.o Constants.o
 	${FC_0} ${FC_FLAGS_SET_0} -c -o $@ $<
 
-SysIFL.o: SysIFL.f90 kgen_utils.o tprof_mod.o Constants.o
-	${FC_0} ${FC_FLAGS_SET_0} -c -o $@ $<
-
-Filters.o: Filters.f90 kgen_utils.o tprof_mod.o Functions.o
-	${FC_0} ${FC_FLAGS_SET_0} -c -o $@ $<
-
-Functions.o: Functions.f90 kgen_utils.o tprof_mod.o Constants.o ROSCO_Types.o
-	${FC_0} ${FC_FLAGS_SET_0} -c -o $@ $<
-
-kernel_driver.o: kernel_driver.f90 Controllers.o ROSCO_Types.o Constants.o ControllerBlocks.o SysIFL.o Filters.o Functions.o kgen_utils.o tprof_mod.o
+kernel_driver.o: kernel_driver.f90 Filters.o ROSCO_Types.o Constants.o Functions.o kgen_utils.o tprof_mod.o
 	${FC_0} ${FC_FLAGS_SET_0} -c -o $@ $<
 
 kgen_utils.o: kgen_utils.f90

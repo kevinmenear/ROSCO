@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-23 21:20:12 
+!Generated at : 2026-03-25 20:41:14 
 !KGEN version : 0.8.1 
   
 ! ROSCO Registry
@@ -493,25 +493,22 @@ TYPE, PUBLIC :: ObjectInstances
     INTEGER(IntKi)                :: instRes                     ! PR controller instance
     INTEGER(IntKi)                :: instRL                      ! Rate limiter instance
 END TYPE ObjectInstances
-
-
-PUBLIC kr_rosco_types_controlparameters 
-PUBLIC kr_rosco_types_we 
-PUBLIC kr_rosco_types_filterparameters 
-PUBLIC kr_rosco_types_rlparams 
-PUBLIC kr_rosco_types_piparams 
-PUBLIC kr_rosco_types_resparams 
-PUBLIC kr_rosco_types_localvariables 
-PUBLIC kr_rosco_types_objectinstances 
-PUBLIC kv_rosco_types_controlparameters 
-PUBLIC kv_rosco_types_we 
-PUBLIC kv_rosco_types_filterparameters 
-PUBLIC kv_rosco_types_rlparams 
-PUBLIC kv_rosco_types_piparams 
-PUBLIC kv_rosco_types_resparams 
-PUBLIC kv_rosco_types_localvariables 
-PUBLIC kv_rosco_types_objectinstances 
-  
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
 CONTAINS 
   
 

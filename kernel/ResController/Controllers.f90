@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-19 22:19:39 
+!Generated at : 2026-03-25 20:40:50 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -23,8 +23,7 @@ MODULE Controllers
 
     USE ISO_C_BINDING
     IMPLICIT NONE 
-    PUBLIC activewakecontrol 
-
+! VIT: removed invalid PUBLIC statement
 
     ! Auto-generated interface for C++ implementation of ResController
     INTERFACE
@@ -91,6 +90,7 @@ SUBROUTINE activewakecontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_file
     TYPE(objectinstances), INTENT(INOUT) :: objinst 
         ! Local vars
 
+        ! COMPLEX(DbKi)              :: complexI = (0.0, 1.0)  ! VIT: removed (complex split)
     INTEGER(KIND=intki) :: imode 
     REAL(KIND=dbki), dimension(2) :: awc_tiltyaw = [0.0, 0.0] 
     REAL(KIND=dbki), dimension(2) :: error = [0.0, 0.0] 
@@ -157,7 +157,7 @@ SUBROUTINE activewakecontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_file
       
     !call to kgen kernel 
                         AWC_TiltYaw(Imode) = ResController(Error(Imode), CntrPar%AWC_CntrGains(1), CntrPar%AWC_CntrGains(2), CntrPar%AWC_freq(Imode), & 
-                                                            CntrPar%PC_MinPit, CntrPar%PC_MaxPit, LocalVar%DT, LocalVar%resP, LocalVar%restart, objInst%instRes)
+                                                            CntrPar%PC_MinPit, CntrPar%PC_MaxPit, LocalVar%DT, LocalVar%resP, (LocalVar%restart /= 0), objInst%instRes)
                         IF (kgen_mainstage) THEN 
                               
                             !verify init 
@@ -203,7 +203,7 @@ SUBROUTINE activewakecontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_file
                             CALL SYSTEM_CLOCK(kgen_start_clock, kgen_rate_clock) 
                             DO kgen_intvar = 1, KGEN_MAXITER 
                         AWC_TiltYaw(Imode) = ResController(Error(Imode), CntrPar%AWC_CntrGains(1), CntrPar%AWC_CntrGains(2), CntrPar%AWC_freq(Imode), & 
-                                                            CntrPar%PC_MinPit, CntrPar%PC_MaxPit, LocalVar%DT, LocalVar%resP, LocalVar%restart, objInst%instRes)
+                                                            CntrPar%PC_MinPit, CntrPar%PC_MaxPit, LocalVar%DT, LocalVar%resP, (LocalVar%restart /= 0), objInst%instRes)
                             END DO   
                             CALL SYSTEM_CLOCK(kgen_stop_clock, kgen_rate_clock) 
                             kgen_measure = 1.0D6*(kgen_stop_clock - kgen_start_clock)/DBLE(kgen_rate_clock*KGEN_MAXITER) 

@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-18 23:13:49 
+!Generated at : 2026-03-25 20:46:18 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -32,36 +32,10 @@
 MODULE Functions
 
     USE constants 
-
     USE kgen_utils_mod
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
+
     IMPLICIT NONE 
-    ! Auto-generated interface for C++ implementation of saturate
-
-
-    ! Auto-generated interface for C++ implementation of wrap_180
-
-
-    ! Auto-generated interface for C++ implementation of wrap_360
-
-
-    ! Auto-generated interface for C++ implementation of ratelimit
-
-
-    ! Auto-generated interface for C++ implementation of ColemanTransform
-
-
-    ! Auto-generated interface for C++ implementation of ColemanTransformInverse
-
-
-    ! Auto-generated interface for C++ implementation of identity
-
-
-    ! Auto-generated interface for C++ implementation of sigma
-
-
-    ! Auto-generated interface for C++ implementation of interp1d
-
 
 !-------------------------------------------------------------------------------------------------------------------------------
 
@@ -95,6 +69,7 @@ MODULE Functions
 !-------------------------------------------------------------------------------------------------------------------------------
 
 !-------------------------------------------------------------------------------------------------------------------------------
+
 
 !-------------------------------------------------------------------------------------------------------------------------------
 

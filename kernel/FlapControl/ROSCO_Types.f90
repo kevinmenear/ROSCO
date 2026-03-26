@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-24 00:49:18 
+!Generated at : 2026-03-25 20:53:07 
 !KGEN version : 0.8.1 
   
 ! ROSCO Registry
@@ -11,10 +11,9 @@
  
 MODULE ROSCO_Types
     USE constants 
-    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
+    USE kgen_utils_mod
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
-    USE kgen_utils_mod, ONLY: check_t, kgen_init_check, kgen_init_verify, kgen_tolerance, kgen_minvalue, kgen_verboselevel, &
-    &CHECK_IDENTICAL, CHECK_IN_TOL, CHECK_OUT_TOL 
+    USE kgen_utils_mod
     IMPLICIT NONE 
 
 
@@ -494,25 +493,22 @@ TYPE, PUBLIC :: ObjectInstances
     INTEGER(IntKi)                :: instRes                     ! PR controller instance
     INTEGER(IntKi)                :: instRL                      ! Rate limiter instance
 END TYPE ObjectInstances
-
-
-PUBLIC kr_rosco_types_controlparameters 
-PUBLIC kr_rosco_types_we 
-PUBLIC kr_rosco_types_filterparameters 
-PUBLIC kr_rosco_types_rlparams 
-PUBLIC kr_rosco_types_piparams 
-PUBLIC kr_rosco_types_resparams 
-PUBLIC kr_rosco_types_localvariables 
-PUBLIC kr_rosco_types_objectinstances 
-PUBLIC kv_rosco_types_controlparameters 
-PUBLIC kv_rosco_types_we 
-PUBLIC kv_rosco_types_filterparameters 
-PUBLIC kv_rosco_types_rlparams 
-PUBLIC kv_rosco_types_piparams 
-PUBLIC kv_rosco_types_resparams 
-PUBLIC kv_rosco_types_localvariables 
-PUBLIC kv_rosco_types_objectinstances 
-  
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
 CONTAINS 
   
 
@@ -3955,7 +3951,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
       
     CALL kgen_init_check(dtype_check_status, rank=check_status%rank) 
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%zmq_id == kgenref_var%zmq_id) THEN 
+    IF ((var%zmq_id == kgenref_var%zmq_id) .OR. ((var%zmq_id /= var%zmq_id) .AND. (kgenref_var%zmq_id /= kgenref_var%zmq_id))) THEN
+        IF (var%zmq_id /= var%zmq_id) WRITE(*, *) "localvar%zmq_id is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -3963,6 +3960,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_id | IDENTICAL | ", var%zmq_id, " | ", kgenref_var%zmq_id
     ELSE 
         diff_zmq_id = ABS(var%zmq_id - kgenref_var%zmq_id) 
         IF (diff_zmq_id <= kgen_tolerance) THEN 
@@ -3973,6 +3971,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_id | IN_TOL | ", var%zmq_id, " | ", kgenref_var%zmq_id, " | ", diff_zmq_id
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -3981,6 +3980,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_id | OUT_TOL | ", var%zmq_id, " | ", kgenref_var%zmq_id, " | ", diff_zmq_id
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4002,7 +4002,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%logginglevel == kgenref_var%logginglevel) THEN 
+    IF ((var%logginglevel == kgenref_var%logginglevel) .OR. ((var%logginglevel /= var%logginglevel) .AND. (kgenref_var%logginglevel /= kgenref_var%logginglevel))) THEN
+        IF (var%logginglevel /= var%logginglevel) WRITE(*, *) "localvar%logginglevel is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -4010,6 +4011,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] logginglevel | IDENTICAL | ", var%logginglevel, " | ", kgenref_var%logginglevel
     ELSE 
         diff_logginglevel = ABS(var%logginglevel - kgenref_var%logginglevel) 
         IF (diff_logginglevel <= kgen_tolerance) THEN 
@@ -4020,6 +4022,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] logginglevel | IN_TOL | ", var%logginglevel, " | ", kgenref_var%logginglevel, " | ", diff_logginglevel
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -4028,6 +4031,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] logginglevel | OUT_TOL | ", var%logginglevel, " | ", kgenref_var%logginglevel, " | ", diff_logginglevel
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4049,7 +4053,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%echo == kgenref_var%echo) THEN 
+    IF ((var%echo == kgenref_var%echo) .OR. ((var%echo /= var%echo) .AND. (kgenref_var%echo /= kgenref_var%echo))) THEN
+        IF (var%echo /= var%echo) WRITE(*, *) "localvar%echo is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -4057,6 +4062,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] echo | IDENTICAL | ", var%echo, " | ", kgenref_var%echo
     ELSE 
         diff_echo = ABS(var%echo - kgenref_var%echo) 
         IF (diff_echo <= kgen_tolerance) THEN 
@@ -4067,6 +4073,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] echo | IN_TOL | ", var%echo, " | ", kgenref_var%echo, " | ", diff_echo
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -4075,6 +4082,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] echo | OUT_TOL | ", var%echo, " | ", kgenref_var%echo, " | ", diff_echo
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4096,7 +4104,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ext_interface == kgenref_var%ext_interface) THEN 
+    IF ((var%ext_interface == kgenref_var%ext_interface) .OR. ((var%ext_interface /= var%ext_interface) .AND. (kgenref_var%ext_interface /= kgenref_var%ext_interface))) THEN
+        IF (var%ext_interface /= var%ext_interface) WRITE(*, *) "localvar%ext_interface is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -4104,6 +4113,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ext_interface | IDENTICAL | ", var%ext_interface, " | ", kgenref_var%ext_interface
     ELSE 
         diff_ext_interface = ABS(var%ext_interface - kgenref_var%ext_interface) 
         IF (diff_ext_interface <= kgen_tolerance) THEN 
@@ -4114,6 +4124,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ext_interface | IN_TOL | ", var%ext_interface, " | ", kgenref_var%ext_interface, " | ", diff_ext_interface
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -4122,6 +4133,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ext_interface | OUT_TOL | ", var%ext_interface, " | ", kgenref_var%ext_interface, " | ", diff_ext_interface
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4143,7 +4155,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%dt_out == kgenref_var%dt_out) THEN 
+    IF ((var%dt_out == kgenref_var%dt_out) .OR. ((var%dt_out /= var%dt_out) .AND. (kgenref_var%dt_out /= kgenref_var%dt_out))) THEN
+        IF (var%dt_out /= var%dt_out) WRITE(*, *) "localvar%dt_out is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -4151,6 +4164,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] dt_out | IDENTICAL | ", var%dt_out, " | ", kgenref_var%dt_out
     ELSE 
         diff_dt_out = ABS(var%dt_out - kgenref_var%dt_out) 
         IF (diff_dt_out <= kgen_tolerance) THEN 
@@ -4161,6 +4175,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] dt_out | IN_TOL | ", var%dt_out, " | ", kgenref_var%dt_out, " | ", diff_dt_out
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -4169,6 +4184,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] dt_out | OUT_TOL | ", var%dt_out, " | ", kgenref_var%dt_out, " | ", diff_dt_out
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4190,7 +4206,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%n_dt_out == kgenref_var%n_dt_out) THEN 
+    IF ((var%n_dt_out == kgenref_var%n_dt_out) .OR. ((var%n_dt_out /= var%n_dt_out) .AND. (kgenref_var%n_dt_out /= kgenref_var%n_dt_out))) THEN
+        IF (var%n_dt_out /= var%n_dt_out) WRITE(*, *) "localvar%n_dt_out is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -4198,6 +4215,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] n_dt_out | IDENTICAL | ", var%n_dt_out, " | ", kgenref_var%n_dt_out
     ELSE 
         diff_n_dt_out = ABS(var%n_dt_out - kgenref_var%n_dt_out) 
         IF (diff_n_dt_out <= kgen_tolerance) THEN 
@@ -4208,6 +4226,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] n_dt_out | IN_TOL | ", var%n_dt_out, " | ", kgenref_var%n_dt_out, " | ", diff_n_dt_out
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -4216,6 +4235,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] n_dt_out | OUT_TOL | ", var%n_dt_out, " | ", kgenref_var%n_dt_out, " | ", diff_n_dt_out
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4237,7 +4257,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%n_dt_zmq == kgenref_var%n_dt_zmq) THEN 
+    IF ((var%n_dt_zmq == kgenref_var%n_dt_zmq) .OR. ((var%n_dt_zmq /= var%n_dt_zmq) .AND. (kgenref_var%n_dt_zmq /= kgenref_var%n_dt_zmq))) THEN
+        IF (var%n_dt_zmq /= var%n_dt_zmq) WRITE(*, *) "localvar%n_dt_zmq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -4245,6 +4266,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] n_dt_zmq | IDENTICAL | ", var%n_dt_zmq, " | ", kgenref_var%n_dt_zmq
     ELSE 
         diff_n_dt_zmq = ABS(var%n_dt_zmq - kgenref_var%n_dt_zmq) 
         IF (diff_n_dt_zmq <= kgen_tolerance) THEN 
@@ -4255,6 +4277,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] n_dt_zmq | IN_TOL | ", var%n_dt_zmq, " | ", kgenref_var%n_dt_zmq, " | ", diff_n_dt_zmq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -4263,6 +4286,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] n_dt_zmq | OUT_TOL | ", var%n_dt_zmq, " | ", kgenref_var%n_dt_zmq, " | ", diff_n_dt_zmq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4284,7 +4308,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%f_lpftype == kgenref_var%f_lpftype) THEN 
+    IF ((var%f_lpftype == kgenref_var%f_lpftype) .OR. ((var%f_lpftype /= var%f_lpftype) .AND. (kgenref_var%f_lpftype /= kgenref_var%f_lpftype))) THEN
+        IF (var%f_lpftype /= var%f_lpftype) WRITE(*, *) "localvar%f_lpftype is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -4292,6 +4317,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] f_lpftype | IDENTICAL | ", var%f_lpftype, " | ", kgenref_var%f_lpftype
     ELSE 
         diff_f_lpftype = ABS(var%f_lpftype - kgenref_var%f_lpftype) 
         IF (diff_f_lpftype <= kgen_tolerance) THEN 
@@ -4302,6 +4328,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_lpftype | IN_TOL | ", var%f_lpftype, " | ", kgenref_var%f_lpftype, " | ", diff_f_lpftype
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -4310,6 +4337,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_lpftype | OUT_TOL | ", var%f_lpftype, " | ", kgenref_var%f_lpftype, " | ", diff_f_lpftype
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4331,7 +4359,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%f_lpfcornerfreq == kgenref_var%f_lpfcornerfreq) THEN 
+    IF ((var%f_lpfcornerfreq == kgenref_var%f_lpfcornerfreq) .OR. ((var%f_lpfcornerfreq /= var%f_lpfcornerfreq) .AND. (kgenref_var%f_lpfcornerfreq /= kgenref_var%f_lpfcornerfreq))) THEN
+        IF (var%f_lpfcornerfreq /= var%f_lpfcornerfreq) WRITE(*, *) "localvar%f_lpfcornerfreq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -4339,6 +4368,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] f_lpfcornerfreq | IDENTICAL | ", var%f_lpfcornerfreq, " | ", kgenref_var%f_lpfcornerfreq
     ELSE 
         diff_f_lpfcornerfreq = ABS(var%f_lpfcornerfreq - kgenref_var%f_lpfcornerfreq) 
         IF (diff_f_lpfcornerfreq <= kgen_tolerance) THEN 
@@ -4349,6 +4379,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_lpfcornerfreq | IN_TOL | ", var%f_lpfcornerfreq, " | ", kgenref_var%f_lpfcornerfreq, " | ", diff_f_lpfcornerfreq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -4357,6 +4388,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_lpfcornerfreq | OUT_TOL | ", var%f_lpfcornerfreq, " | ", kgenref_var%f_lpfcornerfreq, " | ", diff_f_lpfcornerfreq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4378,7 +4410,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%f_lpfdamping == kgenref_var%f_lpfdamping) THEN 
+    IF ((var%f_lpfdamping == kgenref_var%f_lpfdamping) .OR. ((var%f_lpfdamping /= var%f_lpfdamping) .AND. (kgenref_var%f_lpfdamping /= kgenref_var%f_lpfdamping))) THEN
+        IF (var%f_lpfdamping /= var%f_lpfdamping) WRITE(*, *) "localvar%f_lpfdamping is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -4386,6 +4419,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] f_lpfdamping | IDENTICAL | ", var%f_lpfdamping, " | ", kgenref_var%f_lpfdamping
     ELSE 
         diff_f_lpfdamping = ABS(var%f_lpfdamping - kgenref_var%f_lpfdamping) 
         IF (diff_f_lpfdamping <= kgen_tolerance) THEN 
@@ -4396,6 +4430,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_lpfdamping | IN_TOL | ", var%f_lpfdamping, " | ", kgenref_var%f_lpfdamping, " | ", diff_f_lpfdamping
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -4404,6 +4439,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_lpfdamping | OUT_TOL | ", var%f_lpfdamping, " | ", kgenref_var%f_lpfdamping, " | ", diff_f_lpfdamping
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4425,7 +4461,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%f_numnotchfilts == kgenref_var%f_numnotchfilts) THEN 
+    IF ((var%f_numnotchfilts == kgenref_var%f_numnotchfilts) .OR. ((var%f_numnotchfilts /= var%f_numnotchfilts) .AND. (kgenref_var%f_numnotchfilts /= kgenref_var%f_numnotchfilts))) THEN
+        IF (var%f_numnotchfilts /= var%f_numnotchfilts) WRITE(*, *) "localvar%f_numnotchfilts is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -4433,6 +4470,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] f_numnotchfilts | IDENTICAL | ", var%f_numnotchfilts, " | ", kgenref_var%f_numnotchfilts
     ELSE 
         diff_f_numnotchfilts = ABS(var%f_numnotchfilts - kgenref_var%f_numnotchfilts) 
         IF (diff_f_numnotchfilts <= kgen_tolerance) THEN 
@@ -4443,6 +4481,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_numnotchfilts | IN_TOL | ", var%f_numnotchfilts, " | ", kgenref_var%f_numnotchfilts, " | ", diff_f_numnotchfilts
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -4451,6 +4490,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_numnotchfilts | OUT_TOL | ", var%f_numnotchfilts, " | ", kgenref_var%f_numnotchfilts, " | ", diff_f_numnotchfilts
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4472,7 +4512,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%f_genspdnotch_n == kgenref_var%f_genspdnotch_n) THEN 
+    IF ((var%f_genspdnotch_n == kgenref_var%f_genspdnotch_n) .OR. ((var%f_genspdnotch_n /= var%f_genspdnotch_n) .AND. (kgenref_var%f_genspdnotch_n /= kgenref_var%f_genspdnotch_n))) THEN
+        IF (var%f_genspdnotch_n /= var%f_genspdnotch_n) WRITE(*, *) "localvar%f_genspdnotch_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -4480,6 +4521,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] f_genspdnotch_n | IDENTICAL | ", var%f_genspdnotch_n, " | ", kgenref_var%f_genspdnotch_n
     ELSE 
         diff_f_genspdnotch_n = ABS(var%f_genspdnotch_n - kgenref_var%f_genspdnotch_n) 
         IF (diff_f_genspdnotch_n <= kgen_tolerance) THEN 
@@ -4490,6 +4532,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_genspdnotch_n | IN_TOL | ", var%f_genspdnotch_n, " | ", kgenref_var%f_genspdnotch_n, " | ", diff_f_genspdnotch_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -4498,6 +4541,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_genspdnotch_n | OUT_TOL | ", var%f_genspdnotch_n, " | ", kgenref_var%f_genspdnotch_n, " | ", diff_f_genspdnotch_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4528,6 +4572,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] f_genspdnotch_ind | IDENTICAL | size=", SIZE(var%f_genspdnotch_ind)
         ELSE 
             ALLOCATE (buf1_f_genspdnotch_ind(SIZE(var%f_genspdnotch_ind,dim=1))) 
             ALLOCATE (buf2_f_genspdnotch_ind(SIZE(var%f_genspdnotch_ind,dim=1))) 
@@ -4549,6 +4594,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] f_genspdnotch_ind | OUT_TOL | n_diff=", n_f_genspdnotch_ind, " | rms=", rmsdiff_f_genspdnotch_ind
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -4557,6 +4603,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] f_genspdnotch_ind | IN_TOL | n_diff=", n_f_genspdnotch_ind, " | rms=", rmsdiff_f_genspdnotch_ind
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4591,7 +4638,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%f_twrtopnotch_n == kgenref_var%f_twrtopnotch_n) THEN 
+    IF ((var%f_twrtopnotch_n == kgenref_var%f_twrtopnotch_n) .OR. ((var%f_twrtopnotch_n /= var%f_twrtopnotch_n) .AND. (kgenref_var%f_twrtopnotch_n /= kgenref_var%f_twrtopnotch_n))) THEN
+        IF (var%f_twrtopnotch_n /= var%f_twrtopnotch_n) WRITE(*, *) "localvar%f_twrtopnotch_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -4599,6 +4647,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] f_twrtopnotch_n | IDENTICAL | ", var%f_twrtopnotch_n, " | ", kgenref_var%f_twrtopnotch_n
     ELSE 
         diff_f_twrtopnotch_n = ABS(var%f_twrtopnotch_n - kgenref_var%f_twrtopnotch_n) 
         IF (diff_f_twrtopnotch_n <= kgen_tolerance) THEN 
@@ -4609,6 +4658,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_twrtopnotch_n | IN_TOL | ", var%f_twrtopnotch_n, " | ", kgenref_var%f_twrtopnotch_n, " | ", diff_f_twrtopnotch_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -4617,6 +4667,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_twrtopnotch_n | OUT_TOL | ", var%f_twrtopnotch_n, " | ", kgenref_var%f_twrtopnotch_n, " | ", diff_f_twrtopnotch_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4647,6 +4698,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] f_twrtopnotch_ind | IDENTICAL | size=", SIZE(var%f_twrtopnotch_ind)
         ELSE 
             ALLOCATE (buf1_f_twrtopnotch_ind(SIZE(var%f_twrtopnotch_ind,dim=1))) 
             ALLOCATE (buf2_f_twrtopnotch_ind(SIZE(var%f_twrtopnotch_ind,dim=1))) 
@@ -4668,6 +4720,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] f_twrtopnotch_ind | OUT_TOL | n_diff=", n_f_twrtopnotch_ind, " | rms=", rmsdiff_f_twrtopnotch_ind
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -4676,6 +4729,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] f_twrtopnotch_ind | IN_TOL | n_diff=", n_f_twrtopnotch_ind, " | rms=", rmsdiff_f_twrtopnotch_ind
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4719,6 +4773,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] f_notchfreqs | IDENTICAL | size=", SIZE(var%f_notchfreqs)
         ELSE 
             ALLOCATE (buf1_f_notchfreqs(SIZE(var%f_notchfreqs,dim=1))) 
             ALLOCATE (buf2_f_notchfreqs(SIZE(var%f_notchfreqs,dim=1))) 
@@ -4740,6 +4795,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] f_notchfreqs | OUT_TOL | n_diff=", n_f_notchfreqs, " | rms=", rmsdiff_f_notchfreqs
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -4748,6 +4804,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] f_notchfreqs | IN_TOL | n_diff=", n_f_notchfreqs, " | rms=", rmsdiff_f_notchfreqs
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4789,6 +4846,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] f_notchbetanum | IDENTICAL | size=", SIZE(var%f_notchbetanum)
         ELSE 
             ALLOCATE (buf1_f_notchbetanum(SIZE(var%f_notchbetanum,dim=1))) 
             ALLOCATE (buf2_f_notchbetanum(SIZE(var%f_notchbetanum,dim=1))) 
@@ -4810,6 +4868,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] f_notchbetanum | OUT_TOL | n_diff=", n_f_notchbetanum, " | rms=", rmsdiff_f_notchbetanum
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -4818,6 +4877,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] f_notchbetanum | IN_TOL | n_diff=", n_f_notchbetanum, " | rms=", rmsdiff_f_notchbetanum
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4859,6 +4919,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] f_notchbetaden | IDENTICAL | size=", SIZE(var%f_notchbetaden)
         ELSE 
             ALLOCATE (buf1_f_notchbetaden(SIZE(var%f_notchbetaden,dim=1))) 
             ALLOCATE (buf2_f_notchbetaden(SIZE(var%f_notchbetaden,dim=1))) 
@@ -4880,6 +4941,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] f_notchbetaden | OUT_TOL | n_diff=", n_f_notchbetaden, " | rms=", rmsdiff_f_notchbetaden
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -4888,6 +4950,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] f_notchbetaden | IN_TOL | n_diff=", n_f_notchbetaden, " | rms=", rmsdiff_f_notchbetaden
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4920,7 +4983,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%f_sscornerfreq == kgenref_var%f_sscornerfreq) THEN 
+    IF ((var%f_sscornerfreq == kgenref_var%f_sscornerfreq) .OR. ((var%f_sscornerfreq /= var%f_sscornerfreq) .AND. (kgenref_var%f_sscornerfreq /= kgenref_var%f_sscornerfreq))) THEN
+        IF (var%f_sscornerfreq /= var%f_sscornerfreq) WRITE(*, *) "localvar%f_sscornerfreq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -4928,6 +4992,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] f_sscornerfreq | IDENTICAL | ", var%f_sscornerfreq, " | ", kgenref_var%f_sscornerfreq
     ELSE 
         diff_f_sscornerfreq = ABS(var%f_sscornerfreq - kgenref_var%f_sscornerfreq) 
         IF (diff_f_sscornerfreq <= kgen_tolerance) THEN 
@@ -4938,6 +5003,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_sscornerfreq | IN_TOL | ", var%f_sscornerfreq, " | ", kgenref_var%f_sscornerfreq, " | ", diff_f_sscornerfreq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -4946,6 +5012,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_sscornerfreq | OUT_TOL | ", var%f_sscornerfreq, " | ", kgenref_var%f_sscornerfreq, " | ", diff_f_sscornerfreq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -4967,7 +5034,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%f_wecornerfreq == kgenref_var%f_wecornerfreq) THEN 
+    IF ((var%f_wecornerfreq == kgenref_var%f_wecornerfreq) .OR. ((var%f_wecornerfreq /= var%f_wecornerfreq) .AND. (kgenref_var%f_wecornerfreq /= kgenref_var%f_wecornerfreq))) THEN
+        IF (var%f_wecornerfreq /= var%f_wecornerfreq) WRITE(*, *) "localvar%f_wecornerfreq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -4975,6 +5043,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] f_wecornerfreq | IDENTICAL | ", var%f_wecornerfreq, " | ", kgenref_var%f_wecornerfreq
     ELSE 
         diff_f_wecornerfreq = ABS(var%f_wecornerfreq - kgenref_var%f_wecornerfreq) 
         IF (diff_f_wecornerfreq <= kgen_tolerance) THEN 
@@ -4985,6 +5054,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_wecornerfreq | IN_TOL | ", var%f_wecornerfreq, " | ", kgenref_var%f_wecornerfreq, " | ", diff_f_wecornerfreq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -4993,6 +5063,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_wecornerfreq | OUT_TOL | ", var%f_wecornerfreq, " | ", kgenref_var%f_wecornerfreq, " | ", diff_f_wecornerfreq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5023,6 +5094,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] f_flcornerfreq | IDENTICAL | size=", SIZE(var%f_flcornerfreq)
         ELSE 
             ALLOCATE (buf1_f_flcornerfreq(SIZE(var%f_flcornerfreq,dim=1))) 
             ALLOCATE (buf2_f_flcornerfreq(SIZE(var%f_flcornerfreq,dim=1))) 
@@ -5044,6 +5116,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] f_flcornerfreq | OUT_TOL | n_diff=", n_f_flcornerfreq, " | rms=", rmsdiff_f_flcornerfreq
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -5052,6 +5125,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] f_flcornerfreq | IN_TOL | n_diff=", n_f_flcornerfreq, " | rms=", rmsdiff_f_flcornerfreq
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5084,7 +5158,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%f_flhighpassfreq == kgenref_var%f_flhighpassfreq) THEN 
+    IF ((var%f_flhighpassfreq == kgenref_var%f_flhighpassfreq) .OR. ((var%f_flhighpassfreq /= var%f_flhighpassfreq) .AND. (kgenref_var%f_flhighpassfreq /= kgenref_var%f_flhighpassfreq))) THEN
+        IF (var%f_flhighpassfreq /= var%f_flhighpassfreq) WRITE(*, *) "localvar%f_flhighpassfreq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -5092,6 +5167,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] f_flhighpassfreq | IDENTICAL | ", var%f_flhighpassfreq, " | ", kgenref_var%f_flhighpassfreq
     ELSE 
         diff_f_flhighpassfreq = ABS(var%f_flhighpassfreq - kgenref_var%f_flhighpassfreq) 
         IF (diff_f_flhighpassfreq <= kgen_tolerance) THEN 
@@ -5102,6 +5178,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_flhighpassfreq | IN_TOL | ", var%f_flhighpassfreq, " | ", kgenref_var%f_flhighpassfreq, " | ", diff_f_flhighpassfreq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -5110,6 +5187,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_flhighpassfreq | OUT_TOL | ", var%f_flhighpassfreq, " | ", kgenref_var%f_flhighpassfreq, " | ", diff_f_flhighpassfreq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5131,7 +5209,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%f_yawerr == kgenref_var%f_yawerr) THEN 
+    IF ((var%f_yawerr == kgenref_var%f_yawerr) .OR. ((var%f_yawerr /= var%f_yawerr) .AND. (kgenref_var%f_yawerr /= kgenref_var%f_yawerr))) THEN
+        IF (var%f_yawerr /= var%f_yawerr) WRITE(*, *) "localvar%f_yawerr is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -5139,6 +5218,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] f_yawerr | IDENTICAL | ", var%f_yawerr, " | ", kgenref_var%f_yawerr
     ELSE 
         diff_f_yawerr = ABS(var%f_yawerr - kgenref_var%f_yawerr) 
         IF (diff_f_yawerr <= kgen_tolerance) THEN 
@@ -5149,6 +5229,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_yawerr | IN_TOL | ", var%f_yawerr, " | ", kgenref_var%f_yawerr, " | ", diff_f_yawerr
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -5157,6 +5238,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_yawerr | OUT_TOL | ", var%f_yawerr, " | ", kgenref_var%f_yawerr, " | ", diff_f_yawerr
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5187,6 +5269,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] f_flpcornerfreq | IDENTICAL | size=", SIZE(var%f_flpcornerfreq)
         ELSE 
             ALLOCATE (buf1_f_flpcornerfreq(SIZE(var%f_flpcornerfreq,dim=1))) 
             ALLOCATE (buf2_f_flpcornerfreq(SIZE(var%f_flpcornerfreq,dim=1))) 
@@ -5208,6 +5291,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] f_flpcornerfreq | OUT_TOL | n_diff=", n_f_flpcornerfreq, " | rms=", rmsdiff_f_flpcornerfreq
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -5216,6 +5300,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] f_flpcornerfreq | IN_TOL | n_diff=", n_f_flpcornerfreq, " | rms=", rmsdiff_f_flpcornerfreq
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5248,7 +5333,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%f_vsrefspdcornerfreq == kgenref_var%f_vsrefspdcornerfreq) THEN 
+    IF ((var%f_vsrefspdcornerfreq == kgenref_var%f_vsrefspdcornerfreq) .OR. ((var%f_vsrefspdcornerfreq /= var%f_vsrefspdcornerfreq) .AND. (kgenref_var%f_vsrefspdcornerfreq /= kgenref_var%f_vsrefspdcornerfreq))) THEN
+        IF (var%f_vsrefspdcornerfreq /= var%f_vsrefspdcornerfreq) WRITE(*, *) "localvar%f_vsrefspdcornerfreq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -5256,6 +5342,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] f_vsrefspdcornerfreq | IDENTICAL | ", var%f_vsrefspdcornerfreq, " | ", kgenref_var%f_vsrefspdcornerfreq
     ELSE 
         diff_f_vsrefspdcornerfreq = ABS(var%f_vsrefspdcornerfreq - kgenref_var%f_vsrefspdcornerfreq) 
         IF (diff_f_vsrefspdcornerfreq <= kgen_tolerance) THEN 
@@ -5266,6 +5353,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_vsrefspdcornerfreq | IN_TOL | ", var%f_vsrefspdcornerfreq, " | ", kgenref_var%f_vsrefspdcornerfreq, " | ", diff_f_vsrefspdcornerfreq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -5274,6 +5362,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] f_vsrefspdcornerfreq | OUT_TOL | ", var%f_vsrefspdcornerfreq, " | ", kgenref_var%f_vsrefspdcornerfreq, " | ", diff_f_vsrefspdcornerfreq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5295,7 +5384,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%tra_mode == kgenref_var%tra_mode) THEN 
+    IF ((var%tra_mode == kgenref_var%tra_mode) .OR. ((var%tra_mode /= var%tra_mode) .AND. (kgenref_var%tra_mode /= kgenref_var%tra_mode))) THEN
+        IF (var%tra_mode /= var%tra_mode) WRITE(*, *) "localvar%tra_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -5303,6 +5393,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] tra_mode | IDENTICAL | ", var%tra_mode, " | ", kgenref_var%tra_mode
     ELSE 
         diff_tra_mode = ABS(var%tra_mode - kgenref_var%tra_mode) 
         IF (diff_tra_mode <= kgen_tolerance) THEN 
@@ -5313,6 +5404,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] tra_mode | IN_TOL | ", var%tra_mode, " | ", kgenref_var%tra_mode, " | ", diff_tra_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -5321,6 +5413,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] tra_mode | OUT_TOL | ", var%tra_mode, " | ", kgenref_var%tra_mode, " | ", diff_tra_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5342,7 +5435,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%tra_exclspeed == kgenref_var%tra_exclspeed) THEN 
+    IF ((var%tra_exclspeed == kgenref_var%tra_exclspeed) .OR. ((var%tra_exclspeed /= var%tra_exclspeed) .AND. (kgenref_var%tra_exclspeed /= kgenref_var%tra_exclspeed))) THEN
+        IF (var%tra_exclspeed /= var%tra_exclspeed) WRITE(*, *) "localvar%tra_exclspeed is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -5350,6 +5444,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] tra_exclspeed | IDENTICAL | ", var%tra_exclspeed, " | ", kgenref_var%tra_exclspeed
     ELSE 
         diff_tra_exclspeed = ABS(var%tra_exclspeed - kgenref_var%tra_exclspeed) 
         IF (diff_tra_exclspeed <= kgen_tolerance) THEN 
@@ -5360,6 +5455,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] tra_exclspeed | IN_TOL | ", var%tra_exclspeed, " | ", kgenref_var%tra_exclspeed, " | ", diff_tra_exclspeed
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -5368,6 +5464,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] tra_exclspeed | OUT_TOL | ", var%tra_exclspeed, " | ", kgenref_var%tra_exclspeed, " | ", diff_tra_exclspeed
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5389,7 +5486,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%tra_exclband == kgenref_var%tra_exclband) THEN 
+    IF ((var%tra_exclband == kgenref_var%tra_exclband) .OR. ((var%tra_exclband /= var%tra_exclband) .AND. (kgenref_var%tra_exclband /= kgenref_var%tra_exclband))) THEN
+        IF (var%tra_exclband /= var%tra_exclband) WRITE(*, *) "localvar%tra_exclband is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -5397,6 +5495,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] tra_exclband | IDENTICAL | ", var%tra_exclband, " | ", kgenref_var%tra_exclband
     ELSE 
         diff_tra_exclband = ABS(var%tra_exclband - kgenref_var%tra_exclband) 
         IF (diff_tra_exclband <= kgen_tolerance) THEN 
@@ -5407,6 +5506,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] tra_exclband | IN_TOL | ", var%tra_exclband, " | ", kgenref_var%tra_exclband, " | ", diff_tra_exclband
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -5415,6 +5515,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] tra_exclband | OUT_TOL | ", var%tra_exclband, " | ", kgenref_var%tra_exclband, " | ", diff_tra_exclband
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5436,7 +5537,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%tra_ratelimit == kgenref_var%tra_ratelimit) THEN 
+    IF ((var%tra_ratelimit == kgenref_var%tra_ratelimit) .OR. ((var%tra_ratelimit /= var%tra_ratelimit) .AND. (kgenref_var%tra_ratelimit /= kgenref_var%tra_ratelimit))) THEN
+        IF (var%tra_ratelimit /= var%tra_ratelimit) WRITE(*, *) "localvar%tra_ratelimit is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -5444,6 +5546,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] tra_ratelimit | IDENTICAL | ", var%tra_ratelimit, " | ", kgenref_var%tra_ratelimit
     ELSE 
         diff_tra_ratelimit = ABS(var%tra_ratelimit - kgenref_var%tra_ratelimit) 
         IF (diff_tra_ratelimit <= kgen_tolerance) THEN 
@@ -5454,6 +5557,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] tra_ratelimit | IN_TOL | ", var%tra_ratelimit, " | ", kgenref_var%tra_ratelimit, " | ", diff_tra_ratelimit
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -5462,6 +5566,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] tra_ratelimit | OUT_TOL | ", var%tra_ratelimit, " | ", kgenref_var%tra_ratelimit, " | ", diff_tra_ratelimit
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5483,7 +5588,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%td_mode == kgenref_var%td_mode) THEN 
+    IF ((var%td_mode == kgenref_var%td_mode) .OR. ((var%td_mode /= var%td_mode) .AND. (kgenref_var%td_mode /= kgenref_var%td_mode))) THEN
+        IF (var%td_mode /= var%td_mode) WRITE(*, *) "localvar%td_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -5491,6 +5597,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] td_mode | IDENTICAL | ", var%td_mode, " | ", kgenref_var%td_mode
     ELSE 
         diff_td_mode = ABS(var%td_mode - kgenref_var%td_mode) 
         IF (diff_td_mode <= kgen_tolerance) THEN 
@@ -5501,6 +5608,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] td_mode | IN_TOL | ", var%td_mode, " | ", kgenref_var%td_mode, " | ", diff_td_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -5509,6 +5617,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] td_mode | OUT_TOL | ", var%td_mode, " | ", kgenref_var%td_mode, " | ", diff_td_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5530,7 +5639,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%fa_hpfcornerfreq == kgenref_var%fa_hpfcornerfreq) THEN 
+    IF ((var%fa_hpfcornerfreq == kgenref_var%fa_hpfcornerfreq) .OR. ((var%fa_hpfcornerfreq /= var%fa_hpfcornerfreq) .AND. (kgenref_var%fa_hpfcornerfreq /= kgenref_var%fa_hpfcornerfreq))) THEN
+        IF (var%fa_hpfcornerfreq /= var%fa_hpfcornerfreq) WRITE(*, *) "localvar%fa_hpfcornerfreq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -5538,6 +5648,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] fa_hpfcornerfreq | IDENTICAL | ", var%fa_hpfcornerfreq, " | ", kgenref_var%fa_hpfcornerfreq
     ELSE 
         diff_fa_hpfcornerfreq = ABS(var%fa_hpfcornerfreq - kgenref_var%fa_hpfcornerfreq) 
         IF (diff_fa_hpfcornerfreq <= kgen_tolerance) THEN 
@@ -5548,6 +5659,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_hpfcornerfreq | IN_TOL | ", var%fa_hpfcornerfreq, " | ", kgenref_var%fa_hpfcornerfreq, " | ", diff_fa_hpfcornerfreq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -5556,6 +5668,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_hpfcornerfreq | OUT_TOL | ", var%fa_hpfcornerfreq, " | ", kgenref_var%fa_hpfcornerfreq, " | ", diff_fa_hpfcornerfreq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5577,7 +5690,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%fa_intsat == kgenref_var%fa_intsat) THEN 
+    IF ((var%fa_intsat == kgenref_var%fa_intsat) .OR. ((var%fa_intsat /= var%fa_intsat) .AND. (kgenref_var%fa_intsat /= kgenref_var%fa_intsat))) THEN
+        IF (var%fa_intsat /= var%fa_intsat) WRITE(*, *) "localvar%fa_intsat is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -5585,6 +5699,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] fa_intsat | IDENTICAL | ", var%fa_intsat, " | ", kgenref_var%fa_intsat
     ELSE 
         diff_fa_intsat = ABS(var%fa_intsat - kgenref_var%fa_intsat) 
         IF (diff_fa_intsat <= kgen_tolerance) THEN 
@@ -5595,6 +5710,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_intsat | IN_TOL | ", var%fa_intsat, " | ", kgenref_var%fa_intsat, " | ", diff_fa_intsat
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -5603,6 +5719,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_intsat | OUT_TOL | ", var%fa_intsat, " | ", kgenref_var%fa_intsat, " | ", diff_fa_intsat
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5624,7 +5741,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%fa_ki == kgenref_var%fa_ki) THEN 
+    IF ((var%fa_ki == kgenref_var%fa_ki) .OR. ((var%fa_ki /= var%fa_ki) .AND. (kgenref_var%fa_ki /= kgenref_var%fa_ki))) THEN
+        IF (var%fa_ki /= var%fa_ki) WRITE(*, *) "localvar%fa_ki is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -5632,6 +5750,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] fa_ki | IDENTICAL | ", var%fa_ki, " | ", kgenref_var%fa_ki
     ELSE 
         diff_fa_ki = ABS(var%fa_ki - kgenref_var%fa_ki) 
         IF (diff_fa_ki <= kgen_tolerance) THEN 
@@ -5642,6 +5761,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_ki | IN_TOL | ", var%fa_ki, " | ", kgenref_var%fa_ki, " | ", diff_fa_ki
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -5650,6 +5770,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_ki | OUT_TOL | ", var%fa_ki, " | ", kgenref_var%fa_ki, " | ", diff_fa_ki
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5671,7 +5792,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ipc_controlmode == kgenref_var%ipc_controlmode) THEN 
+    IF ((var%ipc_controlmode == kgenref_var%ipc_controlmode) .OR. ((var%ipc_controlmode /= var%ipc_controlmode) .AND. (kgenref_var%ipc_controlmode /= kgenref_var%ipc_controlmode))) THEN
+        IF (var%ipc_controlmode /= var%ipc_controlmode) WRITE(*, *) "localvar%ipc_controlmode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -5679,6 +5801,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ipc_controlmode | IDENTICAL | ", var%ipc_controlmode, " | ", kgenref_var%ipc_controlmode
     ELSE 
         diff_ipc_controlmode = ABS(var%ipc_controlmode - kgenref_var%ipc_controlmode) 
         IF (diff_ipc_controlmode <= kgen_tolerance) THEN 
@@ -5689,6 +5812,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_controlmode | IN_TOL | ", var%ipc_controlmode, " | ", kgenref_var%ipc_controlmode, " | ", diff_ipc_controlmode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -5697,6 +5821,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_controlmode | OUT_TOL | ", var%ipc_controlmode, " | ", kgenref_var%ipc_controlmode, " | ", diff_ipc_controlmode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5727,6 +5852,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ipc_vramp | IDENTICAL | size=", SIZE(var%ipc_vramp)
         ELSE 
             ALLOCATE (buf1_ipc_vramp(SIZE(var%ipc_vramp,dim=1))) 
             ALLOCATE (buf2_ipc_vramp(SIZE(var%ipc_vramp,dim=1))) 
@@ -5748,6 +5874,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ipc_vramp | OUT_TOL | n_diff=", n_ipc_vramp, " | rms=", rmsdiff_ipc_vramp
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -5756,6 +5883,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ipc_vramp | IN_TOL | n_diff=", n_ipc_vramp, " | rms=", rmsdiff_ipc_vramp
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5788,7 +5916,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ipc_intsat == kgenref_var%ipc_intsat) THEN 
+    IF ((var%ipc_intsat == kgenref_var%ipc_intsat) .OR. ((var%ipc_intsat /= var%ipc_intsat) .AND. (kgenref_var%ipc_intsat /= kgenref_var%ipc_intsat))) THEN
+        IF (var%ipc_intsat /= var%ipc_intsat) WRITE(*, *) "localvar%ipc_intsat is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -5796,6 +5925,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ipc_intsat | IDENTICAL | ", var%ipc_intsat, " | ", kgenref_var%ipc_intsat
     ELSE 
         diff_ipc_intsat = ABS(var%ipc_intsat - kgenref_var%ipc_intsat) 
         IF (diff_ipc_intsat <= kgen_tolerance) THEN 
@@ -5806,6 +5936,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_intsat | IN_TOL | ", var%ipc_intsat, " | ", kgenref_var%ipc_intsat, " | ", diff_ipc_intsat
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -5814,6 +5945,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_intsat | OUT_TOL | ", var%ipc_intsat, " | ", kgenref_var%ipc_intsat, " | ", diff_ipc_intsat
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5835,7 +5967,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ipc_satmode == kgenref_var%ipc_satmode) THEN 
+    IF ((var%ipc_satmode == kgenref_var%ipc_satmode) .OR. ((var%ipc_satmode /= var%ipc_satmode) .AND. (kgenref_var%ipc_satmode /= kgenref_var%ipc_satmode))) THEN
+        IF (var%ipc_satmode /= var%ipc_satmode) WRITE(*, *) "localvar%ipc_satmode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -5843,6 +5976,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ipc_satmode | IDENTICAL | ", var%ipc_satmode, " | ", kgenref_var%ipc_satmode
     ELSE 
         diff_ipc_satmode = ABS(var%ipc_satmode - kgenref_var%ipc_satmode) 
         IF (diff_ipc_satmode <= kgen_tolerance) THEN 
@@ -5853,6 +5987,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_satmode | IN_TOL | ", var%ipc_satmode, " | ", kgenref_var%ipc_satmode, " | ", diff_ipc_satmode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -5861,6 +5996,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_satmode | OUT_TOL | ", var%ipc_satmode, " | ", kgenref_var%ipc_satmode, " | ", diff_ipc_satmode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5891,6 +6027,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ipc_kp | IDENTICAL | size=", SIZE(var%ipc_kp)
         ELSE 
             ALLOCATE (buf1_ipc_kp(SIZE(var%ipc_kp,dim=1))) 
             ALLOCATE (buf2_ipc_kp(SIZE(var%ipc_kp,dim=1))) 
@@ -5912,6 +6049,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ipc_kp | OUT_TOL | n_diff=", n_ipc_kp, " | rms=", rmsdiff_ipc_kp
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -5920,6 +6058,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ipc_kp | IN_TOL | n_diff=", n_ipc_kp, " | rms=", rmsdiff_ipc_kp
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -5959,6 +6098,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ipc_ki | IDENTICAL | size=", SIZE(var%ipc_ki)
         ELSE 
             ALLOCATE (buf1_ipc_ki(SIZE(var%ipc_ki,dim=1))) 
             ALLOCATE (buf2_ipc_ki(SIZE(var%ipc_ki,dim=1))) 
@@ -5980,6 +6120,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ipc_ki | OUT_TOL | n_diff=", n_ipc_ki, " | rms=", rmsdiff_ipc_ki
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -5988,6 +6129,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ipc_ki | IN_TOL | n_diff=", n_ipc_ki, " | rms=", rmsdiff_ipc_ki
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6027,6 +6169,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ipc_azioffset | IDENTICAL | size=", SIZE(var%ipc_azioffset)
         ELSE 
             ALLOCATE (buf1_ipc_azioffset(SIZE(var%ipc_azioffset,dim=1))) 
             ALLOCATE (buf2_ipc_azioffset(SIZE(var%ipc_azioffset,dim=1))) 
@@ -6048,6 +6191,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ipc_azioffset | OUT_TOL | n_diff=", n_ipc_azioffset, " | rms=", rmsdiff_ipc_azioffset
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -6056,6 +6200,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ipc_azioffset | IN_TOL | n_diff=", n_ipc_azioffset, " | rms=", rmsdiff_ipc_azioffset
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6088,7 +6233,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ipc_cornerfreqact == kgenref_var%ipc_cornerfreqact) THEN 
+    IF ((var%ipc_cornerfreqact == kgenref_var%ipc_cornerfreqact) .OR. ((var%ipc_cornerfreqact /= var%ipc_cornerfreqact) .AND. (kgenref_var%ipc_cornerfreqact /= kgenref_var%ipc_cornerfreqact))) THEN
+        IF (var%ipc_cornerfreqact /= var%ipc_cornerfreqact) WRITE(*, *) "localvar%ipc_cornerfreqact is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -6096,6 +6242,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ipc_cornerfreqact | IDENTICAL | ", var%ipc_cornerfreqact, " | ", kgenref_var%ipc_cornerfreqact
     ELSE 
         diff_ipc_cornerfreqact = ABS(var%ipc_cornerfreqact - kgenref_var%ipc_cornerfreqact) 
         IF (diff_ipc_cornerfreqact <= kgen_tolerance) THEN 
@@ -6106,6 +6253,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_cornerfreqact | IN_TOL | ", var%ipc_cornerfreqact, " | ", kgenref_var%ipc_cornerfreqact, " | ", diff_ipc_cornerfreqact
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -6114,6 +6262,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_cornerfreqact | OUT_TOL | ", var%ipc_cornerfreqact, " | ", kgenref_var%ipc_cornerfreqact, " | ", diff_ipc_cornerfreqact
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6135,7 +6284,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_controlmode == kgenref_var%pc_controlmode) THEN 
+    IF ((var%pc_controlmode == kgenref_var%pc_controlmode) .OR. ((var%pc_controlmode /= var%pc_controlmode) .AND. (kgenref_var%pc_controlmode /= kgenref_var%pc_controlmode))) THEN
+        IF (var%pc_controlmode /= var%pc_controlmode) WRITE(*, *) "localvar%pc_controlmode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -6143,6 +6293,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_controlmode | IDENTICAL | ", var%pc_controlmode, " | ", kgenref_var%pc_controlmode
     ELSE 
         diff_pc_controlmode = ABS(var%pc_controlmode - kgenref_var%pc_controlmode) 
         IF (diff_pc_controlmode <= kgen_tolerance) THEN 
@@ -6153,6 +6304,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_controlmode | IN_TOL | ", var%pc_controlmode, " | ", kgenref_var%pc_controlmode, " | ", diff_pc_controlmode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -6161,6 +6313,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_controlmode | OUT_TOL | ", var%pc_controlmode, " | ", kgenref_var%pc_controlmode, " | ", diff_pc_controlmode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6182,7 +6335,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_gs_n == kgenref_var%pc_gs_n) THEN 
+    IF ((var%pc_gs_n == kgenref_var%pc_gs_n) .OR. ((var%pc_gs_n /= var%pc_gs_n) .AND. (kgenref_var%pc_gs_n /= kgenref_var%pc_gs_n))) THEN
+        IF (var%pc_gs_n /= var%pc_gs_n) WRITE(*, *) "localvar%pc_gs_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -6190,6 +6344,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_gs_n | IDENTICAL | ", var%pc_gs_n, " | ", kgenref_var%pc_gs_n
     ELSE 
         diff_pc_gs_n = ABS(var%pc_gs_n - kgenref_var%pc_gs_n) 
         IF (diff_pc_gs_n <= kgen_tolerance) THEN 
@@ -6200,6 +6355,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_gs_n | IN_TOL | ", var%pc_gs_n, " | ", kgenref_var%pc_gs_n, " | ", diff_pc_gs_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -6208,6 +6364,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_gs_n | OUT_TOL | ", var%pc_gs_n, " | ", kgenref_var%pc_gs_n, " | ", diff_pc_gs_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6238,6 +6395,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] pc_gs_angles | IDENTICAL | size=", SIZE(var%pc_gs_angles)
         ELSE 
             ALLOCATE (buf1_pc_gs_angles(SIZE(var%pc_gs_angles,dim=1))) 
             ALLOCATE (buf2_pc_gs_angles(SIZE(var%pc_gs_angles,dim=1))) 
@@ -6259,6 +6417,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] pc_gs_angles | OUT_TOL | n_diff=", n_pc_gs_angles, " | rms=", rmsdiff_pc_gs_angles
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -6267,6 +6426,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] pc_gs_angles | IN_TOL | n_diff=", n_pc_gs_angles, " | rms=", rmsdiff_pc_gs_angles
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6308,6 +6468,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] pc_gs_kp | IDENTICAL | size=", SIZE(var%pc_gs_kp)
         ELSE 
             ALLOCATE (buf1_pc_gs_kp(SIZE(var%pc_gs_kp,dim=1))) 
             ALLOCATE (buf2_pc_gs_kp(SIZE(var%pc_gs_kp,dim=1))) 
@@ -6329,6 +6490,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] pc_gs_kp | OUT_TOL | n_diff=", n_pc_gs_kp, " | rms=", rmsdiff_pc_gs_kp
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -6337,6 +6499,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] pc_gs_kp | IN_TOL | n_diff=", n_pc_gs_kp, " | rms=", rmsdiff_pc_gs_kp
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6378,6 +6541,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] pc_gs_ki | IDENTICAL | size=", SIZE(var%pc_gs_ki)
         ELSE 
             ALLOCATE (buf1_pc_gs_ki(SIZE(var%pc_gs_ki,dim=1))) 
             ALLOCATE (buf2_pc_gs_ki(SIZE(var%pc_gs_ki,dim=1))) 
@@ -6399,6 +6563,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] pc_gs_ki | OUT_TOL | n_diff=", n_pc_gs_ki, " | rms=", rmsdiff_pc_gs_ki
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -6407,6 +6572,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] pc_gs_ki | IN_TOL | n_diff=", n_pc_gs_ki, " | rms=", rmsdiff_pc_gs_ki
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6448,6 +6614,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] pc_gs_kd | IDENTICAL | size=", SIZE(var%pc_gs_kd)
         ELSE 
             ALLOCATE (buf1_pc_gs_kd(SIZE(var%pc_gs_kd,dim=1))) 
             ALLOCATE (buf2_pc_gs_kd(SIZE(var%pc_gs_kd,dim=1))) 
@@ -6469,6 +6636,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] pc_gs_kd | OUT_TOL | n_diff=", n_pc_gs_kd, " | rms=", rmsdiff_pc_gs_kd
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -6477,6 +6645,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] pc_gs_kd | IN_TOL | n_diff=", n_pc_gs_kd, " | rms=", rmsdiff_pc_gs_kd
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6518,6 +6687,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] pc_gs_tf | IDENTICAL | size=", SIZE(var%pc_gs_tf)
         ELSE 
             ALLOCATE (buf1_pc_gs_tf(SIZE(var%pc_gs_tf,dim=1))) 
             ALLOCATE (buf2_pc_gs_tf(SIZE(var%pc_gs_tf,dim=1))) 
@@ -6539,6 +6709,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] pc_gs_tf | OUT_TOL | n_diff=", n_pc_gs_tf, " | rms=", rmsdiff_pc_gs_tf
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -6547,6 +6718,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] pc_gs_tf | IN_TOL | n_diff=", n_pc_gs_tf, " | rms=", rmsdiff_pc_gs_tf
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6579,7 +6751,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_maxpit == kgenref_var%pc_maxpit) THEN 
+    IF ((var%pc_maxpit == kgenref_var%pc_maxpit) .OR. ((var%pc_maxpit /= var%pc_maxpit) .AND. (kgenref_var%pc_maxpit /= kgenref_var%pc_maxpit))) THEN
+        IF (var%pc_maxpit /= var%pc_maxpit) WRITE(*, *) "localvar%pc_maxpit is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -6587,6 +6760,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_maxpit | IDENTICAL | ", var%pc_maxpit, " | ", kgenref_var%pc_maxpit
     ELSE 
         diff_pc_maxpit = ABS(var%pc_maxpit - kgenref_var%pc_maxpit) 
         IF (diff_pc_maxpit <= kgen_tolerance) THEN 
@@ -6597,6 +6771,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_maxpit | IN_TOL | ", var%pc_maxpit, " | ", kgenref_var%pc_maxpit, " | ", diff_pc_maxpit
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -6605,6 +6780,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_maxpit | OUT_TOL | ", var%pc_maxpit, " | ", kgenref_var%pc_maxpit, " | ", diff_pc_maxpit
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6626,7 +6802,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_minpit == kgenref_var%pc_minpit) THEN 
+    IF ((var%pc_minpit == kgenref_var%pc_minpit) .OR. ((var%pc_minpit /= var%pc_minpit) .AND. (kgenref_var%pc_minpit /= kgenref_var%pc_minpit))) THEN
+        IF (var%pc_minpit /= var%pc_minpit) WRITE(*, *) "localvar%pc_minpit is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -6634,6 +6811,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_minpit | IDENTICAL | ", var%pc_minpit, " | ", kgenref_var%pc_minpit
     ELSE 
         diff_pc_minpit = ABS(var%pc_minpit - kgenref_var%pc_minpit) 
         IF (diff_pc_minpit <= kgen_tolerance) THEN 
@@ -6644,6 +6822,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_minpit | IN_TOL | ", var%pc_minpit, " | ", kgenref_var%pc_minpit, " | ", diff_pc_minpit
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -6652,6 +6831,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_minpit | OUT_TOL | ", var%pc_minpit, " | ", kgenref_var%pc_minpit, " | ", diff_pc_minpit
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6673,7 +6853,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_maxrat == kgenref_var%pc_maxrat) THEN 
+    IF ((var%pc_maxrat == kgenref_var%pc_maxrat) .OR. ((var%pc_maxrat /= var%pc_maxrat) .AND. (kgenref_var%pc_maxrat /= kgenref_var%pc_maxrat))) THEN
+        IF (var%pc_maxrat /= var%pc_maxrat) WRITE(*, *) "localvar%pc_maxrat is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -6681,6 +6862,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_maxrat | IDENTICAL | ", var%pc_maxrat, " | ", kgenref_var%pc_maxrat
     ELSE 
         diff_pc_maxrat = ABS(var%pc_maxrat - kgenref_var%pc_maxrat) 
         IF (diff_pc_maxrat <= kgen_tolerance) THEN 
@@ -6691,6 +6873,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_maxrat | IN_TOL | ", var%pc_maxrat, " | ", kgenref_var%pc_maxrat, " | ", diff_pc_maxrat
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -6699,6 +6882,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_maxrat | OUT_TOL | ", var%pc_maxrat, " | ", kgenref_var%pc_maxrat, " | ", diff_pc_maxrat
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6720,7 +6904,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_minrat == kgenref_var%pc_minrat) THEN 
+    IF ((var%pc_minrat == kgenref_var%pc_minrat) .OR. ((var%pc_minrat /= var%pc_minrat) .AND. (kgenref_var%pc_minrat /= kgenref_var%pc_minrat))) THEN
+        IF (var%pc_minrat /= var%pc_minrat) WRITE(*, *) "localvar%pc_minrat is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -6728,6 +6913,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_minrat | IDENTICAL | ", var%pc_minrat, " | ", kgenref_var%pc_minrat
     ELSE 
         diff_pc_minrat = ABS(var%pc_minrat - kgenref_var%pc_minrat) 
         IF (diff_pc_minrat <= kgen_tolerance) THEN 
@@ -6738,6 +6924,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_minrat | IN_TOL | ", var%pc_minrat, " | ", kgenref_var%pc_minrat, " | ", diff_pc_minrat
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -6746,6 +6933,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_minrat | OUT_TOL | ", var%pc_minrat, " | ", kgenref_var%pc_minrat, " | ", diff_pc_minrat
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6767,7 +6955,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_refspd == kgenref_var%pc_refspd) THEN 
+    IF ((var%pc_refspd == kgenref_var%pc_refspd) .OR. ((var%pc_refspd /= var%pc_refspd) .AND. (kgenref_var%pc_refspd /= kgenref_var%pc_refspd))) THEN
+        IF (var%pc_refspd /= var%pc_refspd) WRITE(*, *) "localvar%pc_refspd is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -6775,6 +6964,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_refspd | IDENTICAL | ", var%pc_refspd, " | ", kgenref_var%pc_refspd
     ELSE 
         diff_pc_refspd = ABS(var%pc_refspd - kgenref_var%pc_refspd) 
         IF (diff_pc_refspd <= kgen_tolerance) THEN 
@@ -6785,6 +6975,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_refspd | IN_TOL | ", var%pc_refspd, " | ", kgenref_var%pc_refspd, " | ", diff_pc_refspd
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -6793,6 +6984,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_refspd | OUT_TOL | ", var%pc_refspd, " | ", kgenref_var%pc_refspd, " | ", diff_pc_refspd
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6814,7 +7006,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_finepit == kgenref_var%pc_finepit) THEN 
+    IF ((var%pc_finepit == kgenref_var%pc_finepit) .OR. ((var%pc_finepit /= var%pc_finepit) .AND. (kgenref_var%pc_finepit /= kgenref_var%pc_finepit))) THEN
+        IF (var%pc_finepit /= var%pc_finepit) WRITE(*, *) "localvar%pc_finepit is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -6822,6 +7015,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_finepit | IDENTICAL | ", var%pc_finepit, " | ", kgenref_var%pc_finepit
     ELSE 
         diff_pc_finepit = ABS(var%pc_finepit - kgenref_var%pc_finepit) 
         IF (diff_pc_finepit <= kgen_tolerance) THEN 
@@ -6832,6 +7026,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_finepit | IN_TOL | ", var%pc_finepit, " | ", kgenref_var%pc_finepit, " | ", diff_pc_finepit
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -6840,6 +7035,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_finepit | OUT_TOL | ", var%pc_finepit, " | ", kgenref_var%pc_finepit, " | ", diff_pc_finepit
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6861,7 +7057,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_switch == kgenref_var%pc_switch) THEN 
+    IF ((var%pc_switch == kgenref_var%pc_switch) .OR. ((var%pc_switch /= var%pc_switch) .AND. (kgenref_var%pc_switch /= kgenref_var%pc_switch))) THEN
+        IF (var%pc_switch /= var%pc_switch) WRITE(*, *) "localvar%pc_switch is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -6869,6 +7066,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_switch | IDENTICAL | ", var%pc_switch, " | ", kgenref_var%pc_switch
     ELSE 
         diff_pc_switch = ABS(var%pc_switch - kgenref_var%pc_switch) 
         IF (diff_pc_switch <= kgen_tolerance) THEN 
@@ -6879,6 +7077,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_switch | IN_TOL | ", var%pc_switch, " | ", kgenref_var%pc_switch, " | ", diff_pc_switch
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -6887,6 +7086,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_switch | OUT_TOL | ", var%pc_switch, " | ", kgenref_var%pc_switch, " | ", diff_pc_switch
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6908,7 +7108,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_controlmode == kgenref_var%vs_controlmode) THEN 
+    IF ((var%vs_controlmode == kgenref_var%vs_controlmode) .OR. ((var%vs_controlmode /= var%vs_controlmode) .AND. (kgenref_var%vs_controlmode /= kgenref_var%vs_controlmode))) THEN
+        IF (var%vs_controlmode /= var%vs_controlmode) WRITE(*, *) "localvar%vs_controlmode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -6916,6 +7117,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_controlmode | IDENTICAL | ", var%vs_controlmode, " | ", kgenref_var%vs_controlmode
     ELSE 
         diff_vs_controlmode = ABS(var%vs_controlmode - kgenref_var%vs_controlmode) 
         IF (diff_vs_controlmode <= kgen_tolerance) THEN 
@@ -6926,6 +7128,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_controlmode | IN_TOL | ", var%vs_controlmode, " | ", kgenref_var%vs_controlmode, " | ", diff_vs_controlmode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -6934,6 +7137,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_controlmode | OUT_TOL | ", var%vs_controlmode, " | ", kgenref_var%vs_controlmode, " | ", diff_vs_controlmode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -6955,7 +7159,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_constpower == kgenref_var%vs_constpower) THEN 
+    IF ((var%vs_constpower == kgenref_var%vs_constpower) .OR. ((var%vs_constpower /= var%vs_constpower) .AND. (kgenref_var%vs_constpower /= kgenref_var%vs_constpower))) THEN
+        IF (var%vs_constpower /= var%vs_constpower) WRITE(*, *) "localvar%vs_constpower is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -6963,6 +7168,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_constpower | IDENTICAL | ", var%vs_constpower, " | ", kgenref_var%vs_constpower
     ELSE 
         diff_vs_constpower = ABS(var%vs_constpower - kgenref_var%vs_constpower) 
         IF (diff_vs_constpower <= kgen_tolerance) THEN 
@@ -6973,6 +7179,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_constpower | IN_TOL | ", var%vs_constpower, " | ", kgenref_var%vs_constpower, " | ", diff_vs_constpower
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -6981,6 +7188,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_constpower | OUT_TOL | ", var%vs_constpower, " | ", kgenref_var%vs_constpower, " | ", diff_vs_constpower
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7002,7 +7210,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_fbp == kgenref_var%vs_fbp) THEN 
+    IF ((var%vs_fbp == kgenref_var%vs_fbp) .OR. ((var%vs_fbp /= var%vs_fbp) .AND. (kgenref_var%vs_fbp /= kgenref_var%vs_fbp))) THEN
+        IF (var%vs_fbp /= var%vs_fbp) WRITE(*, *) "localvar%vs_fbp is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -7010,6 +7219,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_fbp | IDENTICAL | ", var%vs_fbp, " | ", kgenref_var%vs_fbp
     ELSE 
         diff_vs_fbp = ABS(var%vs_fbp - kgenref_var%vs_fbp) 
         IF (diff_vs_fbp <= kgen_tolerance) THEN 
@@ -7020,6 +7230,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_fbp | IN_TOL | ", var%vs_fbp, " | ", kgenref_var%vs_fbp, " | ", diff_vs_fbp
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -7028,6 +7239,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_fbp | OUT_TOL | ", var%vs_fbp, " | ", kgenref_var%vs_fbp, " | ", diff_vs_fbp
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7049,7 +7261,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_geneff == kgenref_var%vs_geneff) THEN 
+    IF ((var%vs_geneff == kgenref_var%vs_geneff) .OR. ((var%vs_geneff /= var%vs_geneff) .AND. (kgenref_var%vs_geneff /= kgenref_var%vs_geneff))) THEN
+        IF (var%vs_geneff /= var%vs_geneff) WRITE(*, *) "localvar%vs_geneff is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -7057,6 +7270,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_geneff | IDENTICAL | ", var%vs_geneff, " | ", kgenref_var%vs_geneff
     ELSE 
         diff_vs_geneff = ABS(var%vs_geneff - kgenref_var%vs_geneff) 
         IF (diff_vs_geneff <= kgen_tolerance) THEN 
@@ -7067,6 +7281,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_geneff | IN_TOL | ", var%vs_geneff, " | ", kgenref_var%vs_geneff, " | ", diff_vs_geneff
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -7075,6 +7290,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_geneff | OUT_TOL | ", var%vs_geneff, " | ", kgenref_var%vs_geneff, " | ", diff_vs_geneff
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7096,7 +7312,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_arsattq == kgenref_var%vs_arsattq) THEN 
+    IF ((var%vs_arsattq == kgenref_var%vs_arsattq) .OR. ((var%vs_arsattq /= var%vs_arsattq) .AND. (kgenref_var%vs_arsattq /= kgenref_var%vs_arsattq))) THEN
+        IF (var%vs_arsattq /= var%vs_arsattq) WRITE(*, *) "localvar%vs_arsattq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -7104,6 +7321,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_arsattq | IDENTICAL | ", var%vs_arsattq, " | ", kgenref_var%vs_arsattq
     ELSE 
         diff_vs_arsattq = ABS(var%vs_arsattq - kgenref_var%vs_arsattq) 
         IF (diff_vs_arsattq <= kgen_tolerance) THEN 
@@ -7114,6 +7332,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_arsattq | IN_TOL | ", var%vs_arsattq, " | ", kgenref_var%vs_arsattq, " | ", diff_vs_arsattq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -7122,6 +7341,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_arsattq | OUT_TOL | ", var%vs_arsattq, " | ", kgenref_var%vs_arsattq, " | ", diff_vs_arsattq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7143,7 +7363,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_maxrat == kgenref_var%vs_maxrat) THEN 
+    IF ((var%vs_maxrat == kgenref_var%vs_maxrat) .OR. ((var%vs_maxrat /= var%vs_maxrat) .AND. (kgenref_var%vs_maxrat /= kgenref_var%vs_maxrat))) THEN
+        IF (var%vs_maxrat /= var%vs_maxrat) WRITE(*, *) "localvar%vs_maxrat is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -7151,6 +7372,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_maxrat | IDENTICAL | ", var%vs_maxrat, " | ", kgenref_var%vs_maxrat
     ELSE 
         diff_vs_maxrat = ABS(var%vs_maxrat - kgenref_var%vs_maxrat) 
         IF (diff_vs_maxrat <= kgen_tolerance) THEN 
@@ -7161,6 +7383,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_maxrat | IN_TOL | ", var%vs_maxrat, " | ", kgenref_var%vs_maxrat, " | ", diff_vs_maxrat
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -7169,6 +7392,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_maxrat | OUT_TOL | ", var%vs_maxrat, " | ", kgenref_var%vs_maxrat, " | ", diff_vs_maxrat
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7190,7 +7414,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_maxtq == kgenref_var%vs_maxtq) THEN 
+    IF ((var%vs_maxtq == kgenref_var%vs_maxtq) .OR. ((var%vs_maxtq /= var%vs_maxtq) .AND. (kgenref_var%vs_maxtq /= kgenref_var%vs_maxtq))) THEN
+        IF (var%vs_maxtq /= var%vs_maxtq) WRITE(*, *) "localvar%vs_maxtq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -7198,6 +7423,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_maxtq | IDENTICAL | ", var%vs_maxtq, " | ", kgenref_var%vs_maxtq
     ELSE 
         diff_vs_maxtq = ABS(var%vs_maxtq - kgenref_var%vs_maxtq) 
         IF (diff_vs_maxtq <= kgen_tolerance) THEN 
@@ -7208,6 +7434,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_maxtq | IN_TOL | ", var%vs_maxtq, " | ", kgenref_var%vs_maxtq, " | ", diff_vs_maxtq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -7216,6 +7443,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_maxtq | OUT_TOL | ", var%vs_maxtq, " | ", kgenref_var%vs_maxtq, " | ", diff_vs_maxtq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7237,7 +7465,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_mintq == kgenref_var%vs_mintq) THEN 
+    IF ((var%vs_mintq == kgenref_var%vs_mintq) .OR. ((var%vs_mintq /= var%vs_mintq) .AND. (kgenref_var%vs_mintq /= kgenref_var%vs_mintq))) THEN
+        IF (var%vs_mintq /= var%vs_mintq) WRITE(*, *) "localvar%vs_mintq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -7245,6 +7474,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_mintq | IDENTICAL | ", var%vs_mintq, " | ", kgenref_var%vs_mintq
     ELSE 
         diff_vs_mintq = ABS(var%vs_mintq - kgenref_var%vs_mintq) 
         IF (diff_vs_mintq <= kgen_tolerance) THEN 
@@ -7255,6 +7485,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_mintq | IN_TOL | ", var%vs_mintq, " | ", kgenref_var%vs_mintq, " | ", diff_vs_mintq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -7263,6 +7494,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_mintq | OUT_TOL | ", var%vs_mintq, " | ", kgenref_var%vs_mintq, " | ", diff_vs_mintq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7284,7 +7516,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_minomspd == kgenref_var%vs_minomspd) THEN 
+    IF ((var%vs_minomspd == kgenref_var%vs_minomspd) .OR. ((var%vs_minomspd /= var%vs_minomspd) .AND. (kgenref_var%vs_minomspd /= kgenref_var%vs_minomspd))) THEN
+        IF (var%vs_minomspd /= var%vs_minomspd) WRITE(*, *) "localvar%vs_minomspd is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -7292,6 +7525,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_minomspd | IDENTICAL | ", var%vs_minomspd, " | ", kgenref_var%vs_minomspd
     ELSE 
         diff_vs_minomspd = ABS(var%vs_minomspd - kgenref_var%vs_minomspd) 
         IF (diff_vs_minomspd <= kgen_tolerance) THEN 
@@ -7302,6 +7536,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_minomspd | IN_TOL | ", var%vs_minomspd, " | ", kgenref_var%vs_minomspd, " | ", diff_vs_minomspd
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -7310,6 +7545,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_minomspd | OUT_TOL | ", var%vs_minomspd, " | ", kgenref_var%vs_minomspd, " | ", diff_vs_minomspd
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7331,7 +7567,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_rgn2k == kgenref_var%vs_rgn2k) THEN 
+    IF ((var%vs_rgn2k == kgenref_var%vs_rgn2k) .OR. ((var%vs_rgn2k /= var%vs_rgn2k) .AND. (kgenref_var%vs_rgn2k /= kgenref_var%vs_rgn2k))) THEN
+        IF (var%vs_rgn2k /= var%vs_rgn2k) WRITE(*, *) "localvar%vs_rgn2k is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -7339,6 +7576,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_rgn2k | IDENTICAL | ", var%vs_rgn2k, " | ", kgenref_var%vs_rgn2k
     ELSE 
         diff_vs_rgn2k = ABS(var%vs_rgn2k - kgenref_var%vs_rgn2k) 
         IF (diff_vs_rgn2k <= kgen_tolerance) THEN 
@@ -7349,6 +7587,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_rgn2k | IN_TOL | ", var%vs_rgn2k, " | ", kgenref_var%vs_rgn2k, " | ", diff_vs_rgn2k
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -7357,6 +7596,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_rgn2k | OUT_TOL | ", var%vs_rgn2k, " | ", kgenref_var%vs_rgn2k, " | ", diff_vs_rgn2k
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7378,7 +7618,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_rtpwr == kgenref_var%vs_rtpwr) THEN 
+    IF ((var%vs_rtpwr == kgenref_var%vs_rtpwr) .OR. ((var%vs_rtpwr /= var%vs_rtpwr) .AND. (kgenref_var%vs_rtpwr /= kgenref_var%vs_rtpwr))) THEN
+        IF (var%vs_rtpwr /= var%vs_rtpwr) WRITE(*, *) "localvar%vs_rtpwr is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -7386,6 +7627,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_rtpwr | IDENTICAL | ", var%vs_rtpwr, " | ", kgenref_var%vs_rtpwr
     ELSE 
         diff_vs_rtpwr = ABS(var%vs_rtpwr - kgenref_var%vs_rtpwr) 
         IF (diff_vs_rtpwr <= kgen_tolerance) THEN 
@@ -7396,6 +7638,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_rtpwr | IN_TOL | ", var%vs_rtpwr, " | ", kgenref_var%vs_rtpwr, " | ", diff_vs_rtpwr
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -7404,6 +7647,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_rtpwr | OUT_TOL | ", var%vs_rtpwr, " | ", kgenref_var%vs_rtpwr, " | ", diff_vs_rtpwr
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7425,7 +7669,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_rttq == kgenref_var%vs_rttq) THEN 
+    IF ((var%vs_rttq == kgenref_var%vs_rttq) .OR. ((var%vs_rttq /= var%vs_rttq) .AND. (kgenref_var%vs_rttq /= kgenref_var%vs_rttq))) THEN
+        IF (var%vs_rttq /= var%vs_rttq) WRITE(*, *) "localvar%vs_rttq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -7433,6 +7678,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_rttq | IDENTICAL | ", var%vs_rttq, " | ", kgenref_var%vs_rttq
     ELSE 
         diff_vs_rttq = ABS(var%vs_rttq - kgenref_var%vs_rttq) 
         IF (diff_vs_rttq <= kgen_tolerance) THEN 
@@ -7443,6 +7689,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_rttq | IN_TOL | ", var%vs_rttq, " | ", kgenref_var%vs_rttq, " | ", diff_vs_rttq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -7451,6 +7698,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_rttq | OUT_TOL | ", var%vs_rttq, " | ", kgenref_var%vs_rttq, " | ", diff_vs_rttq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7472,7 +7720,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_refspd == kgenref_var%vs_refspd) THEN 
+    IF ((var%vs_refspd == kgenref_var%vs_refspd) .OR. ((var%vs_refspd /= var%vs_refspd) .AND. (kgenref_var%vs_refspd /= kgenref_var%vs_refspd))) THEN
+        IF (var%vs_refspd /= var%vs_refspd) WRITE(*, *) "localvar%vs_refspd is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -7480,6 +7729,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_refspd | IDENTICAL | ", var%vs_refspd, " | ", kgenref_var%vs_refspd
     ELSE 
         diff_vs_refspd = ABS(var%vs_refspd - kgenref_var%vs_refspd) 
         IF (diff_vs_refspd <= kgen_tolerance) THEN 
@@ -7490,6 +7740,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_refspd | IN_TOL | ", var%vs_refspd, " | ", kgenref_var%vs_refspd, " | ", diff_vs_refspd
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -7498,6 +7749,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_refspd | OUT_TOL | ", var%vs_refspd, " | ", kgenref_var%vs_refspd, " | ", diff_vs_refspd
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7519,7 +7771,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_n == kgenref_var%vs_n) THEN 
+    IF ((var%vs_n == kgenref_var%vs_n) .OR. ((var%vs_n /= var%vs_n) .AND. (kgenref_var%vs_n /= kgenref_var%vs_n))) THEN
+        IF (var%vs_n /= var%vs_n) WRITE(*, *) "localvar%vs_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -7527,6 +7780,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_n | IDENTICAL | ", var%vs_n, " | ", kgenref_var%vs_n
     ELSE 
         diff_vs_n = ABS(var%vs_n - kgenref_var%vs_n) 
         IF (diff_vs_n <= kgen_tolerance) THEN 
@@ -7537,6 +7791,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_n | IN_TOL | ", var%vs_n, " | ", kgenref_var%vs_n, " | ", diff_vs_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -7545,6 +7800,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_n | OUT_TOL | ", var%vs_n, " | ", kgenref_var%vs_n, " | ", diff_vs_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7575,6 +7831,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] vs_kp | IDENTICAL | size=", SIZE(var%vs_kp)
         ELSE 
             ALLOCATE (buf1_vs_kp(SIZE(var%vs_kp,dim=1))) 
             ALLOCATE (buf2_vs_kp(SIZE(var%vs_kp,dim=1))) 
@@ -7596,6 +7853,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] vs_kp | OUT_TOL | n_diff=", n_vs_kp, " | rms=", rmsdiff_vs_kp
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -7604,6 +7862,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] vs_kp | IN_TOL | n_diff=", n_vs_kp, " | rms=", rmsdiff_vs_kp
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7643,6 +7902,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] vs_ki | IDENTICAL | size=", SIZE(var%vs_ki)
         ELSE 
             ALLOCATE (buf1_vs_ki(SIZE(var%vs_ki,dim=1))) 
             ALLOCATE (buf2_vs_ki(SIZE(var%vs_ki,dim=1))) 
@@ -7664,6 +7924,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] vs_ki | OUT_TOL | n_diff=", n_vs_ki, " | rms=", rmsdiff_vs_ki
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -7672,6 +7933,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] vs_ki | IN_TOL | n_diff=", n_vs_ki, " | rms=", rmsdiff_vs_ki
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7702,7 +7964,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_tsropt == kgenref_var%vs_tsropt) THEN 
+    IF ((var%vs_tsropt == kgenref_var%vs_tsropt) .OR. ((var%vs_tsropt /= var%vs_tsropt) .AND. (kgenref_var%vs_tsropt /= kgenref_var%vs_tsropt))) THEN
+        IF (var%vs_tsropt /= var%vs_tsropt) WRITE(*, *) "localvar%vs_tsropt is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -7710,6 +7973,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_tsropt | IDENTICAL | ", var%vs_tsropt, " | ", kgenref_var%vs_tsropt
     ELSE 
         diff_vs_tsropt = ABS(var%vs_tsropt - kgenref_var%vs_tsropt) 
         IF (diff_vs_tsropt <= kgen_tolerance) THEN 
@@ -7720,6 +7984,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_tsropt | IN_TOL | ", var%vs_tsropt, " | ", kgenref_var%vs_tsropt, " | ", diff_vs_tsropt
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -7728,6 +7993,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_tsropt | OUT_TOL | ", var%vs_tsropt, " | ", kgenref_var%vs_tsropt, " | ", diff_vs_tsropt
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7749,7 +8015,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_fbp_n == kgenref_var%vs_fbp_n) THEN 
+    IF ((var%vs_fbp_n == kgenref_var%vs_fbp_n) .OR. ((var%vs_fbp_n /= var%vs_fbp_n) .AND. (kgenref_var%vs_fbp_n /= kgenref_var%vs_fbp_n))) THEN
+        IF (var%vs_fbp_n /= var%vs_fbp_n) WRITE(*, *) "localvar%vs_fbp_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -7757,6 +8024,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_fbp_n | IDENTICAL | ", var%vs_fbp_n, " | ", kgenref_var%vs_fbp_n
     ELSE 
         diff_vs_fbp_n = ABS(var%vs_fbp_n - kgenref_var%vs_fbp_n) 
         IF (diff_vs_fbp_n <= kgen_tolerance) THEN 
@@ -7767,6 +8035,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_fbp_n | IN_TOL | ", var%vs_fbp_n, " | ", kgenref_var%vs_fbp_n, " | ", diff_vs_fbp_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -7775,6 +8044,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_fbp_n | OUT_TOL | ", var%vs_fbp_n, " | ", kgenref_var%vs_fbp_n, " | ", diff_vs_fbp_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7805,6 +8075,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] vs_fbp_u | IDENTICAL | size=", SIZE(var%vs_fbp_u)
         ELSE 
             ALLOCATE (buf1_vs_fbp_u(SIZE(var%vs_fbp_u,dim=1))) 
             ALLOCATE (buf2_vs_fbp_u(SIZE(var%vs_fbp_u,dim=1))) 
@@ -7826,6 +8097,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] vs_fbp_u | OUT_TOL | n_diff=", n_vs_fbp_u, " | rms=", rmsdiff_vs_fbp_u
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -7834,6 +8106,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] vs_fbp_u | IN_TOL | n_diff=", n_vs_fbp_u, " | rms=", rmsdiff_vs_fbp_u
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7875,6 +8148,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] vs_fbp_omega | IDENTICAL | size=", SIZE(var%vs_fbp_omega)
         ELSE 
             ALLOCATE (buf1_vs_fbp_omega(SIZE(var%vs_fbp_omega,dim=1))) 
             ALLOCATE (buf2_vs_fbp_omega(SIZE(var%vs_fbp_omega,dim=1))) 
@@ -7896,6 +8170,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] vs_fbp_omega | OUT_TOL | n_diff=", n_vs_fbp_omega, " | rms=", rmsdiff_vs_fbp_omega
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -7904,6 +8179,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] vs_fbp_omega | IN_TOL | n_diff=", n_vs_fbp_omega, " | rms=", rmsdiff_vs_fbp_omega
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -7945,6 +8221,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] vs_fbp_tau | IDENTICAL | size=", SIZE(var%vs_fbp_tau)
         ELSE 
             ALLOCATE (buf1_vs_fbp_tau(SIZE(var%vs_fbp_tau,dim=1))) 
             ALLOCATE (buf2_vs_fbp_tau(SIZE(var%vs_fbp_tau,dim=1))) 
@@ -7966,6 +8243,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] vs_fbp_tau | OUT_TOL | n_diff=", n_vs_fbp_tau, " | rms=", rmsdiff_vs_fbp_tau
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -7974,6 +8252,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] vs_fbp_tau | IN_TOL | n_diff=", n_vs_fbp_tau, " | rms=", rmsdiff_vs_fbp_tau
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8006,7 +8285,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ss_mode == kgenref_var%ss_mode) THEN 
+    IF ((var%ss_mode == kgenref_var%ss_mode) .OR. ((var%ss_mode /= var%ss_mode) .AND. (kgenref_var%ss_mode /= kgenref_var%ss_mode))) THEN
+        IF (var%ss_mode /= var%ss_mode) WRITE(*, *) "localvar%ss_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -8014,6 +8294,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ss_mode | IDENTICAL | ", var%ss_mode, " | ", kgenref_var%ss_mode
     ELSE 
         diff_ss_mode = ABS(var%ss_mode - kgenref_var%ss_mode) 
         IF (diff_ss_mode <= kgen_tolerance) THEN 
@@ -8024,6 +8305,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ss_mode | IN_TOL | ", var%ss_mode, " | ", kgenref_var%ss_mode, " | ", diff_ss_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -8032,6 +8314,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ss_mode | OUT_TOL | ", var%ss_mode, " | ", kgenref_var%ss_mode, " | ", diff_ss_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8053,7 +8336,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ss_vsgain == kgenref_var%ss_vsgain) THEN 
+    IF ((var%ss_vsgain == kgenref_var%ss_vsgain) .OR. ((var%ss_vsgain /= var%ss_vsgain) .AND. (kgenref_var%ss_vsgain /= kgenref_var%ss_vsgain))) THEN
+        IF (var%ss_vsgain /= var%ss_vsgain) WRITE(*, *) "localvar%ss_vsgain is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -8061,6 +8345,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ss_vsgain | IDENTICAL | ", var%ss_vsgain, " | ", kgenref_var%ss_vsgain
     ELSE 
         diff_ss_vsgain = ABS(var%ss_vsgain - kgenref_var%ss_vsgain) 
         IF (diff_ss_vsgain <= kgen_tolerance) THEN 
@@ -8071,6 +8356,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ss_vsgain | IN_TOL | ", var%ss_vsgain, " | ", kgenref_var%ss_vsgain, " | ", diff_ss_vsgain
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -8079,6 +8365,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ss_vsgain | OUT_TOL | ", var%ss_vsgain, " | ", kgenref_var%ss_vsgain, " | ", diff_ss_vsgain
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8100,7 +8387,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ss_pcgain == kgenref_var%ss_pcgain) THEN 
+    IF ((var%ss_pcgain == kgenref_var%ss_pcgain) .OR. ((var%ss_pcgain /= var%ss_pcgain) .AND. (kgenref_var%ss_pcgain /= kgenref_var%ss_pcgain))) THEN
+        IF (var%ss_pcgain /= var%ss_pcgain) WRITE(*, *) "localvar%ss_pcgain is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -8108,6 +8396,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ss_pcgain | IDENTICAL | ", var%ss_pcgain, " | ", kgenref_var%ss_pcgain
     ELSE 
         diff_ss_pcgain = ABS(var%ss_pcgain - kgenref_var%ss_pcgain) 
         IF (diff_ss_pcgain <= kgen_tolerance) THEN 
@@ -8118,6 +8407,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ss_pcgain | IN_TOL | ", var%ss_pcgain, " | ", kgenref_var%ss_pcgain, " | ", diff_ss_pcgain
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -8126,6 +8416,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ss_pcgain | OUT_TOL | ", var%ss_pcgain, " | ", kgenref_var%ss_pcgain, " | ", diff_ss_pcgain
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8147,7 +8438,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%prc_mode == kgenref_var%prc_mode) THEN 
+    IF ((var%prc_mode == kgenref_var%prc_mode) .OR. ((var%prc_mode /= var%prc_mode) .AND. (kgenref_var%prc_mode /= kgenref_var%prc_mode))) THEN
+        IF (var%prc_mode /= var%prc_mode) WRITE(*, *) "localvar%prc_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -8155,6 +8447,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] prc_mode | IDENTICAL | ", var%prc_mode, " | ", kgenref_var%prc_mode
     ELSE 
         diff_prc_mode = ABS(var%prc_mode - kgenref_var%prc_mode) 
         IF (diff_prc_mode <= kgen_tolerance) THEN 
@@ -8165,6 +8458,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_mode | IN_TOL | ", var%prc_mode, " | ", kgenref_var%prc_mode, " | ", diff_prc_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -8173,6 +8467,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_mode | OUT_TOL | ", var%prc_mode, " | ", kgenref_var%prc_mode, " | ", diff_prc_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8194,7 +8489,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%prc_comm == kgenref_var%prc_comm) THEN 
+    IF ((var%prc_comm == kgenref_var%prc_comm) .OR. ((var%prc_comm /= var%prc_comm) .AND. (kgenref_var%prc_comm /= kgenref_var%prc_comm))) THEN
+        IF (var%prc_comm /= var%prc_comm) WRITE(*, *) "localvar%prc_comm is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -8202,6 +8498,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] prc_comm | IDENTICAL | ", var%prc_comm, " | ", kgenref_var%prc_comm
     ELSE 
         diff_prc_comm = ABS(var%prc_comm - kgenref_var%prc_comm) 
         IF (diff_prc_comm <= kgen_tolerance) THEN 
@@ -8212,6 +8509,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_comm | IN_TOL | ", var%prc_comm, " | ", kgenref_var%prc_comm, " | ", diff_prc_comm
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -8220,6 +8518,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_comm | OUT_TOL | ", var%prc_comm, " | ", kgenref_var%prc_comm, " | ", diff_prc_comm
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8250,6 +8549,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] prc_windspeeds | IDENTICAL | size=", SIZE(var%prc_windspeeds)
         ELSE 
             ALLOCATE (buf1_prc_windspeeds(SIZE(var%prc_windspeeds,dim=1))) 
             ALLOCATE (buf2_prc_windspeeds(SIZE(var%prc_windspeeds,dim=1))) 
@@ -8271,6 +8571,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] prc_windspeeds | OUT_TOL | n_diff=", n_prc_windspeeds, " | rms=", rmsdiff_prc_windspeeds
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -8279,6 +8580,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] prc_windspeeds | IN_TOL | n_diff=", n_prc_windspeeds, " | rms=", rmsdiff_prc_windspeeds
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8320,6 +8622,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] prc_genspeeds | IDENTICAL | size=", SIZE(var%prc_genspeeds)
         ELSE 
             ALLOCATE (buf1_prc_genspeeds(SIZE(var%prc_genspeeds,dim=1))) 
             ALLOCATE (buf2_prc_genspeeds(SIZE(var%prc_genspeeds,dim=1))) 
@@ -8341,6 +8644,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] prc_genspeeds | OUT_TOL | n_diff=", n_prc_genspeeds, " | rms=", rmsdiff_prc_genspeeds
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -8349,6 +8653,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] prc_genspeeds | IN_TOL | n_diff=", n_prc_genspeeds, " | rms=", rmsdiff_prc_genspeeds
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8381,7 +8686,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%prc_n == kgenref_var%prc_n) THEN 
+    IF ((var%prc_n == kgenref_var%prc_n) .OR. ((var%prc_n /= var%prc_n) .AND. (kgenref_var%prc_n /= kgenref_var%prc_n))) THEN
+        IF (var%prc_n /= var%prc_n) WRITE(*, *) "localvar%prc_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -8389,6 +8695,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] prc_n | IDENTICAL | ", var%prc_n, " | ", kgenref_var%prc_n
     ELSE 
         diff_prc_n = ABS(var%prc_n - kgenref_var%prc_n) 
         IF (diff_prc_n <= kgen_tolerance) THEN 
@@ -8399,6 +8706,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_n | IN_TOL | ", var%prc_n, " | ", kgenref_var%prc_n, " | ", diff_prc_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -8407,6 +8715,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_n | OUT_TOL | ", var%prc_n, " | ", kgenref_var%prc_n, " | ", diff_prc_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8428,7 +8737,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%prc_lpf_freq == kgenref_var%prc_lpf_freq) THEN 
+    IF ((var%prc_lpf_freq == kgenref_var%prc_lpf_freq) .OR. ((var%prc_lpf_freq /= var%prc_lpf_freq) .AND. (kgenref_var%prc_lpf_freq /= kgenref_var%prc_lpf_freq))) THEN
+        IF (var%prc_lpf_freq /= var%prc_lpf_freq) WRITE(*, *) "localvar%prc_lpf_freq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -8436,6 +8746,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] prc_lpf_freq | IDENTICAL | ", var%prc_lpf_freq, " | ", kgenref_var%prc_lpf_freq
     ELSE 
         diff_prc_lpf_freq = ABS(var%prc_lpf_freq - kgenref_var%prc_lpf_freq) 
         IF (diff_prc_lpf_freq <= kgen_tolerance) THEN 
@@ -8446,6 +8757,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_lpf_freq | IN_TOL | ", var%prc_lpf_freq, " | ", kgenref_var%prc_lpf_freq, " | ", diff_prc_lpf_freq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -8454,6 +8766,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_lpf_freq | OUT_TOL | ", var%prc_lpf_freq, " | ", kgenref_var%prc_lpf_freq, " | ", diff_prc_lpf_freq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8475,7 +8788,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%prc_r_torque == kgenref_var%prc_r_torque) THEN 
+    IF ((var%prc_r_torque == kgenref_var%prc_r_torque) .OR. ((var%prc_r_torque /= var%prc_r_torque) .AND. (kgenref_var%prc_r_torque /= kgenref_var%prc_r_torque))) THEN
+        IF (var%prc_r_torque /= var%prc_r_torque) WRITE(*, *) "localvar%prc_r_torque is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -8483,6 +8797,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] prc_r_torque | IDENTICAL | ", var%prc_r_torque, " | ", kgenref_var%prc_r_torque
     ELSE 
         diff_prc_r_torque = ABS(var%prc_r_torque - kgenref_var%prc_r_torque) 
         IF (diff_prc_r_torque <= kgen_tolerance) THEN 
@@ -8493,6 +8808,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_r_torque | IN_TOL | ", var%prc_r_torque, " | ", kgenref_var%prc_r_torque, " | ", diff_prc_r_torque
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -8501,6 +8817,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_r_torque | OUT_TOL | ", var%prc_r_torque, " | ", kgenref_var%prc_r_torque, " | ", diff_prc_r_torque
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8522,7 +8839,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%prc_r_speed == kgenref_var%prc_r_speed) THEN 
+    IF ((var%prc_r_speed == kgenref_var%prc_r_speed) .OR. ((var%prc_r_speed /= var%prc_r_speed) .AND. (kgenref_var%prc_r_speed /= kgenref_var%prc_r_speed))) THEN
+        IF (var%prc_r_speed /= var%prc_r_speed) WRITE(*, *) "localvar%prc_r_speed is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -8530,6 +8848,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] prc_r_speed | IDENTICAL | ", var%prc_r_speed, " | ", kgenref_var%prc_r_speed
     ELSE 
         diff_prc_r_speed = ABS(var%prc_r_speed - kgenref_var%prc_r_speed) 
         IF (diff_prc_r_speed <= kgen_tolerance) THEN 
@@ -8540,6 +8859,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_r_speed | IN_TOL | ", var%prc_r_speed, " | ", kgenref_var%prc_r_speed, " | ", diff_prc_r_speed
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -8548,6 +8868,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_r_speed | OUT_TOL | ", var%prc_r_speed, " | ", kgenref_var%prc_r_speed, " | ", diff_prc_r_speed
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8569,7 +8890,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%prc_r_pitch == kgenref_var%prc_r_pitch) THEN 
+    IF ((var%prc_r_pitch == kgenref_var%prc_r_pitch) .OR. ((var%prc_r_pitch /= var%prc_r_pitch) .AND. (kgenref_var%prc_r_pitch /= kgenref_var%prc_r_pitch))) THEN
+        IF (var%prc_r_pitch /= var%prc_r_pitch) WRITE(*, *) "localvar%prc_r_pitch is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -8577,6 +8899,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] prc_r_pitch | IDENTICAL | ", var%prc_r_pitch, " | ", kgenref_var%prc_r_pitch
     ELSE 
         diff_prc_r_pitch = ABS(var%prc_r_pitch - kgenref_var%prc_r_pitch) 
         IF (diff_prc_r_pitch <= kgen_tolerance) THEN 
@@ -8587,6 +8910,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_r_pitch | IN_TOL | ", var%prc_r_pitch, " | ", kgenref_var%prc_r_pitch, " | ", diff_prc_r_pitch
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -8595,6 +8919,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_r_pitch | OUT_TOL | ", var%prc_r_pitch, " | ", kgenref_var%prc_r_pitch, " | ", diff_prc_r_pitch
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8616,7 +8941,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%prc_table_n == kgenref_var%prc_table_n) THEN 
+    IF ((var%prc_table_n == kgenref_var%prc_table_n) .OR. ((var%prc_table_n /= var%prc_table_n) .AND. (kgenref_var%prc_table_n /= kgenref_var%prc_table_n))) THEN
+        IF (var%prc_table_n /= var%prc_table_n) WRITE(*, *) "localvar%prc_table_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -8624,6 +8950,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] prc_table_n | IDENTICAL | ", var%prc_table_n, " | ", kgenref_var%prc_table_n
     ELSE 
         diff_prc_table_n = ABS(var%prc_table_n - kgenref_var%prc_table_n) 
         IF (diff_prc_table_n <= kgen_tolerance) THEN 
@@ -8634,6 +8961,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_table_n | IN_TOL | ", var%prc_table_n, " | ", kgenref_var%prc_table_n, " | ", diff_prc_table_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -8642,6 +8970,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_table_n | OUT_TOL | ", var%prc_table_n, " | ", kgenref_var%prc_table_n, " | ", diff_prc_table_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8672,6 +9001,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] prc_pitch_table | IDENTICAL | size=", SIZE(var%prc_pitch_table)
         ELSE 
             ALLOCATE (buf1_prc_pitch_table(SIZE(var%prc_pitch_table,dim=1))) 
             ALLOCATE (buf2_prc_pitch_table(SIZE(var%prc_pitch_table,dim=1))) 
@@ -8693,6 +9023,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] prc_pitch_table | OUT_TOL | n_diff=", n_prc_pitch_table, " | rms=", rmsdiff_prc_pitch_table
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -8701,6 +9032,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] prc_pitch_table | IN_TOL | n_diff=", n_prc_pitch_table, " | rms=", rmsdiff_prc_pitch_table
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8742,6 +9074,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] prc_r_table | IDENTICAL | size=", SIZE(var%prc_r_table)
         ELSE 
             ALLOCATE (buf1_prc_r_table(SIZE(var%prc_r_table,dim=1))) 
             ALLOCATE (buf2_prc_r_table(SIZE(var%prc_r_table,dim=1))) 
@@ -8763,6 +9096,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] prc_r_table | OUT_TOL | n_diff=", n_prc_r_table, " | rms=", rmsdiff_prc_r_table
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -8771,6 +9105,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] prc_r_table | IN_TOL | n_diff=", n_prc_r_table, " | rms=", rmsdiff_prc_r_table
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8803,7 +9138,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%we_mode == kgenref_var%we_mode) THEN 
+    IF ((var%we_mode == kgenref_var%we_mode) .OR. ((var%we_mode /= var%we_mode) .AND. (kgenref_var%we_mode /= kgenref_var%we_mode))) THEN
+        IF (var%we_mode /= var%we_mode) WRITE(*, *) "localvar%we_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -8811,6 +9147,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] we_mode | IDENTICAL | ", var%we_mode, " | ", kgenref_var%we_mode
     ELSE 
         diff_we_mode = ABS(var%we_mode - kgenref_var%we_mode) 
         IF (diff_we_mode <= kgen_tolerance) THEN 
@@ -8821,6 +9158,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_mode | IN_TOL | ", var%we_mode, " | ", kgenref_var%we_mode, " | ", diff_we_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -8829,6 +9167,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_mode | OUT_TOL | ", var%we_mode, " | ", kgenref_var%we_mode, " | ", diff_we_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8850,7 +9189,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%we_bladeradius == kgenref_var%we_bladeradius) THEN 
+    IF ((var%we_bladeradius == kgenref_var%we_bladeradius) .OR. ((var%we_bladeradius /= var%we_bladeradius) .AND. (kgenref_var%we_bladeradius /= kgenref_var%we_bladeradius))) THEN
+        IF (var%we_bladeradius /= var%we_bladeradius) WRITE(*, *) "localvar%we_bladeradius is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -8858,6 +9198,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] we_bladeradius | IDENTICAL | ", var%we_bladeradius, " | ", kgenref_var%we_bladeradius
     ELSE 
         diff_we_bladeradius = ABS(var%we_bladeradius - kgenref_var%we_bladeradius) 
         IF (diff_we_bladeradius <= kgen_tolerance) THEN 
@@ -8868,6 +9209,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_bladeradius | IN_TOL | ", var%we_bladeradius, " | ", kgenref_var%we_bladeradius, " | ", diff_we_bladeradius
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -8876,6 +9218,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_bladeradius | OUT_TOL | ", var%we_bladeradius, " | ", kgenref_var%we_bladeradius, " | ", diff_we_bladeradius
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8897,7 +9240,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%we_cp_n == kgenref_var%we_cp_n) THEN 
+    IF ((var%we_cp_n == kgenref_var%we_cp_n) .OR. ((var%we_cp_n /= var%we_cp_n) .AND. (kgenref_var%we_cp_n /= kgenref_var%we_cp_n))) THEN
+        IF (var%we_cp_n /= var%we_cp_n) WRITE(*, *) "localvar%we_cp_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -8905,6 +9249,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] we_cp_n | IDENTICAL | ", var%we_cp_n, " | ", kgenref_var%we_cp_n
     ELSE 
         diff_we_cp_n = ABS(var%we_cp_n - kgenref_var%we_cp_n) 
         IF (diff_we_cp_n <= kgen_tolerance) THEN 
@@ -8915,6 +9260,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_cp_n | IN_TOL | ", var%we_cp_n, " | ", kgenref_var%we_cp_n, " | ", diff_we_cp_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -8923,6 +9269,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_cp_n | OUT_TOL | ", var%we_cp_n, " | ", kgenref_var%we_cp_n, " | ", diff_we_cp_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -8953,6 +9300,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] we_cp | IDENTICAL | size=", SIZE(var%we_cp)
         ELSE 
             ALLOCATE (buf1_we_cp(SIZE(var%we_cp,dim=1))) 
             ALLOCATE (buf2_we_cp(SIZE(var%we_cp,dim=1))) 
@@ -8974,6 +9322,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] we_cp | OUT_TOL | n_diff=", n_we_cp, " | rms=", rmsdiff_we_cp
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -8982,6 +9331,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] we_cp | IN_TOL | n_diff=", n_we_cp, " | rms=", rmsdiff_we_cp
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9012,7 +9362,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%we_gamma == kgenref_var%we_gamma) THEN 
+    IF ((var%we_gamma == kgenref_var%we_gamma) .OR. ((var%we_gamma /= var%we_gamma) .AND. (kgenref_var%we_gamma /= kgenref_var%we_gamma))) THEN
+        IF (var%we_gamma /= var%we_gamma) WRITE(*, *) "localvar%we_gamma is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9020,6 +9371,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] we_gamma | IDENTICAL | ", var%we_gamma, " | ", kgenref_var%we_gamma
     ELSE 
         diff_we_gamma = ABS(var%we_gamma - kgenref_var%we_gamma) 
         IF (diff_we_gamma <= kgen_tolerance) THEN 
@@ -9030,6 +9382,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_gamma | IN_TOL | ", var%we_gamma, " | ", kgenref_var%we_gamma, " | ", diff_we_gamma
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -9038,6 +9391,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_gamma | OUT_TOL | ", var%we_gamma, " | ", kgenref_var%we_gamma, " | ", diff_we_gamma
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9059,7 +9413,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%we_gearboxratio == kgenref_var%we_gearboxratio) THEN 
+    IF ((var%we_gearboxratio == kgenref_var%we_gearboxratio) .OR. ((var%we_gearboxratio /= var%we_gearboxratio) .AND. (kgenref_var%we_gearboxratio /= kgenref_var%we_gearboxratio))) THEN
+        IF (var%we_gearboxratio /= var%we_gearboxratio) WRITE(*, *) "localvar%we_gearboxratio is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9067,6 +9422,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] we_gearboxratio | IDENTICAL | ", var%we_gearboxratio, " | ", kgenref_var%we_gearboxratio
     ELSE 
         diff_we_gearboxratio = ABS(var%we_gearboxratio - kgenref_var%we_gearboxratio) 
         IF (diff_we_gearboxratio <= kgen_tolerance) THEN 
@@ -9077,6 +9433,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_gearboxratio | IN_TOL | ", var%we_gearboxratio, " | ", kgenref_var%we_gearboxratio, " | ", diff_we_gearboxratio
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -9085,6 +9442,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_gearboxratio | OUT_TOL | ", var%we_gearboxratio, " | ", kgenref_var%we_gearboxratio, " | ", diff_we_gearboxratio
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9106,7 +9464,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%we_jtot == kgenref_var%we_jtot) THEN 
+    IF ((var%we_jtot == kgenref_var%we_jtot) .OR. ((var%we_jtot /= var%we_jtot) .AND. (kgenref_var%we_jtot /= kgenref_var%we_jtot))) THEN
+        IF (var%we_jtot /= var%we_jtot) WRITE(*, *) "localvar%we_jtot is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9114,6 +9473,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] we_jtot | IDENTICAL | ", var%we_jtot, " | ", kgenref_var%we_jtot
     ELSE 
         diff_we_jtot = ABS(var%we_jtot - kgenref_var%we_jtot) 
         IF (diff_we_jtot <= kgen_tolerance) THEN 
@@ -9124,6 +9484,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_jtot | IN_TOL | ", var%we_jtot, " | ", kgenref_var%we_jtot, " | ", diff_we_jtot
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -9132,6 +9493,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_jtot | OUT_TOL | ", var%we_jtot, " | ", kgenref_var%we_jtot, " | ", diff_we_jtot
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9153,7 +9515,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%we_rhoair == kgenref_var%we_rhoair) THEN 
+    IF ((var%we_rhoair == kgenref_var%we_rhoair) .OR. ((var%we_rhoair /= var%we_rhoair) .AND. (kgenref_var%we_rhoair /= kgenref_var%we_rhoair))) THEN
+        IF (var%we_rhoair /= var%we_rhoair) WRITE(*, *) "localvar%we_rhoair is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9161,6 +9524,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] we_rhoair | IDENTICAL | ", var%we_rhoair, " | ", kgenref_var%we_rhoair
     ELSE 
         diff_we_rhoair = ABS(var%we_rhoair - kgenref_var%we_rhoair) 
         IF (diff_we_rhoair <= kgen_tolerance) THEN 
@@ -9171,6 +9535,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_rhoair | IN_TOL | ", var%we_rhoair, " | ", kgenref_var%we_rhoair, " | ", diff_we_rhoair
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -9179,6 +9544,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_rhoair | OUT_TOL | ", var%we_rhoair, " | ", kgenref_var%we_rhoair, " | ", diff_we_rhoair
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9200,7 +9566,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%perffilename == kgenref_var%perffilename) THEN 
+    IF ((var%perffilename == kgenref_var%perffilename) .OR. ((var%perffilename /= var%perffilename) .AND. (kgenref_var%perffilename /= kgenref_var%perffilename))) THEN
+        IF (var%perffilename /= var%perffilename) WRITE(*, *) "localvar%perffilename is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9208,6 +9575,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] perffilename | IDENTICAL | ", var%perffilename, " | ", kgenref_var%perffilename
     ELSE 
         dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -9216,6 +9584,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_OUT_TOL 
+        WRITE(*, *) "[VIT_FIELD] perffilename | OUT_TOL | ", var%perffilename, " | ", kgenref_var%perffilename
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
         CONTINUE 
@@ -9245,6 +9614,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] perftablesize | IDENTICAL | size=", SIZE(var%perftablesize)
         ELSE 
             ALLOCATE (buf1_perftablesize(SIZE(var%perftablesize,dim=1))) 
             ALLOCATE (buf2_perftablesize(SIZE(var%perftablesize,dim=1))) 
@@ -9266,6 +9636,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] perftablesize | OUT_TOL | n_diff=", n_perftablesize, " | rms=", rmsdiff_perftablesize
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -9274,6 +9645,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] perftablesize | IN_TOL | n_diff=", n_perftablesize, " | rms=", rmsdiff_perftablesize
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9306,7 +9678,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%we_fopoles_n == kgenref_var%we_fopoles_n) THEN 
+    IF ((var%we_fopoles_n == kgenref_var%we_fopoles_n) .OR. ((var%we_fopoles_n /= var%we_fopoles_n) .AND. (kgenref_var%we_fopoles_n /= kgenref_var%we_fopoles_n))) THEN
+        IF (var%we_fopoles_n /= var%we_fopoles_n) WRITE(*, *) "localvar%we_fopoles_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9314,6 +9687,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] we_fopoles_n | IDENTICAL | ", var%we_fopoles_n, " | ", kgenref_var%we_fopoles_n
     ELSE 
         diff_we_fopoles_n = ABS(var%we_fopoles_n - kgenref_var%we_fopoles_n) 
         IF (diff_we_fopoles_n <= kgen_tolerance) THEN 
@@ -9324,6 +9698,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_fopoles_n | IN_TOL | ", var%we_fopoles_n, " | ", kgenref_var%we_fopoles_n, " | ", diff_we_fopoles_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -9332,6 +9707,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_fopoles_n | OUT_TOL | ", var%we_fopoles_n, " | ", kgenref_var%we_fopoles_n, " | ", diff_we_fopoles_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9362,6 +9738,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] we_fopoles_v | IDENTICAL | size=", SIZE(var%we_fopoles_v)
         ELSE 
             ALLOCATE (buf1_we_fopoles_v(SIZE(var%we_fopoles_v,dim=1))) 
             ALLOCATE (buf2_we_fopoles_v(SIZE(var%we_fopoles_v,dim=1))) 
@@ -9383,6 +9760,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] we_fopoles_v | OUT_TOL | n_diff=", n_we_fopoles_v, " | rms=", rmsdiff_we_fopoles_v
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -9391,6 +9769,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] we_fopoles_v | IN_TOL | n_diff=", n_we_fopoles_v, " | rms=", rmsdiff_we_fopoles_v
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9432,6 +9811,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] we_fopoles | IDENTICAL | size=", SIZE(var%we_fopoles)
         ELSE 
             ALLOCATE (buf1_we_fopoles(SIZE(var%we_fopoles,dim=1))) 
             ALLOCATE (buf2_we_fopoles(SIZE(var%we_fopoles,dim=1))) 
@@ -9453,6 +9833,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] we_fopoles | OUT_TOL | n_diff=", n_we_fopoles, " | rms=", rmsdiff_we_fopoles
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -9461,6 +9842,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] we_fopoles | IN_TOL | n_diff=", n_we_fopoles, " | rms=", rmsdiff_we_fopoles
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9493,7 +9875,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%y_controlmode == kgenref_var%y_controlmode) THEN 
+    IF ((var%y_controlmode == kgenref_var%y_controlmode) .OR. ((var%y_controlmode /= var%y_controlmode) .AND. (kgenref_var%y_controlmode /= kgenref_var%y_controlmode))) THEN
+        IF (var%y_controlmode /= var%y_controlmode) WRITE(*, *) "localvar%y_controlmode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9501,6 +9884,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] y_controlmode | IDENTICAL | ", var%y_controlmode, " | ", kgenref_var%y_controlmode
     ELSE 
         diff_y_controlmode = ABS(var%y_controlmode - kgenref_var%y_controlmode) 
         IF (diff_y_controlmode <= kgen_tolerance) THEN 
@@ -9511,6 +9895,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] y_controlmode | IN_TOL | ", var%y_controlmode, " | ", kgenref_var%y_controlmode, " | ", diff_y_controlmode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -9519,6 +9904,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] y_controlmode | OUT_TOL | ", var%y_controlmode, " | ", kgenref_var%y_controlmode, " | ", diff_y_controlmode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9540,7 +9926,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%y_uswitch == kgenref_var%y_uswitch) THEN 
+    IF ((var%y_uswitch == kgenref_var%y_uswitch) .OR. ((var%y_uswitch /= var%y_uswitch) .AND. (kgenref_var%y_uswitch /= kgenref_var%y_uswitch))) THEN
+        IF (var%y_uswitch /= var%y_uswitch) WRITE(*, *) "localvar%y_uswitch is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9548,6 +9935,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] y_uswitch | IDENTICAL | ", var%y_uswitch, " | ", kgenref_var%y_uswitch
     ELSE 
         diff_y_uswitch = ABS(var%y_uswitch - kgenref_var%y_uswitch) 
         IF (diff_y_uswitch <= kgen_tolerance) THEN 
@@ -9558,6 +9946,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] y_uswitch | IN_TOL | ", var%y_uswitch, " | ", kgenref_var%y_uswitch, " | ", diff_y_uswitch
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -9566,6 +9955,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] y_uswitch | OUT_TOL | ", var%y_uswitch, " | ", kgenref_var%y_uswitch, " | ", diff_y_uswitch
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9596,6 +9986,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] y_errthresh | IDENTICAL | size=", SIZE(var%y_errthresh)
         ELSE 
             ALLOCATE (buf1_y_errthresh(SIZE(var%y_errthresh,dim=1))) 
             ALLOCATE (buf2_y_errthresh(SIZE(var%y_errthresh,dim=1))) 
@@ -9617,6 +10008,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] y_errthresh | OUT_TOL | n_diff=", n_y_errthresh, " | rms=", rmsdiff_y_errthresh
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -9625,6 +10017,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] y_errthresh | IN_TOL | n_diff=", n_y_errthresh, " | rms=", rmsdiff_y_errthresh
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9657,7 +10050,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%y_rate == kgenref_var%y_rate) THEN 
+    IF ((var%y_rate == kgenref_var%y_rate) .OR. ((var%y_rate /= var%y_rate) .AND. (kgenref_var%y_rate /= kgenref_var%y_rate))) THEN
+        IF (var%y_rate /= var%y_rate) WRITE(*, *) "localvar%y_rate is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9665,6 +10059,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] y_rate | IDENTICAL | ", var%y_rate, " | ", kgenref_var%y_rate
     ELSE 
         diff_y_rate = ABS(var%y_rate - kgenref_var%y_rate) 
         IF (diff_y_rate <= kgen_tolerance) THEN 
@@ -9675,6 +10070,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] y_rate | IN_TOL | ", var%y_rate, " | ", kgenref_var%y_rate, " | ", diff_y_rate
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -9683,6 +10079,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] y_rate | OUT_TOL | ", var%y_rate, " | ", kgenref_var%y_rate, " | ", diff_y_rate
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9704,7 +10101,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%y_merrset == kgenref_var%y_merrset) THEN 
+    IF ((var%y_merrset == kgenref_var%y_merrset) .OR. ((var%y_merrset /= var%y_merrset) .AND. (kgenref_var%y_merrset /= kgenref_var%y_merrset))) THEN
+        IF (var%y_merrset /= var%y_merrset) WRITE(*, *) "localvar%y_merrset is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9712,6 +10110,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] y_merrset | IDENTICAL | ", var%y_merrset, " | ", kgenref_var%y_merrset
     ELSE 
         diff_y_merrset = ABS(var%y_merrset - kgenref_var%y_merrset) 
         IF (diff_y_merrset <= kgen_tolerance) THEN 
@@ -9722,6 +10121,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] y_merrset | IN_TOL | ", var%y_merrset, " | ", kgenref_var%y_merrset, " | ", diff_y_merrset
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -9730,6 +10130,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] y_merrset | OUT_TOL | ", var%y_merrset, " | ", kgenref_var%y_merrset, " | ", diff_y_merrset
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9751,7 +10152,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%y_ipc_intsat == kgenref_var%y_ipc_intsat) THEN 
+    IF ((var%y_ipc_intsat == kgenref_var%y_ipc_intsat) .OR. ((var%y_ipc_intsat /= var%y_ipc_intsat) .AND. (kgenref_var%y_ipc_intsat /= kgenref_var%y_ipc_intsat))) THEN
+        IF (var%y_ipc_intsat /= var%y_ipc_intsat) WRITE(*, *) "localvar%y_ipc_intsat is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9759,6 +10161,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] y_ipc_intsat | IDENTICAL | ", var%y_ipc_intsat, " | ", kgenref_var%y_ipc_intsat
     ELSE 
         diff_y_ipc_intsat = ABS(var%y_ipc_intsat - kgenref_var%y_ipc_intsat) 
         IF (diff_y_ipc_intsat <= kgen_tolerance) THEN 
@@ -9769,6 +10172,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] y_ipc_intsat | IN_TOL | ", var%y_ipc_intsat, " | ", kgenref_var%y_ipc_intsat, " | ", diff_y_ipc_intsat
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -9777,6 +10181,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] y_ipc_intsat | OUT_TOL | ", var%y_ipc_intsat, " | ", kgenref_var%y_ipc_intsat, " | ", diff_y_ipc_intsat
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9798,7 +10203,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%y_ipc_kp == kgenref_var%y_ipc_kp) THEN 
+    IF ((var%y_ipc_kp == kgenref_var%y_ipc_kp) .OR. ((var%y_ipc_kp /= var%y_ipc_kp) .AND. (kgenref_var%y_ipc_kp /= kgenref_var%y_ipc_kp))) THEN
+        IF (var%y_ipc_kp /= var%y_ipc_kp) WRITE(*, *) "localvar%y_ipc_kp is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9806,6 +10212,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] y_ipc_kp | IDENTICAL | ", var%y_ipc_kp, " | ", kgenref_var%y_ipc_kp
     ELSE 
         diff_y_ipc_kp = ABS(var%y_ipc_kp - kgenref_var%y_ipc_kp) 
         IF (diff_y_ipc_kp <= kgen_tolerance) THEN 
@@ -9816,6 +10223,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] y_ipc_kp | IN_TOL | ", var%y_ipc_kp, " | ", kgenref_var%y_ipc_kp, " | ", diff_y_ipc_kp
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -9824,6 +10232,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] y_ipc_kp | OUT_TOL | ", var%y_ipc_kp, " | ", kgenref_var%y_ipc_kp, " | ", diff_y_ipc_kp
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9845,7 +10254,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%y_ipc_ki == kgenref_var%y_ipc_ki) THEN 
+    IF ((var%y_ipc_ki == kgenref_var%y_ipc_ki) .OR. ((var%y_ipc_ki /= var%y_ipc_ki) .AND. (kgenref_var%y_ipc_ki /= kgenref_var%y_ipc_ki))) THEN
+        IF (var%y_ipc_ki /= var%y_ipc_ki) WRITE(*, *) "localvar%y_ipc_ki is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9853,6 +10263,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] y_ipc_ki | IDENTICAL | ", var%y_ipc_ki, " | ", kgenref_var%y_ipc_ki
     ELSE 
         diff_y_ipc_ki = ABS(var%y_ipc_ki - kgenref_var%y_ipc_ki) 
         IF (diff_y_ipc_ki <= kgen_tolerance) THEN 
@@ -9863,6 +10274,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] y_ipc_ki | IN_TOL | ", var%y_ipc_ki, " | ", kgenref_var%y_ipc_ki, " | ", diff_y_ipc_ki
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -9871,6 +10283,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] y_ipc_ki | OUT_TOL | ", var%y_ipc_ki, " | ", kgenref_var%y_ipc_ki, " | ", diff_y_ipc_ki
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9892,7 +10305,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ps_mode == kgenref_var%ps_mode) THEN 
+    IF ((var%ps_mode == kgenref_var%ps_mode) .OR. ((var%ps_mode /= var%ps_mode) .AND. (kgenref_var%ps_mode /= kgenref_var%ps_mode))) THEN
+        IF (var%ps_mode /= var%ps_mode) WRITE(*, *) "localvar%ps_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9900,6 +10314,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ps_mode | IDENTICAL | ", var%ps_mode, " | ", kgenref_var%ps_mode
     ELSE 
         diff_ps_mode = ABS(var%ps_mode - kgenref_var%ps_mode) 
         IF (diff_ps_mode <= kgen_tolerance) THEN 
@@ -9910,6 +10325,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ps_mode | IN_TOL | ", var%ps_mode, " | ", kgenref_var%ps_mode, " | ", diff_ps_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -9918,6 +10334,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ps_mode | OUT_TOL | ", var%ps_mode, " | ", kgenref_var%ps_mode, " | ", diff_ps_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9939,7 +10356,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ps_bldpitchmin_n == kgenref_var%ps_bldpitchmin_n) THEN 
+    IF ((var%ps_bldpitchmin_n == kgenref_var%ps_bldpitchmin_n) .OR. ((var%ps_bldpitchmin_n /= var%ps_bldpitchmin_n) .AND. (kgenref_var%ps_bldpitchmin_n /= kgenref_var%ps_bldpitchmin_n))) THEN
+        IF (var%ps_bldpitchmin_n /= var%ps_bldpitchmin_n) WRITE(*, *) "localvar%ps_bldpitchmin_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -9947,6 +10365,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ps_bldpitchmin_n | IDENTICAL | ", var%ps_bldpitchmin_n, " | ", kgenref_var%ps_bldpitchmin_n
     ELSE 
         diff_ps_bldpitchmin_n = ABS(var%ps_bldpitchmin_n - kgenref_var%ps_bldpitchmin_n) 
         IF (diff_ps_bldpitchmin_n <= kgen_tolerance) THEN 
@@ -9957,6 +10376,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ps_bldpitchmin_n | IN_TOL | ", var%ps_bldpitchmin_n, " | ", kgenref_var%ps_bldpitchmin_n, " | ", diff_ps_bldpitchmin_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -9965,6 +10385,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ps_bldpitchmin_n | OUT_TOL | ", var%ps_bldpitchmin_n, " | ", kgenref_var%ps_bldpitchmin_n, " | ", diff_ps_bldpitchmin_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -9995,6 +10416,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ps_windspeeds | IDENTICAL | size=", SIZE(var%ps_windspeeds)
         ELSE 
             ALLOCATE (buf1_ps_windspeeds(SIZE(var%ps_windspeeds,dim=1))) 
             ALLOCATE (buf2_ps_windspeeds(SIZE(var%ps_windspeeds,dim=1))) 
@@ -10016,6 +10438,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ps_windspeeds | OUT_TOL | n_diff=", n_ps_windspeeds, " | rms=", rmsdiff_ps_windspeeds
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -10024,6 +10447,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ps_windspeeds | IN_TOL | n_diff=", n_ps_windspeeds, " | rms=", rmsdiff_ps_windspeeds
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10065,6 +10489,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ps_bldpitchmin | IDENTICAL | size=", SIZE(var%ps_bldpitchmin)
         ELSE 
             ALLOCATE (buf1_ps_bldpitchmin(SIZE(var%ps_bldpitchmin,dim=1))) 
             ALLOCATE (buf2_ps_bldpitchmin(SIZE(var%ps_bldpitchmin,dim=1))) 
@@ -10086,6 +10511,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ps_bldpitchmin | OUT_TOL | n_diff=", n_ps_bldpitchmin, " | rms=", rmsdiff_ps_bldpitchmin
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -10094,6 +10520,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ps_bldpitchmin | IN_TOL | n_diff=", n_ps_bldpitchmin, " | rms=", rmsdiff_ps_bldpitchmin
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10126,7 +10553,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%su_mode == kgenref_var%su_mode) THEN 
+    IF ((var%su_mode == kgenref_var%su_mode) .OR. ((var%su_mode /= var%su_mode) .AND. (kgenref_var%su_mode /= kgenref_var%su_mode))) THEN
+        IF (var%su_mode /= var%su_mode) WRITE(*, *) "localvar%su_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -10134,6 +10562,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] su_mode | IDENTICAL | ", var%su_mode, " | ", kgenref_var%su_mode
     ELSE 
         diff_su_mode = ABS(var%su_mode - kgenref_var%su_mode) 
         IF (diff_su_mode <= kgen_tolerance) THEN 
@@ -10144,6 +10573,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_mode | IN_TOL | ", var%su_mode, " | ", kgenref_var%su_mode, " | ", diff_su_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -10152,6 +10582,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_mode | OUT_TOL | ", var%su_mode, " | ", kgenref_var%su_mode, " | ", diff_su_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10173,7 +10604,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%su_starttime == kgenref_var%su_starttime) THEN 
+    IF ((var%su_starttime == kgenref_var%su_starttime) .OR. ((var%su_starttime /= var%su_starttime) .AND. (kgenref_var%su_starttime /= kgenref_var%su_starttime))) THEN
+        IF (var%su_starttime /= var%su_starttime) WRITE(*, *) "localvar%su_starttime is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -10181,6 +10613,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] su_starttime | IDENTICAL | ", var%su_starttime, " | ", kgenref_var%su_starttime
     ELSE 
         diff_su_starttime = ABS(var%su_starttime - kgenref_var%su_starttime) 
         IF (diff_su_starttime <= kgen_tolerance) THEN 
@@ -10191,6 +10624,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_starttime | IN_TOL | ", var%su_starttime, " | ", kgenref_var%su_starttime, " | ", diff_su_starttime
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -10199,6 +10633,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_starttime | OUT_TOL | ", var%su_starttime, " | ", kgenref_var%su_starttime, " | ", diff_su_starttime
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10220,7 +10655,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%su_fw_minduration == kgenref_var%su_fw_minduration) THEN 
+    IF ((var%su_fw_minduration == kgenref_var%su_fw_minduration) .OR. ((var%su_fw_minduration /= var%su_fw_minduration) .AND. (kgenref_var%su_fw_minduration /= kgenref_var%su_fw_minduration))) THEN
+        IF (var%su_fw_minduration /= var%su_fw_minduration) WRITE(*, *) "localvar%su_fw_minduration is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -10228,6 +10664,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] su_fw_minduration | IDENTICAL | ", var%su_fw_minduration, " | ", kgenref_var%su_fw_minduration
     ELSE 
         diff_su_fw_minduration = ABS(var%su_fw_minduration - kgenref_var%su_fw_minduration) 
         IF (diff_su_fw_minduration <= kgen_tolerance) THEN 
@@ -10238,6 +10675,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_fw_minduration | IN_TOL | ", var%su_fw_minduration, " | ", kgenref_var%su_fw_minduration, " | ", diff_su_fw_minduration
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -10246,6 +10684,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_fw_minduration | OUT_TOL | ", var%su_fw_minduration, " | ", kgenref_var%su_fw_minduration, " | ", diff_su_fw_minduration
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10267,7 +10706,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%su_rotorspeedthresh == kgenref_var%su_rotorspeedthresh) THEN 
+    IF ((var%su_rotorspeedthresh == kgenref_var%su_rotorspeedthresh) .OR. ((var%su_rotorspeedthresh /= var%su_rotorspeedthresh) .AND. (kgenref_var%su_rotorspeedthresh /= kgenref_var%su_rotorspeedthresh))) THEN
+        IF (var%su_rotorspeedthresh /= var%su_rotorspeedthresh) WRITE(*, *) "localvar%su_rotorspeedthresh is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -10275,6 +10715,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] su_rotorspeedthresh | IDENTICAL | ", var%su_rotorspeedthresh, " | ", kgenref_var%su_rotorspeedthresh
     ELSE 
         diff_su_rotorspeedthresh = ABS(var%su_rotorspeedthresh - kgenref_var%su_rotorspeedthresh) 
         IF (diff_su_rotorspeedthresh <= kgen_tolerance) THEN 
@@ -10285,6 +10726,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_rotorspeedthresh | IN_TOL | ", var%su_rotorspeedthresh, " | ", kgenref_var%su_rotorspeedthresh, " | ", diff_su_rotorspeedthresh
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -10293,6 +10735,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_rotorspeedthresh | OUT_TOL | ", var%su_rotorspeedthresh, " | ", kgenref_var%su_rotorspeedthresh, " | ", diff_su_rotorspeedthresh
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10314,7 +10757,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%su_rotorspeedcornerfreq == kgenref_var%su_rotorspeedcornerfreq) THEN 
+    IF ((var%su_rotorspeedcornerfreq == kgenref_var%su_rotorspeedcornerfreq) .OR. ((var%su_rotorspeedcornerfreq /= var%su_rotorspeedcornerfreq) .AND. (kgenref_var%su_rotorspeedcornerfreq /= kgenref_var%su_rotorspeedcornerfreq))) THEN
+        IF (var%su_rotorspeedcornerfreq /= var%su_rotorspeedcornerfreq) WRITE(*, *) "localvar%su_rotorspeedcornerfreq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -10322,6 +10766,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] su_rotorspeedcornerfreq | IDENTICAL | ", var%su_rotorspeedcornerfreq, " | ", kgenref_var%su_rotorspeedcornerfreq
     ELSE 
         diff_su_rotorspeedcornerfreq = ABS(var%su_rotorspeedcornerfreq - kgenref_var%su_rotorspeedcornerfreq) 
         IF (diff_su_rotorspeedcornerfreq <= kgen_tolerance) THEN 
@@ -10332,6 +10777,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_rotorspeedcornerfreq | IN_TOL | ", var%su_rotorspeedcornerfreq, " | ", kgenref_var%su_rotorspeedcornerfreq, " | ", diff_su_rotorspeedcornerfreq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -10340,6 +10786,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_rotorspeedcornerfreq | OUT_TOL | ", var%su_rotorspeedcornerfreq, " | ", kgenref_var%su_rotorspeedcornerfreq, " | ", diff_su_rotorspeedcornerfreq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10361,7 +10808,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%su_loadstages_n == kgenref_var%su_loadstages_n) THEN 
+    IF ((var%su_loadstages_n == kgenref_var%su_loadstages_n) .OR. ((var%su_loadstages_n /= var%su_loadstages_n) .AND. (kgenref_var%su_loadstages_n /= kgenref_var%su_loadstages_n))) THEN
+        IF (var%su_loadstages_n /= var%su_loadstages_n) WRITE(*, *) "localvar%su_loadstages_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -10369,6 +10817,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] su_loadstages_n | IDENTICAL | ", var%su_loadstages_n, " | ", kgenref_var%su_loadstages_n
     ELSE 
         diff_su_loadstages_n = ABS(var%su_loadstages_n - kgenref_var%su_loadstages_n) 
         IF (diff_su_loadstages_n <= kgen_tolerance) THEN 
@@ -10379,6 +10828,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_loadstages_n | IN_TOL | ", var%su_loadstages_n, " | ", kgenref_var%su_loadstages_n, " | ", diff_su_loadstages_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -10387,6 +10837,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_loadstages_n | OUT_TOL | ", var%su_loadstages_n, " | ", kgenref_var%su_loadstages_n, " | ", diff_su_loadstages_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10417,6 +10868,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] su_loadstages | IDENTICAL | size=", SIZE(var%su_loadstages)
         ELSE 
             ALLOCATE (buf1_su_loadstages(SIZE(var%su_loadstages,dim=1))) 
             ALLOCATE (buf2_su_loadstages(SIZE(var%su_loadstages,dim=1))) 
@@ -10438,6 +10890,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] su_loadstages | OUT_TOL | n_diff=", n_su_loadstages, " | rms=", rmsdiff_su_loadstages
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -10446,6 +10899,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] su_loadstages | IN_TOL | n_diff=", n_su_loadstages, " | rms=", rmsdiff_su_loadstages
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10487,6 +10941,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] su_loadrampduration | IDENTICAL | size=", SIZE(var%su_loadrampduration)
         ELSE 
             ALLOCATE (buf1_su_loadrampduration(SIZE(var%su_loadrampduration,dim=1))) 
             ALLOCATE (buf2_su_loadrampduration(SIZE(var%su_loadrampduration,dim=1))) 
@@ -10509,6 +10964,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] su_loadrampduration | OUT_TOL | n_diff=", n_su_loadrampduration, " | rms=", rmsdiff_su_loadrampduration
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -10517,6 +10973,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] su_loadrampduration | IN_TOL | n_diff=", n_su_loadrampduration, " | rms=", rmsdiff_su_loadrampduration
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10560,6 +11017,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] su_loadholdduration | IDENTICAL | size=", SIZE(var%su_loadholdduration)
         ELSE 
             ALLOCATE (buf1_su_loadholdduration(SIZE(var%su_loadholdduration,dim=1))) 
             ALLOCATE (buf2_su_loadholdduration(SIZE(var%su_loadholdduration,dim=1))) 
@@ -10582,6 +11040,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] su_loadholdduration | OUT_TOL | n_diff=", n_su_loadholdduration, " | rms=", rmsdiff_su_loadholdduration
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -10590,6 +11049,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] su_loadholdduration | IN_TOL | n_diff=", n_su_loadholdduration, " | rms=", rmsdiff_su_loadholdduration
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10624,7 +11084,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_mode == kgenref_var%sd_mode) THEN 
+    IF ((var%sd_mode == kgenref_var%sd_mode) .OR. ((var%sd_mode /= var%sd_mode) .AND. (kgenref_var%sd_mode /= kgenref_var%sd_mode))) THEN
+        IF (var%sd_mode /= var%sd_mode) WRITE(*, *) "localvar%sd_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -10632,6 +11093,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_mode | IDENTICAL | ", var%sd_mode, " | ", kgenref_var%sd_mode
     ELSE 
         diff_sd_mode = ABS(var%sd_mode - kgenref_var%sd_mode) 
         IF (diff_sd_mode <= kgen_tolerance) THEN 
@@ -10642,6 +11104,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_mode | IN_TOL | ", var%sd_mode, " | ", kgenref_var%sd_mode, " | ", diff_sd_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -10650,6 +11113,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_mode | OUT_TOL | ", var%sd_mode, " | ", kgenref_var%sd_mode, " | ", diff_sd_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10671,7 +11135,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_timeactivate == kgenref_var%sd_timeactivate) THEN 
+    IF ((var%sd_timeactivate == kgenref_var%sd_timeactivate) .OR. ((var%sd_timeactivate /= var%sd_timeactivate) .AND. (kgenref_var%sd_timeactivate /= kgenref_var%sd_timeactivate))) THEN
+        IF (var%sd_timeactivate /= var%sd_timeactivate) WRITE(*, *) "localvar%sd_timeactivate is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -10679,6 +11144,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_timeactivate | IDENTICAL | ", var%sd_timeactivate, " | ", kgenref_var%sd_timeactivate
     ELSE 
         diff_sd_timeactivate = ABS(var%sd_timeactivate - kgenref_var%sd_timeactivate) 
         IF (diff_sd_timeactivate <= kgen_tolerance) THEN 
@@ -10689,6 +11155,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_timeactivate | IN_TOL | ", var%sd_timeactivate, " | ", kgenref_var%sd_timeactivate, " | ", diff_sd_timeactivate
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -10697,6 +11164,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_timeactivate | OUT_TOL | ", var%sd_timeactivate, " | ", kgenref_var%sd_timeactivate, " | ", diff_sd_timeactivate
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10718,7 +11186,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_enablepitch == kgenref_var%sd_enablepitch) THEN 
+    IF ((var%sd_enablepitch == kgenref_var%sd_enablepitch) .OR. ((var%sd_enablepitch /= var%sd_enablepitch) .AND. (kgenref_var%sd_enablepitch /= kgenref_var%sd_enablepitch))) THEN
+        IF (var%sd_enablepitch /= var%sd_enablepitch) WRITE(*, *) "localvar%sd_enablepitch is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -10726,6 +11195,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_enablepitch | IDENTICAL | ", var%sd_enablepitch, " | ", kgenref_var%sd_enablepitch
     ELSE 
         diff_sd_enablepitch = ABS(var%sd_enablepitch - kgenref_var%sd_enablepitch) 
         IF (diff_sd_enablepitch <= kgen_tolerance) THEN 
@@ -10736,6 +11206,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_enablepitch | IN_TOL | ", var%sd_enablepitch, " | ", kgenref_var%sd_enablepitch, " | ", diff_sd_enablepitch
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -10744,6 +11215,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_enablepitch | OUT_TOL | ", var%sd_enablepitch, " | ", kgenref_var%sd_enablepitch, " | ", diff_sd_enablepitch
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10765,7 +11237,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_enableyawerror == kgenref_var%sd_enableyawerror) THEN 
+    IF ((var%sd_enableyawerror == kgenref_var%sd_enableyawerror) .OR. ((var%sd_enableyawerror /= var%sd_enableyawerror) .AND. (kgenref_var%sd_enableyawerror /= kgenref_var%sd_enableyawerror))) THEN
+        IF (var%sd_enableyawerror /= var%sd_enableyawerror) WRITE(*, *) "localvar%sd_enableyawerror is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -10773,6 +11246,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_enableyawerror | IDENTICAL | ", var%sd_enableyawerror, " | ", kgenref_var%sd_enableyawerror
     ELSE 
         diff_sd_enableyawerror = ABS(var%sd_enableyawerror - kgenref_var%sd_enableyawerror) 
         IF (diff_sd_enableyawerror <= kgen_tolerance) THEN 
@@ -10783,6 +11257,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_enableyawerror | IN_TOL | ", var%sd_enableyawerror, " | ", kgenref_var%sd_enableyawerror, " | ", diff_sd_enableyawerror
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -10791,6 +11266,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_enableyawerror | OUT_TOL | ", var%sd_enableyawerror, " | ", kgenref_var%sd_enableyawerror, " | ", diff_sd_enableyawerror
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10812,7 +11288,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_enablegenspeed == kgenref_var%sd_enablegenspeed) THEN 
+    IF ((var%sd_enablegenspeed == kgenref_var%sd_enablegenspeed) .OR. ((var%sd_enablegenspeed /= var%sd_enablegenspeed) .AND. (kgenref_var%sd_enablegenspeed /= kgenref_var%sd_enablegenspeed))) THEN
+        IF (var%sd_enablegenspeed /= var%sd_enablegenspeed) WRITE(*, *) "localvar%sd_enablegenspeed is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -10820,6 +11297,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_enablegenspeed | IDENTICAL | ", var%sd_enablegenspeed, " | ", kgenref_var%sd_enablegenspeed
     ELSE 
         diff_sd_enablegenspeed = ABS(var%sd_enablegenspeed - kgenref_var%sd_enablegenspeed) 
         IF (diff_sd_enablegenspeed <= kgen_tolerance) THEN 
@@ -10830,6 +11308,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_enablegenspeed | IN_TOL | ", var%sd_enablegenspeed, " | ", kgenref_var%sd_enablegenspeed, " | ", diff_sd_enablegenspeed
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -10838,6 +11317,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_enablegenspeed | OUT_TOL | ", var%sd_enablegenspeed, " | ", kgenref_var%sd_enablegenspeed, " | ", diff_sd_enablegenspeed
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10859,7 +11339,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_enabletime == kgenref_var%sd_enabletime) THEN 
+    IF ((var%sd_enabletime == kgenref_var%sd_enabletime) .OR. ((var%sd_enabletime /= var%sd_enabletime) .AND. (kgenref_var%sd_enabletime /= kgenref_var%sd_enabletime))) THEN
+        IF (var%sd_enabletime /= var%sd_enabletime) WRITE(*, *) "localvar%sd_enabletime is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -10867,6 +11348,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_enabletime | IDENTICAL | ", var%sd_enabletime, " | ", kgenref_var%sd_enabletime
     ELSE 
         diff_sd_enabletime = ABS(var%sd_enabletime - kgenref_var%sd_enabletime) 
         IF (diff_sd_enabletime <= kgen_tolerance) THEN 
@@ -10877,6 +11359,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_enabletime | IN_TOL | ", var%sd_enabletime, " | ", kgenref_var%sd_enabletime, " | ", diff_sd_enabletime
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -10885,6 +11368,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_enabletime | OUT_TOL | ", var%sd_enabletime, " | ", kgenref_var%sd_enabletime, " | ", diff_sd_enabletime
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10906,7 +11390,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_maxpit == kgenref_var%sd_maxpit) THEN 
+    IF ((var%sd_maxpit == kgenref_var%sd_maxpit) .OR. ((var%sd_maxpit /= var%sd_maxpit) .AND. (kgenref_var%sd_maxpit /= kgenref_var%sd_maxpit))) THEN
+        IF (var%sd_maxpit /= var%sd_maxpit) WRITE(*, *) "localvar%sd_maxpit is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -10914,6 +11399,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_maxpit | IDENTICAL | ", var%sd_maxpit, " | ", kgenref_var%sd_maxpit
     ELSE 
         diff_sd_maxpit = ABS(var%sd_maxpit - kgenref_var%sd_maxpit) 
         IF (diff_sd_maxpit <= kgen_tolerance) THEN 
@@ -10924,6 +11410,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_maxpit | IN_TOL | ", var%sd_maxpit, " | ", kgenref_var%sd_maxpit, " | ", diff_sd_maxpit
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -10932,6 +11419,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_maxpit | OUT_TOL | ", var%sd_maxpit, " | ", kgenref_var%sd_maxpit, " | ", diff_sd_maxpit
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -10953,7 +11441,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_pitchcornerfreq == kgenref_var%sd_pitchcornerfreq) THEN 
+    IF ((var%sd_pitchcornerfreq == kgenref_var%sd_pitchcornerfreq) .OR. ((var%sd_pitchcornerfreq /= var%sd_pitchcornerfreq) .AND. (kgenref_var%sd_pitchcornerfreq /= kgenref_var%sd_pitchcornerfreq))) THEN
+        IF (var%sd_pitchcornerfreq /= var%sd_pitchcornerfreq) WRITE(*, *) "localvar%sd_pitchcornerfreq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -10961,6 +11450,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_pitchcornerfreq | IDENTICAL | ", var%sd_pitchcornerfreq, " | ", kgenref_var%sd_pitchcornerfreq
     ELSE 
         diff_sd_pitchcornerfreq = ABS(var%sd_pitchcornerfreq - kgenref_var%sd_pitchcornerfreq) 
         IF (diff_sd_pitchcornerfreq <= kgen_tolerance) THEN 
@@ -10971,6 +11461,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_pitchcornerfreq | IN_TOL | ", var%sd_pitchcornerfreq, " | ", kgenref_var%sd_pitchcornerfreq, " | ", diff_sd_pitchcornerfreq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -10979,6 +11470,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_pitchcornerfreq | OUT_TOL | ", var%sd_pitchcornerfreq, " | ", kgenref_var%sd_pitchcornerfreq, " | ", diff_sd_pitchcornerfreq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11000,7 +11492,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_maxyawerror == kgenref_var%sd_maxyawerror) THEN 
+    IF ((var%sd_maxyawerror == kgenref_var%sd_maxyawerror) .OR. ((var%sd_maxyawerror /= var%sd_maxyawerror) .AND. (kgenref_var%sd_maxyawerror /= kgenref_var%sd_maxyawerror))) THEN
+        IF (var%sd_maxyawerror /= var%sd_maxyawerror) WRITE(*, *) "localvar%sd_maxyawerror is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -11008,6 +11501,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_maxyawerror | IDENTICAL | ", var%sd_maxyawerror, " | ", kgenref_var%sd_maxyawerror
     ELSE 
         diff_sd_maxyawerror = ABS(var%sd_maxyawerror - kgenref_var%sd_maxyawerror) 
         IF (diff_sd_maxyawerror <= kgen_tolerance) THEN 
@@ -11018,6 +11512,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_maxyawerror | IN_TOL | ", var%sd_maxyawerror, " | ", kgenref_var%sd_maxyawerror, " | ", diff_sd_maxyawerror
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -11026,6 +11521,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_maxyawerror | OUT_TOL | ", var%sd_maxyawerror, " | ", kgenref_var%sd_maxyawerror, " | ", diff_sd_maxyawerror
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11047,7 +11543,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_yawerrorcornerfreq == kgenref_var%sd_yawerrorcornerfreq) THEN 
+    IF ((var%sd_yawerrorcornerfreq == kgenref_var%sd_yawerrorcornerfreq) .OR. ((var%sd_yawerrorcornerfreq /= var%sd_yawerrorcornerfreq) .AND. (kgenref_var%sd_yawerrorcornerfreq /= kgenref_var%sd_yawerrorcornerfreq))) THEN
+        IF (var%sd_yawerrorcornerfreq /= var%sd_yawerrorcornerfreq) WRITE(*, *) "localvar%sd_yawerrorcornerfreq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -11055,6 +11552,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_yawerrorcornerfreq | IDENTICAL | ", var%sd_yawerrorcornerfreq, " | ", kgenref_var%sd_yawerrorcornerfreq
     ELSE 
         diff_sd_yawerrorcornerfreq = ABS(var%sd_yawerrorcornerfreq - kgenref_var%sd_yawerrorcornerfreq) 
         IF (diff_sd_yawerrorcornerfreq <= kgen_tolerance) THEN 
@@ -11065,6 +11563,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_yawerrorcornerfreq | IN_TOL | ", var%sd_yawerrorcornerfreq, " | ", kgenref_var%sd_yawerrorcornerfreq, " | ", diff_sd_yawerrorcornerfreq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -11073,6 +11572,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_yawerrorcornerfreq | OUT_TOL | ", var%sd_yawerrorcornerfreq, " | ", kgenref_var%sd_yawerrorcornerfreq, " | ", diff_sd_yawerrorcornerfreq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11094,7 +11594,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_maxgenspd == kgenref_var%sd_maxgenspd) THEN 
+    IF ((var%sd_maxgenspd == kgenref_var%sd_maxgenspd) .OR. ((var%sd_maxgenspd /= var%sd_maxgenspd) .AND. (kgenref_var%sd_maxgenspd /= kgenref_var%sd_maxgenspd))) THEN
+        IF (var%sd_maxgenspd /= var%sd_maxgenspd) WRITE(*, *) "localvar%sd_maxgenspd is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -11102,6 +11603,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_maxgenspd | IDENTICAL | ", var%sd_maxgenspd, " | ", kgenref_var%sd_maxgenspd
     ELSE 
         diff_sd_maxgenspd = ABS(var%sd_maxgenspd - kgenref_var%sd_maxgenspd) 
         IF (diff_sd_maxgenspd <= kgen_tolerance) THEN 
@@ -11112,6 +11614,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_maxgenspd | IN_TOL | ", var%sd_maxgenspd, " | ", kgenref_var%sd_maxgenspd, " | ", diff_sd_maxgenspd
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -11120,6 +11623,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_maxgenspd | OUT_TOL | ", var%sd_maxgenspd, " | ", kgenref_var%sd_maxgenspd, " | ", diff_sd_maxgenspd
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11141,7 +11645,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_genspdcornerfreq == kgenref_var%sd_genspdcornerfreq) THEN 
+    IF ((var%sd_genspdcornerfreq == kgenref_var%sd_genspdcornerfreq) .OR. ((var%sd_genspdcornerfreq /= var%sd_genspdcornerfreq) .AND. (kgenref_var%sd_genspdcornerfreq /= kgenref_var%sd_genspdcornerfreq))) THEN
+        IF (var%sd_genspdcornerfreq /= var%sd_genspdcornerfreq) WRITE(*, *) "localvar%sd_genspdcornerfreq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -11149,6 +11654,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_genspdcornerfreq | IDENTICAL | ", var%sd_genspdcornerfreq, " | ", kgenref_var%sd_genspdcornerfreq
     ELSE 
         diff_sd_genspdcornerfreq = ABS(var%sd_genspdcornerfreq - kgenref_var%sd_genspdcornerfreq) 
         IF (diff_sd_genspdcornerfreq <= kgen_tolerance) THEN 
@@ -11159,6 +11665,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_genspdcornerfreq | IN_TOL | ", var%sd_genspdcornerfreq, " | ", kgenref_var%sd_genspdcornerfreq, " | ", diff_sd_genspdcornerfreq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -11167,6 +11674,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_genspdcornerfreq | OUT_TOL | ", var%sd_genspdcornerfreq, " | ", kgenref_var%sd_genspdcornerfreq, " | ", diff_sd_genspdcornerfreq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11188,7 +11696,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_time == kgenref_var%sd_time) THEN 
+    IF ((var%sd_time == kgenref_var%sd_time) .OR. ((var%sd_time /= var%sd_time) .AND. (kgenref_var%sd_time /= kgenref_var%sd_time))) THEN
+        IF (var%sd_time /= var%sd_time) WRITE(*, *) "localvar%sd_time is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -11196,6 +11705,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_time | IDENTICAL | ", var%sd_time, " | ", kgenref_var%sd_time
     ELSE 
         diff_sd_time = ABS(var%sd_time - kgenref_var%sd_time) 
         IF (diff_sd_time <= kgen_tolerance) THEN 
@@ -11206,6 +11716,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_time | IN_TOL | ", var%sd_time, " | ", kgenref_var%sd_time, " | ", diff_sd_time
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -11214,6 +11725,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_time | OUT_TOL | ", var%sd_time, " | ", kgenref_var%sd_time, " | ", diff_sd_time
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11235,7 +11747,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_method == kgenref_var%sd_method) THEN 
+    IF ((var%sd_method == kgenref_var%sd_method) .OR. ((var%sd_method /= var%sd_method) .AND. (kgenref_var%sd_method /= kgenref_var%sd_method))) THEN
+        IF (var%sd_method /= var%sd_method) WRITE(*, *) "localvar%sd_method is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -11243,6 +11756,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_method | IDENTICAL | ", var%sd_method, " | ", kgenref_var%sd_method
     ELSE 
         diff_sd_method = ABS(var%sd_method - kgenref_var%sd_method) 
         IF (diff_sd_method <= kgen_tolerance) THEN 
@@ -11253,6 +11767,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_method | IN_TOL | ", var%sd_method, " | ", kgenref_var%sd_method, " | ", diff_sd_method
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -11261,6 +11776,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_method | OUT_TOL | ", var%sd_method, " | ", kgenref_var%sd_method, " | ", diff_sd_method
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11291,6 +11807,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] sd_maxtorquerate | IDENTICAL | size=", SIZE(var%sd_maxtorquerate)
         ELSE 
             ALLOCATE (buf1_sd_maxtorquerate(SIZE(var%sd_maxtorquerate,dim=1))) 
             ALLOCATE (buf2_sd_maxtorquerate(SIZE(var%sd_maxtorquerate,dim=1))) 
@@ -11312,6 +11829,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] sd_maxtorquerate | OUT_TOL | n_diff=", n_sd_maxtorquerate, " | rms=", rmsdiff_sd_maxtorquerate
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -11320,6 +11838,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] sd_maxtorquerate | IN_TOL | n_diff=", n_sd_maxtorquerate, " | rms=", rmsdiff_sd_maxtorquerate
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11363,6 +11882,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] sd_maxpitchrate | IDENTICAL | size=", SIZE(var%sd_maxpitchrate)
         ELSE 
             ALLOCATE (buf1_sd_maxpitchrate(SIZE(var%sd_maxpitchrate,dim=1))) 
             ALLOCATE (buf2_sd_maxpitchrate(SIZE(var%sd_maxpitchrate,dim=1))) 
@@ -11384,6 +11904,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] sd_maxpitchrate | OUT_TOL | n_diff=", n_sd_maxpitchrate, " | rms=", rmsdiff_sd_maxpitchrate
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -11392,6 +11913,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] sd_maxpitchrate | IN_TOL | n_diff=", n_sd_maxpitchrate, " | rms=", rmsdiff_sd_maxpitchrate
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11433,6 +11955,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] sd_stagepitch | IDENTICAL | size=", SIZE(var%sd_stagepitch)
         ELSE 
             ALLOCATE (buf1_sd_stagepitch(SIZE(var%sd_stagepitch,dim=1))) 
             ALLOCATE (buf2_sd_stagepitch(SIZE(var%sd_stagepitch,dim=1))) 
@@ -11454,6 +11977,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] sd_stagepitch | OUT_TOL | n_diff=", n_sd_stagepitch, " | rms=", rmsdiff_sd_stagepitch
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -11462,6 +11986,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] sd_stagepitch | IN_TOL | n_diff=", n_sd_stagepitch, " | rms=", rmsdiff_sd_stagepitch
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11503,6 +12028,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] sd_stagetime | IDENTICAL | size=", SIZE(var%sd_stagetime)
         ELSE 
             ALLOCATE (buf1_sd_stagetime(SIZE(var%sd_stagetime,dim=1))) 
             ALLOCATE (buf2_sd_stagetime(SIZE(var%sd_stagetime,dim=1))) 
@@ -11524,6 +12050,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] sd_stagetime | OUT_TOL | n_diff=", n_sd_stagetime, " | rms=", rmsdiff_sd_stagetime
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -11532,6 +12059,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] sd_stagetime | IN_TOL | n_diff=", n_sd_stagetime, " | rms=", rmsdiff_sd_stagetime
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11564,7 +12092,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_stage_n == kgenref_var%sd_stage_n) THEN 
+    IF ((var%sd_stage_n == kgenref_var%sd_stage_n) .OR. ((var%sd_stage_n /= var%sd_stage_n) .AND. (kgenref_var%sd_stage_n /= kgenref_var%sd_stage_n))) THEN
+        IF (var%sd_stage_n /= var%sd_stage_n) WRITE(*, *) "localvar%sd_stage_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -11572,6 +12101,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_stage_n | IDENTICAL | ", var%sd_stage_n, " | ", kgenref_var%sd_stage_n
     ELSE 
         diff_sd_stage_n = ABS(var%sd_stage_n - kgenref_var%sd_stage_n) 
         IF (diff_sd_stage_n <= kgen_tolerance) THEN 
@@ -11582,6 +12112,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_stage_n | IN_TOL | ", var%sd_stage_n, " | ", kgenref_var%sd_stage_n, " | ", diff_sd_stage_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -11590,6 +12121,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_stage_n | OUT_TOL | ", var%sd_stage_n, " | ", kgenref_var%sd_stage_n, " | ", diff_sd_stage_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11611,7 +12143,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%fl_mode == kgenref_var%fl_mode) THEN 
+    IF ((var%fl_mode == kgenref_var%fl_mode) .OR. ((var%fl_mode /= var%fl_mode) .AND. (kgenref_var%fl_mode /= kgenref_var%fl_mode))) THEN
+        IF (var%fl_mode /= var%fl_mode) WRITE(*, *) "localvar%fl_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -11619,6 +12152,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] fl_mode | IDENTICAL | ", var%fl_mode, " | ", kgenref_var%fl_mode
     ELSE 
         diff_fl_mode = ABS(var%fl_mode - kgenref_var%fl_mode) 
         IF (diff_fl_mode <= kgen_tolerance) THEN 
@@ -11629,6 +12163,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] fl_mode | IN_TOL | ", var%fl_mode, " | ", kgenref_var%fl_mode, " | ", diff_fl_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -11637,6 +12172,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] fl_mode | OUT_TOL | ", var%fl_mode, " | ", kgenref_var%fl_mode, " | ", diff_fl_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11658,7 +12194,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%fl_n == kgenref_var%fl_n) THEN 
+    IF ((var%fl_n == kgenref_var%fl_n) .OR. ((var%fl_n /= var%fl_n) .AND. (kgenref_var%fl_n /= kgenref_var%fl_n))) THEN
+        IF (var%fl_n /= var%fl_n) WRITE(*, *) "localvar%fl_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -11666,6 +12203,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] fl_n | IDENTICAL | ", var%fl_n, " | ", kgenref_var%fl_n
     ELSE 
         diff_fl_n = ABS(var%fl_n - kgenref_var%fl_n) 
         IF (diff_fl_n <= kgen_tolerance) THEN 
@@ -11676,6 +12214,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] fl_n | IN_TOL | ", var%fl_n, " | ", kgenref_var%fl_n, " | ", diff_fl_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -11684,6 +12223,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] fl_n | OUT_TOL | ", var%fl_n, " | ", kgenref_var%fl_n, " | ", diff_fl_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11714,6 +12254,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] fl_kp | IDENTICAL | size=", SIZE(var%fl_kp)
         ELSE 
             ALLOCATE (buf1_fl_kp(SIZE(var%fl_kp,dim=1))) 
             ALLOCATE (buf2_fl_kp(SIZE(var%fl_kp,dim=1))) 
@@ -11735,6 +12276,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] fl_kp | OUT_TOL | n_diff=", n_fl_kp, " | rms=", rmsdiff_fl_kp
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -11743,6 +12285,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] fl_kp | IN_TOL | n_diff=", n_fl_kp, " | rms=", rmsdiff_fl_kp
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11782,6 +12325,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] fl_u | IDENTICAL | size=", SIZE(var%fl_u)
         ELSE 
             ALLOCATE (buf1_fl_u(SIZE(var%fl_u,dim=1))) 
             ALLOCATE (buf2_fl_u(SIZE(var%fl_u,dim=1))) 
@@ -11803,6 +12347,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] fl_u | OUT_TOL | n_diff=", n_fl_u, " | rms=", rmsdiff_fl_u
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -11811,6 +12356,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] fl_u | IN_TOL | n_diff=", n_fl_u, " | rms=", rmsdiff_fl_u
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11841,7 +12387,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%flp_mode == kgenref_var%flp_mode) THEN 
+    IF ((var%flp_mode == kgenref_var%flp_mode) .OR. ((var%flp_mode /= var%flp_mode) .AND. (kgenref_var%flp_mode /= kgenref_var%flp_mode))) THEN
+        IF (var%flp_mode /= var%flp_mode) WRITE(*, *) "localvar%flp_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -11849,6 +12396,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] flp_mode | IDENTICAL | ", var%flp_mode, " | ", kgenref_var%flp_mode
     ELSE 
         diff_flp_mode = ABS(var%flp_mode - kgenref_var%flp_mode) 
         IF (diff_flp_mode <= kgen_tolerance) THEN 
@@ -11859,6 +12407,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] flp_mode | IN_TOL | ", var%flp_mode, " | ", kgenref_var%flp_mode, " | ", diff_flp_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -11867,6 +12416,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] flp_mode | OUT_TOL | ", var%flp_mode, " | ", kgenref_var%flp_mode, " | ", diff_flp_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11888,7 +12438,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%flp_angle == kgenref_var%flp_angle) THEN 
+    IF ((var%flp_angle == kgenref_var%flp_angle) .OR. ((var%flp_angle /= var%flp_angle) .AND. (kgenref_var%flp_angle /= kgenref_var%flp_angle))) THEN
+        IF (var%flp_angle /= var%flp_angle) WRITE(*, *) "localvar%flp_angle is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -11896,6 +12447,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] flp_angle | IDENTICAL | ", var%flp_angle, " | ", kgenref_var%flp_angle
     ELSE 
         diff_flp_angle = ABS(var%flp_angle - kgenref_var%flp_angle) 
         IF (diff_flp_angle <= kgen_tolerance) THEN 
@@ -11906,6 +12458,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] flp_angle | IN_TOL | ", var%flp_angle, " | ", kgenref_var%flp_angle, " | ", diff_flp_angle
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -11914,6 +12467,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] flp_angle | OUT_TOL | ", var%flp_angle, " | ", kgenref_var%flp_angle, " | ", diff_flp_angle
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11935,7 +12489,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%flp_kp == kgenref_var%flp_kp) THEN 
+    IF ((var%flp_kp == kgenref_var%flp_kp) .OR. ((var%flp_kp /= var%flp_kp) .AND. (kgenref_var%flp_kp /= kgenref_var%flp_kp))) THEN
+        IF (var%flp_kp /= var%flp_kp) WRITE(*, *) "localvar%flp_kp is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -11943,6 +12498,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] flp_kp | IDENTICAL | ", var%flp_kp, " | ", kgenref_var%flp_kp
     ELSE 
         diff_flp_kp = ABS(var%flp_kp - kgenref_var%flp_kp) 
         IF (diff_flp_kp <= kgen_tolerance) THEN 
@@ -11953,6 +12509,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] flp_kp | IN_TOL | ", var%flp_kp, " | ", kgenref_var%flp_kp, " | ", diff_flp_kp
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -11961,6 +12518,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] flp_kp | OUT_TOL | ", var%flp_kp, " | ", kgenref_var%flp_kp, " | ", diff_flp_kp
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -11982,7 +12540,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%flp_ki == kgenref_var%flp_ki) THEN 
+    IF ((var%flp_ki == kgenref_var%flp_ki) .OR. ((var%flp_ki /= var%flp_ki) .AND. (kgenref_var%flp_ki /= kgenref_var%flp_ki))) THEN
+        IF (var%flp_ki /= var%flp_ki) WRITE(*, *) "localvar%flp_ki is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -11990,6 +12549,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] flp_ki | IDENTICAL | ", var%flp_ki, " | ", kgenref_var%flp_ki
     ELSE 
         diff_flp_ki = ABS(var%flp_ki - kgenref_var%flp_ki) 
         IF (diff_flp_ki <= kgen_tolerance) THEN 
@@ -12000,6 +12560,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] flp_ki | IN_TOL | ", var%flp_ki, " | ", kgenref_var%flp_ki, " | ", diff_flp_ki
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -12008,6 +12569,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] flp_ki | OUT_TOL | ", var%flp_ki, " | ", kgenref_var%flp_ki, " | ", diff_flp_ki
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12029,7 +12591,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%flp_maxpit == kgenref_var%flp_maxpit) THEN 
+    IF ((var%flp_maxpit == kgenref_var%flp_maxpit) .OR. ((var%flp_maxpit /= var%flp_maxpit) .AND. (kgenref_var%flp_maxpit /= kgenref_var%flp_maxpit))) THEN
+        IF (var%flp_maxpit /= var%flp_maxpit) WRITE(*, *) "localvar%flp_maxpit is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -12037,6 +12600,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] flp_maxpit | IDENTICAL | ", var%flp_maxpit, " | ", kgenref_var%flp_maxpit
     ELSE 
         diff_flp_maxpit = ABS(var%flp_maxpit - kgenref_var%flp_maxpit) 
         IF (diff_flp_maxpit <= kgen_tolerance) THEN 
@@ -12047,6 +12611,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] flp_maxpit | IN_TOL | ", var%flp_maxpit, " | ", kgenref_var%flp_maxpit, " | ", diff_flp_maxpit
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -12055,6 +12620,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] flp_maxpit | OUT_TOL | ", var%flp_maxpit, " | ", kgenref_var%flp_maxpit, " | ", diff_flp_maxpit
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12076,7 +12642,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ol_filename == kgenref_var%ol_filename) THEN 
+    IF ((var%ol_filename == kgenref_var%ol_filename) .OR. ((var%ol_filename /= var%ol_filename) .AND. (kgenref_var%ol_filename /= kgenref_var%ol_filename))) THEN
+        IF (var%ol_filename /= var%ol_filename) WRITE(*, *) "localvar%ol_filename is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -12084,6 +12651,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ol_filename | IDENTICAL | ", var%ol_filename, " | ", kgenref_var%ol_filename
     ELSE 
         dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -12092,6 +12660,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_OUT_TOL 
+        WRITE(*, *) "[VIT_FIELD] ol_filename | OUT_TOL | ", var%ol_filename, " | ", kgenref_var%ol_filename
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
         CONTINUE 
@@ -12112,7 +12681,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ol_mode == kgenref_var%ol_mode) THEN 
+    IF ((var%ol_mode == kgenref_var%ol_mode) .OR. ((var%ol_mode /= var%ol_mode) .AND. (kgenref_var%ol_mode /= kgenref_var%ol_mode))) THEN
+        IF (var%ol_mode /= var%ol_mode) WRITE(*, *) "localvar%ol_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -12120,6 +12690,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ol_mode | IDENTICAL | ", var%ol_mode, " | ", kgenref_var%ol_mode
     ELSE 
         diff_ol_mode = ABS(var%ol_mode - kgenref_var%ol_mode) 
         IF (diff_ol_mode <= kgen_tolerance) THEN 
@@ -12130,6 +12701,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ol_mode | IN_TOL | ", var%ol_mode, " | ", kgenref_var%ol_mode, " | ", diff_ol_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -12138,6 +12710,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ol_mode | OUT_TOL | ", var%ol_mode, " | ", kgenref_var%ol_mode, " | ", diff_ol_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12159,7 +12732,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ol_bp_mode == kgenref_var%ol_bp_mode) THEN 
+    IF ((var%ol_bp_mode == kgenref_var%ol_bp_mode) .OR. ((var%ol_bp_mode /= var%ol_bp_mode) .AND. (kgenref_var%ol_bp_mode /= kgenref_var%ol_bp_mode))) THEN
+        IF (var%ol_bp_mode /= var%ol_bp_mode) WRITE(*, *) "localvar%ol_bp_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -12167,6 +12741,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ol_bp_mode | IDENTICAL | ", var%ol_bp_mode, " | ", kgenref_var%ol_bp_mode
     ELSE 
         diff_ol_bp_mode = ABS(var%ol_bp_mode - kgenref_var%ol_bp_mode) 
         IF (diff_ol_bp_mode <= kgen_tolerance) THEN 
@@ -12177,6 +12752,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ol_bp_mode | IN_TOL | ", var%ol_bp_mode, " | ", kgenref_var%ol_bp_mode, " | ", diff_ol_bp_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -12185,6 +12761,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ol_bp_mode | OUT_TOL | ", var%ol_bp_mode, " | ", kgenref_var%ol_bp_mode, " | ", diff_ol_bp_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12206,7 +12783,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ol_bp_filtfreq == kgenref_var%ol_bp_filtfreq) THEN 
+    IF ((var%ol_bp_filtfreq == kgenref_var%ol_bp_filtfreq) .OR. ((var%ol_bp_filtfreq /= var%ol_bp_filtfreq) .AND. (kgenref_var%ol_bp_filtfreq /= kgenref_var%ol_bp_filtfreq))) THEN
+        IF (var%ol_bp_filtfreq /= var%ol_bp_filtfreq) WRITE(*, *) "localvar%ol_bp_filtfreq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -12214,6 +12792,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ol_bp_filtfreq | IDENTICAL | ", var%ol_bp_filtfreq, " | ", kgenref_var%ol_bp_filtfreq
     ELSE 
         diff_ol_bp_filtfreq = ABS(var%ol_bp_filtfreq - kgenref_var%ol_bp_filtfreq) 
         IF (diff_ol_bp_filtfreq <= kgen_tolerance) THEN 
@@ -12224,6 +12803,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ol_bp_filtfreq | IN_TOL | ", var%ol_bp_filtfreq, " | ", kgenref_var%ol_bp_filtfreq, " | ", diff_ol_bp_filtfreq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -12232,6 +12812,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ol_bp_filtfreq | OUT_TOL | ", var%ol_bp_filtfreq, " | ", kgenref_var%ol_bp_filtfreq, " | ", diff_ol_bp_filtfreq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12253,7 +12834,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ind_breakpoint == kgenref_var%ind_breakpoint) THEN 
+    IF ((var%ind_breakpoint == kgenref_var%ind_breakpoint) .OR. ((var%ind_breakpoint /= var%ind_breakpoint) .AND. (kgenref_var%ind_breakpoint /= kgenref_var%ind_breakpoint))) THEN
+        IF (var%ind_breakpoint /= var%ind_breakpoint) WRITE(*, *) "localvar%ind_breakpoint is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -12261,6 +12843,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ind_breakpoint | IDENTICAL | ", var%ind_breakpoint, " | ", kgenref_var%ind_breakpoint
     ELSE 
         diff_ind_breakpoint = ABS(var%ind_breakpoint - kgenref_var%ind_breakpoint) 
         IF (diff_ind_breakpoint <= kgen_tolerance) THEN 
@@ -12271,6 +12854,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ind_breakpoint | IN_TOL | ", var%ind_breakpoint, " | ", kgenref_var%ind_breakpoint, " | ", diff_ind_breakpoint
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -12279,6 +12863,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ind_breakpoint | OUT_TOL | ", var%ind_breakpoint, " | ", kgenref_var%ind_breakpoint, " | ", diff_ind_breakpoint
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12309,6 +12894,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ind_bldpitch | IDENTICAL | size=", SIZE(var%ind_bldpitch)
         ELSE 
             ALLOCATE (buf1_ind_bldpitch(SIZE(var%ind_bldpitch,dim=1))) 
             ALLOCATE (buf2_ind_bldpitch(SIZE(var%ind_bldpitch,dim=1))) 
@@ -12330,6 +12916,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ind_bldpitch | OUT_TOL | n_diff=", n_ind_bldpitch, " | rms=", rmsdiff_ind_bldpitch
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -12338,6 +12925,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ind_bldpitch | IN_TOL | n_diff=", n_ind_bldpitch, " | rms=", rmsdiff_ind_bldpitch
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12370,7 +12958,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ind_gentq == kgenref_var%ind_gentq) THEN 
+    IF ((var%ind_gentq == kgenref_var%ind_gentq) .OR. ((var%ind_gentq /= var%ind_gentq) .AND. (kgenref_var%ind_gentq /= kgenref_var%ind_gentq))) THEN
+        IF (var%ind_gentq /= var%ind_gentq) WRITE(*, *) "localvar%ind_gentq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -12378,6 +12967,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ind_gentq | IDENTICAL | ", var%ind_gentq, " | ", kgenref_var%ind_gentq
     ELSE 
         diff_ind_gentq = ABS(var%ind_gentq - kgenref_var%ind_gentq) 
         IF (diff_ind_gentq <= kgen_tolerance) THEN 
@@ -12388,6 +12978,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ind_gentq | IN_TOL | ", var%ind_gentq, " | ", kgenref_var%ind_gentq, " | ", diff_ind_gentq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -12396,6 +12987,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ind_gentq | OUT_TOL | ", var%ind_gentq, " | ", kgenref_var%ind_gentq, " | ", diff_ind_gentq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12417,7 +13009,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ind_yawrate == kgenref_var%ind_yawrate) THEN 
+    IF ((var%ind_yawrate == kgenref_var%ind_yawrate) .OR. ((var%ind_yawrate /= var%ind_yawrate) .AND. (kgenref_var%ind_yawrate /= kgenref_var%ind_yawrate))) THEN
+        IF (var%ind_yawrate /= var%ind_yawrate) WRITE(*, *) "localvar%ind_yawrate is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -12425,6 +13018,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ind_yawrate | IDENTICAL | ", var%ind_yawrate, " | ", kgenref_var%ind_yawrate
     ELSE 
         diff_ind_yawrate = ABS(var%ind_yawrate - kgenref_var%ind_yawrate) 
         IF (diff_ind_yawrate <= kgen_tolerance) THEN 
@@ -12435,6 +13029,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ind_yawrate | IN_TOL | ", var%ind_yawrate, " | ", kgenref_var%ind_yawrate, " | ", diff_ind_yawrate
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -12443,6 +13038,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ind_yawrate | OUT_TOL | ", var%ind_yawrate, " | ", kgenref_var%ind_yawrate, " | ", diff_ind_yawrate
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12464,7 +13060,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ind_r_speed == kgenref_var%ind_r_speed) THEN 
+    IF ((var%ind_r_speed == kgenref_var%ind_r_speed) .OR. ((var%ind_r_speed /= var%ind_r_speed) .AND. (kgenref_var%ind_r_speed /= kgenref_var%ind_r_speed))) THEN
+        IF (var%ind_r_speed /= var%ind_r_speed) WRITE(*, *) "localvar%ind_r_speed is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -12472,6 +13069,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ind_r_speed | IDENTICAL | ", var%ind_r_speed, " | ", kgenref_var%ind_r_speed
     ELSE 
         diff_ind_r_speed = ABS(var%ind_r_speed - kgenref_var%ind_r_speed) 
         IF (diff_ind_r_speed <= kgen_tolerance) THEN 
@@ -12482,6 +13080,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ind_r_speed | IN_TOL | ", var%ind_r_speed, " | ", kgenref_var%ind_r_speed, " | ", diff_ind_r_speed
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -12490,6 +13089,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ind_r_speed | OUT_TOL | ", var%ind_r_speed, " | ", kgenref_var%ind_r_speed, " | ", diff_ind_r_speed
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12511,7 +13111,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ind_r_torque == kgenref_var%ind_r_torque) THEN 
+    IF ((var%ind_r_torque == kgenref_var%ind_r_torque) .OR. ((var%ind_r_torque /= var%ind_r_torque) .AND. (kgenref_var%ind_r_torque /= kgenref_var%ind_r_torque))) THEN
+        IF (var%ind_r_torque /= var%ind_r_torque) WRITE(*, *) "localvar%ind_r_torque is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -12519,6 +13120,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ind_r_torque | IDENTICAL | ", var%ind_r_torque, " | ", kgenref_var%ind_r_torque
     ELSE 
         diff_ind_r_torque = ABS(var%ind_r_torque - kgenref_var%ind_r_torque) 
         IF (diff_ind_r_torque <= kgen_tolerance) THEN 
@@ -12529,6 +13131,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ind_r_torque | IN_TOL | ", var%ind_r_torque, " | ", kgenref_var%ind_r_torque, " | ", diff_ind_r_torque
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -12537,6 +13140,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ind_r_torque | OUT_TOL | ", var%ind_r_torque, " | ", kgenref_var%ind_r_torque, " | ", diff_ind_r_torque
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12558,7 +13162,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ind_r_pitch == kgenref_var%ind_r_pitch) THEN 
+    IF ((var%ind_r_pitch == kgenref_var%ind_r_pitch) .OR. ((var%ind_r_pitch /= var%ind_r_pitch) .AND. (kgenref_var%ind_r_pitch /= kgenref_var%ind_r_pitch))) THEN
+        IF (var%ind_r_pitch /= var%ind_r_pitch) WRITE(*, *) "localvar%ind_r_pitch is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -12566,6 +13171,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ind_r_pitch | IDENTICAL | ", var%ind_r_pitch, " | ", kgenref_var%ind_r_pitch
     ELSE 
         diff_ind_r_pitch = ABS(var%ind_r_pitch - kgenref_var%ind_r_pitch) 
         IF (diff_ind_r_pitch <= kgen_tolerance) THEN 
@@ -12576,6 +13182,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ind_r_pitch | IN_TOL | ", var%ind_r_pitch, " | ", kgenref_var%ind_r_pitch, " | ", diff_ind_r_pitch
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -12584,6 +13191,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ind_r_pitch | OUT_TOL | ", var%ind_r_pitch, " | ", kgenref_var%ind_r_pitch, " | ", diff_ind_r_pitch
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12605,7 +13213,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ind_azimuth == kgenref_var%ind_azimuth) THEN 
+    IF ((var%ind_azimuth == kgenref_var%ind_azimuth) .OR. ((var%ind_azimuth /= var%ind_azimuth) .AND. (kgenref_var%ind_azimuth /= kgenref_var%ind_azimuth))) THEN
+        IF (var%ind_azimuth /= var%ind_azimuth) WRITE(*, *) "localvar%ind_azimuth is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -12613,6 +13222,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ind_azimuth | IDENTICAL | ", var%ind_azimuth, " | ", kgenref_var%ind_azimuth
     ELSE 
         diff_ind_azimuth = ABS(var%ind_azimuth - kgenref_var%ind_azimuth) 
         IF (diff_ind_azimuth <= kgen_tolerance) THEN 
@@ -12623,6 +13233,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ind_azimuth | IN_TOL | ", var%ind_azimuth, " | ", kgenref_var%ind_azimuth, " | ", diff_ind_azimuth
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -12631,6 +13242,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ind_azimuth | OUT_TOL | ", var%ind_azimuth, " | ", kgenref_var%ind_azimuth, " | ", diff_ind_azimuth
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12661,6 +13273,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] rp_gains | IDENTICAL | size=", SIZE(var%rp_gains)
         ELSE 
             ALLOCATE (buf1_rp_gains(SIZE(var%rp_gains,dim=1))) 
             ALLOCATE (buf2_rp_gains(SIZE(var%rp_gains,dim=1))) 
@@ -12682,6 +13295,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] rp_gains | OUT_TOL | n_diff=", n_rp_gains, " | rms=", rmsdiff_rp_gains
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -12690,6 +13304,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] rp_gains | IN_TOL | n_diff=", n_rp_gains, " | rms=", rmsdiff_rp_gains
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12731,6 +13346,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ind_cablecontrol | IDENTICAL | size=", SIZE(var%ind_cablecontrol)
         ELSE 
             ALLOCATE (buf1_ind_cablecontrol(SIZE(var%ind_cablecontrol,dim=1))) 
             ALLOCATE (buf2_ind_cablecontrol(SIZE(var%ind_cablecontrol,dim=1))) 
@@ -12752,6 +13368,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ind_cablecontrol | OUT_TOL | n_diff=", n_ind_cablecontrol, " | rms=", rmsdiff_ind_cablecontrol
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -12760,6 +13377,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ind_cablecontrol | IN_TOL | n_diff=", n_ind_cablecontrol, " | rms=", rmsdiff_ind_cablecontrol
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12803,6 +13421,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ind_structcontrol | IDENTICAL | size=", SIZE(var%ind_structcontrol)
         ELSE 
             ALLOCATE (buf1_ind_structcontrol(SIZE(var%ind_structcontrol,dim=1))) 
             ALLOCATE (buf2_ind_structcontrol(SIZE(var%ind_structcontrol,dim=1))) 
@@ -12824,6 +13443,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ind_structcontrol | OUT_TOL | n_diff=", n_ind_structcontrol, " | rms=", rmsdiff_ind_structcontrol
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -12832,6 +13452,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ind_structcontrol | IN_TOL | n_diff=", n_ind_structcontrol, " | rms=", rmsdiff_ind_structcontrol
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12875,6 +13496,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ol_breakpoints | IDENTICAL | size=", SIZE(var%ol_breakpoints)
         ELSE 
             ALLOCATE (buf1_ol_breakpoints(SIZE(var%ol_breakpoints,dim=1))) 
             ALLOCATE (buf2_ol_breakpoints(SIZE(var%ol_breakpoints,dim=1))) 
@@ -12896,6 +13518,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_breakpoints | OUT_TOL | n_diff=", n_ol_breakpoints, " | rms=", rmsdiff_ol_breakpoints
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -12904,6 +13527,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_breakpoints | IN_TOL | n_diff=", n_ol_breakpoints, " | rms=", rmsdiff_ol_breakpoints
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -12945,6 +13569,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ol_bldpitch1 | IDENTICAL | size=", SIZE(var%ol_bldpitch1)
         ELSE 
             ALLOCATE (buf1_ol_bldpitch1(SIZE(var%ol_bldpitch1,dim=1))) 
             ALLOCATE (buf2_ol_bldpitch1(SIZE(var%ol_bldpitch1,dim=1))) 
@@ -12966,6 +13591,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_bldpitch1 | OUT_TOL | n_diff=", n_ol_bldpitch1, " | rms=", rmsdiff_ol_bldpitch1
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -12974,6 +13600,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_bldpitch1 | IN_TOL | n_diff=", n_ol_bldpitch1, " | rms=", rmsdiff_ol_bldpitch1
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13015,6 +13642,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ol_bldpitch2 | IDENTICAL | size=", SIZE(var%ol_bldpitch2)
         ELSE 
             ALLOCATE (buf1_ol_bldpitch2(SIZE(var%ol_bldpitch2,dim=1))) 
             ALLOCATE (buf2_ol_bldpitch2(SIZE(var%ol_bldpitch2,dim=1))) 
@@ -13036,6 +13664,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_bldpitch2 | OUT_TOL | n_diff=", n_ol_bldpitch2, " | rms=", rmsdiff_ol_bldpitch2
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -13044,6 +13673,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_bldpitch2 | IN_TOL | n_diff=", n_ol_bldpitch2, " | rms=", rmsdiff_ol_bldpitch2
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13085,6 +13715,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ol_bldpitch3 | IDENTICAL | size=", SIZE(var%ol_bldpitch3)
         ELSE 
             ALLOCATE (buf1_ol_bldpitch3(SIZE(var%ol_bldpitch3,dim=1))) 
             ALLOCATE (buf2_ol_bldpitch3(SIZE(var%ol_bldpitch3,dim=1))) 
@@ -13106,6 +13737,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_bldpitch3 | OUT_TOL | n_diff=", n_ol_bldpitch3, " | rms=", rmsdiff_ol_bldpitch3
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -13114,6 +13746,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_bldpitch3 | IN_TOL | n_diff=", n_ol_bldpitch3, " | rms=", rmsdiff_ol_bldpitch3
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13155,6 +13788,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ol_cablecontrol | IDENTICAL | size=", SIZE(var%ol_cablecontrol)
         ELSE 
             ALLOCATE (buf1_ol_cablecontrol(SIZE(var%ol_cablecontrol,dim=1),SIZE(var%ol_cablecontrol,dim=2))) 
             ALLOCATE (buf2_ol_cablecontrol(SIZE(var%ol_cablecontrol,dim=1),SIZE(var%ol_cablecontrol,dim=2))) 
@@ -13176,6 +13810,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_cablecontrol | OUT_TOL | n_diff=", n_ol_cablecontrol, " | rms=", rmsdiff_ol_cablecontrol
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -13184,6 +13819,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_cablecontrol | IN_TOL | n_diff=", n_ol_cablecontrol, " | rms=", rmsdiff_ol_cablecontrol
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13225,6 +13861,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ol_structcontrol | IDENTICAL | size=", SIZE(var%ol_structcontrol)
         ELSE 
             ALLOCATE (buf1_ol_structcontrol(SIZE(var%ol_structcontrol,dim=1),SIZE(var%ol_structcontrol,dim=2))) 
             ALLOCATE (buf2_ol_structcontrol(SIZE(var%ol_structcontrol,dim=1),SIZE(var%ol_structcontrol,dim=2))) 
@@ -13246,6 +13883,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_structcontrol | OUT_TOL | n_diff=", n_ol_structcontrol, " | rms=", rmsdiff_ol_structcontrol
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -13254,6 +13892,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_structcontrol | IN_TOL | n_diff=", n_ol_structcontrol, " | rms=", rmsdiff_ol_structcontrol
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13297,6 +13936,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ol_gentq | IDENTICAL | size=", SIZE(var%ol_gentq)
         ELSE 
             ALLOCATE (buf1_ol_gentq(SIZE(var%ol_gentq,dim=1))) 
             ALLOCATE (buf2_ol_gentq(SIZE(var%ol_gentq,dim=1))) 
@@ -13318,6 +13958,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_gentq | OUT_TOL | n_diff=", n_ol_gentq, " | rms=", rmsdiff_ol_gentq
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -13326,6 +13967,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_gentq | IN_TOL | n_diff=", n_ol_gentq, " | rms=", rmsdiff_ol_gentq
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13367,6 +14009,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ol_yawrate | IDENTICAL | size=", SIZE(var%ol_yawrate)
         ELSE 
             ALLOCATE (buf1_ol_yawrate(SIZE(var%ol_yawrate,dim=1))) 
             ALLOCATE (buf2_ol_yawrate(SIZE(var%ol_yawrate,dim=1))) 
@@ -13388,6 +14031,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_yawrate | OUT_TOL | n_diff=", n_ol_yawrate, " | rms=", rmsdiff_ol_yawrate
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -13396,6 +14040,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_yawrate | IN_TOL | n_diff=", n_ol_yawrate, " | rms=", rmsdiff_ol_yawrate
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13437,6 +14082,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ol_azimuth | IDENTICAL | size=", SIZE(var%ol_azimuth)
         ELSE 
             ALLOCATE (buf1_ol_azimuth(SIZE(var%ol_azimuth,dim=1))) 
             ALLOCATE (buf2_ol_azimuth(SIZE(var%ol_azimuth,dim=1))) 
@@ -13458,6 +14104,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_azimuth | OUT_TOL | n_diff=", n_ol_azimuth, " | rms=", rmsdiff_ol_azimuth
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -13466,6 +14113,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_azimuth | IN_TOL | n_diff=", n_ol_azimuth, " | rms=", rmsdiff_ol_azimuth
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13507,6 +14155,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ol_r_speed | IDENTICAL | size=", SIZE(var%ol_r_speed)
         ELSE 
             ALLOCATE (buf1_ol_r_speed(SIZE(var%ol_r_speed,dim=1))) 
             ALLOCATE (buf2_ol_r_speed(SIZE(var%ol_r_speed,dim=1))) 
@@ -13528,6 +14177,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_r_speed | OUT_TOL | n_diff=", n_ol_r_speed, " | rms=", rmsdiff_ol_r_speed
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -13536,6 +14186,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_r_speed | IN_TOL | n_diff=", n_ol_r_speed, " | rms=", rmsdiff_ol_r_speed
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13577,6 +14228,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ol_r_torque | IDENTICAL | size=", SIZE(var%ol_r_torque)
         ELSE 
             ALLOCATE (buf1_ol_r_torque(SIZE(var%ol_r_torque,dim=1))) 
             ALLOCATE (buf2_ol_r_torque(SIZE(var%ol_r_torque,dim=1))) 
@@ -13598,6 +14250,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_r_torque | OUT_TOL | n_diff=", n_ol_r_torque, " | rms=", rmsdiff_ol_r_torque
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -13606,6 +14259,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_r_torque | IN_TOL | n_diff=", n_ol_r_torque, " | rms=", rmsdiff_ol_r_torque
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13647,6 +14301,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ol_r_pitch | IDENTICAL | size=", SIZE(var%ol_r_pitch)
         ELSE 
             ALLOCATE (buf1_ol_r_pitch(SIZE(var%ol_r_pitch,dim=1))) 
             ALLOCATE (buf2_ol_r_pitch(SIZE(var%ol_r_pitch,dim=1))) 
@@ -13668,6 +14323,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_r_pitch | OUT_TOL | n_diff=", n_ol_r_pitch, " | rms=", rmsdiff_ol_r_pitch
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -13676,6 +14332,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_r_pitch | IN_TOL | n_diff=", n_ol_r_pitch, " | rms=", rmsdiff_ol_r_pitch
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13717,6 +14374,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] ol_channels | IDENTICAL | size=", SIZE(var%ol_channels)
         ELSE 
             ALLOCATE (buf1_ol_channels(SIZE(var%ol_channels,dim=1),SIZE(var%ol_channels,dim=2))) 
             ALLOCATE (buf2_ol_channels(SIZE(var%ol_channels,dim=1),SIZE(var%ol_channels,dim=2))) 
@@ -13738,6 +14396,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_channels | OUT_TOL | n_diff=", n_ol_channels, " | rms=", rmsdiff_ol_channels
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -13746,6 +14405,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] ol_channels | IN_TOL | n_diff=", n_ol_channels, " | rms=", rmsdiff_ol_channels
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13778,7 +14438,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pa_mode == kgenref_var%pa_mode) THEN 
+    IF ((var%pa_mode == kgenref_var%pa_mode) .OR. ((var%pa_mode /= var%pa_mode) .AND. (kgenref_var%pa_mode /= kgenref_var%pa_mode))) THEN
+        IF (var%pa_mode /= var%pa_mode) WRITE(*, *) "localvar%pa_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -13786,6 +14447,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pa_mode | IDENTICAL | ", var%pa_mode, " | ", kgenref_var%pa_mode
     ELSE 
         diff_pa_mode = ABS(var%pa_mode - kgenref_var%pa_mode) 
         IF (diff_pa_mode <= kgen_tolerance) THEN 
@@ -13796,6 +14458,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pa_mode | IN_TOL | ", var%pa_mode, " | ", kgenref_var%pa_mode, " | ", diff_pa_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -13804,6 +14467,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pa_mode | OUT_TOL | ", var%pa_mode, " | ", kgenref_var%pa_mode, " | ", diff_pa_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13825,7 +14489,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pa_cornerfreq == kgenref_var%pa_cornerfreq) THEN 
+    IF ((var%pa_cornerfreq == kgenref_var%pa_cornerfreq) .OR. ((var%pa_cornerfreq /= var%pa_cornerfreq) .AND. (kgenref_var%pa_cornerfreq /= kgenref_var%pa_cornerfreq))) THEN
+        IF (var%pa_cornerfreq /= var%pa_cornerfreq) WRITE(*, *) "localvar%pa_cornerfreq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -13833,6 +14498,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pa_cornerfreq | IDENTICAL | ", var%pa_cornerfreq, " | ", kgenref_var%pa_cornerfreq
     ELSE 
         diff_pa_cornerfreq = ABS(var%pa_cornerfreq - kgenref_var%pa_cornerfreq) 
         IF (diff_pa_cornerfreq <= kgen_tolerance) THEN 
@@ -13843,6 +14509,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pa_cornerfreq | IN_TOL | ", var%pa_cornerfreq, " | ", kgenref_var%pa_cornerfreq, " | ", diff_pa_cornerfreq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -13851,6 +14518,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pa_cornerfreq | OUT_TOL | ", var%pa_cornerfreq, " | ", kgenref_var%pa_cornerfreq, " | ", diff_pa_cornerfreq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13872,7 +14540,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pa_damping == kgenref_var%pa_damping) THEN 
+    IF ((var%pa_damping == kgenref_var%pa_damping) .OR. ((var%pa_damping /= var%pa_damping) .AND. (kgenref_var%pa_damping /= kgenref_var%pa_damping))) THEN
+        IF (var%pa_damping /= var%pa_damping) WRITE(*, *) "localvar%pa_damping is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -13880,6 +14549,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pa_damping | IDENTICAL | ", var%pa_damping, " | ", kgenref_var%pa_damping
     ELSE 
         diff_pa_damping = ABS(var%pa_damping - kgenref_var%pa_damping) 
         IF (diff_pa_damping <= kgen_tolerance) THEN 
@@ -13890,6 +14560,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pa_damping | IN_TOL | ", var%pa_damping, " | ", kgenref_var%pa_damping, " | ", diff_pa_damping
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -13898,6 +14569,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pa_damping | OUT_TOL | ", var%pa_damping, " | ", kgenref_var%pa_damping, " | ", diff_pa_damping
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13919,7 +14591,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%awc_mode == kgenref_var%awc_mode) THEN 
+    IF ((var%awc_mode == kgenref_var%awc_mode) .OR. ((var%awc_mode /= var%awc_mode) .AND. (kgenref_var%awc_mode /= kgenref_var%awc_mode))) THEN
+        IF (var%awc_mode /= var%awc_mode) WRITE(*, *) "localvar%awc_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -13927,6 +14600,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] awc_mode | IDENTICAL | ", var%awc_mode, " | ", kgenref_var%awc_mode
     ELSE 
         diff_awc_mode = ABS(var%awc_mode - kgenref_var%awc_mode) 
         IF (diff_awc_mode <= kgen_tolerance) THEN 
@@ -13937,6 +14611,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] awc_mode | IN_TOL | ", var%awc_mode, " | ", kgenref_var%awc_mode, " | ", diff_awc_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -13945,6 +14620,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] awc_mode | OUT_TOL | ", var%awc_mode, " | ", kgenref_var%awc_mode, " | ", diff_awc_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -13966,7 +14642,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%awc_nummodes == kgenref_var%awc_nummodes) THEN 
+    IF ((var%awc_nummodes == kgenref_var%awc_nummodes) .OR. ((var%awc_nummodes /= var%awc_nummodes) .AND. (kgenref_var%awc_nummodes /= kgenref_var%awc_nummodes))) THEN
+        IF (var%awc_nummodes /= var%awc_nummodes) WRITE(*, *) "localvar%awc_nummodes is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -13974,6 +14651,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] awc_nummodes | IDENTICAL | ", var%awc_nummodes, " | ", kgenref_var%awc_nummodes
     ELSE 
         diff_awc_nummodes = ABS(var%awc_nummodes - kgenref_var%awc_nummodes) 
         IF (diff_awc_nummodes <= kgen_tolerance) THEN 
@@ -13984,6 +14662,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] awc_nummodes | IN_TOL | ", var%awc_nummodes, " | ", kgenref_var%awc_nummodes, " | ", diff_awc_nummodes
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -13992,6 +14671,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] awc_nummodes | OUT_TOL | ", var%awc_nummodes, " | ", kgenref_var%awc_nummodes, " | ", diff_awc_nummodes
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14022,6 +14702,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] awc_n | IDENTICAL | size=", SIZE(var%awc_n)
         ELSE 
             ALLOCATE (buf1_awc_n(SIZE(var%awc_n,dim=1))) 
             ALLOCATE (buf2_awc_n(SIZE(var%awc_n,dim=1))) 
@@ -14043,6 +14724,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] awc_n | OUT_TOL | n_diff=", n_awc_n, " | rms=", rmsdiff_awc_n
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -14051,6 +14733,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] awc_n | IN_TOL | n_diff=", n_awc_n, " | rms=", rmsdiff_awc_n
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14090,6 +14773,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] awc_harmonic | IDENTICAL | size=", SIZE(var%awc_harmonic)
         ELSE 
             ALLOCATE (buf1_awc_harmonic(SIZE(var%awc_harmonic,dim=1))) 
             ALLOCATE (buf2_awc_harmonic(SIZE(var%awc_harmonic,dim=1))) 
@@ -14111,6 +14795,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] awc_harmonic | OUT_TOL | n_diff=", n_awc_harmonic, " | rms=", rmsdiff_awc_harmonic
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -14119,6 +14804,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] awc_harmonic | IN_TOL | n_diff=", n_awc_harmonic, " | rms=", rmsdiff_awc_harmonic
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14160,6 +14846,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] awc_freq | IDENTICAL | size=", SIZE(var%awc_freq)
         ELSE 
             ALLOCATE (buf1_awc_freq(SIZE(var%awc_freq,dim=1))) 
             ALLOCATE (buf2_awc_freq(SIZE(var%awc_freq,dim=1))) 
@@ -14181,6 +14868,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] awc_freq | OUT_TOL | n_diff=", n_awc_freq, " | rms=", rmsdiff_awc_freq
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -14189,6 +14877,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] awc_freq | IN_TOL | n_diff=", n_awc_freq, " | rms=", rmsdiff_awc_freq
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14230,6 +14919,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] awc_amp | IDENTICAL | size=", SIZE(var%awc_amp)
         ELSE 
             ALLOCATE (buf1_awc_amp(SIZE(var%awc_amp,dim=1))) 
             ALLOCATE (buf2_awc_amp(SIZE(var%awc_amp,dim=1))) 
@@ -14251,6 +14941,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] awc_amp | OUT_TOL | n_diff=", n_awc_amp, " | rms=", rmsdiff_awc_amp
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -14259,6 +14950,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] awc_amp | IN_TOL | n_diff=", n_awc_amp, " | rms=", rmsdiff_awc_amp
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14300,6 +14992,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] awc_clockangle | IDENTICAL | size=", SIZE(var%awc_clockangle)
         ELSE 
             ALLOCATE (buf1_awc_clockangle(SIZE(var%awc_clockangle,dim=1))) 
             ALLOCATE (buf2_awc_clockangle(SIZE(var%awc_clockangle,dim=1))) 
@@ -14321,6 +15014,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] awc_clockangle | OUT_TOL | n_diff=", n_awc_clockangle, " | rms=", rmsdiff_awc_clockangle
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -14329,6 +15023,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] awc_clockangle | IN_TOL | n_diff=", n_awc_clockangle, " | rms=", rmsdiff_awc_clockangle
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14361,7 +15056,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%awc_phaseoffset == kgenref_var%awc_phaseoffset) THEN 
+    IF ((var%awc_phaseoffset == kgenref_var%awc_phaseoffset) .OR. ((var%awc_phaseoffset /= var%awc_phaseoffset) .AND. (kgenref_var%awc_phaseoffset /= kgenref_var%awc_phaseoffset))) THEN
+        IF (var%awc_phaseoffset /= var%awc_phaseoffset) WRITE(*, *) "localvar%awc_phaseoffset is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -14369,6 +15065,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] awc_phaseoffset | IDENTICAL | ", var%awc_phaseoffset, " | ", kgenref_var%awc_phaseoffset
     ELSE 
         diff_awc_phaseoffset = ABS(var%awc_phaseoffset - kgenref_var%awc_phaseoffset) 
         IF (diff_awc_phaseoffset <= kgen_tolerance) THEN 
@@ -14379,6 +15076,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] awc_phaseoffset | IN_TOL | ", var%awc_phaseoffset, " | ", kgenref_var%awc_phaseoffset, " | ", diff_awc_phaseoffset
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -14387,6 +15085,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] awc_phaseoffset | OUT_TOL | ", var%awc_phaseoffset, " | ", kgenref_var%awc_phaseoffset, " | ", diff_awc_phaseoffset
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14417,6 +15116,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] awc_cntrgains | IDENTICAL | size=", SIZE(var%awc_cntrgains)
         ELSE 
             ALLOCATE (buf1_awc_cntrgains(SIZE(var%awc_cntrgains,dim=1))) 
             ALLOCATE (buf2_awc_cntrgains(SIZE(var%awc_cntrgains,dim=1))) 
@@ -14438,6 +15138,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] awc_cntrgains | OUT_TOL | n_diff=", n_awc_cntrgains, " | rms=", rmsdiff_awc_cntrgains
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -14446,6 +15147,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] awc_cntrgains | IN_TOL | n_diff=", n_awc_cntrgains, " | rms=", rmsdiff_awc_cntrgains
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14478,7 +15180,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pf_mode == kgenref_var%pf_mode) THEN 
+    IF ((var%pf_mode == kgenref_var%pf_mode) .OR. ((var%pf_mode /= var%pf_mode) .AND. (kgenref_var%pf_mode /= kgenref_var%pf_mode))) THEN
+        IF (var%pf_mode /= var%pf_mode) WRITE(*, *) "localvar%pf_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -14486,6 +15189,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pf_mode | IDENTICAL | ", var%pf_mode, " | ", kgenref_var%pf_mode
     ELSE 
         diff_pf_mode = ABS(var%pf_mode - kgenref_var%pf_mode) 
         IF (diff_pf_mode <= kgen_tolerance) THEN 
@@ -14496,6 +15200,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pf_mode | IN_TOL | ", var%pf_mode, " | ", kgenref_var%pf_mode, " | ", diff_pf_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -14504,6 +15209,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pf_mode | OUT_TOL | ", var%pf_mode, " | ", kgenref_var%pf_mode, " | ", diff_pf_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14534,6 +15240,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] pf_offsets | IDENTICAL | size=", SIZE(var%pf_offsets)
         ELSE 
             ALLOCATE (buf1_pf_offsets(SIZE(var%pf_offsets,dim=1))) 
             ALLOCATE (buf2_pf_offsets(SIZE(var%pf_offsets,dim=1))) 
@@ -14555,6 +15262,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] pf_offsets | OUT_TOL | n_diff=", n_pf_offsets, " | rms=", rmsdiff_pf_offsets
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -14563,6 +15271,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] pf_offsets | IN_TOL | n_diff=", n_pf_offsets, " | rms=", rmsdiff_pf_offsets
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14604,6 +15313,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] pf_timestuck | IDENTICAL | size=", SIZE(var%pf_timestuck)
         ELSE 
             ALLOCATE (buf1_pf_timestuck(SIZE(var%pf_timestuck,dim=1))) 
             ALLOCATE (buf2_pf_timestuck(SIZE(var%pf_timestuck,dim=1))) 
@@ -14625,6 +15335,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] pf_timestuck | OUT_TOL | n_diff=", n_pf_timestuck, " | rms=", rmsdiff_pf_timestuck
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -14633,6 +15344,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] pf_timestuck | IN_TOL | n_diff=", n_pf_timestuck, " | rms=", rmsdiff_pf_timestuck
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14665,7 +15377,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ext_mode == kgenref_var%ext_mode) THEN 
+    IF ((var%ext_mode == kgenref_var%ext_mode) .OR. ((var%ext_mode /= var%ext_mode) .AND. (kgenref_var%ext_mode /= kgenref_var%ext_mode))) THEN
+        IF (var%ext_mode /= var%ext_mode) WRITE(*, *) "localvar%ext_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -14673,6 +15386,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ext_mode | IDENTICAL | ", var%ext_mode, " | ", kgenref_var%ext_mode
     ELSE 
         diff_ext_mode = ABS(var%ext_mode - kgenref_var%ext_mode) 
         IF (diff_ext_mode <= kgen_tolerance) THEN 
@@ -14683,6 +15397,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ext_mode | IN_TOL | ", var%ext_mode, " | ", kgenref_var%ext_mode, " | ", diff_ext_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -14691,6 +15406,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ext_mode | OUT_TOL | ", var%ext_mode, " | ", kgenref_var%ext_mode, " | ", diff_ext_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14712,7 +15428,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%dll_filename == kgenref_var%dll_filename) THEN 
+    IF ((var%dll_filename == kgenref_var%dll_filename) .OR. ((var%dll_filename /= var%dll_filename) .AND. (kgenref_var%dll_filename /= kgenref_var%dll_filename))) THEN
+        IF (var%dll_filename /= var%dll_filename) WRITE(*, *) "localvar%dll_filename is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -14720,6 +15437,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] dll_filename | IDENTICAL | ", var%dll_filename, " | ", kgenref_var%dll_filename
     ELSE 
         dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -14728,6 +15446,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_OUT_TOL 
+        WRITE(*, *) "[VIT_FIELD] dll_filename | OUT_TOL | ", var%dll_filename, " | ", kgenref_var%dll_filename
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
         CONTINUE 
@@ -14748,7 +15467,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%dll_infile == kgenref_var%dll_infile) THEN 
+    IF ((var%dll_infile == kgenref_var%dll_infile) .OR. ((var%dll_infile /= var%dll_infile) .AND. (kgenref_var%dll_infile /= kgenref_var%dll_infile))) THEN
+        IF (var%dll_infile /= var%dll_infile) WRITE(*, *) "localvar%dll_infile is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -14756,6 +15476,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] dll_infile | IDENTICAL | ", var%dll_infile, " | ", kgenref_var%dll_infile
     ELSE 
         dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -14764,6 +15485,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_OUT_TOL 
+        WRITE(*, *) "[VIT_FIELD] dll_infile | OUT_TOL | ", var%dll_infile, " | ", kgenref_var%dll_infile
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
         CONTINUE 
@@ -14784,7 +15506,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%dll_procname == kgenref_var%dll_procname) THEN 
+    IF ((var%dll_procname == kgenref_var%dll_procname) .OR. ((var%dll_procname /= var%dll_procname) .AND. (kgenref_var%dll_procname /= kgenref_var%dll_procname))) THEN
+        IF (var%dll_procname /= var%dll_procname) WRITE(*, *) "localvar%dll_procname is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -14792,6 +15515,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] dll_procname | IDENTICAL | ", var%dll_procname, " | ", kgenref_var%dll_procname
     ELSE 
         dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -14800,6 +15524,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_OUT_TOL 
+        WRITE(*, *) "[VIT_FIELD] dll_procname | OUT_TOL | ", var%dll_procname, " | ", kgenref_var%dll_procname
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
         CONTINUE 
@@ -14820,7 +15545,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%zmq_mode == kgenref_var%zmq_mode) THEN 
+    IF ((var%zmq_mode == kgenref_var%zmq_mode) .OR. ((var%zmq_mode /= var%zmq_mode) .AND. (kgenref_var%zmq_mode /= kgenref_var%zmq_mode))) THEN
+        IF (var%zmq_mode /= var%zmq_mode) WRITE(*, *) "localvar%zmq_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -14828,6 +15554,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_mode | IDENTICAL | ", var%zmq_mode, " | ", kgenref_var%zmq_mode
     ELSE 
         diff_zmq_mode = ABS(var%zmq_mode - kgenref_var%zmq_mode) 
         IF (diff_zmq_mode <= kgen_tolerance) THEN 
@@ -14838,6 +15565,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_mode | IN_TOL | ", var%zmq_mode, " | ", kgenref_var%zmq_mode, " | ", diff_zmq_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -14846,6 +15574,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_mode | OUT_TOL | ", var%zmq_mode, " | ", kgenref_var%zmq_mode, " | ", diff_zmq_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14867,7 +15596,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%zmq_commaddress == kgenref_var%zmq_commaddress) THEN 
+    IF ((var%zmq_commaddress == kgenref_var%zmq_commaddress) .OR. ((var%zmq_commaddress /= var%zmq_commaddress) .AND. (kgenref_var%zmq_commaddress /= kgenref_var%zmq_commaddress))) THEN
+        IF (var%zmq_commaddress /= var%zmq_commaddress) WRITE(*, *) "localvar%zmq_commaddress is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -14875,6 +15605,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_commaddress | IDENTICAL | ", var%zmq_commaddress, " | ", kgenref_var%zmq_commaddress
     ELSE 
         dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -14883,6 +15614,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_OUT_TOL 
+        WRITE(*, *) "[VIT_FIELD] zmq_commaddress | OUT_TOL | ", var%zmq_commaddress, " | ", kgenref_var%zmq_commaddress
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
         CONTINUE 
@@ -14903,7 +15635,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%zmq_updateperiod == kgenref_var%zmq_updateperiod) THEN 
+    IF ((var%zmq_updateperiod == kgenref_var%zmq_updateperiod) .OR. ((var%zmq_updateperiod /= var%zmq_updateperiod) .AND. (kgenref_var%zmq_updateperiod /= kgenref_var%zmq_updateperiod))) THEN
+        IF (var%zmq_updateperiod /= var%zmq_updateperiod) WRITE(*, *) "localvar%zmq_updateperiod is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -14911,6 +15644,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_updateperiod | IDENTICAL | ", var%zmq_updateperiod, " | ", kgenref_var%zmq_updateperiod
     ELSE 
         diff_zmq_updateperiod = ABS(var%zmq_updateperiod - kgenref_var%zmq_updateperiod) 
         IF (diff_zmq_updateperiod <= kgen_tolerance) THEN 
@@ -14921,6 +15655,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_updateperiod | IN_TOL | ", var%zmq_updateperiod, " | ", kgenref_var%zmq_updateperiod, " | ", diff_zmq_updateperiod
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -14929,6 +15664,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_updateperiod | OUT_TOL | ", var%zmq_updateperiod, " | ", kgenref_var%zmq_updateperiod, " | ", diff_zmq_updateperiod
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14950,7 +15686,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%cc_mode == kgenref_var%cc_mode) THEN 
+    IF ((var%cc_mode == kgenref_var%cc_mode) .OR. ((var%cc_mode /= var%cc_mode) .AND. (kgenref_var%cc_mode /= kgenref_var%cc_mode))) THEN
+        IF (var%cc_mode /= var%cc_mode) WRITE(*, *) "localvar%cc_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -14958,6 +15695,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] cc_mode | IDENTICAL | ", var%cc_mode, " | ", kgenref_var%cc_mode
     ELSE 
         diff_cc_mode = ABS(var%cc_mode - kgenref_var%cc_mode) 
         IF (diff_cc_mode <= kgen_tolerance) THEN 
@@ -14968,6 +15706,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] cc_mode | IN_TOL | ", var%cc_mode, " | ", kgenref_var%cc_mode, " | ", diff_cc_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -14976,6 +15715,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] cc_mode | OUT_TOL | ", var%cc_mode, " | ", kgenref_var%cc_mode, " | ", diff_cc_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -14997,7 +15737,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%cc_group_n == kgenref_var%cc_group_n) THEN 
+    IF ((var%cc_group_n == kgenref_var%cc_group_n) .OR. ((var%cc_group_n /= var%cc_group_n) .AND. (kgenref_var%cc_group_n /= kgenref_var%cc_group_n))) THEN
+        IF (var%cc_group_n /= var%cc_group_n) WRITE(*, *) "localvar%cc_group_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -15005,6 +15746,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] cc_group_n | IDENTICAL | ", var%cc_group_n, " | ", kgenref_var%cc_group_n
     ELSE 
         diff_cc_group_n = ABS(var%cc_group_n - kgenref_var%cc_group_n) 
         IF (diff_cc_group_n <= kgen_tolerance) THEN 
@@ -15015,6 +15757,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] cc_group_n | IN_TOL | ", var%cc_group_n, " | ", kgenref_var%cc_group_n, " | ", diff_cc_group_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -15023,6 +15766,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] cc_group_n | OUT_TOL | ", var%cc_group_n, " | ", kgenref_var%cc_group_n, " | ", diff_cc_group_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15044,7 +15788,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%cc_acttau == kgenref_var%cc_acttau) THEN 
+    IF ((var%cc_acttau == kgenref_var%cc_acttau) .OR. ((var%cc_acttau /= var%cc_acttau) .AND. (kgenref_var%cc_acttau /= kgenref_var%cc_acttau))) THEN
+        IF (var%cc_acttau /= var%cc_acttau) WRITE(*, *) "localvar%cc_acttau is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -15052,6 +15797,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] cc_acttau | IDENTICAL | ", var%cc_acttau, " | ", kgenref_var%cc_acttau
     ELSE 
         diff_cc_acttau = ABS(var%cc_acttau - kgenref_var%cc_acttau) 
         IF (diff_cc_acttau <= kgen_tolerance) THEN 
@@ -15062,6 +15808,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] cc_acttau | IN_TOL | ", var%cc_acttau, " | ", kgenref_var%cc_acttau, " | ", diff_cc_acttau
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -15070,6 +15817,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] cc_acttau | OUT_TOL | ", var%cc_acttau, " | ", kgenref_var%cc_acttau, " | ", diff_cc_acttau
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15100,6 +15848,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] cc_groupindex | IDENTICAL | size=", SIZE(var%cc_groupindex)
         ELSE 
             ALLOCATE (buf1_cc_groupindex(SIZE(var%cc_groupindex,dim=1))) 
             ALLOCATE (buf2_cc_groupindex(SIZE(var%cc_groupindex,dim=1))) 
@@ -15121,6 +15870,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] cc_groupindex | OUT_TOL | n_diff=", n_cc_groupindex, " | rms=", rmsdiff_cc_groupindex
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -15129,6 +15879,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] cc_groupindex | IN_TOL | n_diff=", n_cc_groupindex, " | rms=", rmsdiff_cc_groupindex
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15161,7 +15912,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%stc_mode == kgenref_var%stc_mode) THEN 
+    IF ((var%stc_mode == kgenref_var%stc_mode) .OR. ((var%stc_mode /= var%stc_mode) .AND. (kgenref_var%stc_mode /= kgenref_var%stc_mode))) THEN
+        IF (var%stc_mode /= var%stc_mode) WRITE(*, *) "localvar%stc_mode is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -15169,6 +15921,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] stc_mode | IDENTICAL | ", var%stc_mode, " | ", kgenref_var%stc_mode
     ELSE 
         diff_stc_mode = ABS(var%stc_mode - kgenref_var%stc_mode) 
         IF (diff_stc_mode <= kgen_tolerance) THEN 
@@ -15179,6 +15932,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] stc_mode | IN_TOL | ", var%stc_mode, " | ", kgenref_var%stc_mode, " | ", diff_stc_mode
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -15187,6 +15941,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] stc_mode | OUT_TOL | ", var%stc_mode, " | ", kgenref_var%stc_mode, " | ", diff_stc_mode
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15208,7 +15963,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%stc_group_n == kgenref_var%stc_group_n) THEN 
+    IF ((var%stc_group_n == kgenref_var%stc_group_n) .OR. ((var%stc_group_n /= var%stc_group_n) .AND. (kgenref_var%stc_group_n /= kgenref_var%stc_group_n))) THEN
+        IF (var%stc_group_n /= var%stc_group_n) WRITE(*, *) "localvar%stc_group_n is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -15216,6 +15972,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] stc_group_n | IDENTICAL | ", var%stc_group_n, " | ", kgenref_var%stc_group_n
     ELSE 
         diff_stc_group_n = ABS(var%stc_group_n - kgenref_var%stc_group_n) 
         IF (diff_stc_group_n <= kgen_tolerance) THEN 
@@ -15226,6 +15983,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] stc_group_n | IN_TOL | ", var%stc_group_n, " | ", kgenref_var%stc_group_n, " | ", diff_stc_group_n
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -15234,6 +15992,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] stc_group_n | OUT_TOL | ", var%stc_group_n, " | ", kgenref_var%stc_group_n, " | ", diff_stc_group_n
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15264,6 +16023,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IDENTICAL 
+            WRITE(*, *) "[VIT_ARRAY] stc_groupindex | IDENTICAL | size=", SIZE(var%stc_groupindex)
         ELSE 
             ALLOCATE (buf1_stc_groupindex(SIZE(var%stc_groupindex,dim=1))) 
             ALLOCATE (buf2_stc_groupindex(SIZE(var%stc_groupindex,dim=1))) 
@@ -15285,6 +16045,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_OUT_TOL 
+                WRITE(*, *) "[VIT_ARRAY] stc_groupindex | OUT_TOL | n_diff=", n_stc_groupindex, " | rms=", rmsdiff_stc_groupindex
             ELSE 
                 dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
                 IF (kgen_verboseLevel > 1) THEN 
@@ -15293,6 +16054,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                     END IF   
                 END IF   
                 check_result = CHECK_IN_TOL 
+                WRITE(*, *) "[VIT_ARRAY] stc_groupindex | IN_TOL | n_diff=", n_stc_groupindex, " | rms=", rmsdiff_stc_groupindex
             END IF   
         END IF   
         IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15325,7 +16087,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
           
     END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_rttq99 == kgenref_var%pc_rttq99) THEN 
+    IF ((var%pc_rttq99 == kgenref_var%pc_rttq99) .OR. ((var%pc_rttq99 /= var%pc_rttq99) .AND. (kgenref_var%pc_rttq99 /= kgenref_var%pc_rttq99))) THEN
+        IF (var%pc_rttq99 /= var%pc_rttq99) WRITE(*, *) "localvar%pc_rttq99 is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -15333,6 +16096,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_rttq99 | IDENTICAL | ", var%pc_rttq99, " | ", kgenref_var%pc_rttq99
     ELSE 
         diff_pc_rttq99 = ABS(var%pc_rttq99 - kgenref_var%pc_rttq99) 
         IF (diff_pc_rttq99 <= kgen_tolerance) THEN 
@@ -15343,6 +16107,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_rttq99 | IN_TOL | ", var%pc_rttq99, " | ", kgenref_var%pc_rttq99, " | ", diff_pc_rttq99
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -15351,6 +16116,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_rttq99 | OUT_TOL | ", var%pc_rttq99, " | ", kgenref_var%pc_rttq99, " | ", diff_pc_rttq99
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15372,7 +16138,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_maxomtq == kgenref_var%vs_maxomtq) THEN 
+    IF ((var%vs_maxomtq == kgenref_var%vs_maxomtq) .OR. ((var%vs_maxomtq /= var%vs_maxomtq) .AND. (kgenref_var%vs_maxomtq /= kgenref_var%vs_maxomtq))) THEN
+        IF (var%vs_maxomtq /= var%vs_maxomtq) WRITE(*, *) "localvar%vs_maxomtq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -15380,6 +16147,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_maxomtq | IDENTICAL | ", var%vs_maxomtq, " | ", kgenref_var%vs_maxomtq
     ELSE 
         diff_vs_maxomtq = ABS(var%vs_maxomtq - kgenref_var%vs_maxomtq) 
         IF (diff_vs_maxomtq <= kgen_tolerance) THEN 
@@ -15390,6 +16158,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_maxomtq | IN_TOL | ", var%vs_maxomtq, " | ", kgenref_var%vs_maxomtq, " | ", diff_vs_maxomtq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -15398,6 +16167,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_maxomtq | OUT_TOL | ", var%vs_maxomtq, " | ", kgenref_var%vs_maxomtq, " | ", diff_vs_maxomtq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15419,7 +16189,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_minomtq == kgenref_var%vs_minomtq) THEN 
+    IF ((var%vs_minomtq == kgenref_var%vs_minomtq) .OR. ((var%vs_minomtq /= var%vs_minomtq) .AND. (kgenref_var%vs_minomtq /= kgenref_var%vs_minomtq))) THEN
+        IF (var%vs_minomtq /= var%vs_minomtq) WRITE(*, *) "localvar%vs_minomtq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -15427,6 +16198,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_minomtq | IDENTICAL | ", var%vs_minomtq, " | ", kgenref_var%vs_minomtq
     ELSE 
         diff_vs_minomtq = ABS(var%vs_minomtq - kgenref_var%vs_minomtq) 
         IF (diff_vs_minomtq <= kgen_tolerance) THEN 
@@ -15437,6 +16209,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_minomtq | IN_TOL | ", var%vs_minomtq, " | ", kgenref_var%vs_minomtq, " | ", diff_vs_minomtq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -15445,6 +16218,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_controlparameters(varname, check_status, var
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_minomtq | OUT_TOL | ", var%vs_minomtq, " | ", kgenref_var%vs_minomtq, " | ", diff_vs_minomtq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15501,7 +16275,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
       
     CALL kgen_init_check(dtype_check_status, rank=check_status%rank) 
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%om_r == kgenref_var%om_r) THEN 
+    IF ((var%om_r == kgenref_var%om_r) .OR. ((var%om_r /= var%om_r) .AND. (kgenref_var%om_r /= kgenref_var%om_r))) THEN
+        IF (var%om_r /= var%om_r) WRITE(*, *) "localvar%om_r is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -15509,6 +16284,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] om_r | IDENTICAL | ", var%om_r, " | ", kgenref_var%om_r
     ELSE 
         diff_om_r = ABS(var%om_r - kgenref_var%om_r) 
         IF (diff_om_r <= kgen_tolerance) THEN 
@@ -15519,6 +16295,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] om_r | IN_TOL | ", var%om_r, " | ", kgenref_var%om_r, " | ", diff_om_r
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -15527,6 +16304,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] om_r | OUT_TOL | ", var%om_r, " | ", kgenref_var%om_r, " | ", diff_om_r
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15548,7 +16326,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%v_t == kgenref_var%v_t) THEN 
+    IF ((var%v_t == kgenref_var%v_t) .OR. ((var%v_t /= var%v_t) .AND. (kgenref_var%v_t /= kgenref_var%v_t))) THEN
+        IF (var%v_t /= var%v_t) WRITE(*, *) "localvar%v_t is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -15556,6 +16335,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] v_t | IDENTICAL | ", var%v_t, " | ", kgenref_var%v_t
     ELSE 
         diff_v_t = ABS(var%v_t - kgenref_var%v_t) 
         IF (diff_v_t <= kgen_tolerance) THEN 
@@ -15566,6 +16346,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] v_t | IN_TOL | ", var%v_t, " | ", kgenref_var%v_t, " | ", diff_v_t
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -15574,6 +16355,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] v_t | OUT_TOL | ", var%v_t, " | ", kgenref_var%v_t, " | ", diff_v_t
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15595,7 +16377,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%v_m == kgenref_var%v_m) THEN 
+    IF ((var%v_m == kgenref_var%v_m) .OR. ((var%v_m /= var%v_m) .AND. (kgenref_var%v_m /= kgenref_var%v_m))) THEN
+        IF (var%v_m /= var%v_m) WRITE(*, *) "localvar%v_m is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -15603,6 +16386,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] v_m | IDENTICAL | ", var%v_m, " | ", kgenref_var%v_m
     ELSE 
         diff_v_m = ABS(var%v_m - kgenref_var%v_m) 
         IF (diff_v_m <= kgen_tolerance) THEN 
@@ -15613,6 +16397,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] v_m | IN_TOL | ", var%v_m, " | ", kgenref_var%v_m, " | ", diff_v_m
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -15621,6 +16406,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] v_m | OUT_TOL | ", var%v_m, " | ", kgenref_var%v_m, " | ", diff_v_m
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15642,7 +16428,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%v_h == kgenref_var%v_h) THEN 
+    IF ((var%v_h == kgenref_var%v_h) .OR. ((var%v_h /= var%v_h) .AND. (kgenref_var%v_h /= kgenref_var%v_h))) THEN
+        IF (var%v_h /= var%v_h) WRITE(*, *) "localvar%v_h is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -15650,6 +16437,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] v_h | IDENTICAL | ", var%v_h, " | ", kgenref_var%v_h
     ELSE 
         diff_v_h = ABS(var%v_h - kgenref_var%v_h) 
         IF (diff_v_h <= kgen_tolerance) THEN 
@@ -15660,6 +16448,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] v_h | IN_TOL | ", var%v_h, " | ", kgenref_var%v_h, " | ", diff_v_h
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -15668,6 +16457,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] v_h | OUT_TOL | ", var%v_h, " | ", kgenref_var%v_h, " | ", diff_v_h
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15697,6 +16487,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] p | IDENTICAL | size=", SIZE(var%p)
     ELSE 
         ALLOCATE (buf1_p(SIZE(var%p,dim=1),SIZE(var%p,dim=2))) 
         ALLOCATE (buf2_p(SIZE(var%p,dim=1),SIZE(var%p,dim=2))) 
@@ -15718,6 +16509,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] p | OUT_TOL | n_diff=", n_p, " | rms=", rmsdiff_p
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -15726,6 +16518,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] p | IN_TOL | n_diff=", n_p, " | rms=", rmsdiff_p
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15763,6 +16556,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] xh | IDENTICAL | size=", SIZE(var%xh)
     ELSE 
         ALLOCATE (buf1_xh(SIZE(var%xh,dim=1),SIZE(var%xh,dim=2))) 
         ALLOCATE (buf2_xh(SIZE(var%xh,dim=1),SIZE(var%xh,dim=2))) 
@@ -15784,6 +16578,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] xh | OUT_TOL | n_diff=", n_xh, " | rms=", rmsdiff_xh
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -15792,6 +16587,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] xh | IN_TOL | n_diff=", n_xh, " | rms=", rmsdiff_xh
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -15829,6 +16625,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] k | IDENTICAL | size=", SIZE(var%k)
     ELSE 
         ALLOCATE (buf1_k(SIZE(var%k,dim=1),SIZE(var%k,dim=2))) 
         ALLOCATE (buf2_k(SIZE(var%k,dim=1),SIZE(var%k,dim=2))) 
@@ -15850,6 +16647,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] k | OUT_TOL | n_diff=", n_k, " | rms=", rmsdiff_k
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -15858,6 +16656,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_we(varname, check_status, var, kgenref_var)
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] k | IN_TOL | n_diff=", n_k, " | rms=", rmsdiff_k
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16055,6 +16854,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf1_a1 | IDENTICAL | size=", SIZE(var%lpf1_a1)
     ELSE 
         ALLOCATE (buf1_lpf1_a1(SIZE(var%lpf1_a1,dim=1))) 
         ALLOCATE (buf2_lpf1_a1(SIZE(var%lpf1_a1,dim=1))) 
@@ -16076,6 +16876,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf1_a1 | OUT_TOL | n_diff=", n_lpf1_a1, " | rms=", rmsdiff_lpf1_a1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -16084,6 +16885,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf1_a1 | IN_TOL | n_diff=", n_lpf1_a1, " | rms=", rmsdiff_lpf1_a1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16121,6 +16923,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf1_a0 | IDENTICAL | size=", SIZE(var%lpf1_a0)
     ELSE 
         ALLOCATE (buf1_lpf1_a0(SIZE(var%lpf1_a0,dim=1))) 
         ALLOCATE (buf2_lpf1_a0(SIZE(var%lpf1_a0,dim=1))) 
@@ -16142,6 +16945,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf1_a0 | OUT_TOL | n_diff=", n_lpf1_a0, " | rms=", rmsdiff_lpf1_a0
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -16150,6 +16954,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf1_a0 | IN_TOL | n_diff=", n_lpf1_a0, " | rms=", rmsdiff_lpf1_a0
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16187,6 +16992,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf1_b1 | IDENTICAL | size=", SIZE(var%lpf1_b1)
     ELSE 
         ALLOCATE (buf1_lpf1_b1(SIZE(var%lpf1_b1,dim=1))) 
         ALLOCATE (buf2_lpf1_b1(SIZE(var%lpf1_b1,dim=1))) 
@@ -16208,6 +17014,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf1_b1 | OUT_TOL | n_diff=", n_lpf1_b1, " | rms=", rmsdiff_lpf1_b1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -16216,6 +17023,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf1_b1 | IN_TOL | n_diff=", n_lpf1_b1, " | rms=", rmsdiff_lpf1_b1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16253,6 +17061,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf1_b0 | IDENTICAL | size=", SIZE(var%lpf1_b0)
     ELSE 
         ALLOCATE (buf1_lpf1_b0(SIZE(var%lpf1_b0,dim=1))) 
         ALLOCATE (buf2_lpf1_b0(SIZE(var%lpf1_b0,dim=1))) 
@@ -16274,6 +17083,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf1_b0 | OUT_TOL | n_diff=", n_lpf1_b0, " | rms=", rmsdiff_lpf1_b0
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -16282,6 +17092,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf1_b0 | IN_TOL | n_diff=", n_lpf1_b0, " | rms=", rmsdiff_lpf1_b0
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16319,6 +17130,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf1_inputsignallast | IDENTICAL | size=", SIZE(var%lpf1_inputsignallast)
     ELSE 
         ALLOCATE (buf1_lpf1_inputsignallast(SIZE(var%lpf1_inputsignallast,dim=1))) 
         ALLOCATE (buf2_lpf1_inputsignallast(SIZE(var%lpf1_inputsignallast,dim=1))) 
@@ -16341,6 +17153,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf1_inputsignallast | OUT_TOL | n_diff=", n_lpf1_inputsignallast, " | rms=", rmsdiff_lpf1_inputsignallast
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -16349,6 +17162,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf1_inputsignallast | IN_TOL | n_diff=", n_lpf1_inputsignallast, " | rms=", rmsdiff_lpf1_inputsignallast
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16390,6 +17204,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf1_outputsignallast | IDENTICAL | size=", SIZE(var%lpf1_outputsignallast)
     ELSE 
         ALLOCATE (buf1_lpf1_outputsignallast(SIZE(var%lpf1_outputsignallast,dim=1))) 
         ALLOCATE (buf2_lpf1_outputsignallast(SIZE(var%lpf1_outputsignallast,dim=1))) 
@@ -16412,6 +17227,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf1_outputsignallast | OUT_TOL | n_diff=", n_lpf1_outputsignallast, " | rms=", rmsdiff_lpf1_outputsignallast
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -16420,6 +17236,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf1_outputsignallast | IN_TOL | n_diff=", n_lpf1_outputsignallast, " | rms=", rmsdiff_lpf1_outputsignallast
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16461,6 +17278,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf2_a2 | IDENTICAL | size=", SIZE(var%lpf2_a2)
     ELSE 
         ALLOCATE (buf1_lpf2_a2(SIZE(var%lpf2_a2,dim=1))) 
         ALLOCATE (buf2_lpf2_a2(SIZE(var%lpf2_a2,dim=1))) 
@@ -16482,6 +17300,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_a2 | OUT_TOL | n_diff=", n_lpf2_a2, " | rms=", rmsdiff_lpf2_a2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -16490,6 +17309,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_a2 | IN_TOL | n_diff=", n_lpf2_a2, " | rms=", rmsdiff_lpf2_a2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16527,6 +17347,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf2_a1 | IDENTICAL | size=", SIZE(var%lpf2_a1)
     ELSE 
         ALLOCATE (buf1_lpf2_a1(SIZE(var%lpf2_a1,dim=1))) 
         ALLOCATE (buf2_lpf2_a1(SIZE(var%lpf2_a1,dim=1))) 
@@ -16548,6 +17369,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_a1 | OUT_TOL | n_diff=", n_lpf2_a1, " | rms=", rmsdiff_lpf2_a1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -16556,6 +17378,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_a1 | IN_TOL | n_diff=", n_lpf2_a1, " | rms=", rmsdiff_lpf2_a1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16593,6 +17416,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf2_a0 | IDENTICAL | size=", SIZE(var%lpf2_a0)
     ELSE 
         ALLOCATE (buf1_lpf2_a0(SIZE(var%lpf2_a0,dim=1))) 
         ALLOCATE (buf2_lpf2_a0(SIZE(var%lpf2_a0,dim=1))) 
@@ -16614,6 +17438,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_a0 | OUT_TOL | n_diff=", n_lpf2_a0, " | rms=", rmsdiff_lpf2_a0
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -16622,6 +17447,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_a0 | IN_TOL | n_diff=", n_lpf2_a0, " | rms=", rmsdiff_lpf2_a0
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16659,6 +17485,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf2_b2 | IDENTICAL | size=", SIZE(var%lpf2_b2)
     ELSE 
         ALLOCATE (buf1_lpf2_b2(SIZE(var%lpf2_b2,dim=1))) 
         ALLOCATE (buf2_lpf2_b2(SIZE(var%lpf2_b2,dim=1))) 
@@ -16680,6 +17507,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_b2 | OUT_TOL | n_diff=", n_lpf2_b2, " | rms=", rmsdiff_lpf2_b2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -16688,6 +17516,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_b2 | IN_TOL | n_diff=", n_lpf2_b2, " | rms=", rmsdiff_lpf2_b2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16725,6 +17554,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf2_b1 | IDENTICAL | size=", SIZE(var%lpf2_b1)
     ELSE 
         ALLOCATE (buf1_lpf2_b1(SIZE(var%lpf2_b1,dim=1))) 
         ALLOCATE (buf2_lpf2_b1(SIZE(var%lpf2_b1,dim=1))) 
@@ -16746,6 +17576,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_b1 | OUT_TOL | n_diff=", n_lpf2_b1, " | rms=", rmsdiff_lpf2_b1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -16754,6 +17585,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_b1 | IN_TOL | n_diff=", n_lpf2_b1, " | rms=", rmsdiff_lpf2_b1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16791,6 +17623,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf2_b0 | IDENTICAL | size=", SIZE(var%lpf2_b0)
     ELSE 
         ALLOCATE (buf1_lpf2_b0(SIZE(var%lpf2_b0,dim=1))) 
         ALLOCATE (buf2_lpf2_b0(SIZE(var%lpf2_b0,dim=1))) 
@@ -16812,6 +17645,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_b0 | OUT_TOL | n_diff=", n_lpf2_b0, " | rms=", rmsdiff_lpf2_b0
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -16820,6 +17654,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_b0 | IN_TOL | n_diff=", n_lpf2_b0, " | rms=", rmsdiff_lpf2_b0
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16857,6 +17692,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf2_inputsignallast2 | IDENTICAL | size=", SIZE(var%lpf2_inputsignallast2)
     ELSE 
         ALLOCATE (buf1_lpf2_inputsignallast2(SIZE(var%lpf2_inputsignallast2,dim=1))) 
         ALLOCATE (buf2_lpf2_inputsignallast2(SIZE(var%lpf2_inputsignallast2,dim=1))) 
@@ -16879,6 +17715,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_inputsignallast2 | OUT_TOL | n_diff=", n_lpf2_inputsignallast2, " | rms=", rmsdiff_lpf2_inputsignallast2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -16887,6 +17724,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_inputsignallast2 | IN_TOL | n_diff=", n_lpf2_inputsignallast2, " | rms=", rmsdiff_lpf2_inputsignallast2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16928,6 +17766,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf2_outputsignallast2 | IDENTICAL | size=", SIZE(var%lpf2_outputsignallast2)
     ELSE 
         ALLOCATE (buf1_lpf2_outputsignallast2(SIZE(var%lpf2_outputsignallast2,dim=1))) 
         ALLOCATE (buf2_lpf2_outputsignallast2(SIZE(var%lpf2_outputsignallast2,dim=1))) 
@@ -16950,6 +17789,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_outputsignallast2 | OUT_TOL | n_diff=", n_lpf2_outputsignallast2, " | rms=", rmsdiff_lpf2_outputsignallast2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -16958,6 +17798,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_outputsignallast2 | IN_TOL | n_diff=", n_lpf2_outputsignallast2, " | rms=", rmsdiff_lpf2_outputsignallast2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -16999,6 +17840,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf2_inputsignallast1 | IDENTICAL | size=", SIZE(var%lpf2_inputsignallast1)
     ELSE 
         ALLOCATE (buf1_lpf2_inputsignallast1(SIZE(var%lpf2_inputsignallast1,dim=1))) 
         ALLOCATE (buf2_lpf2_inputsignallast1(SIZE(var%lpf2_inputsignallast1,dim=1))) 
@@ -17021,6 +17863,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_inputsignallast1 | OUT_TOL | n_diff=", n_lpf2_inputsignallast1, " | rms=", rmsdiff_lpf2_inputsignallast1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17029,6 +17872,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_inputsignallast1 | IN_TOL | n_diff=", n_lpf2_inputsignallast1, " | rms=", rmsdiff_lpf2_inputsignallast1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -17070,6 +17914,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpf2_outputsignallast1 | IDENTICAL | size=", SIZE(var%lpf2_outputsignallast1)
     ELSE 
         ALLOCATE (buf1_lpf2_outputsignallast1(SIZE(var%lpf2_outputsignallast1,dim=1))) 
         ALLOCATE (buf2_lpf2_outputsignallast1(SIZE(var%lpf2_outputsignallast1,dim=1))) 
@@ -17092,6 +17937,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_outputsignallast1 | OUT_TOL | n_diff=", n_lpf2_outputsignallast1, " | rms=", rmsdiff_lpf2_outputsignallast1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17100,6 +17946,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpf2_outputsignallast1 | IN_TOL | n_diff=", n_lpf2_outputsignallast1, " | rms=", rmsdiff_lpf2_outputsignallast1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -17141,6 +17988,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpfv_a2 | IDENTICAL | size=", SIZE(var%lpfv_a2)
     ELSE 
         ALLOCATE (buf1_lpfv_a2(SIZE(var%lpfv_a2,dim=1))) 
         ALLOCATE (buf2_lpfv_a2(SIZE(var%lpfv_a2,dim=1))) 
@@ -17162,6 +18010,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_a2 | OUT_TOL | n_diff=", n_lpfv_a2, " | rms=", rmsdiff_lpfv_a2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17170,6 +18019,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_a2 | IN_TOL | n_diff=", n_lpfv_a2, " | rms=", rmsdiff_lpfv_a2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -17207,6 +18057,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpfv_a1 | IDENTICAL | size=", SIZE(var%lpfv_a1)
     ELSE 
         ALLOCATE (buf1_lpfv_a1(SIZE(var%lpfv_a1,dim=1))) 
         ALLOCATE (buf2_lpfv_a1(SIZE(var%lpfv_a1,dim=1))) 
@@ -17228,6 +18079,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_a1 | OUT_TOL | n_diff=", n_lpfv_a1, " | rms=", rmsdiff_lpfv_a1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17236,6 +18088,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_a1 | IN_TOL | n_diff=", n_lpfv_a1, " | rms=", rmsdiff_lpfv_a1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -17273,6 +18126,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpfv_a0 | IDENTICAL | size=", SIZE(var%lpfv_a0)
     ELSE 
         ALLOCATE (buf1_lpfv_a0(SIZE(var%lpfv_a0,dim=1))) 
         ALLOCATE (buf2_lpfv_a0(SIZE(var%lpfv_a0,dim=1))) 
@@ -17294,6 +18148,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_a0 | OUT_TOL | n_diff=", n_lpfv_a0, " | rms=", rmsdiff_lpfv_a0
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17302,6 +18157,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_a0 | IN_TOL | n_diff=", n_lpfv_a0, " | rms=", rmsdiff_lpfv_a0
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -17339,6 +18195,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpfv_b2 | IDENTICAL | size=", SIZE(var%lpfv_b2)
     ELSE 
         ALLOCATE (buf1_lpfv_b2(SIZE(var%lpfv_b2,dim=1))) 
         ALLOCATE (buf2_lpfv_b2(SIZE(var%lpfv_b2,dim=1))) 
@@ -17360,6 +18217,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_b2 | OUT_TOL | n_diff=", n_lpfv_b2, " | rms=", rmsdiff_lpfv_b2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17368,6 +18226,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_b2 | IN_TOL | n_diff=", n_lpfv_b2, " | rms=", rmsdiff_lpfv_b2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -17405,6 +18264,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpfv_b1 | IDENTICAL | size=", SIZE(var%lpfv_b1)
     ELSE 
         ALLOCATE (buf1_lpfv_b1(SIZE(var%lpfv_b1,dim=1))) 
         ALLOCATE (buf2_lpfv_b1(SIZE(var%lpfv_b1,dim=1))) 
@@ -17426,6 +18286,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_b1 | OUT_TOL | n_diff=", n_lpfv_b1, " | rms=", rmsdiff_lpfv_b1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17434,6 +18295,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_b1 | IN_TOL | n_diff=", n_lpfv_b1, " | rms=", rmsdiff_lpfv_b1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -17471,6 +18333,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpfv_b0 | IDENTICAL | size=", SIZE(var%lpfv_b0)
     ELSE 
         ALLOCATE (buf1_lpfv_b0(SIZE(var%lpfv_b0,dim=1))) 
         ALLOCATE (buf2_lpfv_b0(SIZE(var%lpfv_b0,dim=1))) 
@@ -17492,6 +18355,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_b0 | OUT_TOL | n_diff=", n_lpfv_b0, " | rms=", rmsdiff_lpfv_b0
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17500,6 +18364,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_b0 | IN_TOL | n_diff=", n_lpfv_b0, " | rms=", rmsdiff_lpfv_b0
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -17537,6 +18402,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpfv_inputsignallast2 | IDENTICAL | size=", SIZE(var%lpfv_inputsignallast2)
     ELSE 
         ALLOCATE (buf1_lpfv_inputsignallast2(SIZE(var%lpfv_inputsignallast2,dim=1))) 
         ALLOCATE (buf2_lpfv_inputsignallast2(SIZE(var%lpfv_inputsignallast2,dim=1))) 
@@ -17559,6 +18425,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_inputsignallast2 | OUT_TOL | n_diff=", n_lpfv_inputsignallast2, " | rms=", rmsdiff_lpfv_inputsignallast2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17567,6 +18434,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_inputsignallast2 | IN_TOL | n_diff=", n_lpfv_inputsignallast2, " | rms=", rmsdiff_lpfv_inputsignallast2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -17608,6 +18476,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpfv_outputsignallast2 | IDENTICAL | size=", SIZE(var%lpfv_outputsignallast2)
     ELSE 
         ALLOCATE (buf1_lpfv_outputsignallast2(SIZE(var%lpfv_outputsignallast2,dim=1))) 
         ALLOCATE (buf2_lpfv_outputsignallast2(SIZE(var%lpfv_outputsignallast2,dim=1))) 
@@ -17630,6 +18499,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_outputsignallast2 | OUT_TOL | n_diff=", n_lpfv_outputsignallast2, " | rms=", rmsdiff_lpfv_outputsignallast2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17638,6 +18508,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_outputsignallast2 | IN_TOL | n_diff=", n_lpfv_outputsignallast2, " | rms=", rmsdiff_lpfv_outputsignallast2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -17679,6 +18550,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpfv_inputsignallast1 | IDENTICAL | size=", SIZE(var%lpfv_inputsignallast1)
     ELSE 
         ALLOCATE (buf1_lpfv_inputsignallast1(SIZE(var%lpfv_inputsignallast1,dim=1))) 
         ALLOCATE (buf2_lpfv_inputsignallast1(SIZE(var%lpfv_inputsignallast1,dim=1))) 
@@ -17701,6 +18573,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_inputsignallast1 | OUT_TOL | n_diff=", n_lpfv_inputsignallast1, " | rms=", rmsdiff_lpfv_inputsignallast1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17709,6 +18582,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_inputsignallast1 | IN_TOL | n_diff=", n_lpfv_inputsignallast1, " | rms=", rmsdiff_lpfv_inputsignallast1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -17750,6 +18624,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lpfv_outputsignallast1 | IDENTICAL | size=", SIZE(var%lpfv_outputsignallast1)
     ELSE 
         ALLOCATE (buf1_lpfv_outputsignallast1(SIZE(var%lpfv_outputsignallast1,dim=1))) 
         ALLOCATE (buf2_lpfv_outputsignallast1(SIZE(var%lpfv_outputsignallast1,dim=1))) 
@@ -17772,6 +18647,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_outputsignallast1 | OUT_TOL | n_diff=", n_lpfv_outputsignallast1, " | rms=", rmsdiff_lpfv_outputsignallast1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17780,6 +18656,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lpfv_outputsignallast1 | IN_TOL | n_diff=", n_lpfv_outputsignallast1, " | rms=", rmsdiff_lpfv_outputsignallast1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -17821,6 +18698,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] hpf_inputsignallast | IDENTICAL | size=", SIZE(var%hpf_inputsignallast)
     ELSE 
         ALLOCATE (buf1_hpf_inputsignallast(SIZE(var%hpf_inputsignallast,dim=1))) 
         ALLOCATE (buf2_hpf_inputsignallast(SIZE(var%hpf_inputsignallast,dim=1))) 
@@ -17843,6 +18721,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] hpf_inputsignallast | OUT_TOL | n_diff=", n_hpf_inputsignallast, " | rms=", rmsdiff_hpf_inputsignallast
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17851,6 +18730,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] hpf_inputsignallast | IN_TOL | n_diff=", n_hpf_inputsignallast, " | rms=", rmsdiff_hpf_inputsignallast
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -17892,6 +18772,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] hpf_outputsignallast | IDENTICAL | size=", SIZE(var%hpf_outputsignallast)
     ELSE 
         ALLOCATE (buf1_hpf_outputsignallast(SIZE(var%hpf_outputsignallast,dim=1))) 
         ALLOCATE (buf2_hpf_outputsignallast(SIZE(var%hpf_outputsignallast,dim=1))) 
@@ -17914,6 +18795,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] hpf_outputsignallast | OUT_TOL | n_diff=", n_hpf_outputsignallast, " | rms=", rmsdiff_hpf_outputsignallast
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17922,6 +18804,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] hpf_outputsignallast | IN_TOL | n_diff=", n_hpf_outputsignallast, " | rms=", rmsdiff_hpf_outputsignallast
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -17963,6 +18846,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nfs_outputsignallast1 | IDENTICAL | size=", SIZE(var%nfs_outputsignallast1)
     ELSE 
         ALLOCATE (buf1_nfs_outputsignallast1(SIZE(var%nfs_outputsignallast1,dim=1))) 
         ALLOCATE (buf2_nfs_outputsignallast1(SIZE(var%nfs_outputsignallast1,dim=1))) 
@@ -17985,6 +18869,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_outputsignallast1 | OUT_TOL | n_diff=", n_nfs_outputsignallast1, " | rms=", rmsdiff_nfs_outputsignallast1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -17993,6 +18878,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_outputsignallast1 | IN_TOL | n_diff=", n_nfs_outputsignallast1, " | rms=", rmsdiff_nfs_outputsignallast1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18034,6 +18920,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nfs_outputsignallast2 | IDENTICAL | size=", SIZE(var%nfs_outputsignallast2)
     ELSE 
         ALLOCATE (buf1_nfs_outputsignallast2(SIZE(var%nfs_outputsignallast2,dim=1))) 
         ALLOCATE (buf2_nfs_outputsignallast2(SIZE(var%nfs_outputsignallast2,dim=1))) 
@@ -18056,6 +18943,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_outputsignallast2 | OUT_TOL | n_diff=", n_nfs_outputsignallast2, " | rms=", rmsdiff_nfs_outputsignallast2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -18064,6 +18952,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_outputsignallast2 | IN_TOL | n_diff=", n_nfs_outputsignallast2, " | rms=", rmsdiff_nfs_outputsignallast2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18105,6 +18994,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nfs_inputsignallast1 | IDENTICAL | size=", SIZE(var%nfs_inputsignallast1)
     ELSE 
         ALLOCATE (buf1_nfs_inputsignallast1(SIZE(var%nfs_inputsignallast1,dim=1))) 
         ALLOCATE (buf2_nfs_inputsignallast1(SIZE(var%nfs_inputsignallast1,dim=1))) 
@@ -18127,6 +19017,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_inputsignallast1 | OUT_TOL | n_diff=", n_nfs_inputsignallast1, " | rms=", rmsdiff_nfs_inputsignallast1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -18135,6 +19026,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_inputsignallast1 | IN_TOL | n_diff=", n_nfs_inputsignallast1, " | rms=", rmsdiff_nfs_inputsignallast1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18176,6 +19068,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nfs_inputsignallast2 | IDENTICAL | size=", SIZE(var%nfs_inputsignallast2)
     ELSE 
         ALLOCATE (buf1_nfs_inputsignallast2(SIZE(var%nfs_inputsignallast2,dim=1))) 
         ALLOCATE (buf2_nfs_inputsignallast2(SIZE(var%nfs_inputsignallast2,dim=1))) 
@@ -18198,6 +19091,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_inputsignallast2 | OUT_TOL | n_diff=", n_nfs_inputsignallast2, " | rms=", rmsdiff_nfs_inputsignallast2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -18206,6 +19100,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_inputsignallast2 | IN_TOL | n_diff=", n_nfs_inputsignallast2, " | rms=", rmsdiff_nfs_inputsignallast2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18247,6 +19142,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nfs_b2 | IDENTICAL | size=", SIZE(var%nfs_b2)
     ELSE 
         ALLOCATE (buf1_nfs_b2(SIZE(var%nfs_b2,dim=1))) 
         ALLOCATE (buf2_nfs_b2(SIZE(var%nfs_b2,dim=1))) 
@@ -18268,6 +19164,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_b2 | OUT_TOL | n_diff=", n_nfs_b2, " | rms=", rmsdiff_nfs_b2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -18276,6 +19173,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_b2 | IN_TOL | n_diff=", n_nfs_b2, " | rms=", rmsdiff_nfs_b2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18313,6 +19211,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nfs_b0 | IDENTICAL | size=", SIZE(var%nfs_b0)
     ELSE 
         ALLOCATE (buf1_nfs_b0(SIZE(var%nfs_b0,dim=1))) 
         ALLOCATE (buf2_nfs_b0(SIZE(var%nfs_b0,dim=1))) 
@@ -18334,6 +19233,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_b0 | OUT_TOL | n_diff=", n_nfs_b0, " | rms=", rmsdiff_nfs_b0
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -18342,6 +19242,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_b0 | IN_TOL | n_diff=", n_nfs_b0, " | rms=", rmsdiff_nfs_b0
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18379,6 +19280,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nfs_a2 | IDENTICAL | size=", SIZE(var%nfs_a2)
     ELSE 
         ALLOCATE (buf1_nfs_a2(SIZE(var%nfs_a2,dim=1))) 
         ALLOCATE (buf2_nfs_a2(SIZE(var%nfs_a2,dim=1))) 
@@ -18400,6 +19302,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_a2 | OUT_TOL | n_diff=", n_nfs_a2, " | rms=", rmsdiff_nfs_a2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -18408,6 +19311,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_a2 | IN_TOL | n_diff=", n_nfs_a2, " | rms=", rmsdiff_nfs_a2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18445,6 +19349,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nfs_a1 | IDENTICAL | size=", SIZE(var%nfs_a1)
     ELSE 
         ALLOCATE (buf1_nfs_a1(SIZE(var%nfs_a1,dim=1))) 
         ALLOCATE (buf2_nfs_a1(SIZE(var%nfs_a1,dim=1))) 
@@ -18466,6 +19371,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_a1 | OUT_TOL | n_diff=", n_nfs_a1, " | rms=", rmsdiff_nfs_a1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -18474,6 +19380,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_a1 | IN_TOL | n_diff=", n_nfs_a1, " | rms=", rmsdiff_nfs_a1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18511,6 +19418,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nfs_a0 | IDENTICAL | size=", SIZE(var%nfs_a0)
     ELSE 
         ALLOCATE (buf1_nfs_a0(SIZE(var%nfs_a0,dim=1))) 
         ALLOCATE (buf2_nfs_a0(SIZE(var%nfs_a0,dim=1))) 
@@ -18532,6 +19440,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_a0 | OUT_TOL | n_diff=", n_nfs_a0, " | rms=", rmsdiff_nfs_a0
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -18540,6 +19449,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nfs_a0 | IN_TOL | n_diff=", n_nfs_a0, " | rms=", rmsdiff_nfs_a0
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18577,6 +19487,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nf_outputsignallast1 | IDENTICAL | size=", SIZE(var%nf_outputsignallast1)
     ELSE 
         ALLOCATE (buf1_nf_outputsignallast1(SIZE(var%nf_outputsignallast1,dim=1))) 
         ALLOCATE (buf2_nf_outputsignallast1(SIZE(var%nf_outputsignallast1,dim=1))) 
@@ -18599,6 +19510,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_outputsignallast1 | OUT_TOL | n_diff=", n_nf_outputsignallast1, " | rms=", rmsdiff_nf_outputsignallast1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -18607,6 +19519,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_outputsignallast1 | IN_TOL | n_diff=", n_nf_outputsignallast1, " | rms=", rmsdiff_nf_outputsignallast1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18648,6 +19561,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nf_outputsignallast2 | IDENTICAL | size=", SIZE(var%nf_outputsignallast2)
     ELSE 
         ALLOCATE (buf1_nf_outputsignallast2(SIZE(var%nf_outputsignallast2,dim=1))) 
         ALLOCATE (buf2_nf_outputsignallast2(SIZE(var%nf_outputsignallast2,dim=1))) 
@@ -18670,6 +19584,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_outputsignallast2 | OUT_TOL | n_diff=", n_nf_outputsignallast2, " | rms=", rmsdiff_nf_outputsignallast2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -18678,6 +19593,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_outputsignallast2 | IN_TOL | n_diff=", n_nf_outputsignallast2, " | rms=", rmsdiff_nf_outputsignallast2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18719,6 +19635,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nf_inputsignallast1 | IDENTICAL | size=", SIZE(var%nf_inputsignallast1)
     ELSE 
         ALLOCATE (buf1_nf_inputsignallast1(SIZE(var%nf_inputsignallast1,dim=1))) 
         ALLOCATE (buf2_nf_inputsignallast1(SIZE(var%nf_inputsignallast1,dim=1))) 
@@ -18741,6 +19658,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_inputsignallast1 | OUT_TOL | n_diff=", n_nf_inputsignallast1, " | rms=", rmsdiff_nf_inputsignallast1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -18749,6 +19667,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_inputsignallast1 | IN_TOL | n_diff=", n_nf_inputsignallast1, " | rms=", rmsdiff_nf_inputsignallast1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18790,6 +19709,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nf_inputsignallast2 | IDENTICAL | size=", SIZE(var%nf_inputsignallast2)
     ELSE 
         ALLOCATE (buf1_nf_inputsignallast2(SIZE(var%nf_inputsignallast2,dim=1))) 
         ALLOCATE (buf2_nf_inputsignallast2(SIZE(var%nf_inputsignallast2,dim=1))) 
@@ -18812,6 +19732,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_inputsignallast2 | OUT_TOL | n_diff=", n_nf_inputsignallast2, " | rms=", rmsdiff_nf_inputsignallast2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -18820,6 +19741,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_inputsignallast2 | IN_TOL | n_diff=", n_nf_inputsignallast2, " | rms=", rmsdiff_nf_inputsignallast2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18861,6 +19783,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nf_b2 | IDENTICAL | size=", SIZE(var%nf_b2)
     ELSE 
         ALLOCATE (buf1_nf_b2(SIZE(var%nf_b2,dim=1))) 
         ALLOCATE (buf2_nf_b2(SIZE(var%nf_b2,dim=1))) 
@@ -18882,6 +19805,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_b2 | OUT_TOL | n_diff=", n_nf_b2, " | rms=", rmsdiff_nf_b2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -18890,6 +19814,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_b2 | IN_TOL | n_diff=", n_nf_b2, " | rms=", rmsdiff_nf_b2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18927,6 +19852,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nf_b1 | IDENTICAL | size=", SIZE(var%nf_b1)
     ELSE 
         ALLOCATE (buf1_nf_b1(SIZE(var%nf_b1,dim=1))) 
         ALLOCATE (buf2_nf_b1(SIZE(var%nf_b1,dim=1))) 
@@ -18948,6 +19874,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_b1 | OUT_TOL | n_diff=", n_nf_b1, " | rms=", rmsdiff_nf_b1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -18956,6 +19883,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_b1 | IN_TOL | n_diff=", n_nf_b1, " | rms=", rmsdiff_nf_b1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -18993,6 +19921,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nf_b0 | IDENTICAL | size=", SIZE(var%nf_b0)
     ELSE 
         ALLOCATE (buf1_nf_b0(SIZE(var%nf_b0,dim=1))) 
         ALLOCATE (buf2_nf_b0(SIZE(var%nf_b0,dim=1))) 
@@ -19014,6 +19943,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_b0 | OUT_TOL | n_diff=", n_nf_b0, " | rms=", rmsdiff_nf_b0
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -19022,6 +19952,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_b0 | IN_TOL | n_diff=", n_nf_b0, " | rms=", rmsdiff_nf_b0
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -19059,6 +19990,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nf_a1 | IDENTICAL | size=", SIZE(var%nf_a1)
     ELSE 
         ALLOCATE (buf1_nf_a1(SIZE(var%nf_a1,dim=1))) 
         ALLOCATE (buf2_nf_a1(SIZE(var%nf_a1,dim=1))) 
@@ -19080,6 +20012,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_a1 | OUT_TOL | n_diff=", n_nf_a1, " | rms=", rmsdiff_nf_a1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -19088,6 +20021,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_a1 | IN_TOL | n_diff=", n_nf_a1, " | rms=", rmsdiff_nf_a1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -19125,6 +20059,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] nf_a0 | IDENTICAL | size=", SIZE(var%nf_a0)
     ELSE 
         ALLOCATE (buf1_nf_a0(SIZE(var%nf_a0,dim=1))) 
         ALLOCATE (buf2_nf_a0(SIZE(var%nf_a0,dim=1))) 
@@ -19146,6 +20081,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_a0 | OUT_TOL | n_diff=", n_nf_a0, " | rms=", rmsdiff_nf_a0
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -19154,6 +20090,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_filterparameters(varname, check_status, var,
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] nf_a0 | IN_TOL | n_diff=", n_nf_a0, " | rms=", rmsdiff_nf_a0
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -19216,6 +20153,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_rlparams(varname, check_status, var, kgenref
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] lastsignal | IDENTICAL | size=", SIZE(var%lastsignal)
     ELSE 
         ALLOCATE (buf1_lastsignal(SIZE(var%lastsignal,dim=1))) 
         ALLOCATE (buf2_lastsignal(SIZE(var%lastsignal,dim=1))) 
@@ -19237,6 +20175,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_rlparams(varname, check_status, var, kgenref
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lastsignal | OUT_TOL | n_diff=", n_lastsignal, " | rms=", rmsdiff_lastsignal
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -19245,6 +20184,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_rlparams(varname, check_status, var, kgenref
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] lastsignal | IN_TOL | n_diff=", n_lastsignal, " | rms=", rmsdiff_lastsignal
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -19321,6 +20261,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] iterm | IDENTICAL | size=", SIZE(var%iterm)
     ELSE 
         ALLOCATE (buf1_iterm(SIZE(var%iterm,dim=1))) 
         ALLOCATE (buf2_iterm(SIZE(var%iterm,dim=1))) 
@@ -19342,6 +20283,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] iterm | OUT_TOL | n_diff=", n_iterm, " | rms=", rmsdiff_iterm
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -19350,6 +20292,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] iterm | IN_TOL | n_diff=", n_iterm, " | rms=", rmsdiff_iterm
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -19387,6 +20330,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] itermlast | IDENTICAL | size=", SIZE(var%itermlast)
     ELSE 
         ALLOCATE (buf1_itermlast(SIZE(var%itermlast,dim=1))) 
         ALLOCATE (buf2_itermlast(SIZE(var%itermlast,dim=1))) 
@@ -19408,6 +20352,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] itermlast | OUT_TOL | n_diff=", n_itermlast, " | rms=", rmsdiff_itermlast
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -19416,6 +20361,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] itermlast | IN_TOL | n_diff=", n_itermlast, " | rms=", rmsdiff_itermlast
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -19455,6 +20401,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] iterm2 | IDENTICAL | size=", SIZE(var%iterm2)
     ELSE 
         ALLOCATE (buf1_iterm2(SIZE(var%iterm2,dim=1))) 
         ALLOCATE (buf2_iterm2(SIZE(var%iterm2,dim=1))) 
@@ -19476,6 +20423,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] iterm2 | OUT_TOL | n_diff=", n_iterm2, " | rms=", rmsdiff_iterm2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -19484,6 +20432,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] iterm2 | IN_TOL | n_diff=", n_iterm2, " | rms=", rmsdiff_iterm2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -19521,6 +20470,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] itermlast2 | IDENTICAL | size=", SIZE(var%itermlast2)
     ELSE 
         ALLOCATE (buf1_itermlast2(SIZE(var%itermlast2,dim=1))) 
         ALLOCATE (buf2_itermlast2(SIZE(var%itermlast2,dim=1))) 
@@ -19542,6 +20492,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] itermlast2 | OUT_TOL | n_diff=", n_itermlast2, " | rms=", rmsdiff_itermlast2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -19550,6 +20501,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] itermlast2 | IN_TOL | n_diff=", n_itermlast2, " | rms=", rmsdiff_itermlast2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -19589,6 +20541,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] elast | IDENTICAL | size=", SIZE(var%elast)
     ELSE 
         ALLOCATE (buf1_elast(SIZE(var%elast,dim=1))) 
         ALLOCATE (buf2_elast(SIZE(var%elast,dim=1))) 
@@ -19610,6 +20563,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] elast | OUT_TOL | n_diff=", n_elast, " | rms=", rmsdiff_elast
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -19618,6 +20572,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_piparams(varname, check_status, var, kgenref
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] elast | IN_TOL | n_diff=", n_elast, " | rms=", rmsdiff_elast
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -19689,6 +20644,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_resparams(varname, check_status, var, kgenre
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] res_outputsignallast1 | IDENTICAL | size=", SIZE(var%res_outputsignallast1)
     ELSE 
         ALLOCATE (buf1_res_outputsignallast1(SIZE(var%res_outputsignallast1,dim=1))) 
         ALLOCATE (buf2_res_outputsignallast1(SIZE(var%res_outputsignallast1,dim=1))) 
@@ -19711,6 +20667,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_resparams(varname, check_status, var, kgenre
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] res_outputsignallast1 | OUT_TOL | n_diff=", n_res_outputsignallast1, " | rms=", rmsdiff_res_outputsignallast1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -19719,6 +20676,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_resparams(varname, check_status, var, kgenre
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] res_outputsignallast1 | IN_TOL | n_diff=", n_res_outputsignallast1, " | rms=", rmsdiff_res_outputsignallast1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -19760,6 +20718,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_resparams(varname, check_status, var, kgenre
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] res_outputsignallast2 | IDENTICAL | size=", SIZE(var%res_outputsignallast2)
     ELSE 
         ALLOCATE (buf1_res_outputsignallast2(SIZE(var%res_outputsignallast2,dim=1))) 
         ALLOCATE (buf2_res_outputsignallast2(SIZE(var%res_outputsignallast2,dim=1))) 
@@ -19782,6 +20741,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_resparams(varname, check_status, var, kgenre
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] res_outputsignallast2 | OUT_TOL | n_diff=", n_res_outputsignallast2, " | rms=", rmsdiff_res_outputsignallast2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -19790,6 +20750,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_resparams(varname, check_status, var, kgenre
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] res_outputsignallast2 | IN_TOL | n_diff=", n_res_outputsignallast2, " | rms=", rmsdiff_res_outputsignallast2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -19831,6 +20792,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_resparams(varname, check_status, var, kgenre
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] res_inputsignallast1 | IDENTICAL | size=", SIZE(var%res_inputsignallast1)
     ELSE 
         ALLOCATE (buf1_res_inputsignallast1(SIZE(var%res_inputsignallast1,dim=1))) 
         ALLOCATE (buf2_res_inputsignallast1(SIZE(var%res_inputsignallast1,dim=1))) 
@@ -19853,6 +20815,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_resparams(varname, check_status, var, kgenre
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] res_inputsignallast1 | OUT_TOL | n_diff=", n_res_inputsignallast1, " | rms=", rmsdiff_res_inputsignallast1
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -19861,6 +20824,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_resparams(varname, check_status, var, kgenre
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] res_inputsignallast1 | IN_TOL | n_diff=", n_res_inputsignallast1, " | rms=", rmsdiff_res_inputsignallast1
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -19902,6 +20866,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_resparams(varname, check_status, var, kgenre
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] res_inputsignallast2 | IDENTICAL | size=", SIZE(var%res_inputsignallast2)
     ELSE 
         ALLOCATE (buf1_res_inputsignallast2(SIZE(var%res_inputsignallast2,dim=1))) 
         ALLOCATE (buf2_res_inputsignallast2(SIZE(var%res_inputsignallast2,dim=1))) 
@@ -19924,6 +20889,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_resparams(varname, check_status, var, kgenre
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] res_inputsignallast2 | OUT_TOL | n_diff=", n_res_inputsignallast2, " | rms=", rmsdiff_res_inputsignallast2
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -19932,6 +20898,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_resparams(varname, check_status, var, kgenre
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] res_inputsignallast2 | IN_TOL | n_diff=", n_res_inputsignallast2, " | rms=", rmsdiff_res_inputsignallast2
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20192,7 +21159,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
       
     CALL kgen_init_check(dtype_check_status, rank=check_status%rank) 
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%istatus == kgenref_var%istatus) THEN 
+    IF ((var%istatus == kgenref_var%istatus) .OR. ((var%istatus /= var%istatus) .AND. (kgenref_var%istatus /= kgenref_var%istatus))) THEN
+        IF (var%istatus /= var%istatus) WRITE(*, *) "localvar%istatus is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20200,6 +21168,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] istatus | IDENTICAL | ", var%istatus, " | ", kgenref_var%istatus
     ELSE 
         diff_istatus = ABS(var%istatus - kgenref_var%istatus) 
         IF (diff_istatus <= kgen_tolerance) THEN 
@@ -20210,6 +21179,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] istatus | IN_TOL | ", var%istatus, " | ", kgenref_var%istatus, " | ", diff_istatus
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20218,6 +21188,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] istatus | OUT_TOL | ", var%istatus, " | ", kgenref_var%istatus, " | ", diff_istatus
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20239,7 +21210,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%alreadyinitialized == kgenref_var%alreadyinitialized) THEN 
+    IF ((var%alreadyinitialized == kgenref_var%alreadyinitialized) .OR. ((var%alreadyinitialized /= var%alreadyinitialized) .AND. (kgenref_var%alreadyinitialized /= kgenref_var%alreadyinitialized))) THEN
+        IF (var%alreadyinitialized /= var%alreadyinitialized) WRITE(*, *) "localvar%alreadyinitialized is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20247,6 +21219,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] alreadyinitialized | IDENTICAL | ", var%alreadyinitialized, " | ", kgenref_var%alreadyinitialized
     ELSE 
         diff_alreadyinitialized = ABS(var%alreadyinitialized - kgenref_var%alreadyinitialized) 
         IF (diff_alreadyinitialized <= kgen_tolerance) THEN 
@@ -20257,6 +21230,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] alreadyinitialized | IN_TOL | ", var%alreadyinitialized, " | ", kgenref_var%alreadyinitialized, " | ", diff_alreadyinitialized
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20265,6 +21239,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] alreadyinitialized | OUT_TOL | ", var%alreadyinitialized, " | ", kgenref_var%alreadyinitialized, " | ", diff_alreadyinitialized
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20286,7 +21261,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%restartwse == kgenref_var%restartwse) THEN 
+    IF ((var%restartwse == kgenref_var%restartwse) .OR. ((var%restartwse /= var%restartwse) .AND. (kgenref_var%restartwse /= kgenref_var%restartwse))) THEN
+        IF (var%restartwse /= var%restartwse) WRITE(*, *) "localvar%restartwse is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20294,6 +21270,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] restartwse | IDENTICAL | ", var%restartwse, " | ", kgenref_var%restartwse
     ELSE 
         diff_restartwse = ABS(var%restartwse - kgenref_var%restartwse) 
         IF (diff_restartwse <= kgen_tolerance) THEN 
@@ -20304,6 +21281,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] restartwse | IN_TOL | ", var%restartwse, " | ", kgenref_var%restartwse, " | ", diff_restartwse
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20312,6 +21290,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] restartwse | OUT_TOL | ", var%restartwse, " | ", kgenref_var%restartwse, " | ", diff_restartwse
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20333,7 +21312,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%time == kgenref_var%time) THEN 
+    IF ((var%time == kgenref_var%time) .OR. ((var%time /= var%time) .AND. (kgenref_var%time /= kgenref_var%time))) THEN
+        IF (var%time /= var%time) WRITE(*, *) "localvar%time is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20341,6 +21321,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] time | IDENTICAL | ", var%time, " | ", kgenref_var%time
     ELSE 
         diff_time = ABS(var%time - kgenref_var%time) 
         IF (diff_time <= kgen_tolerance) THEN 
@@ -20351,6 +21332,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] time | IN_TOL | ", var%time, " | ", kgenref_var%time, " | ", diff_time
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20359,6 +21341,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] time | OUT_TOL | ", var%time, " | ", kgenref_var%time, " | ", diff_time
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20380,7 +21363,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%dt == kgenref_var%dt) THEN 
+    IF ((var%dt == kgenref_var%dt) .OR. ((var%dt /= var%dt) .AND. (kgenref_var%dt /= kgenref_var%dt))) THEN
+        IF (var%dt /= var%dt) WRITE(*, *) "localvar%dt is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20388,6 +21372,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] dt | IDENTICAL | ", var%dt, " | ", kgenref_var%dt
     ELSE 
         diff_dt = ABS(var%dt - kgenref_var%dt) 
         IF (diff_dt <= kgen_tolerance) THEN 
@@ -20398,6 +21383,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] dt | IN_TOL | ", var%dt, " | ", kgenref_var%dt, " | ", diff_dt
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20406,6 +21392,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] dt | OUT_TOL | ", var%dt, " | ", kgenref_var%dt, " | ", diff_dt
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20427,7 +21414,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%writethisstep == kgenref_var%writethisstep) THEN 
+    IF ((var%writethisstep == kgenref_var%writethisstep) .OR. ((var%writethisstep /= var%writethisstep) .AND. (kgenref_var%writethisstep /= kgenref_var%writethisstep))) THEN
+        IF (var%writethisstep /= var%writethisstep) WRITE(*, *) "localvar%writethisstep is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20435,6 +21423,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] writethisstep | IDENTICAL | ", var%writethisstep, " | ", kgenref_var%writethisstep
     ELSE 
         diff_writethisstep = ABS(var%writethisstep - kgenref_var%writethisstep) 
         IF (diff_writethisstep <= kgen_tolerance) THEN 
@@ -20445,6 +21434,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] writethisstep | IN_TOL | ", var%writethisstep, " | ", kgenref_var%writethisstep, " | ", diff_writethisstep
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20453,6 +21443,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] writethisstep | OUT_TOL | ", var%writethisstep, " | ", kgenref_var%writethisstep, " | ", diff_writethisstep
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20474,7 +21465,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%n_dt == kgenref_var%n_dt) THEN 
+    IF ((var%n_dt == kgenref_var%n_dt) .OR. ((var%n_dt /= var%n_dt) .AND. (kgenref_var%n_dt /= kgenref_var%n_dt))) THEN
+        IF (var%n_dt /= var%n_dt) WRITE(*, *) "localvar%n_dt is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20482,6 +21474,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] n_dt | IDENTICAL | ", var%n_dt, " | ", kgenref_var%n_dt
     ELSE 
         diff_n_dt = ABS(var%n_dt - kgenref_var%n_dt) 
         IF (diff_n_dt <= kgen_tolerance) THEN 
@@ -20492,6 +21485,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] n_dt | IN_TOL | ", var%n_dt, " | ", kgenref_var%n_dt, " | ", diff_n_dt
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20500,6 +21494,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] n_dt | OUT_TOL | ", var%n_dt, " | ", kgenref_var%n_dt, " | ", diff_n_dt
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20521,7 +21516,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%time_last == kgenref_var%time_last) THEN 
+    IF ((var%time_last == kgenref_var%time_last) .OR. ((var%time_last /= var%time_last) .AND. (kgenref_var%time_last /= kgenref_var%time_last))) THEN
+        IF (var%time_last /= var%time_last) WRITE(*, *) "localvar%time_last is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20529,6 +21525,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] time_last | IDENTICAL | ", var%time_last, " | ", kgenref_var%time_last
     ELSE 
         diff_time_last = ABS(var%time_last - kgenref_var%time_last) 
         IF (diff_time_last <= kgen_tolerance) THEN 
@@ -20539,6 +21536,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] time_last | IN_TOL | ", var%time_last, " | ", kgenref_var%time_last, " | ", diff_time_last
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20547,6 +21545,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] time_last | OUT_TOL | ", var%time_last, " | ", kgenref_var%time_last, " | ", diff_time_last
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20568,7 +21567,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_genpwr == kgenref_var%vs_genpwr) THEN 
+    IF ((var%vs_genpwr == kgenref_var%vs_genpwr) .OR. ((var%vs_genpwr /= var%vs_genpwr) .AND. (kgenref_var%vs_genpwr /= kgenref_var%vs_genpwr))) THEN
+        IF (var%vs_genpwr /= var%vs_genpwr) WRITE(*, *) "localvar%vs_genpwr is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20576,6 +21576,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_genpwr | IDENTICAL | ", var%vs_genpwr, " | ", kgenref_var%vs_genpwr
     ELSE 
         diff_vs_genpwr = ABS(var%vs_genpwr - kgenref_var%vs_genpwr) 
         IF (diff_vs_genpwr <= kgen_tolerance) THEN 
@@ -20586,6 +21587,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_genpwr | IN_TOL | ", var%vs_genpwr, " | ", kgenref_var%vs_genpwr, " | ", diff_vs_genpwr
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20594,6 +21596,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_genpwr | OUT_TOL | ", var%vs_genpwr, " | ", kgenref_var%vs_genpwr, " | ", diff_vs_genpwr
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20615,7 +21618,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%genspeed == kgenref_var%genspeed) THEN 
+    IF ((var%genspeed == kgenref_var%genspeed) .OR. ((var%genspeed /= var%genspeed) .AND. (kgenref_var%genspeed /= kgenref_var%genspeed))) THEN
+        IF (var%genspeed /= var%genspeed) WRITE(*, *) "localvar%genspeed is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20623,6 +21627,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] genspeed | IDENTICAL | ", var%genspeed, " | ", kgenref_var%genspeed
     ELSE 
         diff_genspeed = ABS(var%genspeed - kgenref_var%genspeed) 
         IF (diff_genspeed <= kgen_tolerance) THEN 
@@ -20633,6 +21638,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] genspeed | IN_TOL | ", var%genspeed, " | ", kgenref_var%genspeed, " | ", diff_genspeed
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20641,6 +21647,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] genspeed | OUT_TOL | ", var%genspeed, " | ", kgenref_var%genspeed, " | ", diff_genspeed
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20662,7 +21669,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%rotspeed == kgenref_var%rotspeed) THEN 
+    IF ((var%rotspeed == kgenref_var%rotspeed) .OR. ((var%rotspeed /= var%rotspeed) .AND. (kgenref_var%rotspeed /= kgenref_var%rotspeed))) THEN
+        IF (var%rotspeed /= var%rotspeed) WRITE(*, *) "localvar%rotspeed is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20670,6 +21678,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] rotspeed | IDENTICAL | ", var%rotspeed, " | ", kgenref_var%rotspeed
     ELSE 
         diff_rotspeed = ABS(var%rotspeed - kgenref_var%rotspeed) 
         IF (diff_rotspeed <= kgen_tolerance) THEN 
@@ -20680,6 +21689,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] rotspeed | IN_TOL | ", var%rotspeed, " | ", kgenref_var%rotspeed, " | ", diff_rotspeed
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20688,6 +21698,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] rotspeed | OUT_TOL | ", var%rotspeed, " | ", kgenref_var%rotspeed, " | ", diff_rotspeed
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20709,7 +21720,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%nacheading == kgenref_var%nacheading) THEN 
+    IF ((var%nacheading == kgenref_var%nacheading) .OR. ((var%nacheading /= var%nacheading) .AND. (kgenref_var%nacheading /= kgenref_var%nacheading))) THEN
+        IF (var%nacheading /= var%nacheading) WRITE(*, *) "localvar%nacheading is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20717,6 +21729,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] nacheading | IDENTICAL | ", var%nacheading, " | ", kgenref_var%nacheading
     ELSE 
         diff_nacheading = ABS(var%nacheading - kgenref_var%nacheading) 
         IF (diff_nacheading <= kgen_tolerance) THEN 
@@ -20727,6 +21740,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] nacheading | IN_TOL | ", var%nacheading, " | ", kgenref_var%nacheading, " | ", diff_nacheading
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20735,6 +21749,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] nacheading | OUT_TOL | ", var%nacheading, " | ", kgenref_var%nacheading, " | ", diff_nacheading
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20756,7 +21771,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%nacvane == kgenref_var%nacvane) THEN 
+    IF ((var%nacvane == kgenref_var%nacvane) .OR. ((var%nacvane /= var%nacvane) .AND. (kgenref_var%nacvane /= kgenref_var%nacvane))) THEN
+        IF (var%nacvane /= var%nacvane) WRITE(*, *) "localvar%nacvane is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20764,6 +21780,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] nacvane | IDENTICAL | ", var%nacvane, " | ", kgenref_var%nacvane
     ELSE 
         diff_nacvane = ABS(var%nacvane - kgenref_var%nacvane) 
         IF (diff_nacvane <= kgen_tolerance) THEN 
@@ -20774,6 +21791,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] nacvane | IN_TOL | ", var%nacvane, " | ", kgenref_var%nacvane, " | ", diff_nacvane
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20782,6 +21800,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] nacvane | OUT_TOL | ", var%nacvane, " | ", kgenref_var%nacvane, " | ", diff_nacvane
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20803,7 +21822,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%nacvanef == kgenref_var%nacvanef) THEN 
+    IF ((var%nacvanef == kgenref_var%nacvanef) .OR. ((var%nacvanef /= var%nacvanef) .AND. (kgenref_var%nacvanef /= kgenref_var%nacvanef))) THEN
+        IF (var%nacvanef /= var%nacvanef) WRITE(*, *) "localvar%nacvanef is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20811,6 +21831,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] nacvanef | IDENTICAL | ", var%nacvanef, " | ", kgenref_var%nacvanef
     ELSE 
         diff_nacvanef = ABS(var%nacvanef - kgenref_var%nacvanef) 
         IF (diff_nacvanef <= kgen_tolerance) THEN 
@@ -20821,6 +21842,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] nacvanef | IN_TOL | ", var%nacvanef, " | ", kgenref_var%nacvanef, " | ", diff_nacvanef
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20829,6 +21851,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] nacvanef | OUT_TOL | ", var%nacvanef, " | ", kgenref_var%nacvanef, " | ", diff_nacvanef
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20850,7 +21873,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%winddir == kgenref_var%winddir) THEN 
+    IF ((var%winddir == kgenref_var%winddir) .OR. ((var%winddir /= var%winddir) .AND. (kgenref_var%winddir /= kgenref_var%winddir))) THEN
+        IF (var%winddir /= var%winddir) WRITE(*, *) "localvar%winddir is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20858,6 +21882,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] winddir | IDENTICAL | ", var%winddir, " | ", kgenref_var%winddir
     ELSE 
         diff_winddir = ABS(var%winddir - kgenref_var%winddir) 
         IF (diff_winddir <= kgen_tolerance) THEN 
@@ -20868,6 +21893,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] winddir | IN_TOL | ", var%winddir, " | ", kgenref_var%winddir, " | ", diff_winddir
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20876,6 +21902,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] winddir | OUT_TOL | ", var%winddir, " | ", kgenref_var%winddir, " | ", diff_winddir
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20897,7 +21924,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%horwindv == kgenref_var%horwindv) THEN 
+    IF ((var%horwindv == kgenref_var%horwindv) .OR. ((var%horwindv /= var%horwindv) .AND. (kgenref_var%horwindv /= kgenref_var%horwindv))) THEN
+        IF (var%horwindv /= var%horwindv) WRITE(*, *) "localvar%horwindv is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20905,6 +21933,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] horwindv | IDENTICAL | ", var%horwindv, " | ", kgenref_var%horwindv
     ELSE 
         diff_horwindv = ABS(var%horwindv - kgenref_var%horwindv) 
         IF (diff_horwindv <= kgen_tolerance) THEN 
@@ -20915,6 +21944,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] horwindv | IN_TOL | ", var%horwindv, " | ", kgenref_var%horwindv, " | ", diff_horwindv
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20923,6 +21953,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] horwindv | OUT_TOL | ", var%horwindv, " | ", kgenref_var%horwindv, " | ", diff_horwindv
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20944,7 +21975,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%horwindv_f == kgenref_var%horwindv_f) THEN 
+    IF ((var%horwindv_f == kgenref_var%horwindv_f) .OR. ((var%horwindv_f /= var%horwindv_f) .AND. (kgenref_var%horwindv_f /= kgenref_var%horwindv_f))) THEN
+        IF (var%horwindv_f /= var%horwindv_f) WRITE(*, *) "localvar%horwindv_f is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -20952,6 +21984,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] horwindv_f | IDENTICAL | ", var%horwindv_f, " | ", kgenref_var%horwindv_f
     ELSE 
         diff_horwindv_f = ABS(var%horwindv_f - kgenref_var%horwindv_f) 
         IF (diff_horwindv_f <= kgen_tolerance) THEN 
@@ -20962,6 +21995,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] horwindv_f | IN_TOL | ", var%horwindv_f, " | ", kgenref_var%horwindv_f, " | ", diff_horwindv_f
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -20970,6 +22004,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] horwindv_f | OUT_TOL | ", var%horwindv_f, " | ", kgenref_var%horwindv_f, " | ", diff_horwindv_f
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -20999,6 +22034,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] rootmoop | IDENTICAL | size=", SIZE(var%rootmoop)
     ELSE 
         ALLOCATE (buf1_rootmoop(SIZE(var%rootmoop,dim=1))) 
         ALLOCATE (buf2_rootmoop(SIZE(var%rootmoop,dim=1))) 
@@ -21020,6 +22056,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] rootmoop | OUT_TOL | n_diff=", n_rootmoop, " | rms=", rmsdiff_rootmoop
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21028,6 +22065,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] rootmoop | IN_TOL | n_diff=", n_rootmoop, " | rms=", rmsdiff_rootmoop
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21067,6 +22105,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] rootmoopf | IDENTICAL | size=", SIZE(var%rootmoopf)
     ELSE 
         ALLOCATE (buf1_rootmoopf(SIZE(var%rootmoopf,dim=1))) 
         ALLOCATE (buf2_rootmoopf(SIZE(var%rootmoopf,dim=1))) 
@@ -21088,6 +22127,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] rootmoopf | OUT_TOL | n_diff=", n_rootmoopf, " | rms=", rmsdiff_rootmoopf
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21096,6 +22136,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] rootmoopf | IN_TOL | n_diff=", n_rootmoopf, " | rms=", rmsdiff_rootmoopf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21135,6 +22176,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] blpitch | IDENTICAL | size=", SIZE(var%blpitch)
     ELSE 
         ALLOCATE (buf1_blpitch(SIZE(var%blpitch,dim=1))) 
         ALLOCATE (buf2_blpitch(SIZE(var%blpitch,dim=1))) 
@@ -21156,6 +22198,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] blpitch | OUT_TOL | n_diff=", n_blpitch, " | rms=", rmsdiff_blpitch
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21164,6 +22207,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] blpitch | IN_TOL | n_diff=", n_blpitch, " | rms=", rmsdiff_blpitch
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21193,7 +22237,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%blpitchcmeas == kgenref_var%blpitchcmeas) THEN 
+    IF ((var%blpitchcmeas == kgenref_var%blpitchcmeas) .OR. ((var%blpitchcmeas /= var%blpitchcmeas) .AND. (kgenref_var%blpitchcmeas /= kgenref_var%blpitchcmeas))) THEN
+        IF (var%blpitchcmeas /= var%blpitchcmeas) WRITE(*, *) "localvar%blpitchcmeas is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21201,6 +22246,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] blpitchcmeas | IDENTICAL | ", var%blpitchcmeas, " | ", kgenref_var%blpitchcmeas
     ELSE 
         diff_blpitchcmeas = ABS(var%blpitchcmeas - kgenref_var%blpitchcmeas) 
         IF (diff_blpitchcmeas <= kgen_tolerance) THEN 
@@ -21211,6 +22257,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] blpitchcmeas | IN_TOL | ", var%blpitchcmeas, " | ", kgenref_var%blpitchcmeas, " | ", diff_blpitchcmeas
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21219,6 +22266,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] blpitchcmeas | OUT_TOL | ", var%blpitchcmeas, " | ", kgenref_var%blpitchcmeas, " | ", diff_blpitchcmeas
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21240,7 +22288,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%azimuth == kgenref_var%azimuth) THEN 
+    IF ((var%azimuth == kgenref_var%azimuth) .OR. ((var%azimuth /= var%azimuth) .AND. (kgenref_var%azimuth /= kgenref_var%azimuth))) THEN
+        IF (var%azimuth /= var%azimuth) WRITE(*, *) "localvar%azimuth is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21248,6 +22297,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] azimuth | IDENTICAL | ", var%azimuth, " | ", kgenref_var%azimuth
     ELSE 
         diff_azimuth = ABS(var%azimuth - kgenref_var%azimuth) 
         IF (diff_azimuth <= kgen_tolerance) THEN 
@@ -21258,6 +22308,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] azimuth | IN_TOL | ", var%azimuth, " | ", kgenref_var%azimuth, " | ", diff_azimuth
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21266,6 +22317,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] azimuth | OUT_TOL | ", var%azimuth, " | ", kgenref_var%azimuth, " | ", diff_azimuth
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21287,7 +22339,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ol_azimuth == kgenref_var%ol_azimuth) THEN 
+    IF ((var%ol_azimuth == kgenref_var%ol_azimuth) .OR. ((var%ol_azimuth /= var%ol_azimuth) .AND. (kgenref_var%ol_azimuth /= kgenref_var%ol_azimuth))) THEN
+        IF (var%ol_azimuth /= var%ol_azimuth) WRITE(*, *) "localvar%ol_azimuth is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21295,6 +22348,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ol_azimuth | IDENTICAL | ", var%ol_azimuth, " | ", kgenref_var%ol_azimuth
     ELSE 
         diff_ol_azimuth = ABS(var%ol_azimuth - kgenref_var%ol_azimuth) 
         IF (diff_ol_azimuth <= kgen_tolerance) THEN 
@@ -21305,6 +22359,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ol_azimuth | IN_TOL | ", var%ol_azimuth, " | ", kgenref_var%ol_azimuth, " | ", diff_ol_azimuth
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21313,6 +22368,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ol_azimuth | OUT_TOL | ", var%ol_azimuth, " | ", kgenref_var%ol_azimuth, " | ", diff_ol_azimuth
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21334,7 +22390,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%azunwrapped == kgenref_var%azunwrapped) THEN 
+    IF ((var%azunwrapped == kgenref_var%azunwrapped) .OR. ((var%azunwrapped /= var%azunwrapped) .AND. (kgenref_var%azunwrapped /= kgenref_var%azunwrapped))) THEN
+        IF (var%azunwrapped /= var%azunwrapped) WRITE(*, *) "localvar%azunwrapped is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21342,6 +22399,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] azunwrapped | IDENTICAL | ", var%azunwrapped, " | ", kgenref_var%azunwrapped
     ELSE 
         diff_azunwrapped = ABS(var%azunwrapped - kgenref_var%azunwrapped) 
         IF (diff_azunwrapped <= kgen_tolerance) THEN 
@@ -21352,6 +22410,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] azunwrapped | IN_TOL | ", var%azunwrapped, " | ", kgenref_var%azunwrapped, " | ", diff_azunwrapped
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21360,6 +22419,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] azunwrapped | OUT_TOL | ", var%azunwrapped, " | ", kgenref_var%azunwrapped, " | ", diff_azunwrapped
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21381,7 +22441,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%azerror == kgenref_var%azerror) THEN 
+    IF ((var%azerror == kgenref_var%azerror) .OR. ((var%azerror /= var%azerror) .AND. (kgenref_var%azerror /= kgenref_var%azerror))) THEN
+        IF (var%azerror /= var%azerror) WRITE(*, *) "localvar%azerror is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21389,6 +22450,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] azerror | IDENTICAL | ", var%azerror, " | ", kgenref_var%azerror
     ELSE 
         diff_azerror = ABS(var%azerror - kgenref_var%azerror) 
         IF (diff_azerror <= kgen_tolerance) THEN 
@@ -21399,6 +22461,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] azerror | IN_TOL | ", var%azerror, " | ", kgenref_var%azerror, " | ", diff_azerror
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21407,6 +22470,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] azerror | OUT_TOL | ", var%azerror, " | ", kgenref_var%azerror, " | ", diff_azerror
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21428,7 +22492,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%gentqaz == kgenref_var%gentqaz) THEN 
+    IF ((var%gentqaz == kgenref_var%gentqaz) .OR. ((var%gentqaz /= var%gentqaz) .AND. (kgenref_var%gentqaz /= kgenref_var%gentqaz))) THEN
+        IF (var%gentqaz /= var%gentqaz) WRITE(*, *) "localvar%gentqaz is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21436,6 +22501,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] gentqaz | IDENTICAL | ", var%gentqaz, " | ", kgenref_var%gentqaz
     ELSE 
         diff_gentqaz = ABS(var%gentqaz - kgenref_var%gentqaz) 
         IF (diff_gentqaz <= kgen_tolerance) THEN 
@@ -21446,6 +22512,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] gentqaz | IN_TOL | ", var%gentqaz, " | ", kgenref_var%gentqaz, " | ", diff_gentqaz
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21454,6 +22521,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] gentqaz | OUT_TOL | ", var%gentqaz, " | ", kgenref_var%gentqaz, " | ", diff_gentqaz
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21483,6 +22551,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] azbuffer | IDENTICAL | size=", SIZE(var%azbuffer)
     ELSE 
         ALLOCATE (buf1_azbuffer(SIZE(var%azbuffer,dim=1))) 
         ALLOCATE (buf2_azbuffer(SIZE(var%azbuffer,dim=1))) 
@@ -21504,6 +22573,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] azbuffer | OUT_TOL | n_diff=", n_azbuffer, " | rms=", rmsdiff_azbuffer
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21512,6 +22582,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] azbuffer | IN_TOL | n_diff=", n_azbuffer, " | rms=", rmsdiff_azbuffer
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21543,7 +22614,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%numbl == kgenref_var%numbl) THEN 
+    IF ((var%numbl == kgenref_var%numbl) .OR. ((var%numbl /= var%numbl) .AND. (kgenref_var%numbl /= kgenref_var%numbl))) THEN
+        IF (var%numbl /= var%numbl) WRITE(*, *) "localvar%numbl is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21551,6 +22623,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] numbl | IDENTICAL | ", var%numbl, " | ", kgenref_var%numbl
     ELSE 
         diff_numbl = ABS(var%numbl - kgenref_var%numbl) 
         IF (diff_numbl <= kgen_tolerance) THEN 
@@ -21561,6 +22634,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] numbl | IN_TOL | ", var%numbl, " | ", kgenref_var%numbl, " | ", diff_numbl
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21569,6 +22643,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] numbl | OUT_TOL | ", var%numbl, " | ", kgenref_var%numbl, " | ", diff_numbl
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21590,7 +22665,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%fa_acc_tt == kgenref_var%fa_acc_tt) THEN 
+    IF ((var%fa_acc_tt == kgenref_var%fa_acc_tt) .OR. ((var%fa_acc_tt /= var%fa_acc_tt) .AND. (kgenref_var%fa_acc_tt /= kgenref_var%fa_acc_tt))) THEN
+        IF (var%fa_acc_tt /= var%fa_acc_tt) WRITE(*, *) "localvar%fa_acc_tt is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21598,6 +22674,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] fa_acc_tt | IDENTICAL | ", var%fa_acc_tt, " | ", kgenref_var%fa_acc_tt
     ELSE 
         diff_fa_acc_tt = ABS(var%fa_acc_tt - kgenref_var%fa_acc_tt) 
         IF (diff_fa_acc_tt <= kgen_tolerance) THEN 
@@ -21608,6 +22685,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_acc_tt | IN_TOL | ", var%fa_acc_tt, " | ", kgenref_var%fa_acc_tt, " | ", diff_fa_acc_tt
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21616,6 +22694,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_acc_tt | OUT_TOL | ", var%fa_acc_tt, " | ", kgenref_var%fa_acc_tt, " | ", diff_fa_acc_tt
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21637,7 +22716,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ss_acc_tt == kgenref_var%ss_acc_tt) THEN 
+    IF ((var%ss_acc_tt == kgenref_var%ss_acc_tt) .OR. ((var%ss_acc_tt /= var%ss_acc_tt) .AND. (kgenref_var%ss_acc_tt /= kgenref_var%ss_acc_tt))) THEN
+        IF (var%ss_acc_tt /= var%ss_acc_tt) WRITE(*, *) "localvar%ss_acc_tt is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21645,6 +22725,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ss_acc_tt | IDENTICAL | ", var%ss_acc_tt, " | ", kgenref_var%ss_acc_tt
     ELSE 
         diff_ss_acc_tt = ABS(var%ss_acc_tt - kgenref_var%ss_acc_tt) 
         IF (diff_ss_acc_tt <= kgen_tolerance) THEN 
@@ -21655,6 +22736,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ss_acc_tt | IN_TOL | ", var%ss_acc_tt, " | ", kgenref_var%ss_acc_tt, " | ", diff_ss_acc_tt
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21663,6 +22745,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ss_acc_tt | OUT_TOL | ", var%ss_acc_tt, " | ", kgenref_var%ss_acc_tt, " | ", diff_ss_acc_tt
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21684,7 +22767,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%fa_acc_nac == kgenref_var%fa_acc_nac) THEN 
+    IF ((var%fa_acc_nac == kgenref_var%fa_acc_nac) .OR. ((var%fa_acc_nac /= var%fa_acc_nac) .AND. (kgenref_var%fa_acc_nac /= kgenref_var%fa_acc_nac))) THEN
+        IF (var%fa_acc_nac /= var%fa_acc_nac) WRITE(*, *) "localvar%fa_acc_nac is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21692,6 +22776,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] fa_acc_nac | IDENTICAL | ", var%fa_acc_nac, " | ", kgenref_var%fa_acc_nac
     ELSE 
         diff_fa_acc_nac = ABS(var%fa_acc_nac - kgenref_var%fa_acc_nac) 
         IF (diff_fa_acc_nac <= kgen_tolerance) THEN 
@@ -21702,6 +22787,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_acc_nac | IN_TOL | ", var%fa_acc_nac, " | ", kgenref_var%fa_acc_nac, " | ", diff_fa_acc_nac
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21710,6 +22796,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_acc_nac | OUT_TOL | ", var%fa_acc_nac, " | ", kgenref_var%fa_acc_nac, " | ", diff_fa_acc_nac
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21731,7 +22818,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%nacimu_fa_racc == kgenref_var%nacimu_fa_racc) THEN 
+    IF ((var%nacimu_fa_racc == kgenref_var%nacimu_fa_racc) .OR. ((var%nacimu_fa_racc /= var%nacimu_fa_racc) .AND. (kgenref_var%nacimu_fa_racc /= kgenref_var%nacimu_fa_racc))) THEN
+        IF (var%nacimu_fa_racc /= var%nacimu_fa_racc) WRITE(*, *) "localvar%nacimu_fa_racc is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21739,6 +22827,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] nacimu_fa_racc | IDENTICAL | ", var%nacimu_fa_racc, " | ", kgenref_var%nacimu_fa_racc
     ELSE 
         diff_nacimu_fa_racc = ABS(var%nacimu_fa_racc - kgenref_var%nacimu_fa_racc) 
         IF (diff_nacimu_fa_racc <= kgen_tolerance) THEN 
@@ -21749,6 +22838,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] nacimu_fa_racc | IN_TOL | ", var%nacimu_fa_racc, " | ", kgenref_var%nacimu_fa_racc, " | ", diff_nacimu_fa_racc
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21757,6 +22847,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] nacimu_fa_racc | OUT_TOL | ", var%nacimu_fa_racc, " | ", kgenref_var%nacimu_fa_racc, " | ", diff_nacimu_fa_racc
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21778,7 +22869,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%fa_acchpf == kgenref_var%fa_acchpf) THEN 
+    IF ((var%fa_acchpf == kgenref_var%fa_acchpf) .OR. ((var%fa_acchpf /= var%fa_acchpf) .AND. (kgenref_var%fa_acchpf /= kgenref_var%fa_acchpf))) THEN
+        IF (var%fa_acchpf /= var%fa_acchpf) WRITE(*, *) "localvar%fa_acchpf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21786,6 +22878,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] fa_acchpf | IDENTICAL | ", var%fa_acchpf, " | ", kgenref_var%fa_acchpf
     ELSE 
         diff_fa_acchpf = ABS(var%fa_acchpf - kgenref_var%fa_acchpf) 
         IF (diff_fa_acchpf <= kgen_tolerance) THEN 
@@ -21796,6 +22889,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_acchpf | IN_TOL | ", var%fa_acchpf, " | ", kgenref_var%fa_acchpf, " | ", diff_fa_acchpf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21804,6 +22898,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_acchpf | OUT_TOL | ", var%fa_acchpf, " | ", kgenref_var%fa_acchpf, " | ", diff_fa_acchpf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21825,7 +22920,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%fa_acchpfi == kgenref_var%fa_acchpfi) THEN 
+    IF ((var%fa_acchpfi == kgenref_var%fa_acchpfi) .OR. ((var%fa_acchpfi /= var%fa_acchpfi) .AND. (kgenref_var%fa_acchpfi /= kgenref_var%fa_acchpfi))) THEN
+        IF (var%fa_acchpfi /= var%fa_acchpfi) WRITE(*, *) "localvar%fa_acchpfi is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21833,6 +22929,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] fa_acchpfi | IDENTICAL | ", var%fa_acchpfi, " | ", kgenref_var%fa_acchpfi
     ELSE 
         diff_fa_acchpfi = ABS(var%fa_acchpfi - kgenref_var%fa_acchpfi) 
         IF (diff_fa_acchpfi <= kgen_tolerance) THEN 
@@ -21843,6 +22940,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_acchpfi | IN_TOL | ", var%fa_acchpfi, " | ", kgenref_var%fa_acchpfi, " | ", diff_fa_acchpfi
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21851,6 +22949,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_acchpfi | OUT_TOL | ", var%fa_acchpfi, " | ", kgenref_var%fa_acchpfi, " | ", diff_fa_acchpfi
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21880,6 +22979,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] fa_pitcom | IDENTICAL | size=", SIZE(var%fa_pitcom)
     ELSE 
         ALLOCATE (buf1_fa_pitcom(SIZE(var%fa_pitcom,dim=1))) 
         ALLOCATE (buf2_fa_pitcom(SIZE(var%fa_pitcom,dim=1))) 
@@ -21901,6 +23001,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] fa_pitcom | OUT_TOL | n_diff=", n_fa_pitcom, " | rms=", rmsdiff_fa_pitcom
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21909,6 +23010,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] fa_pitcom | IN_TOL | n_diff=", n_fa_pitcom, " | rms=", rmsdiff_fa_pitcom
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21940,7 +23042,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_refspd == kgenref_var%vs_refspd) THEN 
+    IF ((var%vs_refspd == kgenref_var%vs_refspd) .OR. ((var%vs_refspd /= var%vs_refspd) .AND. (kgenref_var%vs_refspd /= kgenref_var%vs_refspd))) THEN
+        IF (var%vs_refspd /= var%vs_refspd) WRITE(*, *) "localvar%vs_refspd is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21948,6 +23051,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_refspd | IDENTICAL | ", var%vs_refspd, " | ", kgenref_var%vs_refspd
     ELSE 
         diff_vs_refspd = ABS(var%vs_refspd - kgenref_var%vs_refspd) 
         IF (diff_vs_refspd <= kgen_tolerance) THEN 
@@ -21958,6 +23062,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_refspd | IN_TOL | ", var%vs_refspd, " | ", kgenref_var%vs_refspd, " | ", diff_vs_refspd
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -21966,6 +23071,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_refspd | OUT_TOL | ", var%vs_refspd, " | ", kgenref_var%vs_refspd, " | ", diff_vs_refspd
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -21987,7 +23093,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_refspd_tsr == kgenref_var%vs_refspd_tsr) THEN 
+    IF ((var%vs_refspd_tsr == kgenref_var%vs_refspd_tsr) .OR. ((var%vs_refspd_tsr /= var%vs_refspd_tsr) .AND. (kgenref_var%vs_refspd_tsr /= kgenref_var%vs_refspd_tsr))) THEN
+        IF (var%vs_refspd_tsr /= var%vs_refspd_tsr) WRITE(*, *) "localvar%vs_refspd_tsr is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21995,6 +23102,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_refspd_tsr | IDENTICAL | ", var%vs_refspd_tsr, " | ", kgenref_var%vs_refspd_tsr
     ELSE 
         diff_vs_refspd_tsr = ABS(var%vs_refspd_tsr - kgenref_var%vs_refspd_tsr) 
         IF (diff_vs_refspd_tsr <= kgen_tolerance) THEN 
@@ -22005,6 +23113,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_refspd_tsr | IN_TOL | ", var%vs_refspd_tsr, " | ", kgenref_var%vs_refspd_tsr, " | ", diff_vs_refspd_tsr
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22013,6 +23122,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_refspd_tsr | OUT_TOL | ", var%vs_refspd_tsr, " | ", kgenref_var%vs_refspd_tsr, " | ", diff_vs_refspd_tsr
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22034,7 +23144,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_refspd_tra == kgenref_var%vs_refspd_tra) THEN 
+    IF ((var%vs_refspd_tra == kgenref_var%vs_refspd_tra) .OR. ((var%vs_refspd_tra /= var%vs_refspd_tra) .AND. (kgenref_var%vs_refspd_tra /= kgenref_var%vs_refspd_tra))) THEN
+        IF (var%vs_refspd_tra /= var%vs_refspd_tra) WRITE(*, *) "localvar%vs_refspd_tra is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22042,6 +23153,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_refspd_tra | IDENTICAL | ", var%vs_refspd_tra, " | ", kgenref_var%vs_refspd_tra
     ELSE 
         diff_vs_refspd_tra = ABS(var%vs_refspd_tra - kgenref_var%vs_refspd_tra) 
         IF (diff_vs_refspd_tra <= kgen_tolerance) THEN 
@@ -22052,6 +23164,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_refspd_tra | IN_TOL | ", var%vs_refspd_tra, " | ", kgenref_var%vs_refspd_tra, " | ", diff_vs_refspd_tra
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22060,6 +23173,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_refspd_tra | OUT_TOL | ", var%vs_refspd_tra, " | ", kgenref_var%vs_refspd_tra, " | ", diff_vs_refspd_tra
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22081,7 +23195,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_refspd_rl == kgenref_var%vs_refspd_rl) THEN 
+    IF ((var%vs_refspd_rl == kgenref_var%vs_refspd_rl) .OR. ((var%vs_refspd_rl /= var%vs_refspd_rl) .AND. (kgenref_var%vs_refspd_rl /= kgenref_var%vs_refspd_rl))) THEN
+        IF (var%vs_refspd_rl /= var%vs_refspd_rl) WRITE(*, *) "localvar%vs_refspd_rl is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22089,6 +23204,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_refspd_rl | IDENTICAL | ", var%vs_refspd_rl, " | ", kgenref_var%vs_refspd_rl
     ELSE 
         diff_vs_refspd_rl = ABS(var%vs_refspd_rl - kgenref_var%vs_refspd_rl) 
         IF (diff_vs_refspd_rl <= kgen_tolerance) THEN 
@@ -22099,6 +23215,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_refspd_rl | IN_TOL | ", var%vs_refspd_rl, " | ", kgenref_var%vs_refspd_rl, " | ", diff_vs_refspd_rl
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22107,6 +23224,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_refspd_rl | OUT_TOL | ", var%vs_refspd_rl, " | ", kgenref_var%vs_refspd_rl, " | ", diff_vs_refspd_rl
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22128,7 +23246,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_refspd == kgenref_var%pc_refspd) THEN 
+    IF ((var%pc_refspd == kgenref_var%pc_refspd) .OR. ((var%pc_refspd /= var%pc_refspd) .AND. (kgenref_var%pc_refspd /= kgenref_var%pc_refspd))) THEN
+        IF (var%pc_refspd /= var%pc_refspd) WRITE(*, *) "localvar%pc_refspd is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22136,6 +23255,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_refspd | IDENTICAL | ", var%pc_refspd, " | ", kgenref_var%pc_refspd
     ELSE 
         diff_pc_refspd = ABS(var%pc_refspd - kgenref_var%pc_refspd) 
         IF (diff_pc_refspd <= kgen_tolerance) THEN 
@@ -22146,6 +23266,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_refspd | IN_TOL | ", var%pc_refspd, " | ", kgenref_var%pc_refspd, " | ", diff_pc_refspd
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22154,6 +23275,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_refspd | OUT_TOL | ", var%pc_refspd, " | ", kgenref_var%pc_refspd, " | ", diff_pc_refspd
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22175,7 +23297,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_refspd_ss == kgenref_var%pc_refspd_ss) THEN 
+    IF ((var%pc_refspd_ss == kgenref_var%pc_refspd_ss) .OR. ((var%pc_refspd_ss /= var%pc_refspd_ss) .AND. (kgenref_var%pc_refspd_ss /= kgenref_var%pc_refspd_ss))) THEN
+        IF (var%pc_refspd_ss /= var%pc_refspd_ss) WRITE(*, *) "localvar%pc_refspd_ss is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22183,6 +23306,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_refspd_ss | IDENTICAL | ", var%pc_refspd_ss, " | ", kgenref_var%pc_refspd_ss
     ELSE 
         diff_pc_refspd_ss = ABS(var%pc_refspd_ss - kgenref_var%pc_refspd_ss) 
         IF (diff_pc_refspd_ss <= kgen_tolerance) THEN 
@@ -22193,6 +23317,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_refspd_ss | IN_TOL | ", var%pc_refspd_ss, " | ", kgenref_var%pc_refspd_ss, " | ", diff_pc_refspd_ss
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22201,6 +23326,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_refspd_ss | OUT_TOL | ", var%pc_refspd_ss, " | ", kgenref_var%pc_refspd_ss, " | ", diff_pc_refspd_ss
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22222,7 +23348,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_refspd_prc == kgenref_var%pc_refspd_prc) THEN 
+    IF ((var%pc_refspd_prc == kgenref_var%pc_refspd_prc) .OR. ((var%pc_refspd_prc /= var%pc_refspd_prc) .AND. (kgenref_var%pc_refspd_prc /= kgenref_var%pc_refspd_prc))) THEN
+        IF (var%pc_refspd_prc /= var%pc_refspd_prc) WRITE(*, *) "localvar%pc_refspd_prc is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22230,6 +23357,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_refspd_prc | IDENTICAL | ", var%pc_refspd_prc, " | ", kgenref_var%pc_refspd_prc
     ELSE 
         diff_pc_refspd_prc = ABS(var%pc_refspd_prc - kgenref_var%pc_refspd_prc) 
         IF (diff_pc_refspd_prc <= kgen_tolerance) THEN 
@@ -22240,6 +23368,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_refspd_prc | IN_TOL | ", var%pc_refspd_prc, " | ", kgenref_var%pc_refspd_prc, " | ", diff_pc_refspd_prc
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22248,6 +23377,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_refspd_prc | OUT_TOL | ", var%pc_refspd_prc, " | ", kgenref_var%pc_refspd_prc, " | ", diff_pc_refspd_prc
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22269,7 +23399,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%rotspeedf == kgenref_var%rotspeedf) THEN 
+    IF ((var%rotspeedf == kgenref_var%rotspeedf) .OR. ((var%rotspeedf /= var%rotspeedf) .AND. (kgenref_var%rotspeedf /= kgenref_var%rotspeedf))) THEN
+        IF (var%rotspeedf /= var%rotspeedf) WRITE(*, *) "localvar%rotspeedf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22277,6 +23408,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] rotspeedf | IDENTICAL | ", var%rotspeedf, " | ", kgenref_var%rotspeedf
     ELSE 
         diff_rotspeedf = ABS(var%rotspeedf - kgenref_var%rotspeedf) 
         IF (diff_rotspeedf <= kgen_tolerance) THEN 
@@ -22287,6 +23419,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] rotspeedf | IN_TOL | ", var%rotspeedf, " | ", kgenref_var%rotspeedf, " | ", diff_rotspeedf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22295,6 +23428,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] rotspeedf | OUT_TOL | ", var%rotspeedf, " | ", kgenref_var%rotspeedf, " | ", diff_rotspeedf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22316,7 +23450,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%genspeedf == kgenref_var%genspeedf) THEN 
+    IF ((var%genspeedf == kgenref_var%genspeedf) .OR. ((var%genspeedf /= var%genspeedf) .AND. (kgenref_var%genspeedf /= kgenref_var%genspeedf))) THEN
+        IF (var%genspeedf /= var%genspeedf) WRITE(*, *) "localvar%genspeedf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22324,6 +23459,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] genspeedf | IDENTICAL | ", var%genspeedf, " | ", kgenref_var%genspeedf
     ELSE 
         diff_genspeedf = ABS(var%genspeedf - kgenref_var%genspeedf) 
         IF (diff_genspeedf <= kgen_tolerance) THEN 
@@ -22334,6 +23470,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] genspeedf | IN_TOL | ", var%genspeedf, " | ", kgenref_var%genspeedf, " | ", diff_genspeedf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22342,6 +23479,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] genspeedf | OUT_TOL | ", var%genspeedf, " | ", kgenref_var%genspeedf, " | ", diff_genspeedf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22363,7 +23501,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%gentq == kgenref_var%gentq) THEN 
+    IF ((var%gentq == kgenref_var%gentq) .OR. ((var%gentq /= var%gentq) .AND. (kgenref_var%gentq /= kgenref_var%gentq))) THEN
+        IF (var%gentq /= var%gentq) WRITE(*, *) "localvar%gentq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22371,6 +23510,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] gentq | IDENTICAL | ", var%gentq, " | ", kgenref_var%gentq
     ELSE 
         diff_gentq = ABS(var%gentq - kgenref_var%gentq) 
         IF (diff_gentq <= kgen_tolerance) THEN 
@@ -22381,6 +23521,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] gentq | IN_TOL | ", var%gentq, " | ", kgenref_var%gentq, " | ", diff_gentq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22389,6 +23530,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] gentq | OUT_TOL | ", var%gentq, " | ", kgenref_var%gentq, " | ", diff_gentq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22410,7 +23552,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%gentqmeas == kgenref_var%gentqmeas) THEN 
+    IF ((var%gentqmeas == kgenref_var%gentqmeas) .OR. ((var%gentqmeas /= var%gentqmeas) .AND. (kgenref_var%gentqmeas /= kgenref_var%gentqmeas))) THEN
+        IF (var%gentqmeas /= var%gentqmeas) WRITE(*, *) "localvar%gentqmeas is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22418,6 +23561,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] gentqmeas | IDENTICAL | ", var%gentqmeas, " | ", kgenref_var%gentqmeas
     ELSE 
         diff_gentqmeas = ABS(var%gentqmeas - kgenref_var%gentqmeas) 
         IF (diff_gentqmeas <= kgen_tolerance) THEN 
@@ -22428,6 +23572,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] gentqmeas | IN_TOL | ", var%gentqmeas, " | ", kgenref_var%gentqmeas, " | ", diff_gentqmeas
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22436,6 +23581,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] gentqmeas | OUT_TOL | ", var%gentqmeas, " | ", kgenref_var%gentqmeas, " | ", diff_gentqmeas
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22457,7 +23603,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%genartq == kgenref_var%genartq) THEN 
+    IF ((var%genartq == kgenref_var%genartq) .OR. ((var%genartq /= var%genartq) .AND. (kgenref_var%genartq /= kgenref_var%genartq))) THEN
+        IF (var%genartq /= var%genartq) WRITE(*, *) "localvar%genartq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22465,6 +23612,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] genartq | IDENTICAL | ", var%genartq, " | ", kgenref_var%genartq
     ELSE 
         diff_genartq = ABS(var%genartq - kgenref_var%genartq) 
         IF (diff_genartq <= kgen_tolerance) THEN 
@@ -22475,6 +23623,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] genartq | IN_TOL | ", var%genartq, " | ", kgenref_var%genartq, " | ", diff_genartq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22483,6 +23632,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] genartq | OUT_TOL | ", var%genartq, " | ", kgenref_var%genartq, " | ", diff_genartq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22504,7 +23654,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%genbrtq == kgenref_var%genbrtq) THEN 
+    IF ((var%genbrtq == kgenref_var%genbrtq) .OR. ((var%genbrtq /= var%genbrtq) .AND. (kgenref_var%genbrtq /= kgenref_var%genbrtq))) THEN
+        IF (var%genbrtq /= var%genbrtq) WRITE(*, *) "localvar%genbrtq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22512,6 +23663,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] genbrtq | IDENTICAL | ", var%genbrtq, " | ", kgenref_var%genbrtq
     ELSE 
         diff_genbrtq = ABS(var%genbrtq - kgenref_var%genbrtq) 
         IF (diff_genbrtq <= kgen_tolerance) THEN 
@@ -22522,6 +23674,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] genbrtq | IN_TOL | ", var%genbrtq, " | ", kgenref_var%genbrtq, " | ", diff_genbrtq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22530,6 +23683,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] genbrtq | OUT_TOL | ", var%genbrtq, " | ", kgenref_var%genbrtq, " | ", diff_genbrtq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22551,7 +23705,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_komega2_gentq == kgenref_var%vs_komega2_gentq) THEN 
+    IF ((var%vs_komega2_gentq == kgenref_var%vs_komega2_gentq) .OR. ((var%vs_komega2_gentq /= var%vs_komega2_gentq) .AND. (kgenref_var%vs_komega2_gentq /= kgenref_var%vs_komega2_gentq))) THEN
+        IF (var%vs_komega2_gentq /= var%vs_komega2_gentq) WRITE(*, *) "localvar%vs_komega2_gentq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22559,6 +23714,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_komega2_gentq | IDENTICAL | ", var%vs_komega2_gentq, " | ", kgenref_var%vs_komega2_gentq
     ELSE 
         diff_vs_komega2_gentq = ABS(var%vs_komega2_gentq - kgenref_var%vs_komega2_gentq) 
         IF (diff_vs_komega2_gentq <= kgen_tolerance) THEN 
@@ -22569,6 +23725,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_komega2_gentq | IN_TOL | ", var%vs_komega2_gentq, " | ", kgenref_var%vs_komega2_gentq, " | ", diff_vs_komega2_gentq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22577,6 +23734,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_komega2_gentq | OUT_TOL | ", var%vs_komega2_gentq, " | ", kgenref_var%vs_komega2_gentq, " | ", diff_vs_komega2_gentq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22598,7 +23756,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_constpwr_gentq == kgenref_var%vs_constpwr_gentq) THEN 
+    IF ((var%vs_constpwr_gentq == kgenref_var%vs_constpwr_gentq) .OR. ((var%vs_constpwr_gentq /= var%vs_constpwr_gentq) .AND. (kgenref_var%vs_constpwr_gentq /= kgenref_var%vs_constpwr_gentq))) THEN
+        IF (var%vs_constpwr_gentq /= var%vs_constpwr_gentq) WRITE(*, *) "localvar%vs_constpwr_gentq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22606,6 +23765,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_constpwr_gentq | IDENTICAL | ", var%vs_constpwr_gentq, " | ", kgenref_var%vs_constpwr_gentq
     ELSE 
         diff_vs_constpwr_gentq = ABS(var%vs_constpwr_gentq - kgenref_var%vs_constpwr_gentq) 
         IF (diff_vs_constpwr_gentq <= kgen_tolerance) THEN 
@@ -22616,6 +23776,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_constpwr_gentq | IN_TOL | ", var%vs_constpwr_gentq, " | ", kgenref_var%vs_constpwr_gentq, " | ", diff_vs_constpwr_gentq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22624,6 +23785,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_constpwr_gentq | OUT_TOL | ", var%vs_constpwr_gentq, " | ", kgenref_var%vs_constpwr_gentq, " | ", diff_vs_constpwr_gentq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22653,6 +23815,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] ipc_pitcomf | IDENTICAL | size=", SIZE(var%ipc_pitcomf)
     ELSE 
         ALLOCATE (buf1_ipc_pitcomf(SIZE(var%ipc_pitcomf,dim=1))) 
         ALLOCATE (buf2_ipc_pitcomf(SIZE(var%ipc_pitcomf,dim=1))) 
@@ -22674,6 +23837,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] ipc_pitcomf | OUT_TOL | n_diff=", n_ipc_pitcomf, " | rms=", rmsdiff_ipc_pitcomf
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22682,6 +23846,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] ipc_pitcomf | IN_TOL | n_diff=", n_ipc_pitcomf, " | rms=", rmsdiff_ipc_pitcomf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22713,7 +23878,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_kp == kgenref_var%pc_kp) THEN 
+    IF ((var%pc_kp == kgenref_var%pc_kp) .OR. ((var%pc_kp /= var%pc_kp) .AND. (kgenref_var%pc_kp /= kgenref_var%pc_kp))) THEN
+        IF (var%pc_kp /= var%pc_kp) WRITE(*, *) "localvar%pc_kp is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22721,6 +23887,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_kp | IDENTICAL | ", var%pc_kp, " | ", kgenref_var%pc_kp
     ELSE 
         diff_pc_kp = ABS(var%pc_kp - kgenref_var%pc_kp) 
         IF (diff_pc_kp <= kgen_tolerance) THEN 
@@ -22731,6 +23898,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_kp | IN_TOL | ", var%pc_kp, " | ", kgenref_var%pc_kp, " | ", diff_pc_kp
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22739,6 +23907,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_kp | OUT_TOL | ", var%pc_kp, " | ", kgenref_var%pc_kp, " | ", diff_pc_kp
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22760,7 +23929,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_ki == kgenref_var%pc_ki) THEN 
+    IF ((var%pc_ki == kgenref_var%pc_ki) .OR. ((var%pc_ki /= var%pc_ki) .AND. (kgenref_var%pc_ki /= kgenref_var%pc_ki))) THEN
+        IF (var%pc_ki /= var%pc_ki) WRITE(*, *) "localvar%pc_ki is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22768,6 +23938,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_ki | IDENTICAL | ", var%pc_ki, " | ", kgenref_var%pc_ki
     ELSE 
         diff_pc_ki = ABS(var%pc_ki - kgenref_var%pc_ki) 
         IF (diff_pc_ki <= kgen_tolerance) THEN 
@@ -22778,6 +23949,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_ki | IN_TOL | ", var%pc_ki, " | ", kgenref_var%pc_ki, " | ", diff_pc_ki
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22786,6 +23958,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_ki | OUT_TOL | ", var%pc_ki, " | ", kgenref_var%pc_ki, " | ", diff_pc_ki
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22807,7 +23980,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_kd == kgenref_var%pc_kd) THEN 
+    IF ((var%pc_kd == kgenref_var%pc_kd) .OR. ((var%pc_kd /= var%pc_kd) .AND. (kgenref_var%pc_kd /= kgenref_var%pc_kd))) THEN
+        IF (var%pc_kd /= var%pc_kd) WRITE(*, *) "localvar%pc_kd is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22815,6 +23989,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_kd | IDENTICAL | ", var%pc_kd, " | ", kgenref_var%pc_kd
     ELSE 
         diff_pc_kd = ABS(var%pc_kd - kgenref_var%pc_kd) 
         IF (diff_pc_kd <= kgen_tolerance) THEN 
@@ -22825,6 +24000,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_kd | IN_TOL | ", var%pc_kd, " | ", kgenref_var%pc_kd, " | ", diff_pc_kd
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22833,6 +24009,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_kd | OUT_TOL | ", var%pc_kd, " | ", kgenref_var%pc_kd, " | ", diff_pc_kd
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22854,7 +24031,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_tf == kgenref_var%pc_tf) THEN 
+    IF ((var%pc_tf == kgenref_var%pc_tf) .OR. ((var%pc_tf /= var%pc_tf) .AND. (kgenref_var%pc_tf /= kgenref_var%pc_tf))) THEN
+        IF (var%pc_tf /= var%pc_tf) WRITE(*, *) "localvar%pc_tf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22862,6 +24040,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_tf | IDENTICAL | ", var%pc_tf, " | ", kgenref_var%pc_tf
     ELSE 
         diff_pc_tf = ABS(var%pc_tf - kgenref_var%pc_tf) 
         IF (diff_pc_tf <= kgen_tolerance) THEN 
@@ -22872,6 +24051,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_tf | IN_TOL | ", var%pc_tf, " | ", kgenref_var%pc_tf, " | ", diff_pc_tf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22880,6 +24060,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_tf | OUT_TOL | ", var%pc_tf, " | ", kgenref_var%pc_tf, " | ", diff_pc_tf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22901,7 +24082,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_maxpit == kgenref_var%pc_maxpit) THEN 
+    IF ((var%pc_maxpit == kgenref_var%pc_maxpit) .OR. ((var%pc_maxpit /= var%pc_maxpit) .AND. (kgenref_var%pc_maxpit /= kgenref_var%pc_maxpit))) THEN
+        IF (var%pc_maxpit /= var%pc_maxpit) WRITE(*, *) "localvar%pc_maxpit is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22909,6 +24091,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_maxpit | IDENTICAL | ", var%pc_maxpit, " | ", kgenref_var%pc_maxpit
     ELSE 
         diff_pc_maxpit = ABS(var%pc_maxpit - kgenref_var%pc_maxpit) 
         IF (diff_pc_maxpit <= kgen_tolerance) THEN 
@@ -22919,6 +24102,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_maxpit | IN_TOL | ", var%pc_maxpit, " | ", kgenref_var%pc_maxpit, " | ", diff_pc_maxpit
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22927,6 +24111,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_maxpit | OUT_TOL | ", var%pc_maxpit, " | ", kgenref_var%pc_maxpit, " | ", diff_pc_maxpit
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22948,7 +24133,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_minpit == kgenref_var%pc_minpit) THEN 
+    IF ((var%pc_minpit == kgenref_var%pc_minpit) .OR. ((var%pc_minpit /= var%pc_minpit) .AND. (kgenref_var%pc_minpit /= kgenref_var%pc_minpit))) THEN
+        IF (var%pc_minpit /= var%pc_minpit) WRITE(*, *) "localvar%pc_minpit is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -22956,6 +24142,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_minpit | IDENTICAL | ", var%pc_minpit, " | ", kgenref_var%pc_minpit
     ELSE 
         diff_pc_minpit = ABS(var%pc_minpit - kgenref_var%pc_minpit) 
         IF (diff_pc_minpit <= kgen_tolerance) THEN 
@@ -22966,6 +24153,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_minpit | IN_TOL | ", var%pc_minpit, " | ", kgenref_var%pc_minpit, " | ", diff_pc_minpit
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -22974,6 +24162,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_minpit | OUT_TOL | ", var%pc_minpit, " | ", kgenref_var%pc_minpit, " | ", diff_pc_minpit
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -22995,7 +24184,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_pitcomt == kgenref_var%pc_pitcomt) THEN 
+    IF ((var%pc_pitcomt == kgenref_var%pc_pitcomt) .OR. ((var%pc_pitcomt /= var%pc_pitcomt) .AND. (kgenref_var%pc_pitcomt /= kgenref_var%pc_pitcomt))) THEN
+        IF (var%pc_pitcomt /= var%pc_pitcomt) WRITE(*, *) "localvar%pc_pitcomt is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23003,6 +24193,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_pitcomt | IDENTICAL | ", var%pc_pitcomt, " | ", kgenref_var%pc_pitcomt
     ELSE 
         diff_pc_pitcomt = ABS(var%pc_pitcomt - kgenref_var%pc_pitcomt) 
         IF (diff_pc_pitcomt <= kgen_tolerance) THEN 
@@ -23013,6 +24204,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_pitcomt | IN_TOL | ", var%pc_pitcomt, " | ", kgenref_var%pc_pitcomt, " | ", diff_pc_pitcomt
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23021,6 +24213,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_pitcomt | OUT_TOL | ", var%pc_pitcomt, " | ", kgenref_var%pc_pitcomt, " | ", diff_pc_pitcomt
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23042,7 +24235,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_pitcomt_last == kgenref_var%pc_pitcomt_last) THEN 
+    IF ((var%pc_pitcomt_last == kgenref_var%pc_pitcomt_last) .OR. ((var%pc_pitcomt_last /= var%pc_pitcomt_last) .AND. (kgenref_var%pc_pitcomt_last /= kgenref_var%pc_pitcomt_last))) THEN
+        IF (var%pc_pitcomt_last /= var%pc_pitcomt_last) WRITE(*, *) "localvar%pc_pitcomt_last is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23050,6 +24244,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_pitcomt_last | IDENTICAL | ", var%pc_pitcomt_last, " | ", kgenref_var%pc_pitcomt_last
     ELSE 
         diff_pc_pitcomt_last = ABS(var%pc_pitcomt_last - kgenref_var%pc_pitcomt_last) 
         IF (diff_pc_pitcomt_last <= kgen_tolerance) THEN 
@@ -23060,6 +24255,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_pitcomt_last | IN_TOL | ", var%pc_pitcomt_last, " | ", kgenref_var%pc_pitcomt_last, " | ", diff_pc_pitcomt_last
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23068,6 +24264,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_pitcomt_last | OUT_TOL | ", var%pc_pitcomt_last, " | ", kgenref_var%pc_pitcomt_last, " | ", diff_pc_pitcomt_last
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23089,7 +24286,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%blpitchcmeasf == kgenref_var%blpitchcmeasf) THEN 
+    IF ((var%blpitchcmeasf == kgenref_var%blpitchcmeasf) .OR. ((var%blpitchcmeasf /= var%blpitchcmeasf) .AND. (kgenref_var%blpitchcmeasf /= kgenref_var%blpitchcmeasf))) THEN
+        IF (var%blpitchcmeasf /= var%blpitchcmeasf) WRITE(*, *) "localvar%blpitchcmeasf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23097,6 +24295,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] blpitchcmeasf | IDENTICAL | ", var%blpitchcmeasf, " | ", kgenref_var%blpitchcmeasf
     ELSE 
         diff_blpitchcmeasf = ABS(var%blpitchcmeasf - kgenref_var%blpitchcmeasf) 
         IF (diff_blpitchcmeasf <= kgen_tolerance) THEN 
@@ -23107,6 +24306,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] blpitchcmeasf | IN_TOL | ", var%blpitchcmeasf, " | ", kgenref_var%blpitchcmeasf, " | ", diff_blpitchcmeasf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23115,6 +24315,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] blpitchcmeasf | OUT_TOL | ", var%blpitchcmeasf, " | ", kgenref_var%blpitchcmeasf, " | ", diff_blpitchcmeasf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23144,6 +24345,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] pc_pitcomt_ipc | IDENTICAL | size=", SIZE(var%pc_pitcomt_ipc)
     ELSE 
         ALLOCATE (buf1_pc_pitcomt_ipc(SIZE(var%pc_pitcomt_ipc,dim=1))) 
         ALLOCATE (buf2_pc_pitcomt_ipc(SIZE(var%pc_pitcomt_ipc,dim=1))) 
@@ -23165,6 +24367,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] pc_pitcomt_ipc | OUT_TOL | n_diff=", n_pc_pitcomt_ipc, " | rms=", rmsdiff_pc_pitcomt_ipc
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23173,6 +24376,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] pc_pitcomt_ipc | IN_TOL | n_diff=", n_pc_pitcomt_ipc, " | rms=", rmsdiff_pc_pitcomt_ipc
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23204,7 +24408,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_pwrerr == kgenref_var%pc_pwrerr) THEN 
+    IF ((var%pc_pwrerr == kgenref_var%pc_pwrerr) .OR. ((var%pc_pwrerr /= var%pc_pwrerr) .AND. (kgenref_var%pc_pwrerr /= kgenref_var%pc_pwrerr))) THEN
+        IF (var%pc_pwrerr /= var%pc_pwrerr) WRITE(*, *) "localvar%pc_pwrerr is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23212,6 +24417,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_pwrerr | IDENTICAL | ", var%pc_pwrerr, " | ", kgenref_var%pc_pwrerr
     ELSE 
         diff_pc_pwrerr = ABS(var%pc_pwrerr - kgenref_var%pc_pwrerr) 
         IF (diff_pc_pwrerr <= kgen_tolerance) THEN 
@@ -23222,6 +24428,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_pwrerr | IN_TOL | ", var%pc_pwrerr, " | ", kgenref_var%pc_pwrerr, " | ", diff_pc_pwrerr
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23230,6 +24437,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_pwrerr | OUT_TOL | ", var%pc_pwrerr, " | ", kgenref_var%pc_pwrerr, " | ", diff_pc_pwrerr
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23251,7 +24459,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_spderr == kgenref_var%pc_spderr) THEN 
+    IF ((var%pc_spderr == kgenref_var%pc_spderr) .OR. ((var%pc_spderr /= var%pc_spderr) .AND. (kgenref_var%pc_spderr /= kgenref_var%pc_spderr))) THEN
+        IF (var%pc_spderr /= var%pc_spderr) WRITE(*, *) "localvar%pc_spderr is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23259,6 +24468,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_spderr | IDENTICAL | ", var%pc_spderr, " | ", kgenref_var%pc_spderr
     ELSE 
         diff_pc_spderr = ABS(var%pc_spderr - kgenref_var%pc_spderr) 
         IF (diff_pc_spderr <= kgen_tolerance) THEN 
@@ -23269,6 +24479,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_spderr | IN_TOL | ", var%pc_spderr, " | ", kgenref_var%pc_spderr, " | ", diff_pc_spderr
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23277,6 +24488,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_spderr | OUT_TOL | ", var%pc_spderr, " | ", kgenref_var%pc_spderr, " | ", diff_pc_spderr
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23298,7 +24510,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ipc_axistilt_1p == kgenref_var%ipc_axistilt_1p) THEN 
+    IF ((var%ipc_axistilt_1p == kgenref_var%ipc_axistilt_1p) .OR. ((var%ipc_axistilt_1p /= var%ipc_axistilt_1p) .AND. (kgenref_var%ipc_axistilt_1p /= kgenref_var%ipc_axistilt_1p))) THEN
+        IF (var%ipc_axistilt_1p /= var%ipc_axistilt_1p) WRITE(*, *) "localvar%ipc_axistilt_1p is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23306,6 +24519,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ipc_axistilt_1p | IDENTICAL | ", var%ipc_axistilt_1p, " | ", kgenref_var%ipc_axistilt_1p
     ELSE 
         diff_ipc_axistilt_1p = ABS(var%ipc_axistilt_1p - kgenref_var%ipc_axistilt_1p) 
         IF (diff_ipc_axistilt_1p <= kgen_tolerance) THEN 
@@ -23316,6 +24530,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_axistilt_1p | IN_TOL | ", var%ipc_axistilt_1p, " | ", kgenref_var%ipc_axistilt_1p, " | ", diff_ipc_axistilt_1p
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23324,6 +24539,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_axistilt_1p | OUT_TOL | ", var%ipc_axistilt_1p, " | ", kgenref_var%ipc_axistilt_1p, " | ", diff_ipc_axistilt_1p
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23345,7 +24561,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ipc_axisyaw_1p == kgenref_var%ipc_axisyaw_1p) THEN 
+    IF ((var%ipc_axisyaw_1p == kgenref_var%ipc_axisyaw_1p) .OR. ((var%ipc_axisyaw_1p /= var%ipc_axisyaw_1p) .AND. (kgenref_var%ipc_axisyaw_1p /= kgenref_var%ipc_axisyaw_1p))) THEN
+        IF (var%ipc_axisyaw_1p /= var%ipc_axisyaw_1p) WRITE(*, *) "localvar%ipc_axisyaw_1p is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23353,6 +24570,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ipc_axisyaw_1p | IDENTICAL | ", var%ipc_axisyaw_1p, " | ", kgenref_var%ipc_axisyaw_1p
     ELSE 
         diff_ipc_axisyaw_1p = ABS(var%ipc_axisyaw_1p - kgenref_var%ipc_axisyaw_1p) 
         IF (diff_ipc_axisyaw_1p <= kgen_tolerance) THEN 
@@ -23363,6 +24581,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_axisyaw_1p | IN_TOL | ", var%ipc_axisyaw_1p, " | ", kgenref_var%ipc_axisyaw_1p, " | ", diff_ipc_axisyaw_1p
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23371,6 +24590,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_axisyaw_1p | OUT_TOL | ", var%ipc_axisyaw_1p, " | ", kgenref_var%ipc_axisyaw_1p, " | ", diff_ipc_axisyaw_1p
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23392,7 +24612,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ipc_axistilt_2p == kgenref_var%ipc_axistilt_2p) THEN 
+    IF ((var%ipc_axistilt_2p == kgenref_var%ipc_axistilt_2p) .OR. ((var%ipc_axistilt_2p /= var%ipc_axistilt_2p) .AND. (kgenref_var%ipc_axistilt_2p /= kgenref_var%ipc_axistilt_2p))) THEN
+        IF (var%ipc_axistilt_2p /= var%ipc_axistilt_2p) WRITE(*, *) "localvar%ipc_axistilt_2p is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23400,6 +24621,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ipc_axistilt_2p | IDENTICAL | ", var%ipc_axistilt_2p, " | ", kgenref_var%ipc_axistilt_2p
     ELSE 
         diff_ipc_axistilt_2p = ABS(var%ipc_axistilt_2p - kgenref_var%ipc_axistilt_2p) 
         IF (diff_ipc_axistilt_2p <= kgen_tolerance) THEN 
@@ -23410,6 +24632,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_axistilt_2p | IN_TOL | ", var%ipc_axistilt_2p, " | ", kgenref_var%ipc_axistilt_2p, " | ", diff_ipc_axistilt_2p
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23418,6 +24641,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_axistilt_2p | OUT_TOL | ", var%ipc_axistilt_2p, " | ", kgenref_var%ipc_axistilt_2p, " | ", diff_ipc_axistilt_2p
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23439,7 +24663,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ipc_axisyaw_2p == kgenref_var%ipc_axisyaw_2p) THEN 
+    IF ((var%ipc_axisyaw_2p == kgenref_var%ipc_axisyaw_2p) .OR. ((var%ipc_axisyaw_2p /= var%ipc_axisyaw_2p) .AND. (kgenref_var%ipc_axisyaw_2p /= kgenref_var%ipc_axisyaw_2p))) THEN
+        IF (var%ipc_axisyaw_2p /= var%ipc_axisyaw_2p) WRITE(*, *) "localvar%ipc_axisyaw_2p is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23447,6 +24672,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ipc_axisyaw_2p | IDENTICAL | ", var%ipc_axisyaw_2p, " | ", kgenref_var%ipc_axisyaw_2p
     ELSE 
         diff_ipc_axisyaw_2p = ABS(var%ipc_axisyaw_2p - kgenref_var%ipc_axisyaw_2p) 
         IF (diff_ipc_axisyaw_2p <= kgen_tolerance) THEN 
@@ -23457,6 +24683,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_axisyaw_2p | IN_TOL | ", var%ipc_axisyaw_2p, " | ", kgenref_var%ipc_axisyaw_2p, " | ", diff_ipc_axisyaw_2p
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23465,6 +24692,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_axisyaw_2p | OUT_TOL | ", var%ipc_axisyaw_2p, " | ", kgenref_var%ipc_axisyaw_2p, " | ", diff_ipc_axisyaw_2p
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23486,7 +24714,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%axistilt_1p == kgenref_var%axistilt_1p) THEN 
+    IF ((var%axistilt_1p == kgenref_var%axistilt_1p) .OR. ((var%axistilt_1p /= var%axistilt_1p) .AND. (kgenref_var%axistilt_1p /= kgenref_var%axistilt_1p))) THEN
+        IF (var%axistilt_1p /= var%axistilt_1p) WRITE(*, *) "localvar%axistilt_1p is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23494,6 +24723,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] axistilt_1p | IDENTICAL | ", var%axistilt_1p, " | ", kgenref_var%axistilt_1p
     ELSE 
         diff_axistilt_1p = ABS(var%axistilt_1p - kgenref_var%axistilt_1p) 
         IF (diff_axistilt_1p <= kgen_tolerance) THEN 
@@ -23504,6 +24734,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] axistilt_1p | IN_TOL | ", var%axistilt_1p, " | ", kgenref_var%axistilt_1p, " | ", diff_axistilt_1p
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23512,6 +24743,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] axistilt_1p | OUT_TOL | ", var%axistilt_1p, " | ", kgenref_var%axistilt_1p, " | ", diff_axistilt_1p
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23533,7 +24765,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%axisyaw_1p == kgenref_var%axisyaw_1p) THEN 
+    IF ((var%axisyaw_1p == kgenref_var%axisyaw_1p) .OR. ((var%axisyaw_1p /= var%axisyaw_1p) .AND. (kgenref_var%axisyaw_1p /= kgenref_var%axisyaw_1p))) THEN
+        IF (var%axisyaw_1p /= var%axisyaw_1p) WRITE(*, *) "localvar%axisyaw_1p is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23541,6 +24774,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] axisyaw_1p | IDENTICAL | ", var%axisyaw_1p, " | ", kgenref_var%axisyaw_1p
     ELSE 
         diff_axisyaw_1p = ABS(var%axisyaw_1p - kgenref_var%axisyaw_1p) 
         IF (diff_axisyaw_1p <= kgen_tolerance) THEN 
@@ -23551,6 +24785,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] axisyaw_1p | IN_TOL | ", var%axisyaw_1p, " | ", kgenref_var%axisyaw_1p, " | ", diff_axisyaw_1p
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23559,6 +24794,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] axisyaw_1p | OUT_TOL | ", var%axisyaw_1p, " | ", kgenref_var%axisyaw_1p, " | ", diff_axisyaw_1p
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23580,7 +24816,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%axisyawf_1p == kgenref_var%axisyawf_1p) THEN 
+    IF ((var%axisyawf_1p == kgenref_var%axisyawf_1p) .OR. ((var%axisyawf_1p /= var%axisyawf_1p) .AND. (kgenref_var%axisyawf_1p /= kgenref_var%axisyawf_1p))) THEN
+        IF (var%axisyawf_1p /= var%axisyawf_1p) WRITE(*, *) "localvar%axisyawf_1p is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23588,6 +24825,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] axisyawf_1p | IDENTICAL | ", var%axisyawf_1p, " | ", kgenref_var%axisyawf_1p
     ELSE 
         diff_axisyawf_1p = ABS(var%axisyawf_1p - kgenref_var%axisyawf_1p) 
         IF (diff_axisyawf_1p <= kgen_tolerance) THEN 
@@ -23598,6 +24836,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] axisyawf_1p | IN_TOL | ", var%axisyawf_1p, " | ", kgenref_var%axisyawf_1p, " | ", diff_axisyawf_1p
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23606,6 +24845,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] axisyawf_1p | OUT_TOL | ", var%axisyawf_1p, " | ", kgenref_var%axisyawf_1p, " | ", diff_axisyawf_1p
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23627,7 +24867,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%axistilt_2p == kgenref_var%axistilt_2p) THEN 
+    IF ((var%axistilt_2p == kgenref_var%axistilt_2p) .OR. ((var%axistilt_2p /= var%axistilt_2p) .AND. (kgenref_var%axistilt_2p /= kgenref_var%axistilt_2p))) THEN
+        IF (var%axistilt_2p /= var%axistilt_2p) WRITE(*, *) "localvar%axistilt_2p is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23635,6 +24876,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] axistilt_2p | IDENTICAL | ", var%axistilt_2p, " | ", kgenref_var%axistilt_2p
     ELSE 
         diff_axistilt_2p = ABS(var%axistilt_2p - kgenref_var%axistilt_2p) 
         IF (diff_axistilt_2p <= kgen_tolerance) THEN 
@@ -23645,6 +24887,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] axistilt_2p | IN_TOL | ", var%axistilt_2p, " | ", kgenref_var%axistilt_2p, " | ", diff_axistilt_2p
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23653,6 +24896,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] axistilt_2p | OUT_TOL | ", var%axistilt_2p, " | ", kgenref_var%axistilt_2p, " | ", diff_axistilt_2p
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23674,7 +24918,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%axisyaw_2p == kgenref_var%axisyaw_2p) THEN 
+    IF ((var%axisyaw_2p == kgenref_var%axisyaw_2p) .OR. ((var%axisyaw_2p /= var%axisyaw_2p) .AND. (kgenref_var%axisyaw_2p /= kgenref_var%axisyaw_2p))) THEN
+        IF (var%axisyaw_2p /= var%axisyaw_2p) WRITE(*, *) "localvar%axisyaw_2p is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23682,6 +24927,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] axisyaw_2p | IDENTICAL | ", var%axisyaw_2p, " | ", kgenref_var%axisyaw_2p
     ELSE 
         diff_axisyaw_2p = ABS(var%axisyaw_2p - kgenref_var%axisyaw_2p) 
         IF (diff_axisyaw_2p <= kgen_tolerance) THEN 
@@ -23692,6 +24938,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] axisyaw_2p | IN_TOL | ", var%axisyaw_2p, " | ", kgenref_var%axisyaw_2p, " | ", diff_axisyaw_2p
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23700,6 +24947,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] axisyaw_2p | OUT_TOL | ", var%axisyaw_2p, " | ", kgenref_var%axisyaw_2p, " | ", diff_axisyaw_2p
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23721,7 +24969,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%axisyawf_2p == kgenref_var%axisyawf_2p) THEN 
+    IF ((var%axisyawf_2p == kgenref_var%axisyawf_2p) .OR. ((var%axisyawf_2p /= var%axisyawf_2p) .AND. (kgenref_var%axisyawf_2p /= kgenref_var%axisyawf_2p))) THEN
+        IF (var%axisyawf_2p /= var%axisyawf_2p) WRITE(*, *) "localvar%axisyawf_2p is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23729,6 +24978,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] axisyawf_2p | IDENTICAL | ", var%axisyawf_2p, " | ", kgenref_var%axisyawf_2p
     ELSE 
         diff_axisyawf_2p = ABS(var%axisyawf_2p - kgenref_var%axisyawf_2p) 
         IF (diff_axisyawf_2p <= kgen_tolerance) THEN 
@@ -23739,6 +24989,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] axisyawf_2p | IN_TOL | ", var%axisyawf_2p, " | ", kgenref_var%axisyawf_2p, " | ", diff_axisyawf_2p
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23747,6 +24998,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] axisyawf_2p | OUT_TOL | ", var%axisyawf_2p, " | ", kgenref_var%axisyawf_2p, " | ", diff_axisyawf_2p
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23776,6 +25028,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] ipc_ki | IDENTICAL | size=", SIZE(var%ipc_ki)
     ELSE 
         ALLOCATE (buf1_ipc_ki(SIZE(var%ipc_ki,dim=1))) 
         ALLOCATE (buf2_ipc_ki(SIZE(var%ipc_ki,dim=1))) 
@@ -23797,6 +25050,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] ipc_ki | OUT_TOL | n_diff=", n_ipc_ki, " | rms=", rmsdiff_ipc_ki
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23805,6 +25059,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] ipc_ki | IN_TOL | n_diff=", n_ipc_ki, " | rms=", rmsdiff_ipc_ki
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23842,6 +25097,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] ipc_kp | IDENTICAL | size=", SIZE(var%ipc_kp)
     ELSE 
         ALLOCATE (buf1_ipc_kp(SIZE(var%ipc_kp,dim=1))) 
         ALLOCATE (buf2_ipc_kp(SIZE(var%ipc_kp,dim=1))) 
@@ -23863,6 +25119,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] ipc_kp | OUT_TOL | n_diff=", n_ipc_kp, " | rms=", rmsdiff_ipc_kp
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23871,6 +25128,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] ipc_kp | IN_TOL | n_diff=", n_ipc_kp, " | rms=", rmsdiff_ipc_kp
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23900,7 +25158,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ipc_intsat == kgenref_var%ipc_intsat) THEN 
+    IF ((var%ipc_intsat == kgenref_var%ipc_intsat) .OR. ((var%ipc_intsat /= var%ipc_intsat) .AND. (kgenref_var%ipc_intsat /= kgenref_var%ipc_intsat))) THEN
+        IF (var%ipc_intsat /= var%ipc_intsat) WRITE(*, *) "localvar%ipc_intsat is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23908,6 +25167,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ipc_intsat | IDENTICAL | ", var%ipc_intsat, " | ", kgenref_var%ipc_intsat
     ELSE 
         diff_ipc_intsat = ABS(var%ipc_intsat - kgenref_var%ipc_intsat) 
         IF (diff_ipc_intsat <= kgen_tolerance) THEN 
@@ -23918,6 +25178,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_intsat | IN_TOL | ", var%ipc_intsat, " | ", kgenref_var%ipc_intsat, " | ", diff_ipc_intsat
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23926,6 +25187,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ipc_intsat | OUT_TOL | ", var%ipc_intsat, " | ", kgenref_var%ipc_intsat, " | ", diff_ipc_intsat
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -23947,7 +25209,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%pc_state == kgenref_var%pc_state) THEN 
+    IF ((var%pc_state == kgenref_var%pc_state) .OR. ((var%pc_state /= var%pc_state) .AND. (kgenref_var%pc_state /= kgenref_var%pc_state))) THEN
+        IF (var%pc_state /= var%pc_state) WRITE(*, *) "localvar%pc_state is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -23955,6 +25218,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] pc_state | IDENTICAL | ", var%pc_state, " | ", kgenref_var%pc_state
     ELSE 
         diff_pc_state = ABS(var%pc_state - kgenref_var%pc_state) 
         IF (diff_pc_state <= kgen_tolerance) THEN 
@@ -23965,6 +25229,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_state | IN_TOL | ", var%pc_state, " | ", kgenref_var%pc_state, " | ", diff_pc_state
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -23973,6 +25238,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] pc_state | OUT_TOL | ", var%pc_state, " | ", kgenref_var%pc_state, " | ", diff_pc_state
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24002,6 +25268,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] pitcom | IDENTICAL | size=", SIZE(var%pitcom)
     ELSE 
         ALLOCATE (buf1_pitcom(SIZE(var%pitcom,dim=1))) 
         ALLOCATE (buf2_pitcom(SIZE(var%pitcom,dim=1))) 
@@ -24023,6 +25290,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] pitcom | OUT_TOL | n_diff=", n_pitcom, " | rms=", rmsdiff_pitcom
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24031,6 +25299,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] pitcom | IN_TOL | n_diff=", n_pitcom, " | rms=", rmsdiff_pitcom
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24068,6 +25337,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] pitcom_sd | IDENTICAL | size=", SIZE(var%pitcom_sd)
     ELSE 
         ALLOCATE (buf1_pitcom_sd(SIZE(var%pitcom_sd,dim=1))) 
         ALLOCATE (buf2_pitcom_sd(SIZE(var%pitcom_sd,dim=1))) 
@@ -24089,6 +25359,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] pitcom_sd | OUT_TOL | n_diff=", n_pitcom_sd, " | rms=", rmsdiff_pitcom_sd
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24097,6 +25368,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] pitcom_sd | IN_TOL | n_diff=", n_pitcom_sd, " | rms=", rmsdiff_pitcom_sd
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24136,6 +25408,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] pitcomact | IDENTICAL | size=", SIZE(var%pitcomact)
     ELSE 
         ALLOCATE (buf1_pitcomact(SIZE(var%pitcomact,dim=1))) 
         ALLOCATE (buf2_pitcomact(SIZE(var%pitcomact,dim=1))) 
@@ -24157,6 +25430,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] pitcomact | OUT_TOL | n_diff=", n_pitcomact, " | rms=", rmsdiff_pitcomact
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24165,6 +25439,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] pitcomact | IN_TOL | n_diff=", n_pitcomact, " | rms=", rmsdiff_pitcomact
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24196,7 +25471,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ss_delomegaf == kgenref_var%ss_delomegaf) THEN 
+    IF ((var%ss_delomegaf == kgenref_var%ss_delomegaf) .OR. ((var%ss_delomegaf /= var%ss_delomegaf) .AND. (kgenref_var%ss_delomegaf /= kgenref_var%ss_delomegaf))) THEN
+        IF (var%ss_delomegaf /= var%ss_delomegaf) WRITE(*, *) "localvar%ss_delomegaf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24204,6 +25480,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ss_delomegaf | IDENTICAL | ", var%ss_delomegaf, " | ", kgenref_var%ss_delomegaf
     ELSE 
         diff_ss_delomegaf = ABS(var%ss_delomegaf - kgenref_var%ss_delomegaf) 
         IF (diff_ss_delomegaf <= kgen_tolerance) THEN 
@@ -24214,6 +25491,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ss_delomegaf | IN_TOL | ", var%ss_delomegaf, " | ", kgenref_var%ss_delomegaf, " | ", diff_ss_delomegaf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24222,6 +25500,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ss_delomegaf | OUT_TOL | ", var%ss_delomegaf, " | ", kgenref_var%ss_delomegaf, " | ", diff_ss_delomegaf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24243,7 +25522,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%testtype == kgenref_var%testtype) THEN 
+    IF ((var%testtype == kgenref_var%testtype) .OR. ((var%testtype /= var%testtype) .AND. (kgenref_var%testtype /= kgenref_var%testtype))) THEN
+        IF (var%testtype /= var%testtype) WRITE(*, *) "localvar%testtype is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24251,6 +25531,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] testtype | IDENTICAL | ", var%testtype, " | ", kgenref_var%testtype
     ELSE 
         diff_testtype = ABS(var%testtype - kgenref_var%testtype) 
         IF (diff_testtype <= kgen_tolerance) THEN 
@@ -24261,6 +25542,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] testtype | IN_TOL | ", var%testtype, " | ", kgenref_var%testtype, " | ", diff_testtype
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24269,6 +25551,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] testtype | OUT_TOL | ", var%testtype, " | ", kgenref_var%testtype, " | ", diff_testtype
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24290,7 +25573,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%kp_float == kgenref_var%kp_float) THEN 
+    IF ((var%kp_float == kgenref_var%kp_float) .OR. ((var%kp_float /= var%kp_float) .AND. (kgenref_var%kp_float /= kgenref_var%kp_float))) THEN
+        IF (var%kp_float /= var%kp_float) WRITE(*, *) "localvar%kp_float is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24298,6 +25582,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] kp_float | IDENTICAL | ", var%kp_float, " | ", kgenref_var%kp_float
     ELSE 
         diff_kp_float = ABS(var%kp_float - kgenref_var%kp_float) 
         IF (diff_kp_float <= kgen_tolerance) THEN 
@@ -24308,6 +25593,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] kp_float | IN_TOL | ", var%kp_float, " | ", kgenref_var%kp_float, " | ", diff_kp_float
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24316,6 +25602,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] kp_float | OUT_TOL | ", var%kp_float, " | ", kgenref_var%kp_float, " | ", diff_kp_float
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24337,7 +25624,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_maxtq == kgenref_var%vs_maxtq) THEN 
+    IF ((var%vs_maxtq == kgenref_var%vs_maxtq) .OR. ((var%vs_maxtq /= var%vs_maxtq) .AND. (kgenref_var%vs_maxtq /= kgenref_var%vs_maxtq))) THEN
+        IF (var%vs_maxtq /= var%vs_maxtq) WRITE(*, *) "localvar%vs_maxtq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24345,6 +25633,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_maxtq | IDENTICAL | ", var%vs_maxtq, " | ", kgenref_var%vs_maxtq
     ELSE 
         diff_vs_maxtq = ABS(var%vs_maxtq - kgenref_var%vs_maxtq) 
         IF (diff_vs_maxtq <= kgen_tolerance) THEN 
@@ -24355,6 +25644,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_maxtq | IN_TOL | ", var%vs_maxtq, " | ", kgenref_var%vs_maxtq, " | ", diff_vs_maxtq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24363,6 +25653,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_maxtq | OUT_TOL | ", var%vs_maxtq, " | ", kgenref_var%vs_maxtq, " | ", diff_vs_maxtq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24384,7 +25675,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_lastgentrq == kgenref_var%vs_lastgentrq) THEN 
+    IF ((var%vs_lastgentrq == kgenref_var%vs_lastgentrq) .OR. ((var%vs_lastgentrq /= var%vs_lastgentrq) .AND. (kgenref_var%vs_lastgentrq /= kgenref_var%vs_lastgentrq))) THEN
+        IF (var%vs_lastgentrq /= var%vs_lastgentrq) WRITE(*, *) "localvar%vs_lastgentrq is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24392,6 +25684,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_lastgentrq | IDENTICAL | ", var%vs_lastgentrq, " | ", kgenref_var%vs_lastgentrq
     ELSE 
         diff_vs_lastgentrq = ABS(var%vs_lastgentrq - kgenref_var%vs_lastgentrq) 
         IF (diff_vs_lastgentrq <= kgen_tolerance) THEN 
@@ -24402,6 +25695,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_lastgentrq | IN_TOL | ", var%vs_lastgentrq, " | ", kgenref_var%vs_lastgentrq, " | ", diff_vs_lastgentrq
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24410,6 +25704,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_lastgentrq | OUT_TOL | ", var%vs_lastgentrq, " | ", kgenref_var%vs_lastgentrq, " | ", diff_vs_lastgentrq
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24431,7 +25726,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_lastgenpwr == kgenref_var%vs_lastgenpwr) THEN 
+    IF ((var%vs_lastgenpwr == kgenref_var%vs_lastgenpwr) .OR. ((var%vs_lastgenpwr /= var%vs_lastgenpwr) .AND. (kgenref_var%vs_lastgenpwr /= kgenref_var%vs_lastgenpwr))) THEN
+        IF (var%vs_lastgenpwr /= var%vs_lastgenpwr) WRITE(*, *) "localvar%vs_lastgenpwr is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24439,6 +25735,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_lastgenpwr | IDENTICAL | ", var%vs_lastgenpwr, " | ", kgenref_var%vs_lastgenpwr
     ELSE 
         diff_vs_lastgenpwr = ABS(var%vs_lastgenpwr - kgenref_var%vs_lastgenpwr) 
         IF (diff_vs_lastgenpwr <= kgen_tolerance) THEN 
@@ -24449,6 +25746,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_lastgenpwr | IN_TOL | ", var%vs_lastgenpwr, " | ", kgenref_var%vs_lastgenpwr, " | ", diff_vs_lastgenpwr
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24457,6 +25755,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_lastgenpwr | OUT_TOL | ", var%vs_lastgenpwr, " | ", kgenref_var%vs_lastgenpwr, " | ", diff_vs_lastgenpwr
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24478,7 +25777,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_mechgenpwr == kgenref_var%vs_mechgenpwr) THEN 
+    IF ((var%vs_mechgenpwr == kgenref_var%vs_mechgenpwr) .OR. ((var%vs_mechgenpwr /= var%vs_mechgenpwr) .AND. (kgenref_var%vs_mechgenpwr /= kgenref_var%vs_mechgenpwr))) THEN
+        IF (var%vs_mechgenpwr /= var%vs_mechgenpwr) WRITE(*, *) "localvar%vs_mechgenpwr is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24486,6 +25786,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_mechgenpwr | IDENTICAL | ", var%vs_mechgenpwr, " | ", kgenref_var%vs_mechgenpwr
     ELSE 
         diff_vs_mechgenpwr = ABS(var%vs_mechgenpwr - kgenref_var%vs_mechgenpwr) 
         IF (diff_vs_mechgenpwr <= kgen_tolerance) THEN 
@@ -24496,6 +25797,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_mechgenpwr | IN_TOL | ", var%vs_mechgenpwr, " | ", kgenref_var%vs_mechgenpwr, " | ", diff_vs_mechgenpwr
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24504,6 +25806,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_mechgenpwr | OUT_TOL | ", var%vs_mechgenpwr, " | ", kgenref_var%vs_mechgenpwr, " | ", diff_vs_mechgenpwr
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24525,7 +25828,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_spderrar == kgenref_var%vs_spderrar) THEN 
+    IF ((var%vs_spderrar == kgenref_var%vs_spderrar) .OR. ((var%vs_spderrar /= var%vs_spderrar) .AND. (kgenref_var%vs_spderrar /= kgenref_var%vs_spderrar))) THEN
+        IF (var%vs_spderrar /= var%vs_spderrar) WRITE(*, *) "localvar%vs_spderrar is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24533,6 +25837,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_spderrar | IDENTICAL | ", var%vs_spderrar, " | ", kgenref_var%vs_spderrar
     ELSE 
         diff_vs_spderrar = ABS(var%vs_spderrar - kgenref_var%vs_spderrar) 
         IF (diff_vs_spderrar <= kgen_tolerance) THEN 
@@ -24543,6 +25848,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_spderrar | IN_TOL | ", var%vs_spderrar, " | ", kgenref_var%vs_spderrar, " | ", diff_vs_spderrar
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24551,6 +25857,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_spderrar | OUT_TOL | ", var%vs_spderrar, " | ", kgenref_var%vs_spderrar, " | ", diff_vs_spderrar
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24572,7 +25879,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_spderrbr == kgenref_var%vs_spderrbr) THEN 
+    IF ((var%vs_spderrbr == kgenref_var%vs_spderrbr) .OR. ((var%vs_spderrbr /= var%vs_spderrbr) .AND. (kgenref_var%vs_spderrbr /= kgenref_var%vs_spderrbr))) THEN
+        IF (var%vs_spderrbr /= var%vs_spderrbr) WRITE(*, *) "localvar%vs_spderrbr is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24580,6 +25888,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_spderrbr | IDENTICAL | ", var%vs_spderrbr, " | ", kgenref_var%vs_spderrbr
     ELSE 
         diff_vs_spderrbr = ABS(var%vs_spderrbr - kgenref_var%vs_spderrbr) 
         IF (diff_vs_spderrbr <= kgen_tolerance) THEN 
@@ -24590,6 +25899,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_spderrbr | IN_TOL | ", var%vs_spderrbr, " | ", kgenref_var%vs_spderrbr, " | ", diff_vs_spderrbr
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24598,6 +25908,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_spderrbr | OUT_TOL | ", var%vs_spderrbr, " | ", kgenref_var%vs_spderrbr, " | ", diff_vs_spderrbr
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24619,7 +25930,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_spderr == kgenref_var%vs_spderr) THEN 
+    IF ((var%vs_spderr == kgenref_var%vs_spderr) .OR. ((var%vs_spderr /= var%vs_spderr) .AND. (kgenref_var%vs_spderr /= kgenref_var%vs_spderr))) THEN
+        IF (var%vs_spderr /= var%vs_spderr) WRITE(*, *) "localvar%vs_spderr is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24627,6 +25939,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_spderr | IDENTICAL | ", var%vs_spderr, " | ", kgenref_var%vs_spderr
     ELSE 
         diff_vs_spderr = ABS(var%vs_spderr - kgenref_var%vs_spderr) 
         IF (diff_vs_spderr <= kgen_tolerance) THEN 
@@ -24637,6 +25950,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_spderr | IN_TOL | ", var%vs_spderr, " | ", kgenref_var%vs_spderr, " | ", diff_vs_spderr
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24645,6 +25959,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_spderr | OUT_TOL | ", var%vs_spderr, " | ", kgenref_var%vs_spderr, " | ", diff_vs_spderr
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24666,7 +25981,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_state == kgenref_var%vs_state) THEN 
+    IF ((var%vs_state == kgenref_var%vs_state) .OR. ((var%vs_state /= var%vs_state) .AND. (kgenref_var%vs_state /= kgenref_var%vs_state))) THEN
+        IF (var%vs_state /= var%vs_state) WRITE(*, *) "localvar%vs_state is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24674,6 +25990,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_state | IDENTICAL | ", var%vs_state, " | ", kgenref_var%vs_state
     ELSE 
         diff_vs_state = ABS(var%vs_state - kgenref_var%vs_state) 
         IF (diff_vs_state <= kgen_tolerance) THEN 
@@ -24684,6 +26001,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_state | IN_TOL | ", var%vs_state, " | ", kgenref_var%vs_state, " | ", diff_vs_state
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24692,6 +26010,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_state | OUT_TOL | ", var%vs_state, " | ", kgenref_var%vs_state, " | ", diff_vs_state
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24713,7 +26032,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_rgn3pitch == kgenref_var%vs_rgn3pitch) THEN 
+    IF ((var%vs_rgn3pitch == kgenref_var%vs_rgn3pitch) .OR. ((var%vs_rgn3pitch /= var%vs_rgn3pitch) .AND. (kgenref_var%vs_rgn3pitch /= kgenref_var%vs_rgn3pitch))) THEN
+        IF (var%vs_rgn3pitch /= var%vs_rgn3pitch) WRITE(*, *) "localvar%vs_rgn3pitch is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24721,6 +26041,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_rgn3pitch | IDENTICAL | ", var%vs_rgn3pitch, " | ", kgenref_var%vs_rgn3pitch
     ELSE 
         diff_vs_rgn3pitch = ABS(var%vs_rgn3pitch - kgenref_var%vs_rgn3pitch) 
         IF (diff_vs_rgn3pitch <= kgen_tolerance) THEN 
@@ -24731,6 +26052,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_rgn3pitch | IN_TOL | ", var%vs_rgn3pitch, " | ", kgenref_var%vs_rgn3pitch, " | ", diff_vs_rgn3pitch
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24739,6 +26061,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_rgn3pitch | OUT_TOL | ", var%vs_rgn3pitch, " | ", kgenref_var%vs_rgn3pitch, " | ", diff_vs_rgn3pitch
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24760,7 +26083,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%we_vw == kgenref_var%we_vw) THEN 
+    IF ((var%we_vw == kgenref_var%we_vw) .OR. ((var%we_vw /= var%we_vw) .AND. (kgenref_var%we_vw /= kgenref_var%we_vw))) THEN
+        IF (var%we_vw /= var%we_vw) WRITE(*, *) "localvar%we_vw is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24768,6 +26092,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] we_vw | IDENTICAL | ", var%we_vw, " | ", kgenref_var%we_vw
     ELSE 
         diff_we_vw = ABS(var%we_vw - kgenref_var%we_vw) 
         IF (diff_we_vw <= kgen_tolerance) THEN 
@@ -24778,6 +26103,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_vw | IN_TOL | ", var%we_vw, " | ", kgenref_var%we_vw, " | ", diff_we_vw
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24786,6 +26112,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_vw | OUT_TOL | ", var%we_vw, " | ", kgenref_var%we_vw, " | ", diff_we_vw
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24807,7 +26134,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%we_vw_f == kgenref_var%we_vw_f) THEN 
+    IF ((var%we_vw_f == kgenref_var%we_vw_f) .OR. ((var%we_vw_f /= var%we_vw_f) .AND. (kgenref_var%we_vw_f /= kgenref_var%we_vw_f))) THEN
+        IF (var%we_vw_f /= var%we_vw_f) WRITE(*, *) "localvar%we_vw_f is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24815,6 +26143,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] we_vw_f | IDENTICAL | ", var%we_vw_f, " | ", kgenref_var%we_vw_f
     ELSE 
         diff_we_vw_f = ABS(var%we_vw_f - kgenref_var%we_vw_f) 
         IF (diff_we_vw_f <= kgen_tolerance) THEN 
@@ -24825,6 +26154,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_vw_f | IN_TOL | ", var%we_vw_f, " | ", kgenref_var%we_vw_f, " | ", diff_we_vw_f
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24833,6 +26163,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_vw_f | OUT_TOL | ", var%we_vw_f, " | ", kgenref_var%we_vw_f, " | ", diff_we_vw_f
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24854,7 +26185,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%we_vwi == kgenref_var%we_vwi) THEN 
+    IF ((var%we_vwi == kgenref_var%we_vwi) .OR. ((var%we_vwi /= var%we_vwi) .AND. (kgenref_var%we_vwi /= kgenref_var%we_vwi))) THEN
+        IF (var%we_vwi /= var%we_vwi) WRITE(*, *) "localvar%we_vwi is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24862,6 +26194,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] we_vwi | IDENTICAL | ", var%we_vwi, " | ", kgenref_var%we_vwi
     ELSE 
         diff_we_vwi = ABS(var%we_vwi - kgenref_var%we_vwi) 
         IF (diff_we_vwi <= kgen_tolerance) THEN 
@@ -24872,6 +26205,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_vwi | IN_TOL | ", var%we_vwi, " | ", kgenref_var%we_vwi, " | ", diff_we_vwi
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24880,6 +26214,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_vwi | OUT_TOL | ", var%we_vwi, " | ", kgenref_var%we_vwi, " | ", diff_we_vwi
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24901,7 +26236,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%we_vwidot == kgenref_var%we_vwidot) THEN 
+    IF ((var%we_vwidot == kgenref_var%we_vwidot) .OR. ((var%we_vwidot /= var%we_vwidot) .AND. (kgenref_var%we_vwidot /= kgenref_var%we_vwidot))) THEN
+        IF (var%we_vwidot /= var%we_vwidot) WRITE(*, *) "localvar%we_vwidot is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24909,6 +26245,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] we_vwidot | IDENTICAL | ", var%we_vwidot, " | ", kgenref_var%we_vwidot
     ELSE 
         diff_we_vwidot = ABS(var%we_vwidot - kgenref_var%we_vwidot) 
         IF (diff_we_vwidot <= kgen_tolerance) THEN 
@@ -24919,6 +26256,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_vwidot | IN_TOL | ", var%we_vwidot, " | ", kgenref_var%we_vwidot, " | ", diff_we_vwidot
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24927,6 +26265,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_vwidot | OUT_TOL | ", var%we_vwidot, " | ", kgenref_var%we_vwidot, " | ", diff_we_vwidot
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24948,7 +26287,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%we_op == kgenref_var%we_op) THEN 
+    IF ((var%we_op == kgenref_var%we_op) .OR. ((var%we_op /= var%we_op) .AND. (kgenref_var%we_op /= kgenref_var%we_op))) THEN
+        IF (var%we_op /= var%we_op) WRITE(*, *) "localvar%we_op is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -24956,6 +26296,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] we_op | IDENTICAL | ", var%we_op, " | ", kgenref_var%we_op
     ELSE 
         diff_we_op = ABS(var%we_op - kgenref_var%we_op) 
         IF (diff_we_op <= kgen_tolerance) THEN 
@@ -24966,6 +26307,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_op | IN_TOL | ", var%we_op, " | ", kgenref_var%we_op, " | ", diff_we_op
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -24974,6 +26316,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_op | OUT_TOL | ", var%we_op, " | ", kgenref_var%we_op, " | ", diff_we_op
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -24995,7 +26338,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%we_op_last == kgenref_var%we_op_last) THEN 
+    IF ((var%we_op_last == kgenref_var%we_op_last) .OR. ((var%we_op_last /= var%we_op_last) .AND. (kgenref_var%we_op_last /= kgenref_var%we_op_last))) THEN
+        IF (var%we_op_last /= var%we_op_last) WRITE(*, *) "localvar%we_op_last is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25003,6 +26347,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] we_op_last | IDENTICAL | ", var%we_op_last, " | ", kgenref_var%we_op_last
     ELSE 
         diff_we_op_last = ABS(var%we_op_last - kgenref_var%we_op_last) 
         IF (diff_we_op_last <= kgen_tolerance) THEN 
@@ -25013,6 +26358,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_op_last | IN_TOL | ", var%we_op_last, " | ", kgenref_var%we_op_last, " | ", diff_we_op_last
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25021,6 +26367,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] we_op_last | OUT_TOL | ", var%we_op_last, " | ", kgenref_var%we_op_last, " | ", diff_we_op_last
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25042,7 +26389,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_lastgentrqf == kgenref_var%vs_lastgentrqf) THEN 
+    IF ((var%vs_lastgentrqf == kgenref_var%vs_lastgentrqf) .OR. ((var%vs_lastgentrqf /= var%vs_lastgentrqf) .AND. (kgenref_var%vs_lastgentrqf /= kgenref_var%vs_lastgentrqf))) THEN
+        IF (var%vs_lastgentrqf /= var%vs_lastgentrqf) WRITE(*, *) "localvar%vs_lastgentrqf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25050,6 +26398,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_lastgentrqf | IDENTICAL | ", var%vs_lastgentrqf, " | ", kgenref_var%vs_lastgentrqf
     ELSE 
         diff_vs_lastgentrqf = ABS(var%vs_lastgentrqf - kgenref_var%vs_lastgentrqf) 
         IF (diff_vs_lastgentrqf <= kgen_tolerance) THEN 
@@ -25060,6 +26409,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_lastgentrqf | IN_TOL | ", var%vs_lastgentrqf, " | ", kgenref_var%vs_lastgentrqf, " | ", diff_vs_lastgentrqf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25068,6 +26418,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_lastgentrqf | OUT_TOL | ", var%vs_lastgentrqf, " | ", kgenref_var%vs_lastgentrqf, " | ", diff_vs_lastgentrqf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25089,7 +26440,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%prc_wse_f == kgenref_var%prc_wse_f) THEN 
+    IF ((var%prc_wse_f == kgenref_var%prc_wse_f) .OR. ((var%prc_wse_f /= var%prc_wse_f) .AND. (kgenref_var%prc_wse_f /= kgenref_var%prc_wse_f))) THEN
+        IF (var%prc_wse_f /= var%prc_wse_f) WRITE(*, *) "localvar%prc_wse_f is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25097,6 +26449,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] prc_wse_f | IDENTICAL | ", var%prc_wse_f, " | ", kgenref_var%prc_wse_f
     ELSE 
         diff_prc_wse_f = ABS(var%prc_wse_f - kgenref_var%prc_wse_f) 
         IF (diff_prc_wse_f <= kgen_tolerance) THEN 
@@ -25107,6 +26460,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_wse_f | IN_TOL | ", var%prc_wse_f, " | ", kgenref_var%prc_wse_f, " | ", diff_prc_wse_f
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25115,6 +26469,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_wse_f | OUT_TOL | ", var%prc_wse_f, " | ", kgenref_var%prc_wse_f, " | ", diff_prc_wse_f
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25136,7 +26491,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%prc_r_speed == kgenref_var%prc_r_speed) THEN 
+    IF ((var%prc_r_speed == kgenref_var%prc_r_speed) .OR. ((var%prc_r_speed /= var%prc_r_speed) .AND. (kgenref_var%prc_r_speed /= kgenref_var%prc_r_speed))) THEN
+        IF (var%prc_r_speed /= var%prc_r_speed) WRITE(*, *) "localvar%prc_r_speed is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25144,6 +26500,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] prc_r_speed | IDENTICAL | ", var%prc_r_speed, " | ", kgenref_var%prc_r_speed
     ELSE 
         diff_prc_r_speed = ABS(var%prc_r_speed - kgenref_var%prc_r_speed) 
         IF (diff_prc_r_speed <= kgen_tolerance) THEN 
@@ -25154,6 +26511,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_r_speed | IN_TOL | ", var%prc_r_speed, " | ", kgenref_var%prc_r_speed, " | ", diff_prc_r_speed
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25162,6 +26520,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_r_speed | OUT_TOL | ", var%prc_r_speed, " | ", kgenref_var%prc_r_speed, " | ", diff_prc_r_speed
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25183,7 +26542,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%prc_r_torque == kgenref_var%prc_r_torque) THEN 
+    IF ((var%prc_r_torque == kgenref_var%prc_r_torque) .OR. ((var%prc_r_torque /= var%prc_r_torque) .AND. (kgenref_var%prc_r_torque /= kgenref_var%prc_r_torque))) THEN
+        IF (var%prc_r_torque /= var%prc_r_torque) WRITE(*, *) "localvar%prc_r_torque is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25191,6 +26551,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] prc_r_torque | IDENTICAL | ", var%prc_r_torque, " | ", kgenref_var%prc_r_torque
     ELSE 
         diff_prc_r_torque = ABS(var%prc_r_torque - kgenref_var%prc_r_torque) 
         IF (diff_prc_r_torque <= kgen_tolerance) THEN 
@@ -25201,6 +26562,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_r_torque | IN_TOL | ", var%prc_r_torque, " | ", kgenref_var%prc_r_torque, " | ", diff_prc_r_torque
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25209,6 +26571,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_r_torque | OUT_TOL | ", var%prc_r_torque, " | ", kgenref_var%prc_r_torque, " | ", diff_prc_r_torque
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25230,7 +26593,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%prc_r_pitch == kgenref_var%prc_r_pitch) THEN 
+    IF ((var%prc_r_pitch == kgenref_var%prc_r_pitch) .OR. ((var%prc_r_pitch /= var%prc_r_pitch) .AND. (kgenref_var%prc_r_pitch /= kgenref_var%prc_r_pitch))) THEN
+        IF (var%prc_r_pitch /= var%prc_r_pitch) WRITE(*, *) "localvar%prc_r_pitch is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25238,6 +26602,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] prc_r_pitch | IDENTICAL | ", var%prc_r_pitch, " | ", kgenref_var%prc_r_pitch
     ELSE 
         diff_prc_r_pitch = ABS(var%prc_r_pitch - kgenref_var%prc_r_pitch) 
         IF (diff_prc_r_pitch <= kgen_tolerance) THEN 
@@ -25248,6 +26613,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_r_pitch | IN_TOL | ", var%prc_r_pitch, " | ", kgenref_var%prc_r_pitch, " | ", diff_prc_r_pitch
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25256,6 +26622,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_r_pitch | OUT_TOL | ", var%prc_r_pitch, " | ", kgenref_var%prc_r_pitch, " | ", diff_prc_r_pitch
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25277,7 +26644,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%prc_r_total == kgenref_var%prc_r_total) THEN 
+    IF ((var%prc_r_total == kgenref_var%prc_r_total) .OR. ((var%prc_r_total /= var%prc_r_total) .AND. (kgenref_var%prc_r_total /= kgenref_var%prc_r_total))) THEN
+        IF (var%prc_r_total /= var%prc_r_total) WRITE(*, *) "localvar%prc_r_total is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25285,6 +26653,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] prc_r_total | IDENTICAL | ", var%prc_r_total, " | ", kgenref_var%prc_r_total
     ELSE 
         diff_prc_r_total = ABS(var%prc_r_total - kgenref_var%prc_r_total) 
         IF (diff_prc_r_total <= kgen_tolerance) THEN 
@@ -25295,6 +26664,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_r_total | IN_TOL | ", var%prc_r_total, " | ", kgenref_var%prc_r_total, " | ", diff_prc_r_total
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25303,6 +26673,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_r_total | OUT_TOL | ", var%prc_r_total, " | ", kgenref_var%prc_r_total, " | ", diff_prc_r_total
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25324,7 +26695,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%prc_min_pitch == kgenref_var%prc_min_pitch) THEN 
+    IF ((var%prc_min_pitch == kgenref_var%prc_min_pitch) .OR. ((var%prc_min_pitch /= var%prc_min_pitch) .AND. (kgenref_var%prc_min_pitch /= kgenref_var%prc_min_pitch))) THEN
+        IF (var%prc_min_pitch /= var%prc_min_pitch) WRITE(*, *) "localvar%prc_min_pitch is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25332,6 +26704,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] prc_min_pitch | IDENTICAL | ", var%prc_min_pitch, " | ", kgenref_var%prc_min_pitch
     ELSE 
         diff_prc_min_pitch = ABS(var%prc_min_pitch - kgenref_var%prc_min_pitch) 
         IF (diff_prc_min_pitch <= kgen_tolerance) THEN 
@@ -25342,6 +26715,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_min_pitch | IN_TOL | ", var%prc_min_pitch, " | ", kgenref_var%prc_min_pitch, " | ", diff_prc_min_pitch
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25350,6 +26724,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] prc_min_pitch | OUT_TOL | ", var%prc_min_pitch, " | ", kgenref_var%prc_min_pitch, " | ", diff_prc_min_pitch
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25371,7 +26746,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ps_min_pitch == kgenref_var%ps_min_pitch) THEN 
+    IF ((var%ps_min_pitch == kgenref_var%ps_min_pitch) .OR. ((var%ps_min_pitch /= var%ps_min_pitch) .AND. (kgenref_var%ps_min_pitch /= kgenref_var%ps_min_pitch))) THEN
+        IF (var%ps_min_pitch /= var%ps_min_pitch) WRITE(*, *) "localvar%ps_min_pitch is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25379,6 +26755,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ps_min_pitch | IDENTICAL | ", var%ps_min_pitch, " | ", kgenref_var%ps_min_pitch
     ELSE 
         diff_ps_min_pitch = ABS(var%ps_min_pitch - kgenref_var%ps_min_pitch) 
         IF (diff_ps_min_pitch <= kgen_tolerance) THEN 
@@ -25389,6 +26766,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ps_min_pitch | IN_TOL | ", var%ps_min_pitch, " | ", kgenref_var%ps_min_pitch, " | ", diff_ps_min_pitch
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25397,6 +26775,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ps_min_pitch | OUT_TOL | ", var%ps_min_pitch, " | ", kgenref_var%ps_min_pitch, " | ", diff_ps_min_pitch
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25418,7 +26797,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ol_index == kgenref_var%ol_index) THEN 
+    IF ((var%ol_index == kgenref_var%ol_index) .OR. ((var%ol_index /= var%ol_index) .AND. (kgenref_var%ol_index /= kgenref_var%ol_index))) THEN
+        IF (var%ol_index /= var%ol_index) WRITE(*, *) "localvar%ol_index is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25426,6 +26806,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ol_index | IDENTICAL | ", var%ol_index, " | ", kgenref_var%ol_index
     ELSE 
         diff_ol_index = ABS(var%ol_index - kgenref_var%ol_index) 
         IF (diff_ol_index <= kgen_tolerance) THEN 
@@ -25436,6 +26817,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ol_index | IN_TOL | ", var%ol_index, " | ", kgenref_var%ol_index, " | ", diff_ol_index
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25444,6 +26826,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ol_index | OUT_TOL | ", var%ol_index, " | ", kgenref_var%ol_index, " | ", diff_ol_index
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25465,7 +26848,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%su_stage == kgenref_var%su_stage) THEN 
+    IF ((var%su_stage == kgenref_var%su_stage) .OR. ((var%su_stage /= var%su_stage) .AND. (kgenref_var%su_stage /= kgenref_var%su_stage))) THEN
+        IF (var%su_stage /= var%su_stage) WRITE(*, *) "localvar%su_stage is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25473,6 +26857,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] su_stage | IDENTICAL | ", var%su_stage, " | ", kgenref_var%su_stage
     ELSE 
         diff_su_stage = ABS(var%su_stage - kgenref_var%su_stage) 
         IF (diff_su_stage <= kgen_tolerance) THEN 
@@ -25483,6 +26868,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_stage | IN_TOL | ", var%su_stage, " | ", kgenref_var%su_stage, " | ", diff_su_stage
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25491,6 +26877,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_stage | OUT_TOL | ", var%su_stage, " | ", kgenref_var%su_stage, " | ", diff_su_stage
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25512,7 +26899,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%su_loadstagestarttime == kgenref_var%su_loadstagestarttime) THEN 
+    IF ((var%su_loadstagestarttime == kgenref_var%su_loadstagestarttime) .OR. ((var%su_loadstagestarttime /= var%su_loadstagestarttime) .AND. (kgenref_var%su_loadstagestarttime /= kgenref_var%su_loadstagestarttime))) THEN
+        IF (var%su_loadstagestarttime /= var%su_loadstagestarttime) WRITE(*, *) "localvar%su_loadstagestarttime is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25520,6 +26908,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] su_loadstagestarttime | IDENTICAL | ", var%su_loadstagestarttime, " | ", kgenref_var%su_loadstagestarttime
     ELSE 
         diff_su_loadstagestarttime = ABS(var%su_loadstagestarttime - kgenref_var%su_loadstagestarttime) 
         IF (diff_su_loadstagestarttime <= kgen_tolerance) THEN 
@@ -25530,6 +26919,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_loadstagestarttime | IN_TOL | ", var%su_loadstagestarttime, " | ", kgenref_var%su_loadstagestarttime, " | ", diff_su_loadstagestarttime
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25538,6 +26928,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_loadstagestarttime | OUT_TOL | ", var%su_loadstagestarttime, " | ", kgenref_var%su_loadstagestarttime, " | ", diff_su_loadstagestarttime
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25559,7 +26950,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%su_rotspeedf == kgenref_var%su_rotspeedf) THEN 
+    IF ((var%su_rotspeedf == kgenref_var%su_rotspeedf) .OR. ((var%su_rotspeedf /= var%su_rotspeedf) .AND. (kgenref_var%su_rotspeedf /= kgenref_var%su_rotspeedf))) THEN
+        IF (var%su_rotspeedf /= var%su_rotspeedf) WRITE(*, *) "localvar%su_rotspeedf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25567,6 +26959,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] su_rotspeedf | IDENTICAL | ", var%su_rotspeedf, " | ", kgenref_var%su_rotspeedf
     ELSE 
         diff_su_rotspeedf = ABS(var%su_rotspeedf - kgenref_var%su_rotspeedf) 
         IF (diff_su_rotspeedf <= kgen_tolerance) THEN 
@@ -25577,6 +26970,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_rotspeedf | IN_TOL | ", var%su_rotspeedf, " | ", kgenref_var%su_rotspeedf, " | ", diff_su_rotspeedf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25585,6 +26979,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] su_rotspeedf | OUT_TOL | ", var%su_rotspeedf, " | ", kgenref_var%su_rotspeedf, " | ", diff_su_rotspeedf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25606,7 +27001,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_trigger == kgenref_var%sd_trigger) THEN 
+    IF ((var%sd_trigger == kgenref_var%sd_trigger) .OR. ((var%sd_trigger /= var%sd_trigger) .AND. (kgenref_var%sd_trigger /= kgenref_var%sd_trigger))) THEN
+        IF (var%sd_trigger /= var%sd_trigger) WRITE(*, *) "localvar%sd_trigger is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25614,6 +27010,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_trigger | IDENTICAL | ", var%sd_trigger, " | ", kgenref_var%sd_trigger
     ELSE 
         diff_sd_trigger = ABS(var%sd_trigger - kgenref_var%sd_trigger) 
         IF (diff_sd_trigger <= kgen_tolerance) THEN 
@@ -25624,6 +27021,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_trigger | IN_TOL | ", var%sd_trigger, " | ", kgenref_var%sd_trigger, " | ", diff_sd_trigger
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25632,6 +27030,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_trigger | OUT_TOL | ", var%sd_trigger, " | ", kgenref_var%sd_trigger, " | ", diff_sd_trigger
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25653,7 +27052,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_blpitchf == kgenref_var%sd_blpitchf) THEN 
+    IF ((var%sd_blpitchf == kgenref_var%sd_blpitchf) .OR. ((var%sd_blpitchf /= var%sd_blpitchf) .AND. (kgenref_var%sd_blpitchf /= kgenref_var%sd_blpitchf))) THEN
+        IF (var%sd_blpitchf /= var%sd_blpitchf) WRITE(*, *) "localvar%sd_blpitchf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25661,6 +27061,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_blpitchf | IDENTICAL | ", var%sd_blpitchf, " | ", kgenref_var%sd_blpitchf
     ELSE 
         diff_sd_blpitchf = ABS(var%sd_blpitchf - kgenref_var%sd_blpitchf) 
         IF (diff_sd_blpitchf <= kgen_tolerance) THEN 
@@ -25671,6 +27072,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_blpitchf | IN_TOL | ", var%sd_blpitchf, " | ", kgenref_var%sd_blpitchf, " | ", diff_sd_blpitchf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25679,6 +27081,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_blpitchf | OUT_TOL | ", var%sd_blpitchf, " | ", kgenref_var%sd_blpitchf, " | ", diff_sd_blpitchf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25700,7 +27103,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_nacvanef == kgenref_var%sd_nacvanef) THEN 
+    IF ((var%sd_nacvanef == kgenref_var%sd_nacvanef) .OR. ((var%sd_nacvanef /= var%sd_nacvanef) .AND. (kgenref_var%sd_nacvanef /= kgenref_var%sd_nacvanef))) THEN
+        IF (var%sd_nacvanef /= var%sd_nacvanef) WRITE(*, *) "localvar%sd_nacvanef is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25708,6 +27112,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_nacvanef | IDENTICAL | ", var%sd_nacvanef, " | ", kgenref_var%sd_nacvanef
     ELSE 
         diff_sd_nacvanef = ABS(var%sd_nacvanef - kgenref_var%sd_nacvanef) 
         IF (diff_sd_nacvanef <= kgen_tolerance) THEN 
@@ -25718,6 +27123,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_nacvanef | IN_TOL | ", var%sd_nacvanef, " | ", kgenref_var%sd_nacvanef, " | ", diff_sd_nacvanef
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25726,6 +27132,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_nacvanef | OUT_TOL | ", var%sd_nacvanef, " | ", kgenref_var%sd_nacvanef, " | ", diff_sd_nacvanef
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25747,7 +27154,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_genspeedf == kgenref_var%sd_genspeedf) THEN 
+    IF ((var%sd_genspeedf == kgenref_var%sd_genspeedf) .OR. ((var%sd_genspeedf /= var%sd_genspeedf) .AND. (kgenref_var%sd_genspeedf /= kgenref_var%sd_genspeedf))) THEN
+        IF (var%sd_genspeedf /= var%sd_genspeedf) WRITE(*, *) "localvar%sd_genspeedf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25755,6 +27163,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_genspeedf | IDENTICAL | ", var%sd_genspeedf, " | ", kgenref_var%sd_genspeedf
     ELSE 
         diff_sd_genspeedf = ABS(var%sd_genspeedf - kgenref_var%sd_genspeedf) 
         IF (diff_sd_genspeedf <= kgen_tolerance) THEN 
@@ -25765,6 +27174,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_genspeedf | IN_TOL | ", var%sd_genspeedf, " | ", kgenref_var%sd_genspeedf, " | ", diff_sd_genspeedf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25773,6 +27183,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_genspeedf | OUT_TOL | ", var%sd_genspeedf, " | ", kgenref_var%sd_genspeedf, " | ", diff_sd_genspeedf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25794,7 +27205,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_stage == kgenref_var%sd_stage) THEN 
+    IF ((var%sd_stage == kgenref_var%sd_stage) .OR. ((var%sd_stage /= var%sd_stage) .AND. (kgenref_var%sd_stage /= kgenref_var%sd_stage))) THEN
+        IF (var%sd_stage /= var%sd_stage) WRITE(*, *) "localvar%sd_stage is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25802,6 +27214,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_stage | IDENTICAL | ", var%sd_stage, " | ", kgenref_var%sd_stage
     ELSE 
         diff_sd_stage = ABS(var%sd_stage - kgenref_var%sd_stage) 
         IF (diff_sd_stage <= kgen_tolerance) THEN 
@@ -25812,6 +27225,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_stage | IN_TOL | ", var%sd_stage, " | ", kgenref_var%sd_stage, " | ", diff_sd_stage
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25820,6 +27234,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_stage | OUT_TOL | ", var%sd_stage, " | ", kgenref_var%sd_stage, " | ", diff_sd_stage
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25841,7 +27256,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_stagestarttime == kgenref_var%sd_stagestarttime) THEN 
+    IF ((var%sd_stagestarttime == kgenref_var%sd_stagestarttime) .OR. ((var%sd_stagestarttime /= var%sd_stagestarttime) .AND. (kgenref_var%sd_stagestarttime /= kgenref_var%sd_stagestarttime))) THEN
+        IF (var%sd_stagestarttime /= var%sd_stagestarttime) WRITE(*, *) "localvar%sd_stagestarttime is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25849,6 +27265,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_stagestarttime | IDENTICAL | ", var%sd_stagestarttime, " | ", kgenref_var%sd_stagestarttime
     ELSE 
         diff_sd_stagestarttime = ABS(var%sd_stagestarttime - kgenref_var%sd_stagestarttime) 
         IF (diff_sd_stagestarttime <= kgen_tolerance) THEN 
@@ -25859,6 +27276,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_stagestarttime | IN_TOL | ", var%sd_stagestarttime, " | ", kgenref_var%sd_stagestarttime, " | ", diff_sd_stagestarttime
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25867,6 +27285,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_stagestarttime | OUT_TOL | ", var%sd_stagestarttime, " | ", kgenref_var%sd_stagestarttime, " | ", diff_sd_stagestarttime
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25888,7 +27307,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_maxpitchrate == kgenref_var%sd_maxpitchrate) THEN 
+    IF ((var%sd_maxpitchrate == kgenref_var%sd_maxpitchrate) .OR. ((var%sd_maxpitchrate /= var%sd_maxpitchrate) .AND. (kgenref_var%sd_maxpitchrate /= kgenref_var%sd_maxpitchrate))) THEN
+        IF (var%sd_maxpitchrate /= var%sd_maxpitchrate) WRITE(*, *) "localvar%sd_maxpitchrate is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25896,6 +27316,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_maxpitchrate | IDENTICAL | ", var%sd_maxpitchrate, " | ", kgenref_var%sd_maxpitchrate
     ELSE 
         diff_sd_maxpitchrate = ABS(var%sd_maxpitchrate - kgenref_var%sd_maxpitchrate) 
         IF (diff_sd_maxpitchrate <= kgen_tolerance) THEN 
@@ -25906,6 +27327,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_maxpitchrate | IN_TOL | ", var%sd_maxpitchrate, " | ", kgenref_var%sd_maxpitchrate, " | ", diff_sd_maxpitchrate
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25914,6 +27336,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_maxpitchrate | OUT_TOL | ", var%sd_maxpitchrate, " | ", kgenref_var%sd_maxpitchrate, " | ", diff_sd_maxpitchrate
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25935,7 +27358,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%sd_maxtorquerate == kgenref_var%sd_maxtorquerate) THEN 
+    IF ((var%sd_maxtorquerate == kgenref_var%sd_maxtorquerate) .OR. ((var%sd_maxtorquerate /= var%sd_maxtorquerate) .AND. (kgenref_var%sd_maxtorquerate /= kgenref_var%sd_maxtorquerate))) THEN
+        IF (var%sd_maxtorquerate /= var%sd_maxtorquerate) WRITE(*, *) "localvar%sd_maxtorquerate is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25943,6 +27367,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] sd_maxtorquerate | IDENTICAL | ", var%sd_maxtorquerate, " | ", kgenref_var%sd_maxtorquerate
     ELSE 
         diff_sd_maxtorquerate = ABS(var%sd_maxtorquerate - kgenref_var%sd_maxtorquerate) 
         IF (diff_sd_maxtorquerate <= kgen_tolerance) THEN 
@@ -25953,6 +27378,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_maxtorquerate | IN_TOL | ", var%sd_maxtorquerate, " | ", kgenref_var%sd_maxtorquerate, " | ", diff_sd_maxtorquerate
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -25961,6 +27387,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] sd_maxtorquerate | OUT_TOL | ", var%sd_maxtorquerate, " | ", kgenref_var%sd_maxtorquerate, " | ", diff_sd_maxtorquerate
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -25982,7 +27409,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%gentq_sd == kgenref_var%gentq_sd) THEN 
+    IF ((var%gentq_sd == kgenref_var%gentq_sd) .OR. ((var%gentq_sd /= var%gentq_sd) .AND. (kgenref_var%gentq_sd /= kgenref_var%gentq_sd))) THEN
+        IF (var%gentq_sd /= var%gentq_sd) WRITE(*, *) "localvar%gentq_sd is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -25990,6 +27418,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] gentq_sd | IDENTICAL | ", var%gentq_sd, " | ", kgenref_var%gentq_sd
     ELSE 
         diff_gentq_sd = ABS(var%gentq_sd - kgenref_var%gentq_sd) 
         IF (diff_gentq_sd <= kgen_tolerance) THEN 
@@ -26000,6 +27429,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] gentq_sd | IN_TOL | ", var%gentq_sd, " | ", kgenref_var%gentq_sd, " | ", diff_gentq_sd
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26008,6 +27438,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] gentq_sd | OUT_TOL | ", var%gentq_sd, " | ", kgenref_var%gentq_sd, " | ", diff_gentq_sd
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26029,7 +27460,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%fl_pitcom == kgenref_var%fl_pitcom) THEN 
+    IF ((var%fl_pitcom == kgenref_var%fl_pitcom) .OR. ((var%fl_pitcom /= var%fl_pitcom) .AND. (kgenref_var%fl_pitcom /= kgenref_var%fl_pitcom))) THEN
+        IF (var%fl_pitcom /= var%fl_pitcom) WRITE(*, *) "localvar%fl_pitcom is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26037,6 +27469,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] fl_pitcom | IDENTICAL | ", var%fl_pitcom, " | ", kgenref_var%fl_pitcom
     ELSE 
         diff_fl_pitcom = ABS(var%fl_pitcom - kgenref_var%fl_pitcom) 
         IF (diff_fl_pitcom <= kgen_tolerance) THEN 
@@ -26047,6 +27480,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] fl_pitcom | IN_TOL | ", var%fl_pitcom, " | ", kgenref_var%fl_pitcom, " | ", diff_fl_pitcom
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26055,6 +27489,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] fl_pitcom | OUT_TOL | ", var%fl_pitcom, " | ", kgenref_var%fl_pitcom, " | ", diff_fl_pitcom
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26076,7 +27511,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%nacimu_fa_accf == kgenref_var%nacimu_fa_accf) THEN 
+    IF ((var%nacimu_fa_accf == kgenref_var%nacimu_fa_accf) .OR. ((var%nacimu_fa_accf /= var%nacimu_fa_accf) .AND. (kgenref_var%nacimu_fa_accf /= kgenref_var%nacimu_fa_accf))) THEN
+        IF (var%nacimu_fa_accf /= var%nacimu_fa_accf) WRITE(*, *) "localvar%nacimu_fa_accf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26084,6 +27520,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] nacimu_fa_accf | IDENTICAL | ", var%nacimu_fa_accf, " | ", kgenref_var%nacimu_fa_accf
     ELSE 
         diff_nacimu_fa_accf = ABS(var%nacimu_fa_accf - kgenref_var%nacimu_fa_accf) 
         IF (diff_nacimu_fa_accf <= kgen_tolerance) THEN 
@@ -26094,6 +27531,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] nacimu_fa_accf | IN_TOL | ", var%nacimu_fa_accf, " | ", kgenref_var%nacimu_fa_accf, " | ", diff_nacimu_fa_accf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26102,6 +27540,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] nacimu_fa_accf | OUT_TOL | ", var%nacimu_fa_accf, " | ", kgenref_var%nacimu_fa_accf, " | ", diff_nacimu_fa_accf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26123,7 +27562,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%fa_accf == kgenref_var%fa_accf) THEN 
+    IF ((var%fa_accf == kgenref_var%fa_accf) .OR. ((var%fa_accf /= var%fa_accf) .AND. (kgenref_var%fa_accf /= kgenref_var%fa_accf))) THEN
+        IF (var%fa_accf /= var%fa_accf) WRITE(*, *) "localvar%fa_accf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26131,6 +27571,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] fa_accf | IDENTICAL | ", var%fa_accf, " | ", kgenref_var%fa_accf
     ELSE 
         diff_fa_accf = ABS(var%fa_accf - kgenref_var%fa_accf) 
         IF (diff_fa_accf <= kgen_tolerance) THEN 
@@ -26141,6 +27582,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_accf | IN_TOL | ", var%fa_accf, " | ", kgenref_var%fa_accf, " | ", diff_fa_accf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26149,6 +27591,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_accf | OUT_TOL | ", var%fa_accf, " | ", kgenref_var%fa_accf, " | ", diff_fa_accf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26170,7 +27613,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%fa_hist == kgenref_var%fa_hist) THEN 
+    IF ((var%fa_hist == kgenref_var%fa_hist) .OR. ((var%fa_hist /= var%fa_hist) .AND. (kgenref_var%fa_hist /= kgenref_var%fa_hist))) THEN
+        IF (var%fa_hist /= var%fa_hist) WRITE(*, *) "localvar%fa_hist is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26178,6 +27622,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] fa_hist | IDENTICAL | ", var%fa_hist, " | ", kgenref_var%fa_hist
     ELSE 
         diff_fa_hist = ABS(var%fa_hist - kgenref_var%fa_hist) 
         IF (diff_fa_hist <= kgen_tolerance) THEN 
@@ -26188,6 +27633,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_hist | IN_TOL | ", var%fa_hist, " | ", kgenref_var%fa_hist, " | ", diff_fa_hist
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26196,6 +27642,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] fa_hist | OUT_TOL | ", var%fa_hist, " | ", kgenref_var%fa_hist, " | ", diff_fa_hist
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26217,7 +27664,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%tra_lastrefspd == kgenref_var%tra_lastrefspd) THEN 
+    IF ((var%tra_lastrefspd == kgenref_var%tra_lastrefspd) .OR. ((var%tra_lastrefspd /= var%tra_lastrefspd) .AND. (kgenref_var%tra_lastrefspd /= kgenref_var%tra_lastrefspd))) THEN
+        IF (var%tra_lastrefspd /= var%tra_lastrefspd) WRITE(*, *) "localvar%tra_lastrefspd is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26225,6 +27673,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] tra_lastrefspd | IDENTICAL | ", var%tra_lastrefspd, " | ", kgenref_var%tra_lastrefspd
     ELSE 
         diff_tra_lastrefspd = ABS(var%tra_lastrefspd - kgenref_var%tra_lastrefspd) 
         IF (diff_tra_lastrefspd <= kgen_tolerance) THEN 
@@ -26235,6 +27684,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] tra_lastrefspd | IN_TOL | ", var%tra_lastrefspd, " | ", kgenref_var%tra_lastrefspd, " | ", diff_tra_lastrefspd
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26243,6 +27693,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] tra_lastrefspd | OUT_TOL | ", var%tra_lastrefspd, " | ", kgenref_var%tra_lastrefspd, " | ", diff_tra_lastrefspd
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26264,7 +27715,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%vs_refspeed == kgenref_var%vs_refspeed) THEN 
+    IF ((var%vs_refspeed == kgenref_var%vs_refspeed) .OR. ((var%vs_refspeed /= var%vs_refspeed) .AND. (kgenref_var%vs_refspeed /= kgenref_var%vs_refspeed))) THEN
+        IF (var%vs_refspeed /= var%vs_refspeed) WRITE(*, *) "localvar%vs_refspeed is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26272,6 +27724,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] vs_refspeed | IDENTICAL | ", var%vs_refspeed, " | ", kgenref_var%vs_refspeed
     ELSE 
         diff_vs_refspeed = ABS(var%vs_refspeed - kgenref_var%vs_refspeed) 
         IF (diff_vs_refspeed <= kgen_tolerance) THEN 
@@ -26282,6 +27735,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_refspeed | IN_TOL | ", var%vs_refspeed, " | ", kgenref_var%vs_refspeed, " | ", diff_vs_refspeed
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26290,6 +27744,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] vs_refspeed | OUT_TOL | ", var%vs_refspeed, " | ", kgenref_var%vs_refspeed, " | ", diff_vs_refspeed
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26311,7 +27766,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmtdx == kgenref_var%ptfmtdx) THEN 
+    IF ((var%ptfmtdx == kgenref_var%ptfmtdx) .OR. ((var%ptfmtdx /= var%ptfmtdx) .AND. (kgenref_var%ptfmtdx /= kgenref_var%ptfmtdx))) THEN
+        IF (var%ptfmtdx /= var%ptfmtdx) WRITE(*, *) "localvar%ptfmtdx is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26319,6 +27775,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmtdx | IDENTICAL | ", var%ptfmtdx, " | ", kgenref_var%ptfmtdx
     ELSE 
         diff_ptfmtdx = ABS(var%ptfmtdx - kgenref_var%ptfmtdx) 
         IF (diff_ptfmtdx <= kgen_tolerance) THEN 
@@ -26329,6 +27786,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtdx | IN_TOL | ", var%ptfmtdx, " | ", kgenref_var%ptfmtdx, " | ", diff_ptfmtdx
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26337,6 +27795,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtdx | OUT_TOL | ", var%ptfmtdx, " | ", kgenref_var%ptfmtdx, " | ", diff_ptfmtdx
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26358,7 +27817,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmtdy == kgenref_var%ptfmtdy) THEN 
+    IF ((var%ptfmtdy == kgenref_var%ptfmtdy) .OR. ((var%ptfmtdy /= var%ptfmtdy) .AND. (kgenref_var%ptfmtdy /= kgenref_var%ptfmtdy))) THEN
+        IF (var%ptfmtdy /= var%ptfmtdy) WRITE(*, *) "localvar%ptfmtdy is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26366,6 +27826,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmtdy | IDENTICAL | ", var%ptfmtdy, " | ", kgenref_var%ptfmtdy
     ELSE 
         diff_ptfmtdy = ABS(var%ptfmtdy - kgenref_var%ptfmtdy) 
         IF (diff_ptfmtdy <= kgen_tolerance) THEN 
@@ -26376,6 +27837,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtdy | IN_TOL | ", var%ptfmtdy, " | ", kgenref_var%ptfmtdy, " | ", diff_ptfmtdy
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26384,6 +27846,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtdy | OUT_TOL | ", var%ptfmtdy, " | ", kgenref_var%ptfmtdy, " | ", diff_ptfmtdy
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26405,7 +27868,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmtdz == kgenref_var%ptfmtdz) THEN 
+    IF ((var%ptfmtdz == kgenref_var%ptfmtdz) .OR. ((var%ptfmtdz /= var%ptfmtdz) .AND. (kgenref_var%ptfmtdz /= kgenref_var%ptfmtdz))) THEN
+        IF (var%ptfmtdz /= var%ptfmtdz) WRITE(*, *) "localvar%ptfmtdz is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26413,6 +27877,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmtdz | IDENTICAL | ", var%ptfmtdz, " | ", kgenref_var%ptfmtdz
     ELSE 
         diff_ptfmtdz = ABS(var%ptfmtdz - kgenref_var%ptfmtdz) 
         IF (diff_ptfmtdz <= kgen_tolerance) THEN 
@@ -26423,6 +27888,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtdz | IN_TOL | ", var%ptfmtdz, " | ", kgenref_var%ptfmtdz, " | ", diff_ptfmtdz
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26431,6 +27897,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtdz | OUT_TOL | ", var%ptfmtdz, " | ", kgenref_var%ptfmtdz, " | ", diff_ptfmtdz
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26452,7 +27919,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmrdx == kgenref_var%ptfmrdx) THEN 
+    IF ((var%ptfmrdx == kgenref_var%ptfmrdx) .OR. ((var%ptfmrdx /= var%ptfmrdx) .AND. (kgenref_var%ptfmrdx /= kgenref_var%ptfmrdx))) THEN
+        IF (var%ptfmrdx /= var%ptfmrdx) WRITE(*, *) "localvar%ptfmrdx is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26460,6 +27928,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmrdx | IDENTICAL | ", var%ptfmrdx, " | ", kgenref_var%ptfmrdx
     ELSE 
         diff_ptfmrdx = ABS(var%ptfmrdx - kgenref_var%ptfmrdx) 
         IF (diff_ptfmrdx <= kgen_tolerance) THEN 
@@ -26470,6 +27939,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmrdx | IN_TOL | ", var%ptfmrdx, " | ", kgenref_var%ptfmrdx, " | ", diff_ptfmrdx
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26478,6 +27948,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmrdx | OUT_TOL | ", var%ptfmrdx, " | ", kgenref_var%ptfmrdx, " | ", diff_ptfmrdx
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26499,7 +27970,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmrdy == kgenref_var%ptfmrdy) THEN 
+    IF ((var%ptfmrdy == kgenref_var%ptfmrdy) .OR. ((var%ptfmrdy /= var%ptfmrdy) .AND. (kgenref_var%ptfmrdy /= kgenref_var%ptfmrdy))) THEN
+        IF (var%ptfmrdy /= var%ptfmrdy) WRITE(*, *) "localvar%ptfmrdy is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26507,6 +27979,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmrdy | IDENTICAL | ", var%ptfmrdy, " | ", kgenref_var%ptfmrdy
     ELSE 
         diff_ptfmrdy = ABS(var%ptfmrdy - kgenref_var%ptfmrdy) 
         IF (diff_ptfmrdy <= kgen_tolerance) THEN 
@@ -26517,6 +27990,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmrdy | IN_TOL | ", var%ptfmrdy, " | ", kgenref_var%ptfmrdy, " | ", diff_ptfmrdy
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26525,6 +27999,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmrdy | OUT_TOL | ", var%ptfmrdy, " | ", kgenref_var%ptfmrdy, " | ", diff_ptfmrdy
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26546,7 +28021,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmrdz == kgenref_var%ptfmrdz) THEN 
+    IF ((var%ptfmrdz == kgenref_var%ptfmrdz) .OR. ((var%ptfmrdz /= var%ptfmrdz) .AND. (kgenref_var%ptfmrdz /= kgenref_var%ptfmrdz))) THEN
+        IF (var%ptfmrdz /= var%ptfmrdz) WRITE(*, *) "localvar%ptfmrdz is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26554,6 +28030,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmrdz | IDENTICAL | ", var%ptfmrdz, " | ", kgenref_var%ptfmrdz
     ELSE 
         diff_ptfmrdz = ABS(var%ptfmrdz - kgenref_var%ptfmrdz) 
         IF (diff_ptfmrdz <= kgen_tolerance) THEN 
@@ -26564,6 +28041,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmrdz | IN_TOL | ", var%ptfmrdz, " | ", kgenref_var%ptfmrdz, " | ", diff_ptfmrdz
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26572,6 +28050,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmrdz | OUT_TOL | ", var%ptfmrdz, " | ", kgenref_var%ptfmrdz, " | ", diff_ptfmrdz
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26593,7 +28072,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmtvx == kgenref_var%ptfmtvx) THEN 
+    IF ((var%ptfmtvx == kgenref_var%ptfmtvx) .OR. ((var%ptfmtvx /= var%ptfmtvx) .AND. (kgenref_var%ptfmtvx /= kgenref_var%ptfmtvx))) THEN
+        IF (var%ptfmtvx /= var%ptfmtvx) WRITE(*, *) "localvar%ptfmtvx is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26601,6 +28081,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmtvx | IDENTICAL | ", var%ptfmtvx, " | ", kgenref_var%ptfmtvx
     ELSE 
         diff_ptfmtvx = ABS(var%ptfmtvx - kgenref_var%ptfmtvx) 
         IF (diff_ptfmtvx <= kgen_tolerance) THEN 
@@ -26611,6 +28092,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtvx | IN_TOL | ", var%ptfmtvx, " | ", kgenref_var%ptfmtvx, " | ", diff_ptfmtvx
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26619,6 +28101,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtvx | OUT_TOL | ", var%ptfmtvx, " | ", kgenref_var%ptfmtvx, " | ", diff_ptfmtvx
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26640,7 +28123,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmtvy == kgenref_var%ptfmtvy) THEN 
+    IF ((var%ptfmtvy == kgenref_var%ptfmtvy) .OR. ((var%ptfmtvy /= var%ptfmtvy) .AND. (kgenref_var%ptfmtvy /= kgenref_var%ptfmtvy))) THEN
+        IF (var%ptfmtvy /= var%ptfmtvy) WRITE(*, *) "localvar%ptfmtvy is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26648,6 +28132,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmtvy | IDENTICAL | ", var%ptfmtvy, " | ", kgenref_var%ptfmtvy
     ELSE 
         diff_ptfmtvy = ABS(var%ptfmtvy - kgenref_var%ptfmtvy) 
         IF (diff_ptfmtvy <= kgen_tolerance) THEN 
@@ -26658,6 +28143,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtvy | IN_TOL | ", var%ptfmtvy, " | ", kgenref_var%ptfmtvy, " | ", diff_ptfmtvy
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26666,6 +28152,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtvy | OUT_TOL | ", var%ptfmtvy, " | ", kgenref_var%ptfmtvy, " | ", diff_ptfmtvy
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26687,7 +28174,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmtvz == kgenref_var%ptfmtvz) THEN 
+    IF ((var%ptfmtvz == kgenref_var%ptfmtvz) .OR. ((var%ptfmtvz /= var%ptfmtvz) .AND. (kgenref_var%ptfmtvz /= kgenref_var%ptfmtvz))) THEN
+        IF (var%ptfmtvz /= var%ptfmtvz) WRITE(*, *) "localvar%ptfmtvz is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26695,6 +28183,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmtvz | IDENTICAL | ", var%ptfmtvz, " | ", kgenref_var%ptfmtvz
     ELSE 
         diff_ptfmtvz = ABS(var%ptfmtvz - kgenref_var%ptfmtvz) 
         IF (diff_ptfmtvz <= kgen_tolerance) THEN 
@@ -26705,6 +28194,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtvz | IN_TOL | ", var%ptfmtvz, " | ", kgenref_var%ptfmtvz, " | ", diff_ptfmtvz
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26713,6 +28203,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtvz | OUT_TOL | ", var%ptfmtvz, " | ", kgenref_var%ptfmtvz, " | ", diff_ptfmtvz
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26734,7 +28225,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmrvx == kgenref_var%ptfmrvx) THEN 
+    IF ((var%ptfmrvx == kgenref_var%ptfmrvx) .OR. ((var%ptfmrvx /= var%ptfmrvx) .AND. (kgenref_var%ptfmrvx /= kgenref_var%ptfmrvx))) THEN
+        IF (var%ptfmrvx /= var%ptfmrvx) WRITE(*, *) "localvar%ptfmrvx is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26742,6 +28234,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmrvx | IDENTICAL | ", var%ptfmrvx, " | ", kgenref_var%ptfmrvx
     ELSE 
         diff_ptfmrvx = ABS(var%ptfmrvx - kgenref_var%ptfmrvx) 
         IF (diff_ptfmrvx <= kgen_tolerance) THEN 
@@ -26752,6 +28245,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmrvx | IN_TOL | ", var%ptfmrvx, " | ", kgenref_var%ptfmrvx, " | ", diff_ptfmrvx
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26760,6 +28254,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmrvx | OUT_TOL | ", var%ptfmrvx, " | ", kgenref_var%ptfmrvx, " | ", diff_ptfmrvx
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26781,7 +28276,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmrvy == kgenref_var%ptfmrvy) THEN 
+    IF ((var%ptfmrvy == kgenref_var%ptfmrvy) .OR. ((var%ptfmrvy /= var%ptfmrvy) .AND. (kgenref_var%ptfmrvy /= kgenref_var%ptfmrvy))) THEN
+        IF (var%ptfmrvy /= var%ptfmrvy) WRITE(*, *) "localvar%ptfmrvy is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26789,6 +28285,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmrvy | IDENTICAL | ", var%ptfmrvy, " | ", kgenref_var%ptfmrvy
     ELSE 
         diff_ptfmrvy = ABS(var%ptfmrvy - kgenref_var%ptfmrvy) 
         IF (diff_ptfmrvy <= kgen_tolerance) THEN 
@@ -26799,6 +28296,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmrvy | IN_TOL | ", var%ptfmrvy, " | ", kgenref_var%ptfmrvy, " | ", diff_ptfmrvy
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26807,6 +28305,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmrvy | OUT_TOL | ", var%ptfmrvy, " | ", kgenref_var%ptfmrvy, " | ", diff_ptfmrvy
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26828,7 +28327,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmrvz == kgenref_var%ptfmrvz) THEN 
+    IF ((var%ptfmrvz == kgenref_var%ptfmrvz) .OR. ((var%ptfmrvz /= var%ptfmrvz) .AND. (kgenref_var%ptfmrvz /= kgenref_var%ptfmrvz))) THEN
+        IF (var%ptfmrvz /= var%ptfmrvz) WRITE(*, *) "localvar%ptfmrvz is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26836,6 +28336,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmrvz | IDENTICAL | ", var%ptfmrvz, " | ", kgenref_var%ptfmrvz
     ELSE 
         diff_ptfmrvz = ABS(var%ptfmrvz - kgenref_var%ptfmrvz) 
         IF (diff_ptfmrvz <= kgen_tolerance) THEN 
@@ -26846,6 +28347,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmrvz | IN_TOL | ", var%ptfmrvz, " | ", kgenref_var%ptfmrvz, " | ", diff_ptfmrvz
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26854,6 +28356,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmrvz | OUT_TOL | ", var%ptfmrvz, " | ", kgenref_var%ptfmrvz, " | ", diff_ptfmrvz
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26875,7 +28378,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmtax == kgenref_var%ptfmtax) THEN 
+    IF ((var%ptfmtax == kgenref_var%ptfmtax) .OR. ((var%ptfmtax /= var%ptfmtax) .AND. (kgenref_var%ptfmtax /= kgenref_var%ptfmtax))) THEN
+        IF (var%ptfmtax /= var%ptfmtax) WRITE(*, *) "localvar%ptfmtax is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26883,6 +28387,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmtax | IDENTICAL | ", var%ptfmtax, " | ", kgenref_var%ptfmtax
     ELSE 
         diff_ptfmtax = ABS(var%ptfmtax - kgenref_var%ptfmtax) 
         IF (diff_ptfmtax <= kgen_tolerance) THEN 
@@ -26893,6 +28398,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtax | IN_TOL | ", var%ptfmtax, " | ", kgenref_var%ptfmtax, " | ", diff_ptfmtax
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26901,6 +28407,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtax | OUT_TOL | ", var%ptfmtax, " | ", kgenref_var%ptfmtax, " | ", diff_ptfmtax
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26922,7 +28429,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmtay == kgenref_var%ptfmtay) THEN 
+    IF ((var%ptfmtay == kgenref_var%ptfmtay) .OR. ((var%ptfmtay /= var%ptfmtay) .AND. (kgenref_var%ptfmtay /= kgenref_var%ptfmtay))) THEN
+        IF (var%ptfmtay /= var%ptfmtay) WRITE(*, *) "localvar%ptfmtay is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26930,6 +28438,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmtay | IDENTICAL | ", var%ptfmtay, " | ", kgenref_var%ptfmtay
     ELSE 
         diff_ptfmtay = ABS(var%ptfmtay - kgenref_var%ptfmtay) 
         IF (diff_ptfmtay <= kgen_tolerance) THEN 
@@ -26940,6 +28449,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtay | IN_TOL | ", var%ptfmtay, " | ", kgenref_var%ptfmtay, " | ", diff_ptfmtay
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26948,6 +28458,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtay | OUT_TOL | ", var%ptfmtay, " | ", kgenref_var%ptfmtay, " | ", diff_ptfmtay
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -26969,7 +28480,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmtaz == kgenref_var%ptfmtaz) THEN 
+    IF ((var%ptfmtaz == kgenref_var%ptfmtaz) .OR. ((var%ptfmtaz /= var%ptfmtaz) .AND. (kgenref_var%ptfmtaz /= kgenref_var%ptfmtaz))) THEN
+        IF (var%ptfmtaz /= var%ptfmtaz) WRITE(*, *) "localvar%ptfmtaz is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -26977,6 +28489,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmtaz | IDENTICAL | ", var%ptfmtaz, " | ", kgenref_var%ptfmtaz
     ELSE 
         diff_ptfmtaz = ABS(var%ptfmtaz - kgenref_var%ptfmtaz) 
         IF (diff_ptfmtaz <= kgen_tolerance) THEN 
@@ -26987,6 +28500,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtaz | IN_TOL | ", var%ptfmtaz, " | ", kgenref_var%ptfmtaz, " | ", diff_ptfmtaz
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -26995,6 +28509,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmtaz | OUT_TOL | ", var%ptfmtaz, " | ", kgenref_var%ptfmtaz, " | ", diff_ptfmtaz
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27016,7 +28531,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmrax == kgenref_var%ptfmrax) THEN 
+    IF ((var%ptfmrax == kgenref_var%ptfmrax) .OR. ((var%ptfmrax /= var%ptfmrax) .AND. (kgenref_var%ptfmrax /= kgenref_var%ptfmrax))) THEN
+        IF (var%ptfmrax /= var%ptfmrax) WRITE(*, *) "localvar%ptfmrax is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -27024,6 +28540,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmrax | IDENTICAL | ", var%ptfmrax, " | ", kgenref_var%ptfmrax
     ELSE 
         diff_ptfmrax = ABS(var%ptfmrax - kgenref_var%ptfmrax) 
         IF (diff_ptfmrax <= kgen_tolerance) THEN 
@@ -27034,6 +28551,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmrax | IN_TOL | ", var%ptfmrax, " | ", kgenref_var%ptfmrax, " | ", diff_ptfmrax
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27042,6 +28560,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmrax | OUT_TOL | ", var%ptfmrax, " | ", kgenref_var%ptfmrax, " | ", diff_ptfmrax
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27063,7 +28582,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmray == kgenref_var%ptfmray) THEN 
+    IF ((var%ptfmray == kgenref_var%ptfmray) .OR. ((var%ptfmray /= var%ptfmray) .AND. (kgenref_var%ptfmray /= kgenref_var%ptfmray))) THEN
+        IF (var%ptfmray /= var%ptfmray) WRITE(*, *) "localvar%ptfmray is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -27071,6 +28591,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmray | IDENTICAL | ", var%ptfmray, " | ", kgenref_var%ptfmray
     ELSE 
         diff_ptfmray = ABS(var%ptfmray - kgenref_var%ptfmray) 
         IF (diff_ptfmray <= kgen_tolerance) THEN 
@@ -27081,6 +28602,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmray | IN_TOL | ", var%ptfmray, " | ", kgenref_var%ptfmray, " | ", diff_ptfmray
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27089,6 +28611,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmray | OUT_TOL | ", var%ptfmray, " | ", kgenref_var%ptfmray, " | ", diff_ptfmray
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27110,7 +28633,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%ptfmraz == kgenref_var%ptfmraz) THEN 
+    IF ((var%ptfmraz == kgenref_var%ptfmraz) .OR. ((var%ptfmraz /= var%ptfmraz) .AND. (kgenref_var%ptfmraz /= kgenref_var%ptfmraz))) THEN
+        IF (var%ptfmraz /= var%ptfmraz) WRITE(*, *) "localvar%ptfmraz is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -27118,6 +28642,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] ptfmraz | IDENTICAL | ", var%ptfmraz, " | ", kgenref_var%ptfmraz
     ELSE 
         diff_ptfmraz = ABS(var%ptfmraz - kgenref_var%ptfmraz) 
         IF (diff_ptfmraz <= kgen_tolerance) THEN 
@@ -27128,6 +28653,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmraz | IN_TOL | ", var%ptfmraz, " | ", kgenref_var%ptfmraz, " | ", diff_ptfmraz
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27136,6 +28662,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] ptfmraz | OUT_TOL | ", var%ptfmraz, " | ", kgenref_var%ptfmraz, " | ", diff_ptfmraz
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27165,6 +28692,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] cc_desiredl | IDENTICAL | size=", SIZE(var%cc_desiredl)
     ELSE 
         ALLOCATE (buf1_cc_desiredl(SIZE(var%cc_desiredl,dim=1))) 
         ALLOCATE (buf2_cc_desiredl(SIZE(var%cc_desiredl,dim=1))) 
@@ -27186,6 +28714,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] cc_desiredl | OUT_TOL | n_diff=", n_cc_desiredl, " | rms=", rmsdiff_cc_desiredl
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27194,6 +28723,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] cc_desiredl | IN_TOL | n_diff=", n_cc_desiredl, " | rms=", rmsdiff_cc_desiredl
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27233,6 +28763,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] cc_actuatedl | IDENTICAL | size=", SIZE(var%cc_actuatedl)
     ELSE 
         ALLOCATE (buf1_cc_actuatedl(SIZE(var%cc_actuatedl,dim=1))) 
         ALLOCATE (buf2_cc_actuatedl(SIZE(var%cc_actuatedl,dim=1))) 
@@ -27254,6 +28785,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] cc_actuatedl | OUT_TOL | n_diff=", n_cc_actuatedl, " | rms=", rmsdiff_cc_actuatedl
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27262,6 +28794,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] cc_actuatedl | IN_TOL | n_diff=", n_cc_actuatedl, " | rms=", rmsdiff_cc_actuatedl
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27301,6 +28834,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] cc_actuateddl | IDENTICAL | size=", SIZE(var%cc_actuateddl)
     ELSE 
         ALLOCATE (buf1_cc_actuateddl(SIZE(var%cc_actuateddl,dim=1))) 
         ALLOCATE (buf2_cc_actuateddl(SIZE(var%cc_actuateddl,dim=1))) 
@@ -27322,6 +28856,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] cc_actuateddl | OUT_TOL | n_diff=", n_cc_actuateddl, " | rms=", rmsdiff_cc_actuateddl
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27330,6 +28865,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] cc_actuateddl | IN_TOL | n_diff=", n_cc_actuateddl, " | rms=", rmsdiff_cc_actuateddl
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27369,6 +28905,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] stc_input | IDENTICAL | size=", SIZE(var%stc_input)
     ELSE 
         ALLOCATE (buf1_stc_input(SIZE(var%stc_input,dim=1))) 
         ALLOCATE (buf2_stc_input(SIZE(var%stc_input,dim=1))) 
@@ -27390,6 +28927,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] stc_input | OUT_TOL | n_diff=", n_stc_input, " | rms=", rmsdiff_stc_input
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27398,6 +28936,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] stc_input | IN_TOL | n_diff=", n_stc_input, " | rms=", rmsdiff_stc_input
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27437,6 +28976,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] flp_angle | IDENTICAL | size=", SIZE(var%flp_angle)
     ELSE 
         ALLOCATE (buf1_flp_angle(SIZE(var%flp_angle,dim=1))) 
         ALLOCATE (buf2_flp_angle(SIZE(var%flp_angle,dim=1))) 
@@ -27458,6 +28998,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] flp_angle | OUT_TOL | n_diff=", n_flp_angle, " | rms=", rmsdiff_flp_angle
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27466,6 +29007,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] flp_angle | IN_TOL | n_diff=", n_flp_angle, " | rms=", rmsdiff_flp_angle
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27505,6 +29047,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] rootmyb_last | IDENTICAL | size=", SIZE(var%rootmyb_last)
     ELSE 
         ALLOCATE (buf1_rootmyb_last(SIZE(var%rootmyb_last,dim=1))) 
         ALLOCATE (buf2_rootmyb_last(SIZE(var%rootmyb_last,dim=1))) 
@@ -27526,6 +29069,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] rootmyb_last | OUT_TOL | n_diff=", n_rootmyb_last, " | rms=", rmsdiff_rootmyb_last
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27534,6 +29078,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] rootmyb_last | IN_TOL | n_diff=", n_rootmyb_last, " | rms=", rmsdiff_rootmyb_last
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27565,7 +29110,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%acc_infile_size == kgenref_var%acc_infile_size) THEN 
+    IF ((var%acc_infile_size == kgenref_var%acc_infile_size) .OR. ((var%acc_infile_size /= var%acc_infile_size) .AND. (kgenref_var%acc_infile_size /= kgenref_var%acc_infile_size))) THEN
+        IF (var%acc_infile_size /= var%acc_infile_size) WRITE(*, *) "localvar%acc_infile_size is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -27573,6 +29119,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] acc_infile_size | IDENTICAL | ", var%acc_infile_size, " | ", kgenref_var%acc_infile_size
     ELSE 
         diff_acc_infile_size = ABS(var%acc_infile_size - kgenref_var%acc_infile_size) 
         IF (diff_acc_infile_size <= kgen_tolerance) THEN 
@@ -27583,6 +29130,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] acc_infile_size | IN_TOL | ", var%acc_infile_size, " | ", kgenref_var%acc_infile_size, " | ", diff_acc_infile_size
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27591,6 +29139,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] acc_infile_size | OUT_TOL | ", var%acc_infile_size, " | ", kgenref_var%acc_infile_size, " | ", diff_acc_infile_size
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27620,6 +29169,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] acc_infile | IDENTICAL | size=", SIZE(var%acc_infile)
     ELSE 
         n_acc_infile = COUNT(var%acc_infile /= kgenref_var%acc_infile) 
         dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
@@ -27629,6 +29179,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_OUT_TOL 
+        WRITE(*, *) "[VIT_ARRAY] acc_infile | OUT_TOL | n_diff=", n_acc_infile
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
         CONTINUE 
@@ -27649,7 +29200,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%restart == kgenref_var%restart) THEN 
+    IF ((var%restart == kgenref_var%restart) .OR. ((var%restart /= var%restart) .AND. (kgenref_var%restart /= kgenref_var%restart))) THEN
+        IF (var%restart /= var%restart) WRITE(*, *) "localvar%restart is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -27657,6 +29209,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] restart | IDENTICAL | ", var%restart, " | ", kgenref_var%restart
     ELSE 
         diff_restart = ABS(var%restart - kgenref_var%restart) 
         IF (diff_restart <= kgen_tolerance) THEN 
@@ -27667,6 +29220,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] restart | IN_TOL | ", var%restart, " | ", kgenref_var%restart, " | ", diff_restart
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27675,6 +29229,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] restart | OUT_TOL | ", var%restart, " | ", kgenref_var%restart, " | ", diff_restart
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27704,6 +29259,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] awc_complexangle_re | IDENTICAL | size=", SIZE(var%awc_complexangle_re)
     ELSE 
         ALLOCATE (buf1_awc_complexangle_re(SIZE(var%awc_complexangle_re,dim=1))) 
         ALLOCATE (buf2_awc_complexangle_re(SIZE(var%awc_complexangle_re,dim=1))) 
@@ -27726,6 +29282,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] awc_complexangle_re | OUT_TOL | n_diff=", n_awc_complexangle_re, " | rms=", rmsdiff_awc_complexangle_re
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27734,6 +29291,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] awc_complexangle_re | IN_TOL | n_diff=", n_awc_complexangle_re, " | rms=", rmsdiff_awc_complexangle_re
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27775,6 +29333,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] awc_complexangle_im | IDENTICAL | size=", SIZE(var%awc_complexangle_im)
     ELSE 
         ALLOCATE (buf1_awc_complexangle_im(SIZE(var%awc_complexangle_im,dim=1))) 
         ALLOCATE (buf2_awc_complexangle_im(SIZE(var%awc_complexangle_im,dim=1))) 
@@ -27797,6 +29356,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] awc_complexangle_im | OUT_TOL | n_diff=", n_awc_complexangle_im, " | rms=", rmsdiff_awc_complexangle_im
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27805,6 +29365,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] awc_complexangle_im | IN_TOL | n_diff=", n_awc_complexangle_im, " | rms=", rmsdiff_awc_complexangle_im
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27838,7 +29399,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%tiltmean == kgenref_var%tiltmean) THEN 
+    IF ((var%tiltmean == kgenref_var%tiltmean) .OR. ((var%tiltmean /= var%tiltmean) .AND. (kgenref_var%tiltmean /= kgenref_var%tiltmean))) THEN
+        IF (var%tiltmean /= var%tiltmean) WRITE(*, *) "localvar%tiltmean is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -27846,6 +29408,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] tiltmean | IDENTICAL | ", var%tiltmean, " | ", kgenref_var%tiltmean
     ELSE 
         diff_tiltmean = ABS(var%tiltmean - kgenref_var%tiltmean) 
         IF (diff_tiltmean <= kgen_tolerance) THEN 
@@ -27856,6 +29419,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] tiltmean | IN_TOL | ", var%tiltmean, " | ", kgenref_var%tiltmean, " | ", diff_tiltmean
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27864,6 +29428,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] tiltmean | OUT_TOL | ", var%tiltmean, " | ", kgenref_var%tiltmean, " | ", diff_tiltmean
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27885,7 +29450,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%yawmean == kgenref_var%yawmean) THEN 
+    IF ((var%yawmean == kgenref_var%yawmean) .OR. ((var%yawmean /= var%yawmean) .AND. (kgenref_var%yawmean /= kgenref_var%yawmean))) THEN
+        IF (var%yawmean /= var%yawmean) WRITE(*, *) "localvar%yawmean is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -27893,6 +29459,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] yawmean | IDENTICAL | ", var%yawmean, " | ", kgenref_var%yawmean
     ELSE 
         diff_yawmean = ABS(var%yawmean - kgenref_var%yawmean) 
         IF (diff_yawmean <= kgen_tolerance) THEN 
@@ -27903,6 +29470,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] yawmean | IN_TOL | ", var%yawmean, " | ", kgenref_var%yawmean, " | ", diff_yawmean
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27911,6 +29479,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] yawmean | OUT_TOL | ", var%yawmean, " | ", kgenref_var%yawmean, " | ", diff_yawmean
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27932,7 +29501,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%zmq_id == kgenref_var%zmq_id) THEN 
+    IF ((var%zmq_id == kgenref_var%zmq_id) .OR. ((var%zmq_id /= var%zmq_id) .AND. (kgenref_var%zmq_id /= kgenref_var%zmq_id))) THEN
+        IF (var%zmq_id /= var%zmq_id) WRITE(*, *) "localvar%zmq_id is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -27940,6 +29510,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_id | IDENTICAL | ", var%zmq_id, " | ", kgenref_var%zmq_id
     ELSE 
         diff_zmq_id = ABS(var%zmq_id - kgenref_var%zmq_id) 
         IF (diff_zmq_id <= kgen_tolerance) THEN 
@@ -27950,6 +29521,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_id | IN_TOL | ", var%zmq_id, " | ", kgenref_var%zmq_id, " | ", diff_zmq_id
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -27958,6 +29530,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_id | OUT_TOL | ", var%zmq_id, " | ", kgenref_var%zmq_id, " | ", diff_zmq_id
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -27979,7 +29552,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%zmq_yawoffset == kgenref_var%zmq_yawoffset) THEN 
+    IF ((var%zmq_yawoffset == kgenref_var%zmq_yawoffset) .OR. ((var%zmq_yawoffset /= var%zmq_yawoffset) .AND. (kgenref_var%zmq_yawoffset /= kgenref_var%zmq_yawoffset))) THEN
+        IF (var%zmq_yawoffset /= var%zmq_yawoffset) WRITE(*, *) "localvar%zmq_yawoffset is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -27987,6 +29561,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_yawoffset | IDENTICAL | ", var%zmq_yawoffset, " | ", kgenref_var%zmq_yawoffset
     ELSE 
         diff_zmq_yawoffset = ABS(var%zmq_yawoffset - kgenref_var%zmq_yawoffset) 
         IF (diff_zmq_yawoffset <= kgen_tolerance) THEN 
@@ -27997,6 +29572,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_yawoffset | IN_TOL | ", var%zmq_yawoffset, " | ", kgenref_var%zmq_yawoffset, " | ", diff_zmq_yawoffset
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28005,6 +29581,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_yawoffset | OUT_TOL | ", var%zmq_yawoffset, " | ", kgenref_var%zmq_yawoffset, " | ", diff_zmq_yawoffset
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -28026,7 +29603,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%zmq_torqueoffset == kgenref_var%zmq_torqueoffset) THEN 
+    IF ((var%zmq_torqueoffset == kgenref_var%zmq_torqueoffset) .OR. ((var%zmq_torqueoffset /= var%zmq_torqueoffset) .AND. (kgenref_var%zmq_torqueoffset /= kgenref_var%zmq_torqueoffset))) THEN
+        IF (var%zmq_torqueoffset /= var%zmq_torqueoffset) WRITE(*, *) "localvar%zmq_torqueoffset is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -28034,6 +29612,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_torqueoffset | IDENTICAL | ", var%zmq_torqueoffset, " | ", kgenref_var%zmq_torqueoffset
     ELSE 
         diff_zmq_torqueoffset = ABS(var%zmq_torqueoffset - kgenref_var%zmq_torqueoffset) 
         IF (diff_zmq_torqueoffset <= kgen_tolerance) THEN 
@@ -28044,6 +29623,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_torqueoffset | IN_TOL | ", var%zmq_torqueoffset, " | ", kgenref_var%zmq_torqueoffset, " | ", diff_zmq_torqueoffset
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28052,6 +29632,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_torqueoffset | OUT_TOL | ", var%zmq_torqueoffset, " | ", kgenref_var%zmq_torqueoffset, " | ", diff_zmq_torqueoffset
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -28081,6 +29662,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] zmq_pitoffset | IDENTICAL | size=", SIZE(var%zmq_pitoffset)
     ELSE 
         ALLOCATE (buf1_zmq_pitoffset(SIZE(var%zmq_pitoffset,dim=1))) 
         ALLOCATE (buf2_zmq_pitoffset(SIZE(var%zmq_pitoffset,dim=1))) 
@@ -28102,6 +29684,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] zmq_pitoffset | OUT_TOL | n_diff=", n_zmq_pitoffset, " | rms=", rmsdiff_zmq_pitoffset
         ELSE 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28110,6 +29693,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] zmq_pitoffset | IN_TOL | n_diff=", n_zmq_pitoffset, " | rms=", rmsdiff_zmq_pitoffset
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -28141,7 +29725,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%zmq_r_speed == kgenref_var%zmq_r_speed) THEN 
+    IF ((var%zmq_r_speed == kgenref_var%zmq_r_speed) .OR. ((var%zmq_r_speed /= var%zmq_r_speed) .AND. (kgenref_var%zmq_r_speed /= kgenref_var%zmq_r_speed))) THEN
+        IF (var%zmq_r_speed /= var%zmq_r_speed) WRITE(*, *) "localvar%zmq_r_speed is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -28149,6 +29734,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_speed | IDENTICAL | ", var%zmq_r_speed, " | ", kgenref_var%zmq_r_speed
     ELSE 
         diff_zmq_r_speed = ABS(var%zmq_r_speed - kgenref_var%zmq_r_speed) 
         IF (diff_zmq_r_speed <= kgen_tolerance) THEN 
@@ -28159,6 +29745,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_r_speed | IN_TOL | ", var%zmq_r_speed, " | ", kgenref_var%zmq_r_speed, " | ", diff_zmq_r_speed
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28167,6 +29754,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_r_speed | OUT_TOL | ", var%zmq_r_speed, " | ", kgenref_var%zmq_r_speed, " | ", diff_zmq_r_speed
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -28188,7 +29776,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%zmq_r_torque == kgenref_var%zmq_r_torque) THEN 
+    IF ((var%zmq_r_torque == kgenref_var%zmq_r_torque) .OR. ((var%zmq_r_torque /= var%zmq_r_torque) .AND. (kgenref_var%zmq_r_torque /= kgenref_var%zmq_r_torque))) THEN
+        IF (var%zmq_r_torque /= var%zmq_r_torque) WRITE(*, *) "localvar%zmq_r_torque is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -28196,6 +29785,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_torque | IDENTICAL | ", var%zmq_r_torque, " | ", kgenref_var%zmq_r_torque
     ELSE 
         diff_zmq_r_torque = ABS(var%zmq_r_torque - kgenref_var%zmq_r_torque) 
         IF (diff_zmq_r_torque <= kgen_tolerance) THEN 
@@ -28206,6 +29796,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_r_torque | IN_TOL | ", var%zmq_r_torque, " | ", kgenref_var%zmq_r_torque, " | ", diff_zmq_r_torque
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28214,6 +29805,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_r_torque | OUT_TOL | ", var%zmq_r_torque, " | ", kgenref_var%zmq_r_torque, " | ", diff_zmq_r_torque
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -28235,7 +29827,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%zmq_r_pitch == kgenref_var%zmq_r_pitch) THEN 
+    IF ((var%zmq_r_pitch == kgenref_var%zmq_r_pitch) .OR. ((var%zmq_r_pitch /= var%zmq_r_pitch) .AND. (kgenref_var%zmq_r_pitch /= kgenref_var%zmq_r_pitch))) THEN
+        IF (var%zmq_r_pitch /= var%zmq_r_pitch) WRITE(*, *) "localvar%zmq_r_pitch is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -28243,6 +29836,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | IDENTICAL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch
     ELSE 
         diff_zmq_r_pitch = ABS(var%zmq_r_pitch - kgenref_var%zmq_r_pitch) 
         IF (diff_zmq_r_pitch <= kgen_tolerance) THEN 
@@ -28253,6 +29847,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | IN_TOL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch, " | ", diff_zmq_r_pitch
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28261,6 +29856,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | OUT_TOL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch, " | ", diff_zmq_r_pitch
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -28292,6 +29888,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | IDENTICAL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch
     ELSE IF (comp_check_status%numOutTol > 0) THEN 
         dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -28300,6 +29897,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_OUT_TOL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | OUT_TOL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch, " | ", diff_zmq_r_pitch
     ELSE IF (comp_check_status%numInTol > 0) THEN 
         dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -28308,6 +29906,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IN_TOL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | IN_TOL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch, " | ", diff_zmq_r_pitch
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
         CONTINUE 
@@ -28344,6 +29943,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | IDENTICAL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch
     ELSE IF (comp_check_status%numOutTol > 0) THEN 
         dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -28352,6 +29952,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_OUT_TOL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | OUT_TOL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch, " | ", diff_zmq_r_pitch
     ELSE IF (comp_check_status%numInTol > 0) THEN 
         dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -28360,6 +29961,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IN_TOL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | IN_TOL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch, " | ", diff_zmq_r_pitch
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
         CONTINUE 
@@ -28396,6 +29998,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | IDENTICAL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch
     ELSE IF (comp_check_status%numOutTol > 0) THEN 
         dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -28404,6 +30007,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_OUT_TOL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | OUT_TOL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch, " | ", diff_zmq_r_pitch
     ELSE IF (comp_check_status%numInTol > 0) THEN 
         dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -28412,6 +30016,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IN_TOL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | IN_TOL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch, " | ", diff_zmq_r_pitch
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
         CONTINUE 
@@ -28448,6 +30053,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | IDENTICAL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch
     ELSE IF (comp_check_status%numOutTol > 0) THEN 
         dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -28456,6 +30062,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_OUT_TOL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | OUT_TOL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch, " | ", diff_zmq_r_pitch
     ELSE IF (comp_check_status%numInTol > 0) THEN 
         dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -28464,6 +30071,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IN_TOL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | IN_TOL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch, " | ", diff_zmq_r_pitch
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
         CONTINUE 
@@ -28500,6 +30108,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | IDENTICAL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch
     ELSE IF (comp_check_status%numOutTol > 0) THEN 
         dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -28508,6 +30117,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_OUT_TOL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | OUT_TOL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch, " | ", diff_zmq_r_pitch
     ELSE IF (comp_check_status%numInTol > 0) THEN 
         dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
@@ -28516,6 +30126,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IN_TOL 
+        WRITE(*, *) "[VIT_FIELD] zmq_r_pitch | IN_TOL | ", var%zmq_r_pitch, " | ", kgenref_var%zmq_r_pitch, " | ", diff_zmq_r_pitch
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
         CONTINUE 
@@ -28573,7 +30184,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
       
     CALL kgen_init_check(dtype_check_status, rank=check_status%rank) 
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%instlpf == kgenref_var%instlpf) THEN 
+    IF ((var%instlpf == kgenref_var%instlpf) .OR. ((var%instlpf /= var%instlpf) .AND. (kgenref_var%instlpf /= kgenref_var%instlpf))) THEN
+        IF (var%instlpf /= var%instlpf) WRITE(*, *) "localvar%instlpf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -28581,6 +30193,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] instlpf | IDENTICAL | ", var%instlpf, " | ", kgenref_var%instlpf
     ELSE 
         diff_instlpf = ABS(var%instlpf - kgenref_var%instlpf) 
         IF (diff_instlpf <= kgen_tolerance) THEN 
@@ -28591,6 +30204,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] instlpf | IN_TOL | ", var%instlpf, " | ", kgenref_var%instlpf, " | ", diff_instlpf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28599,6 +30213,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] instlpf | OUT_TOL | ", var%instlpf, " | ", kgenref_var%instlpf, " | ", diff_instlpf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -28620,7 +30235,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%instseclpf == kgenref_var%instseclpf) THEN 
+    IF ((var%instseclpf == kgenref_var%instseclpf) .OR. ((var%instseclpf /= var%instseclpf) .AND. (kgenref_var%instseclpf /= kgenref_var%instseclpf))) THEN
+        IF (var%instseclpf /= var%instseclpf) WRITE(*, *) "localvar%instseclpf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -28628,6 +30244,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] instseclpf | IDENTICAL | ", var%instseclpf, " | ", kgenref_var%instseclpf
     ELSE 
         diff_instseclpf = ABS(var%instseclpf - kgenref_var%instseclpf) 
         IF (diff_instseclpf <= kgen_tolerance) THEN 
@@ -28638,6 +30255,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] instseclpf | IN_TOL | ", var%instseclpf, " | ", kgenref_var%instseclpf, " | ", diff_instseclpf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28646,6 +30264,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] instseclpf | OUT_TOL | ", var%instseclpf, " | ", kgenref_var%instseclpf, " | ", diff_instseclpf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -28667,7 +30286,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%instseclpfv == kgenref_var%instseclpfv) THEN 
+    IF ((var%instseclpfv == kgenref_var%instseclpfv) .OR. ((var%instseclpfv /= var%instseclpfv) .AND. (kgenref_var%instseclpfv /= kgenref_var%instseclpfv))) THEN
+        IF (var%instseclpfv /= var%instseclpfv) WRITE(*, *) "localvar%instseclpfv is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -28675,6 +30295,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] instseclpfv | IDENTICAL | ", var%instseclpfv, " | ", kgenref_var%instseclpfv
     ELSE 
         diff_instseclpfv = ABS(var%instseclpfv - kgenref_var%instseclpfv) 
         IF (diff_instseclpfv <= kgen_tolerance) THEN 
@@ -28685,6 +30306,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] instseclpfv | IN_TOL | ", var%instseclpfv, " | ", kgenref_var%instseclpfv, " | ", diff_instseclpfv
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28693,6 +30315,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] instseclpfv | OUT_TOL | ", var%instseclpfv, " | ", kgenref_var%instseclpfv, " | ", diff_instseclpfv
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -28714,7 +30337,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%insthpf == kgenref_var%insthpf) THEN 
+    IF ((var%insthpf == kgenref_var%insthpf) .OR. ((var%insthpf /= var%insthpf) .AND. (kgenref_var%insthpf /= kgenref_var%insthpf))) THEN
+        IF (var%insthpf /= var%insthpf) WRITE(*, *) "localvar%insthpf is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -28722,6 +30346,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] insthpf | IDENTICAL | ", var%insthpf, " | ", kgenref_var%insthpf
     ELSE 
         diff_insthpf = ABS(var%insthpf - kgenref_var%insthpf) 
         IF (diff_insthpf <= kgen_tolerance) THEN 
@@ -28732,6 +30357,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] insthpf | IN_TOL | ", var%insthpf, " | ", kgenref_var%insthpf, " | ", diff_insthpf
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28740,6 +30366,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] insthpf | OUT_TOL | ", var%insthpf, " | ", kgenref_var%insthpf, " | ", diff_insthpf
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -28761,7 +30388,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%instnotchslopes == kgenref_var%instnotchslopes) THEN 
+    IF ((var%instnotchslopes == kgenref_var%instnotchslopes) .OR. ((var%instnotchslopes /= var%instnotchslopes) .AND. (kgenref_var%instnotchslopes /= kgenref_var%instnotchslopes))) THEN
+        IF (var%instnotchslopes /= var%instnotchslopes) WRITE(*, *) "localvar%instnotchslopes is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -28769,6 +30397,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] instnotchslopes | IDENTICAL | ", var%instnotchslopes, " | ", kgenref_var%instnotchslopes
     ELSE 
         diff_instnotchslopes = ABS(var%instnotchslopes - kgenref_var%instnotchslopes) 
         IF (diff_instnotchslopes <= kgen_tolerance) THEN 
@@ -28779,6 +30408,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] instnotchslopes | IN_TOL | ", var%instnotchslopes, " | ", kgenref_var%instnotchslopes, " | ", diff_instnotchslopes
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28787,6 +30417,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] instnotchslopes | OUT_TOL | ", var%instnotchslopes, " | ", kgenref_var%instnotchslopes, " | ", diff_instnotchslopes
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -28808,7 +30439,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%instnotch == kgenref_var%instnotch) THEN 
+    IF ((var%instnotch == kgenref_var%instnotch) .OR. ((var%instnotch /= var%instnotch) .AND. (kgenref_var%instnotch /= kgenref_var%instnotch))) THEN
+        IF (var%instnotch /= var%instnotch) WRITE(*, *) "localvar%instnotch is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -28816,6 +30448,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] instnotch | IDENTICAL | ", var%instnotch, " | ", kgenref_var%instnotch
     ELSE 
         diff_instnotch = ABS(var%instnotch - kgenref_var%instnotch) 
         IF (diff_instnotch <= kgen_tolerance) THEN 
@@ -28826,6 +30459,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] instnotch | IN_TOL | ", var%instnotch, " | ", kgenref_var%instnotch, " | ", diff_instnotch
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28834,6 +30468,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] instnotch | OUT_TOL | ", var%instnotch, " | ", kgenref_var%instnotch, " | ", diff_instnotch
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -28855,7 +30490,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%instpi == kgenref_var%instpi) THEN 
+    IF ((var%instpi == kgenref_var%instpi) .OR. ((var%instpi /= var%instpi) .AND. (kgenref_var%instpi /= kgenref_var%instpi))) THEN
+        IF (var%instpi /= var%instpi) WRITE(*, *) "localvar%instpi is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -28863,6 +30499,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] instpi | IDENTICAL | ", var%instpi, " | ", kgenref_var%instpi
     ELSE 
         diff_instpi = ABS(var%instpi - kgenref_var%instpi) 
         IF (diff_instpi <= kgen_tolerance) THEN 
@@ -28873,6 +30510,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] instpi | IN_TOL | ", var%instpi, " | ", kgenref_var%instpi, " | ", diff_instpi
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28881,6 +30519,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] instpi | OUT_TOL | ", var%instpi, " | ", kgenref_var%instpi, " | ", diff_instpi
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -28902,7 +30541,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%instres == kgenref_var%instres) THEN 
+    IF ((var%instres == kgenref_var%instres) .OR. ((var%instres /= var%instres) .AND. (kgenref_var%instres /= kgenref_var%instres))) THEN
+        IF (var%instres /= var%instres) WRITE(*, *) "localvar%instres is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -28910,6 +30550,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] instres | IDENTICAL | ", var%instres, " | ", kgenref_var%instres
     ELSE 
         diff_instres = ABS(var%instres - kgenref_var%instres) 
         IF (diff_instres <= kgen_tolerance) THEN 
@@ -28920,6 +30561,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] instres | IN_TOL | ", var%instres, " | ", kgenref_var%instres, " | ", diff_instres
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28928,6 +30570,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] instres | OUT_TOL | ", var%instres, " | ", kgenref_var%instres, " | ", diff_instres
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -28949,7 +30592,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%instrl == kgenref_var%instrl) THEN 
+    IF ((var%instrl == kgenref_var%instrl) .OR. ((var%instrl /= var%instrl) .AND. (kgenref_var%instrl /= kgenref_var%instrl))) THEN
+        IF (var%instrl /= var%instrl) WRITE(*, *) "localvar%instrl is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -28957,6 +30601,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_FIELD] instrl | IDENTICAL | ", var%instrl, " | ", kgenref_var%instrl
     ELSE 
         diff_instrl = ABS(var%instrl - kgenref_var%instrl) 
         IF (diff_instrl <= kgen_tolerance) THEN 
@@ -28967,6 +30612,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] instrl | IN_TOL | ", var%instrl, " | ", kgenref_var%instrl, " | ", diff_instrl
         ELSE 
             dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
@@ -28975,6 +30621,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_objectinstances(varname, check_status, var, 
                 END IF   
             END IF   
             check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] instrl | OUT_TOL | ", var%instrl, " | ", kgenref_var%instrl, " | ", diff_instrl
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 

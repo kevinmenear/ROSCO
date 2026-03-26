@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-18 23:13:49 
+!Generated at : 2026-03-25 20:46:17 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -25,32 +25,10 @@
 MODULE Filters
 !...............................................................................................................................
     USE functions 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
-    USE ISO_C_BINDING
     IMPLICIT NONE 
     PUBLIC prefiltermeasuredsignals 
-
-
-    ! Auto-generated interface for C++ implementation of NotchFilterSlopes
-    INTERFACE
-        FUNCTION notchfilterslopes_c(InputSignal, DT, CornerFreq, Damp, FP, iStatus, reset, inst, has_Moving, Moving, has_InitialValue, InitialValue) BIND(C, NAME='notchfilterslopes_c')
-            USE ISO_C_BINDING
-            REAL(C_DOUBLE), VALUE :: InputSignal
-            REAL(C_DOUBLE), VALUE :: DT
-            REAL(C_DOUBLE), VALUE :: CornerFreq
-            REAL(C_DOUBLE), VALUE :: Damp
-            TYPE(C_PTR), VALUE :: FP
-            INTEGER(C_INT), VALUE :: iStatus
-            LOGICAL(C_BOOL), VALUE :: reset
-            INTEGER(C_INT), INTENT(INOUT) :: inst
-            INTEGER(C_INT), VALUE :: has_Moving
-            LOGICAL(C_BOOL), VALUE :: Moving
-            INTEGER(C_INT), VALUE :: has_InitialValue
-            REAL(C_DOUBLE), VALUE :: InitialValue
-            REAL(C_DOUBLE) :: notchfilterslopes_c
-        END FUNCTION notchfilterslopes_c
-    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -66,41 +44,67 @@ CONTAINS
 
 
 !-------------------------------------------------------------------------------------------------------------------------------
-    FUNCTION NotchFilterSlopes(InputSignal, DT, CornerFreq, Damp, FP, iStatus, reset, inst, Moving, InitialValue) RESULT(NotchFilterSlopes_result)
-        USE ISO_C_BINDING
-        USE ROSCO_Types, ONLY : FilterParameters
-        IMPLICIT NONE
-        REAL(DbKi), INTENT(IN) :: InputSignal
-        REAL(DbKi), INTENT(IN) :: DT
-        REAL(DbKi), INTENT(IN) :: CornerFreq
-        REAL(DbKi), INTENT(IN) :: Damp
-        TYPE(FilterParameters), INTENT(INOUT), TARGET :: FP
-        INTEGER(IntKi), INTENT(IN) :: iStatus
-        LOGICAL(4), INTENT(IN) :: reset
-        INTEGER(IntKi), INTENT(INOUT) :: inst
-        LOGICAL, INTENT(IN), OPTIONAL :: Moving
-        REAL(DbKi), INTENT(IN), OPTIONAL :: InitialValue
-        REAL(DbKi) :: NotchFilterSlopes_result
+    REAL(DbKi) FUNCTION NotchFilterSlopes(InputSignal, DT, CornerFreq, Damp, FP, iStatus, reset, inst, Moving, InitialValue)
+    ! Discrete time inverted Notch Filter with descending slopes, G = CornerFreq*s/(Damp*s^2+CornerFreq*s+Damp*CornerFreq^2)
+        USE rosco_types, ONLY: filterparameters 
+        USE rosco_types, ONLY: kr_rosco_types_filterparameters 
+        USE rosco_types, ONLY: kv_rosco_types_filterparameters 
+        TYPE(FilterParameters),       INTENT(INOUT)       :: FP 
 
-        ! Local variables for OPTIONAL args
-        INTEGER(C_INT) :: has_Moving_flag
-        LOGICAL(C_BOOL) :: Moving_val
-        INTEGER(C_INT) :: has_InitialValue_flag
-        REAL(C_DOUBLE) :: InitialValue_val
+        REAL(DbKi), INTENT(IN)                  :: InputSignal
+        REAL(DbKi), INTENT(IN)                  :: DT               ! time step [s]
+        REAL(DbKi), INTENT(IN)                  :: CornerFreq       ! corner frequency [rad/s]
+        REAL(DbKi), INTENT(IN)                  :: Damp             ! Dampening constant
+        INTEGER(IntKi), INTENT(IN)              :: iStatus          ! A status flag set by the simulation as follows: 0 if this is the first call, 1 for all subsequent time steps, -1 if this is the final call at the end of the simulation.
+        INTEGER(IntKi), INTENT(INOUT)           :: inst             ! Instance number. Every instance of this function needs to have an unique instance number to ensure instances don't influence each other.
+        LOGICAL(4), INTENT(IN)                  :: reset            ! Reset the filter to the input signal
+        LOGICAL, OPTIONAL,  INTENT(IN)          :: Moving           ! Moving CornerFreq flag
+        REAL(DbKi), OPTIONAL,  INTENT(IN)          :: InitialValue           ! Value to set when reset 
 
-        has_Moving_flag = 0
-        Moving_val = 0
-        IF (PRESENT(Moving)) THEN
-            has_Moving_flag = 1
-            Moving_val = Moving
-        END IF
-        has_InitialValue_flag = 0
-        InitialValue_val = 0.0D0
-        IF (PRESENT(InitialValue)) THEN
-            has_InitialValue_flag = 1
-            InitialValue_val = REAL(InitialValue, C_DOUBLE)
-        END IF
-        NotchFilterSlopes_result = REAL(notchfilterslopes_c(REAL(InputSignal, C_DOUBLE), REAL(DT, C_DOUBLE), REAL(CornerFreq, C_DOUBLE), REAL(Damp, C_DOUBLE), C_LOC(FP), INT(iStatus, C_INT), LOGICAL(reset, C_BOOL), inst, has_Moving_flag, Moving_val, has_InitialValue_flag, InitialValue_val), DbKi)
+        LOGICAL                                 :: Moving_          ! Local version
+        REAL(DbKi)                              :: CornerFreq_          ! Local version
+        REAL(DbKi)                          :: InitialValue_           ! Value to set when reset
+        ! Defaults
+
+        InitialValue_ = InputSignal
+        IF (PRESENT(InitialValue)) InitialValue_ = InitialValue  
+
+        Moving_ = .FALSE.
+        IF (PRESENT(Moving)) Moving_ = Moving   
+        ! Saturate Corner Freq at 0
+
+        IF (CornerFreq < 0) THEN 
+            CornerFreq_ = 0
+        ELSE
+            CornerFreq_ = CornerFreq
+        ENDIF
+        ! Initialization
+        
+        IF ((iStatus == 0) .OR. reset) THEN
+            FP%nfs_OutputSignalLast1(inst)  = InitialValue_
+            FP%nfs_OutputSignalLast2(inst)  = InitialValue_
+            FP%nfs_InputSignalLast1(inst)   = InitialValue_
+            FP%nfs_InputSignalLast2(inst)   = InitialValue_
+        ENDIF
+
+        IF ((iStatus == 0) .OR. reset .OR. Moving_) THEN
+            FP%nfs_b2(inst) = 2.0 * DT * CornerFreq_
+            FP%nfs_b0(inst) = -FP%nfs_b2(inst)
+            FP%nfs_a2(inst) = Damp*DT**2.0*CornerFreq_**2.0 + 2.0*DT*CornerFreq_ + 4.0*Damp
+            FP%nfs_a1(inst) = 2.0*Damp*DT**2.0*CornerFreq_**2.0 - 8.0*Damp
+            FP%nfs_a0(inst) = Damp*DT**2.0*CornerFreq_**2.0 - 2*DT*CornerFreq_ + 4.0*Damp
+        ENDIF
+
+        NotchFilterSlopes = 1.0/FP%nfs_a2(inst) * (FP%nfs_b2(inst)*InputSignal + FP%nfs_b0(inst)*FP%nfs_InputSignalLast1(inst) &
+                            - FP%nfs_a1(inst)*FP%nfs_OutputSignalLast1(inst)  - FP%nfs_a0(inst)*FP%nfs_OutputSignalLast2(inst))
+        ! Save signals for next time step
+
+        FP%nfs_InputSignalLast2(inst)   = FP%nfs_InputSignalLast1(inst)
+        FP%nfs_InputSignalLast1(inst)   = InputSignal          !Save input signal for next time step
+        FP%nfs_OutputSignalLast2(inst)  = FP%nfs_OutputSignalLast1(inst)      !Save input signal for next time step
+        FP%nfs_OutputSignalLast1(inst)  = NotchFilterSlopes
+        inst = inst + 1
+
     END FUNCTION NotchFilterSlopes
 !-------------------------------------------------------------------------------------------------------------------------------
 
@@ -110,8 +114,8 @@ CONTAINS
     ! Prefilter shared measured wind turbine signals
 
         USE rosco_types, ONLY: localvariables, objectinstances 
-        USE kgen_utils_mod
-        USE kgen_utils_mod
+        USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
+        USE kgen_utils_mod, ONLY: kgen_perturb_real 
         USE rosco_types, ONLY: kr_rosco_types_localvariables 
         USE rosco_types, ONLY: kr_rosco_types_objectinstances 
         USE rosco_types, ONLY: kv_rosco_types_localvariables 
@@ -187,11 +191,11 @@ CONTAINS
           
           
         !call to kgen kernel 
-                LocalVar%RootMOOPF(K) = NotchFilterSlopes(LocalVar%rootMOOP(K), LocalVar%DT, LocalVar%RotSpeedF, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotchSlopes, .TRUE.)
+                LocalVar%RootMOOPF(K) = NotchFilterSlopes(LocalVar%rootMOOP(K), LocalVar%DT, LocalVar%RotSpeedF, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instNotchSlopes, .TRUE.)
                 IF (kgen_mainstage) THEN 
                       
                     !verify init 
-                    CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=100) 
+                    CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=1) 
                     CALL kgen_init_check(check_status, rank=kgen_mpirank) 
                       
                     !extern verify variables 
@@ -231,7 +235,7 @@ CONTAINS
                     END IF   
                     CALL SYSTEM_CLOCK(kgen_start_clock, kgen_rate_clock) 
                     DO kgen_intvar = 1, KGEN_MAXITER 
-                LocalVar%RootMOOPF(K) = NotchFilterSlopes(LocalVar%rootMOOP(K), LocalVar%DT, LocalVar%RotSpeedF, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotchSlopes, .TRUE.)
+                LocalVar%RootMOOPF(K) = NotchFilterSlopes(LocalVar%rootMOOP(K), LocalVar%DT, LocalVar%RotSpeedF, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instNotchSlopes, .TRUE.)
                     END DO   
                     CALL SYSTEM_CLOCK(kgen_stop_clock, kgen_rate_clock) 
                     kgen_measure = 1.0D6*(kgen_stop_clock - kgen_start_clock)/DBLE(kgen_rate_clock*KGEN_MAXITER) 
@@ -243,6 +247,7 @@ CONTAINS
                 END IF   
                 IF (kgen_evalstage) THEN 
                 END IF   
+
         ! Control commands (used by WSE, mostly)
 
 

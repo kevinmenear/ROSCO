@@ -1,12 +1,12 @@
     !KGEN-generated Fortran source file 
       
-    !Generated at : 2026-03-24 00:48:09 
+    !Generated at : 2026-03-25 20:50:34 
     !KGEN version : 0.8.1 
       
     PROGRAM kernel_driver 
-        USE kgen_utils_mod, ONLY: kgen_get_newunit, kgen_error_stop, kgen_dp, kgen_array_sumcheck, kgen_rankthreadinvoke 
+        USE kgen_utils_mod
         USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
-        USE discon, ONLY: discon 
+! VIT: removed USE discon (subroutine, not module)
           
         USE functions, ONLY: reki 
         IMPLICIT NONE 

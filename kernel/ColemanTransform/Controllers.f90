@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-18 12:29:41 
+!Generated at : 2026-03-25 20:34:58 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -22,8 +22,7 @@ MODULE Controllers
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
     IMPLICIT NONE 
-    PUBLIC ipc 
-
+! VIT: removed invalid PUBLIC statement
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
 

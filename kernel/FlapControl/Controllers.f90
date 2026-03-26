@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-24 00:49:18 
+!Generated at : 2026-03-25 20:53:08 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -18,10 +18,23 @@
 MODULE Controllers
 
     USE controllerblocks 
-    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
+    USE kgen_utils_mod
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
+    USE ISO_C_BINDING
     IMPLICIT NONE 
+
+
+    ! Auto-generated interface for C++ implementation of FlapControl
+    INTERFACE
+        SUBROUTINE flapcontrol_c(avrSWAP, CntrPar, LocalVar, objInst) BIND(C, NAME='flapcontrol_c')
+            USE ISO_C_BINDING
+            REAL(C_FLOAT), INTENT(INOUT) :: avrSWAP(*)
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: objInst
+        END SUBROUTINE flapcontrol_c
+    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -42,80 +55,20 @@ CONTAINS
 
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE FlapControl(avrSWAP, CntrPar, LocalVar, objInst)
-        ! Yaw rate controller
-        !       Y_ControlMode = 0, No yaw control
-        !       Y_ControlMode = 1, Simple yaw rate control using yaw drive
-        !       Y_ControlMode = 2, Yaw by IPC (accounted for in IPC subroutine)
-        USE rosco_types, ONLY: controlparameters, localvariables, objectinstances 
-        USE rosco_types, ONLY: kr_rosco_types_controlparameters 
-        USE rosco_types, ONLY: kr_rosco_types_localvariables 
-        USE rosco_types, ONLY: kr_rosco_types_objectinstances 
-        USE rosco_types, ONLY: kv_rosco_types_controlparameters 
-        USE rosco_types, ONLY: kv_rosco_types_localvariables 
-        USE rosco_types, ONLY: kv_rosco_types_objectinstances 
-    
-        REAL(ReKi), INTENT(INOUT) :: avrSWAP(*) ! The swap array, used to pass data to, and receive data from, the DLL controller.
-    
-        TYPE(ControlParameters), INTENT(INOUT)    :: CntrPar
-        TYPE(LocalVariables), INTENT(INOUT)       :: LocalVar
-        TYPE(ObjectInstances), INTENT(INOUT)      :: objInst
-        ! Internal Variables
-        INTEGER(IntKi)              :: K
-        REAL(DbKi)                  :: RootMyb_Vel(3)
-        REAL(DbKi)                  :: RootMyb_VelErr(3)
-        REAL(DbKi)                  :: axisTilt_1P, axisYaw_1P    ! Direct axis and quadrature axis outputted by Coleman transform, 1P
-        REAL(DbKi)                  :: Flp_axisTilt_1P, Flp_axisYaw_1P ! Flap command in direct and quadrature axis coordinates
-        ! Flap control
-        IF (CntrPar%Flp_Mode > 0) THEN
-            IF (LocalVar%iStatus == 0) THEN
-                LocalVar%RootMyb_Last(1) = 0 - LocalVar%rootMOOP(1)
-                LocalVar%RootMyb_Last(2) = 0 - LocalVar%rootMOOP(2)
-                LocalVar%RootMyb_Last(3) = 0 - LocalVar%rootMOOP(3)
-                ! Initial Flap angle
-                LocalVar%Flp_Angle(1) = CntrPar%Flp_Angle
-                LocalVar%Flp_Angle(2) = CntrPar%Flp_Angle
-                LocalVar%Flp_Angle(3) = CntrPar%Flp_Angle
-                ! Initialize controller
-                IF (CntrPar%Flp_Mode == 2) THEN
-                    LocalVar%Flp_Angle(K) = PIIController(RootMyb_VelErr(K), 0 - LocalVar%Flp_Angle(K), CntrPar%Flp_Kp, CntrPar%Flp_Ki, 0.05_DbKi, -CntrPar%Flp_MaxPit , CntrPar%Flp_MaxPit , LocalVar%DT, 0.0_DbKi, LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI)
-                ENDIF
-            ! Steady flap angle
-            
-            ELSEIF (CntrPar%Flp_Mode == 1) THEN
-                LocalVar%Flp_Angle(1) = LocalVar%Flp_Angle(1) 
-                LocalVar%Flp_Angle(2) = LocalVar%Flp_Angle(2) 
-                LocalVar%Flp_Angle(3) = LocalVar%Flp_Angle(3) 
-            ! PII flap control
-
-            ELSEIF (CntrPar%Flp_Mode == 2) THEN
-                DO K = 1,LocalVar%NumBl
-                    ! Find flap angle command - includes an integral term to encourage zero flap angle
-                    LocalVar%Flp_Angle(K) = PIIController(-LocalVar%rootMOOPF(K), 0 - LocalVar%Flp_Angle(K), CntrPar%Flp_Kp, CntrPar%Flp_Ki, 0.05_DbKi, -CntrPar%Flp_MaxPit , CntrPar%Flp_MaxPit , LocalVar%DT, 0.0_DbKi, LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI)
-                    ! Saturation Limits
-                    LocalVar%Flp_Angle(K) = saturate(LocalVar%Flp_Angle(K), -CntrPar%Flp_MaxPit, CntrPar%Flp_MaxPit) * R2D
-                END DO
-            ! Cyclic flap Control
-
-            ELSEIF (CntrPar%Flp_Mode == 3) THEN
-                ! Pass rootMOOPs through the Coleman transform to get the tilt and yaw moment axis
-                CALL ColemanTransform(LocalVar%rootMOOPF, LocalVar%Azimuth, NP_1, axisTilt_1P, axisYaw_1P)
-                ! Apply PI control
-
-                Flp_axisTilt_1P = PIController(axisTilt_1P, CntrPar%Flp_Kp, CntrPar%Flp_Ki, -CntrPar%Flp_MaxPit, CntrPar%Flp_MaxPit, LocalVar%DT, 0.0_DbKi, LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI) 
-                Flp_axisYaw_1P = PIController(axisYaw_1P, CntrPar%Flp_Kp, CntrPar%Flp_Ki, -CntrPar%Flp_MaxPit, CntrPar%Flp_MaxPit, LocalVar%DT, 0.0_DbKi, LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI) 
-                ! Pass direct and quadrature axis through the inverse Coleman transform to get the commanded pitch angles
-            
-                CALL ColemanTransformInverse(Flp_axisTilt_1P, Flp_axisYaw_1P, LocalVar%Azimuth, NP_1, 0.0_DbKi, LocalVar%Flp_Angle)
-                
-            ENDIF
-            ! Send to AVRSwap
-
-            avrSWAP(120) = LocalVar%Flp_Angle(1)   ! Send flap pitch command (deg)
-            avrSWAP(121) = LocalVar%Flp_Angle(2)   ! Send flap pitch command (deg)
-            avrSWAP(122) = LocalVar%Flp_Angle(3)   ! Send flap pitch command (deg)
-        ELSE
-            RETURN
-        ENDIF
+        USE ISO_C_BINDING
+        USE ROSCO_Types, ONLY : ControlParameters, LocalVariables, ObjectInstances
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_original_controlparameters
+        IMPLICIT NONE
+        REAL(ReKi), INTENT(INOUT) :: avrSWAP(*)
+        TYPE(ControlParameters), INTENT(INOUT), TARGET :: CntrPar
+        TYPE(LocalVariables), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(ObjectInstances), INTENT(INOUT), TARGET :: objInst
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        ! Stash original Fortran pointers for callee bridges
+        vit_original_controlparameters => CntrPar
+        CALL flapcontrol_c(avrSWAP, C_LOC(CntrPar_view), C_LOC(LocalVar), C_LOC(objInst))
     END SUBROUTINE FlapControl
 !-------------------------------------------------------------------------------------------------------------------------------
 

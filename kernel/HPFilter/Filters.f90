@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-18 21:32:35 
+!Generated at : 2026-03-25 20:38:04 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -29,8 +29,7 @@ MODULE Filters
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
     USE ISO_C_BINDING
     IMPLICIT NONE 
-    PUBLIC prefiltermeasuredsignals 
-
+! VIT: removed invalid PUBLIC statement
 
     ! Auto-generated interface for C++ implementation of HPFilter
     INTERFACE
@@ -167,7 +166,7 @@ CONTAINS
           
           
         !call to kgen kernel 
-        LocalVar%NacIMU_FA_AccF = HPFilter(LocalVar%NacIMU_FA_AccF, LocalVar%DT, CntrPar%F_FlHighPassFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instHPF) 
+        LocalVar%NacIMU_FA_AccF = HPFilter(LocalVar%NacIMU_FA_AccF, LocalVar%DT, CntrPar%F_FlHighPassFreq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instHPF) 
         IF (kgen_mainstage) THEN 
               
             !verify init 
@@ -211,7 +210,7 @@ CONTAINS
             END IF   
             CALL SYSTEM_CLOCK(kgen_start_clock, kgen_rate_clock) 
             DO kgen_intvar = 1, KGEN_MAXITER 
-        LocalVar%NacIMU_FA_AccF = HPFilter(LocalVar%NacIMU_FA_AccF, LocalVar%DT, CntrPar%F_FlHighPassFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instHPF) 
+        LocalVar%NacIMU_FA_AccF = HPFilter(LocalVar%NacIMU_FA_AccF, LocalVar%DT, CntrPar%F_FlHighPassFreq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instHPF) 
             END DO   
             CALL SYSTEM_CLOCK(kgen_stop_clock, kgen_rate_clock) 
             kgen_measure = 1.0D6*(kgen_stop_clock - kgen_start_clock)/DBLE(kgen_rate_clock*KGEN_MAXITER) 

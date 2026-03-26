@@ -1,5 +1,5 @@
 FC_0 ?= gfortran
-FC_FLAGS_SET_0 ?= -O2 -ffree-form -ffree-line-length-none -fdefault-real-8 -fdefault-double-8
+FC_FLAGS_SET_0 ?= -O2 -ffree-form -ffree-line-length-none -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
 # Makefile for KGEN-generated kernel
 
 
@@ -41,7 +41,7 @@ vit_bridge_wrap_360.o: vit_bridge_wrap_360.f90 vit_bridge_sigma.o vit_bridge_pic
 	$(FC_0) $(FC_FLAGS_SET_0) -c $< -o $@
 
 build: ${ALL_OBJS}
-	${FC_0} ${FC_FLAGS_SET_0} -o kernel.exe -lstdc++ $^
+	${FC_0} ${FC_FLAGS_SET_0} -o kernel.exe -lstdc++ $^  
 
 run: build
 	./kernel.exe
@@ -61,7 +61,7 @@ ControllerBlocks.o: ControllerBlocks.f90 kgen_utils.o tprof_mod.o SysIFL.o Filte
 SysIFL.o: SysIFL.f90 kgen_utils.o tprof_mod.o Constants.o
 	${FC_0} ${FC_FLAGS_SET_0} -c -o $@ $<
 
-Filters.o: Filters.f90 kgen_utils.o tprof_mod.o Functions.o
+Filters.o: Filters.f90 kgen_utils.o tprof_mod.o Functions.o ROSCO_Types.o
 	${FC_0} ${FC_FLAGS_SET_0} -c -o $@ $<
 
 Functions.o: Functions.f90 kgen_utils.o tprof_mod.o Constants.o ROSCO_Types.o

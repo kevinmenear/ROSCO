@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-19 22:07:51 
+!Generated at : 2026-03-25 20:40:04 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -18,31 +18,11 @@
 MODULE Controllers
 
     USE controllerblocks 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
-    USE ISO_C_BINDING
     IMPLICIT NONE 
     PUBLIC pitchcontrol 
-
-
-    ! Auto-generated interface for C++ implementation of PIController
-    INTERFACE
-        FUNCTION picontroller_c(error, kp, ki, minValue, maxValue, DT, I0, piP, reset, inst) BIND(C, NAME='picontroller_c')
-            USE ISO_C_BINDING
-            REAL(C_DOUBLE), VALUE :: error
-            REAL(C_DOUBLE), VALUE :: kp
-            REAL(C_DOUBLE), VALUE :: ki
-            REAL(C_DOUBLE), VALUE :: minValue
-            REAL(C_DOUBLE), VALUE :: maxValue
-            REAL(C_DOUBLE), VALUE :: DT
-            REAL(C_DOUBLE), VALUE :: I0
-            TYPE(C_PTR), VALUE :: piP
-            LOGICAL(C_BOOL), VALUE :: reset
-            INTEGER(C_INT), INTENT(INOUT) :: inst
-            REAL(C_DOUBLE) :: picontroller_c
-        END FUNCTION picontroller_c
-    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -52,8 +32,8 @@ SUBROUTINE pitchcontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath,
     !       PC_State = PC_State_Disabled (1), is gain scheduled PI controller 
     USE rosco_types, ONLY: localvariables, objectinstances 
         ! Inputs
-    USE kgen_utils_mod
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
+    USE kgen_utils_mod, ONLY: kgen_perturb_real 
     USE rosco_types, ONLY: kr_rosco_types_localvariables 
     USE rosco_types, ONLY: kr_rosco_types_objectinstances 
     USE rosco_types, ONLY: kv_rosco_types_localvariables 
@@ -117,11 +97,11 @@ SUBROUTINE pitchcontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath,
       
       
     !call to kgen kernel 
-        LocalVar%PC_PitComT = PIController(LocalVar%PC_SpdErr, LocalVar%PC_KP, LocalVar%PC_KI, LocalVar%PC_MinPit, LocalVar%PC_MaxPit, LocalVar%DT, LocalVar%BlPitch(1), LocalVar%piP, LocalVar%restart, objInst%instPI)
+        LocalVar%PC_PitComT = PIController(LocalVar%PC_SpdErr, LocalVar%PC_KP, LocalVar%PC_KI, LocalVar%PC_MinPit, LocalVar%PC_MaxPit, LocalVar%DT, LocalVar%BlPitch(1), LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI)
         IF (kgen_mainstage) THEN 
               
             !verify init 
-            CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=100) 
+            CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=1) 
             CALL kgen_init_check(check_status, rank=kgen_mpirank) 
               
             !extern verify variables 
@@ -161,7 +141,7 @@ SUBROUTINE pitchcontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath,
             END IF   
             CALL SYSTEM_CLOCK(kgen_start_clock, kgen_rate_clock) 
             DO kgen_intvar = 1, KGEN_MAXITER 
-        LocalVar%PC_PitComT = PIController(LocalVar%PC_SpdErr, LocalVar%PC_KP, LocalVar%PC_KI, LocalVar%PC_MinPit, LocalVar%PC_MaxPit, LocalVar%DT, LocalVar%BlPitch(1), LocalVar%piP, LocalVar%restart, objInst%instPI)
+        LocalVar%PC_PitComT = PIController(LocalVar%PC_SpdErr, LocalVar%PC_KP, LocalVar%PC_KI, LocalVar%PC_MinPit, LocalVar%PC_MaxPit, LocalVar%DT, LocalVar%BlPitch(1), LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI)
             END DO   
             CALL SYSTEM_CLOCK(kgen_stop_clock, kgen_rate_clock) 
             kgen_measure = 1.0D6*(kgen_stop_clock - kgen_start_clock)/DBLE(kgen_rate_clock*KGEN_MAXITER) 
@@ -244,22 +224,45 @@ END SUBROUTINE pitchcontrol
 
 
 !-------------------------------------------------------------------------------------------------------------------------------
-    FUNCTION PIController(error, kp, ki, minValue, maxValue, DT, I0, piP, reset, inst) RESULT(PIController_result)
-        USE ISO_C_BINDING
-        USE ROSCO_Types, ONLY : piParams
+    REAL(DbKi) FUNCTION PIController(error, kp, ki, minValue, maxValue, DT, I0, piP, reset, inst)
+        USE rosco_types, ONLY: piparams 
+    ! PI controller, with output saturation
+        USE rosco_types, ONLY: kr_rosco_types_piparams 
+        USE rosco_types, ONLY: kv_rosco_types_piparams 
+
+
         IMPLICIT NONE
-        REAL(DbKi), INTENT(IN) :: error
-        REAL(DbKi), INTENT(IN) :: kp
-        REAL(DbKi), INTENT(IN) :: ki
-        REAL(DbKi), INTENT(IN) :: minValue
-        REAL(DbKi), INTENT(IN) :: maxValue
-        REAL(DbKi), INTENT(IN) :: DT
-        REAL(DbKi), INTENT(IN) :: I0
-        TYPE(piParams), INTENT(INOUT), TARGET :: piP
-        LOGICAL, INTENT(IN) :: reset
-        INTEGER(IntKi), INTENT(INOUT) :: inst
-        REAL(DbKi) :: PIController_result
-        PIController_result = REAL(picontroller_c(REAL(error, C_DOUBLE), REAL(kp, C_DOUBLE), REAL(ki, C_DOUBLE), REAL(minValue, C_DOUBLE), REAL(maxValue, C_DOUBLE), REAL(DT, C_DOUBLE), REAL(I0, C_DOUBLE), C_LOC(piP), LOGICAL(reset, C_BOOL), inst), DbKi)
+        ! Allocate Inputs
+        REAL(DbKi),    INTENT(IN)         :: error
+        REAL(DbKi),    INTENT(IN)         :: kp
+        REAL(DbKi),    INTENT(IN)         :: ki
+        REAL(DbKi),    INTENT(IN)         :: minValue
+        REAL(DbKi),    INTENT(IN)         :: maxValue
+        REAL(DbKi),    INTENT(IN)         :: DT
+        INTEGER(IntKi), INTENT(INOUT)      :: inst
+        REAL(DbKi),    INTENT(IN)         :: I0
+        TYPE(piParams), INTENT(INOUT)  :: piP
+        LOGICAL,    INTENT(IN)         :: reset     
+        ! Allocate local variables
+        INTEGER(IntKi)                      :: i                                            ! Counter for making arrays
+        REAL(DbKi)                         :: PTerm                                        ! Proportional term
+        ! Initialize persistent variables/arrays, and set inital condition for integrator term
+
+        IF (reset) THEN
+            piP%ITerm(inst) = I0
+            piP%ITermLast(inst) = I0
+            
+            PIController = I0
+        ELSE
+            PTerm = kp*error
+            piP%ITerm(inst) = piP%ITerm(inst) + DT*ki*error
+            piP%ITerm(inst) = saturate(piP%ITerm(inst), minValue, maxValue)
+            PIController = saturate(PTerm + piP%ITerm(inst), minValue, maxValue)
+        
+            piP%ITermLast(inst) = piP%ITerm(inst)
+        END IF
+        inst = inst + 1
+        
     END FUNCTION PIController
 !-------------------------------------------------------------------------------------------------------------------------------
 

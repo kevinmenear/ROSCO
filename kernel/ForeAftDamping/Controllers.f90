@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-23 21:20:12 
+!Generated at : 2026-03-25 20:41:14 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -23,8 +23,7 @@ MODULE Controllers
 
     USE ISO_C_BINDING
     IMPLICIT NONE 
-    PUBLIC pitchcontrol 
-
+! VIT: removed invalid PUBLIC statement
 
     ! Auto-generated interface for C++ implementation of ForeAftDamping
     INTERFACE
@@ -229,7 +228,7 @@ END SUBROUTINE pitchcontrol
     SUBROUTINE ForeAftDamping(CntrPar, LocalVar, objInst)
         USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : ControlParameters, LocalVariables, ObjectInstances
-        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_original_controlparameters
         IMPLICIT NONE
         TYPE(ControlParameters), INTENT(INOUT), TARGET :: CntrPar
         TYPE(LocalVariables), INTENT(INOUT), TARGET :: LocalVar
@@ -237,6 +236,8 @@ END SUBROUTINE pitchcontrol
         TYPE(controlparameters_view_t), TARGET :: CntrPar_view
         ! Populate view structs from Fortran types
         CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        ! Stash original Fortran pointers for callee bridges
+        vit_original_controlparameters => CntrPar
         CALL foreaftdamping_c(C_LOC(CntrPar_view), C_LOC(LocalVar), C_LOC(objInst))
     END SUBROUTINE ForeAftDamping
 !-------------------------------------------------------------------------------------------------------------------------------

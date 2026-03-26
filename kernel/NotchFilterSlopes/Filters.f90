@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-18 23:13:49 
+!Generated at : 2026-03-25 20:46:17 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -29,8 +29,7 @@ MODULE Filters
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
     USE ISO_C_BINDING
     IMPLICIT NONE 
-    PUBLIC prefiltermeasuredsignals 
-
+! VIT: removed invalid PUBLIC statement
 
     ! Auto-generated interface for C++ implementation of NotchFilterSlopes
     INTERFACE
@@ -187,7 +186,7 @@ CONTAINS
           
           
         !call to kgen kernel 
-                LocalVar%RootMOOPF(K) = NotchFilterSlopes(LocalVar%rootMOOP(K), LocalVar%DT, LocalVar%RotSpeedF, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotchSlopes, .TRUE.)
+                LocalVar%RootMOOPF(K) = NotchFilterSlopes(LocalVar%rootMOOP(K), LocalVar%DT, LocalVar%RotSpeedF, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instNotchSlopes, .TRUE.)
                 IF (kgen_mainstage) THEN 
                       
                     !verify init 
@@ -231,7 +230,7 @@ CONTAINS
                     END IF   
                     CALL SYSTEM_CLOCK(kgen_start_clock, kgen_rate_clock) 
                     DO kgen_intvar = 1, KGEN_MAXITER 
-                LocalVar%RootMOOPF(K) = NotchFilterSlopes(LocalVar%rootMOOP(K), LocalVar%DT, LocalVar%RotSpeedF, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotchSlopes, .TRUE.)
+                LocalVar%RootMOOPF(K) = NotchFilterSlopes(LocalVar%rootMOOP(K), LocalVar%DT, LocalVar%RotSpeedF, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instNotchSlopes, .TRUE.)
                     END DO   
                     CALL SYSTEM_CLOCK(kgen_stop_clock, kgen_rate_clock) 
                     kgen_measure = 1.0D6*(kgen_stop_clock - kgen_start_clock)/DBLE(kgen_rate_clock*KGEN_MAXITER) 
@@ -243,6 +242,7 @@ CONTAINS
                 END IF   
                 IF (kgen_evalstage) THEN 
                 END IF   
+
         ! Control commands (used by WSE, mostly)
 
 

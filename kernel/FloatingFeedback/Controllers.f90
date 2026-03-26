@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-24 10:43:10 
+!Generated at : 2026-03-25 20:52:14 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -18,11 +18,24 @@
 MODULE Controllers
 
     USE controllerblocks 
-    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
+    USE kgen_utils_mod
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
+    USE ISO_C_BINDING
     IMPLICIT NONE 
-    PUBLIC pitchcontrol 
+! VIT: removed invalid PUBLIC statement
+
+    ! Auto-generated interface for C++ implementation of FloatingFeedback
+    INTERFACE
+        FUNCTION floatingfeedback_c(LocalVar, CntrPar, objInst, ErrVar) BIND(C, NAME='floatingfeedback_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: objInst
+            TYPE(C_PTR), VALUE :: ErrVar
+            REAL(C_DOUBLE) :: floatingfeedback_c
+        END FUNCTION floatingfeedback_c
+    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -32,8 +45,8 @@ SUBROUTINE pitchcontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath,
     !       PC_State = PC_State_Disabled (1), is gain scheduled PI controller 
     USE rosco_types, ONLY: controlparameters, localvariables, objectinstances, errorvariables 
         ! Inputs
-    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
-    USE kgen_utils_mod, ONLY: kgen_perturb_real 
+    USE kgen_utils_mod
+    USE kgen_utils_mod
     USE rosco_types, ONLY: kr_rosco_types_localvariables 
     USE rosco_types, ONLY: kr_rosco_types_controlparameters 
     USE rosco_types, ONLY: kr_rosco_types_objectinstances 
@@ -121,7 +134,7 @@ SUBROUTINE pitchcontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath,
             IF (kgen_mainstage) THEN 
                   
                 !verify init 
-                CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=1) 
+                CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=100) 
                 CALL kgen_init_check(check_status, rank=kgen_mpirank) 
                   
                 !extern verify variables 
@@ -219,43 +232,22 @@ END SUBROUTINE pitchcontrol
 !-------------------------------------------------------------------------------------------------------------------------------
 
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION FloatingFeedback(LocalVar, CntrPar, objInst, ErrVar) 
-    ! FloatingFeedback defines a minimum blade pitch angle based on a lookup table provided by DISON.IN
-    !       Fl_Mode = 0, No feedback
-    !       Fl_Mode = 1, Proportional feedback of nacelle velocity (translational)
-    !       Fl_Mode = 2, Proportional feedback of nacelle velocity (rotational)
-        USE rosco_types, ONLY: localvariables, controlparameters, objectinstances, errorvariables 
-        USE rosco_types, ONLY: kr_rosco_types_localvariables 
-        USE rosco_types, ONLY: kr_rosco_types_controlparameters 
-        USE rosco_types, ONLY: kr_rosco_types_objectinstances 
-        USE rosco_types, ONLY: kr_rosco_types_errorvariables 
-        USE rosco_types, ONLY: kv_rosco_types_localvariables 
-        USE rosco_types, ONLY: kv_rosco_types_controlparameters 
-        USE rosco_types, ONLY: kv_rosco_types_objectinstances 
-        USE rosco_types, ONLY: kv_rosco_types_errorvariables 
+    FUNCTION FloatingFeedback(LocalVar, CntrPar, objInst, ErrVar) RESULT(FloatingFeedback_result)
+        USE ISO_C_BINDING
+        USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, ObjectInstances, ErrorVariables
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_original_controlparameters
         IMPLICIT NONE
-        ! Inputs
-        TYPE(ControlParameters), INTENT(IN)     :: CntrPar
-        TYPE(LocalVariables), INTENT(INOUT)     :: LocalVar 
-        TYPE(ObjectInstances), INTENT(INOUT)    :: objInst
-        TYPE(ErrorVariables), INTENT(INOUT)     :: ErrVar
-        ! Allocate Variables 
-        REAL(DbKi)                      :: FA_vel ! Tower fore-aft velocity [m/s]
-        REAL(DbKi)                      :: NacIMU_FA_vel ! Tower fore-aft pitching velocity [rad/s]
-        ! Gain scheduling
-
-        LocalVar%Kp_Float = interp1d(CntrPar%Fl_U,CntrPar%Fl_Kp,LocalVar%WE_Vw_F,ErrVar)       ! Schedule based on WSE
-        ! Calculate floating contribution to pitch command
-        
-        FA_vel = PIController(LocalVar%FA_AccF, 0.0_DbKi, 1.0_DbKi, -100.0_DbKi , 100.0_DbKi ,LocalVar%DT, 0.0_DbKi, LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI) ! NJA: should never reach saturation limits....
-        NacIMU_FA_vel = PIController(LocalVar%NacIMU_FA_AccF, 0.0_DbKi, 1.0_DbKi, -100.0_DbKi , 100.0_DbKi ,LocalVar%DT, 0.0_DbKi, LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI) ! NJA: should never reach saturation limits....        
-! Mod made by A. Wright: use the gain scheduled value of KPfloat in the floating fb equ's below (instead of the old value of CntrPar%Fl_Kp), for either value of CntrPar%Fl_Mode...        
-        if (CntrPar%Fl_Mode == 1) THEN
-            FloatingFeedback = (0.0_DbKi - FA_vel) * LocalVar%Kp_Float ! Mod made by A. Wright: use the gain scheduled value of KPfloat in the floating fb equ's below (instead of the old value of CntrPar%Fl_Kp), for either value of CntrPar%Fl_Mode...
-        ELSEIF (CntrPar%Fl_Mode == 2) THEN
-            FloatingFeedback = (0.0_DbKi - NacIMU_FA_vel) *LocalVar%Kp_Float ! Mod made by A. Wright: use the gain scheduled value of KPfloat in the floating fb equ's below (instead of the old value of CntrPar%Fl_Kp), for either value of CntrPar%Fl_Mode...
-        END IF
-
+        TYPE(LocalVariables), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(ControlParameters), INTENT(IN), TARGET :: CntrPar
+        TYPE(ObjectInstances), INTENT(INOUT), TARGET :: objInst
+        TYPE(ErrorVariables), INTENT(INOUT), TARGET :: ErrVar
+        REAL(DbKi) :: FloatingFeedback_result
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        ! Stash original Fortran pointers for callee bridges
+        vit_original_controlparameters => CntrPar
+        FloatingFeedback_result = REAL(floatingfeedback_c(C_LOC(LocalVar), C_LOC(CntrPar_view), C_LOC(objInst), C_LOC(ErrVar)), DbKi)
     END FUNCTION FloatingFeedback
 !-------------------------------------------------------------------------------------------------------------------------------
 

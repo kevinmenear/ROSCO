@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-18 21:32:35 
+!Generated at : 2026-03-25 20:38:04 
 !KGEN version : 0.8.1 
   
 ! ROSCO Registry
@@ -233,7 +233,7 @@ TYPE, PUBLIC :: ControlParameters
     REAL(DbKi)                    :: VS_MinOMTq                  ! Minimum torque at the beginning of the below-rated region 2, [Nm]
 END TYPE ControlParameters
 
-TYPE, PUBLIC :: WE
+TYPE, BIND(C), PUBLIC :: WE
     REAL(DbKi)                    :: om_r                        ! Estimated rotor speed [rad/s]
     REAL(DbKi)                    :: v_t                         ! Estimated wind speed, turbulent component [m/s]
     REAL(DbKi)                    :: v_m                         ! Estimated wind speed, 10-minute averaged [m/s]
@@ -243,7 +243,7 @@ TYPE, PUBLIC :: WE
     REAL(DbKi), DIMENSION(3,1)     :: K                           ! Kalman gain matrix
 END TYPE WE
 
-TYPE, PUBLIC :: FilterParameters
+TYPE, BIND(C), PUBLIC :: FilterParameters
     REAL(DbKi), DIMENSION(1024)     :: lpf1_a1                     ! First order filter - Denominator coefficient 1
     REAL(DbKi), DIMENSION(1024)     :: lpf1_a0                     ! First order filter - Denominator coefficient 0
     REAL(DbKi), DIMENSION(1024)     :: lpf1_b1                     ! First order filter - Numerator coefficient 1
@@ -292,11 +292,11 @@ TYPE, PUBLIC :: FilterParameters
     REAL(DbKi), DIMENSION(1024)     :: nf_a0                       ! Notch filter denominator coefficient 0
 END TYPE FilterParameters
 
-TYPE, PUBLIC :: rlParams
+TYPE, BIND(C), PUBLIC :: rlParams
     REAL(DbKi), DIMENSION(1024)     :: LastSignal                  ! Last input signal
 END TYPE rlParams
 
-TYPE, PUBLIC :: piParams
+TYPE, BIND(C), PUBLIC :: piParams
     REAL(DbKi), DIMENSION(1024)     :: ITerm                       ! Integrator term
     REAL(DbKi), DIMENSION(1024)     :: ITermLast                   ! Previous integrator term
     REAL(DbKi), DIMENSION(1024)     :: ITerm2                      ! Integrator term - second integrator
@@ -304,20 +304,20 @@ TYPE, PUBLIC :: piParams
     REAL(DbKi), DIMENSION(1024)     :: ELast                       ! Previous error term for derivative
 END TYPE piParams
 
-TYPE, PUBLIC :: resParams
+TYPE, BIND(C), PUBLIC :: resParams
     REAL(DbKi), DIMENSION(1024)     :: res_OutputSignalLast1       ! Previous output signal
     REAL(DbKi), DIMENSION(1024)     :: res_OutputSignalLast2       ! Previous output signal - second integrator
     REAL(DbKi), DIMENSION(1024)     :: res_InputSignalLast1        ! Previous input signal
     REAL(DbKi), DIMENSION(1024)     :: res_InputSignalLast2        ! Previous input signal - second integrator
 END TYPE resParams
 
-TYPE, PUBLIC :: LocalVariables
+TYPE, BIND(C), PUBLIC :: LocalVariables
     INTEGER(IntKi)                :: iStatus                     ! Initialization status
-    INTEGER(IntKi)                :: AlreadyInitialized = 0      ! Has ROSCO already been initialized (0-no, 1-yes)
+    INTEGER(IntKi)                :: AlreadyInitialized           ! Has ROSCO already been initialized (0-no, 1-yes)
     INTEGER(IntKi)                :: RestartWSE                  ! Restart WSE flag, 0 - restart, 1- not, to mirror iStatus
     REAL(DbKi)                    :: Time                        ! Time [s]
     REAL(DbKi)                    :: DT                          ! Time step [s]
-    LOGICAL                       :: WriteThisStep               ! Write an output line this time step
+    INTEGER(C_INT)                :: WriteThisStep ! Write an output line this time step
     INTEGER(IntKi)                :: n_DT                        ! number of timesteps since start
     REAL(DbKi)                    :: Time_Last                   ! Last time [s]
     REAL(DbKi)                    :: VS_GenPwr                   ! Generator power [W]
@@ -462,9 +462,10 @@ TYPE, PUBLIC :: LocalVariables
     REAL(DbKi)                    :: Flp_Angle(3)                ! Flap Angle (rad)
     REAL(DbKi)                    :: RootMyb_Last(3)             ! Last blade root bending moment (Nm)
     INTEGER(IntKi)                :: ACC_INFILE_SIZE             ! Length of parameter input filename
-    CHARACTER, DIMENSION(:), ALLOCATABLE     :: ACC_INFILE                  ! Parameter input filename
-    LOGICAL                       :: restart                     ! Restart flag
-    COMPLEX(DbKi)                 :: AWC_complexangle(3)         ! Complex angle for each blade, sum of modes?
+    CHARACTER                         :: ACC_INFILE(1024) ! Parameter input filename
+    INTEGER(C_INT)                :: restart ! Restart flag
+    REAL(DbKi)                 :: AWC_complexangle_re(3)          ! Complex angle for each blade, sum of modes?
+    REAL(DbKi)                 :: AWC_complexangle_im(3)         ! Imaginary part
     REAL(DbKi)                    :: TiltMean                    ! Mean tilt blade moment [Nm]
     REAL(DbKi)                    :: YawMean                     ! Mean yaw blade moment [Nm]
     INTEGER(IntKi)                :: ZMQ_ID                      ! 0000 - 9999, Identifier of the rosco, used for zeromq interface only
@@ -492,25 +493,22 @@ TYPE, PUBLIC :: ObjectInstances
     INTEGER(IntKi)                :: instRes                     ! PR controller instance
     INTEGER(IntKi)                :: instRL                      ! Rate limiter instance
 END TYPE ObjectInstances
-
-
-PUBLIC kr_rosco_types_controlparameters 
-PUBLIC kr_rosco_types_we 
-PUBLIC kr_rosco_types_filterparameters 
-PUBLIC kr_rosco_types_rlparams 
-PUBLIC kr_rosco_types_piparams 
-PUBLIC kr_rosco_types_resparams 
-PUBLIC kr_rosco_types_localvariables 
-PUBLIC kr_rosco_types_objectinstances 
-PUBLIC kv_rosco_types_controlparameters 
-PUBLIC kv_rosco_types_we 
-PUBLIC kv_rosco_types_filterparameters 
-PUBLIC kv_rosco_types_rlparams 
-PUBLIC kv_rosco_types_piparams 
-PUBLIC kv_rosco_types_resparams 
-PUBLIC kv_rosco_types_localvariables 
-PUBLIC kv_rosco_types_objectinstances 
-  
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
+! VIT: removed invalid PUBLIC statement
 CONTAINS 
   
 
@@ -3419,10 +3417,12 @@ RECURSIVE SUBROUTINE kr_rosco_types_localvariables(var, kgen_unit, printname, pr
         WRITE (*, *) "KGEN DEBUG: " // printname // "%acc_infile_size = ", var%acc_infile_size 
     END IF   
       
-    IF (PRESENT( printvar ) .AND. printvar) THEN 
-        CALL kr_localvariables_character___dim1(var%acc_infile, kgen_unit, printname // "%acc_infile", .TRUE.) 
-    ELSE 
-        CALL kr_localvariables_character___dim1(var%acc_infile, kgen_unit, printname // "%acc_infile", .FALSE.) 
+    READ (UNIT = kgen_unit) kgen_istrue 
+    IF (kgen_istrue) THEN 
+        READ (UNIT = kgen_unit) var%acc_infile 
+        IF (PRESENT( printvar ) .AND. printvar) THEN 
+            WRITE (*, *) "KGEN DEBUG: " // printname // "%acc_infile = ", var%acc_infile 
+        END IF   
     END IF   
       
     READ (UNIT = kgen_unit) var%restart 
@@ -3433,12 +3433,24 @@ RECURSIVE SUBROUTINE kr_rosco_types_localvariables(var, kgen_unit, printname, pr
     READ (UNIT = kgen_unit) kgen_istrue 
     IF (kgen_istrue) THEN 
         READ (UNIT = kgen_unit) kgen_array_sum 
-        READ (UNIT = kgen_unit) var%awc_complexangle 
-        CALL kgen_array_sumcheck(printname // "%awc_complexangle", kgen_array_sum, DBLE(SUM(var%awc_complexangle, &
-        &mask=(var%awc_complexangle .eq. var%awc_complexangle))), .TRUE.) 
+        READ (UNIT = kgen_unit) var%awc_complexangle_re 
+        CALL kgen_array_sumcheck(printname // "%awc_complexangle_re", kgen_array_sum, DBLE(SUM(var%awc_complexangle_re, &
+        &mask=(var%awc_complexangle_re .eq. var%awc_complexangle_re))), .TRUE.) 
         IF (PRESENT( printvar ) .AND. printvar) THEN 
-            WRITE (*, *) "KGEN DEBUG: DBLE(SUM(" // printname // "%awc_complexangle)) = ", DBLE(SUM(var%awc_complexangle, &
-            &mask=(var%awc_complexangle .eq. var%awc_complexangle))) 
+            WRITE (*, *) "KGEN DEBUG: DBLE(SUM(" // printname // "%awc_complexangle_re)) = ", DBLE(SUM(var%awc_complexangle_re, &
+            &mask=(var%awc_complexangle_re .eq. var%awc_complexangle_re))) 
+        END IF   
+    END IF   
+      
+    READ (UNIT = kgen_unit) kgen_istrue 
+    IF (kgen_istrue) THEN 
+        READ (UNIT = kgen_unit) kgen_array_sum 
+        READ (UNIT = kgen_unit) var%awc_complexangle_im 
+        CALL kgen_array_sumcheck(printname // "%awc_complexangle_im", kgen_array_sum, DBLE(SUM(var%awc_complexangle_im, &
+        &mask=(var%awc_complexangle_im .eq. var%awc_complexangle_im))), .TRUE.) 
+        IF (PRESENT( printvar ) .AND. printvar) THEN 
+            WRITE (*, *) "KGEN DEBUG: DBLE(SUM(" // printname // "%awc_complexangle_im)) = ", DBLE(SUM(var%awc_complexangle_im, &
+            &mask=(var%awc_complexangle_im .eq. var%awc_complexangle_im))) 
         END IF   
     END IF   
       
@@ -3525,33 +3537,6 @@ RECURSIVE SUBROUTINE kr_rosco_types_localvariables(var, kgen_unit, printname, pr
     END IF   
       
 END SUBROUTINE kr_rosco_types_localvariables 
-  
-!write state subroutine for kr_localvariables_character___dim1 
-SUBROUTINE kr_localvariables_character___dim1(var, kgen_unit, printname, printvar) 
-    CHARACTER, INTENT(INOUT), ALLOCATABLE, DIMENSION(:) :: var 
-    INTEGER, INTENT(IN) :: kgen_unit 
-    CHARACTER(LEN=*), INTENT(IN) :: printname 
-    LOGICAL, INTENT(IN), OPTIONAL :: printvar 
-    LOGICAL :: kgen_istrue 
-    REAL(KIND=8) :: kgen_array_sum 
-    INTEGER :: idx1 
-    INTEGER, DIMENSION(2,1) :: kgen_bound 
-      
-    READ (UNIT = kgen_unit) kgen_istrue 
-    IF (kgen_istrue) THEN 
-        IF (ALLOCATED( var )) THEN 
-            DEALLOCATE (var) 
-        END IF   
-        READ (UNIT = kgen_unit) kgen_bound(1, 1) 
-        READ (UNIT = kgen_unit) kgen_bound(2, 1) 
-        ALLOCATE (var(kgen_bound(1,1):kgen_bound(2,1))) 
-        READ (UNIT = kgen_unit) var 
-        IF (PRESENT( printvar ) .AND. printvar) THEN 
-            WRITE (*, *) "KGEN DEBUG: " // printname // " = ", var 
-        END IF   
-    END IF   
-      
-END SUBROUTINE kr_localvariables_character___dim1 
   
 !read state subroutine for kr_rosco_types_objectinstances 
 RECURSIVE SUBROUTINE kr_rosco_types_objectinstances(var, kgen_unit, printname, printvar) 
@@ -20969,6 +20954,7 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     integer(KIND=intki) :: diff_restartwse 
     real(KIND=dbki) :: diff_time 
     real(KIND=dbki) :: diff_dt 
+    integer(KIND=c_int) :: diff_writethisstep 
     integer(KIND=intki) :: diff_n_dt 
     real(KIND=dbki) :: diff_time_last 
     real(KIND=dbki) :: diff_vs_genpwr 
@@ -21150,9 +21136,13 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     real(KIND=dbki), ALLOCATABLE :: buf1_rootmyb_last(:), buf2_rootmyb_last(:) 
     integer(KIND=intki) :: diff_acc_infile_size 
     INTEGER :: n_acc_infile 
-    INTEGER :: n_awc_complexangle 
-    REAL(KIND=kgen_dp) :: nrmsdiff_awc_complexangle, rmsdiff_awc_complexangle 
-    REAL(KIND=kgen_dp), ALLOCATABLE :: buf1_awc_complexangle(:), buf2_awc_complexangle(:) 
+    integer(KIND=c_int) :: diff_restart 
+    INTEGER :: n_awc_complexangle_re 
+    real(KIND=dbki) :: nrmsdiff_awc_complexangle_re, rmsdiff_awc_complexangle_re 
+    real(KIND=dbki), ALLOCATABLE :: buf1_awc_complexangle_re(:), buf2_awc_complexangle_re(:) 
+    INTEGER :: n_awc_complexangle_im 
+    real(KIND=dbki) :: nrmsdiff_awc_complexangle_im, rmsdiff_awc_complexangle_im 
+    real(KIND=dbki), ALLOCATABLE :: buf1_awc_complexangle_im(:), buf2_awc_complexangle_im(:) 
     real(KIND=dbki) :: diff_tiltmean 
     real(KIND=dbki) :: diff_yawmean 
     integer(KIND=intki) :: diff_zmq_id 
@@ -21424,7 +21414,8 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%writethisstep .EQV. kgenref_var%writethisstep) THEN 
+    IF ((var%writethisstep == kgenref_var%writethisstep) .OR. ((var%writethisstep /= var%writethisstep) .AND. (kgenref_var%writethisstep /= kgenref_var%writethisstep))) THEN
+        IF (var%writethisstep /= var%writethisstep) WRITE(*, *) "localvar%writethisstep is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
@@ -21432,30 +21423,42 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
-        WRITE(*, *) "[VIT_FIELD] dt | IDENTICAL | ", var%dt, " | ", kgenref_var%dt
+        WRITE(*, *) "[VIT_FIELD] writethisstep | IDENTICAL | ", var%writethisstep, " | ", kgenref_var%writethisstep
     ELSE 
-        dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
-        IF (kgen_verboseLevel > 1) THEN 
-            IF (check_status%rank == 0) THEN 
-                WRITE (*, *) trim(adjustl(varname)), "%writethisstep is NOT IDENTICAL." 
+        diff_writethisstep = ABS(var%writethisstep - kgenref_var%writethisstep) 
+        IF (diff_writethisstep <= kgen_tolerance) THEN 
+            dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
+            IF (kgen_verboseLevel > 1) THEN 
+                IF (check_status%rank == 0) THEN 
+                    WRITE (*, *) trim(adjustl(varname)), "%writethisstep is NOT IDENTICAL(within tolerance)." 
+                END IF   
             END IF   
+            check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_FIELD] writethisstep | IN_TOL | ", var%writethisstep, " | ", kgenref_var%writethisstep, " | ", diff_writethisstep
+        ELSE 
+            dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
+            IF (kgen_verboseLevel > 1) THEN 
+                IF (check_status%rank == 0) THEN 
+                    WRITE (*, *) trim(adjustl(varname)), "%writethisstep is NOT IDENTICAL(out of tolerance)." 
+                END IF   
+            END IF   
+            check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] writethisstep | OUT_TOL | ", var%writethisstep, " | ", kgenref_var%writethisstep, " | ", diff_writethisstep
         END IF   
-        check_result = CHECK_OUT_TOL 
-        WRITE(*, *) "[VIT_FIELD] dt | OUT_TOL | ", var%dt, " | ", kgenref_var%dt, " | ", diff_dt
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
         CONTINUE 
     ELSE IF (check_result == CHECK_OUT_TOL) THEN 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank ==0) THEN 
-                WRITE (*, *) "NOT IMPLEMENTED YET" 
+                WRITE (*, *) "Difference is ", diff_writethisstep 
                 WRITE (*, *) "" 
             END IF   
         END IF   
     ELSE IF (check_result == CHECK_IN_TOL) THEN 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank ==0) THEN 
-                WRITE (*, *) "NOT IMPLEMENTED YET" 
+                WRITE (*, *) "Difference is ", diff_writethisstep 
                 WRITE (*, *) "" 
             END IF   
         END IF   
@@ -29157,62 +29160,22 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
         END IF   
     END IF   
       
-    IF (ALLOCATED(var%acc_infile)) THEN 
-        dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-        IF (ALL(var%acc_infile == kgenref_var%acc_infile)) THEN 
-            dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
-            IF (kgen_verboseLevel > 2) THEN 
-                IF (check_status%rank == 0) THEN 
-                    WRITE (*, *) trim(adjustl(varname)), "%acc_infile is IDENTICAL." 
-                END IF   
-            END IF   
-            check_result = CHECK_IDENTICAL 
-            WRITE(*, *) "[VIT_ARRAY] acc_infile | IDENTICAL | size=", SIZE(var%acc_infile)
-        ELSE 
-            n_acc_infile = COUNT(var%acc_infile /= kgenref_var%acc_infile) 
-            dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
-            IF (kgen_verboseLevel > 1) THEN 
-                IF (check_status%rank == 0) THEN 
-                    WRITE (*, *) trim(adjustl(varname)), "%acc_infile is NOT IDENTICAL(out of tolerance)." 
-                END IF   
-            END IF   
-            check_result = CHECK_OUT_TOL 
-            WRITE(*, *) "[VIT_ARRAY] acc_infile | OUT_TOL | n_diff=", n_acc_infile
-        END IF   
-        IF (check_result == CHECK_IDENTICAL) THEN 
-            CONTINUE 
-        ELSE IF (check_result == CHECK_OUT_TOL) THEN 
-            IF (kgen_verboseLevel > 2) THEN 
-                IF (check_status%rank ==0) THEN 
-                    WRITE (*, *) "NOT IMPLEMENTED YET" 
-                    WRITE (*, *) "" 
-                END IF   
-            END IF   
-        ELSE IF (check_result == CHECK_IN_TOL) THEN 
-            IF (kgen_verboseLevel > 2) THEN 
-                IF (check_status%rank ==0) THEN 
-                    WRITE (*, *) "NOT IMPLEMENTED YET" 
-                    WRITE (*, *) "" 
-                END IF   
-            END IF   
-        END IF   
-          
-    END IF   
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (var%restart .EQV. kgenref_var%restart) THEN 
+    IF (ALL(var%acc_infile == kgenref_var%acc_infile)) THEN 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
-                WRITE (*, *) trim(adjustl(varname)), "%restart is IDENTICAL." 
+                WRITE (*, *) trim(adjustl(varname)), "%acc_infile is IDENTICAL." 
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
         WRITE(*, *) "[VIT_ARRAY] acc_infile | IDENTICAL | size=", SIZE(var%acc_infile)
     ELSE 
+        n_acc_infile = COUNT(var%acc_infile /= kgenref_var%acc_infile) 
         dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
         IF (kgen_verboseLevel > 1) THEN 
             IF (check_status%rank == 0) THEN 
-                WRITE (*, *) trim(adjustl(varname)), "%restart is NOT IDENTICAL." 
+                WRITE (*, *) trim(adjustl(varname)), "%acc_infile is NOT IDENTICAL(out of tolerance)." 
             END IF   
         END IF   
         check_result = CHECK_OUT_TOL 
@@ -29237,46 +29200,36 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     END IF   
       
     dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
-    IF (ALL(var%awc_complexangle == kgenref_var%awc_complexangle)) THEN 
+    IF ((var%restart == kgenref_var%restart) .OR. ((var%restart /= var%restart) .AND. (kgenref_var%restart /= kgenref_var%restart))) THEN
+        IF (var%restart /= var%restart) WRITE(*, *) "localvar%restart is IDENTICAL (both NaN, uninitialized)." 
         dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank == 0) THEN 
-                WRITE (*, *) trim(adjustl(varname)), "%awc_complexangle is IDENTICAL." 
+                WRITE (*, *) trim(adjustl(varname)), "%restart is IDENTICAL." 
             END IF   
         END IF   
         check_result = CHECK_IDENTICAL 
-        WRITE(*, *) "[VIT_ARRAY] awc_complexangle | IDENTICAL | size=", SIZE(var%awc_complexangle)
+        WRITE(*, *) "[VIT_FIELD] restart | IDENTICAL | ", var%restart, " | ", kgenref_var%restart
     ELSE 
-        ALLOCATE (buf1_awc_complexangle(SIZE(var%awc_complexangle,dim=1))) 
-        ALLOCATE (buf2_awc_complexangle(SIZE(var%awc_complexangle,dim=1))) 
-        n_awc_complexangle = COUNT(var%awc_complexangle /= kgenref_var%awc_complexangle) 
-        WHERE ( ABS(kgenref_var%awc_complexangle) > kgen_minvalue ) 
-            buf1_awc_complexangle = ((var%awc_complexangle-kgenref_var%awc_complexangle)/kgenref_var%awc_complexangle)**2 
-            buf2_awc_complexangle = (var%awc_complexangle-kgenref_var%awc_complexangle)**2 
-        ELSEWHERE 
-            buf1_awc_complexangle = (var%awc_complexangle-kgenref_var%awc_complexangle)**2 
-            buf2_awc_complexangle = buf1_awc_complexangle 
-        END WHERE   
-        nrmsdiff_awc_complexangle = SQRT(SUM(buf1_awc_complexangle)/REAL(n_awc_complexangle)) 
-        rmsdiff_awc_complexangle = SQRT(SUM(buf2_awc_complexangle)/REAL(n_awc_complexangle)) 
-        IF (rmsdiff_awc_complexangle > kgen_tolerance) THEN 
-            dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
-            IF (kgen_verboseLevel > 1) THEN 
-                IF (check_status%rank == 0) THEN 
-                    WRITE (*, *) trim(adjustl(varname)), "%awc_complexangle is NOT IDENTICAL(out of tolerance)." 
-                END IF   
-            END IF   
-            check_result = CHECK_OUT_TOL 
-            WRITE(*, *) "[VIT_ARRAY] awc_complexangle | OUT_TOL | n_diff=", n_awc_complexangle, " | rms=", rmsdiff_awc_complexangle
-        ELSE 
+        diff_restart = ABS(var%restart - kgenref_var%restart) 
+        IF (diff_restart <= kgen_tolerance) THEN 
             dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
             IF (kgen_verboseLevel > 1) THEN 
                 IF (check_status%rank == 0) THEN 
-                    WRITE (*, *) trim(adjustl(varname)), "%awc_complexangle is NOT IDENTICAL(within tolerance)." 
+                    WRITE (*, *) trim(adjustl(varname)), "%restart is NOT IDENTICAL(within tolerance)." 
                 END IF   
             END IF   
             check_result = CHECK_IN_TOL 
-            WRITE(*, *) "[VIT_ARRAY] awc_complexangle | IN_TOL | n_diff=", n_awc_complexangle, " | rms=", rmsdiff_awc_complexangle
+            WRITE(*, *) "[VIT_FIELD] restart | IN_TOL | ", var%restart, " | ", kgenref_var%restart, " | ", diff_restart
+        ELSE 
+            dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
+            IF (kgen_verboseLevel > 1) THEN 
+                IF (check_status%rank == 0) THEN 
+                    WRITE (*, *) trim(adjustl(varname)), "%restart is NOT IDENTICAL(out of tolerance)." 
+                END IF   
+            END IF   
+            check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_FIELD] restart | OUT_TOL | ", var%restart, " | ", kgenref_var%restart, " | ", diff_restart
         END IF   
     END IF   
     IF (check_result == CHECK_IDENTICAL) THEN 
@@ -29284,24 +29237,162 @@ RECURSIVE SUBROUTINE kv_rosco_types_localvariables(varname, check_status, var, k
     ELSE IF (check_result == CHECK_OUT_TOL) THEN 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank ==0) THEN 
-                WRITE (*, *) count( var%awc_complexangle /= kgenref_var%awc_complexangle), " of ", size( var%awc_complexangle ), &
-                &" elements are different." 
-                WRITE (*, *) "Average - kernel ", sum(var%awc_complexangle)/real(size(var%awc_complexangle)) 
-                WRITE (*, *) "Average - reference ", sum(kgenref_var%awc_complexangle)/real(size(kgenref_var%awc_complexangle)) 
-                WRITE (*, *) "RMS of difference is ", rmsdiff_awc_complexangle 
-                WRITE (*, *) "Normalized RMS of difference is ", nrmsdiff_awc_complexangle 
+                WRITE (*, *) "Difference is ", diff_restart 
                 WRITE (*, *) "" 
             END IF   
         END IF   
     ELSE IF (check_result == CHECK_IN_TOL) THEN 
         IF (kgen_verboseLevel > 2) THEN 
             IF (check_status%rank ==0) THEN 
-                WRITE (*, *) count( var%awc_complexangle /= kgenref_var%awc_complexangle), " of ", size( var%awc_complexangle ), &
-                &" elements are different." 
-                WRITE (*, *) "Average - kernel ", sum(var%awc_complexangle)/real(size(var%awc_complexangle)) 
-                WRITE (*, *) "Average - reference ", sum(kgenref_var%awc_complexangle)/real(size(kgenref_var%awc_complexangle)) 
-                WRITE (*, *) "RMS of difference is ", rmsdiff_awc_complexangle 
-                WRITE (*, *) "Normalized RMS of difference is ", nrmsdiff_awc_complexangle 
+                WRITE (*, *) "Difference is ", diff_restart 
+                WRITE (*, *) "" 
+            END IF   
+        END IF   
+    END IF   
+      
+    dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
+    IF (ALL(var%awc_complexangle_re == kgenref_var%awc_complexangle_re)) THEN 
+        dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
+        IF (kgen_verboseLevel > 2) THEN 
+            IF (check_status%rank == 0) THEN 
+                WRITE (*, *) trim(adjustl(varname)), "%awc_complexangle_re is IDENTICAL." 
+            END IF   
+        END IF   
+        check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] awc_complexangle_re | IDENTICAL | size=", SIZE(var%awc_complexangle_re)
+    ELSE 
+        ALLOCATE (buf1_awc_complexangle_re(SIZE(var%awc_complexangle_re,dim=1))) 
+        ALLOCATE (buf2_awc_complexangle_re(SIZE(var%awc_complexangle_re,dim=1))) 
+        n_awc_complexangle_re = COUNT(var%awc_complexangle_re /= kgenref_var%awc_complexangle_re) 
+        WHERE ( ABS(kgenref_var%awc_complexangle_re) > kgen_minvalue ) 
+            buf1_awc_complexangle_re = &
+            &((var%awc_complexangle_re-kgenref_var%awc_complexangle_re)/kgenref_var%awc_complexangle_re)**2 
+            buf2_awc_complexangle_re = (var%awc_complexangle_re-kgenref_var%awc_complexangle_re)**2 
+        ELSEWHERE 
+            buf1_awc_complexangle_re = (var%awc_complexangle_re-kgenref_var%awc_complexangle_re)**2 
+            buf2_awc_complexangle_re = buf1_awc_complexangle_re 
+        END WHERE   
+        nrmsdiff_awc_complexangle_re = SQRT(SUM(buf1_awc_complexangle_re)/REAL(n_awc_complexangle_re)) 
+        rmsdiff_awc_complexangle_re = SQRT(SUM(buf2_awc_complexangle_re)/REAL(n_awc_complexangle_re)) 
+        IF (rmsdiff_awc_complexangle_re > kgen_tolerance) THEN 
+            dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
+            IF (kgen_verboseLevel > 1) THEN 
+                IF (check_status%rank == 0) THEN 
+                    WRITE (*, *) trim(adjustl(varname)), "%awc_complexangle_re is NOT IDENTICAL(out of tolerance)." 
+                END IF   
+            END IF   
+            check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] awc_complexangle_re | OUT_TOL | n_diff=", n_awc_complexangle_re, " | rms=", rmsdiff_awc_complexangle_re
+        ELSE 
+            dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
+            IF (kgen_verboseLevel > 1) THEN 
+                IF (check_status%rank == 0) THEN 
+                    WRITE (*, *) trim(adjustl(varname)), "%awc_complexangle_re is NOT IDENTICAL(within tolerance)." 
+                END IF   
+            END IF   
+            check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] awc_complexangle_re | IN_TOL | n_diff=", n_awc_complexangle_re, " | rms=", rmsdiff_awc_complexangle_re
+        END IF   
+    END IF   
+    IF (check_result == CHECK_IDENTICAL) THEN 
+        CONTINUE 
+    ELSE IF (check_result == CHECK_OUT_TOL) THEN 
+        IF (kgen_verboseLevel > 2) THEN 
+            IF (check_status%rank ==0) THEN 
+                WRITE (*, *) count( var%awc_complexangle_re /= kgenref_var%awc_complexangle_re), " of ", size( &
+                &var%awc_complexangle_re ), " elements are different." 
+                WRITE (*, *) "Average - kernel ", sum(var%awc_complexangle_re)/real(size(var%awc_complexangle_re)) 
+                WRITE (*, *) "Average - reference ", &
+                &sum(kgenref_var%awc_complexangle_re)/real(size(kgenref_var%awc_complexangle_re)) 
+                WRITE (*, *) "RMS of difference is ", rmsdiff_awc_complexangle_re 
+                WRITE (*, *) "Normalized RMS of difference is ", nrmsdiff_awc_complexangle_re 
+                WRITE (*, *) "" 
+            END IF   
+        END IF   
+    ELSE IF (check_result == CHECK_IN_TOL) THEN 
+        IF (kgen_verboseLevel > 2) THEN 
+            IF (check_status%rank ==0) THEN 
+                WRITE (*, *) count( var%awc_complexangle_re /= kgenref_var%awc_complexangle_re), " of ", size( &
+                &var%awc_complexangle_re ), " elements are different." 
+                WRITE (*, *) "Average - kernel ", sum(var%awc_complexangle_re)/real(size(var%awc_complexangle_re)) 
+                WRITE (*, *) "Average - reference ", &
+                &sum(kgenref_var%awc_complexangle_re)/real(size(kgenref_var%awc_complexangle_re)) 
+                WRITE (*, *) "RMS of difference is ", rmsdiff_awc_complexangle_re 
+                WRITE (*, *) "Normalized RMS of difference is ", nrmsdiff_awc_complexangle_re 
+                WRITE (*, *) "" 
+            END IF   
+        END IF   
+    END IF   
+      
+    dtype_check_status%numTotal = dtype_check_status%numTotal + 1 
+    IF (ALL(var%awc_complexangle_im == kgenref_var%awc_complexangle_im)) THEN 
+        dtype_check_status%numIdentical = dtype_check_status%numIdentical + 1 
+        IF (kgen_verboseLevel > 2) THEN 
+            IF (check_status%rank == 0) THEN 
+                WRITE (*, *) trim(adjustl(varname)), "%awc_complexangle_im is IDENTICAL." 
+            END IF   
+        END IF   
+        check_result = CHECK_IDENTICAL 
+        WRITE(*, *) "[VIT_ARRAY] awc_complexangle_im | IDENTICAL | size=", SIZE(var%awc_complexangle_im)
+    ELSE 
+        ALLOCATE (buf1_awc_complexangle_im(SIZE(var%awc_complexangle_im,dim=1))) 
+        ALLOCATE (buf2_awc_complexangle_im(SIZE(var%awc_complexangle_im,dim=1))) 
+        n_awc_complexangle_im = COUNT(var%awc_complexangle_im /= kgenref_var%awc_complexangle_im) 
+        WHERE ( ABS(kgenref_var%awc_complexangle_im) > kgen_minvalue ) 
+            buf1_awc_complexangle_im = &
+            &((var%awc_complexangle_im-kgenref_var%awc_complexangle_im)/kgenref_var%awc_complexangle_im)**2 
+            buf2_awc_complexangle_im = (var%awc_complexangle_im-kgenref_var%awc_complexangle_im)**2 
+        ELSEWHERE 
+            buf1_awc_complexangle_im = (var%awc_complexangle_im-kgenref_var%awc_complexangle_im)**2 
+            buf2_awc_complexangle_im = buf1_awc_complexangle_im 
+        END WHERE   
+        nrmsdiff_awc_complexangle_im = SQRT(SUM(buf1_awc_complexangle_im)/REAL(n_awc_complexangle_im)) 
+        rmsdiff_awc_complexangle_im = SQRT(SUM(buf2_awc_complexangle_im)/REAL(n_awc_complexangle_im)) 
+        IF (rmsdiff_awc_complexangle_im > kgen_tolerance) THEN 
+            dtype_check_status%numOutTol = dtype_check_status%numOutTol + 1 
+            IF (kgen_verboseLevel > 1) THEN 
+                IF (check_status%rank == 0) THEN 
+                    WRITE (*, *) trim(adjustl(varname)), "%awc_complexangle_im is NOT IDENTICAL(out of tolerance)." 
+                END IF   
+            END IF   
+            check_result = CHECK_OUT_TOL 
+            WRITE(*, *) "[VIT_ARRAY] awc_complexangle_im | OUT_TOL | n_diff=", n_awc_complexangle_im, " | rms=", rmsdiff_awc_complexangle_im
+        ELSE 
+            dtype_check_status%numInTol = dtype_check_status%numInTol + 1 
+            IF (kgen_verboseLevel > 1) THEN 
+                IF (check_status%rank == 0) THEN 
+                    WRITE (*, *) trim(adjustl(varname)), "%awc_complexangle_im is NOT IDENTICAL(within tolerance)." 
+                END IF   
+            END IF   
+            check_result = CHECK_IN_TOL 
+            WRITE(*, *) "[VIT_ARRAY] awc_complexangle_im | IN_TOL | n_diff=", n_awc_complexangle_im, " | rms=", rmsdiff_awc_complexangle_im
+        END IF   
+    END IF   
+    IF (check_result == CHECK_IDENTICAL) THEN 
+        CONTINUE 
+    ELSE IF (check_result == CHECK_OUT_TOL) THEN 
+        IF (kgen_verboseLevel > 2) THEN 
+            IF (check_status%rank ==0) THEN 
+                WRITE (*, *) count( var%awc_complexangle_im /= kgenref_var%awc_complexangle_im), " of ", size( &
+                &var%awc_complexangle_im ), " elements are different." 
+                WRITE (*, *) "Average - kernel ", sum(var%awc_complexangle_im)/real(size(var%awc_complexangle_im)) 
+                WRITE (*, *) "Average - reference ", &
+                &sum(kgenref_var%awc_complexangle_im)/real(size(kgenref_var%awc_complexangle_im)) 
+                WRITE (*, *) "RMS of difference is ", rmsdiff_awc_complexangle_im 
+                WRITE (*, *) "Normalized RMS of difference is ", nrmsdiff_awc_complexangle_im 
+                WRITE (*, *) "" 
+            END IF   
+        END IF   
+    ELSE IF (check_result == CHECK_IN_TOL) THEN 
+        IF (kgen_verboseLevel > 2) THEN 
+            IF (check_status%rank ==0) THEN 
+                WRITE (*, *) count( var%awc_complexangle_im /= kgenref_var%awc_complexangle_im), " of ", size( &
+                &var%awc_complexangle_im ), " elements are different." 
+                WRITE (*, *) "Average - kernel ", sum(var%awc_complexangle_im)/real(size(var%awc_complexangle_im)) 
+                WRITE (*, *) "Average - reference ", &
+                &sum(kgenref_var%awc_complexangle_im)/real(size(kgenref_var%awc_complexangle_im)) 
+                WRITE (*, *) "RMS of difference is ", rmsdiff_awc_complexangle_im 
+                WRITE (*, *) "Normalized RMS of difference is ", nrmsdiff_awc_complexangle_im 
                 WRITE (*, *) "" 
             END IF   
         END IF   

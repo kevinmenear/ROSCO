@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-18 23:13:08 
+!Generated at : 2026-03-25 20:38:47 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -29,8 +29,7 @@ MODULE Filters
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
     USE ISO_C_BINDING
     IMPLICIT NONE 
-    PUBLIC prefiltermeasuredsignals 
-
+! VIT: removed invalid PUBLIC statement
 
     ! Auto-generated interface for C++ implementation of NotchFilter
     INTERFACE
@@ -166,7 +165,7 @@ CONTAINS
                                             CntrPar%F_NotchFreqs(CntrPar%F_GenSpdNotch_Ind(n)), &
                                             CntrPar%F_NotchBetaNum(CntrPar%F_GenSpdNotch_Ind(n)), &
                                             CntrPar%F_NotchBetaDen(CntrPar%F_GenSpdNotch_Ind(n)), &
-                                            LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotch)
+                                            LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instNotch)
             IF (kgen_mainstage) THEN 
                   
                 !verify init 
@@ -214,7 +213,7 @@ CONTAINS
                                             CntrPar%F_NotchFreqs(CntrPar%F_GenSpdNotch_Ind(n)), &
                                             CntrPar%F_NotchBetaNum(CntrPar%F_GenSpdNotch_Ind(n)), &
                                             CntrPar%F_NotchBetaDen(CntrPar%F_GenSpdNotch_Ind(n)), &
-                                            LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotch)
+                                            LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instNotch)
                 END DO   
                 CALL SYSTEM_CLOCK(kgen_stop_clock, kgen_rate_clock) 
                 kgen_measure = 1.0D6*(kgen_stop_clock - kgen_start_clock)/DBLE(kgen_rate_clock*KGEN_MAXITER) 

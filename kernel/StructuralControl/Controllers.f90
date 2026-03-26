@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-24 18:24:23 
+!Generated at : 2026-03-25 20:53:50 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -29,7 +29,7 @@ MODULE Controllers
     INTERFACE
         SUBROUTINE structuralcontrol_c(avrSWAP, CntrPar, LocalVar, objInst, ErrVar) BIND(C, NAME='structuralcontrol_c')
             USE ISO_C_BINDING
-            REAL(C_DOUBLE), INTENT(INOUT) :: avrSWAP(*)
+            REAL(C_FLOAT), INTENT(INOUT) :: avrSWAP(*)
             TYPE(C_PTR), VALUE :: CntrPar
             TYPE(C_PTR), VALUE :: LocalVar
             TYPE(C_PTR), VALUE :: objInst
@@ -80,12 +80,7 @@ CONTAINS
         CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
         ! Stash original Fortran pointers for callee bridges
         vit_original_controlparameters => CntrPar
-        BLOCK
-            REAL(C_DOUBLE) :: vit_tmp_avrswap(2000)
-            vit_tmp_avrswap = REAL(avrSWAP(1:2000), C_DOUBLE)
-            CALL structuralcontrol_c(vit_tmp_avrswap, C_LOC(CntrPar_view), C_LOC(LocalVar), C_LOC(objInst), C_LOC(ErrVar))
-            avrSWAP(1:2000) = REAL(vit_tmp_avrswap, KIND(avrSWAP))
-        END BLOCK
+        CALL structuralcontrol_c(avrSWAP, C_LOC(CntrPar_view), C_LOC(LocalVar), C_LOC(objInst), C_LOC(ErrVar))
     END SUBROUTINE StructuralControl
 !-------------------------------------------------------------------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-18 12:20:47 
+!Generated at : 2026-03-25 20:33:24 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -22,8 +22,7 @@ MODULE Controllers
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
     IMPLICIT NONE 
-    PUBLIC pitchcontrol 
-
+! VIT: removed invalid PUBLIC statement
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
 SUBROUTINE pitchcontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath, cntrpar, localvar) 

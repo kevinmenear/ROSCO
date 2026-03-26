@@ -7,7 +7,11 @@ MODULE vit_controlparameters_view
     USE ROSCO_Types, ONLY: ControlParameters
     IMPLICIT NONE
     PRIVATE
-    PUBLIC :: controlparameters_view_t, vit_populate_controlparameters
+    PUBLIC :: controlparameters_view_t, vit_populate_controlparameters, vit_original_controlparameters
+
+    ! Kernel stash: pointer to original Fortran type, set by wrapper before calling C++.
+    ! Callee bridges USE this to pass the original type to Fortran callees.
+    TYPE(ControlParameters), POINTER, SAVE :: vit_original_controlparameters => NULL()
 
     ! Mirror of the C view struct — layout MUST match controlparameters_view_t in C header
     TYPE, BIND(C) :: controlparameters_view_t

@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-19 15:14:30 
+!Generated at : 2026-03-25 20:39:42 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -22,8 +22,7 @@ MODULE Controllers
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
     IMPLICIT NONE 
-    PUBLIC cablecontrol 
-
+! VIT: removed invalid PUBLIC statement
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
 
@@ -120,7 +119,7 @@ SUBROUTINE cablecontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath,
       
     !call to kgen kernel 
             LocalVar%CC_ActuatedDL(I_GROUP) = SecLPFilter_Vel(LocalVar%CC_DesiredL(I_GROUP),LocalVar%DT,2*PI/CntrPar%CC_ActTau,REAL(1.0,DbKi), &
-                                                                LocalVar%FP,LocalVar%iStatus,LocalVar%restart,objInst%instSecLPFV)
+                                                                LocalVar%FP,LocalVar%iStatus,(LocalVar%restart /= 0),objInst%instSecLPFV)
             IF (kgen_mainstage) THEN 
                   
                 !verify init 
@@ -165,7 +164,7 @@ SUBROUTINE cablecontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath,
                 CALL SYSTEM_CLOCK(kgen_start_clock, kgen_rate_clock) 
                 DO kgen_intvar = 1, KGEN_MAXITER 
             LocalVar%CC_ActuatedDL(I_GROUP) = SecLPFilter_Vel(LocalVar%CC_DesiredL(I_GROUP),LocalVar%DT,2*PI/CntrPar%CC_ActTau,REAL(1.0,DbKi), &
-                                                                LocalVar%FP,LocalVar%iStatus,LocalVar%restart,objInst%instSecLPFV)
+                                                                LocalVar%FP,LocalVar%iStatus,(LocalVar%restart /= 0),objInst%instSecLPFV)
                 END DO   
                 CALL SYSTEM_CLOCK(kgen_stop_clock, kgen_rate_clock) 
                 kgen_measure = 1.0D6*(kgen_stop_clock - kgen_start_clock)/DBLE(kgen_rate_clock*KGEN_MAXITER) 

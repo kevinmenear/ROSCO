@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-19 22:19:39 
+!Generated at : 2026-03-25 20:40:50 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -18,31 +18,11 @@
 MODULE Controllers
 
     USE controllerblocks 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
-    USE ISO_C_BINDING
     IMPLICIT NONE 
     PUBLIC activewakecontrol 
-
-
-    ! Auto-generated interface for C++ implementation of ResController
-    INTERFACE
-        FUNCTION rescontroller_c(error, kp, ki, freq, minValue, maxValue, DT, resP, reset, inst) BIND(C, NAME='rescontroller_c')
-            USE ISO_C_BINDING
-            REAL(C_DOUBLE), VALUE :: error
-            REAL(C_DOUBLE), VALUE :: kp
-            REAL(C_DOUBLE), VALUE :: ki
-            REAL(C_DOUBLE), VALUE :: freq
-            REAL(C_DOUBLE), VALUE :: minValue
-            REAL(C_DOUBLE), VALUE :: maxValue
-            REAL(C_DOUBLE), VALUE :: DT
-            TYPE(C_PTR), VALUE :: resP
-            LOGICAL(C_BOOL), VALUE :: reset
-            INTEGER(C_INT), INTENT(INOUT) :: inst
-            REAL(C_DOUBLE) :: rescontroller_c
-        END FUNCTION rescontroller_c
-    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -76,21 +56,23 @@ SUBROUTINE activewakecontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_file
         !       AWC_Mode = 4, Closed-loop Proportional-resonant (PR) active wake control
         !       AWC_Mode = 5, Strouhal transformation based closed-loop active wake control
     USE rosco_types, ONLY: controlparameters, localvariables, objectinstances 
-    USE kgen_utils_mod
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
+    USE kgen_utils_mod, ONLY: kgen_perturb_real 
     USE rosco_types, ONLY: kr_rosco_types_controlparameters 
     USE rosco_types, ONLY: kr_rosco_types_localvariables 
     USE rosco_types, ONLY: kr_rosco_types_objectinstances 
     USE rosco_types, ONLY: kv_rosco_types_controlparameters 
     USE rosco_types, ONLY: kv_rosco_types_localvariables 
     USE rosco_types, ONLY: kv_rosco_types_objectinstances 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: check_t, kgen_init_check, kgen_init_verify, kgen_tolerance, kgen_minvalue, kgen_verboselevel, &
+    &CHECK_IDENTICAL, CHECK_IN_TOL, CHECK_OUT_TOL 
 
     TYPE(controlparameters), INTENT(INOUT) :: cntrpar 
     TYPE(localvariables), INTENT(INOUT) :: localvar 
     TYPE(objectinstances), INTENT(INOUT) :: objinst 
         ! Local vars
 
+        ! COMPLEX(DbKi)              :: complexI = (0.0, 1.0)  ! VIT: removed (complex split)
     INTEGER(KIND=intki) :: imode 
     REAL(KIND=dbki), dimension(2) :: awc_tiltyaw = [0.0, 0.0] 
     REAL(KIND=dbki), dimension(2) :: error = [0.0, 0.0] 
@@ -157,11 +139,11 @@ SUBROUTINE activewakecontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_file
       
     !call to kgen kernel 
                         AWC_TiltYaw(Imode) = ResController(Error(Imode), CntrPar%AWC_CntrGains(1), CntrPar%AWC_CntrGains(2), CntrPar%AWC_freq(Imode), & 
-                                                            CntrPar%PC_MinPit, CntrPar%PC_MaxPit, LocalVar%DT, LocalVar%resP, LocalVar%restart, objInst%instRes)
+                                                            CntrPar%PC_MinPit, CntrPar%PC_MaxPit, LocalVar%DT, LocalVar%resP, (LocalVar%restart /= 0), objInst%instRes)
                         IF (kgen_mainstage) THEN 
                               
                             !verify init 
-                            CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=100) 
+                            CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=1) 
                             CALL kgen_init_check(check_status, rank=kgen_mpirank) 
                               
                             !extern verify variables 
@@ -203,7 +185,7 @@ SUBROUTINE activewakecontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_file
                             CALL SYSTEM_CLOCK(kgen_start_clock, kgen_rate_clock) 
                             DO kgen_intvar = 1, KGEN_MAXITER 
                         AWC_TiltYaw(Imode) = ResController(Error(Imode), CntrPar%AWC_CntrGains(1), CntrPar%AWC_CntrGains(2), CntrPar%AWC_freq(Imode), & 
-                                                            CntrPar%PC_MinPit, CntrPar%PC_MaxPit, LocalVar%DT, LocalVar%resP, LocalVar%restart, objInst%instRes)
+                                                            CntrPar%PC_MinPit, CntrPar%PC_MaxPit, LocalVar%DT, LocalVar%resP, (LocalVar%restart /= 0), objInst%instRes)
                             END DO   
                             CALL SYSTEM_CLOCK(kgen_stop_clock, kgen_rate_clock) 
                             kgen_measure = 1.0D6*(kgen_stop_clock - kgen_start_clock)/DBLE(kgen_rate_clock*KGEN_MAXITER) 
@@ -244,7 +226,6 @@ SUBROUTINE activewakecontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_file
                                     END IF   
                                 END IF   
                                 check_result = CHECK_IDENTICAL 
-                                WRITE(*, *) "[VIT_ARRAY] ", trim(adjustl(varname)), " | IDENTICAL | size=", SIZE(var)
                             ELSE 
                                 ALLOCATE (buf1(SIZE(var,dim=1))) 
                                 ALLOCATE (buf2(SIZE(var,dim=1))) 
@@ -266,7 +247,6 @@ SUBROUTINE activewakecontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_file
                                         END IF   
                                     END IF   
                                     check_result = CHECK_OUT_TOL 
-                                    WRITE(*, *) "[VIT_ARRAY] ", trim(adjustl(varname)), " | OUT_TOL | n_diff=", n, " | rms=", rmsdiff
                                 ELSE 
                                     check_status%numInTol = check_status%numInTol + 1 
                                     IF (kgen_verboseLevel > 1) THEN 
@@ -275,7 +255,6 @@ SUBROUTINE activewakecontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_file
                                         END IF   
                                     END IF   
                                     check_result = CHECK_IN_TOL 
-                                    WRITE(*, *) "[VIT_ARRAY] ", trim(adjustl(varname)), " | IN_TOL | n_diff=", n, " | rms=", rmsdiff
                                 END IF   
                             END IF   
                             IF (check_result == CHECK_IDENTICAL) THEN 
@@ -332,22 +311,57 @@ END SUBROUTINE activewakecontrol
 
         !-------------------------------------------------------------------------------------------------------------------------------
 
-    FUNCTION ResController(error, kp, ki, freq, minValue, maxValue, DT, resP, reset, inst) RESULT(ResController_result)
-        USE ISO_C_BINDING
-        USE ROSCO_Types, ONLY : resParams
+    REAL(DbKi) FUNCTION ResController(error, kp, ki, freq, minValue, maxValue, DT, resP, reset, inst)
+        USE rosco_types, ONLY: resparams 
+    ! PI controller, with output saturation
+        USE rosco_types, ONLY: kr_rosco_types_resparams 
+        USE rosco_types, ONLY: kv_rosco_types_resparams 
+
+
         IMPLICIT NONE
-        REAL(DbKi), INTENT(IN) :: error
-        REAL(DbKi), INTENT(IN) :: kp
-        REAL(DbKi), INTENT(IN) :: ki
-        REAL(DbKi), INTENT(IN) :: freq
-        REAL(DbKi), INTENT(IN) :: minValue
-        REAL(DbKi), INTENT(IN) :: maxValue
-        REAL(DbKi), INTENT(IN) :: DT
-        TYPE(resParams), INTENT(INOUT), TARGET :: resP
-        LOGICAL, INTENT(IN) :: reset
-        INTEGER(IntKi), INTENT(INOUT) :: inst
-        REAL(DbKi) :: ResController_result
-        ResController_result = REAL(rescontroller_c(REAL(error, C_DOUBLE), REAL(kp, C_DOUBLE), REAL(ki, C_DOUBLE), REAL(freq, C_DOUBLE), REAL(minValue, C_DOUBLE), REAL(maxValue, C_DOUBLE), REAL(DT, C_DOUBLE), C_LOC(resP), LOGICAL(reset, C_BOOL), inst), DbKi)
+        ! Allocate Inputs
+        REAL(DbKi),    INTENT(IN)         :: error
+        REAL(DbKi),    INTENT(IN)         :: kp
+        REAL(DbKi),    INTENT(IN)         :: ki
+        REAL(DbKi),    INTENT(IN)         :: freq
+        REAL(DbKi),    INTENT(IN)         :: minValue
+        REAL(DbKi),    INTENT(IN)         :: maxValue
+        REAL(DbKi),    INTENT(IN)         :: DT
+        INTEGER(IntKi), INTENT(INOUT)     :: inst
+        TYPE(resParams), INTENT(INOUT)    :: resP
+        LOGICAL,    INTENT(IN)            :: reset
+        ! Allocate local variables
+        REAL(DbKi)                        :: omega                                        ! Frequency
+        REAL(DbKi)                        :: a0, a1, a2, b0, b1, b2
+
+        omega = 2*PI*freq
+        !! Tustin RC
+
+        b0 = 4+omega**2*DT**2
+        b1 = -8+2*omega**2*DT**2
+        b2 = 4+omega**2*DT**2
+        a0 = b0*kp + 2*DT*ki
+        a1 = b1*kp 
+        a2 = b2*kp - 2*DT*ki
+        ! Initialize persistent variables/arrays, and set initial condition for integrator term
+        IF (reset) THEN
+            resP%res_OutputSignalLast1(inst)  = 0
+            resP%res_OutputSignalLast2(inst)  = 0
+            resP%res_InputSignalLast1(inst)   = 0
+            resP%res_InputSignalLast2(inst)   = 0
+        ELSE
+            ResController = 1/b0*( -b1*resP%res_OutputSignalLast1(inst) - b2*resP%res_OutputSignalLast2(inst) &
+                                    + a0*error + a1*resP%res_InputSignalLast1(inst) + a2*resP%res_InputSignalLast2(inst))
+            ResController = saturate(ResController, minValue, maxValue)
+            ! Save signals for next time step
+        
+            resP%res_InputSignalLast2(inst)   = resP%res_InputSignalLast1(inst)
+            resP%res_InputSignalLast1(inst)   = error
+            resP%res_OutputSignalLast2(inst)  = resP%res_OutputSignalLast1(inst)
+            resP%res_OutputSignalLast1(inst)  = ResController
+        END IF
+        inst = inst + 1
+        
     END FUNCTION ResController
 !-------------------------------------------------------------------------------------------------------------------------------
 

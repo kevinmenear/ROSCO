@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-19 13:59:41 
+!Generated at : 2026-03-25 20:37:42 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -29,8 +29,7 @@ MODULE Filters
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
     USE ISO_C_BINDING
     IMPLICIT NONE 
-    PUBLIC prefiltermeasuredsignals 
-
+! VIT: removed invalid PUBLIC statement
 
     ! Auto-generated interface for C++ implementation of LPFilter
     INTERFACE
@@ -153,7 +152,7 @@ CONTAINS
           
           
         !call to kgen kernel 
-            LocalVar%GenSpeedF = LPFilter(LocalVar%GenSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
+            LocalVar%GenSpeedF = LPFilter(LocalVar%GenSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF)
             IF (kgen_mainstage) THEN 
                   
                 !verify init 
@@ -197,7 +196,7 @@ CONTAINS
                 END IF   
                 CALL SYSTEM_CLOCK(kgen_start_clock, kgen_rate_clock) 
                 DO kgen_intvar = 1, KGEN_MAXITER 
-            LocalVar%GenSpeedF = LPFilter(LocalVar%GenSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
+            LocalVar%GenSpeedF = LPFilter(LocalVar%GenSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF)
                 END DO   
                 CALL SYSTEM_CLOCK(kgen_stop_clock, kgen_rate_clock) 
                 kgen_measure = 1.0D6*(kgen_stop_clock - kgen_start_clock)/DBLE(kgen_rate_clock*KGEN_MAXITER) 

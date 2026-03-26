@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-24 00:48:09 
+!Generated at : 2026-03-25 20:50:33 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -25,7 +25,7 @@
 MODULE ExtControl
 
     USE syssubs 
-    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
+    USE kgen_utils_mod
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
     IMPLICIT NONE 
