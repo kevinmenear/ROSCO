@@ -87,6 +87,10 @@ model/
 baseline_output.txt
 integrated_output.txt
 
+# VIT — integration test arrays
+baseline_final/
+integrated_final/
+
 # Other
 .pytest_cache
 examples/cp_ct_cq_lut.p
