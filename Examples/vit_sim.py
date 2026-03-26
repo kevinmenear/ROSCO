@@ -239,18 +239,19 @@ def run_scenario_2(turbine, controller, cp_filename):
 # Scenario 3: Filter coverage (IPC + notch + cable control)
 # ---------------------------------------------------------------------------
 def run_scenario_3(turbine, controller, cp_filename):
-    """Sim with IPC, notch filters, and cable control enabled.
+    """Sim with notch filters, cable control, and multiple mode flags enabled.
 
-    Exercises filter functions not active in the standard config:
+    Exercises filter/controller functions not active in the standard config:
     - NotchFilter: F_GenSpdNotch_N=1 adds a notch at 1.0 rad/s on gen speed
-    - NotchFilterSlopes: IPC_ControlMode=1 enables 1P blade root filtering
     - SecLPFilter_Vel: CC_Group_N=1 enables the cable control filter loop
+    - FlapControl: Flp_Mode=1 (IPC-based flap control)
+    - Plus: TD_Mode, Fl_Mode, Y_ControlMode, StC_Mode, CC_Mode
 
-    All three are safe: notch is purely additive filtering, IPC processes
-    zero blade loads (1-DOF sim), cable control filters zero with CC_Mode=0.
+    Note: NotchFilterSlopes requires IPC_ControlMode=1, which conflicts with
+    Flp_Mode > 0 (ROSCO mutual exclusion). Use Scenario 6 for NotchFilterSlopes.
     """
     print("=" * 60)
-    print("Scenario 3: Filter coverage (IPC + notch + cable control)")
+    print("Scenario 3: Mode coverage (notch + cable + flap + structural)")
     print("=" * 60)
 
     param_filename = os.path.join(this_dir, 'DISCON_filters.IN')
@@ -262,10 +263,9 @@ def run_scenario_3(turbine, controller, cp_filename):
         'F_NotchBetaDen': '0.2500',
         'F_GenSpdNotch_N': 1,
         'F_GenSpdNotch_Ind': '1',
-        # NotchFilterSlopes: IPC is exercised by default (PC_ControlMode=1 activates
-        # PitchControl which calls IPC when IPC_ControlMode>0). Use default IPC mode
-        # to avoid conflict with Flp_Mode (ROSCO rejects IPC + Flp_Mode simultaneously).
-        # IPC_ControlMode uses the default from the tuning.
+        # Note: NotchFilterSlopes requires IPC_ControlMode=1, but ROSCO rejects
+        # IPC_ControlMode > 0 AND Flp_Mode > 0 simultaneously. Since this scenario
+        # needs Flp_Mode=1, NotchFilterSlopes must use Scenario 6 instead.
 
         # SecLPFilter_Vel: enable cable control loop
         # CC_Mode=1 required so DISCON calls CableControl (gated by CC_Mode > 0).
@@ -311,7 +311,7 @@ def run_scenario_3(turbine, controller, cp_filename):
         ws[i] = ws[i] + t[i] // 100
 
     sim_3.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    print("Scenario 3: PASSED (NotchFilter + NotchFilterSlopes + SecLPFilter_Vel exercised)")
+    print("Scenario 3: PASSED (NotchFilter + SecLPFilter_Vel + mode flags exercised)")
 
 
 # ---------------------------------------------------------------------------
@@ -405,12 +405,58 @@ def run_scenario_5(turbine, controller, cp_filename):
 
 
 # ---------------------------------------------------------------------------
+# Scenario 6: IPC (IPC_ControlMode=1 → NotchFilterSlopes)
+# ---------------------------------------------------------------------------
+def run_scenario_6(turbine, controller, cp_filename):
+    """Sim with IPC_ControlMode=1 to exercise NotchFilterSlopes.
+
+    IPC_ControlMode=1 enables Individual Pitch Control, which calls
+    NotchFilterSlopes for 1P blade root bending moment filtering
+    (gated by IPC_ControlMode > 0 in PreFilterMeasuredSignals).
+
+    Flp_Mode must be 0: ROSCO rejects IPC_ControlMode > 0 AND Flp_Mode > 0
+    simultaneously (ReadSetParameters.f90:1108).
+
+    In the 1-DOF sim, blade root moments are 0, so IPC and
+    NotchFilterSlopes process zero signals. Fine for state capture.
+    """
+    print("=" * 60)
+    print("Scenario 6: IPC (IPC_ControlMode=1, NotchFilterSlopes)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_ipc.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'IPC_ControlMode': 1,
+        'Flp_Mode': 0,       # Mutual exclusion with IPC_ControlMode > 0
+        'IPC_KI': '0.0 0.0',
+        'IPC_KP': '0.0 0.0',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim6'
+    )
+
+    sim_6 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 100
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_6.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    print("Scenario 6: PASSED (NotchFilterSlopes exercised)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description='VIT simulation runner')
     parser.add_argument('--scenario', type=int, default=0,
-                        help='Run specific scenario (1-5). Default 0 = run all.')
+                        help='Run specific scenario (1-6). Default 0 = run all.')
     args = parser.parse_args()
 
     turbine, controller, cp_filename = load_turbine_and_controller()
@@ -435,6 +481,9 @@ def main():
 
     if args.scenario == 0 or args.scenario == 2:
         run_scenario_2(turbine, controller, cp_filename)
+
+    if args.scenario == 0 or args.scenario == 6:
+        run_scenario_6(turbine, controller, cp_filename)
 
     print("\n" + "=" * 60)
     print("All scenarios complete.")
