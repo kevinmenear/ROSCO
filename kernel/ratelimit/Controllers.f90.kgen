@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 20:34:37 
+!Generated at : 2026-03-25 23:30:26 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -18,11 +18,12 @@
 MODULE Controllers
 
     USE controllerblocks 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
     IMPLICIT NONE 
-! VIT: removed invalid PUBLIC statement
+    PUBLIC pitchcontrol 
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
 SUBROUTINE pitchcontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath, cntrpar, localvar, objinst) 
@@ -31,8 +32,8 @@ SUBROUTINE pitchcontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath,
     !       PC_State = PC_State_Disabled (1), is gain scheduled PI controller 
     USE rosco_types, ONLY: controlparameters, localvariables, objectinstances 
         ! Inputs
-    USE kgen_utils_mod
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
+    USE kgen_utils_mod, ONLY: kgen_perturb_real 
     USE rosco_types, ONLY: kr_rosco_types_localvariables 
     USE rosco_types, ONLY: kr_rosco_types_controlparameters 
     USE rosco_types, ONLY: kr_rosco_types_objectinstances 
@@ -117,7 +118,7 @@ SUBROUTINE pitchcontrol(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath,
         IF (kgen_mainstage) THEN 
               
             !verify init 
-            CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=100) 
+            CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=1) 
             CALL kgen_init_check(check_status, rank=kgen_mpirank) 
               
             !extern verify variables 

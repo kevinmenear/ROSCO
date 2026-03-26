@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 20:36:27 
+!Generated at : 2026-03-25 23:32:13 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -32,26 +32,10 @@
 MODULE Functions
 
     USE constants 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
-    USE ISO_C_BINDING
     IMPLICIT NONE 
-
-
-    ! Auto-generated interface for C++ implementation of sigma
-    INTERFACE
-        FUNCTION sigma_c(x, x0, x1, y0, y1, ErrVar) BIND(C, NAME='sigma_c')
-            USE ISO_C_BINDING
-            REAL(C_DOUBLE), VALUE :: x
-            REAL(C_DOUBLE), VALUE :: x0
-            REAL(C_DOUBLE), VALUE :: x1
-            REAL(C_DOUBLE), VALUE :: y0
-            REAL(C_DOUBLE), VALUE :: y1
-            TYPE(C_PTR), VALUE :: ErrVar
-            REAL(C_DOUBLE) :: sigma_c
-        END FUNCTION sigma_c
-    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -86,18 +70,42 @@ CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
 
 !-------------------------------------------------------------------------------------------------------------------------------
-    FUNCTION sigma(x, x0, x1, y0, y1, ErrVar) RESULT(sigma_result)
-        USE ISO_C_BINDING
-        USE ROSCO_Types, ONLY : ErrorVariables
+    REAL(DbKi) FUNCTION sigma(x, x0, x1, y0, y1, ErrVar)
+    ! Generic sigma function
+        USE rosco_types, ONLY: errorvariables 
+        USE rosco_types, ONLY: kr_rosco_types_errorvariables 
+        USE rosco_types, ONLY: kv_rosco_types_errorvariables 
         IMPLICIT NONE
-        REAL(DbKi), INTENT(IN) :: x
-        REAL(DbKi), INTENT(IN) :: x0
-        REAL(DbKi), INTENT(IN) :: x1
-        REAL(DbKi), INTENT(IN) :: y0
-        REAL(DbKi), INTENT(IN) :: y1
-        TYPE(ErrorVariables), INTENT(INOUT), TARGET :: ErrVar
-        REAL(DbKi) :: sigma_result
-        sigma_result = REAL(sigma_c(REAL(x, C_DOUBLE), REAL(x0, C_DOUBLE), REAL(x1, C_DOUBLE), REAL(y0, C_DOUBLE), REAL(y1, C_DOUBLE), C_LOC(ErrVar)), DbKi)
+        ! Inputs
+    
+        TYPE(ErrorVariables), INTENT(INOUT) :: ErrVar
+
+        REAL(DbKi), Intent(IN)  :: x, x0, x1
+        REAL(DbKi), Intent(IN)  :: y0, y1
+        ! Local
+            
+        REAL(DbKi) :: a3, a2, a1, a0
+
+        CHARACTER(*), PARAMETER                 :: RoutineName = 'sigma'
+
+        a3 = 2/(x0-x1)**3
+        a2 = -3*(x0+x1)/(x0-x1)**3
+        a1 = 6*x1*x0/(x0-x1)**3
+        a0 = (x0-3*x1)*x0**2/(x0-x1)**3
+
+        IF (x < x0) THEN
+            sigma = y0
+        ELSEIF (x > x1) THEN
+            sigma = y1
+        ELSE
+            sigma = (a3*x**3 + a2*x**2 + a1*x + a0)*(y1-y0) + y0
+        ENDIF 
+        ! Add RoutineName to error message
+
+        IF (ErrVar%aviFAIL < 0) THEN
+            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
+        ENDIF
+        
     END FUNCTION sigma
 !-------------------------------------------------------------------------------------------------------------------------------
 

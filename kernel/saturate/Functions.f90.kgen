@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 20:33:24 
+!Generated at : 2026-03-25 23:26:01 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -32,34 +32,24 @@
 MODULE Functions
 
     USE constants 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
-    USE ISO_C_BINDING
     IMPLICIT NONE 
-
-
-    ! Auto-generated interface for C++ implementation of saturate
-    INTERFACE
-        FUNCTION saturate_c(inputValue, minValue, maxValue) BIND(C, NAME='saturate_c')
-            USE ISO_C_BINDING
-            REAL(C_DOUBLE), VALUE :: inputValue
-            REAL(C_DOUBLE), VALUE :: minValue
-            REAL(C_DOUBLE), VALUE :: maxValue
-            REAL(C_DOUBLE) :: saturate_c
-        END FUNCTION saturate_c
-    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
-    FUNCTION saturate(inputValue, minValue, maxValue) RESULT(saturate_result)
-        USE ISO_C_BINDING
+    REAL(DbKi) FUNCTION saturate(inputValue, minValue, maxValue)
+    ! Saturates inputValue. Makes sure it is not smaller than minValue and not larger than maxValue
+
         IMPLICIT NONE
-        REAL(DbKi), INTENT(IN) :: inputValue
-        REAL(DbKi), INTENT(IN) :: minValue
-        REAL(DbKi), INTENT(IN) :: maxValue
-        REAL(DbKi) :: saturate_result
-        saturate_result = REAL(saturate_c(REAL(inputValue, C_DOUBLE), REAL(minValue, C_DOUBLE), REAL(maxValue, C_DOUBLE)), DbKi)
+
+        REAL(DbKi), INTENT(IN)     :: inputValue
+        REAL(DbKi), INTENT(IN)     :: minValue
+        REAL(DbKi), INTENT(IN)     :: maxValue
+
+        saturate = REAL(MIN(MAX(inputValue,minValue), maxValue),DbKi)
+
     END FUNCTION saturate
 !-------------------------------------------------------------------------------------------------------------------------------
     

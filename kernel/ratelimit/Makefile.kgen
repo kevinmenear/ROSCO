@@ -1,23 +1,10 @@
-FC_0 ?= gfortran
-FC_FLAGS_SET_0 ?= -O2 -ffree-form -ffree-line-length-none -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
 # Makefile for KGEN-generated kernel
 
 
-ALL_OBJS := vit_bridge_saturate.o ratelimit_cpp.o Controllers.o ROSCO_Types.o Constants.o ControllerBlocks.o Filters.o Functions.o kernel_driver.o kgen_utils.o tprof_mod.o
-
-# VIT: C++ compilation support
-CXX ?= g++
-CXXFLAGS ?= -O2 -fPIC -ffp-contract=off
-
-ratelimit_cpp.o: ratelimit_cpp.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# VIT: callee bridge for kernel verification
-vit_bridge_saturate.o: vit_bridge_saturate.f90 Controllers.o ROSCO_Types.o Constants.o ControllerBlocks.o Filters.o Functions.o kernel_driver.o kgen_utils.o tprof_mod.o
-	$(FC_0) $(FC_FLAGS_SET_0) -c $< -o $@
+ALL_OBJS := Controllers.o ROSCO_Types.o Constants.o ControllerBlocks.o Filters.o Functions.o kernel_driver.o kgen_utils.o tprof_mod.o
 
 build: ${ALL_OBJS}
-	${FC_0} ${FC_FLAGS_SET_0} -o kernel.exe -lstdc++ $^  
+	${FC_0} ${FC_FLAGS_SET_0} -o kernel.exe $^  
 
 run: build
 	./kernel.exe

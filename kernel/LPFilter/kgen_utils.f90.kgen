@@ -69,7 +69,9 @@ subroutine kgen_array_sumcheck(varname, sum1, sum2, finish)
                 print *, 'Difference: ', diff
                 print *, 'Normalized difference: ', rel_diff
 
-                ! VIT: removed STOP from kgen_array_sumcheck (false positives from subnormal values)
+                if ( present(finish) .AND. finish ) then
+                    stop
+                end if
             end if
         else
             print *, ''
@@ -78,7 +80,9 @@ subroutine kgen_array_sumcheck(varname, sum1, sum2, finish)
             print *, 'From array: ', sum2
             print *, 'Difference: ', diff
 
-            ! VIT: removed STOP from kgen_array_sumcheck (false positives from subnormal values)
+            if ( present(finish) .AND. finish ) then
+                stop
+            end if
         end if
     end if
 end subroutine

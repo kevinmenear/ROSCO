@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 20:37:42 
+!Generated at : 2026-03-25 23:33:25 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -25,56 +25,57 @@
 MODULE Filters
 !...............................................................................................................................
     USE functions 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
-    USE ISO_C_BINDING
     IMPLICIT NONE 
-! VIT: removed invalid PUBLIC statement
-
-    ! Auto-generated interface for C++ implementation of LPFilter
-    INTERFACE
-        FUNCTION lpfilter_c(InputSignal, DT, CornerFreq, FP, iStatus, reset, inst, has_InitialValue, InitialValue) BIND(C, NAME='lpfilter_c')
-            USE ISO_C_BINDING
-            REAL(C_DOUBLE), VALUE :: InputSignal
-            REAL(C_DOUBLE), VALUE :: DT
-            REAL(C_DOUBLE), VALUE :: CornerFreq
-            TYPE(C_PTR), VALUE :: FP
-            INTEGER(C_INT), VALUE :: iStatus
-            LOGICAL(C_BOOL), VALUE :: reset
-            INTEGER(C_INT), INTENT(INOUT) :: inst
-            INTEGER(C_INT), VALUE :: has_InitialValue
-            REAL(C_DOUBLE), VALUE :: InitialValue
-            REAL(C_DOUBLE) :: lpfilter_c
-        END FUNCTION lpfilter_c
-    END INTERFACE
+    PUBLIC prefiltermeasuredsignals 
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
-    FUNCTION LPFilter(InputSignal, DT, CornerFreq, FP, iStatus, reset, inst, InitialValue) RESULT(LPFilter_result)
-        USE ISO_C_BINDING
-        USE ROSCO_Types, ONLY : FilterParameters
-        IMPLICIT NONE
-        REAL(DbKi), INTENT(IN) :: InputSignal
-        REAL(DbKi), INTENT(IN) :: DT
-        REAL(DbKi), INTENT(IN) :: CornerFreq
-        TYPE(FilterParameters), INTENT(INOUT), TARGET :: FP
-        INTEGER(IntKi), INTENT(IN) :: iStatus
-        LOGICAL(4), INTENT(IN) :: reset
-        INTEGER(IntKi), INTENT(INOUT) :: inst
-        REAL(DbKi), INTENT(IN), OPTIONAL :: InitialValue
-        REAL(DbKi) :: LPFilter_result
+    REAL(DbKi) FUNCTION LPFilter(InputSignal, DT, CornerFreq, FP, iStatus, reset, inst, InitialValue)
+    ! Discrete time Low-Pass Filter of the form:
+    !                               Continuous Time Form:   H(s) = CornerFreq/(1 + CornerFreq)
+    !                               Discrete Time Form:     H(z) = (b1z + b0) / (a1*z + a0)
+    !
+        USE rosco_types, ONLY: filterparameters 
+        USE rosco_types, ONLY: kr_rosco_types_filterparameters 
+        USE rosco_types, ONLY: kv_rosco_types_filterparameters 
+        TYPE(FilterParameters),       INTENT(INOUT)       :: FP 
 
-        ! Local variables for OPTIONAL args
-        INTEGER(C_INT) :: has_InitialValue_flag
-        REAL(C_DOUBLE) :: InitialValue_val
+        REAL(DbKi), INTENT(IN)         :: InputSignal
+        REAL(DbKi), INTENT(IN)         :: DT                       ! time step [s]
+        REAL(DbKi), INTENT(IN)         :: CornerFreq               ! corner frequency [rad/s]
+        INTEGER(IntKi), INTENT(IN)      :: iStatus                  ! A status flag set by the simulation as follows: 0 if this is the first call, 1 for all subsequent time steps, -1 if this is the final call at the end of the simulation.
+        INTEGER(IntKi), INTENT(INOUT)   :: inst                     ! Instance number. Every instance of this function needs to have an unique instance number to ensure instances don't influence each other.
+        LOGICAL(4), INTENT(IN)      :: reset                    ! Reset the filter to the input signal
+        REAL(DbKi), OPTIONAL,  INTENT(IN)          :: InitialValue           ! Value to set when reset 
+        
+        REAL(DbKi)                          :: InitialValue_           ! Value to set when reset
+        ! Defaults
 
-        has_InitialValue_flag = 0
-        InitialValue_val = 0.0D0
-        IF (PRESENT(InitialValue)) THEN
-            has_InitialValue_flag = 1
-            InitialValue_val = REAL(InitialValue, C_DOUBLE)
-        END IF
-        LPFilter_result = REAL(lpfilter_c(REAL(InputSignal, C_DOUBLE), REAL(DT, C_DOUBLE), REAL(CornerFreq, C_DOUBLE), C_LOC(FP), INT(iStatus, C_INT), LOGICAL(reset, C_BOOL), inst, has_InitialValue_flag, InitialValue_val), DbKi)
+        InitialValue_ = InputSignal
+        IF (PRESENT(InitialValue)) InitialValue_ = InitialValue  
+        ! Initialization
+
+        IF ((iStatus == 0) .OR. reset) THEN   
+            FP%lpf1_OutputSignalLast(inst) = InitialValue_
+            FP%lpf1_InputSignalLast(inst) = InitialValue_
+            FP%lpf1_a1(inst) = 2 + CornerFreq*DT
+            FP%lpf1_a0(inst) = CornerFreq*DT - 2
+            FP%lpf1_b1(inst) = CornerFreq*DT
+            FP%lpf1_b0(inst) = CornerFreq*DT
+        ENDIF
+        ! Define coefficients
+        ! Filter
+
+
+        LPFilter = 1.0/FP%lpf1_a1(inst) * (-FP%lpf1_a0(inst)*FP%lpf1_OutputSignalLast(inst) + FP%lpf1_b1(inst)*InputSignal + FP%lpf1_b0(inst)*FP%lpf1_InputSignalLast(inst))
+        ! Save signals for next time step
+
+        FP%lpf1_InputSignalLast(inst)  = InputSignal
+        FP%lpf1_OutputSignalLast(inst) = LPFilter
+        inst = inst + 1
+
     END FUNCTION LPFilter
 !-------------------------------------------------------------------------------------------------------------------------------
 
@@ -96,8 +97,8 @@ CONTAINS
     ! Prefilter shared measured wind turbine signals
 
         USE rosco_types, ONLY: controlparameters, localvariables, objectinstances 
-        USE kgen_utils_mod
-        USE kgen_utils_mod
+        USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
+        USE kgen_utils_mod, ONLY: kgen_perturb_real 
         USE rosco_types, ONLY: kr_rosco_types_localvariables 
         USE rosco_types, ONLY: kr_rosco_types_controlparameters 
         USE rosco_types, ONLY: kr_rosco_types_objectinstances 
@@ -156,7 +157,7 @@ CONTAINS
             IF (kgen_mainstage) THEN 
                   
                 !verify init 
-                CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=100) 
+                CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=1) 
                 CALL kgen_init_check(check_status, rank=kgen_mpirank) 
                   
                 !extern verify variables 

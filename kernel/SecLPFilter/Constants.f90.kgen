@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 20:38:26 
+!Generated at : 2026-03-25 23:34:07 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -15,7 +15,7 @@
 
 MODULE Constants
     USE, INTRINSIC :: iso_c_binding 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
     
     INTEGER, PARAMETER                  :: DbKi             = C_DOUBLE            !< Default kind for double floating-point numbers

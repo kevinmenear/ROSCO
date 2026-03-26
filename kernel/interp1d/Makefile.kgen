@@ -1,19 +1,10 @@
-FC_0 ?= gfortran
-FC_FLAGS_SET_0 ?= -O2 -ffree-form -ffree-line-length-none -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
 # Makefile for KGEN-generated kernel
 
 
-ALL_OBJS := interp1d_cpp.o Controllers.o ROSCO_Types.o Constants.o ControllerBlocks.o Filters.o Functions.o kernel_driver.o kgen_utils.o tprof_mod.o
-
-# VIT: C++ compilation support
-CXX ?= g++
-CXXFLAGS ?= -O2 -fPIC -ffp-contract=off
-
-interp1d_cpp.o: interp1d_cpp.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+ALL_OBJS := Controllers.o ROSCO_Types.o Constants.o ControllerBlocks.o Filters.o Functions.o kernel_driver.o kgen_utils.o tprof_mod.o
 
 build: ${ALL_OBJS}
-	${FC_0} ${FC_FLAGS_SET_0} -o kernel.exe -lstdc++ $^  
+	${FC_0} ${FC_FLAGS_SET_0} -o kernel.exe $^  
 
 run: build
 	./kernel.exe

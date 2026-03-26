@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 20:53:08 
+!Generated at : 2026-03-25 23:43:08 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -77,7 +77,9 @@ CONTAINS
                 LocalVar%Flp_Angle(3) = CntrPar%Flp_Angle
                 ! Initialize controller
                 IF (CntrPar%Flp_Mode == 2) THEN
-                    LocalVar%Flp_Angle(K) = PIIController(RootMyb_VelErr(K), 0 - LocalVar%Flp_Angle(K), CntrPar%Flp_Kp, CntrPar%Flp_Ki, 0.05_DbKi, -CntrPar%Flp_MaxPit , CntrPar%Flp_MaxPit , LocalVar%DT, 0.0_DbKi, LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI)
+                    DO K = 1,LocalVar%NumBl
+                        LocalVar%Flp_Angle(K) = PIIController(RootMyb_VelErr(K), 0 - LocalVar%Flp_Angle(K), CntrPar%Flp_Kp, CntrPar%Flp_Ki, 0.05_DbKi, -CntrPar%Flp_MaxPit , CntrPar%Flp_MaxPit , LocalVar%DT, 0.0_DbKi, LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI)
+                    END DO
                 ENDIF
             ! Steady flap angle
             

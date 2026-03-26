@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 20:33:45 
+!Generated at : 2026-03-25 23:29:35 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -32,21 +32,10 @@
 MODULE Functions
 
     USE constants 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
-    USE ISO_C_BINDING
     IMPLICIT NONE 
-
-
-    ! Auto-generated interface for C++ implementation of wrap_180
-    INTERFACE
-        FUNCTION wrap_180_c(x) BIND(C, NAME='wrap_180_c')
-            USE ISO_C_BINDING
-            REAL(C_DOUBLE), VALUE :: x
-            REAL(C_DOUBLE) :: wrap_180_c
-        END FUNCTION wrap_180_c
-    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -77,12 +66,18 @@ CONTAINS
 
 
 !-------------------------------------------------------------------------------------------------------------------------------
-    FUNCTION wrap_180(x) RESULT(wrap_180_result)
-        USE ISO_C_BINDING
-        IMPLICIT NONE
-        REAL(DbKi), INTENT(IN) :: x
-        REAL(DbKi) :: wrap_180_result
-        wrap_180_result = REAL(wrap_180_c(REAL(x, C_DOUBLE)), DbKi)
+    REAL(DbKi) FUNCTION wrap_180(x) 
+    ! Function modifies input angle, x, such that -180<=x<=180, preventing windup
+        REAL(DbKi), INTENT(IN) :: x         ! angle, degrees
+
+        IF (x .le. -180.0) THEN
+            wrap_180 = x + 360.0
+        ELSEIF (x .gt. 180.0) THEN
+            wrap_180 = x - 360.0
+        ELSE
+            wrap_180 = x
+        ENDIF
+
     END FUNCTION wrap_180
 !-------------------------------------------------------------------------------------------------------------------------------
 

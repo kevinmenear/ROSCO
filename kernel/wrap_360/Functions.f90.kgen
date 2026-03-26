@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 20:34:04 
+!Generated at : 2026-03-25 23:29:54 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -32,21 +32,10 @@
 MODULE Functions
 
     USE constants 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
-    USE ISO_C_BINDING
     IMPLICIT NONE 
-
-
-    ! Auto-generated interface for C++ implementation of wrap_360
-    INTERFACE
-        FUNCTION wrap_360_c(x) BIND(C, NAME='wrap_360_c')
-            USE ISO_C_BINDING
-            REAL(C_DOUBLE), VALUE :: x
-            REAL(C_DOUBLE) :: wrap_360_c
-        END FUNCTION wrap_360_c
-    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -79,12 +68,18 @@ CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
 
 !-------------------------------------------------------------------------------------------------------------------------------
-    FUNCTION wrap_360(x) RESULT(wrap_360_result)
-        USE ISO_C_BINDING
-        IMPLICIT NONE
-        REAL(DbKi), INTENT(IN) :: x
-        REAL(DbKi) :: wrap_360_result
-        wrap_360_result = REAL(wrap_360_c(REAL(x, C_DOUBLE)), DbKi)
+    REAL(DbKi) FUNCTION wrap_360(x) 
+    ! Function modifies input angle, x, such that 0<=x<=360, preventing windup
+        REAL(DbKi), INTENT(IN) :: x         ! angle, degrees
+
+        IF (x .lt. 0.0) THEN
+            wrap_360 = x + 360.0
+        ELSEIF (x .ge. 360.0) THEN
+            wrap_360 = x - 360.0
+        ELSE
+            wrap_360 = x
+        ENDIF
+
     END FUNCTION wrap_360
 !-------------------------------------------------------------------------------------------------------------------------------
 
