@@ -32,7 +32,11 @@ captures state from whichever function is being extracted.
 Usage:
     python3 vit_sim.py              # Run all scenarios
     python3 vit_sim.py --scenario 1 # Standard sim only
+    python3 vit_sim.py --scenario 2 # Yaw-by-IPC sim only
     python3 vit_sim.py --scenario 3 # Filter/mode coverage sim only
+    python3 vit_sim.py --scenario 4 # Flap control sim only
+    python3 vit_sim.py --scenario 5 # Active wake control sim only
+    python3 vit_sim.py --scenario 6 # IPC sim only
     python3 vit_sim.py --scenario 7 # Synthetic inputs sim only
     python3 vit_sim.py --scenario 8 # IPC + AWC sim only
 """
