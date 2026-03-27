@@ -24,52 +24,10 @@ Run on the **Mac** (not in the container):
 
 ```bash
 cd ~/Artifacts/vit_translation/ROSCO
-
-# Functions.f90 + Filters.f90: dba7738 (restart fix + notch filter bug fix, no wrappers)
-git checkout dba7738 -- rosco/controller/src/Functions.f90 rosco/controller/src/Filters.f90
-
-# Controllers.f90 + ControllerBlocks.f90: fde0498 (Phase 4C, no wrappers)
-git checkout fde0498 -- rosco/controller/src/Controllers.f90 rosco/controller/src/ControllerBlocks.f90
-
-# DISCON.F90: upstream (no wrappers)
-git checkout e8010f0 -- rosco/controller/src/DISCON.F90
-
-# Create C++ stubs (CMakeLists.txt references these)
-for f in rosco/controller/src/*_cpp.cpp; do echo "// stub" > "$f"; done
+bash scripts/reset_to_clean.sh
 ```
 
-### Apply FlapControl K init bug fix
-
-fde0498 does NOT include this fix. Without it, Scenario 4 (Flp_Mode=2) segfaults.
-
-In `rosco/controller/src/Controllers.f90`, find line 669 (inside FlapControl, `IF (CntrPar%Flp_Mode == 2) THEN` block) and wrap the PIIController call in a DO loop:
-
-```fortran
-! BEFORE (broken — K is uninitialized):
-                IF (CntrPar%Flp_Mode == 2) THEN
-                    LocalVar%Flp_Angle(K) = PIIController(...)
-                ENDIF
-
-! AFTER (fixed):
-                IF (CntrPar%Flp_Mode == 2) THEN
-                    DO K = 1,LocalVar%NumBl
-                        LocalVar%Flp_Angle(K) = PIIController(...)
-                    END DO
-                ENDIF
-```
-
-### Verify clean state
-
-```bash
-# Must all be 0:
-grep -c '_c(' rosco/controller/src/Functions.f90
-grep -c '_c(' rosco/controller/src/Filters.f90
-grep -c '_c(' rosco/controller/src/Controllers.f90
-grep -c '_c(' rosco/controller/src/ControllerBlocks.f90
-
-# Must be "// stub":
-cat rosco/controller/src/saturate_cpp.cpp
-```
+The script resets source files to clean Fortran (no integration wrappers) with all bug fixes applied, creates C++ stubs, and verifies the result. See `scripts/reset_to_clean.sh` for details on which commits are used.
 
 ## Step 2: Build Clean Fortran Baseline
 
