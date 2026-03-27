@@ -124,6 +124,10 @@ translations:
   NotchFilterSlopes:
     status: integrated
     cpp_file: translations/Filters/notchfilterslopes.cpp
+    cases_passed: 20
+    cases_total: 20
+    cases_skipped: 0
+    kernel_dir: kernel/NotchFilterSlopes
   SecLPFilter_Vel:
     status: integrated
     cpp_file: translations/Filters/seclpfilter_vel.cpp
@@ -141,9 +145,17 @@ translations:
   ResController:
     status: integrated
     cpp_file: translations/Controllers/rescontroller.cpp
+    cases_passed: 20
+    cases_total: 20
+    cases_skipped: 0
+    kernel_dir: kernel/ResController
   PIIController:
     status: integrated
     cpp_file: translations/Controllers/piicontroller.cpp
+    cases_passed: 20
+    cases_total: 20
+    cases_skipped: 0
+    kernel_dir: kernel/PIIController
   ForeAftDamping:
     status: integrated
     cpp_file: translations/Controllers/foreaftdamping.cpp
@@ -208,7 +220,7 @@ translations:
     cases_skipped: 0
     kernel_dir: kernel/ActiveWakeControl
   PitchControl:
-    status: integrated
+    status: verified
     cpp_file: translations/Controllers/pitchcontrol.cpp
     cases_passed: 20
     cases_total: 20

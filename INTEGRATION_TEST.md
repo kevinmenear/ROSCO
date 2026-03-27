@@ -8,12 +8,13 @@ This document captures the exact steps to validate that C++ translations produce
 - VIT and ROSCO installed in the container
 - Golden kernel fixtures in `kernel/` (for KGen verification, not used here)
 - Translation files in `translations/` for all functions being integrated
+- FITPACK stack scrubber built: `gcc -shared -fPIC -o rosco/lib/libscrub.so rosco/controller/src/scrub_stack.c` (required for Scenario 3 determinism — see dev note `202603261512`)
 
 ## Overview
 
-The test compares simulation output arrays (gen_torque, bld_pitch, gen_speed, gen_power, nac_yaw) between a pure-Fortran baseline and the integrated Fortran/C++ build. Each of 6 scenarios runs in a **separate OS process** to avoid DLL SAVE variable contamination across scenarios.
+The test compares simulation output arrays (gen_torque, bld_pitch, gen_speed, gen_power, nac_yaw) between a pure-Fortran baseline and the integrated Fortran/C++ build. Each of 8 scenarios runs in a **separate OS process** to avoid DLL SAVE variable contamination across scenarios.
 
-**What is compared:** 412,000 float64 values across 6 scenarios, using `np.array_equal()` (byte-identical, not tolerance-based).
+**What is compared:** 612,000 float64 values across 8 scenarios, using `np.array_equal()` (byte-identical, not tolerance-based).
 
 **What this proves:** The Fortran wrappers, C struct passing, view types, C++→C++ call paths, and library loading all produce correct results in the real ROSCO build. Every controller output at every timestep matches the pure-Fortran original.
 
@@ -96,9 +97,11 @@ docker exec vit-dev bash -c "cd /workspace/ROSCO/Examples && python3 vit_sim.py 
 docker exec vit-dev bash -c "cd /workspace/ROSCO/Examples && python3 vit_sim.py --scenario 4 --output-dir /workspace/ROSCO/baseline_final"
 docker exec vit-dev bash -c "cd /workspace/ROSCO/Examples && python3 vit_sim.py --scenario 5 --output-dir /workspace/ROSCO/baseline_final"
 docker exec vit-dev bash -c "cd /workspace/ROSCO/Examples && python3 vit_sim.py --scenario 6 --output-dir /workspace/ROSCO/baseline_final"
+docker exec vit-dev bash -c "cd /workspace/ROSCO/Examples && python3 vit_sim.py --scenario 7 --output-dir /workspace/ROSCO/baseline_final"
+docker exec vit-dev bash -c "cd /workspace/ROSCO/Examples && python3 vit_sim.py --scenario 8 --output-dir /workspace/ROSCO/baseline_final"
 ```
 
-Verify: 6 `.npz` files in `baseline_final/`, all 6 scenarios print "PASSED".
+Verify: 8 `.npz` files in `baseline_final/`, all 8 scenarios print "PASSED".
 
 ## Step 4: Integrate All Functions
 
@@ -184,9 +187,11 @@ docker exec vit-dev bash -c "cd /workspace/ROSCO/Examples && python3 vit_sim.py 
 docker exec vit-dev bash -c "cd /workspace/ROSCO/Examples && python3 vit_sim.py --scenario 4 --output-dir /workspace/ROSCO/integrated_final"
 docker exec vit-dev bash -c "cd /workspace/ROSCO/Examples && python3 vit_sim.py --scenario 5 --output-dir /workspace/ROSCO/integrated_final"
 docker exec vit-dev bash -c "cd /workspace/ROSCO/Examples && python3 vit_sim.py --scenario 6 --output-dir /workspace/ROSCO/integrated_final"
+docker exec vit-dev bash -c "cd /workspace/ROSCO/Examples && python3 vit_sim.py --scenario 7 --output-dir /workspace/ROSCO/integrated_final"
+docker exec vit-dev bash -c "cd /workspace/ROSCO/Examples && python3 vit_sim.py --scenario 8 --output-dir /workspace/ROSCO/integrated_final"
 ```
 
-Verify: 6 `.npz` files in `integrated_final/`, all 6 scenarios print "PASSED".
+Verify: 8 `.npz` files in `integrated_final/`, all 8 scenarios print "PASSED".
 
 ## Step 7: Compare All Arrays
 
@@ -204,7 +209,7 @@ print()
 ok = True
 total = 0
 
-for s in [1, 2, 3, 4, 5, 6]:
+for s in [1, 2, 3, 4, 5, 6, 7, 8]:
     b = np.load(f\"baseline_final/scenario_{s}.npz\")
     i = np.load(f\"integrated_final/scenario_{s}.npz\")
 
@@ -239,7 +244,7 @@ else:
 "'
 ```
 
-**Expected output:** ALL IDENTICAL — 412,000 total float64 values compared.
+**Expected output:** ALL IDENTICAL — 612,000 total float64 values compared.
 
 ## Step 8: Cleanup
 
@@ -268,7 +273,9 @@ Per-scenario isolation (separate `docker exec` = separate OS process = guarantee
 | 4 | 100s | 4,000 | Flp_Mode=2 | PIIController |
 | 5 | 400s | 16,000 | AWC_Mode=4 | ResController, ActiveWakeControl |
 | 6 | 100s | 4,000 | IPC_ControlMode=1 | IPC, NotchFilterSlopes |
+| 7 | 600s | 24,000 | Y_ControlMode=1, TD_Mode=1, Fl_Mode=1, StC_Mode=1, CC_Mode=1, Flp_Mode=1 | YawRateControl, ForeAftDamping, FloatingFeedback, StructuralControl, CableControl, FlapControl (all with synthetic non-zero inputs: NacVane, NacHeading, FA_Acc_TT, NacIMU_FA_RAcc, rootMOOP) |
+| 8 | 400s | 16,000 | IPC_ControlMode=1 (KP=0.1, KI=0.01), AWC_Mode=4 | IPC (real gains), ActiveWakeControl (rootMOOP feedback), NotchFilterSlopes (non-zero rootMOOP) |
 
 ## Last Validated
 
-2026-03-26: 27 functions, 412,000 values, ALL IDENTICAL.
+2026-03-26: 27 functions, 612,000 values across 8 scenarios, ALL IDENTICAL.
