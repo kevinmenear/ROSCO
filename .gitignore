@@ -96,9 +96,7 @@ integrated_final/
 examples/cp_ct_cq_lut.p
 
 # Files Generated in Examples
-Examples/DISCON.IN
-Examples/DISCON_yaw.IN
-Examples/DISCON_zmq.IN
+Examples/DISCON*.IN
 Examples/*.p
 
 # Exclude testing results

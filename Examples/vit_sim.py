@@ -10,12 +10,21 @@ for VIT translation verification:
      - Exercises: saturate, wrap_180, interp1d, LPFilter, HPFilter, SecLPFilter
   2. Yaw-by-IPC simulation with Y_ControlMode=2
      - Exercises: wrap_360 (via synthetic NacHeading/NacVane signals)
-  3. Filter coverage simulation with IPC + notch + cable control enabled
-     - Exercises: NotchFilter, NotchFilterSlopes, SecLPFilter_Vel
+  3. Filter coverage simulation with multi-mode flags enabled
+     - Exercises: NotchFilter, SecLPFilter_Vel, ForeAftDamping, FloatingFeedback,
+       FlapControl, YawRateControl, StructuralControl, CableControl
   4. Flap control simulation with Flp_Mode=2
      - Exercises: PIIController (dual-integral flap controller)
   5. Active wake control simulation with AWC_Mode=4
-     - Exercises: ResController (proportional-resonant controller)
+     - Exercises: ResController (proportional-resonant controller), ActiveWakeControl
+  6. IPC simulation with IPC_ControlMode=1
+     - Exercises: IPC, NotchFilterSlopes
+  7. Synthetic inputs for under-exercised functions (manual sim loop)
+     - Exercises: YawRateControl, ForeAftDamping, FloatingFeedback,
+       StructuralControl, CableControl, FlapControl with non-zero inputs
+  8. IPC + AWC with real blade moments (manual sim loop)
+     - Exercises: IPC (real gains), ActiveWakeControl (rootMOOP feedback),
+       NotchFilterSlopes (non-zero rootMOOP)
 
 All scenarios use the same compiled libdiscon.so, so KGen instrumentation
 captures state from whichever function is being extracted.
@@ -23,10 +32,9 @@ captures state from whichever function is being extracted.
 Usage:
     python3 vit_sim.py              # Run all scenarios
     python3 vit_sim.py --scenario 1 # Standard sim only
-    python3 vit_sim.py --scenario 2 # Yaw-by-IPC sim only
-    python3 vit_sim.py --scenario 3 # Filter coverage sim only
-    python3 vit_sim.py --scenario 4 # Flap control sim only
-    python3 vit_sim.py --scenario 5 # Active wake control sim only
+    python3 vit_sim.py --scenario 3 # Filter/mode coverage sim only
+    python3 vit_sim.py --scenario 7 # Synthetic inputs sim only
+    python3 vit_sim.py --scenario 8 # IPC + AWC sim only
 """
 
 import argparse
