@@ -40,15 +40,15 @@ translations:
   wrap_180:
     status: integrated
     cpp_file: translations/Functions/wrap_180.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 22
+    cases_total: 22
     cases_skipped: 0
     kernel_dir: kernel/wrap_180
   wrap_360:
     status: integrated
     cpp_file: translations/Functions/wrap_360.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 22
+    cases_total: 22
     cases_skipped: 0
     kernel_dir: kernel/wrap_360
   interp1d:
@@ -82,8 +82,8 @@ translations:
   ratelimit:
     status: integrated
     cpp_file: translations/Functions/ratelimit.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 21
+    cases_total: 21
     cases_skipped: 0
     kernel_dir: kernel/ratelimit
   sigma:
@@ -96,43 +96,43 @@ translations:
   LPFilter:
     status: integrated
     cpp_file: translations/Filters/lpfilter.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 22
+    cases_total: 22
     cases_skipped: 0
     kernel_dir: kernel/LPFilter
   HPFilter:
     status: integrated
     cpp_file: translations/Filters/hpfilter.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 21
+    cases_total: 21
     cases_skipped: 0
     kernel_dir: kernel/HPFilter
   SecLPFilter:
     status: integrated
     cpp_file: translations/Filters/seclpfilter.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 21
+    cases_total: 21
     cases_skipped: 0
     kernel_dir: kernel/SecLPFilter
   NotchFilter:
     status: integrated
     cpp_file: translations/Filters/notchfilter.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 21
+    cases_total: 21
     cases_skipped: 0
     kernel_dir: kernel/NotchFilter
   NotchFilterSlopes:
     status: integrated
     cpp_file: translations/Filters/notchfilterslopes.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 23
+    cases_total: 23
     cases_skipped: 0
     kernel_dir: kernel/NotchFilterSlopes
   SecLPFilter_Vel:
     status: integrated
     cpp_file: translations/Filters/seclpfilter_vel.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 21
+    cases_total: 21
     cases_skipped: 0
     kernel_dir: kernel/SecLPFilter_Vel
   PIController:
@@ -145,8 +145,8 @@ translations:
   ResController:
     status: integrated
     cpp_file: translations/Controllers/rescontroller.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 21
+    cases_total: 21
     cases_skipped: 0
     kernel_dir: kernel/ResController
   PIIController:
@@ -180,29 +180,29 @@ translations:
   CableControl:
     status: integrated
     cpp_file: translations/Controllers/cablecontrol.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 21
+    cases_total: 21
     cases_skipped: 0
     kernel_dir: kernel/CableControl
   FlapControl:
     status: integrated
     cpp_file: translations/Controllers/flapcontrol.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 22
+    cases_total: 22
     cases_skipped: 0
     kernel_dir: kernel/FlapControl
   YawRateControl:
     status: integrated
     cpp_file: translations/Controllers/yawratecontrol.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 21
+    cases_total: 21
     cases_skipped: 0
     kernel_dir: kernel/YawRateControl
   VariableSpeedControl:
     status: integrated
     cpp_file: translations/Controllers/variablespeedcontrol.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 22
+    cases_total: 22
     cases_skipped: 0
     kernel_dir: kernel/VariableSpeedControl
   IPC:
@@ -215,16 +215,16 @@ translations:
   ActiveWakeControl:
     status: integrated
     cpp_file: translations/Controllers/activewakecontrol.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 23
+    cases_total: 23
     cases_skipped: 0
     kernel_dir: kernel/ActiveWakeControl
   PitchControl:
     status: verified
-    cpp_file: translations/Controllers/pitchcontrol.cpp
     cases_passed: 20
     cases_total: 20
     cases_skipped: 0
+    cpp_file: translations/Controllers/pitchcontrol.cpp
     kernel_dir: kernel/PitchControl
 types:
   ControlParameters:
