@@ -214,7 +214,7 @@ Keep `baseline_final/` as reference for future tests (or regenerate from clean F
 
 ## Why Per-Scenario Isolation Is Required
 
-Running all 6 scenarios in a single Python process causes Fortran SAVE variables (LocalVar, CntrPar, objInst, etc.) to persist between scenarios via DLL memory that `dlclose()` does not reliably release. This cross-scenario contamination is:
+Running all 8 scenarios in a single Python process causes Fortran SAVE variables (LocalVar, CntrPar, objInst, etc.) to persist between scenarios via DLL memory that `dlclose()` does not reliably release. This cross-scenario contamination is:
 
 - **Consistent with clean Fortran** (same contaminated result every run)
 - **Non-deterministic with the integrated binary** (varies between runs due to Python Cp interpolation sensitivity to shared library memory layout)
@@ -223,16 +223,16 @@ Per-scenario isolation (separate `docker exec` = separate OS process = guarantee
 
 ## Scenario Coverage
 
-| Scenario | Duration | Timesteps | Mode Flags | Functions Exercised |
-|----------|----------|-----------|------------|-------------------|
-| 1 | 1000s | 40,000 | Default | saturate, wrap_180, interp1d, LPFilter, HPFilter, SecLPFilter, PIController, VariableSpeedControl |
-| 2 | 100s | 4,000 | Y_ControlMode=2 | wrap_360 |
-| 3 | 400s | 16,000 | CC_Mode=1, TD_Mode=1, Fl_Mode=1, Y_ControlMode=1, StC_Mode=1, Flp_Mode=1, F_GenSpdNotch_N=1 | NotchFilter, SecLPFilter_Vel, ForeAftDamping, FloatingFeedback, FlapControl, YawRateControl, StructuralControl, CableControl |
-| 4 | 100s | 4,000 | Flp_Mode=2 | PIIController |
-| 5 | 400s | 16,000 | AWC_Mode=4 | ResController, ActiveWakeControl |
-| 6 | 100s | 4,000 | IPC_ControlMode=1 | IPC, NotchFilterSlopes |
-| 7 | 600s | 24,000 | Y_ControlMode=1, TD_Mode=1, Fl_Mode=1, StC_Mode=1, CC_Mode=1, Flp_Mode=1 | YawRateControl, ForeAftDamping, FloatingFeedback, StructuralControl, CableControl, FlapControl (all with synthetic non-zero inputs: NacVane, NacHeading, FA_Acc_TT, NacIMU_FA_RAcc, rootMOOP) |
-| 8 | 400s | 16,000 | IPC_ControlMode=1 (KP=0.1, KI=0.01), AWC_Mode=4 | IPC (real gains), ActiveWakeControl (rootMOOP feedback), NotchFilterSlopes (non-zero rootMOOP) |
+| Scenario | Duration | Timesteps | Mode Flags | Functions Called | Functions Exercised (non-zero inputs) |
+|----------|----------|-----------|------------|-----------------|--------------------------------------|
+| 1 | 1000s | 40,000 | Default | saturate, wrap_180, interp1d, LPFilter, HPFilter, SecLPFilter, PIController, VariableSpeedControl | All listed |
+| 2 | 100s | 4,000 | Y_ControlMode=2 | wrap_360 | wrap_360 |
+| 3 | 400s | 16,000 | CC_Mode=1, TD_Mode=1, Fl_Mode=1, Y_ControlMode=1, StC_Mode=1, Flp_Mode=1, F_GenSpdNotch_N=1 | NotchFilter, SecLPFilter_Vel, ForeAftDamping, FloatingFeedback, FlapControl, YawRateControl, StructuralControl, CableControl | NotchFilter, SecLPFilter_Vel (others called with zero inputs) |
+| 4 | 100s | 4,000 | Flp_Mode=2 | PIIController | PIIController |
+| 5 | 400s | 16,000 | AWC_Mode=4 | ResController, ActiveWakeControl | ResController, ActiveWakeControl (zero rootMOOP) |
+| 6 | 100s | 4,000 | IPC_ControlMode=1 | IPC, NotchFilterSlopes | IPC, NotchFilterSlopes (zero rootMOOP) |
+| 7 | 600s | 24,000 | Y_ControlMode=1, TD_Mode=1, Fl_Mode=1, StC_Mode=1, CC_Mode=1, Flp_Mode=1 | YawRateControl, ForeAftDamping, FloatingFeedback, StructuralControl, CableControl, FlapControl | All listed (synthetic non-zero inputs: NacVane, NacHeading, FA_Acc_TT, NacIMU_FA_RAcc, rootMOOP) |
+| 8 | 400s | 16,000 | IPC_ControlMode=1 (KP=0.1, KI=0.01), AWC_Mode=4 | IPC, ActiveWakeControl, NotchFilterSlopes | All listed (real IPC gains, non-zero rootMOOP feedback) |
 
 ## Last Validated
 
