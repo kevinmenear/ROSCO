@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 23:30:26 
+!Generated at : 2026-03-27 18:15:13 
 !KGEN version : 0.8.1 
   
 ! ROSCO Registry
@@ -509,9 +509,34 @@ END TYPE ObjectInstances
 ! VIT: removed invalid PUBLIC statement
 ! VIT: removed invalid PUBLIC statement
 ! VIT: removed invalid PUBLIC statement
+!read state subroutine for kw_rosco_types_we 
+  
 CONTAINS 
   
+  
 
+
+!read state subroutine for kw_rosco_types_filterparameters 
+  
+
+
+!read state subroutine for kw_rosco_types_rlparams 
+  
+
+
+!read state subroutine for kw_rosco_types_piparams 
+  
+
+
+!read state subroutine for kw_rosco_types_resparams 
+  
+
+
+!read state subroutine for kw_rosco_types_localvariables 
+  
+
+
+  
 !read state subroutine for kr_rosco_types_controlparameters 
 RECURSIVE SUBROUTINE kr_rosco_types_controlparameters(var, kgen_unit, printname, printvar) 
     TYPE(controlparameters), INTENT(INOUT) :: var 

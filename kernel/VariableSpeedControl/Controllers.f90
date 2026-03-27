@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 23:41:37 
+!Generated at : 2026-03-27 18:27:18 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -18,24 +18,10 @@
 MODULE Controllers
 
     USE controllerblocks 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
-    USE ISO_C_BINDING
     IMPLICIT NONE 
-
-
-    ! Auto-generated interface for C++ implementation of VariableSpeedControl
-    INTERFACE
-        SUBROUTINE variablespeedcontrol_c(avrSWAP, CntrPar, LocalVar, objInst, ErrVar) BIND(C, NAME='variablespeedcontrol_c')
-            USE ISO_C_BINDING
-            REAL(C_FLOAT), INTENT(INOUT) :: avrSWAP(*)
-            TYPE(C_PTR), VALUE :: CntrPar
-            TYPE(C_PTR), VALUE :: LocalVar
-            TYPE(C_PTR), VALUE :: objInst
-            TYPE(C_PTR), VALUE :: ErrVar
-        END SUBROUTINE variablespeedcontrol_c
-    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -43,21 +29,163 @@ CONTAINS
 
 !-------------------------------------------------------------------------------------------------------------------------------  
     SUBROUTINE VariableSpeedControl(avrSWAP, CntrPar, LocalVar, objInst, ErrVar)
-        USE ISO_C_BINDING
-        USE ROSCO_Types, ONLY : ControlParameters, LocalVariables, ObjectInstances, ErrorVariables
-        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_original_controlparameters
-        IMPLICIT NONE
-        REAL(ReKi), INTENT(INOUT) :: avrSWAP(*)
-        TYPE(ControlParameters), INTENT(INOUT), TARGET :: CntrPar
-        TYPE(LocalVariables), INTENT(INOUT), TARGET :: LocalVar
-        TYPE(ObjectInstances), INTENT(INOUT), TARGET :: objInst
-        TYPE(ErrorVariables), INTENT(INOUT), TARGET :: ErrVar
-        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
-        ! Populate view structs from Fortran types
-        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
-        ! Stash original Fortran pointers for callee bridges
-        vit_original_controlparameters => CntrPar
-        CALL variablespeedcontrol_c(avrSWAP, C_LOC(CntrPar_view), C_LOC(LocalVar), C_LOC(objInst), C_LOC(ErrVar))
+    ! Generator torque controller
+    !       VS_State = VS_State_Error             (0), Error state, for debugging purposes, GenTq = VS_RtTq
+    !       VS_State = VS_State_Region_1_5        (1), Region 1(.5) operation, torque control to keep the rotor at cut-in speed towards the Cp-max operational curve
+    !       VS_State = VS_State_Region_2          (2), Region 2 operation, maximum rotor power efficiency (Cp-max) tracking using K*omega^2 law, fixed fine-pitch angle in BldPitch controller
+    !       VS_State = VS_State_Region_2_5        (3), Region 2.5, transition between below and above-rated operating conditions (near-rated region) using PI torque control
+    !       VS_State = VS_State_Region_3_ConstTrq (4), above-rated operation using pitch control (constant torque mode)
+    !       VS_State = VS_State_Region_3_ConstPwr (5), above-rated operation using pitch and torque control (constant power mode)
+    !       VS_State = VS_State_PI                (6), Tip-Speed-Ratio tracking PI controller (ignore state machine)
+        USE rosco_types, ONLY: controlparameters, localvariables, objectinstances, errorvariables 
+        ! Inputs
+        USE rosco_types, ONLY: kr_rosco_types_controlparameters 
+        USE rosco_types, ONLY: kr_rosco_types_localvariables 
+        USE rosco_types, ONLY: kr_rosco_types_objectinstances 
+        USE rosco_types, ONLY: kr_rosco_types_errorvariables 
+        USE rosco_types, ONLY: kv_rosco_types_controlparameters 
+        USE rosco_types, ONLY: kv_rosco_types_localvariables 
+        USE rosco_types, ONLY: kv_rosco_types_objectinstances 
+        USE rosco_types, ONLY: kv_rosco_types_errorvariables 
+        REAL(ReKi),                 INTENT(INOUT)       :: avrSWAP(*)    ! The swap array, used to pass data to, and receive data from, the DLL controller.
+        TYPE(ControlParameters),    INTENT(INOUT)       :: CntrPar
+        TYPE(LocalVariables),       INTENT(INOUT)       :: LocalVar
+        TYPE(ObjectInstances),      INTENT(INOUT)       :: objInst
+        TYPE(ErrorVariables),       INTENT(INOUT)       :: ErrVar
+
+        CHARACTER(*),               PARAMETER           :: RoutineName = 'VariableSpeedControl'
+        ! Allocate Variables
+        ! -------- Variable-Speed Torque Controller --------
+        ! Pre-compute generator torque values for K*Omega^2 and constant power
+
+
+        LocalVar%VS_KOmega2_GenTq = CntrPar%VS_Rgn2K*LocalVar%GenSpeedF*LocalVar%GenSpeedF
+        LocalVar%VS_ConstPwr_GenTq = (CntrPar%VS_RtPwr/(CntrPar%VS_GenEff/100.0))/LocalVar%GenSpeedF * LocalVar%PRC_R_Torque
+        ! Determine maximum torque saturation limit, VS_MaxTq
+
+        IF (CntrPar%VS_FBP == VS_FBP_Variable_Pitch) THEN 
+            ! Variable pitch mode        
+            IF (CntrPar%VS_ConstPower == VS_Mode_ConstPwr) THEN
+                LocalVar%VS_MaxTq = min(LocalVar%VS_ConstPwr_GenTq, CntrPar%VS_MaxTq)
+            ELSE
+                LocalVar%VS_MaxTq = CntrPar%VS_RtTq * LocalVar%PRC_R_Torque
+            END IF
+        ELSE   
+            ! Constant pitch, max torque is control parameter
+            LocalVar%VS_MaxTq = CntrPar%VS_MaxTq  
+        ENDIF 
+        ! Optimal Tip-Speed-Ratio tracking controller (reference generated in subroutine ComputeVariablesSetpoints)
+
+        IF ((CntrPar%VS_ControlMode == VS_Mode_WSE_TSR) .OR.             (CntrPar%VS_ControlMode == VS_Mode_Power_TSR) .OR.             (CntrPar%VS_ControlMode == VS_Mode_Torque_TSR)) THEN
+            ! PI controller
+
+
+            LocalVar%GenTq = PIController( &
+                                        LocalVar%VS_SpdErr, &
+                                        CntrPar%VS_KP(1), &
+                                        CntrPar%VS_KI(1), &
+                                        CntrPar%VS_MinTq, LocalVar%VS_MaxTq, &
+                                        LocalVar%DT, LocalVar%VS_LastGenTrq, LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI)
+            ! Saturate control input to Region 3 constant-power value if FBP mode is set to constant-power overspeed (no need for explicit transition region)
+
+            IF (CntrPar%VS_FBP == VS_FBP_Power_Overspeed) THEN
+                LocalVar%GenTq = MIN(LocalVar%VS_ConstPwr_GenTq, LocalVar%GenTq)
+            ENDIF
+        ! K*Omega^2 control law with PI torque control in transition regions
+
+        ELSEIF (CntrPar%VS_ControlMode == VS_Mode_KOmega) THEN
+            ! Update PI loops for region 1.5 and 2.5 PI control
+            LocalVar%GenArTq = PIController(LocalVar%VS_SpdErrAr, CntrPar%VS_KP(1), CntrPar%VS_KI(1), CntrPar%VS_MaxOMTq, CntrPar%VS_ArSatTq, LocalVar%DT, CntrPar%VS_MaxOMTq, LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI)
+            LocalVar%GenBrTq = PIController(LocalVar%VS_SpdErrBr, CntrPar%VS_KP(1), CntrPar%VS_KI(1), CntrPar%VS_MinTq, CntrPar%VS_MinOMTq, LocalVar%DT, CntrPar%VS_MinOMTq, LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI)
+            ! State machine if switching to blade pitch control
+
+            IF (LocalVar%VS_State == VS_State_Region_1_5) THEN ! Region 1.5
+                LocalVar%GenTq = LocalVar%GenBrTq
+            ELSEIF (LocalVar%VS_State == VS_State_Region_2) THEN ! Region 2
+                LocalVar%GenTq = LocalVar%VS_KOmega2_GenTq
+            ELSEIF (LocalVar%VS_State == VS_State_Region_2_5) THEN ! Region 2.5
+                LocalVar%GenTq = LocalVar%GenArTq
+            ELSEIF (LocalVar%VS_State == VS_State_Region_3_ConstTrq) THEN ! Region 3, constant torque
+                LocalVar%GenTq = CntrPar%VS_RtTq
+            ELSEIF (LocalVar%VS_State == VS_State_Region_3_ConstPwr) THEN ! Region 3, constant power
+                LocalVar%GenTq = LocalVar%VS_ConstPwr_GenTq
+            ELSEIF (LocalVar%VS_State == VS_State_Region_3_FBP) THEN ! Region 3, fixed blade pitch
+                ! Constant power overspeed
+                IF (CntrPar%VS_FBP == VS_FBP_Power_Overspeed) THEN
+                    ! K*Omega^2 in Region 2 or constant power overspeed in Region 3
+                    LocalVar%GenTq = MIN(LocalVar%VS_ConstPwr_GenTq, LocalVar%VS_KOmega2_GenTq)
+                ! Reference-tracking in Region 3
+                ELSEIF ((CntrPar%VS_FBP == VS_FBP_WSE_Ref) .OR. (CntrPar%VS_FBP == VS_FBP_Torque_Ref)) THEN
+                    LocalVar%GenTq = LocalVar%GenArTq
+                ENDIF
+            END IF
+
+        ELSE        ! VS_ControlMode of 0
+            LocalVar%GenTq = 0
+        ENDIF
+        ! Shutdown
+        
+        
+        IF (LocalVar%SD_Trigger == 0) THEN
+            LocalVar%GenTq_SD = LocalVar%GenTq
+        ELSE 
+            IF (CntrPar%SD_Method == 1 .OR. CntrPar%SD_Method == 2) THEN
+                LocalVar%GenTq_SD = LocalVar%GenTq_SD - LocalVar%SD_MaxTorqueRate*LocalVar%DT
+                LocalVar%GenTq_SD = saturate(LocalVar%GenTq_SD, CntrPar%VS_MinTq, CntrPar%VS_MaxTq)
+            ENDIF
+            LocalVar%GenTq = LocalVar%GenTq_SD
+        ENDIF
+        ! Saturate based on most stringent defined maximum
+
+        LocalVar%GenTq = saturate(LocalVar%GenTq, CntrPar%VS_MinTq, MIN(CntrPar%VS_MaxTq, LocalVar%VS_MaxTq))
+        ! Saturate the commanded torque using the torque rate limit
+
+        LocalVar%GenTq = ratelimit(LocalVar%GenTq, -CntrPar%VS_MaxRat, CntrPar%VS_MaxRat, LocalVar%DT, (LocalVar%restart /= 0), LocalVar%rlP,objInst%instRL)    ! Saturate the command using the torque rate limit
+        ! Open loop torque control
+
+        IF ((CntrPar%OL_Mode > 0) .AND. (CntrPar%Ind_GenTq > 0)) THEN
+            ! Get current OL GenTq, applies for OL_Mode 1 and 2
+            IF (LocalVar%Time >= CntrPar%OL_Breakpoints(1)) THEN
+                LocalVar%GenTq = interp1d(CntrPar%OL_Breakpoints,CntrPar%OL_GenTq,LocalVar%OL_Index,ErrVar)
+            ENDIF
+            ! Azimuth tracking control
+            
+            IF (CntrPar%OL_Mode == 2) THEN
+                ! Push, pop and unwrap azimuth buffer 
+                ! Initialize
+                
+                IF (LocalVar%iStatus == 0) THEN
+                    LocalVar%AzBuffer(1) = LocalVar%Azimuth
+                    LocalVar%AzBuffer(2) = LocalVar%Azimuth
+                ENDIF
+                LocalVar%AzBuffer(1) = LocalVar%AzBuffer(2)
+                LocalVar%AzBuffer(2) = LocalVar%Azimuth
+                LocalVar%AzBuffer = UNWRAP(LocalVar%AzBuffer, ErrVar)
+                LocalVar%AzUnwrapped = LocalVar%AzBuffer(2)
+                ! Current desired Azimuth, error
+
+                LocalVar%OL_Azimuth = interp1d(CntrPar%OL_Breakpoints,CntrPar%OL_Azimuth,LocalVar%Time,ErrVar)
+                LocalVar%AzError = LocalVar%OL_Azimuth - LocalVar%AzUnwrapped 
+
+                LocalVar%GenTqAz = PIDController(LocalVar%AzError, CntrPar%RP_Gains(1), CntrPar%RP_Gains(2), CntrPar%RP_Gains(3), CntrPar%RP_Gains(4), -LocalVar%VS_MaxTq * 2, LocalVar%VS_MaxTq * 2, LocalVar%DT, 0.0_DbKi, LocalVar%piP, (LocalVar%restart /= 0), objInst, LocalVar)
+                LocalVar%GenTq = LocalVar%GenTq + LocalVar%GenTqAz
+
+            ENDIF
+
+        ENDIF
+        ! Reset the value of LocalVar%VS_LastGenTrq to the current values:
+
+        LocalVar%VS_LastGenTrq = LocalVar%GenTq
+        LocalVar%VS_LastGenPwr = LocalVar%VS_GenPwr
+        ! Set the command generator torque (See Appendix A of Bladed User's Guide):
+        
+        avrSWAP(47) = MAX(0.0_DbKi, LocalVar%VS_LastGenTrq)  ! Demanded generator torque, prevent negatives.
+        ! Add RoutineName to error message
+
+        IF (ErrVar%aviFAIL < 0) THEN
+            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
+        ENDIF
+
     END SUBROUTINE VariableSpeedControl
 !-------------------------------------------------------------------------------------------------------------------------------
 

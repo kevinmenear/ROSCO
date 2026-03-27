@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 23:43:08 
+!Generated at : 2026-03-27 18:29:25 
 !KGEN version : 0.8.1 
   
 !**********************************************************************************************************************************
@@ -27,7 +27,7 @@ MODULE SysSubs
 
     USE rosco_types 
     USE constants 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
 

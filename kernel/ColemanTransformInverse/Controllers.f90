@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 23:31:19 
+!Generated at : 2026-03-27 18:38:23 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -18,11 +18,12 @@
 MODULE Controllers
 
     USE controllerblocks 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
     IMPLICIT NONE 
-! VIT: removed invalid PUBLIC statement
+    PUBLIC ipc 
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
 
@@ -40,13 +41,14 @@ SUBROUTINE ipc(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath, cntrpar,
         !   - Includes yaw by IPC
 
     USE rosco_types, ONLY: controlparameters, localvariables 
-    USE kgen_utils_mod
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
+    USE kgen_utils_mod, ONLY: kgen_perturb_real 
     USE rosco_types, ONLY: kr_rosco_types_localvariables 
     USE rosco_types, ONLY: kr_rosco_types_controlparameters 
     USE rosco_types, ONLY: kv_rosco_types_localvariables 
     USE rosco_types, ONLY: kv_rosco_types_controlparameters 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: check_t, kgen_init_check, kgen_init_verify, kgen_tolerance, kgen_minvalue, kgen_verboselevel, &
+    &CHECK_IDENTICAL, CHECK_IN_TOL, CHECK_OUT_TOL 
         
     TYPE(controlparameters), INTENT(INOUT) :: cntrpar 
     TYPE(localvariables), INTENT(INOUT) :: localvar 
@@ -132,7 +134,7 @@ SUBROUTINE ipc(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath, cntrpar,
         IF (kgen_mainstage) THEN 
               
             !verify init 
-            CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=100) 
+            CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=1) 
             CALL kgen_init_check(check_status, rank=kgen_mpirank) 
               
             !extern verify variables 
@@ -218,7 +220,6 @@ SUBROUTINE ipc(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath, cntrpar,
                     END IF   
                 END IF   
                 check_result = CHECK_IDENTICAL 
-                WRITE(*, *) "[VIT_ARRAY] ", trim(adjustl(varname)), " | IDENTICAL | size=", SIZE(var)
             ELSE 
                 ALLOCATE (buf1(SIZE(var,dim=1))) 
                 ALLOCATE (buf2(SIZE(var,dim=1))) 
@@ -240,7 +241,6 @@ SUBROUTINE ipc(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath, cntrpar,
                         END IF   
                     END IF   
                     check_result = CHECK_OUT_TOL 
-                    WRITE(*, *) "[VIT_ARRAY] ", trim(adjustl(varname)), " | OUT_TOL | n_diff=", n, " | rms=", rmsdiff
                 ELSE 
                     check_status%numInTol = check_status%numInTol + 1 
                     IF (kgen_verboseLevel > 1) THEN 
@@ -249,7 +249,6 @@ SUBROUTINE ipc(kgen_unit, kgen_measure, kgen_isverified, kgen_filepath, cntrpar,
                         END IF   
                     END IF   
                     check_result = CHECK_IN_TOL 
-                    WRITE(*, *) "[VIT_ARRAY] ", trim(adjustl(varname)), " | IN_TOL | n_diff=", n, " | rms=", rmsdiff
                 END IF   
             END IF   
             IF (check_result == CHECK_IDENTICAL) THEN 

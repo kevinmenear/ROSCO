@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 23:42:01 
+!Generated at : 2026-03-27 18:27:59 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -18,45 +18,207 @@
 MODULE Controllers
 
     USE controllerblocks 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
-    USE ISO_C_BINDING
     IMPLICIT NONE 
-
-
-    ! Auto-generated interface for C++ implementation of PitchControl
-    INTERFACE
-        SUBROUTINE pitchcontrol_c(avrSWAP, CntrPar, LocalVar, objInst, DebugVar, ErrVar) BIND(C, NAME='pitchcontrol_c')
-            USE ISO_C_BINDING
-            REAL(C_FLOAT), INTENT(INOUT) :: avrSWAP(*)
-            TYPE(C_PTR), VALUE :: CntrPar
-            TYPE(C_PTR), VALUE :: LocalVar
-            TYPE(C_PTR), VALUE :: objInst
-            TYPE(C_PTR), VALUE :: DebugVar
-            TYPE(C_PTR), VALUE :: ErrVar
-        END SUBROUTINE pitchcontrol_c
-    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE PitchControl(avrSWAP, CntrPar, LocalVar, objInst, DebugVar, ErrVar)
-        USE ISO_C_BINDING
-        USE ROSCO_Types, ONLY : ControlParameters, LocalVariables, ObjectInstances, DebugVariables, ErrorVariables
-        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_original_controlparameters
-        IMPLICIT NONE
-        REAL(ReKi), INTENT(INOUT) :: avrSWAP(*)
-        TYPE(ControlParameters), INTENT(INOUT), TARGET :: CntrPar
-        TYPE(LocalVariables), INTENT(INOUT), TARGET :: LocalVar
-        TYPE(ObjectInstances), INTENT(INOUT), TARGET :: objInst
-        TYPE(DebugVariables), INTENT(INOUT), TARGET :: DebugVar
-        TYPE(ErrorVariables), INTENT(INOUT), TARGET :: ErrVar
-        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
-        ! Populate view structs from Fortran types
-        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
-        ! Stash original Fortran pointers for callee bridges
-        vit_original_controlparameters => CntrPar
-        CALL pitchcontrol_c(avrSWAP, C_LOC(CntrPar_view), C_LOC(LocalVar), C_LOC(objInst), C_LOC(DebugVar), C_LOC(ErrVar))
+    ! Blade pitch controller, generally maximizes rotor speed below rated (region 2) and regulates rotor speed above rated (region 3)
+    !       PC_State = PC_State_Disabled (0), fix blade pitch to fine pitch angle (PC_FinePit)
+    !       PC_State = PC_State_Disabled (1), is gain scheduled PI controller 
+        USE rosco_types, ONLY: controlparameters, localvariables, objectinstances, debugvariables, errorvariables 
+        ! Inputs
+        USE rosco_types, ONLY: kr_rosco_types_controlparameters 
+        USE rosco_types, ONLY: kr_rosco_types_localvariables 
+        USE rosco_types, ONLY: kr_rosco_types_objectinstances 
+        USE rosco_types, ONLY: kr_rosco_types_debugvariables 
+        USE rosco_types, ONLY: kr_rosco_types_errorvariables 
+        USE rosco_types, ONLY: kv_rosco_types_controlparameters 
+        USE rosco_types, ONLY: kv_rosco_types_localvariables 
+        USE rosco_types, ONLY: kv_rosco_types_objectinstances 
+        USE rosco_types, ONLY: kv_rosco_types_debugvariables 
+        USE rosco_types, ONLY: kv_rosco_types_errorvariables 
+        
+        REAL(ReKi),              INTENT(INOUT)       :: avrSWAP(*)   ! The swap array, used to pass data to, and receive data from the DLL controller.
+        TYPE(ControlParameters),    INTENT(INOUT)       :: CntrPar
+        TYPE(LocalVariables),       INTENT(INOUT)       :: LocalVar
+        TYPE(ObjectInstances),      INTENT(INOUT)       :: objInst
+        TYPE(DebugVariables),       INTENT(INOUT)       :: DebugVar
+        TYPE(ErrorVariables),       INTENT(INOUT)       :: ErrVar
+        ! Allocate Variables:
+
+        INTEGER(IntKi)                                  :: K            ! Index used for looping through blades.
+
+        CHARACTER(*),               PARAMETER           :: RoutineName = 'PitchControl'
+        ! ------- Blade Pitch Controller --------
+        ! Load PC State
+
+        IF (LocalVar%PC_State == PC_State_Enabled) THEN ! PI BldPitch control
+            LocalVar%PC_MaxPit = CntrPar%PC_MaxPit
+        ELSE ! debug mode, fix at fine pitch
+            LocalVar%PC_MaxPit = CntrPar%PC_FinePit
+        END IF
+        ! Hold blade pitch at last value
+        ! If:
+        !   In pre-startup mode (before freewheeling)
+
+        IF ((CntrPar%SU_Mode > 0) .AND. (LocalVar%SU_Stage == -1)) THEN
+            LocalVar%PC_MaxPit = LocalVar%BlPitchCMeas
+            LocalVar%PC_MinPit = LocalVar%BlPitchCMeas
+        END IF
+        ! Compute (interpolate) the gains based on previously commanded blade pitch angles and lookup table:
+        
+        LocalVar%PC_KP = interp1d(CntrPar%PC_GS_angles, CntrPar%PC_GS_KP, LocalVar%BlPitchCMeasF, ErrVar) ! Proportional gain
+        LocalVar%PC_KI = interp1d(CntrPar%PC_GS_angles, CntrPar%PC_GS_KI, LocalVar%BlPitchCMeasF, ErrVar) ! Integral gain
+        LocalVar%PC_KD = interp1d(CntrPar%PC_GS_angles, CntrPar%PC_GS_KD, LocalVar%BlPitchCMeasF, ErrVar) ! Derivative gain
+        LocalVar%PC_TF = interp1d(CntrPar%PC_GS_angles, CntrPar%PC_GS_TF, LocalVar%BlPitchCMeasF, ErrVar) ! TF gains (derivative filter) !NJA - need to clarify
+        ! Compute the collective pitch command associated with the proportional and integral gains:
+        
+        LocalVar%PC_PitComT = PIController(LocalVar%PC_SpdErr, LocalVar%PC_KP, LocalVar%PC_KI, LocalVar%PC_MinPit, LocalVar%PC_MaxPit, LocalVar%DT, LocalVar%BlPitch(1), LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI)
+        DebugVar%PC_PICommand = LocalVar%PC_PitComT
+        ! Find individual pitch control contribution
+
+        IF ((CntrPar%IPC_ControlMode >= 1) .OR. (CntrPar%Y_ControlMode == 2)) THEN
+            CALL IPC(CntrPar, LocalVar, objInst, DebugVar, ErrVar)
+        ELSE
+            LocalVar%IPC_PitComF = 0.0 ! THIS IS AN ARRAY!!
+        END IF
+        ! Include tower fore-aft tower vibration damping control
+        
+        IF (CntrPar%TD_Mode > 0) THEN
+            CALL ForeAftDamping(CntrPar, LocalVar, objInst)
+        ELSE
+            LocalVar%FA_PitCom = 0.0 ! THIS IS AN ARRAY!!
+        ENDIF
+        ! Pitch Saturation
+        
+        IF (CntrPar%PS_Mode > 0) THEN
+            LocalVar%PC_MinPit = PitchSaturation(LocalVar,CntrPar,objInst,DebugVar, ErrVar)
+            LocalVar%PC_MinPit = max(LocalVar%PC_MinPit, CntrPar%PC_FinePit)
+        ELSE
+            LocalVar%PC_MinPit = CntrPar%PC_FinePit
+        ENDIF
+        DebugVar%PC_MinPit = LocalVar%PC_MinPit
+        ! FloatingFeedback
+        
+        IF (CntrPar%Fl_Mode > 0) THEN
+            LocalVar%Fl_PitCom = FloatingFeedback(LocalVar, CntrPar, objInst, ErrVar)
+            DebugVar%FL_PitCom = LocalVar%Fl_PitCom
+            LocalVar%PC_PitComT = LocalVar%PC_PitComT + LocalVar%Fl_PitCom
+        ENDIF
+        ! Saturate collective pitch commands:
+        
+        LocalVar%PC_PitComT = saturate(LocalVar%PC_PitComT, LocalVar%PC_MinPit, CntrPar%PC_MaxPit)                    ! Saturate the overall command using the pitch angle limits
+        LocalVar%PC_PitComT = ratelimit(LocalVar%PC_PitComT, CntrPar%PC_MinRat, CntrPar%PC_MaxRat, LocalVar%DT, (LocalVar%restart /= 0), LocalVar%rlP,objInst%instRL,LocalVar%BlPitchCMeas) ! Saturate the overall command of blade K using the pitch rate limit
+        LocalVar%PC_PitComT_Last = LocalVar%PC_PitComT
+        ! Combine and saturate all individual pitch commands in software
+
+        DO K = 1,LocalVar%NumBl ! Loop through all blades, add IPC contribution and limit pitch rate
+            LocalVar%PitCom(K) = LocalVar%PC_PitComT + LocalVar%FA_PitCom(K) 
+            LocalVar%PitCom(K) = saturate(LocalVar%PitCom(K), LocalVar%PC_MinPit, CntrPar%PC_MaxPit)                    ! Saturate the command using the pitch saturation limits
+            LocalVar%PitCom(K) = LocalVar%PitCom(K) + LocalVar%IPC_PitComF(K)                                          ! Add IPC
+            ! Hard IPC saturation by peak shaving limit
+            
+            IF (CntrPar%IPC_SatMode == 1) THEN
+                LocalVar%PitCom(K) = saturate(LocalVar%PitCom(K), LocalVar%PC_MinPit, CntrPar%PC_MaxPit)  
+            END IF
+            ! Add ZeroMQ pitch commands
+            
+            LocalVar%PitCom(K) = LocalVar%PitCom(K) + LocalVar%ZMQ_PitOffset(K)
+            ! Rate limit                  
+
+            LocalVar%PitCom(K) = ratelimit(LocalVar%PitCom(K), CntrPar%PC_MinRat, CntrPar%PC_MaxRat, LocalVar%DT, (LocalVar%restart /= 0), LocalVar%rlP,objInst%instRL,LocalVar%BlPitch(K)) ! Saturate the overall command of blade K using the pitch rate limit
+        END DO 
+        ! Open Loop control, use if
+        !   Open loop mode active         Using OL blade pitch control      
+
+        IF (CntrPar%OL_Mode > 0) THEN
+            IF (LocalVar%Time >= CntrPar%OL_Breakpoints(1)) THEN    ! Time > first open loop breakpoint
+                IF (CntrPar%Ind_BldPitch(1) > 0) THEN
+                    LocalVar%PitCom(1) = interp1d(CntrPar%OL_Breakpoints,CntrPar%OL_BldPitch1,LocalVar%OL_Index, ErrVar)
+                ENDIF
+
+                IF (CntrPar%Ind_BldPitch(2) > 0) THEN
+                    LocalVar%PitCom(2) = interp1d(CntrPar%OL_Breakpoints,CntrPar%OL_BldPitch2,LocalVar%OL_Index, ErrVar)
+                ENDIF
+
+                IF (CntrPar%Ind_BldPitch(3) > 0) THEN
+                    LocalVar%PitCom(3) = interp1d(CntrPar%OL_Breakpoints,CntrPar%OL_BldPitch3,LocalVar%OL_Index, ErrVar)
+                ENDIF
+            ENDIF
+        ENDIF
+        ! Active wake control
+
+        IF (CntrPar%AWC_Mode > 0) THEN
+            CALL ActiveWakeControl(CntrPar, LocalVar, DebugVar, objInst)
+        ENDIF
+        ! Shutdown
+
+        IF (LocalVar%SD_Trigger == 0) THEN
+            LocalVar%PitCom_SD = LocalVar%PitCom
+        ! If shutdown is not triggered, PitCom_SD tracks PitCom.
+        ELSE
+            IF (CntrPar%SD_Method == 1 .OR. CntrPar%SD_Method == 2) THEN
+                DO K = 1,LocalVar%NumBl
+                    LocalVar%PitCom_SD(K) = LocalVar%PitCom_SD(K) + LocalVar%SD_MaxPitchRate*LocalVar%DT
+                END DO
+            ENDIF
+            LocalVar%PitCom = LocalVar%PitCom_SD
+            ! When shutdown is triggered (SD_Trigger \=0), pitch to feather.
+            ! Note that in some instances (like a downwind rotor), we may want to pitch to a stall angle.
+        ENDIF
+        ! Place pitch actuator here, so it can be used with or without open-loop
+        
+       
+        DO K = 1,LocalVar%NumBl ! Loop through all blades, add IPC contribution and limit pitch rate
+            IF (CntrPar%PA_Mode > 0) THEN
+                IF (CntrPar%PA_Mode == 1) THEN
+                    LocalVar%PitComAct(K) = LPFilter(LocalVar%PitCom(K), LocalVar%DT, CntrPar%PA_CornerFreq, LocalVar%FP, LocalVar%iStatus, (LocalVar%restart /= 0), objInst%instLPF)
+                ELSE IF (CntrPar%PA_Mode == 2) THEN
+                    LocalVar%PitComAct(K) = SecLPFilter(LocalVar%PitCom(K),LocalVar%DT,CntrPar%PA_CornerFreq,CntrPar%PA_Damping,LocalVar%FP,LocalVar%iStatus,(LocalVar%restart /= 0),objInst%instSecLPF)
+                END IF  
+            ELSE
+                LocalVar%PitComAct(K) = LocalVar%PitCom(K)
+            ENDIF
+        END DO
+        ! Hardware saturation: using CntrPar%PC_MinPit
+
+        DO K = 1,LocalVar%NumBl ! Loop through all blades, add IPC contribution and limit pitch rate
+            ! Saturate the pitch command using the overall (hardware) limit
+            LocalVar%PitComAct(K) = saturate(LocalVar%PitComAct(K), CntrPar%PC_MinPit, CntrPar%PC_MaxPit)
+            ! Saturate the overall command of blade K using the pitch rate limit
+            LocalVar%PitComAct(K) = ratelimit(LocalVar%PitComAct(K), CntrPar%PC_MinRat, CntrPar%PC_MaxRat, LocalVar%DT, (LocalVar%restart /= 0), LocalVar%rlP,objInst%instRL,LocalVar%BlPitch(K)) ! Saturate the overall command of blade K using the pitch rate limit
+        END DO
+        ! Add pitch actuator fault for blade K
+
+        IF (CntrPar%PF_Mode == 1) THEN
+            DO K = 1, LocalVar%NumBl
+                ! This assumes that the pitch actuator fault overides the Hardware saturation
+                LocalVar%PitComAct(K) = LocalVar%PitComAct(K) + CntrPar%PF_Offsets(K)
+            END DO
+        ! Blade pitch stuck at last value
+        ELSEIF (CntrPar%PF_Mode == 2) THEN
+            DO K = 1, LocalVar%NumBl
+                IF (LocalVar%Time > CntrPar%PF_TimeStuck(K)) THEN
+                    LocalVar%PitComAct(K) = LocalVar%BlPitch(K)
+                END IF
+            END DO
+        END IF
+        ! Command the pitch demanded from the last
+        ! call to the controller (See Appendix A of Bladed User's Guide):
+
+        avrSWAP(42) = LocalVar%PitComAct(1)   ! Use the command angles of all blades if using individual pitch
+        avrSWAP(43) = LocalVar%PitComAct(2)   ! "
+        avrSWAP(44) = LocalVar%PitComAct(3)   ! "
+        avrSWAP(45) = LocalVar%PitComAct(1)   ! Use the command angle of blade 1 if using collective pitch
+        ! Add RoutineName to error message
+
+        IF (ErrVar%aviFAIL < 0) THEN
+            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
+        ENDIF
     END SUBROUTINE PitchControl
 !-------------------------------------------------------------------------------------------------------------------------------  
 

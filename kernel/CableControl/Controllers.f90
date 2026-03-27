@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 23:43:30 
+!Generated at : 2026-03-27 18:30:07 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -18,24 +18,10 @@
 MODULE Controllers
 
     USE controllerblocks 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
-    USE ISO_C_BINDING
     IMPLICIT NONE 
-
-
-    ! Auto-generated interface for C++ implementation of CableControl
-    INTERFACE
-        SUBROUTINE cablecontrol_c(avrSWAP, CntrPar, LocalVar, objInst, ErrVar) BIND(C, NAME='cablecontrol_c')
-            USE ISO_C_BINDING
-            REAL(C_FLOAT), INTENT(INOUT) :: avrSWAP(*)
-            TYPE(C_PTR), VALUE :: CntrPar
-            TYPE(C_PTR), VALUE :: LocalVar
-            TYPE(C_PTR), VALUE :: objInst
-            TYPE(C_PTR), VALUE :: ErrVar
-        END SUBROUTINE cablecontrol_c
-    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -63,21 +49,91 @@ CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
 
     SUBROUTINE CableControl(avrSWAP, CntrPar, LocalVar, objInst, ErrVar)
-        USE ISO_C_BINDING
-        USE ROSCO_Types, ONLY : ControlParameters, LocalVariables, ObjectInstances, ErrorVariables
-        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_original_controlparameters
-        IMPLICIT NONE
-        REAL(ReKi), INTENT(INOUT) :: avrSWAP(*)
-        TYPE(ControlParameters), INTENT(INOUT), TARGET :: CntrPar
-        TYPE(LocalVariables), INTENT(INOUT), TARGET :: LocalVar
-        TYPE(ObjectInstances), INTENT(INOUT), TARGET :: objInst
-        TYPE(ErrorVariables), INTENT(INOUT), TARGET :: ErrVar
-        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
-        ! Populate view structs from Fortran types
-        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
-        ! Stash original Fortran pointers for callee bridges
-        vit_original_controlparameters => CntrPar
-        CALL cablecontrol_c(avrSWAP, C_LOC(CntrPar_view), C_LOC(LocalVar), C_LOC(objInst), C_LOC(ErrVar))
+        ! Cable controller
+        !       CC_Mode = 0, No cable control, this code not executed
+        !       CC_Mode = 1, User-defined cable control
+        !       CC_Mode = 2, Position control, not yet implemented
+        ! Note that LocalVar%CC_Actuated*(), and CC_Desired() has a fixed max size of 12, which can be increased in rosco_types.yaml
+        !
+        !
+        USE rosco_types, ONLY: controlparameters, localvariables, objectinstances, errorvariables 
+        USE rosco_types, ONLY: kr_rosco_types_controlparameters 
+        USE rosco_types, ONLY: kr_rosco_types_localvariables 
+        USE rosco_types, ONLY: kr_rosco_types_objectinstances 
+        USE rosco_types, ONLY: kr_rosco_types_errorvariables 
+        USE rosco_types, ONLY: kv_rosco_types_controlparameters 
+        USE rosco_types, ONLY: kv_rosco_types_localvariables 
+        USE rosco_types, ONLY: kv_rosco_types_objectinstances 
+        USE rosco_types, ONLY: kv_rosco_types_errorvariables 
+    
+        REAL(ReKi), INTENT(INOUT) :: avrSWAP(*) ! The swap array, used to pass data to, and receive data from, the DLL controller.
+    
+        TYPE(ControlParameters), INTENT(INOUT)    :: CntrPar
+        TYPE(LocalVariables), INTENT(INOUT)       :: LocalVar
+        TYPE(ObjectInstances), INTENT(INOUT)      :: objInst
+        TYPE(ErrorVariables), INTENT(INOUT)      :: ErrVar
+        ! Internal Variables
+        
+        Integer(IntKi)                            :: I_GROUP
+        CHARACTER(*),               PARAMETER           :: RoutineName = 'StructuralControl'
+
+
+        IF (CntrPar%CC_Mode == 1) THEN
+            ! User defined control
+
+            IF (LocalVar%Time > 500) THEN
+                ! Shorten first group by 4 m
+                LocalVar%CC_DesiredL(1) = -14.51
+                LocalVar%CC_DesiredL(2) = 1.58
+                LocalVar%CC_DesiredL(3) = -10.332
+
+
+            END IF
+
+        ELSEIF (CntrPar%CC_Mode == 2) THEN
+            ! Open loop control
+            ! DO I_GROUP = 1, CntrPar%CC_Group_N
+            !     LocalVar%CC_DesiredL(I_GROUP) = interp1d(x,y,eq,ErrVar)
+
+            DO I_GROUP = 1,CntrPar%CC_Group_N
+                IF (CntrPar%Ind_CableControl(I_GROUP) > 0) THEN
+                    LocalVar%CC_DesiredL(I_GROUP) = interp1d(CntrPar%OL_Breakpoints, &
+                                                            CntrPar%OL_CableControl(I_GROUP,:), &
+                                                            LocalVar%Time,ErrVar)
+                ENDIF
+            ENDDO
+
+
+        END IF
+        ! Convert desired to actuated line length and delta length for all groups
+
+
+        DO I_GROUP = 1, CntrPar%CC_Group_N
+            ! Get Actuated deltaL
+
+            LocalVar%CC_ActuatedDL(I_GROUP) = SecLPFilter_Vel(LocalVar%CC_DesiredL(I_GROUP),LocalVar%DT,2*PI/CntrPar%CC_ActTau,REAL(1.0,DbKi), &
+                                                                LocalVar%FP,LocalVar%iStatus,(LocalVar%restart /= 0),objInst%instSecLPFV)
+            ! Integrate
+
+            LocalVar%CC_ActuatedL(I_GROUP) = PIController(LocalVar%CC_ActuatedDL(I_GROUP),0.0_DbKi,1.0_DbKi, &
+                                                    -1000.0_DbKi,1000.0_DbKi,LocalVar%DT,LocalVar%CC_ActuatedDL(1), &
+                                                    LocalVar%piP, (LocalVar%restart /= 0), objInst%instPI)
+
+        END DO
+        ! Assign to avrSWAP
+
+        DO I_GROUP = 1, CntrPar%CC_Group_N
+
+            avrSWAP(CntrPar%CC_GroupIndex(I_GROUP)) = LocalVar%CC_ActuatedL(I_GROUP)
+            avrSWAP(CntrPar%CC_GroupIndex(I_GROUP)+1) = LocalVar%CC_ActuatedDL(I_GROUP)
+
+        END DO
+        ! Add RoutineName to error message
+
+        IF (ErrVar%aviFAIL < 0) THEN
+            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
+        ENDIF
+
     END SUBROUTINE CableControl
 !-------------------------------------------------------------------------------------------------------------------------------
 

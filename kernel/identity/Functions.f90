@@ -1,6 +1,6 @@
 !KGEN-generated Fortran source file 
   
-!Generated at : 2026-03-25 23:31:53 
+!Generated at : 2026-03-27 18:17:01 
 !KGEN version : 0.8.1 
   
 ! Copyright 2019 NREL
@@ -32,21 +32,10 @@
 MODULE Functions
 
     USE constants 
-    USE kgen_utils_mod
+    USE kgen_utils_mod, ONLY: kgen_dp, kgen_array_sumcheck 
     USE tprof_mod, ONLY: tstart, tstop, tnull, tprnt 
 
-    USE ISO_C_BINDING
     IMPLICIT NONE 
-
-
-    ! Auto-generated interface for C++ implementation of identity
-    INTERFACE
-        SUBROUTINE identity_c(n, identity_result) BIND(C, NAME='identity_c')
-            USE ISO_C_BINDING
-            INTEGER(C_INT), VALUE :: n
-            REAL(C_DOUBLE), INTENT(OUT) :: identity_result(*)
-        END SUBROUTINE identity_c
-    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -64,11 +53,24 @@ CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
 
     FUNCTION identity(n) RESULT(A)
-        USE ISO_C_BINDING
-        IMPLICIT NONE
-        INTEGER, INTENT(IN) :: n
-        REAL(DbKi), DIMENSION(N, N) :: A
-        CALL identity_c(n, A)
+    ! Produces an identity matrix of size n x n
+
+        INTEGER, INTENT(IN)         :: n
+        REAL(DbKi), DIMENSION(n, n)    :: A
+        INTEGER                     :: i
+        INTEGER                     :: j
+        ! Build identity matrix 
+
+        DO i=1,n  
+            DO j = 1,n
+                IF (i == j) THEN 
+                    A(i,j) = 1.0
+                ELSE
+                    A(i,j) = 0.0
+                ENDIF
+            ENDDO
+        ENDDO
+    
     END FUNCTION identity
 !-------------------------------------------------------------------------------------------------------------------------------
 

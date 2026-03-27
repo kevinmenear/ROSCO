@@ -1,48 +1,15 @@
-FC_0 ?= gfortran
-FC_FLAGS_SET_0 ?= -O2 -ffree-form -ffree-line-length-none -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
 # Makefile for KGEN-generated kernel
 
 
-ALL_OBJS := vit_bridge_wrap_360.o vit_bridge_rescontroller.o vit_bridge_picontroller.o vit_bridge_colemantransforminverse.o vit_bridge_colemantransform.o vit_controlparameters_view.o activewakecontrol_cpp.o Controllers.o ROSCO_Types.o Constants.o ControllerBlocks.o SysIFL.o Filters.o Functions.o kernel_driver.o kgen_utils.o tprof_mod.o
-
-# VIT: C++ compilation support
-CXX ?= g++
-CXXFLAGS ?= -O2 -fPIC -ffp-contract=off
-
-activewakecontrol_cpp.o: activewakecontrol_cpp.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# VIT: view populator module
-vit_controlparameters_view.o: vit_controlparameters_view.f90 ROSCO_Types.o
-	$(FC_0) $(FC_FLAGS_SET_0) -c $< -o $@
-
-# VIT: callee bridge for kernel verification
-vit_bridge_colemantransform.o: vit_bridge_colemantransform.f90 vit_controlparameters_view.o Controllers.o ROSCO_Types.o Constants.o ControllerBlocks.o SysIFL.o Filters.o Functions.o kernel_driver.o kgen_utils.o tprof_mod.o
-	$(FC_0) $(FC_FLAGS_SET_0) -c $< -o $@
-
-# VIT: callee bridge for kernel verification
-vit_bridge_colemantransforminverse.o: vit_bridge_colemantransforminverse.f90 vit_bridge_colemantransform.o vit_controlparameters_view.o Controllers.o ROSCO_Types.o Constants.o ControllerBlocks.o SysIFL.o Filters.o Functions.o kernel_driver.o kgen_utils.o tprof_mod.o
-	$(FC_0) $(FC_FLAGS_SET_0) -c $< -o $@
-
-# VIT: callee bridge for kernel verification
-vit_bridge_picontroller.o: vit_bridge_picontroller.f90 vit_bridge_colemantransforminverse.o vit_bridge_colemantransform.o vit_controlparameters_view.o Controllers.o ROSCO_Types.o Constants.o ControllerBlocks.o SysIFL.o Filters.o Functions.o kernel_driver.o kgen_utils.o tprof_mod.o
-	$(FC_0) $(FC_FLAGS_SET_0) -c $< -o $@
-
-# VIT: callee bridge for kernel verification
-vit_bridge_rescontroller.o: vit_bridge_rescontroller.f90 vit_bridge_picontroller.o vit_bridge_colemantransforminverse.o vit_bridge_colemantransform.o vit_controlparameters_view.o Controllers.o ROSCO_Types.o Constants.o ControllerBlocks.o SysIFL.o Filters.o Functions.o kernel_driver.o kgen_utils.o tprof_mod.o
-	$(FC_0) $(FC_FLAGS_SET_0) -c $< -o $@
-
-# VIT: callee bridge for kernel verification
-vit_bridge_wrap_360.o: vit_bridge_wrap_360.f90 vit_bridge_rescontroller.o vit_bridge_picontroller.o vit_bridge_colemantransforminverse.o vit_bridge_colemantransform.o vit_controlparameters_view.o Controllers.o ROSCO_Types.o Constants.o ControllerBlocks.o SysIFL.o Filters.o Functions.o kernel_driver.o kgen_utils.o tprof_mod.o
-	$(FC_0) $(FC_FLAGS_SET_0) -c $< -o $@
+ALL_OBJS := Controllers.o ROSCO_Types.o Constants.o ControllerBlocks.o SysIFL.o Filters.o Functions.o kernel_driver.o kgen_utils.o tprof_mod.o
 
 build: ${ALL_OBJS}
-	${FC_0} ${FC_FLAGS_SET_0} -o kernel.exe -lstdc++ $^  
+	${FC_0} ${FC_FLAGS_SET_0} -o kernel.exe $^  
 
 run: build
 	./kernel.exe
 
-Controllers.o: Controllers.f90 ROSCO_Types.o Constants.o ControllerBlocks.o SysIFL.o Filters.o Functions.o kgen_utils.o tprof_mod.o vit_controlparameters_view.o
+Controllers.o: Controllers.f90 ROSCO_Types.o Constants.o ControllerBlocks.o SysIFL.o Filters.o Functions.o kgen_utils.o tprof_mod.o
 	${FC_0} ${FC_FLAGS_SET_0} -c -o $@ $<
 
 ROSCO_Types.o: ROSCO_Types.f90 kgen_utils.o tprof_mod.o Constants.o
