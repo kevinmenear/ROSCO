@@ -67,40 +67,10 @@ Run in the **container**:
 
 ```bash
 cd /workspace/ROSCO
-
-vit integrate saturate translations/Functions/saturate.cpp -f rosco/controller/src/Functions.f90 --apply
-vit integrate wrap_180 translations/Functions/wrap_180.cpp -f rosco/controller/src/Functions.f90 --apply
-vit integrate wrap_360 translations/Functions/wrap_360.cpp -f rosco/controller/src/Functions.f90 --apply
-vit integrate ratelimit translations/Functions/ratelimit.cpp -f rosco/controller/src/Functions.f90 --apply
-vit integrate ColemanTransform translations/Functions/colemantransform.cpp -f rosco/controller/src/Functions.f90 --apply
-vit integrate ColemanTransformInverse translations/Functions/colemantransforminverse.cpp -f rosco/controller/src/Functions.f90 --apply
-vit integrate identity translations/Functions/identity.cpp -f rosco/controller/src/Functions.f90 --apply
-vit integrate sigma translations/Functions/sigma.cpp -f rosco/controller/src/Functions.f90 --apply
-vit integrate interp1d translations/Functions/interp1d.cpp -f rosco/controller/src/Functions.f90 --apply
-
-vit integrate LPFilter translations/Filters/lpfilter.cpp -f rosco/controller/src/Filters.f90 --apply
-vit integrate HPFilter translations/Filters/hpfilter.cpp -f rosco/controller/src/Filters.f90 --apply
-vit integrate SecLPFilter translations/Filters/seclpfilter.cpp -f rosco/controller/src/Filters.f90 --apply
-vit integrate SecLPFilter_Vel translations/Filters/seclpfilter_vel.cpp -f rosco/controller/src/Filters.f90 --apply
-vit integrate NotchFilter translations/Filters/notchfilter.cpp -f rosco/controller/src/Filters.f90 --apply
-vit integrate NotchFilterSlopes translations/Filters/notchfilterslopes.cpp -f rosco/controller/src/Filters.f90 --apply
-
-vit integrate PIController translations/Controllers/picontroller.cpp -f rosco/controller/src/Controllers.f90 --apply
-vit integrate PIIController translations/Controllers/piicontroller.cpp -f rosco/controller/src/Controllers.f90 --apply
-vit integrate ResController translations/Controllers/rescontroller.cpp -f rosco/controller/src/Controllers.f90 --apply
-vit integrate ForeAftDamping translations/Controllers/foreaftdamping.cpp -f rosco/controller/src/Controllers.f90 --apply
-
-vit integrate FloatingFeedback translations/Controllers/floatingfeedback.cpp -f rosco/controller/src/Controllers.f90 --apply
-vit integrate StructuralControl translations/Controllers/structuralcontrol.cpp -f rosco/controller/src/Controllers.f90 --apply
-vit integrate CableControl translations/Controllers/cablecontrol.cpp -f rosco/controller/src/Controllers.f90 --apply
-vit integrate FlapControl translations/Controllers/flapcontrol.cpp -f rosco/controller/src/Controllers.f90 --apply
-vit integrate YawRateControl translations/Controllers/yawratecontrol.cpp -f rosco/controller/src/Controllers.f90 --apply
-vit integrate VariableSpeedControl translations/Controllers/variablespeedcontrol.cpp -f rosco/controller/src/Controllers.f90 --apply
-vit integrate IPC translations/Controllers/ipc.cpp -f rosco/controller/src/Controllers.f90 --apply
-vit integrate ActiveWakeControl translations/Controllers/activewakecontrol.cpp -f rosco/controller/src/Controllers.f90 --apply
+bash scripts/integrate_all.sh
 ```
 
-Each must print "Integration applied successfully".
+Must show `27/27 passed`. See `scripts/integrate_all.sh` for the full function list.
 
 ### Verify integration was applied
 
