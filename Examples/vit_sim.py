@@ -91,6 +91,11 @@ os.makedirs(example_out_dir, exist_ok=True)
 # residual stack contents from prior Fortran calls (e.g., ROSCO's CableControl).
 # We cache the RectBivariateSpline (so the FITPACK constructor doesn't refill
 # the stack before evaluation) and scrub 64KB of stack before each evaluation.
+#
+# Confirmed in scipy 1.17.1 on aarch64 (QEMU/Colima). To test if a future scipy
+# version fixes this, comment out the monkey-patch below and run Scenario 3
+# thirty times — all runs should produce the same gen_torque MD5.
+# See dev note 202603261512 for the full bug report with reproduction steps.
 import ctypes as _ctypes
 from scipy import interpolate as _interpolate
 _scrub_lib_path = os.path.join(os.path.dirname(this_dir), 'rosco', 'lib', 'libscrub.so')
