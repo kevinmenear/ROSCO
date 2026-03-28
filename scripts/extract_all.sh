@@ -1,5 +1,5 @@
 #!/bin/bash
-# Extract all 28 functions sequentially.
+# Extract all 29 functions sequentially.
 # Each extraction uses the specific scenario needed for that function's call site.
 # Run from the ROSCO repo root inside the Docker container.
 #
@@ -14,7 +14,7 @@ set -e
 
 PASS=0
 FAIL=0
-TOTAL=28
+TOTAL=29
 
 extract() {
     local name=$1; shift
@@ -78,6 +78,9 @@ extract YawRateControl YawRateControl -f rosco/controller/src/DISCON.F90 -l 123 
 extract FlapControl    FlapControl -f rosco/controller/src/DISCON.F90 -l 127 --run-args '--scenario 7'
 extract CableControl   CableControl -f rosco/controller/src/DISCON.F90 -l 132 --run-args '--scenario 7'
 extract StructuralControl StructuralControl -f rosco/controller/src/DISCON.F90 -l 137 --run-args '--scenario 7'
+
+# ControllerBlocks (Scenario 3)
+extract PitchSaturation PitchSaturation -f rosco/controller/src/Controllers.f90 -l 87 --run-args '--scenario 3'
 
 echo ""
 echo "=== Extraction complete: $PASS/$TOTAL passed, $FAIL failed ==="

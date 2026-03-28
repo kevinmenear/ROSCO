@@ -75,8 +75,8 @@ translations:
   ColemanTransformInverse:
     status: integrated
     cpp_file: translations/Functions/colemantransforminverse.cpp
-    cases_passed: 20
-    cases_total: 20
+    cases_passed: 22
+    cases_total: 22
     cases_skipped: 0
     kernel_dir: kernel/ColemanTransformInverse
   ratelimit:
@@ -145,10 +145,6 @@ translations:
   ResController:
     status: integrated
     cpp_file: translations/Controllers/rescontroller.cpp
-    cases_passed: 21
-    cases_total: 21
-    cases_skipped: 0
-    kernel_dir: kernel/ResController
   PIIController:
     status: integrated
     cpp_file: translations/Controllers/piicontroller.cpp
@@ -220,12 +216,19 @@ translations:
     cases_skipped: 0
     kernel_dir: kernel/ActiveWakeControl
   PitchControl:
-    status: verified
+    status: integrated
+    cpp_file: translations/Controllers/pitchcontrol.cpp
     cases_passed: 20
     cases_total: 20
     cases_skipped: 0
-    cpp_file: translations/Controllers/pitchcontrol.cpp
     kernel_dir: kernel/PitchControl
+  PitchSaturation:
+    status: integrated
+    cpp_file: translations/ControllerBlocks/pitchsaturation.cpp
+    cases_passed: 21
+    cases_total: 21
+    cases_skipped: 0
+    kernel_dir: kernel/PitchSaturation
 types:
   ControlParameters:
     strategy: view

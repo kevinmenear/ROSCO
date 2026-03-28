@@ -70,7 +70,7 @@ cd /workspace/ROSCO
 bash scripts/integrate_all.sh
 ```
 
-Must show `27/27 passed`. See `scripts/integrate_all.sh` for the full function list.
+Must show `29/29 passed`. See `scripts/integrate_all.sh` for the full function list.
 
 ### Verify integration was applied
 
@@ -87,7 +87,7 @@ grep -c '_cpp.cpp' rosco/controller/CMakeLists.txt
 head -3 rosco/controller/src/saturate_cpp.cpp
 ```
 
-**Note:** PitchControl is excluded. It depends on PitchSaturation (ControllerBlocks.f90, Phase 8), which is not yet translated. See dev note `202603241718`.
+**Note:** PitchControl and PitchSaturation are both included (Phase 8A). PitchSaturation must integrate before PitchControl (callee dependency).
 
 ## Step 5: Clean Rebuild with C++
 
@@ -206,4 +206,5 @@ Per-scenario isolation (separate `docker exec` = separate OS process = guarantee
 
 ## Last Validated
 
+2026-03-28: 29 functions (Phase 8A: +PitchSaturation, +PitchControl), 612,000 values across 8 scenarios, ALL IDENTICAL.
 2026-03-26: 27 functions, 612,000 values across 8 scenarios, ALL IDENTICAL.

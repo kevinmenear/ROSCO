@@ -1,5 +1,5 @@
 #!/bin/bash
-# Integrate all 27 C++ translations into the ROSCO codebase.
+# Integrate all 29 C++ translations into the ROSCO codebase.
 # Run from the ROSCO repo root inside the Docker container.
 #
 # Usage: bash scripts/integrate_all.sh
@@ -7,15 +7,12 @@
 # Prerequisites:
 #   - Clean source (bash scripts/reset_to_clean.sh)
 #   - Translation files in translations/
-#
-# Note: PitchControl is excluded — it depends on PitchSaturation
-# (ControllerBlocks.f90, Phase 8), which is not yet translated.
 
 set -e
 
 PASS=0
 FAIL=0
-TOTAL=27
+TOTAL=29
 
 integrate() {
     local name=$1
@@ -32,7 +29,7 @@ integrate() {
     fi
 }
 
-echo "=== Integrating 27 functions ==="
+echo "=== Integrating 29 functions ==="
 echo ""
 
 # Functions
@@ -70,6 +67,14 @@ integrate YawRateControl      translations/Controllers/yawratecontrol.cpp      r
 integrate VariableSpeedControl translations/Controllers/variablespeedcontrol.cpp rosco/controller/src/Controllers.f90
 integrate IPC                 translations/Controllers/ipc.cpp                 rosco/controller/src/Controllers.f90
 integrate ActiveWakeControl   translations/Controllers/activewakecontrol.cpp   rosco/controller/src/Controllers.f90
+
+# ControllerBlocks
+echo "--- ControllerBlocks ---"
+integrate PitchSaturation    translations/ControllerBlocks/pitchsaturation.cpp rosco/controller/src/ControllerBlocks.f90
+
+# PitchControl (depends on PitchSaturation above)
+echo "--- PitchControl ---"
+integrate PitchControl       translations/Controllers/pitchcontrol.cpp        rosco/controller/src/Controllers.f90
 
 echo ""
 echo "=== Integration complete: $PASS/$TOTAL passed, $FAIL failed ==="
