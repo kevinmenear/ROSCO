@@ -229,6 +229,48 @@ translations:
     cases_total: 21
     cases_skipped: 0
     kernel_dir: kernel/PitchSaturation
+  RefSpeedExclusion:
+    status: verified
+    cases_passed: 22
+    cases_total: 22
+    cases_skipped: 0
+    cpp_file: translations/ControllerBlocks/refspeedexclusion.cpp
+    kernel_dir: kernel/RefSpeedExclusion
+  Startup:
+    status: verified
+    cases_passed: 20
+    cases_total: 20
+    cases_skipped: 0
+    cpp_file: translations/ControllerBlocks/startup.cpp
+    kernel_dir: kernel/Startup
+  Shutdown:
+    status: verified
+    cases_passed: 21
+    cases_total: 21
+    cases_skipped: 0
+    cpp_file: translations/ControllerBlocks/shutdown.cpp
+    kernel_dir: kernel/Shutdown
+  AeroDynTorque:
+    status: verified
+    cases_passed: 20
+    cases_total: 20
+    cases_skipped: 0
+    cpp_file: translations/Functions/aerodyntorque.cpp
+    kernel_dir: kernel/AeroDynTorque
+  interp2d:
+    status: verified
+    cases_passed: 21
+    cases_total: 21
+    cases_skipped: 0
+    cpp_file: translations/Functions/interp2d.cpp
+    kernel_dir: kernel/interp2d
+  WindSpeedEstimator:
+    status: verified
+    cases_passed: 21
+    cases_total: 21
+    cases_skipped: 0
+    cpp_file: translations/ControllerBlocks/windspeedestimator.cpp
+    kernel_dir: kernel/WindSpeedEstimator
 types:
   ControlParameters:
     strategy: view
