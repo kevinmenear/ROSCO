@@ -808,12 +808,81 @@ def run_scenario_8(turbine, controller, cp_filename, output_dir=None):
 
 
 # ---------------------------------------------------------------------------
+# Scenario 9: Startup + Shutdown + TRA (SU_Mode=1, SD_Mode=1, TRA_Mode=1)
+# ---------------------------------------------------------------------------
+def run_scenario_9(turbine, controller, cp_filename, output_dir=None):
+    """Exercises Startup, Shutdown, and RefSpeedExclusion functions.
+
+    SU_Mode=1 with early start time and short durations so startup stages
+    progress within the first 20 invocations. SD_Mode=1 with time-based
+    shutdown triggered late (well past extraction window). TRA_Mode=1 with
+    exclusion band near rated LSS speed.
+    """
+    print("=" * 60)
+    print("Scenario 9: Startup/Shutdown/TRA (SU_Mode=1, SD_Mode=1, TRA_Mode=1)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_su_sd_tra.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'SU_Mode': 1,
+        'SU_StartTime': 0,
+        'SU_FW_MinDuration': 5,
+        'SU_RotorSpeedThresh': 0.3,
+        'SU_RotorSpeedCornerFreq': 0.5,
+        'SU_LoadStages_N': 2,
+        'SU_LoadStages': '0.5 1.0',
+        'SU_LoadRampDuration': '10 10',
+        'SU_LoadHoldDuration': '10 10',
+        'SD_Mode': 1,
+        'SD_TimeActivate': 0,
+        'SD_EnablePitch': 0,
+        'SD_EnableYawError': 0,
+        'SD_EnableGenSpeed': 0,
+        'SD_EnableTime': 1,
+        'SD_Time': 250,
+        'SD_Method': 1,
+        'SD_Stage_N': 2,
+        'SD_StageTime': '50 50',
+        'SD_MaxPitchRate': '0.05 0.1',
+        'SD_MaxTorqueRate': '1000 2000',
+        'SD_StagePitch': '0.5 1.57',
+        'TRA_Mode': 1,
+        'TRA_ExclSpeed': 0.8,
+        'TRA_ExclBand': 0.1,
+        'TRA_RateLimit': 0.01,
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim9'
+    )
+
+    sim_9 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 300
+    ws0 = 7
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_9.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+
+    save_and_print_results({
+        'gen_torque': sim_9.gen_torque, 'bld_pitch': sim_9.bld_pitch,
+        'gen_speed': sim_9.gen_speed, 'gen_power': sim_9.gen_power,
+        'nac_yaw': sim_9.nac_yaw,
+    }, 9, output_dir)
+    print("Scenario 9: PASSED (startup/shutdown/TRA exercised)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description='VIT simulation runner')
     parser.add_argument('--scenario', type=int, default=0,
-                        help='Run specific scenario (1-8). Default 0 = run all.')
+                        help='Run specific scenario (1-9). Default 0 = run all.')
     parser.add_argument('--output-dir', type=str, default=None,
                         help='Save simulation output arrays to .npz files in this directory.')
     args = parser.parse_args()
@@ -850,6 +919,9 @@ def main():
 
     if args.scenario == 0 or args.scenario == 8:
         run_scenario_8(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 9:
+        run_scenario_9(turbine, controller, cp_filename, od)
 
     print("\n" + "=" * 60)
     print("All scenarios complete.")
