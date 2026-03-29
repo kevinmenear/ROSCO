@@ -1,12 +1,12 @@
 #!/bin/bash
-# Verify all 29 C++ translations against golden kernel fixtures.
+# Verify all 39 C++ translations against golden kernel fixtures.
 # Run from the ROSCO repo root inside the Docker container.
 #
 # Usage:
-#   bash scripts/verify_all.sh          # Run all 29 sequentially
-#   bash scripts/verify_all.sh 1        # Batch 1 only (10 functions: Functions + LPFilter)
-#   bash scripts/verify_all.sh 2        # Batch 2 only (10 functions: Filters + Controllers part 1)
-#   bash scripts/verify_all.sh 3        # Batch 3 only (9 functions: Controllers part 2 + ControllerBlocks)
+#   bash scripts/verify_all.sh          # Run all 39 sequentially
+#   bash scripts/verify_all.sh 1        # Batch 1 only (13 functions)
+#   bash scripts/verify_all.sh 2        # Batch 2 only (13 functions)
+#   bash scripts/verify_all.sh 3        # Batch 3 only (13 functions)
 #
 # For parallel execution, launch 3 separate docker exec calls:
 #   docker exec vit-dev bash -c "cd /workspace/ROSCO && bash scripts/verify_all.sh 1" &
@@ -59,7 +59,7 @@ verify() {
     fi
 }
 
-# --- Batch 1: Functions + LPFilter (10 functions) ---
+# --- Batch 1: Functions + Filters (13 functions) ---
 if [ "$BATCH" = "0" ] || [ "$BATCH" = "1" ]; then
     echo "--- Functions ---"
     verify saturate                translations/Functions/saturate.cpp                rosco/controller/src/Functions.f90
@@ -68,46 +68,57 @@ if [ "$BATCH" = "0" ] || [ "$BATCH" = "1" ]; then
     verify ratelimit               translations/Functions/ratelimit.cpp               rosco/controller/src/Functions.f90
     verify sigma                   translations/Functions/sigma.cpp                   rosco/controller/src/Functions.f90
     verify interp1d                translations/Functions/interp1d.cpp                rosco/controller/src/Functions.f90
+    verify interp2d                translations/Functions/interp2d.cpp                rosco/controller/src/Functions.f90
     verify ColemanTransform        translations/Functions/colemantransform.cpp        rosco/controller/src/Functions.f90
     verify ColemanTransformInverse translations/Functions/colemantransforminverse.cpp rosco/controller/src/Functions.f90
     verify identity                translations/Functions/identity.cpp                rosco/controller/src/Functions.f90
+    echo "--- Filters ---"
     verify LPFilter                translations/Filters/lpfilter.cpp                  rosco/controller/src/Filters.f90
+    verify HPFilter                translations/Filters/hpfilter.cpp                  rosco/controller/src/Filters.f90
+    verify SecLPFilter             translations/Filters/seclpfilter.cpp               rosco/controller/src/Filters.f90
 fi
 
-# --- Batch 2: Filters + Controllers part 1 (10 functions) ---
+# --- Batch 2: Filters (cont) + Controllers (13 functions) ---
 if [ "$BATCH" = "0" ] || [ "$BATCH" = "2" ]; then
-    echo "--- Filters ---"
-    verify HPFilter          translations/Filters/hpfilter.cpp          rosco/controller/src/Filters.f90
-    verify SecLPFilter       translations/Filters/seclpfilter.cpp       rosco/controller/src/Filters.f90
+    echo "--- Filters (cont) ---"
     verify NotchFilter       translations/Filters/notchfilter.cpp       rosco/controller/src/Filters.f90
     verify NotchFilterSlopes translations/Filters/notchfilterslopes.cpp rosco/controller/src/Filters.f90
     verify SecLPFilter_Vel   translations/Filters/seclpfilter_vel.cpp   rosco/controller/src/Filters.f90
-    echo "--- Controllers (part 1) ---"
+    echo "--- Controllers ---"
     verify PIController        translations/Controllers/picontroller.cpp        rosco/controller/src/Controllers.f90
     verify PIIController       translations/Controllers/piicontroller.cpp       rosco/controller/src/Controllers.f90
     verify ResController       translations/Controllers/rescontroller.cpp       rosco/controller/src/Controllers.f90
     verify ForeAftDamping      translations/Controllers/foreaftdamping.cpp      rosco/controller/src/Controllers.f90
     verify FloatingFeedback    translations/Controllers/floatingfeedback.cpp    rosco/controller/src/Controllers.f90
-fi
-
-# --- Batch 3: Controllers part 2 + ControllerBlocks (9 functions) ---
-if [ "$BATCH" = "0" ] || [ "$BATCH" = "3" ]; then
-    echo "--- Controllers (part 2) ---"
     verify StructuralControl   translations/Controllers/structuralcontrol.cpp   rosco/controller/src/Controllers.f90
     verify CableControl        translations/Controllers/cablecontrol.cpp        rosco/controller/src/Controllers.f90
     verify FlapControl         translations/Controllers/flapcontrol.cpp         rosco/controller/src/Controllers.f90
     verify YawRateControl      translations/Controllers/yawratecontrol.cpp      rosco/controller/src/Controllers.f90
     verify VariableSpeedControl translations/Controllers/variablespeedcontrol.cpp rosco/controller/src/Controllers.f90
+fi
+
+# --- Batch 3: Controllers (cont) + ControllerBlocks (13 functions) ---
+if [ "$BATCH" = "0" ] || [ "$BATCH" = "3" ]; then
+    echo "--- Controllers (cont) ---"
     verify IPC                 translations/Controllers/ipc.cpp                 rosco/controller/src/Controllers.f90
     verify ActiveWakeControl   translations/Controllers/activewakecontrol.cpp   rosco/controller/src/Controllers.f90
     verify PitchControl        translations/Controllers/pitchcontrol.cpp        rosco/controller/src/Controllers.f90
     echo "--- ControllerBlocks ---"
-    verify PitchSaturation     translations/ControllerBlocks/pitchsaturation.cpp rosco/controller/src/ControllerBlocks.f90
+    verify PitchSaturation     translations/ControllerBlocks/pitchsaturation.cpp     rosco/controller/src/ControllerBlocks.f90
+    verify AeroDynTorque       translations/Functions/aerodyntorque.cpp               rosco/controller/src/Functions.f90
+    verify StateMachine        translations/ControllerBlocks/statemachine.cpp         rosco/controller/src/ControllerBlocks.f90
+    verify SetpointSmoother    translations/ControllerBlocks/setpointsmoother.cpp     rosco/controller/src/ControllerBlocks.f90
+    verify PowerControlSetpoints translations/ControllerBlocks/powercontrolsetpoints.cpp rosco/controller/src/ControllerBlocks.f90
+    verify RefSpeedExclusion   translations/ControllerBlocks/refspeedexclusion.cpp    rosco/controller/src/ControllerBlocks.f90
+    verify ComputeVariablesSetpoints translations/ControllerBlocks/computevariablessetpoints.cpp rosco/controller/src/ControllerBlocks.f90
+    verify Shutdown            translations/ControllerBlocks/shutdown.cpp              rosco/controller/src/ControllerBlocks.f90
+    verify Startup             translations/ControllerBlocks/startup.cpp               rosco/controller/src/ControllerBlocks.f90
+    verify WindSpeedEstimator  translations/ControllerBlocks/windspeedestimator.cpp   rosco/controller/src/ControllerBlocks.f90
 fi
 
 echo ""
 if [ "$BATCH" = "0" ]; then
-    TOTAL=29
+    TOTAL=39
 else
     TOTAL=$((PASS + FAIL))
 fi

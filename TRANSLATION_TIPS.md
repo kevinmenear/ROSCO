@@ -66,3 +66,44 @@ The difference is small but propagates through filter coefficients and trig
 computations, producing IN_TOL differences instead of IDENTICAL.
 
 *Discovered investigating CableControl and ActiveWakeControl IN_TOL fields.*
+
+---
+
+## Fortran `x**3.0` (real exponent) calls `pow()`, not `x*x*x`
+
+gfortran compiles `x**N.0` (REAL exponent) differently depending on N:
+
+- **Integer exponent** (any N): always optimized to repeated multiply → use `x*x*...*x`
+- **Real exponent 2.0**: special-cased by gfortran, optimized to `x*x` → use `x*x`
+- **Real exponent ≥ 3.0**: NOT optimized — gfortran emits a call to libm `pow()` → use `std::pow(x, N.0)`
+
+The results of `pow(x, 3.0)` and `x*x*x` differ by 1 ULP for some input values.
+In closed-loop control with feedback, this 1 ULP accumulates over thousands of
+timesteps and eventually causes visible divergence.
+
+**Fortran:** `v_m**3.0`
+**Wrong C++:** `v_m * v_m * v_m`
+**Correct C++:** `std::pow(v_m, 3.0)`
+
+**General rule:** if the Fortran exponent is a REAL literal (has a decimal point)
+and the value is 3.0 or higher, use `std::pow()`. If the exponent is an INTEGER
+literal (no decimal point), use repeated multiplication.
+
+*Discovered in Phase 8C: WindSpeedEstimator Q(2,2) matrix element.*
+
+---
+
+## Fortran comments can be wrong — the code is authoritative
+
+When translating Fortran to C++, always defer to the actual code (IF conditions,
+array indexing, WRITE formats, loop bounds) — not the comments. Comments may
+describe intended behavior that was never implemented, or describe an earlier
+version of the logic that was updated without changing the comment.
+
+This applies to all aspects of translation: error checks, dimension ordering,
+variable names in comments, and "TODO" annotations that may have been resolved
+in code but not in comments.
+
+*Discovered in Phase 8C: Fortran interp2d had correct dimension checks
+(`SIZE(zData,2)`) but misleading comments that said "zData(:,1)". Reading the
+comments instead of the IF conditions led to an incorrect diagnosis.*

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Extract all 29 functions sequentially.
+# Extract all 39 functions sequentially.
 # Each extraction uses the specific scenario needed for that function's call site.
 # Run from the ROSCO repo root inside the Docker container.
 #
@@ -14,7 +14,7 @@ set -e
 
 PASS=0
 FAIL=0
-TOTAL=29
+TOTAL=39
 
 extract() {
     local name=$1; shift
@@ -34,7 +34,7 @@ extract() {
     fi
 }
 
-echo "=== Extracting 28 functions ==="
+echo "=== Extracting 39 functions ==="
 echo ""
 
 # Functions (Scenario 3)
@@ -81,6 +81,20 @@ extract StructuralControl StructuralControl -f rosco/controller/src/DISCON.F90 -
 
 # ControllerBlocks (Scenario 3)
 extract PitchSaturation PitchSaturation -f rosco/controller/src/Controllers.f90 -l 87 --run-args '--scenario 3'
+extract interp2d       interp2d -f rosco/controller/src/ControllerBlocks.f90 -l 425 --run-args '--scenario 3'
+extract AeroDynTorque  AeroDynTorque -f rosco/controller/src/ControllerBlocks.f90 -l 389 --run-args '--scenario 3'
+extract RefSpeedExclusion RefSpeedExclusion -f rosco/controller/src/ControllerBlocks.f90 -l 157 --run-args '--scenario 3'
+
+# DISCON.F90 ControllerBlocks (Scenario 3)
+extract WindSpeedEstimator WindSpeedEstimator -f rosco/controller/src/DISCON.F90 -l 109 --run-args '--scenario 3'
+extract PowerControlSetpoints PowerControlSetpoints -f rosco/controller/src/DISCON.F90 -l 110 --run-args '--scenario 3'
+extract ComputeVariablesSetpoints ComputeVariablesSetpoints -f rosco/controller/src/DISCON.F90 -l 114 --run-args '--scenario 3'
+extract StateMachine   StateMachine -f rosco/controller/src/DISCON.F90 -l 115 --run-args '--scenario 3'
+extract SetpointSmoother SetpointSmoother -f rosco/controller/src/DISCON.F90 -l 116 --run-args '--scenario 3'
+
+# DISCON.F90 ControllerBlocks (Scenario 9 — SD_Mode=1, SU_Mode=1)
+extract Shutdown       Shutdown -f rosco/controller/src/DISCON.F90 -l 107 --run-args '--scenario 9'
+extract Startup        Startup -f rosco/controller/src/DISCON.F90 -l 112 --run-args '--scenario 9'
 
 echo ""
 echo "=== Extraction complete: $PASS/$TOTAL passed, $FAIL failed ==="
