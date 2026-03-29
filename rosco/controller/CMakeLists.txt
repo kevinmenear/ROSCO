@@ -46,6 +46,7 @@ set(SOURCES
     src/ROSCO_IO.f90
     src/ZeroMQInterface.f90
     src/ExtControl.f90
+    src/vit_math_bridge.f90
     src/saturate_cpp.cpp
     src/wrap_180_cpp.cpp
     src/wrap_360_cpp.cpp
@@ -66,6 +67,27 @@ set(SOURCES
     src/rescontroller_cpp.cpp
     src/vit_controlparameters_view.f90
     src/foreaftdamping_cpp.cpp
+    src/interp2d_cpp.cpp
+    src/vit_performancedata_view.f90
+    src/aerodyntorque_cpp.cpp
+    src/floatingfeedback_cpp.cpp
+    src/structuralcontrol_cpp.cpp
+    src/cablecontrol_cpp.cpp
+    src/flapcontrol_cpp.cpp
+    src/yawratecontrol_cpp.cpp
+    src/variablespeedcontrol_cpp.cpp
+    src/ipc_cpp.cpp
+    src/activewakecontrol_cpp.cpp
+    src/pitchsaturation_cpp.cpp
+    src/statemachine_cpp.cpp
+    src/setpointsmoother_cpp.cpp
+    src/powercontrolsetpoints_cpp.cpp
+    src/refspeedexclusion_cpp.cpp
+    src/computevariablessetpoints_cpp.cpp
+    src/shutdown_cpp.cpp
+    src/startup_cpp.cpp
+    src/windspeedestimator_cpp.cpp
+    src/pitchcontrol_cpp.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

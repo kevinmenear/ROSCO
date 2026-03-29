@@ -658,8 +658,15 @@ double lpfilter_c(double InputSignal, double DT, double CornerFreq,
                   filterparameters_t* FP, int iStatus, int reset, int* inst,
                   int has_InitialValue, double InitialValue);
 double wrap_180_c(double angle);
+// Fortran math bridge — use gfortran's intrinsics for bit-identical results
+double vit_cos(double x);
+double vit_sin(double x);
+double vit_atan2(double y, double x);
 
-void shutdown(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar) {
+// Named shutdown_impl to avoid collision with POSIX shutdown(2) system call.
+// The dynamic linker resolves PLT calls to libc's shutdown(int,int) if this
+// is named plain "shutdown", silently replacing our function.
+void shutdown_impl(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar) {
 
     // Initialize shutdown trigger
     if (LocalVar->iStatus == 0) {
@@ -678,15 +685,15 @@ void shutdown(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, obj
                                          &objInst->instLPF, 0, 0.0);
 
     // Filter yaw error signal (NacVane)
-    double SD_NacVaneCosF = lpfilter_c(std::cos(LocalVar->NacVane * D2R), LocalVar->DT, CntrPar->SD_YawErrorCornerFreq,
+    double SD_NacVaneCosF = lpfilter_c(vit_cos(LocalVar->NacVane * D2R), LocalVar->DT, CntrPar->SD_YawErrorCornerFreq,
                                         &LocalVar->FP, LocalVar->iStatus,
                                         (LocalVar->restart != 0) ? 1 : 0,
                                         &objInst->instLPF, 0, 0.0);
-    double SD_NacVaneSinF = lpfilter_c(std::sin(LocalVar->NacVane * D2R), LocalVar->DT, CntrPar->SD_YawErrorCornerFreq,
+    double SD_NacVaneSinF = lpfilter_c(vit_sin(LocalVar->NacVane * D2R), LocalVar->DT, CntrPar->SD_YawErrorCornerFreq,
                                         &LocalVar->FP, LocalVar->iStatus,
                                         (LocalVar->restart != 0) ? 1 : 0,
                                         &objInst->instLPF, 0, 0.0);
-    LocalVar->SD_NacVaneF = wrap_180_c(std::atan2(SD_NacVaneSinF, SD_NacVaneCosF) * R2D);
+    LocalVar->SD_NacVaneF = wrap_180_c(vit_atan2(SD_NacVaneSinF, SD_NacVaneCosF) * R2D);
 
     // Check for shutdown conditions
     if ((LocalVar->SD_Trigger == 0) && (LocalVar->Time >= CntrPar->SD_TimeActivate)) {

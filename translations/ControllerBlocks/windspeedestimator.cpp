@@ -728,12 +728,22 @@ static const double R2D = 57.2957795130;
 #define WE_xh(i)   LocalVar->WE.xh[(i)-1][0]
 #define WE_K(i)    LocalVar->WE.K[(i)-1][0]
 
+// Fortran EKF bridge for bit-identical results during mixed-binary phase
+extern "C" {
+    void vit_ekf_update(double* xh, double* P, double* K,
+                        const double* F, const double* Q, const double* dxh,
+                        double R_m, double DT, double WE_Inp_Speed, double om_r);
+}
+
+
 extern "C" {
 
 double lpfilter_c(double InputSignal, double DT, double CornerFreq,
                   filterparameters_t* FP, int iStatus, int reset, int* inst,
                   int has_InitialValue, double InitialValue);
 double saturate_c(double val, double minval, double maxval);
+// Fortran math bridge — use gfortran's intrinsics for bit-identical results
+double vit_cos(double x);
 double interp1d_c(double* xData, int n_xData, double* yData, int n_yData,
                   double xq, errorvariables_t* ErrVar);
 double interp2d_c(double* xData, int n_xData, double* yData, int n_yData,
@@ -804,7 +814,7 @@ void windspeedestimator(localvariables_t* LocalVar, controlparameters_view_t* Cn
     }
 
     // Filter hub height wind speed (with OPTIONAL InitialValue = WE_Vw)
-    LocalVar->HorWindV_F = std::cos(LocalVar->NacVaneF * D2R) *
+    LocalVar->HorWindV_F = vit_cos(LocalVar->NacVaneF * D2R) *
         lpfilter_c(LocalVar->HorWindV, LocalVar->DT, CntrPar->F_WECornerFreq / 10.0,
                    &LocalVar->FP, LocalVar->RestartWSE,
                    (LocalVar->restart != 0) ? 1 : 0,
@@ -816,7 +826,7 @@ void windspeedestimator(localvariables_t* LocalVar, controlparameters_view_t* Cn
     DebugVar->WE_t = WE_Inp_Torque;
 
     // ---- Define wind speed estimate ----
-    double Tau_r, Cp_op = 0.0, lambda = 0.0;
+    double Tau_r = 0.0, Cp_op = 0.0, lambda = 0.0;
 
     // Inversion and Invariance Filter
     if (CntrPar->WE_Mode == 1 && LocalVar->WE_Op > 0) {
@@ -897,7 +907,7 @@ void windspeedestimator(localvariables_t* LocalVar, controlparameters_view_t* Cn
 
             // Update process noise Q
             QM(1,1) = 0.00001;
-            QM(2,2) = (PI * (LocalVar->WE.v_m * LocalVar->WE.v_m * LocalVar->WE.v_m) * (Ti * Ti)) / L;
+            QM(2,2) = (PI * std::pow(LocalVar->WE.v_m, 3.0) * (Ti * Ti)) / L;
             QM(3,3) = (2.0 * 2.0) / 600.0;
 
             // Prediction update
@@ -908,82 +918,13 @@ void windspeedestimator(localvariables_t* LocalVar, controlparameters_view_t* Cn
             dxh[1] = -a * LocalVar->WE.v_t;
             dxh[2] = 0.0;
 
-            // State update: xh = xh + DT * dxh
-            WE_xh(1) = WE_xh(1) + LocalVar->DT * dxh[0];
-            WE_xh(2) = WE_xh(2) + LocalVar->DT * dxh[1];
-            WE_xh(3) = WE_xh(3) + LocalVar->DT * dxh[2];
-
-            // P = P + DT * (F*P + P*F^T + Q - K*R_m*K^T)
-            // Compute FP = F*P (3x3)
-            double FP[9] = {0};
-            for (int i = 1; i <= 3; i++)
-                for (int j = 1; j <= 3; j++)
-                    for (int k = 1; k <= 3; k++)
-                        FP[((j)-1)*3+((i)-1)] += FM(i,k) * WE_P(k,j);
-
-            // Compute PFt = P*F^T (3x3)
-            double PFt[9] = {0};
-            for (int i = 1; i <= 3; i++)
-                for (int j = 1; j <= 3; j++)
-                    for (int k = 1; k <= 3; k++)
-                        PFt[((j)-1)*3+((i)-1)] += WE_P(i,k) * FM(j,k); // F^T(k,j) = F(j,k)
-
-            // Compute KRKt = K * R_m * K^T (3x3)
-            double KRKt[9] = {0};
-            for (int i = 1; i <= 3; i++)
-                for (int j = 1; j <= 3; j++)
-                    KRKt[((j)-1)*3+((i)-1)] = WE_K(i) * R_m * WE_K(j);
-
-            // P += DT * (FP + PFt + Q - KRKt)
-            for (int i = 1; i <= 3; i++)
-                for (int j = 1; j <= 3; j++) {
-                    int idx = ((j)-1)*3+((i)-1);
-                    WE_P(i,j) = WE_P(i,j) + LocalVar->DT * (FP[idx] + PFt[idx] + QM(i,j) - KRKt[idx]);
-                }
-
-            // Measurement update
-            // S = H * P * H^T + R_m (scalar, since H is 1x3)
-            double S = 0.0;
-            for (int k = 1; k <= 3; k++)
-                for (int m = 1; m <= 3; m++)
-                    S += H[k-1] * WE_P(k,m) * H[m-1];
-            S += R_m;
-
-            // K = P * H^T / S (3x1)
-            for (int i = 1; i <= 3; i++) {
-                double sum = 0.0;
-                for (int k = 1; k <= 3; k++)
-                    sum += WE_P(i,k) * H[k-1];
-                WE_K(i) = sum / S;
-            }
-
-            // xh = xh + K * (omega_meas - omega_est)
-            double innov = WE_Inp_Speed - LocalVar->WE.om_r;
-            WE_xh(1) = WE_xh(1) + WE_K(1) * innov;
-            WE_xh(2) = WE_xh(2) + WE_K(2) * innov;
-            WE_xh(3) = WE_xh(3) + WE_K(3) * innov;
-
-            // P = (I - K*H) * P
-            // Compute IKH = I - K*H (3x3)
-            double IKH[9] = {0};
-            for (int i = 1; i <= 3; i++)
-                for (int j = 1; j <= 3; j++)
-                    IKH[((j)-1)*3+((i)-1)] = (i == j ? 1.0 : 0.0) - WE_K(i) * H[j-1];
-
-            // P_new = IKH * P_old (need temp copy)
-            double P_old[9];
-            for (int i = 0; i < 9; i++) P_old[i] = 0.0;
-            for (int i = 1; i <= 3; i++)
-                for (int j = 1; j <= 3; j++)
-                    P_old[((j)-1)*3+((i)-1)] = WE_P(i,j);
-
-            for (int i = 1; i <= 3; i++)
-                for (int j = 1; j <= 3; j++) {
-                    double sum = 0.0;
-                    for (int k = 1; k <= 3; k++)
-                        sum += IKH[((k)-1)*3+((i)-1)] * P_old[((j)-1)*3+((k)-1)];
-                    WE_P(i,j) = sum;
-                }
+            // Full EKF update (xh prediction + P prediction + measurement)
+            // All done in Fortran bridge for bit-identical results
+            double dxh_col[3] = {dxh[0], dxh[1], dxh[2]}; // flat column vector
+            vit_ekf_update(&LocalVar->WE.xh[0][0], &LocalVar->WE.P[0][0],
+                           &LocalVar->WE.K[0][0], F, Q, dxh_col,
+                           R_m, LocalVar->DT,
+                           WE_Inp_Speed, LocalVar->WE.om_r);
 
             // Extract state estimates
             LocalVar->WE.om_r = WE_xh(1) > eps ? WE_xh(1) : eps;
@@ -1016,6 +957,19 @@ void windspeedestimator(localvariables_t* LocalVar, controlparameters_view_t* Cn
     }
 
     DebugVar->WE_Vw = LocalVar->WE_Vw;
+
+    // Diagnostic: pitch trace
+    {
+        static int wse_call = 0;
+        static FILE* diag = fopen("/tmp/wse_diag.txt", "w");
+        wse_call++;
+        if (diag) {
+            fprintf(diag, "%8d %25.17E %25.17E %25.17E %25.17E\n",
+                wse_call, LocalVar->WE_Vw,
+                LocalVar->BlPitchCMeas, WE_Inp_Pitch, WE_Inp_Pitch * R2D);
+            fflush(diag);
+        }
+    }
 
     // Add RoutineName to error message
     if (ErrVar->aviFAIL < 0) {

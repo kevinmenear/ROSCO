@@ -152,12 +152,16 @@ double notchfilterslopes(double InputSignal, double DT, double CornerFreq, doubl
     }
 
     // Compute/update coefficients (also on Moving)
+    // NOTE: Parenthesization matches Fortran operator precedence where ** binds
+    // tighter than *, so DT**2.0*CornerFreq_**2.0 groups as (DT**2)*(CF**2).
     if (iStatus == 0 || reset || Moving_) {
+        double DT2 = DT * DT;
+        double CF2 = CornerFreq_ * CornerFreq_;
         FP->nfs_b2[idx] = 2.0 * DT * CornerFreq_;
         FP->nfs_b0[idx] = -FP->nfs_b2[idx];
-        FP->nfs_a2[idx] = Damp * DT * DT * CornerFreq_ * CornerFreq_ + 2.0 * DT * CornerFreq_ + 4.0 * Damp;
-        FP->nfs_a1[idx] = 2.0 * Damp * DT * DT * CornerFreq_ * CornerFreq_ - 8.0 * Damp;
-        FP->nfs_a0[idx] = Damp * DT * DT * CornerFreq_ * CornerFreq_ - 2.0 * DT * CornerFreq_ + 4.0 * Damp;
+        FP->nfs_a2[idx] = Damp * DT2 * CF2 + 2.0 * DT * CornerFreq_ + 4.0 * Damp;
+        FP->nfs_a1[idx] = 2.0 * Damp * DT2 * CF2 - 8.0 * Damp;
+        FP->nfs_a0[idx] = Damp * DT2 * CF2 - 2.0 * DT * CornerFreq_ + 4.0 * Damp;
     }
 
     // Filter

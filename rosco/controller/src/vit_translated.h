@@ -31,6 +31,26 @@ double picontroller_c(double error, double kp, double ki, double minValue, doubl
 double piicontroller_c(double error, double error2, double kp, double ki, double ki2, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int reset, int* inst);
 double rescontroller_c(double error, double kp, double ki, double freq, double minValue, double maxValue, double DT, resparams_t* resP, int reset, int* inst);
 void foreaftdamping_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst);
+double interp2d_c(double* xData, int n_xData, double* yData, int n_yData, double* zData, int n_zData_rows, int n_zData_cols, double xq, double yq, errorvariables_t* ErrVar);
+double aerodyntorque_c(double RotSpeed, double BldPitch, localvariables_t* LocalVar, controlparameters_view_t* CntrPar, performancedata_view_t* PerfData, errorvariables_t* ErrVar);
+double floatingfeedback_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar);
+void structuralcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar);
+void cablecontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar);
+void flapcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst);
+void yawratecontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
+void variablespeedcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar);
+void ipc_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
+void activewakecontrol_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, debugvariables_t* DebugVar, objectinstances_t* objInst);
+double pitchsaturation_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
+void statemachine_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar);
+void setpointsmoother_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst);
+void powercontrolsetpoints_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
+void refspeedexclusion_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, debugvariables_t* DebugVar);
+void computevariablessetpoints_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
+void shutdown_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar);
+void startup_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar);
+void windspeedestimator_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, performancedata_view_t* PerfData, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
+void pitchcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
 
 #ifdef __cplusplus
 }
