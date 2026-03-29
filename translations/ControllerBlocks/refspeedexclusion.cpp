@@ -673,7 +673,7 @@ double ratelimit_c(double inputSignal, double minRate, double maxRate, double DT
                    int reset, rlparams_t* rlP, int* inst,
                    int has_ResetValue, double ResetValue);
 
-void refspeedexclusion(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, debugvariables_t* DebugVar) {
+void RefSpeedExclusion(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, debugvariables_t* DebugVar) {
 
     // Get LSS Ref speed
     double VS_RefSpeed_LSS = LocalVar->VS_RefSpd / CntrPar->WE_GearboxRatio;

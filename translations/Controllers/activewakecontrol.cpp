@@ -689,7 +689,7 @@ extern "C" {
                            resparams_t* resP, int reset, int* inst);
 }
 
-void activewakecontrol(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, debugvariables_t* DebugVar, objectinstances_t* objInst) {
+void ActiveWakeControl(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, debugvariables_t* DebugVar, objectinstances_t* objInst) {
     // ActiveWakeControl: active wake mixing via individual pitch
     //   AWC_Mode 1: SNL complex-number approach
     //   AWC_Mode 2: Open-loop Coleman transform

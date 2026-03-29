@@ -636,7 +636,7 @@ double lpfilter_c(double InputSignal, double DT, double CornerFreq,
                   filterparameters_t* FP, int iStatus, int reset, int* inst,
                   int has_InitialValue, double InitialValue);
 
-void setpointsmoother(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst) {
+void SetpointSmoother(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst) {
 
     // ------ Setpoint Smoothing ------
     if (CntrPar->SS_Mode == 1) {

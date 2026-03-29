@@ -720,7 +720,7 @@ extern "C" {
                          int has_InitialValue, double InitialValue);
 }
 
-void pitchcontrol(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar) {
+void PitchControl(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar) {
     // PitchControl: master blade pitch controller
     // Orchestrates collective pitch PI, IPC, tower damping, floating feedback,
     // pitch saturation, AWC, shutdown, actuator model, and fault handling.

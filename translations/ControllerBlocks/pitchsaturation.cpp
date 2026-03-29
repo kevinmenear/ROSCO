@@ -689,7 +689,7 @@ extern "C" {
 double interp1d_c(double* xData, int n_xData, double* yData, int n_yData,
                   double xq, errorvariables_t* ErrVar);
 
-double pitchsaturation(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar) {
+double PitchSaturation(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar) {
 
     // Define minimum blade pitch angle for peak shaving as a function of estimated wind speed
     LocalVar->PS_Min_Pitch = interp1d_c(CntrPar->PS_WindSpeeds, CntrPar->n_PS_WindSpeeds,

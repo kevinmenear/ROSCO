@@ -653,7 +653,7 @@ extern "C" {
                       double xq, errorvariables_t* ErrVar);
 }
 
-void structuralcontrol(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar) {
+void StructuralControl(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar) {
     // StructuralControl: structural control input assignment
     //   StC_Mode = 1: user-defined step inputs
     //   StC_Mode = 2: open-loop from lookup table

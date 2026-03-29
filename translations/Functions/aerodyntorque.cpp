@@ -670,7 +670,7 @@ double interp2d_c(double* xData, int n_xData, double* yData, int n_yData,
                   double* zData, int n_zData_rows, int n_zData_cols,
                   double xq, double yq, errorvariables_t* ErrVar);
 
-double aerodyntorque(double RotSpeed, double BldPitch, localvariables_t* LocalVar,
+double AeroDynTorque(double RotSpeed, double BldPitch, localvariables_t* LocalVar,
                      controlparameters_view_t* CntrPar, performancedata_view_t* PerfData,
                      errorvariables_t* ErrVar) {
 

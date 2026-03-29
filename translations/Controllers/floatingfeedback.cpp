@@ -654,7 +654,7 @@ extern "C" {
                           double I0, piparams_t* piP, int reset, int* inst);
 }
 
-double floatingfeedback(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar) {
+double FloatingFeedback(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar) {
     // FloatingFeedback: pitch contribution from nacelle velocity feedback
     //   Fl_Mode = 1: proportional feedback of translational nacelle velocity
     //   Fl_Mode = 2: proportional feedback of rotational nacelle velocity

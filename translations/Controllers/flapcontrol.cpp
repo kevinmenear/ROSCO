@@ -647,7 +647,7 @@ extern "C" {
 
 static const double R2D = 57.2957795130;
 
-void flapcontrol(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst) {
+void FlapControl(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst) {
     // FlapControl: blade flap angle control
     //   Flp_Mode = 1: steady-state flap angle
     //   Flp_Mode = 2: PII flap control (proportional-integral-integral)

@@ -703,7 +703,7 @@ double saturate_c(double val, double minval, double maxval);
 void refspeedexclusion_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar,
                          objectinstances_t* objInst, debugvariables_t* DebugVar);
 
-void computevariablessetpoints(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar) {
+void ComputeVariablesSetpoints(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar) {
 
     // Change pitch reference speed
     LocalVar->PC_RefSpd_PRC = CntrPar->PC_RefSpd * LocalVar->PRC_R_Speed;

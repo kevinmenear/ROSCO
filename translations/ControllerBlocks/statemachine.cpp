@@ -625,7 +625,7 @@ static const int PC_State_Enabled = 1;
 
 extern "C" {
 
-void statemachine(controlparameters_view_t* CntrPar, localvariables_t* LocalVar) {
+void StateMachine(controlparameters_view_t* CntrPar, localvariables_t* LocalVar) {
 
     // Initialize State machine if first call
     if (LocalVar->iStatus == 0) {

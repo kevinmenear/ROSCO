@@ -653,7 +653,7 @@ double lpfilter_c(double InputSignal, double DT, double CornerFreq,
 double sigma_c(double x, double x0, double x1, double y0, double y1,
                errorvariables_t* ErrVar);
 
-void startup(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar) {
+void Startup(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar) {
 
     double SU_PrevLoad;
 

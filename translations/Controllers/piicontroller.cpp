@@ -23,7 +23,7 @@ typedef struct {
 
 #include <algorithm>
 
-double piicontroller(double error, double error2, double kp, double ki, double ki2, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int reset, int* inst) {
+double PIIController(double error, double error2, double kp, double ki, double ki2, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int reset, int* inst) {
     int idx = *inst - 1;  // Fortran 1-based -> C 0-based
     double result;
 

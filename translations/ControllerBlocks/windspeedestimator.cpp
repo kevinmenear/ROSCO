@@ -743,7 +743,7 @@ double aerodyntorque_c(double RotSpeed, double BldPitch, localvariables_t* Local
                        controlparameters_view_t* CntrPar, performancedata_view_t* PerfData,
                        errorvariables_t* ErrVar);
 
-void windspeedestimator(localvariables_t* LocalVar, controlparameters_view_t* CntrPar,
+void WindSpeedEstimator(localvariables_t* LocalVar, controlparameters_view_t* CntrPar,
                         objectinstances_t* objInst, performancedata_view_t* PerfData,
                         debugvariables_t* DebugVar, errorvariables_t* ErrVar) {
 

@@ -16,7 +16,7 @@ extern "C" {
                           double I0, piparams_t* piP, int reset, int* inst);
 }
 
-void foreaftdamping(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst) {
+void ForeAftDamping(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst) {
     // Fore-aft damping controller: reduces tower vibrations using pitch
 
     // PI controller on fore-aft acceleration (high-pass filtered)

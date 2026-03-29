@@ -692,7 +692,7 @@ extern "C" {
 double interp1d_c(double* xData, int n_xData, double* yData, int n_yData,
                   double xq, errorvariables_t* ErrVar);
 
-void powercontrolsetpoints(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar) {
+void PowerControlSetpoints(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar) {
 
     // Set up power control
     if (CntrPar->PRC_Mode == 2) { // Using power reference control

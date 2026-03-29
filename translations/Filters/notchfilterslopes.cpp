@@ -65,7 +65,7 @@ typedef struct {
 
 #endif // FILTERPARAMETERS_T_H
 
-double notchfilterslopes(double InputSignal, double DT, double CornerFreq, double Damp, filterparameters_t* FP, int iStatus, int reset, int* inst, int has_Moving, int Moving, int has_InitialValue, double InitialValue) {
+double NotchFilterSlopes(double InputSignal, double DT, double CornerFreq, double Damp, filterparameters_t* FP, int iStatus, int reset, int* inst, int has_Moving, int Moving, int has_InitialValue, double InitialValue) {
     int idx = *inst - 1;  // Fortran 1-based → C 0-based
 
     // OPTIONAL handling

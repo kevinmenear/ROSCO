@@ -22,7 +22,7 @@ typedef struct {
 
 #include <algorithm>
 
-double rescontroller(double error, double kp, double ki, double freq, double minValue, double maxValue, double DT, resparams_t* resP, int reset, int* inst) {
+double ResController(double error, double kp, double ki, double freq, double minValue, double maxValue, double DT, resparams_t* resP, int reset, int* inst) {
     int idx = *inst - 1;  // Fortran 1-based -> C 0-based
 
     const double PI = 3.14159265359;

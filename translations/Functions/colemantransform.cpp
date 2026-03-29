@@ -8,7 +8,7 @@
 // Status: unverified
 // Generated: 2026-03-18T13:43:44Z
 
-void colemantransform(double* rootMOOP, double aziAngle, int nHarmonic, double* axTOut, double* axYOut) {
+void ColemanTransform(double* rootMOOP, double aziAngle, int nHarmonic, double* axTOut, double* axYOut) {
     const double PI = 3.14159265359;
     const double phi2 = 2.0 / 3.0 * PI;
     const double phi3 = 4.0 / 3.0 * PI;
