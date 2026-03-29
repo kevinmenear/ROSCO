@@ -12,9 +12,9 @@ This document captures the exact steps to validate that C++ translations produce
 
 ## Overview
 
-The test compares simulation output arrays (gen_torque, bld_pitch, gen_speed, gen_power, nac_yaw) between a pure-Fortran baseline and the integrated Fortran/C++ build. Each of 8 scenarios runs in a **separate OS process** to avoid DLL SAVE variable contamination across scenarios.
+The test compares simulation output arrays (gen_torque, bld_pitch, gen_speed, gen_power, nac_yaw) between a pure-Fortran baseline and the integrated Fortran/C++ build. Each of 9 scenarios runs in a **separate OS process** to avoid DLL SAVE variable contamination across scenarios.
 
-**What is compared:** 612,000 float64 values across 8 scenarios, using `np.array_equal()` (byte-identical, not tolerance-based).
+**What is compared:** 672,000 float64 values across 9 scenarios, using `np.array_equal()` (byte-identical, not tolerance-based).
 
 **What this proves:** The Fortran wrappers, C struct passing, view types, C++→C++ call paths, and library loading all produce correct results in the real ROSCO build. Every controller output at every timestep matches the pure-Fortran original.
 
@@ -70,7 +70,7 @@ cd /workspace/ROSCO
 bash scripts/integrate_all.sh
 ```
 
-Must show `29/29 passed`. See `scripts/integrate_all.sh` for the full function list.
+Must show `39/39 passed`. See `scripts/integrate_all.sh` for the full function list.
 
 ### Verify integration was applied
 
@@ -80,11 +80,11 @@ grep -c '_c(' rosco/controller/src/Functions.f90     # expect 18
 grep -c '_c(' rosco/controller/src/Filters.f90       # expect 12
 grep -c '_c(' rosco/controller/src/Controllers.f90   # expect 24
 
-# Should show 27:
-grep -c '_cpp.cpp' rosco/controller/CMakeLists.txt
+# Should show 39:
+grep -c '\.cpp' rosco/controller/CMakeLists.txt
 
 # Should show real C++ code, not "// stub":
-head -3 rosco/controller/src/saturate_cpp.cpp
+head -3 rosco/controller/src/saturate.cpp
 ```
 
 **Note:** PitchControl and PitchSaturation are both included (Phase 8A). PitchSaturation must integrate before PitchControl (callee dependency).
@@ -172,7 +172,7 @@ else:
 "'
 ```
 
-**Expected output:** ALL IDENTICAL — 612,000 total float64 values compared.
+**Expected output:** ALL IDENTICAL — 672,000 total float64 values compared.
 
 ## Step 8: Cleanup
 
@@ -206,5 +206,6 @@ Per-scenario isolation (separate `docker exec` = separate OS process = guarantee
 
 ## Last Validated
 
+2026-03-29: 39 functions (Phase 8 complete), 672,000 values across 9 scenarios, ALL IDENTICAL. Pure C++ translations — no Fortran bridges.
 2026-03-28: 29 functions (Phase 8A: +PitchSaturation, +PitchControl), 612,000 values across 8 scenarios, ALL IDENTICAL.
 2026-03-26: 27 functions, 612,000 values across 8 scenarios, ALL IDENTICAL.

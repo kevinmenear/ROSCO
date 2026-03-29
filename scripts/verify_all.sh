@@ -32,7 +32,7 @@ fi
 
 # --- Step 0: Clean stale build artifacts from kernel directories ---
 # Only remove compiler outputs (.o, .mod, .exe) and verification logs (.csv).
-# Do NOT remove .h, .f90, *_cpp.cpp, or *_impl.hpp — these are tracked golden
+# Do NOT remove .h, .f90, *.cpp, or *.hpp — these are tracked golden
 # fixture files that vit verify depends on, and git is not available in the
 # container to restore them.
 echo "Cleaning kernel build artifacts..."
