@@ -46,48 +46,47 @@ set(SOURCES
     src/ROSCO_IO.f90
     src/ZeroMQInterface.f90
     src/ExtControl.f90
-    src/vit_math_bridge.f90
-    src/saturate_cpp.cpp
-    src/wrap_180_cpp.cpp
-    src/wrap_360_cpp.cpp
-    src/ratelimit_cpp.cpp
-    src/colemantransform_cpp.cpp
-    src/colemantransforminverse_cpp.cpp
-    src/identity_cpp.cpp
-    src/sigma_cpp.cpp
-    src/interp1d_cpp.cpp
-    src/lpfilter_cpp.cpp
-    src/hpfilter_cpp.cpp
-    src/seclpfilter_cpp.cpp
-    src/seclpfilter_vel_cpp.cpp
-    src/notchfilter_cpp.cpp
-    src/notchfilterslopes_cpp.cpp
-    src/picontroller_cpp.cpp
-    src/piicontroller_cpp.cpp
-    src/rescontroller_cpp.cpp
+    src/saturate.cpp
+    src/wrap_180.cpp
+    src/wrap_360.cpp
+    src/ratelimit.cpp
+    src/colemantransform.cpp
+    src/colemantransforminverse.cpp
+    src/identity.cpp
+    src/sigma.cpp
+    src/interp1d.cpp
+    src/lpfilter.cpp
+    src/hpfilter.cpp
+    src/seclpfilter.cpp
+    src/seclpfilter_vel.cpp
+    src/notchfilter.cpp
+    src/notchfilterslopes.cpp
+    src/picontroller.cpp
+    src/piicontroller.cpp
+    src/rescontroller.cpp
     src/vit_controlparameters_view.f90
-    src/foreaftdamping_cpp.cpp
-    src/interp2d_cpp.cpp
+    src/foreaftdamping.cpp
+    src/interp2d.cpp
     src/vit_performancedata_view.f90
-    src/aerodyntorque_cpp.cpp
-    src/floatingfeedback_cpp.cpp
-    src/structuralcontrol_cpp.cpp
-    src/cablecontrol_cpp.cpp
-    src/flapcontrol_cpp.cpp
-    src/yawratecontrol_cpp.cpp
-    src/variablespeedcontrol_cpp.cpp
-    src/ipc_cpp.cpp
-    src/activewakecontrol_cpp.cpp
-    src/pitchsaturation_cpp.cpp
-    src/statemachine_cpp.cpp
-    src/setpointsmoother_cpp.cpp
-    src/powercontrolsetpoints_cpp.cpp
-    src/refspeedexclusion_cpp.cpp
-    src/computevariablessetpoints_cpp.cpp
-    src/shutdown_cpp.cpp
-    src/startup_cpp.cpp
-    src/windspeedestimator_cpp.cpp
-    src/pitchcontrol_cpp.cpp
+    src/aerodyntorque.cpp
+    src/floatingfeedback.cpp
+    src/structuralcontrol.cpp
+    src/cablecontrol.cpp
+    src/flapcontrol.cpp
+    src/yawratecontrol.cpp
+    src/variablespeedcontrol.cpp
+    src/ipc.cpp
+    src/activewakecontrol.cpp
+    src/pitchsaturation.cpp
+    src/statemachine.cpp
+    src/setpointsmoother.cpp
+    src/powercontrolsetpoints.cpp
+    src/refspeedexclusion.cpp
+    src/computevariablessetpoints.cpp
+    src/shutdown.cpp
+    src/startup.cpp
+    src/windspeedestimator.cpp
+    src/pitchcontrol.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

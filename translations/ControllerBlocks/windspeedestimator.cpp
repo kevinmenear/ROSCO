@@ -728,22 +728,12 @@ static const double R2D = 57.2957795130;
 #define WE_xh(i)   LocalVar->WE.xh[(i)-1][0]
 #define WE_K(i)    LocalVar->WE.K[(i)-1][0]
 
-// Fortran EKF bridge for bit-identical results during mixed-binary phase
-extern "C" {
-    void vit_ekf_update(double* xh, double* P, double* K,
-                        const double* F, const double* Q, const double* dxh,
-                        double R_m, double DT, double WE_Inp_Speed, double om_r);
-}
-
-
 extern "C" {
 
 double lpfilter_c(double InputSignal, double DT, double CornerFreq,
                   filterparameters_t* FP, int iStatus, int reset, int* inst,
                   int has_InitialValue, double InitialValue);
 double saturate_c(double val, double minval, double maxval);
-// Fortran math bridge — use gfortran's intrinsics for bit-identical results
-double vit_cos(double x);
 double interp1d_c(double* xData, int n_xData, double* yData, int n_yData,
                   double xq, errorvariables_t* ErrVar);
 double interp2d_c(double* xData, int n_xData, double* yData, int n_yData,
@@ -814,7 +804,7 @@ void windspeedestimator(localvariables_t* LocalVar, controlparameters_view_t* Cn
     }
 
     // Filter hub height wind speed (with OPTIONAL InitialValue = WE_Vw)
-    LocalVar->HorWindV_F = vit_cos(LocalVar->NacVaneF * D2R) *
+    LocalVar->HorWindV_F = std::cos(LocalVar->NacVaneF * D2R) *
         lpfilter_c(LocalVar->HorWindV, LocalVar->DT, CntrPar->F_WECornerFreq / 10.0,
                    &LocalVar->FP, LocalVar->RestartWSE,
                    (LocalVar->restart != 0) ? 1 : 0,
@@ -918,13 +908,65 @@ void windspeedestimator(localvariables_t* LocalVar, controlparameters_view_t* Cn
             dxh[1] = -a * LocalVar->WE.v_t;
             dxh[2] = 0.0;
 
-            // Full EKF update (xh prediction + P prediction + measurement)
-            // All done in Fortran bridge for bit-identical results
-            double dxh_col[3] = {dxh[0], dxh[1], dxh[2]}; // flat column vector
-            vit_ekf_update(&LocalVar->WE.xh[0][0], &LocalVar->WE.P[0][0],
-                           &LocalVar->WE.K[0][0], F, Q, dxh_col,
-                           R_m, LocalVar->DT,
-                           WE_Inp_Speed, LocalVar->WE.om_r);
+            // EKF update — state prediction, P prediction, measurement update
+            // Uses explicit element-by-element MATMUL with left-to-right
+            // accumulation and temporaries to avoid aliasing (P appears on
+            // both sides of the P prediction equation).
+
+            // State prediction: xh = xh + DT * dxh
+            WE_xh(1) += LocalVar->DT * dxh[0];
+            WE_xh(2) += LocalVar->DT * dxh[1];
+            WE_xh(3) += LocalVar->DT * dxh[2];
+
+            // P prediction: P_new = P + DT*(F*P + P*F^T + Q - K*R_m*K^T)
+            // Compute into temporary to avoid aliasing (P is read and written)
+            {
+                double P_new[3][3];
+                for (int i = 1; i <= 3; i++) {
+                    for (int j = 1; j <= 3; j++) {
+                        // F*P element (i,j)
+                        double FP_ij = FM(i,1)*WE_P(1,j) + FM(i,2)*WE_P(2,j) + FM(i,3)*WE_P(3,j);
+                        // P*F^T element (i,j) = sum_k P(i,k)*F(j,k)
+                        double PFt_ij = WE_P(i,1)*FM(j,1) + WE_P(i,2)*FM(j,2) + WE_P(i,3)*FM(j,3);
+                        // K*R_m*K^T element (i,j) = K(i)*R_m*K(j)
+                        double KRKt_ij = WE_K(i) * R_m * WE_K(j);
+                        P_new[j-1][i-1] = WE_P(i,j) + LocalVar->DT * (FP_ij + PFt_ij + QM(i,j) - KRKt_ij);
+                    }
+                }
+                // Copy back
+                for (int i = 0; i < 3; i++)
+                    for (int j = 0; j < 3; j++)
+                        LocalVar->WE.P[i][j] = P_new[i][j];
+            }
+
+            // Measurement update
+            // H = [1, 0, 0], so H*P*H^T = P(1,1), P*H^T = P(:,1)
+            double S = WE_P(1,1) + R_m;
+            WE_K(1) = WE_P(1,1) / S;
+            WE_K(2) = WE_P(2,1) / S;
+            WE_K(3) = WE_P(3,1) / S;
+
+            // xh = xh + K*(WE_Inp_Speed - om_r)
+            double innov = WE_Inp_Speed - LocalVar->WE.om_r;
+            WE_xh(1) += WE_K(1) * innov;
+            WE_xh(2) += WE_K(2) * innov;
+            WE_xh(3) += WE_K(3) * innov;
+
+            // P = (I - K*H) * P  where K*H is rank-1: (K*H)(i,j) = K(i)*H(j) = K(i) if j==1, else 0
+            {
+                double P_new[3][3];
+                for (int i = 1; i <= 3; i++) {
+                    for (int j = 1; j <= 3; j++) {
+                        // (I - K*H)(i,k) = delta(i,k) - K(i)*H(k)
+                        // = delta(i,k) - K(i) if k==1, else delta(i,k)
+                        // So (I-KH)*P (i,j) = P(i,j) - K(i)*P(1,j)
+                        P_new[j-1][i-1] = WE_P(i,j) - WE_K(i) * WE_P(1,j);
+                    }
+                }
+                for (int i = 0; i < 3; i++)
+                    for (int j = 0; j < 3; j++)
+                        LocalVar->WE.P[i][j] = P_new[i][j];
+            }
 
             // Extract state estimates
             LocalVar->WE.om_r = WE_xh(1) > eps ? WE_xh(1) : eps;

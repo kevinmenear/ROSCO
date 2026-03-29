@@ -41,7 +41,7 @@ git checkout dba7738 -- rosco/controller/src/Functions.f90 rosco/controller/src/
 git checkout e8010f0 -- rosco/controller/src/DISCON.F90
 
 # Create C++ stubs (CMakeLists.txt references these)
-for f in rosco/controller/src/*_cpp.cpp; do
+for f in rosco/controller/src/*.cpp; do
     echo "// stub" > "$f"
 done
 
