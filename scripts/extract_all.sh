@@ -100,17 +100,7 @@ extract Startup        Startup -f rosco/controller/src/DISCON.F90 -l 112 --run-a
 extract PIDController  PIDController -f rosco/controller/src/Controllers.f90 -l 346 --run-args '--scenario 10'
 
 # ReadSetParameters (Scenario 3)
-# Note: ReadAvrSWAP extraction requires patching ROSCO_Helpers.f90 to work around
-# KGen's parser failing on backslash characters in PathIsRelative/GetPath functions.
-# ReadSetParameters.f90 USEs ROSCO_Helpers, triggering KGen to parse the file.
-echo "--- ReadSetParameters (patching ROSCO_Helpers.f90 for KGen) ---"
-cp rosco/controller/src/ROSCO_Helpers.f90 rosco/controller/src/ROSCO_Helpers.f90.bak
-sed -i "s|INDEX( GivenFil, '\\\\\\\\', BACK=.TRUE. )|INDEX( GivenFil, '/', BACK=.TRUE. )|" rosco/controller/src/ROSCO_Helpers.f90
-sed -i 's|INDEX( GivenFil, ":\\\\"|INDEX( GivenFil, ":/"|' rosco/controller/src/ROSCO_Helpers.f90
-sed -i 's|INDEX( "/\\\\"|INDEX( "//"|' rosco/controller/src/ROSCO_Helpers.f90
 extract ReadAvrSWAP    ReadAvrSWAP -f rosco/controller/src/DISCON.F90 -l 81 --run-args '--scenario 3'
-cp rosco/controller/src/ROSCO_Helpers.f90.bak rosco/controller/src/ROSCO_Helpers.f90
-rm rosco/controller/src/ROSCO_Helpers.f90.bak
 
 echo ""
 echo "=== Extraction complete: $PASS/$TOTAL passed, $FAIL failed ==="
