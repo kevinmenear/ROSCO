@@ -74,8 +74,10 @@ _build
 kernel/**/*.o
 kernel/**/*.exe
 kernel/**/*.csv
-kernel/**/*_cpp.cpp
-kernel/**/*_impl.hpp
+kernel/**/*.cpp
+kernel/**/*.hpp
+kernel/**/rosco_constants.h
+kernel/**/vit_types.h
 
 # VIT — extraction intermediates
 state/
