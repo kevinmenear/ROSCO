@@ -686,7 +686,7 @@ typedef struct {
 #include <cstring>
 #include <cstdio>
 
-static const int PC_State_Enabled = 1;
+#include "rosco_constants.h"
 
 // Callee entry points
 extern "C" {

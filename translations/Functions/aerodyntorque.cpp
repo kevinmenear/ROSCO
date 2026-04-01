@@ -660,9 +660,7 @@ typedef struct {
 #include <cstring>
 #include <limits>
 
-// Constants from Constants.f90
-static const double PI = 3.14159265359;
-static const double R2D = 57.2957795130;
+#include "rosco_constants.h"
 
 extern "C" {
 

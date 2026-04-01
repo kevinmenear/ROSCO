@@ -645,7 +645,7 @@ extern "C" {
                           double I0, piparams_t* piP, int reset, int* inst);
 }
 
-static const double R2D = 57.2957795130;
+#include "rosco_constants.h"
 
 void FlapControl(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst) {
     // FlapControl: blade flap angle control

@@ -8,8 +8,10 @@
 // Status: unverified
 // Generated: 2026-03-18T13:43:50Z
 
+#include <cmath>
+#include "rosco_constants.h"
+
 void ColemanTransformInverse(double axTIn, double axYIn, double aziAngle, int nHarmonic, double aziOffset, double* PitComIPC) {
-    const double PI = 3.14159265359;
     const double phi2 = 2.0 / 3.0 * PI;
     const double phi3 = 4.0 / 3.0 * PI;
 

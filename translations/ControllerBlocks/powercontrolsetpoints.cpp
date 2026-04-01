@@ -682,10 +682,7 @@ typedef struct {
 
 #endif // LOCALVARIABLES_T_H
 
-// Constants from Constants.f90
-static const int PRC_Comm_Constant = 0;
-static const int PRC_Comm_OpenLoop = 1;
-static const int PRC_Comm_ZMQ = 2;
+#include "rosco_constants.h"
 
 extern "C" {
 

@@ -107,3 +107,24 @@ in code but not in comments.
 *Discovered in Phase 8C: Fortran interp2d had correct dimension checks
 (`SIZE(zData,2)`) but misleading comments that said "zData(:,1)". Reading the
 comments instead of the IF conditions led to an incorrect diagnosis.*
+
+---
+
+## Shared constants header: `rosco_constants.h`
+
+ROSCO constants (PI, D2R, R2D, RPS2RPM, control mode enumerations) are defined
+in `translations/rosco_constants.h`. Use `#include "rosco_constants.h"` instead
+of defining constants inline. The header contains:
+
+- **Math:** `PI`, `D2R`, `R2D`, `RPS2RPM`
+- **VS control modes:** `VS_Mode_Disabled`, `VS_Mode_KOmega`, `VS_Mode_WSE_TSR`, `VS_Mode_Power_TSR`, `VS_Mode_Torque_TSR`
+- **VS states:** `VS_State_Error`, `VS_State_Region_1_5`, ..., `VS_State_PI`
+- **VS feedback path:** `VS_FBP_Variable_Pitch`, `VS_FBP_Power_Overspeed`, `VS_FBP_WSE_Ref`, `VS_FBP_Torque_Ref`
+- **VS constant power:** `VS_Mode_ConstTrq`, `VS_Mode_ConstPwr`
+- **Pitch states:** `PC_State_Disabled`, `PC_State_Enabled`
+- **Power ref comm:** `PRC_Comm_Constant`, `PRC_Comm_OpenLoop`, `PRC_Comm_ZMQ`
+- **Harmonics:** `NP_1`, `NP_2`
+
+Values match `Constants.f90` exactly. Only include the header if your translation
+uses these constants. Translation files should be self-contained — include only
+what they use.

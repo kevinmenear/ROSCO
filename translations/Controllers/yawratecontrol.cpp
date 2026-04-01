@@ -682,10 +682,9 @@ typedef struct {
 
 #endif // LOCALVARIABLES_T_H
 
-#include <cmath>
 
-static const double D2R = 0.01745329251;
-static const double R2D = 57.2957795130;
+#include <cmath>
+#include "rosco_constants.h"
 
 // Callee entry points
 extern "C" {

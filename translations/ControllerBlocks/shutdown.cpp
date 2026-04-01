@@ -648,9 +648,7 @@ typedef struct {
 #include <cmath>
 #include <cstring>
 
-// Constants from Constants.f90
-static const double D2R = 0.01745329251;
-static const double R2D = 57.2957795130;
+#include "rosco_constants.h"
 
 extern "C" {
 

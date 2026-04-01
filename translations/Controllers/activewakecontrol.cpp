@@ -668,11 +668,7 @@ typedef struct {
 #endif // LOCALVARIABLES_T_H
 
 #include <cmath>
-
-// Use ROSCO's PI from Constants.f90 — NOT PI (which has more digits)
-static const double PI = 3.14159265359;
-
-static const double D2R = 0.01745329251;
+#include "rosco_constants.h"
 
 // Callee entry points
 extern "C" {

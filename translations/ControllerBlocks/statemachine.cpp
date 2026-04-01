@@ -610,18 +610,7 @@ typedef struct {
 
 #endif // LOCALVARIABLES_T_H
 
-// Constants from Constants.f90
-static const int VS_Mode_ConstPwr = 1;
-static const int VS_FBP_Variable_Pitch = 0;
-static const int VS_State_Error = 0;
-static const int VS_State_Region_1_5 = 1;
-static const int VS_State_Region_2 = 2;
-static const int VS_State_Region_2_5 = 3;
-static const int VS_State_Region_3_ConstTrq = 4;
-static const int VS_State_Region_3_ConstPwr = 5;
-static const int VS_State_Region_3_FBP = 6;
-static const int PC_State_Disabled = 0;
-static const int PC_State_Enabled = 1;
+#include "rosco_constants.h"
 
 extern "C" {
 

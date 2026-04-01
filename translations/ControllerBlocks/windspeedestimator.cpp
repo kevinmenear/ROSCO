@@ -718,10 +718,7 @@ typedef struct {
 #include <cstdio>
 #include <limits>
 
-// Constants from Constants.f90
-static const double PI = 3.14159265359;
-static const double D2R = 0.01745329251;
-static const double R2D = 57.2957795130;
+#include "rosco_constants.h"
 
 // Fortran P(i,j) = C P[j-1][i-1] (column-major to row-major mapping)
 #define WE_P(i,j)  LocalVar->WE.P[(j)-1][(i)-1]

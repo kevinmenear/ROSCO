@@ -7,7 +7,6 @@
 // VIT: 0.1.0
 // Status: unverified
 
-#include <cmath>
 // Generated: 2026-03-28T12:00:17Z
 
 // Auto-generated view struct for Fortran TYPE(ControlParameters)
@@ -684,13 +683,8 @@ typedef struct {
 
 #endif // LOCALVARIABLES_T_H
 
-// Constants from Constants.f90
-static const int VS_Mode_WSE_TSR = 2;
-static const int VS_Mode_Power_TSR = 3;
-static const int VS_Mode_Torque_TSR = 4;
-static const int VS_FBP_Variable_Pitch = 0;
-static const int VS_FBP_WSE_Ref = 2;
-static const int VS_FBP_Torque_Ref = 3;
+#include <cmath>
+#include "rosco_constants.h"
 
 extern "C" {
 

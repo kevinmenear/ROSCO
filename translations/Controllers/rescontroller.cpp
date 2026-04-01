@@ -21,11 +21,11 @@ typedef struct {
 #endif // RESPARAMS_T_H
 
 #include <algorithm>
+#include "rosco_constants.h"
 
 double ResController(double error, double kp, double ki, double freq, double minValue, double maxValue, double DT, resparams_t* resP, int reset, int* inst) {
     int idx = *inst - 1;  // Fortran 1-based -> C 0-based
 
-    const double PI = 3.14159265359;
     double omega = 2 * PI * freq;
 
     // Tustin RC coefficients — match Fortran operator precedence:

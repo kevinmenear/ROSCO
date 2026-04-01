@@ -648,30 +648,7 @@ typedef struct {
 #include <algorithm>
 #include <cstring>
 #include <cstdio>
-
-// VS control mode constants
-static const int VS_Mode_Disabled   = 0;
-static const int VS_Mode_KOmega     = 1;
-static const int VS_Mode_WSE_TSR    = 2;
-static const int VS_Mode_Power_TSR  = 3;
-static const int VS_Mode_Torque_TSR = 4;
-
-static const int VS_Mode_ConstTrq = 0;
-static const int VS_Mode_ConstPwr = 1;
-
-static const int VS_FBP_Variable_Pitch  = 0;
-static const int VS_FBP_Power_Overspeed = 1;
-static const int VS_FBP_WSE_Ref         = 2;
-static const int VS_FBP_Torque_Ref      = 3;
-
-static const int VS_State_Error             = 0;
-static const int VS_State_Region_1_5        = 1;
-static const int VS_State_Region_2          = 2;
-static const int VS_State_Region_2_5        = 3;
-static const int VS_State_Region_3_ConstTrq = 4;
-static const int VS_State_Region_3_ConstPwr = 5;
-static const int VS_State_Region_3_FBP      = 6;
-static const int VS_State_PI                = 7;
+#include "rosco_constants.h"
 
 // Callee entry points — provided by vit_kernel_callees.h (kernel) or
 // vit_translated.h (integration). Declared here for standalone compilation.
