@@ -1,5 +1,5 @@
 #!/bin/bash
-# Extract all 39 functions sequentially.
+# Extract all 40 functions sequentially.
 # Each extraction uses the specific scenario needed for that function's call site.
 # Run from the ROSCO repo root inside the Docker container.
 #
@@ -14,7 +14,7 @@ set -e
 
 PASS=0
 FAIL=0
-TOTAL=39
+TOTAL=40
 
 extract() {
     local name=$1; shift
@@ -34,7 +34,7 @@ extract() {
     fi
 }
 
-echo "=== Extracting 39 functions ==="
+echo "=== Extracting 40 functions ==="
 echo ""
 
 # Functions (Scenario 3)
@@ -95,6 +95,19 @@ extract SetpointSmoother SetpointSmoother -f rosco/controller/src/DISCON.F90 -l 
 # DISCON.F90 ControllerBlocks (Scenario 9 — SD_Mode=1, SU_Mode=1)
 extract Shutdown       Shutdown -f rosco/controller/src/DISCON.F90 -l 107 --run-args '--scenario 9'
 extract Startup        Startup -f rosco/controller/src/DISCON.F90 -l 112 --run-args '--scenario 9'
+
+# ReadSetParameters (Scenario 3)
+# Note: ReadAvrSWAP extraction requires patching ROSCO_Helpers.f90 to work around
+# KGen's parser failing on backslash characters in PathIsRelative/GetPath functions.
+# ReadSetParameters.f90 USEs ROSCO_Helpers, triggering KGen to parse the file.
+echo "--- ReadSetParameters (patching ROSCO_Helpers.f90 for KGen) ---"
+cp rosco/controller/src/ROSCO_Helpers.f90 rosco/controller/src/ROSCO_Helpers.f90.bak
+sed -i "s|INDEX( GivenFil, '\\\\\\\\', BACK=.TRUE. )|INDEX( GivenFil, '/', BACK=.TRUE. )|" rosco/controller/src/ROSCO_Helpers.f90
+sed -i 's|INDEX( GivenFil, ":\\\\"|INDEX( GivenFil, ":/"|' rosco/controller/src/ROSCO_Helpers.f90
+sed -i 's|INDEX( "/\\\\"|INDEX( "//"|' rosco/controller/src/ROSCO_Helpers.f90
+extract ReadAvrSWAP    ReadAvrSWAP -f rosco/controller/src/DISCON.F90 -l 81 --run-args '--scenario 3'
+cp rosco/controller/src/ROSCO_Helpers.f90.bak rosco/controller/src/ROSCO_Helpers.f90
+rm rosco/controller/src/ROSCO_Helpers.f90.bak
 
 echo ""
 echo "=== Extraction complete: $PASS/$TOTAL passed, $FAIL failed ==="

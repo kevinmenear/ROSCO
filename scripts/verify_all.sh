@@ -1,10 +1,10 @@
 #!/bin/bash
-# Verify all 39 C++ translations against golden kernel fixtures.
+# Verify all 40 C++ translations against golden kernel fixtures.
 # Run from the ROSCO repo root inside the Docker container.
 #
 # Usage:
-#   bash scripts/verify_all.sh          # Run all 39 sequentially
-#   bash scripts/verify_all.sh 1        # Batch 1 only (13 functions)
+#   bash scripts/verify_all.sh          # Run all 40 sequentially
+#   bash scripts/verify_all.sh 1        # Batch 1 only (14 functions)
 #   bash scripts/verify_all.sh 2        # Batch 2 only (13 functions)
 #   bash scripts/verify_all.sh 3        # Batch 3 only (13 functions)
 #
@@ -59,7 +59,7 @@ verify() {
     fi
 }
 
-# --- Batch 1: Functions + Filters (13 functions) ---
+# --- Batch 1: Functions + Filters + ReadSetParameters (14 functions) ---
 if [ "$BATCH" = "0" ] || [ "$BATCH" = "1" ]; then
     echo "--- Functions ---"
     verify saturate                translations/Functions/saturate.cpp                rosco/controller/src/Functions.f90
@@ -72,6 +72,8 @@ if [ "$BATCH" = "0" ] || [ "$BATCH" = "1" ]; then
     verify ColemanTransform        translations/Functions/colemantransform.cpp        rosco/controller/src/Functions.f90
     verify ColemanTransformInverse translations/Functions/colemantransforminverse.cpp rosco/controller/src/Functions.f90
     verify identity                translations/Functions/identity.cpp                rosco/controller/src/Functions.f90
+    echo "--- ReadSetParameters ---"
+    verify ReadAvrSWAP             translations/ReadSetParameters/readavrswap.cpp     rosco/controller/src/ReadSetParameters.f90
     echo "--- Filters ---"
     verify LPFilter                translations/Filters/lpfilter.cpp                  rosco/controller/src/Filters.f90
     verify HPFilter                translations/Filters/hpfilter.cpp                  rosco/controller/src/Filters.f90
@@ -118,7 +120,7 @@ fi
 
 echo ""
 if [ "$BATCH" = "0" ]; then
-    TOTAL=39
+    TOTAL=40
 else
     TOTAL=$((PASS + FAIL))
 fi

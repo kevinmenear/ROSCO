@@ -10,10 +10,11 @@
 #   - Controllers.f90 + ControllerBlocks.f90 → 46e8d4f (Phase 4C + K init fix)
 #   - Functions.f90 + Filters.f90 → dba7738 (restart fix + notch filter bug fix)
 #   - DISCON.F90 → e8010f0 (upstream, no wrappers)
-#   - All *_cpp.cpp files → "// stub"
+#   - ReadSetParameters.f90 → HEAD (committed version has Phase 4A fixes, no wrappers)
+#   - All *.cpp files → "// stub"
 #
 # What it does NOT reset (these have Phase 4A/4C fixes and no wrappers):
-#   - ROSCO_Types.f90, ExtControl.f90, ReadSetParameters.f90, ROSCO_IO.f90
+#   - ROSCO_Types.f90, ExtControl.f90, ROSCO_IO.f90
 #   - CMakeLists.txt (-ffp-contract=off flags + C++ source list)
 #   - translations/, vit.yaml, kernel/
 #
@@ -40,6 +41,9 @@ git checkout dba7738 -- rosco/controller/src/Functions.f90 rosco/controller/src/
 # DISCON.F90: upstream (no wrappers)
 git checkout e8010f0 -- rosco/controller/src/DISCON.F90
 
+# ReadSetParameters.f90: restore committed version (Phase 4A fixes, no wrappers)
+git checkout -- rosco/controller/src/ReadSetParameters.f90
+
 # Create C++ stubs (CMakeLists.txt references these)
 for f in rosco/controller/src/*.cpp; do
     echo "// stub" > "$f"
@@ -49,7 +53,8 @@ done
 echo ""
 echo "Verification (all should be 0):"
 grep -c '_c(' rosco/controller/src/Functions.f90 rosco/controller/src/Filters.f90 \
-              rosco/controller/src/Controllers.f90 rosco/controller/src/ControllerBlocks.f90 || true
+              rosco/controller/src/Controllers.f90 rosco/controller/src/ControllerBlocks.f90 \
+              rosco/controller/src/ReadSetParameters.f90 || true
 
 echo ""
 echo "Reset complete."

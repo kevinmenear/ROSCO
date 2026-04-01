@@ -147,6 +147,9 @@ translations:
   ComputeVariablesSetpoints:
     status: integrated
     cpp_file: translations/ControllerBlocks/computevariablessetpoints.cpp
+  ReadAvrSWAP:
+    status: integrated
+    cpp_file: translations/ReadSetParameters/readavrswap.cpp
 types:
   ControlParameters:
     strategy: view

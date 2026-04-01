@@ -51,6 +51,7 @@ void shutdown_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, o
 void startup_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar);
 void windspeedestimator_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, performancedata_view_t* PerfData, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
 void pitchcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
+void readavrswap_c(float* avrSWAP, localvariables_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_t* ErrVar);
 
 #ifdef __cplusplus
 }
