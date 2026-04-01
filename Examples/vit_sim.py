@@ -877,12 +877,69 @@ def run_scenario_9(turbine, controller, cp_filename, output_dir=None):
 
 
 # ---------------------------------------------------------------------------
+# Scenario 10: Open loop rotor position control (OL_Mode=2 → PIDController)
+# ---------------------------------------------------------------------------
+def run_scenario_10(turbine, controller, cp_filename, output_dir=None):
+    """OL_Mode=2 azimuth tracking to exercise PIDController.
+
+    PIDController is only called when OL_Mode=2. It uses RP_Gains (Kp, Ki, Kd, Tf)
+    to track a desired azimuth profile from the OL input file. The PID output
+    (GenTqAz) is added to the base generator torque.
+    """
+    print("=" * 60)
+    print("Scenario 10: Rotor position control (OL_Mode=2, PIDController)")
+    print("=" * 60)
+
+    ol_input_path = os.path.join(this_dir, 'example_inputs', 'OL_Mode2_Input.dat')
+    param_filename = os.path.join(this_dir, 'DISCON_ol_mode2.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'OL_Mode': 2,
+        'OL_Filename': ol_input_path,
+        'OL_BP_Mode': 0,
+        'OL_BP_FiltFreq': 0.0,
+        'Ind_Breakpoint': 1,
+        'Ind_BldPitch': '2 3 4',
+        'Ind_GenTq': 5,
+        'Ind_Azimuth': 6,
+        'Ind_YawRate': 0,
+        'Ind_R_Speed': 0,
+        'Ind_R_Torque': 0,
+        'Ind_R_Pitch': 0,
+        'RP_Gains': '1000.0 100.0 500.0 0.1',
+        # Disable modes incompatible with OL_Mode=2
+        'CC_Mode': 0,
+        'StC_Mode': 0,
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim10'
+    )
+
+    sim_10 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 100
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+
+    sim_10.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+
+    save_and_print_results({
+        'gen_torque': sim_10.gen_torque, 'bld_pitch': sim_10.bld_pitch,
+        'gen_speed': sim_10.gen_speed, 'gen_power': sim_10.gen_power,
+        'nac_yaw': sim_10.nac_yaw,
+    }, 10, output_dir)
+    print("Scenario 10: PASSED (PIDController for azimuth tracking exercised)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description='VIT simulation runner')
     parser.add_argument('--scenario', type=int, default=0,
-                        help='Run specific scenario (1-9). Default 0 = run all.')
+                        help='Run specific scenario (1-10). Default 0 = run all.')
     parser.add_argument('--output-dir', type=str, default=None,
                         help='Save simulation output arrays to .npz files in this directory.')
     args = parser.parse_args()
@@ -922,6 +979,9 @@ def main():
 
     if args.scenario == 0 or args.scenario == 9:
         run_scenario_9(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 10:
+        run_scenario_10(turbine, controller, cp_filename, od)
 
     print("\n" + "=" * 60)
     print("All scenarios complete.")

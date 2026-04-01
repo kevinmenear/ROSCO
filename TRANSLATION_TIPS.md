@@ -131,6 +131,27 @@ what they use.
 
 ---
 
+## Declare callee signatures inline — do not `#include "vit_translated.h"`
+
+When your translation calls another translated function (e.g., PIDController
+calling `lpfilter_c`), declare the callee signatures inline in an `extern "C"`
+block. Do not include `vit_translated.h` — it is not available during
+compilation. The `vit translate` prompt includes the correct callee signatures;
+copy them into your translation.
+
+```cpp
+extern "C" {
+    double saturate_c(double inputValue, double minValue, double maxValue);
+    double lpfilter_c(double InputSignal, double DT, double CornerFreq,
+                      filterparameters_t* FP, int iStatus, int reset, int* inst,
+                      int has_InitialValue, double InitialValue);
+}
+```
+
+*Discovered in Phase 10A: PIDController build failed on missing header.*
+
+---
+
 ## Shared type header: `vit_types.h`
 
 C struct definitions for Fortran derived types are in `translations/vit_types.h`.

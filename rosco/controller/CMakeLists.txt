@@ -88,6 +88,7 @@ set(SOURCES
     src/windspeedestimator.cpp
     src/pitchcontrol.cpp
     src/readavrswap.cpp
+    src/pidcontroller.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

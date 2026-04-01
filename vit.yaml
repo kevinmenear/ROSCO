@@ -150,6 +150,9 @@ translations:
   ReadAvrSWAP:
     status: integrated
     cpp_file: translations/ReadSetParameters/readavrswap.cpp
+  PIDController:
+    status: integrated
+    cpp_file: translations/Controllers/pidcontroller.cpp
 types:
   ControlParameters:
     strategy: view

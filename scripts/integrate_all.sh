@@ -1,6 +1,6 @@
 #!/bin/bash
-# Integrate all 40 C++ translations into the ROSCO codebase.
-# (39 algorithm functions from Phases 1-9, plus ReadAvrSWAP from Phase 10A)
+# Integrate all 41 C++ translations into the ROSCO codebase.
+# (39 algorithm functions from Phases 1-9, plus ReadAvrSWAP and PIDController from Phase 10A)
 # Run from the ROSCO repo root inside the Docker container.
 #
 # Usage: bash scripts/integrate_all.sh
@@ -13,7 +13,7 @@ set -e
 
 PASS=0
 FAIL=0
-TOTAL=40
+TOTAL=41
 
 integrate() {
     local name=$1
@@ -30,7 +30,7 @@ integrate() {
     fi
 }
 
-echo "=== Integrating 40 functions ==="
+echo "=== Integrating 41 functions ==="
 echo ""
 
 # Functions
@@ -82,6 +82,8 @@ integrate ComputeVariablesSetpoints translations/ControllerBlocks/computevariabl
 integrate Shutdown                  translations/ControllerBlocks/shutdown.cpp                  rosco/controller/src/ControllerBlocks.f90
 integrate Startup                   translations/ControllerBlocks/startup.cpp                   rosco/controller/src/ControllerBlocks.f90
 integrate WindSpeedEstimator        translations/ControllerBlocks/windspeedestimator.cpp        rosco/controller/src/ControllerBlocks.f90
+
+integrate PIDController       translations/Controllers/pidcontroller.cpp       rosco/controller/src/Controllers.f90
 
 # PitchControl (depends on PitchSaturation above)
 echo "--- PitchControl ---"

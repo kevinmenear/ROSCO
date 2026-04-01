@@ -26,6 +26,10 @@ extern "C" {
                        int has_ResetValue, double ResetValue);
     double interp1d_c(double* xData, int n_xData, double* yData, int n_yData,
                       double xq, errorvariables_t* ErrVar);
+    double pidcontroller_c(double error, double kp, double ki, double kd, double tf,
+                           double minValue, double maxValue, double DT, double I0,
+                           piparams_t* piP, int reset, objectinstances_t* objInst,
+                           localvariables_t* LocalVar);
 }
 
 void VariableSpeedControl(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar) {
@@ -132,8 +136,7 @@ void VariableSpeedControl(float* avrSWAP, controlparameters_view_t* CntrPar, loc
                 LocalVar->OL_Index, ErrVar);
         }
 
-        // Azimuth tracking control (OL_Mode == 2) — handled by callee bridges
-        // (UNWRAP, PIDController not yet translated, will use Fortran originals)
+        // Azimuth tracking control (OL_Mode == 2)
         if (CntrPar->OL_Mode == 2) {
             // Initialize azimuth buffer
             if (LocalVar->iStatus == 0) {
@@ -143,10 +146,34 @@ void VariableSpeedControl(float* avrSWAP, controlparameters_view_t* CntrPar, loc
             // Push/pop buffer
             LocalVar->AzBuffer[0] = LocalVar->AzBuffer[1];
             LocalVar->AzBuffer[1] = LocalVar->Azimuth;
-            // UNWRAP and PIDController are untranslated — these branches
-            // are not exercised in the golden fixture (OL_Mode=0).
-            // They will be bridged to Fortran during kernel verification.
-            // For now, skip the azimuth tracking computation.
+
+            // Inline 2-element unwrap (equivalent to Fortran UNWRAP function)
+            while (LocalVar->AzBuffer[1] - LocalVar->AzBuffer[0] <= -PI)
+                LocalVar->AzBuffer[1] += 2.0 * PI;
+            while (LocalVar->AzBuffer[1] - LocalVar->AzBuffer[0] >= PI)
+                LocalVar->AzBuffer[1] -= 2.0 * PI;
+
+            LocalVar->AzUnwrapped = LocalVar->AzBuffer[1];
+
+            // Desired azimuth from OL file
+            LocalVar->OL_Azimuth = interp1d_c(
+                CntrPar->OL_Breakpoints, CntrPar->n_OL_Breakpoints,
+                CntrPar->OL_Azimuth, CntrPar->n_OL_Azimuth,
+                LocalVar->Time, ErrVar);
+
+            LocalVar->AzError = LocalVar->OL_Azimuth - LocalVar->AzUnwrapped;
+
+            // PID controller for azimuth tracking torque
+            LocalVar->GenTqAz = pidcontroller_c(
+                LocalVar->AzError,
+                CntrPar->RP_Gains[0], CntrPar->RP_Gains[1],
+                CntrPar->RP_Gains[2], CntrPar->RP_Gains[3],
+                -LocalVar->VS_MaxTq * 2.0, LocalVar->VS_MaxTq * 2.0,
+                LocalVar->DT, 0.0,
+                &LocalVar->piP, (LocalVar->restart != 0) ? 1 : 0,
+                objInst, LocalVar);
+
+            LocalVar->GenTq = LocalVar->GenTq + LocalVar->GenTqAz;
         }
     }
 

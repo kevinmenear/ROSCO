@@ -1,11 +1,11 @@
 #!/bin/bash
-# Verify all 40 C++ translations against golden kernel fixtures.
+# Verify all 41 C++ translations against golden kernel fixtures.
 # Run from the ROSCO repo root inside the Docker container.
 #
 # Usage:
-#   bash scripts/verify_all.sh          # Run all 40 sequentially
+#   bash scripts/verify_all.sh          # Run all 41 sequentially
 #   bash scripts/verify_all.sh 1        # Batch 1 only (14 functions)
-#   bash scripts/verify_all.sh 2        # Batch 2 only (13 functions)
+#   bash scripts/verify_all.sh 2        # Batch 2 only (14 functions)
 #   bash scripts/verify_all.sh 3        # Batch 3 only (13 functions)
 #
 # For parallel execution, launch 3 separate docker exec calls:
@@ -80,7 +80,7 @@ if [ "$BATCH" = "0" ] || [ "$BATCH" = "1" ]; then
     verify SecLPFilter             translations/Filters/seclpfilter.cpp               rosco/controller/src/Filters.f90
 fi
 
-# --- Batch 2: Filters (cont) + Controllers (13 functions) ---
+# --- Batch 2: Filters (cont) + Controllers (14 functions) ---
 if [ "$BATCH" = "0" ] || [ "$BATCH" = "2" ]; then
     echo "--- Filters (cont) ---"
     verify NotchFilter       translations/Filters/notchfilter.cpp       rosco/controller/src/Filters.f90
@@ -97,6 +97,7 @@ if [ "$BATCH" = "0" ] || [ "$BATCH" = "2" ]; then
     verify FlapControl         translations/Controllers/flapcontrol.cpp         rosco/controller/src/Controllers.f90
     verify YawRateControl      translations/Controllers/yawratecontrol.cpp      rosco/controller/src/Controllers.f90
     verify VariableSpeedControl translations/Controllers/variablespeedcontrol.cpp rosco/controller/src/Controllers.f90
+    verify PIDController       translations/Controllers/pidcontroller.cpp       rosco/controller/src/Controllers.f90
 fi
 
 # --- Batch 3: Controllers (cont) + ControllerBlocks (13 functions) ---
@@ -120,7 +121,7 @@ fi
 
 echo ""
 if [ "$BATCH" = "0" ]; then
-    TOTAL=40
+    TOTAL=41
 else
     TOTAL=$((PASS + FAIL))
 fi

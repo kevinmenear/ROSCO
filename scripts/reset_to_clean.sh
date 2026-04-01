@@ -45,8 +45,16 @@ git checkout e8010f0 -- rosco/controller/src/DISCON.F90
 git checkout -- rosco/controller/src/ReadSetParameters.f90
 
 # Create C++ stubs (CMakeLists.txt references these)
+# Stub existing files
 for f in rosco/controller/src/*.cpp; do
-    echo "// stub" > "$f"
+    [ -f "$f" ] && echo "// stub" > "$f"
+done
+# Also create stubs for any .cpp files listed in CMakeLists.txt that don't exist yet
+grep -oE 'src/[^ ]+\.cpp' rosco/controller/CMakeLists.txt | while read f; do
+    filepath="rosco/controller/$f"
+    if [ ! -f "$filepath" ]; then
+        echo "// stub" > "$filepath"
+    fi
 done
 
 # Verify clean state (grep -c returns 1 when count is 0, so use || true)
