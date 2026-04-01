@@ -5,8 +5,7 @@
 // Fortran: FUNCTION PIController(error, kp, ki, minValue, maxValue, DT, I0, piP, reset, inst)
 // Status: unverified
 
-#include "piparams_t.h"
-
+#include "vit_types.h"
 #include <algorithm>
 
 double PIController(double error, double kp, double ki, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int reset, int* inst) {

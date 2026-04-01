@@ -7,18 +7,9 @@
 // VIT: 0.1.0
 // Status: unverified
 
-#include "controlparameters_view_t.h"
-#include "errorvariables_t.h"
-#include "filterparameters_t.h"
-#include "objectinstances_t.h"
-#include "piparams_t.h"
-#include "resparams_t.h"
-#include "rlparams_t.h"
-#include "we_t.h"
-#include "localvariables_t.h"
-
 // interp1d and PIController entry points — provided by vit_translated.h (integration)
 // or vit_kernel_callees.h (kernel verification).
+#include "vit_types.h"
 extern "C" {
     double interp1d_c(double* xData, int n_xData, double* yData, int n_yData,
                       double xq, errorvariables_t* ErrVar);

@@ -8,16 +8,8 @@
 // Status: unverified
 // Generated: 2026-03-24T17:05:23Z
 
-#include "controlparameters_view_t.h"
-#include "filterparameters_t.h"
-#include "objectinstances_t.h"
-#include "piparams_t.h"
-#include "resparams_t.h"
-#include "rlparams_t.h"
-#include "we_t.h"
-#include "localvariables_t.h"
-
 // Callee entry points
+#include "vit_types.h"
 extern "C" {
     double piicontroller_c(double error, double error2, double kp, double ki,
                            double ki2, double minValue, double maxValue, double DT,

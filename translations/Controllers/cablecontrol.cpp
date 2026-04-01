@@ -8,16 +8,7 @@
 // Status: unverified
 // Generated: 2026-03-24T16:04:46Z
 
-#include "controlparameters_view_t.h"
-#include "errorvariables_t.h"
-#include "filterparameters_t.h"
-#include "objectinstances_t.h"
-#include "piparams_t.h"
-#include "resparams_t.h"
-#include "rlparams_t.h"
-#include "we_t.h"
-#include "localvariables_t.h"
-
+#include "vit_types.h"
 #include <cstring>
 #include <cstdio>
 #include "rosco_constants.h"

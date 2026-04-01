@@ -10,14 +10,13 @@
 // 1-D linear interpolation (table lookup)
 // xData must be strictly increasing
 // Clamps to boundary values when xq is outside the data range
+#include "vit_types.h"
 //
 // VIT interface: each assumed-shape array gets its own size parameter.
 // n_xData and n_yData should be equal for valid input.
 
 #include <cstring>
 #include <cstdio>
-
-#include "errorvariables_t.h"
 
 double interp1d(double* xData, int n_xData, double* yData, int n_yData, double xq, errorvariables_t* ErrVar) {
     // Error check: are xData and yData the same size?

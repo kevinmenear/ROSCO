@@ -8,16 +8,7 @@
 // Status: unverified
 // Generated: 2026-03-28T12:54:51Z
 
-#include "controlparameters_view_t.h"
-#include "debugvariables_t.h"
-#include "filterparameters_t.h"
-#include "objectinstances_t.h"
-#include "piparams_t.h"
-#include "resparams_t.h"
-#include "rlparams_t.h"
-#include "we_t.h"
-#include "localvariables_t.h"
-
+#include "vit_types.h"
 extern "C" {
 
 double ratelimit_c(double inputSignal, double minRate, double maxRate, double DT,

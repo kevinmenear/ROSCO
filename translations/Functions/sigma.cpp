@@ -11,9 +11,8 @@
 // Returns y0 when x < x0, y1 when x > x1, cubic blend in between
 // Chains error message if aviFAIL < 0 on entry
 
+#include "vit_types.h"
 #include <cstring>
-
-#include "errorvariables_t.h"
 
 double sigma(double x, double x0, double x1, double y0, double y1, errorvariables_t* ErrVar) {
     double d = x0 - x1;

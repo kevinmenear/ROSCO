@@ -6,11 +6,8 @@
 // VIT: 0.1.0
 // Status: unverified
 
+#include "vit_types.h"
 #include <algorithm>
-#include "controlparameters_view_t.h"
-#include "localvariables_t.h"
-#include "objectinstances_t.h"
-#include "piparams_t.h"
 
 // PIController entry point — provided by vit_translated.h (integration)
 // or vit_kernel_callees.h (kernel verification).

@@ -8,8 +8,7 @@
 // Status: unverified
 // Generated: 2026-03-19T01:43:55Z
 
-#include "filterparameters_t.h"
-
+#include "vit_types.h"
 double LPFilter(double InputSignal, double DT, double CornerFreq, filterparameters_t* FP, int iStatus, int reset, int* inst, int has_InitialValue, double InitialValue) {
     int idx = *inst - 1;  // Fortran 1-based → C 0-based
 

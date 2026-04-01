@@ -5,8 +5,7 @@
 // Fortran: FUNCTION ResController(error, kp, ki, freq, minValue, maxValue, DT, resP, reset, inst)
 // Status: unverified
 
-#include "resparams_t.h"
-
+#include "vit_types.h"
 #include <algorithm>
 #include "rosco_constants.h"
 

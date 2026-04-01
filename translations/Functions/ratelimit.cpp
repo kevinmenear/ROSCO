@@ -8,9 +8,8 @@
 // Status: unverified
 // Generated: 2026-03-18T15:03:43Z
 
+#include "vit_types.h"
 #include <algorithm>
-
-#include "rlparams_t.h"
 
 double ratelimit(double inputSignal, double minRate, double maxRate, double DT, int reset, rlparams_t* rlP, int* inst, int has_ResetValue, double ResetValue) {
     // Determine reset value: use ResetValue if present, else inputSignal

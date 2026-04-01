@@ -8,8 +8,7 @@
 // Status: unverified
 // Generated: 2026-03-28T13:16:44Z
 
-#include "errorvariables_t.h"
-
+#include "vit_types.h"
 #include <cmath>
 #include <cstring>
 #include <cstdio>

@@ -9,17 +9,7 @@
 
 // Generated: 2026-03-28T12:00:17Z
 
-#include "controlparameters_view_t.h"
-#include "debugvariables_t.h"
-#include "errorvariables_t.h"
-#include "filterparameters_t.h"
-#include "objectinstances_t.h"
-#include "piparams_t.h"
-#include "resparams_t.h"
-#include "rlparams_t.h"
-#include "we_t.h"
-#include "localvariables_t.h"
-
+#include "vit_types.h"
 #include <cmath>
 #include "rosco_constants.h"
 
