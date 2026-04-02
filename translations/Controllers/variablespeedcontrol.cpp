@@ -30,6 +30,7 @@ extern "C" {
                            double minValue, double maxValue, double DT, double I0,
                            piparams_t* piP, int reset, objectinstances_t* objInst,
                            localvariables_t* LocalVar);
+    void unwrap_c(double* x, int n_x, errorvariables_t* ErrVar, double* unwrap_result);
 }
 
 void VariableSpeedControl(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar) {
@@ -147,11 +148,11 @@ void VariableSpeedControl(float* avrSWAP, controlparameters_view_t* CntrPar, loc
             LocalVar->AzBuffer[0] = LocalVar->AzBuffer[1];
             LocalVar->AzBuffer[1] = LocalVar->Azimuth;
 
-            // Inline 2-element unwrap (equivalent to Fortran UNWRAP function)
-            while (LocalVar->AzBuffer[1] - LocalVar->AzBuffer[0] <= -PI)
-                LocalVar->AzBuffer[1] += 2.0 * PI;
-            while (LocalVar->AzBuffer[1] - LocalVar->AzBuffer[0] >= PI)
-                LocalVar->AzBuffer[1] -= 2.0 * PI;
+            // Unwrap azimuth buffer via shared unwrap_c
+            double az_unwrapped[2];
+            unwrap_c(LocalVar->AzBuffer, 2, ErrVar, az_unwrapped);
+            LocalVar->AzBuffer[0] = az_unwrapped[0];
+            LocalVar->AzBuffer[1] = az_unwrapped[1];
 
             LocalVar->AzUnwrapped = LocalVar->AzBuffer[1];
 

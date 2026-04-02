@@ -153,6 +153,9 @@ translations:
   PIDController:
     status: integrated
     cpp_file: translations/Controllers/pidcontroller.cpp
+  unwrap:
+    status: integrated
+    cpp_file: translations/Functions/unwrap.cpp
 types:
   ControlParameters:
     strategy: view

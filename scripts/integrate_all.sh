@@ -1,6 +1,7 @@
 #!/bin/bash
-# Integrate all 41 C++ translations into the ROSCO codebase.
-# (39 algorithm functions from Phases 1-9, plus ReadAvrSWAP and PIDController from Phase 10A)
+# Integrate all 45 C++ translations into the ROSCO codebase.
+# (39 algorithm functions from Phases 1-9, ReadAvrSWAP + PIDController from Phase 10A,
+#  unwrap, and 3 Stage B functions: CheckInputs, ReadCpFile, ReadControlParameterFileSub)
 # Run from the ROSCO repo root inside the Docker container.
 #
 # Usage: bash scripts/integrate_all.sh
@@ -13,7 +14,7 @@ set -e
 
 PASS=0
 FAIL=0
-TOTAL=44
+TOTAL=45
 
 integrate() {
     local name=$1
@@ -46,6 +47,7 @@ integrate sigma                   translations/Functions/sigma.cpp              
 integrate interp1d                translations/Functions/interp1d.cpp                rosco/controller/src/Functions.f90
 integrate interp2d                translations/Functions/interp2d.cpp                rosco/controller/src/Functions.f90
 integrate AeroDynTorque           translations/Functions/aerodyntorque.cpp           rosco/controller/src/Functions.f90
+integrate unwrap                 translations/Functions/unwrap.cpp                 rosco/controller/src/Functions.f90
 
 # Filters
 echo "--- Filters ---"

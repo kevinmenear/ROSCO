@@ -92,6 +92,7 @@ set(SOURCES
     src/checkinputs.cpp
     src/readcpfile.cpp
     src/readcontrolparameterfilesub.cpp
+    src/unwrap.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

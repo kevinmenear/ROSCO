@@ -109,6 +109,7 @@ if [ "$BATCH" = "0" ] || [ "$BATCH" = "3" ]; then
     echo "--- ControllerBlocks ---"
     verify PitchSaturation     translations/ControllerBlocks/pitchsaturation.cpp     rosco/controller/src/ControllerBlocks.f90
     verify AeroDynTorque       translations/Functions/aerodyntorque.cpp               rosco/controller/src/Functions.f90
+    verify unwrap              translations/Functions/unwrap.cpp                      rosco/controller/src/Functions.f90
     verify StateMachine        translations/ControllerBlocks/statemachine.cpp         rosco/controller/src/ControllerBlocks.f90
     verify SetpointSmoother    translations/ControllerBlocks/setpointsmoother.cpp     rosco/controller/src/ControllerBlocks.f90
     verify PowerControlSetpoints translations/ControllerBlocks/powercontrolsetpoints.cpp rosco/controller/src/ControllerBlocks.f90
@@ -121,7 +122,7 @@ fi
 
 echo ""
 if [ "$BATCH" = "0" ]; then
-    TOTAL=41
+    TOTAL=42
 else
     TOTAL=$((PASS + FAIL))
 fi

@@ -205,3 +205,5 @@
 
         ! Copy scalars again (computed constants modified in pass 2)
         CALL vit_copy_scalars_to_cntrpar(CntrPar_view, CntrPar)
+
+    END SUBROUTINE ReadControlParameterFileSub
