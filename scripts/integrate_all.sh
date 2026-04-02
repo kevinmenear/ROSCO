@@ -286,22 +286,11 @@ fi
 
 echo "--- Stage D: ExtController ---"
 # ExtController needs a guarded ALLOCATE before the view populate.
-# Use vit integrate, then fix up the wrapper.
 integrate ExtController translations/IO/ext_control.cpp rosco/controller/src/ExtControl.f90
-# Remove duplicate INTERFACE block (VIT's idempotency issue) and add guarded ALLOCATE
+# Add guarded ALLOCATE for ExtDLL%avrSWAP (conditional, not auto-allocatable)
 python3 -c "
-import re
 with open('rosco/controller/src/ExtControl.f90', 'r') as f:
     content = f.read()
-# Remove duplicate INTERFACE blocks (keep first, remove second)
-pattern = r'(    END INTERFACE\n)\n\n    ! Auto-generated interface for C\+\+ implementation of ExtController\n    INTERFACE\n.*?    END INTERFACE\n'
-content = re.sub(pattern, r'\1', content, flags=re.DOTALL)
-# Remove duplicate USE statements
-content = content.replace(
-    '        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters\n        USE vit_extcontroltype_view, ONLY: extcontroltype_view_t, vit_populate_extcontroltype\n        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters\n        USE vit_extcontroltype_view, ONLY: extcontroltype_view_t, vit_populate_extcontroltype',
-    '        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters\n        USE vit_extcontroltype_view, ONLY: extcontroltype_view_t, vit_populate_extcontroltype'
-)
-# Add guarded ALLOCATE
 content = content.replace(
     '        ! Populate view structs from Fortran types\n        CALL vit_populate_controlparameters',
     '        ! Pre-allocate ExtDLL%avrSWAP if not yet allocated (first call)\n        IF (.NOT. ALLOCATED(ExtDLL%avrSWAP)) ALLOCATE(ExtDLL%avrSWAP(2000))\n        ! Populate view structs from Fortran types\n        CALL vit_populate_controlparameters'
