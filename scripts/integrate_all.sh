@@ -1,7 +1,7 @@
 #!/bin/bash
-# Integrate all 45 C++ translations into the ROSCO codebase.
+# Integrate all 47 C++ translations into the ROSCO codebase.
 # (39 algorithm functions from Phases 1-9, ReadAvrSWAP + PIDController from Phase 10A,
-#  unwrap, and 3 Stage B functions: CheckInputs, ReadCpFile, ReadControlParameterFileSub)
+#  unwrap, 3 Stage B functions, and 2 Stage D functions: UpdateZeroMQ, ExtController)
 # Run from the ROSCO repo root inside the Docker container.
 #
 # Usage: bash scripts/integrate_all.sh
@@ -14,7 +14,7 @@ set -e
 
 PASS=0
 FAIL=0
-TOTAL=45
+TOTAL=47
 
 integrate() {
     local name=$1
@@ -236,6 +236,79 @@ if [ $? -eq 0 ]; then
 else
     FAIL=$((FAIL + 1))
 fi
+
+# Stage D: Platform modules (manual wrappers — #ifdef and conditional ALLOCATE)
+echo "--- Stage D: UpdateZeroMQ (manual) ---"
+# ZeroMQInterface.f90 has #ifdef preprocessor directives that break VIT's parser.
+# Use pre-built wrapper directly.
+cp translations/IO/zmq_interface.cpp rosco/controller/src/updatezeromq.cpp
+python3 -c "
+import sys
+wrapper = '''module ZeroMQInterface
+   USE, INTRINSIC :: ISO_C_BINDING
+   IMPLICIT NONE
+
+    ! Auto-generated interface for C++ implementation of UpdateZeroMQ
+    INTERFACE
+        SUBROUTINE updatezeromq_c(LocalVar, CntrPar, ErrVar) BIND(C, NAME=\\\"updatezeromq_c\\\")
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE updatezeromq_c
+    END INTERFACE
+
+CONTAINS
+    SUBROUTINE UpdateZeroMQ(LocalVar, CntrPar, ErrVar)
+        USE ISO_C_BINDING
+        USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, ErrorVariables
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters
+        IMPLICIT NONE
+        TYPE(LocalVariables), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(ControlParameters), INTENT(INOUT), TARGET :: CntrPar
+        TYPE(ErrorVariables), INTENT(INOUT), TARGET :: ErrVar
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        ! Populate view struct from Fortran type
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL updatezeromq_c(C_LOC(LocalVar), C_LOC(CntrPar_view), C_LOC(ErrVar))
+    END SUBROUTINE UpdateZeroMQ
+end module ZeroMQInterface
+'''
+with open('rosco/controller/src/ZeroMQInterface.f90', 'w') as f:
+    f.write(wrapper)
+print('  OK UpdateZeroMQ')
+" 2>&1
+if [ $? -eq 0 ]; then
+    PASS=$((PASS + 1))
+else
+    FAIL=$((FAIL + 1))
+fi
+
+echo "--- Stage D: ExtController ---"
+# ExtController needs a guarded ALLOCATE before the view populate.
+# Use vit integrate, then fix up the wrapper.
+integrate ExtController translations/IO/ext_control.cpp rosco/controller/src/ExtControl.f90
+# Remove duplicate INTERFACE block (VIT's idempotency issue) and add guarded ALLOCATE
+python3 -c "
+import re
+with open('rosco/controller/src/ExtControl.f90', 'r') as f:
+    content = f.read()
+# Remove duplicate INTERFACE blocks (keep first, remove second)
+pattern = r'(    END INTERFACE\n)\n\n    ! Auto-generated interface for C\+\+ implementation of ExtController\n    INTERFACE\n.*?    END INTERFACE\n'
+content = re.sub(pattern, r'\1', content, flags=re.DOTALL)
+# Remove duplicate USE statements
+content = content.replace(
+    '        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters\n        USE vit_extcontroltype_view, ONLY: extcontroltype_view_t, vit_populate_extcontroltype\n        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters\n        USE vit_extcontroltype_view, ONLY: extcontroltype_view_t, vit_populate_extcontroltype',
+    '        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters\n        USE vit_extcontroltype_view, ONLY: extcontroltype_view_t, vit_populate_extcontroltype'
+)
+# Add guarded ALLOCATE
+content = content.replace(
+    '        ! Populate view structs from Fortran types\n        CALL vit_populate_controlparameters',
+    '        ! Pre-allocate ExtDLL%avrSWAP if not yet allocated (first call)\n        IF (.NOT. ALLOCATED(ExtDLL%avrSWAP)) ALLOCATE(ExtDLL%avrSWAP(2000))\n        ! Populate view structs from Fortran types\n        CALL vit_populate_controlparameters'
+)
+with open('rosco/controller/src/ExtControl.f90', 'w') as f:
+    f.write(content)
+" 2>&1
 
 echo ""
 echo "=== Integration complete: $PASS/$TOTAL passed, $FAIL failed ==="

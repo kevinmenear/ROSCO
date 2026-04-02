@@ -93,6 +93,9 @@ set(SOURCES
     src/readcpfile.cpp
     src/readcontrolparameterfilesub.cpp
     src/unwrap.cpp
+    src/updatezeromq.cpp
+    src/vit_extcontroltype_view.f90
+    src/extcontroller.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
@@ -149,7 +152,7 @@ endif()
 
 add_library(discon SHARED ${SOURCES})
 target_include_directories(discon PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../translations)
-target_link_libraries(discon PRIVATE stdc++)
+target_link_libraries(discon PRIVATE stdc++ dl)
 
 if(PC_ZeroMQ_FOUND)
 	target_include_directories(discon PUBLIC ${ZeroMQ_INCLUDE_DIR})

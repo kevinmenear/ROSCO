@@ -156,6 +156,12 @@ translations:
   unwrap:
     status: integrated
     cpp_file: translations/Functions/unwrap.cpp
+  UpdateZeroMQ:
+    status: integrated
+    cpp_file: translations/IO/zmq_interface.cpp
+  ExtController:
+    status: integrated
+    cpp_file: translations/IO/ext_control.cpp
 types:
   ControlParameters:
     strategy: view

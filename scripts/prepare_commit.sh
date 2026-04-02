@@ -43,6 +43,7 @@ git checkout 46e8d4f -- rosco/controller/src/Controllers.f90 rosco/controller/sr
 git checkout dba7738 -- rosco/controller/src/Functions.f90 rosco/controller/src/Filters.f90
 git checkout e8010f0 -- rosco/controller/src/DISCON.F90
 git checkout -- rosco/controller/src/ReadSetParameters.f90
+git checkout -- rosco/controller/src/ExtControl.f90 rosco/controller/src/ZeroMQInterface.f90
 
 # 2. Restore tracked src/*.cpp and src/vit_translated.h to committed state
 #    (integrate_all.sh regenerates them, but output may differ slightly
