@@ -13,7 +13,7 @@ set -e
 
 PASS=0
 FAIL=0
-TOTAL=41
+TOTAL=42
 
 integrate() {
     local name=$1
@@ -30,7 +30,7 @@ integrate() {
     fi
 }
 
-echo "=== Integrating 41 functions ==="
+echo "=== Integrating $TOTAL functions ==="
 echo ""
 
 # Functions
@@ -92,6 +92,63 @@ integrate PitchControl       translations/Controllers/pitchcontrol.cpp        ro
 # ReadSetParameters
 echo "--- ReadSetParameters ---"
 integrate ReadAvrSWAP        translations/ReadSetParameters/readavrswap.cpp   rosco/controller/src/ReadSetParameters.f90
+
+# Stage B manual integration: CheckInputs (pure validation, no KGen)
+# Replace CheckInputs body with C++ wrapper. The C++ translation is in
+# rosco/controller/src/checkinputs.cpp (copied from translations/ReadSetParameters/).
+echo "--- Stage B: CheckInputs (manual) ---"
+cp translations/ReadSetParameters/checkinputs.cpp rosco/controller/src/checkinputs.cpp
+python3 -c "
+import re, sys
+with open('rosco/controller/src/ReadSetParameters.f90', 'r') as f:
+    content = f.read()
+# Find the CheckInputs subroutine body and replace with wrapper
+pattern = r'(    SUBROUTINE CheckInputs\(LocalVar, CntrPar, avrSWAP, ErrVar, size_avcMSG\)).*?(    END SUBROUTINE CheckInputs)'
+wrapper = '''    SUBROUTINE CheckInputs(LocalVar, CntrPar, avrSWAP, ErrVar, size_avcMSG)
+        USE, INTRINSIC :: ISO_C_Binding
+        USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, ErrorVariables
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters
+
+        IMPLICIT NONE
+
+        ! Inputs
+        TYPE(ControlParameters),    INTENT(INOUT), TARGET :: CntrPar
+        TYPE(LocalVariables),       INTENT(INOUT), TARGET :: LocalVar
+        TYPE(ErrorVariables),       INTENT(INOUT), TARGET :: ErrVar
+        INTEGER(IntKi),             INTENT(IN   )         :: size_avcMSG
+        REAL(ReKi),                 INTENT(IN   )         :: avrSWAP(*)
+
+        ! VIT: C++ wrapper
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+
+        INTERFACE
+            SUBROUTINE checkinputs_c(LocalVar, CntrPar, avrSWAP, ErrVar, size_avcMSG) BIND(C, NAME='checkinputs_c')
+                USE ISO_C_BINDING
+                TYPE(C_PTR), VALUE :: LocalVar
+                TYPE(C_PTR), VALUE :: CntrPar
+                REAL(C_FLOAT), INTENT(IN) :: avrSWAP(*)
+                TYPE(C_PTR), VALUE :: ErrVar
+                INTEGER(C_INT32_T), VALUE :: size_avcMSG
+            END SUBROUTINE checkinputs_c
+        END INTERFACE
+
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL checkinputs_c(C_LOC(LocalVar), C_LOC(CntrPar_view), avrSWAP, C_LOC(ErrVar), INT(size_avcMSG, C_INT32_T))
+
+    END SUBROUTINE CheckInputs'''
+result = re.sub(pattern, wrapper, content, flags=re.DOTALL)
+if result == content:
+    print('FAIL CheckInputs: pattern not found in ReadSetParameters.f90')
+    sys.exit(1)
+with open('rosco/controller/src/ReadSetParameters.f90', 'w') as f:
+    f.write(result)
+print('  OK CheckInputs')
+" 2>&1
+if [ $? -eq 0 ]; then
+    PASS=$((PASS + 1))
+else
+    FAIL=$((FAIL + 1))
+fi
 
 echo ""
 echo "=== Integration complete: $PASS/$TOTAL passed, $FAIL failed ==="

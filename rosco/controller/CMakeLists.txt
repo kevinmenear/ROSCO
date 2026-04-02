@@ -89,6 +89,7 @@ set(SOURCES
     src/pitchcontrol.cpp
     src/readavrswap.cpp
     src/pidcontroller.cpp
+    src/checkinputs.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
@@ -144,6 +145,7 @@ if(PC_ZeroMQ_FOUND)
 endif()
 
 add_library(discon SHARED ${SOURCES})
+target_include_directories(discon PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../translations)
 target_link_libraries(discon PRIVATE stdc++)
 
 if(PC_ZeroMQ_FOUND)

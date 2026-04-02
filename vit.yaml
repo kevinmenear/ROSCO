@@ -150,10 +150,6 @@ translations:
   ReadAvrSWAP:
     status: integrated
     cpp_file: translations/ReadSetParameters/readavrswap.cpp
-    cases_passed: 21
-    cases_total: 21
-    cases_skipped: 0
-    kernel_dir: kernel/ReadAvrSWAP
   PIDController:
     status: integrated
     cpp_file: translations/Controllers/pidcontroller.cpp

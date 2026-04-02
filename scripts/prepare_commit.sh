@@ -44,12 +44,15 @@ git checkout dba7738 -- rosco/controller/src/Functions.f90 rosco/controller/src/
 git checkout e8010f0 -- rosco/controller/src/DISCON.F90
 git checkout -- rosco/controller/src/ReadSetParameters.f90
 
-# 2. Restore tracked src/*.cpp files to committed state
+# 2. Restore tracked src/*.cpp and src/vit_translated.h to committed state
 #    (integrate_all.sh regenerates them, but output may differ slightly
 #    from committed versions due to VIT code changes)
+#    Must use git ls-files to avoid untracked .cpp files breaking the glob.
 echo "  Restoring src/*.cpp to committed state..."
-git checkout -- rosco/controller/src/*.cpp 2>/dev/null || true
-git checkout -- rosco/controller/src/vit_translated.h 2>/dev/null || true
+tracked_cpp=$(git ls-files 'rosco/controller/src/*.cpp' 'rosco/controller/src/vit_translated.h')
+if [ -n "$tracked_cpp" ]; then
+    echo "$tracked_cpp" | xargs git checkout --
+fi
 
 # 3. Restore tracked DISCON_*.IN date artifacts (vit_sim.py regenerates with today's date)
 #    Must use git ls-files to avoid including untracked DISCON files in the glob,
@@ -62,8 +65,8 @@ fi
 
 # 4. Remove transient artifacts
 echo "  Removing transient artifacts..."
-rm -rf baseline_arrays/ integrated_arrays/
-rm -f integrated_output.txt baseline_output.txt
+rm -rf integrated_arrays/
+rm -f integrated_output.txt
 rm -f Examples/core
 rm -f rosco/controller/src/rosco_constants.h rosco/controller/src/vit_types.h
 
