@@ -13,7 +13,7 @@ set -e
 
 PASS=0
 FAIL=0
-TOTAL=43
+TOTAL=44
 
 integrate() {
     local name=$1
@@ -202,6 +202,32 @@ if result == content:
 with open('rosco/controller/src/ReadSetParameters.f90', 'w') as f:
     f.write(result)
 print('  OK ReadCpFile')
+" 2>&1
+if [ $? -eq 0 ]; then
+    PASS=$((PASS + 1))
+else
+    FAIL=$((FAIL + 1))
+fi
+
+# Stage B manual integration: ReadControlParameterFileSub (config parser, no KGen)
+# Replace entire ReadControlParameterFileSub with two-pass C++ wrapper.
+# Wrapper template stored in translations/ (too large to embed in shell script).
+echo "--- Stage B: ReadControlParameterFileSub (manual) ---"
+cp translations/ReadSetParameters/readcontrolparameterfilesub.cpp rosco/controller/src/readcontrolparameterfilesub.cpp
+python3 -c "
+import re, sys
+with open('rosco/controller/src/ReadSetParameters.f90', 'r') as f:
+    content = f.read()
+with open('translations/ReadSetParameters/readcontrolparameterfilesub_wrapper.f90', 'r') as f:
+    wrapper = f.read()
+pattern = r'(    SUBROUTINE ReadControlParameterFileSub\(CntrPar, LocalVar, accINFILE, accINFILE_size, RootName, ErrVar\)).*?(    END SUBROUTINE ReadControlParameterFileSub)'
+result = re.sub(pattern, wrapper.rstrip(), content, flags=re.DOTALL)
+if result == content:
+    print('FAIL ReadControlParameterFileSub: pattern not found in ReadSetParameters.f90')
+    sys.exit(1)
+with open('rosco/controller/src/ReadSetParameters.f90', 'w') as f:
+    f.write(result)
+print('  OK ReadControlParameterFileSub')
 " 2>&1
 if [ $? -eq 0 ]; then
     PASS=$((PASS + 1))
