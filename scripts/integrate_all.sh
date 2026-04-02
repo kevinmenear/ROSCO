@@ -13,7 +13,7 @@ set -e
 
 PASS=0
 FAIL=0
-TOTAL=42
+TOTAL=43
 
 integrate() {
     local name=$1
@@ -143,6 +143,65 @@ if result == content:
 with open('rosco/controller/src/ReadSetParameters.f90', 'w') as f:
     f.write(result)
 print('  OK CheckInputs')
+" 2>&1
+if [ $? -eq 0 ]; then
+    PASS=$((PASS + 1))
+else
+    FAIL=$((FAIL + 1))
+fi
+
+# Stage B manual integration: ReadCpFile (performance table reader, no KGen)
+# Replace ReadCpFile body with C++ wrapper that pre-allocates arrays.
+echo "--- Stage B: ReadCpFile (manual) ---"
+cp translations/ReadSetParameters/readcpfile.cpp rosco/controller/src/readcpfile.cpp
+python3 -c "
+import re, sys
+with open('rosco/controller/src/ReadSetParameters.f90', 'r') as f:
+    content = f.read()
+pattern = r'(    SUBROUTINE ReadCpFile\(CntrPar\s*,\s*PerfData\s*,\s*ErrVar\)).*?(    END SUBROUTINE ReadCpFile)'
+wrapper = '''    SUBROUTINE ReadCpFile(CntrPar, PerfData, ErrVar)
+        USE, INTRINSIC :: ISO_C_Binding
+        USE ROSCO_Types, ONLY : PerformanceData, ControlParameters, ErrorVariables
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters
+        USE vit_performancedata_view, ONLY: performancedata_view_t, vit_populate_performancedata
+
+        IMPLICIT NONE
+
+        TYPE(ControlParameters),    INTENT(INOUT), TARGET :: CntrPar
+        TYPE(PerformanceData),      INTENT(INOUT), TARGET :: PerfData
+        TYPE(ErrorVariables),       INTENT(INOUT), TARGET :: ErrVar
+
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(performancedata_view_t), TARGET :: PerfData_view
+
+        INTERFACE
+            SUBROUTINE readcpfile_c(CntrPar, PerfData, ErrVar) BIND(C, NAME=\\\"readcpfile_c\\\")
+                USE ISO_C_BINDING
+                TYPE(C_PTR), VALUE :: CntrPar
+                TYPE(C_PTR), VALUE :: PerfData
+                TYPE(C_PTR), VALUE :: ErrVar
+            END SUBROUTINE readcpfile_c
+        END INTERFACE
+
+        ALLOCATE(PerfData%Beta_vec(CntrPar%PerfTableSize(1)))
+        ALLOCATE(PerfData%TSR_vec(CntrPar%PerfTableSize(2)))
+        ALLOCATE(PerfData%Cp_mat(CntrPar%PerfTableSize(2), CntrPar%PerfTableSize(1)))
+        ALLOCATE(PerfData%Ct_mat(CntrPar%PerfTableSize(2), CntrPar%PerfTableSize(1)))
+        ALLOCATE(PerfData%Cq_mat(CntrPar%PerfTableSize(2), CntrPar%PerfTableSize(1)))
+
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_performancedata(PerfData, PerfData_view)
+
+        CALL readcpfile_c(C_LOC(CntrPar_view), C_LOC(PerfData_view), C_LOC(ErrVar))
+
+    END SUBROUTINE ReadCpFile'''
+result = re.sub(pattern, wrapper, content, flags=re.DOTALL)
+if result == content:
+    print('FAIL ReadCpFile: pattern not found in ReadSetParameters.f90')
+    sys.exit(1)
+with open('rosco/controller/src/ReadSetParameters.f90', 'w') as f:
+    f.write(result)
+print('  OK ReadCpFile')
 " 2>&1
 if [ $? -eq 0 ]; then
     PASS=$((PASS + 1))

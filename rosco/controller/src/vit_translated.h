@@ -54,6 +54,7 @@ void pitchcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvari
 void readavrswap_c(float* avrSWAP, localvariables_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_t* ErrVar);
 double pidcontroller_c(double error, double kp, double ki, double kd, double tf, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int reset, objectinstances_t* objInst, localvariables_t* LocalVar);
 void checkinputs_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, float* avrSWAP, errorvariables_t* ErrVar, int32_t size_avcMSG);
+void readcpfile_c(controlparameters_view_t* CntrPar, performancedata_view_t* PerfData, errorvariables_t* ErrVar);
 
 #ifdef __cplusplus
 }

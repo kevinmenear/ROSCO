@@ -90,6 +90,7 @@ set(SOURCES
     src/readavrswap.cpp
     src/pidcontroller.cpp
     src/checkinputs.cpp
+    src/readcpfile.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
