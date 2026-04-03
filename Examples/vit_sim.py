@@ -1888,97 +1888,65 @@ def main():
                         help='Run specific scenario (1-27). Default 0 = run all.')
     parser.add_argument('--output-dir', type=str, default=None,
                         help='Save simulation output arrays to .npz files in this directory.')
+    parser.add_argument('--benchmark', type=int, default=0,
+                        help='Run each scenario N times and output timing CSV. No arrays saved.')
+    parser.add_argument('--build', type=str, default='unknown',
+                        help='Build label for benchmark CSV output (e.g., upstream, modified, cpp).')
     args = parser.parse_args()
 
     turbine, controller, cp_filename = load_turbine_and_controller()
     od = args.output_dir
 
+    # Scenario dispatch table (ordered for KGen extraction compatibility)
+    scenario_order = [3, 4, 5, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+                      17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
+    scenario_functions = {
+        1: run_scenario_1, 2: run_scenario_2, 3: run_scenario_3,
+        4: run_scenario_4, 5: run_scenario_5, 6: run_scenario_6,
+        7: run_scenario_7, 8: run_scenario_8, 9: run_scenario_9,
+        10: run_scenario_10, 11: run_scenario_11, 12: run_scenario_12,
+        13: run_scenario_13, 14: run_scenario_14, 15: run_scenario_15,
+        16: run_scenario_16, 17: run_scenario_17, 18: run_scenario_18,
+        19: run_scenario_19, 20: run_scenario_20, 21: run_scenario_21,
+        22: run_scenario_22, 23: run_scenario_23, 24: run_scenario_24,
+        25: run_scenario_25, 26: run_scenario_26, 27: run_scenario_27,
+    }
+
+    if args.benchmark > 0:
+        # Benchmark mode: time each scenario, output CSV, suppress ALL stdout
+        # (including C/Fortran prints that bypass Python's sys.stdout)
+        import time
+
+        scenarios = [args.scenario] if args.scenario > 0 else scenario_order
+        # Write timing results to stderr (fd 2) to avoid mixing with controller output
+        sys.stderr.write("build,scenario,run,seconds\n")
+        sys.stderr.flush()
+        for s in scenarios:
+            run_fn = scenario_functions[s]
+            for run_num in range(1, args.benchmark + 1):
+                # Redirect fd 1 to /dev/null at OS level to suppress
+                # both Python prints and C/Fortran printf/write
+                devnull_fd = os.open(os.devnull, os.O_WRONLY)
+                saved_stdout_fd = os.dup(1)
+                os.dup2(devnull_fd, 1)
+                os.close(devnull_fd)
+                try:
+                    t0 = time.perf_counter()
+                    run_fn(turbine, controller, cp_filename, None)
+                    t1 = time.perf_counter()
+                finally:
+                    os.dup2(saved_stdout_fd, 1)
+                    os.close(saved_stdout_fd)
+                sys.stderr.write("%s,%d,%d,%.4f\n" % (args.build, s, run_num, t1 - t0))
+                sys.stderr.flush()
+        return
+
+    # Normal mode: run scenarios with output
     # Scenario 3 runs first so KGen's early invocations (1-20) capture all
-    # mode-gated code paths: CC_Mode=1 (CableControl), StC_Mode=1
-    # (StructuralControl), Fl_Mode=1 (FloatingFeedback), Flp_Mode=1
-    # (FlapControl), Y_ControlMode=1 (YawRateControl), TD_Mode=1
-    # (ForeAftDamping). Scenarios 4 and 5 follow for PIIController
-    # (Flp_Mode=2) and ResController (AWC_Mode=4).
-    if args.scenario == 0 or args.scenario == 3:
-        run_scenario_3(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 4:
-        run_scenario_4(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 5:
-        run_scenario_5(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 1:
-        run_scenario_1(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 2:
-        run_scenario_2(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 6:
-        run_scenario_6(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 7:
-        run_scenario_7(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 8:
-        run_scenario_8(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 9:
-        run_scenario_9(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 10:
-        run_scenario_10(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 11:
-        run_scenario_11(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 12:
-        run_scenario_12(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 13:
-        run_scenario_13(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 14:
-        run_scenario_14(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 15:
-        run_scenario_15(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 16:
-        run_scenario_16(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 17:
-        run_scenario_17(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 18:
-        run_scenario_18(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 19:
-        run_scenario_19(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 20:
-        run_scenario_20(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 21:
-        run_scenario_21(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 22:
-        run_scenario_22(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 23:
-        run_scenario_23(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 24:
-        run_scenario_24(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 25:
-        run_scenario_25(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 26:
-        run_scenario_26(turbine, controller, cp_filename, od)
-
-    if args.scenario == 0 or args.scenario == 27:
-        run_scenario_27(turbine, controller, cp_filename, od)
+    # mode-gated code paths.
+    for s in scenario_order:
+        if args.scenario == 0 or args.scenario == s:
+            scenario_functions[s](turbine, controller, cp_filename, od)
 
     print("\n" + "=" * 60)
     print("All scenarios complete.")
