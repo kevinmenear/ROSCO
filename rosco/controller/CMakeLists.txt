@@ -9,59 +9,59 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffp-contract=off")
 
 set(SOURCES
-    src/discon.cpp
-    src/saturate.cpp
-    src/wrap_180.cpp
-    src/wrap_360.cpp
-    src/ratelimit.cpp
+    src/activewakecontrol.cpp
+    src/aerodyntorque.cpp
+    src/cablecontrol.cpp
+    src/checkinputs.cpp
     src/colemantransform.cpp
     src/colemantransforminverse.cpp
-    src/identity.cpp
-    src/sigma.cpp
-    src/interp1d.cpp
-    src/lpfilter.cpp
+    src/computevariablessetpoints.cpp
+    src/debug.cpp
+    src/discon.cpp
+    src/extcontroller.cpp
+    src/flapcontrol.cpp
+    src/floatingfeedback.cpp
+    src/foreaftdamping.cpp
     src/hpfilter.cpp
-    src/seclpfilter.cpp
-    src/seclpfilter_vel.cpp
+    src/identity.cpp
+    src/interp1d.cpp
+    src/interp2d.cpp
+    src/ipc.cpp
+    src/lpfilter.cpp
     src/notchfilter.cpp
     src/notchfilterslopes.cpp
     src/picontroller.cpp
-    src/piicontroller.cpp
-    src/rescontroller.cpp
-    src/foreaftdamping.cpp
-    src/interp2d.cpp
-    src/aerodyntorque.cpp
-    src/floatingfeedback.cpp
-    src/structuralcontrol.cpp
-    src/cablecontrol.cpp
-    src/flapcontrol.cpp
-    src/yawratecontrol.cpp
-    src/variablespeedcontrol.cpp
-    src/ipc.cpp
-    src/activewakecontrol.cpp
-    src/pitchsaturation.cpp
-    src/statemachine.cpp
-    src/setpointsmoother.cpp
-    src/powercontrolsetpoints.cpp
-    src/refspeedexclusion.cpp
-    src/computevariablessetpoints.cpp
-    src/shutdown.cpp
-    src/startup.cpp
-    src/windspeedestimator.cpp
-    src/pitchcontrol.cpp
-    src/readavrswap.cpp
     src/pidcontroller.cpp
-    src/checkinputs.cpp
-    src/readcpfile.cpp
+    src/piicontroller.cpp
+    src/pitchcontrol.cpp
+    src/pitchsaturation.cpp
+    src/powercontrolsetpoints.cpp
+    src/prefiltermeasuredsignals.cpp
+    src/ratelimit.cpp
+    src/readavrswap.cpp
     src/readcontrolparameterfilesub.cpp
+    src/readcpfile.cpp
+    src/readrestartfile.cpp
+    src/refspeedexclusion.cpp
+    src/rescontroller.cpp
+    src/saturate.cpp
+    src/seclpfilter.cpp
+    src/seclpfilter_vel.cpp
+    src/setparameters.cpp
+    src/setpointsmoother.cpp
+    src/shutdown.cpp
+    src/sigma.cpp
+    src/startup.cpp
+    src/statemachine.cpp
+    src/structuralcontrol.cpp
     src/unwrap.cpp
     src/updatezeromq.cpp
-    src/setparameters.cpp
-    src/readrestartfile.cpp
-    src/extcontroller.cpp
+    src/variablespeedcontrol.cpp
+    src/windspeedestimator.cpp
+    src/wrap_180.cpp
+    src/wrap_360.cpp
     src/writerestartfile.cpp
-    src/debug.cpp
-    src/prefiltermeasuredsignals.cpp
+    src/yawratecontrol.cpp
 )
 
 # ZMQ Library

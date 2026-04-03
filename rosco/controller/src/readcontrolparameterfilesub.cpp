@@ -61,19 +61,6 @@ static std::string stripQuotes(const std::string& s) {
     return s;
 }
 
-// Unwrap an angle array in-place (add/subtract 2*PI to keep consecutive
-// differences in [-PI, PI]).  Matches Fortran unwrap() semantics.
-static void unwrap(double* arr, int n) {
-    for (int i = 1; i < n; i++) {
-        while (arr[i] - arr[i - 1] <= -PI) {
-            for (int j = i; j < n; j++) arr[j] += 2.0 * PI;
-        }
-        while (arr[i] - arr[i - 1] >= PI) {
-            for (int j = i; j < n; j++) arr[j] -= 2.0 * PI;
-        }
-    }
-}
-
 // ---------------------------------------------------------------------------
 // DisconParser — reads a DISCON.IN parameter file
 // ---------------------------------------------------------------------------
@@ -311,6 +298,8 @@ static bool pathIsRelative(const std::string& path) {
 // ---------------------------------------------------------------------------
 
 extern "C" {
+
+void unwrap_c(double* x, int n_x, errorvariables_t* ErrVar, double* unwrap_result);
 
 void readcontrolparameterfilesub_pass1_c(
     controlparameters_view_t* CntrPar,
@@ -986,7 +975,7 @@ void readcontrolparameterfilesub_pass2_c(
             for (int i = 0; i < nRows; i++) {
                 CntrPar->OL_Azimuth[i] = CntrPar->OL_Channels[col * nRows + i];
             }
-            unwrap(CntrPar->OL_Azimuth, nRows);
+            unwrap_c(CntrPar->OL_Azimuth, nRows, ErrVar, CntrPar->OL_Azimuth);
         }
 
         // OL_R_Speed

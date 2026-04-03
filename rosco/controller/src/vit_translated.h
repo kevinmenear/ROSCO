@@ -21,18 +21,20 @@ void colemantransforminverse_c(double axTIn, double axYIn, double aziAngle, int 
 void identity_c(int n, double* identity_result);
 double sigma_c(double x, double x0, double x1, double y0, double y1, errorvariables_t* ErrVar);
 double interp1d_c(double* xData, int n_xData, double* yData, int n_yData, double xq, errorvariables_t* ErrVar);
+double interp2d_c(double* xData, int n_xData, double* yData, int n_yData, double* zData, int n_zData_rows, int n_zData_cols, double xq, double yq, errorvariables_t* ErrVar);
+double aerodyntorque_c(double RotSpeed, double BldPitch, localvariables_t* LocalVar, controlparameters_view_t* CntrPar, performancedata_view_t* PerfData, errorvariables_t* ErrVar);
+void unwrap_c(double* x, int n_x, errorvariables_t* ErrVar, double* unwrap_result);
 double lpfilter_c(double InputSignal, double DT, double CornerFreq, filterparameters_t* FP, int iStatus, int reset, int* inst, int has_InitialValue, double InitialValue);
 double hpfilter_c(double InputSignal, double DT, double CornerFreq, filterparameters_t* FP, int iStatus, int reset, int* inst, int has_InitialValue, double InitialValue);
 double seclpfilter_c(double InputSignal, double DT, double CornerFreq, double Damp, filterparameters_t* FP, int iStatus, int reset, int* inst, int has_InitialValue, double InitialValue);
 double seclpfilter_vel_c(double InputSignal, double DT, double CornerFreq, double Damp, filterparameters_t* FP, int iStatus, int reset, int* inst, int has_InitialValue, double InitialValue);
 double notchfilter_c(double InputSignal, double DT, double omega, double betaNum, double betaDen, filterparameters_t* FP, int iStatus, int reset, int* inst, int has_InitialValue, double InitialValue);
 double notchfilterslopes_c(double InputSignal, double DT, double CornerFreq, double Damp, filterparameters_t* FP, int iStatus, int reset, int* inst, int has_Moving, int Moving, int has_InitialValue, double InitialValue);
+void prefiltermeasuredsignals_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, debugvariables_t* DebugVar, objectinstances_t* objInst, errorvariables_t* ErrVar);
 double picontroller_c(double error, double kp, double ki, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int reset, int* inst);
 double piicontroller_c(double error, double error2, double kp, double ki, double ki2, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int reset, int* inst);
 double rescontroller_c(double error, double kp, double ki, double freq, double minValue, double maxValue, double DT, resparams_t* resP, int reset, int* inst);
 void foreaftdamping_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst);
-double interp2d_c(double* xData, int n_xData, double* yData, int n_yData, double* zData, int n_zData_rows, int n_zData_cols, double xq, double yq, errorvariables_t* ErrVar);
-double aerodyntorque_c(double RotSpeed, double BldPitch, localvariables_t* LocalVar, controlparameters_view_t* CntrPar, performancedata_view_t* PerfData, errorvariables_t* ErrVar);
 double floatingfeedback_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar);
 void structuralcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar);
 void cablecontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar);
@@ -50,13 +52,12 @@ void computevariablessetpoints_c(controlparameters_view_t* CntrPar, localvariabl
 void shutdown_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar);
 void startup_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar);
 void windspeedestimator_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, performancedata_view_t* PerfData, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
+double pidcontroller_c(double error, double kp, double ki, double kd, double tf, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int reset, objectinstances_t* objInst, localvariables_t* LocalVar);
 void pitchcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
 void readavrswap_c(float* avrSWAP, localvariables_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_t* ErrVar);
-double pidcontroller_c(double error, double kp, double ki, double kd, double tf, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int reset, objectinstances_t* objInst, localvariables_t* LocalVar);
-void checkinputs_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, float* avrSWAP, errorvariables_t* ErrVar, int32_t size_avcMSG);
-void readcpfile_c(controlparameters_view_t* CntrPar, performancedata_view_t* PerfData, errorvariables_t* ErrVar);
-void readcontrolparameterfilesub_pass1_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, const char* filename, const char* priPath, errorvariables_t* ErrVar, int32_t* n_OL_rows, int32_t* OL_Count);
-void readcontrolparameterfilesub_pass2_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, const char* filename, const char* priPath, errorvariables_t* ErrVar);
+void extcontroller_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, extcontroltype_view_t* ExtDLL, errorvariables_t* ErrVar);
+void writerestartfile_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_t* ErrVar, objectinstances_t* objInst, char* RootName, int size_avcOUTNAME);
+void debug_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, debugvariables_t* DebugVar, errorvariables_t* ErrVar, float* avrSWAP, char* RootName, int size_avcOUTNAME);
 
 #ifdef __cplusplus
 }

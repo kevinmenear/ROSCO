@@ -16,7 +16,6 @@
 // Generated: 2026-04-01T22:04:01Z
 
 #include "vit_types.h"
-#include <algorithm>
 
 // Callee entry points — provided by vit_translated.h (integration)
 // or vit_kernel_callees.h (kernel verification).
@@ -45,13 +44,13 @@ double PIDController(double error, double kp, double ki, double kd, double tf, d
 
         // Integrate and saturate
         piP->ITerm[piIdx] = piP->ITerm[piIdx] + DT * ki * error;
-        piP->ITerm[piIdx] = std::min(std::max(piP->ITerm[piIdx], minValue), maxValue);
+        piP->ITerm[piIdx] = saturate_c(piP->ITerm[piIdx], minValue, maxValue);
 
         // Derivative (filtered)
         double DTerm = kd * (EFilt - piP->ELast[piIdx]) / DT;
 
         // Saturate all
-        result = std::min(std::max(PTerm + piP->ITerm[piIdx] + DTerm, minValue), maxValue);
+        result = saturate_c(PTerm + piP->ITerm[piIdx] + DTerm, minValue, maxValue);
 
         // Save lasts
         piP->ITermLast[piIdx] = piP->ITerm[piIdx];

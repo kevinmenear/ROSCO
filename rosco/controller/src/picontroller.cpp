@@ -13,7 +13,10 @@
 // Status: unverified
 
 #include "vit_types.h"
-#include <algorithm>
+
+extern "C" {
+    double saturate_c(double inputValue, double minValue, double maxValue);
+}
 
 double PIController(double error, double kp, double ki, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int reset, int* inst) {
     int idx = *inst - 1;  // Fortran 1-based -> C 0-based
@@ -27,8 +30,8 @@ double PIController(double error, double kp, double ki, double minValue, double 
     } else {
         double PTerm = kp * error;
         piP->ITerm[idx] = piP->ITerm[idx] + DT * ki * error;
-        piP->ITerm[idx] = std::min(std::max(piP->ITerm[idx], minValue), maxValue);
-        result = std::min(std::max(PTerm + piP->ITerm[idx], minValue), maxValue);
+        piP->ITerm[idx] = saturate_c(piP->ITerm[idx], minValue, maxValue);
+        result = saturate_c(PTerm + piP->ITerm[idx], minValue, maxValue);
 
         piP->ITermLast[idx] = piP->ITerm[idx];
     }
