@@ -934,12 +934,61 @@ def run_scenario_10(turbine, controller, cp_filename, output_dir=None):
 
 
 # ---------------------------------------------------------------------------
+# Scenario 11: AWC_Mode=1 (open-loop complex number AWC)
+# ---------------------------------------------------------------------------
+def run_scenario_11(turbine, controller, cp_filename, output_dir=None):
+    """Sim with AWC_Mode=1 to exercise open-loop complex number AWC.
+
+    AWC_Mode=1 applies sinusoidal pitch commands phase-locked to blade
+    azimuth using the complex number method. This is the only code path
+    that uses AWC_complexangle (COMPLEX in upstream ROSCO, decomposed to
+    COS/SIN REAL pair in our fork). This scenario verifies the decomposition
+    produces identical output.
+    """
+    print("=" * 60)
+    print("Scenario 11: Active wake control (AWC_Mode=1, complex number method)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_awc.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'AWC_Mode': 1,
+        'AWC_NumModes': 1,
+        'AWC_n': '1',
+        'AWC_freq': '0.05',
+        'AWC_amp': '2.0',
+        'AWC_clockangle': '0.0',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim11'
+    )
+
+    sim_11 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_11.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_11.gen_torque, 'bld_pitch': sim_11.bld_pitch,
+        'gen_speed': sim_11.gen_speed, 'gen_power': sim_11.gen_power,
+        'nac_yaw': sim_11.nac_yaw,
+    }, 11, output_dir)
+    print("Scenario 11: PASSED (AWC_Mode=1 complex number method exercised)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description='VIT simulation runner')
     parser.add_argument('--scenario', type=int, default=0,
-                        help='Run specific scenario (1-10). Default 0 = run all.')
+                        help='Run specific scenario (1-11). Default 0 = run all.')
     parser.add_argument('--output-dir', type=str, default=None,
                         help='Save simulation output arrays to .npz files in this directory.')
     args = parser.parse_args()
@@ -982,6 +1031,9 @@ def main():
 
     if args.scenario == 0 or args.scenario == 10:
         run_scenario_10(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 11:
+        run_scenario_11(turbine, controller, cp_filename, od)
 
     print("\n" + "=" * 60)
     print("All scenarios complete.")
