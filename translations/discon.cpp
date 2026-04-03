@@ -339,26 +339,8 @@ static void allocate_cntrpar_arrays(controlparameters_view_t* cp, int32_t n_OL_r
         alloc.OL_R_Speed = alloc_dbl(n_OL_rows);     cp->OL_R_Speed = alloc.OL_R_Speed; cp->n_OL_R_Speed = n_OL_rows;
         alloc.OL_R_Torque = alloc_dbl(n_OL_rows);    cp->OL_R_Torque = alloc.OL_R_Torque; cp->n_OL_R_Torque = n_OL_rows;
         alloc.OL_R_Pitch = alloc_dbl(n_OL_rows);     cp->OL_R_Pitch = alloc.OL_R_Pitch; cp->n_OL_R_Pitch = n_OL_rows;
-        // OL_CableControl: count non-zero Ind_CableControl entries
-        int nOlCables = 0;
-        for (int i = 0; i < cp->n_Ind_CableControl; i++) {
-            if (cp->Ind_CableControl[i] > 0) nOlCables++;
-        }
-        if (nOlCables > 0) {
-            alloc.OL_CableControl = alloc_dbl(nOlCables * n_OL_rows);
-            cp->OL_CableControl = alloc.OL_CableControl;
-            cp->n_OL_CableControl_rows = nOlCables; cp->n_OL_CableControl_cols = n_OL_rows;
-        }
-        // OL_StructControl: count non-zero Ind_StructControl entries
-        int nOlStCs = 0;
-        for (int i = 0; i < cp->n_Ind_StructControl; i++) {
-            if (cp->Ind_StructControl[i] > 0) nOlStCs++;
-        }
-        if (nOlStCs > 0) {
-            alloc.OL_StructControl = alloc_dbl(nOlStCs * n_OL_rows);
-            cp->OL_StructControl = alloc.OL_StructControl;
-            cp->n_OL_StructControl_rows = nOlStCs; cp->n_OL_StructControl_cols = n_OL_rows;
-        }
+        // OL_CableControl and OL_StructControl allocated after pass2
+        // (sizes depend on Ind_CableControl/Ind_StructControl values filled by pass2)
     }
 }
 
@@ -423,6 +405,55 @@ static void read_config_files(float* avrSWAP, char* accINFILE, int accINFILE_siz
 
     // Pass 2: fill arrays + computed constants
     readcontrolparameterfilesub_pass2_c(&CntrPar, &LocalVar, filename, priPath, &ErrVar);
+
+    // Allocate and populate OL_CableControl/OL_StructControl from OL_Channels
+    // (must happen after pass2 fills Ind_CableControl/Ind_StructControl values
+    // and OL_Channels data)
+    if (CntrPar.OL_Mode > 0 && CntrPar.n_OL_Channels_rows > 0) {
+        int nRows = CntrPar.n_OL_Channels_rows;
+        // OL_CableControl
+        int nOlCables = 0;
+        for (int i = 0; i < CntrPar.n_Ind_CableControl; i++) {
+            if (CntrPar.Ind_CableControl[i] > 0) nOlCables++;
+        }
+        if (nOlCables > 0) {
+            alloc.OL_CableControl = alloc_dbl(nOlCables * nRows);
+            CntrPar.OL_CableControl = alloc.OL_CableControl;
+            CntrPar.n_OL_CableControl_rows = nOlCables;
+            CntrPar.n_OL_CableControl_cols = nRows;
+            int iOL = 0;
+            for (int i = 0; i < CntrPar.n_Ind_CableControl; i++) {
+                if (CntrPar.Ind_CableControl[i] > 0) {
+                    int col = CntrPar.Ind_CableControl[i] - 1;
+                    for (int r = 0; r < nRows; r++) {
+                        CntrPar.OL_CableControl[r * nOlCables + iOL] = CntrPar.OL_Channels[col * nRows + r];
+                    }
+                    iOL++;
+                }
+            }
+        }
+        // OL_StructControl
+        int nOlStCs = 0;
+        for (int i = 0; i < CntrPar.n_Ind_StructControl; i++) {
+            if (CntrPar.Ind_StructControl[i] > 0) nOlStCs++;
+        }
+        if (nOlStCs > 0) {
+            alloc.OL_StructControl = alloc_dbl(nOlStCs * nRows);
+            CntrPar.OL_StructControl = alloc.OL_StructControl;
+            CntrPar.n_OL_StructControl_rows = nOlStCs;
+            CntrPar.n_OL_StructControl_cols = nRows;
+            int iOL = 0;
+            for (int i = 0; i < CntrPar.n_Ind_StructControl; i++) {
+                if (CntrPar.Ind_StructControl[i] > 0) {
+                    int col = CntrPar.Ind_StructControl[i] - 1;
+                    for (int r = 0; r < nRows; r++) {
+                        CntrPar.OL_StructControl[r * nOlStCs + iOL] = CntrPar.OL_Channels[col * nRows + r];
+                    }
+                    iOL++;
+                }
+            }
+        }
+    }
 
     // ReadCpFile (performance tables)
     if (CntrPar.WE_Mode > 0) {
