@@ -1722,12 +1722,170 @@ def run_scenario_26(turbine, controller, cp_filename, output_dir=None):
 
 
 # ---------------------------------------------------------------------------
+# Scenario 27: Maximum-coverage stress test (11 modes simultaneously)
+# ---------------------------------------------------------------------------
+def run_scenario_27(turbine, controller, cp_filename, output_dir=None):
+    """Stress test: 11 controller modes active simultaneously with all synthetic inputs.
+
+    Combines IPC, AWC, yaw control, tower damping, floating feedback,
+    cable/structural control, pitch actuator filter, pitch fault offsets,
+    constant power, and power reference control. The pitch command is the
+    sum of 6 simultaneous contributions (collective PI, IPC, tower damping,
+    floating feedback, AWC, pitch fault) filtered through a 2nd-order
+    pitch actuator model.
+
+    No existing scenario has more than 3 pitch contributions active at once.
+    """
+    print("=" * 60)
+    print("Scenario 27: Maximum-coverage stress test (11 modes)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_stress27.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'IPC_ControlMode': 1,
+        'IPC_KP': '0.1 0.0',
+        'IPC_KI': '0.01 0.0',
+        'AWC_Mode': 4,
+        'AWC_NumModes': 1,
+        'AWC_harmonic': '1',
+        'AWC_freq': '0.05',
+        'AWC_amp': '2.0',
+        'AWC_clockangle': '0.0',
+        'AWC_CntrGains': '0.0100 0.0050',
+        'Y_ControlMode': 1,
+        'TD_Mode': 1,
+        'Fl_Mode': 2,
+        'F_FlCornerFreq': '1.0 0.7',
+        'CC_Mode': 1,
+        'CC_Group_N': 1,
+        'CC_GroupIndex': '2601',
+        'StC_Mode': 1,
+        'StC_Group_N': 1,
+        'StC_GroupIndex': '2801',
+        'PA_Mode': 2,
+        'PF_Mode': 1,
+        'PF_Offsets': '0.01 -0.01 0.005',
+        'VS_ConstPower': 1,
+        'PRC_Mode': 1,
+        'Flp_Mode': 0,
+        'F_NumNotchFilts': 1,
+        'F_NotchFreqs': '1.0000',
+        'F_NotchBetaNum': '0.0000',
+        'F_NotchBetaDen': '0.2500',
+        'F_GenSpdNotch_N': 1,
+        'F_GenSpdNotch_Ind': '1',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim27'
+    )
+
+    dt = 0.025
+    tlen = 600  # Exceeds t=500s for CC/StC step activation
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i_ws in range(len(t)):
+        ws[i_ws] = ws[i_ws] + t[i_ws] // 100
+
+    deg2rad = np.pi / 180.0
+    R = turbine.rotor_radius
+    GBRatio = turbine.Ng
+    rpm2RadSec = 2.0 * np.pi / 60.0
+
+    bld_pitch = np.zeros_like(t)
+    rot_speed = np.ones_like(t) * 4.0 * rpm2RadSec
+    gen_speed = rot_speed * GBRatio
+    gen_torque = np.zeros_like(t)
+    gen_power = np.zeros_like(t)
+    nac_yaw = np.zeros_like(t)
+    nac_yawrate = np.zeros_like(t)
+    extra = {name: np.zeros_like(t) for name in EXTRA_AVRSWAP}
+
+    for i, ti in enumerate(t):
+        if i == 0:
+            continue
+
+        ws_i = ws[i]
+        tsr = rot_speed[i-1] * R / ws_i
+        cp = turbine.Cp.interp_surface(bld_pitch[i-1], tsr)
+        aero_torque = 0.5 * turbine.rho * (np.pi * R**3) * (cp / tsr) * ws_i**2
+        rot_speed[i] = rot_speed[i-1] + (dt / turbine.J) * (
+            aero_torque - GBRatio * gen_torque[i-1] / (turbine.GBoxEff / 100)
+        )
+        gen_speed[i] = rot_speed[i] * GBRatio
+
+        # Synthetic yaw signals (for Y_ControlMode=1)
+        nac_vane_deg = 20.0 * np.sin(2 * np.pi * ti / 50.0)
+        nac_vane_rad = nac_vane_deg * deg2rad
+        nac_heading_rad = 350.0 * deg2rad
+
+        # Synthetic rotor azimuth (for IPC + AWC Coleman transforms)
+        azimuth_rad = (rot_speed[i] * ti) % (2 * np.pi)
+
+        # Synthetic tower fore-aft acceleration (for TD_Mode=1, ~0.3 Hz tower mode)
+        fa_acc_tt = 0.5 * np.sin(2 * np.pi * ti / 3.0)
+
+        # Synthetic nacelle IMU rotational acceleration (for Fl_Mode=2)
+        nac_imu_fa_racc = 0.3 * np.sin(2 * np.pi * ti / 3.0)
+
+        # Synthetic blade root moments (for IPC + AWC, 1P per-blade, 120 deg offset)
+        if rot_speed[i] > 0.1:
+            t_rotor = 2 * np.pi / rot_speed[i]
+        else:
+            t_rotor = 100.0
+        rootMOOP = [
+            1000.0 * np.sin(2 * np.pi * ti / t_rotor + k * 2 * np.pi / 3)
+            for k in range(3)
+        ]
+
+        turbine_state = {}
+        turbine_state['iStatus'] = 1 if i < len(t) - 1 else -1
+        turbine_state['t'] = ti
+        turbine_state['dt'] = dt
+        turbine_state['ws'] = ws_i
+        turbine_state['bld_pitch'] = bld_pitch[i-1]
+        turbine_state['gen_torque'] = gen_torque[i-1]
+        turbine_state['gen_speed'] = gen_speed[i]
+        turbine_state['gen_eff'] = turbine.GenEff / 100
+        turbine_state['rot_speed'] = rot_speed[i]
+        turbine_state['Yaw_fromNorth'] = nac_yaw[i-1]
+        turbine_state['Y_MeasErr'] = nac_vane_rad
+
+        # Inject all synthetic avrSWAP values
+        controller_int.avrSWAP[23] = nac_vane_rad         # avrSWAP(24) NacVane
+        controller_int.avrSWAP[36] = nac_heading_rad       # avrSWAP(37) NacHeading
+        controller_int.avrSWAP[52] = fa_acc_tt              # avrSWAP(53) FA_Acc_TT
+        controller_int.avrSWAP[82] = nac_imu_fa_racc        # avrSWAP(83) NacIMU_FA_RAcc
+        controller_int.avrSWAP[59] = azimuth_rad            # avrSWAP(60) Azimuth
+        controller_int.avrSWAP[29] = rootMOOP[0]            # avrSWAP(30) rootMOOP(1)
+        controller_int.avrSWAP[30] = rootMOOP[1]            # avrSWAP(31) rootMOOP(2)
+        controller_int.avrSWAP[31] = rootMOOP[2]            # avrSWAP(32) rootMOOP(3)
+
+        gen_torque[i], bld_pitch[i], nac_yawrate[i] = controller_int.call_controller(turbine_state)
+        gen_power[i] = gen_speed[i] * gen_torque[i] * turbine.GenEff / 100
+        nac_yaw[i] = nac_yaw[i-1] + nac_yawrate[i] * dt
+        for name, idx in EXTRA_AVRSWAP.items():
+            extra[name][i] = controller_int.avrSWAP[idx]
+
+    controller_int.kill_discon()
+    result = {
+        'gen_torque': gen_torque, 'bld_pitch': bld_pitch,
+        'gen_speed': gen_speed, 'gen_power': gen_power,
+        'nac_yaw': nac_yaw,
+    }
+    result.update(extra)
+    save_and_print_results(result, 27, output_dir)
+    print("Scenario 27: PASSED (11-mode stress test exercised)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description='VIT simulation runner')
     parser.add_argument('--scenario', type=int, default=0,
-                        help='Run specific scenario (1-26). Default 0 = run all.')
+                        help='Run specific scenario (1-27). Default 0 = run all.')
     parser.add_argument('--output-dir', type=str, default=None,
                         help='Save simulation output arrays to .npz files in this directory.')
     args = parser.parse_args()
@@ -1818,6 +1976,9 @@ def main():
 
     if args.scenario == 0 or args.scenario == 26:
         run_scenario_26(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 27:
+        run_scenario_27(turbine, controller, cp_filename, od)
 
     print("\n" + "=" * 60)
     print("All scenarios complete.")
