@@ -1,12 +1,12 @@
 #!/bin/bash
-# Verify all 41 C++ translations against golden kernel fixtures.
+# Verify all 42 KGen-verified C++ translations against golden kernel fixtures.
 # Run from the ROSCO repo root inside the Docker container.
 #
 # Usage:
-#   bash scripts/verify_all.sh          # Run all 41 sequentially
+#   bash scripts/verify_all.sh          # Run all 42 sequentially
 #   bash scripts/verify_all.sh 1        # Batch 1 only (14 functions)
 #   bash scripts/verify_all.sh 2        # Batch 2 only (14 functions)
-#   bash scripts/verify_all.sh 3        # Batch 3 only (13 functions)
+#   bash scripts/verify_all.sh 3        # Batch 3 only (14 functions)
 #
 # For parallel execution, launch 3 separate docker exec calls:
 #   docker exec vit-dev bash -c "cd /workspace/ROSCO && bash scripts/verify_all.sh 1" &
@@ -100,7 +100,7 @@ if [ "$BATCH" = "0" ] || [ "$BATCH" = "2" ]; then
     verify PIDController       translations/Controllers/pidcontroller.cpp       rosco/controller/src/Controllers.f90
 fi
 
-# --- Batch 3: Controllers (cont) + ControllerBlocks (13 functions) ---
+# --- Batch 3: Controllers (cont) + ControllerBlocks + Functions (14 functions) ---
 if [ "$BATCH" = "0" ] || [ "$BATCH" = "3" ]; then
     echo "--- Controllers (cont) ---"
     verify IPC                 translations/Controllers/ipc.cpp                 rosco/controller/src/Controllers.f90

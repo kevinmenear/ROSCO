@@ -51,7 +51,7 @@ git checkout -- rosco/controller/src/ROSCO_IO.f90
 #    from committed versions due to VIT code changes)
 #    Must use git ls-files to avoid untracked .cpp files breaking the glob.
 echo "  Restoring src/*.cpp to committed state..."
-tracked_cpp=$(git ls-files 'rosco/controller/src/*.cpp' 'rosco/controller/src/vit_translated.h')
+tracked_cpp=$(git ls-files 'rosco/controller/src/*.cpp' 'rosco/controller/src/*.h')
 if [ -n "$tracked_cpp" ]; then
     echo "$tracked_cpp" | xargs git checkout --
 fi
@@ -65,12 +65,18 @@ if [ -n "$tracked_discon" ]; then
     echo "$tracked_discon" | xargs git checkout --
 fi
 
-# 4. Remove transient artifacts
+# 4. Remove transient artifacts (integration-generated files not tracked by git)
 echo "  Removing transient artifacts..."
 rm -rf integrated_arrays/
 rm -f integrated_output.txt
 rm -f Examples/core
 rm -f rosco/controller/src/rosco_constants.h rosco/controller/src/vit_types.h
+# Remove untracked .cpp/.h files in src/ left by integrate_all.sh
+cd rosco/controller/src
+for f in *.cpp *.h; do
+    [ -f "$f" ] && ! git ls-files --error-unmatch "$f" > /dev/null 2>&1 && rm -f "$f"
+done
+cd ../../..
 
 # 5. Create stubs for any NEW src/*.cpp files referenced in CMakeLists.txt
 #    but not yet tracked (so cmake doesn't fail on clean builds)
@@ -84,14 +90,14 @@ done
 
 echo ""
 echo "Verification:"
-wrapper_count=$(grep -c '_c(' rosco/controller/src/Functions.f90 rosco/controller/src/Controllers.f90 rosco/controller/src/ControllerBlocks.f90 rosco/controller/src/ReadSetParameters.f90 2>/dev/null | awk -F: '{s+=$2} END {print s}')
+wrapper_count=$(grep -c '_c(' rosco/controller/src/Functions.f90 rosco/controller/src/Filters.f90 rosco/controller/src/Controllers.f90 rosco/controller/src/ControllerBlocks.f90 rosco/controller/src/ReadSetParameters.f90 rosco/controller/src/ROSCO_IO.f90 rosco/controller/src/ExtControl.f90 rosco/controller/src/ZeroMQInterface.f90 2>/dev/null | awk -F: '{s+=$2} END {print s}')
 echo "  .f90 wrapper calls: $wrapper_count (should be 0)"
 
-cpp_stubs=$(grep -rl '// stub' rosco/controller/src/*.cpp 2>/dev/null | wc -l | tr -d ' ')
-echo "  .cpp stub files: $cpp_stubs (should be 0)"
+untracked_src=$(git ls-files --others --exclude-standard 'rosco/controller/src/' 2>/dev/null | wc -l | tr -d ' ')
+echo "  Untracked src/ files: $untracked_src (should be 0)"
 
 echo ""
-if [ "$wrapper_count" -eq 0 ] && [ "$cpp_stubs" -eq 0 ]; then
+if [ "$wrapper_count" -eq 0 ] && [ "$untracked_src" -eq 0 ]; then
     echo "Ready to commit. Run 'git status' to review."
 else
     echo "WARNING: Unexpected state detected. Review before committing."
