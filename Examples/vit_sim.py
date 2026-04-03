@@ -1335,6 +1335,7 @@ def run_scenario_19(turbine, controller, cp_filename, output_dir=None):
         'PF_Offsets': '0.01 -0.01 0.005',
         'VS_ConstPower': 1,
         'Fl_Mode': 2,
+        'F_FlCornerFreq': '1.0 0.7',
     })
 
     controller_int = ROSCO_ci.ControllerInterface(
