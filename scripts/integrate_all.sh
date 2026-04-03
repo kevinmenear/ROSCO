@@ -1,8 +1,8 @@
 #!/bin/bash
-# Integrate all 52 C++ translations into the ROSCO codebase.
+# Integrate all 52 C++ translations + DISCON entry point into the ROSCO codebase.
 # (39 algorithm functions from Phases 1-9, ReadAvrSWAP + PIDController from Phase 10A,
 #  unwrap, 3 Stage B functions, 2 Stage D functions, 3 Stage C functions,
-#  and 2 Stage E functions)
+#  2 Stage E functions, and DISCON entry point from Phase 11A)
 # Run from the ROSCO repo root inside the Docker container.
 #
 # Usage: bash scripts/integrate_all.sh
@@ -15,7 +15,7 @@ set -e
 
 PASS=0
 FAIL=0
-TOTAL=52
+TOTAL=53
 
 integrate() {
     local name=$1
@@ -529,6 +529,26 @@ if 'setparameters.cpp' not in content:
     with open('rosco/controller/CMakeLists.txt', 'w') as f:
         f.write(content)
 "
+
+# Phase 11A: Replace DISCON.F90 with C++ entry point
+echo "--- Phase 11A: DISCON (C++ entry point) ---"
+cp translations/discon.cpp rosco/controller/src/discon.cpp
+python3 -c "
+with open('rosco/controller/CMakeLists.txt', 'r') as f:
+    content = f.read()
+if 'src/discon.cpp' not in content:
+    content = content.replace('src/DISCON.F90\n', 'src/discon.cpp\n')
+    with open('rosco/controller/CMakeLists.txt', 'w') as f:
+        f.write(content)
+    print('  OK DISCON: swapped DISCON.F90 -> discon.cpp in CMakeLists.txt')
+else:
+    print('  OK DISCON: discon.cpp already in CMakeLists.txt')
+" 2>&1
+if [ $? -eq 0 ]; then
+    PASS=$((PASS + 1))
+else
+    FAIL=$((FAIL + 1))
+fi
 
 echo ""
 echo "=== Integration complete: $PASS/$TOTAL passed, $FAIL failed ==="
