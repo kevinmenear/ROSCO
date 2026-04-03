@@ -1543,12 +1543,118 @@ def run_scenario_23(turbine, controller, cp_filename, output_dir=None):
 
 
 # ---------------------------------------------------------------------------
+# Scenario 24: CC_Mode=2 + StC_Mode=2 + OL_Mode=1 (open-loop cable + structural)
+# ---------------------------------------------------------------------------
+def run_scenario_24(turbine, controller, cp_filename, output_dir=None):
+    """Sim with CC_Mode=2 + StC_Mode=2 to exercise open-loop cable and structural control.
+
+    CC_Mode=2 and StC_Mode=2 read desired control values from columns in the
+    OL input file, interpolated by time. Requires OL_Mode=1 with extended
+    input file containing cable and structural control columns.
+    """
+    print("=" * 60)
+    print("Scenario 24: Open-loop cable + structural (CC_Mode=2, StC_Mode=2)")
+    print("=" * 60)
+
+    ol_input_path = os.path.join(this_dir, 'example_inputs', 'OL_Mode1_CC_StC_Input.dat')
+    param_filename = os.path.join(this_dir, 'DISCON_ol_cc_stc.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'OL_Mode': 1,
+        'OL_Filename': ol_input_path,
+        'OL_BP_Mode': 0,
+        'OL_BP_FiltFreq': 0.0,
+        'Ind_Breakpoint': 1,
+        'Ind_BldPitch': '2 3 4',
+        'Ind_GenTq': 5,
+        'Ind_YawRate': 6,
+        'Ind_Azimuth': 0,
+        'Ind_R_Speed': 0,
+        'Ind_R_Torque': 0,
+        'Ind_R_Pitch': 0,
+        'CC_Mode': 2,
+        'CC_Group_N': 1,
+        'CC_GroupIndex': '2601',
+        'Ind_CableControl': '7',
+        'StC_Mode': 2,
+        'StC_Group_N': 1,
+        'StC_GroupIndex': '2801',
+        'Ind_StructControl': '8',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim24'
+    )
+
+    sim_24 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 200
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+
+    sim_24.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_24.gen_torque, 'bld_pitch': sim_24.bld_pitch,
+        'gen_speed': sim_24.gen_speed, 'gen_power': sim_24.gen_power,
+        'nac_yaw': sim_24.nac_yaw,
+    }, 24, output_dir)
+    print("Scenario 24: PASSED (CC_Mode=2, StC_Mode=2 open-loop exercised)")
+
+
+# ---------------------------------------------------------------------------
+# Scenario 25: PRC_Mode=2 (dynamic power rating, constant inputs)
+# ---------------------------------------------------------------------------
+def run_scenario_25(turbine, controller, cp_filename, output_dir=None):
+    """Sim with PRC_Mode=2 to exercise dynamic power rating control.
+
+    PRC_Mode=2 with PRC_Comm=0 uses constant rating multipliers from DISCON.
+    PRC_R_Speed=0.9 reduces rated speed by 10%, visibly affecting torque and
+    speed setpoints. Independent of OL_Mode.
+    """
+    print("=" * 60)
+    print("Scenario 25: Dynamic power rating (PRC_Mode=2, PRC_Comm=0)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'PRC_Mode': 2,
+        'PRC_Comm': 0,
+        'PRC_R_Speed': '0.9',
+        'PRC_R_Torque': '1.0',
+        'PRC_R_Pitch': '1.0',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim25'
+    )
+
+    sim_25 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 7
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_25.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_25.gen_torque, 'bld_pitch': sim_25.bld_pitch,
+        'gen_speed': sim_25.gen_speed, 'gen_power': sim_25.gen_power,
+        'nac_yaw': sim_25.nac_yaw,
+    }, 25, output_dir)
+    print("Scenario 25: PASSED (PRC_Mode=2 dynamic power rating exercised)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description='VIT simulation runner')
     parser.add_argument('--scenario', type=int, default=0,
-                        help='Run specific scenario (1-23). Default 0 = run all.')
+                        help='Run specific scenario (1-25). Default 0 = run all.')
     parser.add_argument('--output-dir', type=str, default=None,
                         help='Save simulation output arrays to .npz files in this directory.')
     args = parser.parse_args()
@@ -1630,6 +1736,12 @@ def main():
 
     if args.scenario == 0 or args.scenario == 23:
         run_scenario_23(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 24:
+        run_scenario_24(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 25:
+        run_scenario_25(turbine, controller, cp_filename, od)
 
     print("\n" + "=" * 60)
     print("All scenarios complete.")

@@ -129,6 +129,8 @@ static struct {
     double* OL_R_Speed;
     double* OL_R_Torque;
     double* OL_R_Pitch;
+    double* OL_CableControl;
+    double* OL_StructControl;
     // PerformanceData (5 fields)
     double* TSR_vec;
     double* Beta_vec;
@@ -337,7 +339,26 @@ static void allocate_cntrpar_arrays(controlparameters_view_t* cp, int32_t n_OL_r
         alloc.OL_R_Speed = alloc_dbl(n_OL_rows);     cp->OL_R_Speed = alloc.OL_R_Speed; cp->n_OL_R_Speed = n_OL_rows;
         alloc.OL_R_Torque = alloc_dbl(n_OL_rows);    cp->OL_R_Torque = alloc.OL_R_Torque; cp->n_OL_R_Torque = n_OL_rows;
         alloc.OL_R_Pitch = alloc_dbl(n_OL_rows);     cp->OL_R_Pitch = alloc.OL_R_Pitch; cp->n_OL_R_Pitch = n_OL_rows;
-        // OL_CableControl and OL_StructControl allocated inside C++ pass 2
+        // OL_CableControl: count non-zero Ind_CableControl entries
+        int nOlCables = 0;
+        for (int i = 0; i < cp->n_Ind_CableControl; i++) {
+            if (cp->Ind_CableControl[i] > 0) nOlCables++;
+        }
+        if (nOlCables > 0) {
+            alloc.OL_CableControl = alloc_dbl(nOlCables * n_OL_rows);
+            cp->OL_CableControl = alloc.OL_CableControl;
+            cp->n_OL_CableControl_rows = nOlCables; cp->n_OL_CableControl_cols = n_OL_rows;
+        }
+        // OL_StructControl: count non-zero Ind_StructControl entries
+        int nOlStCs = 0;
+        for (int i = 0; i < cp->n_Ind_StructControl; i++) {
+            if (cp->Ind_StructControl[i] > 0) nOlStCs++;
+        }
+        if (nOlStCs > 0) {
+            alloc.OL_StructControl = alloc_dbl(nOlStCs * n_OL_rows);
+            cp->OL_StructControl = alloc.OL_StructControl;
+            cp->n_OL_StructControl_rows = nOlStCs; cp->n_OL_StructControl_cols = n_OL_rows;
+        }
     }
 }
 
