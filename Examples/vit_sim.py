@@ -1313,12 +1313,241 @@ def run_scenario_18(turbine, controller, cp_filename, output_dir=None):
 
 
 # ---------------------------------------------------------------------------
+# Scenario 19: PA_Mode=1, PF_Mode=1, VS_ConstPower=1, Fl_Mode=2
+# ---------------------------------------------------------------------------
+def run_scenario_19(turbine, controller, cp_filename, output_dir=None):
+    """Combined: pitch actuator LP + pitch offset fault + const power + Fl_Mode=2.
+
+    PA_Mode=1: First-order LP filter on pitch actuator.
+    PF_Mode=1: Adds fixed pitch offsets to blade commands.
+    VS_ConstPower=1: Constant power (not torque) above rated.
+    Fl_Mode=2: Floating feedback from rotational velocity (IMU) instead of
+    translational velocity (Fl_Mode=1, tested in Scenario 3).
+    """
+    print("=" * 60)
+    print("Scenario 19: PA_Mode=1 + PF_Mode=1 + VS_ConstPower=1 + Fl_Mode=2")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'PA_Mode': 1,
+        'PF_Mode': 1,
+        'PF_Offsets': '0.01 -0.01 0.005',
+        'VS_ConstPower': 1,
+        'Fl_Mode': 2,
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim19'
+    )
+
+    sim_19 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_19.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_19.gen_torque, 'bld_pitch': sim_19.bld_pitch,
+        'gen_speed': sim_19.gen_speed, 'gen_power': sim_19.gen_power,
+        'nac_yaw': sim_19.nac_yaw,
+    }, 19, output_dir)
+    print("Scenario 19: PASSED")
+
+
+# ---------------------------------------------------------------------------
+# Scenario 20: PA_Mode=2, PF_Mode=2, PRC_Mode=1
+# ---------------------------------------------------------------------------
+def run_scenario_20(turbine, controller, cp_filename, output_dir=None):
+    """Combined: pitch actuator SecLP + pitch stuck fault + PRC lookup table.
+
+    PA_Mode=2: Second-order LP filter on pitch actuator.
+    PF_Mode=2: Pitch actuator stuck at 200s (blade 1 only).
+    PRC_Mode=1: Power reference speed from wind speed lookup table.
+    """
+    print("=" * 60)
+    print("Scenario 20: PA_Mode=2 + PF_Mode=2 + PRC_Mode=1")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'PA_Mode': 2,
+        'PF_Mode': 2,
+        'PF_TimeStuck': '200.0 9999.0 9999.0',
+        'PRC_Mode': 1,
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim20'
+    )
+
+    sim_20 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_20.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_20.gen_torque, 'bld_pitch': sim_20.bld_pitch,
+        'gen_speed': sim_20.gen_speed, 'gen_power': sim_20.gen_power,
+        'nac_yaw': sim_20.nac_yaw,
+    }, 20, output_dir)
+    print("Scenario 20: PASSED")
+
+
+# ---------------------------------------------------------------------------
+# Scenario 21: AWC_Mode=3 (closed-loop PI AWC)
+# ---------------------------------------------------------------------------
+def run_scenario_21(turbine, controller, cp_filename, output_dir=None):
+    """Sim with AWC_Mode=3 to exercise closed-loop PI active wake control.
+
+    AWC_Mode=3 uses PI controller with Coleman transform for feedback-based
+    active wake control. Different algorithm from Mode=4 (resonator).
+    """
+    print("=" * 60)
+    print("Scenario 21: Closed-loop PI AWC (AWC_Mode=3)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_awc.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'AWC_Mode': 3,
+        'AWC_NumModes': 1,
+        'AWC_harmonic': '1',
+        'AWC_freq': '0.05',
+        'AWC_amp': '2.0',
+        'AWC_clockangle': '0.0',
+        'AWC_CntrGains': '0.0100 0.0050',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim21'
+    )
+
+    sim_21 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_21.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_21.gen_torque, 'bld_pitch': sim_21.bld_pitch,
+        'gen_speed': sim_21.gen_speed, 'gen_power': sim_21.gen_power,
+        'nac_yaw': sim_21.nac_yaw,
+    }, 21, output_dir)
+    print("Scenario 21: PASSED (AWC_Mode=3 closed-loop PI exercised)")
+
+
+# ---------------------------------------------------------------------------
+# Scenario 22: AWC_Mode=5 (Strouhal transform AWC)
+# ---------------------------------------------------------------------------
+def run_scenario_22(turbine, controller, cp_filename, output_dir=None):
+    """Sim with AWC_Mode=5 to exercise Strouhal-based active wake control.
+
+    AWC_Mode=5 uses frequency-transformed azimuth angle for wake control.
+    Different from modes 1-4.
+    """
+    print("=" * 60)
+    print("Scenario 22: Strouhal transform AWC (AWC_Mode=5)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_awc.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'AWC_Mode': 5,
+        'AWC_NumModes': 1,
+        'AWC_harmonic': '1',
+        'AWC_freq': '0.05',
+        'AWC_amp': '2.0',
+        'AWC_clockangle': '0.0',
+        'AWC_CntrGains': '0.0100 0.0050',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim22'
+    )
+
+    sim_22 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_22.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_22.gen_torque, 'bld_pitch': sim_22.bld_pitch,
+        'gen_speed': sim_22.gen_speed, 'gen_power': sim_22.gen_power,
+        'nac_yaw': sim_22.nac_yaw,
+    }, 22, output_dir)
+    print("Scenario 22: PASSED (AWC_Mode=5 Strouhal transform exercised)")
+
+
+# ---------------------------------------------------------------------------
+# Scenario 23: PS_Mode=0, SS_Mode=0 (disable normally-on modes)
+# ---------------------------------------------------------------------------
+def run_scenario_23(turbine, controller, cp_filename, output_dir=None):
+    """Sim with PS_Mode=0 and SS_Mode=0 to exercise disabled paths.
+
+    Tests the 'off' branches of normally-on modes: pitch saturation
+    disabled (uses PC_FinePit as minimum) and setpoint smoothing disabled.
+    """
+    print("=" * 60)
+    print("Scenario 23: PS_Mode=0 + SS_Mode=0 (disabled paths)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'PS_Mode': 0,
+        'SS_Mode': 0,
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim23'
+    )
+
+    sim_23 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 7
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_23.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_23.gen_torque, 'bld_pitch': sim_23.bld_pitch,
+        'gen_speed': sim_23.gen_speed, 'gen_power': sim_23.gen_power,
+        'nac_yaw': sim_23.nac_yaw,
+    }, 23, output_dir)
+    print("Scenario 23: PASSED (PS_Mode=0, SS_Mode=0 disabled paths exercised)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description='VIT simulation runner')
     parser.add_argument('--scenario', type=int, default=0,
-                        help='Run specific scenario (1-18). Default 0 = run all.')
+                        help='Run specific scenario (1-23). Default 0 = run all.')
     parser.add_argument('--output-dir', type=str, default=None,
                         help='Save simulation output arrays to .npz files in this directory.')
     args = parser.parse_args()
@@ -1385,6 +1614,21 @@ def main():
 
     if args.scenario == 0 or args.scenario == 18:
         run_scenario_18(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 19:
+        run_scenario_19(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 20:
+        run_scenario_20(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 21:
+        run_scenario_21(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 22:
+        run_scenario_22(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 23:
+        run_scenario_23(turbine, controller, cp_filename, od)
 
     print("\n" + "=" * 60)
     print("All scenarios complete.")
