@@ -1,21 +1,22 @@
 #!/bin/bash
-# Reset ROSCO source to clean Fortran for extraction or integration testing.
+# Reset ROSCO source to clean Fortran for extraction, integration testing,
+# or baseline capture.
 #
-# This script resets the Fortran source files to their clean state (no
-# integration wrappers) with all bug fixes applied. It replaces the manual
-# multi-step git checkout procedure documented in CLAUDE.md and
-# INTEGRATION_TEST.md.
+# This script resets ALL source files and the build configuration to a
+# buildable clean Fortran state (no integration wrappers, no C++ entry point)
+# with all bug fixes applied. After running this script, ROSCO can be built
+# as a pure Fortran project to capture baseline simulation arrays.
 #
 # What it resets:
 #   - Controllers.f90 + ControllerBlocks.f90 → 46e8d4f (Phase 4C + K init fix)
 #   - Functions.f90 + Filters.f90 → dba7738 (restart fix + notch filter bug fix)
 #   - DISCON.F90 → e8010f0 (upstream, no wrappers)
 #   - ReadSetParameters.f90 → HEAD (committed version has Phase 4A fixes, no wrappers)
+#   - CMakeLists.txt → aef3155 (full Fortran build: DISCON.F90, all .f90 sources, gfortran)
 #   - All *.cpp files → "// stub"
 #
 # What it does NOT reset (these have Phase 4A/4C fixes and no wrappers):
 #   - ROSCO_Types.f90
-#   - CMakeLists.txt (-ffp-contract=off flags + C++ source list)
 #   - translations/, vit.yaml, kernel/
 #
 # Usage:
@@ -40,6 +41,11 @@ git checkout dba7738 -- rosco/controller/src/Functions.f90 rosco/controller/src/
 
 # DISCON.F90: upstream (no wrappers)
 git checkout e8010f0 -- rosco/controller/src/DISCON.F90
+
+# CMakeLists.txt: full Fortran build configuration (pre-Phase 11A)
+# This restores DISCON.F90 in SOURCES, all .f90 modules, gfortran flags,
+# NWTC_SYS_FILE block, and -ffp-contract=off on both Fortran and C++.
+git checkout aef3155 -- rosco/controller/CMakeLists.txt
 
 # ReadSetParameters.f90: restore committed version (Phase 4A fixes, no wrappers)
 git checkout -- rosco/controller/src/ReadSetParameters.f90
@@ -66,6 +72,14 @@ echo "Verification (all should be 0):"
 grep -c '_c(' rosco/controller/src/Functions.f90 rosco/controller/src/Filters.f90 \
               rosco/controller/src/Controllers.f90 rosco/controller/src/ControllerBlocks.f90 \
               rosco/controller/src/ReadSetParameters.f90 || true
+
+# Verify CMakeLists.txt has Fortran build configuration
+if grep -q 'LANGUAGES Fortran C' rosco/controller/CMakeLists.txt && \
+   grep -q 'src/DISCON.F90' rosco/controller/CMakeLists.txt; then
+    echo "  CMakeLists.txt: Fortran build OK"
+else
+    echo "  CMakeLists.txt: WARNING — missing Fortran configuration"
+fi
 
 echo ""
 echo "Reset complete."

@@ -46,6 +46,12 @@ git checkout -- rosco/controller/src/ReadSetParameters.f90
 git checkout -- rosco/controller/src/ExtControl.f90 rosco/controller/src/ZeroMQInterface.f90
 git checkout -- rosco/controller/src/ROSCO_IO.f90
 
+# 1b. Restore CMakeLists.txt to committed state (pure C++ build)
+#     reset_to_clean.sh changes it to the Fortran build configuration;
+#     this restores it to the committed (Phase 11B) state.
+echo "  Restoring CMakeLists.txt to committed state..."
+git checkout -- rosco/controller/CMakeLists.txt
+
 # 2. Restore tracked src/*.cpp and src/vit_translated.h to committed state
 #    (integrate_all.sh regenerates them, but output may differ slightly
 #    from committed versions due to VIT code changes)
