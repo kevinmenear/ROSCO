@@ -53,6 +53,12 @@ git checkout -- rosco/controller/src/ReadSetParameters.f90
 # Stage C/D files: restored to HEAD (clean, no wrappers — integrate_all.sh modifies them)
 git checkout -- rosco/controller/src/ExtControl.f90 rosco/controller/src/ZeroMQInterface.f90 rosco/controller/src/ROSCO_IO.f90
 
+# Unstage everything — git checkout <commit> -- <file> stages changes,
+# which would cause phantom staged diffs that could be accidentally committed.
+git reset HEAD -- rosco/controller/src/Controllers.f90 rosco/controller/src/ControllerBlocks.f90 \
+    rosco/controller/src/Functions.f90 rosco/controller/src/Filters.f90 \
+    rosco/controller/src/DISCON.F90 rosco/controller/CMakeLists.txt > /dev/null 2>&1
+
 # Create C++ stubs (CMakeLists.txt references these)
 # Stub existing files
 for f in rosco/controller/src/*.cpp; do
