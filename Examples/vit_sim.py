@@ -84,9 +84,9 @@ from rosco.toolbox import control_interface as ROSCO_ci
 EXTRA_AVRSWAP = {
     'bld_pitch_2': 42,     # Blade 2 pitch command (Fortran index 43)
     'bld_pitch_3': 43,     # Blade 3 pitch command (Fortran index 44)
-    'flp_angle_1': 120,    # Blade 1 flap pitch command (Fortran index 121)
-    'flp_angle_2': 121,    # Blade 2 flap pitch command (Fortran index 122)
-    'flp_angle_3': 122,    # Blade 3 flap pitch command (Fortran index 123)
+    'flp_angle_1': 119,    # Blade 1 flap pitch command (Fortran index 120)
+    'flp_angle_2': 120,    # Blade 2 flap pitch command (Fortran index 121)
+    'flp_angle_3': 121,    # Blade 3 flap pitch command (Fortran index 122)
     'cc_actuated_l': 2600,  # Cable control actuated length (CC_GroupIndex=2601)
     'cc_actuated_dl': 2601, # Cable control actuated delta-length
     'stc_input': 2800,      # Structural control input (StC_GroupIndex=2801)
