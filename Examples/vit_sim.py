@@ -259,6 +259,8 @@ def run_scenario_2(turbine, controller, cp_filename, output_dir=None):
     rot_speed = np.ones_like(t) * 4.0 * rpm2RadSec
     gen_speed = rot_speed * GBRatio
     gen_torque = np.zeros_like(t)
+    nac_yaw = np.zeros_like(t)
+    gen_power = np.zeros_like(t)
 
     for i, ti in enumerate(t):
         if i == 0:
@@ -302,12 +304,14 @@ def run_scenario_2(turbine, controller, cp_filename, output_dir=None):
         controller_int.avrSWAP[59] = azimuth_rad      # avrSWAP(60) = Azimuth [rad]
 
         # Call controller
-        gen_torque[i], bld_pitch[i], _ = controller_int.call_controller(turbine_state)
+        gen_torque[i], bld_pitch[i], nac_yaw[i] = controller_int.call_controller(turbine_state)
+        gen_power[i] = gen_torque[i] * gen_speed[i] * (turbine.GenEff / 100)
 
     controller_int.kill_discon()
     save_and_print_results({
         'gen_torque': gen_torque, 'bld_pitch': bld_pitch,
-        'gen_speed': gen_speed,
+        'gen_speed': gen_speed, 'gen_power': gen_power,
+        'nac_yaw': nac_yaw,
     }, 2, output_dir)
     print("Scenario 2: PASSED (wrap_360 exercised)")
 
