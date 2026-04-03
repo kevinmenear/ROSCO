@@ -1125,12 +1125,200 @@ def run_scenario_14(turbine, controller, cp_filename, output_dir=None):
 
 
 # ---------------------------------------------------------------------------
+# Scenario 15: AWC_Mode=2 (Coleman transform AWC)
+# ---------------------------------------------------------------------------
+def run_scenario_15(turbine, controller, cp_filename, output_dir=None):
+    """Sim with AWC_Mode=2 to exercise Coleman transform active wake control.
+
+    AWC_Mode=2 uses ColemanTransform/ColemanTransformInverse to apply
+    harmonic pitch forcing in the rotating frame. Exercises a different
+    AWC code path from Mode=1 (complex number) and Mode=4 (resonator).
+    """
+    print("=" * 60)
+    print("Scenario 15: Coleman transform AWC (AWC_Mode=2)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_awc.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'AWC_Mode': 2,
+        'AWC_NumModes': 1,
+        'AWC_harmonic': '1',
+        'AWC_freq': '0.05',
+        'AWC_amp': '2.0',
+        'AWC_clockangle': '0.0',
+        'AWC_phaseoffset': '0.0',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim15'
+    )
+
+    sim_15 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_15.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_15.gen_torque, 'bld_pitch': sim_15.bld_pitch,
+        'gen_speed': sim_15.gen_speed, 'gen_power': sim_15.gen_power,
+        'nac_yaw': sim_15.nac_yaw,
+    }, 15, output_dir)
+    print("Scenario 15: PASSED (AWC_Mode=2 Coleman transform exercised)")
+
+
+# ---------------------------------------------------------------------------
+# Scenario 16: Flp_Mode=3 (Coleman transform flap control)
+# ---------------------------------------------------------------------------
+def run_scenario_16(turbine, controller, cp_filename, output_dir=None):
+    """Sim with Flp_Mode=3 to exercise Coleman transform cyclic flap control.
+
+    Flp_Mode=3 uses ColemanTransform to decompose blade root moments into
+    tilt/yaw axes, applies PI control, then uses ColemanTransformInverse
+    to convert back to individual blade flap commands.
+    """
+    print("=" * 60)
+    print("Scenario 16: Coleman transform flap control (Flp_Mode=3)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_flp.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'Flp_Mode': 3,
+        'IPC_ControlMode': 0,
+        'Flp_Kp': '-0.001',
+        'Flp_Ki': '-0.0005',
+        'F_FlpCornerFreq': '0.5 0.7',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim16'
+    )
+
+    sim_16 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_16.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_16.gen_torque, 'bld_pitch': sim_16.bld_pitch,
+        'gen_speed': sim_16.gen_speed, 'gen_power': sim_16.gen_power,
+        'nac_yaw': sim_16.nac_yaw,
+    }, 16, output_dir)
+    print("Scenario 16: PASSED (Flp_Mode=3 Coleman transform flap exercised)")
+
+
+# ---------------------------------------------------------------------------
+# Scenario 17: WE_Mode=1 (Inversion and Invariance Filter WSE)
+# ---------------------------------------------------------------------------
+def run_scenario_17(turbine, controller, cp_filename, output_dir=None):
+    """Sim with WE_Mode=1 to exercise the I&I wind speed estimator.
+
+    WE_Mode=1 uses a simpler wind speed estimation algorithm than the
+    default EKF (WE_Mode=2). Exercises a completely different code path
+    in WindSpeedEstimator.
+    """
+    print("=" * 60)
+    print("Scenario 17: I&I wind speed estimator (WE_Mode=1)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'WE_Mode': 1,
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim17'
+    )
+
+    sim_17 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 7
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_17.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_17.gen_torque, 'bld_pitch': sim_17.bld_pitch,
+        'gen_speed': sim_17.gen_speed, 'gen_power': sim_17.gen_power,
+        'nac_yaw': sim_17.nac_yaw,
+    }, 17, output_dir)
+    print("Scenario 17: PASSED (WE_Mode=1 I&I estimator exercised)")
+
+
+# ---------------------------------------------------------------------------
+# Scenario 18: IPC_ControlMode=2 (1P + 2P individual pitch control)
+# ---------------------------------------------------------------------------
+def run_scenario_18(turbine, controller, cp_filename, output_dir=None):
+    """Sim with IPC_ControlMode=2 to exercise 2P harmonic IPC.
+
+    IPC_ControlMode=2 enables both 1P and 2P harmonic individual pitch
+    control. Scenario 6 tests 1P with zero gains, Scenario 8 tests 1P
+    with non-zero gains. This scenario tests both 1P and 2P with
+    non-zero gains.
+    """
+    print("=" * 60)
+    print("Scenario 18: 1P+2P individual pitch control (IPC_ControlMode=2)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_ipc.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'IPC_ControlMode': 2,
+        'IPC_KP': '0.1 0.05',
+        'IPC_KI': '0.01 0.005',
+        'Flp_Mode': 0,
+        'F_NumNotchFilts': 1,
+        'F_NotchFreqs': '1.0000',
+        'F_NotchBetaNum': '0.0000',
+        'F_NotchBetaDen': '0.2500',
+        'F_GenSpdNotch_N': 1,
+        'F_GenSpdNotch_Ind': '1',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim18'
+    )
+
+    sim_18 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_18.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_18.gen_torque, 'bld_pitch': sim_18.bld_pitch,
+        'gen_speed': sim_18.gen_speed, 'gen_power': sim_18.gen_power,
+        'nac_yaw': sim_18.nac_yaw,
+    }, 18, output_dir)
+    print("Scenario 18: PASSED (IPC_ControlMode=2, 1P+2P exercised)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description='VIT simulation runner')
     parser.add_argument('--scenario', type=int, default=0,
-                        help='Run specific scenario (1-14). Default 0 = run all.')
+                        help='Run specific scenario (1-18). Default 0 = run all.')
     parser.add_argument('--output-dir', type=str, default=None,
                         help='Save simulation output arrays to .npz files in this directory.')
     args = parser.parse_args()
@@ -1185,6 +1373,18 @@ def main():
 
     if args.scenario == 0 or args.scenario == 14:
         run_scenario_14(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 15:
+        run_scenario_15(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 16:
+        run_scenario_16(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 17:
+        run_scenario_17(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 18:
+        run_scenario_18(turbine, controller, cp_filename, od)
 
     print("\n" + "=" * 60)
     print("All scenarios complete.")
