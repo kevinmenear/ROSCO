@@ -11,6 +11,10 @@
 #include "vit_types.h"
 #include <algorithm>
 
+extern "C" {
+    double saturate_c(double inputValue, double minValue, double maxValue);
+}
+
 double ratelimit(double inputSignal, double minRate, double maxRate, double DT, int reset, rlparams_t* rlP, int* inst, int has_ResetValue, double ResetValue) {
     // Determine reset value: use ResetValue if present, else inputSignal
     double resetValue_ = inputSignal;
@@ -29,8 +33,8 @@ double ratelimit(double inputSignal, double minRate, double maxRate, double DT, 
     } else {
         // Compute unsaturated rate
         double rate = (inputSignal - rlP->LastSignal[idx]) / DT;
-        // Saturate the rate (inline — equivalent to saturate(rate, minRate, maxRate))
-        rate = std::min(std::max(rate, minRate), maxRate);
+        // Saturate the rate — call saturate_c (matching Fortran's function call to saturate)
+        rate = saturate_c(rate, minRate, maxRate);
 
         result = rlP->LastSignal[idx] + rate * DT;
 

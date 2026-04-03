@@ -6,8 +6,11 @@
 // Status: unverified
 
 #include "vit_types.h"
-#include <algorithm>
 #include "rosco_constants.h"
+
+extern "C" {
+    double saturate_c(double inputValue, double minValue, double maxValue);
+}
 
 double ResController(double error, double kp, double ki, double freq, double minValue, double maxValue, double DT, resparams_t* resP, int reset, int* inst) {
     int idx = *inst - 1;  // Fortran 1-based -> C 0-based
@@ -34,7 +37,7 @@ double ResController(double error, double kp, double ki, double freq, double min
     } else {
         result = 1 / b0 * (-b1 * resP->res_OutputSignalLast1[idx] - b2 * resP->res_OutputSignalLast2[idx]
                             + a0 * error + a1 * resP->res_InputSignalLast1[idx] + a2 * resP->res_InputSignalLast2[idx]);
-        result = std::min(std::max(result, minValue), maxValue);
+        result = saturate_c(result, minValue, maxValue);
 
         // Save signals for next time step
         resP->res_InputSignalLast2[idx] = resP->res_InputSignalLast1[idx];
