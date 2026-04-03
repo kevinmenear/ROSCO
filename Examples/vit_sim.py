@@ -1604,12 +1604,130 @@ def run_scenario_25(turbine, controller, cp_filename, output_dir=None):
 
 
 # ---------------------------------------------------------------------------
+# Scenario 26: Flp_Mode=3 with synthetic rootMOOP (non-zero flap output)
+# ---------------------------------------------------------------------------
+def run_scenario_26(turbine, controller, cp_filename, output_dir=None):
+    """Exercises FlapControl Flp_Mode=3 (Coleman transform cyclic) with non-zero output.
+
+    Uses a manual sim loop to inject synthetic rootMOOP (1000 Nm, 1P per-blade).
+    This is the only scenario that produces non-zero flp_angle output —
+    all other flap scenarios have zero rootMOOP (1-DOF sim) or use Flp_Mode=1
+    (which ignores rootMOOP).
+
+    Flp_Mode=3 path: rootMOOP → NotchFilterSlopes → ColemanTransform →
+    PIController (tilt/yaw axes) → ColemanTransformInverse → per-blade Flp_Angle.
+    """
+    print("=" * 60)
+    print("Scenario 26: Flp_Mode=3 with synthetic rootMOOP (non-zero flap output)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_flap26.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'Flp_Mode': 3,
+        'Flp_Kp': -0.001,
+        'Flp_Ki': -0.0005,
+        'F_FlpCornerFreq': '0.5 0.7',
+        'F_FlCornerFreq': '1.0 0.7',
+        'IPC_ControlMode': 0,
+        'AWC_Mode': 0,
+        'F_NumNotchFilts': 1,
+        'F_NotchFreqs': '1.0000',
+        'F_NotchBetaNum': '0.0000',
+        'F_NotchBetaDen': '0.2500',
+        'F_GenSpdNotch_N': 1,
+        'F_GenSpdNotch_Ind': '1',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim26'
+    )
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+
+    R = turbine.rotor_radius
+    GBRatio = turbine.Ng
+    rpm2RadSec = 2.0 * np.pi / 60.0
+
+    bld_pitch = np.zeros_like(t)
+    rot_speed = np.ones_like(t) * 4.0 * rpm2RadSec
+    gen_speed = rot_speed * GBRatio
+    gen_torque = np.zeros_like(t)
+    gen_power = np.zeros_like(t)
+    nac_yaw = np.zeros_like(t)
+    extra = {name: np.zeros_like(t) for name in EXTRA_AVRSWAP}
+
+    for i, ti in enumerate(t):
+        if i == 0:
+            continue
+
+        ws_i = ws[i]
+        tsr = rot_speed[i-1] * R / ws_i
+        cp = turbine.Cp.interp_surface(bld_pitch[i-1], tsr)
+        aero_torque = 0.5 * turbine.rho * (np.pi * R**3) * (cp / tsr) * ws_i**2
+        rot_speed[i] = rot_speed[i-1] + (dt / turbine.J) * (
+            aero_torque - GBRatio * gen_torque[i-1] / (turbine.GBoxEff / 100)
+        )
+        gen_speed[i] = rot_speed[i] * GBRatio
+
+        # Synthetic rotor azimuth
+        azimuth_rad = (rot_speed[i] * ti) % (2 * np.pi)
+
+        # Synthetic blade root moments (1P per-blade, 120 deg phase offset)
+        if rot_speed[i] > 0.1:
+            t_rotor = 2 * np.pi / rot_speed[i]
+        else:
+            t_rotor = 100.0
+        rootMOOP = [
+            1000.0 * np.sin(2 * np.pi * ti / t_rotor + k * 2 * np.pi / 3)
+            for k in range(3)
+        ]
+
+        turbine_state = {}
+        turbine_state['iStatus'] = 1 if i < len(t) - 1 else -1
+        turbine_state['t'] = ti
+        turbine_state['dt'] = dt
+        turbine_state['ws'] = ws_i
+        turbine_state['bld_pitch'] = bld_pitch[i-1]
+        turbine_state['gen_torque'] = gen_torque[i-1]
+        turbine_state['gen_speed'] = gen_speed[i]
+        turbine_state['gen_eff'] = turbine.GenEff / 100
+        turbine_state['rot_speed'] = rot_speed[i]
+        turbine_state['Yaw_fromNorth'] = 0.0
+        turbine_state['Y_MeasErr'] = 0.0
+
+        # Inject azimuth and rootMOOP
+        controller_int.avrSWAP[59] = azimuth_rad         # avrSWAP(60) Azimuth
+        controller_int.avrSWAP[29] = rootMOOP[0]         # avrSWAP(30) rootMOOP(1)
+        controller_int.avrSWAP[30] = rootMOOP[1]         # avrSWAP(31) rootMOOP(2)
+        controller_int.avrSWAP[31] = rootMOOP[2]         # avrSWAP(32) rootMOOP(3)
+
+        gen_torque[i], bld_pitch[i], _ = controller_int.call_controller(turbine_state)
+        gen_power[i] = gen_speed[i] * gen_torque[i] * turbine.GenEff / 100
+        for name, idx in EXTRA_AVRSWAP.items():
+            extra[name][i] = controller_int.avrSWAP[idx]
+
+    controller_int.kill_discon()
+    result = {
+        'gen_torque': gen_torque, 'bld_pitch': bld_pitch,
+        'gen_speed': gen_speed, 'gen_power': gen_power,
+        'nac_yaw': nac_yaw,
+    }
+    result.update(extra)
+    save_and_print_results(result, 26, output_dir)
+    print("Scenario 26: PASSED (Flp_Mode=3 with non-zero flap output exercised)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description='VIT simulation runner')
     parser.add_argument('--scenario', type=int, default=0,
-                        help='Run specific scenario (1-25). Default 0 = run all.')
+                        help='Run specific scenario (1-26). Default 0 = run all.')
     parser.add_argument('--output-dir', type=str, default=None,
                         help='Save simulation output arrays to .npz files in this directory.')
     args = parser.parse_args()
@@ -1697,6 +1815,9 @@ def main():
 
     if args.scenario == 0 or args.scenario == 25:
         run_scenario_25(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 26:
+        run_scenario_26(turbine, controller, cp_filename, od)
 
     print("\n" + "=" * 60)
     print("All scenarios complete.")
