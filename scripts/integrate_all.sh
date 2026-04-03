@@ -559,10 +559,13 @@ import re, sys
 with open('rosco/controller/CMakeLists.txt', 'r') as f:
     content = f.read()
 
-# Extract the list of .cpp source files from the SOURCES block
-cpp_files = re.findall(r'    (src/\S+\.cpp)', content)
+# Scan src/ directory for all .cpp files (not CMakeLists.txt SOURCES —
+# manual integration blocks copy .cpp files to src/ but may not add them
+# to CMake when starting from upstream Fortran-only CMakeLists.txt).
+import os
+cpp_files = sorted(['src/' + f for f in os.listdir('rosco/controller/src') if f.endswith('.cpp')])
 if not cpp_files:
-    print('FAIL: No .cpp files found in SOURCES')
+    print('FAIL: No .cpp files found in src/')
     sys.exit(1)
 
 sources_block = '\n'.join(f'    {f}' for f in cpp_files)

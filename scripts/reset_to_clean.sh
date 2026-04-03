@@ -1,22 +1,20 @@
 #!/bin/bash
-# Reset ROSCO source to clean Fortran for extraction, integration testing,
-# or baseline capture.
+# Reset ROSCO source to a buildable clean Fortran state.
 #
-# This script resets ALL source files and the build configuration to a
-# buildable clean Fortran state (no integration wrappers, no C++ entry point)
-# with all bug fixes applied. After running this script, ROSCO can be built
-# as a pure Fortran project to capture baseline simulation arrays.
+# Produces a pure Fortran build — no C++ compiler, no .cpp files, no VIT
+# headers. After running this script, ROSCO can be built as a Fortran-only
+# project to capture baseline simulation arrays.
 #
 # What it resets:
 #   - Controllers.f90 + ControllerBlocks.f90 → 46e8d4f (Phase 4C + K init fix)
 #   - Functions.f90 + Filters.f90 → dba7738 (restart fix + notch filter bug fix)
 #   - DISCON.F90 → e8010f0 (upstream, no wrappers)
-#   - ReadSetParameters.f90 → HEAD (committed version has Phase 4A fixes, no wrappers)
-#   - CMakeLists.txt → aef3155 (full Fortran build: DISCON.F90, all .f90 sources, gfortran)
-#   - All *.cpp files → "// stub"
+#   - ReadSetParameters.f90, ExtControl.f90, ZeroMQInterface.f90, ROSCO_IO.f90 → HEAD
+#   - CMakeLists.txt → e8010f0 (upstream Fortran-only) + -ffp-contract=off
+#   - Removes all .cpp and .h files from src/
 #
-# What it does NOT reset (these have Phase 4A/4C fixes and no wrappers):
-#   - ROSCO_Types.f90
+# What it does NOT reset:
+#   - ROSCO_Types.f90 (Phase 4A/4C type fixes, required by bug-fixed sources)
 #   - translations/, vit.yaml, kernel/
 #
 # Usage:
@@ -25,13 +23,14 @@
 
 set -e
 
-# Verify we're in the ROSCO repo root
 if [ ! -d "rosco/controller/src" ]; then
     echo "ERROR: Must run from ROSCO repo root (rosco/controller/src/ not found)" >&2
     exit 1
 fi
 
 echo "Resetting ROSCO source to clean Fortran..."
+
+# --- Restore .f90 source files ---
 
 # Controllers.f90 + ControllerBlocks.f90: Phase 4C with K init fix (no wrappers)
 git checkout 46e8d4f -- rosco/controller/src/Controllers.f90 rosco/controller/src/ControllerBlocks.f90
@@ -42,49 +41,55 @@ git checkout dba7738 -- rosco/controller/src/Functions.f90 rosco/controller/src/
 # DISCON.F90: upstream (no wrappers)
 git checkout e8010f0 -- rosco/controller/src/DISCON.F90
 
-# CMakeLists.txt: full Fortran build configuration (pre-Phase 11A)
-# This restores DISCON.F90 in SOURCES, all .f90 modules, gfortran flags,
-# NWTC_SYS_FILE block, and -ffp-contract=off on both Fortran and C++.
-git checkout aef3155 -- rosco/controller/CMakeLists.txt
-
-# ReadSetParameters.f90: restore committed version (Phase 4A fixes, no wrappers)
+# ReadSetParameters.f90: committed version (Phase 4A fixes, no wrappers)
 git checkout -- rosco/controller/src/ReadSetParameters.f90
 
-# Stage C/D files: restored to HEAD (clean, no wrappers — integrate_all.sh modifies them)
+# Stage C/D files: committed version (clean, no wrappers)
 git checkout -- rosco/controller/src/ExtControl.f90 rosco/controller/src/ZeroMQInterface.f90 rosco/controller/src/ROSCO_IO.f90
 
-# Unstage everything — git checkout <commit> -- <file> stages changes,
-# which would cause phantom staged diffs that could be accidentally committed.
+# --- Restore CMakeLists.txt to upstream Fortran-only build ---
+
+# Upstream CMakeLists.txt: LANGUAGES Fortran C, 12 .f90 SOURCES only,
+# no .cpp files, no CXX, no view populator .f90 files.
+git checkout e8010f0 -- rosco/controller/CMakeLists.txt
+
+# Add -ffp-contract=off to gfortran flags (not in upstream, needed for
+# bit-identical verification against C++ translations)
+sed -i '' 's/-fdefault-double-8 -cpp"/-fdefault-double-8 -cpp -ffp-contract=off"/' \
+    rosco/controller/CMakeLists.txt
+
+# --- Unstage everything ---
+# git checkout <commit> -- <file> stages changes. Unstage to avoid
+# phantom staged diffs that could be accidentally committed.
 git reset HEAD -- rosco/controller/src/Controllers.f90 rosco/controller/src/ControllerBlocks.f90 \
     rosco/controller/src/Functions.f90 rosco/controller/src/Filters.f90 \
     rosco/controller/src/DISCON.F90 rosco/controller/CMakeLists.txt > /dev/null 2>&1
 
-# Create C++ stubs (CMakeLists.txt references these)
-# Stub existing files
-for f in rosco/controller/src/*.cpp; do
-    [ -f "$f" ] && echo "// stub" > "$f"
-done
-# Also create stubs for any .cpp files listed in CMakeLists.txt that don't exist yet
-grep -oE 'src/[^ ]+\.cpp' rosco/controller/CMakeLists.txt | while read f; do
-    filepath="rosco/controller/$f"
-    if [ ! -f "$filepath" ]; then
-        echo "// stub" > "$filepath"
-    fi
-done
+# --- Remove all C++ artifacts from src/ ---
+# A clean Fortran build has no .cpp or .h files. These are created by
+# integrate_all.sh during the translation/integration cycle.
+rm -f rosco/controller/src/*.cpp rosco/controller/src/*.h
 
-# Verify clean state (grep -c returns 1 when count is 0, so use || true)
+# --- Verification ---
 echo ""
 echo "Verification (all should be 0):"
 grep -c '_c(' rosco/controller/src/Functions.f90 rosco/controller/src/Filters.f90 \
               rosco/controller/src/Controllers.f90 rosco/controller/src/ControllerBlocks.f90 \
               rosco/controller/src/ReadSetParameters.f90 || true
 
-# Verify CMakeLists.txt has Fortran build configuration
-if grep -q 'LANGUAGES Fortran C' rosco/controller/CMakeLists.txt && \
-   grep -q 'src/DISCON.F90' rosco/controller/CMakeLists.txt; then
-    echo "  CMakeLists.txt: Fortran build OK"
+# Check no C++ artifacts remain
+cpp_count=$(ls rosco/controller/src/*.cpp 2>/dev/null | wc -l | tr -d ' ')
+h_count=$(ls rosco/controller/src/*.h 2>/dev/null | wc -l | tr -d ' ')
+echo "  C++ files in src/: $cpp_count .cpp, $h_count .h (both should be 0)"
+
+# Check CMakeLists.txt is pure Fortran
+if grep -q 'LANGUAGES Fortran C)' rosco/controller/CMakeLists.txt && \
+   grep -q 'src/DISCON.F90' rosco/controller/CMakeLists.txt && \
+   ! grep -q '\.cpp' rosco/controller/CMakeLists.txt && \
+   grep -q 'ffp-contract=off' rosco/controller/CMakeLists.txt; then
+    echo "  CMakeLists.txt: pure Fortran build with -ffp-contract=off OK"
 else
-    echo "  CMakeLists.txt: WARNING — missing Fortran configuration"
+    echo "  CMakeLists.txt: WARNING — unexpected state"
 fi
 
 echo ""
