@@ -47,6 +47,10 @@ git checkout -- rosco/controller/src/ReadSetParameters.f90
 # Stage C/D files: committed version (clean, no wrappers)
 git checkout -- rosco/controller/src/ExtControl.f90 rosco/controller/src/ZeroMQInterface.f90 rosco/controller/src/ROSCO_IO.f90
 
+# ROSCO_Types.f90: committed version (Phase 4A/4C type fixes — BIND(C), INTEGER(C_INT)
+# restart, CHARACTER(1024) ACC_INFILE/ErrMsg). Required by the bug-fixed sources above.
+git checkout -- rosco/controller/src/ROSCO_Types.f90
+
 # --- Restore CMakeLists.txt to upstream Fortran-only build ---
 
 # Upstream CMakeLists.txt: LANGUAGES Fortran C, 12 .f90 SOURCES only,
