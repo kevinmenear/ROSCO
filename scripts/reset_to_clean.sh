@@ -14,7 +14,7 @@
 #   - All *.cpp files → "// stub"
 #
 # What it does NOT reset (these have Phase 4A/4C fixes and no wrappers):
-#   - ROSCO_Types.f90, ExtControl.f90, ROSCO_IO.f90
+#   - ROSCO_Types.f90
 #   - CMakeLists.txt (-ffp-contract=off flags + C++ source list)
 #   - translations/, vit.yaml, kernel/
 #
@@ -43,6 +43,9 @@ git checkout e8010f0 -- rosco/controller/src/DISCON.F90
 
 # ReadSetParameters.f90: restore committed version (Phase 4A fixes, no wrappers)
 git checkout -- rosco/controller/src/ReadSetParameters.f90
+
+# Stage C/D files: restored to HEAD (clean, no wrappers — integrate_all.sh modifies them)
+git checkout -- rosco/controller/src/ExtControl.f90 rosco/controller/src/ZeroMQInterface.f90 rosco/controller/src/ROSCO_IO.f90
 
 # Create C++ stubs (CMakeLists.txt references these)
 # Stub existing files

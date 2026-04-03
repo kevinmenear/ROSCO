@@ -94,6 +94,8 @@ set(SOURCES
     src/readcontrolparameterfilesub.cpp
     src/unwrap.cpp
     src/updatezeromq.cpp
+    src/debug_logger.cpp
+    src/restart.cpp
     src/vit_extcontroltype_view.f90
     src/extcontroller.cpp
 )

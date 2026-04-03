@@ -1,7 +1,7 @@
 #!/bin/bash
-# Integrate all 47 C++ translations into the ROSCO codebase.
+# Integrate all 50 C++ translations into the ROSCO codebase.
 # (39 algorithm functions from Phases 1-9, ReadAvrSWAP + PIDController from Phase 10A,
-#  unwrap, 3 Stage B functions, and 2 Stage D functions: UpdateZeroMQ, ExtController)
+#  unwrap, 3 Stage B functions, 2 Stage D functions, and 3 Stage C functions)
 # Run from the ROSCO repo root inside the Docker container.
 #
 # Usage: bash scripts/integrate_all.sh
@@ -14,7 +14,7 @@ set -e
 
 PASS=0
 FAIL=0
-TOTAL=47
+TOTAL=50
 
 integrate() {
     local name=$1
@@ -298,6 +298,189 @@ content = content.replace(
 with open('rosco/controller/src/ExtControl.f90', 'w') as f:
     f.write(content)
 " 2>&1
+
+# Stage C: ROSCO_IO — restart I/O + debug logger (manual wrappers)
+echo "--- Stage C: WriteRestartFile + ReadRestartFile + Debug (manual) ---"
+cp translations/IO/restart.cpp rosco/controller/src/restart.cpp
+cp translations/IO/debug_logger.cpp rosco/controller/src/debug_logger.cpp
+python3 -c "
+import re, sys
+
+with open('rosco/controller/src/ROSCO_IO.f90', 'r') as f:
+    content = f.read()
+
+# --- WriteRestartFile ---
+write_wrapper = '''SUBROUTINE WriteRestartFile(LocalVar, CntrPar, ErrVar, objInst, RootName, size_avcOUTNAME)
+    USE, INTRINSIC :: ISO_C_Binding
+    USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, ErrorVariables, ObjectInstances
+    IMPLICIT NONE
+
+    TYPE(LocalVariables), INTENT(IN), TARGET       :: LocalVar
+    TYPE(ControlParameters), INTENT(INOUT)         :: CntrPar
+    TYPE(ObjectInstances), INTENT(INOUT), TARGET   :: objInst
+    TYPE(ErrorVariables), INTENT(INOUT), TARGET    :: ErrVar
+    INTEGER(IntKi), INTENT(IN)                     :: size_avcOUTNAME
+    CHARACTER(size_avcOUTNAME), INTENT(IN)         :: RootName
+
+    CHARACTER(KIND=C_CHAR) :: RootName_c(size_avcOUTNAME)
+    INTEGER :: i
+
+    INTERFACE
+        SUBROUTINE writerestartfile_c(LocalVar, ErrVar, objInst, RootName, size_avcOUTNAME) &
+                BIND(C, NAME='writerestartfile_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: ErrVar
+            TYPE(C_PTR), VALUE :: objInst
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: RootName(*)
+            INTEGER(C_INT32_T), VALUE :: size_avcOUTNAME
+        END SUBROUTINE writerestartfile_c
+    END INTERFACE
+
+    DO i = 1, size_avcOUTNAME
+        RootName_c(i) = RootName(i:i)
+    END DO
+
+    CALL writerestartfile_c(C_LOC(LocalVar), C_LOC(ErrVar), C_LOC(objInst), &
+                            RootName_c, INT(size_avcOUTNAME, C_INT32_T))
+
+END SUBROUTINE WriteRestartFile'''
+
+pattern = r'SUBROUTINE WriteRestartFile\(LocalVar, CntrPar, ErrVar, objInst, RootName, size_avcOUTNAME\).*?END SUBROUTINE WriteRestartFile'
+result = re.sub(pattern, write_wrapper, content, flags=re.DOTALL)
+if result == content:
+    print('FAIL WriteRestartFile: pattern not found')
+    sys.exit(1)
+content = result
+print('  OK WriteRestartFile')
+
+# --- ReadRestartFile ---
+read_wrapper = '''SUBROUTINE ReadRestartFile(avrSWAP, LocalVar, CntrPar, objInst, PerfData, RootName, size_avcOUTNAME, ErrVar)
+    USE, INTRINSIC :: ISO_C_Binding
+    USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, ErrorVariables, ObjectInstances, PerformanceData
+    USE ReadSetParameters, ONLY : ReadControlParameterFileSub, ReadCpFile
+    IMPLICIT NONE
+
+    TYPE(LocalVariables), INTENT(INOUT), TARGET    :: LocalVar
+    TYPE(ControlParameters), INTENT(INOUT), TARGET :: CntrPar
+    TYPE(ObjectInstances), INTENT(INOUT), TARGET   :: objInst
+    TYPE(PerformanceData), INTENT(INOUT), TARGET   :: PerfData
+    TYPE(ErrorVariables), INTENT(INOUT), TARGET    :: ErrVar
+    REAL(ReKi), INTENT(IN)                         :: avrSWAP(*)
+    INTEGER(IntKi), INTENT(IN)                     :: size_avcOUTNAME
+    CHARACTER(size_avcOUTNAME), INTENT(IN)         :: RootName
+
+    CHARACTER(KIND=C_CHAR) :: RootName_c(size_avcOUTNAME)
+    INTEGER :: i
+
+    INTERFACE
+        SUBROUTINE readrestartfile_c(avrSWAP, LocalVar, ErrVar, objInst, RootName, size_avcOUTNAME) &
+                BIND(C, NAME='readrestartfile_c')
+            USE ISO_C_BINDING
+            REAL(C_FLOAT), INTENT(IN) :: avrSWAP(*)
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: ErrVar
+            TYPE(C_PTR), VALUE :: objInst
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: RootName(*)
+            INTEGER(C_INT32_T), VALUE :: size_avcOUTNAME
+        END SUBROUTINE readrestartfile_c
+    END INTERFACE
+
+    DO i = 1, size_avcOUTNAME
+        RootName_c(i) = RootName(i:i)
+    END DO
+
+    CALL readrestartfile_c(avrSWAP, C_LOC(LocalVar), C_LOC(ErrVar), C_LOC(objInst), &
+                           RootName_c, INT(size_avcOUTNAME, C_INT32_T))
+
+    ! Read parameter files (same as original Fortran)
+    CALL ReadControlParameterFileSub(CntrPar, LocalVar, LocalVar%ACC_INFILE, LocalVar%ACC_INFILE_SIZE, RootName, ErrVar)
+    IF (CntrPar%WE_Mode > 0) THEN
+        CALL ReadCpFile(CntrPar, PerfData, ErrVar)
+    ENDIF
+END SUBROUTINE ReadRestartFile'''
+
+pattern = r'SUBROUTINE ReadRestartFile\(avrSWAP, LocalVar, CntrPar, objInst, PerfData, RootName, size_avcOUTNAME, ErrVar\).*?END SUBROUTINE ReadRestartFile'
+result = re.sub(pattern, read_wrapper, content, flags=re.DOTALL)
+if result == content:
+    print('FAIL ReadRestartFile: pattern not found')
+    sys.exit(1)
+content = result
+print('  OK ReadRestartFile')
+
+# --- Debug ---
+debug_wrapper = '''SUBROUTINE Debug(LocalVar, CntrPar, DebugVar, ErrVar, avrSWAP, RootName, size_avcOUTNAME)
+    USE, INTRINSIC :: ISO_C_Binding
+    USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, DebugVariables, ErrorVariables
+    USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters
+    IMPLICIT NONE
+
+    TYPE(ControlParameters), INTENT(IN), TARGET    :: CntrPar
+    TYPE(LocalVariables), INTENT(IN), TARGET       :: LocalVar
+    TYPE(DebugVariables), INTENT(IN), TARGET       :: DebugVar
+    TYPE(ErrorVariables), INTENT(INOUT), TARGET    :: ErrVar
+    INTEGER(IntKi), INTENT(IN)                     :: size_avcOUTNAME
+    REAL(ReKi), INTENT(INOUT)                      :: avrSWAP(*)
+    CHARACTER(size_avcOUTNAME), INTENT(IN)         :: RootName
+
+    TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+    CHARACTER(KIND=C_CHAR) :: RootName_c(size_avcOUTNAME)
+    INTEGER :: i
+
+    INTERFACE
+        SUBROUTINE debug_c(LocalVar, CntrPar, DebugVar, ErrVar, avrSWAP, RootName, size_avcOUTNAME) &
+                BIND(C, NAME='debug_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: DebugVar
+            TYPE(C_PTR), VALUE :: ErrVar
+            REAL(C_FLOAT), INTENT(INOUT) :: avrSWAP(*)
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: RootName(*)
+            INTEGER(C_INT32_T), VALUE :: size_avcOUTNAME
+        END SUBROUTINE debug_c
+    END INTERFACE
+
+    DO i = 1, size_avcOUTNAME
+        RootName_c(i) = RootName(i:i)
+    END DO
+
+    CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+    CALL debug_c(C_LOC(LocalVar), C_LOC(CntrPar_view), C_LOC(DebugVar), C_LOC(ErrVar), &
+                 avrSWAP, RootName_c, INT(size_avcOUTNAME, C_INT32_T))
+
+END SUBROUTINE Debug'''
+
+pattern = r'SUBROUTINE Debug\(LocalVar, CntrPar, DebugVar, ErrVar, avrSWAP, RootName, size_avcOUTNAME\).*?END SUBROUTINE Debug'
+result = re.sub(pattern, debug_wrapper, content, flags=re.DOTALL)
+if result == content:
+    print('FAIL Debug: pattern not found')
+    sys.exit(1)
+content = result
+print('  OK Debug')
+
+with open('rosco/controller/src/ROSCO_IO.f90', 'w') as f:
+    f.write(content)
+" 2>&1
+if [ $? -eq 0 ]; then
+    PASS=$((PASS + 3))
+else
+    FAIL=$((FAIL + 3))
+fi
+
+# Add Stage C source files to CMakeLists.txt if not already present
+python3 -c "
+with open('rosco/controller/CMakeLists.txt', 'r') as f:
+    content = f.read()
+changed = False
+for src in ['restart.cpp', 'debug_logger.cpp']:
+    if src not in content:
+        content = content.replace('src/updatezeromq.cpp', 'src/updatezeromq.cpp\n    src/' + src)
+        changed = True
+if changed:
+    with open('rosco/controller/CMakeLists.txt', 'w') as f:
+        f.write(content)
+"
 
 echo ""
 echo "=== Integration complete: $PASS/$TOTAL passed, $FAIL failed ==="

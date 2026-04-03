@@ -33,36 +33,76 @@ translations:
   saturate:
     status: integrated
     cpp_file: translations/Functions/saturate.cpp
+    cases_passed: 20
+    cases_total: 20
+    cases_skipped: 0
+    kernel_dir: kernel/saturate
   wrap_180:
     status: integrated
     cpp_file: translations/Functions/wrap_180.cpp
+    cases_passed: 22
+    cases_total: 22
+    cases_skipped: 0
+    kernel_dir: kernel/wrap_180
   wrap_360:
     status: integrated
     cpp_file: translations/Functions/wrap_360.cpp
+    cases_passed: 22
+    cases_total: 22
+    cases_skipped: 0
+    kernel_dir: kernel/wrap_360
   interp1d:
     status: integrated
     cpp_file: translations/Functions/interp1d.cpp
+    cases_passed: 20
+    cases_total: 20
+    cases_skipped: 0
+    kernel_dir: kernel/interp1d
   identity:
     status: integrated
     cpp_file: translations/Functions/identity.cpp
   ColemanTransform:
     status: integrated
     cpp_file: translations/Functions/colemantransform.cpp
+    cases_passed: 20
+    cases_total: 20
+    cases_skipped: 0
+    kernel_dir: kernel/ColemanTransform
   ColemanTransformInverse:
     status: integrated
     cpp_file: translations/Functions/colemantransforminverse.cpp
+    cases_passed: 22
+    cases_total: 22
+    cases_skipped: 0
+    kernel_dir: kernel/ColemanTransformInverse
   ratelimit:
     status: integrated
     cpp_file: translations/Functions/ratelimit.cpp
+    cases_passed: 21
+    cases_total: 21
+    cases_skipped: 0
+    kernel_dir: kernel/ratelimit
   sigma:
     status: integrated
     cpp_file: translations/Functions/sigma.cpp
+    cases_passed: 20
+    cases_total: 20
+    cases_skipped: 0
+    kernel_dir: kernel/sigma
   LPFilter:
     status: integrated
     cpp_file: translations/Filters/lpfilter.cpp
+    cases_passed: 22
+    cases_total: 22
+    cases_skipped: 0
+    kernel_dir: kernel/LPFilter
   HPFilter:
     status: integrated
     cpp_file: translations/Filters/hpfilter.cpp
+    cases_passed: 21
+    cases_total: 21
+    cases_skipped: 0
+    kernel_dir: kernel/HPFilter
   SecLPFilter:
     status: integrated
     cpp_file: translations/Filters/seclpfilter.cpp
@@ -132,6 +172,10 @@ translations:
   interp2d:
     status: integrated
     cpp_file: translations/Functions/interp2d.cpp
+    cases_passed: 21
+    cases_total: 21
+    cases_skipped: 0
+    kernel_dir: kernel/interp2d
   WindSpeedEstimator:
     status: integrated
     cpp_file: translations/ControllerBlocks/windspeedestimator.cpp
@@ -162,6 +206,15 @@ translations:
   ExtController:
     status: integrated
     cpp_file: translations/IO/ext_control.cpp
+  WriteRestartFile:
+    status: integrated
+    cpp_file: translations/IO/restart.cpp
+  ReadRestartFile:
+    status: integrated
+    cpp_file: translations/IO/restart.cpp
+  Debug:
+    status: integrated
+    cpp_file: translations/IO/debug_logger.cpp
 types:
   ControlParameters:
     strategy: view
