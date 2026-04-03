@@ -983,12 +983,154 @@ def run_scenario_11(turbine, controller, cp_filename, output_dir=None):
 
 
 # ---------------------------------------------------------------------------
+# Scenario 12: VS_ControlMode=1 (K*Omega^2 torque control)
+# ---------------------------------------------------------------------------
+def run_scenario_12(turbine, controller, cp_filename, output_dir=None):
+    """Sim with VS_ControlMode=1 to exercise K*Omega^2 torque control.
+
+    VS_ControlMode=1 is the classical ROSCO torque control with 5 operating
+    regions (1, 1.5, 2, 2.5, 3) and PI transitions. This is completely
+    different from the default VS_ControlMode=2 (WSE TSR tracking).
+    """
+    print("=" * 60)
+    print("Scenario 12: K*Omega^2 torque control (VS_ControlMode=1)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'VS_ControlMode': 1,
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim12'
+    )
+
+    sim_12 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 7
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_12.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_12.gen_torque, 'bld_pitch': sim_12.bld_pitch,
+        'gen_speed': sim_12.gen_speed, 'gen_power': sim_12.gen_power,
+        'nac_yaw': sim_12.nac_yaw,
+    }, 12, output_dir)
+    print("Scenario 12: PASSED (VS_ControlMode=1 K*Omega^2 exercised)")
+
+
+# ---------------------------------------------------------------------------
+# Scenario 13: VS_FBP=1 (power overspeed, no pitch control)
+# ---------------------------------------------------------------------------
+def run_scenario_13(turbine, controller, cp_filename, output_dir=None):
+    """Sim with VS_FBP=1 to exercise fixed-blade-pitch power overspeed mode.
+
+    VS_FBP=1 (power overspeed) disables pitch control and uses constant-power
+    saturation in Region 3. Exercises FBP lookup tables (VS_FBP_U, VS_FBP_Omega,
+    VS_FBP_Tau) and the interp1d-based torque reference path.
+
+    Requires PC_ControlMode=0 (mutual exclusion with VS_FBP>0).
+    """
+    print("=" * 60)
+    print("Scenario 13: Power overspeed mode (VS_FBP=1)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'VS_FBP': 1,
+        'PC_ControlMode': 0,
+        'VS_ControlMode': 1,
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim13'
+    )
+
+    sim_13 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_13.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_13.gen_torque, 'bld_pitch': sim_13.bld_pitch,
+        'gen_speed': sim_13.gen_speed, 'gen_power': sim_13.gen_power,
+        'nac_yaw': sim_13.nac_yaw,
+    }, 13, output_dir)
+    print("Scenario 13: PASSED (VS_FBP=1 power overspeed exercised)")
+
+
+# ---------------------------------------------------------------------------
+# Scenario 14: OL_Mode=1 (time-based open-loop control)
+# ---------------------------------------------------------------------------
+def run_scenario_14(turbine, controller, cp_filename, output_dir=None):
+    """Sim with OL_Mode=1 to exercise time-based open-loop pitch/torque/yaw.
+
+    OL_Mode=1 reads open-loop signals from a breakpoint file and interpolates
+    blade pitch, generator torque, and yaw rate as functions of time. Exercises
+    the OL_Breakpoints/OL_BldPitch/OL_GenTq/OL_YawRate interpolation paths.
+    """
+    print("=" * 60)
+    print("Scenario 14: Time-based open-loop control (OL_Mode=1)")
+    print("=" * 60)
+
+    ol_input_path = os.path.join(this_dir, 'example_inputs', 'OL_Mode1_Input.dat')
+    param_filename = os.path.join(this_dir, 'DISCON_ol_mode1.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        'OL_Mode': 1,
+        'OL_Filename': ol_input_path,
+        'OL_BP_Mode': 0,
+        'OL_BP_FiltFreq': 0.0,
+        'Ind_Breakpoint': 1,
+        'Ind_BldPitch': '2 3 4',
+        'Ind_GenTq': 5,
+        'Ind_YawRate': 6,
+        'Ind_Azimuth': 0,
+        'Ind_R_Speed': 0,
+        'Ind_R_Torque': 0,
+        'Ind_R_Pitch': 0,
+        'CC_Mode': 0,
+        'StC_Mode': 0,
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim14'
+    )
+
+    sim_14 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 200
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+
+    sim_14.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    save_and_print_results({
+        'gen_torque': sim_14.gen_torque, 'bld_pitch': sim_14.bld_pitch,
+        'gen_speed': sim_14.gen_speed, 'gen_power': sim_14.gen_power,
+        'nac_yaw': sim_14.nac_yaw,
+    }, 14, output_dir)
+    print("Scenario 14: PASSED (OL_Mode=1 open-loop control exercised)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description='VIT simulation runner')
     parser.add_argument('--scenario', type=int, default=0,
-                        help='Run specific scenario (1-11). Default 0 = run all.')
+                        help='Run specific scenario (1-14). Default 0 = run all.')
     parser.add_argument('--output-dir', type=str, default=None,
                         help='Save simulation output arrays to .npz files in this directory.')
     args = parser.parse_args()
@@ -1034,6 +1176,15 @@ def main():
 
     if args.scenario == 0 or args.scenario == 11:
         run_scenario_11(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 12:
+        run_scenario_12(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 13:
+        run_scenario_13(turbine, controller, cp_filename, od)
+
+    if args.scenario == 0 or args.scenario == 14:
+        run_scenario_14(turbine, controller, cp_filename, od)
 
     print("\n" + "=" * 60)
     print("All scenarios complete.")
