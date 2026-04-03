@@ -3,8 +3,8 @@
 // All 52 functions are already translated to C++; this file orchestrates them
 // directly via _c entry points, eliminating the Fortran interop layer.
 
-#include "vit_types.h"
-#include "rosco_constants.h"
+#include "include/vit_types.h"
+#include "include/rosco_constants.h"
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -17,7 +17,7 @@ static const char* ROSCO_VERSION = "2.10.1";
 // ============================================================
 // Callee declarations
 // ============================================================
-#include "vit_translated.h"
+#include "include/vit_translated.h"
 
 // ============================================================
 // Static state — persists for DLL lifetime (replaces Fortran SAVE)
