@@ -1,13 +1,3 @@
-// VIT Translation Scaffold
-// Function: UpdateZeroMQ
-// Source: ZeroMQInterface.f90
-// Module: ZeroMQInterface
-// Fortran: SUBROUTINE UpdateZeroMQ(LocalVar, CntrPar, ErrVar)
-// Source MD5: 5d1a1f7b4251
-// VIT: 0.1.0
-// Status: unverified
-// Generated: 2026-04-02T23:10:26Z
-
 #include "vit_types.h"
 #include <cstring>
 
@@ -76,12 +66,5 @@ void UpdateZeroMQ(localvariables_t* LocalVar, controlparameters_view_t* CntrPar,
         LocalVar->ZMQ_R_Speed      = setpoints[5];
         LocalVar->ZMQ_R_Torque     = setpoints[6];
         LocalVar->ZMQ_R_Pitch      = setpoints[7];
-    }
-}
-
-// --- Fortran-callable C wrapper ---
-extern "C" {
-    void updatezeromq_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_t* ErrVar) {
-        UpdateZeroMQ(LocalVar, CntrPar, ErrVar);
     }
 }

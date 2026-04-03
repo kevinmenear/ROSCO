@@ -1,25 +1,8 @@
-// VIT Translation
-// Function: SetParameters (partial — Fortran wrapper handles per-timestep init,
-//           banner, accINFILE save, ReadControlParameterFileSub, ReadCpFile)
-// Source: ReadSetParameters.f90
-// Module: ReadSetParameters
-// Status: unverified
-
 #include "vit_types.h"
+#include "vit_translated.h"
 #include "rosco_constants.h"
 #include <cstring>
 #include <algorithm>
-
-// Callee entry points
-extern "C" {
-    void checkinputs_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar,
-                       float* avrSWAP, errorvariables_t* ErrVar, int32_t size_avcMSG);
-    double interp1d_c(double* xData, int n_xData, double* yData, int n_yData,
-                      double xq, errorvariables_t* ErrVar);
-    double lpfilter_c(double InputSignal, double DT, double CornerFreq,
-                      filterparameters_t* FP, int iStatus, int reset, int* inst,
-                      int has_InitialValue, double InitialValue);
-}
 
 void SetParameters(controlparameters_view_t* CntrPar, localvariables_t* LocalVar,
                    float* avrSWAP, objectinstances_t* objInst,
@@ -50,7 +33,7 @@ void SetParameters(controlparameters_view_t* CntrPar, localvariables_t* LocalVar
                     CntrPar->VS_Rgn2K * LocalVar->GenSpeed * LocalVar->GenSpeed);
             }
         } else {
-            LocalVar->GenTq = interp1d_c(CntrPar->VS_FBP_U, CntrPar->n_VS_FBP_U,
+            LocalVar->GenTq = interp1d(CntrPar->VS_FBP_U, CntrPar->n_VS_FBP_U,
                                          CntrPar->VS_FBP_Tau, CntrPar->n_VS_FBP_Tau,
                                          LocalVar->HorWindV, ErrVar);
         }
@@ -69,7 +52,7 @@ void SetParameters(controlparameters_view_t* CntrPar, localvariables_t* LocalVar
         LocalVar->ZMQ_ID = CntrPar->ZMQ_ID;
 
         // Check validity of input parameters
-        checkinputs_c(LocalVar, CntrPar, avrSWAP, ErrVar, size_avcMSG);
+        CheckInputs(LocalVar, CntrPar, avrSWAP, ErrVar, size_avcMSG);
     }
 
     // Per-timestep: Open Loop index
@@ -78,18 +61,9 @@ void SetParameters(controlparameters_view_t* CntrPar, localvariables_t* LocalVar
     } else {
         LocalVar->OL_Index = LocalVar->WE_Vw;
         if (CntrPar->OL_BP_FiltFreq > 0) {
-            LocalVar->OL_Index = lpfilter_c(LocalVar->WE_Vw, LocalVar->DT,
+            LocalVar->OL_Index = LPFilter(LocalVar->WE_Vw, LocalVar->DT,
                 CntrPar->OL_BP_FiltFreq, &LocalVar->FP, LocalVar->iStatus,
                 (LocalVar->restart != 0), &objInst->instLPF, 0, 0.0);
         }
-    }
-}
-
-// extern "C" wrapper — manual integration
-extern "C" {
-    void setparameters_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar,
-                         float* avrSWAP, objectinstances_t* objInst,
-                         errorvariables_t* ErrVar, int size_avcMSG) {
-        SetParameters(CntrPar, LocalVar, avrSWAP, objInst, ErrVar, size_avcMSG);
     }
 }

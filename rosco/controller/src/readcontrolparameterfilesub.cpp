@@ -1,15 +1,5 @@
-// VIT Translation
-// Function: ReadControlParameterFileSub
-// Source: ReadSetParameters.f90
-// Module: ReadSetParameters
-// Fortran: SUBROUTINE ReadControlParameterFileSub(CntrPar, LocalVar, accINFILE, accINFILE_size, RootName, ErrVar)
-// Status: unverified
-//
-// Two-pass DISCON.IN config file parser.
-// Pass 1: reads all scalars, counts OL file rows
-// Pass 2: fills ALLOCATABLE arrays, computes derived constants, loads OL CSV
-
 #include "vit_types.h"
+#include "vit_translated.h"
 #include "rosco_constants.h"
 #include <fstream>
 #include <sstream>
@@ -297,11 +287,9 @@ static bool pathIsRelative(const std::string& path) {
 // Pass 1 — read all scalar fields and count OL rows
 // ---------------------------------------------------------------------------
 
-extern "C" {
+// unwrap declared in vit_translated.h
 
-void unwrap_c(double* x, int n_x, errorvariables_t* ErrVar, double* unwrap_result);
-
-void readcontrolparameterfilesub_pass1_c(
+void ReadControlParameterFileSub_pass1(
     controlparameters_view_t* CntrPar,
     localvariables_t* LocalVar,
     const char* filename,
@@ -646,7 +634,7 @@ void readcontrolparameterfilesub_pass1_c(
 // Pass 2 — fill all ALLOCATABLE array fields + computed constants + OL loading
 // ---------------------------------------------------------------------------
 
-void readcontrolparameterfilesub_pass2_c(
+void ReadControlParameterFileSub_pass2(
     controlparameters_view_t* CntrPar,
     localvariables_t* LocalVar,
     const char* filename,
@@ -975,7 +963,7 @@ void readcontrolparameterfilesub_pass2_c(
             for (int i = 0; i < nRows; i++) {
                 CntrPar->OL_Azimuth[i] = CntrPar->OL_Channels[col * nRows + i];
             }
-            unwrap_c(CntrPar->OL_Azimuth, nRows, ErrVar, CntrPar->OL_Azimuth);
+            unwrap(CntrPar->OL_Azimuth, nRows, ErrVar, CntrPar->OL_Azimuth);
         }
 
         // OL_R_Speed
@@ -1043,4 +1031,3 @@ void readcontrolparameterfilesub_pass2_c(
     }
 }
 
-} // extern "C"

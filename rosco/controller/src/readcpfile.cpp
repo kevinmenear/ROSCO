@@ -1,13 +1,3 @@
-// VIT Translation
-// Function: ReadCpFile
-// Source: ReadSetParameters.f90
-// Module: ReadSetParameters
-// Fortran: SUBROUTINE ReadCpFile(CntrPar, PerfData, ErrVar)
-//
-// Reads rotor performance tables (Cp, Ct, Cq) from a fixed-format text file.
-// The file contains pitch angle and TSR vectors followed by three matrices.
-// Arrays must be pre-allocated by the Fortran wrapper before calling this function.
-
 #include "vit_types.h"
 #include <fstream>
 #include <sstream>
@@ -152,13 +142,5 @@ void ReadCpFile(controlparameters_view_t* CntrPar, performancedata_view_t* PerfD
         while (msgLen > 0 && ErrVar->ErrMsg[msgLen - 1] == ' ') msgLen--;
         std::snprintf(tmp, sizeof(tmp), "ReadCpFile:%.*s", msgLen, ErrVar->ErrMsg);
         setError(ErrVar, tmp);
-    }
-}
-
-// extern "C" wrapper
-extern "C" {
-    void readcpfile_c(controlparameters_view_t* CntrPar, performancedata_view_t* PerfData,
-                      errorvariables_t* ErrVar) {
-        ReadCpFile(CntrPar, PerfData, ErrVar);
     }
 }

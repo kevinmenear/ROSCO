@@ -1,9 +1,3 @@
-// VIT Translation
-// Function: ReadRestartFile
-// Source: ROSCO_IO.f90
-// Module: ROSCO_IO
-// Status: unverified
-
 #include "restart_fields.h"
 
 void ReadRestartFile(float* avrSWAP, localvariables_t* LocalVar,
@@ -35,16 +29,4 @@ void ReadRestartFile(float* avrSWAP, localvariables_t* LocalVar,
 
     // Note: ReadControlParameterFileSub and ReadCpFile calls are handled
     // by the Fortran wrapper, not here.
-}
-
-// extern "C" wrapper — manual integration (VIT doesn't generate this for ReadRestartFile
-// because it needs callee dispatch in the Fortran wrapper)
-extern "C" {
-    void readrestartfile_c(float* avrSWAP, localvariables_t* LocalVar,
-                           controlparameters_view_t* CntrPar, objectinstances_t* objInst,
-                           performancedata_view_t* PerfData, char* RootName,
-                           int size_avcOUTNAME, errorvariables_t* ErrVar) {
-        ReadRestartFile(avrSWAP, LocalVar, CntrPar, objInst, PerfData, RootName,
-                        size_avcOUTNAME, ErrVar);
-    }
 }

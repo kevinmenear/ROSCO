@@ -15,39 +15,9 @@
 static const char* ROSCO_VERSION = "2.10.1";
 
 // ============================================================
-// Callee declarations — all _c entry points
+// Callee declarations
 // ============================================================
-extern "C" {
-
-// vit_translated.h functions (already declared there, but we include
-// all declarations here for self-containment)
-void readavrswap_c(float* avrSWAP, localvariables_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_t* ErrVar);
-void readcontrolparameterfilesub_pass1_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, const char* filename, const char* priPath, errorvariables_t* ErrVar, int32_t* n_OL_rows, int32_t* OL_Count);
-void readcontrolparameterfilesub_pass2_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, const char* filename, const char* priPath, errorvariables_t* ErrVar);
-void readcpfile_c(controlparameters_view_t* CntrPar, performancedata_view_t* PerfData, errorvariables_t* ErrVar);
-void setparameters_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, float* avrSWAP, objectinstances_t* objInst, errorvariables_t* ErrVar, int size_avcMSG);
-void checkinputs_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, float* avrSWAP, errorvariables_t* ErrVar, int32_t size_avcMSG);
-void readrestartfile_c(float* avrSWAP, localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, performancedata_view_t* PerfData, char* RootName, int size_avcOUTNAME, errorvariables_t* ErrVar);
-void writerestartfile_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_t* ErrVar, objectinstances_t* objInst, char* RootName, int size_avcOUTNAME);
-void debug_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, debugvariables_t* DebugVar, errorvariables_t* ErrVar, float* avrSWAP, char* RootName, int size_avcOUTNAME);
-void extcontroller_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, extcontroltype_view_t* ExtDLL, errorvariables_t* ErrVar);
-void prefiltermeasuredsignals_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, debugvariables_t* DebugVar, objectinstances_t* objInst, errorvariables_t* ErrVar);
-void updatezeromq_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_t* ErrVar);
-void windspeedestimator_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, performancedata_view_t* PerfData, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
-void powercontrolsetpoints_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
-void shutdown_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar);
-void startup_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar);
-void computevariablessetpoints_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
-void statemachine_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar);
-void setpointsmoother_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst);
-void variablespeedcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar);
-void pitchcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
-void yawratecontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
-void flapcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst);
-void cablecontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar);
-void structuralcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, errorvariables_t* ErrVar);
-
-} // extern "C"
+#include "vit_translated.h"
 
 // ============================================================
 // Static state — persists for DLL lifetime (replaces Fortran SAVE)
@@ -392,7 +362,7 @@ static void read_config_files(float* avrSWAP, char* accINFILE, int accINFILE_siz
 
     // Pass 1: parse scalars + count OL rows
     int32_t n_OL_rows = 0, OL_Count = 0;
-    readcontrolparameterfilesub_pass1_c(&CntrPar, &LocalVar, filename, priPath, &ErrVar, &n_OL_rows, &OL_Count);
+    ReadControlParameterFileSub_pass1(&CntrPar, &LocalVar, filename, priPath, &ErrVar, &n_OL_rows, &OL_Count);
     if (ErrVar.aviFAIL < 0) {
         char tmp[sizeof(ErrVar.ErrMsg)];
         snprintf(tmp, sizeof(tmp), "SetParameters:%s", ErrVar.ErrMsg);
@@ -404,7 +374,7 @@ static void read_config_files(float* avrSWAP, char* accINFILE, int accINFILE_siz
     allocate_cntrpar_arrays(&CntrPar, n_OL_rows, OL_Count);
 
     // Pass 2: fill arrays + computed constants
-    readcontrolparameterfilesub_pass2_c(&CntrPar, &LocalVar, filename, priPath, &ErrVar);
+    ReadControlParameterFileSub_pass2(&CntrPar, &LocalVar, filename, priPath, &ErrVar);
 
     // Allocate and populate OL_CableControl/OL_StructControl from OL_Channels
     // (must happen after pass2 fills Ind_CableControl/Ind_StructControl values
@@ -458,7 +428,7 @@ static void read_config_files(float* avrSWAP, char* accINFILE, int accINFILE_siz
     // ReadCpFile (performance tables)
     if (CntrPar.WE_Mode > 0) {
         allocate_perfdata_arrays(&CntrPar, &PerfData);
-        readcpfile_c(&CntrPar, &PerfData, &ErrVar);
+        ReadCpFile(&CntrPar, &PerfData, &ErrVar);
     }
 }
 
@@ -511,18 +481,18 @@ void DISCON(float* avrSWAP, int* aviFAIL, char* accINFILE, char* avcOUTNAME, cha
     int iStatus = (int)avrSWAP[0];  // avrSWAP(1)
 
     if (iStatus == -9 && *aviFAIL >= 0) {
-        readrestartfile_c(avrSWAP, &LocalVar, &CntrPar, &objInst, &PerfData, RootName, avcOUTNAME_size, &ErrVar);
+        ReadRestartFile(avrSWAP, &LocalVar, &CntrPar, &objInst, &PerfData, RootName, avcOUTNAME_size, &ErrVar);
         // Callee dispatch: re-read config files (same as iStatus==0)
         read_config_files(avrSWAP, LocalVar.ACC_INFILE, LocalVar.ACC_INFILE_SIZE);
         if (CntrPar.LoggingLevel > 0) {
-            debug_c(&LocalVar, &CntrPar, &DebugVar, &ErrVar, avrSWAP, RootName, avcOUTNAME_size);
+            Debug(&LocalVar, &CntrPar, &DebugVar, &ErrVar, avrSWAP, RootName, avcOUTNAME_size);
         }
     }
 
     // ============================================================
     // Read avrSWAP array into derived types
     // ============================================================
-    readavrswap_c(avrSWAP, &LocalVar, &CntrPar, &ErrVar);
+    ReadAvrSWAP(avrSWAP, &LocalVar, &CntrPar, &ErrVar);
 
     // ============================================================
     // Set Control Parameters
@@ -551,7 +521,7 @@ void DISCON(float* avrSWAP, int* aviFAIL, char* accINFILE, char* avcOUTNAME, cha
         }
 
         // SetParameters C++ logic (LocalVar init on iStatus==0, OL_Index on every call)
-        setparameters_c(&CntrPar, &LocalVar, avrSWAP, &objInst, &ErrVar, size_avcMSG);
+        SetParameters(&CntrPar, &LocalVar, avrSWAP, &objInst, &ErrVar, size_avcMSG);
 
         // Error prepend for CheckInputs errors
         if (LocalVar.iStatus == 0 && ErrVar.aviFAIL < 0) {
@@ -571,14 +541,14 @@ void DISCON(float* avrSWAP, int* aviFAIL, char* accINFILE, char* avcOUTNAME, cha
             ExtDLL.avrSWAP = alloc.ExtDLL_avrSWAP;
             ExtDLL.n_avrSWAP = 2000;
         }
-        extcontroller_c(avrSWAP, &CntrPar, &LocalVar, &ExtDLL, &ErrVar);
+        ExtController(avrSWAP, &CntrPar, &LocalVar, &ExtDLL, &ErrVar);
     }
 
     // ============================================================
     // Filter signals
     // ============================================================
     if (ErrVar.aviFAIL >= 0) {
-        prefiltermeasuredsignals_c(&CntrPar, &LocalVar, &DebugVar, &objInst, &ErrVar);
+        PreFilterMeasuredSignals(&CntrPar, &LocalVar, &DebugVar, &objInst, &ErrVar);
     }
 
     // ============================================================
@@ -586,47 +556,47 @@ void DISCON(float* avrSWAP, int* aviFAIL, char* accINFILE, char* avcOUTNAME, cha
     // ============================================================
     if (((LocalVar.iStatus >= 0) || (LocalVar.iStatus <= -8)) && (ErrVar.aviFAIL >= 0)) {
         if ((LocalVar.iStatus == -8) && (ErrVar.aviFAIL >= 0)) {
-            writerestartfile_c(&LocalVar, &CntrPar, &ErrVar, &objInst, RootName, avcOUTNAME_size);
+            WriteRestartFile(&LocalVar, &CntrPar, &ErrVar, &objInst, RootName, avcOUTNAME_size);
         }
         if (CntrPar.ZMQ_Mode > 0) {
-            updatezeromq_c(&LocalVar, &CntrPar, &ErrVar);
+            UpdateZeroMQ(&LocalVar, &CntrPar, &ErrVar);
         }
         if (CntrPar.SD_Mode > 0) {
-            shutdown_c(&LocalVar, &CntrPar, &objInst, &ErrVar);
+            Shutdown(&LocalVar, &CntrPar, &objInst, &ErrVar);
         }
-        windspeedestimator_c(&LocalVar, &CntrPar, &objInst, &PerfData, &DebugVar, &ErrVar);
-        powercontrolsetpoints_c(&CntrPar, &LocalVar, &objInst, &DebugVar, &ErrVar);
+        WindSpeedEstimator(&LocalVar, &CntrPar, &objInst, &PerfData, &DebugVar, &ErrVar);
+        PowerControlSetpoints(&CntrPar, &LocalVar, &objInst, &DebugVar, &ErrVar);
         if (CntrPar.SU_Mode > 0) {
-            startup_c(&LocalVar, &CntrPar, &objInst, &ErrVar);
+            Startup(&LocalVar, &CntrPar, &objInst, &ErrVar);
         }
-        computevariablessetpoints_c(&CntrPar, &LocalVar, &objInst, &DebugVar, &ErrVar);
-        statemachine_c(&CntrPar, &LocalVar);
-        setpointsmoother_c(&LocalVar, &CntrPar, &objInst);
-        variablespeedcontrol_c(avrSWAP, &CntrPar, &LocalVar, &objInst, &ErrVar);
+        ComputeVariablesSetpoints(&CntrPar, &LocalVar, &objInst, &DebugVar, &ErrVar);
+        StateMachine(&CntrPar, &LocalVar);
+        SetpointSmoother(&LocalVar, &CntrPar, &objInst);
+        VariableSpeedControl(avrSWAP, &CntrPar, &LocalVar, &objInst, &ErrVar);
         if (CntrPar.PC_ControlMode > 0) {
-            pitchcontrol_c(avrSWAP, &CntrPar, &LocalVar, &objInst, &DebugVar, &ErrVar);
+            PitchControl(avrSWAP, &CntrPar, &LocalVar, &objInst, &DebugVar, &ErrVar);
         }
         if (CntrPar.Y_ControlMode > 0) {
-            yawratecontrol_c(avrSWAP, &CntrPar, &LocalVar, &objInst, &DebugVar, &ErrVar);
+            YawRateControl(avrSWAP, &CntrPar, &LocalVar, &objInst, &DebugVar, &ErrVar);
         }
         if (CntrPar.Flp_Mode > 0) {
-            flapcontrol_c(avrSWAP, &CntrPar, &LocalVar, &objInst);
+            FlapControl(avrSWAP, &CntrPar, &LocalVar, &objInst);
         }
         if (CntrPar.CC_Mode > 0) {
-            cablecontrol_c(avrSWAP, &CntrPar, &LocalVar, &objInst, &ErrVar);
+            CableControl(avrSWAP, &CntrPar, &LocalVar, &objInst, &ErrVar);
         }
         if (CntrPar.StC_Mode > 0) {
-            structuralcontrol_c(avrSWAP, &CntrPar, &LocalVar, &objInst, &ErrVar);
+            StructuralControl(avrSWAP, &CntrPar, &LocalVar, &objInst, &ErrVar);
         }
     } else if ((LocalVar.iStatus == -1) && (CntrPar.ZMQ_Mode > 0)) {
-        updatezeromq_c(&LocalVar, &CntrPar, &ErrVar);
+        UpdateZeroMQ(&LocalVar, &CntrPar, &ErrVar);
     }
 
     // ============================================================
     // Debug logging
     // ============================================================
     if ((CntrPar.LoggingLevel > 0) && (ErrVar.aviFAIL >= 0)) {
-        debug_c(&LocalVar, &CntrPar, &DebugVar, &ErrVar, avrSWAP, RootName, avcOUTNAME_size);
+        Debug(&LocalVar, &CntrPar, &DebugVar, &ErrVar, avrSWAP, RootName, avcOUTNAME_size);
     }
 
     // ============================================================

@@ -1,9 +1,3 @@
-// VIT Translation
-// Function: CheckInputs
-// Source: ReadSetParameters.f90
-// Module: ReadSetParameters
-// Fortran: SUBROUTINE CheckInputs(LocalVar, CntrPar, avrSWAP, ErrVar, size_avcMSG)
-
 #include "vit_types.h"
 #include "rosco_constants.h"
 #include <cmath>
@@ -829,12 +823,5 @@ void CheckInputs(localvariables_t* LocalVar, controlparameters_view_t* CntrPar,
             std::memcpy(tmp + prefixLen, ErrVar->ErrMsg, copyLen);
         }
         std::memcpy(ErrVar->ErrMsg, tmp, 1024);
-    }
-}
-
-extern "C" {
-    void checkinputs_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar,
-                       float* avrSWAP, errorvariables_t* ErrVar, int32_t size_avcMSG) {
-        CheckInputs(LocalVar, CntrPar, avrSWAP, ErrVar, size_avcMSG);
     }
 }
