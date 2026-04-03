@@ -73,9 +73,9 @@ static std::ofstream dbg2_file;
 static std::ofstream dbg3_file;
 static std::vector<int32_t> avr_indices;
 
-static void Debug(localvariables_t* LocalVar, controlparameters_view_t* CntrPar,
-                  debugvariables_t* DebugVar, errorvariables_t* ErrVar,
-                  float* avrSWAP, const char* RootName, int32_t size_avcOUTNAME) {
+void Debug(localvariables_t* LocalVar, controlparameters_view_t* CntrPar,
+           debugvariables_t* DebugVar, errorvariables_t* ErrVar,
+           float* avrSWAP, char* RootName, int size_avcOUTNAME) {
 
     std::string root = trim_fortran_string(RootName, size_avcOUTNAME);
 
@@ -346,13 +346,5 @@ static void Debug(localvariables_t* LocalVar, controlparameters_view_t* CntrPar,
         if (dbg_file.is_open()) dbg_file.close();
         if (dbg2_file.is_open()) dbg2_file.close();
         if (dbg3_file.is_open()) dbg3_file.close();
-    }
-}
-
-extern "C" {
-    void debug_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar,
-                 debugvariables_t* DebugVar, errorvariables_t* ErrVar,
-                 float* avrSWAP, const char* RootName, int32_t size_avcOUTNAME) {
-        Debug(LocalVar, CntrPar, DebugVar, ErrVar, avrSWAP, RootName, size_avcOUTNAME);
     }
 }

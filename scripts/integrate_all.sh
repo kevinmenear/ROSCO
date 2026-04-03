@@ -299,90 +299,60 @@ with open('rosco/controller/src/ExtControl.f90', 'w') as f:
     f.write(content)
 " 2>&1
 
-# Stage C: ROSCO_IO — restart I/O + debug logger (manual wrappers)
-echo "--- Stage C: WriteRestartFile + ReadRestartFile + Debug (manual) ---"
-cp translations/IO/restart.cpp rosco/controller/src/restart.cpp
-cp translations/IO/debug_logger.cpp rosco/controller/src/debug_logger.cpp
+# Stage C: ROSCO_IO — restart I/O + debug logger
+# WriteRestartFile and Debug use vit integrate (CHARACTER(variable) now supported).
+# ReadRestartFile stays manual (needs callee dispatch for ReadControlParameterFileSub/ReadCpFile).
+# Copy shared restart header (needed by both writerestartfile.cpp and readrestartfile.cpp)
+cp translations/IO/restart_fields.h rosco/controller/src/restart_fields.h
+
+echo "--- Stage C: WriteRestartFile ---"
+integrate WriteRestartFile  translations/IO/writerestartfile.cpp  rosco/controller/src/ROSCO_IO.f90
+
+echo "--- Stage C: Debug ---"
+integrate Debug             translations/IO/debug_logger.cpp      rosco/controller/src/ROSCO_IO.f90
+
+echo "--- Stage C: ReadRestartFile (manual — callee dispatch) ---"
+cp translations/IO/readrestartfile.cpp rosco/controller/src/readrestartfile.cpp
 python3 -c "
 import re, sys
 
 with open('rosco/controller/src/ROSCO_IO.f90', 'r') as f:
     content = f.read()
 
-# --- WriteRestartFile ---
-write_wrapper = '''SUBROUTINE WriteRestartFile(LocalVar, CntrPar, ErrVar, objInst, RootName, size_avcOUTNAME)
-    USE, INTRINSIC :: ISO_C_Binding
-    USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, ErrorVariables, ObjectInstances
-    IMPLICIT NONE
-
-    TYPE(LocalVariables), INTENT(IN), TARGET       :: LocalVar
-    TYPE(ControlParameters), INTENT(INOUT)         :: CntrPar
-    TYPE(ObjectInstances), INTENT(INOUT), TARGET   :: objInst
-    TYPE(ErrorVariables), INTENT(INOUT), TARGET    :: ErrVar
-    INTEGER(IntKi), INTENT(IN)                     :: size_avcOUTNAME
-    CHARACTER(size_avcOUTNAME), INTENT(IN)         :: RootName
-
-    CHARACTER(KIND=C_CHAR) :: RootName_c(size_avcOUTNAME)
-    INTEGER :: i
-
-    INTERFACE
-        SUBROUTINE writerestartfile_c(LocalVar, ErrVar, objInst, RootName, size_avcOUTNAME) &
-                BIND(C, NAME='writerestartfile_c')
-            USE ISO_C_BINDING
-            TYPE(C_PTR), VALUE :: LocalVar
-            TYPE(C_PTR), VALUE :: ErrVar
-            TYPE(C_PTR), VALUE :: objInst
-            CHARACTER(KIND=C_CHAR), INTENT(IN) :: RootName(*)
-            INTEGER(C_INT32_T), VALUE :: size_avcOUTNAME
-        END SUBROUTINE writerestartfile_c
-    END INTERFACE
-
-    DO i = 1, size_avcOUTNAME
-        RootName_c(i) = RootName(i:i)
-    END DO
-
-    CALL writerestartfile_c(C_LOC(LocalVar), C_LOC(ErrVar), C_LOC(objInst), &
-                            RootName_c, INT(size_avcOUTNAME, C_INT32_T))
-
-END SUBROUTINE WriteRestartFile'''
-
-pattern = r'SUBROUTINE WriteRestartFile\(LocalVar, CntrPar, ErrVar, objInst, RootName, size_avcOUTNAME\).*?END SUBROUTINE WriteRestartFile'
-result = re.sub(pattern, write_wrapper, content, flags=re.DOTALL)
-if result == content:
-    print('FAIL WriteRestartFile: pattern not found')
-    sys.exit(1)
-content = result
-print('  OK WriteRestartFile')
-
-# --- ReadRestartFile ---
 read_wrapper = '''SUBROUTINE ReadRestartFile(avrSWAP, LocalVar, CntrPar, objInst, PerfData, RootName, size_avcOUTNAME, ErrVar)
     USE, INTRINSIC :: ISO_C_Binding
     USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, ErrorVariables, ObjectInstances, PerformanceData
     USE ReadSetParameters, ONLY : ReadControlParameterFileSub, ReadCpFile
+    USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters
+    USE vit_performancedata_view, ONLY: performancedata_view_t, vit_populate_performancedata
     IMPLICIT NONE
 
+    REAL(ReKi), INTENT(IN)                         :: avrSWAP(*)
     TYPE(LocalVariables), INTENT(INOUT), TARGET    :: LocalVar
     TYPE(ControlParameters), INTENT(INOUT), TARGET :: CntrPar
     TYPE(ObjectInstances), INTENT(INOUT), TARGET   :: objInst
     TYPE(PerformanceData), INTENT(INOUT), TARGET   :: PerfData
     TYPE(ErrorVariables), INTENT(INOUT), TARGET    :: ErrVar
-    REAL(ReKi), INTENT(IN)                         :: avrSWAP(*)
     INTEGER(IntKi), INTENT(IN)                     :: size_avcOUTNAME
     CHARACTER(size_avcOUTNAME), INTENT(IN)         :: RootName
 
+    TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+    TYPE(performancedata_view_t), TARGET :: PerfData_view
     CHARACTER(KIND=C_CHAR) :: RootName_c(size_avcOUTNAME)
     INTEGER :: i
 
     INTERFACE
-        SUBROUTINE readrestartfile_c(avrSWAP, LocalVar, ErrVar, objInst, RootName, size_avcOUTNAME) &
-                BIND(C, NAME='readrestartfile_c')
+        SUBROUTINE readrestartfile_c(avrSWAP, LocalVar, CntrPar, objInst, PerfData, RootName, size_avcOUTNAME, ErrVar) &
+                BIND(C, NAME=\\\"readrestartfile_c\\\")
             USE ISO_C_BINDING
             REAL(C_FLOAT), INTENT(IN) :: avrSWAP(*)
             TYPE(C_PTR), VALUE :: LocalVar
-            TYPE(C_PTR), VALUE :: ErrVar
+            TYPE(C_PTR), VALUE :: CntrPar
             TYPE(C_PTR), VALUE :: objInst
+            TYPE(C_PTR), VALUE :: PerfData
             CHARACTER(KIND=C_CHAR), INTENT(IN) :: RootName(*)
-            INTEGER(C_INT32_T), VALUE :: size_avcOUTNAME
+            INTEGER(C_INT), VALUE :: size_avcOUTNAME
+            TYPE(C_PTR), VALUE :: ErrVar
         END SUBROUTINE readrestartfile_c
     END INTERFACE
 
@@ -390,8 +360,10 @@ read_wrapper = '''SUBROUTINE ReadRestartFile(avrSWAP, LocalVar, CntrPar, objInst
         RootName_c(i) = RootName(i:i)
     END DO
 
-    CALL readrestartfile_c(avrSWAP, C_LOC(LocalVar), C_LOC(ErrVar), C_LOC(objInst), &
-                           RootName_c, INT(size_avcOUTNAME, C_INT32_T))
+    CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+    CALL vit_populate_performancedata(PerfData, PerfData_view)
+    CALL readrestartfile_c(avrSWAP, C_LOC(LocalVar), C_LOC(CntrPar_view), C_LOC(objInst), &
+                           C_LOC(PerfData_view), RootName_c, INT(size_avcOUTNAME, C_INT), C_LOC(ErrVar))
 
     ! Read parameter files (same as original Fortran)
     CALL ReadControlParameterFileSub(CntrPar, LocalVar, LocalVar%ACC_INFILE, LocalVar%ACC_INFILE_SIZE, RootName, ErrVar)
@@ -405,79 +377,22 @@ result = re.sub(pattern, read_wrapper, content, flags=re.DOTALL)
 if result == content:
     print('FAIL ReadRestartFile: pattern not found')
     sys.exit(1)
-content = result
-print('  OK ReadRestartFile')
-
-# --- Debug ---
-debug_wrapper = '''SUBROUTINE Debug(LocalVar, CntrPar, DebugVar, ErrVar, avrSWAP, RootName, size_avcOUTNAME)
-    USE, INTRINSIC :: ISO_C_Binding
-    USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, DebugVariables, ErrorVariables
-    USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters
-    IMPLICIT NONE
-
-    TYPE(ControlParameters), INTENT(IN), TARGET    :: CntrPar
-    TYPE(LocalVariables), INTENT(IN), TARGET       :: LocalVar
-    TYPE(DebugVariables), INTENT(IN), TARGET       :: DebugVar
-    TYPE(ErrorVariables), INTENT(INOUT), TARGET    :: ErrVar
-    INTEGER(IntKi), INTENT(IN)                     :: size_avcOUTNAME
-    REAL(ReKi), INTENT(INOUT)                      :: avrSWAP(*)
-    CHARACTER(size_avcOUTNAME), INTENT(IN)         :: RootName
-
-    TYPE(controlparameters_view_t), TARGET :: CntrPar_view
-    CHARACTER(KIND=C_CHAR) :: RootName_c(size_avcOUTNAME)
-    INTEGER :: i
-
-    INTERFACE
-        SUBROUTINE debug_c(LocalVar, CntrPar, DebugVar, ErrVar, avrSWAP, RootName, size_avcOUTNAME) &
-                BIND(C, NAME='debug_c')
-            USE ISO_C_BINDING
-            TYPE(C_PTR), VALUE :: LocalVar
-            TYPE(C_PTR), VALUE :: CntrPar
-            TYPE(C_PTR), VALUE :: DebugVar
-            TYPE(C_PTR), VALUE :: ErrVar
-            REAL(C_FLOAT), INTENT(INOUT) :: avrSWAP(*)
-            CHARACTER(KIND=C_CHAR), INTENT(IN) :: RootName(*)
-            INTEGER(C_INT32_T), VALUE :: size_avcOUTNAME
-        END SUBROUTINE debug_c
-    END INTERFACE
-
-    DO i = 1, size_avcOUTNAME
-        RootName_c(i) = RootName(i:i)
-    END DO
-
-    CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
-    CALL debug_c(C_LOC(LocalVar), C_LOC(CntrPar_view), C_LOC(DebugVar), C_LOC(ErrVar), &
-                 avrSWAP, RootName_c, INT(size_avcOUTNAME, C_INT32_T))
-
-END SUBROUTINE Debug'''
-
-pattern = r'SUBROUTINE Debug\(LocalVar, CntrPar, DebugVar, ErrVar, avrSWAP, RootName, size_avcOUTNAME\).*?END SUBROUTINE Debug'
-result = re.sub(pattern, debug_wrapper, content, flags=re.DOTALL)
-if result == content:
-    print('FAIL Debug: pattern not found')
-    sys.exit(1)
-content = result
-print('  OK Debug')
-
 with open('rosco/controller/src/ROSCO_IO.f90', 'w') as f:
-    f.write(content)
+    f.write(result)
+print('  OK ReadRestartFile')
 " 2>&1
 if [ $? -eq 0 ]; then
-    PASS=$((PASS + 3))
+    PASS=$((PASS + 1))
 else
-    FAIL=$((FAIL + 3))
+    FAIL=$((FAIL + 1))
 fi
 
-# Add Stage C source files to CMakeLists.txt if not already present
+# Add readrestartfile.cpp to CMakeLists.txt if not already present
 python3 -c "
 with open('rosco/controller/CMakeLists.txt', 'r') as f:
     content = f.read()
-changed = False
-for src in ['restart.cpp', 'debug_logger.cpp']:
-    if src not in content:
-        content = content.replace('src/updatezeromq.cpp', 'src/updatezeromq.cpp\n    src/' + src)
-        changed = True
-if changed:
+if 'readrestartfile.cpp' not in content:
+    content = content.replace('src/updatezeromq.cpp', 'src/updatezeromq.cpp\n    src/readrestartfile.cpp')
     with open('rosco/controller/CMakeLists.txt', 'w') as f:
         f.write(content)
 "

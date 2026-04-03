@@ -1,8 +1,9 @@
-// VIT Translation
-// Functions: WriteRestartFile, ReadRestartFile
-// Source: ROSCO_IO.f90
-// Module: ROSCO_IO
-// Status: unverified
+// Shared checkpoint field helpers for WriteRestartFile and ReadRestartFile.
+// Both functions use checkpoint_fields() with the same field order to guarantee
+// binary checkpoint consistency.
+
+#ifndef RESTART_FIELDS_H
+#define RESTART_FIELDS_H
 
 #include "vit_types.h"
 #include <fstream>
@@ -29,12 +30,11 @@ void read_field(std::ifstream& f, T& val) {
     f.read(reinterpret_cast<char*>(&val), sizeof(val));
 }
 
-// Write checkpoint fields — shared field order for Write and Read
-// Follows exact field order from Fortran ROSCO_IO.f90 lines 39-349
+// Shared field order for Write and Read — follows ROSCO_IO.f90 lines 39-349 exactly.
 template<typename Stream, typename FieldOp>
 void checkpoint_fields(Stream& f, localvariables_t* LocalVar,
                        objectinstances_t* objInst, FieldOp field_op) {
-    // --- LocalVar scalars (lines 39-55) ---
+    // --- LocalVar scalars ---
     field_op(f, LocalVar->iStatus);
     field_op(f, LocalVar->AlreadyInitialized);
     field_op(f, LocalVar->RestartWSE);
@@ -53,12 +53,10 @@ void checkpoint_fields(Stream& f, localvariables_t* LocalVar,
     field_op(f, LocalVar->HorWindV);
     field_op(f, LocalVar->HorWindV_F);
 
-    // --- rootMOOP(1:3), rootMOOPF(1:3), BlPitch(1:3) (lines 56-65) ---
     for (int i = 0; i < 3; i++) field_op(f, LocalVar->rootMOOP[i]);
     for (int i = 0; i < 3; i++) field_op(f, LocalVar->rootMOOPF[i]);
     for (int i = 0; i < 3; i++) field_op(f, LocalVar->BlPitch[i]);
 
-    // --- More scalars (lines 65-83) ---
     field_op(f, LocalVar->BlPitchCMeas);
     field_op(f, LocalVar->Azimuth);
     field_op(f, LocalVar->OL_Azimuth);
@@ -75,7 +73,6 @@ void checkpoint_fields(Stream& f, localvariables_t* LocalVar,
     field_op(f, LocalVar->FA_AccHPFI);
     for (int i = 0; i < 3; i++) field_op(f, LocalVar->FA_PitCom[i]);
 
-    // --- Speed/power references (lines 83-99) ---
     field_op(f, LocalVar->VS_RefSpd);
     field_op(f, LocalVar->VS_RefSpd_TSR);
     field_op(f, LocalVar->VS_RefSpd_TRA);
@@ -93,7 +90,6 @@ void checkpoint_fields(Stream& f, localvariables_t* LocalVar,
     field_op(f, LocalVar->VS_ConstPwr_GenTq);
     for (int i = 0; i < 3; i++) field_op(f, LocalVar->IPC_PitComF[i]);
 
-    // --- Pitch controller state (lines 101-129) ---
     field_op(f, LocalVar->PC_KP);
     field_op(f, LocalVar->PC_KI);
     field_op(f, LocalVar->PC_KD);
@@ -120,13 +116,11 @@ void checkpoint_fields(Stream& f, localvariables_t* LocalVar,
     for (int i = 0; i < 2; i++) field_op(f, LocalVar->IPC_KP[i]);
     field_op(f, LocalVar->IPC_IntSat);
 
-    // --- Controller state + pitch commands (lines 130-139) ---
     field_op(f, LocalVar->PC_State);
     for (int i = 0; i < 3; i++) field_op(f, LocalVar->PitCom[i]);
     for (int i = 0; i < 3; i++) field_op(f, LocalVar->PitCom_SD[i]);
     for (int i = 0; i < 3; i++) field_op(f, LocalVar->PitComAct[i]);
 
-    // --- More scalars (lines 140-184) ---
     field_op(f, LocalVar->SS_DelOmegaF);
     field_op(f, LocalVar->TestType);
     field_op(f, LocalVar->Kp_Float);
@@ -173,7 +167,6 @@ void checkpoint_fields(Stream& f, localvariables_t* LocalVar,
     field_op(f, LocalVar->TRA_LastRefSpd);
     field_op(f, LocalVar->VS_RefSpeed);
 
-    // --- Platform motion (lines 185-202) ---
     field_op(f, LocalVar->PtfmTDX);
     field_op(f, LocalVar->PtfmTDY);
     field_op(f, LocalVar->PtfmTDZ);
@@ -193,7 +186,6 @@ void checkpoint_fields(Stream& f, localvariables_t* LocalVar,
     field_op(f, LocalVar->PtfmRAY);
     field_op(f, LocalVar->PtfmRAZ);
 
-    // --- Cable/structural control arrays (lines 203-250) ---
     for (int i = 0; i < 12; i++) field_op(f, LocalVar->CC_DesiredL[i]);
     for (int i = 0; i < 12; i++) field_op(f, LocalVar->CC_ActuatedL[i]);
     for (int i = 0; i < 12; i++) field_op(f, LocalVar->CC_ActuatedDL[i]);
@@ -201,18 +193,16 @@ void checkpoint_fields(Stream& f, localvariables_t* LocalVar,
     for (int i = 0; i < 3; i++) field_op(f, LocalVar->Flp_Angle[i]);
     for (int i = 0; i < 3; i++) field_op(f, LocalVar->RootMyb_Last[i]);
 
-    // --- ACC_INFILE and restart flag (lines 257-259) ---
     field_op(f, LocalVar->ACC_INFILE_SIZE);
     field_op(f, LocalVar->ACC_INFILE);
     field_op(f, LocalVar->restart);
 
-    // --- AWC complex angle (interleaved re/im) (lines 260-265) ---
+    // AWC complex angle (interleaved re/im)
     for (int i = 0; i < 3; i++) {
         field_op(f, LocalVar->AWC_complexangle_re[i]);
         field_op(f, LocalVar->AWC_complexangle_im[i]);
     }
 
-    // --- Remaining scalars (lines 266-276) ---
     field_op(f, LocalVar->TiltMean);
     field_op(f, LocalVar->YawMean);
     field_op(f, LocalVar->ZMQ_ID);
@@ -223,7 +213,7 @@ void checkpoint_fields(Stream& f, localvariables_t* LocalVar,
     field_op(f, LocalVar->ZMQ_R_Torque);
     field_op(f, LocalVar->ZMQ_R_Pitch);
 
-    // --- WE nested struct (lines 277-283) ---
+    // --- WE nested struct ---
     field_op(f, LocalVar->WE.om_r);
     field_op(f, LocalVar->WE.v_t);
     field_op(f, LocalVar->WE.v_m);
@@ -232,7 +222,7 @@ void checkpoint_fields(Stream& f, localvariables_t* LocalVar,
     field_op(f, LocalVar->WE.xh);
     field_op(f, LocalVar->WE.K);
 
-    // --- FP (FilterParameters) arrays — 46 x DIMENSION(1024) (lines 284-329) ---
+    // --- FP (FilterParameters) — 46 x DIMENSION(1024) ---
     field_op(f, LocalVar->FP.lpf1_a1);
     field_op(f, LocalVar->FP.lpf1_a0);
     field_op(f, LocalVar->FP.lpf1_b1);
@@ -280,23 +270,21 @@ void checkpoint_fields(Stream& f, localvariables_t* LocalVar,
     field_op(f, LocalVar->FP.nf_a1);
     field_op(f, LocalVar->FP.nf_a0);
 
-    // --- piP (piParams) — 5 x DIMENSION(1024) (lines 330-334) ---
+    // --- piP, resP, rlP ---
     field_op(f, LocalVar->piP.ITerm);
     field_op(f, LocalVar->piP.ITermLast);
     field_op(f, LocalVar->piP.ITerm2);
     field_op(f, LocalVar->piP.ITermLast2);
     field_op(f, LocalVar->piP.ELast);
 
-    // --- resP (resParams) — 4 x DIMENSION(1024) (lines 335-338) ---
     field_op(f, LocalVar->resP.res_OutputSignalLast1);
     field_op(f, LocalVar->resP.res_OutputSignalLast2);
     field_op(f, LocalVar->resP.res_InputSignalLast1);
     field_op(f, LocalVar->resP.res_InputSignalLast2);
 
-    // --- rlP (rlParams) — 1 x DIMENSION(1024) (line 339) ---
     field_op(f, LocalVar->rlP.LastSignal);
 
-    // --- objInst (lines 340-348) ---
+    // --- objInst ---
     field_op(f, objInst->instLPF);
     field_op(f, objInst->instSecLPF);
     field_op(f, objInst->instSecLPFV);
@@ -310,72 +298,4 @@ void checkpoint_fields(Stream& f, localvariables_t* LocalVar,
 
 } // anonymous namespace
 
-static void WriteRestartFile(localvariables_t* LocalVar, errorvariables_t* ErrVar,
-                             objectinstances_t* objInst, const char* RootName,
-                             int32_t size_avcOUTNAME) {
-    std::string root = trim_fortran_string(RootName, size_avcOUTNAME);
-    int timestep = (int)std::round(LocalVar->Time / LocalVar->DT);
-    std::string filename = root + std::to_string(timestep) + ".RO.chkp";
-
-    std::ofstream f(filename, std::ios::binary);
-    if (!f.is_open()) {
-        ErrVar->aviFAIL = 1;
-        snprintf(ErrVar->ErrMsg, sizeof(ErrVar->ErrMsg),
-                 "ROSCO_IO: Cannot open checkpoint file %s for writing", filename.c_str());
-        return;
-    }
-
-    checkpoint_fields(f, LocalVar, objInst, [](std::ofstream& s, auto& val) {
-        write_field(s, val);
-    });
-
-    if (!f.good()) {
-        ErrVar->aviFAIL = 1;
-        snprintf(ErrVar->ErrMsg, sizeof(ErrVar->ErrMsg),
-                 "ROSCO_IO: Error writing checkpoint file.");
-    }
-}
-
-static void ReadRestartFile(float* avrSWAP, localvariables_t* LocalVar,
-                            errorvariables_t* ErrVar, objectinstances_t* objInst,
-                            const char* RootName, int32_t size_avcOUTNAME) {
-    std::string root = trim_fortran_string(RootName, size_avcOUTNAME);
-    // Fortran: NINT(avrSWAP(2)/avrSWAP(3))  — 1-indexed
-    int timestep = (int)std::round((double)avrSWAP[1] / (double)avrSWAP[2]);
-    std::string filename = root + std::to_string(timestep) + ".RO.chkp";
-
-    std::ifstream f(filename, std::ios::binary);
-    if (!f.is_open()) {
-        ErrVar->aviFAIL = 1;
-        snprintf(ErrVar->ErrMsg, sizeof(ErrVar->ErrMsg),
-                 "ROSCO_IO: Cannot open checkpoint file %s for reading", filename.c_str());
-        return;
-    }
-
-    checkpoint_fields(f, LocalVar, objInst, [](std::ifstream& s, auto& val) {
-        read_field(s, val);
-    });
-
-    if (!f.good()) {
-        ErrVar->aviFAIL = 1;
-        snprintf(ErrVar->ErrMsg, sizeof(ErrVar->ErrMsg),
-                 "ROSCO_IO: Error reading checkpoint file.");
-    }
-
-    // Note: ReadControlParameterFileSub and ReadCpFile calls are handled
-    // by the Fortran wrapper, not here.
-}
-
-extern "C" {
-    void writerestartfile_c(localvariables_t* LocalVar, errorvariables_t* ErrVar,
-                            objectinstances_t* objInst, const char* RootName,
-                            int32_t size_avcOUTNAME) {
-        WriteRestartFile(LocalVar, ErrVar, objInst, RootName, size_avcOUTNAME);
-    }
-
-    void readrestartfile_c(float* avrSWAP, localvariables_t* LocalVar,
-                           errorvariables_t* ErrVar, objectinstances_t* objInst,
-                           const char* RootName, int32_t size_avcOUTNAME) {
-        ReadRestartFile(avrSWAP, LocalVar, ErrVar, objInst, RootName, size_avcOUTNAME);
-    }
-}
+#endif // RESTART_FIELDS_H

@@ -35,7 +35,7 @@ capture() {
 
     # Run the specified scenario
     cd Examples
-    python3 vit_sim.py --scenario "$SCENARIO" > /dev/null 2>&1
+    LD_PRELOAD=${LD_PRELOAD:-} python3 vit_sim.py --scenario "$SCENARIO" > /dev/null 2>&1
     cd ..
 
     # Copy debug files
