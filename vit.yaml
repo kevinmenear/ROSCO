@@ -147,6 +147,36 @@ translations:
   ComputeVariablesSetpoints:
     status: integrated
     cpp_file: translations/ControllerBlocks/computevariablessetpoints.cpp
+  ReadAvrSWAP:
+    status: integrated
+    cpp_file: translations/ReadSetParameters/readavrswap.cpp
+  PIDController:
+    status: integrated
+    cpp_file: translations/Controllers/pidcontroller.cpp
+  unwrap:
+    status: integrated
+    cpp_file: translations/Functions/unwrap.cpp
+  UpdateZeroMQ:
+    status: integrated
+    cpp_file: translations/IO/zmq_interface.cpp
+  ExtController:
+    status: integrated
+    cpp_file: translations/IO/ext_control.cpp
+  WriteRestartFile:
+    status: integrated
+    cpp_file: translations/IO/writerestartfile.cpp
+  ReadRestartFile:
+    status: integrated
+    cpp_file: translations/IO/readrestartfile.cpp
+  Debug:
+    status: integrated
+    cpp_file: translations/IO/debug_logger.cpp
+  PreFilterMeasuredSignals:
+    status: integrated
+    cpp_file: translations/Filters/prefiltermeasuredsignals.cpp
+  SetParameters:
+    status: integrated
+    cpp_file: translations/ReadSetParameters/setparameters.cpp
 types:
   ControlParameters:
     strategy: view

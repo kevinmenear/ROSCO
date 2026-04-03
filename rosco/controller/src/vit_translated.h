@@ -51,6 +51,12 @@ void shutdown_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, o
 void startup_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_t* ErrVar);
 void windspeedestimator_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, performancedata_view_t* PerfData, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
 void pitchcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_t* ErrVar);
+void readavrswap_c(float* avrSWAP, localvariables_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_t* ErrVar);
+double pidcontroller_c(double error, double kp, double ki, double kd, double tf, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int reset, objectinstances_t* objInst, localvariables_t* LocalVar);
+void checkinputs_c(localvariables_t* LocalVar, controlparameters_view_t* CntrPar, float* avrSWAP, errorvariables_t* ErrVar, int32_t size_avcMSG);
+void readcpfile_c(controlparameters_view_t* CntrPar, performancedata_view_t* PerfData, errorvariables_t* ErrVar);
+void readcontrolparameterfilesub_pass1_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, const char* filename, const char* priPath, errorvariables_t* ErrVar, int32_t* n_OL_rows, int32_t* OL_Count);
+void readcontrolparameterfilesub_pass2_c(controlparameters_view_t* CntrPar, localvariables_t* LocalVar, const char* filename, const char* priPath, errorvariables_t* ErrVar);
 
 #ifdef __cplusplus
 }

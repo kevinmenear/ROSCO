@@ -1,12 +1,12 @@
 #!/bin/bash
-# Verify all 39 C++ translations against golden kernel fixtures.
+# Verify all 42 KGen-verified C++ translations against golden kernel fixtures.
 # Run from the ROSCO repo root inside the Docker container.
 #
 # Usage:
-#   bash scripts/verify_all.sh          # Run all 39 sequentially
-#   bash scripts/verify_all.sh 1        # Batch 1 only (13 functions)
-#   bash scripts/verify_all.sh 2        # Batch 2 only (13 functions)
-#   bash scripts/verify_all.sh 3        # Batch 3 only (13 functions)
+#   bash scripts/verify_all.sh          # Run all 42 sequentially
+#   bash scripts/verify_all.sh 1        # Batch 1 only (14 functions)
+#   bash scripts/verify_all.sh 2        # Batch 2 only (14 functions)
+#   bash scripts/verify_all.sh 3        # Batch 3 only (14 functions)
 #
 # For parallel execution, launch 3 separate docker exec calls:
 #   docker exec vit-dev bash -c "cd /workspace/ROSCO && bash scripts/verify_all.sh 1" &
@@ -59,7 +59,7 @@ verify() {
     fi
 }
 
-# --- Batch 1: Functions + Filters (13 functions) ---
+# --- Batch 1: Functions + Filters + ReadSetParameters (14 functions) ---
 if [ "$BATCH" = "0" ] || [ "$BATCH" = "1" ]; then
     echo "--- Functions ---"
     verify saturate                translations/Functions/saturate.cpp                rosco/controller/src/Functions.f90
@@ -72,13 +72,15 @@ if [ "$BATCH" = "0" ] || [ "$BATCH" = "1" ]; then
     verify ColemanTransform        translations/Functions/colemantransform.cpp        rosco/controller/src/Functions.f90
     verify ColemanTransformInverse translations/Functions/colemantransforminverse.cpp rosco/controller/src/Functions.f90
     verify identity                translations/Functions/identity.cpp                rosco/controller/src/Functions.f90
+    echo "--- ReadSetParameters ---"
+    verify ReadAvrSWAP             translations/ReadSetParameters/readavrswap.cpp     rosco/controller/src/ReadSetParameters.f90
     echo "--- Filters ---"
     verify LPFilter                translations/Filters/lpfilter.cpp                  rosco/controller/src/Filters.f90
     verify HPFilter                translations/Filters/hpfilter.cpp                  rosco/controller/src/Filters.f90
     verify SecLPFilter             translations/Filters/seclpfilter.cpp               rosco/controller/src/Filters.f90
 fi
 
-# --- Batch 2: Filters (cont) + Controllers (13 functions) ---
+# --- Batch 2: Filters (cont) + Controllers (14 functions) ---
 if [ "$BATCH" = "0" ] || [ "$BATCH" = "2" ]; then
     echo "--- Filters (cont) ---"
     verify NotchFilter       translations/Filters/notchfilter.cpp       rosco/controller/src/Filters.f90
@@ -95,9 +97,10 @@ if [ "$BATCH" = "0" ] || [ "$BATCH" = "2" ]; then
     verify FlapControl         translations/Controllers/flapcontrol.cpp         rosco/controller/src/Controllers.f90
     verify YawRateControl      translations/Controllers/yawratecontrol.cpp      rosco/controller/src/Controllers.f90
     verify VariableSpeedControl translations/Controllers/variablespeedcontrol.cpp rosco/controller/src/Controllers.f90
+    verify PIDController       translations/Controllers/pidcontroller.cpp       rosco/controller/src/Controllers.f90
 fi
 
-# --- Batch 3: Controllers (cont) + ControllerBlocks (13 functions) ---
+# --- Batch 3: Controllers (cont) + ControllerBlocks + Functions (14 functions) ---
 if [ "$BATCH" = "0" ] || [ "$BATCH" = "3" ]; then
     echo "--- Controllers (cont) ---"
     verify IPC                 translations/Controllers/ipc.cpp                 rosco/controller/src/Controllers.f90
@@ -106,6 +109,7 @@ if [ "$BATCH" = "0" ] || [ "$BATCH" = "3" ]; then
     echo "--- ControllerBlocks ---"
     verify PitchSaturation     translations/ControllerBlocks/pitchsaturation.cpp     rosco/controller/src/ControllerBlocks.f90
     verify AeroDynTorque       translations/Functions/aerodyntorque.cpp               rosco/controller/src/Functions.f90
+    verify unwrap              translations/Functions/unwrap.cpp                      rosco/controller/src/Functions.f90
     verify StateMachine        translations/ControllerBlocks/statemachine.cpp         rosco/controller/src/ControllerBlocks.f90
     verify SetpointSmoother    translations/ControllerBlocks/setpointsmoother.cpp     rosco/controller/src/ControllerBlocks.f90
     verify PowerControlSetpoints translations/ControllerBlocks/powercontrolsetpoints.cpp rosco/controller/src/ControllerBlocks.f90
@@ -118,7 +122,7 @@ fi
 
 echo ""
 if [ "$BATCH" = "0" ]; then
-    TOTAL=39
+    TOTAL=42
 else
     TOTAL=$((PASS + FAIL))
 fi

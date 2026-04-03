@@ -1,5 +1,5 @@
 #!/bin/bash
-# Extract all 39 functions sequentially.
+# Extract all 41 functions sequentially.
 # Each extraction uses the specific scenario needed for that function's call site.
 # Run from the ROSCO repo root inside the Docker container.
 #
@@ -14,7 +14,7 @@ set -e
 
 PASS=0
 FAIL=0
-TOTAL=39
+TOTAL=41
 
 extract() {
     local name=$1; shift
@@ -34,7 +34,7 @@ extract() {
     fi
 }
 
-echo "=== Extracting 39 functions ==="
+echo "=== Extracting 41 functions ==="
 echo ""
 
 # Functions (Scenario 3)
@@ -95,6 +95,12 @@ extract SetpointSmoother SetpointSmoother -f rosco/controller/src/DISCON.F90 -l 
 # DISCON.F90 ControllerBlocks (Scenario 9 — SD_Mode=1, SU_Mode=1)
 extract Shutdown       Shutdown -f rosco/controller/src/DISCON.F90 -l 107 --run-args '--scenario 9'
 extract Startup        Startup -f rosco/controller/src/DISCON.F90 -l 112 --run-args '--scenario 9'
+
+# Controllers — PIDController (Scenario 10 — OL_Mode=2 azimuth tracking)
+extract PIDController  PIDController -f rosco/controller/src/Controllers.f90 -l 346 --run-args '--scenario 10'
+
+# ReadSetParameters (Scenario 3)
+extract ReadAvrSWAP    ReadAvrSWAP -f rosco/controller/src/DISCON.F90 -l 81 --run-args '--scenario 3'
 
 echo ""
 echo "=== Extraction complete: $PASS/$TOTAL passed, $FAIL failed ==="
