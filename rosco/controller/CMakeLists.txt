@@ -94,11 +94,13 @@ set(SOURCES
     src/readcontrolparameterfilesub.cpp
     src/unwrap.cpp
     src/updatezeromq.cpp
+    src/setparameters.cpp
     src/readrestartfile.cpp
     src/vit_extcontroltype_view.f90
     src/extcontroller.cpp
     src/writerestartfile.cpp
     src/debug.cpp
+    src/prefiltermeasuredsignals.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

@@ -1,7 +1,8 @@
 #!/bin/bash
-# Integrate all 50 C++ translations into the ROSCO codebase.
+# Integrate all 52 C++ translations into the ROSCO codebase.
 # (39 algorithm functions from Phases 1-9, ReadAvrSWAP + PIDController from Phase 10A,
-#  unwrap, 3 Stage B functions, 2 Stage D functions, and 3 Stage C functions)
+#  unwrap, 3 Stage B functions, 2 Stage D functions, 3 Stage C functions,
+#  and 2 Stage E functions)
 # Run from the ROSCO repo root inside the Docker container.
 #
 # Usage: bash scripts/integrate_all.sh
@@ -14,7 +15,7 @@ set -e
 
 PASS=0
 FAIL=0
-TOTAL=50
+TOTAL=52
 
 integrate() {
     local name=$1
@@ -56,7 +57,8 @@ integrate HPFilter          translations/Filters/hpfilter.cpp          rosco/con
 integrate SecLPFilter       translations/Filters/seclpfilter.cpp       rosco/controller/src/Filters.f90
 integrate SecLPFilter_Vel   translations/Filters/seclpfilter_vel.cpp   rosco/controller/src/Filters.f90
 integrate NotchFilter       translations/Filters/notchfilter.cpp       rosco/controller/src/Filters.f90
-integrate NotchFilterSlopes translations/Filters/notchfilterslopes.cpp rosco/controller/src/Filters.f90
+integrate NotchFilterSlopes         translations/Filters/notchfilterslopes.cpp         rosco/controller/src/Filters.f90
+integrate PreFilterMeasuredSignals  translations/Filters/prefiltermeasuredsignals.cpp  rosco/controller/src/Filters.f90
 
 # Controllers
 echo "--- Controllers ---"
@@ -393,6 +395,137 @@ with open('rosco/controller/CMakeLists.txt', 'r') as f:
     content = f.read()
 if 'readrestartfile.cpp' not in content:
     content = content.replace('src/updatezeromq.cpp', 'src/updatezeromq.cpp\n    src/readrestartfile.cpp')
+    with open('rosco/controller/CMakeLists.txt', 'w') as f:
+        f.write(content)
+"
+
+# Stage E: SetParameters (manual — callee dispatch for ReadControlParameterFileSub/ReadCpFile)
+# Per-timestep init + banner + file reading stay in Fortran wrapper.
+# C++ handles LocalVar initialization, CheckInputs, OL_Index.
+echo "--- Stage E: SetParameters (manual) ---"
+cp translations/ReadSetParameters/setparameters.cpp rosco/controller/src/setparameters.cpp
+python3 -c "
+import re, sys
+with open('rosco/controller/src/ReadSetParameters.f90', 'r') as f:
+    content = f.read()
+pattern = r'(    SUBROUTINE SetParameters\(avrSWAP, accINFILE, size_avcMSG, CntrPar, LocalVar, objInst, PerfData, RootName, ErrVar\)).*?(    END SUBROUTINE SetParameters)'
+wrapper = '''    SUBROUTINE SetParameters(avrSWAP, accINFILE, size_avcMSG, CntrPar, LocalVar, objInst, PerfData, RootName, ErrVar)
+        USE, INTRINSIC :: ISO_C_Binding
+        USE ROSCO_Types, ONLY : ControlParameters, LocalVariables, ObjectInstances, PerformanceData, ErrorVariables, rosco_version
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters
+
+        IMPLICIT NONE
+
+        REAL(ReKi),                 INTENT(INOUT), TARGET :: avrSWAP(*)
+        CHARACTER(C_CHAR),          INTENT(IN   )         :: accINFILE(NINT(avrSWAP(50)))
+        INTEGER(IntKi),             INTENT(IN   )         :: size_avcMSG
+        TYPE(ControlParameters),    INTENT(INOUT), TARGET :: CntrPar
+        TYPE(LocalVariables),       INTENT(INOUT), TARGET :: LocalVar
+        TYPE(ObjectInstances),      INTENT(INOUT), TARGET :: objInst
+        TYPE(PerformanceData),      INTENT(INOUT), TARGET :: PerfData
+        TYPE(ErrorVariables),       INTENT(INOUT), TARGET :: ErrVar
+        CHARACTER(NINT(avrSWAP(50))-1), INTENT(IN)        :: RootName
+
+        INTEGER(IntKi) :: I
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+
+        INTERFACE
+            SUBROUTINE setparameters_c(CntrPar, LocalVar, avrSWAP, objInst, ErrVar, size_avcMSG) BIND(C, NAME=\\\"setparameters_c\\\")
+                USE ISO_C_BINDING
+                TYPE(C_PTR), VALUE :: CntrPar
+                TYPE(C_PTR), VALUE :: LocalVar
+                REAL(C_FLOAT), INTENT(INOUT) :: avrSWAP(*)
+                TYPE(C_PTR), VALUE :: objInst
+                TYPE(C_PTR), VALUE :: ErrVar
+                INTEGER(C_INT32_T), VALUE :: size_avcMSG
+            END SUBROUTINE setparameters_c
+        END INTERFACE
+
+        ! --- Per-timestep init (must happen before any callee calls) ---
+        ErrVar%aviFAIL = 0
+        ErrVar%size_avcMSG = size_avcMSG
+
+        objInst%instLPF         = 1
+        objInst%instSecLPF      = 1
+        objInst%instSecLPFV     = 1
+        objInst%instHPF         = 1
+        objInst%instNotchSlopes = 1
+        objInst%instNotch       = 1
+        objInst%instPI          = 1
+        objInst%instRes         = 1
+        objInst%instRL          = 1
+
+        avrSWAP(35) = 1.0
+        avrSWAP(36) = 0.0
+        avrSWAP(41) = 0.0
+        avrSWAP(46) = 0.0
+        avrSWAP(55) = 0.0
+        avrSWAP(56) = 0.0
+        avrSWAP(65) = 0.0
+        avrSWAP(72) = 0.0
+        avrSWAP(79) = 4.0
+        avrSWAP(80) = 0.0
+        avrSWAP(81) = 0.0
+
+        ! --- iStatus==0: callee dispatch (Fortran handles ALLOCATE protocol) ---
+        IF (LocalVar%iStatus == 0) THEN
+            write (*,*) \\\"                                                                              \\\"//NEW_LINE(\\\"A\\\")// &
+                        \\\"------------------------------------------------------------------------------\\\"//NEW_LINE(\\\"A\\\")// &
+                        \\\"Running ROSCO-\\\"//TRIM(rosco_version)//NEW_LINE(\\\"A\\\")// &
+                        \\\"A wind turbine controller framework for public use in the scientific field    \\\"//NEW_LINE(\\\"A\\\")// &
+                        \\\"Developed in collaboration: National Renewable Energy Laboratory              \\\"//NEW_LINE(\\\"A\\\")// &
+                        \\\"                            Delft University of Technology, The Netherlands   \\\"//NEW_LINE(\\\"A\\\")// &
+                        \\\"------------------------------------------------------------------------------\\\"
+
+            LocalVar%ACC_INFILE_SIZE = NINT(avrSWAP(50))
+            LocalVar%ACC_INFILE = \\\" \\\"
+            DO I = 1, MIN(LocalVar%ACC_INFILE_SIZE, 1024)
+                LocalVar%ACC_INFILE(I:I) = accINFILE(I)
+            END DO
+
+            CALL ReadControlParameterFileSub(CntrPar, LocalVar, accINFILE, NINT(avrSWAP(50)), RootName, ErrVar)
+            IF (ErrVar%aviFAIL < 0) THEN
+                ErrVar%ErrMsg = \\\"SetParameters:\\\"//TRIM(ErrVar%ErrMsg)
+                RETURN
+            ENDIF
+
+            IF (CntrPar%WE_Mode > 0) THEN
+                CALL ReadCpFile(CntrPar, PerfData, ErrVar)
+            ENDIF
+        ENDIF
+
+        ! --- Populate CntrPar view (arrays allocated after first call) ---
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+
+        ! --- C++ handles: LocalVar init, CheckInputs, OL_Index ---
+        CALL setparameters_c(C_LOC(CntrPar_view), C_LOC(LocalVar), avrSWAP, C_LOC(objInst), C_LOC(ErrVar), INT(size_avcMSG, C_INT32_T))
+
+        ! --- Error prepend for CheckInputs errors ---
+        IF (LocalVar%iStatus == 0 .AND. ErrVar%aviFAIL < 0) THEN
+            ErrVar%ErrMsg = \\\"SetParameters:\\\"//TRIM(ErrVar%ErrMsg)
+        ENDIF
+
+    END SUBROUTINE SetParameters'''
+result = re.sub(pattern, wrapper, content, flags=re.DOTALL)
+if result == content:
+    print('FAIL SetParameters: pattern not found in ReadSetParameters.f90')
+    sys.exit(1)
+with open('rosco/controller/src/ReadSetParameters.f90', 'w') as f:
+    f.write(result)
+print('  OK SetParameters')
+" 2>&1
+if [ $? -eq 0 ]; then
+    PASS=$((PASS + 1))
+else
+    FAIL=$((FAIL + 1))
+fi
+
+# Add setparameters.cpp to CMakeLists.txt if not already present
+python3 -c "
+with open('rosco/controller/CMakeLists.txt', 'r') as f:
+    content = f.read()
+if 'setparameters.cpp' not in content:
+    content = content.replace('src/updatezeromq.cpp', 'src/updatezeromq.cpp\n    src/setparameters.cpp')
     with open('rosco/controller/CMakeLists.txt', 'w') as f:
         f.write(content)
 "

@@ -171,6 +171,12 @@ translations:
   Debug:
     status: integrated
     cpp_file: translations/IO/debug_logger.cpp
+  PreFilterMeasuredSignals:
+    status: integrated
+    cpp_file: translations/Filters/prefiltermeasuredsignals.cpp
+  SetParameters:
+    status: integrated
+    cpp_file: translations/ReadSetParameters/setparameters.cpp
 types:
   ControlParameters:
     strategy: view
