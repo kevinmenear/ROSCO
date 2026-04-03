@@ -51,7 +51,7 @@ class Sim():
 
     def sim_ws_series(self, t_array, ws_array, rotor_rpm_init=10, init_pitch=0.0,
                       wd_array=None, yaw_init=0.0,
-                      make_plots=True):
+                      make_plots=True, extra_avrswap=None):
         '''
         Simulate simplified turbine model using a complied controller (.dll or similar).
             - currently a 1DOF rotor model
@@ -91,6 +91,12 @@ class Sim():
         nac_yaw = np.ones_like(t_array) * yaw_init
         nac_yawerr = np.ones_like(t_array) * 0.0
         nac_yawrate = np.ones_like(t_array) * 0.0
+
+        # Pre-allocate extra avrSWAP capture arrays
+        extra_arrays = {}
+        if extra_avrswap:
+            for name in extra_avrswap:
+                extra_arrays[name] = np.zeros_like(t_array)
 
         # check for wind direction array
         if isinstance(wd_array, (list, np.ndarray)):
@@ -138,6 +144,11 @@ class Sim():
             # Define outputs
             gen_torque[i], bld_pitch[i], nac_yawrate[i] = self.controller_int.call_controller(turbine_state)
 
+            # Capture extra avrSWAP values
+            if extra_avrswap:
+                for name, idx in extra_avrswap.items():
+                    extra_arrays[name][i] = self.controller_int.avrSWAP[idx]
+
             # Calculate the power
             gen_power[i] = gen_speed[i] * gen_torque[i] * self.turbine.GenEff / 100
 
@@ -157,6 +168,9 @@ class Sim():
         self.ws_array = ws_array
         self.wd_array = wd_array
         self.nac_yaw = nac_yaw
+        if extra_avrswap:
+            for name, arr in extra_arrays.items():
+                setattr(self, name, arr)
 
         if make_plots:
             # if sum(nac_yaw) > 0:

@@ -78,6 +78,31 @@ from rosco.toolbox import controller as ROSCO_controller
 from rosco.toolbox import turbine as ROSCO_turbine
 from rosco.toolbox import sim as ROSCO_sim
 from rosco.toolbox import control_interface as ROSCO_ci
+
+# Additional avrSWAP indices to capture beyond the 3 primary outputs.
+# Maps array name -> Python (0-indexed) avrSWAP index.
+EXTRA_AVRSWAP = {
+    'bld_pitch_2': 42,     # Blade 2 pitch command (Fortran index 43)
+    'bld_pitch_3': 43,     # Blade 3 pitch command (Fortran index 44)
+    'flp_angle_1': 120,    # Blade 1 flap pitch command (Fortran index 121)
+    'flp_angle_2': 121,    # Blade 2 flap pitch command (Fortran index 122)
+    'flp_angle_3': 122,    # Blade 3 flap pitch command (Fortran index 123)
+    'cc_actuated_l': 2600,  # Cable control actuated length (CC_GroupIndex=2601)
+    'cc_actuated_dl': 2601, # Cable control actuated delta-length
+    'stc_input': 2800,      # Structural control input (StC_GroupIndex=2801)
+}
+
+
+def build_save_dict(sim_obj):
+    """Build the full output dict from a Sim object (includes extra avrSWAP arrays)."""
+    result = {
+        'gen_torque': sim_obj.gen_torque, 'bld_pitch': sim_obj.bld_pitch,
+        'gen_speed': sim_obj.gen_speed, 'gen_power': sim_obj.gen_power,
+        'nac_yaw': sim_obj.nac_yaw,
+    }
+    for name in EXTRA_AVRSWAP:
+        result[name] = getattr(sim_obj, name)
+    return result
 from rosco.toolbox.utilities import write_DISCON
 from rosco.toolbox.inputs.validation import load_rosco_yaml
 
@@ -195,21 +220,17 @@ def run_scenario_1(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_1.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    sim_1.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
 
     # Second run to check deallocation (same as 04_simple_sim.py)
     controller_int = ROSCO_ci.ControllerInterface(
         lib_name, param_filename=param_filename, sim_name='vit_sim1b'
     )
     sim_1b = ROSCO_sim.Sim(turbine, controller_int)
-    sim_1b.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    sim_1b.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
 
     np.testing.assert_almost_equal(sim_1.gen_speed, sim_1b.gen_speed)
-    save_and_print_results({
-        'gen_torque': sim_1.gen_torque, 'bld_pitch': sim_1.bld_pitch,
-        'gen_speed': sim_1.gen_speed, 'gen_power': sim_1.gen_power,
-        'nac_yaw': sim_1.nac_yaw,
-    }, 1, output_dir)
+    save_and_print_results(build_save_dict(sim_1), 1, output_dir)
     print("Scenario 1: PASSED (deterministic, deallocated correctly)")
 
 
@@ -261,6 +282,7 @@ def run_scenario_2(turbine, controller, cp_filename, output_dir=None):
     gen_torque = np.zeros_like(t)
     nac_yaw = np.zeros_like(t)
     gen_power = np.zeros_like(t)
+    extra = {name: np.zeros_like(t) for name in EXTRA_AVRSWAP}
 
     for i, ti in enumerate(t):
         if i == 0:
@@ -306,13 +328,17 @@ def run_scenario_2(turbine, controller, cp_filename, output_dir=None):
         # Call controller
         gen_torque[i], bld_pitch[i], nac_yaw[i] = controller_int.call_controller(turbine_state)
         gen_power[i] = gen_torque[i] * gen_speed[i] * (turbine.GenEff / 100)
+        for name, idx in EXTRA_AVRSWAP.items():
+            extra[name][i] = controller_int.avrSWAP[idx]
 
     controller_int.kill_discon()
-    save_and_print_results({
+    result = {
         'gen_torque': gen_torque, 'bld_pitch': bld_pitch,
         'gen_speed': gen_speed, 'gen_power': gen_power,
         'nac_yaw': nac_yaw,
-    }, 2, output_dir)
+    }
+    result.update(extra)
+    save_and_print_results(result, 2, output_dir)
     print("Scenario 2: PASSED (wrap_360 exercised)")
 
 
@@ -391,12 +417,8 @@ def run_scenario_3(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_3.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_3.gen_torque, 'bld_pitch': sim_3.bld_pitch,
-        'gen_speed': sim_3.gen_speed, 'gen_power': sim_3.gen_power,
-        'nac_yaw': sim_3.nac_yaw,
-    }, 3, output_dir)
+    sim_3.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_3), 3, output_dir)
     print("Scenario 3: PASSED (NotchFilter + SecLPFilter_Vel + mode flags exercised)")
 
 
@@ -443,12 +465,8 @@ def run_scenario_4(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_4.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_4.gen_torque, 'bld_pitch': sim_4.bld_pitch,
-        'gen_speed': sim_4.gen_speed, 'gen_power': sim_4.gen_power,
-        'nac_yaw': sim_4.nac_yaw,
-    }, 4, output_dir)
+    sim_4.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_4), 4, output_dir)
     print("Scenario 4: PASSED (PIIController exercised)")
 
 
@@ -491,12 +509,8 @@ def run_scenario_5(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_5.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_5.gen_torque, 'bld_pitch': sim_5.bld_pitch,
-        'gen_speed': sim_5.gen_speed, 'gen_power': sim_5.gen_power,
-        'nac_yaw': sim_5.nac_yaw,
-    }, 5, output_dir)
+    sim_5.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_5), 5, output_dir)
     print("Scenario 5: PASSED (ResController exercised)")
 
 
@@ -542,12 +556,8 @@ def run_scenario_6(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_6.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_6.gen_torque, 'bld_pitch': sim_6.bld_pitch,
-        'gen_speed': sim_6.gen_speed, 'gen_power': sim_6.gen_power,
-        'nac_yaw': sim_6.nac_yaw,
-    }, 6, output_dir)
+    sim_6.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_6), 6, output_dir)
     print("Scenario 6: PASSED (NotchFilterSlopes exercised)")
 
 
@@ -620,6 +630,7 @@ def run_scenario_7(turbine, controller, cp_filename, output_dir=None):
     gen_power = np.zeros_like(t)
     nac_yaw = np.zeros_like(t)
     nac_yawrate = np.zeros_like(t)
+    extra = {name: np.zeros_like(t) for name in EXTRA_AVRSWAP}
 
     for i, ti in enumerate(t):
         if i == 0:
@@ -684,13 +695,17 @@ def run_scenario_7(turbine, controller, cp_filename, output_dir=None):
         gen_torque[i], bld_pitch[i], nac_yawrate[i] = controller_int.call_controller(turbine_state)
         gen_power[i] = gen_speed[i] * gen_torque[i] * turbine.GenEff / 100
         nac_yaw[i] = nac_yaw[i-1] + nac_yawrate[i] * dt
+        for name, idx in EXTRA_AVRSWAP.items():
+            extra[name][i] = controller_int.avrSWAP[idx]
 
     controller_int.kill_discon()
-    save_and_print_results({
+    result = {
         'gen_torque': gen_torque, 'bld_pitch': bld_pitch,
         'gen_speed': gen_speed, 'gen_power': gen_power,
         'nac_yaw': nac_yaw,
-    }, 7, output_dir)
+    }
+    result.update(extra)
+    save_and_print_results(result, 7, output_dir)
     print("Scenario 7: PASSED (yaw, tower, float, struct, cable, flap exercised)")
 
 
@@ -754,6 +769,7 @@ def run_scenario_8(turbine, controller, cp_filename, output_dir=None):
     gen_torque = np.zeros_like(t)
     gen_power = np.zeros_like(t)
     nac_yaw = np.zeros_like(t)
+    extra = {name: np.zeros_like(t) for name in EXTRA_AVRSWAP}
 
     for i, ti in enumerate(t):
         if i == 0:
@@ -801,13 +817,17 @@ def run_scenario_8(turbine, controller, cp_filename, output_dir=None):
 
         gen_torque[i], bld_pitch[i], _ = controller_int.call_controller(turbine_state)
         gen_power[i] = gen_speed[i] * gen_torque[i] * turbine.GenEff / 100
+        for name, idx in EXTRA_AVRSWAP.items():
+            extra[name][i] = controller_int.avrSWAP[idx]
 
     controller_int.kill_discon()
-    save_and_print_results({
+    result = {
         'gen_torque': gen_torque, 'bld_pitch': bld_pitch,
         'gen_speed': gen_speed, 'gen_power': gen_power,
         'nac_yaw': nac_yaw,
-    }, 8, output_dir)
+    }
+    result.update(extra)
+    save_and_print_results(result, 8, output_dir)
     print("Scenario 8: PASSED (IPC + AWC with blade moments exercised)")
 
 
@@ -870,13 +890,8 @@ def run_scenario_9(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_9.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-
-    save_and_print_results({
-        'gen_torque': sim_9.gen_torque, 'bld_pitch': sim_9.bld_pitch,
-        'gen_speed': sim_9.gen_speed, 'gen_power': sim_9.gen_power,
-        'nac_yaw': sim_9.nac_yaw,
-    }, 9, output_dir)
+    sim_9.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_9), 9, output_dir)
     print("Scenario 9: PASSED (startup/shutdown/TRA exercised)")
 
 
@@ -927,13 +942,9 @@ def run_scenario_10(turbine, controller, cp_filename, output_dir=None):
     t = np.arange(0, tlen, dt)
     ws = np.ones_like(t) * ws0
 
-    sim_10.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
+    sim_10.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
 
-    save_and_print_results({
-        'gen_torque': sim_10.gen_torque, 'bld_pitch': sim_10.bld_pitch,
-        'gen_speed': sim_10.gen_speed, 'gen_power': sim_10.gen_power,
-        'nac_yaw': sim_10.nac_yaw,
-    }, 10, output_dir)
+    save_and_print_results(build_save_dict(sim_10), 10, output_dir)
     print("Scenario 10: PASSED (PIDController for azimuth tracking exercised)")
 
 
@@ -977,12 +988,8 @@ def run_scenario_11(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_11.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_11.gen_torque, 'bld_pitch': sim_11.bld_pitch,
-        'gen_speed': sim_11.gen_speed, 'gen_power': sim_11.gen_power,
-        'nac_yaw': sim_11.nac_yaw,
-    }, 11, output_dir)
+    sim_11.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_11), 11, output_dir)
     print("Scenario 11: PASSED (AWC_Mode=1 complex number method exercised)")
 
 
@@ -1019,12 +1026,8 @@ def run_scenario_12(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_12.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_12.gen_torque, 'bld_pitch': sim_12.bld_pitch,
-        'gen_speed': sim_12.gen_speed, 'gen_power': sim_12.gen_power,
-        'nac_yaw': sim_12.nac_yaw,
-    }, 12, output_dir)
+    sim_12.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_12), 12, output_dir)
     print("Scenario 12: PASSED (VS_ControlMode=1 K*Omega^2 exercised)")
 
 
@@ -1065,12 +1068,8 @@ def run_scenario_13(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_13.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_13.gen_torque, 'bld_pitch': sim_13.bld_pitch,
-        'gen_speed': sim_13.gen_speed, 'gen_power': sim_13.gen_power,
-        'nac_yaw': sim_13.nac_yaw,
-    }, 13, output_dir)
+    sim_13.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_13), 13, output_dir)
     print("Scenario 13: PASSED (VS_FBP=1 power overspeed exercised)")
 
 
@@ -1119,12 +1118,8 @@ def run_scenario_14(turbine, controller, cp_filename, output_dir=None):
     t = np.arange(0, tlen, dt)
     ws = np.ones_like(t) * ws0
 
-    sim_14.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_14.gen_torque, 'bld_pitch': sim_14.bld_pitch,
-        'gen_speed': sim_14.gen_speed, 'gen_power': sim_14.gen_power,
-        'nac_yaw': sim_14.nac_yaw,
-    }, 14, output_dir)
+    sim_14.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_14), 14, output_dir)
     print("Scenario 14: PASSED (OL_Mode=1 open-loop control exercised)")
 
 
@@ -1167,12 +1162,8 @@ def run_scenario_15(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_15.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_15.gen_torque, 'bld_pitch': sim_15.bld_pitch,
-        'gen_speed': sim_15.gen_speed, 'gen_power': sim_15.gen_power,
-        'nac_yaw': sim_15.nac_yaw,
-    }, 15, output_dir)
+    sim_15.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_15), 15, output_dir)
     print("Scenario 15: PASSED (AWC_Mode=2 Coleman transform exercised)")
 
 
@@ -1213,12 +1204,8 @@ def run_scenario_16(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_16.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_16.gen_torque, 'bld_pitch': sim_16.bld_pitch,
-        'gen_speed': sim_16.gen_speed, 'gen_power': sim_16.gen_power,
-        'nac_yaw': sim_16.nac_yaw,
-    }, 16, output_dir)
+    sim_16.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_16), 16, output_dir)
     print("Scenario 16: PASSED (Flp_Mode=3 Coleman transform flap exercised)")
 
 
@@ -1255,12 +1242,8 @@ def run_scenario_17(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_17.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_17.gen_torque, 'bld_pitch': sim_17.bld_pitch,
-        'gen_speed': sim_17.gen_speed, 'gen_power': sim_17.gen_power,
-        'nac_yaw': sim_17.nac_yaw,
-    }, 17, output_dir)
+    sim_17.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_17), 17, output_dir)
     print("Scenario 17: PASSED (WE_Mode=1 I&I estimator exercised)")
 
 
@@ -1307,12 +1290,8 @@ def run_scenario_18(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_18.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_18.gen_torque, 'bld_pitch': sim_18.bld_pitch,
-        'gen_speed': sim_18.gen_speed, 'gen_power': sim_18.gen_power,
-        'nac_yaw': sim_18.nac_yaw,
-    }, 18, output_dir)
+    sim_18.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_18), 18, output_dir)
     print("Scenario 18: PASSED (IPC_ControlMode=2, 1P+2P exercised)")
 
 
@@ -1356,12 +1335,8 @@ def run_scenario_19(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_19.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_19.gen_torque, 'bld_pitch': sim_19.bld_pitch,
-        'gen_speed': sim_19.gen_speed, 'gen_power': sim_19.gen_power,
-        'nac_yaw': sim_19.nac_yaw,
-    }, 19, output_dir)
+    sim_19.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_19), 19, output_dir)
     print("Scenario 19: PASSED")
 
 
@@ -1401,12 +1376,8 @@ def run_scenario_20(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_20.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_20.gen_torque, 'bld_pitch': sim_20.bld_pitch,
-        'gen_speed': sim_20.gen_speed, 'gen_power': sim_20.gen_power,
-        'nac_yaw': sim_20.nac_yaw,
-    }, 20, output_dir)
+    sim_20.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_20), 20, output_dir)
     print("Scenario 20: PASSED")
 
 
@@ -1448,12 +1419,8 @@ def run_scenario_21(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_21.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_21.gen_torque, 'bld_pitch': sim_21.bld_pitch,
-        'gen_speed': sim_21.gen_speed, 'gen_power': sim_21.gen_power,
-        'nac_yaw': sim_21.nac_yaw,
-    }, 21, output_dir)
+    sim_21.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_21), 21, output_dir)
     print("Scenario 21: PASSED (AWC_Mode=3 closed-loop PI exercised)")
 
 
@@ -1495,12 +1462,8 @@ def run_scenario_22(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_22.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_22.gen_torque, 'bld_pitch': sim_22.bld_pitch,
-        'gen_speed': sim_22.gen_speed, 'gen_power': sim_22.gen_power,
-        'nac_yaw': sim_22.nac_yaw,
-    }, 22, output_dir)
+    sim_22.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_22), 22, output_dir)
     print("Scenario 22: PASSED (AWC_Mode=5 Strouhal transform exercised)")
 
 
@@ -1537,12 +1500,8 @@ def run_scenario_23(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_23.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_23.gen_torque, 'bld_pitch': sim_23.bld_pitch,
-        'gen_speed': sim_23.gen_speed, 'gen_power': sim_23.gen_power,
-        'nac_yaw': sim_23.nac_yaw,
-    }, 23, output_dir)
+    sim_23.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_23), 23, output_dir)
     print("Scenario 23: PASSED (PS_Mode=0, SS_Mode=0 disabled paths exercised)")
 
 
@@ -1597,12 +1556,8 @@ def run_scenario_24(turbine, controller, cp_filename, output_dir=None):
     t = np.arange(0, tlen, dt)
     ws = np.ones_like(t) * ws0
 
-    sim_24.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_24.gen_torque, 'bld_pitch': sim_24.bld_pitch,
-        'gen_speed': sim_24.gen_speed, 'gen_power': sim_24.gen_power,
-        'nac_yaw': sim_24.nac_yaw,
-    }, 24, output_dir)
+    sim_24.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_24), 24, output_dir)
     print("Scenario 24: PASSED (CC_Mode=2, StC_Mode=2 open-loop exercised)")
 
 
@@ -1643,12 +1598,8 @@ def run_scenario_25(turbine, controller, cp_filename, output_dir=None):
     for i in range(len(t)):
         ws[i] = ws[i] + t[i] // 100
 
-    sim_25.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False)
-    save_and_print_results({
-        'gen_torque': sim_25.gen_torque, 'bld_pitch': sim_25.bld_pitch,
-        'gen_speed': sim_25.gen_speed, 'gen_power': sim_25.gen_power,
-        'nac_yaw': sim_25.nac_yaw,
-    }, 25, output_dir)
+    sim_25.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_25), 25, output_dir)
     print("Scenario 25: PASSED (PRC_Mode=2 dynamic power rating exercised)")
 
 
