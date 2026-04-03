@@ -1,8 +1,9 @@
 #!/bin/bash
-# Integrate all 52 C++ translations + DISCON entry point into the ROSCO codebase.
+# Integrate all 52 C++ translations + DISCON entry point + Fortran removal.
 # (39 algorithm functions from Phases 1-9, ReadAvrSWAP + PIDController from Phase 10A,
 #  unwrap, 3 Stage B functions, 2 Stage D functions, 3 Stage C functions,
-#  2 Stage E functions, and DISCON entry point from Phase 11A)
+#  2 Stage E functions, DISCON entry point from Phase 11A,
+#  and Fortran removal from Phase 11B)
 # Run from the ROSCO repo root inside the Docker container.
 #
 # Usage: bash scripts/integrate_all.sh
@@ -15,7 +16,7 @@ set -e
 
 PASS=0
 FAIL=0
-TOTAL=53
+TOTAL=54
 
 integrate() {
     local name=$1
@@ -543,6 +544,83 @@ if 'src/discon.cpp' not in content:
     print('  OK DISCON: swapped DISCON.F90 -> discon.cpp in CMakeLists.txt')
 else:
     print('  OK DISCON: discon.cpp already in CMakeLists.txt')
+" 2>&1
+if [ $? -eq 0 ]; then
+    PASS=$((PASS + 1))
+else
+    FAIL=$((FAIL + 1))
+fi
+
+# Phase 11B: Remove all Fortran from the build (pure C++ libdiscon.so)
+echo "--- Phase 11B: Remove Fortran (pure C++ build) ---"
+python3 -c "
+import re, sys
+
+with open('rosco/controller/CMakeLists.txt', 'r') as f:
+    content = f.read()
+
+# Extract the list of .cpp source files from the SOURCES block
+cpp_files = re.findall(r'    (src/\S+\.cpp)', content)
+if not cpp_files:
+    print('FAIL: No .cpp files found in SOURCES')
+    sys.exit(1)
+
+sources_block = '\n'.join(f'    {f}' for f in cpp_files)
+
+# Write a clean C/C++ CMakeLists.txt
+cmake = '''cmake_minimum_required(VERSION 3.6)
+project(ROSCO VERSION 2.9.0 LANGUAGES C CXX)
+
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE \"RelWithDebInfo\" CACHE STRING \"Choose the build type: Debug RelWithDebInfo Release\" FORCE)
+endif()
+
+# VIT: -ffp-contract=off for bit-identical verification during translation phase.
+set(CMAKE_CXX_FLAGS \"\${CMAKE_CXX_FLAGS} -ffp-contract=off\")
+
+set(SOURCES
+''' + sources_block + '''
+)
+
+# ZMQ Library
+find_package(PkgConfig)
+pkg_check_modules(PC_ZeroMQ libzmq)
+if(PC_ZeroMQ_FOUND)
+    find_path(ZeroMQ_INCLUDE_DIR NAMES zmq.h PATHS \${PC_ZeroMQ_INCLUDE_DIRS})
+    find_library(ZeroMQ_LIBRARY NAMES zmq PATHS \${PC_ZeroMQ_LIBRARY_DIRS})
+    include_directories(\${ZeroMQ_INCLUDE_DIR})
+    add_compile_options(-I\${ZeroMQ_INCLUDE_DIR} -l\${ZeroMQ_LIBRARY} -fPIC)
+    add_library(zmq_client OBJECT src/zmq_client.c)
+    add_definitions(-DZMQ_CLIENT=\"TRUE\")
+    set(SOURCES \${SOURCES} \$<TARGET_OBJECTS:zmq_client>)
+endif()
+
+add_library(discon SHARED \${SOURCES})
+target_include_directories(discon PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/../../translations)
+target_link_libraries(discon PRIVATE stdc++ dl)
+
+if(PC_ZeroMQ_FOUND)
+    target_include_directories(discon PUBLIC \${ZeroMQ_INCLUDE_DIR})
+    target_link_libraries(discon PUBLIC \${ZeroMQ_LIBRARY})
+endif()
+
+install(TARGETS discon
+  EXPORT \"\${CMAKE_PROJECT_NAME}Libraries\"
+  RUNTIME DESTINATION lib
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
+
+set(linuxDefault \${CMAKE_INSTALL_PREFIX} STREQUAL \"/usr/local\")
+set(windowsDefault \${CMAKE_INSTALL_PREFIX} STREQUAL \"C:\\\\\\\\Program Files (x86)\")
+if(\${linuxDefault} OR \${windowsDefault})
+  set(CMAKE_INSTALL_PREFIX \"\${CMAKE_SOURCE_DIR}/../\")
+endif()
+'''
+
+with open('rosco/controller/CMakeLists.txt', 'w') as f:
+    f.write(cmake)
+print('  OK: Removed all Fortran from CMakeLists.txt (' + str(len(cpp_files)) + ' C++ sources)')
 " 2>&1
 if [ $? -eq 0 ]; then
     PASS=$((PASS + 1))
