@@ -114,3 +114,6 @@ rosco/test/testing
 # OpenFAST outputs
 outputs/
 
+
+# restart-validation scratch (checkpoints, run outputs) — do not commit
+restart_test_scratch/
