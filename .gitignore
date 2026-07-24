@@ -117,3 +117,5 @@ outputs/
 
 # restart-validation scratch (checkpoints, run outputs) — do not commit
 restart_test_scratch/
+repro_scratch/
+repro_scratch_cpp/
