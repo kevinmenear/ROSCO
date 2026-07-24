@@ -453,15 +453,7 @@ void DISCON(float* avrSWAP, int* aviFAIL, char* accINFILE, char* avcOUTNAME, cha
     ErrVar.aviFAIL = 0;
     ErrVar.size_avcMSG = size_avcMSG;
 
-    objInst.instLPF         = 1;
-    objInst.instSecLPF      = 1;
-    objInst.instSecLPFV     = 1;
-    objInst.instHPF         = 1;
-    objInst.instNotchSlopes = 1;
-    objInst.instNotch       = 1;
-    objInst.instPI          = 1;
-    objInst.instRes         = 1;
-    objInst.instRL          = 1;
+    // objInst counters reset AFTER the -9 ReadRestartFile below (see dev note 202607232319)
 
     avrSWAP[34] = 1.0f;   // avrSWAP(35)
     avrSWAP[35] = 0.0f;   // avrSWAP(36)
@@ -492,6 +484,19 @@ void DISCON(float* avrSWAP, int* aviFAIL, char* accINFILE, char* avcOUTNAME, cha
     // ============================================================
     // Read avrSWAP array into derived types
     // ============================================================
+    // Reset filter/limiter instance counters for this timestep, AFTER the -9
+    // ReadRestartFile (which restores the checkpointed counters). Prevents the
+    // controllers indexing wrong FP/piP/rlP slots on restart. See dev note 202607232319.
+    objInst.instLPF         = 1;
+    objInst.instSecLPF      = 1;
+    objInst.instSecLPFV     = 1;
+    objInst.instHPF         = 1;
+    objInst.instNotchSlopes = 1;
+    objInst.instNotch       = 1;
+    objInst.instPI          = 1;
+    objInst.instRes         = 1;
+    objInst.instRL          = 1;
+
     ReadAvrSWAP(avrSWAP, &LocalVar, &CntrPar, &ErrVar);
 
     // ============================================================
