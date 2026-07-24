@@ -119,3 +119,5 @@ outputs/
 restart_test_scratch/
 repro_scratch/
 repro_scratch_cpp/
+chase_f/
+chase_cpp/
