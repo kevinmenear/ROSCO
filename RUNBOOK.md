@@ -414,41 +414,30 @@ is `/workspace/ROSCO-r2`.
   many times per timestep in every scenario) and confirm green returns after the
   revert, or the red is not attributable to the perturbation.
 
-- **Extract / capture:** RUNS, BUT CAPTURES NO STATE. Do not treat as working.
+- **Extract / capture:** WORKS. Point it at a call site that RUNS.
   ```
   docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2 && \
-      vit extract AddToList --file rosco/controller/src/ROSCO_IO.f90 --line 1126 \
-      --run-args ' --scenario 3'"
+      vit extract ColemanTransform --file rosco/controller/src/Controllers.f90 \
+      --line 510 --run-args ' --scenario 27'"
   ```
-  Run three times on 2026-08-10. Every time it printed **`✓ Extraction
-  successful`** and, two lines later, **`WARNING: No state data captured.`** The
-  kernel tree under `kernel/AddToList/` is generated (20 files) and contains
-  **zero** files matching the campaign's state pattern `\.\d+\.\d+\.\d+$`.
-  The first replication has `kernel/AddToList.0.0.1`, so this IS capturable and
-  something here is not right yet.
+  63 state files, first attempt, 2026-08-10.
 
-  What was ruled out, so nobody repeats it:
-  - *The call site is unreachable in the default scenario.* True but not the
-    whole story -- all five `AddToList` call sites are gated on `CC_Mode`/
-    `StC_Mode`. Re-running against scenario 3 (`CC_Mode=1`) changed nothing.
-  - *`--run-args` not reaching KGen.* It does: `--dry-run` shows
-    `--cmd-run '... vit_sim.py  --scenario 3'` and `--invocation 0:0:1-20`.
-  - *The uninstrumented library being loaded* -- VIT warns about this loudly
-    because the editable `ROSCO` install points at another tree. It is NOT the
-    cause: `nm -D` shows 27 kgen symbols in BOTH
-    `rosco/controller/build/libdiscon.so` and the installed
-    `rosco/lib/libdiscon.so`. `Examples/vit_sim.py` already resolves the library
-    from this tree and raises rather than falling back, with a comment naming
-    this as "the one failure mode that produces a green result and no signal".
-  - `VIT_WRAPPER_LOG=<path>` enables the wrapper's own diagnostics (VIT's
-    authors anticipated silent capture failure). It logs a clean cmake
-    reconfigure, exit 0, and stops there.
+  **The earlier entry here said extraction was broken. It was not.** Three runs
+  on `AddToList` printed `✓ Extraction successful` and `WARNING: No state data
+  captured.`, and the instrumented library, the run command and the invocation
+  window were each ruled out by measurement. What was never measured was the
+  premise underneath all three: `ROSCO_IO.f90:1126` has **zero hits in all 27
+  scenarios**, as do the other four `AddToList` call sites. There was no state
+  to capture. KGen had instrumented a region the process never entered and said
+  so.
 
-  **The point worth keeping is the shape, not the diagnosis.** A tool that
-  reports success and captures nothing is the exact failure this campaign
-  exists to remove, and it is sitting in our own front-end. Until this is
-  understood, kernel replay is NOT available as a verification route and units
-  must close on the generated harness instead.
+  So the order matters more than the checks. Before diagnosing a capture
+  failure, query `coverage/line_coverage.json` for the call site's hit counts.
+  A call site with no hits is not a tool failure.
+
+  **Hit counts are necessary and NOT sufficient.** See the invocation entry
+  below: scenario 6 executes this call site 3,999 times, on zeros, and produces
+  a kernel that a zero-writing stub passes.
 
   **Extraction is not read-only.** Each run strips CRLF from
   `rosco/controller/src/DISCON.F90` (162 lines, content identical, 7956 -> 7794
@@ -459,6 +448,105 @@ is `/workspace/ROSCO-r2`.
   `DISCON.F90` -- lowercase glob, uppercase extension, verified by running
   `Path.glob` against the tree: 11 files matched, DISCON.F90 not among them.
   Add `--protect 'rosco/controller/src/*.F90'` as well.
+
+- **Coverage:** WORKS, 2026-08-10. This is C2's input; there was none before.
+  ```
+  python3 scripts/coverage.py --out coverage/line_coverage.json
+  python3 scripts/coverage.py --no-build --files Functions.f90,Controllers.f90
+  ```
+  Builds `--coverage -O0` in `rosco/controller/build_cov` (its own directory, so
+  the Release build the gate measures is untouched), runs each of the 27
+  scenarios with the counters cleared, gcovs after each. ~6 min for all 12
+  sources. Remove `build_cov` and run `reset_to_clean.sh` afterwards.
+
+  Two things it taught immediately, both by measurement:
+
+  1. All five `AddToList` call sites are dead in all 27 scenarios. That is the
+     whole of the "extraction is broken" blocker.
+  2. Scenarios 10, 14 and 24 execute **no controller code at all**, and 13
+     executes 12 lines. They enter DISCON, read parameters, and stop. See
+     STATUS.md; this is E3.3's failure mode, measured.
+
+  `gcov -o <dir> Functions.f90` does NOT work: gcov strips the extension, looks
+  for `Functions.gcno`, prints "No executable lines" and **exits 0**. Name the
+  notes file: `gcov <dir>/Functions.f90.gcno`. The first run of this script
+  reported 0/185 lines for all 27 scenarios and looked like a clean answer;
+  printing the denominator next to the numerator is what showed it.
+
+- **Choosing the invocation window:** hit counts are not enough.
+  `vit.yaml`'s `kgen.invocation` at setup is `0:0:1-20`, which for a call site
+  in the control loop means the first 21 timesteps -- simulation start, where
+  most state is still zero. For `ColemanTransform` every captured case had
+  `Azimuth = 0` and `rootMOOPF = 0`, and a translation reading none of its
+  inputs and writing `0.0` passed **21/21 with 4725/4725 IDENTICAL**.
+
+  Widening the window on the same scenario did not help: scenario 6 is a 1-DOF
+  sim that never drives azimuth or blade root moments, so invocations 2000-2020
+  and 3900-3920 are all-zero too. **The line ran 7,998 times on zeros.**
+
+  So the check is on the CAPTURED VALUES, not on the counts:
+
+  ```
+  python3 - <<'EOF'
+  import csv, collections
+  rows = list(csv.DictReader(open('kernel/<Unit>/verify_fields.csv')))
+  print(collections.Counter(r['status'] for r in rows))
+  for fld in ('<the fields the unit writes>',):
+      v = [float(r['reference']) for r in rows if r['field'] == fld]
+      print(fld, sum(1 for x in v if x != 0.0), '/', len(v), 'non-zero')
+  EOF
+  ```
+
+  A field that is 0.0 in every reference case is a field the kernel cannot see.
+  Then run the stub test below; if the stub passes, the window is vacuous
+  whatever it says.
+
+- **Red-test every green on first use, including the tool's own.** For a kernel:
+  replace the translation body with one that reads no argument and writes
+  constants, re-run `vit verify`, confirm it FAILS, restore. Two minutes, and it
+  is the only thing that distinguishes `62/62 IDENTICAL` from `62/62 IDENTICAL
+  on inputs that were all zero`. Keep the passing-stub artifact when you find
+  one -- `evidence/<Unit>/`.
+
+- **Differential harness (P11) and mutation score (P12):** WORK, 2026-08-10.
+  ```
+  bash scripts/harness.sh <Unit> <Module> <stem> rosco/controller/src/<File>.f90 \
+       --against translation --out harness/<Unit>.json
+  bash scripts/harness.sh <Unit> <Module> <stem> rosco/controller/src/<File>.f90 \
+       --post-integration --out harness/<Unit>.postintegration.json
+  docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2 && \
+      python3 /workspace/translation-loop/scripts/vit_mutate.py <Unit> \
+        --root /workspace/ROSCO-r2 --cpp translations/<Module>/<stem>.cpp \
+        --module <Module> --out mutation/<Unit>.json"
+  ```
+  `scripts/harness.sh` rather than `vit_harness.py` directly: the pinned loop
+  repo writes to `translations/<Module>/<stem>_test/` and this workspace's VIT
+  writes the Makefile and bridge to `translations/<Module>/`, so the raw command
+  dies on `No rule to make target 'test'`. The script reconciles them and
+  explains why VIT was not upgraded instead.
+
+  ColemanTransform: 199 differential cases, 0 failed; 35/35 mutants killed,
+  score 1.000; 217/217 post-integration.
+
+  **`--post-integration` measures the WRAPPER, not the arithmetic.** After
+  integration the Fortran body IS the translation, so both sides run the same
+  code by construction. A failure means the marshalling corrupted an argument --
+  which is worth checking, since two generated bridges in this campaign dropped
+  an array's rank. Red-test it by swapping the wrapper's two INTENT(OUT)
+  arguments; it must fail every case.
+
+  **The mutation score is MANDATORY for every unit, not just `respecify`.**
+  `done.py:344` returns `_mutation(...)` unconditionally when `--mutation-glob`
+  is set -- the red-test fallback exists only when it is UNSET -- and
+  `min_mutation_score` is 1.0 and is never overridden. Do not unset the flag to
+  make a unit close: that converts a hard requirement into a red test and makes
+  that unit's evidence permanently weaker than every other unit's, silently.
+
+- **`vit verify` and `vit integrate` rewrite `vit.yaml` and delete every
+  comment.** Observed three times on 2026-08-10. The file is declared `derive`
+  and its provenance lives entirely in those comments. Restore them from
+  `git show HEAD:vit.yaml` after the last VIT command of the unit, keeping VIT's
+  own `translations:` block, and check `yaml.safe_load` still parses it.
 
 - **Reset to clean source:** WORKS, 2026-08-10.
   ```
@@ -534,39 +622,11 @@ across because it is nearby is not the same as diagnosing. And the real cause
 was already written down in the previous campaign's own bug report; reading it
 would have been faster than reproducing it.
 
-- **Differential harness (P11) and mutation score (P12):** the generator RUNS
-  here as of 2026-08-10; the full loop needs a translation to exist.
-  ```
-  docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2 && \
-      python3 /workspace/translation-loop/scripts/vit_harness.py <Unit> \
-        --root /workspace/ROSCO-r2 --file rosco/controller/src/<File>.f90 \
-        --cpp translations/<Module>/<unit>.cpp --module <Module> \
-        --against integrated --out harness/<Unit>.postintegration.json"
-
-  docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2 && \
-      python3 /workspace/translation-loop/scripts/vit_mutate.py <Unit> \
-        --root /workspace/ROSCO-r2 --cpp translations/<Module>/<unit>.cpp \
-        --module <Module> --out mutation/<Unit>.json"
-  ```
-  **Run them in `vit-dev`, not on the host.** The host has gfortran, but it is
-  macOS and this tree's objects are Linux -- they cannot link. The loop repo is
-  a checkout PINNED at `/workspace/translation-loop`, cloned from the local repo
-  rather than origin; see DECISIONS.md. Both scripts stamp `loop_rev` into their
-  JSON, so an artifact says which instrument produced it.
-
-  Measured for `ColemanTransform` with `--no-build`: 257 cases, R1/R3/R4/R6
-  applied, R5 and R2 reported `N/A ... this is not a pass`.
-
-  **The mutation score is MANDATORY for every unit, not just `respecify`.**
-  `done.py:344` returns `_mutation(...)` unconditionally when `--mutation-glob`
-  is set -- the red-test fallback exists only when it is UNSET -- and
-  `min_mutation_score` is 1.0 and is never overridden. So every unit needs every
-  non-equivalent mutant killed. Do not unset the flag to make a unit close:
-  that converts a hard requirement into a red test and makes that unit's
-  evidence permanently weaker than every other unit's, silently.
-
 ## Finishing a unit
 
+0. Before extracting: query `coverage/line_coverage.json` for the call site's
+   hit counts AND check that the scenario actually drives the unit's inputs.
+   A line that runs on zeros produces a kernel that cannot fail.
 1. Red-test the gate for this unit; confirm it fails and writes its artifact.
 2. Run the gate. Non-zero compared count, zero mismatched.
 3. If this unit needed a purpose-built harness, **re-run it against the

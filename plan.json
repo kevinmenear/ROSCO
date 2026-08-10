@@ -34,9 +34,29 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "all 5 argument declaration(s) read and checked against the matrix: axtout, axyout, aziangle, nharmonic, rootmoop"
+    "basis": "all 5 argument declaration(s) read and checked against the matrix: axtout, axyout, aziangle, nharmonic, rootmoop",
+    "observed": "CONFIRMED. All 5 arguments crossed with no decomposition: rootMOOP(3) -> double* by reference, aziAngle/nHarmonic by value, axTOut/axYOut (INTENT(OUT) scalars) by reference. The integrated wrapper is a 9-line CALL colemantransform_c(...) and the gate is bit-identical across 5,252,000 values. The prediction was about the SIGNATURE and it held. What did not hold is the assumption that a crossable signature is crossed correctly by every generator: VIT's test-validate bridge declared rootMOOP a by-value scalar, and the loop's harness mapping made it a one-element buffer read three deep. interface_gen -- the generator the kernel and the integration actually use -- got it right. Both others fixed; see DECISIONS.md."
    },
-   "observability": null
+   "observability": "The kernel exercises nHarmonic=1 ONLY: KGen's callsite region is the single CALL at Controllers.f90:510, so the NP_2 call at :511 is replayed from state rather than recomputed. nHarmonic=2 is covered by the differential harness, which varies it, and by the gate, which runs both calls.",
+   "disposition": "integrated",
+   "source_file": "rosco/controller/src/Functions.f90",
+   "translation": "translations/Functions/colemantransform.cpp",
+   "harness_required": true,
+   "evidence": [
+    "translations/Functions/colemantransform.cpp",
+    "rosco/controller/src/colemantransform.cpp",
+    "gate/ColemanTransform.json",
+    "gate/ColemanTransform.redtest.json",
+    "harness/ColemanTransform.json",
+    "harness/ColemanTransform.postintegration.json",
+    "harness/ColemanTransform.postintegration.redtest.json",
+    "mutation/ColemanTransform.json",
+    "evidence/ColemanTransform/README.md",
+    "evidence/ColemanTransform/kernel-window-27.verify_fields.csv",
+    "evidence/ColemanTransform/kernel-window-27.stub-fails.verify_fields.csv",
+    "evidence/ColemanTransform/kernel-window-1-20.stub-passes.verify_fields.csv",
+    "coverage/line_coverage.json"
+   ]
   },
   {
    "order": 3,
