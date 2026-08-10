@@ -24,12 +24,12 @@ double SecLPFilter_Vel(double InputSignal, double DT, double CornerFreq, double 
         FP->lpfV_InputSignalLast2[idx] = InitialValue_;
 
         // Coefficients (velocity output variant — b terms differ from SecLPFilter)
-        FP->lpfV_a2[idx] = DT * DT * CornerFreq * CornerFreq + 4.0 + 4.0 * Damp * CornerFreq * DT;
-        FP->lpfV_a1[idx] = 2.0 * DT * DT * CornerFreq * CornerFreq - 8.0;
-        FP->lpfV_a0[idx] = DT * DT * CornerFreq * CornerFreq + 4.0 - 4.0 * Damp * CornerFreq * DT;
-        FP->lpfV_b2[idx] = 2.0 * DT * CornerFreq * CornerFreq;
+        FP->lpfV_a2[idx] = (DT * DT) * (CornerFreq * CornerFreq) + 4.0 + 4.0 * Damp * CornerFreq * DT;
+        FP->lpfV_a1[idx] = 2.0 * (DT * DT) * (CornerFreq * CornerFreq) - 8.0;
+        FP->lpfV_a0[idx] = (DT * DT) * (CornerFreq * CornerFreq) + 4.0 - 4.0 * Damp * CornerFreq * DT;
+        FP->lpfV_b2[idx] = 2.0 * DT * (CornerFreq * CornerFreq);
         FP->lpfV_b1[idx] = 0.0;
-        FP->lpfV_b0[idx] = -2.0 * DT * CornerFreq * CornerFreq;
+        FP->lpfV_b0[idx] = -2.0 * DT * (CornerFreq * CornerFreq);
     }
 
     // Filter

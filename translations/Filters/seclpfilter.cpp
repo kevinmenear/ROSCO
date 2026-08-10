@@ -24,12 +24,12 @@ double SecLPFilter(double InputSignal, double DT, double CornerFreq, double Damp
         FP->lpf2_InputSignalLast2[idx] = InitialValue_;
 
         // Coefficients
-        FP->lpf2_a2[idx] = DT * DT * CornerFreq * CornerFreq + 4.0 + 4.0 * Damp * CornerFreq * DT;
-        FP->lpf2_a1[idx] = 2.0 * DT * DT * CornerFreq * CornerFreq - 8.0;
-        FP->lpf2_a0[idx] = DT * DT * CornerFreq * CornerFreq + 4.0 - 4.0 * Damp * CornerFreq * DT;
-        FP->lpf2_b2[idx] = DT * DT * CornerFreq * CornerFreq;
-        FP->lpf2_b1[idx] = 2.0 * DT * DT * CornerFreq * CornerFreq;
-        FP->lpf2_b0[idx] = DT * DT * CornerFreq * CornerFreq;
+        FP->lpf2_a2[idx] = (DT * DT) * (CornerFreq * CornerFreq) + 4.0 + 4.0 * Damp * CornerFreq * DT;
+        FP->lpf2_a1[idx] = 2.0 * (DT * DT) * (CornerFreq * CornerFreq) - 8.0;
+        FP->lpf2_a0[idx] = (DT * DT) * (CornerFreq * CornerFreq) + 4.0 - 4.0 * Damp * CornerFreq * DT;
+        FP->lpf2_b2[idx] = (DT * DT) * (CornerFreq * CornerFreq);
+        FP->lpf2_b1[idx] = 2.0 * (DT * DT) * (CornerFreq * CornerFreq);
+        FP->lpf2_b0[idx] = (DT * DT) * (CornerFreq * CornerFreq);
     }
 
     // Filter
