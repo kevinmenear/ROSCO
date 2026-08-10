@@ -12,8 +12,31 @@ how = "manual"
 note = "TODO: Clean build from a pinned upstream commit"
 
 ["E1.2"]
-how = "manual"
-note = "TODO: Translation-phase flags applied to every compiler and asserted in the build log"
+how = "command"
+cmd = "bash scripts/assert_fp_contract.sh"
+expect_exit = 0
+stdout_contains = "0 FMA instruction(s) in libdiscon.so"
+note = """Earned 2026-08-10, during unit #2 (ColemanTransform), which is where it \
+stopped being deferrable. The unit is five lines of arithmetic and its C++ \
+disagreed with the Fortran by ~1 ULP on 105 of 200 random inputs. The cause was \
+not the translation: at Release (-O3) gfortran contracted \
+`cos(a)*r1 + cos(b)*r2 + cos(c)*r3` into 4 `vfmadd` instructions, confirmed by \
+objdump on the shipped `__functions_MOD_colemantransform`. With \
+`-ffp-contract=off` the disagreement went to 0 of 200.
+
+Two assertions, because either alone passes while the requirement fails: the \
+flag is on the build line CMake emits, AND the linked library contains zero FMA \
+instructions. The second is the one that cannot be satisfied by declaring \
+anything. Red-tested the same day by blanking the flag and rebuilding: 0 build \
+lines, 103 FMA instructions, exit 1.
+
+Whole-library, not per-file, on purpose: a per-file check goes green the moment \
+the file under translation is clean and says nothing about the next unit.
+
+Closing this INVALIDATED the baselines, which had been captured from the \
+contracted build. Measured footprint before regeneration: 489,734 of 5,252,000 \
+values across 90 of 351 channels. baseline_arrays/ was regenerated from clean \
+pre-integration source and E3.2 re-run; see E3.5."""
 
 ["E1.3"]
 how = "manual"
@@ -75,7 +98,7 @@ path = "gate/__gate__.redtest.json"
 json_equals = { perturbed = true, went_red = true, revert_verified = true, reverted = true }
 note = """Earned 2026-08-10. `scripts/gate.py --perturb-file/--perturb-from/--perturb-to` \
 perturbed LPFilter's leading 1.0 to 1.000001_DbKi in Filters.f90:65, rebuilt, \
-re-ran all 27 scenarios and moved 1,634,643 of 5,252,000 values across 138 of \
+re-ran all 27 scenarios and moved 1,604,573 of 5,252,000 values across 138 of \
 351 channels. Reverting restored 0 of 5,252,000. Both runs of the red test \
 produced the identical count, so it is deterministic.
 
@@ -94,8 +117,23 @@ how = "manual"
 note = "TODO: Branch coverage of the gate measured; gaps recorded in a known-gaps table"
 
 ["E3.5"]
-how = "manual"
-note = "TODO: Baselines generated from clean pre-integration source, committed"
+how = "artifact"
+path = "gate/__gate__.json"
+json_equals = { verdict = "PASS", mismatched = 0, compared = 5252000 }
+note = """Regenerated 2026-08-10 by `bash scripts/regress.sh --baseline` against \
+clean pre-integration source, after E1.2 changed the compiler flags and so \
+changed the numbers: 20 of 27 scenario_*.npz moved. The gate re-run against the \
+regenerated set compares 5,252,000 values with 0 mismatched, and E3.2 was \
+re-run against it so the red evidence describes the same baselines the green \
+does -- 1,604,573 moved, 0 after revert.
+
+Two limitations, stated rather than left to be discovered. (1) The artifact \
+pinned here is the gate's, which shows the baselines are self-consistent with \
+the build; it is not independent evidence that the source was clean, which is \
+asserted by reset_to_clean.sh having run first. (2) `regress.sh --baseline` \
+does NOT restore Examples/DISCON*.IN afterwards -- gate.py's snapshot/restore \
+covers gate runs only. Two files were left modified and had to be checked out \
+by hand. See DECISIONS.md."""
 
 ["E3.6"]
 how = "manual"

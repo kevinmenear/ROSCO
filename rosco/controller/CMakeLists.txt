@@ -9,22 +9,40 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 message(STATUS "CMAKE_Fortran_COMPILER_ID = ${CMAKE_Fortran_COMPILER_ID}")
+
+# E1.2 -- translation-phase flag, on EVERY compiler. Not a preference.
+#
+# Measured on this tree 2026-08-10, not assumed: at Release (-O3) gfortran
+# contracts ColemanTransform's `cos(a)*r1 + cos(b)*r2 + cos(c)*r3` into 4
+# `vfmadd` instructions, confirmed with objdump on the shipped
+# __functions_MOD_colemantransform. A C++ translation of the same expression
+# does not, so the two stop being bit-comparable: 105 of 200 random inputs
+# differed by ~1 ULP. Adding this flag took that to 0 of 200. The difference
+# was never in the translation.
+#
+# The compiler-specific spellings are Intel's `-fp-model precise` (its
+# `-ffp-contract` spelling differs) and Flang/GNU's `-ffp-contract=off`. Only
+# the GNU/Linux branch has been EXERCISED here; the others are written to the
+# same requirement but are unverified on this tree.
+set(FP_CONTRACT_OFF_GNU "-ffp-contract=off")
+set(FP_CONTRACT_OFF_INTEL "-fp-model precise")
+
 if(APPLE OR UNIX)
 # Enable .dll export
 if (CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DIMPLICIT_DLLEXPORT -r8 -double-size 64 -cpp -no-wrap-margin")
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DIMPLICIT_DLLEXPORT -r8 -double-size 64 -cpp -no-wrap-margin ${FP_CONTRACT_OFF_INTEL}")
 elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "Flang")
 add_definitions(-DFLANG_COMPILER)
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DIMPLICIT_DLLEXPORT -fno-backslash -cpp -fdefault-real-8")  
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DIMPLICIT_DLLEXPORT -fno-backslash -cpp -fdefault-real-8 ${FP_CONTRACT_OFF_GNU}")  
 else()
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DIMPLICIT_DLLEXPORT -ffree-line-length-0 -fdefault-real-8 -fdefault-double-8 -cpp")  
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DIMPLICIT_DLLEXPORT -ffree-line-length-0 -fdefault-real-8 -fdefault-double-8 -cpp ${FP_CONTRACT_OFF_GNU}")  
 endif()
 elseif (WIN32)
 if (CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
 # Ensure static linking to avoid requiring Fortran runtime dependencies
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffree-line-length-0 -static-libgcc -static-libgfortran -static -fdefault-real-8 -fdefault-double-8 -cpp")
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffree-line-length-0 -static-libgcc -static-libgfortran -static -fdefault-real-8 -fdefault-double-8 -cpp ${FP_CONTRACT_OFF_GNU}")
 elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -libs:static -free -static -fpp -real-size:64 -double-size:64")
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -libs:static -free -static -fpp -real-size:64 -double-size:64 ${FP_CONTRACT_OFF_INTEL}")
 #     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} /ffree-line-length-0 /static-libgcc /static-libgfortran /static /fdefault-real-8 /fdefault-double-8 /cpp")
 endif()
 endif()

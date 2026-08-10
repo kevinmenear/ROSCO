@@ -4,16 +4,16 @@
  "channels_mismatched": 0,
  "compared": 5252000,
  "generated_by": "scripts/gate.py",
- "inputs_restored": [
-  "Examples/DISCON_flp.IN",
-  "Examples/DISCON_ipc.IN"
- ],
+ "inputs_restored": [],
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "perturbed": false,
- "residual_dirt": [],
+ "residual_dirt": [
+  " M Examples/DISCON_flp.IN",
+  " M Examples/DISCON_ipc.IN"
+ ],
  "scenarios": [
   3,
   4,

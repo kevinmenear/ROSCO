@@ -114,3 +114,5 @@ model/
 elapsedtime/
 kgen.log
 .vit_wrapper.log
+model.ini
+.loop-run/

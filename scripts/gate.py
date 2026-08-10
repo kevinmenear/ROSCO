@@ -303,7 +303,15 @@ def main(argv=None) -> int:
                 print("  compared NOTHING -- a green here would be vacuous", file=sys.stderr)
 
         dest.write_text(json.dumps(payload, indent=1, sort_keys=True) + "\n")
-        print(f"wrote {dest.relative_to(ROOT)}")
+        # `relative_to` RAISES on an --out outside the campaign root, after the
+        # artifact is already written and after the verdict is already decided.
+        # The traceback then replaces the exit code, so a red gate exits 1 for
+        # the wrong reason and a green one exits 1 too. Observed with
+        # --out /tmp/...json on 2026-08-10.
+        try:
+            print(f"wrote {dest.relative_to(ROOT)}")
+        except ValueError:
+            print(f"wrote {dest}")
         return rc
     finally:
         telemetry(a.unit, "end", command=("gate_redtest" if perturbing else "gate"),
