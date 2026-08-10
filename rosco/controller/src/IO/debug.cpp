@@ -20,10 +20,25 @@ std::string trim_fortran_string(const char* s, int len) {
 }
 
 std::string current_date() {
+    // Fortran `CurDate` builds 'dd-mmm-yyyy' from a hardcoded English month
+    // table (a SELECT CASE over CDate(5:6)), with the day taken as two raw
+    // characters of "ccyymmdd" and therefore zero-padded.
+    //
+    // `strftime`'s %b is the abbreviated month name IN THE CURRENT LOCALE, so
+    // it agrees with the Fortran only while the locale happens to be C or
+    // English. ROSCO never calls setlocale, but libdiscon.so is loaded BY
+    // something else -- OpenFAST, a Python wrapper, MATLAB -- and inherits
+    // whatever that set. Reproduce the table instead.
+    static const char* const MONTHS[12] = {
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     time_t now = time(nullptr);
     struct tm* t = localtime(&now);
+    int mon = t->tm_mon;
+    if (mon < 0 || mon > 11) mon = 0;   // defensive; tm_mon is 0-11
     char buf[32];
-    strftime(buf, sizeof(buf), "%d-%b-%Y", t);
+    std::snprintf(buf, sizeof(buf), "%02d-%s-%04d",
+                  t->tm_mday, MONTHS[mon], t->tm_year + 1900);
     return std::string(buf);
 }
 
