@@ -57,6 +57,10 @@ translations:
   sigma:
     status: integrated
     cpp_file: translations/Functions/sigma.cpp
+    cases_passed: 20
+    cases_total: 20
+    cases_skipped: 0
+    kernel_dir: kernel/sigma
   LPFilter:
     status: integrated
     cpp_file: translations/Filters/lpfilter.cpp
@@ -66,6 +70,10 @@ translations:
   SecLPFilter:
     status: integrated
     cpp_file: translations/Filters/seclpfilter.cpp
+    cases_passed: 21
+    cases_total: 21
+    cases_skipped: 0
+    kernel_dir: kernel/SecLPFilter
   NotchFilter:
     status: integrated
     cpp_file: translations/Filters/notchfilter.cpp
@@ -75,6 +83,10 @@ translations:
   SecLPFilter_Vel:
     status: integrated
     cpp_file: translations/Filters/seclpfilter_vel.cpp
+    cases_passed: 21
+    cases_total: 21
+    cases_skipped: 0
+    kernel_dir: kernel/SecLPFilter_Vel
   PIController:
     status: integrated
     cpp_file: translations/Controllers/picontroller.cpp
