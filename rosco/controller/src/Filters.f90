@@ -408,12 +408,14 @@ CONTAINS
                 LocalVar%RootMOOPF(K) = SecLPFilter(LocalVar%rootMOOP(K),LocalVar%DT, CntrPar%F_FlpCornerFreq(1), CntrPar%F_FlpCornerFreq(2), LocalVar%FP, LocalVar%iStatus, LocalVar%restart,objInst%instSecLPF)
                 LocalVar%RootMOOPF(K) = HPFilter(LocalVar%rootMOOPF(K),LocalVar%DT, 0.1_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart,objInst%instHPF)
                 
-                ! Use same as generator speed signal because that's how it was before
-                LocalVar%RootMOOPF(K) = NotchFilter(LocalVar%RootMOOPF(K), LocalVar%DT, &
-                                                    CntrPar%F_NotchFreqs(CntrPar%F_GenSpdNotch_Ind(n)), &
-                                                    CntrPar%F_NotchBetaNum(CntrPar%F_GenSpdNotch_Ind(n)), &
-                                                    CntrPar%F_NotchBetaDen(CntrPar%F_GenSpdNotch_Ind(n)), &
-                                                    LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotch)
+                ! Apply gen speed notch filters to blade root signal (same as gen speed path)
+                DO n = 1,CntrPar%F_GenSpdNotch_N  ! upstream bug: n was uninitialized here
+                    LocalVar%RootMOOPF(K) = NotchFilter(LocalVar%RootMOOPF(K), LocalVar%DT, &
+                                                        CntrPar%F_NotchFreqs(CntrPar%F_GenSpdNotch_Ind(n)), &
+                                                        CntrPar%F_NotchBetaNum(CntrPar%F_GenSpdNotch_Ind(n)), &
+                                                        CntrPar%F_NotchBetaDen(CntrPar%F_GenSpdNotch_Ind(n)), &
+                                                        LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotch)
+                END DO
             ELSE
                 LocalVar%RootMOOPF(K) = LocalVar%rootMOOP(K)
             ENDIF     

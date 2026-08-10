@@ -666,7 +666,9 @@ CONTAINS
                 LocalVar%Flp_Angle(3) = CntrPar%Flp_Angle
                 ! Initialize controller
                 IF (CntrPar%Flp_Mode == 2) THEN
-                    LocalVar%Flp_Angle(K) = PIIController(RootMyb_VelErr(K), 0 - LocalVar%Flp_Angle(K), CntrPar%Flp_Kp, CntrPar%Flp_Ki, 0.05_DbKi, -CntrPar%Flp_MaxPit , CntrPar%Flp_MaxPit , LocalVar%DT, 0.0_DbKi, LocalVar%piP, LocalVar%restart, objInst%instPI)
+                    DO K = 1,LocalVar%NumBl  ! upstream bug: K was uninitialized here
+                        LocalVar%Flp_Angle(K) = PIIController(RootMyb_VelErr(K), 0 - LocalVar%Flp_Angle(K), CntrPar%Flp_Kp, CntrPar%Flp_Ki, 0.05_DbKi, -CntrPar%Flp_MaxPit , CntrPar%Flp_MaxPit , LocalVar%DT, 0.0_DbKi, LocalVar%piP, LocalVar%restart, objInst%instPI)
+                    END DO
                 ENDIF
             
             ! Steady flap angle

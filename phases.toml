@@ -1,0 +1,124 @@
+# How each phase exit criterion is EVIDENCED for this campaign.
+#
+# Every criterion starts `manual`, which is NOT_EVALUABLE and never a pass.
+# Replace a stanza with one of:
+#
+#   how = "artifact"  path = "..."   [nonempty|contains|json_equals]
+#   how = "command"   cmd = "..."    [expect_exit|stdout_contains]
+#   how = "not_applicable"  reason = "..."   (a reason is mandatory)
+
+["E1.1"]
+how = "manual"
+note = "TODO: Clean build from a pinned upstream commit"
+
+["E1.2"]
+how = "manual"
+note = "TODO: Translation-phase flags applied to every compiler and asserted in the build log"
+
+["E1.3"]
+how = "manual"
+note = "TODO: All five red tests in §5.3 observed red"
+
+["E1.4"]
+how = "manual"
+note = "TODO: Reset/restore cycle round-trips bit-identically"
+
+["E1.5"]
+how = "manual"
+note = "TODO: Copy manifest complete, every entry hashed or flagged as re-implemented"
+
+["E1.6"]
+how = "manual"
+note = "TODO: Telemetry records a start and an end event with a correct exit code for a deliberately failing"
+
+["E2.1"]
+how = "manual"
+note = "TODO: Inventory complete; every procedure classified in-scope, out-of-scope, or dead, with reasons"
+
+["E2.2"]
+how = "manual"
+note = "TODO: Dependency graph built; work order derived from it, not from file order"
+
+["E2.3"]
+how = "manual"
+note = "TODO: Coverage data generated from a clean build and committed"
+
+["E2.4"]
+how = "manual"
+note = "TODO: plan.json complete, with phase and proposed_verification marked explicitly as hypotheses"
+
+["E2.5"]
+how = "manual"
+note = "TODO: At least one non-leaf function identified as an early infrastructure probe"
+
+["E3.1"]
+how = "manual"
+note = "TODO: Gate runs, prints the compared count next to the pass count, and exits non-zero on mismatch"
+
+["E3.2"]
+how = "manual"
+note = "TODO: Gate observed red under a deliberate perturbation"
+
+["E3.3"]
+how = "manual"
+note = "TODO: Every scenario confirmed alive: no rejected runs, no all-constant channel sets"
+
+["E3.4"]
+how = "manual"
+note = "TODO: Branch coverage of the gate measured; gaps recorded in a known-gaps table"
+
+["E3.5"]
+how = "manual"
+note = "TODO: Baselines generated from clean pre-integration source, committed"
+
+["E3.6"]
+how = "manual"
+note = "TODO: Subset-baseline generation exists and does not disturb existing baselines"
+
+["E4.1"]
+how = "manual"
+note = "TODO: Disposition recorded, from the vocabulary, with the evidence it rests on"
+
+["E4.2"]
+how = "manual"
+note = "TODO: Every evidence reference resolves to a committed artifact"
+
+["E4.3"]
+how = "manual"
+note = "TODO: The gate ran, and its compared count is recorded in a committed artifact rather than in prose"
+
+["E4.4"]
+how = "manual"
+note = "TODO: A state commit brings STATUS.md, DECISIONS.md and the dataset current"
+
+["E4.5"]
+how = "manual"
+note = "TODO: The generated differential harness ran against the integrated build, not only the"
+
+["E4.6"]
+how = "manual"
+note = "TODO: The mutation score for this unit is at or above the campaign's stated threshold, every"
+
+["E5.1"]
+how = "manual"
+note = "TODO: Claims audit run; every verification claim resolves to an artifact that exists"
+
+["E5.2"]
+how = "manual"
+note = "TODO: Verification ledger produced: one row per unit, naming the instrument and what it could not see"
+
+["E5.3"]
+how = "manual"
+note = "TODO: Every unit whose only verification ran pre-integration has a post-integration check or a"
+
+["E5.4"]
+how = "manual"
+note = "TODO: Branch coverage of the gate recorded as a table rather than claimed"
+
+["E5.5"]
+how = "manual"
+note = "TODO: Every translated unit turned red by a deliberate perturbation"
+
+["E5.6"]
+how = "manual"
+note = "TODO: Full gate re-run from a clean build against baselines regenerated from clean source"

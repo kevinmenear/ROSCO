@@ -1,0 +1,1565 @@
+{
+ "units": [
+  {
+   "order": 1,
+   "name": "AddToList",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 2,
+   "name": "ColemanTransform",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 3,
+   "name": "ColemanTransformInverse",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 4,
+   "name": "Conv2UC",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 5,
+   "name": "ExtController",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [
+    "LoadDynamicLib"
+   ],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 6,
+   "name": "GetPath",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 7,
+   "name": "GetRoot",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 8,
+   "name": "GetWords",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 9,
+   "name": "HPFilter",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 10,
+   "name": "Int2LStr",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 11,
+   "name": "LPFilter",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 12,
+   "name": "NonDecreasing",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 13,
+   "name": "NotchFilter",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 14,
+   "name": "NotchFilterSlopes",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 15,
+   "name": "PathIsRelative",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 16,
+   "name": "ReadAvrSWAP",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 17,
+   "name": "Read_OL_Input",
+   "contract": "respecify",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "generated harness + mutation score (P13); the gate cannot decide",
+   "why": "performs external I/O on Unit_OL_Input that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 18,
+   "name": "SecLPFilter",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 19,
+   "name": "SecLPFilter_Vel",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 20,
+   "name": "StateMachine",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 21,
+   "name": "UpdateZeroMQ",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 22,
+   "name": "identity",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 23,
+   "name": "interp1d",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 24,
+   "name": "saturate",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 25,
+   "name": "sigma",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 26,
+   "name": "unwrap",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 27,
+   "name": "wrap_180",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 28,
+   "name": "wrap_360",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 0,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 29,
+   "name": "CheckInputs",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "AddToList",
+    "NonDecreasing"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 30,
+   "name": "ChkParseData",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "Conv2UC",
+    "Int2LStr"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 31,
+   "name": "Debug",
+   "contract": "respecify",
+   "absorbs": [
+    "GetNewUnit"
+   ],
+   "depends_on": [
+    "AddToList",
+    "Int2LStr"
+   ],
+   "permanent_bridges": [
+    "CurDate",
+    "CurTime"
+   ],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "generated harness + mutation score (P13); the gate cannot decide",
+   "why": "performs external I/O on UnDb, UnDb2, UnDb3 that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 32,
+   "name": "FindLine",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "Conv2UC",
+    "GetWords"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 33,
+   "name": "PIController",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "saturate"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 34,
+   "name": "PIDController",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "LPFilter",
+    "saturate"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 35,
+   "name": "PIIController",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "saturate"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 36,
+   "name": "PitchSaturation",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "interp1d"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 37,
+   "name": "PowerControlSetpoints",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "interp1d"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature; writes to unit 401 without opening it -- an UNCOMPARED output, not a missing input",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 38,
+   "name": "PreFilterMeasuredSignals",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "HPFilter",
+    "LPFilter",
+    "NotchFilter",
+    "NotchFilterSlopes",
+    "SecLPFilter",
+    "wrap_180"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 39,
+   "name": "ResController",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "saturate"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 40,
+   "name": "SetpointSmoother",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "LPFilter"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 41,
+   "name": "Shutdown",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "LPFilter",
+    "wrap_180"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 42,
+   "name": "Startup",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "LPFilter",
+    "sigma"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 43,
+   "name": "StructuralControl",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "interp1d"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 44,
+   "name": "YawRateControl",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "LPFilter",
+    "interp1d",
+    "wrap_180"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 45,
+   "name": "interp2d",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "interp1d"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 46,
+   "name": "ratelimit",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "saturate"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 1,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 47,
+   "name": "ActiveWakeControl",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "ColemanTransform",
+    "ColemanTransformInverse",
+    "PIController",
+    "ResController",
+    "wrap_360"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 48,
+   "name": "AeroDynTorque",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "interp2d"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 49,
+   "name": "CableControl",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "PIController",
+    "SecLPFilter_Vel",
+    "interp1d"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 50,
+   "name": "FlapControl",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "ColemanTransform",
+    "ColemanTransformInverse",
+    "PIController",
+    "PIIController",
+    "saturate"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 51,
+   "name": "FloatingFeedback",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "PIController",
+    "interp1d"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 52,
+   "name": "ForeAftDamping",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "PIController"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 53,
+   "name": "IPC",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "ColemanTransform",
+    "ColemanTransformInverse",
+    "LPFilter",
+    "PIController",
+    "sigma",
+    "wrap_360"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 54,
+   "name": "ParseDbAry_Opt",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "FindLine",
+    "GetWords",
+    "Int2LStr"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
+   "bridge_feasible": {
+    "value": "no",
+    "basis": "ary: c_alloc_inout does not cross (UNSUPPORTED: as c_alloc_out. INTENT(INOUT) ALLOCATABLE needs an ALLOCA)"
+   },
+   "observability": null
+  },
+  {
+   "order": 55,
+   "name": "ParseInAry_Opt",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "FindLine",
+    "GetWords",
+    "Int2LStr"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
+   "bridge_feasible": {
+    "value": "no",
+    "basis": "ary: c_alloc_inout does not cross (UNSUPPORTED: as c_alloc_out. INTENT(INOUT) ALLOCATABLE needs an ALLOCA)"
+   },
+   "observability": null
+  },
+  {
+   "order": 56,
+   "name": "ParseInput_Dbl_Opt",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "FindLine",
+    "GetWords",
+    "Int2LStr"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 57,
+   "name": "ParseInput_Int_Opt",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "FindLine",
+    "GetWords",
+    "Int2LStr"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 58,
+   "name": "ParseInput_Str_Opt",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "FindLine",
+    "GetWords",
+    "Int2LStr"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 59,
+   "name": "RefSpeedExclusion",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "ratelimit"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 60,
+   "name": "VariableSpeedControl",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "PIController",
+    "PIDController",
+    "interp1d",
+    "ratelimit",
+    "saturate",
+    "unwrap"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 61,
+   "name": "WriteRestartFile",
+   "contract": "respecify",
+   "absorbs": [],
+   "depends_on": [
+    "Debug"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 2,
+   "verification": "generated harness + mutation score (P13); the gate cannot decide",
+   "why": "performs external I/O on Un that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 62,
+   "name": "ComputeVariablesSetpoints",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "LPFilter",
+    "RefSpeedExclusion",
+    "interp1d",
+    "saturate"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 3,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 63,
+   "name": "PitchControl",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "ActiveWakeControl",
+    "FloatingFeedback",
+    "ForeAftDamping",
+    "IPC",
+    "LPFilter",
+    "PIController",
+    "PitchSaturation",
+    "SecLPFilter",
+    "interp1d",
+    "ratelimit",
+    "saturate"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 3,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 64,
+   "name": "ReadControlParameterFileSub",
+   "contract": "respecify",
+   "absorbs": [
+    "ParseDbAry",
+    "ParseInAry",
+    "ParseInput_Dbl",
+    "ParseInput_Int",
+    "ParseInput_Str"
+   ],
+   "depends_on": [
+    "ChkParseData",
+    "Debug",
+    "GetPath",
+    "GetWords",
+    "Int2LStr",
+    "ParseDbAry_Opt",
+    "ParseInAry_Opt",
+    "ParseInput_Dbl_Opt",
+    "ParseInput_Int_Opt",
+    "ParseInput_Str_Opt",
+    "PathIsRelative",
+    "Read_OL_Input",
+    "unwrap"
+   ],
+   "permanent_bridges": [
+    "CurDate",
+    "CurTime"
+   ],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 3,
+   "verification": "generated harness + mutation score (P13); the gate cannot decide",
+   "why": "opens and closes UnControllerParameters, UnEc itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 65,
+   "name": "WindSpeedEstimator",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "AeroDynTorque",
+    "LPFilter",
+    "identity",
+    "interp1d",
+    "interp2d",
+    "saturate"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 3,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 66,
+   "name": "ReadCpFile",
+   "contract": "respecify",
+   "absorbs": [
+    "ReadEmptyLine"
+   ],
+   "depends_on": [
+    "Debug",
+    "ParseDbAry_Opt",
+    "ParseInAry_Opt",
+    "ReadControlParameterFileSub"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 4,
+   "verification": "generated harness + mutation score (P13); the gate cannot decide",
+   "why": "opens and closes UnPerfParameters itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 67,
+   "name": "ReadRestartFile",
+   "contract": "respecify",
+   "absorbs": [],
+   "depends_on": [
+    "Debug",
+    "ReadControlParameterFileSub",
+    "ReadCpFile"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 5,
+   "verification": "generated harness + mutation score (P13); the gate cannot decide",
+   "why": "performs external I/O on Un that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 68,
+   "name": "SetParameters",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "CheckInputs",
+    "LPFilter",
+    "ReadControlParameterFileSub",
+    "ReadCpFile",
+    "interp1d"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 5,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature; writes to standard output (a side effect, not compared)",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  },
+  {
+   "order": 69,
+   "name": "DISCON",
+   "contract": "mirror",
+   "absorbs": [],
+   "depends_on": [
+    "CableControl",
+    "ComputeVariablesSetpoints",
+    "Debug",
+    "ExtController",
+    "FlapControl",
+    "GetRoot",
+    "PitchControl",
+    "PowerControlSetpoints",
+    "PreFilterMeasuredSignals",
+    "ReadAvrSWAP",
+    "ReadRestartFile",
+    "SetParameters",
+    "SetpointSmoother",
+    "Shutdown",
+    "Startup",
+    "StateMachine",
+    "StructuralControl",
+    "UpdateZeroMQ",
+    "VariableSpeedControl",
+    "WindSpeedEstimator",
+    "WriteRestartFile",
+    "YawRateControl"
+   ],
+   "permanent_bridges": [],
+   "reached_by": [
+    "DISCON"
+   ],
+   "dependency_depth": 6,
+   "verification": "kernel replay or direct-call harness; bit-identical",
+   "why": "every input and output crosses the signature",
+   "bridge_feasible": {
+    "value": "yes",
+    "basis": "no signature feature is recorded as failing to cross"
+   },
+   "observability": null
+  }
+ ],
+ "excluded": {
+  "CPfunction": {
+   "kind": "dead",
+   "why": "not reachable from any declared entry point"
+  },
+  "FreeDynamicLib": {
+   "kind": "dead",
+   "why": "not reachable from any declared entry point"
+  },
+  "LoadDynamicLib": {
+   "kind": "out_of_scope",
+   "why": "declared out of scope: /SysFiles/"
+  },
+  "LoadDynamicLibProc": {
+   "kind": "out_of_scope",
+   "why": "declared out of scope: /SysFiles/"
+  },
+  "matinv3": {
+   "kind": "dead",
+   "why": "not reachable from any declared entry point"
+  },
+  "CurDate": {
+   "kind": "boundary",
+   "why": "reads state no signature mentions (DATE_AND_TIME); no lifetime bounds it, so no enclosing scope closes the contract"
+  },
+  "CurTime": {
+   "kind": "boundary",
+   "why": "reads state no signature mentions (DATE_AND_TIME); no lifetime bounds it, so no enclosing scope closes the contract"
+  }
+ },
+ "cycles": [],
+ "notes": [
+  "3 of 83 procedures (4%) are unreachable from ['DISCON']. For a library the entry points are the public API, not a driver -- check the list before treating these as dead"
+ ],
+ "schema_version": 1,
+ "derived_from": {
+  "source": "/Users/kmenear/Artifacts/vit_translation/ROSCO-r2/rosco/controller/src",
+  "entry_points": [
+   "DISCON"
+  ],
+  "exclude_paths": [
+   "/SysFiles/"
+  ],
+  "exclude_names": []
+ }
+}

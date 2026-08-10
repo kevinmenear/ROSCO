@@ -92,3 +92,10 @@ rosco/test/testing
 # OpenFAST outputs
 outputs/
 
+
+# loop campaign state
+__pycache__/
+*.pyc
+core
+core.*
+*.core
