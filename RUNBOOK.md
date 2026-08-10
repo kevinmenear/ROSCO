@@ -460,18 +460,48 @@ is `/workspace/ROSCO-r2`.
   `Path.glob` against the tree: 11 files matched, DISCON.F90 not among them.
   Add `--protect 'rosco/controller/src/*.F90'` as well.
 
-- **Reset to clean source:** STILL TODO, and now known to be needed EARLIER
-  than "once the first unit is integrated". `vit extract` installs an
-  INSTRUMENTED `libdiscon.so` into `rosco/lib/` -- 27 kgen symbols, confirmed
-  with `nm -D` -- and leaves it there. Any gate run after an extraction
-  therefore measures the instrumented build unless the tree is rebuilt clean
-  first. Until a script exists, the manual sequence is:
+- **Reset to clean source:** WORKS, 2026-08-10.
   ```
-  git checkout -- rosco/controller/src/DISCON.F90
-  docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2/rosco/controller/build && \
-      cmake --build . -j4 && cp libdiscon.so /workspace/ROSCO-r2/rosco/lib/libdiscon.so"
-  python3.12 scripts/gate.py __gate__     # confirm 5,252,000 / 0 before trusting anything
+  bash scripts/reset_to_clean.sh              # sources + leftovers + rebuild + verify
+  bash scripts/reset_to_clean.sh --no-build   # sources only
+  bash scripts/restore_integrated.sh          # put the wrappers back
   ```
+  **The pair must be used together.** Leaving the tree clean and then gating
+  builds a library with no C++ in it at all, which passes 27/27 and means
+  nothing.
+
+  It reverts more than the replication's version because `vit extract` on this
+  tree damages more than wrappers. Four things, each measured here:
+
+  1. **wrapper-carrying sources** back to the pinned clean baseline, selected by
+     whether the file calls a `<name>_c(` bridge -- a rule that maintains itself
+     as units are added. Files WITHOUT a wrapper are left at HEAD: some sources
+     differ for reasons that are not integrations, and reverting those breaks
+     the kernel.
+  2. **files whose ONLY change is line endings.** DISCON.F90 comes back
+     CRLF-stripped from every extraction, including `--dry-run`. Narrow on
+     purpose: reverting any file that merely DIFFERS would destroy in-flight
+     work, but a change with no content in it cannot lose any.
+  3. **extraction leftovers** -- `kernel/ state/ model/ elapsedtime/`, the logs,
+     `.kgen_org` backups, `src/kgen_utils.f90`, and CMakeLists' `kgen_utils`
+     patch plus its `.vit_backup`. Note `make recover` in `state/` does NOT do
+     this: it restores the PRAGMA-CARRYING source and leaves the rest.
+  4. **rebuild, install, and ASSERT the installed library carries no kgen
+     symbols**, exiting non-zero if it does. Extraction installs an instrumented
+     `libdiscon.so` into `rosco/lib/`; any gate run afterwards measures the
+     instrumented build, and nothing announces it.
+
+  Red-tested 2026-08-10 against synthetic damage rather than waiting for a real
+  integration: a planted `synthetic_c(` wrapper is reverted, a planted
+  non-wrapper edit SURVIVES, CRLF is restored to 162 lines, every leftover is
+  removed, and a deliberately instrumented `libdiscon.so` makes the script exit
+  1. 10 of 10 assertions.
+
+  **The verification had a bug of its own, worth keeping.** `grep -c` exits 1 on
+  a count of zero, so an outer `|| echo "?"` appended a second line to a correct
+  `0` and the check reported FAILED on a clean library. Wrong in the safe
+  direction, but a verification that misreports is not a verification. `|| true`
+  belongs inside the container command.
 
 ### Two upstream ROSCO bugs must be fixed before the gate can run
 
