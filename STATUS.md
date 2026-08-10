@@ -36,6 +36,13 @@ values in `phases.toml` turns both `[FAIL]`, and restoring them turns both
   unit dispatched, and `next_unit` does not yet consult the field — it selects
   on `disposition` alone. Decide the policy (skip / escalate / pre-dispose)
   before any unit is dispatched.
+- **The UNKNOWN feasibility branch never fires on this codebase.** The
+  re-derived distribution is 64 yes / 5 no / **0 unknown**: the scanner now
+  parses every one of 418 dummy arguments, so nothing in the live plan reaches
+  the guard that refuses a verdict about unparsed arguments. Its only evidence
+  is its own red test. A guard we have not seen work on real input is a guard
+  on probation — if a future codebase (or a Fortran form ROSCO lacks) starts
+  producing UNKNOWNs, that is the guard working, not a regression.
 - **BLOCKER — extraction reports success and captures no state.** `vit extract`
   prints `✓ Extraction successful` alongside `WARNING: No state data captured.`
   Zero state files against the first replication's `kernel/AddToList.0.0.1`.
