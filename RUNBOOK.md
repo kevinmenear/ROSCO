@@ -534,6 +534,37 @@ across because it is nearby is not the same as diagnosing. And the real cause
 was already written down in the previous campaign's own bug report; reading it
 would have been faster than reproducing it.
 
+- **Differential harness (P11) and mutation score (P12):** the generator RUNS
+  here as of 2026-08-10; the full loop needs a translation to exist.
+  ```
+  docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2 && \
+      python3 /workspace/translation-loop/scripts/vit_harness.py <Unit> \
+        --root /workspace/ROSCO-r2 --file rosco/controller/src/<File>.f90 \
+        --cpp translations/<Module>/<unit>.cpp --module <Module> \
+        --against integrated --out harness/<Unit>.postintegration.json"
+
+  docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2 && \
+      python3 /workspace/translation-loop/scripts/vit_mutate.py <Unit> \
+        --root /workspace/ROSCO-r2 --cpp translations/<Module>/<unit>.cpp \
+        --module <Module> --out mutation/<Unit>.json"
+  ```
+  **Run them in `vit-dev`, not on the host.** The host has gfortran, but it is
+  macOS and this tree's objects are Linux -- they cannot link. The loop repo is
+  a checkout PINNED at `/workspace/translation-loop`, cloned from the local repo
+  rather than origin; see DECISIONS.md. Both scripts stamp `loop_rev` into their
+  JSON, so an artifact says which instrument produced it.
+
+  Measured for `ColemanTransform` with `--no-build`: 257 cases, R1/R3/R4/R6
+  applied, R5 and R2 reported `N/A ... this is not a pass`.
+
+  **The mutation score is MANDATORY for every unit, not just `respecify`.**
+  `done.py:344` returns `_mutation(...)` unconditionally when `--mutation-glob`
+  is set -- the red-test fallback exists only when it is UNSET -- and
+  `min_mutation_score` is 1.0 and is never overridden. So every unit needs every
+  non-equivalent mutant killed. Do not unset the flag to make a unit close:
+  that converts a hard requirement into a red test and makes that unit's
+  evidence permanently weaker than every other unit's, silently.
+
 ## Finishing a unit
 
 1. Red-test the gate for this unit; confirm it fails and writes its artifact.
