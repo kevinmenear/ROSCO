@@ -116,3 +116,30 @@ dispatch `AddToList` first — now against a plan that states its signature cann
 cross. Whether an infeasible unit should be skipped, escalated, or given a
 disposition up front is a policy question, recorded here rather than decided in
 passing.
+
+## 2026-08-10 — what "the smoke test passed" means, written before launching
+
+Named in advance, because afterwards any outcome can be narrated into either
+column. The smoke test is `--only ColemanTransform --max-units 1`, and what it
+tests is the WIRING, not the translation.
+
+  PASS   ColemanTransform closes all 13 predicates.
+
+  PASS   It fails at P11 or P12 because the harness or the mutation score could
+         not produce evidence, HAVING REACHED that point through
+         translate -> verify -> integrate -> gate. The path working is the
+         result. Record it as a finding about the evidence path, not as a
+         failure of the loop.
+
+  FAIL   Anything earlier: dispatch, Sentinel, budget accounting, prompt
+         render, done-condition evaluation, or the state commit.
+
+**`--mutation-glob` will not be unset to make the unit close.** `done.py:344`
+returns `self._mutation(...)` unconditionally when the glob is set — the
+red-test fallback exists only when it is UNSET — and `min_mutation_score` is
+1.0 and is never overridden by `run_campaign.py`. So mutation is mandatory for
+all 69 units at a 100% kill rate, mirror and respecify alike. Dropping the flag
+would convert a hard requirement into a red test and make the first unit's
+evidence permanently weaker than every later unit's, silently. If mutation
+genuinely cannot run here, that is a Phase 1 blocker to fix or escalate, not a
+flag to drop.
