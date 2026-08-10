@@ -483,15 +483,12 @@ void DISCON(float* avrSWAP, int* aviFAIL, char* accINFILE, char* avcOUTNAME, cha
     ErrVar.aviFAIL = 0;
     ErrVar.size_avcMSG = size_avcMSG;
 
-    objInst.instLPF         = 1;
-    objInst.instSecLPF      = 1;
-    objInst.instSecLPFV     = 1;
-    objInst.instHPF         = 1;
-    objInst.instNotchSlopes = 1;
-    objInst.instNotch       = 1;
-    objInst.instPI          = 1;
-    objInst.instRes         = 1;
-    objInst.instRL          = 1;
+    // NOTE: filter/limiter instance counters (objInst) are reset AFTER the
+    // iStatus==-9 ReadRestartFile below, NOT here. On restart ReadRestartFile
+    // restores the checkpointed (end-of-step, high) counter values, which would
+    // clobber a reset placed here and make the controllers index the wrong
+    // FP/piP/rlP state slots. Fortran resets them in SetParameters, i.e. after
+    // ReadRestartFile — we match that ordering. See dev note 202607232319.
 
     avrSWAP[34] = 1.0f;   // avrSWAP(35)
     avrSWAP[35] = 0.0f;   // avrSWAP(36)
@@ -518,6 +515,20 @@ void DISCON(float* avrSWAP, int* aviFAIL, char* accINFILE, char* avcOUTNAME, cha
             debug_c(&LocalVar, &CntrPar, &DebugVar, &ErrVar, avrSWAP, RootName, avcOUTNAME_size);
         }
     }
+
+    // Reset filter/limiter instance counters for this timestep. MUST be after the
+    // iStatus==-9 ReadRestartFile above (which restores the checkpointed counters),
+    // so the controllers index FP/piP/rlP state from slot 1. Matches Fortran, where
+    // SetParameters performs this reset after ReadRestartFile. See dev note 202607232319.
+    objInst.instLPF         = 1;
+    objInst.instSecLPF      = 1;
+    objInst.instSecLPFV     = 1;
+    objInst.instHPF         = 1;
+    objInst.instNotchSlopes = 1;
+    objInst.instNotch       = 1;
+    objInst.instPI          = 1;
+    objInst.instRes         = 1;
+    objInst.instRL          = 1;
 
     // ============================================================
     // Read avrSWAP array into derived types
