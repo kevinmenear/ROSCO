@@ -1,0 +1,17 @@
+{
+ "unit": "ColemanTransform",
+ "against": "translation",
+ "checked": 199,
+ "failed": 0,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  N/A      R5_non_degenerate_shape    0 varied extent(s); 1 FIXED by the type at [3] -- not varied, NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      150 value(s) from 9 literal(s) in the reference, each under every declared value of 0 flag(s)",
+  "  applied  R3_no_dead_signal          4 real value(s), none zero in every case",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 3 out-parameter(s): rootMOOP, axTOut, axYOut"
+ ],
+ "mismatches": [],
+ "loop_rev": "3c88913-pinned"
+}

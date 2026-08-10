@@ -1,0 +1,17 @@
+{
+ "unit": "ColemanTransform",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "index_offset",
+  "swap_operands"
+ ],
+ "total": 35,
+ "killed": 35,
+ "survived": 0,
+ "equivalent": 0,
+ "score": 1.0,
+ "loop_rev": "3c88913-pinned",
+ "survivors": []
+}

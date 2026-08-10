@@ -30,7 +30,21 @@ MODULE Functions
 
 USE Constants
 
+USE ISO_C_BINDING
 IMPLICIT NONE
+
+
+    ! Auto-generated interface for C++ implementation of ColemanTransform
+    INTERFACE
+        SUBROUTINE colemantransform_c(rootMOOP, aziAngle, nHarmonic, axTOut, axYOut) BIND(C, NAME='colemantransform_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), INTENT(IN) :: rootMOOP(*)
+            REAL(C_DOUBLE), VALUE :: aziAngle
+            INTEGER(C_INT), VALUE :: nHarmonic
+            REAL(C_DOUBLE), INTENT(OUT) :: axTOut
+            REAL(C_DOUBLE), INTENT(OUT) :: axYOut
+        END SUBROUTINE colemantransform_c
+    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -349,24 +363,14 @@ CONTAINS
 
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE ColemanTransform(rootMOOP, aziAngle, nHarmonic, axTOut, axYOut)
-    ! The Coleman or d-q axis transformation transforms the root out of plane bending moments of each turbine blade
-    ! to a direct axis and a quadrature axis
-
+        USE ISO_C_BINDING
         IMPLICIT NONE
-        ! Inputs
-        REAL(DbKi), INTENT(IN)     :: rootMOOP(3)                      ! Root out of plane bending moments of each blade
-        REAL(DbKi), INTENT(IN)     :: aziAngle                         ! Rotor azimuth angle
-        INTEGER(IntKi), INTENT(IN)  :: nHarmonic                        ! The harmonic number, nP
-        ! Outputs
-        REAL(DbKi), INTENT(OUT)    :: axTOut, axYOut               ! Direct axis and quadrature axis outputted by this transform
-        ! Local
-        REAL(DbKi), PARAMETER      :: phi2 = 2.0/3.0*PI                ! Phase difference from first to second blade
-        REAL(DbKi), PARAMETER      :: phi3 = 4.0/3.0*PI                ! Phase difference from first to third blade
-
-        ! Body
-        axTOut  = 2.0/3.0 * (cos(nHarmonic*(aziAngle))*rootMOOP(1) + cos(nHarmonic*(aziAngle+phi2))*rootMOOP(2) + cos(nHarmonic*(aziAngle+phi3))*rootMOOP(3))
-        axYOut  = 2.0/3.0 * (sin(nHarmonic*(aziAngle))*rootMOOP(1) + sin(nHarmonic*(aziAngle+phi2))*rootMOOP(2) + sin(nHarmonic*(aziAngle+phi3))*rootMOOP(3))
-        
+        REAL(8), INTENT(IN) :: rootMOOP(3)
+        REAL(8), INTENT(IN) :: aziAngle
+        INTEGER(4), INTENT(IN) :: nHarmonic
+        REAL(8), INTENT(OUT) :: axTOut
+        REAL(8), INTENT(OUT) :: axYOut
+        CALL colemantransform_c(rootMOOP, aziAngle, nHarmonic, axTOut, axYOut)
     END SUBROUTINE ColemanTransform
 
 !-------------------------------------------------------------------------------------------------------------------------------

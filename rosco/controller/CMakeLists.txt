@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
 project(ROSCO VERSION 2.9.0 LANGUAGES Fortran C)
+enable_language(CXX)
 
 set(CMAKE_Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/ftnmods")
 
@@ -26,6 +27,15 @@ message(STATUS "CMAKE_Fortran_COMPILER_ID = ${CMAKE_Fortran_COMPILER_ID}")
 # same requirement but are unverified on this tree.
 set(FP_CONTRACT_OFF_GNU "-ffp-contract=off")
 set(FP_CONTRACT_OFF_INTEL "-fp-model precise")
+
+# The C++ side, which only exists once a translation is integrated. `vit
+# integrate` adds `enable_language(CXX)` and a .cpp to SOURCES; it does not set
+# CXX flags, so the translation would compile at Release's bare -O3 -DNDEBUG
+# and could contract exactly the multiply-add the Fortran no longer does --
+# reintroducing the difference from the other side, after the Fortran fix had
+# been verified. "Every compiler" is the criterion, not "the one that showed
+# the problem".
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FP_CONTRACT_OFF_GNU}")
 
 if(APPLE OR UNIX)
 # Enable .dll export
@@ -60,6 +70,7 @@ set(SOURCES
     src/ROSCO_IO.f90
     src/ZeroMQInterface.f90
     src/ExtControl.f90
+    src/colemantransform.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
@@ -118,7 +129,7 @@ add_library(discon SHARED ${SOURCES})
 
 if(PC_ZeroMQ_FOUND)
 	target_include_directories(discon PUBLIC ${ZeroMQ_INCLUDE_DIR})
-	target_link_libraries(discon PUBLIC ${ZeroMQ_LIBRARY})
+	target_link_libraries(discon PUBLIC ${ZeroMQ_LIBRARY} stdc++)
 endif()
 
 

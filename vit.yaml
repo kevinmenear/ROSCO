@@ -31,7 +31,26 @@ kgen:
   run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py
   clean_cmd: cd /workspace/ROSCO-r2/rosco/controller/build && make clean
   install_cmd: cp /workspace/ROSCO-r2/rosco/controller/build/libdiscon.so /workspace/ROSCO-r2/rosco/lib/libdiscon.so
-  invocation: 0:0:1-20
+  # WIDENED 2026-08-10 during unit #2, and it took two tries. The setup value
+  # 0:0:1-20 is VACUOUS for ColemanTransform: the first 21 invocations at
+  # Controllers.f90:510 land at simulation start, where Azimuth and rootMOOPF
+  # are 0, so the function was handed zero and expected to return zero in every
+  # captured case. A translation reading none of its inputs and writing 0.0
+  # passed 21/21 with 4725/4725 IDENTICAL. That artifact is kept, deliberately,
+  # under evidence/ColemanTransform/.
+  #
+  # Widening alone did not fix it. Against scenario 6 -- which coverage shows
+  # executing the call site 3,999 times -- invocations 2000-2020 and 3900-3920
+  # are ALSO all-zero: scenario 6 is a 1-DOF sim that never drives azimuth or
+  # blade root moments, so the line ran 7,998 times on zeros. P9 in one
+  # measurement: coverage says a line executed, not that it executed on data
+  # that can tell two translations apart.
+  #
+  # Scenario 27 injects synthetic azimuth and per-blade rootMOOP and has the
+  # highest measured hit count at this call site, 23,999. The ranges span its
+  # start, middle and end. Chosen from coverage/line_coverage.json, not copied
+  # from the first replication.
+  invocation: 0:0:1-20,0:0:12000-12020,0:0:23900-23920
   # Interface truth about the Bladed-style array: DISCON receives it as an
   # assumed-size dummy, so nothing in the source states its extent.
   assumed_size_arrays:
@@ -55,13 +74,19 @@ fortran:
   compiler: gfortran
   # -ffp-contract=off is E1.2's method requirement, not a preference: without it
   # the compiler may fuse a multiply-add and the two sides stop being
-  # bit-comparable. NOTE: rosco/controller/CMakeLists.txt does NOT currently
-  # pass it, so this declares a requirement the build does not yet meet. E1.2 is
-  # open; closing it means recapturing the baseline. See STATUS.md.
+  # bit-comparable. CLOSED 2026-08-10 -- rosco/controller/CMakeLists.txt now
+  # passes it to gfortran AND to g++, and scripts/assert_fp_contract.sh checks
+  # both the build line and the absence of FMA in the linked library. The gap
+  # this comment used to describe was not theoretical: it cost unit #2 a ~1 ULP
+  # disagreement on 105 of 200 inputs, and closing it meant regenerating 20 of
+  # 27 baselines.
   flags: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
 verification:
   tolerance: 1.0e-14
-translations: {}
+translations:
+  ColemanTransform:
+    status: integrated
+    cpp_file: translations/Functions/colemantransform.cpp
 types:
   ControlParameters:
     strategy: view
