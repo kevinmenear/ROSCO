@@ -49,7 +49,16 @@ static void setFortranString(char* dest, int maxLen, const std::string& src) {
 
 static std::string toUpper(const std::string& s) {
     std::string r = s;
-    for (auto& c : r) c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+    // Fortran `Conv2UC` is `CHAR(ICHAR(c) - 32)` guarded by `c >= 'a' .AND.
+    // c <= 'z'` -- plain ASCII, in every locale, always. `std::toupper` follows
+    // the current C locale, and this function uppercases PARAMETER NAMES before
+    // comparing them, so a locale that maps letters differently silently stops
+    // a parameter from being recognised. (Turkish is the standard example: 'i'
+    // does not uppercase to 'I'.)
+    for (auto& c : r) {
+        unsigned char u = static_cast<unsigned char>(c);
+        if (u >= 'a' && u <= 'z') c = static_cast<char>(u - 32);
+    }
     return r;
 }
 
