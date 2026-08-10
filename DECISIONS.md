@@ -447,3 +447,41 @@ campaign. It is passed explicitly at launch and recorded here.
 A timeout is no longer a run-ender in any case: `Driver.run_unit` now catches at
 the dispatch, records the unit with its cost as UNKNOWN rather than $0.00, and
 escalates `session_failed`. The timeout is now a bound, not a cliff.
+
+## 2026-08-10 — the campaign's VIT was 89 commits stale; reconciled at unit 1
+
+`vit-dev` sets `PYTHONPATH=/workspace/vit`, which is `~/Artifacts/vit_translation/vit`
+— NOT the canonical checkout the handoff named. So every `vit extract /
+translate / verify / integrate` in this campaign ran from a tree 89 commits
+behind canonical, and ColemanTransform's evidence already did. Merge-base
+`10f7cd4`; 1 campaign-only commit (`d85b33b`) plus 37 uncommitted lines.
+
+Nobody checked which VIT the container imports. The answer was one `git log`
+away throughout.
+
+Those 89 commits are the post-replication work whose purpose was removing
+fails-green defects from VIT — the redtest `candidates()` fix, the check
+registry with its deferral list emptied, reachability's `compile_references`,
+exponent grouping, the locale fixes. Running a campaign about silent
+verification failure on an instrument known to contain silent verification
+failures is self-defeating. Reconciling at unit 1 costs a rebuild and a
+re-verify; at unit 40 it would be unaffordable and the instrument would have to
+be defended rather than fixed.
+
+Merged to `d07a716`. The one conflict is the argument in miniature: both sides
+had independently fixed the SAME explicit-shape-array bug, and canonical's was
+strictly better — ours hardcoded `REAL(C_DOUBLE)` for every REAL array, which IS
+the kind defect canonical fixed with `_iso_c_for()`, so keeping ours would have
+traded a caught rank bug for an uncaught precision one on every `REAL(ReKi)`.
+The Makefile link fix was superseded the same way and removed rather than kept
+alongside.
+
+Re-verified after the merge rather than assumed: `vit status` and `vit parse`
+work (`rootMOOP: REAL(8) INTENT(IN)(3)`, rank preserved), the integrated build
+gates 5,252,000 / 0, and `vit_harness` generates 217 cases.
+
+`vit_rev` is now stamped into harness and mutation artifacts beside `loop_rev`,
+via a `.vit_rev` pin file because `vit-dev` has no git. Every instrument that
+produces evidence should say which version of itself produced it — the loop
+stamp caught the loop's own drift on its first live run, and this one would have
+caught the 89 before the campaign started.
