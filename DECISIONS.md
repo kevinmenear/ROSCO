@@ -64,3 +64,55 @@ Consequence for planning: kernel replay is not currently an available
 verification route, so units must close on the generated differential harness.
 Six of them are `respecify`, for which P13 makes a mutation score mandatory
 anyway.
+
+## 2026-08-10 — bridge_feasible was a reading of a parse failure
+
+`AddToList` was unit #1, `contract: mirror`, `bridge_feasible: yes`. Its whole
+contract is `allocate(clist(isize+1))` → copy → `move_alloc(clist, list)`: it
+changes the extent and the data pointer of the caller's allocatable array. The
+bridge VIT generates for it passes `list(*)` as a bare pointer and `n_list` BY
+VALUE, and the wrapper's dummy drops `allocatable` altogether. The function's
+only effect has no representation in its own signature.
+
+The plan already said so, two entries away. `ParseInAry_Opt` and
+`ParseDbAry_Opt` were `bridge_feasible: no` with the basis `c_alloc_inout does
+not cross (INTENT(INOUT) ALLOCATABLE needs an ALLOCA)` — the identical feature.
+
+**The mechanism was not the parameter name.** `harness/contract.py`'s `_DECL`
+matched `^(CHARACTER|INTEGER|...)\b[^:]*::`, and `[^:]*` forbids a colon
+anywhere in the attribute list — so every declaration carrying `DIMENSION(:)`
+or `dimension(:,:)` failed to match and the argument silently got no entry in
+`arg_decls`. Measured on this tree: 15 of 418 dummy arguments lost, in 12 of 83
+procedures. `AddToList`'s `list` was one of them, so `bridge_blockers` iterated
+a one-argument list, found no ALLOCATABLE, and returned (). The evidence of `no`
+had been parsed away and the absence was rendered as a positive.
+
+All 67 `yes` verdicts carried the same basis string — "no signature feature is
+recorded as failing to cross" — which states in words that nothing was
+recorded. `Tri` requires a basis on a settled value precisely so a yes cannot be
+told from a default; a constant met that requirement syntactically and defeated
+it semantically. A constant is not a provenance.
+
+Fixed in the loop repo: the regex now admits colons inside the attribute list;
+`_feasibility` returns UNKNOWN if any argument's declaration did not parse,
+rather than a verdict about the arguments that happened to be readable; and a
+`yes` basis now names the arguments it read. Both fixes are red-tested.
+
+Re-derived, unchanged sources, same entry point and exclusions:
+
+    bridge_feasible   67 yes / 2 no   ->   64 yes / 5 no
+    changed:  AddToList     yes -> no   (list: c_alloc_inout)
+              Read_OL_Input yes -> no   (channels: c_alloc_inout)
+              interp2d      yes -> no   (zdata: c_assumed_shape_2d)
+
+`interp2d` fails on a different cell — a rank-2 assumed-shape dummy — a blocker
+class the old plan could not see at all. Nothing else in the plan moved: unit
+set, order, contracts, absorption, exclusions and notes are byte-identical, so
+this is a contained correction and not a re-planning.
+
+**Consequence not yet addressed.** `loop/driver.py:82`'s `next_unit` selects on
+`disposition` alone and ignores `bridge_feasible`, so the Driver would still
+dispatch `AddToList` first — now against a plan that states its signature cannot
+cross. Whether an infeasible unit should be skipped, escalated, or given a
+disposition up front is a policy question, recorded here rather than decided in
+passing.

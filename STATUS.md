@@ -31,6 +31,11 @@ values in `phases.toml` turns both `[FAIL]`, and restoring them turns both
 
 ## Open
 
+- **`AddToList` is unit #1 and its signature cannot cross the bridge.** Now
+  `bridge_feasible: no` after the plan was re-derived. It must not be the first
+  unit dispatched, and `next_unit` does not yet consult the field — it selects
+  on `disposition` alone. Decide the policy (skip / escalate / pre-dispose)
+  before any unit is dispatched.
 - **BLOCKER — extraction reports success and captures no state.** `vit extract`
   prints `✓ Extraction successful` alongside `WARNING: No state data captured.`
   Zero state files against the first replication's `kernel/AddToList.0.0.1`.

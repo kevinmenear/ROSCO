@@ -14,8 +14,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "value": "no",
+    "basis": "list: c_alloc_inout does not cross (UNSUPPORTED: as c_alloc_out. INTENT(INOUT) ALLOCATABLE needs an ALLOCA)"
    },
    "observability": null
   },
@@ -34,7 +34,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 5 argument declaration(s) read and checked against the matrix: axtout, axyout, aziangle, nharmonic, rootmoop"
    },
    "observability": null
   },
@@ -53,7 +53,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 6 argument declaration(s) read and checked against the matrix: axtin, axyin, aziangle, azioffset, nharmonic, pitcomipc"
    },
    "observability": null
   },
@@ -72,7 +72,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 1 argument declaration(s) read and checked against the matrix: str"
    },
    "observability": null
   },
@@ -93,7 +93,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 5 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, errvar, extdll, localvar"
    },
    "observability": null
   },
@@ -112,7 +112,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 2 argument declaration(s) read and checked against the matrix: givenfil, pathname"
    },
    "observability": null
   },
@@ -131,7 +131,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 2 argument declaration(s) read and checked against the matrix: givenfil, rootname"
    },
    "observability": null
   },
@@ -150,7 +150,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 3 argument declaration(s) read and checked against the matrix: line, numwords, words"
    },
    "observability": null
   },
@@ -169,7 +169,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 8 argument declaration(s) read and checked against the matrix: cornerfreq, dt, fp, initialvalue, inputsignal, inst, istatus, reset"
    },
    "observability": null
   },
@@ -188,7 +188,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 1 argument declaration(s) read and checked against the matrix: num"
    },
    "observability": null
   },
@@ -207,7 +207,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 8 argument declaration(s) read and checked against the matrix: cornerfreq, dt, fp, initialvalue, inputsignal, inst, istatus, reset"
    },
    "observability": null
   },
@@ -226,7 +226,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 1 argument declaration(s) read and checked against the matrix: array"
    },
    "observability": null
   },
@@ -245,7 +245,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 10 argument declaration(s) read and checked against the matrix: betaden, betanum, dt, fp, initialvalue, inputsignal, inst, istatus, omega, reset"
    },
    "observability": null
   },
@@ -264,7 +264,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 10 argument declaration(s) read and checked against the matrix: cornerfreq, damp, dt, fp, initialvalue, inputsignal, inst, istatus, moving, reset"
    },
    "observability": null
   },
@@ -283,7 +283,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 1 argument declaration(s) read and checked against the matrix: givenfil"
    },
    "observability": null
   },
@@ -302,7 +302,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 4 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, errvar, localvar"
    },
    "observability": null
   },
@@ -320,8 +320,8 @@
    "verification": "generated harness + mutation score (P13); the gate cannot decide",
    "why": "performs external I/O on Unit_OL_Input that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "value": "no",
+    "basis": "channels: c_alloc_inout does not cross (UNSUPPORTED: as c_alloc_out. INTENT(INOUT) ALLOCATABLE needs an ALLOCA); channels: c_assumed_shape_2d does not cross (UNSUPPORTED: a rank-2 assumed-shape dummy is passed as m(1:n_m), a ran)"
    },
    "observability": null
   },
@@ -340,7 +340,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 9 argument declaration(s) read and checked against the matrix: cornerfreq, damp, dt, fp, initialvalue, inputsignal, inst, istatus, reset"
    },
    "observability": null
   },
@@ -359,7 +359,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 9 argument declaration(s) read and checked against the matrix: cornerfreq, damp, dt, fp, initialvalue, inputsignal, inst, istatus, reset"
    },
    "observability": null
   },
@@ -378,7 +378,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 2 argument declaration(s) read and checked against the matrix: cntrpar, localvar"
    },
    "observability": null
   },
@@ -397,7 +397,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 3 argument declaration(s) read and checked against the matrix: cntrpar, errvar, localvar"
    },
    "observability": null
   },
@@ -416,7 +416,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 1 argument declaration(s) read and checked against the matrix: n"
    },
    "observability": null
   },
@@ -435,7 +435,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 4 argument declaration(s) read and checked against the matrix: errvar, xdata, xq, ydata"
    },
    "observability": null
   },
@@ -454,7 +454,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 3 argument declaration(s) read and checked against the matrix: inputvalue, maxvalue, minvalue"
    },
    "observability": null
   },
@@ -473,7 +473,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 6 argument declaration(s) read and checked against the matrix: errvar, x, x0, x1, y0, y1"
    },
    "observability": null
   },
@@ -492,7 +492,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 2 argument declaration(s) read and checked against the matrix: errvar, x"
    },
    "observability": null
   },
@@ -511,7 +511,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 1 argument declaration(s) read and checked against the matrix: x"
    },
    "observability": null
   },
@@ -530,7 +530,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 1 argument declaration(s) read and checked against the matrix: x"
    },
    "observability": null
   },
@@ -552,7 +552,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 5 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, errvar, localvar, size_avcmsg"
    },
    "observability": null
   },
@@ -574,7 +574,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 5 argument declaration(s) read and checked against the matrix: errvar, expvarname, filelinenum, filename, words"
    },
    "observability": null
   },
@@ -601,7 +601,7 @@
    "why": "performs external I/O on UnDb, UnDb2, UnDb3 that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 7 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, debugvar, errvar, localvar, rootname, size_avcoutname"
    },
    "observability": null
   },
@@ -623,7 +623,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 6 argument declaration(s) read and checked against the matrix: arylen, filelines, foundline, line, linenum, paramname"
    },
    "observability": null
   },
@@ -644,7 +644,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 10 argument declaration(s) read and checked against the matrix: dt, error, i0, inst, ki, kp, maxvalue, minvalue, pip, reset"
    },
    "observability": null
   },
@@ -666,7 +666,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 13 argument declaration(s) read and checked against the matrix: dt, error, i0, kd, ki, kp, localvar, maxvalue, minvalue, objinst, pip, reset, tf"
    },
    "observability": null
   },
@@ -687,7 +687,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 12 argument declaration(s) read and checked against the matrix: dt, error, error2, i0, inst, ki, ki2, kp, maxvalue, minvalue, pip, reset"
    },
    "observability": null
   },
@@ -708,7 +708,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 5 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, errvar, localvar, objinst"
    },
    "observability": null
   },
@@ -729,7 +729,7 @@
    "why": "every input and output crosses the signature; writes to unit 401 without opening it -- an UNCOMPARED output, not a missing input",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 5 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, errvar, localvar, objinst"
    },
    "observability": null
   },
@@ -755,7 +755,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 5 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, errvar, localvar, objinst"
    },
    "observability": null
   },
@@ -776,7 +776,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 10 argument declaration(s) read and checked against the matrix: dt, error, freq, inst, ki, kp, maxvalue, minvalue, reset, resp"
    },
    "observability": null
   },
@@ -797,7 +797,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 3 argument declaration(s) read and checked against the matrix: cntrpar, localvar, objinst"
    },
    "observability": null
   },
@@ -819,7 +819,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 4 argument declaration(s) read and checked against the matrix: cntrpar, errvar, localvar, objinst"
    },
    "observability": null
   },
@@ -841,7 +841,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 4 argument declaration(s) read and checked against the matrix: cntrpar, errvar, localvar, objinst"
    },
    "observability": null
   },
@@ -862,7 +862,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 5 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, errvar, localvar, objinst"
    },
    "observability": null
   },
@@ -885,7 +885,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 6 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, debugvar, errvar, localvar, objinst"
    },
    "observability": null
   },
@@ -905,8 +905,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "value": "no",
+    "basis": "zdata: c_assumed_shape_2d does not cross (UNSUPPORTED: a rank-2 assumed-shape dummy is passed as m(1:n_m), a ran)"
    },
    "observability": null
   },
@@ -927,7 +927,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 8 argument declaration(s) read and checked against the matrix: dt, inputsignal, inst, maxrate, minrate, reset, resetvalue, rlp"
    },
    "observability": null
   },
@@ -952,7 +952,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 4 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, localvar, objinst"
    },
    "observability": null
   },
@@ -973,7 +973,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 6 argument declaration(s) read and checked against the matrix: bldpitch, cntrpar, errvar, localvar, perfdata, rotspeed"
    },
    "observability": null
   },
@@ -996,7 +996,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 5 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, errvar, localvar, objinst"
    },
    "observability": null
   },
@@ -1021,7 +1021,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 4 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, localvar, objinst"
    },
    "observability": null
   },
@@ -1043,7 +1043,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 4 argument declaration(s) read and checked against the matrix: cntrpar, errvar, localvar, objinst"
    },
    "observability": null
   },
@@ -1064,7 +1064,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 3 argument declaration(s) read and checked against the matrix: cntrpar, localvar, objinst"
    },
    "observability": null
   },
@@ -1090,7 +1090,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 5 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, errvar, localvar, objinst"
    },
    "observability": null
   },
@@ -1159,7 +1159,7 @@
    "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 7 argument declaration(s) read and checked against the matrix: allowdefault, errvar, filelines, filename, unec, variable, varname"
    },
    "observability": null
   },
@@ -1182,7 +1182,7 @@
    "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 7 argument declaration(s) read and checked against the matrix: allowdefault, errvar, filelines, filename, unec, variable, varname"
    },
    "observability": null
   },
@@ -1205,7 +1205,7 @@
    "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 7 argument declaration(s) read and checked against the matrix: allowdefault, errvar, filelines, filename, unec, variable, varname"
    },
    "observability": null
   },
@@ -1226,7 +1226,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 4 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, localvar, objinst"
    },
    "observability": null
   },
@@ -1252,7 +1252,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 5 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, errvar, localvar, objinst"
    },
    "observability": null
   },
@@ -1273,7 +1273,7 @@
    "why": "performs external I/O on Un that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 6 argument declaration(s) read and checked against the matrix: cntrpar, errvar, localvar, objinst, rootname, size_avcoutname"
    },
    "observability": null
   },
@@ -1297,7 +1297,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 5 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, errvar, localvar, objinst"
    },
    "observability": null
   },
@@ -1328,7 +1328,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 6 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, debugvar, errvar, localvar, objinst"
    },
    "observability": null
   },
@@ -1370,7 +1370,7 @@
    "why": "opens and closes UnControllerParameters, UnEc itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 6 argument declaration(s) read and checked against the matrix: accinfile, accinfile_size, cntrpar, errvar, localvar, rootname"
    },
    "observability": null
   },
@@ -1396,7 +1396,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 6 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, errvar, localvar, objinst, perfdata"
    },
    "observability": null
   },
@@ -1422,7 +1422,7 @@
    "why": "opens and closes UnPerfParameters itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 3 argument declaration(s) read and checked against the matrix: cntrpar, errvar, perfdata"
    },
    "observability": null
   },
@@ -1445,7 +1445,7 @@
    "why": "performs external I/O on Un that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 8 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, errvar, localvar, objinst, perfdata, rootname, size_avcoutname"
    },
    "observability": null
   },
@@ -1470,7 +1470,7 @@
    "why": "every input and output crosses the signature; writes to standard output (a side effect, not compared)",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 9 argument declaration(s) read and checked against the matrix: accinfile, avrswap, cntrpar, errvar, localvar, objinst, perfdata, rootname, size_avcmsg"
    },
    "observability": null
   },
@@ -1512,7 +1512,7 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "yes",
-    "basis": "no signature feature is recorded as failing to cross"
+    "basis": "all 5 argument declaration(s) read and checked against the matrix: accinfile, avcmsg, avcoutname, avifail, avrswap"
    },
    "observability": null
   }
