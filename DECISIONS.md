@@ -417,3 +417,33 @@ rules unit #2 actually bore on:
     NOT exercised, and worth naming: P5 (no gap was closed by addition),
     P6 (nothing absent had to be rendered), E1.3, E1.5, E1.6, E2.x, E3.3,
     E3.4, E3.6, E5.x.
+
+## 2026-08-10 — --timeout-s raised to 7200, with the basis measured not guessed
+
+The ColemanTransform session hit the 3600 s default. Its own commit timestamps
+split the hour, so the number is derivable rather than chosen:
+
+    17:45:33  dispatched
+    18:15:23  Phase 1/3 -- closed E1.2, regenerated the baselines it invalidated
+    18:40:50  ColemanTransform translated, verified four ways, integrated
+    18:44:07  state commit
+    18:45:33  killed by the timeout, ~90 s after its last commit
+
+So roughly **30 minutes of one-time infrastructure** and **~28 minutes of unit
+work**. Telemetry agrees in shape: 100 events, 29.6 minutes of bracketed command
+time, dominated by extract (28), test-validate (20) and gate (18).
+
+The infrastructure half does not recur, so it says almost nothing about a
+typical unit -- which is exactly why 3600 cannot be defended by "it nearly
+fit". What it does say is that a unit's own cycle here is ~28 minutes for a
+SMALL mirror unit with five scalar/array arguments, and the campaign this method
+comes from recorded a 4.8x upward cost trend across its run.
+
+**7200 s.** Roughly 4x the observed unit cycle, which absorbs that trend without
+being unbounded. Not a default change: `run_campaign.py` still defaults to 3600,
+because one campaign's single measurement should not silently retune every other
+campaign. It is passed explicitly at launch and recorded here.
+
+A timeout is no longer a run-ender in any case: `Driver.run_unit` now catches at
+the dispatch, records the unit with its cost as UNKNOWN rather than $0.00, and
+escalates `session_failed`. The timeout is now a bound, not a cliff.
