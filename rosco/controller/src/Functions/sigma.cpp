@@ -7,7 +7,7 @@ double sigma(double x, double x0, double x1, double y0, double y1, errorvariable
     double a3 = 2.0 / d3;
     double a2 = -3.0 * (x0 + x1) / d3;
     double a1 = 6.0 * x1 * x0 / d3;
-    double a0 = (x0 - 3.0 * x1) * x0 * x0 / d3;
+    double a0 = (x0 - 3.0 * x1) * (x0 * x0) / d3;
 
     double result;
     if (x < x0) {
@@ -15,7 +15,7 @@ double sigma(double x, double x0, double x1, double y0, double y1, errorvariable
     } else if (x > x1) {
         result = y1;
     } else {
-        result = (a3 * x * x * x + a2 * x * x + a1 * x + a0) * (y1 - y0) + y0;
+        result = (a3 * (x * x * x) + a2 * (x * x) + a1 * x + a0) * (y1 - y0) + y0;
     }
 
     // Add RoutineName to error message
