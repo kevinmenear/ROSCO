@@ -358,8 +358,11 @@ is `/workspace/ROSCO-r2`.
   `bf25e35` and hash-verified (`6e6b2623446d`, `c87a74e194d0`). Each scenario
   must run in its own process -- the DLL holds SAVE state across calls.
 
-  It does not yet print a compared count or exit non-zero on comparing nothing.
-  That is an E3.1 exit criterion and is TODO.
+  It does not yet print a compared count next to its verdict. That much IS
+  E3.1 and is TODO. Making it also exit non-zero when it compares NOTHING is
+  not part of E3.1 as written -- it follows from SPEC §7's reasoning that the
+  count is what catches the vacuous case, and is worth doing, but record it as
+  a local decision rather than as the criterion.
 
 - **Baseline capture:** 26 of 27 scenarios. Scenario 4 does not run -- below.
 
