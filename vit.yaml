@@ -1,0 +1,76 @@
+# VIT configuration for rosco-r2.
+#
+# DERIVED from ROSCO-replication's vit.yaml AT bf25e35 -- its SETUP commit, the
+# revision campaigns/rosco-r2.toml already pins as `src_rev`. Not from its HEAD.
+# That distinction is the whole point: at HEAD the file carries 54 integrated
+# translations, five `types` entries, a `shared_files` list and a widened kgen
+# invocation, all of which were LEARNED DURING the first run. Deriving from HEAD
+# would hand this campaign an answer key -- 54 of 69 units pre-declared done,
+# and the names of the files a translator is supposed to produce.
+#
+# Deriving from the setup commit takes only what the first replication knew
+# BEFORE it translated anything.
+#
+# The only substantive change from bf25e35 is mechanical:
+#   /workspace/ROSCO-replication -> /workspace/ROSCO-r2   (4 commands)
+# Everything else is byte-equal to the source; the added comments are why this
+# is declared `derive` rather than `copy`.
+#
+# NOT carried, because they postdate bf25e35:
+#   types.ErrorVariables, types.LocalVariables   (3 types at setup, 5 at HEAD)
+#   shared_files:                                (absent at setup entirely)
+#   invocation's second range 0:0:20000-20020    (setup had 0:0:1-20)
+
+project:
+  name: ROSCO
+  source_dir: rosco/controller/src
+  build_dir: rosco/controller/build
+kgen:
+  path: /workspace/KGen/bin/kgen
+  build_cmd: cd /workspace/ROSCO-r2/rosco/controller/build && cmake --build .
+  run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py
+  clean_cmd: cd /workspace/ROSCO-r2/rosco/controller/build && make clean
+  install_cmd: cp /workspace/ROSCO-r2/rosco/controller/build/libdiscon.so /workspace/ROSCO-r2/rosco/lib/libdiscon.so
+  invocation: 0:0:1-20
+  # Interface truth about the Bladed-style array: DISCON receives it as an
+  # assumed-size dummy, so nothing in the source states its extent.
+  assumed_size_arrays:
+    avrSWAP: 3000
+  # DISCON holds SAVE state across calls in DLL memory that dlclose() does not
+  # reliably release. A replayed kernel must re-enter initialisation.
+  dll_persistence:
+    resets:
+    - anchor: CALL ReadAvrSWAP
+      code: LocalVar%AlreadyInitialized = 0
+build_system:
+  type: cmake
+  cmake_file: rosco/controller/CMakeLists.txt
+  target_name: discon
+fortran:
+  kind_aliases:
+    ReKi: REAL(4)
+    DbKi: REAL(8)
+    SiKi: REAL(4)
+    IntKi: INTEGER(4)
+  compiler: gfortran
+  # -ffp-contract=off is E1.2's method requirement, not a preference: without it
+  # the compiler may fuse a multiply-add and the two sides stop being
+  # bit-comparable. NOTE: rosco/controller/CMakeLists.txt does NOT currently
+  # pass it, so this declares a requirement the build does not yet meet. E1.2 is
+  # open; closing it means recapturing the baseline. See STATUS.md.
+  flags: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+verification:
+  tolerance: 1.0e-14
+translations: {}
+types:
+  ControlParameters:
+    strategy: view
+  PerformanceData:
+    strategy: view
+  ExtControlType:
+    strategy: view
+allocatable:
+  helpers:
+  - name: ParseAry
+    array_arg: 3
+    size_arg: 4

@@ -358,11 +358,43 @@ is `/workspace/ROSCO-r2`.
   `bf25e35` and hash-verified (`6e6b2623446d`, `c87a74e194d0`). Each scenario
   must run in its own process -- the DLL holds SAVE state across calls.
 
-  It does not yet print a compared count next to its verdict. That much IS
-  E3.1 and is TODO. Making it also exit non-zero when it compares NOTHING is
-  not part of E3.1 as written -- it follows from SPEC §7's reasoning that the
-  count is what catches the vacuous case, and is worth doing, but record it as
-  a local decision rather than as the criterion.
+  `regress.sh` prints `channels compared: N  mismatched: M` and writes no
+  artifact. Superseded for gating by `scripts/gate.py` below; still the way to
+  regenerate baselines (`bash scripts/regress.sh --baseline`).
+
+- **Gate (use this one):** WORKS, 2026-08-10.
+  ```
+  python3.12 scripts/gate.py <unit>          # -> gate/<unit>.json, exit != 0 on mismatch
+  ```
+  Runs all 27 scenarios, compares every channel against `baseline_arrays` on
+  the exact bit pattern, prints the count next to the verdict and PERSISTS it.
+  Measured on the pristine build: **5,252,000 values across 351 channels, 0
+  mismatched, 55 s.**
+
+  Three things it does that `regress.sh` does not, each because of something
+  observed here rather than anticipated:
+
+  1. **It counts VALUES, not channels.** 351 against 5,252,000. P9 only asserts
+     `compared > 0`, so a channel-counted artifact passes while saying four
+     orders of magnitude less than it appears to -- and would not be evidence
+     about the same instrument E3.2 observed failing, since the red test is
+     recorded in values.
+  2. **It compares bit patterns via a uint8 view, not `==`.** `==` calls two
+     identical NaNs different; `np.array_equal` collapses a whole channel to one
+     bool.
+  3. **It restores `Examples/DISCON*.IN` afterwards.** `vit_sim.py`'s
+     `write_discon()` rewrites those files in place per scenario and never puts
+     them back -- measured here as `IPC_ControlMode` 1->2 and `F_NumNotchFilts`
+     0->1 left in the tree. `loop/done.py` runs `require_clean_tree=True`, so a
+     unit session that ran the gate could not close; a session that resolved the
+     dirt with `git add -A` would commit a silently reconfigured gate for every
+     unit after it. `gate.py` snapshots and restores them, records which it put
+     back in `inputs_restored`, and reports anything still dirty in
+     `residual_dirt` rather than assuming its own list is complete.
+
+  Exiting non-zero when it compares NOTHING is not part of E3.1 as written. It
+  follows from SPEC §7's reasoning that the count is what catches the vacuous
+  case; recorded in DECISIONS.md as a local decision.
 
 - **Baseline capture:** 26 of 27 scenarios. Scenario 4 does not run -- below.
 
@@ -382,11 +414,64 @@ is `/workspace/ROSCO-r2`.
   many times per timestep in every scenario) and confirm green returns after the
   revert, or the red is not attributable to the perturbation.
 
-- **Extract / capture:** TODO.
+- **Extract / capture:** RUNS, BUT CAPTURES NO STATE. Do not treat as working.
+  ```
+  docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2 && \
+      vit extract AddToList --file rosco/controller/src/ROSCO_IO.f90 --line 1126 \
+      --run-args ' --scenario 3'"
+  ```
+  Run three times on 2026-08-10. Every time it printed **`✓ Extraction
+  successful`** and, two lines later, **`WARNING: No state data captured.`** The
+  kernel tree under `kernel/AddToList/` is generated (20 files) and contains
+  **zero** files matching the campaign's state pattern `\.\d+\.\d+\.\d+$`.
+  The first replication has `kernel/AddToList.0.0.1`, so this IS capturable and
+  something here is not right yet.
 
-- **Reset to clean source:** not applicable yet. This tree has no integration
-  wrappers, so there is nothing to reset. Once the first unit is integrated,
-  this becomes a real requirement -- extraction needs clean Fortran.
+  What was ruled out, so nobody repeats it:
+  - *The call site is unreachable in the default scenario.* True but not the
+    whole story -- all five `AddToList` call sites are gated on `CC_Mode`/
+    `StC_Mode`. Re-running against scenario 3 (`CC_Mode=1`) changed nothing.
+  - *`--run-args` not reaching KGen.* It does: `--dry-run` shows
+    `--cmd-run '... vit_sim.py  --scenario 3'` and `--invocation 0:0:1-20`.
+  - *The uninstrumented library being loaded* -- VIT warns about this loudly
+    because the editable `ROSCO` install points at another tree. It is NOT the
+    cause: `nm -D` shows 27 kgen symbols in BOTH
+    `rosco/controller/build/libdiscon.so` and the installed
+    `rosco/lib/libdiscon.so`. `Examples/vit_sim.py` already resolves the library
+    from this tree and raises rather than falling back, with a comment naming
+    this as "the one failure mode that produces a green result and no signal".
+  - `VIT_WRAPPER_LOG=<path>` enables the wrapper's own diagnostics (VIT's
+    authors anticipated silent capture failure). It logs a clean cmake
+    reconfigure, exit 0, and stops there.
+
+  **The point worth keeping is the shape, not the diagnosis.** A tool that
+  reports success and captures nothing is the exact failure this campaign
+  exists to remove, and it is sitting in our own front-end. Until this is
+  understood, kernel replay is NOT available as a verification route and units
+  must close on the generated harness instead.
+
+  **Extraction is not read-only.** Each run strips CRLF from
+  `rosco/controller/src/DISCON.F90` (162 lines, content identical, 7956 -> 7794
+  bytes) -- including under `--dry-run` -- and leaves `include.ini`,
+  `strace.log`, `kgen.log`, `model/`, `elapsedtime/` and `.vit_build_wrapper.sh`
+  behind. Those are now gitignored; DISCON.F90 must be checked out afterwards.
+  Note the launcher's `--protect 'rosco/controller/src/*.f90'` does NOT cover
+  `DISCON.F90` -- lowercase glob, uppercase extension, verified by running
+  `Path.glob` against the tree: 11 files matched, DISCON.F90 not among them.
+  Add `--protect 'rosco/controller/src/*.F90'` as well.
+
+- **Reset to clean source:** STILL TODO, and now known to be needed EARLIER
+  than "once the first unit is integrated". `vit extract` installs an
+  INSTRUMENTED `libdiscon.so` into `rosco/lib/` -- 27 kgen symbols, confirmed
+  with `nm -D` -- and leaves it there. Any gate run after an extraction
+  therefore measures the instrumented build unless the tree is rebuilt clean
+  first. Until a script exists, the manual sequence is:
+  ```
+  git checkout -- rosco/controller/src/DISCON.F90
+  docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2/rosco/controller/build && \
+      cmake --build . -j4 && cp libdiscon.so /workspace/ROSCO-r2/rosco/lib/libdiscon.so"
+  python3.12 scripts/gate.py __gate__     # confirm 5,252,000 / 0 before trusting anything
+  ```
 
 ### Two upstream ROSCO bugs must be fixed before the gate can run
 
