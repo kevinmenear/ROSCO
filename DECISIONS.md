@@ -143,3 +143,47 @@ would convert a hard requirement into a red test and make the first unit's
 evidence permanently weaker than every later unit's, silently. If mutation
 genuinely cannot run here, that is a Phase 1 blocker to fix or escalate, not a
 flag to drop.
+
+## 2026-08-10 — the loop repo runs from a pinned checkout inside the mount
+
+`vit_harness.py` and `vit_mutate.py` need three things at once: ROSCO-r2's
+Fortran objects, this repo's `harness/` package, and a Linux toolchain. No
+environment had all three. `vit-dev` mounts the campaign but not the loop repo;
+`vit-harness` mounts the loop repo but not the campaign; the host has both plus
+gfortran, but it is macOS and the objects are Linux, so they cannot link.
+
+Both scripts resolve their imports repo-relatively
+(`sys.path.insert(0, parents[1])`), so they need the repo PRESENT at any path --
+not a new mount and not re-plumbing. So a checkout lives at
+
+    ~/Artifacts/vit_translation/translation-loop   ->  /workspace/translation-loop
+
+cloned from the LOCAL repo, not origin: origin does not have the fixes. No
+container was recreated. Compilation now happens in the same container that
+built the objects and ran the gate -- identical, not merely equivalent, which
+matters because equivalence is a measurement and identity is a property. (The
+toolchains do happen to be identical: both images carry gcc/gfortran/g++ 13.3.0
+on Ubuntu 24.04 with glibc 2.39, despite being different images.)
+
+**Pinned to `d58a418`, recorded here, and reversible with `rm -rf`.** Two
+checkouts drift, and a campaign quietly running month-old harness code is the
+silent-wrong-answer shape this project exists to remove. So both scripts now
+stamp `loop_rev` into their JSON beside `{against, checked, failed}` and
+`{total, killed, equivalent, score}`: the evidence already said what it measured,
+this says which instrument measured it.
+
+`vit-dev` has NO git, so the stamp returned "unknown" there -- silently, in the
+direction that looks like it worked. It now falls back to a `.loop_rev` pin file
+and reports `d58a418-pinned`, never dressed up as a verified read: it states
+what the pin claims and cannot see whether the tree was edited after. Live git
+still wins where it exists.
+
+Verified against ROSCO-r2 rather than assumed: `vit_harness.py` generated 257
+cases for ColemanTransform with the rules applied, and `vit_mutate.py` reached
+the point of reading the translation and failed with a clean FileNotFoundError
+because no translation exists yet -- which is the smoke test's job to produce.
+
+Separately: `vit-dev`'s image was UNTAGGED (`b83f3bc715d0`). A `docker image
+prune` would have deleted the campaign's execution environment, which holds two
+weeks of state and is not rebuildable from a Dockerfile we have. Now tagged
+`vit-dev-rosco:latest`.
