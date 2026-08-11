@@ -11,18 +11,15 @@
     "DISCON"
    ],
    "dependency_depth": 0,
-   "verification": "differential harness against the clean Fortran + mutation score; post-integration harness for the wrapper. NOT the gate and NOT a kernel: no scenario reaches this function.",
+   "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "no",
-    "basis": "list: c_alloc_inout does not cross (UNSUPPORTED: as c_alloc_out. INTENT(INOUT) ALLOCATABLE needs an ALLOCA)",
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'",
     "observed": "PREDICTION REFUTED, in two dispatches, and the split is the finding.\n\nFIRST DISPATCH -- verdict confirmed against the tool as it stood, basis refuted. `vit interface` emitted `INTEGER(C_INT), INTENT(INOUT) :: list(*)` plus `INTEGER(C_INT), VALUE :: n_list`, under a wrapper declaring `INTEGER(4), INTENT(INOUT) :: list(:)` -- the ALLOCATABLE attribute dropped with no diagnostic, although fortran_parser had recorded is_allocatable=True. Measured against the original on the live ROSCO path (allocate 4, append 3x): the caller's array was still 4 elements, the appended values written one past the end of its heap block, and nothing -- gfortran, g++, or the run -- said so. A hand-written Fortran 2018 CFI bridge reproduced the oracle BYTE FOR BYTE on both branches, so the limit was VIT's, not the argument's. evidence/AddToList/bridge_probe/result.json.\n\nSECOND DISPATCH -- the verdict is refuted too. VIT 37f8bdf generates that bridge: the dummy is declared in the BIND(C) interface exactly as the original declares it (`DIMENSION(:), ALLOCATABLE, INTENT(INOUT)`), no extent parameter is emitted, and the C side receives the caller's own CFI_cdesc_t*. The unit is INTEGRATED on that path. Nothing about it is hand-written: interface block, wrapper, C++ scaffold, the differential harness's Fortran bridge and the post-integration shim are all generated (X1, X2). The loop's harness learned the same convention (cf885e3) -- three generators, which is what the escalation said it would take.\n\nWHERE THE BASIS CAME FROM: tests/conformance/matrix.toml's `[c_alloc_inout] compiles = \"no\"` was measured from `test_validate.generate_fortran_bridge` -- the DIFFERENTIAL HARNESS's Fortran side, never linked into the library -- while `vit integrate` ships `interface_gen`'s output, which compiled clean and did nothing. The cell now reads compiles=\"yes\", integrates=\"yes\", re-measured. The prediction was right by luck of a different generator failing.\n\nSTILL REFUSED by VIT, for being UNMEASURED rather than impossible, each with its reason in the exception message: a SCALAR allocatable, rank >= 2, a CHARACTER or derived-type element, and any type/kind the interface cannot declare as the actual's own (LOGICAL, COMPLEX). The three other `bridge_feasible: no` entries waiting on this -- Read_OL_Input, ParseInAry_Opt, ParseDbAry_Opt -- are not thereby unblocked: their verdicts were derived from the same pre-`integrates` matrix and have to be re-measured, not inferred from this one."
    },
    "observability": "THE GATE CANNOT SEE THIS UNIT. VERIFICATION IS THE DIFFERENTIAL HARNESS AND THE MUTATION SCORE, NOT THE GATE.\n\nThe body and all five call sites have zero hits in all 27 scenarios (coverage/line_coverage.json). Measured a second time, independently of gcov, and now against the INTEGRATED build: perturbing the C++ translation (`clist[nsize - 1] = element` -> `element + 1000`), rebuilding and re-gating moved 0 of 5,252,000 values. gate/AddToList.redtest.json, verdict RED_TEST_FAIL. So gate/AddToList.json -- 5,252,000 values compared, 0 mismatched -- is a green that constrains nothing about AddToList, and is committed next to the red test that says why.\n\nThere is no kernel either, for the same reason: no scenario reaches a call site, so there is no runtime state to capture. `vit extract` reporting `No state data captured` during setup was this deadness, not a tool defect.\n\nWhat DOES constrain it, all red-tested:\n  * 43 differential cases against the clean Fortran, 0 failed. Perturbing the allocated branch turns 18 red and the unallocated branch 25; 18 + 25 = 43, so no case is inert.\n  * mutation 23/23 behavioural killed, score 1.000, 2 declared equivalent with reasons (CFI_allocate's elem_len is ignored for a non-CHARACTER type, F2018 18.5.5.5).\n  * 43 post-integration cases against the integrated build, 0 failed; the wrapper corrupting one argument turns all 43 red.\n\nThe unallocated actual is a distinct input that extent 0 is not, and the harness's generator had no rule that would produce it -- `_extent_plan` ranges over 1, 3, 4, ... It is now a two-valued flag, so R2 guarantees both states appear. That is 25 of the 43 cases.\n\nKNOWN GAP, stated rather than left to be found: with one extent parameter, `_extent_plan` gives it the same value (3) in every case, so the harness varies allocated/unallocated but NOT the length. A defect that only appears at another length is not covered by these 43 cases.",
    "disposition": "integrated",
-   "source_file": "rosco/controller/src/ROSCO_Helpers.f90",
-   "translation": "translations/ROSCO_Helpers/addtolist.cpp",
-   "harness_required": true,
    "evidence": [
     "evidence/AddToList/README.md",
     "translations/ROSCO_Helpers/addtolist.cpp",
@@ -51,7 +48,9 @@
     "evidence/AddToList/vit_translate.stdout.txt",
     "evidence/AddToList/addtolist.scaffold.cpp",
     "coverage/line_coverage.json"
-   ]
+   ],
+   "translation": "translations/ROSCO_Helpers/addtolist.cpp",
+   "harness_required": true
   },
   {
    "order": 2,
@@ -67,15 +66,12 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 5 argument declaration(s) read and checked against the matrix: axtout, axyout, aziangle, nharmonic, rootmoop",
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'",
     "observed": "CONFIRMED, and re-confirmed on a second pass with a different VIT. All 5 arguments cross with no decomposition: rootMOOP(3) -> double* by reference, aziAngle/nHarmonic by value, axTOut/axYOut (INTENT(OUT) scalars) by reference. The integrated wrapper is a 9-line CALL colemantransform_c(...) and the gate is bit-identical across 5,252,000 values. The prediction was about the SIGNATURE and it held.\n\nWhat did NOT hold, first pass, is the assumption that a crossable signature is crossed correctly by every generator: VIT's test-validate bridge declared rootMOOP a by-value scalar, and the loop's harness mapping made it a one-element buffer read three deep. interface_gen -- the generator the kernel and the integration actually use -- got it right. Both others fixed; see DECISIONS.md.\n\nSecond pass, after VIT was reconciled with canonical (d85b33b -> d07a716, 89 commits): `vit integrate` regenerated the interface block, the wrapper and the .cpp BYTE-IDENTICAL to what the old VIT produced -- `git diff` over Functions.f90, CMakeLists.txt and colemantransform.cpp is empty. The crossing does not depend on which of the two VITs generated it."
    },
    "observability": "The kernel exercises nHarmonic=1 ONLY: KGen's callsite region is the single CALL at Controllers.f90:510, so the NP_2 call at :511 is replayed from state rather than recomputed. nHarmonic=2 is covered by the differential harness, which varies it, and by the gate, which runs both calls.\n\nThe kernel window is load-bearing and was wrong once: at invocation 1-20 every input is zero and a stub passes 21/21. At the 63 cases actually used (scenario 27, three ranges) the same stub produces 124 differing field entries. evidence/ColemanTransform/.\n\nWhat NOTHING here sees: the post-integration harness cannot compare arithmetic -- after integration the Fortran body IS the translation -- so it measures the wrapper's marshalling only. The 35 mutants include 2 killed by failing to compile rather than by a case mismatch, so the behavioural kill count is 33 of 33 scoreable.",
    "disposition": "integrated",
-   "source_file": "rosco/controller/src/Functions.f90",
-   "translation": "translations/Functions/colemantransform.cpp",
-   "harness_required": true,
    "evidence": [
     "translations/Functions/colemantransform.cpp",
     "rosco/controller/src/colemantransform.cpp",
@@ -93,7 +89,9 @@
     "evidence/ColemanTransform/kernel-window-27.vit-d07a716.stub-fails.verify_fields.csv",
     "evidence/ColemanTransform/kernel-window-27.vit-d07a716.statefiles.lst",
     "coverage/line_coverage.json"
-   ]
+   ],
+   "translation": "translations/Functions/colemantransform.cpp",
+   "harness_required": true
   },
   {
    "order": 3,
@@ -109,8 +107,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 6 argument declaration(s) read and checked against the matrix: axtin, axyin, aziangle, azioffset, nharmonic, pitcomipc"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -128,8 +126,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 1 argument declaration(s) read and checked against the matrix: str"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -149,8 +147,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 5 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, errvar, extdll, localvar"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -168,8 +166,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 2 argument declaration(s) read and checked against the matrix: givenfil, pathname"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -187,8 +185,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 2 argument declaration(s) read and checked against the matrix: givenfil, rootname"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -206,8 +204,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 3 argument declaration(s) read and checked against the matrix: line, numwords, words"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -225,8 +223,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 8 argument declaration(s) read and checked against the matrix: cornerfreq, dt, fp, initialvalue, inputsignal, inst, istatus, reset"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -244,8 +242,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 1 argument declaration(s) read and checked against the matrix: num"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -263,8 +261,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 8 argument declaration(s) read and checked against the matrix: cornerfreq, dt, fp, initialvalue, inputsignal, inst, istatus, reset"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -282,8 +280,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 1 argument declaration(s) read and checked against the matrix: array"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -301,8 +299,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 10 argument declaration(s) read and checked against the matrix: betaden, betanum, dt, fp, initialvalue, inputsignal, inst, istatus, omega, reset"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -320,8 +318,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 10 argument declaration(s) read and checked against the matrix: cornerfreq, damp, dt, fp, initialvalue, inputsignal, inst, istatus, moving, reset"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -339,8 +337,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 1 argument declaration(s) read and checked against the matrix: givenfil"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -358,8 +356,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 4 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, errvar, localvar"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -378,7 +376,7 @@
    "why": "performs external I/O on Unit_OL_Input that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
    "bridge_feasible": {
     "value": "no",
-    "basis": "channels: c_alloc_inout does not cross (UNSUPPORTED: as c_alloc_out. INTENT(INOUT) ALLOCATABLE needs an ALLOCA); channels: c_assumed_shape_2d does not cross (UNSUPPORTED: a rank-2 assumed-shape dummy is passed as m(1:n_m), a ran)"
+    "basis": "channels: c_assumed_shape_2d does not cross (UNSUPPORTED: a rank-2 assumed-shape dummy is passed as m(1:n_m), a ran)"
    },
    "observability": null
   },
@@ -396,8 +394,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 9 argument declaration(s) read and checked against the matrix: cornerfreq, damp, dt, fp, initialvalue, inputsignal, inst, istatus, reset"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -415,8 +413,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 9 argument declaration(s) read and checked against the matrix: cornerfreq, damp, dt, fp, initialvalue, inputsignal, inst, istatus, reset"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -434,8 +432,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 2 argument declaration(s) read and checked against the matrix: cntrpar, localvar"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -453,8 +451,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 3 argument declaration(s) read and checked against the matrix: cntrpar, errvar, localvar"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -472,8 +470,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 1 argument declaration(s) read and checked against the matrix: n"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -491,8 +489,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 4 argument declaration(s) read and checked against the matrix: errvar, xdata, xq, ydata"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -510,8 +508,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 3 argument declaration(s) read and checked against the matrix: inputvalue, maxvalue, minvalue"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -529,8 +527,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 6 argument declaration(s) read and checked against the matrix: errvar, x, x0, x1, y0, y1"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -548,8 +546,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 2 argument declaration(s) read and checked against the matrix: errvar, x"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -567,8 +565,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 1 argument declaration(s) read and checked against the matrix: x"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -586,8 +584,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 1 argument declaration(s) read and checked against the matrix: x"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -608,8 +606,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 5 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, errvar, localvar, size_avcmsg"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -630,8 +628,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 5 argument declaration(s) read and checked against the matrix: errvar, expvarname, filelinenum, filename, words"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -657,8 +655,8 @@
    "verification": "generated harness + mutation score (P13); the gate cannot decide",
    "why": "performs external I/O on UnDb, UnDb2, UnDb3 that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 7 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, debugvar, errvar, localvar, rootname, size_avcoutname"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -679,8 +677,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 6 argument declaration(s) read and checked against the matrix: arylen, filelines, foundline, line, linenum, paramname"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -700,8 +698,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 10 argument declaration(s) read and checked against the matrix: dt, error, i0, inst, ki, kp, maxvalue, minvalue, pip, reset"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -722,8 +720,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 13 argument declaration(s) read and checked against the matrix: dt, error, i0, kd, ki, kp, localvar, maxvalue, minvalue, objinst, pip, reset, tf"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -743,8 +741,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 12 argument declaration(s) read and checked against the matrix: dt, error, error2, i0, inst, ki, ki2, kp, maxvalue, minvalue, pip, reset"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -764,8 +762,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 5 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, errvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -785,8 +783,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature; writes to unit 401 without opening it -- an UNCOMPARED output, not a missing input",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 5 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, errvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -811,8 +809,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 5 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, errvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -832,8 +830,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 10 argument declaration(s) read and checked against the matrix: dt, error, freq, inst, ki, kp, maxvalue, minvalue, reset, resp"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -853,8 +851,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 3 argument declaration(s) read and checked against the matrix: cntrpar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -875,8 +873,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 4 argument declaration(s) read and checked against the matrix: cntrpar, errvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -897,8 +895,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 4 argument declaration(s) read and checked against the matrix: cntrpar, errvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -918,8 +916,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 5 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, errvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -941,8 +939,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 6 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, debugvar, errvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -983,8 +981,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 8 argument declaration(s) read and checked against the matrix: dt, inputsignal, inst, maxrate, minrate, reset, resetvalue, rlp"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1008,8 +1006,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 4 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1029,8 +1027,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 6 argument declaration(s) read and checked against the matrix: bldpitch, cntrpar, errvar, localvar, perfdata, rotspeed"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1052,8 +1050,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 5 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, errvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1077,8 +1075,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 4 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1099,8 +1097,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 4 argument declaration(s) read and checked against the matrix: cntrpar, errvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1120,8 +1118,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 3 argument declaration(s) read and checked against the matrix: cntrpar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1146,8 +1144,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 5 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, errvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1169,8 +1167,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
    "bridge_feasible": {
-    "value": "no",
-    "basis": "ary: c_alloc_inout does not cross (UNSUPPORTED: as c_alloc_out. INTENT(INOUT) ALLOCATABLE needs an ALLOCA)"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1192,8 +1190,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
    "bridge_feasible": {
-    "value": "no",
-    "basis": "ary: c_alloc_inout does not cross (UNSUPPORTED: as c_alloc_out. INTENT(INOUT) ALLOCATABLE needs an ALLOCA)"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1215,8 +1213,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 7 argument declaration(s) read and checked against the matrix: allowdefault, errvar, filelines, filename, unec, variable, varname"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1238,8 +1236,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 7 argument declaration(s) read and checked against the matrix: allowdefault, errvar, filelines, filename, unec, variable, varname"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1261,8 +1259,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 7 argument declaration(s) read and checked against the matrix: allowdefault, errvar, filelines, filename, unec, variable, varname"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1282,8 +1280,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 4 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1308,8 +1306,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 5 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, errvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1329,8 +1327,8 @@
    "verification": "generated harness + mutation score (P13); the gate cannot decide",
    "why": "performs external I/O on Un that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 6 argument declaration(s) read and checked against the matrix: cntrpar, errvar, localvar, objinst, rootname, size_avcoutname"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1353,8 +1351,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 5 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, errvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1384,8 +1382,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 6 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, debugvar, errvar, localvar, objinst"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1426,8 +1424,8 @@
    "verification": "generated harness + mutation score (P13); the gate cannot decide",
    "why": "opens and closes UnControllerParameters, UnEc itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 6 argument declaration(s) read and checked against the matrix: accinfile, accinfile_size, cntrpar, errvar, localvar, rootname"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1452,8 +1450,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 6 argument declaration(s) read and checked against the matrix: cntrpar, debugvar, errvar, localvar, objinst, perfdata"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1478,8 +1476,8 @@
    "verification": "generated harness + mutation score (P13); the gate cannot decide",
    "why": "opens and closes UnPerfParameters itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 3 argument declaration(s) read and checked against the matrix: cntrpar, errvar, perfdata"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1501,8 +1499,8 @@
    "verification": "generated harness + mutation score (P13); the gate cannot decide",
    "why": "performs external I/O on Un that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 8 argument declaration(s) read and checked against the matrix: avrswap, cntrpar, errvar, localvar, objinst, perfdata, rootname, size_avcoutname"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1526,8 +1524,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature; writes to standard output (a side effect, not compared)",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 9 argument declaration(s) read and checked against the matrix: accinfile, avrswap, cntrpar, errvar, localvar, objinst, perfdata, rootname, size_avcmsg"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   },
@@ -1568,8 +1566,8 @@
    "verification": "kernel replay or direct-call harness; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "yes",
-    "basis": "all 5 argument declaration(s) read and checked against the matrix: accinfile, avcmsg, avcoutname, avifail, avrswap"
+    "value": "unknown",
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
    "observability": null
   }
@@ -1609,8 +1607,12 @@
   "3 of 83 procedures (4%) are unreachable from ['DISCON']. For a library the entry points are the public API, not a driver -- check the list before treating these as dead"
  ],
  "schema_version": 1,
+ "matrix_source": {
+  "path": "/workspace/vit/tests/conformance/matrix.toml",
+  "vit_rev": "37f8bdf-pinned"
+ },
  "derived_from": {
-  "source": "/Users/kmenear/Artifacts/vit_translation/ROSCO-r2/rosco/controller/src",
+  "source": "/workspace/ROSCO-r2/rosco/controller/src",
   "entry_points": [
    "DISCON"
   ],
