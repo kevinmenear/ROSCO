@@ -121,3 +121,11 @@ translations/*/*_test/
 # ExtController oracle fixture: a BUILD PRODUCT of fixtures/bladed_stub/discon_stub.c.
 # The .c is the artifact; the .so is rebuilt by fixtures/bladed_stub/build.sh.
 fixtures/bladed_stub/*.so
+# ...and the script that rebuilds it is NOT a build product. `*build*` above
+# matches `build.sh`, so the first commit of this fixture silently left it
+# untracked: an evidence file naming a library that nothing committed could
+# produce (K3). Same shape as the gitignored `Examples/DISCON.IN` that let a
+# crashed probe reconfigure the gate where no clean-tree check could see it --
+# a pattern broad enough to catch a directory is broad enough to catch a file
+# somebody needs.
+!fixtures/bladed_stub/build.sh
