@@ -1,0 +1,73 @@
+// VIT Translation Scaffold
+// Function: Int2LStr
+// Source: ROSCO_Helpers.f90
+// Module: ROSCO_Helpers
+// Fortran: FUNCTION Int2LStr(Num)
+// Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+// Source MD5: 14cc1752e4ac
+// VIT: 0.1.0
+// Status: unverified
+// Generated: 2026-08-11T21:12:52Z
+
+// The Fortran, in full:
+//
+//     CHARACTER(11)       :: Int2LStr
+//     INTEGER, INTENT(IN) :: Num
+//     WRITE (Int2LStr,'(I11)')  Num
+//     Int2Lstr = ADJUSTL( Int2LStr )
+//
+// The result is a CHARACTER(11) function result, so it crosses as a caller-owned
+// buffer rather than as a C return value, and it is BLANK-PADDED to its full
+// declared width -- not NUL-terminated. All 11 bytes are written on every call.
+
+void Int2LStr(int Num, char* Int2LStr_result) {
+    const int W = 11;
+
+    // WRITE (Int2LStr,'(I11)') Num
+    //
+    // I11 writes the value RIGHT-justified in an 11-character field, blank
+    // filled on the left, with a leading '-' for a negative value and no '+'
+    // for a positive one.
+    //
+    // Fortran fills the whole field with '*' when the value does not fit, and
+    // that branch is deliberately NOT written here. `Num` is a default INTEGER,
+    // which crosses as a 4-byte C `int`; its widest representation is
+    // "-2147483648", which is exactly 11 characters, so no input can overflow
+    // an I11 field. Transcribing the branch would add mutable sites no input
+    // can reach -- the shape that survived as unobservable mutants at units #1
+    // and #4 -- so the proof lives here instead of the code.
+    long long mag = (Num < 0) ? -(long long)Num : (long long)Num;
+    int first = W;
+    do {
+        Int2LStr_result[--first] = (char)('0' + (int)(mag % 10));
+        mag /= 10;
+    } while (mag != 0);
+    if (Num < 0) {
+        Int2LStr_result[--first] = '-';
+    }
+
+    // Int2Lstr = ADJUSTL( Int2LStr )
+    //
+    // ADJUSTL removes the leading blanks, shifting what follows left, and
+    // blank-fills the vacated positions on the right.
+    //
+    // The count of leading blanks is `first`, and it is NOT recomputed by
+    // scanning for the first non-blank character. The two are the same number
+    // by the I11 contract written above -- the field is blank at exactly
+    // 0 .. first-1 and non-blank at `first` -- and this campaign has twice
+    // measured what the recomputation costs: a quantity named at more than one
+    // site leaves every site but one unable to change an output, so its mutants
+    // survive as unobservable rather than equivalent (RUNBOOK, units #1 and
+    // #4). One name, one site.
+    //
+    // Writing the field's leading blanks and then scanning them back off would
+    // be the same restatement one step earlier, so they are never written: the
+    // only positions the shift leaves undefined are the trailing ones, and the
+    // second loop is what fills those.
+    for (int i = 0; first + i < W; ++i) {
+        Int2LStr_result[i] = Int2LStr_result[first + i];
+    }
+    for (int i = W - first; i < W; ++i) {
+        Int2LStr_result[i] = ' ';
+    }
+}

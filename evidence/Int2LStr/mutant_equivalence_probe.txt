@@ -1,0 +1,6 @@
+checked 4038021 input(s)
+  mutant A <=0 ternary    differ-IN-BOUNDS 0
+  mutant B <1 ternary     differ-IN-BOUNDS 0
+  mutant C shift bound    differ-IN-BOUNDS 0
+  mutant D fill bound     differ-IN-BOUNDS 0
+  mutant E width 12       differ-IN-BOUNDS 0

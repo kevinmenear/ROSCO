@@ -119,6 +119,9 @@ translations:
   GetWords:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/getwords.cpp
+  Int2LStr:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/int2lstr.cpp
 types:
   ControlParameters:
     strategy: view

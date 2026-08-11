@@ -1,0 +1,18 @@
+{
+ "unit": "Int2LStr",
+ "against": "translation",
+ "checked": 144,
+ "failed": 0,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  N/A      R5_non_degenerate_shape    0 varied extent(s); 1 FIXED by the type at [11] -- not varied, NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 22 character value(s) from a corpus of 22 (the reference's own character literals and their collating neighbours) across 1 string(s), each at length(s) [11] and in the mixed / padded / all-blank / leading-blank shapes, plus 44 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+  "  N/A      R3_no_dead_signal          no real parameter",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 1 out-parameter(s): Int2LStr_result"
+ ],
+ "mismatches": [],
+ "loop_rev": "5b40e1c-nogit",
+ "vit_rev": "300da9c-nogit"
+}

@@ -1,0 +1,121 @@
+{
+ "unit": "Int2LStr",
+ "against": "integrated",
+ "checked": 144,
+ "failed": 144,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  N/A      R5_non_degenerate_shape    0 varied extent(s); 1 FIXED by the type at [11] -- not varied, NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 22 character value(s) from a corpus of 22 (the reference's own character literals and their collating neighbours) across 1 string(s), each at length(s) [11] and in the mixed / padded / all-blank / leading-blank shapes, plus 44 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+  "  N/A      R3_no_dead_signal          no real parameter",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 1 out-parameter(s): Int2LStr_result"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 1,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 2,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 3,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 4,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 5,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 6,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 7,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 8,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 9,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 10,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 11,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 12,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 13,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 14,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  },
+  {
+   "case": 15,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202090",
+   "got": "3020202020202020202020"
+  }
+ ],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "5b40e1c-dirty",
+ "vit_rev": "300da9c",
+ "red_test": {
+  "perturbation": "wrapper: the result copy-back loop shortened from 11 to 10, so the last byte of the CHARACTER(11) result is never copied",
+  "result": "144 of 144 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

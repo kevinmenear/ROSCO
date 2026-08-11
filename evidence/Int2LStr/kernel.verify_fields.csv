@@ -1,0 +1,2 @@
+case,field,type,status,computed,reference,diff
+Int2LStr.0.0.1,ol_string,scalar,IDENTICAL,BldPitch1 BldPitch2 BldPitch3 GenTq YawRate Cable1,BldPitch1 BldPitch2 BldPitch3 GenTq YawRate Cable1,

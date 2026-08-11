@@ -1,0 +1,120 @@
+{
+ "unit": "Int2LStr",
+ "against": "translation",
+ "checked": 103,
+ "failed": 103,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  N/A      R5_non_degenerate_shape    0 varied extent(s); 1 FIXED by the type at [11] -- not varied, NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      22 character value(s) from a corpus of 22 (the reference's own character literals and their collating neighbours) across 1 string(s), each at length(s) [11] and in the mixed / padded / all-blank / leading-blank shapes, plus 44 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+  "  N/A      R3_no_dead_signal          no real parameter",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 1 out-parameter(s): Int2LStr_result"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "5a5b5e5f606162797a7b20"
+  },
+  {
+   "case": 1,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "2020202020202020202020"
+  },
+  {
+   "case": 2,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "2121212121212121212121"
+  },
+  {
+   "case": 3,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "2f2f2f2f2f2f2f2f2f2f2f"
+  },
+  {
+   "case": 4,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "3030303030303030303030"
+  },
+  {
+   "case": 5,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "3131313131313131313131"
+  },
+  {
+   "case": 6,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "3838383838383838383838"
+  },
+  {
+   "case": 7,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "3939393939393939393939"
+  },
+  {
+   "case": 8,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "3a3a3a3a3a3a3a3a3a3a3a"
+  },
+  {
+   "case": 9,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "4040404040404040404040"
+  },
+  {
+   "case": 10,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "4141414141414141414141"
+  },
+  {
+   "case": 11,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "4242424242424242424242"
+  },
+  {
+   "case": 12,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "5959595959595959595959"
+  },
+  {
+   "case": 13,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "5a5a5a5a5a5a5a5a5a5a5a"
+  },
+  {
+   "case": 14,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "5b5b5b5b5b5b5b5b5b5b5b"
+  },
+  {
+   "case": 15,
+   "output": "Int2LStr_result",
+   "ref": "3020202020202020202020",
+   "got": "5e5e5e5e5e5e5e5e5e5e5e"
+  }
+ ],
+ "loop_rev": "5b40e1c-nogit",
+ "vit_rev": "300da9c-nogit",
+ "red_test": {
+  "perturbation": "the unit as a no-op: reads no argument and writes no byte of the result",
+  "result": "103 of 103 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

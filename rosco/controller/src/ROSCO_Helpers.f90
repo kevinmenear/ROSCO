@@ -101,6 +101,16 @@ MODULE ROSCO_Helpers
         END SUBROUTINE getwords_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of Int2LStr
+    INTERFACE
+        SUBROUTINE int2lstr_c(Num, Int2LStr_result) BIND(C, NAME='int2lstr_c')
+            USE ISO_C_BINDING
+            INTEGER(C_INT), VALUE :: Num
+            CHARACTER(KIND=C_CHAR), INTENT(OUT) :: Int2LStr_result(*)
+        END SUBROUTINE int2lstr_c
+    END INTERFACE
+
 CONTAINS
 
     !=======================================================================
@@ -1578,24 +1588,18 @@ END SUBROUTINE Read_OL_Input
      !> This function returns a left-adjusted string representing the passed numeric value. 
     !! It eliminates trailing zeroes and even the decimal point if it is not a fraction. \n
     !! Use Num2LStr (nwtc_io::num2lstr) instead of directly calling a specific routine in the generic interface.   
-    FUNCTION Int2LStr ( Num )
-
-        CHARACTER(11)                :: Int2LStr                                     !< string representing input number.
-    
-    
-        ! Argument declarations.
-    
-        INTEGER, INTENT(IN)          :: Num                                          !< The number to convert to a left-justified string.
-    
-    
-    
-        WRITE (Int2LStr,'(I11)')  Num
-    
-        Int2Lstr = ADJUSTL( Int2LStr )
-    
-    
-        RETURN
-        END FUNCTION Int2LStr
+    FUNCTION Int2LStr(Num) RESULT(Int2LStr_result)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: Num
+        CHARACTER(11) :: Int2LStr_result
+        CHARACTER(KIND=C_CHAR) :: Int2LStr_result_c(11)
+        INTEGER :: vit_i_result
+        CALL int2lstr_c(Num, Int2LStr_result_c)
+        DO vit_i_result = 1, 11
+            Int2LStr_result(vit_i_result:vit_i_result) = Int2LStr_result_c(vit_i_result)
+        END DO
+    END FUNCTION Int2LStr
 
 !=======================================================================
 
