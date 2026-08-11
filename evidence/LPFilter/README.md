@@ -37,12 +37,18 @@ was taken at — is the speed error the torque and pitch controllers are built o
 
 ## What each layer could NOT see
 
-* **The kernel cannot constrain `CornerFreq`.** `CntrPar%F_LPFCornerFreq` is
-  `1.57080` in all 14 `Examples/*.IN` and `vit_sim.py` never patches it, so a
-  translation that ignores the argument and writes the literal is
-  indistinguishable from the real one — unit #3's shape, unit #9's at this same
-  type. `kernel.hardcoded-cornerfreq-stub.verify_fields.csv` is that
-  measurement. Only the differential harness varies it.
+* **The kernel cannot constrain `CornerFreq`, and the stub that says so scores
+  14,508 of 14,508 `IDENTICAL`.** `CntrPar%F_LPFCornerFreq` is `1.57080` in all
+  14 `Examples/*.IN` and `vit_sim.py` never patches it, so a translation that
+  ignores the argument and writes the literal is indistinguishable from the real
+  one — unit #3's shape, unit #9's at this same type.
+  `kernel.hardcoded-cornerfreq-stub-PASSES.verify_fields.csv` is that
+  measurement, and it is **sharper than a constant argument**: `CornerFreq` is
+  read ONLY inside the initialisation branch, and exactly **1 of the 62 captured
+  cases has `istatus == 0`**. So 61 of them do not read the argument at all, and
+  the 62nd reads the single value the input files carry — the stub's pass is
+  61 parts blindness and 1 part coincidence, not 62 parts coincidence. Only the
+  differential harness varies it.
 * **The kernel window is at one call site of eighteen.** `Filters.f90:347`,
   `LocalVar%GenSpeedF = LPFilter(LocalVar%GenSpeed, ...)`, scenario 1, the
   default `run_cmd`. The window is exactly the configured
@@ -119,6 +125,33 @@ the unit — not by re-running. The real red test scaled the marshalled result a
 failed 656 of 996; the other 340 cases have a reference result of exactly 0.0,
 which scaling cannot move.
 
+## This unit took two dispatches, and the reason is in this directory
+
+The first dispatch ran every layer above and then ran out of time with the tree
+dirty and the state uncommitted. It also left **a claim without its artifact**:
+`plan.json` and this README both named
+`kernel.hardcoded-cornerfreq-stub.verify_fields.csv` and described what it
+showed, and the file did not exist. The stub `.cpp` beside it did — which is the
+trap. *A stub committed as evidence is the INPUT to a measurement, not the
+measurement.* K3 caught it (`P5:unresolved_evidence`) exactly as designed.
+
+The second dispatch RAN it rather than deleting the claim, because the claim
+turned out to be true and the number is worth having. Re-running a kernel verify
+after integration needs no source reset: the kernel directory carries its own
+generated Fortran, and `-f` only supplies the signature, so a gitignored copy of
+the pre-integration file will do —
+
+```
+git show HEAD~1:rosco/controller/src/Filters.f90 > .vit/Filters.clean.f90
+vit verify LPFilter translations/Filters/lpfilter.cpp \
+    -f .vit/Filters.clean.f90 --kernel-dir kernel/LPFilter
+```
+
+Restore `translations/Filters/lpfilter.cpp` afterwards (the stub is copied over
+it) and `git checkout -- vit.yaml` (`vit verify` strips every comment from it and
+writes a `translations:` record describing the STUB's run, which would be a false
+claim about the shipped translation).
+
 ## Files
 
 | file | what it is |
@@ -128,7 +161,7 @@ which scaling cannot move.
 | `lpfilter.hardcoded-cornerfreq-stub.cpp` | the real translation with `CornerFreq` replaced by `1.57080` |
 | `kernel.verify_fields.csv` | 14,508 rows, all IDENTICAL |
 | `kernel.zero-stub-FAILS.verify_fields.csv` | 172 rows `OUT_TOL` — the comparison is alive |
-| `kernel.hardcoded-cornerfreq-stub.verify_fields.csv` | what the kernel can say about a constant argument |
+| `kernel.hardcoded-cornerfreq-stub-PASSES.verify_fields.csv` | 14,508 rows, all IDENTICAL — what the kernel can say about `CornerFreq`, which is nothing |
 | `kernel-window.statefiles.lst` | the 62 captured indices, checked against the configured window |
 | `kernel-generated-Filters.post-verify.f90` | the generated kernel source (POST-`vit verify`, per unit #7) |
 | `instrument_defect/*` | the two instrument findings above, in the state they were found |

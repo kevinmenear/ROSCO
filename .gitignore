@@ -130,6 +130,16 @@ include.ini
 strace.log
 .vit_build_wrapper.sh
 kgen_*/
+# The KGen kernel fixture. An extraction leftover like the four lines around it
+# -- `scripts/reset_to_clean.sh` has always removed it, and it has never been
+# tracked -- but it was the only one not named here, so every unit that ran an
+# extraction left `?? kernel/` behind and had to delete it by hand to satisfy
+# done.py's clean-tree predicate. Unit #11's second dispatch could not (its
+# session had no permission to remove a directory) and would have had to choose
+# between an unclean tree and committing 62 state files plus object code.
+# Anything inside worth keeping is COPIED to evidence/<Unit>/ by convention --
+# the verify_fields.csv, the generated .f90, the statefile list.
+kernel/
 model/
 elapsedtime/
 kgen.log

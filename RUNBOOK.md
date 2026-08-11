@@ -1786,6 +1786,52 @@ is `/workspace/ROSCO-r2`.
   `git show HEAD:vit.yaml` after the last VIT command of the unit, keeping VIT's
   own `translations:` block, and check `yaml.safe_load` still parses it.
 
+  **"Keeping VIT's own `translations:` block" does NOT hold for a STUB run.**
+  Unit #11, second dispatch. A `vit verify` run on the hardcoded-`CornerFreq`
+  stub wrote `cases_passed: 62`, `red_test: demonstrated` under
+  `translations.LPFilter` — a machine-readable claim, in the config every later
+  unit reads, that the SHIPPED translation was verified by a run of something
+  else. When the verify you just ran was on a stub, `git checkout -- vit.yaml`
+  wholesale; there is nothing in the new block worth keeping.
+
+- **A stub `.cpp` committed as evidence is the INPUT to a measurement, not the
+  measurement — and a unit's evidence directory can look complete while the
+  measurement is missing.** Unit #11, and `done_check.py` is what found it, not a
+  reader: `P5:unresolved_evidence` named a `verify_fields.csv` that `plan.json`
+  and the evidence README both described in prose and neither had produced. The
+  hard-to-write half of the artifact (the stub) was there, which is exactly why
+  it read as done.
+
+  **Re-running a kernel verify after integration needs no source reset.** The
+  kernel directory carries its own generated Fortran, and `-f` supplies only the
+  signature, so a gitignored copy of the pre-integration file is enough:
+
+  ```
+  mkdir -p .vit && git show HEAD~1:rosco/controller/src/Filters.f90 > .vit/Filters.clean.f90
+  cp translations/<Module>/<unit>.cpp /tmp/<unit>.intended.cpp        # the stub overwrites it
+  cp evidence/<Unit>/<the-stub>.cpp translations/<Module>/<unit>.cpp
+  vit verify <Unit> translations/<Module>/<unit>.cpp \
+      -f .vit/Filters.clean.f90 --kernel-dir kernel/<Unit>
+  cp /tmp/<unit>.intended.cpp translations/<Module>/<unit>.cpp        # restore, then diff
+  git checkout -- vit.yaml
+  ```
+
+  Three minutes, and it turns "delete the unsupported claim" into "run it". Here
+  the claim held AND got sharper: the stub passes 14,508 of 14,508, and the
+  reason is not the one the prose gave. `CornerFreq` is read only in the
+  initialisation branch and **exactly 1 of the 62 captured cases has
+  `istatus == 0`**, so 61 cases never read the argument at all. *Ask how many
+  cases REACH the branch that reads the argument before calling a
+  constant-argument stub's pass a constant-argument blindness* — they produce the
+  same green and they are not the same weakness:
+
+  ```
+  python3.12 -c "import csv,collections; \
+    r=list(csv.DictReader(open('evidence/<Unit>/<the-stub-csv>'))); \
+    d=collections.defaultdict(dict); [d[x['case']].__setitem__(x['field'],x['reference']) for x in r]; \
+    print(sum(1 for v in d.values() if v.get('istatus')=='0'), 'of', len(d))"
+  ```
+
 - **Reset to clean source:** WORKS, 2026-08-10.
   ```
   bash scripts/reset_to_clean.sh              # sources + leftovers + rebuild + verify
