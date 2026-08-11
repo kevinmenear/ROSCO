@@ -46,6 +46,20 @@ IMPLICIT NONE
         END SUBROUTINE colemantransform_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of ColemanTransformInverse
+    INTERFACE
+        SUBROUTINE colemantransforminverse_c(axTIn, axYIn, aziAngle, nHarmonic, aziOffset, PitComIPC) BIND(C, NAME='colemantransforminverse_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: axTIn
+            REAL(C_DOUBLE), VALUE :: axYIn
+            REAL(C_DOUBLE), VALUE :: aziAngle
+            INTEGER(C_INT), VALUE :: nHarmonic
+            REAL(C_DOUBLE), VALUE :: aziOffset
+            REAL(C_DOUBLE), INTENT(OUT) :: PitComIPC(*)
+        END SUBROUTINE colemantransforminverse_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     REAL(DbKi) FUNCTION saturate(inputValue, minValue, maxValue)
@@ -375,25 +389,15 @@ CONTAINS
 
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE ColemanTransformInverse(axTIn, axYIn, aziAngle, nHarmonic, aziOffset, PitComIPC)
-    ! The inverse Coleman or d-q axis transformation transforms the direct axis and quadrature axis
-    ! back to root out of plane bending moments of each turbine blade
+        USE ISO_C_BINDING
         IMPLICIT NONE
-        ! Inputs
-        REAL(DbKi), INTENT(IN)     :: axTIn, axYIn         ! Direct axis and quadrature axis
-        REAL(DbKi), INTENT(IN)     :: aziAngle                     ! Rotor azimuth angle
-        REAL(DbKi), INTENT(IN)     :: aziOffset                    ! Phase shift added to the azimuth angle
-        INTEGER(IntKi), INTENT(IN)  :: nHarmonic                    ! The harmonic number, nP
-        ! Outputs
-        REAL(DbKi), INTENT(OUT)    :: PitComIPC(3)                   ! Commanded individual pitch (deg)
-        ! Local
-        REAL(DbKi), PARAMETER      :: phi2 = 2.0/3.0*PI                ! Phase difference from first to second blade
-        REAL(DbKi), PARAMETER      :: phi3 = 4.0/3.0*PI                ! Phase difference from first to third blade
-
-        ! Body
-        PitComIPC(1) = cos(nHarmonic*(aziAngle+aziOffset))*axTIn + sin(nHarmonic*(aziAngle+aziOffset))*axYIn
-        PitComIPC(2) = cos(nHarmonic*(aziAngle+aziOffset+phi2))*axTIn + sin(nHarmonic*(aziAngle+aziOffset+phi2))*axYIn
-        PitComIPC(3) = cos(nHarmonic*(aziAngle+aziOffset+phi3))*axTIn + sin(nHarmonic*(aziAngle+aziOffset+phi3))*axYIn
-
+        REAL(8), INTENT(IN) :: axTIn
+        REAL(8), INTENT(IN) :: axYIn
+        REAL(8), INTENT(IN) :: aziAngle
+        INTEGER(4), INTENT(IN) :: nHarmonic
+        REAL(8), INTENT(IN) :: aziOffset
+        REAL(8), INTENT(OUT) :: PitComIPC(3)
+        CALL colemantransforminverse_c(axTIn, axYIn, aziAngle, nHarmonic, aziOffset, PitComIPC)
     END SUBROUTINE ColemanTransformInverse
 
 !-------------------------------------------------------------------------------------------------------------------------------

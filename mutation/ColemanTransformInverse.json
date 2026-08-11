@@ -1,0 +1,23 @@
+{
+ "unit": "ColemanTransformInverse",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "index_offset",
+  "swap_operands"
+ ],
+ "mutants": 24,
+ "equivalent_declared": 0,
+ "nocompile": 2,
+ "nocompile_ratio": 0.0769,
+ "nocompile_refused": false,
+ "total": 26,
+ "killed": 24,
+ "survived": 0,
+ "equivalent": 0,
+ "score": 1.0,
+ "loop_rev": "5edf80d-pinned",
+ "vit_rev": "37f8bdf-pinned",
+ "survivors": []
+}

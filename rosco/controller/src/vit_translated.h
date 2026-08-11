@@ -31,6 +31,7 @@ extern "C" {
 
 void colemantransform_c(double* rootMOOP, double aziAngle, int nHarmonic, double* axTOut, double* axYOut);
 void addtolist_c(CFI_cdesc_t* list, int element);
+void colemantransforminverse_c(double axTIn, double axYIn, double aziAngle, int nHarmonic, double aziOffset, double* PitComIPC);
 
 #ifdef __cplusplus
 }

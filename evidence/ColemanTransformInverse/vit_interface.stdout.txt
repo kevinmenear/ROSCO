@@ -1,0 +1,42 @@
+
+SUBROUTINE ColemanTransformInverse
+  File: rosco/controller/src/Functions.f90:373
+  Module: Functions
+  Arguments:
+    axTIn: REAL(DbKi) INTENT(IN)
+    axYIn: REAL(DbKi) INTENT(IN)
+    aziAngle: REAL(DbKi) INTENT(IN)
+    nHarmonic: INTEGER(IntKi) INTENT(IN)
+    aziOffset: REAL(DbKi) INTENT(IN)
+    PitComIPC: REAL(DbKi) INTENT(OUT)(3)
+  C name: colemantransforminverse_c
+
+✓ Interface block:  /tmp/cti_iface/colemantransforminverse_interface.f90
+✓ Wrapper function: /tmp/cti_iface/colemantransforminverse_wrapper.f90
+
+--- Interface Block ---
+    ! Auto-generated interface for C++ implementation of ColemanTransformInverse
+    INTERFACE
+        SUBROUTINE colemantransforminverse_c(axTIn, axYIn, aziAngle, nHarmonic, aziOffset, PitComIPC) BIND(C, NAME='colemantransforminverse_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: axTIn
+            REAL(C_DOUBLE), VALUE :: axYIn
+            REAL(C_DOUBLE), VALUE :: aziAngle
+            INTEGER(C_INT), VALUE :: nHarmonic
+            REAL(C_DOUBLE), VALUE :: aziOffset
+            REAL(C_DOUBLE), INTENT(OUT) :: PitComIPC(*)
+        END SUBROUTINE colemantransforminverse_c
+    END INTERFACE
+
+--- Wrapper Function ---
+    SUBROUTINE ColemanTransformInverse(axTIn, axYIn, aziAngle, nHarmonic, aziOffset, PitComIPC)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        REAL(8), INTENT(IN) :: axTIn
+        REAL(8), INTENT(IN) :: axYIn
+        REAL(8), INTENT(IN) :: aziAngle
+        INTEGER(4), INTENT(IN) :: nHarmonic
+        REAL(8), INTENT(IN) :: aziOffset
+        REAL(8), INTENT(OUT) :: PitComIPC(3)
+        CALL colemantransforminverse_c(axTIn, axYIn, aziAngle, nHarmonic, aziOffset, PitComIPC)
+    END SUBROUTINE ColemanTransformInverse

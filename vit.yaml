@@ -90,6 +90,9 @@ translations:
   AddToList:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/addtolist.cpp
+  ColemanTransformInverse:
+    status: integrated
+    cpp_file: translations/Functions/colemantransforminverse.cpp
 types:
   ControlParameters:
     strategy: view

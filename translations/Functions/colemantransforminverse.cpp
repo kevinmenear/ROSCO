@@ -1,0 +1,45 @@
+// VIT Translation Scaffold
+// Function: ColemanTransformInverse
+// Source: Functions.f90
+// Module: Functions
+// Fortran: SUBROUTINE ColemanTransformInverse(axTIn, axYIn, aziAngle, nHarmonic, aziOffset, PitComIPC)
+// Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+// Source MD5: ec4d363951a9
+// VIT: 0.1.0
+// Status: unverified
+// Generated: 2026-08-11T04:16:20Z
+
+#include <cmath>
+
+void ColemanTransformInverse(double axTIn, double axYIn, double aziAngle, int nHarmonic, double aziOffset, double* PitComIPC) {
+    // PI is Constants.f90's own literal, NOT M_PI. It differs from pi in the
+    // 12th significant digit, and that difference reaches the output: phi2 and
+    // phi3 are added to the azimuth and the sum is multiplied by nHarmonic
+    // before cos/sin. Same constant, same reason, as colemantransform.cpp.
+    const double PI = 3.14159265359;
+
+    // REAL(DbKi), PARAMETER :: phi2 = 2.0/3.0*PI
+    // REAL(DbKi), PARAMETER :: phi3 = 4.0/3.0*PI
+    // `*` and `/` are equal precedence and left-associative in both languages,
+    // so `2.0/3.0*PI` is `(2.0/3.0)*PI` on both sides. Parenthesised anyway:
+    // the rounding of the intermediate is what makes them the same value.
+    const double phi2 = (2.0 / 3.0) * PI;
+    const double phi3 = (4.0 / 3.0) * PI;
+
+    // INTEGER(IntKi) * REAL(DbKi) promotes the integer to REAL(DbKi) before
+    // multiplying, which is what the implicit int->double conversion does here.
+    const double n = static_cast<double>(nHarmonic);
+
+    // `aziAngle+aziOffset+phi2` is left-associative in Fortran and in C++:
+    // ((aziAngle + aziOffset) + phi2). The sum is restated on each line rather
+    // than hoisted, transcribing the Fortran shape literally -- the same value
+    // either way, and each of the three lines stays independently perturbable.
+    // PitComIPC(1..3) is 1-based in Fortran; the dummy is PitComIPC(3), so the
+    // C++ indices are 0..2 and the extent the caller sees is fixed at 3.
+    PitComIPC[0] = std::cos(n * (aziAngle + aziOffset)) * axTIn
+                 + std::sin(n * (aziAngle + aziOffset)) * axYIn;
+    PitComIPC[1] = std::cos(n * (aziAngle + aziOffset + phi2)) * axTIn
+                 + std::sin(n * (aziAngle + aziOffset + phi2)) * axYIn;
+    PitComIPC[2] = std::cos(n * (aziAngle + aziOffset + phi3)) * axTIn
+                 + std::sin(n * (aziAngle + aziOffset + phi3)) * axYIn;
+}

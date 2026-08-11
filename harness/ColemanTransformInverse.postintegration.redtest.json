@@ -1,0 +1,121 @@
+{
+ "unit": "ColemanTransformInverse",
+ "against": "integrated",
+ "checked": 257,
+ "failed": 256,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  N/A      R5_non_degenerate_shape    0 varied extent(s); 1 FIXED by the type at [3] -- not varied, NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      200 value(s) from 9 literal(s) in the reference, each under every declared value of 0 flag(s)",
+  "  applied  R3_no_dead_signal          5 real value(s), none zero in every case",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 1 out-parameter(s): PitComIPC"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "PitComIPC",
+   "ref": "14b5347264376240da021e72643762403db4177264376240",
+   "got": "ba4a9bac9d6370c03b99a1ac9d6370c0e359a3ac9d6370c0"
+  },
+  {
+   "case": 1,
+   "output": "PitComIPC",
+   "ref": "14b5347264376240da021e72643762403db4177264376240",
+   "got": "ba4a9bac9d6370c03b99a1ac9d6370c0e359a3ac9d6370c0"
+  },
+  {
+   "case": 2,
+   "output": "PitComIPC",
+   "ref": "451ac5f65c536240ce72aef65c5362402f27a8f65c536240",
+   "got": "78086963636b70c04a4d6f63636b70c0410b7163636b70c0"
+  },
+  {
+   "case": 3,
+   "output": "PitComIPC",
+   "ref": "e34fa4ed6b1b6240e6928ded6b1b62404b4187ed6b1b6240",
+   "got": "fc8ccdf5d75b70c02ce5d3f5d75b70c085a8d5f5d75b70c0"
+  },
+  {
+   "case": 4,
+   "output": "PitComIPC",
+   "ref": "ade77cb460456240d43a66b460456240b6ed5fb460456240",
+   "got": "99290288806770c042730888806770c092320a88806770c0"
+  },
+  {
+   "case": 5,
+   "output": "PitComIPC",
+   "ref": "c89b105166306240dde6f950663062408097f35066306240",
+   "got": "4bdbe73eac6170c0372cee3eac6170c08cedef3eac6170c0"
+  },
+  {
+   "case": 6,
+   "output": "PitComIPC",
+   "ref": "bac1c682e33a6240d910b082e33a62409bc2a982e33a6240",
+   "got": "72027563966470c0bd4f7b63966470c00f107d63966470c0"
+  },
+  {
+   "case": 7,
+   "output": "PitComIPC",
+   "ref": "9ba47558d8c286c000d48558d8c286c06b538a58d8c286c0",
+   "got": "24c623ce68f16b40b681cbcd68f16b405cfab2cd68f16b40"
+  },
+  {
+   "case": 8,
+   "output": "PitComIPC",
+   "ref": "25ff8f918ade8f406ed594918ade8f40892d96918ade8f40",
+   "got": "433c24e0f75f87c0a87914e0f75f87c07a1810e0f75f87c0"
+  },
+  {
+   "case": 10,
+   "output": "PitComIPC",
+   "ref": "9af7f636db16dfbf7b3bd036db16dfbfe077c536db16dfbf",
+   "got": "0631659084f8eb3f72f46f9084f8eb3f27f2729084f8eb3f"
+  },
+  {
+   "case": 11,
+   "output": "PitComIPC",
+   "ref": "9af7f636db16df3f7b3bd036db16df3fe077c536db16df3f",
+   "got": "0631659084f8ebbf72f46f9084f8ebbf27f2729084f8ebbf"
+  },
+  {
+   "case": 12,
+   "output": "PitComIPC",
+   "ref": "9af7f636db16cfbf7b3bd036db16cfbfe077c536db16cfbf",
+   "got": "0631659084f8db3f72f46f9084f8db3f27f2729084f8db3f"
+  },
+  {
+   "case": 13,
+   "output": "PitComIPC",
+   "ref": "9af7f636db16bf3f7b3bd036db16bf3fe077c536db16bf3f",
+   "got": "0631659084f8cbbf72f46f9084f8cbbf27f2729084f8cbbf"
+  },
+  {
+   "case": 14,
+   "output": "PitComIPC",
+   "ref": "9af7f636db16afbf7b3bd036db16afbfe077c536db16afbf",
+   "got": "0631659084f8bb3f72f46f9084f8bb3f27f2729084f8bb3f"
+  },
+  {
+   "case": 15,
+   "output": "PitComIPC",
+   "ref": "cc2dad13525c7e40165a8713525c7e4011d77c13525c7e40",
+   "got": "e0d10275b1508bc0b7540d75b1508bc07a401075b1508bc0"
+  },
+  {
+   "case": 16,
+   "output": "PitComIPC",
+   "ref": "cc2dad13525c7ec0165a8713525c7ec011d77c13525c7ec0",
+   "got": "e0d10275b1508b40b7540d75b1508b407a401075b1508b40"
+  }
+ ],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "5edf80d-pinned",
+ "vit_rev": "37f8bdf-pinned",
+ "red_test": {
+  "perturbation": "wrapper: the two INTENT(IN) axis arguments axTIn and axYIn swapped in the CALL to colemantransforminverse_c",
+  "result": "256 of 257 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}
