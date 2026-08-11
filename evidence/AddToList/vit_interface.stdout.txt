@@ -1,0 +1,31 @@
+
+SUBROUTINE AddToList
+  File: rosco/controller/src/ROSCO_Helpers.f90:1629
+  Module: ROSCO_Helpers
+  Arguments:
+    list: Integer(IntKi) INTENT(INOUT)(:)
+    element: Integer(IntKi) INTENT(IN)
+  C name: addtolist_c
+
+✓ Interface block:  /tmp/addtolist_iface/addtolist_interface.f90
+✓ Wrapper function: /tmp/addtolist_iface/addtolist_wrapper.f90
+
+--- Interface Block ---
+    ! Auto-generated interface for C++ implementation of AddToList
+    INTERFACE
+        SUBROUTINE addtolist_c(list, n_list, element) BIND(C, NAME='addtolist_c')
+            USE ISO_C_BINDING
+            INTEGER(C_INT), INTENT(INOUT) :: list(*)
+            INTEGER(C_INT), VALUE :: n_list
+            INTEGER(C_INT), VALUE :: element
+        END SUBROUTINE addtolist_c
+    END INTERFACE
+
+--- Wrapper Function ---
+    SUBROUTINE AddToList(list, element)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        INTEGER(4), INTENT(INOUT) :: list(:)
+        INTEGER(4), INTENT(IN) :: element
+        CALL addtolist_c(list, SIZE(list), element)
+    END SUBROUTINE AddToList

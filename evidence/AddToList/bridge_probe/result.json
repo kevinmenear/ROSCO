@@ -1,0 +1,12 @@
+{
+  "probe": "AddToList: does the signature cross the C bridge?",
+  "oracle": "orig -- ROSCO_Helpers.f90:1629-1657 verbatim, mod_orig.f90 md5 c13b12f7a68e",
+  "vit_rev": "d07a716-pinned",
+  "toolchain": "gfortran 13 / g++ 13 aarch64",
+  "scenarios": "A: allocated then appended 3x (the live ROSCO path). B: unallocated on entry (the else branch).",
+  "implementations": {
+    "orig": {"build_rc": 0, "run_rc": 0, "verdict": "MATCHES_ORACLE", "lines_reported": 7},
+    "vit": {"build_rc": 0, "run_rc": 0, "verdict": "DIFFERS_FROM_ORACLE", "lines_reported": 5},
+    "cfi": {"build_rc": 0, "run_rc": 0, "verdict": "MATCHES_ORACLE", "lines_reported": 7}
+  }
+}

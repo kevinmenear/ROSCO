@@ -285,6 +285,25 @@ def main(argv=None) -> int:
             went_red = payload["mismatched"] > 0 and payload["compared"] > 0
             payload["went_red"] = went_red
             rc = 0 if (went_red and payload["revert_verified"]) else 1
+            # AND THE ARTIFACT MUST SAY SO. Until unit #1 `verdict` was left at
+            # the COMPARISON's verdict on a perturbing run, so a red test that
+            # correctly went red wrote `verdict: FAIL` and one that failed to
+            # go red wrote `verdict: PASS`. Both are backwards to any reader who
+            # does not already know which kind of run produced the file, and
+            # AddToList produced the dangerous half: a gate that cannot see the
+            # unit at all, filed under `PASS`.
+            #
+            # The comparison's own verdict is kept, under its own name, because
+            # it is a real measurement -- it is `revert_verified`'s sibling and
+            # says whether the PERTURBED build still matched baseline.
+            #
+            # The new spelling is deliberately not `PASS`/`FAIL`: artifacts
+            # written before this change carry the old vocabulary, and a reader
+            # can tell which convention a file uses from the value itself
+            # instead of from its date. `went_red` means the same thing in both
+            # and predates this.
+            payload["comparison_verdict"] = payload["verdict"]
+            payload["verdict"] = "RED_TEST_PASS" if rc == 0 else "RED_TEST_FAIL"
             print(f"RED TEST {'PASS' if rc == 0 else 'FAIL'}: perturbation moved "
                   f"{payload['mismatched']} of {payload['compared']} compared value(s); "
                   f"after revert {payload['revert_mismatched']} of "
