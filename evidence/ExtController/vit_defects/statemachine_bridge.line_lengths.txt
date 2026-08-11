@@ -1,0 +1,8 @@
+44	! VIT: Test-validate bridge for StateMachine
+64	! Allows C++ test harness to call the original Fortran funct
+71	! Handles C↔Fortran type conversions for derived types and
+11747	    SUBROUTINE statemachine_f90(vit_CntrPar_ZMQ_ID, vit_Cntr
+40	        BIND(C, NAME='statemachine_f90')
+25	        USE ISO_C_BINDING
+28	        USE ControllerBlocks
+21	        USE Constants

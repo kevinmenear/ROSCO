@@ -1,0 +1,32 @@
+{
+ "probe": "ExtController oracle availability, WITH the stub fixture",
+ "stub": "fixtures/bladed_stub/libdiscon_stub.so",
+ "stub_exists": true,
+ "exit_status": 0,
+ "config": [
+  "1                   ! Ext_Mode        - External control mode (0 - not used, 1 - call external dynamic library)",
+  "\"/workspace/ROSCO-r2/fixtures/bladed_stub/libdiscon_stub.so\"            ! DLL_FileName        - Name/location of the dynamic library in the Bladed-DLL format",
+  "\"DISCON\"            ! DLL_ProcName        - Name of procedure in DLL to be called (-)"
+ ],
+ "returned_normally": true,
+ "stdout_tail": [
+  " ROSCO is calling an external dynamic library for control input:",
+  " DLL_FileName:/workspace/ROSCO-r2/fixtures/bladed_stub/libdiscon_stub.so",
+  " DLL_InFile:unused",
+  " DLL_ProcName:DISCON",
+  " Library loaded successfully",
+  "***************************************************************************************************************************************",
+  "ROSCO Warning: The wind speed estimator is used, but an input (pitch, rotor speed, or torque) has left the bounds of normal operation.",
+  "The filtered hub-height wind speed will be used instead. This warning will not persist even though the condition may.",
+  "Check WE_Op in the ROSCO .dbg file to see if the WSE is enabled (1) or disabled (0).",
+  "***************************************************************************************************************************************",
+  "Generator speed:    9.5 RPM, Pitch angle:   0.0 deg, Power:     0.0 kW, Est. wind Speed:  10.0 m/s",
+  "RETURNED the first call returned without terminating"
+ ],
+ "stderr_tail": [
+  "ResourceWarning: /workspace/ROSCO/rosco/toolbox/turbine.py:129",
+  "unclosed file <_io.BufferedReader name='/workspace/ROSCO-r2/Examples/examples_out/01_NREL5MW_saved.p'>ResourceWarning: /workspace/ROSCO-r2/evidence/ExtController/probe_ext_mode_1_with_oracle.py:69",
+  "unclosed file <_io.TextIOWrapper name='/workspace/ROSCO-r2/Examples/DISCON.IN' mode='r' encoding='UTF-8'>"
+ ],
+ "discon_in_restored_by_parent": true
+}

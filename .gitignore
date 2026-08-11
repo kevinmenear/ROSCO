@@ -117,3 +117,7 @@ kgen.log
 model.ini
 .loop-run/
 translations/*/*_test/
+
+# ExtController oracle fixture: a BUILD PRODUCT of fixtures/bladed_stub/discon_stub.c.
+# The .c is the artifact; the .so is rebuilt by fixtures/bladed_stub/build.sh.
+fixtures/bladed_stub/*.so

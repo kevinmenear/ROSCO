@@ -1,0 +1,1 @@
+ERROR: Cannot map Fortran type 'CHARACTER(:)' (normalized: 'CHARACTER(:)'). Deferred-length CHARACTER(:) is not C-compatible. Use 'vit analyze-types --fix character' to convert to fixed-length.
