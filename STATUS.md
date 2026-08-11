@@ -4,9 +4,54 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-11: unit #4 `Conv2UC` is `integrated` and CLOSED.** Every layer
-green with its own red test — except the gate, whose red test FAILED and is
-committed as the finding.
+**As of 2026-08-11: unit #5 `ExtController` is `blocked`, and it is the first
+unit in this campaign that no instrument can verify.** Not because the gate
+cannot see it — three units before it had that problem — but because **the
+oracle cannot be run.**
+
+**FORCING THE ORIGINAL FORTRAN TO EXECUTE MAKES IT SEGFAULT.** `Ext_Mode` is 0
+in all 14 `Examples/*.IN`, so `ExtControl.f90` measures **0 of 28 executable
+lines in all 27 scenarios**. Turning the guard on through `vit_sim.py`'s own
+`write_discon(patches={'Ext_Mode': 1})` produces **exit status −11, signal 11**:
+`DLL_FileName` is the literal string `"unused"`, no external Bladed-style
+library is shipped anywhere in the tree, and `ExtController` never checks
+`ErrVar%ErrStat` after `LoadDynamicLib` — so `dlopen` fails, the code prints
+*"Library loaded successfully"*, and the next two statements are
+`C_F_PROCPOINTER` on a null funptr and a CALL through it.
+`evidence/ExtController/probe_ext_mode_1.json`.
+
+That is what separates it from `AddToList`, which was equally dead and still
+closed `integrated`: the harness could **run the clean Fortran** as an oracle.
+Here P7 has nothing to point at. **This is a fourth shape of unobservability in
+five units, and the first that is not about the instrument** — #1 was a line no
+scenario reached, #3 an argument constant in every scenario, #4 an executed line
+whose result is cancelled downstream, and this is a unit whose reference
+implementation cannot be executed to completion on any input the campaign has.
+
+Two further findings from this unit:
+
+1. **VIT emitted a five-argument wrapper over a three-argument bridge, silently.**
+   With no view strategy configured, `vit interface` produced
+   `CALL extcontroller_c(avrSWAP, C_LOC(CntrPar_view), C_LOC(ExtDLL_view))` —
+   `LocalVar` and `ErrVar` accepted and not forwarded, no diagnostic anywhere.
+   `LocalVar%iStatus` is the guard on the whole initialisation branch, so that
+   bridge could never have loaded the library it exists to call, and it compiles
+   and links. Same shape as unit #1's dropped ALLOCATABLE attribute, one level
+   up. Fixed in VIT (`f8ab74f`), additively, red-tested both directions.
+2. **`Examples/DISCON.IN` is gitignored, so a crashed run can reconfigure the
+   gate where no clean-tree check can see it.** The probe's first draft restored
+   it in a `finally`, and a `finally` does not run through SIGSEGV; it left
+   `Ext_Mode = 1` in the gate's own input with `git status` clean. The probe now
+   restores from a parent process.
+
+Units #1–#4 remain closed. **Escalation 3 is raised** (`blocked_substrate`), and
+escalation 2 still stands.
+
+---
+
+**Unit #4 `Conv2UC` is `integrated` and CLOSED.** Every layer green with its own
+red test — except the gate, whose red test FAILED and is committed as the
+finding.
 
 **THE GATE IS BLIND TO A PROCEDURE CALLED 1,333,146 TIMES.** `Conv2UC` converts
 4,558,823 characters across the 27 scenarios; it is among the hottest procedures
@@ -50,15 +95,21 @@ fields — those are hypotheses, not facts. Run
 
 ## Counts
 
-4 attempted / 4 integrated / 0 integrated_unexercised / 0 out_of_scope /
-0 deferred / 0 blocked.
+5 attempted / 4 integrated / 0 integrated_unexercised / 0 out_of_scope /
+0 deferred / **1 blocked**.
 
-69 units in `plan.json`; 65 remain.
+69 units in `plan.json`; 64 remain.
 
-**2 of the 4 closed units are invisible to the gate**, for two different
-reasons: `AddToList` is never called, and `Conv2UC` is called constantly and
-cancelled. Both carry a green gate artifact committed beside the red test that
-says it constrains nothing.
+**3 of the 5 attempted units are invisible to the gate**, for three different
+reasons: `AddToList` is never called, `Conv2UC` is called constantly and
+cancelled, and `ExtController` is never called *and* cannot be run at all. Each
+carries a green gate artifact committed beside the red test that says it
+constrains nothing.
+
+**`ExtController` is the only unit so far with no `harness/` and no `mutation/`
+artifact.** That absence is the finding, not an omission: P11 and P12 are
+mandatory for every unit here, and neither can be produced without a bridge and
+a runnable reference. `done_check.py` reports both FAIL and that verdict is kept.
 
 ## Evidenced
 
@@ -186,8 +237,69 @@ generated comparison has no tolerance branch at all. Unit #3's caveat is a fact
 about REAL fields, not about the verdict line; read the generated comparison for
 each new element type.
 
+### ExtController — every layer, and why none of them ran
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay | **NOT ATTEMPTED** — no live call site, so nothing to capture | n/a; unit #1's lesson is that this is deadness, not a tool defect |
+| differential harness vs clean Fortran | **IMPOSSIBLE** — VIT emits no bridge, and the oracle segfaults | n/a |
+| mutation score | **IMPOSSIBLE** — no translation to mutate | n/a |
+| post-integration harness | **IMPOSSIBLE** — nothing integrated | n/a |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED TEST FAILED, twice — 0 of 5,252,000 moved** |
+
+Both gate red tests carry `replacements: 1`, `perturbed: true`,
+`revert_verified: true`, `residual_dirt: []`. The second perturbs toward
+**absence** — first statement replaced by `RETURN`, making the unit a no-op —
+which is the form that shows the gate is blind to the *unit*, not merely to the
+perturbation chosen.
+
+`gcov` says the same thing independently: **0 of 28 executable lines, in all 27
+scenarios.** The denominator had to be regenerated to get it — see the coverage
+gap in Open below.
+
 ## Open
 
+- **ESCALATION 3, RAISED: `ExtController` is `blocked`, and the blockage is in
+  the substrate and in the fixtures — not in the function.** Three independent
+  things would have to change, and only the third decides:
+  1. **VIT must map `CHARACTER(:), ALLOCATABLE` in a view struct**, with
+     *reallocating* assignment from C++ (`ErrVar%ErrMsg = RoutineName//':'//
+     TRIM(ErrVar%ErrMsg)` changes its length). `TYPE(ErrorVariables)` has four
+     fields and exactly one blocks it. **37 of the 69 units take a
+     `TYPE(ErrorVariables)` dummy**, so this must be built regardless of what
+     happens to `ExtController` — the same argument that carried unit #1's
+     descriptor bridge and unit #4's string kind. It does **not** unblock this
+     unit on its own.
+  2. **`TYPE(ExtDLL_Type)` must cross**, for the `LoadDynamicLib` permanent
+     bridge `plan.json` already declares: five fields including `TYPE(C_PTR)`,
+     `TYPE(C_FUNPTR) :: ProcAddr(3)` and `CHARACTER(1024) :: ProcName(3)` — a
+     CHARACTER array, which the differential harness also still refuses. X1
+     forbids inlining `LoadDynamicLib` to avoid it. Blocks this unit only.
+  3. **An oracle must be constructed** — a minimal Bladed-style library
+     exporting a `DISCON` entry point plus a scenario setting `Ext_Mode = 1`.
+     That is an *addition*, which P5 permits, but it adds a gate scenario and so
+     changes the gate's compared count and baseline set. SPEC §8.4 makes that
+     the Driver's call, not a unit's. **Until it exists there would be a
+     translation and nothing to check it against.**
+- **`vit analyze-types --fix character` must not be used to close this gap.**
+  It is what VIT's own error message suggests, and it rewrites ROSCO's type
+  definition to a fixed length — changing `LEN(ErrVar%ErrMsg)`, which sizes
+  `avcMSG`. That is a behavioural change to the oracle (P7). Recorded here
+  because the suggestion is in the tool's output and will be read again.
+- **A gitignored file can reconfigure the gate where no clean-tree check can
+  see it.** `Examples/DISCON.IN` is ignored at `.gitignore:78`. A run that dies
+  on a signal cannot restore it from a `finally`, and `git status` stays clean,
+  so `done.py`'s P2 cannot catch it. `gate.py` already snapshots and restores
+  these; nothing else did. The general form: **any restore that must survive a
+  crash belongs in a parent process, not in the process that crashes.**
+- **`coverage/line_coverage.json` cannot distinguish "never ran" from "never
+  instrumented".** `scripts/coverage.py` stores only lines with a NON-ZERO hit
+  count, so both are the same empty dictionary. Four files read as empty today —
+  `ExtControl.f90`, `Constants.f90`, `ROSCO_Types.f90`, `ZeroMQInterface.f90` —
+  and only re-running with the denominator printed tells them apart
+  (`ExtControl.f90` is genuinely `0/28`, 27 times). The per-scenario log line
+  already prints `N/M`; the *artifact* drops M. Storing the denominator would
+  close it, and would be an addition.
 - **A hot line is not an observable line, and nothing in the campaign's coverage
   data can say which is which.** `Conv2UC` runs 1.3M times and no gate
   perturbation of it moves any output, because its result is only ever compared

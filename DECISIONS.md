@@ -1331,3 +1331,163 @@ false, so this is a candidate rather than a rule — but "perturb toward absence
 not toward a different answer" is a sharper statement of what the red test is
 for, and it would have got the right answer on unit #4 in one attempt instead of
 two. The Driver may raise it; it is not made here.
+
+---
+
+## Unit #5 — ExtController, 2026-08-11: `blocked`, and the first unit with no oracle
+
+### The decision
+
+`ExtController` closes `blocked`, with `blocked_substrate` escalated. It is not
+translated. This is the first unit in the campaign that ends without a
+translation, and the reasoning is worth stating plainly because "I could not
+make the tool work" and "no instrument in this campaign can verify this" look
+alike in a report and are not the same claim.
+
+Four units closed before this one, three of them with a gate that could not see
+them. Every one still closed, because *something* could see them: `AddToList`
+was dead and the differential harness ran the clean Fortran as an oracle;
+`Conv2UC` was cancelled downstream and the kernel plus the harness carried it.
+The route in both cases was **P7 — the oracle is the original source.**
+
+Here the original source **cannot be run**. That is the whole decision.
+
+### What was measured, in the order it was measured
+
+1. **`ExtControl.f90` is 0 of 28 executable lines in all 27 scenarios.**
+   `Ext_Mode` is `0` in all 14 `Examples/*.IN` — one distinct value across every
+   input file — `vit_sim.py` never patches it, and `DISCON.F90:90` sits under
+   `IF (CntrPar%Ext_Mode > 0 .AND. ...)`.
+
+   The denominator is not decoration. `scripts/coverage.py` stores only lines
+   with a **non-zero** hit count, so a file that never ran and a file that was
+   never instrumented are **the same empty dictionary**, and four files read as
+   empty in the committed artifact. Re-running with the denominator printed is
+   what turns "no entry" into `0/28`, twenty-seven times. This is the same
+   failure the script's own docstring records about `gcov`'s notes file, one
+   level up: there the numerator was wrong, here the numerator is right and
+   unfalsifiable without its denominator.
+
+2. **The gate is blind to it, measured against the Release build, twice.**
+   Perturbing Record 49 moved 0 of 5,252,000; making the unit a **no-op**
+   (first statement → `RETURN`) moved 0 of 5,252,000. Both artifacts record
+   `replacements: 1` and `revert_verified: true`. The second is the form the
+   RUNBOOK now prescribes — perturb toward absence — and it is what makes the
+   claim about the *unit* rather than about the perturbation.
+
+3. **Forcing the oracle to run makes it segfault.** `Ext_Mode = 1` through
+   `vit_sim.py`'s own `write_discon(patches=...)`: **exit status −11, signal
+   11**. `DLL_FileName` is the literal string `"unused"` in all 14 inputs, no
+   external Bladed-style library is shipped anywhere in the tree, and
+   `ExtController` never checks `ErrVar%ErrStat` after `LoadDynamicLib` — so
+   `dlopen` fails, `ProcAddr(1)` stays `C_NULL_FUNPTR`, the code prints
+   *"Library loaded successfully"*, and the next two statements are
+   `C_F_PROCPOINTER` on that null and a CALL through it.
+
+   This was measured rather than reasoned about, and the order matters: the
+   source was read first and the probe written to test what the source
+   predicted. Reasoning alone would have got the same answer here and has been
+   wrong before in this campaign.
+
+4. **VIT refuses to generate anything, deterministically and correctly.**
+   `TYPE(ErrorVariables)` has four fields and exactly one blocks it:
+   `CHARACTER(:), ALLOCATABLE :: ErrMsg`. Not a defect — a refusal with a
+   correct message.
+
+### Why the substrate gap was NOT closed here, when unit #1 and unit #4 closed theirs
+
+Unit #1 built the descriptor bridge; unit #4 built the harness's string kind.
+Both were the right call and the same argument applies to `CHARACTER(:),
+ALLOCATABLE`: **37 of the 69 units take a `TYPE(ErrorVariables)` dummy**, so it
+is on the critical path and will have to be built.
+
+The difference is that building it **would not close this unit.** Even with a
+bridge there would be nothing to compare the translation against. Spending the
+unit's budget on a feature that leaves the unit exactly as unverifiable would
+have produced a translation with no evidence — which is the failure mode this
+whole method exists to prevent, arrived at by working hard rather than by
+cutting corners. The gap is escalated with its blast radius measured, which is
+what the Driver needs in order to schedule it against the other 36 units.
+
+`vit analyze-types --fix character` — the remedy VIT's own error message
+suggests — is **refused**. It rewrites ROSCO's type definition to a fixed
+length, changing `LEN(ErrVar%ErrMsg)`, which sizes `avcMSG`, which is Record 49.
+Changing the oracle to make the translation checkable inverts P7.
+
+### Two defects, each recorded before it was fixed (C12)
+
+1. **VIT emitted a five-argument wrapper over a three-argument bridge, in
+   silence.** With no view strategy configured, `vit interface` produced
+   `CALL extcontroller_c(avrSWAP, C_LOC(CntrPar_view), C_LOC(ExtDLL_view))` —
+   `LocalVar` and `ErrVar` declared in the wrapper's dummy list and absent from
+   the call, with no diagnostic anywhere in the output. `LocalVar%iStatus` is
+   the guard on the entire initialisation branch, so that bridge could never
+   have loaded the library it exists to call. It compiles and it links.
+
+   Same shape as unit #1's dropped ALLOCATABLE attribute, one level up: there an
+   attribute went missing, here two whole arguments. The wrong artifact is kept.
+
+   Fixed in VIT (`f8ab74f`), not worked around (X2). `dropped_derived_args`
+   already existed and only `test_validate` asked it, so the warning now lives
+   in `generate_fortran_wrapper` — every path that ships a wrapper goes through
+   it, and a fourth caller added later cannot forget to ask. Additive: no
+   generated byte changes, so no artifact already measured against an earlier
+   revision is invalidated. Red-tested both directions; 937 tests pass (935 + 2).
+
+   **The habit did not save this; reading the wrapper did.** RUNBOOK's unit #1
+   entry says to read the emitted wrapper attribute by attribute whatever the
+   tool's current answer is. That is what caught it. A habit is weaker than a
+   tool, which is why the tool changed.
+
+2. **A crashed run can reconfigure the gate where no clean-tree check can see
+   it.** This probe's first draft restored `Examples/DISCON.IN` in a `finally`,
+   and **a `finally` does not run through SIGSEGV**. The run left `Ext_Mode = 1`
+   in the gate's own input — and `Examples/DISCON.IN` is **gitignored**
+   (`.gitignore:78`), so `git status` stayed clean and `done.py`'s P2 could not
+   have caught it. Every gate run afterwards would have measured a silently
+   reconfigured controller.
+
+   The general form, and it is not specific to this probe: **a restore that must
+   survive a crash belongs in a parent process, not in the process that
+   crashes.** `gate.py` snapshots and restores these files and is the reason the
+   campaign has not been bitten before; nothing else did.
+
+### On the disposition, and on `done_check.py`'s verdict
+
+`done_check.py` will report `ExtController` INCOMPLETE: P9 (gate) passes on a
+vacuous green, and **P11 and P12 FAIL** because `harness/ExtController.json` and
+`mutation/ExtController.json` do not exist. **That verdict is correct and is
+kept.** The RUNBOOK says a unit that is not COMPLETE is not finished — and this
+unit is not finished; it is *blocked*, which is a different claim, and P8 exists
+so that the distinction can be recorded instead of halting the run. Manufacturing
+a harness artifact for a unit with no bridge and no oracle would have made the
+condition green and the campaign's evidence weaker, silently — the same trade
+the RUNBOOK refuses when it forbids unsetting `--mutation-glob`.
+
+The absence of those two files is therefore load-bearing evidence, and it is
+named as such in `plan.json`'s `observability` rather than left to be noticed.
+
+### NOT method, target
+
+The coverage-denominator gap, the gitignored-input hazard, the `CHARACTER(:)`
+refusal and the `ExtDLL_Type` bridge are all in the RUNBOOK's target layer.
+
+**CANDIDATE METHOD AMENDMENT, flagged and NOT made.** SPEC §P8 lists five
+dispositions and says each must state the evidence it rests on. Four units of
+evidence here suggest a missing distinction *within* `blocked`: this unit is
+blocked because **no oracle exists**, which is a permanent property of the
+campaign's fixtures until someone adds one, and is categorically different from
+blocked-on-a-tool-gap (unit #1, which was answered in two dispatches by building
+the feature). A Driver reading `blocked` alone cannot tell which it has, and the
+two schedule completely differently — one is engineering work with a known
+endpoint, the other is a decision about what the campaign's inputs are for. The
+`evidence` field carries the difference today, in prose. Whether the vocabulary
+should carry it is the Driver's call; it is not made here.
+
+**A SECOND CANDIDATE, weaker, also flagged.** SPEC §10.3 says "a function no
+instrument can turn red is unverified regardless of its recorded disposition."
+That is exactly this unit, and the spec has no name for it. `integrated_
+unexercised` is close and wrong — it claims translation and verification, and
+`AddToList` shows the campaign already uses plain `integrated` for a verified-
+but-unexercised unit. The gap is a name for *verified by nothing, and here is
+why*. Raised, not resolved.

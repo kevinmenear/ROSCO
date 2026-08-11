@@ -505,6 +505,90 @@ is `/workspace/ROSCO-r2`.
   simulation output can constrain it, and the harness plus the mutation score
   are the whole of the evidence.
 
+- **Before anything else, ask whether the ORACLE can be RUN — not just whether
+  the unit is reached.** Learned at unit #5, and it is the question the first
+  four units never had to ask because the answer was always yes.
+
+  `ExtController` is 0/28 lines in all 27 scenarios, which by unit #1's rule
+  makes it a dead unit that the harness and the mutation score should still
+  carry. They cannot. Forcing the guard on — `Ext_Mode = 1` through
+  `vit_sim.py`'s own `write_discon(patches=...)` — makes **the original Fortran
+  segfault**, signal 11: `DLL_FileName` is the literal string `"unused"` in all
+  14 inputs, no external Bladed-style library is shipped anywhere in the tree,
+  and `ExtController` never checks `ErrVar%ErrStat` after `LoadDynamicLib`, so
+  `dlopen` fails, the code prints *"Library loaded successfully"*, and the next
+  two statements are `C_F_PROCPOINTER` on a null funptr and a CALL through it.
+
+  P7 makes the original the oracle for **every** layer here, so a unit whose
+  original cannot be run to completion has no verification route at all — not a
+  weaker one. The check is cheap and belongs before the translate step:
+
+  ```
+  grep -h '<the guard parameter>' Examples/*.IN | sort -u    # one value = dead
+  docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2 && \
+      python3 evidence/ExtController/probe_ext_mode_1.py"    # can it RUN?
+  ```
+
+  `evidence/ExtController/probe_ext_mode_1.py` is the pattern: patch the guard
+  through the campaign's own `write_discon`, make the `iStatus == 0` call, and
+  record the child's exit status. **Run the crashing part in a CHILD process.**
+  The first draft restored `Examples/DISCON.IN` in a `finally`, and a `finally`
+  does not run through SIGSEGV — it left `Ext_Mode = 1` in the gate's own input,
+  and because `Examples/DISCON.IN` is GITIGNORED (`.gitignore:78`) `git status`
+  stayed clean and `done.py`'s P2 could not have caught it. Any restore that
+  must survive a crash goes in the parent.
+
+- **`coverage/line_coverage.json` cannot tell "never ran" from "never
+  instrumented", and four files read the same either way.** `scripts/coverage.py`
+  stores only lines with a NON-ZERO hit count, so a fully-dead file is an empty
+  dictionary — as are `Constants.f90`, `ROSCO_Types.f90` and `ZeroMQInterface.f90`
+  today. The per-scenario log line prints `N/M`; the artifact drops `M`.
+
+  So before calling a unit dead from the committed artifact, regenerate it for
+  that file and read the denominator:
+
+  ```
+  python3.12 scripts/coverage.py --files <File>.f90,Functions.f90 \
+      --out /tmp/<unit>_coverage.json          # then read the printed N/M
+  docker exec vit-dev bash -lc "rm -rf /workspace/ROSCO-r2/rosco/controller/build_cov"
+  bash scripts/reset_to_clean.sh
+  ```
+
+  `ExtControl.f90` came back `0/28` on all 27, which is a measurement;
+  "no entry in the JSON" was not. Keep `Functions.f90` in the `--files` list as a
+  live control — a run where BOTH are 0/0 is an instrumentation failure, not a
+  finding.
+
+- **VIT can emit a wrapper with more arguments than its bridge, and until unit #5
+  it did so in silence.** With no `strategy: view` configured for a derived type,
+  `vit interface` accepts the argument in the wrapper's dummy list and does not
+  forward it. On `ExtController` that produced
+  `CALL extcontroller_c(avrSWAP, C_LOC(CntrPar_view), C_LOC(ExtDLL_view))` —
+  three of five — dropping `LocalVar`, whose `%iStatus` is the guard on the whole
+  initialisation branch. It compiles, it links, and nothing said a word.
+
+  Fixed in VIT `f8ab74f`: `generate_fortran_wrapper` now prints what it dropped,
+  so every path that ships a wrapper reports it. **Read the wrapper anyway** —
+  that is what caught this one, and the habit from unit #1 is the thing that
+  generalises past whatever the tool currently checks.
+
+  Two follow-ons measured here, both worth having before the next derived-type
+  unit:
+  1. `vit translate` AUTO-ADDS `strategy: view` to `vit.yaml` for any type with
+     ALLOCATABLE fields, then may still refuse for a different reason. It also
+     rewrites the file and strips every comment, like `verify` and `integrate`.
+  2. Once the strategy IS configured, the wrapper `vit interface` emits `USE`s a
+     view module that `vit translate` may be unable to generate — so the tool has
+     two answers and neither is a working bridge. `ErrorVariables` is that case:
+     `CHARACTER(:), ALLOCATABLE :: ErrMsg`, refused, and **37 of the 69 units take
+     a `TYPE(ErrorVariables)` dummy**.
+
+- **`cp` onto a bind-mounted file can be read half-written from inside the
+  container.** Restoring `vit.yaml` on the Mac and immediately running a `vit`
+  command produced a YAML parse traceback from a file that parses fine on both
+  sides a second later. Re-run before believing a config error; if it repeats,
+  it is real.
+
 - **A kernel PASS *is* a bit-identity claim for a CHARACTER output, and this is
   a per-TYPE fact, not a per-unit one.** Unit #3 recorded that KGen falls back
   to an ABSOLUTE RMS against `1.D-14` for a REAL array. Read the generated
