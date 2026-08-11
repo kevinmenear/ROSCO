@@ -1,0 +1,63 @@
+# done_check.py ExtController -- SECOND DISPATCH, run 2026-08-11 on a CLEAN tree,
+# after both commits and BEFORE this file existed.
+#
+#     $ python3.12 scripts/done_check.py ExtController --baseline bfe67a3
+#
+# ExtController: Verdict.INCOMPLETE  (11/13 PASS)
+#
+# [  ok  ] P1   commits exist
+# [  ok  ] P2   clean tree
+# [  ok  ] P3   disposition recorded
+# [  ok  ] P4   evidence recorded
+# [  ok  ] P5   evidence resolves
+# [  ok  ] P6   functional commit
+# [  ok  ] P7   state brought current
+# [  ok  ] P8   unit named in state
+# [  ok  ] P9   gate compared and matched
+# [ FAIL ] P12  mutation score for this unit    mutation_missing:no mutation/ExtController.json
+# [ FAIL ] P11  post-integration harness re-run harness_not_rerun:no harness/ExtController.postintegration.json
+# [  ok  ] P13  evidence matches the contract   mirror: the gate's evidence is admissible
+# [  ok  ] P10  evidence reproducible
+#
+# ---------------------------------------------------------------------------
+# THE SAME 11 OF 13 AS THE FIRST DISPATCH, AND IT MEANS SOMETHING DIFFERENT.
+#
+# The dispatch asked for exactly these two predicates. They are not met, and
+# nothing here pretends otherwise. What changed is why.
+#
+# The first dispatch recorded that P11 and P12 "cannot be produced ... and they
+# cannot", resting on two claims:
+#
+#   1. no bridge -- VIT refuses CHARACTER(:), ALLOCATABLE;
+#   2. no runnable oracle -- the original Fortran segfaults.
+#
+# (1) is CLOSED (VIT a2e2c30) and (2) is REFUTED: the segfault was a property of
+# the campaign's inputs, not of the function, and with a Bladed-style stub the
+# original runs to completion -- probe_ext_mode_1_with_oracle.json, exit_status
+# 0. A third defect turned up only because someone tried: vit test-validate was
+# emitting bridges past Fortran's 132-column limit, which had put most of this
+# campaign outside the differential harness in silence (VIT 83d25f9).
+#
+# So the two FAILs are no longer a finding about what is possible. They are
+# unfinished work with three named remaining causes, listed in plan.json's
+# escalation:
+#
+#   A. a deferred-length CHARACTER FIELD of a decomposed type, in
+#      vit test-validate -- the same three-member shape already built and
+#      round-trip-tested for the view struct, one generator over;
+#   B. CHARACTER fields supplied by the loop's expand_derived, which drops them
+#      today and says so in its own comment;
+#   C. a JUDGEMENT, not a feature: every generated case must supply a loadable
+#      DLL_FileName and the SAVE DLL_Ext constrains case ORDER, so the harness
+#      must pin an input and an ordering in a generator whose premise is that
+#      narrowing the domain is the blindness it removes. Raised, not made.
+#
+# WHAT WAS NOT DONE, AND WHY. No harness or mutation artifact was manufactured.
+# The disposition was not moved off `blocked` to make a predicate go green. The
+# RUNBOOK forbids the equivalent trade when it forbids unsetting --mutation-glob,
+# and P12's own docstring says a green that established nothing is the shape to
+# refuse. INCOMPLETE is the correct verdict for this unit today.
+#
+# WHY THIS IS A TRANSCRIPT. Creating the capture file makes the tree dirty and
+# P2 then describes the file rather than the unit -- the first dispatch met that
+# head-on and recorded it. Re-run the command on a clean tree to reproduce.
