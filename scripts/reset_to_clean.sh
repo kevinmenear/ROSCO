@@ -123,11 +123,39 @@ if [ -f rosco/controller/CMakeLists.txt ]; then
     fi
 fi
 
+# --- 3c. INSTRUMENTED OBJECTS out of the build tree ---------------------------
+#
+# Restoring the source is not enough, and this was measured at unit #4 rather
+# than anticipated. `vit extract` restores the pragma-carrying source itself
+# when it finishes, so ROSCO_Helpers.f90 came back textually clean -- step 1
+# skipped it (no `_c(` wrapper, nothing to revert) and its mtime never moved.
+# make therefore saw an object newer than its source and did not recompile it,
+# and `ROSCO_Helpers.f90.o` stayed INSTRUMENTED through a full "clean" rebuild.
+# The assertion in step 4 caught it (1 kgen symbol) but could not repair it.
+#
+# The rule is the object's own contents, not a list of files: an object is
+# contaminated iff it defines kgen symbols. That maintains itself for whatever
+# source the next extraction instruments. Removing it forces the recompile the
+# timestamps did not.
+#
+# `kgen_utils.f90.o` goes too, for the same reason -- it exists only because an
+# extraction patched it into CMakeLists, and step 3 has already removed both the
+# patch and the source it was built from.
+objs=0
+if [ -d rosco/controller/build ]; then
+    objs=$(docker exec "$CONTAINER" bash -lc \
+        "cd $WORKDIR/rosco/controller/build && c=0; \
+         for o in \$(find . -name '*.o'); do \
+             if nm \$o 2>/dev/null | grep -qi 'kgen'; then rm -f \$o; c=\$((c+1)); fi; \
+         done; echo \$c")
+fi
+
 echo "reset_to_clean: $n wrapper-carrying source(s) restored to $BASELINE"
 [ -n "$skipped" ] && echo "  left at HEAD (no wrappers):$skipped"
 echo "  $crlf file(s) reverted whose only change was line endings"
 echo "  extraction leftovers removed (kernel/ state/ model/ elapsedtime/ logs, .kgen_org)"
 echo "  $cpp translated .cpp source(s) removed from CMakeLists (E1.2 flags kept)"
+echo "  $objs instrumented object(s) removed from the build tree"
 [ "$left" = "1" ] && echo "  CMakeLists.txt un-patched"
 
 [ "$BUILD" = "0" ] && { echo "  --no-build: NOT rebuilt. The installed library may still be instrumented."; exit 0; }

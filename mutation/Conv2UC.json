@@ -1,0 +1,23 @@
+{
+ "unit": "Conv2UC",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "mutants": 14,
+ "equivalent_declared": 0,
+ "nocompile": 4,
+ "nocompile_ratio": 0.2222,
+ "nocompile_refused": false,
+ "total": 18,
+ "killed": 14,
+ "survived": 0,
+ "equivalent": 0,
+ "score": 1.0,
+ "loop_rev": "9bee569-pinned",
+ "vit_rev": "37f8bdf-pinned",
+ "survivors": []
+}

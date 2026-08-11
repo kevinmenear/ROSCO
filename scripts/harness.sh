@@ -187,8 +187,22 @@ fi
 if [ "$MODE" = "pre" ]; then
     docker exec "$CONTAINER" bash -lc \
         "cd $WORKDIR && python3 $LOOP/scripts/vit_harness.py $UNIT --root $WORKDIR \
-            --file $FFILE --cpp $MOD_DIR/$STEM.cpp --module $MODULE ${ARGS[*]}"
-    exit $?
+            --file $FFILE --cpp $MOD_DIR/$STEM.cpp --module $MODULE ${ARGS[*]}" \
+        && rc=0 || rc=$?
+    # `--red-test` used to be ACCEPTED AND DROPPED here: this path returned
+    # before the stamping block at the end of the file, which only post mode
+    # reaches. A pre-integration red test therefore wrote an artifact saying
+    # `failed: 27` and nothing about what was perturbed -- indistinguishable
+    # from a run that failed by accident. Found at unit #4, where the harness
+    # emitter itself was new and its red test was the only evidence it could
+    # fail at all. A non-zero rc is EXPECTED on a red run, so the stamp decides
+    # the verdict, not `./test`'s exit code.
+    if [ -n "$REDTEST" ] && [ -s "$ROOT/$OUT" ]; then
+        python3 "$ROOT/scripts/_harness_stamp.py" "$ROOT/$OUT" --pre \
+            --red-test "$REDTEST"
+        exit $?
+    fi
+    exit "$rc"
 fi
 
 # --- post-integration mode (E4.5) --------------------------------------------

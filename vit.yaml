@@ -93,6 +93,9 @@ translations:
   ColemanTransformInverse:
     status: integrated
     cpp_file: translations/Functions/colemantransforminverse.cpp
+  Conv2UC:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/conv2uc.cpp
 types:
   ControlParameters:
     strategy: view

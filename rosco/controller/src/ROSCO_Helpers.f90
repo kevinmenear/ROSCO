@@ -54,6 +54,16 @@ MODULE ROSCO_Helpers
         END SUBROUTINE addtolist_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of Conv2UC
+    INTERFACE
+        SUBROUTINE conv2uc_c(Str, len_Str) BIND(C, NAME='conv2uc_c')
+            USE ISO_C_BINDING
+            CHARACTER(KIND=C_CHAR), INTENT(INOUT) :: Str(*)
+            INTEGER(C_INT), VALUE :: len_Str
+        END SUBROUTINE conv2uc_c
+    END INTERFACE
+
 CONTAINS
 
     !=======================================================================
@@ -1586,30 +1596,22 @@ END SUBROUTINE Read_OL_Input
 
 !=======================================================================
 !> This routine converts all the text in a string to upper case.
-    SUBROUTINE Conv2UC ( Str )
-
-        ! Argument declarations.
-  
-     CHARACTER(*), INTENT(INOUT)  :: Str                                          !< The string to be converted to UC (upper case).
-  
-  
-        ! Local declarations.
-  
-     INTEGER                      :: IC                                           ! Character index
-  
-  
-  
-     DO IC=1,LEN_TRIM( Str )
-  
-        IF ( ( Str(IC:IC) >= 'a' ).AND.( Str(IC:IC) <= 'z' ) )  THEN
-           Str(IC:IC) = CHAR( ICHAR( Str(IC:IC) ) - 32 )
-        END IF
-  
-     END DO ! IC
-  
-  
-     RETURN
-     END SUBROUTINE Conv2UC
+    SUBROUTINE Conv2UC(Str)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        CHARACTER(*), INTENT(INOUT) :: Str
+        CHARACTER(KIND=C_CHAR) :: Str_c(LEN(Str))
+        INTEGER :: vit_i_Str
+        ! Convert CHARACTER args to C_CHAR arrays
+        DO vit_i_Str = 1, LEN(Str)
+            Str_c(vit_i_Str) = Str(vit_i_Str:vit_i_Str)
+        END DO
+        CALL conv2uc_c(Str_c, LEN(Str))
+        ! Copy C_CHAR arrays back to CHARACTER args (INTENT OUT/INOUT)
+        DO vit_i_Str = 1, LEN(Str)
+            Str(vit_i_Str:vit_i_Str) = Str_c(vit_i_Str)
+        END DO
+    END SUBROUTINE Conv2UC
 
 !=======================================================================
      !> This function returns a left-adjusted string representing the passed numeric value. 

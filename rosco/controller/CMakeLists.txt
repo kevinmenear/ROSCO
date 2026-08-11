@@ -73,6 +73,7 @@ set(SOURCES
     src/colemantransform.cpp
     src/addtolist.cpp
     src/colemantransforminverse.cpp
+    src/conv2uc.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

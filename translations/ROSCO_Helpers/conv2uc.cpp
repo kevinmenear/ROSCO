@@ -1,0 +1,50 @@
+// VIT Translation Scaffold
+// Function: Conv2UC
+// Source: ROSCO_Helpers.f90
+// Module: ROSCO_Helpers
+// Fortran: SUBROUTINE Conv2UC(Str)
+// Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+// Source MD5: 255bce72c6d6
+// VIT: 0.1.0
+// Status: unverified
+// Generated: 2026-08-11T04:54:37Z
+
+// Str arrives as a CHARACTER(KIND=C_CHAR) array of exactly len_Str bytes. It is
+// NOT NUL-terminated, so len_Str is the only statement of its extent, and it is
+// named once, here, as the loop's bound.
+//
+// THE FORTRAN'S BOUND IS `LEN_TRIM(Str)` AND THIS USES `len_Str`. That is a
+// deliberate departure from literal transcription, and what justifies it is a
+// proof rather than a convenience:
+//
+//   By the definition of LEN_TRIM, every character at a position in
+//   (LEN_TRIM(Str), LEN(Str)] is a BLANK, 0x20. The body writes only under
+//   `ch >= 'a' && ch <= 'z'`, which is [0x61, 0x7A]. So every extra iteration
+//   tests false and writes nothing, and the two bounds agree on every input
+//   there is.
+//
+// The reason to prefer the shorter one is OBSERVABILITY, and it was measured,
+// not predicted. A transcribed LEN_TRIM is
+// `while (len_trim > 0 && Str[len_trim - 1] == ' ') --len_trim;` -- six mutable
+// sites computing a quantity nothing downstream can read, because by the proof
+// above it cannot change an output. All six survived mutation (score 0.696),
+// and five survived as OUT-OF-BOUNDS READS: `Str[len_trim + 1]`,
+// `Str[1 - len_trim]`, and `len_trim >= 0` reading `Str[-1]`. Declaring those
+// equivalent would have recorded a blindness in the harness as a property of
+// the mutants.
+//
+// This is unit #1's "name a size once", one restatement further out: what was
+// restated here is the LOOP BOUND, and removing the restatement leaves one
+// site, which every case can see.
+void Conv2UC(char* Str, int len_Str) {
+    // DO IC=1,LEN_TRIM( Str ) -- transcribed 1-based, as the Fortran writes it.
+    for (int IC = 1; IC <= len_Str; ++IC) {
+        // ICHAR is the ASCII code; a plain char may be signed, so read the byte
+        // through unsigned char rather than through toupper, which is
+        // locale-dependent and undefined on a negative char.
+        unsigned char ch = static_cast<unsigned char>(Str[IC - 1]);
+        if (ch >= 'a' && ch <= 'z') {
+            Str[IC - 1] = static_cast<char>(ch - 32);
+        }
+    }
+}

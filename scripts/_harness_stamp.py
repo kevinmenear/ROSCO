@@ -26,17 +26,30 @@ MEASURES = (
 
 
 def main(argv: list[str]) -> int:
-    red = None
+    # `--pre` stamps a PRE-integration run, which needs the red-test record and
+    # nothing else: its `against` is already what vit_harness.py wrote, and
+    # MEASURES is a sentence about the integrated build that would be false
+    # here. Added at unit #4, where `harness.sh --red-test` in pre mode was
+    # ACCEPTED AND DROPPED -- the pre path returns before the stamping block --
+    # so a red artifact came back saying only `failed: 27` with nothing about
+    # what was perturbed. harness.sh's own header says a red artifact that
+    # cannot say what it measured is not evidence about the instrument.
+    red, pre = None, False
+    argv = list(argv)
+    if "--pre" in argv:
+        pre = True
+        argv.remove("--pre")
     if len(argv) == 3 and argv[1] == "--red-test":
         red, argv = argv[2], argv[:1]
     if len(argv) != 1:
-        print("usage: _harness_stamp.py <artifact.json> [--red-test <what was perturbed>]",
-              file=sys.stderr)
+        print("usage: _harness_stamp.py <artifact.json> [--pre] "
+              "[--red-test <what was perturbed>]", file=sys.stderr)
         return 2
     p = Path(argv[0])
     d = json.loads(p.read_text())
-    d["against"] = "integrated"
-    d["measures"] = MEASURES
+    if not pre:
+        d["against"] = "integrated"
+        d["measures"] = MEASURES
     # Both instruments, not one. `vit_harness.py` and `vit_mutate.py` stamp
     # loop_rev AND vit_rev; this artifact carried only loop_rev, so the one
     # measurement of the INTEGRATION WRAPPER -- the thing VIT generates -- was
@@ -60,10 +73,15 @@ def main(argv: list[str]) -> int:
         }
         p.write_text(json.dumps(d, indent=1) + "\n")
         ok = d["failed"] > 0 and d["checked"] > 0
-        print(f"POST-INTEGRATION RED TEST {'OK (went red)' if ok else 'FAILED (stayed green)'}: "
+        where = "PRE-INTEGRATION" if pre else "POST-INTEGRATION"
+        print(f"{where} RED TEST {'OK (went red)' if ok else 'FAILED (stayed green)'}: "
               f"checked {d['checked']}  failed {d['failed']}")
         return 0 if ok else 1
 
+    if pre:
+        # Nothing to add to a green pre-integration run: vit_harness.py already
+        # stamped it. Rewriting it here would only risk changing it.
+        return 0
     p.write_text(json.dumps(d, indent=1) + "\n")
     ok = d["failed"] == 0 and d["checked"] > 0
     print(f"POST-INTEGRATION {'PASS' if ok else 'FAIL'}: "

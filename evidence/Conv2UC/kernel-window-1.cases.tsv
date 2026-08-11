@@ -1,0 +1,69 @@
+# Captured state for Conv2UC, scenario 1, ROSCO_Helpers.f90:1118 (clean numbering).
+# Decoded from the KGen state files: bytes 0-199 are FileLineUC on entry,
+# bytes 200-399 are the reference value on exit. CHARACTER(MaxParamLength=200),
+# blank-padded; shown here with trailing blanks stripped.
+case	input	reference	converts
+Conv2UC.0.0.1	parameter	PARAMETER	yes
+Conv2UC.0.0.2	File	FILE	yes
+Conv2UC.0.0.3			no
+Conv2UC.0.0.4	SIMULATION	SIMULATION	no
+Conv2UC.0.0.5	LoggingLevel	LOGGINGLEVEL	yes
+Conv2UC.0.0.6	DT_Out	DT_OUT	yes
+Conv2UC.0.0.7	Ext_Interface	EXT_INTERFACE	yes
+Conv2UC.0.0.8	Echo	ECHO	yes
+Conv2UC.0.0.9			no
+Conv2UC.0.0.10	CONTROLLER	CONTROLLER	no
+Conv2UC.0.0.11	F_LPFType	F_LPFTYPE	yes
+Conv2UC.0.0.12	IPC_ControlMode	IPC_CONTROLMODE	yes
+Conv2UC.0.0.13	VS_ControlMode	VS_CONTROLMODE	yes
+Conv2UC.0.0.14	VS_ConstPower	VS_CONSTPOWER	yes
+Conv2UC.0.0.15	VS_FBP	VS_FBP	no
+Conv2UC.0.0.16	PC_ControlMode	PC_CONTROLMODE	yes
+Conv2UC.0.0.17	Y_ControlMode	Y_CONTROLMODE	yes
+Conv2UC.0.0.18	SS_Mode	SS_MODE	yes
+Conv2UC.0.0.19	PRC_Mode	PRC_MODE	yes
+Conv2UC.0.0.20	WE_Mode	WE_MODE	yes
+Conv2UC.0.0.21	PS_Mode	PS_MODE	yes
+Conv2UC.0.0.12000			no
+Conv2UC.0.0.12001			no
+Conv2UC.0.0.12002	11.8533	11.8533	no
+Conv2UC.0.0.12003	1.2291e+02	1.2291E+02	yes
+Conv2UC.0.0.12004	4.2557e+04	4.2557E+04	yes
+Conv2UC.0.0.12005			no
+Conv2UC.0.0.12006			no
+Conv2UC.0.0.12007			no
+Conv2UC.0.0.12008			no
+Conv2UC.0.0.12009			no
+Conv2UC.0.0.12010			no
+Conv2UC.0.0.12011			no
+Conv2UC.0.0.12012			no
+Conv2UC.0.0.12013			no
+Conv2UC.0.0.12014			no
+Conv2UC.0.0.12015			no
+Conv2UC.0.0.12016	length	LENGTH	yes
+Conv2UC.0.0.12017	be	BE	yes
+Conv2UC.0.0.12018			no
+Conv2UC.0.0.12019			no
+Conv2UC.0.0.12020			no
+Conv2UC.0.0.23900	VS_KP	VS_KP	no
+Conv2UC.0.0.23901	VS_KI	VS_KI	no
+Conv2UC.0.0.23902	VS_TSRopt	VS_TSROPT	yes
+Conv2UC.0.0.23903			no
+Conv2UC.0.0.23904	FIXED	FIXED	no
+Conv2UC.0.0.23905	VS_FBP_n	VS_FBP_N	yes
+Conv2UC.0.0.23906	3.2897	3.2897	no
+Conv2UC.0.0.23907	3.7988e+01	3.7988E+01	yes
+Conv2UC.0.0.23908	3.3343e+03	3.3343E+03	yes
+Conv2UC.0.0.23909			no
+Conv2UC.0.0.23910	SETPOINT	SETPOINT	no
+Conv2UC.0.0.23911	SS_VSGain	SS_VSGAIN	yes
+Conv2UC.0.0.23912	SS_PCGain	SS_PCGAIN	yes
+Conv2UC.0.0.23913			no
+Conv2UC.0.0.23914	POWER	POWER	no
+Conv2UC.0.0.23915	PRC_Comm	PRC_COMM	yes
+Conv2UC.0.0.23916	PRC_R_Torque	PRC_R_TORQUE	yes
+Conv2UC.0.0.23917	PRC_R_Speed	PRC_R_SPEED	yes
+Conv2UC.0.0.23918	PRC_R_Pitch	PRC_R_PITCH	yes
+Conv2UC.0.0.23919	PRC_Table_n	PRC_TABLE_N	yes
+Conv2UC.0.0.23920	0.0526	0.0526	no
+# 31 of 63 cases change the string; the other 32 are already upper case, numeric or empty.
