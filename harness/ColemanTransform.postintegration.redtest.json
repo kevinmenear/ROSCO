@@ -1,13 +1,13 @@
 {
  "unit": "ColemanTransform",
  "against": "integrated",
- "checked": 217,
- "failed": 217,
+ "checked": 199,
+ "failed": 199,
  "inadmissible": 0,
  "rule_coverage": [
   "  N/A      R5_non_degenerate_shape    0 varied extent(s); 1 FIXED by the type at [3] -- not varied, NO index parameter identified, array elements distinct",
   "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
-  "  applied  R6_reference_literals      168 value(s) from 10 literal(s) in the reference, each under every declared value of 0 flag(s)",
+  "  applied  R6_reference_literals      150 value(s) from 9 literal(s) in the reference, each under every declared value of 0 flag(s)",
   "  applied  R3_no_dead_signal          4 real value(s), none zero in every case",
   "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
   "  applied  R4_compare_all_outputs     return value + 3 out-parameter(s): rootMOOP, axTOut, axYOut"
@@ -110,9 +110,12 @@
    "got": "bda49d8cde5535c0"
   }
  ],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "ebce989-pinned",
+ "vit_rev": "d07a716-pinned",
  "red_test": {
   "perturbation": "integrated Functions.f90 wrapper: CALL colemantransform_c(..., axYOut, axTOut) -- the two INTENT(OUT) arguments swapped",
-  "result": "217 of 217 cases failed; reverting the wrapper restored 217 checked / 0 failed",
+  "result": "199 of 199 case(s) failed",
   "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
  }
 }

@@ -13,5 +13,6 @@
   "  applied  R4_compare_all_outputs     return value + 3 out-parameter(s): rootMOOP, axTOut, axYOut"
  ],
  "mismatches": [],
- "loop_rev": "3c88913-pinned"
+ "loop_rev": "ebce989-pinned",
+ "vit_rev": "d07a716-pinned"
 }

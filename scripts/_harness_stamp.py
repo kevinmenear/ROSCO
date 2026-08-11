@@ -26,16 +26,44 @@ MEASURES = (
 
 
 def main(argv: list[str]) -> int:
+    red = None
+    if len(argv) == 3 and argv[1] == "--red-test":
+        red, argv = argv[2], argv[:1]
     if len(argv) != 1:
-        print("usage: _harness_stamp.py <artifact.json>", file=sys.stderr)
+        print("usage: _harness_stamp.py <artifact.json> [--red-test <what was perturbed>]",
+              file=sys.stderr)
         return 2
     p = Path(argv[0])
     d = json.loads(p.read_text())
     d["against"] = "integrated"
     d["measures"] = MEASURES
-    pin = Path.home() / "Artifacts/vit_translation/translation-loop/.loop_rev"
-    if pin.is_file():
-        d["loop_rev"] = pin.read_text().strip() + "-pinned"
+    # Both instruments, not one. `vit_harness.py` and `vit_mutate.py` stamp
+    # loop_rev AND vit_rev; this artifact carried only loop_rev, so the one
+    # measurement of the INTEGRATION WRAPPER -- the thing VIT generates -- was
+    # the one that did not say which VIT generated it. That is exactly backwards.
+    # Read as pins because neither repo has git inside the container that
+    # produced the run, and never dressed up as a verified read.
+    base = Path.home() / "Artifacts/vit_translation"
+    for key, pin in (("loop_rev", base / "translation-loop/.loop_rev"),
+                     ("vit_rev", base / "vit/.vit_rev")):
+        if pin.is_file() and pin.read_text().strip():
+            d[key] = pin.read_text().strip() + "-pinned"
+    if red is not None:
+        # A red run INVERTS the verdict: failing is the result, and passing is
+        # the finding -- a harness that stays green under a deliberate
+        # perturbation cannot be told from one that cannot fail.
+        d["red_test"] = {
+            "perturbation": red,
+            "result": f"{d['failed']} of {d['checked']} case(s) failed",
+            "why": "a harness whose green was never observed going red cannot be "
+                   "told from one that cannot fail",
+        }
+        p.write_text(json.dumps(d, indent=1) + "\n")
+        ok = d["failed"] > 0 and d["checked"] > 0
+        print(f"POST-INTEGRATION RED TEST {'OK (went red)' if ok else 'FAILED (stayed green)'}: "
+              f"checked {d['checked']}  failed {d['failed']}")
+        return 0 if ok else 1
+
     p.write_text(json.dumps(d, indent=1) + "\n")
     ok = d["failed"] == 0 and d["checked"] > 0
     print(f"POST-INTEGRATION {'PASS' if ok else 'FAIL'}: "

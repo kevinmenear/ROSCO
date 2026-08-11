@@ -29,3 +29,29 @@ were the same measurement.
 
 Fixed by widening the window to a region where the rotor is turning, not by
 changing what is compared. See DECISIONS.md.
+
+## `kernel-window-27.*` — the working window, twice, from two VITs
+
+`kernel-window-27.verify_fields.csv` and `.stub-fails.verify_fields.csv` are the
+first pass, taken with VIT `d85b33b`.
+
+The `.vit-d07a716.*` files are the SAME three measurements repeated on the
+second pass, after VIT was reconciled with canonical (89 commits, DECISIONS.md).
+They are kept beside the originals rather than replacing them, because the
+question they answer is not "what does the kernel say" but "does it still say it
+under a different instrument":
+
+| file | run | result |
+|---|---|---|
+| `kernel-window-27.vit-d07a716.verify_fields.csv` | the translation | 63/63, 14,175 entries, all IDENTICAL |
+| `kernel-window-27.vit-d07a716.stub-fails.verify_fields.csv` | the zero-writing stub | 124 of 14,175 `OUT_TOL` — the kernel discriminates |
+| `kernel-window-27.vit-d07a716.statefiles.lst` | — | the 63 captured state files, by name |
+
+The stub log is the one worth reading. 124 differing entries out of 14,175 is
+what "this window is alive" looks like from the inside: 62 of 63 cases have a
+non-zero `axistilt_1p` and `axisyaw_1p`, and those 124 values are the whole of
+what separates the real translation from a function that ignores its arguments.
+Under the `1-20` window the same stub produced zero differing entries.
+
+Green was re-confirmed after the stub was reverted (63/63), so the red is
+attributable to the stub and not to anything else that moved between runs.
