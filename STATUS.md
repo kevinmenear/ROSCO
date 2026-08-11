@@ -4,7 +4,95 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-11: unit #6 `GetPath` is `integrated` and CLOSED**, first
+**As of 2026-08-11: unit #7 `GetRoot` is `integrated` and CLOSED**, first
+dispatch.
+
+**THE KERNEL IS A MIRROR AND THE GATE IS BLIND, AND THE INSTRUMENT THAT DOES
+CONSTRAIN IT WAS ITSELF BLIND UNTIL THIS UNIT FIXED IT.**
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases, scenario 1 | 62/62 `IDENTICAL` over the full `CHARACTER(8)` | **a NO-OP also scores 62/62 `IDENTICAL`**; a WRONG-constant stub scores `OUT_TOL`, which is what says the comparison is alive |
+| differential harness vs clean Fortran | 726 checked, 0 failed | no-op stub → 700/726 failed, naming `RootName`; green restored |
+| mutation score | 60/60 behavioural killed, 1.000, **2 declared equivalent**, 0 nocompile | refuses to score unless the baseline is green |
+| post-integration harness (wrapper only) | 726 checked, 0 failed | `LEN(RootName)` → `LEN(RootName) - 1` in the CALL → 596/726 failed; green restored |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED TEST FAILED — 0 of 5,252,000 moved** |
+
+8 of the 60 mutation kills are CRASHES rather than case mismatches, so the
+killed-by-comparison count is 52 of 60.
+
+**THE CALL SITE ALIASES ITS TWO ARGUMENTS, AND THAT BREAKS TWO OF THE
+CAMPAIGN'S OWN RED TESTS.** `DISCON.F90:67` is `CALL GetRoot(RootName,RootName)`
+— one variable as both the INTENT(IN) and the INTENT(OUT) dummy. KGen's captured
+input is therefore bit-for-bit its captured reference output (the state file is
+`vit_sim1vit_sim1`), so a stub that reads nothing and writes nothing PASSES. And
+because every scenario's name contains no `'.'`, `GetRoot` is the IDENTITY on
+the exercised domain — so the gate's standard no-op perturbation is not a wrong
+implementation either. Both no-op red tests are green for reasons that have
+nothing to do with observability. The tests that carry the claim are a
+**wrong-constant** kernel stub (62/62 `OUT_TOL`) and a **wrong-output** gate
+perturbation (0 of 5,252,000 moved, `replacements: 1`, `revert_verified: true`).
+Unit #6's recipe read forwards gives the wrong answer here; RUNBOOK now says so.
+
+**A FIFTH SHAPE OF P9: the result is consumed, by a live line, into a channel
+the gate does not read.** `RootName` has six reader sites and all six build a
+FILENAME. Five are dead in all 27 scenarios; the sixth runs 24 times and is
+`OPEN(unit=UnDb, FILE=TRIM(RootName)//'.RO.dbg')`. `gate.py` compares the `.npz`
+arrays `vit_sim.py` collects across the DLL boundary and never opens a `.RO.dbg`.
+Perturbing this unit renames a file.
+
+| unit | shape |
+|---|---|
+| #1 `AddToList` | the line is never executed |
+| #3 `ColemanTransformInverse` | an argument is constant in every scenario |
+| #4 `Conv2UC` | 1.3M executions, result cancelled by a symmetric consumer |
+| #6 `GetPath` | result produced, consumer's guard false wherever it would matter |
+| #7 `GetRoot` | result consumed by a live line, into a side effect outside the instrument |
+
+**THE FIRST DIFFERENTIAL HARNESS REPORTED `224 checked, 0 failed` AND HAD NEVER
+EXECUTED THE BRANCH THE PROCEDURE EXISTS FOR.** Three independent gaps in the
+generator, each found from a SURVIVING MUTANT rather than from the verdict:
+
+1. R6 mined **single-character** literals, so the character SET `'\/'` was
+   invisible and the corpus contained **no backslash at all**. Now every
+   character of every literal handed to `INDEX`/`SCAN`/`VERIFY` is mined.
+2. The corpus is each literal plus its **collating neighbours**, laid down in
+   corpus order — and `'/'` is `'.'+1`, so every generated string containing a
+   dot had a separator directly after it. The rule that makes the corpus
+   relevant is the rule that blinded it. Planted characters and planted PAIRS
+   of the reference's own literals now break the adjacency.
+3. The length ladder `{1, N, N+5}` had no **2**, the smallest non-degenerate
+   string and the first length at which a first-versus-second-character test has
+   two answers.
+
+224 cases / mutation 0.648 → 726 / 0.968. Fixed in the loop repo (`0e92a72`).
+
+**TWO KGEN DEFECTS, BOTH FIXED IN KGEN (`4457cd2`).** The generated kernel
+compiled, ran, printed `62/62 passed` and compared **nothing** — VIT's own
+"kernel compared 0 output variables" is what caught it. `update_state_info` found
+an argument's position with `list.index`, and `Fortran2003.Base` compares nodes
+by content, so both occurrences of a repeated actual argument resolved to
+argument 0. Fixing that exposed a second: the VERIFY name generator embeds the
+declaration's selector in a procedure name, so `CHARACTER(LEN=size(avcoutname))`
+produced `kv_discon_character_size(avcoutname)_`. `c839e1a` had fixed exactly
+that on the GENCORE side and the VERIFICATION side never got it. Red-tested in
+both directions; the green control is a `GetPath` re-extraction that comes back
+byte-identical with and without the patch.
+
+**REMOVING AN UNOBSERVABLE RESTATEMENT AGAIN — and this time it is the SAME
+INTRINSIC unit #4 removed.** Transcribing `LEN_TRIM` literally scored 0.886 with
+**six of eight survivors inside the helper**, and three of those six are
+out-of-bounds reads, which cannot honestly be declared equivalent. The
+translation carries a three-part proof that `LEN(GivenFil)` serves at both sites.
+The two mutants that remain are declared equivalent with their proofs committed
+at `mutation/GetRoot.equivalences.md`: an out-of-bounds read no value comparison
+can see, and `RootName = ''` — **dead code in upstream ROSCO**, unreachable
+because the special case at the top of the procedure has already returned on the
+only input that could get there.
+
+---
+
+**Unit #6 `GetPath` is `integrated` and CLOSED**, first
 dispatch.
 
 **BOTH BIT-EXACT LAYERS ARE VACUOUS FOR THIS UNIT, AND EACH SAYS SO IN AN
@@ -192,17 +280,18 @@ fields — those are hypotheses, not facts. Run
 
 ## Counts
 
-6 attempted / **6 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+7 attempted / **7 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / 0 blocked.
 
-69 units in `plan.json`; 63 remain.
+69 units in `plan.json`; 62 remain.
 
-**4 of the 6 integrated units are invisible to the gate**, for four different
+**5 of the 7 integrated units are invisible to the gate**, for five different
 reasons: `AddToList` is never called, `Conv2UC` is called constantly and
 cancelled, `ExtController` is never called *and* has no observable effect on any
-channel the gate compares even when it is, and `GetPath` is called in every
-scenario and its answer is never consumed. Each carries a green gate artifact
-committed beside the red test that says it constrains nothing.
+channel the gate compares even when it is, `GetPath` is called in every scenario
+and its answer is never consumed, and `GetRoot`'s answer IS consumed — by a live
+line that uses it to name a debug file the gate never opens. Each carries a green
+gate artifact committed beside the red test that says it constrains nothing.
 
 **Every unit now has a `harness/` and a `mutation/` artifact.** `ExtController`
 was the exception for two dispatches and the absence was recorded as the
@@ -418,8 +507,30 @@ things and only the fallback uses the platform parameter (P7).
 
 ## Open
 
+- **`vit check -f <file>` MISATTRIBUTES, and at unit #7 it misattributed a
+  finding that LOOKED like it belonged to the unit.** Third sighting. The two
+  findings against `GetRoot` are `narrowing-local` on `ExpUCVarName` (clean 1051,
+  inside `FindLine`) and `delimiter-set` on `':/'` (clean 1332, inside
+  `PathIsRelative`) — neither in `GetRoot`'s range 1253–1306. The new part is that
+  `GetRoot` **does** contain a delimiter set, `'\/'`, so the reported finding is
+  a near-miss a reader could plausibly accept. Re-attribute by line range, not by
+  plausibility. Fix belongs in VIT: scope the cross-source checks to the
+  function, not the file.
+- **The differential harness generator has been blind three ways at once, and
+  the verdict never said so.** Closed in the loop repo (`0e92a72`) — see the unit
+  #7 block above — but kept open here as a standing warning about the SHAPE:
+  a harness green is a claim about the cases that were generated, and only the
+  mutation survivors say which cases those were. Every one of the three gaps was
+  found by asking why a mutant lived, never by reading a `checked N failed 0`.
+- **The post-integration harness links PREBUILT Fortran objects.** A red test
+  that edits a wrapper and re-runs `harness.sh --post-integration` without
+  rebuilding the controller measures the OLD wrapper and reports green — which
+  reads exactly like a harness that cannot fail. Measured at unit #7: the same
+  perturbation goes 0/726 without a rebuild and 596/726 with one. `harness.sh`
+  could rebuild, or refuse to run when a source it links is newer than the object.
 - **`vit interface` EMITS A COPY-IN FOR AN `INTENT(OUT)` ARGUMENT.** New at unit
-  #6. The shipped `GetPath` wrapper reads `PathName` — undefined on entry, by
+  #6, seen again at unit #7 (26 of 726 no-op cases survive because of it). The
+  shipped `GetPath` wrapper reads `PathName` — undefined on entry, by
   definition of `INTENT(OUT)` — into the C_CHAR staging array before the call. It
   does not change this unit's answer, because the translation writes every one of
   `len_PathName` bytes. It changes what the instruments can SEE: it is exactly
@@ -443,13 +554,21 @@ things and only the fallback uses the platform parameter (P7).
   measuring it. Fixed in the loop repo (`74742bc`), verified in both directions.
   CLOSED; kept here because it is the second time an instrument's own failure
   looked like a finding about a unit.
-- **The campaign now has FOUR shapes of P9 and the verification ledger (E5.2)
+- **The campaign now has FIVE shapes of P9 and the verification ledger (E5.2)
   needs a column for each.** Unit #4 asked for a "hot but cancelled" column;
-  unit #6 adds "produced but never consumed", which is neither that nor
-  "unexercised" nor "argument held constant". All four are consumer- or
-  input-space properties that `coverage/line_coverage.json` cannot express,
+  unit #6 adds "produced but never consumed"; unit #7 adds "consumed by a live
+  line, into a side effect the instrument does not read". All five are consumer-
+  or input-space properties that `coverage/line_coverage.json` cannot express,
   because coverage counts entries to a line and every one of these lines is
   entered.
+- **A unit can be the IDENTITY on the whole exercised domain, and then the gate's
+  standard no-op perturbation is not a wrong implementation.** New at unit #7.
+  `GetRoot` strips a file extension and every scenario hands it a name with no
+  `'.'`, so all 444,000 calls fall through to `RootName = GivenFil`. A no-op
+  returns the caller's own bytes, which through the aliased call site IS the
+  right answer. The red test has to perturb the unit to a WRONG value. The same
+  property makes the KERNEL a mirror rather than a comparison, so the kernel's
+  liveness test also has to be a wrong-constant stub rather than a no-op.
 - **A unit's kernel can be STRUCTURALLY one case, and no configuration reaches
   it.** `GetPath`'s call site runs once per process. Unit #2's answer to a
   vacuous window — widen it — does not apply, and `vit.yaml`'s `invocation` is

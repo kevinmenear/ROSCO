@@ -2095,3 +2095,275 @@ UTF-8 by construction. X2.
 Red-tested in both directions on this unit: before, a traceback and no verdict;
 after, COMPLETE 13/13 on the same evidence list. The transcript is at
 `evidence/GetPath/done_check.txt` and says so.
+
+## Unit #7 — GetRoot, 2026-08-11: `integrated`, and every red test the campaign owned had to be replaced
+
+`GetRoot` parses the root name off a filename. Two `CHARACTER(*)` dummies, no
+callees, ONE call site — structurally the twin of unit #6's `GetPath`. It closed
+`integrated` on the first dispatch, on the differential harness and the mutation
+score, with a green gate committed beside a FAILED gate red test. That much is
+unit #6 repeated. Nothing else was.
+
+### 1. THE CALL SITE ALIASES ITS TWO ARGUMENTS, AND THAT INVALIDATES TWO RED TESTS
+
+```fortran
+RootName = TRANSFER(avcOUTNAME, RootName)
+CALL GetRoot(RootName,RootName)          ! DISCON.F90:67 -- the ONLY call site
+```
+
+One variable, passed as both the `INTENT(IN)` and the `INTENT(OUT)` dummy.
+
+**The kernel becomes a mirror.** KGen captures the pre-call value as the input
+and the post-call value as the expected output; they are the same storage, so
+`strings kernel/GetRoot/GetRoot.0.0.1` prints `vit_sim1vit_sim1`. A stub that
+reads nothing and writes nothing scores **62/62 IDENTICAL**
+(`evidence/GetRoot/kernel.noop-stub.verify_fields.csv`).
+
+Unit #6 wrote the rule "the no-op says the kernel is alive, the constant stub
+says whether being alive buys anything". Read forwards here it says the kernel is
+DEAD, which is not what a passing no-op means and would have been the wrong
+conclusion. Four stubs, all committed, and the fourth is the one that resolves it:
+
+| stub | verdict |
+|---|---|
+| the translation | 62/62 `IDENTICAL` |
+| no-op | 62/62 `IDENTICAL` |
+| right constant | 62/62 `IDENTICAL` |
+| **wrong constant** | **62/62 `OUT_TOL`** |
+
+The wrong-constant stub is the liveness test. RUNBOOK now says so, as an
+exception scoped to aliased call sites rather than as a replacement of unit #6's
+entry.
+
+**The gate's no-op perturbation is degenerate too**, for a second and independent
+reason: every scenario's `avcOUTNAME` is `vit_sim<N>`, containing no `'.'`, so
+`GetRoot` is the IDENTITY on the whole exercised domain and a no-op is the
+CORRECT implementation there. The perturbation that carries the claim makes the
+unit return `XXXXXXXX`; it moved **0 of 5,252,000** with `replacements: 1` and
+`revert_verified: true`. The no-op run is committed beside it, labelled
+degenerate — the same discipline unit #6 used for its deliberately weak
+`I == 0` perturbation.
+
+### 2. A FIFTH SHAPE OF P9: consumed, by a live line, outside the instrument
+
+`RootName` has six reader sites and every one builds a FILENAME. Measured:
+
+| reader (clean) | hits, all 27 |
+|---|---|
+| `ROSCO_IO.f90:1102` `OPEN(unit=UnDb, FILE=TRIM(RootName)//'.RO.dbg')` | **24**, 23 scenarios |
+| `ROSCO_IO.f90:1110`, `:1142` (`.RO.dbg2`, `.RO.dbg3`) | 0 |
+| `ROSCO_IO.f90:30`, `:373` (`.RO.chkp`) | 0 |
+| `ReadSetParameters.f90:360` (`.RO.echo`) | 0 |
+
+`gate.py` compares `baseline_arrays/scenario_N.npz`, which `vit_sim.py` builds
+from the arrays crossing the DLL boundary. It never opens a `.RO.dbg`. So the one
+live consumer takes the value out of the process through a channel the instrument
+does not read: perturbing the unit renames a file.
+
+That is not any of the four shapes already recorded. #1 was an unexecuted line,
+#3 a constant argument, #4 a result cancelled by a symmetric consumer, #6 a
+result whose consumers' guards are false. Here the consumer runs and the value
+matters — to something the gate is not looking at. `coverage/line_coverage.json`
+can express none of the five, and this one least of all: line 1102 is hit in
+nearly every scenario.
+
+### 3. THE DIFFERENTIAL HARNESS REPORTED GREEN WITHOUT EVER RUNNING THE UNIT'S POINT
+
+First run: `224 checked, 0 failed`. It had not once executed
+`RootName = GivenFil(:I-1)` under `INDEX('\/', ...) == 0` — stripping an
+extension, which is what the procedure is FOR. Nothing in the verdict said so.
+What said so was the mutation score: 0.648, 25 survivors, six of them clustered
+in that branch.
+
+Three independent gaps, each fixed in the loop repo (`0e92a72`) and each
+generalising past this unit:
+
+1. **The literal miner read SINGLE-character literals only.** A Fortran character
+   SET is one multi-character literal, so `'\/'` was invisible and the corpus
+   held **no backslash at all** — the generator could not construct a case that
+   told the two halves of the set apart. Now every character of every literal
+   passed to `INDEX`/`SCAN`/`VERIFY` is mined. Those three intrinsics take a set
+   by definition, which is what keeps error messages and format strings out; the
+   single-character rule exists to avoid exactly that flooding and the narrow
+   exception preserves it. Conv2UC's corpus is unchanged (`a`, `z`), GetWords'
+   gains its five delimiters.
+2. **The corpus is each literal plus its COLLATING NEIGHBOURS, laid down in
+   corpus order.** `'/'` is `'.'+1`. So every mixed string containing a dot had a
+   separator immediately after it, and the branch that requires a NON-separator
+   there was unreachable by any seed. *The rule that makes the corpus relevant is
+   the rule that blinded it.* Fixed by planting a corpus character at an interior
+   position of an ordinary string, by planting PAIRS of the reference's own
+   literals adjacently, and by a blank-tail variant that makes `LEN_TRIM` land on
+   the plant.
+3. **The length ladder `{1, N, N+5}` had no 2.** Length 1 is degenerate — the
+   first character is also the last — and at 4 both sides of an `I == 1` test are
+   false together. `IF ( I == 1 )` → `IF ( I == 2 )` survived 726 cases on
+   `{1,4,9}` and dies on `{1,2,4,9}`.
+
+224 / 0.648 → 726 / 0.968. All three are additions appended after the existing
+draws, so the rng sequence the other shapes consume is unchanged.
+
+**The general lesson, and it is about how to read a harness.** A green
+`checked N failed 0` is a claim about the cases that were generated. Only the
+mutation survivors say which cases those were. Three times in this unit the
+verdict was green and wrong to trust, and three times the survivor list was what
+pointed at the gap.
+
+### 4. THE SAME INTRINSIC UNIT #4 REMOVED, REMOVED AGAIN — with a harder proof
+
+Transcribed literally, `LEN_TRIM` scored 0.886 with **six of eight survivors
+inside the `len_trim` helper** (`mutation/GetRoot.survivors_len_trim.json`).
+That is unit #4's `Conv2UC` measurement reproduced on a different unit and the
+same intrinsic, so the rule now has two independent measurements.
+
+The proof here is longer than #4's and is written into the translation, because
+the quantity is used three ways:
+
+1. `TRIM(X) == "."` and `X == "."` are the SAME PREDICATE in Fortran — comparison
+   blank-pads the shorter operand, so TRIM on the left of a comparison against a
+   blank-free literal is a no-op by the language's own rule.
+2. The scan looks for `'.'`; the positions between `LEN_TRIM` and `LEN` are
+   blanks, and a blank is not a `'.'`, so the wider bound finds the same index.
+3. `I < LEN_TRIM` and `I < LEN` differ only at `I == LEN_TRIM < LEN`, where the
+   character at `I+1` is a blank, `INDEX('\/', blank)` is 0, and both paths write
+   `GivenFil(:I-1)`.
+
+**What decided it was not the count but the KIND of survivor.** Three of the six
+(`s[i+1]`, `s[1-i]`, `s[i-2]`) are OUT-OF-BOUNDS READS. A mutant whose behaviour
+is undefined cannot honestly be *declared* equivalent — "equivalent" is a claim
+about behaviour and it has none. Deleting the site is the only move that is both
+true and closes the gap. That is a refinement of the existing rule worth keeping:
+when survivors are undefined-behaviour mutants, DECLARE is not available and
+REMOVE is the only honest option.
+
+### 5. TWO MUTANTS DECLARED EQUIVALENT, AND THE REASONS ARE COMMITTED
+
+`vit_mutate.py --equivalences` takes a bare list of ids, so
+`mutation/GetRoot.equivalences.md` carries the proofs beside
+`mutation/GetRoot.equivalences.json` — the same shape as `harness/ranges.toml`
+at unit #5. A judgement stated without its basis is one nobody can check.
+
+* `6751970e` `I < len_GivenFil` → `I <= len_GivenFil`: equivalent everywhere it
+  is DEFINED; at `I == len_GivenFil` it reads one byte past the argument. Stated
+  plainly as a limit of value-comparison mutation testing, with the instrument
+  that would kill it named (`-fsanitize=address`).
+* `51209c13` the `0` in `RootName = ''`: **dead code in upstream ROSCO**.
+  Reaching it needs `GivenFil` to be the single character `'.'`, and the
+  procedure's own first statement has already returned on that. Transcribed
+  anyway under P7; no input executes the line, so no mutant of it can be seen.
+
+Score 1.000, 60 of 60 behavioural killed, 8 of them by CRASH — so the
+killed-by-comparison count is 52 of 60, reported beside the score as unit #2's
+entry requires.
+
+### 6. TWO KGEN DEFECTS, BOTH FIXED IN KGEN (X2)
+
+`vit extract` succeeded, the kernel BUILT, it RAN, it printed `62/62 passed` —
+and it compared nothing:
+
+```
+✗ VERIFICATION FAILED: 62/62 passed
+  FAILED: kernel compared 0 output variables — nothing was verified
+```
+
+VIT's guard is what caught it. `evidence/GetRoot/kgen_callsite.aliased_args_no_verify.F90`
+is the generated file, with an empty `!local verify variables` section.
+
+`kganalyze.update_state_info` promotes a call-site variable to STATE_OUT by
+finding its position in the actual-argument list and reading the matching dummy's
+INTENT. It used `arglist.items.index(argobj)`, and `Fortran2003.Base.__cmp__`
+compares nodes by CONTENT — so two occurrences of one name compare equal and
+`list.index` returns 0 for both. Measured in the container rather than read off
+the source:
+
+```
+Actual_Arg_Spec_List('RootName, RootName')  ->  index(items[1]) == 0
+Actual_Arg_Spec_List('A, B')                ->  index(items[1]) == 1
+```
+
+Argument 0 is `GivenFil`, INTENT(IN). Fixed by resolving the position by
+IDENTITY — `argobj` comes out of the traversal's own lineage, so it IS the node
+in the tree — with the value lookup kept as a fallback, so the change can only be
+more precise than what it replaces.
+
+**The dangerous version of this defect is not the one that happened.** Here the
+kernel compared nothing and something noticed. At a call site with a SECOND
+out-argument the kernel would have compared that one, dropped this one, and
+reported a clean pass.
+
+Fixing it exposed a second defect one file over. `get_typedecl_subpname` composes
+a procedure name out of the declaration's selector, and `RootName` is declared
+`CHARACTER(LEN=size(avcoutname))`, so the verify subroutine came out as
+`kv_discon_character_size(avcoutname)_` — parentheses in an identifier.
+`c839e1a` fixed exactly this on the GENCORE side during unit #4's era; the
+VERIFICATION side has the same two lines and never got it, because no unit had
+generated a verify subroutine for such a type before. **A fix applied at one of
+two sites that share a code shape is a fix the other site escapes** — the same
+lesson unit #5 recorded about the 132-column bridge generator, now measured a
+second time. The sanitiser moved to `kgutils` so both generators share one
+definition.
+
+Red-tested in both directions (KGen `4457cd2`). The GREEN direction found
+something too: unit #6's committed `evidence/GetPath/kernel-generated-ReadSetParameters.f90`
+**cannot be used as the control**, because it is a POST-`vit verify` file —
+`vit verify` reports "Modified 10 files" and rewrites the generated callsite file
+(USE-ONLY lists, `verboseLevel` 100 → 1, a NaN branch, `[VIT_FIELD]` prints).
+The control that works is a same-stage comparison: stash the patch, re-extract
+`GetPath`, and diff the two fresh kernels. They are byte-identical.
+
+### 7. A RED TEST THAT STAYED GREEN BECAUSE THE PERTURBATION NEVER REACHED THE BINARY
+
+The post-integration harness links the campaign's PREBUILT Fortran objects; it
+compiles the C++ test and nothing else. Editing the wrapper and re-running
+`harness.sh --post-integration` reported `checked 726  failed 0` — which is
+indistinguishable from a harness that cannot fail. Rebuilding the controller
+between the edit and the run turns the same perturbation red, 596 of 726.
+
+Worth keeping because it is the third instance in this campaign of *an instrument
+reporting about itself and being read as reporting about the unit*: the stale
+harness artifact at unit #2, the crashed done-condition at unit #6, this.
+
+### 8. A VIT CHECK FIXED, AND A THIRD SIGHTING OF ITS FILE-SCOPING DEFECT
+
+`vit check` reported `delimiter-set` against `'\/'` — this unit's own set, and a
+FALSE POSITIVE: the check gathers only string literals from the translation, and
+this translation spells the set as `static const char Separators[] = { '\\', '/' }`,
+which is the form the campaign's own "name a size once" rule asks for (an array
+states its length via `sizeof`; a string literal needs the length written beside
+it as a second mutable site, and carries a NUL the Fortran set does not). So the
+check fired on a translation for following the campaign's rule. Fixed in VIT
+(`87a3847`) by reading braced character arrays as sets; registry self-tests 67
+passed.
+
+The two findings that remain are the file-scoping defect's third sighting, and
+this time one of them is a NEAR-MISS: `delimiter-set` on `':/'` from
+`PathIsRelative`, reported against a unit that genuinely has a delimiter set.
+Misattribution is most dangerous when the neighbouring procedure's shape
+resembles the unit's. Re-attribute by LINE RANGE, not by plausibility.
+
+### 9. NOT method, target
+
+All of it. The aliased-argument red-test inversion, the fifth P9 shape, the three
+harness-corpus gaps, the LEN_TRIM removal, the two KGen defects, the VIT check
+fix and the prebuilt-objects trap are all RUNBOOK target-layer entries. No
+amendment to the invariant layer is proposed.
+
+Two observations for the Driver, neither an amendment:
+
+**X4 did the work again, and it did it three levels deep.** "Never take a green
+result at face value on first use" caught the kernel (a no-op passes), the gate
+(a wrong answer moves nothing) and the harness (224 green cases that missed the
+unit's purpose). The third is the interesting one: the harness green was not
+merely uninformative, it was *actively misleading*, and the thing that exposed it
+was P12's mutation score, not any red test. **A red test asks whether the
+instrument CAN move; the mutation score asks whether it moves for the right
+reasons.** The campaign has now had one unit where those two questions had
+different answers.
+
+**Three of this unit's fixes were to instruments, not to the translation**, and
+the translation was written in an hour. That ratio is worth watching: at unit #4
+it was one, at #5 it was four, here three. It is not obviously a problem — the
+fixes are permanent and each closed a blindness that would have silently applied
+to later units — but a campaign whose per-unit cost is dominated by instrument
+repair is a campaign whose bootstrap phase is not finished, and E1/E2/E3 all
+report closed.

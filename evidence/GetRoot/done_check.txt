@@ -1,0 +1,52 @@
+$ python3.12 scripts/done_check.py GetRoot
+
+TRANSCRIPT, not a redirection. Creating the file that captures the verdict makes
+the tree dirty, and P2 reads the tree -- so a redirected capture records
+`P2 FAIL dirty_tree` and describes ITSELF rather than the unit. Unit #5 paid for
+that once; RUNBOOK says to transcribe instead.
+
+Run 1, after both commits (0e11390 the function, e3ed56e the state), with this
+file not yet existing:
+
+    baseline (inferred): 9722ddc  -- the commit before 0e11390 touched
+                                     translations/ROSCO_Helpers/getroot.cpp
+
+    GetRoot: Verdict.INCOMPLETE  (12/13 PASS)
+
+    [  ok  ] P1   commits exist
+    [  ok  ] P2   clean tree
+    [  ok  ] P3   disposition recorded
+    [  ok  ] P4   evidence recorded
+    [ FAIL ] P5   evidence resolves     unresolved_evidence:evidence/GetRoot/done_check.txt
+    [  ok  ] P6   functional commit
+    [  ok  ] P7   state brought current
+    [  ok  ] P8   unit named in state
+    [  ok  ] P9   gate compared and matched
+    [  ok  ] P12  mutation score for this unit    60/60 mutant(s) killed, 2 declared equivalent
+    [  ok  ] P11  post-integration harness re-run 726 check(s) against the integrated build
+    [  ok  ] P13  evidence matches the contract   mirror: the gate's evidence is
+                                                  admissible for a procedure-for-
+                                                  procedure translation
+    [  ok  ] P10  evidence reproducible
+
+The one FAIL is this file, which plan.json's evidence list names and which run 1
+could not have resolved because run 1 is what produces it. Written, the state
+commit amended, and re-run below.
+
+Run 2, after `git commit --amend` brought this file into e3ed56e's successor:
+
+    GetRoot: Verdict.COMPLETE  (13/13 PASS)
+
+    [  ok  ] P1   commits exist
+    [  ok  ] P2   clean tree
+    [  ok  ] P3   disposition recorded
+    [  ok  ] P4   evidence recorded
+    [  ok  ] P5   evidence resolves
+    [  ok  ] P6   functional commit
+    [  ok  ] P7   state brought current
+    [  ok  ] P8   unit named in state
+    [  ok  ] P9   gate compared and matched
+    [  ok  ] P12  mutation score for this unit    60/60 mutant(s) killed, 2 declared equivalent
+    [  ok  ] P11  post-integration harness re-run 726 check(s) against the integrated build
+    [  ok  ] P13  evidence matches the contract   mirror
+    [  ok  ] P10  evidence reproducible

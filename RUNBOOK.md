@@ -454,6 +454,52 @@ is `/workspace/ROSCO-r2`.
        <(sed 3d evidence/Conv2UC/kernel-generated-ROSCO_Helpers.f90)
   ```
 
+  **A committed `kernel-generated-*.f90` is a POST-`vit verify` file, not KGen's
+  output.** Learned at unit #7 while trying to use unit #6's `GetPath` artifact
+  as that control. `vit verify` reports "Modified 10 files" and one of them is
+  the generated callsite file: it collapses the `USE kgen_utils_mod` lines to
+  `ONLY:` lists, lowers `verboseLevel` from 100 to 1, adds a NaN branch and the
+  `[VIT_FIELD]` prints. Diffing a fresh pre-verify extraction against it shows
+  five differences that are all VIT's and none KGen's. Control a KGen change
+  against a run of the SAME stage — stash the patch, re-extract, `diff` the two
+  fresh kernels.
+
+- **A KGen kernel can COMPILE, RUN, print `62/62 passed`, and compare NOTHING.**
+  Learned at unit #7, and VIT is what caught it:
+
+  ```
+  ✗ VERIFICATION FAILED: 62/62 passed
+    FAILED: kernel compared 0 output variables — nothing was verified
+  ```
+
+  `CALL GetRoot(RootName,RootName)` passes one variable to both an INTENT(IN)
+  and an INTENT(OUT) dummy. `kganalyze.update_state_info` promotes a variable to
+  STATE_OUT by finding its position in the argument list and reading the matching
+  dummy's INTENT — with `arglist.items.index(argobj)`, and `Fortran2003.Base`
+  compares nodes by CONTENT, so both occurrences resolved to argument 0
+  (INTENT(IN)) and the variable stayed an input. Measured rather than read:
+
+  ```
+  Actual_Arg_Spec_List('RootName, RootName')  ->  index(items[1]) == 0
+  Actual_Arg_Spec_List('A, B')                ->  index(items[1]) == 1
+  ```
+
+  FIXED IN KGEN (X2), `4457cd2`, by searching for the argument node by IDENTITY.
+  **The dangerous version is a call site with a SECOND out-argument**: the kernel
+  compares that one, drops this one, and says nothing at all. Before trusting a
+  kernel, read the generated callsite file's `!local verify variables` section
+  and check that every output the unit writes is named there.
+
+  Fixing it exposed a second defect one file over: `get_typedecl_subpname` builds
+  a procedure name out of the declaration's selector, so
+  `CHARACTER(LEN=size(avcoutname))` produced
+  `SUBROUTINE kv_discon_character_size(avcoutname)_(...)`, which gfortran cannot
+  read. `c839e1a` had already fixed exactly this on the GENCORE side; the
+  VERIFICATION side has the same two lines and never got it. **A fix applied at
+  one of two sites that share a code shape is a fix the other site escapes** —
+  the same lesson unit #5 recorded about the 132-column bridge generator. The
+  sanitiser now lives in `kgutils` and both import it.
+
 - **The captured case count is NOT stable across runs of the identical command.**
   Unit #4 recorded 63 cases for `Conv2UC`; the same command on the same clean
   source now yields 62, with and without unit #6's KGen change. The configured
@@ -638,6 +684,125 @@ is `/workspace/ROSCO-r2`.
   A reader whose guard has one value across all 14 inputs is a reader that
   cannot carry the result out. Hit counts on the reader's own line say nothing:
   here they are 28 of 28.
+
+- **When the call site ALIASES an INTENT(IN) argument with an INTENT(OUT) one,
+  the no-op stub stops being a liveness test and becomes a vacuity test.**
+  Learned at unit #7, and it INVERTS the recipe unit #6 wrote three entries up.
+
+  `DISCON.F90:67` is `CALL GetRoot(RootName,RootName)`. KGen captures the input
+  and the reference output of the same variable, so they are the same bytes —
+  the state file is literally `vit_sim1vit_sim1` — and a stub that reads nothing
+  and writes nothing scores **62/62 IDENTICAL**. Unit #6's rule ("the no-op says
+  the kernel is alive, the constant stub says whether being alive buys
+  anything") read forwards here gives the wrong answer twice over.
+
+  Run a THIRD stub, and let it write a WRONG constant:
+
+  ```
+  # no-op          -> if this PASSES, the kernel is a mirror, not a comparison
+  # right constant -> if this PASSES, the kernel is a lookup table
+  # WRONG constant -> if this FAILS, the comparison is alive. This is the
+  #                   liveness test whenever the arguments alias.
+  ```
+
+  62/62 `OUT_TOL` for the wrong constant is what makes the other two artifacts
+  statements about the UNIT rather than about a broken check
+  (`evidence/GetRoot/kernel.wrong-constant-stub.verify_fields.csv`).
+
+  The same aliasing makes the GATE's standard no-op perturbation degenerate: a
+  no-op returns the caller's own bytes, which on this campaign's inputs is the
+  correct answer, so `0 moved` says nothing. Perturb the unit to return a
+  WRONG value instead. Both artifacts are committed, and the degenerate one is
+  labelled as such.
+
+- **A unit's result can be consumed by a line that runs, and still be outside
+  what the gate measures.** Learned at unit #7; a FIFTH shape of P9, after
+  unexercised (#1), constant argument (#3), cancelled-downstream (#4) and
+  produced-but-never-consumed (#6).
+
+  `GetRoot`'s output names a FILE. Five of its six reader sites are dead in all
+  27 scenarios; the sixth runs 24 times and is
+  `OPEN(unit=UnDb, FILE=TRIM(RootName)//'.RO.dbg')`. `gate.py` compares
+  `baseline_arrays/scenario_N.npz`, which `vit_sim.py` builds from the arrays
+  crossing the DLL boundary — it never opens a `.RO.dbg`. Perturbing the unit
+  renames a file.
+
+  So unit #6's "follow the OUTPUT, not the call" needs one more question after
+  it: **does the live reader put the value somewhere the gate READS?** A reader
+  that opens a file, writes a log, or sets a name is a live consumer and an
+  invisible one.
+
+  ```
+  grep -n '<the out-argument>' rosco/controller/src/*.f90   # every reader
+  python3.12 -c "import json;d=json.load(open('coverage/line_coverage.json'));\
+      print({k: sum(d['hits']['<File>.f90'].get(k,{}).values()) for k in ['<lines>']})"
+  grep -n 'npz\|savez\|arrays\[' Examples/vit_sim.py        # what the gate reads
+  ```
+
+- **A whole procedure can be the IDENTITY on the exercised domain, and then
+  every instrument built on those inputs is measuring nothing.** Also unit #7,
+  and it is the other half of that gate blindness.
+
+  `GetRoot` strips a file extension. Every scenario hands it `vit_sim<N>`, which
+  contains no `'.'`, so all 444,000 calls fall through to `RootName = GivenFil`.
+  Coverage states it precisely: clean `ROSCO_Helpers.f90:1280` is evaluated
+  4,304,000 times and **every assignment inside it — 1283, 1284, 1285, 1287,
+  1290 — has zero hits**, as does the special case at 1270.
+
+  The check is to read the coverage of the branch BODIES, not of the branch:
+
+  ```
+  python3.12 -c "import json;d=json.load(open('coverage/line_coverage.json'));\
+      h=d['hits']['<File>.f90'];print([(l, sum(h[str(l)].values()) if str(l) in h else 0) \
+      for l in range(<lo>,<hi>)])"
+  ```
+
+  A procedure whose every interesting leaf is 0 is one the differential harness
+  and the mutation score have to carry alone — and see the harness-corpus entry
+  below, because the generator may not reach those leaves either.
+
+- **A green differential harness can mean the corpus never reached the branch
+  the procedure exists for, and R6's own rule is what prevents it.** Unit #7's
+  first harness reported `224 checked, 0 failed` and had not once executed
+  `RootName = GivenFil(:I-1)` — extension stripping, the whole point of the
+  unit. Three independent gaps, each found from a SURVIVING MUTANT and not from
+  reading the generator:
+
+  1. **The literal miner read single-character literals only, so a character SET
+     was invisible.** `INDEX( '\/', ... )` is one two-character literal; the
+     corpus contained **no backslash at all**. Fixed by mining every character of
+     every literal handed to `INDEX`/`SCAN`/`VERIFY` — the three intrinsics whose
+     argument is a set by definition, which is what keeps error messages out.
+  2. **The corpus is each literal plus its COLLATING NEIGHBOURS, laid down in
+     corpus order — so `'.'` was always followed by `'/'`, which is `'.'+1`.**
+     The rule that makes the corpus relevant is the rule that blinded it: the
+     character after a matched literal could only ever be that literal's own
+     neighbour. Fixed by planting a corpus character at an interior position of
+     an ordinary string, and by planting PAIRS of the reference's own literals.
+  3. **The length ladder `{1, N, N+5}` has no 2.** Length 1 is degenerate — the
+     first character is also the last — and at 4 both sides of an `I == 1` test
+     are false together. `{1, 2, N, N+5}` now.
+
+  224 cases / mutation 0.648 → 726 / 0.968. Fixed in the loop repo (`0e92a72`).
+  **The verdict did not find any of this; the mutation score did.** A harness
+  green is a claim about the cases that were generated, and the survivors are the
+  only thing that says which cases those were.
+
+- **A post-integration red test can stay green because the perturbation never
+  reached the binary.** Unit #7, first attempt: `LEN(RootName)` was changed to
+  `LEN(RootName) - 1` in the wrapper and `harness.sh --post-integration`
+  reported `checked 726  failed 0`, which reads exactly like a harness that
+  cannot fail. The harness links the campaign's **prebuilt Fortran objects**; it
+  compiles the C++ test and nothing else. Rebuild the controller between the edit
+  and the run:
+
+  ```
+  docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2/rosco/controller/build && \
+      cmake --build . -j4"
+  ```
+
+  With the rebuild it fails 596 of 726. Revert, rebuild AGAIN, and confirm green
+  returns before believing either number.
 
 - **`restore_integrated.sh` restores from HEAD, so run it before the unit's
   commit and you lose the unit's own wrapper.** Paid for once at unit #6: the
