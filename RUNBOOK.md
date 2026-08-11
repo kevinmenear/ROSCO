@@ -449,6 +449,43 @@ is `/workspace/ROSCO-r2`.
   `Path.glob` against the tree: 11 files matched, DISCON.F90 not among them.
   Add `--protect 'rosco/controller/src/*.F90'` as well.
 
+  It also leaves the scenario's `Examples/DISCON_<name>.IN` modified — extraction
+  runs `vit_sim.py`, whose `write_discon()` rewrites the `File written using
+  ROSCO version ... on MM/DD/YY` header to today's date. Content-free and it
+  still blocks `done.py`'s clean-tree predicate. `git checkout --` it;
+  `reset_to_clean.sh` deliberately does not, because that script owns the SOURCE
+  tree and these files are the gate's input, which `gate.py` already restores.
+
+- **An argument can be a constant in every scenario, and neither the kernel nor
+  the gate can say so.** Learned at unit #3. `ColemanTransformInverse`'s
+  `aziOffset` is 0 at all five call sites in all 27 scenarios — `IPC_aziOffset`
+  is `0.000` in all 14 `Examples/DISCON*.IN`, `AWC_phaseoffset` likewise and the
+  one scenario patching it patches it to `'0.0'`, and the fifth site passes the
+  literal `0.0_DbKi`. A translation ignoring that argument passes the kernel
+  63/63 and the gate 5,252,000 of 5,252,000, and the gate's red test does not
+  catch it either: perturbing the OUTPUT proves the unit is seen, not that every
+  argument is.
+
+  Only the differential harness varies it. So before writing the observability
+  note, grep the scenario inputs for each argument that comes from `CntrPar` or
+  from a literal:
+
+  ```
+  grep -h '<ParamName>' Examples/*.IN | sort -u
+  grep -n "'<ParamName>'" Examples/vit_sim.py
+  ```
+
+  A parameter with one distinct value across all of them is a parameter the two
+  bit-exact layers cannot constrain, and the harness's mutant kill counts are
+  the evidence that anything does.
+
+- **`vit check -f <file>` scopes its cross-source checks to the FILE, not the
+  function**, and `--function` only sets the report header. On `Functions.f90` it
+  reported `minval-endpoints` and `array-section-row` against a 6-line
+  translation containing neither — both findings came from `interp1d`/`interp2d`
+  hundreds of lines away. Re-attribute every finding to the unit's own line range
+  before acting on it, or the checker teaches you to ignore it.
+
 - **Before writing any C++, ask whether the SIGNATURE crosses — and ask the
   generator that ships, not the one the matrix measures.** Learned at unit #1.
 
@@ -595,6 +632,35 @@ is `/workspace/ROSCO-r2`.
   A field that is 0.0 in every reference case is a field the kernel cannot see.
   Then run the stub test below; if the stub passes, the window is vacuous
   whatever it says.
+
+  **THAT RECIPE ONLY WORKS FOR SCALAR OUTPUTS.** Learned at unit #3. VIT logs a
+  scalar field with its computed and reference values; it logs an ARRAY field as
+  ONE row with BOTH value columns EMPTY:
+
+  ```
+  ColemanTransformInverse.0.0.1,pitcomipc_1p,array,IDENTICAL,,,size=           3
+  ```
+
+  So for a unit whose outputs are arrays the loop above yields nothing at all —
+  it does not error, it produces an empty answer that reads like "no zeros
+  found". For such a unit the stub test below is not a second opinion, it is the
+  only one. Check `type` in the field log before trusting the recipe.
+
+- **A kernel `✓ VERIFICATION PASSED` is NOT a bit-identity claim.** Read out of
+  the generated comparison at unit #3, not assumed. For an array field KGen
+  generates:
+
+  ```
+  IF (ALL(var == kgenref_var)) -> IDENTICAL
+  ELSE rmsdiff = SQRT(SUM((var-ref)**2)/n)
+       IF (rmsdiff > kgen_tolerance) -> OUT_TOL  ELSE -> IN_TOL
+  ```
+
+  `kgen_tolerance` is `1.D-14` and `rmsdiff` is ABSOLUTE. A unit whose outputs
+  are of order 1e-3 can be wrong at ~1e-11 relative, score `IN_TOL`, leave
+  `numOutTol` at 0, and print `63/63 passed`. **The bit-exact claim lives in the
+  field log's `status` column (`IDENTICAL`), not in the verdict line.** Quote the
+  status counts in evidence, never the verdict alone.
 
 - **Red-test every green on first use, including the tool's own.** For a kernel:
   replace the translation body with one that reads no argument and writes

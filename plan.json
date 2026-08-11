@@ -108,9 +108,31 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'",
+    "observed": "CONFIRMED. All six arguments cross with no decomposition, and the one that could have been decomposed was not: `PitComIPC` is `REAL(DbKi), INTENT(OUT), DIMENSION(3)` and the generated interface declares it `REAL(C_DOUBLE), INTENT(OUT) :: PitComIPC(*)` -- by reference, rank preserved, no extent parameter emitted and none needed, because the extent is fixed by the dummy's own declaration. The five scalars go by VALUE. The integrated wrapper is a 9-line CALL colemantransforminverse_c(...).\n\nThe RUNBOOK's habit was applied before any C++ was written: `vit interface` was run and its wrapper compared to the original attribute by attribute (evidence/ColemanTransformInverse/vit_interface.stdout.txt). Nothing was dropped -- REAL(DbKi)->REAL(8), INTEGER(IntKi)->INTEGER(4), every INTENT preserved, PitComIPC still (3). That is the check unit #1 failed silently, so it is run whatever the tool's current answer is.\n\nThe plan's basis string is still the honest one and is still not the answer: it says only that no blocker was DETECTABLE, which is a statement about the matrix's resolution and not about this signature. The verdict here comes from having run the generator that ships, plus a post-integration harness that turns red when the wrapper corrupts an argument."
    },
-   "observability": null
+   "observability": "THE GATE SEES THIS UNIT, AND MEASURED SO. Perturbing the integrated C++ (`PitComIPC[0] = 1.000001 * std::cos(...)`), rebuilding and re-gating moved 389,644 of 5,252,000 values; reverting returned 0. gate/ColemanTransformInverse.redtest.json, verdict RED_TEST_PASS. Five call sites reach it (Controllers.f90:561, 562, 699, 781, 826) across scenarios 2, 5, 6, 8, 15, 16, 18, 21, 26 and 27.\n\nWHAT NEITHER THE KERNEL NOR THE GATE SEES: `aziOffset`. It is 0 at every call site in every scenario -- `IPC_aziOffset` is 0.000 in all 14 Examples/DISCON*.IN and no scenario patches it, `AWC_phaseoffset` is 0.0 in all of them and the one scenario that patches it (15) patches it to '0.0', and the fifth site passes the literal 0.0_DbKi. A translation that ignored aziOffset entirely would pass the kernel 63/63 and the gate 5,252,000/5,252,000. Only the differential harness varies it; the three `aziAngle + aziOffset` -> `-` mutants die in 81 of 257 cases each, and those 81 cases are the entirety of what constrains that argument in this campaign. `nHarmonic` is similarly only ever 1 or 2 in the scenarios, and the kernel's call site fixes it at NP_1 = 1.\n\nTHE KERNEL WINDOW IS ALIVE, and the ONLY thing that shows it is the stub. RUNBOOK's recipe for this -- count non-zero `reference` values in verify_fields.csv -- CANNOT BE RUN on this unit: its only output is an array, and VIT logs an array field as one row with an EMPTY reference column and `diff=size=3`. Against the zero-writing stub, 61 of 63 cases go OUT_TOL; the 2 that do not are invocations 1 and 2, simulation start, where the axis inputs are still zero. evidence/ColemanTransformInverse/.\n\nTHE KERNEL'S PASS CONDITION IS NOT BIT-IDENTITY. Read out of the generated `kv_ipc_real__dbki_dim1`: equality gives IDENTICAL, otherwise an ABSOLUTE RMS difference is compared against kgen_tolerance = 1e-14 and anything under it counts as IN_TOL and still prints PASSED. This unit's outputs are of order 1e-3 rad. What makes its kernel evidence bit-exact is that all 63 fields landed in the equality branch -- status=IDENTICAL in the field log -- not that the kernel demanded it.\n\nThe post-integration harness measures the WRAPPER only, by construction: after integration the Fortran body IS the translation. 257 cases, 0 failed; swapping axTIn and axYIn in the wrapper's CALL turns 256 of 257 red (the one survivor is a case where the two are equal or both zero).\n\nMUTATION: 24 of 24 behavioural killed, 1.000, 0 declared equivalent; 2 `compare_op` mutants did not compile and are excluded rather than counted. 2 of the 24 kills are CRASHES -- `[2] -> [2 + 1]` and `'2' -> '3'` both write past the end of the caller's 3-element array -- so 22 of 24 were killed by a case mismatch. The harness's own note records the remaining blind spot: PitComIPC's extent is FIXED at 3 by the type and is not varied (R5 N/A).",
+   "disposition": "integrated",
+   "translation": "translations/Functions/colemantransforminverse.cpp",
+   "harness_required": true,
+   "evidence": [
+    "evidence/ColemanTransformInverse/README.md",
+    "translations/Functions/colemantransforminverse.cpp",
+    "rosco/controller/src/colemantransforminverse.cpp",
+    "gate/ColemanTransformInverse.json",
+    "gate/ColemanTransformInverse.redtest.json",
+    "harness/ColemanTransformInverse.json",
+    "harness/ColemanTransformInverse.postintegration.json",
+    "harness/ColemanTransformInverse.postintegration.redtest.json",
+    "mutation/ColemanTransformInverse.json",
+    "evidence/ColemanTransformInverse/kernel-window-27.verify_fields.csv",
+    "evidence/ColemanTransformInverse/kernel-window-27.stub-fails.verify_fields.csv",
+    "evidence/ColemanTransformInverse/kernel-window-27.statefiles.lst",
+    "evidence/ColemanTransformInverse/vit_interface.stdout.txt",
+    "evidence/ColemanTransformInverse/vit_translate.stdout.txt",
+    "evidence/ColemanTransformInverse/colemantransforminverse.scaffold.cpp",
+    "coverage/line_coverage.json"
+   ]
   },
   {
    "order": 4,

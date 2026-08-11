@@ -1073,3 +1073,108 @@ distinguish." It reads like a rule and it has been measured exactly once. Two
 survivors here were unobservable memory errors caused by writing `SIZE(clist)`
 three times; two others are equivalent by the Fortran standard. The distinction
 held up on this unit. One unit is not a rule.
+
+## 2026-08-11 — Unit #3, ColemanTransformInverse: three instruments read for what
+   they actually say
+
+**The RUNBOOK's liveness recipe cannot be run on a unit whose outputs are
+arrays, and nothing said so.** The recipe reads `reference` out of
+`kernel/<Unit>/verify_fields.csv` and counts non-zeros; VIT logs a scalar field
+with its computed and reference values, and an ARRAY field as a single row with
+BOTH value columns EMPTY and `diff=size=3`. For ColemanTransformInverse — one
+output, `PitComIPC(3)` — the recipe returns nothing at all. It does not fail; it
+produces an empty answer that a session in a hurry would read as "no zeros
+found".
+
+The stub run is therefore not a second opinion here, it is the only opinion.
+Against a translation reading no argument and writing `0.0`, 61 of 63 cases go
+`OUT_TOL`. The 2 that do not are invocations 1 and 2 — simulation start, where
+the axis inputs are still zero. That is unit #2's `1-20` window failure mode
+surviving as two cases out of 63 instead of all 21, and it is visible only
+because the stub was run.
+
+The RUNBOOK's target layer now says this; the recipe is kept beside it, because
+it is still the right check for a scalar-output unit.
+
+**A kernel PASS is not a bit-identity claim, and this was read out of the
+generated code rather than assumed.** `kv_ipc_real__dbki_dim1`, the comparison
+KGen generated for this unit's array output:
+
+    IF (ALL(var == kgenref_var)) -> IDENTICAL
+    ELSE rmsdiff = SQRT(SUM((var-ref)**2)/n)
+         IF (rmsdiff > kgen_tolerance) -> OUT_TOL  ELSE -> IN_TOL
+
+`kgen_tolerance` is `1.D-14` and `rmsdiff` is ABSOLUTE, not relative. This
+unit's outputs are of order 1e-3 rad, so a translation wrong at ~1e-11 relative
+would score `IN_TOL`, `numOutTol` would stay 0, and the run would print
+`✓ VERIFICATION PASSED: 63/63 passed`. Nothing in that line distinguishes it
+from bit-identity.
+
+What makes this unit's kernel evidence bit-exact is not the verdict. It is that
+all 63 fields landed in the `ALL(var == kgenref_var)` branch — `IDENTICAL` in
+the field log's status column. **Read the status column, not the verdict line.**
+This is P3 applied to somebody else's instrument: a green must be able to name
+what it compared, and `63/63 passed` names a tolerance, not an equality.
+
+**One argument of this unit is invisible to both bit-exact instruments.**
+`aziOffset` is 0 at all five call sites in all 27 scenarios: `IPC_aziOffset` is
+`0.000 0.000` in all 14 `Examples/DISCON*.IN` and no scenario patches it,
+`AWC_phaseoffset` is `0.000000000000` in all of them and the single scenario
+that patches it (15) patches it to `'0.0'`, and `Controllers.f90:699` passes the
+literal `0.0_DbKi`. A translation that ignored `aziOffset` entirely would pass
+the kernel 63/63 and the gate 5,252,000 of 5,252,000.
+
+The differential harness is what covers it — `R6_reference_literals` varies it,
+and the three `aziAngle + aziOffset` → `-` mutants die in 81 of 257 cases each.
+Those 81 cases are the entirety of what constrains that argument in this
+campaign. This is P9 at argument granularity rather than line granularity: the
+line is executed 100,000+ times per scenario and one of its inputs is a
+constant throughout. Coverage cannot express that, and the gate's red test
+cannot either — perturbing the output moved 389,644 values, which says the unit
+is seen, not that every argument is.
+
+**Not escalated, because the harness already answers it.** Recorded so that the
+next unit with a parameter constant across all scenarios is not surprised, and
+so the campaign's ledger can say which arguments its bit-exact layers bound.
+
+**`vit check -f <file>` scopes its cross-source checks to the FILE, not the
+function.** It reported `minval-endpoints` and `array-section-row` against this
+translation; both come from `interp1d`/`interp2d` elsewhere in `Functions.f90`,
+lines 132-271, and neither intrinsic appears anywhere in
+`ColemanTransformInverse`. `--function` only sets the report header — its own
+help text says so. On a 900-line multi-procedure source every finding has to be
+re-attributed by hand before it means anything, and a session that trusts the
+count will either chase two ghosts or start ignoring the checker. Not fixed
+here: it is a VIT change, and X2 says fix it rather than work around it, but it
+belongs to a VIT session and not to this unit's cycle. Left as an open item in
+STATUS.md.
+
+**Extraction dirties one more file than the RUNBOOK listed.** The scenario's
+`Examples/DISCON*.IN` comes back with its `File written using ROSCO version ...
+on MM/DD/YY` header line rewritten to today's date, because extraction runs
+`vit_sim.py`, whose `write_discon()` regenerates it. Content-free, and it still
+blocks `done.py`'s clean-tree predicate. Restored by hand; noted in the RUNBOOK
+beside the other extraction leftovers rather than added to
+`reset_to_clean.sh`, because that script is about the SOURCE tree and this file
+is the gate's input — `gate.py` already owns restoring these.
+
+### What this unit is verified BY
+
+| layer | result | red test |
+|---|---|---|
+| kernel replay, 63 cases, scenario 27 | 63/63, all `IDENTICAL` (the equality branch, not the tolerance branch) | zero-writing stub → 61/63 `OUT_TOL`; green restored on revert |
+| differential harness, 257 cases vs clean Fortran | 0 failed | the mutation score, below |
+| mutation | 24/24 behavioural killed, 1.000, 0 declared equivalent (2 nocompile EXCLUDED) | refuses to score unless the baseline is green |
+| post-integration harness (wrapper marshalling) | 257 cases, 0 failed | `axTIn`/`axYIn` swapped in the wrapper's CALL → 256/257 red; green restored |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | `PitComIPC[0]` scaled by 1.000001 → 389,644 values moved; revert → 0 |
+
+Two of the 24 mutation kills are CRASHES, not case mismatches: `[2] -> [2 + 1]`
+and `'2' -> '3'` both write one past the end of the caller's 3-element array.
+Honest kills — the harness died — but a value comparison alone would not have
+seen them, so the behavioural-by-comparison count is 22 of 24. The same
+distinction unit #1 drew about `killed (no compile)`, one layer in.
+
+`vit_mutate.py` now EXCLUDES nocompile mutants from the score rather than
+counting them (loop `46a7f4f`), so unit #2's `35/35` and this unit's `24/24` are
+not the same measurement. Unit #2's included 2 nocompile kills; this one's does
+not.
