@@ -732,3 +732,175 @@ Unit 2's cold cost will be reported when it lands. Not as a gate — it is
 ColemanTransform's sibling and among the simplest units in the plan, so it is
 another floor rather than a representative sample — but because the gap between
 warm and cold is the number that makes every later projection honest.
+
+## 2026-08-10 — unit #1: the verdict was right, the reason was about a
+   different generator, and the matrix could not have known
+
+`plan.json` predicted `AddToList` cannot cross the C bridge, basis
+`list: c_alloc_inout does not cross (INTENT(INOUT) ALLOCATABLE needs an
+ALLOCA...)`. **The verdict is confirmed. The basis is refuted.** Both halves
+were measured; neither was argued.
+
+### Confirmed: the generated bridge compiles and does nothing
+
+`vit interface` emits `INTEGER(C_INT), INTENT(INOUT) :: list(*)` and
+`INTEGER(C_INT), VALUE :: n_list`, under a wrapper whose dummy reads
+`INTEGER(4), INTENT(INOUT) :: list(:)` — the ALLOCATABLE attribute gone.
+`fortran_parser` had recorded `is_allocatable=True`; `generate_fortran_wrapper`
+attaches `, ALLOCATABLE` only for `is_alloc_return` dummies and dropped it
+without a word.
+
+`AddToList`'s whole contract is `allocate(clist(isize+1))` → copy →
+`move_alloc(clist, list)`: it replaces the caller's data pointer AND its extent.
+A bare pointer and a by-value length carry neither. Three implementations were
+built against one driver on the live ROSCO path (both call sites `ALLOCATE`
+first, then append):
+
+    orig  A1 size=5 ...91   A2 size=6 ...92   A3 size=7 ...17
+    vit   A1 size=4         A2 size=4         A3 size=4
+    cfi   A1 size=5 ...91   A2 size=6 ...92   A3 size=7 ...17
+
+The array never grows. The appended values are written one past the end of the
+caller's heap block. gfortran said nothing, g++ said nothing, the run did not
+crash. **A wrapper that compiles and does nothing is worse than one that does
+not compile** — the second is caught by the build.
+
+### Refuted: the limit is VIT's, not Fortran's
+
+Fortran 2018 permits an `ALLOCATABLE` dummy in a `BIND(C)` interface. The C side
+receives the caller's own `CFI_cdesc_t *`, and `CFI_deallocate`/`CFI_allocate`
+through it do exactly what `move_alloc` does. A hand-written CFI bridge
+reproduced the oracle **byte for byte on both branches**, including
+`move_alloc`'s reset of the lower bound, under gfortran 13.3 / g++ 13.3.
+Red-tested: one perturbed token in the CFI body turns the probe red.
+
+So `c_alloc_inout does not cross` was a true sentence about the tool wearing the
+grammar of a claim about the language. The distinction is not academic — it is
+the difference between "close this unit as impossible" and "VIT is four
+`plan.json` entries short of a feature it can have."
+
+### Why the matrix could not have known: it measures a different generator
+
+`tests/test_conformance.py:probe()` fed `bridge` and `compiles` from
+`test_validate.generate_fortran_bridge` — the **differential harness's** Fortran
+side, linked into a test binary and never into the library. On `AddToList` it
+fails with `Actual argument for 'list' must be ALLOCATABLE`, which is where
+`[c_alloc_inout] compiles = "no"` came from and therefore where the plan's basis
+came from. The matrix never called `generate_fortran_interface_block` or
+`generate_fortran_wrapper`, the two generators whose output `vit integrate`
+writes into the shipped source, and those compile clean.
+
+**The prediction was right by luck of a different generator failing.** Any cell
+whose harness bridge happened to compile would have read `yes` and the campaign
+would have integrated a no-op. That is the campaign's own failure shape, sitting
+in the file built to prevent it: a column that means less than its name.
+
+### Fixed at the source, both halves, red-tested (X2, P5)
+
+1. `interface_gen.assert_integration_bridgeable` raises `UnbridgeableSignature`
+   for an ALLOCATABLE INTENT(INOUT) dummy. Called from the interface-block
+   generator, the wrapper generator, and the C++ scaffold — `vit translate` is
+   the earliest point at which a wasted body is avoidable. `vit translate`,
+   `vit interface` and `vit integrate` on `AddToList` now exit 1 and write
+   nothing. **Only INTENT(INOUT) is refused**, because only INTENT(INOUT) was
+   measured; INTENT(IN) ALLOCATABLE has the same dropped attribute and no
+   campaign has hit one, and inventing a verdict for an unmeasured cell is the
+   habit this refusal exists to break.
+2. `test_conformance.py` gained an `integrates` column that runs the integration
+   generators and compiles their output. Regenerating the matrix moved
+   `c_alloc_inout` to `integrates = "refused"` and turned up **`c_complex_in`**,
+   a cell every previous column called supported, whose integration wrapper
+   emits `COMPLEX(z, C_DOUBLE_COMPLEX)` for an already-COMPLEX dummy and does
+   not compile. Five of 39 cells now disagree between the two columns.
+
+Both red-tested by disabling them and confirming the suite fails
+(`test_cell_matches_the_record[c_alloc_inout]`, three refusal tests), then
+restoring. VIT suite: 930 passed.
+
+**Two probe defects were found first, and both were the same mistake in
+miniature.** The `integrates` column initially reported `no` for seven cells:
+three because the synthetic module did not `USE vit_conformance_types`, three
+because the generated view-populator modules did not exist, one because
+`_compiles` matched only `Error:` and not `Fatal Error:` and so reported
+`compilation terminated.` — a diagnostic naming no cause. Every one of those was
+measuring the probe. They are fixed and the reasons are in the code.
+
+### The gate cannot see this unit, measured twice
+
+`coverage/line_coverage.json` says the body and all five call sites have zero
+hits in all 27 scenarios. Confirmed independently of gcov by perturbing BOTH
+branches (`= element` → `= element + 1000`, 2 replacements), rebuilding, and
+re-gating: **0 of 5,252,000 values moved.**
+
+So `gate/AddToList.json` — 5,252,000 compared, 0 mismatched — is a green that
+constrains nothing about `AddToList`. It is committed next to the red test that
+says why, because the green alone would be a lie by omission.
+
+### A reading hazard the dead red test exposed
+
+On a `--perturb-*` run, `gate.py` left `verdict` at the COMPARISON's verdict. So
+a red test that correctly went red wrote `verdict: FAIL`, and one that failed to
+go red wrote `verdict: PASS`. `AddToList` produced the dangerous half: a gate
+blind to the unit, filed under `PASS`.
+
+`verdict` on a perturbing run is now `RED_TEST_PASS` / `RED_TEST_FAIL`, and the
+comparison's own verdict is kept under `comparison_verdict`. **The new spelling
+is deliberately not `PASS`/`FAIL`**: `gate/ColemanTransform.redtest.json` was
+written under the old convention, and a reader can now tell which convention a
+file uses from the value itself rather than from its date. Verified in both
+directions: the `LPFilter` perturbation over scenarios 1/3/6 moved 265,890 of
+780,000 and wrote `RED_TEST_PASS` (rc 0); `AddToList` wrote `RED_TEST_FAIL`
+(rc 1).
+
+### Disposition: `blocked`, and it escalates
+
+SPEC §8.4 requires escalation when a disposition is `blocked` and the blockage
+is in the substrate. It is: VIT does not generate CFI descriptors. Two questions
+for the Driver, neither decidable inside a unit session:
+
+1. **Should VIT learn the CFI bridge?** It is demonstrated working here, and it
+   is what `AddToList`, `Read_OL_Input`, `ParseInAry_Opt` and `ParseDbAry_Opt`
+   are waiting on — 4 of the 5 `bridge_feasible: no` entries in this plan. It
+   also has to reach `test_validate`'s bridge and the loop's `vitbridge` before
+   a blocked unit can produce a mutation score, so it is three generators, not
+   one.
+2. **Can a unit no scenario reaches ever close?** P9 can only be satisfied
+   vacuously here, P12's mutation score cannot be produced, and P12's red-test
+   fallback is impossible by construction. `integrated_unexercised` exists in
+   the vocabulary for exactly this case and the done-condition has no branch for
+   it. Until it does, every dead unit in this plan will end `blocked` for a
+   reason that has nothing to do with its translation.
+
+### What was NOT done, and why
+
+No translation was written and none was integrated. The correct CFI translation
+exists in `evidence/AddToList/bridge_probe/addtolist_cfi.cpp` and was **not**
+promoted into `translations/`: integrating it would need the interface block and
+wrapper hand-written into `ROSCO_Helpers.f90`, which is the generator's job
+(X1/X2), and `reset_to_clean.sh` and `restore_integrated.sh` select integrated
+files by looking for a `<name>_c(` bridge that would not exist. Shipping it by
+hand would buy one function and leave the next three at the same wall with the
+tooling still unable to see it.
+
+### The done-condition, run rather than predicted
+
+`python3.12 scripts/done_check.py AddToList --baseline 2ef6d0d` →
+**INCOMPLETE, 11 of 13.**
+
+    P1..P8   ok
+    P9       ok   -- on the vacuous gate green, which is the point
+    P12    FAIL   mutation_missing: no mutation/AddToList.json
+    P11    FAIL   harness_not_rerun: no harness/AddToList.postintegration.json
+    P13,P10  ok
+
+The two failures are the two artifacts that cannot exist: both the differential
+harness and the mutation score are generated from the bridge that does not
+cross. There is nothing to fix that is inside this unit — which is escalation 2,
+now measured rather than argued.
+
+`--baseline` is required: `done_check.py` infers the window from the first
+commit touching `plan.json`'s `translation`, and a blocked unit has none.
+
+Recorded here rather than left to be re-derived, because the alternative is a
+later session reading `blocked` beside a green STATUS and assuming the condition
+was never run — which is exactly what happened to unit #2.

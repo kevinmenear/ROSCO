@@ -4,25 +4,32 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-10: unit #2 `ColemanTransform` is integrated and CLOSED — the
-done-condition was run, not asserted.** `scripts/done_check.py ColemanTransform`
-returns COMPLETE, 13 of 13. It took two passes: the first recorded
-`disposition: integrated` while the condition stood at 10 of 13, because nothing
-in the session could evaluate it. That script now exists; run it before setting
-any disposition.
+**As of 2026-08-10: unit #1 `AddToList` is `blocked`, and the blockage is in the
+substrate, so it ESCALATES.** The done-condition was RUN, not predicted:
+`python3.12 scripts/done_check.py AddToList --baseline 2ef6d0d` returns
+**INCOMPLETE, 11 of 13** — P11 and P12 fail, and they are exactly the two that
+cannot be produced for this unit, because the harness and the mutation score are
+both generated from the bridge that does not cross. That is escalation 2 below,
+measured. `--baseline` is required because a blocked unit has no `translation`
+for the script to infer one from.
 
-Closing it required opening and closing E1.2 (see Evidenced), which invalidated
-and replaced the baselines. Next: the lowest-order remaining unit in
-`plan.json`. Confirm it against `plan.json` before starting, including its
-`phase` and `proposed_verification` fields — those are hypotheses, not facts.
-**`AddToList` is order 1 and must not be dispatched — see Open.**
+The remaining detail: Its signature does not cross VIT's generator —
+confirmed by measurement, not by reading the plan — and no scenario reaches it,
+so nothing in this campaign could verify it even if it did. Both findings are in
+`evidence/AddToList/README.md`. Unit #2 `ColemanTransform` remains integrated
+and CLOSED at 13 of 13.
+
+Next: the lowest-order remaining unit in `plan.json`. Confirm it against
+`plan.json` before starting, including its `phase` and `proposed_verification`
+fields — those are hypotheses, not facts. Run
+`python3.12 scripts/done_check.py <Unit>` before setting any disposition.
 
 ## Counts
 
-1 attempted / 1 integrated / 0 integrated_unexercised / 0 out_of_scope /
-0 deferred / 0 blocked.
+2 attempted / 1 integrated / 0 integrated_unexercised / 0 out_of_scope /
+0 deferred / 1 blocked.
 
-69 units in `plan.json`; 68 remain.
+69 units in `plan.json`; 67 remain.
 
 ## Evidenced
 
@@ -46,6 +53,24 @@ Both E3.1 and E3.2 were red-tested **as criteria**, not just satisfied:
 corrupting the expected values in `phases.toml` turns them `[FAIL]`, restoring
 them turns them `[ok]`.
 
+### The campaign's VIT moved during unit #1: `d07a716` → `22086e8`
+
+Not an upgrade — a fix this unit produced. `interface_gen` now refuses an
+ALLOCATABLE INTENT(INOUT) dummy instead of emitting a wrapper that compiles and
+does nothing, and the conformance matrix gained an `integrates` column measuring
+the generators `vit integrate` actually ships. VIT suite 930 passed;
+`vit_translation/vit/.vit_rev` updated so artifact stamps name the new tree.
+
+`ColemanTransform`'s committed evidence was produced under `d07a716` and is
+unaffected: it has no ALLOCATABLE argument, and the refusal is the only
+behavioural change. Nothing was regenerated for it.
+
+**`AddToList`'s own evidence was deliberately measured under `d07a716`, before
+the fix**, and stamps it. `evidence/AddToList/vit_interface.stdout.txt`,
+`vit_translate.stdout.txt`, `addtolist.scaffold.cpp` and
+`bridge_probe/mod_vit.f90` **can no longer be regenerated** — VIT refuses that
+signature now. They are the record of what it did before.
+
 ### ColemanTransform, second pass — every number re-measured
 
 Every artifact for this unit now comes from ONE instrument pair, VIT `d07a716`
@@ -65,13 +90,29 @@ and `colemantransform.cpp` **byte-identical** to the committed integration.
 
 ## Open
 
-- **`AddToList` is unit #1 and its signature cannot cross the bridge.**
-  `bridge_feasible: no`. `next_unit` selects on `disposition` alone and does not
-  consult the field, so the Driver would still dispatch it. Decide the policy
-  (skip / escalate / pre-dispose). **Additionally it is now known to be DEAD in
-  the gate**: all five `AddToList` call sites have zero hits in all 27
-  scenarios (`coverage/line_coverage.json`). Whatever policy is chosen, it
-  cannot be verified by this gate.
+- **ESCALATION 1 — should VIT learn the Fortran 2018 C descriptor?** A CFI
+  bridge for `AddToList` was built and reproduces the original byte for byte on
+  both branches (`evidence/AddToList/bridge_probe/`), so the limit is VIT's, not
+  Fortran's. It is what 4 of this plan's 5 `bridge_feasible: no` entries are
+  waiting on — `AddToList`, `Read_OL_Input`, `ParseInAry_Opt`, `ParseDbAry_Opt`.
+  It has to reach three generators, not one: `interface_gen`,
+  `test_validate.generate_fortran_bridge`, and the loop's `vitbridge`, or a
+  unit that crosses still cannot produce a mutation score.
+- **ESCALATION 2 — the done-condition cannot close a unit no scenario reaches.**
+  P9 is satisfiable only vacuously, P12's mutation score cannot be produced, and
+  the red-test fallback P12 offers when mutation is unconfigured is impossible
+  by construction. `integrated_unexercised` exists in the vocabulary for exactly
+  this and `loop/done.py` has no branch for it. Every dead unit in this plan
+  will otherwise end `blocked` for a reason unrelated to its translation.
+- **`bridge_feasible` verdicts in `plan.json` were derived from a column that
+  measures the wrong generator.** VIT's conformance matrix fed `bridge` and
+  `compiles` from `test_validate.generate_fortran_bridge` — the differential
+  harness's Fortran side — while `vit integrate` ships the output of
+  `interface_gen`. Fixed in VIT (an `integrates` column, and a refusal), but
+  **the plan's 64 `yes` verdicts were computed before that**, and one of them —
+  `c_complex_in`'s shape — is now known not to integrate. The plan's
+  feasibility column should be re-derived against the new matrix before it is
+  trusted again.
 - **THREE SCENARIOS EXECUTE NO CONTROLLER CODE AT ALL.** Scenarios 10, 14 and
   24 run 0 lines of Controllers.f90, ControllerBlocks.f90, Filters.f90 and
   Functions.f90; scenario 13 runs 12 lines of Functions.f90 and 0 of
@@ -100,22 +141,20 @@ and `colemantransform.cpp` **byte-identical** to the committed integration.
 - **The harness Makefile's LIBS can carry `kgen_utils.f90.o`**, an object that
   exists only because an extraction left it in the build tree. A from-scratch
   build directory would not have it and the link would fail.
-- **`reset_to_clean.sh` leaves `CMakeLists.txt` integrated.** It restores the
-  Fortran body but not the build's source list, so the tree it produces is a
-  hybrid: clean Fortran plus a compiled `<stem>.cpp.o` of the same function.
-  That object is a second definition of what the differential harness compiles
-  itself, and the pre-integration harness link fails on it. Worked around in
-  `scripts/harness.sh` (it drops this unit's own object from LIBS, and only its
-  own). The alternative — have `reset_to_clean.sh` revert CMakeLists too, so
-  "clean" means the pre-integration BUILD and not just the pre-integration
-  SOURCE — is the better fix and is not made here: that script is red-tested and
-  unit #2's second pass is not the place to re-open it. Decide before unit #3.
 - `vit.yaml` is declared `derive` with `red_tested = false`. The planned test is
   to drop `assumed_size_arrays.avrSWAP` and confirm extraction breaks.
 - Bootstrap otherwise incomplete: `phases.toml` still declares most criteria
   `manual`, which is NOT_EVALUABLE and never a pass.
 
 ## Closed
+
+- **`reset_to_clean.sh` used to leave `CMakeLists.txt` integrated**, so "clean"
+  meant the pre-integration SOURCE and not the pre-integration BUILD, and the
+  differential harness link died on a second definition of its own translation.
+  Closed in `6e614af`: the reset strips translated `.cpp` entries from
+  CMakeLists and `restore_integrated.sh` puts them back. `harness.sh`'s LIBS
+  workaround is kept — it is what makes the artifacts already committed for
+  unit #2 reproducible.
 
 - **`ColemanTransform`'s closure was asserted; now it is measured.**
   `scripts/done_check.py` runs the loop's own `DoneVerifier` with exactly the

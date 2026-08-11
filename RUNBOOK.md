@@ -449,6 +449,53 @@ is `/workspace/ROSCO-r2`.
   `Path.glob` against the tree: 11 files matched, DISCON.F90 not among them.
   Add `--protect 'rosco/controller/src/*.F90'` as well.
 
+- **Before writing any C++, ask whether the SIGNATURE crosses — and ask the
+  generator that ships, not the one the matrix measures.** Learned at unit #1.
+
+  ```
+  vit interface <Unit> -f <file> -o /tmp/<unit>_iface     # read the wrapper it emits
+  ```
+
+  Compare the emitted wrapper's dummy declarations against the original's,
+  attribute by attribute. `AddToList`'s `list` is
+  `dimension(:), allocatable, intent(inout)`; the wrapper declared
+  `INTEGER(4), INTENT(INOUT) :: list(:)`. **VIT parsed `is_allocatable=True` and
+  the generator dropped it with no diagnostic**, producing a bridge that
+  compiles and cannot do the one thing the function does.
+
+  VIT now REFUSES that case (`UnbridgeableSignature`, exit 1, nothing written),
+  so this specific shape announces itself. The habit is what generalises: an
+  attribute missing from the generated wrapper is a silent semantic change, and
+  the build cannot catch it.
+
+  **`plan.json`'s `bridge_feasible` is not the answer to this question.** Its
+  basis strings come from VIT's conformance matrix, whose `bridge`/`compiles`
+  columns measured `test_validate.generate_fortran_bridge` — the differential
+  harness's Fortran side — while `vit integrate` ships `interface_gen`'s output.
+  Those are different code paths and 5 of 39 cells disagree. The matrix now has
+  an `integrates` column; the plan was derived before it existed.
+
+- **A unit the gate cannot see is not a unit the gate passed.** Two checks, and
+  the second is the one that cannot be argued with:
+
+  ```
+  python3.12 -c "import json;d=json.load(open('coverage/line_coverage.json'));\
+      print(sum(sum(v.values()) for k,v in d['hits']['<File>.f90'].items() if int(k) in range(<lo>,<hi>)))"
+  python3.12 scripts/gate.py <Unit> --perturb-file <file> \
+      --perturb-from '<a line the body certainly runs>' --perturb-to '<perturbed>'
+  ```
+
+  For `AddToList`, perturbing BOTH branches of the body moved **0 of 5,252,000**
+  values. The gate's green for that unit compares 5,252,000 values and
+  constrains none of them. Commit the pair — green and failed red test — never
+  the green alone.
+
+  On a `--perturb-*` run `gate.py` writes `verdict: RED_TEST_PASS` or
+  `RED_TEST_FAIL` and keeps the comparison's own verdict under
+  `comparison_verdict`. Artifacts written before unit #1 carry the old spelling
+  (`PASS`/`FAIL`), which is INVERTED relative to the run's meaning; `went_red`
+  means the same thing in both and is the field to read on any redtest file.
+
 - **Coverage:** WORKS, 2026-08-10. This is C2's input; there was none before.
   ```
   python3 scripts/coverage.py --out coverage/line_coverage.json

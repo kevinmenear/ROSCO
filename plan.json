@@ -15,9 +15,34 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "no",
-    "basis": "list: c_alloc_inout does not cross (UNSUPPORTED: as c_alloc_out. INTENT(INOUT) ALLOCATABLE needs an ALLOCA)"
+    "basis": "list: c_alloc_inout does not cross (UNSUPPORTED: as c_alloc_out. INTENT(INOUT) ALLOCATABLE needs an ALLOCA)",
+    "observed": "VERDICT CONFIRMED, BASIS REFUTED, and the second half is the finding.\n\nCONFIRMED: the signature does not cross VIT d07a716. `vit interface` emitted `INTEGER(C_INT), INTENT(INOUT) :: list(*)` plus `INTEGER(C_INT), VALUE :: n_list`, and a wrapper whose dummy is `INTEGER(4), INTENT(INOUT) :: list(:)` -- the ALLOCATABLE attribute dropped, with no diagnostic, although fortran_parser had recorded is_allocatable=True. AddToList's entire contract is `allocate(clist(isize+1))` -> copy -> `move_alloc(clist, list)`, which replaces the caller's data pointer AND its extent; neither is reachable through a bare pointer and a by-value length. Measured against the original on the live ROSCO path (allocate 4, append 3x): the caller's array was still 4 elements, the appended values had been written one past the end of its heap block, and nothing -- gfortran, g++, or the run -- said so. The `else` branch (unallocated list) is unreachable: the wrapper evaluates SIZE(list) before the call. evidence/AddToList/bridge_probe/result.json.\n\nREFUTED: `INTENT(INOUT) ALLOCATABLE needs an ALLOCA` is a fact about VIT, not about the argument. A Fortran 2018 BIND(C) interface takes the ALLOCATABLE dummy directly; the C side receives the caller's own CFI_cdesc_t* and CFI_deallocate/CFI_allocate through it do exactly what move_alloc does. A hand-written CFI bridge reproduced the oracle BYTE FOR BYTE on both branches, including move_alloc's reset of the lower bound, under gfortran 13.3/g++ 13.3. Red-tested: one perturbed token in the CFI body turns the probe red (result.redtest.json).\n\nWHERE THE BASIS CAME FROM, and why it was right by accident: tests/conformance/matrix.toml's `[c_alloc_inout] compiles = \"no\"` is measured by test_conformance.py:probe() from `test_validate.generate_fortran_bridge` -- the DIFFERENTIAL HARNESS's Fortran side, which is linked into a test binary and never into the library. On AddToList it fails with `Actual argument for 'list' must be ALLOCATABLE`. The matrix never called generate_fortran_interface_block or generate_fortran_wrapper, the two generators whose output `vit integrate` writes into the shipped source, and those compile clean. Any cell whose harness bridge happened to compile would have read `yes` and the campaign would have integrated a no-op. evidence/AddToList/generators.json.\n\nFIXED AT THE SOURCE (X2), not worked around: VIT now has interface_gen.assert_integration_bridgeable, called from the interface-block generator, the wrapper generator and the C++ scaffold, which raises UnbridgeableSignature for an ALLOCATABLE INTENT(INOUT) dummy. `vit translate`, `vit interface` and `vit integrate` on AddToList now exit 1 and write nothing. test_conformance.py gained an `integrates` column that measures the integration generators and compiles their output; regenerating the matrix moved c_alloc_inout to `integrates = \"refused\"` and turned up c_complex_in, a cell every previous column called supported whose integration wrapper emits COMPLEX(z, C_DOUBLE_COMPLEX) for an already-COMPLEX dummy and does not compile. Five of 39 cells now disagree between the harness column and the integration column. Both changes red-tested; VIT suite 930 passed."
    },
-   "observability": null
+   "observability": "NOTHING IN THIS CAMPAIGN CAN SEE THIS UNIT.\n\nThe body and all five call sites have zero hits in all 27 scenarios (coverage/line_coverage.json). Measured a second time, independently of gcov, by perturbing BOTH branches of the body (`= element` -> `= element + 1000`, 2 replacements), rebuilding and re-gating: 0 of 5,252,000 values moved. gate/AddToList.redtest.json, verdict RED_TEST_FAIL.\n\nSo gate/AddToList.json -- 5,252,000 values compared, 0 mismatched -- is a green that constrains nothing about AddToList. It is committed anyway, next to the red test that shows why, because the pair is the evidence and the green alone would be a lie by omission.\n\nThere is also no kernel: `vit extract` at ROSCO_IO.f90:1126 returned `No state data captured` three times during setup, which was recorded as a tool defect and is now settled as this same deadness. And there is no differential harness or mutation score, because both are generated from the bridge that does not cross.\n\nConsequence for the done-condition: P9 can only be satisfied vacuously, P12's mutation score cannot be produced at all, and the red-test fallback P12 offers when mutation is unconfigured is equally impossible. A unit no scenario reaches cannot close under this configuration however good its translation is. That is a property of the campaign's instruments, not of this function.",
+   "disposition": "blocked",
+   "source_file": "rosco/controller/src/ROSCO_Helpers.f90",
+   "translation": null,
+   "harness_required": true,
+   "evidence": [
+    "evidence/AddToList/README.md",
+    "evidence/AddToList/bridge_probe/run.sh",
+    "evidence/AddToList/bridge_probe/mod_orig.f90",
+    "evidence/AddToList/bridge_probe/mod_vit.f90",
+    "evidence/AddToList/bridge_probe/addtolist_vit.cpp",
+    "evidence/AddToList/bridge_probe/mod_cfi.f90",
+    "evidence/AddToList/bridge_probe/addtolist_cfi.cpp",
+    "evidence/AddToList/bridge_probe/driver.F90",
+    "evidence/AddToList/bridge_probe/result.json",
+    "evidence/AddToList/bridge_probe/result.redtest.json",
+    "evidence/AddToList/generators.py",
+    "evidence/AddToList/generators.json",
+    "evidence/AddToList/vit_interface.stdout.txt",
+    "evidence/AddToList/vit_translate.stdout.txt",
+    "evidence/AddToList/addtolist.scaffold.cpp",
+    "gate/AddToList.json",
+    "gate/AddToList.redtest.json",
+    "coverage/line_coverage.json"
+   ]
   },
   {
    "order": 2,
