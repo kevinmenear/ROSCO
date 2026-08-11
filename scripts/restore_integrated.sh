@@ -47,7 +47,15 @@ while read -r f; do
     n=$((n + 1))
 done < <(git ls-files rosco/controller/src)
 
+# CMakeLists.txt lives OUTSIDE src/, so the loop above never saw it -- and
+# reset_to_clean.sh now strips the translated .cpp sources from it. Without this
+# the pair is asymmetric: reset removes them, restore does not put them back,
+# and the rebuilt library quietly contains no C++ at all while gating 27/27.
+git checkout HEAD -- rosco/controller/CMakeLists.txt
+n=$((n + 1))
+
 echo "restore_integrated: $n file(s) restored from HEAD (vit_types.h untouched)"
+echo "  CMakeLists.txt restored: the translated .cpp sources are back in the build"
 
 docker exec "$CONTAINER" bash -lc \
     "cd $WORKDIR/rosco/controller/build && cmake --build . -j4 >/dev/null 2>&1 && \

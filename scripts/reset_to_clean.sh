@@ -91,10 +91,43 @@ if ! git diff --quiet -- rosco/controller/CMakeLists.txt 2>/dev/null; then
     fi
 fi
 
+# --- 3b. translated .cpp sources out of the build ----------------------------
+#
+# WITHOUT THIS THE SCRIPT DOES NOT DO WHAT IT IS NAMED. Once a unit is
+# integrated, CMakeLists lists its translation, so the build tree holds a SECOND
+# definition of the function -- and the pre-integration harness, which compiles
+# that same translation itself, cannot link. That hits every unit after the
+# first.
+#
+# Leaving harness.sh to compensate was the alternative and is worse: every
+# future consumer would have to know to compensate, and `vit_mutate.py` drives
+# make on its own, which is a second path to the same wall. It also matters more
+# than tidiness -- a link that fails for EVERY mutant scores 1.000 while
+# measuring nothing, so each route removed is a route to a fabricated perfect
+# score removed.
+#
+# ONLY the `src/*.cpp` source lines go. Upstream ROSCO has no C++ at all, so any
+# such line is a translation and the rule maintains itself. What must SURVIVE is
+# everything else integration added -- `enable_language(CXX)`, the stdc++ link,
+# and above all E1.2's -ffp-contract=off, which was measured on this tree taking
+# 105 of 200 random inputs from ~1 ULP apart to 0. A blanket `git checkout` of
+# this file would silently revert that flag and invalidate the baselines that
+# were regenerated for it.
+cpp=0
+if [ -f rosco/controller/CMakeLists.txt ]; then
+    cpp=$(grep -cE '^[[:space:]]*src/.*\.cpp[[:space:]]*$' rosco/controller/CMakeLists.txt || true)
+    if [ "$cpp" != "0" ]; then
+        grep -vE '^[[:space:]]*src/.*\.cpp[[:space:]]*$' rosco/controller/CMakeLists.txt \
+            > rosco/controller/CMakeLists.txt.reset && \
+            mv rosco/controller/CMakeLists.txt.reset rosco/controller/CMakeLists.txt
+    fi
+fi
+
 echo "reset_to_clean: $n wrapper-carrying source(s) restored to $BASELINE"
 [ -n "$skipped" ] && echo "  left at HEAD (no wrappers):$skipped"
 echo "  $crlf file(s) reverted whose only change was line endings"
 echo "  extraction leftovers removed (kernel/ state/ model/ elapsedtime/ logs, .kgen_org)"
+echo "  $cpp translated .cpp source(s) removed from CMakeLists (E1.2 flags kept)"
 [ "$left" = "1" ] && echo "  CMakeLists.txt un-patched"
 
 [ "$BUILD" = "0" ] && { echo "  --no-build: NOT rebuilt. The installed library may still be instrumented."; exit 0; }
