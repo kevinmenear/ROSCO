@@ -1,0 +1,202 @@
+case,field,type,status,computed,reference,diff
+NonDecreasing.0.0.1,zmq_id,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,logginglevel,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,echo,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,ext_interface,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,dt_out,scalar,IDENTICAL,0.10000000149011612,0.10000000149011612,
+NonDecreasing.0.0.1,n_dt_out,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,n_dt_zmq,scalar,IDENTICAL,10,10,
+NonDecreasing.0.0.1,f_lpftype,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,f_lpfcornerfreq,scalar,IDENTICAL,1.5708000000000000,1.5708000000000000,
+NonDecreasing.0.0.1,f_lpfdamping,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,f_numnotchfilts,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,f_genspdnotch_n,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,f_twrtopnotch_n,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,f_notchfreqs,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,f_notchbetanum,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,f_notchbetaden,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,f_sscornerfreq,scalar,IDENTICAL,0.62829999999999997,0.62829999999999997,
+NonDecreasing.0.0.1,f_wecornerfreq,scalar,IDENTICAL,0.20943999999999999,0.20943999999999999,
+NonDecreasing.0.0.1,f_flcornerfreq,array,IDENTICAL,,,size=           2
+NonDecreasing.0.0.1,f_flhighpassfreq,scalar,IDENTICAL,1.0420000000000000E-002,1.0420000000000000E-002,
+NonDecreasing.0.0.1,f_yawerr,scalar,IDENTICAL,0.17952000000000001,0.17952000000000001,
+NonDecreasing.0.0.1,f_flpcornerfreq,array,IDENTICAL,,,size=           2
+NonDecreasing.0.0.1,f_vsrefspdcornerfreq,scalar,IDENTICAL,0.20943999999999999,0.20943999999999999,
+NonDecreasing.0.0.1,tra_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,tra_exclspeed,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,tra_exclband,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,tra_ratelimit,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,td_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,fa_hpfcornerfreq,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,fa_intsat,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,fa_ki,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,ipc_controlmode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,ipc_vramp,array,IDENTICAL,,,size=           2
+NonDecreasing.0.0.1,ipc_intsat,scalar,IDENTICAL,0.29999999999999999,0.29999999999999999,
+NonDecreasing.0.0.1,ipc_satmode,scalar,IDENTICAL,2,2,
+NonDecreasing.0.0.1,ipc_kp,array,IDENTICAL,,,size=           2
+NonDecreasing.0.0.1,ipc_ki,array,IDENTICAL,,,size=           2
+NonDecreasing.0.0.1,ipc_azioffset,array,IDENTICAL,,,size=           2
+NonDecreasing.0.0.1,ipc_cornerfreqact,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,pc_controlmode,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,pc_gs_n,scalar,IDENTICAL,30,30,
+NonDecreasing.0.0.1,pc_gs_angles,array,IDENTICAL,,,size=          30
+NonDecreasing.0.0.1,pc_gs_kp,array,IDENTICAL,,,size=          30
+NonDecreasing.0.0.1,pc_gs_ki,array,IDENTICAL,,,size=          30
+NonDecreasing.0.0.1,pc_gs_kd,array,IDENTICAL,,,size=          30
+NonDecreasing.0.0.1,pc_gs_tf,array,IDENTICAL,,,size=          30
+NonDecreasing.0.0.1,pc_maxpit,scalar,IDENTICAL,1.5700000000000001,1.5700000000000001,
+NonDecreasing.0.0.1,pc_minpit,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,pc_maxrat,scalar,IDENTICAL,0.17449999999999999,0.17449999999999999,
+NonDecreasing.0.0.1,pc_minrat,scalar,IDENTICAL,-0.17449999999999999,-0.17449999999999999,
+NonDecreasing.0.0.1,pc_refspd,scalar,IDENTICAL,122.90967000000001,122.90967000000001,
+NonDecreasing.0.0.1,pc_finepit,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,pc_switch,scalar,IDENTICAL,1.7450000000000000E-002,1.7450000000000000E-002,
+NonDecreasing.0.0.1,vs_controlmode,scalar,IDENTICAL,2,2,
+NonDecreasing.0.0.1,vs_constpower,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,vs_fbp,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,vs_geneff,scalar,IDENTICAL,94.400000000000006,94.400000000000006,
+NonDecreasing.0.0.1,vs_arsattq,scalar,IDENTICAL,43093.500000000000,43093.500000000000,
+NonDecreasing.0.0.1,vs_maxrat,scalar,IDENTICAL,40000.000000000000,40000.000000000000,
+NonDecreasing.0.0.1,vs_maxtq,scalar,IDENTICAL,47402.900000000001,47402.900000000001,
+NonDecreasing.0.0.1,vs_mintq,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,vs_minomspd,scalar,IDENTICAL,34.642859999999999,34.642859999999999,
+NonDecreasing.0.0.1,vs_rgn2k,scalar,IDENTICAL,2.3105500000000001,2.3105500000000001,
+NonDecreasing.0.0.1,vs_rtpwr,scalar,IDENTICAL,5000000.0000000000,5000000.0000000000,
+NonDecreasing.0.0.1,vs_rttq,scalar,IDENTICAL,43093.500000000000,43093.500000000000,
+NonDecreasing.0.0.1,vs_refspd,scalar,IDENTICAL,122.90967000000001,122.90967000000001,
+NonDecreasing.0.0.1,vs_n,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,vs_kp,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,vs_ki,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,vs_tsropt,scalar,IDENTICAL,7.5000000000000000,7.5000000000000000,
+NonDecreasing.0.0.1,vs_fbp_n,scalar,IDENTICAL,60,60,
+NonDecreasing.0.0.1,vs_fbp_u,array,IDENTICAL,,,size=          60
+NonDecreasing.0.0.1,vs_fbp_omega,array,IDENTICAL,,,size=          60
+NonDecreasing.0.0.1,vs_fbp_tau,array,IDENTICAL,,,size=          60
+NonDecreasing.0.0.1,ss_mode,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,ss_vsgain,scalar,IDENTICAL,1.0000000000000000,1.0000000000000000,
+NonDecreasing.0.0.1,ss_pcgain,scalar,IDENTICAL,5.0000000000000003E-002,5.0000000000000003E-002,
+NonDecreasing.0.0.1,prc_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,prc_comm,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,prc_windspeeds,array,IDENTICAL,,,size=           2
+NonDecreasing.0.0.1,prc_genspeeds,array,IDENTICAL,,,size=           2
+NonDecreasing.0.0.1,prc_n,scalar,IDENTICAL,2,2,
+NonDecreasing.0.0.1,prc_lpf_freq,scalar,IDENTICAL,7.8539999999999999E-002,7.8539999999999999E-002,
+NonDecreasing.0.0.1,prc_r_torque,scalar,IDENTICAL,1.0000000000000000,1.0000000000000000,
+NonDecreasing.0.0.1,prc_r_speed,scalar,IDENTICAL,1.0000000000000000,1.0000000000000000,
+NonDecreasing.0.0.1,prc_r_pitch,scalar,IDENTICAL,1.0000000000000000,1.0000000000000000,
+NonDecreasing.0.0.1,prc_table_n,scalar,IDENTICAL,20,20,
+NonDecreasing.0.0.1,prc_pitch_table,array,IDENTICAL,,,size=          20
+NonDecreasing.0.0.1,prc_r_table,array,IDENTICAL,,,size=          20
+NonDecreasing.0.0.1,we_mode,scalar,IDENTICAL,2,2,
+NonDecreasing.0.0.1,we_bladeradius,scalar,IDENTICAL,63.000000000000000,63.000000000000000,
+NonDecreasing.0.0.1,we_cp_n,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,we_gamma,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,we_gearboxratio,scalar,IDENTICAL,97.000000000000000,97.000000000000000,
+NonDecreasing.0.0.1,we_jtot,scalar,IDENTICAL,43702538.056999996,43702538.056999996,
+NonDecreasing.0.0.1,we_rhoair,scalar,IDENTICAL,1.2250000000000001,1.2250000000000001,
+NonDecreasing.0.0.1,perffilename,scalar,IDENTICAL,/workspace/ROSCO-r2/Examples/Tune_Cases/../Test_Cases/NREL-5MW/Cp_Ct_Cq.NREL5MW.txt,/workspace/ROSCO-r2/Examples/Tune_Cases/../Test_Cases/NREL-5MW/Cp_Ct_Cq.NREL5MW.txt,
+NonDecreasing.0.0.1,perftablesize,array,IDENTICAL,,,size=           2
+NonDecreasing.0.0.1,we_fopoles_n,scalar,IDENTICAL,60,60,
+NonDecreasing.0.0.1,we_fopoles_v,array,IDENTICAL,,,size=          60
+NonDecreasing.0.0.1,we_fopoles,array,IDENTICAL,,,size=          60
+NonDecreasing.0.0.1,y_controlmode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,y_uswitch,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,y_errthresh,array,IDENTICAL,,,size=           2
+NonDecreasing.0.0.1,y_rate,scalar,IDENTICAL,0.49847328176309996,0.49847328176309996,
+NonDecreasing.0.0.1,y_merrset,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,y_ipc_intsat,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,y_ipc_kp,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,y_ipc_ki,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,ps_mode,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,ps_bldpitchmin_n,scalar,IDENTICAL,60,60,
+NonDecreasing.0.0.1,ps_windspeeds,array,IDENTICAL,,,size=          60
+NonDecreasing.0.0.1,ps_bldpitchmin,array,IDENTICAL,,,size=          60
+NonDecreasing.0.0.1,su_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,su_starttime,scalar,IDENTICAL,120.00000000000000,120.00000000000000,
+NonDecreasing.0.0.1,su_fw_minduration,scalar,IDENTICAL,200.00000000000000,200.00000000000000,
+NonDecreasing.0.0.1,su_rotorspeedthresh,scalar,IDENTICAL,0.52000000000000002,0.52000000000000002,
+NonDecreasing.0.0.1,su_rotorspeedcornerfreq,scalar,IDENTICAL,0.41887999999999997,0.41887999999999997,
+NonDecreasing.0.0.1,su_loadstages_n,scalar,IDENTICAL,2,2,
+NonDecreasing.0.0.1,su_loadstages,array,IDENTICAL,,,size=           2
+NonDecreasing.0.0.1,su_loadrampduration,array,IDENTICAL,,,size=           2
+NonDecreasing.0.0.1,su_loadholdduration,array,IDENTICAL,,,size=           2
+NonDecreasing.0.0.1,sd_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,sd_timeactivate,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,sd_enablepitch,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,sd_enableyawerror,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,sd_enablegenspeed,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,sd_enabletime,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,sd_maxpit,scalar,IDENTICAL,0.40205000000000002,0.40205000000000002,
+NonDecreasing.0.0.1,sd_pitchcornerfreq,scalar,IDENTICAL,0.41887999999999997,0.41887999999999997,
+NonDecreasing.0.0.1,sd_maxyawerror,scalar,IDENTICAL,30.000000000000000,30.000000000000000,
+NonDecreasing.0.0.1,sd_yawerrorcornerfreq,scalar,IDENTICAL,0.41887999999999997,0.41887999999999997,
+NonDecreasing.0.0.1,sd_maxgenspd,scalar,IDENTICAL,147.49160000000001,147.49160000000001,
+NonDecreasing.0.0.1,sd_genspdcornerfreq,scalar,IDENTICAL,0.41887999999999997,0.41887999999999997,
+NonDecreasing.0.0.1,sd_time,scalar,IDENTICAL,9999.0000000000000,9999.0000000000000,
+NonDecreasing.0.0.1,sd_method,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,sd_maxtorquerate,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,sd_maxpitchrate,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,sd_stagepitch,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,sd_stagetime,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,sd_stage_n,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,fl_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,fl_n,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,fl_kp,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,fl_u,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,flp_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,flp_angle,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,flp_kp,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,flp_ki,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,flp_maxpit,scalar,IDENTICAL,0.17449999999999999,0.17449999999999999,
+NonDecreasing.0.0.1,ol_filename,scalar,IDENTICAL,/workspace/ROSCO-r2/Examples/unused,/workspace/ROSCO-r2/Examples/unused,
+NonDecreasing.0.0.1,ol_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,ol_bp_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,ol_bp_filtfreq,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,ind_breakpoint,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,ind_bldpitch,array,IDENTICAL,,,size=           3
+NonDecreasing.0.0.1,ind_gentq,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,ind_yawrate,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,ind_r_speed,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,ind_r_torque,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,ind_r_pitch,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,ind_azimuth,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,rp_gains,array,IDENTICAL,,,size=           4
+NonDecreasing.0.0.1,ind_cablecontrol,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,ind_structcontrol,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,pa_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,pa_cornerfreq,scalar,IDENTICAL,3.1400000000000001,3.1400000000000001,
+NonDecreasing.0.0.1,pa_damping,scalar,IDENTICAL,0.70699999999999996,0.70699999999999996,
+NonDecreasing.0.0.1,awc_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,awc_nummodes,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,awc_n,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,awc_harmonic,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,awc_freq,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,awc_amp,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,awc_clockangle,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,awc_phaseoffset,scalar,IDENTICAL,0.0000000000000000,0.0000000000000000,
+NonDecreasing.0.0.1,awc_cntrgains,array,IDENTICAL,,,size=           2
+NonDecreasing.0.0.1,pf_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,pf_offsets,array,IDENTICAL,,,size=           3
+NonDecreasing.0.0.1,pf_timestuck,array,IDENTICAL,,,size=           3
+NonDecreasing.0.0.1,ext_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,dll_filename,scalar,IDENTICAL,unused,unused,
+NonDecreasing.0.0.1,dll_infile,scalar,IDENTICAL,unused,unused,
+NonDecreasing.0.0.1,dll_procname,scalar,IDENTICAL,DISCON,DISCON,
+NonDecreasing.0.0.1,zmq_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,zmq_commaddress,scalar,IDENTICAL,tcp://localhost:5555,tcp://localhost:5555,
+NonDecreasing.0.0.1,zmq_updateperiod,scalar,IDENTICAL,1.0000000000000000,1.0000000000000000,
+NonDecreasing.0.0.1,cc_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,cc_group_n,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,cc_acttau,scalar,IDENTICAL,20.000000000000000,20.000000000000000,
+NonDecreasing.0.0.1,cc_groupindex,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,stc_mode,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,stc_group_n,scalar,IDENTICAL,1,1,
+NonDecreasing.0.0.1,stc_groupindex,array,IDENTICAL,,,size=           1
+NonDecreasing.0.0.1,pc_rttq99,scalar,IDENTICAL,42662.565000000002,42662.565000000002,
+NonDecreasing.0.0.1,vs_maxomtq,scalar,IDENTICAL,34904.986655504290,34904.986655504290,
+NonDecreasing.0.0.1,vs_minomtq,scalar,IDENTICAL,2772.9551704048149,2772.9551704048149,
+NonDecreasing.0.0.1,size_avcmsg,scalar,IDENTICAL,500,500,
+NonDecreasing.0.0.1,avifail,scalar,OUT_TOL,-1,0,1
+NonDecreasing.0.0.1,errstat,scalar,IDENTICAL,0,0,
+NonDecreasing.0.0.1,errmsg,scalar,OUT_TOL,PC_GS_angles must be non-decreasing,,

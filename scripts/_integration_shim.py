@@ -94,8 +94,21 @@ def main() -> int:
     # directory, which is where the shim is compiled, so it is the same
     # declarations the translation itself was built against.
     if any(t.rstrip("* ").strip().endswith("_t") and "CFI_cdesc" not in t
-           for t, _ in params):
+           and "int" not in t for t, _ in params):
         out.append('#include "vit_types.h"')
+        out.append("")
+    # A FIXED-WIDTH type is a name `<cstdint>` defines, and the shim compiles
+    # STANDALONE -- it includes nothing the translation includes. A LOGICAL
+    # RESULT is the first one this campaign has produced: VIT maps it to
+    # `int32_t`, which the shim then names in the declaration AND in the
+    # `extern "C"` definition, neither of which has seen the type. Third
+    # conditional include for the same reason as the two above it and keyed the
+    # same way -- on the types actually emitted, so no unit whose shim already
+    # compiles gains a line.
+    if any(w in t for t, _ in params
+           for w in ("int8_t", "int16_t", "int32_t", "int64_t")) \
+            or any(w in ret for w in ("int8_t", "int16_t", "int32_t", "int64_t")):
+        out.append("#include <cstdint>")
         out.append("")
     out += [f"{ret} {sig.cpp_impl_name}({decl_types});",
             f'extern "C" {ret} {sig.c_func_name}({defn}) {{',

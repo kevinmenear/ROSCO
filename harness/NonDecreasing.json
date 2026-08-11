@@ -1,0 +1,18 @@
+{
+ "unit": "NonDecreasing",
+ "against": "translation",
+ "checked": 36,
+ "failed": 0,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    1 varied extent(s) at [3], NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  N/A      R6_reference_literals      no real, no INTEGER and no CHARACTER parameter -- no boundary this rule can reach",
+  "  applied  R3_no_dead_signal          1 real value(s), none zero in every case",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 0 out-parameter(s): none"
+ ],
+ "mismatches": [],
+ "loop_rev": "54d792f-nogit",
+ "vit_rev": "300da9c-nogit"
+}

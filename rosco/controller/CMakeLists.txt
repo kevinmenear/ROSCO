@@ -90,6 +90,7 @@ set(SOURCES
     src/hpfilter.cpp
     src/int2lstr.cpp
     src/lpfilter.cpp
+    src/nondecreasing.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

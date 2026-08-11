@@ -1,0 +1,10 @@
+logical_result_conversion_probe.f90:30:11:
+
+   30 |     conv = n
+      |           1
+Warning: Extension: Conversion from INTEGER(4) to LOGICAL(4) at (1)
+           0  F  T            0
+           1  T  F            1
+           2  T  F            1
+          -1  T  F            1
+         256  T  F            1

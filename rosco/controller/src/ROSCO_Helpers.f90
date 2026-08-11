@@ -111,6 +111,17 @@ MODULE ROSCO_Helpers
         END SUBROUTINE int2lstr_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of NonDecreasing
+    INTERFACE
+        FUNCTION nondecreasing_c(Array, n_Array) BIND(C, NAME='nondecreasing_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), INTENT(IN) :: Array(*)
+            INTEGER(C_INT), VALUE :: n_Array
+            INTEGER(C_INT) :: nondecreasing_c
+        END FUNCTION nondecreasing_c
+    END INTERFACE
+
 CONTAINS
 
     !=======================================================================
@@ -1546,23 +1557,12 @@ END SUBROUTINE Read_OL_Input
 
 !=======================================================================
 ! This function checks whether an array is non-decreasing
-    LOGICAL Function NonDecreasing(Array)
-
-    IMPLICIT NONE
-
-    REAL(DbKi), DIMENSION(:)            :: Array
-    INTEGER(IntKi)         :: I_DIFF
-
-    NonDecreasing = .TRUE.
-    ! Is Array non decreasing
-    DO I_DIFF = 1, size(Array) - 1
-        IF (Array(I_DIFF + 1) - Array(I_DIFF) <= 0) THEN
-            NonDecreasing = .FALSE.
-            RETURN
-        END IF
-    END DO
-
-    RETURN
+    FUNCTION NonDecreasing(Array) RESULT(NonDecreasing_result)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        REAL(8), INTENT(IN) :: Array(:)
+        LOGICAL :: NonDecreasing_result
+        NonDecreasing_result = nondecreasing_c(Array, SIZE(Array))
     END FUNCTION NonDecreasing
 
 !=======================================================================
