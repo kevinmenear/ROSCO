@@ -538,6 +538,139 @@ is `/workspace/ROSCO-r2`.
   stayed clean and `done.py`'s P2 could not have caught it. Any restore that
   must survive a crash goes in the parent.
 
+- **Before believing a differential harness's green, ask WHICH FIELDS its red
+  test named.** Learned at unit #5's third dispatch, and it is the entry that
+  would have saved two dispatches if it had existed.
+
+  `vit test-validate` decomposes a derived-type argument into one bridge
+  parameter per field. It copied every field IN and copied back only fixed-size
+  arrays, nested types and fixed-width CHARACTERs. A rank-1 **ALLOCATABLE**
+  field and a **SCALAR** field of an INOUT argument were INPUT-ONLY -- so the
+  reference wrote into a Fortran allocation the bridge then deallocated, and
+  the two sides were never compared on that field at all.
+
+  `ExtDLL%avrSWAP` is the whole of what `ExtController` produces.
+  `ErrVar%ErrStat` is where ROSCO puts every error status. Both were invisible,
+  and **every unit in this campaign taking a derived type was affected.**
+
+  Fixed in VIT `8c34ceb`: the extent goes BY REFERENCE, because the callee
+  CHOOSES it, plus a capacity; `n < 0` unallocated, `n == 0` allocated-empty,
+  `n > 0` allocated (P6); over-capacity is refused and reported, never
+  truncated. A SCALAR of an INOUT argument crosses by reference and is copied
+  back.
+
+  The check is one command and it belongs before believing any harness green:
+
+  ```
+  # replace the translation body with a no-op, re-run, and READ THE FIELD NAMES
+  bash scripts/harness.sh <Unit> <Module> <stem> <file>.f90 \
+       --out harness/<Unit>.redtest.json --red-test "the unit as a no-op"
+  ```
+
+  A no-op must fail every case AND the mismatch list must name every output the
+  unit is supposed to write. `163/163 failed` says the harness can move; the
+  LIST is what says it was ever looking at the right things.
+
+- **`harness/ranges.toml` is where a judgement goes, and this campaign's first
+  four entries are all about a reference that CRASHES on its own domain.**
+  Created at unit #5's third dispatch; it did not exist before.
+
+  `ExtController` never checks `ErrVar%ErrStat` after `LoadDynamicLib` and then
+  calls through `DLL_Ext%ProcAddr(1)`. Any generated case that fails to load a
+  library reaches a null function pointer, so the admissible domain really is
+  narrow -- and pinning it is still a NARROWING of the input space, which is the
+  blindness the generator exists to remove. So each entry carries the
+  measurement that forces it, and the COST is written into `plan.json`'s
+  `observability` rather than left to be discovered.
+
+  Two mechanisms were needed and both are additions: `text = "..."` in the TOML
+  (a stated string written as the string it is), and `lo = hi = -1` on an
+  ALLOCATABLE field's extent, which is how the bridge is told the field arrives
+  UNALLOCATED. A `values` list on a CHARACTER parameter is NOT an enumeration of
+  alternatives -- three places in the generator read it as one, and one of them
+  turned a pinned library path into 1024 semicolons.
+
+- **`vit integrate --auto-allocate` does not work on this codebase, and the one
+  ALLOCATE it should have generated is in the committed wrapper instead.**
+  Learned at unit #5's third dispatch. Three defects, artifact kept at
+  `evidence/ExtController/vit_defects/integrate_auto_allocate.wrapper.f90`:
+
+  1. Its copy-call scan matches **any** `CALL x(..., arg%field, ...)`, not just
+     Registry Copy calls as its docstring says. It hoisted BOTH
+     `LoadDynamicLib` and the external DLL call into the wrapper -- each would
+     have run a second time.
+  2. A size expression that is a local PARAMETER classifies `local` and is
+     declined.
+  3. Its error handling emits `SetErrStat(...)` and `CHARACTER(ErrMsgLen)`,
+     OpenFAST names that exist NOWHERE in ROSCO. The generated wrapper cannot
+     compile here at all, so the path has never been exercised outside OpenFAST.
+
+  Read the dry run before applying, and read it for the WRAPPER, not just the
+  file list:
+
+  ```
+  vit integrate <Unit> <cpp> -f <file>.f90 --reverse-copy --auto-allocate --dry-run
+  ```
+
+- **`vit integrate` also writes `verification: simulation` into `vit.yaml`**,
+  having run no simulation and read no result. It is the same shape as the
+  `// After verification: <name> kernel PASSED` comment `37f8bdf` deleted from
+  every generated file, one file over. Remove it, or leave it only where it is
+  true. Nothing in the toolchain checks a claim a generator makes about
+  verification.
+
+- **A REFERENCE THAT PRINTS breaks three different readers of stdout.**
+  `ExtController` has five `PRINT *` statements. `vit_harness.py` and
+  `vit_mutate.py` both did `json.loads(run.stdout)`, and `harness.sh`'s post
+  mode did `./test > $OUT`. A clean 163-of-163 run therefore reported "harness
+  produced no JSON", and `vit_mutate.py` reported the BASELINE as a crash. The
+  second is the dangerous one: had its baseline check not refused to score,
+  every mutant would have scored `killed (no compile)`/`killed (crash)` -- a
+  1.000 that measured nothing. All three now take the last parseable JSON
+  object in the stream.
+
+- **After integrating a unit that takes a derived type, the harness's generated
+  LIBS list is STALE.** `vit test-validate` derives LIBS from the CMake target
+  as it stood BEFORE integration, and `vit integrate` then adds one
+  view-populator `.f90` per type -- four, for `ExtController`. The
+  post-integration link dies on eight undefined `__vit_*_view_MOD_vit_populate_*`
+  symbols, in the wrapper the run exists to measure. `harness.sh` now repairs it
+  by CONTENTS (every object CMake built for this target that is not already
+  there) rather than by a list, the same shape as `reset_to_clean.sh`'s "remove
+  any object that DEFINES kgen symbols". Every earlier unit took scalars, arrays
+  and strings, so integration added only the `.cpp`, which the existing drop
+  removes anyway.
+
+- **Two things about a Fortran original that must be MEASURED and not read.**
+  Both found at unit #5's third dispatch, both transcribed rather than corrected
+  (P7), and both would have produced a plausible wrong answer.
+
+  1. `LEN` of a CHARACTER ARRAY is the ELEMENT length, not the array size.
+     `ExtDLL%avrSWAP(49) = LEN(avcMSG) + 1` where
+     `CHARACTER(KIND=C_CHAR) :: avcMSG(LEN(ErrVar%ErrMsg)+1)` is therefore the
+     **constant 2**, not the size of the message buffer the record's own comment
+     claims. `evidence/ExtController/len_probe.f90`.
+  2. `TRANSFER(SOURCE, MOLD)` with an ARRAY mold returns an array just large
+     enough for SOURCE -- ONE element for one character -- and gfortran assigns
+     a nonconforming right-hand side by copying min(size) elements. So
+     `avcMSG = TRANSFER(C_NULL_CHAR, avcMSG)` writes byte 1 and leaves the rest
+     INDETERMINATE. `evidence/ExtController/transfer_probe.f90` prints
+     `0 90 90 ...`.
+
+  The second has a consequence for the ORACLE, not just for the translation: a
+  fixture that folded those bytes into its answer would make the two sides of
+  the comparison disagree for a reason about neither implementation. Extend a
+  stub to read an input ONLY where the input is defined.
+
+- **A survivor can be a blindness in the ORACLE, and then the oracle is what to
+  change.** Third move at unit #5, alongside REMOVE-the-restatement and
+  DECLARE-with-a-reason. `int aviFAIL = 0;` was write-only -- the local is
+  handed to the external library and never read again -- so no mutation of it
+  could be caught. The stub now reports the INCOMING value back in an output
+  record before overwriting it, and the mutant dies on every case. Before
+  declaring a survivor equivalent, ask whether the instrument could see it if
+  the instrument were better.
+
 - **A unit whose original CRASHES is not a unit with no oracle. Ask what it
   crashed ON.** Learned at unit #5's second dispatch, and it reverses that
   unit's first conclusion.

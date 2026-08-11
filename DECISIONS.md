@@ -1663,3 +1663,205 @@ All of it. The oracle-vs-instrument distinction, the 132-column limit, the
 deferred-CHARACTER shape and the gitignore hazard are RUNBOOK target-layer
 entries. No amendment to the invariant layer is proposed; the one the first
 dispatch proposed is argued against above.
+
+## Unit #5, third dispatch — 2026-08-11: `ExtController` is `integrated`
+
+### 1. The blocking claim was wrong for the second time, and for a smaller reason
+
+The second dispatch closed `blocked` on three remaining items and called them
+"ordinary engineering with a known endpoint". They were, and they are done. What
+that dispatch could not have known is that doing them would surface a defect
+larger than the unit — see §3.
+
+The pattern across three dispatches is worth naming because it is not about this
+function. Each dispatch's blocker dissolved when someone asked **which instrument
+needs this**, rather than **is this unit verifiable**:
+
+* #1 escalated "an oracle must be constructed" to the Driver under SPEC §8.4,
+  on the assumption that an oracle meant a gate scenario. The differential
+  harness does not run scenarios. It was P5, and 60 lines of C.
+* #2 declined to close the `CHARACTER(:)` gap on the grounds that it "would not
+  close this unit". The premise was #1's, and #1 was false.
+* #3 found that the differential bridge had been discarding outputs for the
+  whole campaign. No amount of reasoning about `ExtController` would have shown
+  that; only running the harness did.
+
+### 2. Gap C is a JUDGEMENT and it is now made, in a file that can be reviewed
+
+`harness/ranges.toml` did not exist in this campaign. It does now, with four
+pins for this unit and a header saying what the file is for: **the only
+judgement in the pipeline**, and every entry NARROWS the generated domain, which
+is the blindness the generator exists to remove.
+
+The four are `CntrPar_DLL_FileName` (the fixture path), `CntrPar_DLL_ProcName`
+(`DISCON`), `LocalVar_iStatus` (0) and `ExtDLL_avrSWAP_n` (−1, meaning
+unallocated). **Every one exists because the REFERENCE crashes on the rest of
+the domain, not because the translation would**: `ExtController` never checks
+`ErrVar%ErrStat` after `LoadDynamicLib` and then calls through
+`DLL_Ext%ProcAddr(1)`, which is `C_NULL_FUNPTR` whenever the load failed. That
+is a fact about upstream ROSCO and the file records it as one.
+
+What the pins COST is stated in `plan.json`'s `observability` rather than left
+to be discovered: the `iStatus /= 0` path is never exercised, two of the three
+DLL strings are held at one value each, and `LEN_TRIM(ErrVar%ErrMsg)` is 0 in
+every admissible case. The third of those is where two of the four
+declared-equivalent mutants come from.
+
+`statevary.constrain` gained `text = "..."` so a pinned string is written as the
+string it is. A judgement nobody can read is not one anybody can review.
+
+### 3. C12 — the decomposed bridge was discarding outputs, for the whole campaign
+
+Recorded before it was fixed; the wrong artifact is
+`evidence/ExtController/vit_defects/extcontroller_bridge.alloc_input_only.f90`.
+
+`vit test-validate` decomposes a derived-type argument into one bridge parameter
+per field. It copied every field IN. It copied back only fixed-size arrays,
+nested types and fixed-width CHARACTERs. A **rank-1 ALLOCATABLE** field and a
+**SCALAR** field of an INOUT argument were input-only:
+
+* the reference wrote into a Fortran allocation the bridge then deallocated,
+  while the translation wrote into the caller's buffer — so the two were never
+  compared on that field at all;
+* a scalar crossed by VALUE, so the harness compared its own INPUT against the
+  translation's answer. On `ExtController` that reported the translation wrong
+  on all 163 cases, which is the loud version; a unit whose scalar output
+  happens to equal its input would have reported a full green.
+
+`ExtDLL%avrSWAP` is everything `ExtController` produces and `ErrVar%ErrStat` is
+where ROSCO puts every error status. Both were invisible.
+
+Fixed in VIT `8c34ceb`. The extent goes BY REFERENCE, because the callee chooses
+it — `ExtController` receives the field unallocated and returns 2000 elements —
+and a CAPACITY says how much room the caller has, with three states kept
+distinguishable because one of them is absence (P6): `n < 0` unallocated,
+`n == 0` allocated-empty, `n > 0` allocated. A result past the capacity is
+REFUSED and reported, never truncated, which is the same rule the view struct's
+reverse copy already used.
+
+**The proof that it matters is the red test**: with the translation replaced by
+a no-op the harness fails 163 of 163 and names `ExtDLL.avrSWAP`,
+`ExtDLL.n_avrSWAP`, `ErrVar.ErrStat` and `ErrVar.ErrMsg` — the four outputs that
+no harness in this campaign could see before this commit.
+
+### 4. Where the blindness is in the INSTRUMENT, change the instrument
+
+The mutation score went 0.758 → 0.904 → 1.000, and each step is a different kind
+of move:
+
+* **0.758 → 0.904, by REMOVING restatements.** `accINFILE`'s bound and record 50
+  are the same expression, and so are `avcOUTNAME`'s bound and record 51.
+  Transcribing each twice leaves a second site computing a quantity nothing
+  reads back. Naming each once leaves only the observable site. That is the
+  third time in this campaign — unit #1 named a SIZE once, unit #4 a LOOP BOUND,
+  this a BUFFER LENGTH — and the test is still the one the RUNBOOK states: *can
+  any input make this quantity change an output?*
+* **A survivor fixed in the ORACLE, not in the translation and not by
+  declaration.** `int aviFAIL = 0;` was write-only: the local is handed to the
+  external library and never read again. The stub now reports the INCOMING value
+  back in record 44 before overwriting it, and the mutant dies on all 163 cases.
+  The fixture had already been extended once for the same reason — the bytes of
+  `accINFILE` and `avcOUTNAME` were reaching the library and never being read.
+  **A stub that answers without reading its inputs is unit #2's all-zero kernel
+  window in another costume.**
+* **0.904 → 1.000, by DECLARING four, each applied by hand and re-run first.**
+  Two are one fact: `LoadDynamicLib` blank-fills `ErrMsg` through a
+  `CHARACTER(*), INTENT(OUT)` dummy, so `LEN_TRIM` is 0 in every admissible case
+  and the concatenation's right operand is constant. One is a capacity boundary
+  four orders of magnitude out of reach. One is a buffer length nothing reads.
+  The distinction this campaign preserves — REMOVED vs DECLARED — is why the
+  file has four entries and not eight.
+
+### 5. Two things about the ORIGINAL that had to be measured, not read
+
+Both were measured before any C++ was written, and both are transcribed rather
+than corrected, because the original is the oracle (P7).
+
+* **`ExtDLL%avrSWAP(49) = LEN(avcMSG) + 1` is the constant 2.** `avcMSG` is an
+  ARRAY of `CHARACTER(KIND=C_CHAR)`, whose ELEMENT length is 1; `LEN` of a
+  CHARACTER array is the element length, not the array size. The record's own
+  comment calls it "Maximum number of characters in the MESSAGE argument". It is
+  not. `evidence/ExtController/len_probe.txt`.
+* **`avcMSG = TRANSFER(C_NULL_CHAR, avcMSG)` writes ONE byte.** `TRANSFER` with
+  an array MOLD returns an array just large enough for SOURCE, and gfortran
+  assigns a nonconforming right-hand side by copying min(size) elements. Bytes
+  2..N of an automatic array are left INDETERMINATE.
+  `evidence/ExtController/transfer_probe.f90` prints `0 90 90 ...`. The
+  translation zero-initialises instead — a stated departure with its proof in
+  the file — and the oracle fixture deliberately does NOT fold those bytes into
+  its answer, because a stub reading indeterminate memory would make the two
+  sides of a differential comparison disagree for a reason about neither
+  implementation.
+
+### 6. `--auto-allocate` is unusable here, and that is now the campaign's problem
+
+RAISED, not worked around in silence. Artifact:
+`evidence/ExtController/vit_defects/integrate_auto_allocate.wrapper.f90`.
+
+Three defects, each measured on this unit:
+
+1. Its copy-call scan matches **any** `CALL x(..., arg%field, ...)`. Its own
+   docstring says "Registry Copy calls"; the implementation says any call. It
+   hoisted BOTH `LoadDynamicLib` and the external DLL call into the wrapper,
+   which would have called each a second time.
+2. `ALLOCATE(ExtDLL%avrSWAP(max_avr_entries))` is classified `local` because the
+   size is a local PARAMETER, so it is declined even after (1).
+3. Its error handling emits `SetErrStat(...)` and `CHARACTER(ErrMsgLen)` —
+   OpenFAST names that exist nowhere in ROSCO. The generated wrapper cannot
+   compile on this codebase at all, so this path has never been exercised
+   outside OpenFAST.
+
+This unit needs exactly one ALLOCATE and it is in the committed wrapper, one
+statement, transcribed verbatim, with all of the above beside it. **That does
+not scale**: the next unit that allocates a field of an argument hits the same
+wall, and a hand-edited generated wrapper is a thing that drifts. Fix belongs in
+VIT (X2).
+
+### 7. Four smaller defects in the loop's own harness, all found by one run
+
+Each was a wrong answer in the safe direction, which is why none of them had
+been seen.
+
+1. `parse_struct_members` split on `;` **before** stripping comments, so a
+   semicolon inside a `//` comment ended a member and the next real member was
+   glued to the comment's tail. VIT's own generated header did exactly that and
+   `n_ErrMsg_cap` was reported ABSENT FROM THE STRUCT.
+2. A string's `values` are its BYTES, and two stages read them as an
+   enumeration. `R2_flag_values` multiplied the case set by a 57-byte stated
+   path — 218 cases became 9,635 and 211 MB of case data — and `_random_over`
+   replaced the whole parameter with ONE code point drawn from its own contents,
+   so the pinned library path became 1024 semicolons and the reference
+   `dlopen`ed a file named `";"`.
+3. `_struct_fields` decided "the C struct has no member for this extent" from
+   whether the extent was FIXED, which is the same answer for the common cases
+   and the wrong one as soon as an ALLOCATABLE field's extent is pinned.
+4. `json.loads(run.stdout)` assumed the generated program was the only thing
+   printing. `ExtController` has five `PRINT *` statements, so a clean run of
+   163 cases reported "harness produced no JSON" — and `vit_mutate.py` had the
+   same line, where it reported the BASELINE as a crash. Had its baseline check
+   not refused to score, every mutant would have scored `killed (crash)`: a
+   1.000 that measured nothing.
+
+Two campaign scripts needed the same lesson: `_integration_shim.py` did not
+include `vit_types.h` (first unit with a view-struct signature), and
+`harness.sh`'s post-integration LIBS went stale the moment integration added the
+four view-populator sources — repaired by CONTENTS (every object CMake built for
+this target) rather than by a list, the same shape as `reset_to_clean.sh`'s
+"remove any object that DEFINES kgen symbols".
+
+### 8. NOT method, target
+
+All of it. The oracle-vs-instrument distinction, the input-only decomposed
+bridge, the `ranges.toml` judgement, the two measured facts about the original,
+and the `--auto-allocate` refusal are RUNBOOK target-layer entries. No amendment
+to the invariant layer is proposed.
+
+One candidate is worth naming for the Driver and is NOT proposed as an
+amendment, because the existing rules already reach it: **P3 already says a
+green must be able to name what it compared and be able to go red, and this unit
+is the case where the RED TEST is what proved the instrument had been discarding
+outputs.** The no-op stub did not merely turn the harness red; the LIST OF
+FIELDS it named is what showed four of them had never been compared before. A
+red test that reports WHICH outputs moved is strictly more informative than one
+that reports that some did, and this campaign's harness already does it. Nothing
+to amend — worth knowing.

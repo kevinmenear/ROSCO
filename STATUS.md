@@ -4,50 +4,71 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-11: unit #5 `ExtController` is `blocked`, and it is the first
-unit in this campaign that no instrument can verify.** Not because the gate
-cannot see it — three units before it had that problem — but because **the
-oracle cannot be run.**
+**As of 2026-08-11: unit #5 `ExtController` is `integrated` and CLOSED**, on its
+third dispatch. Two dispatches closed it `blocked`; both blocking claims are now
+refuted by measurement, and the second one cost less than the first.
 
-**FORCING THE ORIGINAL FORTRAN TO EXECUTE MAKES IT SEGFAULT.** `Ext_Mode` is 0
-in all 14 `Examples/*.IN`, so `ExtControl.f90` measures **0 of 28 executable
-lines in all 27 scenarios**. Turning the guard on through `vit_sim.py`'s own
-`write_discon(patches={'Ext_Mode': 1})` produces **exit status −11, signal 11**:
-`DLL_FileName` is the literal string `"unused"`, no external Bladed-style
-library is shipped anywhere in the tree, and `ExtController` never checks
-`ErrVar%ErrStat` after `LoadDynamicLib` — so `dlopen` fails, the code prints
-*"Library loaded successfully"*, and the next two statements are
-`C_F_PROCPOINTER` on a null funptr and a CALL through it.
-`evidence/ExtController/probe_ext_mode_1.json`.
+**A DEAD UNIT WITH A DERIVED-TYPE SIGNATURE CLOSES THE SAME WAY `AddToList` DID.**
+The gate is blind to it — 0 of 28 executable lines in all 27 scenarios, and
+making the unit a no-op moves 0 of 5,252,000 values — so the evidence is the
+differential harness and the mutation score, against an oracle this campaign
+had to build:
 
-That is what separates it from `AddToList`, which was equally dead and still
-closed `integrated`: the harness could **run the clean Fortran** as an oracle.
-Here P7 has nothing to point at. **This is a fourth shape of unobservability in
-five units, and the first that is not about the instrument** — #1 was a line no
-scenario reached, #3 an argument constant in every scenario, #4 an executed line
-whose result is cancelled downstream, and this is a unit whose reference
-implementation cannot be executed to completion on any input the campaign has.
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay | NOT ATTEMPTED — no live call site, so nothing to capture | n/a; unit #1's rule |
+| differential harness vs clean Fortran | 163 checked, 0 failed | no-op stub → 163/163 failed; green restored |
+| mutation score | 48/48 behavioural killed, 1.000, 4 declared equivalent, 8 nocompile excluded (13.3%) | refuses to score unless the baseline is green |
+| post-integration harness (wrapper only) | 163 checked, 0 failed | ErrVar reverse copy removed → 163/163 failed; green restored |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED TEST FAILED — 0 of 5,252,000 moved** |
 
-Two further findings from this unit:
+**THE DEFECT THIS UNIT FOUND IS BIGGER THAN THE UNIT.** `vit test-validate`'s
+decomposed bridge copied every field of a derived-type argument IN and almost
+none OUT. A rank-1 ALLOCATABLE field and a SCALAR field of an INOUT argument
+were both **input-only**, silently — so `ExtDLL%avrSWAP`, which is the whole of
+what `ExtController` produces, and `ErrVar%ErrStat`, which is where ROSCO puts
+every error status, were handed to the reference and then discarded. **Every
+unit in this campaign taking a derived type was affected**, which is most of
+them. Fixed in VIT (`8c34ceb`) as three members — pointer, extent BY REFERENCE
+because the callee chooses it, and a capacity — with an over-long result
+REFUSED and reported rather than truncated. The wrong artifact is kept at
+`evidence/ExtController/vit_defects/extcontroller_bridge.alloc_input_only.f90`.
 
-1. **VIT emitted a five-argument wrapper over a three-argument bridge, silently.**
-   With no view strategy configured, `vit interface` produced
-   `CALL extcontroller_c(avrSWAP, C_LOC(CntrPar_view), C_LOC(ExtDLL_view))` —
-   `LocalVar` and `ErrVar` accepted and not forwarded, no diagnostic anywhere.
-   `LocalVar%iStatus` is the guard on the whole initialisation branch, so that
-   bridge could never have loaded the library it exists to call, and it compiles
-   and links. Same shape as unit #1's dropped ALLOCATABLE attribute, one level
-   up. Fixed in VIT (`f8ab74f`), additively, red-tested both directions.
-2. **`Examples/DISCON.IN` is gitignored, so a crashed run can reconfigure the
-   gate where no clean-tree check can see it.** The probe's first draft restored
-   it in a `finally`, and a `finally` does not run through SIGSEGV; it left
-   `Ext_Mode = 1` in the gate's own input with `git status` clean. The probe now
-   restores from a parent process.
+Four further findings, each measured:
 
-Units #1–#4 remain closed. **Escalation 3 is raised** (`blocked_substrate`), and
-escalation 2 still stands.
+1. **A CHARACTER FIELD did not cross, and 37 of 69 units take one.** `vit
+   test-validate` refused a deferred-length `CHARACTER(:)` field outright and
+   the loop's `expand_derived` dropped every CHARACTER field with a comment
+   saying so. Both closed (VIT `8c34ceb`, loop `7d7c913`). A CHARACTER **array**
+   field is still refused, with its reason.
+2. **`ExtDLL%avrSWAP(49)` is the constant 2, not the size of the message
+   buffer its own comment claims.** `avcMSG` is an ARRAY of `CHARACTER(1)`, and
+   `LEN` of a CHARACTER array is the ELEMENT length. Measured before any C++
+   was written (`evidence/ExtController/len_probe.txt`) and transcribed, not
+   corrected: the original is the oracle. An upstream ROSCO defect.
+3. **`avcMSG = TRANSFER(C_NULL_CHAR, avcMSG)` writes ONE byte and leaves the
+   rest indeterminate.** gfortran copies min(size) elements from a nonconforming
+   right-hand side (`evidence/ExtController/transfer_probe.f90` prints
+   `0 90 90 ...`). The translation zero-initialises instead, with the proof
+   written in the file — and the oracle fixture deliberately does NOT read those
+   bytes, because a stub that folded in indeterminate memory would make the two
+   sides disagree for a reason about neither implementation.
+4. **`vit integrate --auto-allocate` cannot be used on this codebase.** Its
+   copy-call scan matches ANY `CALL x(..., arg%field, ...)`, so it hoisted both
+   `LoadDynamicLib` AND the external DLL call into the wrapper; it declines a
+   size expression that is a local PARAMETER; and its error handling emits
+   `SetErrStat` and `CHARACTER(ErrMsgLen)`, OpenFAST names that exist nowhere
+   in ROSCO. Artifact kept; the one ALLOCATE this unit needs is in the committed
+   wrapper with the reason beside it. **Open, and it is the campaign's problem
+   now, not this unit's.**
+
+**Escalation 3 is CLOSED.** Escalation 2 still stands in part — `loop/done.py`
+still has no branch for `integrated_unexercised` — but it no longer blocks
+anything: a dead unit whose signature crosses closes as `integrated`, and this
+is the second one.
 
 ---
+
 
 **Unit #4 `Conv2UC` is `integrated` and CLOSED.** Every layer green with its own
 red test — except the gate, whose red test FAILED and is committed as the
@@ -95,21 +116,20 @@ fields — those are hypotheses, not facts. Run
 
 ## Counts
 
-5 attempted / 4 integrated / 0 integrated_unexercised / 0 out_of_scope /
-0 deferred / **1 blocked**.
+5 attempted / **5 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+0 deferred / 0 blocked.
 
 69 units in `plan.json`; 64 remain.
 
-**3 of the 5 attempted units are invisible to the gate**, for three different
+**3 of the 5 integrated units are invisible to the gate**, for three different
 reasons: `AddToList` is never called, `Conv2UC` is called constantly and
-cancelled, and `ExtController` is never called *and* cannot be run at all. Each
-carries a green gate artifact committed beside the red test that says it
-constrains nothing.
+cancelled, and `ExtController` is never called *and* has no observable effect on
+any channel the gate compares even when it is. Each carries a green gate
+artifact committed beside the red test that says it constrains nothing.
 
-**`ExtController` is the only unit so far with no `harness/` and no `mutation/`
-artifact.** That absence is the finding, not an omission: P11 and P12 are
-mandatory for every unit here, and neither can be produced without a bridge and
-a runnable reference. `done_check.py` reports both FAIL and that verdict is kept.
+**Every unit now has a `harness/` and a `mutation/` artifact.** `ExtController`
+was the exception for two dispatches and the absence was recorded as the
+finding; it is now unfinished work that got finished.
 
 ## Evidenced
 
@@ -252,50 +272,75 @@ generated comparison has no tolerance branch at all. Unit #3's caveat is a fact
 about REAL fields, not about the verdict line; read the generated comparison for
 each new element type.
 
-### ExtController — every layer, and why none of them ran
+### ExtController — every layer, and the one red test that failed
 
 | layer | result | red-tested |
 |---|---|---|
-| kernel replay | **NOT ATTEMPTED** — no live call site, so nothing to capture | n/a; unit #1's lesson is that this is deadness, not a tool defect |
-| differential harness vs clean Fortran | **IMPOSSIBLE** — VIT emits no bridge, and the oracle segfaults | n/a |
-| mutation score | **IMPOSSIBLE** — no translation to mutate | n/a |
-| post-integration harness | **IMPOSSIBLE** — nothing integrated | n/a |
-| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED TEST FAILED, twice — 0 of 5,252,000 moved** |
+| kernel replay | **NOT ATTEMPTED** — 0 of 28 lines in all 27 scenarios, so no state to capture | n/a; unit #1's rule is that this is deadness, not a tool defect |
+| differential harness vs clean Fortran | 163 checked, 0 failed | no-op stub → 163/163 failed, naming ExtDLL.avrSWAP, ExtDLL.n_avrSWAP, ErrVar.ErrStat, ErrVar.ErrMsg; green restored |
+| mutation score | 48/48 behavioural killed, 1.000, 4 declared equivalent, 8 nocompile EXCLUDED | refuses to score unless the baseline is green |
+| post-integration harness (wrapper only) | 163 checked, 0 failed | ErrVar reverse copy removed → 163/163 failed; green restored |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED TEST FAILED — 0 of 5,252,000 moved** |
 
-Both gate red tests carry `replacements: 1`, `perturbed: true`,
-`revert_verified: true`, `residual_dirt: []`. The second perturbs toward
-**absence** — first statement replaced by `RETURN`, making the unit a no-op —
-which is the form that shows the gate is blind to the *unit*, not merely to the
-perturbation chosen.
+The gate red test carries `replacements: 1`, `perturbed: true`,
+`revert_verified: true`, `residual_dirt: []`, and perturbs toward **absence** —
+the unit made a no-op — which is the form that shows the gate is blind to the
+*unit* rather than to the perturbation chosen. `gcov` says the same thing
+independently: **0 of 28 executable lines, in all 27 scenarios.**
 
-`gcov` says the same thing independently: **0 of 28 executable lines, in all 27
-scenarios.** The denominator had to be regenerated to get it — see the coverage
-gap in Open below.
+**The four survivors are DECLARED, not smoothed over, and each was applied by
+hand and re-run before it was declared** (`mutation/ExtController.equivalences.json`).
+Two are the same fact: `LEN_TRIM(ErrVar%ErrMsg)` is 0 in every admissible case
+because `LoadDynamicLib` blank-fills the message through a `CHARACTER(*),
+INTENT(OUT)` dummy, so the concatenation's right operand is constant and the
+memmove moves zero bytes. One is a capacity boundary four orders of magnitude
+away. One is a buffer length nothing reads back.
+
+**FOUR OTHER SURVIVORS WERE REMOVED RATHER THAN DECLARED, and one was fixed in
+the ORACLE.** `accINFILE`'s bound and record 50 are the same expression, as are
+`avcOUTNAME`'s bound and record 51; transcribing each twice left a site
+computing a quantity nothing reads. Naming each once took the score from 0.758
+to 0.904 — the third time in this campaign that removing a restatement raised a
+mutation score. The fifth, `aviFAIL = 0`, was a write-only local: the stub now
+reports the incoming value back in record 44 before overwriting it, and the
+mutant dies. **Where the blindness is in the instrument rather than in the unit,
+the instrument is what to change.**
+
+**The oracle fixture had to grow twice for this**, and both times because a
+value was reaching the library and never being read: the bytes of `accINFILE`
+and `avcOUTNAME` (record 46) and the incoming `aviFAIL` (record 44). A stub that
+answers without reading its inputs is unit #2's all-zero kernel window in
+another costume.
 
 ## Open
 
-- **ESCALATION 3, RAISED: `ExtController` is `blocked`, and the blockage is in
-  the substrate and in the fixtures — not in the function.** Three independent
-  things would have to change, and only the third decides:
-  1. **VIT must map `CHARACTER(:), ALLOCATABLE` in a view struct**, with
-     *reallocating* assignment from C++ (`ErrVar%ErrMsg = RoutineName//':'//
-     TRIM(ErrVar%ErrMsg)` changes its length). `TYPE(ErrorVariables)` has four
-     fields and exactly one blocks it. **37 of the 69 units take a
-     `TYPE(ErrorVariables)` dummy**, so this must be built regardless of what
-     happens to `ExtController` — the same argument that carried unit #1's
-     descriptor bridge and unit #4's string kind. It does **not** unblock this
-     unit on its own.
-  2. **`TYPE(ExtDLL_Type)` must cross**, for the `LoadDynamicLib` permanent
-     bridge `plan.json` already declares: five fields including `TYPE(C_PTR)`,
-     `TYPE(C_FUNPTR) :: ProcAddr(3)` and `CHARACTER(1024) :: ProcName(3)` — a
-     CHARACTER array, which the differential harness also still refuses. X1
-     forbids inlining `LoadDynamicLib` to avoid it. Blocks this unit only.
-  3. **An oracle must be constructed** — a minimal Bladed-style library
-     exporting a `DISCON` entry point plus a scenario setting `Ext_Mode = 1`.
-     That is an *addition*, which P5 permits, but it adds a gate scenario and so
-     changes the gate's compared count and baseline set. SPEC §8.4 makes that
-     the Driver's call, not a unit's. **Until it exists there would be a
-     translation and nothing to check it against.**
+- **ESCALATION 3 IS CLOSED.** All three items are done and the unit is
+  `integrated`. (1) `CHARACTER(:), ALLOCATABLE` crosses a view struct (VIT
+  `a2e2c30`) and now a decomposed differential bridge too (`8c34ceb`) — the
+  37-of-69 blocker, off the critical path in both generators. (2)
+  `TYPE(ExtDLL_Type)` crosses as a PRODUCTION BRIDGE that owns the SAVE
+  variable (`rosco/controller/src/vit_extcontroller_dll.f90`) rather than as a
+  view: it calls `LoadDynamicLib` (X1) and hands back `ProcAddr(1)` as a C
+  function pointer, which is what `C_F_PROCPOINTER` compiles to. (3) The oracle
+  exists and changes no verification default.
+- **NEW, AND IT IS THE CAMPAIGN'S PROBLEM: `vit integrate --auto-allocate` does
+  not work on this codebase.** Three defects, measured, artifact at
+  `evidence/ExtController/vit_defects/integrate_auto_allocate.wrapper.f90`:
+  its copy-call scan matches ANY `CALL x(..., arg%field, ...)` and hoisted BOTH
+  `LoadDynamicLib` and the external DLL call into the wrapper — which would
+  call each a second time; it declines a size expression that is a local
+  PARAMETER; and its error handling emits `SetErrStat` and
+  `CHARACTER(ErrMsgLen)`, OpenFAST names that exist nowhere in ROSCO. This unit
+  needs exactly one ALLOCATE, and it is in the committed wrapper with the reason
+  beside it. **The next unit that allocates a field of an argument will hit the
+  same wall, and hand-editing a generated wrapper does not scale.** Fix belongs
+  in VIT (X2).
+- **`vit integrate` wrote `verification: simulation` into `vit.yaml`**, having
+  run no simulation and read no result. It is FALSE for this unit — the gate is
+  blind to it and the committed red test says so. Removed by hand with the
+  reason in the file. Same shape as the `// After verification: <name> kernel
+  PASSED` comment `37f8bdf` deleted from every generated file: nothing in the
+  toolchain checks a claim a generator makes about verification.
 - **`vit analyze-types --fix character` must not be used to close this gap.**
   It is what VIT's own error message suggests, and it rewrites ROSCO's type
   definition to a fixed length — changing `LEN(ErrVar%ErrMsg)`, which sizes
@@ -479,58 +524,49 @@ gap in Open below.
 - **Reset-to-clean**, which did not exist: `scripts/reset_to_clean.sh` and
   `scripts/restore_integrated.sh`, red-tested.
 
-## Unit #5, second dispatch — 2026-08-11
+## Unit #5, three dispatches — 2026-08-11
 
-**The first dispatch's blocking claim was wrong, and saying so is the result.**
-It closed `blocked` on "there is no runnable oracle for ExtController anywhere in
-this campaign" and on the judgement that closing the `CHARACTER(:)` gap "would
-not close this unit". The first is refuted; the second rested on the first.
+**Each dispatch's blocking claim was refuted by the next one, and saying so is
+part of the result.**
 
-- **The oracle runs.** `fixtures/bladed_stub/discon_stub.c` — 60 lines of C
-  exporting `DISCON` — makes the ORIGINAL Fortran execute to completion with
-  `Ext_Mode = 1`: `exit_status: 0`, `returned_normally: true`
-  (`probe_ext_mode_1_with_oracle.json`). The SIGSEGV was a property of the INPUT:
-  `DLL_FileName` is `"unused"` in all 14 inputs and no such library existed in
-  the tree. Both probe artifacts are kept and are meant to be read together.
-  It changes **no verification default** — the differential harness does not run
-  scenarios, so the gate's 27 scenarios, its baselines and its pinned
-  `compared = 5252000` are untouched.
-- **`CHARACTER(:), ALLOCATABLE` crosses a view struct** — VIT `a2e2c30`. The
-  37-of-69 blocker, closed. `vit translate ExtController` now succeeds and
-  `vit interface` emits all five arguments over a five-argument bridge.
-- **A generated differential bridge is no longer past Fortran's 132-column
-  limit** — VIT `83d25f9`, found on the way and recorded before it was fixed.
-  Decomposing `ControlParameters` (214 fields) and `LocalVariables` (168)
-  produced an 11,747-character `SUBROUTINE` statement and 1,153 diagnostics that
-  never named the cause. **Every unit here taking either type — most of ROSCO's
-  controllers — was outside `vit test-validate` entirely, and nothing said so.**
+* **First dispatch** closed `blocked` on *"there is no runnable oracle for
+  ExtController anywhere in this campaign"*. The SIGSEGV it measured was real
+  and is still true of the campaign's own inputs; the generalisation was not.
+  `DLL_FileName` is the literal string `"unused"` in all 14 `Examples/*.IN`, so
+  the crash was a property of the INPUT. **Sixty lines of C** made the original
+  run to completion.
+* **Second dispatch** built that fixture, closed the `CHARACTER(:)` view-struct
+  gap and the 132-column bridge-generator gap, and closed `blocked` again on
+  three remaining items — one of which it correctly called *a judgement, not a
+  feature*.
+* **Third dispatch** did the three items and found a fourth that was larger
+  than all of them. The judgement (C) is made and written where it can be
+  reviewed: `harness/ranges.toml`, four pins, each with the measurement that
+  forces it. Every one exists because the REFERENCE crashes on the rest of the
+  domain — `ExtController` never checks `ErrVar%ErrStat` after
+  `LoadDynamicLib` and calls through a null `ProcAddr` — which is itself a
+  finding about upstream ROSCO, and the file says so.
 
-**Still `blocked`, for a third and smaller reason.** P11 and P12 still FAIL; the
-artifacts still do not exist and manufacturing them is still the trade this
-campaign refuses. What remains is named in `plan.json`'s escalation: (A) a
-deferred-length CHARACTER *field* of a decomposed type in `vit test-validate`,
-(B) CHARACTER fields supplied by the loop's `expand_derived`, and (C) a
-judgement — every generated case must supply a loadable `DLL_FileName` and the
-SAVE `DLL_Ext` constrains case order, which is pinning an input in a generator
-built to refuse narrowed domains. (C) is raised, not made.
-
-**A gitignore hazard, again.** `.gitignore:65`'s `*build*` silently swallowed
-`fixtures/bladed_stub/build.sh`, so the first commit left a committed evidence
-file naming a library nothing committed could build (K3), with a clean
-`git status` throughout. Same shape as the gitignored `Examples/DISCON.IN`.
-`git check-ignore -v` each file of a new fixture.
+**What the three dispatches cost, and what it bought.** Two `blocked`
+dispositions on a unit that closes `integrated`. What made the difference each
+time was not new information about the function: it was asking *which
+instrument needs this* instead of *is this unit verifiable*. The first dispatch
+escalated "an oracle must be constructed" as SPEC §8.4's call because it assumed
+an oracle meant a gate scenario; it did not. The third found that the
+differential bridge had been discarding outputs for the whole campaign, which
+no amount of reasoning about `ExtController` would have surfaced — only
+running the harness did.
 
 ## Done-condition, unit #5
 
-`python3.12 scripts/done_check.py ExtController --baseline 05a64cd` returns
-**INCOMPLETE, 11 of 13**, on a clean tree. P11 and P12 FAIL because
-`harness/ExtController.postintegration.json` and `mutation/ExtController.json`
-do not exist and cannot be produced without a bridge and a runnable oracle.
-**That verdict is correct and is kept** — a `blocked` unit cannot reach COMPLETE,
-and `loop/driver.py` escalates `blocked_substrate` on the disposition separately
-(SPEC §8.4). Transcript and reasoning: `evidence/ExtController/done_check.txt`.
+Run at the end of the third dispatch, after both commits, per RUNBOOK. The
+verdict and its transcript are in `evidence/ExtController/done_check.txt`; the
+second dispatch's INCOMPLETE 11-of-13 is kept beside it as
+`done_check.second_dispatch.txt`, because a verdict that was correct when it was
+taken is worth more than a deletion.
 
-Worth carrying: the first attempt piped the run into that file, and **creating
-the file made the tree dirty**, so the artifact recorded `P2 FAIL dirty_tree` and
-10/13 — describing itself rather than the unit. A done-condition capture has to
-be taken before the file that captures it exists, or written as a transcript.
+Worth carrying, from the second dispatch: the first attempt piped the run into
+that file, and **creating the file made the tree dirty**, so the artifact
+recorded `P2 FAIL dirty_tree` — describing itself rather than the unit. A
+done-condition capture has to be taken before the file that captures it exists,
+or written as a transcript.
