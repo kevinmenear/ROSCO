@@ -695,3 +695,40 @@ amendment. Three shapes worth considering, in preference order:
 
 Until one of them exists, the field should be read as "nobody could write this",
 not as "these rules were never exercised".
+
+## 2026-08-10 — ceiling $3000, per-unit cap $25, both settled before unit 2
+
+Both parameters are recorded in `run.json` and the Driver REFUSES to resume a
+run whose limits changed, because carrying spend across a changed ceiling
+misreports both the spend and the headroom. So they had to be decided together
+and decided now: settling the total today and the per-unit cap at unit 10 costs
+the same restart twice. One unit is closed, so the restart is free; at unit 40
+it would not be.
+
+**Total $3000, not $1000 and not $2000.** The total only functions as a guard
+BELOW `68 x per_unit_cap`. At the old $35 cap that product is $2,380, so $2000
+sits inside the nominal range and could bind from ordinary spending — the exact
+failure we are paying a restart to avoid. Above it, the total stops being a
+truncation risk and becomes what a total is for: catching retry storms. A retry
+is a second dispatch, so the worst case is 68 x $50 = $3,400 at the new cap, and
+$3000 halts that.
+
+**Per-unit cap $25, down from $35.** A generous cap SILENCES the per-unit
+signal: `unit_overran` almost never fires, so costs get watched by hand instead
+of reported. ColemanTransform closed at $11.885, so $25 is ~2x the observation —
+generous enough not to false-fire, tight enough to catch an outlier. Exceeding
+it escalates AFTER the fact rather than killing work, so a tight cap buys signal
+at no cost. 68 x $25 = $1,700 nominal, comfortably inside $3000.
+
+**$11.885 is a FLOOR, not an estimate**, and the projections above are built on
+it knowingly. That dispatch found its translation and integration already
+committed; the cold run that did that work timed out and its spend was never
+recorded, so nothing in the ledger reflects a full cold unit. The accounting
+restarts here: `run.json.pre-ceiling-change` preserves the old record and
+`units.jsonl` keeps ColemanTransform's row, so the campaign's true spend is
+$11.885 plus whatever this run reports.
+
+Unit 2's cold cost will be reported when it lands. Not as a gate — it is
+ColemanTransform's sibling and among the simplest units in the plan, so it is
+another floor rather than a representative sample — but because the gap between
+warm and cold is the number that makes every later projection honest.
