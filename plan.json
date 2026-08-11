@@ -35,10 +35,10 @@
    "bridge_feasible": {
     "value": "yes",
     "basis": "all 5 argument declaration(s) read and checked against the matrix: axtout, axyout, aziangle, nharmonic, rootmoop",
-    "observed": "CONFIRMED. All 5 arguments crossed with no decomposition: rootMOOP(3) -> double* by reference, aziAngle/nHarmonic by value, axTOut/axYOut (INTENT(OUT) scalars) by reference. The integrated wrapper is a 9-line CALL colemantransform_c(...) and the gate is bit-identical across 5,252,000 values. The prediction was about the SIGNATURE and it held. What did not hold is the assumption that a crossable signature is crossed correctly by every generator: VIT's test-validate bridge declared rootMOOP a by-value scalar, and the loop's harness mapping made it a one-element buffer read three deep. interface_gen -- the generator the kernel and the integration actually use -- got it right. Both others fixed; see DECISIONS.md."
+    "observed": "CONFIRMED, and re-confirmed on a second pass with a different VIT. All 5 arguments cross with no decomposition: rootMOOP(3) -> double* by reference, aziAngle/nHarmonic by value, axTOut/axYOut (INTENT(OUT) scalars) by reference. The integrated wrapper is a 9-line CALL colemantransform_c(...) and the gate is bit-identical across 5,252,000 values. The prediction was about the SIGNATURE and it held.\n\nWhat did NOT hold, first pass, is the assumption that a crossable signature is crossed correctly by every generator: VIT's test-validate bridge declared rootMOOP a by-value scalar, and the loop's harness mapping made it a one-element buffer read three deep. interface_gen -- the generator the kernel and the integration actually use -- got it right. Both others fixed; see DECISIONS.md.\n\nSecond pass, after VIT was reconciled with canonical (d85b33b -> d07a716, 89 commits): `vit integrate` regenerated the interface block, the wrapper and the .cpp BYTE-IDENTICAL to what the old VIT produced -- `git diff` over Functions.f90, CMakeLists.txt and colemantransform.cpp is empty. The crossing does not depend on which of the two VITs generated it."
    },
-   "observability": "The kernel exercises nHarmonic=1 ONLY: KGen's callsite region is the single CALL at Controllers.f90:510, so the NP_2 call at :511 is replayed from state rather than recomputed. nHarmonic=2 is covered by the differential harness, which varies it, and by the gate, which runs both calls.",
-   "disposition": null,
+   "observability": "The kernel exercises nHarmonic=1 ONLY: KGen's callsite region is the single CALL at Controllers.f90:510, so the NP_2 call at :511 is replayed from state rather than recomputed. nHarmonic=2 is covered by the differential harness, which varies it, and by the gate, which runs both calls.\n\nThe kernel window is load-bearing and was wrong once: at invocation 1-20 every input is zero and a stub passes 21/21. At the 63 cases actually used (scenario 27, three ranges) the same stub produces 124 differing field entries. evidence/ColemanTransform/.\n\nWhat NOTHING here sees: the post-integration harness cannot compare arithmetic -- after integration the Fortran body IS the translation -- so it measures the wrapper's marshalling only. The 35 mutants include 2 killed by failing to compile rather than by a case mismatch, so the behavioural kill count is 33 of 33 scoreable.",
+   "disposition": "integrated",
    "source_file": "rosco/controller/src/Functions.f90",
    "translation": "translations/Functions/colemantransform.cpp",
    "harness_required": true,
@@ -55,6 +55,9 @@
     "evidence/ColemanTransform/kernel-window-27.verify_fields.csv",
     "evidence/ColemanTransform/kernel-window-27.stub-fails.verify_fields.csv",
     "evidence/ColemanTransform/kernel-window-1-20.stub-passes.verify_fields.csv",
+    "evidence/ColemanTransform/kernel-window-27.vit-d07a716.verify_fields.csv",
+    "evidence/ColemanTransform/kernel-window-27.vit-d07a716.stub-fails.verify_fields.csv",
+    "evidence/ColemanTransform/kernel-window-27.vit-d07a716.statefiles.lst",
     "coverage/line_coverage.json"
    ]
   },

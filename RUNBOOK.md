@@ -508,6 +508,26 @@ is `/workspace/ROSCO-r2`.
   on inputs that were all zero`. Keep the passing-stub artifact when you find
   one -- `evidence/<Unit>/`.
 
+- **The done-condition:** RUNNABLE HERE, 2026-08-10. Run it before believing a
+  unit is finished, and again before the state commit.
+  ```
+  python3.12 scripts/done_check.py <Unit>          # exit 0 only on COMPLETE
+  ```
+  It imports the loop's own `DoneVerifier` with exactly the config
+  `scripts/run_campaign.py` builds, and prints all 13 predicates with reasons.
+  It reads; it never writes.
+
+  **This is what unit #2 was re-dispatched for.** The first pass wrote
+  `disposition: integrated` while the condition stood at 10 of 13 — not because
+  the work was bad but because nothing in the session could ask. A disposition
+  set without running this is a prediction of the verdict, and predictions of
+  green have been wrong here before.
+
+  The two predicates a session most often gets wrong on its own:
+  `P2 dirty_tree` (any untracked file counts, including one you just wrote) and
+  `P12`, which reads `mutation/<Unit>.json` and needs the keys `mutants` and
+  `equivalent_declared`.
+
 - **Differential harness (P11) and mutation score (P12):** WORK, 2026-08-10.
   ```
   bash scripts/harness.sh <Unit> <Module> <stem> rosco/controller/src/<File>.f90 \
@@ -519,14 +539,49 @@ is `/workspace/ROSCO-r2`.
         --root /workspace/ROSCO-r2 --cpp translations/<Module>/<stem>.cpp \
         --module <Module> --out mutation/<Unit>.json"
   ```
-  `scripts/harness.sh` rather than `vit_harness.py` directly: the pinned loop
-  repo writes to `translations/<Module>/<stem>_test/` and this workspace's VIT
-  writes the Makefile and bridge to `translations/<Module>/`, so the raw command
-  dies on `No rule to make target 'test'`. The script reconciles them and
-  explains why VIT was not upgraded instead.
+  Red-test the post-integration run with the same script, which records the
+  perturbation into the artifact and inverts the verdict:
+  ```
+  bash scripts/harness.sh <Unit> <Module> <stem> rosco/controller/src/<File>.f90 \
+       --post-integration --out harness/<Unit>.postintegration.redtest.json \
+       --red-test "wrapper: the two INTENT(OUT) arguments swapped"
+  ```
 
-  ColemanTransform: 199 differential cases, 0 failed; 35/35 mutants killed,
-  score 1.000; 217/217 post-integration.
+  `scripts/harness.sh` rather than `vit_harness.py` directly. It now does four
+  things, three of them learned by a run failing on 2026-08-10:
+
+  1. Handles BOTH test-directory layouts and prints which one it used. VIT
+     `d07a716` writes to `translations/<Module>/<stem>_test/`, the same place
+     `vit_harness.py` looks; the pre-merge VIT wrote one level up. The skew the
+     script was written to reconcile has closed.
+  2. **Drops this unit's own `<stem>.cpp.o` from the generated LIBS.** After a
+     unit has been integrated once, `reset_to_clean.sh` leaves CMakeLists
+     integrated, so the build tree holds a compiled copy of the same function
+     the harness compiles itself: `multiple definition of ...`, link dead. This
+     hits EVERY unit from #2 onward and could not have happened on the first
+     one. The edit goes into the Makefile, not onto a `make` command line,
+     because `vit_mutate.py` runs `make` itself.
+  3. Asks `make` what LIBS is instead of grepping `^LIBS =`. The new VIT's
+     Makefile ends with a second `LIBS +=` assignment, and the old grep handed
+     the literal words `LIBS` and `+=` to the linker.
+  4. Stamps the artifact even when the run went RED. Under `set -e` a non-zero
+     `./test` aborted one line short of the stamp, so a red artifact carried
+     `against: "translation"` and no revisions.
+
+  ColemanTransform, second pass (VIT `d07a716`, loop `ebce989`): 199
+  differential cases 0 failed; 35/35 mutants killed, score 1.000; 199/199
+  post-integration; the wrapper-swap red test 199 of 199 failed.
+
+  **Check the artifact's `loop_rev`/`vit_rev` before believing its numbers.** A
+  run that fails to write leaves the PREVIOUS run's artifact in place, and it
+  reads exactly like a fresh pass. Three runs today failed and two were read as
+  successes off a stale file; the stamp naming a revision that no longer exists
+  is what exposed it.
+
+  Case counts differ between passes and that is expected: post-integration
+  reuses whatever case file the last generating run left, and the literals it
+  draws from differ before and after integration (217 first pass, 199 second).
+  The artifact records what it actually checked.
 
   **`--post-integration` measures the WRAPPER, not the arithmetic.** After
   integration the Fortran body IS the translation, so both sides run the same
@@ -534,6 +589,12 @@ is `/workspace/ROSCO-r2`.
   which is worth checking, since two generated bridges in this campaign dropped
   an array's rank. Red-test it by swapping the wrapper's two INTENT(OUT)
   arguments; it must fail every case.
+
+  **A `killed (no compile)` mutant is not a behavioural kill.** ColemanTransform
+  scores 35/35, but 2 of those are `compare_op` mutants on a translation
+  containing no comparison, killed by the build failing. Counting them is
+  honest; reading 35/35 as 35 wrong implementations caught is not. Report the
+  behavioural count beside the score.
 
   **The mutation score is MANDATORY for every unit, not just `respecify`.**
   `done.py:344` returns `_mutation(...)` unconditionally when `--mutation-glob`
@@ -631,8 +692,17 @@ would have been faster than reproducing it.
 2. Run the gate. Non-zero compared count, zero mismatched.
 3. If this unit needed a purpose-built harness, **re-run it against the
    integrated build**, not only against the translation, and commit the result.
-4. Set `disposition` and `evidence` in `plan.json`. Evidence must name artifacts
+4. Score the mutants and confirm the artifact carries `mutants` and
+   `equivalent_declared`. `mutation/<Unit>.json` is what P12 reads; the
+   `total`/`equivalent` spelling is invisible to it.
+5. Set `disposition` and `evidence` in `plan.json`. Evidence must name artifacts
    that exist.
-5. Commit the translation and its gate artifacts.
-6. Commit `STATUS.md`, `DECISIONS.md` and `plan.json` brought current. That
+6. Commit the translation and its gate artifacts.
+7. Commit `STATUS.md`, `DECISIONS.md` and `plan.json` brought current. That
    second commit is the hand-off.
+8. **Run `python3.12 scripts/done_check.py <Unit>` and read the verdict.** Not
+   before the commits -- P2 requires a clean tree and P6/P7 require the commits
+   to exist, so the condition can only be true at the end. If it is not
+   COMPLETE, the unit is not finished no matter what the work looked like; fix
+   what it names and amend. Unit #2 recorded `integrated` at 10 of 13 because
+   this step did not exist.
