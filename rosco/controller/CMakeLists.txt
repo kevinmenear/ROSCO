@@ -70,10 +70,20 @@ set(SOURCES
     src/ROSCO_IO.f90
     src/ZeroMQInterface.f90
     src/ExtControl.f90
+    # Production bridge for ExtController's SAVE TYPE(ExtDLL_Type) and its
+    # LoadDynamicLib call (plan.json declares that bridge). It is a NEW file,
+    # not an integration wrapper, so it belongs in the build whether or not
+    # ExtController is integrated -- the differential harness links it too.
+    src/vit_extcontroller_dll.f90
     src/colemantransform.cpp
     src/addtolist.cpp
     src/colemantransforminverse.cpp
     src/conv2uc.cpp
+    src/vit_errorvariables_view.f90
+    src/vit_extcontroltype_view.f90
+    src/vit_localvariables_view.f90
+    src/vit_controlparameters_view.f90
+    src/extcontroller.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

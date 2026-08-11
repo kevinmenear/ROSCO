@@ -238,6 +238,20 @@ fi
 # to the harness's copy keeps exactly one definition and routes the ref side
 # through the real wrapper.
 
+# THE GENERATED LIBS LIST GOES STALE THE MOMENT INTEGRATION ADDS A SOURCE.
+# `vit test-validate` derives LIBS from the CMake target as it stood when the
+# PRE-integration run ran, and `vit integrate` then adds the .cpp and -- for a
+# unit taking a derived type -- one view-populator .f90 per type. Unit #5 added
+# four, and the post-integration link died on eight undefined
+# `__vit_*_view_MOD_vit_populate_*` symbols, in the wrapper the run exists to
+# measure. Every earlier unit took scalars, arrays and strings, so integration
+# added only the .cpp, which the drop below removes anyway.
+#
+# Repaired by CONTENTS rather than by a list: every object CMake has built for
+# this target is added if it is not already there. A rule about what is in the
+# build directory maintains itself as sources are added; a list does not. Same
+# shape as `reset_to_clean.sh`'s "remove any object that DEFINES kgen symbols".
+
 # The post-integration run reuses whatever case file the last generating run
 # left in place; it does not regenerate. That is deliberate -- after integration
 # `literals_from(Functions.f90)` reads a source whose arithmetic has been
@@ -286,10 +300,38 @@ docker exec "$CONTAINER" bash -lc "cd $WORKDIR/$UNIT_DIR && \
   printf 'include Makefile\nvit-print-libs:\n\t@echo \$(LIBS)\n' > .vit_libs.mk && \
   LIBS=\$(make -s -f .vit_libs.mk vit-print-libs | sed 's#[^ ]*${STEM}\.cpp\.o##') && \
   rm -f .vit_libs.mk && \
+  for o in $WORKDIR/rosco/controller/build/CMakeFiles/discon.dir/src/*.o; do \
+      case \"\$o\" in *${STEM}.cpp.o) continue;; esac; \
+      case \" \$LIBS \" in *\" \$o \"*) ;; *) LIBS=\"\$o \$LIBS\";; esac; \
+  done && \
   case \"\$LIBS\" in *LIBS*|*'+='*) echo \"harness.sh: LIBS did not evaluate: \$LIBS\" >&2; exit 3;; esac && \
   rm -f test ${STEM}_test.o && \
   make test LIBS=\"\$LIBS $WORKDIR/$UNIT_DIR/vit_integration_shim.o\" >/dev/null && \
   ./test ${STEM}_cases.bin > $WORKDIR/$OUT" && rc=0 || rc=$?
+
+# KEEP ONLY THE JSON. `> $OUT` assumed the generated program was the only thing
+# writing to stdout, and a REFERENCE THAT PRINTS breaks that: after integration
+# the Fortran wrapper's callee is the translation, whose five `printf`s -- the
+# `PRINT *` statements ExtController has always had -- land in the artifact
+# ahead of the object. A clean 163-of-163 run then failed the parse check below
+# and reported "the build or the run died". `vit_harness.py::_payload` does the
+# same thing for the pre-integration path; this is that rule on a FILE.
+if [ -s "$ROOT/$OUT" ]; then
+    python3 - "$ROOT/$OUT" <<'PY'
+import json, sys
+p = sys.argv[1]
+lines = open(p, errors="replace").read().splitlines()
+for i in range(len(lines) - 1, -1, -1):
+    if lines[i].lstrip().startswith("{"):
+        text = "\n".join(lines[i:])
+        try:
+            json.loads(text)
+        except json.JSONDecodeError:
+            continue
+        open(p, "w").write(text + "\n")
+        break
+PY
+fi
 
 # STAMP EVEN WHEN THE RUN WENT RED, and the distinction matters more than it
 # looks. `./test` exits non-zero when cases mismatch, so under `set -e` this

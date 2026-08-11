@@ -26,10 +26,10 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "perturbation": {
-  "file": "rosco/controller/src/ExtControl.f90",
-  "from": "aviFAIL     = 0",
+  "file": "rosco/controller/src/extcontroller.cpp",
+  "from": "    int aviFAIL = 0;",
   "replacements": 1,
-  "to": "RETURN"
+  "to": "    int aviFAIL = 0; return;   // RED TEST: the unit becomes a no-op"
  },
  "perturbed": true,
  "residual_dirt": [],

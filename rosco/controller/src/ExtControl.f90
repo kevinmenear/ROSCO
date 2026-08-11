@@ -47,85 +47,77 @@ MODULE ExtControl
 
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of ExtController
+    INTERFACE
+        SUBROUTINE extcontroller_c(avrSWAP, CntrPar, LocalVar, ExtDLL, ErrVar) BIND(C, NAME='extcontroller_c')
+            USE ISO_C_BINDING
+            REAL(C_FLOAT), INTENT(INOUT) :: avrSWAP(*)
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: ExtDLL
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE extcontroller_c
+    END INTERFACE
+
 CONTAINS
 
     SUBROUTINE ExtController(avrSWAP, CntrPar, LocalVar, ExtDLL, ErrVar)
-        ! Inputs
-        TYPE(ControlParameters), INTENT(INOUT)      :: CntrPar
-        TYPE(LocalVariables), INTENT(INOUT)         :: LocalVar
-        TYPE(ErrorVariables), INTENT(INOUT)         :: ErrVar
-        TYPE(ExtControlType), INTENT(INOUT)         :: ExtDLL
+        USE ISO_C_BINDING
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
+        USE vit_extcontroltype_view, ONLY: extcontroltype_view_t, vit_populate_extcontroltype, vit_copy_scalars_to_extcontroltype
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
+        IMPLICIT NONE
+        REAL(4), INTENT(INOUT) :: avrSWAP(*)
+        TYPE(CONTROLPARAMETERS), INTENT(INOUT), TARGET :: CntrPar
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(EXTCONTROLTYPE), INTENT(INOUT), TARGET :: ExtDLL
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(extcontroltype_view_t), TARGET :: ExtDLL_view
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        INTEGER(IntKi), PARAMETER :: max_avr_entries = 2000
 
-
-        REAL(ReKi), INTENT(INOUT)                   :: avrSWAP(*)   ! The swap array, used to pass data to, and receive data from the DLL controller.
-
-        ! Temporary variables
-        CHARACTER(100), PARAMETER                   :: ExtRootName   = 'external_control'
-
-        ! Local Variables
-        CHARACTER(*), PARAMETER                     :: RoutineName = 'ExtController'
-
-        TYPE(ExtDLL_Type), SAVE                     :: DLL_Ext
-        INTEGER(IntKi), PARAMETER                   :: max_avr_entries = 2000
-
-
-        PROCEDURE(BladedDLL_Legacy_Procedure), POINTER :: DLL_Legacy_Subroutine          ! The address of the (legacy DISCON) procedure in the Bladed DLL
-        CHARACTER(KIND=C_CHAR)                      :: accINFILE(LEN_TRIM(CntrPar%DLL_InFile)+1)  ! INFILE
-        CHARACTER(KIND=C_CHAR)                      :: avcOUTNAME(LEN_TRIM(ExtRootName)+1)   ! OUTNAME (Simulation RootName)
-        CHARACTER(KIND=C_CHAR)                      :: avcMSG(LEN(ErrVar%ErrMsg)+1)                ! MESSA
-
-
-        INTEGER(C_INT)                              :: aviFAIL                        ! A flag used to indicate the success of this DLL call set as follows: 0 if the DLL call was successful, >0 if the DLL call was successful but cMessage should be issued as a warning messsage, <0 if the DLL call was unsuccessful or for any other reason the simulation is to be stopped at this point with cMessage as the error message.
-
-
-        ! Initialize strings for external controller
-        aviFAIL     = 0
-        avcMSG     = TRANSFER( C_NULL_CHAR,                            avcMSG     )
-        avcOUTNAME = TRANSFER( TRIM(ExtRootName)//C_NULL_CHAR,   avcOUTNAME )
-        accINFILE  = TRANSFER( TRIM(CntrPar%DLL_InFile)//C_NULL_CHAR, accINFILE  )
-                
-        IF (LocalVar%iStatus == 0) THEN  
-
-            !! Set up DLL, will come from ROSCO input   
-            DLL_Ext%FileName = TRIM(CntrPar%DLL_FileName)
-            DLL_Ext%ProcName = TRIM(CntrPar%DLL_ProcName)
-
-            PRINT *, "ROSCO is calling an external dynamic library for control input:"
-            PRINT *, "DLL_FileName:", TRIM(CntrPar%DLL_FileName)
-            PRINT *, "DLL_InFile:", TRIM(CntrPar%DLL_InFile)
-            PRINT *, "DLL_ProcName:", TRIM(CntrPar%DLL_ProcName)
-
-            ! Load dynamic library, but first make sure that it's free
-            ! CALL FreeDynamicLib(DLL_Ext, ErrVar%ErrStat, ErrVar%ErrMsg)
-            CALL LoadDynamicLib(DLL_Ext, ErrVar%ErrStat, ErrVar%ErrMsg)
-            ALLOCATE(ExtDLL%avrSWAP(max_avr_entries)) !(1:max_avr_entries)
-
-            PRINT *, "Library loaded successfully"
-
+        ! THE ONE STATEMENT THE C++ CANNOT PERFORM, transcribed verbatim from
+        ! the original and placed BEFORE the populators so that C_LOC has real
+        ! memory to point at.
+        !
+        ! `ALLOCATE(ExtDLL%avrSWAP(max_avr_entries))` allocates FORTRAN storage.
+        ! A view struct carries a raw pointer and a count; C++ can write through
+        ! that pointer and can report a different count, but it cannot create
+        ! the allocation. On the first call `ExtDLL%avrSWAP` is unallocated, so
+        ! the populator hands the translation a NULL pointer -- and the
+        ! translation's first act is to fill 2000 elements.
+        !
+        ! `vit integrate --auto-allocate` exists for exactly this and CANNOT BE
+        ! USED HERE. Three defects, measured, with the artifact kept at
+        ! evidence/ExtController/vit_defects/integrate_auto_allocate.wrapper.f90:
+        !   1. Its copy-call scan matches ANY `CALL x(..., arg%field, ...)`, so
+        !      it hoisted `LoadDynamicLib` AND the external DLL call itself into
+        !      this wrapper -- which would call both a second time.
+        !   2. The size expression is the local PARAMETER `max_avr_entries`, so
+        !      it classifies the allocation `local` and declines it anyway.
+        !   3. Its error handling emits `SetErrStat(...)` and `CHARACTER(ErrMsgLen)`,
+        !      which are OpenFAST names that do not exist anywhere in ROSCO.
+        ! Recorded for the Driver in DECISIONS.md rather than worked around in
+        ! the tool's output silently.
+        IF (LocalVar%iStatus == 0) THEN
+            ALLOCATE(ExtDLL%avrSWAP(max_avr_entries))
         END IF
 
-        ! Set avrSWAP of external DLL, inputs to external DLL
-        ExtDLL%avrSWAP = avrSWAP(1:max_avr_entries)
-
-        ! Set some length parameters
-        ExtDLL%avrSWAP(49) = LEN(avcMSG)  + 1                     !> * Record 49: Maximum number of characters in the "MESSAGE" argument (-) [size of ExtErrMsg argument plus 1 (we add one for the C NULL CHARACTER)]
-        ExtDLL%avrSWAP(50) = LEN_TRIM(CntrPar%DLL_InFile) +1  !> * Record 50: Number of characters in the "INFILE"  argument (-) [trimmed length of ExtDLL_InFile parameter plus 1 (we add one for the C NULL CHARACTER)]
-        ExtDLL%avrSWAP(51) = LEN_TRIM(ExtRootName)   +1  !> * Record 51: Number of characters in the "OUTNAME" argument (-) [trimmed length of ExtRootName parameter plus 1 (we add one for the C NULL CHARACTER)]
-
-        ! Call the DLL (first associate the address from the procedure in the DLL with the subroutine):
-        CALL C_F_PROCPOINTER( DLL_Ext%ProcAddr(1), DLL_Legacy_Subroutine) 
-        CALL DLL_Legacy_Subroutine (ExtDLL%avrSWAP, aviFAIL, accINFILE, avcOUTNAME, avcMSG ) 
-
-        ! Clean up DLL 
-        ! CALL FreeDynamicLib(DLL_Ext, ErrVar%ErrStat, ErrVar%ErrMsg)
-
-        ! Add RoutineName to error message
-        IF (ErrVar%aviFAIL < 0) THEN
-            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
-            print * , TRIM(ErrVar%ErrMsg)
-        ENDIF
-
-
+        ! Populate view structs from Fortran types
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_extcontroltype(ExtDLL, ExtDLL_view)
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        CALL extcontroller_c(avrSWAP, C_LOC(CntrPar_view), C_LOC(LocalVar_view), C_LOC(ExtDLL_view), C_LOC(ErrVar_view))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_controlparameters(CntrPar_view, CntrPar)
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+        CALL vit_copy_scalars_to_extcontroltype(ExtDLL_view, ExtDLL)
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
     END SUBROUTINE ExtController
 
 

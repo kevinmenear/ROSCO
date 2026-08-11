@@ -1,0 +1,9 @@
+SIZE(avcMSG)      = 1
+LEN(avcMSG)       = 1
+record 49         = 2
+SIZE(avcOUTNAME)  = 17
+record 51         = 17
+SIZE(accINFILE)   = 19
+record 50         = 19
+LEN(ErrMsg)       = 0
+LEN(RoutineName)  = 13

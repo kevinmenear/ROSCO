@@ -64,6 +64,26 @@ _build
 *local*
 *build*
 
+# TWO NEGATIONS, EACH FOR A FILE ONE OF THOSE TWO PATTERNS SWALLOWED, AND EACH
+# FOUND ONLY BECAUSE SOMETHING ELSE BROKE. `git status` is clean the whole time
+# a needed file is missing, which is what makes this shape expensive:
+#
+#   *build*  swallowed fixtures/bladed_stub/build.sh, so the first commit of the
+#            oracle fixture added the .c and left the script that builds it
+#            untracked -- a committed evidence file naming a library nothing
+#            committed could produce (K3). Unit #5, second dispatch.
+#   *local*  swallowed rosco/controller/src/vit_localvariables_view.f90, a
+#            GENERATED view populator that CMakeLists compiles and the
+#            ExtController wrapper USEs. A fresh clone would not build. Unit #5,
+#            third dispatch.
+#
+# Negations rather than `git add -f`, so the NEXT generated file with `local` or
+# `build` in its name is not swallowed too. After committing any new fixture or
+# generated source, run `git check-ignore -v` on each file rather than trusting
+# a clean status.
+!rosco/controller/src/vit_*_view.f90
+!fixtures/**/build.sh
+
 # Binaries
 *.dylib
 *.so

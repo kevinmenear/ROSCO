@@ -83,6 +83,20 @@ def main() -> int:
     if cfi_args(sig):
         out.append("#include <ISO_Fortran_binding.h>")
         out.append("")
+    # A VIEW-STRUCT parameter is a typedef only `vit_types.h` defines, and the
+    # shim names it in both the declaration and the definition. Units #1-#4 took
+    # scalars, arrays and strings, so every parameter type was a builtin and
+    # this was never needed; unit #5 is the first whose signature carries a
+    # derived type, and without the include the shim does not compile --
+    # "'controlparameters_view_t' has not been declared", four times.
+    #
+    # The header is the one `vit test-validate` wrote into this unit's test
+    # directory, which is where the shim is compiled, so it is the same
+    # declarations the translation itself was built against.
+    if any(t.rstrip("* ").strip().endswith("_t") and "CFI_cdesc" not in t
+           for t, _ in params):
+        out.append('#include "vit_types.h"')
+        out.append("")
     out += [f"{ret} {sig.cpp_impl_name}({decl_types});",
             f'extern "C" {ret} {sig.c_func_name}({defn}) {{',
             f"    {'return ' if ret != 'void' else ''}{sig.cpp_impl_name}({call});",

@@ -96,6 +96,17 @@ translations:
   Conv2UC:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/conv2uc.cpp
+  # `vit integrate` also wrote `verification: simulation` here. REMOVED, and the
+  # removal is the point: it is a claim about what verified this unit, made by a
+  # command that ran no simulation and read no result -- the same shape as the
+  # `// After verification: <name> kernel PASSED` comment `37f8bdf` deleted from
+  # every generated file. It is FALSE for this unit specifically: the gate runs
+  # 27 scenarios and is blind to ExtController, and gate/ExtController.redtest.json
+  # is the failed red test that says so. What verified it is the differential
+  # harness and the mutation score; that lives in plan.json's `evidence`.
+  ExtController:
+    status: integrated
+    cpp_file: translations/ExtControl/extcontroller.cpp
 types:
   ControlParameters:
     strategy: view

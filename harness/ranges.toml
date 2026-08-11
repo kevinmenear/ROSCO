@@ -1,0 +1,82 @@
+# Stated admissible ranges for this campaign's differential harness.
+#
+# THIS FILE IS THE ONLY JUDGEMENT IN THE PIPELINE, and it is committed for that
+# reason. Everything else the harness does is derived: the signature from VIT,
+# the read set from the Fortran body, the values from the rules. What goes here
+# is a person saying "this input is not admissible", and every entry NARROWS the
+# generated domain -- which is the blindness the generator exists to remove. So
+# each one carries the measurement or the source line that forces it, and an
+# entry with only an assertion behind it does not belong here.
+#
+# Read with `harness/statevary.py::constrain`. `text = "..."` pins a CHARACTER
+# parameter's contents; `lo`/`hi` pin a number; `values` pins an enumeration.
+
+# ---------------------------------------------------------------------------
+# ExtController
+#
+# Four pins, and all four exist because the REFERENCE CRASHES on the rest of the
+# domain rather than because the translation would. That is a fact about
+# upstream ROSCO and it is the reason this unit needed an oracle fixture at all:
+# `ExtController` never checks `ErrVar%ErrStat` after `LoadDynamicLib`, so any
+# input that fails to load a library reaches
+#
+#     CALL C_F_PROCPOINTER( DLL_Ext%ProcAddr(1), DLL_Legacy_Subroutine )
+#     CALL DLL_Legacy_Subroutine ( ... )
+#
+# with `ProcAddr(1)` still `C_NULL_FUNPTR` -- SIGSEGV, measured on this
+# campaign's own inputs at `evidence/ExtController/probe_ext_mode_1.json`.
+#
+# So the admissible domain of this procedure really is this narrow. What the
+# harness would otherwise generate is not "more coverage", it is 218 signals.
+
+[ExtController]
+
+# The library the reference loads. `fixtures/bladed_stub/discon_stub.c`, built
+# by its own build.sh. An absolute path because `LoadDynamicLib` passes it
+# straight to `dlopen`, whose search rules are not the process's cwd.
+#
+# THE COST, STATED: `DLL_FileName` is held at one value, so nothing this harness
+# does can distinguish a translation that reads it from one that ignores it.
+# What still constrains it is `CntrPar_DLL_InFile`, which is NOT pinned -- it is
+# built by the same TRIM/TRANSFER shape, its trimmed length is record 50, and
+# the oracle folds its bytes into record 46.
+CntrPar_DLL_FileName = { text = "/workspace/ROSCO-r2/fixtures/bladed_stub/libdiscon_stub.so" }
+
+# The symbol `LoadDynamicLibProc` looks up with `dlsym`. Anything else returns a
+# null `ProcAddr` and reaches the same CALL. "DISCON" is what all 14
+# `Examples/*.IN` say and what the fixture exports (build.sh asserts it).
+CntrPar_DLL_ProcName = { text = "DISCON" }
+
+# THE INITIALISATION BRANCH, ON EVERY CASE -- and the two pins below are one
+# decision, not two.
+#
+# `LocalVar%iStatus == 0` guards the branch that loads the library. `DLL_Ext` is
+# a SAVE local, so a case with `iStatus /= 0` before any case has loaded it
+# reaches the null `ProcAddr` again. Ordering the case set instead -- one
+# `iStatus == 0` case first, the rest not -- is not something this generator can
+# express: it chooses each parameter independently of the others and of the case
+# index, and teaching it otherwise would be a per-case schedule that no other
+# unit needs.
+#
+# Holding `iStatus == 0` takes the branch every time, which is the SAFE side:
+# the four statements the other path skips are then always executed, and the
+# only thing unexercised is their absence.
+#
+# WHAT IS NOT COVERED, stated rather than left to be found: the `iStatus /= 0`
+# path. It skips `DLL_Ext%FileName`/`%ProcName`, `LoadDynamicLib`, the ALLOCATE
+# and four PRINTs; everything after `END IF` -- the copy, the three length
+# records, the call and the error-message branch -- runs identically on both
+# paths and IS covered. A defect confined to "does the guard fire at all" is
+# invisible here, and `mutation/ExtController.json` is where that shows up.
+LocalVar_iStatus = { values = [0] }
+
+# `ExtDLL%avrSWAP` UNALLOCATED on entry, which is what -1 means to the
+# decomposed bridge (see `vit/test_validate.py`: n < 0 unallocated, n == 0
+# allocated-empty, n > 0 allocated). Forced, not chosen: the branch above runs
+# `ALLOCATE(ExtDLL%avrSWAP(max_avr_entries))`, and Fortran ABORTS on an ALLOCATE
+# of an already-allocated variable. Supplying it allocated would end 218 of 218
+# cases in "Attempting to allocate already allocated variable".
+#
+# It is also the input the shipped program has: the guard is `iStatus == 0`,
+# the first call, where the field has never been allocated.
+ExtDLL_avrSWAP_n = { lo = -1, hi = -1 }
