@@ -39,6 +39,7 @@ void getroot_c(char* GivenFil, int len_GivenFil, char* RootName, int len_RootNam
 void getwords_c(char* Line, int len_Line, char* Words, int len_Words, int NumWords);
 double hpfilter_c(double InputSignal, double DT, double CornerFreq, filterparameters_t* FP, int iStatus, int32_t reset, int* inst, int has_InitialValue, double InitialValue);
 void int2lstr_c(int Num, char* Int2LStr_result);
+double lpfilter_c(double InputSignal, double DT, double CornerFreq, filterparameters_t* FP, int iStatus, int32_t reset, int* inst, int has_InitialValue, double InitialValue);
 
 #ifdef __cplusplus
 }

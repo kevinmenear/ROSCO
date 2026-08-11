@@ -122,6 +122,9 @@ translations:
   Int2LStr:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/int2lstr.cpp
+  LPFilter:
+    status: integrated
+    cpp_file: translations/Filters/lpfilter.cpp
 types:
   ControlParameters:
     strategy: view

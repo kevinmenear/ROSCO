@@ -414,6 +414,59 @@ is `/workspace/ROSCO-r2`.
   many times per timestep in every scenario) and confirm green returns after the
   revert, or the red is not attributable to the perturbation.
 
+- **`vit_mutate.py` mutates the TRANSLATION FILE IN PLACE, so an interrupted
+  mutation run leaves a MUTANT in the tree and nothing says so.** Unit #11.
+
+  A run was stopped mid-flight (`pkill`) to correct a comment. It restores the
+  file when it finishes; killed, it does not. The file left behind read
+  `*inst = *inst + 2;` — four characters, in a file whose own header still says
+  `Status: unverified`, sitting in the exact place the next `vit integrate` would
+  have taken it from. `git status` showed it as the same untracked path it had
+  been all along.
+
+  What caught it was re-running the differential harness for an unrelated reason
+  and getting `checked 996  failed 996` where the identical command had passed
+  ten minutes earlier. So the rule is cheap and it is not optional:
+
+  ```
+  cp translations/<Module>/<stem>.cpp /tmp/<stem>.intended.cpp    # BEFORE mutating
+  # ... run mutation ...
+  diff /tmp/<stem>.intended.cpp translations/<Module>/<stem>.cpp  # AFTER, always
+  ```
+
+  **Do not read, copy, or edit the translation while a mutation run is live**,
+  and treat any harness/kernel artifact taken during one as measuring a mutant.
+  The window is minutes wide and the failure is silent in both directions: a
+  mutant that happens to pass the layer you are running looks like a green.
+
+- **The differential harness read the INDEX ROLE off the translation only, so
+  the one run that proves it can fail was the one run it could not complete.**
+  Unit #11, fixed by addition rather than worked around.
+
+  `map_signature(..., cpp_source=...)` promotes a scalar to `role="index"` by
+  finding `FP->lpf1_a1[i]` in the C++. The no-op red test contains no such
+  subscript, so `inst` stayed an ordinary scalar integer, the generator drew it
+  from unit #10's decade ladder up to `INT_MAX`, and the REFERENCE — which
+  subscripts `FP%lpf1_a1(inst)` on a `DIMENSION(1024)` array — segfaulted.
+  `harness.sh` reported **"harness produced no JSON"**, which is the same
+  sentence a reference that PRINTS produces, and wrote no artifact at all.
+
+  The input domain of a differential harness must not be a function of the code
+  under test. The REFERENCE states the role too, and it is the oracle (P7):
+  `infer_indexes_fortran` reads `arg%field(expr)` out of the unit's own Fortran
+  body and fills only what the translation left ordinary, so no already-measured
+  unit's corpus moves. Loop repo; `unit_body()` allows the TYPE-prefixed
+  declaration (`REAL(DbKi) FUNCTION LPFilter(...)`) that `char_literals_from`'s
+  line-anchored copy of the same search silently misses.
+
+  The check, and the number that says the fix worked: the red test's case count
+  must MATCH the green run's. 1157 before (an `inst` nobody constrained), **996
+  after — the green run's own figure**, with `996 of 996 failed`.
+
+  ```
+  grep -E 'note: inst|case\(s\)$|HARNESS' <the red run's log>
+  ```
+
 - **A gate red test that comes back GREEN needs a CONTROL taken on the SAME
   BUILD, or it is not a finding.** Learned at unit #9, and it is owed to the five
   units before it that recorded `0 of 5,252,000` without one.

@@ -1,0 +1,120 @@
+{
+ "unit": "LPFilter",
+ "against": "translation",
+ "checked": 996,
+ "failed": 996,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    0 varied extent(s); 46 FIXED by the type at [1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024] -- not varied, 1 index(es) at 1/interior/n, array elements distinct",
+  "  applied  R2_flag_values             4 value(s) across 2 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R6_reference_literals      160 value(s) from 7 literal(s) in the reference, each under every declared value of 2 flag(s); 41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared",
+  "  applied  R3_no_dead_signal          10 real value(s), none zero in every case; 40 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 47 out-parameter(s): FP_lpf1_a1, FP_lpf1_a0, FP_lpf1_b1, FP_lpf1_b0, FP_lpf1_InputSignalLast, FP_lpf1_OutputSignalLast, FP_lpf2_a2, FP_lpf2_a1, FP_lpf2_a0, FP_lpf2_b2, FP_lpf2_b1, FP_lpf2_b0, FP_lpf2_InputSignalLast2, FP_lpf2_OutputSignalLast2, FP_lpf2_InputSignalLast1, FP_lpf2_OutputSignalLast1, FP_lpfV_a2, FP_lpfV_a1, FP_lpfV_a0, FP_lpfV_b2, FP_lpfV_b1, FP_lpfV_b0, FP_lpfV_InputSignalLast2, FP_lpfV_OutputSignalLast2, FP_lpfV_InputSignalLast1, FP_lpfV_OutputSignalLast1, FP_hpf_InputSignalLast, FP_hpf_OutputSignalLast, FP_nfs_OutputSignalLast1, FP_nfs_OutputSignalLast2, FP_nfs_InputSignalLast1, FP_nfs_InputSignalLast2, FP_nfs_b2, FP_nfs_b0, FP_nfs_a2, FP_nfs_a1, FP_nfs_a0, FP_nf_OutputSignalLast1, FP_nf_OutputSignalLast2, FP_nf_InputSignalLast1, FP_nf_InputSignalLast2, FP_nf_b2, FP_nf_b1, FP_nf_b0, FP_nf_a1, FP_nf_a0, inst"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "vit_result",
+   "ref": "0000000000000080",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 0,
+   "output": "FP.lpf1_a1",
+   "ref": "00000000e0f8f5c0f4ba980d3e1f8fc03b8e343951108fc0c7e1b91a09018fc0...",
+   "got": "9f58413bad2e8fc0f4ba980d3e1f8fc03b8e343951108fc0c7e1b91a09018fc0..."
+  },
+  {
+   "case": 0,
+   "output": "FP.lpf1_a0",
+   "ref": "0000000020f9f5c0f23acf75c51e8fc09b1f8202c9108fc0feca4b0ff9ff8ec0...",
+   "got": "d0150ad0432f8fc0f23acf75c51e8fc09b1f8202c9108fc0feca4b0ff9ff8ec0..."
+  },
+  {
+   "case": 0,
+   "output": "FP.lpf1_b1",
+   "ref": "0000000000f9f5c0b5cfd817141f8fc0b4a4eac5a70f8fc0113efb1195008fc0...",
+   "got": "a17f8c26d22e8fc0b5cfd817141f8fc0b4a4eac5a70f8fc0113efb1195008fc0..."
+  },
+  {
+   "case": 0,
+   "output": "FP.lpf1_b0",
+   "ref": "0000000000f9f5c0310d5a3f971f8fc0cd35a3aa44108fc0b4e59f62ea008fc0...",
+   "got": "4a4c6b9031308fc0310d5a3f971f8fc0cd35a3aa44108fc0b4e59f62ea008fc0..."
+  },
+  {
+   "case": 0,
+   "output": "FP.lpf1_InputSignalLast",
+   "ref": "000000000000000075f7e708ff1f8fc017d978116e108fc093d7f4f780018fc0...",
+   "got": "071c43185f308fc075f7e708ff1f8fc017d978116e108fc093d7f4f780018fc0..."
+  },
+  {
+   "case": 0,
+   "output": "FP.lpf1_OutputSignalLast",
+   "ref": "000000000000008020e996ea2d1f8fc0c58c541a16118fc0b0ecbc4afcff8ec0...",
+   "got": "8e2fc68b2e308fc020e996ea2d1f8fc0c58c541a16118fc0b0ecbc4afcff8ec0..."
+  },
+  {
+   "case": 0,
+   "output": "inst",
+   "ref": "02000000",
+   "got": "01000000"
+  },
+  {
+   "case": 1,
+   "output": "vit_result",
+   "ref": "0000000000000080",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 1,
+   "output": "FP.lpf1_a1",
+   "ref": "00000000e0f8f5c08cb80265861f8fc04898fd3c04108fc09f80b8978f008fc0...",
+   "got": "66c109d6d62e8fc08cb80265861f8fc04898fd3c04108fc09f80b8978f008fc0..."
+  },
+  {
+   "case": 1,
+   "output": "FP.lpf1_a0",
+   "ref": "0000000020f9f5c0113a65fbb8208fc0ff10185f2a118fc0d6052c5e74008fc0...",
+   "got": "480bff5540308fc0113a65fbb8208fc0ff10185f2a118fc0d6052c5e74008fc0..."
+  },
+  {
+   "case": 1,
+   "output": "FP.lpf1_b1",
+   "ref": "0000000000f9f5c02cfa9cf8ad208fc0d5644b401b108fc0da50320b91008fc0...",
+   "got": "3a80316e322f8fc02cfa9cf8ad208fc0d5644b401b108fc0da50320b91008fc0..."
+  },
+  {
+   "case": 1,
+   "output": "FP.lpf1_b0",
+   "ref": "0000000000f9f5c01a9897cf8d1f8fc0da142a2bb4108fc021f0706d2c008fc0...",
+   "got": "4c606852ab2e8fc01a9897cf8d1f8fc0da142a2bb4108fc021f0706d2c008fc0..."
+  },
+  {
+   "case": 1,
+   "output": "FP.lpf1_InputSignalLast",
+   "ref": "0000000000000000b6160847aa208fc0343f2a09780f8fc0e6f1197318018fc0...",
+   "got": "96906c0aea2e8fc0b6160847aa208fc0343f2a09780f8fc0e6f1197318018fc0..."
+  },
+  {
+   "case": 1,
+   "output": "FP.lpf1_OutputSignalLast",
+   "ref": "000000000000008042133017b0208fc0973a2188ad0f8fc029b412f38fff8ec0...",
+   "got": "e19029adff2e8fc042133017b0208fc0973a2188ad0f8fc029b412f38fff8ec0..."
+  },
+  {
+   "case": 1,
+   "output": "inst",
+   "ref": "02000000",
+   "got": "01000000"
+  }
+ ],
+ "loop_rev": "d79f39e-nogit",
+ "vit_rev": "300da9c-nogit",
+ "red_test": {
+  "perturbation": "the unit as a no-op: reads nothing, writes nothing, does not advance inst",
+  "result": "996 of 996 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

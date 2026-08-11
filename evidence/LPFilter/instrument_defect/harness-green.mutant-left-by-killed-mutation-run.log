@@ -1,0 +1,37 @@
+harness.sh: VIT wrote the per-unit layout directly (translations/Filters/lpfilter_test); no move needed
+LPFilter: 100 C parameter(s), 46 extent(s), 47 output(s)
+  note: FP: expanded 92 param(s) from 46 field(s)
+  note: inst: indexes FP_lpf1_OutputSignalLast (read from the translation)
+
+LPFilter: 20 parameter(s) varied, 80 held at an inert value
+  CornerFreq: read WHOLE (passed to a callee) -- every field varied
+  DT: read WHOLE (passed to a callee) -- every field varied
+  FP: reads 6 field(s): lpf1_InputSignalLast, lpf1_OutputSignalLast, lpf1_a0, lpf1_a1, lpf1_b0, lpf1_b1
+  InitialValue: read WHOLE (passed to a callee) -- every field varied
+  InputSignal: read WHOLE (passed to a callee) -- every field varied
+  iStatus: read WHOLE (passed to a callee) -- every field varied
+  inst: read WHOLE (passed to a callee) -- every field varied
+  reset: read WHOLE (passed to a callee) -- every field varied
+  HELD, so untested by construction: 80 parameter(s). A defect confined to one of these is invisible to this harness.
+  UNCONSTRAINED: 10 varied parameter(s) on the +/-1e3 default: CornerFreq, DT, FP_lpf1_InputSignalLast, FP_lpf1_OutputSignalLast, FP_lpf1_a0, FP_lpf1_a1, FP_lpf1_b0, FP_lpf1_b1, InitialValue, InputSignal
+
+996 case(s)
+  applied  R5_non_degenerate_shape    0 varied extent(s); 46 FIXED by the type at [1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024] -- not varied, 1 index(es) at 1/interior/n, array elements distinct
+  applied  R2_flag_values             4 value(s) across 2 flag(s), each with 8 case(s) of the remaining inputs varied under it
+  applied  R6_reference_literals      160 value(s) from 7 literal(s) in the reference, each under every declared value of 2 flag(s); 41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared
+  applied  R3_no_dead_signal          10 real value(s), none zero in every case; 40 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output
+  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it
+  applied  R4_compare_all_outputs     return value + 47 out-parameter(s): FP_lpf1_a1, FP_lpf1_a0, FP_lpf1_b1, FP_lpf1_b0, FP_lpf1_InputSignalLast, FP_lpf1_OutputSignalLast, FP_lpf2_a2, FP_lpf2_a1, FP_lpf2_a0, FP_lpf2_b2, FP_lpf2_b1, FP_lpf2_b0, FP_lpf2_InputSignalLast2, FP_lpf2_OutputSignalLast2, FP_lpf2_InputSignalLast1, FP_lpf2_OutputSignalLast1, FP_lpfV_a2, FP_lpfV_a1, FP_lpfV_a0, FP_lpfV_b2, FP_lpfV_b1, FP_lpfV_b0, FP_lpfV_InputSignalLast2, FP_lpfV_OutputSignalLast2, FP_lpfV_InputSignalLast1, FP_lpfV_OutputSignalLast1, FP_hpf_InputSignalLast, FP_hpf_OutputSignalLast, FP_nfs_OutputSignalLast1, FP_nfs_OutputSignalLast2, FP_nfs_InputSignalLast1, FP_nfs_InputSignalLast2, FP_nfs_b2, FP_nfs_b0, FP_nfs_a2, FP_nfs_a1, FP_nfs_a0, FP_nf_OutputSignalLast1, FP_nf_OutputSignalLast2, FP_nf_InputSignalLast1, FP_nf_InputSignalLast2, FP_nf_b2, FP_nf_b1, FP_nf_b0, FP_nf_a1, FP_nf_a0, inst
+
+wrote /workspace/ROSCO-r2/translations/Filters/lpfilter_test/lpfilter_test.cpp  (996 cases, 375376464 bytes of case data)
+
+HARNESS FAIL: checked 996  failed 996  inadmissible 0
+  case 0 inst: ref 02000000 != got 03000000
+  case 1 inst: ref 02000000 != got 03000000
+  case 2 inst: ref 01020000 != got 02020000
+  case 3 inst: ref 01040000 != got 02040000
+  case 4 inst: ref 02000000 != got 03000000
+  case 5 inst: ref cd030000 != got ce030000
+  case 6 inst: ref 6a020000 != got 6b020000
+  case 7 inst: ref 22020000 != got 23020000
+artifact: harness/LPFilter.json
