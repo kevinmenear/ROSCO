@@ -4,7 +4,79 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-11: unit #7 `GetRoot` is `integrated` and CLOSED**, first
+**As of 2026-08-11: unit #8 `GetWords` is `integrated` and CLOSED**, first
+dispatch.
+
+**EVERY LAYER IS ALIVE, INCLUDING THE GATE — THE FIRST TIME IN THIS CAMPAIGN.**
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases, scenario 1 | 62/62 `IDENTICAL` on `words` | no-op → 62/62 `OUT_TOL`; a CONSTANT stub → 1/62; the real translation with `Words(1)` corrupted → 62/62 `OUT_TOL`, so every ELEMENT of the array is compared |
+| differential harness vs clean Fortran | 1370 checked, 0 failed | no-op stub → 1343/1370 failed, naming `Words`; green restored |
+| mutation score | 57/57 behavioural killed, 1.000, **1 declared equivalent**, 0 nocompile | refuses to score unless the baseline is green |
+| post-integration harness (wrapper only) | 1370 checked, 0 failed | copy-back stops one element short → 1323/1370 failed; green restored |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED TEST PASSED — 1,857,893 of 5,252,000 moved** |
+
+**THE GATE SEES THIS UNIT, AND THE REASON IS THE MIRROR OF UNIT #4's.** `FindLine`
+upper-cases `Words(WordInd)` and compares it against the parameter name the
+caller asked for — one operand is this unit's output, the other is not. `Conv2UC`
+was invisible through 1.3M calls precisely because BOTH its operands went through
+it. So the campaign now has a positive case beside its five negative ones, and
+one test decides all six: follow the output to its consumers and ask whether
+anything the gate reads depends on it ASYMMETRICALLY.
+
+Stated beside the green: **both extents are constant in all 27 scenarios**
+(`len_Line` = 2048, `len_Words` = 200, `NumWords` ∈ {2, AryLen+1}). The kernel
+inherits all three from the simulation. A defect that only appears at another
+width is outside both bit-exact layers; only the differential harness varies
+them. Unit #3's constant-argument shape, at EXTENT granularity.
+
+**THE UNIT HAD NO DIFFERENTIAL HARNESS AT ALL, AND ITS ONLY OUTPUT WAS THE
+REFUSED ARGUMENT.** `CHARACTER(*), INTENT(OUT) :: Words(NumWords)` is two extents
+where `char[]` had one — the gap recorded as known since unit #4, which fell due
+here. **`vit interface` handles this shape while the harness generator refused
+it**: two generators over the same declaration, disagreeing, and only running
+both showed it. Built rather than routed around (loop `6d13949`); rank ≥ 2 is
+still refused with its reason.
+
+**THREE MORE CORPUS BLIND SPOTS, ALL THREE NAMED BY A SURVIVING MUTANT.** The
+score went 0.889 → 0.905 → 0.921 → 0.983 → 1.000 and no step was found by reading
+the generator. Second unit running where that is true.
+
+1. `''` inside a `'...'` literal is ONE APOSTROPHE in Fortran; the miner read the
+   unit's own separator set as two literals and lost the character.
+2. The seventh separator is `CHAR(9)` — a tab cannot be written as a literal at
+   all — and `char_corpus` filtered to printable ASCII, so it was unreachable
+   twice over. **The miner's blind spot was exactly the class of character that
+   most needs mining.**
+3. No string shape put a word anywhere but position 1, so every predicate about
+   where a word BEGINS had one answer in every case.
+
+None of the three moves an earlier unit's corpus (22, 26, 26 — recomputed,
+unchanged).
+
+**A MUTATION SCORE CAN FLAP, AND THE RUN THAT READS 1.000 CAN BE THE ONE THAT
+MEASURED LEAST.** Three IDENTICAL runs scored 0.983, 1.000, 0.983. The mutant
+responsible differs from the original only past the end of a buffer — proved
+exhaustively, 4,908 disagreements and **zero in bounds**. Two fixes: the
+declaration is now a statement about the MUTANT rather than about one run, and a
+declared mutant that is killed anyway lands in `declared_but_killed` instead of
+being absorbed (loop `5b40e1c`).
+
+**THE REVISION STAMP WAS MIS-ATTRIBUTING ITS OWN OUTPUT, IN THREE PLACES.**
+`vit-dev` has no git, so both loop scripts fell through to hand-written,
+gitignored pin files. **Unit #7's committed harness and mutation artifacts stamp
+`99b57ab-pinned` while the tree was at `0e92a72` — the commit that unit's OWN
+corpus fix went in as** — and every artifact since unit #5 says `8c34ceb-pinned`
+against a VIT at `87a3847`. `.git/HEAD` is plain text and needs no binary, so
+both scripts read it first now and report `-nogit`. And **this campaign's own
+`scripts/_harness_stamp.py` was a third site that OVERWROTE the correct read with
+the stale pin.** Unit #7's artifacts are not restamped: a verdict that was
+correct when it was taken is worth more than a deletion.
+
+---
+
+**Unit #7 `GetRoot` is `integrated` and CLOSED**, first
 dispatch.
 
 **THE KERNEL IS A MIRROR AND THE GATE IS BLIND, AND THE INSTRUMENT THAT DOES
@@ -280,12 +352,12 @@ fields — those are hypotheses, not facts. Run
 
 ## Counts
 
-7 attempted / **7 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+8 attempted / **8 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / 0 blocked.
 
-69 units in `plan.json`; 62 remain.
+69 units in `plan.json`; 61 remain.
 
-**5 of the 7 integrated units are invisible to the gate**, for five different
+**5 of the 8 integrated units are invisible to the gate**, for five different
 reasons: `AddToList` is never called, `Conv2UC` is called constantly and
 cancelled, `ExtController` is never called *and* has no observable effect on any
 channel the gate compares even when it is, `GetPath` is called in every scenario
@@ -507,8 +579,51 @@ things and only the fallback uses the platform parameter (P7).
 
 ## Open
 
+- **The differential harness's CHARACTER-ARRAY refusal is CLOSED, and the way it
+  was found is the standing warning.** `vit interface` shipped a working bridge
+  for `Words(NumWords)` while the harness generator refused the same declaration
+  — so `plan.json` said the signature crossed, the integration worked, and the
+  unit's ONLY OUTPUT was invisible to P11 and P12. Two generators over one
+  declaration, disagreeing, and only running both showed it. Built in the loop
+  repo (`6d13949`). `FileLines(:)` is still refused: assumed-shape, so its
+  element count is in a descriptor `build_c_params` does not emit. Rank ≥ 2 also
+  still refused. **`FindLine`, `ParseInAry_Opt`, `ParseDbAry_Opt` and the four
+  `ParseInput_*_Opt` units all take a `FileLines(:)`, so that is the next
+  instrument gap on the critical path** — the refusal that remains is narrower
+  than the one that was there, and it is the one that blocks the most units.
+- **A revision stamp read from a hand-written pin file was mis-attributing the
+  campaign's own evidence, in three places.** CLOSED in the two loop scripts
+  (`5b40e1c`, reading `.git/HEAD` before the pin) and in this campaign's
+  `scripts/_harness_stamp.py` (which OVERWROTE the correct read with the pin,
+  and now fills a missing key only). Kept open as a record of what the stale
+  stamps NAME, because the artifacts are not restamped: **unit #7's
+  `harness/GetRoot*.json` and `mutation/GetRoot.json` say `loop_rev:
+  99b57ab-pinned` and the tree was at `0e92a72`** — the commit carrying that
+  unit's own corpus fix — and **every artifact from unit #5 onward says
+  `vit_rev: 8c34ceb-pinned` against a VIT checkout at `87a3847`**. The numbers in
+  those artifacts stand; the instrument they name is one or more commits behind
+  the instrument that produced them.
+- **A mutation score can FLAP between runs of the identical command.** Unit #8:
+  0.983, 1.000, 0.983 over the same translation and the same 1370 cases, because
+  the deciding mutant differs from the original only past the end of a buffer.
+  The scoring defect is closed (a declaration is now about the MUTANT, not about
+  one run) but the general hazard is not: **a mutation score is not reproducible
+  wherever a mutant's only observable difference is undefined behaviour, and the
+  run that reads 1.000 is the one that measured least.** Any unit whose score was
+  taken once, with survivors of that shape, has a number nobody has repeated.
+- **Both of `GetWords`'s extents are constant in all 27 scenarios**, and this is
+  P9 at EXTENT granularity — a shape the verification ledger (E5.2) has no column
+  for. `len_Line` is `MaxLineLength` = 2048 and `len_Words` is `MaxParamLength` =
+  200 at every one of the eleven call sites; `NumWords` is 2 or `AryLen+1`. The
+  gate's red test PASSES for this unit and still constrains nothing about what
+  happens at another width. Only the differential harness varies them.
+
 - **`vit check -f <file>` MISATTRIBUTES, and at unit #7 it misattributed a
-  finding that LOOKED like it belonged to the unit.** Third sighting. The two
+  finding that LOOKED like it belonged to the unit.** FOURTH sighting, at unit
+  #8: two findings against a 190-line translation, `narrowing-local` on
+  `ExpUCVarName` (clean 1051) and `delimiter-set` on `':/'` (clean 1236, inside
+  `GetPath`), against a `GetWords` occupying clean 1150–1216. Third sighting
+  below. The two
   findings against `GetRoot` are `narrowing-local` on `ExpUCVarName` (clean 1051,
   inside `FindLine`) and `delimiter-set` on `':/'` (clean 1332, inside
   `PathIsRelative`) — neither in `GetRoot`'s range 1253–1306. The new part is that
@@ -529,7 +644,9 @@ things and only the fallback uses the platform parameter (P7).
   perturbation goes 0/726 without a rebuild and 596/726 with one. `harness.sh`
   could rebuild, or refuse to run when a source it links is newer than the object.
 - **`vit interface` EMITS A COPY-IN FOR AN `INTENT(OUT)` ARGUMENT.** New at unit
-  #6, seen again at unit #7 (26 of 726 no-op cases survive because of it). The
+  #6, seen again at unit #7 (26 of 726 no-op cases survive because of it) and at
+  unit #8 (27 of 1370, on a CHARACTER ARRAY, where the wrapper reads every one of
+  `len_Words * NumWords` undefined bytes before the call). The
   shipped `GetPath` wrapper reads `PathName` — undefined on entry, by
   definition of `INTENT(OUT)` — into the C_CHAR staging array before the call. It
   does not change this unit's answer, because the translation writes every one of
@@ -640,11 +757,12 @@ things and only the fallback uses the platform parameter (P7).
   general instrument found here is to perturb toward ABSENCE (`if (false && …)`)
   rather than toward a different answer; see DECISIONS.md for the candidate
   method amendment this suggests, which is flagged and not made.
-- **The differential harness refuses a CHARACTER ARRAY dummy.** `char[]` has one
-  extent; `CHARACTER(*), DIMENSION(:)` has two — element width and element
-  count. `FindLine`, `ParseInAry_Opt`, `ParseDbAry_Opt` and the four other
-  `ParseInput_*_Opt` units all take one, so this is the next instrument gap on
-  the critical path, and it is refused with a reason rather than approximated.
+- **The differential harness refuses a CHARACTER ARRAY dummy.** PARTLY CLOSED at
+  unit #8 and moved to the top of this list. An EXPLICIT-SHAPE one whose element
+  count is another dummy — `Words(NumWords)` — now crosses. An ASSUMED-SHAPE one
+  — `FileLines(:)`, which is what `FindLine`, `ParseInAry_Opt`, `ParseDbAry_Opt`
+  and the four `ParseInput_*_Opt` units take — still does not: its extent lives
+  in a descriptor `build_c_params` does not emit.
 - **The harness varies a string's length over {1, 3, 8}, not over the 200
   `MaxParamLength` gives it.** `_extent_plan` assigns a lone free extent the
   single value 3; the string stage adds 1 and 8 without touching that plan,

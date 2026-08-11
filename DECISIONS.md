@@ -2367,3 +2367,208 @@ fixes are permanent and each closed a blindness that would have silently applied
 to later units — but a campaign whose per-unit cost is dominated by instrument
 repair is a campaign whose bootstrap phase is not finished, and E1/E2/E3 all
 report closed.
+
+---
+
+## Unit #8 — GetWords, 2026-08-11: `integrated`, and the first unit the gate can see
+
+`GetWords(Line, Words, NumWords)` splits a line of text into words on a
+seven-character separator set. Its one hot call site is inside `FindLine`, which
+is how every `ParseInput_*` and `ParseAry` in `ROSCO_Helpers` reads a parameter
+out of a `DISCON*.IN` file — 1,333,130 calls across the 27 scenarios.
+
+**Disposition: `integrated`.** Every layer green, every layer red-tested, and
+this is the first unit where none of the five red tests failed.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases, scenario 1 | 62/62 `IDENTICAL` on `words` | no-op → 62/62 `OUT_TOL`; constant → 1/62; `Words(1)` corrupted → 62/62 `OUT_TOL` |
+| differential harness vs clean Fortran | 1370 checked, 0 failed | no-op stub → 1343/1370 failed, naming `Words` |
+| mutation score | 57/57 behavioural killed, 1.000, 1 declared equivalent | refuses to score unless the baseline is green |
+| post-integration harness (wrapper only) | 1370 checked, 0 failed | copy-back stops one element short → 1323/1370 failed |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED TEST PASSED — 1,857,893 of 5,252,000 moved** |
+
+### 1. The gate is not blind here, and the reason is the mirror of unit #4's
+
+Five of the seven units before this one were invisible to the gate. This one is
+not, and the difference is a property of the CONSUMER, exactly as the blindness
+always was. `FindLine` upper-cases `Words(WordInd)` and compares it against the
+parameter name the caller asked for. **That comparison is asymmetric in this
+unit's output** — one operand is the word `GetWords` produced, the other comes
+from the caller — which is precisely what `Conv2UC` lacked: there both operands
+went through the same function, so any perturbation landed on both sides and
+equality survived 1.3 million times.
+
+So the campaign now has a positive case to set beside its five negative ones, and
+it is the same test that decides all six: **follow the output to its consumers
+and ask whether anything the gate reads depends on it asymmetrically.**
+
+Stated beside the green, because a passing red test is not a claim about every
+argument: **both extents are constant in all 27 scenarios.** `len_Line` is
+`MaxLineLength = 2048` and `len_Words` is `MaxParamLength = 200` at every call
+site; `NumWords` takes two values. The kernel inherits all three from the
+simulation. A defect that only appears at another width — truncating a word wider
+than an element, say — is outside both bit-exact layers, and only the
+differential harness varies them. That is unit #3's constant-argument shape at
+EXTENT granularity.
+
+### 2. The unit had no differential harness at all, and P11/P12 are mandatory
+
+`Words` is `CHARACTER(*), INTENT(OUT) :: Words(NumWords)` — an array of
+fixed-width strings, **two extents where the generator's `char[]` had one** — and
+it was refused. The refusal was recorded as a known gap at unit #4 and it fell
+due here: the refused argument is this unit's ONLY output, so the harness would
+have supplied and compared nothing at all, and `NumWords` — the extent of a
+buffer both sides WRITE THROUGH — would have been varied over ±1e3 as a free
+integer.
+
+Built, not routed around (loop `6d13949`). Four files, all additive; rank ≥ 2
+stays refused with the reason the refusal always had. Two things worth carrying:
+
+1. **The element count is an ORDINARY dummy of the original.** Nothing in the
+   emitted C signature says it sizes anything — it has to be read off the Fortran
+   declaration, and VIT's parser upper-cases the dimension text while
+   `build_c_params` keeps the argument's declared spelling, so a literal match
+   found nothing and looked exactly like a declaration naming no parameter.
+2. **`vit interface` handled this shape while the harness refused it.** Two
+   generators over the same declaration, disagreeing, and only running both
+   showed it. That is the same shape as unit #1's `bridge_feasible` lesson and
+   unit #5's 132-column bridge: a capability measured on one generator says
+   nothing about the other.
+
+### 3. Three corpus blind spots, all three named by a surviving mutant
+
+The score went 0.889 → 0.905 → 0.921 → 0.983 → 1.000, and **every step was forced
+by a specific survivor.** None was found by reading the generator. This is the
+second unit in a row where that is true, so it is a pattern rather than an
+anecdote: *a harness green is a claim about the cases that were generated, and
+the survivors are the only thing that says which cases those were.*
+
+1. **The apostrophe.** The unit's set is `' ,!;''"'//Tab`. In Fortran `''` inside
+   a `'...'` literal is ONE apostrophe; the miner's `'([^']*)'` read it as two
+   literals and lost the character. A corpus for a word splitter that contained
+   no apostrophe.
+2. **The tab.** The seventh separator is `CHAR(9)`, because a tab cannot be
+   written as a source literal at all — so the miner's blind spot was exactly the
+   class of character that most needs mining. And `char_corpus` filtered
+   `32 <= v <= 126`, which would have discarded it even if mined. The rule that
+   filter was reaching for is *do not INVENT unprintable characters*, not *the
+   reference cannot have meant one*: a character the reference NAMES is now
+   admitted, and only its neighbours must be printable. NUL stays out at both
+   ends.
+3. **The leading blank.** The string shapes were mixed / word-then-blanks /
+   all-blank. `padded` made the END of a string interesting and left the START
+   pinned to a word, so **every predicate about where a word BEGINS had one
+   answer in every case** — and `Ch = Ch + 1` → `Ch + 2` only matters when the
+   character after a separator begins a word. `leading` is `padded`'s mirror, and
+   ROSCO's own input files are full of it.
+
+None of the three moves an earlier unit: `Conv2UC`, `GetPath` and `GetRoot` name
+only printable characters, none of their set literals contains a doubled quote,
+and `leading` is appended after the existing draws. Verified by recomputing their
+corpora — 22, 26, 26, unchanged.
+
+### 4. A mutation score that flaps on memory the program does not own
+
+The last survivor was `len_Line - Ch` → `len_Line + Ch`, and **three IDENTICAL
+runs over the identical translation and the identical 1370 cases scored 0.983,
+1.000, 0.983.** The mutant asks `scan_first` to search a superset of the correct
+region whose extra bytes lie entirely past the end of the caller's buffer, so
+whether it "dies" depends on the heap.
+
+Two consequences, and the second is the campaign's, not this unit's.
+
+**The declaration is proved exhaustively rather than argued.** A probe enumerates
+every `Line` over {blank, non-separator, separator} at every length 1..7 and
+every reachable `Ch`, with the bytes after the buffer set to separators so the
+out-of-bounds region is maximally able to disagree: `same 19695,
+differ-only-past-the-end 4908, differ-IN-BOUNDS 0`. That is a measurement, and it
+is what the equivalence rests on.
+
+**A declaration was a statement about ONE RUN, and now it is a statement about
+the mutant.** `vit_mutate.py` drew its equivalence set from the mutants that
+SURVIVED, so a declared mutant that happened to die was silently counted an
+ordinary kill and the declaration did nothing. On this unit the run that reads
+1.000 without the declaration is the run that measured LEAST. Fixed in the loop
+repo (`5b40e1c`): the declaration applies either way, and a declared mutant that
+was nonetheless killed is printed and recorded in `declared_but_killed` — because
+a false equivalence is how a real defect gets excused and it must not hide.
+
+### 5. Four out-of-bounds-only survivors were deleted rather than declared
+
+Unit #7's rule: *a mutant whose behaviour is undefined cannot honestly be
+declared equivalent; it can only be deleted along with the site that admits it.*
+Written as `for (int i = 1; i <= len; ++i) if (s[i - 1] != ' ')`, the blank-line
+guard admitted four survivors — `s[i+1]`, `s[1-i]`, `s[i-2]` and the bound. Three
+are observable only through a read outside the buffer. `std::all_of` states the
+same predicate with no index arithmetic to admit them.
+
+The fourth is genuinely equivalent and the proof is a property of the REFERENCE:
+`i < len` differs from `i <= len` only on a `Line` whose sole non-blank is the
+LAST character, and on such a line the parse below emits nothing anyway — a word
+is written only when a separator FOLLOWS it. Both answers give an all-blank
+`Words`. **The guard is an optimisation of a path the loop already computes
+correctly, so only a wrongly-TRUE guard can change the output at all.** That is
+why its mutants are hard to observe, and it is worth writing down because it says
+which of them could ever be.
+
+The `LEN_TRIM` removal itself is now the FIFTH time this campaign has removed a
+restatement of a quantity nothing downstream reads (#1 a size, #4 a loop bound,
+#6 and #7 this same intrinsic).
+
+### 6. The revision stamp mis-attributed its own output
+
+`vit-dev` has no git, so both loop scripts fell through to `.loop_rev` — a
+hand-written, GITIGNORED pin. **Unit #7's committed harness and mutation
+artifacts stamp `99b57ab-pinned` while the tree was at `0e92a72`, the commit that
+unit's OWN corpus fix went in as.** The artifact names the generator that could
+not yet reach `GetRoot`'s principal branch. `.vit_rev` was stale too: every
+artifact since unit #5 says `8c34ceb-pinned` against a checkout at `87a3847`.
+
+`.git/HEAD` and the ref file it names are plain text and need no binary, so this
+was fixable rather than workaround-able (X2). Both scripts read it before the
+pin now and report `-nogit`, which cannot see a dirty tree and does not claim to.
+
+**And the campaign's own `scripts/_harness_stamp.py` was a third site with the
+same logic that OVERWROTE the correct read with the stale pin** — the green
+pre-integration run stamped `57c6fe3-nogit` and the red-test run, passing through
+that script, came back `6d13949-pinned`. A measured value clobbered by a claimed
+one. It now fills a MISSING key only, and runs git first (it runs on the Mac,
+where git exists). Same lesson as unit #5's 132-column bridge and unit #7's
+KGen sanitiser: **a fix applied at one of N sites sharing a code shape is a fix
+the other N-1 escape.**
+
+Unit #7's artifacts are NOT restamped. A verdict that was correct when it was
+taken is worth more than a deletion; what it actually names is recorded in
+STATUS.md.
+
+### 7. `vit check`'s file-scoping defect, fourth sighting
+
+Two findings against a 190-line translation, both from other procedures:
+`narrowing-local` on `ExpUCVarName` (clean line 1051, inside `ParseInput_*`) and
+`delimiter-set` on `':/'` (clean line 1236, inside `GetPath`). `GetWords` is
+clean 1150–1216. Re-attribute by line range. Fix belongs in VIT.
+
+### 8. NOT method, target
+
+All of it. The CHARACTER-array bridge, the three corpus gaps, the declaration
+semantics, the stamp precedence and the gate-visibility test are RUNBOOK
+target-layer entries. No amendment to the invariant layer is proposed.
+
+Two observations for the Driver, neither an amendment:
+
+**The instrument-repair ratio did not fall.** Unit #4 spent one instrument fix,
+#5 four, #7 three, and this one five — the harness's CHARACTER-array kind, three
+corpus gaps and the declaration semantics — plus a campaign-script fix. The
+previous entry flagged this as worth watching, and eight units in it has not
+converged. What HAS changed is the character of the repairs: #4 and #5 were
+building capability that did not exist, while #7 and #8 are closing blindnesses
+in capability that already shipped and reported green. Those are different
+problems, and only the second kind casts doubt on artifacts already committed.
+
+**P12 is now doing work no red test does, three units running.** The mutation
+score found all three corpus gaps here and all three at unit #7, and in both
+cases the harness verdict was a confident green. The RUNBOOK says a green must be
+able to go red; these units say something narrower and sharper — *a green must be
+able to go red FOR THE RIGHT REASON*, and the survivors are the only instrument
+the campaign has that can tell.

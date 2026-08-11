@@ -414,6 +414,114 @@ is `/workspace/ROSCO-r2`.
   many times per timestep in every scenario) and confirm green returns after the
   revert, or the red is not attributable to the perturbation.
 
+- **A CHARACTER ARRAY dummy is TWO extents, and two of this campaign's generators
+  disagreed about it in opposite directions.** Learned at unit #8, and the
+  disagreement is the transferable part.
+
+  `CHARACTER(*), INTENT(OUT) :: Words(NumWords)` is an array of fixed-width
+  strings: an element WIDTH and an element COUNT where every earlier unit's
+  CHARACTER dummy had one length. `vit interface` handles it -- it stages the
+  argument column-major, `Words_c((j-1)*LEN(Words)+i) = Words(j)(i:i)`, and the
+  wrapper compiles and works. The DIFFERENTIAL HARNESS refused it outright. So
+  the unit had a shipping bridge and no P11/P12 route at all, and the refused
+  argument was its ONLY output.
+
+  ```
+  # ask BOTH generators before writing C++, not just the one that ships
+  vit interface <Unit> -f <file> -o /tmp/<u>_iface
+  docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2 && python3 -c \"
+  import sys; sys.path.insert(0,'/workspace/translation-loop')
+  from vit.fortran_parser import find_function_in_file
+  from harness.vitbridge import map_signature
+  m = map_signature(find_function_in_file('<file>','<Unit>'), {...})
+  print(m.unobservable)\""
+  ```
+
+  A non-empty `unobservable` naming an OUTPUT is a unit with no differential
+  harness, whatever `vit interface` says. Built in the loop repo (`6d13949`);
+  rank >= 2 is still refused. The trap inside the fix, if it needs touching
+  again: the element count is an ORDINARY dummy of the original, so nothing in
+  the emitted C signature says it sizes anything -- it comes off the Fortran
+  declaration, and VIT's parser UPPER-CASES the dimension text while
+  `build_c_params` keeps the argument's declared spelling. Match case-folded or
+  the lookup finds nothing and reads like a declaration naming no parameter.
+
+- **An extent that is also a semantic input must be `role="extent"`, and getting
+  that wrong is worse than a wrong length.** Same unit. `NumWords` is both the
+  element count of `Words` and the value the loop tests `IW ==` against. Left as
+  an ordinary integer it is varied over +/-1e3 -- and it is the extent of a
+  buffer BOTH SIDES WRITE THROUGH. A wrong length reads past a buffer; a wrong
+  count writes past one.
+
+- **The corpus cannot contain a character the reference cannot write, and the
+  characters a reference cannot write are the ones that matter most.** Unit #8,
+  and it is the third and fourth corpus blind spot after unit #7's two.
+
+  `GetWords` separates words on `' ,!;''"'//Tab` -- seven characters. The corpus
+  contained five.
+
+  1. `''` inside a `'...'` literal is ONE APOSTROPHE in Fortran. `'([^']*)'`
+     reads it as two literals and drops the character. An apostrophe is a word
+     separator, so it is exactly what a SET literal exists to name.
+  2. `Tab = CHAR(9)`, because a tab cannot be written as a source literal at
+     all -- and `char_corpus` filtered `32 <= v <= 126`, so it would have been
+     discarded even if mined. The rule that filter was reaching for is *do not
+     INVENT unprintable characters*, not *the reference cannot have meant one*.
+
+  Both fixed in the loop repo (`5b40e1c`); a mined character is admitted, its
+  neighbours must still be printable, NUL stays out. Check before believing a
+  string unit's corpus:
+
+  ```
+  python3 -c "from harness.generate import char_corpus; print(sorted(char_corpus(<mined>)))"
+  ```
+
+- **`padded` makes the END of a string interesting and pins its START.** Unit #8.
+  The three shapes were mixed / word-then-blanks / all-blank, and all three put
+  a word at position 1 -- so every predicate about where a word BEGINS had one
+  answer in every case, and `Ch = Ch + 1` -> `Ch + 2` survived 978 of them. A
+  fourth shape, `leading`, is `padded`'s mirror. ROSCO's own `DISCON*.IN` files
+  are full of it.
+
+- **A mutation score can FLAP, and the run that reads 1.000 can be the one that
+  measured least.** Unit #8. Three IDENTICAL runs -- same translation, same 1370
+  cases, same command -- scored 0.983, 1.000, 0.983. The mutant responsible
+  differs from the original only at addresses past the end of a buffer, so
+  whether it dies depends on the heap.
+
+  Two rules follow, and the campaign now depends on both:
+
+  1. **Before declaring a survivor equivalent on an out-of-bounds argument,
+     PROVE it exhaustively rather than reasoning about it.** Enumerate the input
+     space at small sizes with the bytes past the buffer set to the value most
+     able to disagree, and count in-bounds disagreements:
+     `evidence/GetWords/mutant_91681005_probe.cpp` is the pattern -- 3,279
+     strings x every reachable offset, `differ-IN-BOUNDS 0`.
+  2. **A declaration is a statement about the MUTANT, not about one run.**
+     `vit_mutate.py` drew its equivalence set from the mutants that SURVIVED, so
+     a declared mutant that happened to die was counted an ordinary kill and the
+     declaration did nothing. Fixed (`5b40e1c`); a declared mutant that is
+     killed anyway now lands in the artifact's `declared_but_killed` rather than
+     being absorbed.
+
+- **A revision stamp read from a hand-written pin file goes stale in silence, and
+  it took the campaign's OWN script down with it.** Unit #8. `vit-dev` has no
+  git, so `loop_rev`/`vit_rev` fell through to `.loop_rev` and `.vit_rev` --
+  gitignored, hand-maintained, and both wrong: unit #7's artifacts stamp
+  `99b57ab-pinned` against a tree at `0e92a72`, which is the commit that unit's
+  own corpus fix went in as, and every artifact since unit #5 says
+  `8c34ceb-pinned` against a VIT at `87a3847`.
+
+  `.git/HEAD` and the ref it names are plain text and need no binary. Both loop
+  scripts read it before the pin now and report `-nogit`, which cannot see a
+  dirty tree and does not claim to. **And `scripts/_harness_stamp.py` was a
+  third site with the same logic that OVERWROTE the correct read with the stale
+  pin** -- the pre-integration run stamped `57c6fe3-nogit` and the red-test run,
+  passing through that script, came back `6d13949-pinned`. A measured value
+  clobbered by a claimed one. Read the stamp of every artifact before believing
+  its numbers, and check that the two artifacts of a green/red PAIR agree about
+  which instrument produced them.
+
 - **A KGen kernel that will not COMPILE is a different failure from one that
   captures nothing, and this one is on the critical path.** Learned at unit #6.
   `vit extract` reported success, and `vit verify` died in the kernel build:
