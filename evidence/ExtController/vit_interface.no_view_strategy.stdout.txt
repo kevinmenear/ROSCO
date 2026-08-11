@@ -1,0 +1,47 @@
+WARNING: ExtController: 2 argument(s) accepted by the wrapper but NOT forwarded to extcontroller_c:
+  - LocalVar :: TYPE(LocalVariables) -- ALLOCATABLE field(s), nested derived-type field(s); set `strategy: view` for this type in vit.yaml to cross it
+  - ErrVar :: TYPE(ErrorVariables) -- ALLOCATABLE field(s); set `strategy: view` for this type in vit.yaml to cross it
+
+SUBROUTINE ExtController
+  File: rosco/controller/src/ExtControl.f90:52
+  Module: ExtControl
+  Arguments:
+    avrSWAP: REAL(ReKi) INTENT(INOUT)(*)
+    CntrPar: TYPE(ControlParameters) INTENT(INOUT)
+    LocalVar: TYPE(LocalVariables) INTENT(INOUT)
+    ExtDLL: TYPE(ExtControlType) INTENT(INOUT)
+    ErrVar: TYPE(ErrorVariables) INTENT(INOUT)
+  C name: extcontroller_c
+
+✓ Interface block:  /tmp/ifA/extcontroller_interface.f90
+✓ Wrapper function: /tmp/ifA/extcontroller_wrapper.f90
+
+--- Interface Block ---
+    ! Auto-generated interface for C++ implementation of ExtController
+    INTERFACE
+        SUBROUTINE extcontroller_c(avrSWAP, CntrPar, ExtDLL) BIND(C, NAME='extcontroller_c')
+            USE ISO_C_BINDING
+            REAL(C_FLOAT), INTENT(INOUT) :: avrSWAP(*)
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: ExtDLL
+        END SUBROUTINE extcontroller_c
+    END INTERFACE
+
+--- Wrapper Function ---
+    SUBROUTINE ExtController(avrSWAP, CntrPar, LocalVar, ExtDLL, ErrVar)
+        USE ISO_C_BINDING
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters
+        USE vit_extcontroltype_view, ONLY: extcontroltype_view_t, vit_populate_extcontroltype
+        IMPLICIT NONE
+        REAL(4), INTENT(INOUT) :: avrSWAP(*)
+        TYPE(CONTROLPARAMETERS), INTENT(INOUT), TARGET :: CntrPar
+        TYPE(LOCALVARIABLES), INTENT(INOUT) :: LocalVar
+        TYPE(EXTCONTROLTYPE), INTENT(INOUT), TARGET :: ExtDLL
+        TYPE(ERRORVARIABLES), INTENT(INOUT) :: ErrVar
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(extcontroltype_view_t), TARGET :: ExtDLL_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_extcontroltype(ExtDLL, ExtDLL_view)
+        CALL extcontroller_c(avrSWAP, C_LOC(CntrPar_view), C_LOC(ExtDLL_view))
+    END SUBROUTINE ExtController

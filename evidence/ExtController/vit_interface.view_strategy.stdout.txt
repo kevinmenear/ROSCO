@@ -1,0 +1,52 @@
+
+SUBROUTINE ExtController
+  File: rosco/controller/src/ExtControl.f90:52
+  Module: ExtControl
+  Arguments:
+    avrSWAP: REAL(ReKi) INTENT(INOUT)(*)
+    CntrPar: TYPE(ControlParameters) INTENT(INOUT)
+    LocalVar: TYPE(LocalVariables) INTENT(INOUT)
+    ExtDLL: TYPE(ExtControlType) INTENT(INOUT)
+    ErrVar: TYPE(ErrorVariables) INTENT(INOUT)
+  C name: extcontroller_c
+
+✓ Interface block:  /tmp/ifB/extcontroller_interface.f90
+✓ Wrapper function: /tmp/ifB/extcontroller_wrapper.f90
+
+--- Interface Block ---
+    ! Auto-generated interface for C++ implementation of ExtController
+    INTERFACE
+        SUBROUTINE extcontroller_c(avrSWAP, CntrPar, LocalVar, ExtDLL, ErrVar) BIND(C, NAME='extcontroller_c')
+            USE ISO_C_BINDING
+            REAL(C_FLOAT), INTENT(INOUT) :: avrSWAP(*)
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: ExtDLL
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE extcontroller_c
+    END INTERFACE
+
+--- Wrapper Function ---
+    SUBROUTINE ExtController(avrSWAP, CntrPar, LocalVar, ExtDLL, ErrVar)
+        USE ISO_C_BINDING
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables
+        USE vit_extcontroltype_view, ONLY: extcontroltype_view_t, vit_populate_extcontroltype
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables
+        IMPLICIT NONE
+        REAL(4), INTENT(INOUT) :: avrSWAP(*)
+        TYPE(CONTROLPARAMETERS), INTENT(INOUT), TARGET :: CntrPar
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(EXTCONTROLTYPE), INTENT(INOUT), TARGET :: ExtDLL
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(extcontroltype_view_t), TARGET :: ExtDLL_view
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_extcontroltype(ExtDLL, ExtDLL_view)
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        CALL extcontroller_c(avrSWAP, C_LOC(CntrPar_view), C_LOC(LocalVar_view), C_LOC(ExtDLL_view), C_LOC(ErrVar_view))
+    END SUBROUTINE ExtController

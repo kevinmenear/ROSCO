@@ -1,0 +1,30 @@
+{
+ "probe": "ExtController oracle availability",
+ "exit_status": -11,
+ "signal": 11,
+ "config": [
+  "1                   ! Ext_Mode        - External control mode (0 - not used, 1 - call external dynamic library)",
+  "\"unused\"            ! DLL_FileName        - Name/location of the dynamic library in the Bladed-DLL format"
+ ],
+ "returned_normally": false,
+ "stdout_tail": [
+  "A wind turbine controller framework for public use in the scientific field    ",
+  "Developed in collaboration: National Renewable Energy Laboratory              ",
+  "                            Delft University of Technology, The Netherlands   ",
+  "------------------------------------------------------------------------------",
+  " ROSCO Warning: Did not find correct size F_NotchFreqs in input file.  Using default value of [   0.0000000000000000      ]",
+  " ROSCO Warning: Did not find correct size F_NotchBetaNum in input file.  Using default value of [   0.0000000000000000      ]",
+  " ROSCO Warning: Did not find correct size F_NotchBetaDen in input file.  Using default value of [   0.0000000000000000      ]",
+  " ROSCO is calling an external dynamic library for control input:",
+  " DLL_FileName:unused",
+  " DLL_InFile:unused",
+  " DLL_ProcName:DISCON",
+  " Library loaded successfully"
+ ],
+ "stderr_tail": [
+  "ResourceWarning: /workspace/ROSCO/rosco/toolbox/turbine.py:129",
+  "unclosed file <_io.BufferedReader name='/workspace/ROSCO-r2/Examples/examples_out/01_NREL5MW_saved.p'>ResourceWarning: /workspace/ROSCO-r2/evidence/ExtController/probe_ext_mode_1.py:57",
+  "unclosed file <_io.TextIOWrapper name='/workspace/ROSCO-r2/Examples/DISCON.IN' mode='r' encoding='UTF-8'>"
+ ],
+ "discon_in_restored_by_parent": true
+}

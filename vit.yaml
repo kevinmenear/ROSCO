@@ -103,6 +103,36 @@ types:
     strategy: view
   ExtControlType:
     strategy: view
+  # ADDED BY `vit translate` at unit #5, not carried from the first replication.
+  # The header above says these two were deliberately NOT taken from that
+  # campaign's HEAD, because taking them would have been an answer key. These
+  # were derived by the tool from THIS tree's ROSCO_Types.f90 -- it detects the
+  # ALLOCATABLE fields and writes the entry itself -- so they are a measurement,
+  # not a copy, and they are kept for that reason.
+  #
+  # What they mean today, measured at unit #5 and true until VIT changes:
+  # LocalVariables crosses (167 fields, one CHARACTER array, five nested types;
+  # `strategy: view` handles all of it). ErrorVariables DOES NOT. Its four
+  # fields include `CHARACTER(:), ALLOCATABLE :: ErrMsg`, and `vit translate`
+  # refuses it -- "Deferred-length CHARACTER(:) is not C-compatible".
+  #
+  # So with this entry present `vit interface` emits a five-argument wrapper
+  # that USEs `vit_errorvariables_view`, a module nothing can generate: the
+  # wrapper will not compile. Without it, the same command silently emitted a
+  # three-argument bridge that compiled and could not see `LocalVar%iStatus`.
+  # The entry stays because failing to build beats failing silently, and
+  # because 37 of this campaign's 69 units take a TYPE(ErrorVariables) dummy --
+  # the gap has to be closed in VIT, not routed around here. See DECISIONS.md
+  # and plan.json's ExtController entry.
+  #
+  # `vit analyze-types --fix character` is the remedy VIT's error message
+  # suggests, and it is REFUSED here: it rewrites ROSCO's own type definition
+  # to a fixed length, which changes LEN(ErrVar%ErrMsg) and so changes the
+  # oracle's behaviour. P7.
+  LocalVariables:
+    strategy: view
+  ErrorVariables:
+    strategy: view
 allocatable:
   helpers:
   - name: ParseAry
