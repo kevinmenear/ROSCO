@@ -1,0 +1,18 @@
+baseline (inferred): e6ec260  -- the commit before 4a6b851 touched translations/ROSCO_Helpers/getwords.cpp
+
+GetWords: Verdict.COMPLETE  (13/13 PASS)
+
+[  ok  ] P1   commits exist                      
+[  ok  ] P2   clean tree                         
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[  ok  ] P5   evidence resolves                  
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[  ok  ] P9   gate compared and matched          
+[  ok  ] P12  mutation score for this unit       57/57 mutant(s) killed, 1 declared equivalent
+[  ok  ] P11  post-integration harness re-run    1370 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible              
+

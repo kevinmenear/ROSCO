@@ -396,6 +396,7 @@
    "harness_required": true,
    "evidence": [
     "evidence/GetWords/README.md",
+    "evidence/GetWords/done_check.txt",
     "evidence/GetWords/vit_interface.stdout.txt",
     "evidence/GetWords/vit_check.stdout.txt",
     "evidence/GetWords/getwords.final.cpp",
