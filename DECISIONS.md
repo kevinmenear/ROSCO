@@ -2666,3 +2666,197 @@ asleep and the timeout killed it with everything uncommitted. The work it had
 already done — kernel, pre-integration harness, both red tests — was still on
 disk and this dispatch re-ran none of it. P1 is what saved it: state on disk, not
 in context. The RUNBOOK now carries the prohibition in its target layer.
+
+---
+
+## Unit #10 — `Int2LStr` — 2026-08-11
+
+`FUNCTION Int2LStr(Num)` returning `CHARACTER(11)`. Two statements: write the
+integer right-justified into an 11-character field, then left-justify it.
+`integrated`, first dispatch, done-condition COMPLETE.
+
+### The decision that mattered: ask BOTH generators, before writing any C++
+
+Unit #8 wrote that rule after a CHARACTER ARRAY dummy shipped through
+`vit interface` and was refused by the differential harness. It cost this unit
+about four minutes to apply and it changed the whole shape of the work.
+
+`vit interface` handles a `CHARACTER(11)` function result cleanly: VIT's
+`result_is_out_param` turns it into a trailing `char* Int2LStr_result`, and the
+wrapper copies 11 bytes back with the width **compiled into both sides**.
+`map_signature`, asked the same question about the same declaration, returned
+
+    Unobservable(name='Int2LStr_result', kind='character-arg',
+      detail='crosses as char* but build_c_params emitted no len_Int2LStr_result,
+              so nothing states how many bytes either side may read;
+              neither supplied nor compared')
+
+and that argument is the unit's ONLY output. Had the harness simply been run
+against a translation, it would have failed at emit time with a message about a
+case stream — which is what happened later, once, for a different reason — or
+worse, generated something. Asking first is what made this a known gap rather
+than a symptom.
+
+### Three defects, and the ordering of the fixes is the finding
+
+They are the same defect seen from three sides: **a CHARACTER function RESULT is
+a `char*` whose width is not a parameter**, and three different places assumed a
+width always is one.
+
+1. `harness/vitbridge.py` — refused it for want of a `len_` that cannot exist.
+   Fixed by mapping it to a `char[]` with a SYNTHETIC, PINNED extent, which is
+   the shape `_constant_extent` already established for `rootMOOP(3)`: `lo == hi`,
+   `generate` holds it, `build_call` never passes it.
+2. `harness/emit.py` — ASSERTED that a `char[]`'s length is the NEXT C parameter.
+   That assertion is correct and load-bearing for a CHARACTER dummy (it is what
+   stops a transposed call compiling), so it was not weakened. A new
+   `string_fixed` category was added beside `string`: one CArg standing for ONE C
+   parameter, width in the stream, never in the call.
+3. `scripts/vit_harness.py` — set `result_ctype` whenever `sig.is_function`.
+
+The third is the one worth carrying. It asked **`is_function`** where the
+question is **does the result come back through the return value**. VIT already
+answers that, in one predicate, `result_is_out_param`, and the harness had a
+second, worse answer of its own. Had the other two fixes landed without it, the
+generated test would have emitted `char ret_a = int2lstr(...)` against a C++
+wrapper returning `void`, and passed a `&ret_b` the Fortran bridge has no dummy
+for — through a C linkage that checks neither. *A reader of two agreeing
+generators can disagree with both.*
+
+### `intent="out"` was wrong, and the module already said so
+
+The first mapping gave the result `intent="out"`, which reads correctly and is
+not this module's vocabulary: `Signature.inputs` excludes an `out`, so nothing
+FILLED the buffer and `write_cases` put 0 elements in a stream whose extents said
+11. `_arg_intent` had drawn the line already — *"an OUT struct is still supplied
+(allocated) and compared"* — and `inout` is also the stronger choice: the bytes a
+translation FAILS to write are the ones the harness put there, and they are
+compared. The red test shows it working, the no-op returning the harness's own
+fill (`!!!!!`, `/////`, `00000`) rather than anything the unit produced.
+
+### A scalar INTEGER reached no value this generator ever chose
+
+Nine mutants survived a 144-case green — a 0.654 — and the survivors are what
+said why, exactly as at units #7 and #8. `Num` spanned **-933 to 891**. Not
+because anything declared that range: `_ladder` and `_literal_values` are both
+driven off `reals`, so the only thing that has ever set a scalar int in this
+apparatus is `rng.randint` over `_bounds`' DEFAULT `±1e3`.
+
+A Fortran default INTEGER is the whole 32-bit domain. `±1e3` is 0.00005% of it,
+all of it in the middle — and **every branch this unit has is a branch about the
+WIDTH of the number.** At `|Num| < 1000` the width is 1 to 4 in every case ever
+generated and the blank run is never shorter than six, so the entire structure
+of an `I11` field and of `ADJUSTL` was outside the case set.
+
+The addition is an integer DECADE ladder: `9/10`, `99/100`, … `999999999/10⁹`,
+both signs, plus `INT_MAX` and `INT_MIN`. Those are the only places a
+width-dependent predicate can change its answer, and no interior value can stand
+in for them. `-2147483648` is listed rather than derived — it is the one value
+whose magnitude has no positive counterpart, and it is exactly 11 characters
+wide, which is the field this unit writes into.
+
+**It is appended last and fires only for a DEFAULTED scalar int**, for the reason
+the character ladder states in its own comment: it can only ADD cases, so the
+draws every earlier unit was scored on are byte-for-byte unchanged. A parameter
+whose range is DECLARED — `harness/ranges.toml`, `types.toml` — is left alone,
+because that range is a judgement about the admissible domain and widening past
+it would generate exactly the cases the declaration exists to exclude.
+
+**This is not an X3 change.** X3 forbids changing a verification default mid-run,
+and the reflex to check was right. But nothing here loosens a default to let
+something pass: the default range is untouched, no existing case is altered, and
+the effect is strictly more input, strictly more mutants killed. It is the same
+move units #7 and #8 made when a mined character set and a missing string shape
+turned out to be corpus blind spots, and it is recorded here for the same reason
+those were — because *a green is a claim about the cases that were generated*.
+
+### The translation was fixed before the survivors were declared away
+
+0.731 → 0.737 by deleting restatements, which is now the third sighting of unit
+#1's rule. The first draft blank-filled the whole buffer, wrote the digits, then
+performed `ADJUSTL` as a literal scan-and-shift — **four traversals of one
+11-byte buffer, restating its bound three times.** 26 mutable sites.
+
+The count of leading blanks is not an independent quantity: by the `I11` contract
+the field is blank at exactly `0 .. first-1`, and `first` is already computed. So
+the scan is a restatement, and the initial blank fill is the same restatement one
+step earlier — the only positions the shift leaves undefined are the trailing
+ones. 26 mutants became 19.
+
+The departure from literal transcription carries its proof in the file, which is
+what the RUNBOOK rule requires. Likewise the `'*'`-overflow branch an `I11` field
+has in Fortran and this translation does not: `Num` crosses as a 4-byte `int`
+whose widest representation is `-2147483648`, exactly 11 characters, so **no input
+can overflow the field.** Writing that branch would have added mutable sites no
+input can reach, which is the shape that survived at units #1 and #4.
+
+### Five declared equivalent, proved over 4,038,021 inputs
+
+All five are buffer-bound: two on a ternary whose arms agree at `Num == 0`, three
+writing or reading index 11 of an 11-byte result. Unit #8's rule is that this is
+exactly where reasoning must not be trusted — three identical runs there scored
+0.983, 1.000, 0.983, because whether such a mutant dies depends on the heap, and
+**the run that reads 1.000 is the one that measured least.**
+
+So `evidence/Int2LStr/mutant_equivalence_probe.cpp` sweeps rather than argues:
+every value with `|Num| ≤ 2,000,000`, every value within 1000 of every decade
+boundary to 10⁹ both signs, every value within 1000 of `INT_MAX` and `INT_MIN`,
+against a guard byte poisoned to a value no correct output contains, counting
+disagreements in bytes 0..10 only. `differ-IN-BOUNDS 0` for all five. The domain
+is exhaustive over the only structure the function has: its behaviour is a
+function of the decimal STRING of `Num`, so it can change only where the digit
+count changes, and every such transition is swept whole rather than sampled.
+
+### C6 was run on a kernel that turned out to be a lookup table, and running it is what proved that
+
+One live call site in all 27 scenarios, hit once, in scenario 24. `vit extract`
+captures 1 case whatever the invocation window says — unit #6's `GetPath` shape,
+and the recipe for it was already written. What the recipe did not anticipate:
+**the kernel compares the CALLER's variable.** KGen instruments the assignment
+`OL_String = TRIM(OL_String)//' Cable'//TRIM(Int2LStr(I))//' '`, so the compared
+field is `ol_string`, and the generated `!local verify variables` names the unit's
+own result nowhere at all — which is precisely the check unit #7 said to run
+before trusting a kernel.
+
+Four stubs, one more than any unit before. The fourth, `'X'` padding, is kept
+even though it FAILS, and it is kept as a warning: it looks like proof the kernel
+sees all 11 bytes and it is not, because it survives `TRIM` only by being
+non-blank. A translation that padded with a different blank would be invisible.
+**A stub that fails does not tell you why it failed.**
+
+### NOT method, target
+
+Almost all of it. The four-stub ladder, the `PRINT`-only-reader grep, and the
+integer decade ladder are RUNBOOK target-layer entries. No amendment to the
+invariant layer is proposed.
+
+**One observation for the Driver, and it is the counterweight to unit #9's.**
+Unit #9 reported the instrument-repair ratio falling to zero and read it as
+convergence. This unit spent three repairs, all in the differential path, and the
+reason is not regression: it is **the first unit of a new SHAPE**. Every unit
+before it was a SUBROUTINE, or a function whose result was a scalar returned by
+value. The generator repairs of units #7 and #8 were paid for once and this unit
+inherited them working — the corpus, the string shapes, the collating neighbours
+all just ran. What was unbuilt was the function-result path, and nothing about
+units #1–#9 could have exercised it. So the ratio is not a measure of
+convergence per unit; it is a measure of **how many new declaration shapes remain
+unmet**, and `plan.json` can be read for that in advance. 20 of the 69 units take
+a CHARACTER dummy; the count that would have predicted this unit is *how many
+are FUNCTIONs with a non-scalar result*, and nobody has computed it.
+
+### The artifacts stamp `5b40e1c-nogit`, and the code that produced them is `d79f39e`
+
+Read this before believing the revision on any of unit #10's harness or mutation
+artifacts. The loop repo's HEAD was `5b40e1c` throughout the measurements, with
+the three fixes above sitting uncommitted in the working tree; they were
+committed as `d79f39e` only after the suite was shown at parity. The `-nogit`
+suffix is the stamp saying exactly this — unit #8 built it to read `.git/HEAD`
+directly and to admit that it **cannot see a dirty tree and does not claim to**.
+
+So `5b40e1c-nogit` is honest and it is not the answer to "what code ran". The
+answer is `5b40e1c` plus the diff that became `d79f39e`, and nothing but this
+paragraph records it. That is the residue of unit #8's finding rather than a
+regression of it: a stamp that cannot see a dirty tree is strictly better than
+one that reports a stale pin as fact, and it still leaves the campaign relying on
+prose for the one case that matters — measurements taken while fixing the
+instrument, which is every measurement that finds an instrument defect.

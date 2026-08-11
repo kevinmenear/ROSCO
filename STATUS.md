@@ -4,6 +4,128 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-11: unit #10 `Int2LStr` is `integrated` and CLOSED**, first
+dispatch.
+
+**FOUR LAYERS ALIVE, ONE DEAD, AND ONE OF THE LIVE ONES PROVED VACUOUS BY ITS
+OWN STUB.**
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 1 case, scenario 24 | 1/1 `IDENTICAL` on `ol_string` | no-op → `OUT_TOL`; a WRONG constant → `OUT_TOL`; `'X'` padding → `OUT_TOL`; **the RIGHT constant, reading no argument, PASSES 1/1** |
+| differential harness vs clean Fortran | 144 checked, 0 failed | no-op → 144/144 failed, naming `Int2LStr_result` |
+| mutation score | 14/14 behavioural killed, 1.000, **5 declared equivalent**, 0 nocompile | refuses to score unless the baseline is green |
+| post-integration harness (wrapper only) | 144 checked, 0 failed | copy-back shortened 11 → 10 → 144/144 failed; rebuilt, green restored |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED TEST FAILED TWICE — a COMPLETE NO-OP moved 0 of 5,252,000** |
+
+**THE FIRST FUNCTION RESULT IN THIS CAMPAIGN, AND THE TWO GENERATORS DISAGREED
+ABOUT IT.** `CHARACTER(11) :: Int2LStr` is not a C return value: VIT's
+`result_is_out_param` turns it into a trailing `char* Int2LStr_result` the caller
+owns and the callee blank-fills, and `vit interface` emits exactly that with the
+width **compiled into both sides** rather than passed. The DIFFERENTIAL HARNESS
+refused the same declaration — `build_c_params` emits no `len_` for a width that
+is a literal in the function's own declaration, so `map_signature` reported the
+argument unobservable, *"nothing states how many bytes either side may read"*.
+That argument is the unit's **only output**. A shipping bridge and no P11/P12
+route at all: unit #8's sentence, one type over, and found the same way — by
+asking both generators before writing any C++.
+
+**THREE DEFECTS, ALL IN THE DIFFERENTIAL PATH, ALL FIXED BY ADDITION.** The
+third is the dangerous one:
+
+1. `map_signature` refused the CHARACTER function result (above). It now maps it
+   to a `char[]` with a SYNTHETIC, PINNED width — the shape `_constant_extent`
+   already established for an explicit-shape array.
+2. `build_call` ASSERTED that a `char[]`'s width is the next C parameter. True of
+   a CHARACTER dummy, false of a result. A new `string_fixed` category carries a
+   buffer whose width is in the stream and never in the call.
+3. **`vit_harness.py` set `result_ctype` for ANY function.** A result that
+   already crosses as an out-parameter would have been emitted a SECOND time as a
+   return value — `char ret_a = int2lstr(...)` against a wrapper returning void,
+   plus a `&ret_b` argument the bridge has no dummy for. It asked `is_function`
+   where the question is *does the result come back through the return value*.
+   The two generators agree here; this reader of them did not.
+
+**THE GATE IS BLIND, AND THE CONTROL IS WHAT MAKES THAT A FINDING.** Two
+perturbations moved 0 of 5,252,000 — the trailing blank fill rewritten, and the
+whole unit made a no-op by an early return. GetWords' committed perturbation,
+re-run on this same integrated build, moved **1,857,893 of 5,252,000, bit-for-bit
+the number `gate/GetWords.redtest.json` carries**. The chain is alive; the unit is
+what cannot be seen. `evidence/Int2LStr/gate.control-getwords-perturbed-MOVES.json`.
+
+**WHY, IN ONE GREP: THE ONLY READER IS A `PRINT`.** `Int2LStr` runs TWICE in all
+27 scenarios, both in scenario 24. Its result is concatenated into `OL_String`,
+whose sole reader in the entire controller is
+`ReadSetParameters.f90:772  PRINT *, 'ROSCO: Implementing open loop control for'//TRIM(OL_String)`.
+`gate.py` compares the arrays crossing the DLL boundary and never reads stdout.
+The other **eighteen call sites are dead**, and structurally so: sixteen build
+`ErrVar%ErrMsg` strings and two build a debug-file FORMAT. A unit whose whole job
+is rendering numbers into human-readable messages produces output a numerical
+gate does not look at — and all 27 scenarios read valid input files, so no error
+message is ever built.
+
+**THE KERNEL IS A LOOKUP TABLE, AND IT TOOK FOUR STUBS TO SAY SO.** Unit #6
+prescribed two and unit #7 a third; this unit needed a fourth, because the kernel
+compares something none of them anticipated. KGen instruments the ASSIGNMENT, so
+the compared field is the caller's `ol_string` and **the unit's own result is
+named nowhere in the generated `!local verify variables`**. A no-op fails, a
+wrong constant fails, `'X'` padding fails — and the RIGHT constant, reading no
+argument at all, passes 1/1. The padding stub is kept as the cautionary one: it
+looks like proof the kernel sees all 11 bytes, and it only passes through `TRIM`
+because `'X'` is not a blank.
+
+**THE MUTATION SCORE REACHED 1.000 IN THREE MOVES, AND ONLY THE LAST IS A
+DECLARATION.**
+
+| | score | what changed |
+|---|---|---|
+| as written | 0.654 | 9 survivors |
+| fix the GENERATOR | 0.731 | `Num` was drawn from the default ±1e3 — see below |
+| fix the TRANSLATION | 0.737 | three restatements of one buffer bound deleted; 26 mutants became 19 |
+| declare 5, with a proof | **1.000** | 4,038,021 inputs, poisoned guard byte, `differ-IN-BOUNDS 0` |
+
+**A SCALAR INTEGER REACHED NO VALUE THIS GENERATOR CHOSE — IT WAS ALWAYS A
+UNIFORM DRAW OVER A RANGE NOBODY DECLARED.** `_ladder` and `_literal_values` are
+both driven off `reals`; the only thing that ever set a scalar int was
+`rng.randint` over the DEFAULT ±1e3. A Fortran default INTEGER is the whole
+32-bit domain, and ±1e3 is 0.00005% of it, all of it in the middle. Every branch
+this unit has is a branch about the WIDTH of the number, so at `|Num| < 1000` the
+width was 1–4 in every case ever generated and the blank run never shorter than
+six. An integer DECADE ladder now exists — decade boundaries and the type's
+extremes, both signs, `-2147483648` included for itself because it is the one
+value with no positive counterpart and is exactly 11 characters wide. 103 cases →
+144, and two mutants died to it. Appended last and fired only for a DEFAULTED
+scalar int, so it can only ADD cases: the draws every earlier unit was scored on
+are byte-for-byte unchanged.
+
+**THE REMAINING FIVE ARE DECLARED, AND PROVED RATHER THAN ARGUED.** All five are
+buffer-bound mutants on an 11-byte result — two on a ternary that cannot change
+its answer at `Num == 0`, three writing or reading index 11. Unit #8's rule is
+that reasoning is not enough here, because whether such a mutant dies depends on
+the heap. `evidence/Int2LStr/mutant_equivalence_probe.cpp` sweeps every value with
+`|Num| ≤ 2,000,000`, every value within 1000 of every decade boundary to 10⁹ both
+signs, and every value within 1000 of `INT_MAX` and `INT_MIN`, against a guard
+byte poisoned to `'\x7f'`. That is exhaustive over the only structure the function
+has: its behaviour is a function of the decimal STRING, so it can change only
+where the digit count does. **differ-IN-BOUNDS 0 for all five.**
+
+**A SEVENTH P9 SHAPE — OR RATHER, THE FIFTH ONE ARRIVING IN SECONDS INSTEAD OF AN
+HOUR.** This is unit #7's shape (live consumer, outside what the gate measures),
+but reaching it cost one `grep` for the readers of `OL_String` rather than an
+afternoon. The accumulated recipe worked as written.
+
+| unit | shape |
+|---|---|
+| #1 `AddToList` | the line is never executed |
+| #3 `ColemanTransformInverse` | an argument is constant in every scenario |
+| #4 `Conv2UC` | 1.3M executions, result cancelled by a symmetric consumer |
+| #6 `GetPath` | result produced, consumer's guard false wherever it would matter |
+| #7 `GetRoot` | result consumed by a live line, into a side effect outside the instrument |
+| #9 `HPFilter` | every call site cancelled, by three different mechanisms, two of them a zero gain in the inputs |
+| #10 `Int2LStr` | #7's shape: the only live reader is a `PRINT`, and 18 of 20 call sites build error messages no valid input produces |
+
+---
+
 **As of 2026-08-11: unit #9 `HPFilter` is `integrated` and CLOSED**, SECOND
 dispatch. The first dispatch was killed by the 7200 s timeout mid-cycle with its
 work uncommitted; it had finished the kernel, the pre-integration harness and
@@ -440,18 +562,28 @@ fields — those are hypotheses, not facts. Run
 
 ## Counts
 
-8 attempted / **8 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+10 attempted / **10 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / 0 blocked.
 
-69 units in `plan.json`; 61 remain.
+69 units in `plan.json`; 59 remain.
 
-**5 of the 8 integrated units are invisible to the gate**, for five different
+(This block read `8 / 8 / 61 remain` through unit #9, which did not update it.
+Recounted from `plan.json` at unit #10 rather than incremented.)
+
+**7 of the 10 integrated units are invisible to the gate**, for six different
 reasons: `AddToList` is never called, `Conv2UC` is called constantly and
 cancelled, `ExtController` is never called *and* has no observable effect on any
 channel the gate compares even when it is, `GetPath` is called in every scenario
-and its answer is never consumed, and `GetRoot`'s answer IS consumed — by a live
-line that uses it to name a debug file the gate never opens. Each carries a green
-gate artifact committed beside the red test that says it constrains nothing.
+and its answer is never consumed, `GetRoot`'s answer IS consumed — by a live line
+that uses it to name a debug file the gate never opens — `HPFilter` runs 892,000
+times with every call site cancelled by a different mechanism, and `Int2LStr`'s
+only live reader is a `PRINT`. Each carries a green gate artifact committed beside
+the red test that says it constrains nothing.
+
+**And from unit #9 onward each also carries a CONTROL** — GetWords' known-red
+perturbation re-run on that unit's own build — because a red test that comes back
+green is indistinguishable from a broken instrument without one. The five units
+before #9 do not have theirs; that is recorded under Open.
 
 **Every unit now has a `harness/` and a `mutation/` artifact.** `ExtController`
 was the exception for two dispatches and the absence was recorded as the

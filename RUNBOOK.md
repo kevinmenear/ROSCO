@@ -489,6 +489,128 @@ is `/workspace/ROSCO-r2`.
   EOF
   ```
 
+- **A CHARACTER FUNCTION RESULT is a `char*` whose WIDTH IS NOT A PARAMETER, and
+  three separate places assumed a width always is one.** Unit #10, and it is the
+  same disagreement-between-generators shape unit #8 recorded, one type over.
+
+  `CHARACTER(11) :: Int2LStr` is not a C return value. `result_is_out_param`
+  makes it a trailing `char* <Func>_result` the caller owns and the callee
+  blank-fills, and `vit interface` emits that with the width COMPILED INTO BOTH
+  SIDES (`DO vit_i_result = 1, 11`). `build_c_params` therefore emits no
+  `len_<x>` -- there is nothing to emit, the width is a literal in the
+  FUNCTION's own declaration -- and the differential harness refused the unit's
+  ONLY output for its absence.
+
+  Ask both generators, and for a FUNCTION ask a third question of the harness
+  script itself:
+
+  ```
+  vit interface <Unit> -f <file> -o /tmp/<u>_iface        # does the result cross?
+  # ... map_signature as in the unit #8 entry above ...
+  grep -n 'result_ctype' /workspace/translation-loop/scripts/vit_harness.py
+  ```
+
+  **`vit_harness.py` set `result_ctype` for ANY function.** A result already
+  crossing as an out-parameter would have been emitted a SECOND time as a return
+  value: `char ret_a = int2lstr(...)` against a wrapper returning `void`, plus a
+  `&ret_b` argument the Fortran bridge has no dummy for, through a C linkage that
+  checks neither. It asked `is_function` where the question is *does the result
+  come back through the RETURN VALUE* -- which VIT already answers, in one
+  predicate. Fixed in the loop repo; the check before believing any FUNCTION's
+  harness is that the generated test declares the bridge with the same arity VIT's
+  `vit interface` printed:
+
+  ```
+  grep -n 'extern "C" void <unit>_f90' translations/<Module>/<unit>_test/<unit>_test.cpp
+  ```
+
+- **`intent="out"` on a buffer the harness must SUPPLY is a stream with nothing
+  in it.** Same unit, thirty seconds after the mapping was fixed:
+  `Signature.inputs` excludes an `out`, so nothing filled the result buffer and
+  `write_cases` died with *"has 0 element(s) but its extents say 11"*.
+  `_arg_intent` had already drawn this line -- *"an OUT struct is still supplied
+  (allocated) and compared"* -- and `inout` is also the STRONGER choice: the
+  bytes a translation fails to write are the ones the harness put there, and they
+  are compared. Read the no-op red test's `got` column to confirm it: it should
+  show the harness's own fill, not zeros.
+
+- **A scalar INTEGER reaches no value this generator CHOSE -- it is a uniform
+  draw over a range nobody declared, and for a width-dependent unit that is the
+  whole blindness.** Unit #10, and it is the third corpus blind spot after unit
+  #7's three and unit #8's two.
+
+  `_ladder` and `_literal_values` are both driven off `reals`. The only thing
+  that has ever set a scalar int is `rng.randint` over `_bounds`' DEFAULT
+  `+/-1e3`. A Fortran default INTEGER is the whole 32-bit domain; `+/-1e3` is
+  0.00005% of it, all of it in the middle.
+
+  `Int2LStr` formats a number into an 11-character field, so every branch it has
+  is a branch about the WIDTH of the number -- and at `|Num| < 1000` the width is
+  1 to 4 in every case ever generated. Nine mutants survived a 144-case green for
+  want of a value the generator could not produce. Check it before believing any
+  green on a unit that formats, pads, justifies or field-widths a number:
+
+  ```
+  python3.12 - <<'EOF'
+  import struct
+  b = open('translations/<Module>/<unit>_test/<unit>_cases.bin','rb').read()
+  # decode per the unit's own _order; print the distinct values of each int
+  EOF
+  ```
+
+  An integer DECADE ladder now exists (`_int_magnitude_ladder`): `9/10`,
+  `99/100`, ... `10^9`, both signs, plus `INT_MAX` and `INT_MIN`. Those are the
+  only places a width-dependent predicate changes its answer. `-2147483648` is
+  listed rather than derived -- it is the one value whose magnitude has no
+  positive counterpart, and it is exactly 11 characters wide. Appended last and
+  fired only for a DEFAULTED scalar int, so it can only ADD cases and no earlier
+  unit's draws move. **Not an X3 change**: no default is loosened, no existing
+  case is altered, and the effect is strictly more input and strictly more
+  mutants killed.
+
+- **The KERNEL may compare the CALLER's variable, not the unit's result, and then
+  three stubs are not enough.** Unit #10. `Int2LStr` is called inside an
+  expression -- `OL_String = TRIM(OL_String)//' Cable'//TRIM(Int2LStr(I))//' '`
+  -- so KGen instruments the ASSIGNMENT and the compared field is `ol_string`.
+  The generated `!local verify variables` names the unit's own output NOWHERE,
+  which is exactly the check unit #7 said to run before trusting a kernel.
+
+  Run FOUR stubs when the result reaches the compared field through `TRIM`,
+  concatenation, or any other narrowing:
+
+  ```
+  no-op            must FAIL   -- the comparison is alive
+  WRONG constant   must FAIL   -- alive on the VALUE, not just on presence
+  the SHAPE stub   ?           -- right digits, wrong PADDING (use a non-blank)
+  RIGHT constant   if it PASSES the kernel is a lookup table
+  ```
+
+  The third one is the trap and is worth keeping even when it fails. `'X'`
+  padding fails here, which reads like proof the kernel sees all 11 bytes -- and
+  it only survives `TRIM` because `'X'` is not a blank. A translation that padded
+  with a different BLANK would be invisible. **A stub that fails does not tell
+  you why it failed.**
+
+- **Ask whether the only reader is a `PRINT` -- it is one grep, and it settles
+  the observability note before any tracing.** Unit #10; unit #7's shape reached
+  in seconds rather than an afternoon.
+
+  ```
+  grep -n '<the out-variable>' rosco/controller/src/*.f90    # EVERY reader
+  ```
+
+  If every reader is a `PRINT`, a `WRITE` to a log unit, or a filename, the gate
+  cannot see the unit and no amount of hit count changes that: `gate.py` compares
+  `baseline_arrays/scenario_N.npz`, built from the arrays crossing the DLL
+  boundary, and never reads stdout.
+
+  And ask what the DEAD call sites have in common before calling them incidental.
+  Eighteen of `Int2LStr`'s twenty sites build `ErrVar%ErrMsg` strings or a
+  debug-file FORMAT. **A unit whose job is rendering numbers into human-readable
+  messages has output a numerical gate structurally does not look at**, and all
+  27 scenarios read valid input files, so no error message is ever built. That is
+  a property of the unit's PURPOSE, not an accident of coverage.
+
 - **A CHARACTER ARRAY dummy is TWO extents, and two of this campaign's generators
   disagreed about it in opposite directions.** Learned at unit #8, and the
   disagreement is the transferable part.

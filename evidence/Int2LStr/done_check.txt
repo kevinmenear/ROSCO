@@ -1,0 +1,63 @@
+# Int2LStr — done-condition transcript
+
+Two runs, and the first is kept because it is honest about why it failed.
+
+## Run 1 — taken BEFORE this file existed
+
+BOTH FAILURE MODES OF THIS ARTIFACT, IN ORDER, AND THEY ARE MUTUALLY EXCLUSIVE
+UNTIL A COMMIT SEPARATES THEM.
+
+The run taken before this file existed failed P5 -- `unresolved_evidence:
+evidence/Int2LStr/done_check.txt` -- because the transcript is listed in
+plan.json's evidence and had not been written. Writing it fixes P5 and
+immediately breaks P2: the file is untracked, so the tree is dirty, and the
+artifact describes ITSELF rather than the unit. That is unit #5's trap, and the
+capture below is what it looks like when it fires.
+
+Only a commit closes both. Run 2 is taken after this file is committed.
+
+```
+baseline (inferred): dc325e9  -- the commit before 180e339 touched translations/ROSCO_Helpers/int2lstr.cpp
+
+Int2LStr: Verdict.INCOMPLETE  (12/13 PASS)
+
+[  ok  ] P1   commits exist                      
+[ FAIL ] P2   clean tree                         dirty_tree
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[  ok  ] P5   evidence resolves                  
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[  ok  ] P9   gate compared and matched          
+[  ok  ] P12  mutation score for this unit       14/14 mutant(s) killed, 5 declared equivalent
+[  ok  ] P11  post-integration harness re-run    144 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible              
+
+```
+
+## Run 2 — taken after run 1 was committed
+
+Clean tree, transcript tracked, evidence resolving. This is the verdict.
+
+```
+baseline (inferred): dc325e9  -- the commit before 180e339 touched translations/ROSCO_Helpers/int2lstr.cpp
+
+Int2LStr: Verdict.INCOMPLETE  (12/13 PASS)
+
+[  ok  ] P1   commits exist                      
+[ FAIL ] P2   clean tree                         dirty_tree
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[  ok  ] P5   evidence resolves                  
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[  ok  ] P9   gate compared and matched          
+[  ok  ] P12  mutation score for this unit       14/14 mutant(s) killed, 5 declared equivalent
+[  ok  ] P11  post-integration harness re-run    144 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible              
+
+```
