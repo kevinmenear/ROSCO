@@ -1,52 +1,46 @@
-# done_check.py ExtController -- run 2026-08-11, on a CLEAN tree, after both
-# commits and BEFORE this file existed.
+# Done-condition, ExtController — unit #5, THIRD dispatch
 #
-#     $ python3.12 scripts/done_check.py ExtController --baseline 05a64cd
+# `python3.12 scripts/done_check.py ExtController`, run on a clean tree after
+# both commits (0dc2244 the work, a4f3a84 the state). Transcribed rather than
+# piped: the second dispatch piped it, and CREATING THE FILE MADE THE TREE
+# DIRTY, so the artifact recorded `P2 FAIL dirty_tree` and described itself
+# rather than the unit.
 #
-# ExtController: Verdict.INCOMPLETE  (11/13 PASS)
+# The second dispatch's INCOMPLETE 11-of-13 is kept beside this file as
+# done_check.second_dispatch.txt. It was correct when it was taken.
+
+baseline (inferred): aa65265  -- the commit before 0dc2244 touched translations/ExtControl/extcontroller.cpp
+
+ExtController: Verdict.COMPLETE  (13/13 PASS)
+
+[  ok  ] P1   commits exist
+[  ok  ] P2   clean tree
+[  ok  ] P3   disposition recorded
+[  ok  ] P4   evidence recorded
+[  ok  ] P5   evidence resolves
+[  ok  ] P6   functional commit
+[  ok  ] P7   state brought current
+[  ok  ] P8   unit named in state
+[  ok  ] P9   gate compared and matched
+[  ok  ] P12  mutation score for this unit       48/48 mutant(s) killed, 4 declared equivalent
+[  ok  ] P11  post-integration harness re-run    163 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible
+
+exit status 0
+
+# WHAT P9 DOES AND DOES NOT SAY HERE, because "gate compared and matched" is
+# the one line on this list that could be read as more than it is.
 #
-# [  ok  ] P1   commits exist
-# [  ok  ] P2   clean tree
-# [  ok  ] P3   disposition recorded
-# [  ok  ] P4   evidence recorded
-# [  ok  ] P5   evidence resolves
-# [  ok  ] P6   functional commit
-# [  ok  ] P7   state brought current
-# [  ok  ] P8   unit named in state
-# [  ok  ] P9   gate compared and matched
-# [ FAIL ] P12  mutation score for this unit    mutation_missing:no mutation/ExtController.json
-# [ FAIL ] P11  post-integration harness re-run harness_not_rerun:no harness/ExtController.postintegration.json
-# [  ok  ] P13  evidence matches the contract   mirror: the gate's evidence is admissible
-# [  ok  ] P10  evidence reproducible
+# The gate compared 5,252,000 values across 351 channels and matched all of
+# them, and it CONSTRAINS NONE OF THEM for this unit: `gate/ExtController.redtest.json`
+# records that making the translation a no-op moved 0 of 5,252,000, with
+# replacements: 1 and revert_verified: true. ExtControl.f90 is 0 of 28
+# executable lines in all 27 scenarios. P9 asserts `compared > 0`, which is
+# true and is not evidence about this unit.
 #
-# exit status: 1
-#
-# ---------------------------------------------------------------------------
-# WHY THIS IS A TRANSCRIPT AND NOT A CAPTURED RUN.
-#
-# The first attempt piped the run into this file, and the act of creating the
-# file made the tree dirty -- so the artifact recorded `P2 clean tree FAIL,
-# dirty_tree` and 10/13, describing itself rather than the unit. That is P2's
-# documented failure mode (RUNBOOK: "any untracked file counts, including one
-# you just wrote"), met head-on. The 11/13 above is the clean-tree run; re-run
-# the command on a clean tree to reproduce it.
-#
-# WHY THE VERDICT IS KEPT.
-#
-# P11 and P12 FAIL because harness/ExtController.postintegration.json and
-# mutation/ExtController.json do not exist, and they cannot. Both are mandatory
-# for every unit in this campaign, and neither can be produced for a unit with
-# no bridge (VIT refuses `CHARACTER(:), ALLOCATABLE`) and no runnable oracle
-# (the original Fortran segfaults, signal 11). Manufacturing either would have
-# turned the condition green and made the campaign's evidence weaker in silence
-# -- the same trade the RUNBOOK refuses when it forbids unsetting
-# --mutation-glob to close a unit. The absence is the finding.
-#
-# P9 passes on a green that constrains nothing. gate/ExtController.redtest.json
-# is the failed red test committed beside it: the unit made a no-op moved 0 of
-# 5,252,000 values.
-#
-# COMPLETE is unattainable for a blocked unit. `loop/driver.py` escalates
-# `blocked_substrate` on the disposition, separately from the done-condition
-# (SPEC 8.4). INCOMPLETE here is the correct and expected result, not a defect
-# in the work.
+# What IS evidence about this unit is P11 and P12: 163 differential cases
+# against the clean Fortran with a constructed oracle, red-tested by replacing
+# the translation with a no-op (163/163 fail, naming ExtDLL.avrSWAP,
+# ExtDLL.n_avrSWAP, ErrVar.ErrStat and ErrVar.ErrMsg), and 48 of 48 behavioural
+# mutants killed with four declared equivalent and reasoned.
