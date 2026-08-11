@@ -414,6 +414,141 @@ is `/workspace/ROSCO-r2`.
   many times per timestep in every scenario) and confirm green returns after the
   revert, or the red is not attributable to the perturbation.
 
+- **A generated corpus can contain ONE ORDERING, and the check is three lines
+  of decoding, not a reading of the generator.** Unit #12, and it is the seventh
+  corpus blind spot -- the one that made the differential harness green for the
+  same reason the kernel was.
+
+  `harness/generate.py`'s `_fill_array` returns `lo + span*(k+1) + jitter`: a
+  strictly ASCENDING ramp, in every case, for every array parameter this
+  generator has ever filled. `NonDecreasing`'s whole body is
+  `Array(I+1) - Array(I) <= 0`, so all 25 cases answered `.TRUE.` and a
+  translation reading no argument and returning `.TRUE.` passes -- which is the
+  identical green the KERNEL gives, because `NonDecreasing = .FALSE.` has zero
+  hits in all 27 scenarios. **Two instruments, one blindness**, and the second
+  exists to not share the first's.
+
+  Decode the case file and count the DISTINCT ANSWERS before believing any green
+  on a unit whose output is a predicate:
+
+  ```
+  python3.12 - <<'EOF'
+  import struct
+  b = open('translations/<Module>/<unit>_test/<unit>_cases.bin','rb').read()
+  # decode per the unit's own _order; evaluate the reference's predicate in
+  # Python and count how many cases give each answer
+  EOF
+  ```
+
+  An ORDER LADDER now exists: reversed, one adjacent inversion at first /
+  interior / last, one adjacent EQUAL pair at interior and last, the constant
+  array, and lengths 1 and 2. Fired only for an array the REFERENCE ITSELF
+  subscripts twice in one statement (`order_arrays_from`, read out of the
+  Fortran, which is the oracle -- a red-test stub contains no subscript).
+  Deliberately NOT "any array": an interpolation table's reference SEARCHES a
+  sorted array, one subscript per statement, and an unsorted one would put it
+  outside its own admissible domain. Appended last, and the block draws no
+  random numbers when it does not fire, so no earlier unit's corpus moves.
+
+  The number that says it bought something: both `<= 0.0` -> `< 0.0` mutants are
+  killed by 4 of 36 cases, and all 4 are ladder cases
+  (`evidence/NonDecreasing/order_ladder_kills_the_le_mutant.txt`). Without it the
+  score is 0.875. Those same 4 are the only cases the post-integration
+  `SIZE(Array) - 1` red test can reach.
+
+- **A NUMERIC ARRAY's extent is an ORDINARY C PARAMETER that `vit interface`
+  puts AFTER the buffer, and the harness emitter declared in signature order.**
+  Unit #12. `std::vector<double> Array_a(n_Array_a);` came out one line before
+  `n_Array_a` existed -- a compile error, not a wrong answer, and so cheap to
+  spot that it is worth knowing it is a fixed shape rather than a new bug:
+
+  ```
+  grep -n 'was not declared in this scope' <the harness build log>
+  ```
+
+  The CHARACTER path had already solved it, with a `predeclared` placeholder
+  that reads the length WITH the buffer and passes it at its own argument
+  position. **A fix applied at one of two sites that share a code shape is a fix
+  the other site escapes** -- the fifth instance here. Fixed by reusing that
+  machinery, gated on `names.index(d) > i`, which is exactly the condition under
+  which the old emitter produced the error, so nothing that ever compiled moves.
+  A second defect rode along: at its own position the extent was typed from
+  `elem_ctype`, which defaults to `double`.
+
+  And `scripts/_integration_shim.py` emitted `extern "C" int32_t <unit>_c(...)`
+  with **no `#include <cstdint>`**. The shim compiles STANDALONE and includes
+  nothing the translation includes; it already carries two conditional includes
+  for this reason, and a LOGICAL RESULT is the first fixed-width return this
+  campaign has produced.
+
+- **A LOGICAL FUNCTION RESULT crosses as `INTEGER(C_INT)`, gfortran accepts the
+  assignment as an EXTENSION, and what the extension DOES has to be measured.**
+  Unit #12. `vit interface` emits
+  `NonDecreasing_result = nondecreasing_c(Array, SIZE(Array))` -- `LOGICAL =
+  INTEGER`, which is not standard Fortran. gfortran compiles it with one warning
+  and exit 0, so the build says nothing useful; a bit-copy and a normalisation
+  give different answers for a return value of 2, and only one of them is safe.
+
+  ```
+  # evidence/NonDecreasing/logical_result_conversion_probe.f90 is the pattern
+  gfortran probe.f90 -o /tmp/probe && /tmp/probe
+  ```
+
+  It NORMALISES: `0` -> `.FALSE.`, and `1`, `2`, `-1`, `256` all -> `.TRUE.` with
+  `TRANSFER(L,0) == 1`. Returning 1/0 from the C++ is exact. Also read the
+  wrapper for what it ADDS: it declares `INTENT(IN)` on a dummy the original
+  declares with no intent at all.
+
+- **A gate red test that reproduces ANOTHER unit's red number exactly is one
+  finding, not two.** Unit #12. Forcing `NonDecreasing` to answer `.FALSE.` moved
+  **1,857,893 of 5,252,000** -- byte-identical to `gate/GetWords.redtest.json`,
+  the figure the campaign already designates as its same-build control.
+
+  Read forwards that is a fifth gate-visible unit. Read properly it says the two
+  perturbations END IN THE SAME PLACE: every live call site is
+  `.NOT. NonDecreasing(...)` -> `ErrVar%aviFAIL = -1`, so the controller rejects
+  its own input file, which is exactly what breaking GetWords' word parser does,
+  and a rejected input file has ONE output signature. The red is real and
+  attributable, and what it constrains is a SINGLE BOOLEAN -- nothing about the
+  array, and nothing about the answer no scenario produces.
+
+  Two things follow, both worth keeping. Such a red test IS its own control -- it
+  has just reproduced the control figure. And before writing "the gate sees this
+  unit", compare the moved count against every committed redtest artifact:
+
+  ```
+  python3.12 -c "import json,glob; [print(f, json.load(open(f)).get('mismatched')) \
+      for f in sorted(glob.glob('gate/*redtest*.json'))]"
+  ```
+
+- **When the unit is called inside an IF CONDITION, KGen instruments the IF and
+  the compared fields are the BRANCH's outputs.** Unit #12, and it is the shape
+  unit #7's `!local verify variables` check is for. `IF (... .AND. .NOT.
+  NonDecreasing(CntrPar%PC_GS_angles)) THEN ErrVar%aviFAIL = -1` gives a kernel
+  comparing `cntrpar` and `errvar` and naming the unit's result nowhere.
+
+  That is not automatically dead -- the result reaches `errvar` by deciding
+  whether the branch runs -- but it makes the pair of stubs mandatory and it
+  makes WHICH constant you pick load-bearing:
+
+  ```
+  the constant the scenarios ACTUALLY produce   -> if it PASSES, the kernel is a
+                                                   lookup table
+  the OTHER constant                            -> if it FAILS, the comparison is
+                                                   alive
+  ```
+
+  Here `.TRUE.` passes 200 of 200 and `.FALSE.` moves exactly 2 rows, `avifail`
+  and `errmsg`. Pick the constants from the COVERAGE of the branch bodies, not
+  from the signature: clean `ROSCO_Helpers.f90:1569` has zero hits in all 27
+  scenarios, which said in advance that `.TRUE.` was the only answer the kernel
+  would ever have seen.
+
+  **An input VALIDATOR is this shape by construction.** All 27 scenarios read
+  valid input files, so the branch the unit exists for is the branch none of them
+  takes -- the same argument unit #10 recorded about a unit whose job is
+  rendering error messages, one layer up.
+
 - **`vit_mutate.py` mutates the TRANSLATION FILE IN PLACE, so an interrupted
   mutation run leaves a MUTANT in the tree and nothing says so.** Unit #11.
 

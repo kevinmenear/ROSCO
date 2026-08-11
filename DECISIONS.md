@@ -2,6 +2,93 @@
 
 Append-only record of *why*. Never read end to end.
 
+## 2026-08-11 — Unit #12 `NonDecreasing`: the corpus had one ordering in it
+
+**Every array this generator has ever produced was sorted ascending, and the
+unit whose whole body is an order predicate is what made that visible.**
+`harness/generate.py`'s `_fill_array` returns `lo + span*(k+1) + jitter` — a
+strictly increasing ramp, deliberately, because the shape it was written for is
+a table of interpolation breakpoints and an unsorted one puts the reference
+outside its own admissible domain. The consequence nobody had measured: all 25
+generated cases for `NonDecreasing` were ascending, the reference answered
+`.TRUE.` in every one, and a translation that reads no argument and returns
+`.TRUE.` passes that corpus.
+
+That is the SAME green the kernel gives, for the same reason. `NonDecreasing =
+.FALSE.` has zero hits in all 27 scenarios, so a constant-`.TRUE.` stub reading
+no argument scores 200 of 200 `IDENTICAL`. **Two independent instruments, one
+blindness** — and the differential harness exists precisely to not share the
+simulation's blind spots.
+
+Fixed by addition, and the addition is narrow on purpose. An ORDER LADDER —
+reversed, one adjacent inversion at first / interior / last, one adjacent EQUAL
+pair at interior and last, the constant array, and the degenerate lengths 1 and
+2 — appended last, fired only for an array the REFERENCE ITSELF subscripts twice
+in one statement (`Array(I_DIFF + 1) - Array(I_DIFF)`). Read out of the Fortran,
+not the C++, for unit #11's reason: a red-test stub contains no subscript, so a
+corpus keyed off the translation collapses on exactly the run that proves the
+harness can fail. Not "any array": `interp1d` compares `xData(I)` against a
+scalar, one subscript per statement, and would not fire.
+
+**The measurement that says it bought something**, rather than the claim: both
+`compare_op` mutants (`<= 0.0` → `< 0.0`) are killed by 4 of 36 cases, and
+`evidence/NonDecreasing/order_ladder_kills_the_le_mutant.txt` enumerates those 4
+— all of them order-ladder cases, none of them among the 25 base draws. Without
+the repair the score is 14/16 = 0.875, below the campaign's threshold. The same
+4 cases are the only ones the post-integration `SIZE(Array) - 1` red test can
+reach, so the ladder is also what made the marshalling red test possible.
+
+**A green that is one-sided does not announce itself.** 25 checked, 0 failed
+read exactly like 36 checked, 0 failed. What exposed it was decoding the case
+file and counting distinct answers — three lines, and it belongs before
+believing any harness green on a unit whose output is a predicate.
+
+## 2026-08-11 — Unit #12: two generators that had never met a numeric array's extent
+
+Both recorded with their wrong artifact before either was fixed (C12), under
+`evidence/NonDecreasing/loop_defects/`.
+
+1. **`harness/emit.py` emitted a use before its declaration.** A numeric array's
+   extent is an ordinary C parameter and `vit interface` puts it AFTER the
+   buffer (`nondecreasing_c(Array, n_Array)`), while the generated `main`
+   declares in C-parameter order — so `std::vector<double> Array_a(n_Array_a);`
+   came out a line before `n_Array_a` existed. The CHARACTER path had solved
+   this: it reads the length WITH the buffer and passes it at its own position
+   through a `predeclared` placeholder. The numeric path never got the
+   mechanism. **A fix applied at one of two sites that share a code shape is a
+   fix the other site escapes** — the campaign's fifth instance.
+
+   The fix reuses the existing placeholder machinery and is gated on
+   `names.index(d) > i`, which is *precisely* the condition under which the old
+   emitter produced the compile error. So no unit that ever produced a compiling
+   harness can enter the new branch, and no already-measured corpus moves. A
+   second defect went with it: at its own position the extent was typed from
+   `elem_ctype`, which defaults to `double`, so a `double` was being read from an
+   int slot and narrowed back at the call.
+
+2. **`scripts/_integration_shim.py` emitted `int32_t` with no `<cstdint>`.** The
+   shim compiles standalone and includes nothing the translation includes. It
+   already has two conditional includes for exactly this reason
+   (`ISO_Fortran_binding.h`, `vit_types.h`); this is the third, keyed the same
+   way — on the types actually emitted, so no unit whose shim already compiles
+   gains a line. A LOGICAL RESULT is the first fixed-width return this campaign
+   has produced.
+
+## 2026-08-11 — Unit #12: the gate's red is a refusal to start, not a computation
+
+`gate/NonDecreasing.redtest.json` moved **1,857,893 of 5,252,000**, which is
+byte-identical to `gate/GetWords.redtest.json`. Read as a second gate-visible
+unit that would be an overstatement. All three live call sites are
+`.NOT. NonDecreasing(...)` → `ErrVar%aviFAIL = -1`, so answering `.FALSE.` makes
+the controller reject its own input file — the same end state as breaking
+GetWords' word parser, and a rejected input file has one output signature.
+
+Two things follow and both are kept. The red test IS its own same-build control
+(it reproduces the campaign's designated control figure exactly, which is what
+that control exists to check). And what the gate constrains is a single boolean:
+nothing about the array, and nothing about the answer `.FALSE.`, which no
+scenario ever produces.
+
 ## 2026-08-10 — Phase 1: the gate got an artifact, and extraction got a verdict
 
 **The gate counts values, not channels.** `regress.sh` compared whole channels

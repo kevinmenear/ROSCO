@@ -594,13 +594,44 @@
         "DISCON"
       ],
       "dependency_depth": 0,
-      "verification": "kernel replay or direct-call harness; bit-identical",
+      "verification": "ROUTE EXISTS AND WAS RUN. FIVE LAYERS; FOUR ALIVE, AND THE KERNEL PROVED VACUOUS BY ITS OWN STUB.\n\n  kernel replay              1/1 case, 200 compared field rows, ALL `IDENTICAL`. Scenario 1, call site clean ReadSetParameters.f90:1196 inside `CheckInputs` -- `IF (CntrPar%PC_ControlMode .NE. 0 .AND. .NOT. NonDecreasing(CntrPar%PC_GS_angles))`. The call is inside an IF CONDITION, so KGen instruments the enclosing statement and the compared fields are `cntrpar` and `errvar`, NOT the unit's result -- the check unit #7's entry asks for, run and answered. VIT itself returned NON_DISCRIMINATING (no by-value floating-point argument), so two stubs were run by hand:\n      constant-.FALSE. stub   ALIVE. 2 of 201 rows `OUT_TOL`, and they are exactly the two the result can reach: `avifail` 0 -> -1 and `errmsg` blank -> 'PC_GS_angles must be non-decreasing'.\n      constant-.TRUE. stub    IT PASSES. A stub reading NO argument, 200 of 200 `IDENTICAL`. The kernel is a LOOKUP TABLE for this unit and cannot constrain the array at all -- because `NonDecreasing = .FALSE.` has ZERO hits in all 27 scenarios and all 74 calls answer `.TRUE.`.\n  differential harness       36 checked, 0 failed, against the CLEAN Fortran. RED-TESTED: the result INVERTED fails 36 of 36 and the mismatch list names `vit_result`, the unit's only output. A constant could not have been the red test here -- the corpus now contains both answers -- which is itself the measurement that the one-sided corpus is gone. THE HARNESS DID NOT EXIST AT FIRST: the generated test did not compile. See DECISIONS.md and evidence/NonDecreasing/loop_defects/.\n  mutation score             16 of 16 BEHAVIOURAL killed, score 1.000, 0 declared equivalent, 0 excluded as no-compile. BOTH `compare_op` mutants (`<= 0.0` -> `< 0.0`) are killed by 4 of 36 cases, and evidence/NonDecreasing/order_ladder_kills_the_le_mutant.txt shows those 4 are ALL cases the new order ladder appended and NONE of them among the 25 base draws. Without the corpus repair the score is 0.875.\n  post-integration harness   36 checked, 0 failed -- the WRAPPER's marshalling, which here is an assumed-shape `REAL(8) :: Array(:)` onto `double*` plus `SIZE(Array)`, and an INTEGER(C_INT) return assigned to a LOGICAL. RED-TESTED with the rebuild between edit and run: forwarding `SIZE(Array) - 1` fails 4 of 36, and 4 is exactly the number of cases at which dropping the last element changes the answer (cases 3, 4, 9, 10 -- all four of them order-ladder cases). Revert, rebuild, green restored.\n  gate, 27 scenarios         5,252,000 values / 351 channels, 0 mismatched -- AND ITS RED TEST WENT RED. Forcing the unit to answer `.FALSE.` moved 1,857,893 of 5,252,000; revert returned 0 (`replacements: 1`, `revert_verified: true`). That figure is BYTE-IDENTICAL to gate/GetWords.redtest.json, the campaign's designated same-build control, so the red test is simultaneously its own control -- and the coincidence is the finding: both perturbations end in a REJECTED INPUT FILE, which has one output signature. The gate constrains ONE BIT of this unit and nothing about the array.",
       "why": "every input and output crosses the signature",
       "bridge_feasible": {
-        "value": "unknown",
-        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+        "value": "yes -- measured on the generator that ships",
+        "basis": "the recorded basis (five blocking features in the conformance matrix that no FEATURE_CELLS pattern can attribute) is superseded by reading `vit interface`'s wrapper attribute by attribute before writing any C++, and `vit integrate --dry-run`'s before applying it",
+        "observed": "The single dummy crosses and nothing is dropped: `REAL(DbKi), DIMENSION(:) :: Array` becomes `REAL(C_DOUBLE), INTENT(IN) :: Array(*)` plus `INTEGER(C_INT), VALUE :: n_Array`, forwarded as `SIZE(Array)`. Two things the wrapper does that the original does not, both read rather than assumed: it ADDS `INTENT(IN)` where the original declares no intent (a narrowing, and sound -- the body never writes Array), and it assigns an `INTEGER(C_INT)` RESULT to a `LOGICAL`, which is a gfortran EXTENSION and compiles with a warning rather than an error. That conversion NORMALISES rather than bit-copying -- 0 -> .FALSE.; 1, 2, -1 and 256 all -> .TRUE. with TRANSFER(L,0) == 1 -- so returning 1/0 from the C++ is exact. Measured: evidence/NonDecreasing/logical_result_conversion_probe.f90."
       },
-      "observability": null
+      "observability": "THE GATE SEES ONE BIT OF THIS UNIT, AND IT SEES IT AS A REFUSAL TO START.\n\ngate/NonDecreasing.redtest.json: forcing `.FALSE.` moved 1,857,893 of 5,252,000, green after revert. Fifth of twelve units to be gate-visible at all, after ColemanTransform (124,353), ColemanTransformInverse (389,644), GetWords (1,857,893) and LPFilter (1,592,059).\n\nTHE NUMBER IS THE SAME AS GetWords'. That is not a coincidence to be reported as a second success: the unit's result is read at three live call sites and every one of them does `.NOT. NonDecreasing(...)` -> `ErrVar%aviFAIL = -1` + an `ErrMsg`. Answering `.FALSE.` makes the controller reject its own input file, which is exactly what breaking GetWords' word parser does, and a rejected input file has ONE output signature. So the gate's red is real and attributable, and what it constrains is a single boolean, not the comparison the unit performs.\n\nWHAT NO SIMULATION-BASED LAYER HERE CONSTRAINS: the array, and the answer `.FALSE.`. Clean ROSCO_Helpers.f90:1569 (`NonDecreasing = .FALSE.`) and 1570 (its RETURN) have ZERO hits in all 27 scenarios, while the loop head at 1567 runs 3,690 times and the function is entered 74 times across 24 scenarios. The unit is the CONSTANT .TRUE. on the exercised domain -- unit #7's identity-on-the-exercised-domain shape, one predicate over -- and that is a property of its PURPOSE: it is an input VALIDATOR, all 27 scenarios read valid input files, so the branch it exists for is the branch none of them takes. A constant-.TRUE. stub reading no argument passes the kernel 200 of 200.\n\nONE OF FOUR CALL SITES IS DEAD in all 27 scenarios: ReadSetParameters.f90:1566 (`SD_StagePitch`, guarded by `SD_Method == 2`). The other three -- 1196 `PC_GS_angles` (25 hits), 1408 `WE_FOPoles_v` (25), 1476 `PS_WindSpeeds` (24) -- are live.\n\nSO THE DIFFERENTIAL HARNESS AND THE MUTATION SCORE ARE THE WHOLE OF THE EVIDENCE ABOUT WHAT THIS UNIT COMPUTES, and until this unit they would not have been either: `_fill_array` returns a strictly ASCENDING ramp in every case it has ever produced, so all 25 generated cases answered `.TRUE.` and the corpus had exactly one ordering in it. Fixed by addition -- an ORDER LADDER fired only for an array the REFERENCE itself subscripts twice in one statement. 25 cases -> 36; both `<= 0.0` -> `< 0.0` mutants go from surviving to dying on 4 cases apiece.",
+      "disposition": "integrated",
+      "source_file": "rosco/controller/src/ROSCO_Helpers.f90",
+      "translation": "translations/ROSCO_Helpers/nondecreasing.cpp",
+      "harness_required": true,
+      "evidence": [
+        "evidence/NonDecreasing/README.md",
+        "evidence/NonDecreasing/nondecreasing.final.cpp",
+        "evidence/NonDecreasing/nondecreasing.constant-true-stub.cpp",
+        "evidence/NonDecreasing/nondecreasing.constant-false-stub.cpp",
+        "evidence/NonDecreasing/nondecreasing.inverted-result-stub.cpp",
+        "evidence/NonDecreasing/kernel.verify_fields.csv",
+        "evidence/NonDecreasing/kernel.constant-true-stub-PASSES.verify_fields.csv",
+        "evidence/NonDecreasing/kernel.constant-false-stub-FAILS.verify_fields.csv",
+        "evidence/NonDecreasing/order_ladder_kills_the_le_mutant.txt",
+        "evidence/NonDecreasing/logical_result_conversion_probe.f90",
+        "evidence/NonDecreasing/logical_result_conversion_probe.out.txt",
+        "evidence/NonDecreasing/loop_defects/nondecreasing_test.GENERATED-DOES-NOT-COMPILE.cpp",
+        "evidence/NonDecreasing/loop_defects/build.error.txt",
+        "evidence/NonDecreasing/loop_defects/vit_integration_shim.GENERATED-DOES-NOT-COMPILE.cpp",
+        "evidence/NonDecreasing/gate.redtest.json",
+        "harness/NonDecreasing.json",
+        "harness/NonDecreasing.redtest.json",
+        "harness/NonDecreasing.postintegration.json",
+        "harness/NonDecreasing.postintegration.redtest.json",
+        "mutation/NonDecreasing.json",
+        "gate/NonDecreasing.json",
+        "gate/NonDecreasing.redtest.json",
+        "translations/ROSCO_Helpers/nondecreasing.cpp",
+        "rosco/controller/src/nondecreasing.cpp"
+      ]
     },
     {
       "order": 13,

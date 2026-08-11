@@ -4,6 +4,56 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-11: unit #12 `NonDecreasing` is `integrated` and CLOSED**, first
+dispatch.
+
+**FOUR LAYERS ALIVE, ONE PROVED VACUOUS BY ITS OWN STUB — and the harness layer
+did not exist until this unit built it.**
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 1 case, scenario 1 | 200 field rows, ALL `IDENTICAL` | constant `.FALSE.` → 2 of 201 `OUT_TOL`, naming `avifail` and `errmsg`; **the constant `.TRUE.` stub, reading no argument, PASSES 200 of 200** |
+| differential harness vs clean Fortran | 36 checked, 0 failed | the result INVERTED → **36 of 36 failed**, naming `vit_result`. A CONSTANT could not have been the red test — the corpus now holds both answers |
+| mutation score | **16/16 behavioural killed, 1.000**, 0 declared equivalent, 0 nocompile | both `<=`→`<` mutants die on 4 cases apiece, and all 4 are order-ladder cases |
+| post-integration harness (wrapper only) | 36 checked, 0 failed | `SIZE(Array)` forwarded as `SIZE(Array) - 1` → 4 of 36, which is exactly the number of cases that perturbation can reach; revert, rebuild, green |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED: 1,857,893 of 5,252,000 moved**, 0 after revert |
+
+**THE CORPUS HAD ONE ORDERING IN IT, AND TWO INSTRUMENTS SHARED ONE BLINDNESS.**
+`_fill_array` returns a strictly ascending ramp in every case it has ever
+produced, so all 25 generated cases answered `.TRUE.` — the same answer the
+kernel gives, for the same reason: `NonDecreasing = .FALSE.` has **zero hits in
+all 27 scenarios**, so a stub reading no argument and returning `.TRUE.` passes
+the kernel 200 of 200. The differential harness exists precisely to not share
+the simulation's blind spots, and here it did. Fixed by addition — an ORDER
+LADDER fired only for an array the REFERENCE itself subscripts twice in one
+statement. 25 cases → 36; the score goes 0.875 → 1.000, and
+`evidence/NonDecreasing/order_ladder_kills_the_le_mutant.txt` names the 4 cases
+that do it.
+
+**THE GATE'S RED IS A REFUSAL TO START.** 1,857,893 is byte-identical to
+`gate/GetWords.redtest.json`, and that is the finding rather than a coincidence:
+all three live call sites are `.NOT. NonDecreasing(...)` → `ErrVar%aviFAIL = -1`,
+so a `.FALSE.` answer makes the controller reject its own input file — the same
+end state as breaking GetWords' word parser. The red test is therefore also its
+own same-build control. What the gate constrains is one boolean; nothing about
+the array, and nothing about the answer no scenario produces.
+
+**TWO GENERATOR DEFECTS, BOTH RECORDED BEFORE THEY WERE FIXED, BOTH FIXED BY
+ADDITION.** `harness/emit.py` emitted `std::vector<double> Array_a(n_Array_a);`
+one line before `n_Array_a` was declared — the CHARACTER path's `predeclared`
+mechanism, which the numeric path never got; and
+`scripts/_integration_shim.py` emitted `int32_t` with no `<cstdint>`, the third
+conditional include that generator has needed for the same reason.
+
+**FIRST LOGICAL FUNCTION RESULT IN THIS CAMPAIGN.** `vit interface` assigns an
+`INTEGER(C_INT)` to a `LOGICAL`, which gfortran accepts as an extension with a
+warning. That conversion NORMALISES rather than bit-copying — measured, not read
+(`evidence/NonDecreasing/logical_result_conversion_probe.f90`): 0 → `.FALSE.`;
+1, 2, -1 and 256 all → `.TRUE.` with `TRANSFER(L,0) == 1`. Returning 1/0 is
+exact.
+
+---
+
 **As of 2026-08-11: unit #11 `LPFilter` is `integrated` and CLOSED**, on the
 SECOND dispatch. The first ran all five layers and then ran out of time with the
 tree dirty, the state uncommitted, and one evidence reference naming a file that
