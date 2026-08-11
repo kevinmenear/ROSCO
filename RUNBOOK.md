@@ -479,6 +479,96 @@ is `/workspace/ROSCO-r2`.
   bit-exact layers cannot constrain, and the harness's mutant kill counts are
   the evidence that anything does.
 
+- **A line executed 1.3 million times can still be one the gate cannot see.**
+  Learned at unit #4. `Conv2UC` is among the hottest procedures in the
+  controller — 1,333,146 calls, 4,558,823 characters converted — and BOTH of
+  these moved 0 of 5,252,000 values:
+
+  ```
+  python3.12 scripts/gate.py <Unit> --perturb-file rosco/controller/src/<u>.cpp \
+      --perturb-from '<the write>' --perturb-to '<a wrong write>'
+  python3.12 scripts/gate.py <Unit> --perturb-file rosco/controller/src/<u>.cpp \
+      --perturb-from 'if (<guard>) {' --perturb-to 'if (false && <guard>) {'
+  ```
+
+  The second is the one to reach for, and it is worth a habit of its own: it
+  makes the unit a NO-OP, so a gate that still cannot move is blind to the unit
+  entirely, not merely to the perturbation you chose. Confirm `replacements: 1`
+  and `revert_verified: true` in the artifact before believing either.
+
+  The cause here is a shape to look for before writing an observability note:
+  **the unit's output is only ever compared against another of its own
+  outputs.** `FindLine` upper-cases the expected parameter name and the file's
+  word with the same function and tests them equal, so any perturbation lands
+  on both sides and equality survives. Grep the call sites for what consumes
+  the result; if every consumer is symmetric in this way, no gate built on
+  simulation output can constrain it, and the harness plus the mutation score
+  are the whole of the evidence.
+
+- **A kernel PASS *is* a bit-identity claim for a CHARACTER output, and this is
+  a per-TYPE fact, not a per-unit one.** Unit #3 recorded that KGen falls back
+  to an ABSOLUTE RMS against `1.D-14` for a REAL array. Read the generated
+  comparison again for each new element type: for `CHARACTER(len)` KGen emits
+
+  ```
+  IF (var == kgenref_var) -> IDENTICAL  ELSE -> OUT_TOL
+  ```
+
+  with no `rmsdiff`, no tolerance and no `IN_TOL` branch at all. Quoting the
+  status counts is still the right habit; the point is that the caveat belongs
+  to REAL fields, and repeating it about a CHARACTER field would be hedging
+  about an instrument that is exact.
+
+- **`vit verify` will report `NON_DISCRIMINATING` for a unit with no by-value
+  floating-point argument, and it is right to.** Its automatic red test
+  perturbs such an argument; a CHARACTER, array or pointer-only signature has
+  none, so it declines to construct one and says the kernel's discriminating
+  power is UNMEASURED. That verdict is not a failure of the translation and
+  must not be argued away — run the zero/no-op stub by hand, record the count,
+  and keep VIT's line in the evidence beside it.
+
+- **A CHARACTER argument crosses, and until unit #4 the HARNESS did not.**
+  `vit interface` emits `CHARACTER(KIND=C_CHAR), INTENT(INOUT) :: Str(*)` plus
+  `INTEGER(C_INT), VALUE :: len_Str`, with copy-in/copy-out in the wrapper, and
+  the wrapper declares the dummy exactly as the original does. What failed was
+  the differential harness: `harness/generate.py` had kinds real / int / real[]
+  and no string, so `vit_harness.py` reported the argument
+  comparable-but-held-constant and then died on
+  `C parameter 'Str' is not in the mapped signature`.
+
+  **20 of this campaign's 69 units take a CHARACTER dummy argument**, and P11
+  and P12 are mandatory for every unit, so none of the 20 could close. Fixed in
+  the loop repo (`9bee569`), not worked around. Two things to carry:
+
+  1. `len_<x>` is an EXTENT. It was falling through to the scalar branch and
+     being varied over ±1e3 — two implementations reading that many bytes from
+     a buffer sized by a different number.
+  2. A string needs THREE SHAPES, not just three lengths: mixed,
+     word-then-blanks, and all-blank. `LEN_TRIM` and `LEN` are the same number
+     on a string with no trailing blank in it, so without a padded case a unit
+     that trims cannot be told from one that does not.
+
+  Still REFUSED, for being unmeasured: a CHARACTER **array** dummy
+  (`FileLines(:)`), whose element width and element count are two extents where
+  `char[]` has one. `FindLine`, `ParseInAry_Opt` and the `ParseInput_*_Opt`
+  family all take one, so that is the next thing this feature will need.
+
+- **Removing a restatement raised a mutation score from 0.696 to 1.000, for the
+  second time.** Unit #1 named a SIZE once; unit #4 named a LOOP BOUND once.
+  `Conv2UC`'s Fortran reads `DO IC=1,LEN_TRIM(Str)`, and transcribing LEN_TRIM
+  literally adds six mutable sites computing a quantity nothing downstream can
+  read — every character past `LEN_TRIM` is a blank, and a blank is never
+  converted, so the trimmed bound and the full length agree on every input. All
+  six survived, five of them as out-of-bounds reads no value comparison can
+  see.
+
+  The test to apply before declaring a survivor equivalent: **can any input
+  make this quantity change an output?** If not, the sites are not equivalent
+  mutants, they are unobservable ones — and the fix is to delete the
+  restatement and write the proof in the translation, not to declare the
+  blindness away. A departure from literal transcription needs that proof in
+  the file; without one, transcribe literally.
+
 - **`vit check -f <file>` scopes its cross-source checks to the FILE, not the
   function**, and `--function` only sets the report header. On `Functions.f90` it
   reported `minval-endpoints` and `array-section-row` against a 6-line
@@ -700,6 +790,13 @@ is `/workspace/ROSCO-r2`.
         --root /workspace/ROSCO-r2 --cpp translations/<Module>/<stem>.cpp \
         --module <Module> --out mutation/<Unit>.json"
   ```
+  `--red-test` works in BOTH modes as of unit #4. It used to be **accepted and
+  silently dropped in pre mode** — that path returns before the stamping block
+  — so a pre-integration red test wrote an artifact saying `failed: 27` and
+  nothing about what was perturbed, indistinguishable from a run that failed by
+  accident. It now stamps with `--pre`, which adds the `red_test` record and
+  none of post mode's fields.
+
   Red-test the post-integration run with the same script, which records the
   perturbation into the artifact and inverts the verdict:
   ```
@@ -780,8 +877,21 @@ is `/workspace/ROSCO-r2`.
   builds a library with no C++ in it at all, which passes 27/27 and means
   nothing.
 
+  **Restoring the SOURCE is not enough, and the script could detect that
+  before it could repair it.** At unit #4 the reset reported success on every
+  step and then exited 1: `kgen symbols in rosco/lib/libdiscon.so: 1`.
+  `vit extract` restores its own pragma-carrying source when it finishes, so
+  `ROSCO_Helpers.f90` came back textually clean, step 1 skipped it (no `_c(`
+  wrapper to revert) and its mtime never moved — and make, seeing an object
+  newer than its source, did not recompile the INSTRUMENTED
+  `ROSCO_Helpers.f90.o`. Step 3c now removes any object in the build tree that
+  DEFINES kgen symbols, which is a rule about contents rather than a list of
+  files and so covers whatever the next extraction instruments. Measured in
+  both directions on the run that found it: 2 objects removed and the assertion
+  went 1 → 0; the immediate re-run removed 0 and stayed at 0.
+
   It reverts more than the replication's version because `vit extract` on this
-  tree damages more than wrappers. Four things, each measured here:
+  tree damages more than wrappers. Five things, each measured here:
 
   1. **wrapper-carrying sources** back to the pinned clean baseline, selected by
      whether the file calls a `<name>_c(` bridge -- a rule that maintains itself

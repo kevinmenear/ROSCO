@@ -4,31 +4,44 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-11: unit #3 `ColemanTransformInverse` is `integrated` and
-CLOSED.** Every layer green with its own red test, and the unit's finding is
-about the INSTRUMENTS rather than the translation. Three of them say less than
-they appear to:
+**As of 2026-08-11: unit #4 `Conv2UC` is `integrated` and CLOSED.** Every layer
+green with its own red test — except the gate, whose red test FAILED and is
+committed as the finding.
 
-1. **RUNBOOK's kernel-liveness recipe cannot be run on this unit at all.** It
-   counts non-zero `reference` values in `verify_fields.csv`; VIT logs an ARRAY
-   field as one row with both value columns EMPTY. The recipe returns an empty
-   answer that reads like a clean one. The zero-writing stub is the only
-   instrument that answers the question here — and it does: 61 of 63 cases go
-   `OUT_TOL`.
-2. **A kernel `PASSED` is a TOLERANCE claim, not a bit-identity claim.** The
-   generated comparison falls back to an ABSOLUTE RMS against `1.D-14`; outputs
-   here are of order 1e-3 rad. The bit-exact claim is in the field log's
-   `status` column, which reads `IDENTICAL` for all 63.
-3. **`aziOffset` is 0 at all five call sites in all 27 scenarios.** A
-   translation ignoring that argument passes the kernel 63/63 AND the gate
-   5,252,000/5,252,000. Only the differential harness varies it; three mutants
-   die in 81 of 257 cases each, and those 81 cases are the whole of what
-   constrains it.
+**THE GATE IS BLIND TO A PROCEDURE CALLED 1,333,146 TIMES.** `Conv2UC` converts
+4,558,823 characters across the 27 scenarios; it is among the hottest procedures
+in the controller. Two perturbations of the integrated C++ were built and gated
+and **each moved 0 of 5,252,000 values** — `ch - 32` → `ch - 31`, and the guard
+forced false so no conversion happens at all. The cause is structural: every
+value the unit produces is consumed by an equality test against another of its
+own outputs (`FindLine` upper-cases both the expected parameter name and the
+file's word before comparing them), so a perturbation lands on both operands and
+equality survives.
 
-Unit #1 `AddToList` and unit #2 `ColemanTransform` remain closed. Escalation 1
-is answered; **escalation 2 still stands** — a dead unit whose signature does
-NOT cross has no path to harness, mutation or gate, and `loop/done.py` still has
-no branch for `integrated_unexercised`.
+This is the third distinct shape of P9 in four units and the sharpest: #1 was a
+line no scenario reached, #3 was an argument constant in every scenario, and
+this is an **executed line whose result is cancelled downstream**. A hit count
+of 1.3M says nothing about observability, and `coverage/line_coverage.json`
+cannot express the difference.
+
+Two further findings:
+
+1. **The differential harness had no string kind, and 20 of 69 units need one.**
+   `vit_harness.py` reported the CHARACTER argument comparable-but-held-constant
+   and then died on `C parameter 'Str' is not in the mapped signature`. With
+   P11 and P12 mandatory, none of those 20 units had a path to close. Built
+   rather than worked around: loop `9bee569`. A CHARACTER **array** dummy is
+   still refused, with its reason.
+2. **Removing a restatement raised the mutation score from 0.696 to 1.000, for
+   the second time in the campaign.** Transcribing `LEN_TRIM` literally adds six
+   mutable sites computing a quantity nothing downstream can read; five survived
+   as out-of-bounds reads no value comparison can see. Unit #1 named a size
+   once; this named a loop bound once.
+
+Units #1 `AddToList`, #2 `ColemanTransform` and #3 `ColemanTransformInverse`
+remain closed. Escalation 1 is answered; **escalation 2 still stands** — a dead
+unit whose signature does NOT cross has no path to harness, mutation or gate,
+and `loop/done.py` still has no branch for `integrated_unexercised`.
 
 Next: the lowest-order remaining unit in `plan.json`. Confirm it against
 `plan.json` before starting, including its `phase` and `proposed_verification`
@@ -37,10 +50,15 @@ fields — those are hypotheses, not facts. Run
 
 ## Counts
 
-3 attempted / 3 integrated / 0 integrated_unexercised / 0 out_of_scope /
+4 attempted / 4 integrated / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / 0 blocked.
 
-69 units in `plan.json`; 66 remain.
+69 units in `plan.json`; 65 remain.
+
+**2 of the 4 closed units are invisible to the gate**, for two different
+reasons: `AddToList` is never called, and `Conv2UC` is called constantly and
+cancelled. Both carry a green gate artifact committed beside the red test that
+says it constrains nothing.
 
 ## Evidenced
 
@@ -141,8 +159,56 @@ extent parameter emitted or needed — and the five scalars go by `VALUE`.
 `vit interface` was read attribute by attribute before any C++ was written, per
 the habit unit #1 installed; nothing was dropped.
 
+### Conv2UC — every layer, and the one red test that failed
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 63 cases, scenario 1, `ROSCO_Helpers.f90:1118` | 63/63 `IDENTICAL` | no-op stub → 31/63 `OUT_TOL`; green restored |
+| differential harness vs clean Fortran | 118 checked, 0 failed | no-op stub → 27/118 failed |
+| mutation score | 14/14 behavioural killed, 1.000, 0 declared equivalent (4 nocompile EXCLUDED) | refuses to score unless the baseline is green |
+| post-integration harness (wrapper only) | 118 checked, 0 failed | `LEN(Str)` → `LEN(Str) - 1` → 24/118 failed; green restored |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED TEST FAILED, twice — 0 of 5,252,000 moved** |
+
+2 of the 14 mutation kills are CRASHES rather than case mismatches (both index
+before the buffer), so the killed-by-comparison count is 12 of 14. The 4
+excluded nocompile mutants are all `harness/cppmutate.py` mangling
+`static_cast<unsigned char>` — 22% against the 25% at which `vit_mutate.py`
+refuses to score.
+
+The signature crosses whole: `CHARACTER(*), INTENT(INOUT) :: Str` becomes
+`CHARACTER(KIND=C_CHAR), INTENT(INOUT) :: Str(*)` plus
+`INTEGER(C_INT), VALUE :: len_Str`, with copy-in/copy-out in a wrapper that
+declares the dummy exactly as the original does. `vit interface` was read
+attribute by attribute before any C++ was written.
+
+**For a CHARACTER output a kernel PASS *is* a bit-identity claim** — KGen's
+generated comparison has no tolerance branch at all. Unit #3's caveat is a fact
+about REAL fields, not about the verdict line; read the generated comparison for
+each new element type.
+
 ## Open
 
+- **A hot line is not an observable line, and nothing in the campaign's coverage
+  data can say which is which.** `Conv2UC` runs 1.3M times and no gate
+  perturbation of it moves any output, because its result is only ever compared
+  against another of its own results. The verification ledger (E5.2) needs a
+  column for this that is distinct from both "unexercised" and "argument held
+  constant" — it is a *consumer* property, not a producer one, and neither
+  coverage nor the gate's own red test in its usual form can detect it. The
+  general instrument found here is to perturb toward ABSENCE (`if (false && …)`)
+  rather than toward a different answer; see DECISIONS.md for the candidate
+  method amendment this suggests, which is flagged and not made.
+- **The differential harness refuses a CHARACTER ARRAY dummy.** `char[]` has one
+  extent; `CHARACTER(*), DIMENSION(:)` has two — element width and element
+  count. `FindLine`, `ParseInAry_Opt`, `ParseDbAry_Opt` and the four other
+  `ParseInput_*_Opt` units all take one, so this is the next instrument gap on
+  the critical path, and it is refused with a reason rather than approximated.
+- **The harness varies a string's length over {1, 3, 8}, not over the 200
+  `MaxParamLength` gives it.** `_extent_plan` assigns a lone free extent the
+  single value 3; the string stage adds 1 and 8 without touching that plan,
+  deliberately, because widening `_extent_plan` would change the case set of
+  every unit already scored. A defect that only appears past the eighth
+  character is not covered.
 - **`vit check -f <file>` attributes findings to the FILE, not the function.**
   It reported `minval-endpoints` and `array-section-row` against a 6-line
   translation containing neither; both came from `interp1d`/`interp2d` elsewhere
@@ -181,9 +247,13 @@ the habit unit #1 installed; nothing was dropped.
   recorded a blindness as a property of the mutants.
 - **`harness/cppmutate.py` reads a C++ template bracket as a comparison.**
   `static_cast<int*>` mutates to `static_cast<=int*>`, which does not compile. 8
-  of 33 mutants here (24%) were that, one point under the 25% at which
-  `vit_mutate.py` REFUSES to score. A translation with a few more casts would
-  have been unscoreable for a reason that has nothing to do with its harness.
+  of 33 mutants on `AddToList` (24%) were that, one point under the 25% at which
+  `vit_mutate.py` REFUSES to score. **Seen a second time at unit #4**: 4 of 18
+  (22%) on `Conv2UC`'s two `static_cast<unsigned char>`s. Two units, both within
+  three points of the refusal threshold, for a reason with nothing to do with
+  either translation. This is now a pattern rather than an anecdote and belongs
+  in the loop repo's mutator: mask template argument lists the way `cppmutate`
+  already masks string and character literals.
 - **The differential harness varies this unit's allocation status but not its
   length.** With a single extent parameter `_extent_plan` gives the same value
   (3) in every case, so a defect that only appears at another length is not

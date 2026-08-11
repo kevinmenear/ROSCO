@@ -1178,3 +1178,156 @@ distinction unit #1 drew about `killed (no compile)`, one layer in.
 counting them (loop `46a7f4f`), so unit #2's `35/35` and this unit's `24/24` are
 not the same measurement. Unit #2's included 2 nocompile kills; this one's does
 not.
+
+## 2026-08-11 — Unit #4, Conv2UC: a hot line the gate cannot see, and the
+   instrument that had to be built before the unit could close
+
+**The differential harness had no string kind, and 20 of 69 units need one.**
+`vit_harness.py` printed `UNOBSERVABLE [character-arg] Str: crosses as char* +
+length and IS comparable; the generator has no string kind, so this argument is
+held constant` — a diagnostic somebody had already written, whose own text calls
+the gap "a gap with a fix, not a property of the bridge" — and then died:
+`EmitError: Conv2UC: C parameter 'Str' is not in the mapped signature`. So the
+report and the behaviour disagreed. It said *held*; it meant *unrunnable*.
+
+The scale is what made this a feature rather than a note. Parsing the plan's 69
+units against their Fortran declarations, **20 take a CHARACTER dummy argument**
+— `GetPath`, `GetRoot`, `GetWords`, `FindLine`, the five `ParseInput_*_Opt`, and
+`DISCON` itself. P11 (differential harness) and P12 (mutation score at 1.000)
+are mandatory for every unit and `done.py` has no branch that waives them, so
+none of those 20 had any path to close.
+
+Fixed rather than worked around, which is X2 and is also what unit #1 did with
+VIT's descriptor bridge. Loop `9bee569`: a `char[]` kind in which a CHARACTER
+dummy's length is an EXTENT — the thing the rules already know how to vary — and
+its bytes are an array of one-byte elements, which the case stream already knows
+how to carry. 8 tests, none of which need VIT; 414 collected; the pre-existing
+failures in this environment are unchanged, verified by diffing the failure set
+against a `git stash`ed baseline rather than by counting.
+
+Four things in it are worth carrying:
+
+1. **`len_<x>` had to be RECOGNISED as an extent.** `_EXTENT_1D` matches `n_<x>`
+   only, so the length fell through to the scalar branch and was VARIED OVER
+   ±1e3 — two implementations reading that many bytes out of a buffer sized by
+   a different number. It is now matched, guarded on the C type of `<x>` rather
+   than on the name.
+2. **The string and its length are ONE call argument.** `_order` has to put the
+   length in the stream before the bytes, because the buffer cannot be declared
+   until its size is read; that is only expressible if one object owns both.
+   Adjacency in the C parameter list is asserted, not assumed — a generator that
+   separated them would transpose the call rather than fail to compile.
+3. **R6, one type over.** The reference's own CHARACTER literals and their two
+   collating neighbours are the discrete analogue of a literal and its ULP
+   neighbours, and they are what makes `>= 'a'` distinguishable from `> 'a'`.
+   Scoped to the UNIT's body, unlike `literals_from`, which reads the whole
+   file: a stray numeric literal is mostly discarded by the range filter, but
+   every character is inside every string's domain, so `ROSCO_Helpers.f90`'s
+   hundred stray literals would have buried the two `Conv2UC` branches on.
+4. **Three SHAPES, not just three lengths** — mixed, word-then-blanks,
+   all-blank. `LEN_TRIM` and `LEN` are the same number on a string with no
+   trailing blank in it.
+
+REFUSED, for being unmeasured rather than impossible, each with its own reason
+in the report: a CHARACTER **array** dummy (element width and element count are
+two extents where `char[]` has one), and a `char*` with no `len_` beside it.
+`FindLine` and the `Parse*Ary_Opt` family all take a CHARACTER array, so that is
+the next thing this will need — recorded now rather than discovered then.
+
+**THE GATE IS BLIND TO A PROCEDURE CALLED 1.3 MILLION TIMES, AND THE REASON IS
+NOT DEADNESS.** `Conv2UC` converts 4,558,823 characters across the 27 scenarios.
+Two perturbations of the integrated C++ were built and gated and each moved
+**0 of 5,252,000 values**: `ch - 32` → `ch - 31`, and the guard forced false so
+that no conversion happens at all. Both artifacts carry `replacements: 1`,
+`perturbed: true`, `reverted: true`, `revert_verified: true`.
+
+The cause is that every value this unit produces is consumed by an equality test
+against another of its own outputs. `FindLine` upper-cases the expected
+parameter name at `ROSCO_Helpers.f90:1106` and the file's word at `:1118` with
+the same function and compares them; a perturbation lands on both operands, and
+equality survives. The no-conversion run shows it survives non-injective damage
+too, on the inputs these scenarios carry.
+
+This is the third distinct shape of P9 in four units, and it is the one that
+most directly attacks the coverage argument. #1 was a line no scenario reached.
+#3 was an argument that is a constant in every scenario. **This is an executed
+line — one of the hottest in the tree — whose result is cancelled downstream.**
+A hit count says a line ran. It says nothing about whether anything downstream
+can tell two implementations apart, and `coverage/line_coverage.json` cannot
+express the difference. The `--perturb-to 'if (false && ...)'` form is the
+general instrument for asking, because it makes the unit a no-op rather than
+testing one guess about what a defect would look like; it is in the RUNBOOK.
+
+**Removing a restatement raised the mutation score from 0.696 to 1.000, and it
+is the second measurement of that rule rather than the first.** The Fortran's
+loop bound is `LEN_TRIM(Str)`. Transcribed literally that is
+`while (len_trim > 0 && Str[len_trim - 1] == ' ') --len_trim;` — six mutable
+sites computing a quantity nothing downstream can read, because every character
+past `LEN_TRIM` is a blank and a blank is never converted. All six survived, and
+FIVE survived as out-of-bounds reads: `Str[len_trim + 1]`, `Str[1 - len_trim]`,
+and `len_trim >= 0` reading `Str[-1]`.
+
+Declaring those equivalent would have recorded a blindness in the harness as a
+property of the mutants — the exact distinction unit #1 drew. Removing the
+restatement left one loop bound, which every case can see, and the score is
+1.000 with ZERO declared equivalent.
+
+The generalisation, now with two measurements behind it: **before declaring a
+survivor equivalent, ask whether any input can make the quantity it perturbs
+change an output.** If not, the site is not equivalent, it is unobservable, and
+the fix is to delete the restatement. Unit #1 named a SIZE once; this named a
+LOOP BOUND once. The cost is a departure from literal transcription, which is
+only admissible with a proof written into the translation — this one has it.
+
+**A kernel PASS *is* bit-identity for a CHARACTER output, and that is not a
+contradiction of unit #3.** KGen's generated comparison for `CHARACTER(len)`,
+`kv_findline_character_maxparamlength_`, is `IF (var == kgenref_var)` →
+IDENTICAL, ELSE → OUT_TOL. No `rmsdiff`, no `kgen_tolerance`, no `IN_TOL`
+branch. Unit #3's caveat — an ABSOLUTE RMS against 1e-14 that lets a 1e-11
+relative error print PASSED — is a fact about REAL fields. The rule is
+therefore: **read the generated comparison for each new element type**, and do
+not carry a hedge across types where the instrument is exact.
+
+**VIT declined to build its own kernel red test and said so.**
+`NON_DISCRIMINATING — 63 case(s) compared IDENTICAL, and the kernel did not
+report a mismatch when the translation was deliberately changed.` Its automatic
+red test perturbs a by-value floating-point argument and this unit has none, so
+it refused to claim discriminating power it had not measured. That is the tool
+doing the right thing, and the line is kept in the evidence rather than argued
+away; the manual no-op stub is what answers it (31 of 63 cases OUT_TOL, matching
+the 31 of 63 captured strings that actually change).
+
+**Two defects in this campaign's own scripts, both found by a run that should
+have worked, both fixed by addition:**
+
+1. `reset_to_clean.sh` restored the SOURCE and left the OBJECT instrumented.
+   `vit extract` puts its own pragma-carrying file back when it finishes, so
+   `ROSCO_Helpers.f90` returned textually clean, step 1 skipped it (no `_c(`
+   wrapper), its mtime never moved, and make had no reason to recompile. Every
+   step reported success and the script then exited 1 on its own assertion:
+   `kgen symbols in libdiscon.so: 1`. It could detect the contamination and not
+   repair it. Step 3c now removes any build object that DEFINES kgen symbols —
+   a rule about contents, so it covers whatever the next extraction
+   instruments. Red-tested in both directions on the same run: 2 removed and
+   the assertion 1 → 0, then 0 removed and still 0.
+
+2. `harness.sh --red-test` was **accepted and silently dropped in pre mode**.
+   The pre path returns before the stamping block, so a pre-integration red
+   test wrote `failed: 27` with nothing about what was perturbed — the script's
+   own header says a red artifact that cannot say what it measured is not
+   evidence about the instrument. `_harness_stamp.py` now takes `--pre`.
+
+**NOT method, target.** The string kind, the `--perturb-to 'if (false && ...)'`
+habit, and both script fixes are in the RUNBOOK's target layer.
+
+**CANDIDATE METHOD AMENDMENT, flagged and NOT made.** The gate red test as SPEC
+frames it asks whether the gate can see a *perturbation*. Three units in, that
+has twice given a false negative for a reason the perturbation choice caused
+rather than the unit: RUNBOOK's own attempt-1 (a line the scenarios never run)
+and, less obviously, unit #4's off-by-one (a perturbation an equality test
+cancels). The stronger question is whether the gate can see the unit's
+*absence*. Making a unit a no-op is not always as easy as forcing one guard
+false, so this is a candidate rather than a rule — but "perturb toward absence,
+not toward a different answer" is a sharper statement of what the red test is
+for, and it would have got the right answer on unit #4 in one attempt instead of
+two. The Driver may raise it; it is not made here.

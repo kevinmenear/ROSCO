@@ -149,9 +149,37 @@
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'",
+    "observed": "CONFIRMED, and the shape is new to this campaign. `Str` is `CHARACTER(*), INTENT(INOUT)` and crosses whole: the generated interface declares `CHARACTER(KIND=C_CHAR), INTENT(INOUT) :: Str(*)` plus `INTEGER(C_INT), VALUE :: len_Str`, and the wrapper declares the dummy exactly as the original does -- `CHARACTER(*), INTENT(INOUT) :: Str` -- copying into a C_CHAR array of LEN(Str) and back out again. Nothing is dropped. Read attribute by attribute before any C++ was written, per the habit unit #1 installed: evidence/Conv2UC/vit_interface.stdout.txt.\n\nThe plan's basis string remains the honest one and remains not the answer: `c_fn_alloc_character` is one of the five features it names as undetectable, and this signature has nothing allocatable in it. The verdict here comes from having run the generator that ships, plus a post-integration harness that turns red when the wrapper misstates the length (LEN(Str) -> LEN(Str) - 1, 24 of 118 cases).\n\nWHAT DID NOT CROSS WAS THE HARNESS, NOT THE SIGNATURE. `harness/generate.py` had kinds real / int / real[] and no string, so `vit_harness.py` reported `Str` comparable-but-held-constant and then died: `C parameter 'Str' is not in the mapped signature`. 20 of this campaign's 69 units take a CHARACTER dummy and P11/P12 are mandatory for all of them, so none of the 20 had a path to close. Fixed rather than worked around (X2): loop `9bee569` adds a `char[]` kind, in which the length is an extent the rules already vary and the bytes are an array the case stream already carries. A CHARACTER ARRAY dummy (`FileLines(:)`) is still REFUSED, with its reason, for being unmeasured -- element width and element count are two extents where `char[]` has one."
    },
-   "observability": null
+   "observability": "THE GATE CANNOT SEE THIS UNIT, AND NOT BECAUSE THE CODE IS DEAD. `Conv2UC` runs 1,333,146 times across the 27 scenarios and converts 4,558,823 characters -- among the hottest procedures in the controller (coverage/line_coverage.json, clean lines 1579/1595). Two perturbations of the integrated C++ were rebuilt and re-gated and EACH MOVED 0 OF 5,252,000 VALUES: `ch - 32` -> `ch - 31` (every conversion off by one), and the guard forced false so that NO conversion happens at all. Both artifacts record replacements: 1, perturbed: true, reverted: true, revert_verified: true, so the perturbed library was genuinely built and run. gate/Conv2UC.redtest.json and evidence/Conv2UC/gate_redtests/.\n\nThe cause is structural. Every value this unit produces is consumed by an equality test against ANOTHER of its own outputs: FindLine converts the expected parameter name (ROSCO_Helpers.f90:1106) and the file's word (1118) with the same function and compares them. A perturbation applied to both operands preserves equality, and the no-conversion run shows equality survives even the non-injective case on the inputs these scenarios carry. So gate/Conv2UC.json -- 5,252,000 values compared, 0 mismatched -- is a green that constrains nothing about Conv2UC, and is committed next to the red tests that say why.\n\nThis is a THIRD shape of P9 in four units, and the sharpest: #1 was a line no scenario reached, #3 was an argument constant in every scenario, and this is an executed line whose result is cancelled downstream. A hit count of 1.3M says nothing about observability.\n\nWHAT DOES CONSTRAIN IT, all red-tested:\n  * kernel replay, 63 cases from scenario 1 at ROSCO_Helpers.f90:1118, 63/63 IDENTICAL. The window is alive and TWO instruments say so: decoding the state files shows 31 of the 63 captured strings actually change, and a no-op stub scores exactly 31 OUT_TOL. For a CHARACTER field a kernel PASS *is* a bit-identity claim -- KGen's generated comparison has no tolerance branch at all, which is the per-TYPE counterpart to unit #3's finding rather than a contradiction of it.\n  * 118 differential cases against the clean Fortran, 0 failed; the no-op stub turns 27 of them red. Strings at lengths 1/3/8 in three shapes (mixed, word-then-blanks, all-blank) over a 22-character corpus built from the reference's own 'a' and 'z' plus their collating neighbours.\n  * mutation 14/14 behavioural killed, 1.000, 0 declared equivalent. 2 of the 14 are CRASHES rather than case mismatches (both index before the buffer), so the killed-by-comparison count is 12 of 14.\n  * 118 post-integration cases, 0 failed; misstating the length in the wrapper (LEN(Str) -> LEN(Str) - 1) turns 24 of 118 red.\n\nKNOWN GAPS, stated rather than left to be found:\n  * 4 mutants did not compile and are excluded from the score. All four are harness/cppmutate.py reading `static_cast<unsigned char>`'s template bracket as a comparison. 22% against the 25% at which vit_mutate.py refuses to score -- one more cast and this unit would have been unscoreable for a reason with nothing to do with it.\n  * The harness varies the string's length over {1, 3, 8}, not over the 200 that MaxParamLength actually gives it. A defect that only appears past the eighth character is not covered by these 118 cases.\n  * VIT declined to construct its own kernel red test (no by-value floating-point parameter) and reported NON_DISCRIMINATING. That verdict is kept in the record; the manual stub is what answers it.",
+   "disposition": "integrated",
+   "translation": "translations/ROSCO_Helpers/conv2uc.cpp",
+   "harness_required": true,
+   "evidence": [
+    "evidence/Conv2UC/README.md",
+    "translations/ROSCO_Helpers/conv2uc.cpp",
+    "rosco/controller/src/conv2uc.cpp",
+    "gate/Conv2UC.json",
+    "gate/Conv2UC.redtest.json",
+    "evidence/Conv2UC/gate_redtests/Conv2UC.redtest-offbyone.json",
+    "evidence/Conv2UC/gate_redtests/Conv2UC.redtest-noconversion.json",
+    "harness/Conv2UC.json",
+    "harness/Conv2UC.postintegration.json",
+    "harness/Conv2UC.postintegration.redtest.json",
+    "evidence/Conv2UC/harness_redtests/Conv2UC.redtest-noop.json",
+    "mutation/Conv2UC.json",
+    "evidence/Conv2UC/kernel-window-1.cases.tsv",
+    "evidence/Conv2UC/kernel-window-1.verify_fields.csv",
+    "evidence/Conv2UC/kernel-window-1.stub-fails.verify_fields.csv",
+    "evidence/Conv2UC/kernel-window-1.statefiles.lst",
+    "evidence/Conv2UC/kernel-generated-ROSCO_Helpers.f90",
+    "evidence/Conv2UC/vit_interface.stdout.txt",
+    "evidence/Conv2UC/vit_translate.stdout.txt",
+    "evidence/Conv2UC/conv2uc.scaffold.cpp",
+    "evidence/Conv2UC/conv2uc.stub.cpp",
+    "coverage/line_coverage.json"
+   ]
   },
   {
    "order": 5,
