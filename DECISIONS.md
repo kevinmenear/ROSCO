@@ -2572,3 +2572,97 @@ cases the harness verdict was a confident green. The RUNBOOK says a green must b
 able to go red; these units say something narrower and sharper — *a green must be
 able to go red FOR THE RIGHT REASON*, and the survivors are the only instrument
 the campaign has that can tell.
+
+## 2026-08-11 — unit #9 `HPFilter`: a blind gate, proved blind by a control
+
+**A red test that reads zero and an instrument that is broken are the same
+artifact, and this unit is where that stopped being tolerable.** `HPFilter`'s
+gate red test moved 0 of 5,252,000 — twice, once with the unit made a complete
+no-op and once with only its return value zeroed. Five earlier units recorded the
+same shape and none of them ran a control. Here one was run: GetWords' committed
+perturbation, re-applied to the SAME integrated build in the same session, moved
+1,857,893 of 5,252,000, which is bit-for-bit the number `gate/GetWords.redtest.json`
+already carried. Only with that beside it does "0 moved" mean *this unit is
+invisible* rather than *the chain from build to install to simulation to compare
+is broken today*.
+
+The cost is one extra 3-minute gate run per blind unit. Cheap next to what it
+buys, and it is proposed as a habit for every future red test that comes back
+green — recorded in RUNBOOK's target layer.
+
+**The blindness was traced, not asserted, and it has three causes.** Coverage
+says the unit runs 892,000 times; all four of its readers run too. Unit #6's
+"follow the OUTPUT, not the call" and unit #7's "does the live reader put it
+somewhere the gate READS" both answer *yes* here and both are wrong. What is
+actually true is that each site is multiplied by something zero:
+
+- `Fl_Kp` is `0.0000` in all 14 `Examples/*.IN` and is never patched by
+  `vit_sim.py`, so `Kp_Float` is 0 and `FloatingFeedback` is 0 whatever the two
+  hottest call sites return.
+- `FA_KI` is `0.00000` in all 14, and the proportional gain at that call site is
+  the literal `0.0_DbKi`, so `FA_PitCom` is 0.
+- The third site runs only in scenario 4, whose `flp_angle_*` channels are
+  identically 0.0 for all 4,000 timesteps — `vit_sim.py`'s own scenario-26
+  docstring records why: every flap scenario but 26 has zero rootMOOP.
+
+So the question to ask of a unit the gate cannot see is **what SCALES the value
+between the reader and a compared channel**, and the answer is usually a gain in
+the input files rather than anything in the source. `grep -h '<gain>' Examples/*.IN
+| sort -u` is the whole check.
+
+**The first extraction window was vacuous and was discarded rather than
+explained.** On scenario 27 the real translation and a zero stub both scored
+14,508/14,508 `IDENTICAL`. Re-extracted on scenario 1, where the zero stub moves
+183 rows. Both CSVs are committed. A window that a zero-writing stub passes is
+not a weak measurement, it is not a measurement, and keeping the discarded one is
+what lets the kept one be read as a claim.
+
+**The VIT defect was fixed in VIT, and recorded before it was fixed (C12).**
+`test-validate`'s bridge dropped the OPTIONAL argument's `PRESENT()` flag and a
+procedure-scope `USE`, emitting a 9-argument Fortran bridge against a 10-argument
+C++ caller and passing `InitialValue` unconditionally to an OPTIONAL dummy. Fixed
+at `300da9c`; the two wrong artifacts are kept under
+`evidence/HPFilter/vit_defects/`. Without the fix the `PRESENT` branch would have
+been outside every instrument — which matters more than usual here, because
+`has_InitialValue` is 0 at all four call sites in all 27 scenarios, so the
+differential harness is the ONLY thing that ever reaches that branch.
+
+**`C_LOC` onto a flat struct was checked before it was trusted.**
+`TYPE(FilterParameters)` crosses as a raw pointer rather than through a view
+populator. That is sound only because the type is 46 fixed-size
+`REAL(DbKi), DIMENSION(1024)` fields — no ALLOCATABLE, no padding possible — and
+the field order was verified name-by-name against `ROSCO_Types.f90` before any
+C++ was believed. A reordered struct compiles, links, and silently reads the
+wrong array; no layer in this campaign would have caught it, because every layer
+uses the same header.
+
+**Two red tests were kept where one would have done, because the weaker one is
+informative.** Swapping `DT` and `CornerFreq` in the wrapper fails only 85 of 829
+cases — a swap of two INTENT(IN)s is a no-op wherever the corpus draws them
+equal. Scaling the marshalled return value fails 527 of 829, the remaining 302
+having a reference result of exactly 0.0. Neither is "fails every case", and
+saying so is better than picking the perturbation that flatters the harness.
+
+### NOT method, target
+
+All of it. The control-for-a-blind-gate habit, the scales-not-consumes test, the
+`C_LOC` field-order check and the vacuous-window discard are RUNBOOK target-layer
+entries. No amendment to the invariant layer is proposed.
+
+One observation for the Driver, not an amendment. **The instrument-repair ratio
+finally fell to zero.** Units #4/#5/#7/#8 spent one, four, three and five
+instrument fixes; this unit spent one, and it was in VIT rather than in the
+harness generator, and the mutation score reached 1.000 with no survivor at any
+point and no equivalence declared. The generator repairs of units #7 and #8 —
+mined character sets, collating neighbours, string shapes, the length ladder —
+were paid for once and this unit inherited them working. That is the first
+evidence in this campaign that the instrument is converging rather than being
+patched per unit.
+
+**And the first dispatch of this unit died of sleeping, not of difficulty.** It
+backgrounded a build and then wrote 11 polling loops against a task-output file,
+several running to full exhaustion; roughly 100 of its 120 minutes were spent
+asleep and the timeout killed it with everything uncommitted. The work it had
+already done — kernel, pre-integration harness, both red tests — was still on
+disk and this dispatch re-ran none of it. P1 is what saved it: state on disk, not
+in context. The RUNBOOK now carries the prohibition in its target layer.

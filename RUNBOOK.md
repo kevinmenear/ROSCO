@@ -414,6 +414,81 @@ is `/workspace/ROSCO-r2`.
   many times per timestep in every scenario) and confirm green returns after the
   revert, or the red is not attributable to the perturbation.
 
+- **A gate red test that comes back GREEN needs a CONTROL taken on the SAME
+  BUILD, or it is not a finding.** Learned at unit #9, and it is owed to the five
+  units before it that recorded `0 of 5,252,000` without one.
+
+  "The gate cannot see this unit" and "the chain from build to install to 27
+  simulations to bit comparison is broken today" produce the IDENTICAL artifact.
+  Nothing in `gate.py` distinguishes them: `revert_verified: true` only says the
+  revert also moved nothing, which is equally true in both worlds.
+
+  Re-run a perturbation that is ALREADY KNOWN RED, from a unit already committed,
+  against the build in front of you:
+
+  ```
+  python3.12 scripts/gate.py <ThisUnit> --perturb-file rosco/controller/src/getwords.cpp \
+      --perturb-from 'if (NextWhite > 1) {' --perturb-to 'if (false && NextWhite > 1) {' \
+      --out evidence/<ThisUnit>/gate.control-getwords-perturbed-MOVES.json
+  ```
+
+  It must reproduce `gate/GetWords.redtest.json`'s **1,857,893 of 5,252,000**. A
+  control that moves a DIFFERENT number is its own finding. Costs one gate run
+  (~3 min) and it is the difference between a measurement and a shrug.
+
+- **Ask what SCALES the unit's result, not what CONSUMES it.** Unit #9, and it is
+  the sixth P9 shape -- the one where unit #6's "follow the OUTPUT" and unit #7's
+  "does the live reader put it somewhere the gate READS" both answer YES and are
+  both wrong.
+
+  `HPFilter` runs 892,000 times across 23 of 27 scenarios and all four of its
+  readers run. It is still invisible, because every call site is multiplied by
+  something zero, and no two sites share the mechanism:
+
+  ```
+  grep -h '<the gain the reader multiplies by>' Examples/*.IN | sort -u
+  grep -n '<that gain>' Examples/vit_sim.py        # is it PATCHED by a scenario?
+  ```
+
+  `Fl_Kp` is `0.0000` in all 14 inputs and never patched, so `Kp_Float` is 0 and
+  `FloatingFeedback` is 0. `FA_KI` likewise, with the proportional gain the
+  literal `0.0_DbKi` at the call. Both greps are seconds; tracing the readers by
+  hand took most of an hour and answered the wrong question.
+
+  The third site needed a different check -- the consumer is live and the gain is
+  non-zero, and the CHANNEL is constant anyway:
+
+  ```
+  python3.12 -c "import numpy as np; d=np.load('baseline_arrays/scenario_<N>.npz'); \
+      print({c: len(set(d[c].tolist())) for c in d.files})"
+  ```
+
+  A channel with **1 distinct value** cannot carry any result out of any unit.
+  Check it before writing an observability note that blames the unit.
+
+- **A derived type can cross as `C_LOC(FP)` onto a flat C struct with no view
+  populator, and then the FIELD ORDER is load-bearing and unchecked.** Unit #9.
+
+  `vit integrate` emits `C_LOC(FP)` for `TYPE(FilterParameters)` and the C++ does
+  `FP->hpf_InputSignalLast[i]`. That is sound only because the type is 46
+  fixed-size `REAL(DbKi), DIMENSION(1024)` fields -- no ALLOCATABLE, no CHARACTER,
+  no padding possible. **A reordered or short struct compiles, links, and reads
+  the wrong array in silence**, and no layer here would catch it: the kernel, the
+  harness and the mutation run all include the same `vit_types.h`. Verify against
+  the Fortran declaration, not against the header:
+
+  ```
+  python3.12 - <<'EOF'
+  import re
+  blk = open('rosco/controller/src/ROSCO_Types.f90').read() \
+        .split('TYPE, PUBLIC :: <Type>')[1].split('END TYPE')[0]
+  fort = re.findall(r'::\s*(\w+)', blk)
+  cb = open('rosco/controller/src/vit_types.h').read().split('} <type>_t;')[0]
+  c = re.findall(r'double\s+(\w+)\[<N>\];', cb[cb.rfind('typedef struct'):])
+  print(len(fort), len(c), 'ORDER+NAMES MATCH:', fort == c)
+  EOF
+  ```
+
 - **A CHARACTER ARRAY dummy is TWO extents, and two of this campaign's generators
   disagreed about it in opposite directions.** Learned at unit #8, and the
   disagreement is the transferable part.
@@ -1622,6 +1697,33 @@ FITPACK stack scrubber, and raising `avr_size` from 500 to 3000. Carrying a fix
 across because it is nearby is not the same as diagnosing. And the real cause
 was already written down in the previous campaign's own bug report; reading it
 would have been faster than reproducing it.
+
+## Do not background a build and poll for it
+
+Run builds, gates and mutation runs in the **foreground**. Backgrounded work is
+tracked and you are re-invoked when it finishes, so a sleep-loop waiting on its
+output file buys nothing and spends the unit's budget doing it.
+
+Never:
+
+```bash
+for i in $(seq 1 20); do
+  if [ -s .../tasks/<id>.output ]; then break; fi
+  sleep 15
+done
+```
+
+**Measured on unit HPFilter.** It backgrounded the kernel build and then wrote
+11 polling loops against the harness's own task-output file. The slowest
+inter-call gaps cluster at 606, 608, 610, 610, 611 and 742 seconds -- `seq 1 60`
+x `sleep 10` is exactly 600 -- so those loops ran to EXHAUSTION rather than
+breaking early. Roughly 100 of its 120 minutes were spent asleep, and the 7200s
+timeout killed it mid-cycle with its work uncommitted.
+
+It was not a hard unit. Its 216 assistant turns sit beside GetRoot's 263 and
+GetWords' 252, and it cost about $12.55 against GetWords' $40.20 -- it was
+sleeping, not thinking. Cost and wall clock are not the same axis here, and a
+unit can exhaust the second while barely touching the first.
 
 ## Finishing a unit
 

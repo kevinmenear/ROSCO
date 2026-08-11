@@ -4,7 +4,95 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-11: unit #8 `GetWords` is `integrated` and CLOSED**, first
+**As of 2026-08-11: unit #9 `HPFilter` is `integrated` and CLOSED**, SECOND
+dispatch. The first dispatch was killed by the 7200 s timeout mid-cycle with its
+work uncommitted; it had finished the kernel, the pre-integration harness and
+their red tests, and none of it was committed. This dispatch re-ran nothing that
+was already measured and carried it the rest of the way.
+
+**FOUR LAYERS ALIVE, ONE DEAD — AND THE DEAD ONE WAS PROVED DEAD RATHER THAN
+ASSUMED.**
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases, scenario 1 | 14,508 field rows, all `IDENTICAL` | zero stub → 183 rows `OUT_TOL`; VIT's own red test discriminating (`InputSignal` × 1.00001). **A HARDCODED-`CornerFreq` STUB PASSES 14,508/14,508** |
+| differential harness vs clean Fortran | 832 checked, 0 failed | no-op → 829/829 failed, naming `vit_result`, both `FP.hpf_*` arrays and `inst` |
+| mutation score | 26/26 behavioural killed, 1.000, **0 declared equivalent**, 1 nocompile | refuses to score unless the baseline is green |
+| post-integration harness (wrapper only) | 829 checked, 0 failed | return value × 1.000001 → 527/829; `DT`/`CornerFreq` swapped → 85/829; green restored |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED TEST FAILED — a COMPLETE NO-OP moved 0 of 5,252,000** |
+
+**THE GATE IS BLIND, AND THE CONTROL IS WHAT MAKES THAT A FINDING.** A zero from
+a red test looks identical to a zero from a broken instrument. So GetWords'
+committed perturbation was re-run on this same integrated build and moved
+**1,857,893 of 5,252,000 — bit-for-bit the number `gate/GetWords.redtest.json`
+carries**. The chain from build to install to 27 simulations to bit comparison is
+alive; the unit is what cannot be seen.
+`evidence/HPFilter/gate.control-getwords-perturbed-MOVES.json`.
+
+**THREE CALL SITES, THREE DIFFERENT CANCELLATIONS, AND TWO OF THEM ARE A GAIN OF
+ZERO IN THE INPUT FILES.** HPFilter runs 892,000 times across 23 of 27 scenarios,
+so unit #1's "never executed" is not the answer, and every one of its four
+readers RUNS:
+
+| call site | calls | what cancels it |
+|---|---|---|
+| `Filters.f90:375`, `:376` | 408,000 each | read only by `FloatingFeedback`, which returns `(0 - FA_vel) * Kp_Float`; `Kp_Float` interpolates **`Fl_Kp` = 0.0000 in all 14 `Examples/*.IN`**, never patched |
+| `Filters.f90:395` | 64,000 | read only by `PIController(FA_AccHPF, 0.0_DbKi, CntrPar%FA_KI, …)` — proportional gain the literal 0.0, **`FA_KI` = 0.00000 in all 14 inputs**, never patched |
+| `Filters.f90:409` | 12,000, scenario 4 only | reaches only `flp_angle_1/2/3`, which are **identically 0.0 across all 4,000 timesteps of scenario 4's baseline**; the 1-DOF sim produces no rootMOOP, and scenario 26 — the one scenario where flp_angle moves — is `Flp_Mode = 3` and never reaches this site |
+
+**A SIXTH SHAPE OF P9, and it is a compound one.** Unit #4's cancelled-downstream
+shape assumed one mechanism. Here every site is cancelled and no two share a
+mechanism or a scenario, so following the output to a live reader answers
+nothing — all four readers run. The question is what **scales** the value between
+the reader and a compared channel, and for two of three sites that scale is a
+gain that is zero in every input file the campaign owns.
+
+| unit | shape |
+|---|---|
+| #1 `AddToList` | the line is never executed |
+| #3 `ColemanTransformInverse` | an argument is constant in every scenario |
+| #4 `Conv2UC` | 1.3M executions, result cancelled by a symmetric consumer |
+| #6 `GetPath` | result produced, consumer's guard false wherever it would matter |
+| #7 `GetRoot` | result consumed by a live line, into a side effect outside the instrument |
+| #9 `HPFilter` | every call site cancelled, by three different mechanisms, two of them a zero gain in the inputs |
+
+**THE FIRST EXTRACTION WINDOW WAS VACUOUS AND WAS THROWN AWAY FOR IT.** On
+scenario 27 the real translation and a zero stub BOTH score 14,508/14,508
+`IDENTICAL`. Re-extracted on scenario 1, where the zero stub moves 183 rows. Both
+artifacts are committed: the discarded measurement is what makes the kept one a
+statement rather than a hope.
+
+**A CONSTANT-ARGUMENT BLINDNESS THE KERNEL CANNOT SEE, unit #3's shape again.**
+`CntrPar%F_FlHighPassFreq` is 0.01042 in all 14 inputs, so a translation that
+ignores `CornerFreq` and writes the literal passes the kernel outright
+(`kernel.hardcoded-cornerfreq-stub-PASSES.verify_fields.csv`). And
+`has_InitialValue` is 0 at all four call sites in all 27 scenarios — **the
+`PRESENT(InitialValue)` branch is reached by no simulation at all.** The
+differential harness is the only instrument that varies either, and it is the
+only reason the `negate_cond` mutant on that branch dies.
+
+**FIRST UNIT IN THIS CAMPAIGN THAT NEEDED NO INSTRUMENT REPAIR TO REACH 1.000.**
+26 of 26 behavioural mutants killed, no survivors at any point, no equivalence
+declared. Units #4, #5, #7 and #8 each spent between one and five instrument
+fixes getting there.
+
+**ONE VIT DEFECT, FIXED IN VIT (`300da9c`), NOT WORKED AROUND.** The
+`test-validate` bridge dropped the OPTIONAL argument's `PRESENT()` flag and a
+procedure-scope `USE`: it emitted a 9-argument `hpfilter_f90` while the generated
+C++ test called it with 10, and it passed `InitialValue` unconditionally to an
+OPTIONAL dummy. Both wrong artifacts are kept under
+`evidence/HPFilter/vit_defects/` per C12 — recorded before the fix, not after.
+
+**`C_LOC(FP)` ONTO A FLAT STRUCT IS SOUND HERE ONLY BECAUSE OF WHAT THE TYPE IS.**
+`TYPE(FilterParameters)` crosses as a raw pointer rather than a view populator.
+That works because it is 46 fixed-size `REAL(DbKi), DIMENSION(1024)` fields with
+no ALLOCATABLE and no possible padding — and the field ORDER was verified
+name-by-name against `ROSCO_Types.f90` before the translation was believed. A
+reordering would compile, link, and silently read the wrong array.
+
+---
+
+**Unit #8 `GetWords` is `integrated` and CLOSED**, first
 dispatch.
 
 **EVERY LAYER IS ALIVE, INCLUDING THE GATE — THE FIRST TIME IN THIS CAMPAIGN.**
