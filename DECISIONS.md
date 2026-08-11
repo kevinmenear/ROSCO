@@ -1045,3 +1045,31 @@ the mutation score from a `reset_to_clean` tree (they measure the clean Fortran
 and must not be taken against the integrated build), the post-integration pair
 after `restore_integrated`, and the gate last. The RUNBOOK's warning about
 stale artifacts reading like fresh passes is the reason this was not skipped.
+
+## 2026-08-10 — for the Driver: one candidate method amendment, and two that
+   are not
+
+The invariant layer was not edited, so `invariant_hash` is unchanged. Flagged
+here instead, as the dispatch asks.
+
+**CANDIDATE (method).** *A generator may not state a verification verdict it did
+not obtain.* `vit integrate` wrote `// After verification: <name> kernel PASSED`
+into every file it produced, having run no kernel and read no result. It is the
+same defect P3 and P6 describe — a claim with nothing behind it, and absence
+rendered as a value — but neither principle reaches a GENERATOR's output, only
+a checker's. Nothing in the toolchain checks a comment, and this one shipped in
+source for as long as the generator existed. If the method has a rule that
+artifacts must be able to name what they measured, its scope should include
+what tools emit, not only what verifiers report.
+
+**NOT method, target.** The descriptor bridge itself, and the ordering
+constraint that a pre-integration harness and a mutation score must be taken
+against a clean tree: both are in the RUNBOOK's target layer, where they
+belong.
+
+**NOT method, but worth a second campaign's data.** "Raise a mutation score by
+removing restatements of one quantity, and DECLARE only what no input can
+distinguish." It reads like a rule and it has been measured exactly once. Two
+survivors here were unobservable memory errors caused by writing `SIZE(clist)`
+three times; two others are equivalent by the Fortran standard. The distinction
+held up on this unit. One unit is not a rule.
