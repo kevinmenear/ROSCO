@@ -14,6 +14,6 @@
  ],
  "mismatches": [],
  "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
- "loop_rev": "febe8c2-pinned",
+ "loop_rev": "47384b3-pinned",
  "vit_rev": "8c34ceb-pinned"
 }

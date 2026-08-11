@@ -110,7 +110,7 @@
    "got": "4a020000"
   }
  ],
- "loop_rev": "febe8c2-pinned",
+ "loop_rev": "47384b3-pinned",
  "vit_rev": "8c34ceb-pinned",
  "red_test": {
   "perturbation": "the translation replaced by a no-op: reads no argument and writes none",
