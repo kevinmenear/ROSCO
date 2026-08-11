@@ -463,3 +463,18 @@ gap in Open below.
 - **E1.2, previously "declared but unmet".** Closed 2026-08-10 — see Evidenced.
 - **Reset-to-clean**, which did not exist: `scripts/reset_to_clean.sh` and
   `scripts/restore_integrated.sh`, red-tested.
+
+## Done-condition, unit #5
+
+`python3.12 scripts/done_check.py ExtController --baseline 05a64cd` returns
+**INCOMPLETE, 11 of 13**, on a clean tree. P11 and P12 FAIL because
+`harness/ExtController.postintegration.json` and `mutation/ExtController.json`
+do not exist and cannot be produced without a bridge and a runnable oracle.
+**That verdict is correct and is kept** — a `blocked` unit cannot reach COMPLETE,
+and `loop/driver.py` escalates `blocked_substrate` on the disposition separately
+(SPEC §8.4). Transcript and reasoning: `evidence/ExtController/done_check.txt`.
+
+Worth carrying: the first attempt piped the run into that file, and **creating
+the file made the tree dirty**, so the artifact recorded `P2 FAIL dirty_tree` and
+10/13 — describing itself rather than the unit. A done-condition capture has to
+be taken before the file that captures it exists, or written as a transcript.

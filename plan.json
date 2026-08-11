@@ -208,6 +208,7 @@
    "escalation": "blocked_substrate: the blockage is in the substrate (VIT cannot map CHARACTER(:), ALLOCATABLE, which blocks 37 of 69 units) and in the campaign FIXTURES (no external Bladed-style library exists, so the original cannot be run as an oracle). Neither is a property of the function. Unblocking needs three independent things, listed in evidence/ExtController/README.md; the third -- constructing an oracle -- adds a gate scenario and so is a verification-default change, which SPEC 8.4 makes the Driver's call.",
    "evidence": [
     "evidence/ExtController/README.md",
+    "evidence/ExtController/done_check.txt",
     "evidence/ExtController/coverage_extcontrol.json",
     "evidence/ExtController/coverage_extcontrol.denominators.txt",
     "evidence/ExtController/probe_ext_mode_1.py",
