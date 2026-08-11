@@ -1,0 +1,24 @@
+{
+ "unit": "AddToList",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "index_offset",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "mutants": 25,
+ "equivalent_declared": 2,
+ "nocompile": 8,
+ "nocompile_ratio": 0.2424,
+ "nocompile_refused": false,
+ "total": 33,
+ "killed": 23,
+ "survived": 0,
+ "equivalent": 2,
+ "score": 1.0,
+ "loop_rev": "cf885e3-pinned",
+ "vit_rev": "37f8bdf-pinned",
+ "survivors": []
+}

@@ -1,0 +1,9 @@
+{
+ "_why": "Mutant ids declared BEHAVIOUR-PRESERVING for AddToList, each with the reason. `vit_mutate.py --equivalences` reads the KEYS of this object (json.loads then set(...)), so the reasons live in the same file as the claim rather than in a commit message. A declared equivalence leaves the denominator, so each one is a claim that has to be answerable -- these two are answerable from the Fortran 2018 standard rather than from observation.",
+
+ "6e5e008f": "CFI_allocate(list, &lower, &upper, 0) -> (..., 1), the ALLOCATED branch. The fourth argument is elem_len, and F2018 18.5.5.5 says it is IGNORED unless the descriptor's type is CFI_type_char, CFI_type_ucs4_char or CFI_type_struct. This descriptor is CFI_type_int, so the two programs are the same program. Equivalent by the standard, not by luck of the input set: NO input can distinguish them.",
+
+ "a33820d9": "The same mutation on the same call in the UNALLOCATED branch (allocate(list(1))). Same reason.",
+
+ "_not_declared": "Two other mutants survived an earlier version of this translation and are NOT declared here, because they were not equivalent -- they were unobservable: `malloc(isize+1)` -> `isize-1` (heap under-allocation) and `memcpy(..., isize+1)` -> `isize+2` (copy past the buffer). Both are memory errors a value comparison cannot see. They were removed by giving the quantity one name (`nsize`) and one site instead of three, so the surviving site now decides the extent the caller sees. Declaring them equivalent would have recorded a blindness as a property of the mutants."
+}

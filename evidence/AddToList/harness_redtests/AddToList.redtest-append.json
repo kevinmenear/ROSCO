@@ -1,0 +1,115 @@
+{
+ "unit": "AddToList",
+ "against": "translation",
+ "checked": 43,
+ "failed": 18,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    1 varied extent(s) at [3], NO index parameter identified, array elements distinct",
+  "  applied  R2_flag_values             2 value(s) across 1 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  N/A      R6_reference_literals      no numeric literal in the reference source, or none inside any parameter's range -- no boundary this rule can reach",
+  "  N/A      R3_no_dead_signal          no real parameter",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 1 out-parameter(s): list"
+ ],
+ "mismatches": [
+  {
+   "case": 10,
+   "output": "list",
+   "ref": "010000000400000000000000010000000000000015feffff150000002f020000...",
+   "got": "010000000400000000000000010000000000000015feffff150000002f020000..."
+  },
+  {
+   "case": 11,
+   "output": "list",
+   "ref": "010000000400000000000000010000000000000076feffff13000000e3010000...",
+   "got": "010000000400000000000000010000000000000076feffff13000000e3010000..."
+  },
+  {
+   "case": 12,
+   "output": "list",
+   "ref": "0100000004000000000000000100000000000000d8fdffff9afeffff8cffffff...",
+   "got": "0100000004000000000000000100000000000000d8fdffff9afeffff8cffffff..."
+  },
+  {
+   "case": 13,
+   "output": "list",
+   "ref": "010000000400000000000000010000000000000065000000fc00000091010000...",
+   "got": "010000000400000000000000010000000000000065000000fc00000091010000..."
+  },
+  {
+   "case": 14,
+   "output": "list",
+   "ref": "010000000400000000000000010000000000000034ffffffbe00000032020000...",
+   "got": "010000000400000000000000010000000000000034ffffffbe00000032020000..."
+  },
+  {
+   "case": 15,
+   "output": "list",
+   "ref": "01000000040000000000000001000000000000001b000000de000000a8010000...",
+   "got": "01000000040000000000000001000000000000001b000000de000000a8010000..."
+  },
+  {
+   "case": 16,
+   "output": "list",
+   "ref": "01000000040000000000000001000000000000002dffffff7c000000e8010000...",
+   "got": "01000000040000000000000001000000000000002dffffff7c000000e8010000..."
+  },
+  {
+   "case": 17,
+   "output": "list",
+   "ref": "01000000040000000000000001000000000000004afeffff9bffffffff000000...",
+   "got": "01000000040000000000000001000000000000004afeffff9bffffffff000000..."
+  },
+  {
+   "case": 18,
+   "output": "list",
+   "ref": "010000000400000000000000010000000000000053feffffd2ffffff7b010000...",
+   "got": "010000000400000000000000010000000000000053feffffd2ffffff7b010000..."
+  },
+  {
+   "case": 24,
+   "output": "list",
+   "ref": "0100000004000000000000000100000000000000ef000000da010000af020000...",
+   "got": "0100000004000000000000000100000000000000ef000000da010000af020000..."
+  },
+  {
+   "case": 27,
+   "output": "list",
+   "ref": "01000000040000000000000001000000000000004b0000005801000048020000...",
+   "got": "01000000040000000000000001000000000000004b0000005801000048020000..."
+  },
+  {
+   "case": 29,
+   "output": "list",
+   "ref": "0100000004000000000000000100000000000000bf000000c2010000c9020000...",
+   "got": "0100000004000000000000000100000000000000bf000000c2010000c9020000..."
+  },
+  {
+   "case": 30,
+   "output": "list",
+   "ref": "01000000040000000000000001000000000000006dffffff8b000000a9010000...",
+   "got": "01000000040000000000000001000000000000006dffffff8b000000a9010000..."
+  },
+  {
+   "case": 32,
+   "output": "list",
+   "ref": "010000000400000000000000010000000000000079feffffdeffffff76010000...",
+   "got": "010000000400000000000000010000000000000079feffffdeffffff76010000..."
+  },
+  {
+   "case": 33,
+   "output": "list",
+   "ref": "010000000400000000000000010000000000000077ffffff30000000ed000000...",
+   "got": "010000000400000000000000010000000000000077ffffff30000000ed000000..."
+  },
+  {
+   "case": 35,
+   "output": "list",
+   "ref": "0100000004000000000000000100000000000000180000005d01000089020000...",
+   "got": "0100000004000000000000000100000000000000180000005d01000089020000..."
+  }
+ ],
+ "loop_rev": "cf885e3-pinned",
+ "vit_rev": "37f8bdf-pinned"
+}

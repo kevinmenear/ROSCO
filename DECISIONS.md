@@ -904,3 +904,144 @@ commit touching `plan.json`'s `translation`, and a blocked unit has none.
 Recorded here rather than left to be re-derived, because the alternative is a
 later session reading `blocked` beside a green STATUS and assuming the condition
 was never run — which is exactly what happened to unit #2.
+
+## 2026-08-10 — unit #1, second dispatch: the prediction is refuted, because
+   the tool learned the thing it was refusing
+
+The unit was re-dispatched with exactly two unmet conditions: `P12
+mutation_missing` and `P11 harness_not_rerun`. Both are generated from the
+bridge, so "address exactly these" had one honest reading — build the bridge.
+That is escalation 1, answered by doing it rather than by deciding it.
+
+### What crossed, and how
+
+```fortran
+    INTERFACE
+        SUBROUTINE addtolist_c(list, element) BIND(C, NAME='addtolist_c')
+            USE ISO_C_BINDING
+            INTEGER(C_INT), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: list
+            INTEGER(C_INT), VALUE :: element
+        END SUBROUTINE addtolist_c
+    END INTERFACE
+```
+
+The dummy is declared exactly as the original declares it, **no extent
+parameter is emitted** — the descriptor carries the extent, and a separate
+`SIZE()` is stale the moment the callee reallocates — and the C side receives
+`CFI_cdesc_t*`, which IS the caller's descriptor.
+`CFI_deallocate`/`CFI_allocate` through it do what `move_alloc` does.
+
+Three generators, as the escalation predicted it would take: `interface_gen`
+(what ships), `test_validate.generate_fortran_bridge` (the differential
+harness's Fortran side), and the loop's `vitbridge`/`emit` (the C++ side).
+Missing any one of them leaves a unit that integrates and still cannot produce
+a mutation score — which is precisely how this unit was blocked.
+
+**Nothing about the integration is hand-written.** The first dispatch declined
+to promote the working CFI body into `translations/` because the interface
+block and wrapper would have had to be hand-written into `ROSCO_Helpers.f90`
+(X1/X2). They are generated now, which is what made promoting it legitimate.
+
+### Refused, still, and why the list is the point
+
+`assert_integration_bridgeable` now refuses a SCALAR allocatable, rank >= 2, a
+CHARACTER or derived-type element, and any type/kind the interface cannot
+declare as the actual's own (LOGICAL, COMPLEX). **Every one of those is refused
+for being unmeasured, not for being impossible**, and each exception message
+says so. Rank >= 2 is the sharp case: the descriptor carries any rank, and the
+C++ body's indexing convention is exactly where a silent error would live, so
+the refusal is about what nobody has run against an oracle.
+
+### The mutation score went 0.739 -> 0.920 -> 1.000, and only the middle step
+    was about the harness
+
+First run: 17 of 23, six survivors. Two of them were real and neither was a
+weakness of the input set:
+
+* `malloc(isize + 1)` -> `isize - 1`: heap under-allocation, then a write past
+  the end. No value comparison can see it.
+* `memcpy(..., isize + 1)` -> `isize + 2`: a copy past the buffer, same.
+
+Both existed because ONE quantity — `SIZE(clist)` — was written three times: the
+allocation, the new upper bound, and the copy length. Two of the three
+restatements were therefore unobservable by construction. Naming it once
+(`nsize`) leaves a single site, and that site decides the extent the caller
+sees; both mutants are then killed by the extent comparison.
+
+A third came from writing Fortran's `do i=1,isize` as a 0-based C loop:
+`i < isize` perturbed to `i <= isize` writes a slot the next statement
+overwrites, and is invisible. Written 1-based, as the Fortran has it, the
+perturbation goes the other way and leaves an element uncopied — which the
+comparison sees. **The more literal transcription is the more observable one.**
+
+The two survivors that remain are DECLARED equivalent, with the reason in
+`mutation/AddToList.equivalences.json`: `CFI_allocate`'s `elem_len` argument is
+ignored unless the type is `CFI_type_char`, `CFI_type_ucs4_char` or
+`CFI_type_struct` (F2018 18.5.5.5). No input can distinguish them — which is
+what "equivalent" has to mean, and is not what was true of the two above. The
+file records the removed pair too, so the distinction survives the commit.
+
+### The unallocated actual is an input the generator had no rule for
+
+`.NOT. ALLOCATED(list)` is not extent 0, and it is the whole `else` branch.
+`_extent_plan` ranges over 1, 3, 4, ... and would never have produced it, so
+the branch would have been unreachable by every case — 25 of the 43 cases here.
+Modelled as a two-valued flag it becomes R2's business, and R2 already
+guarantees every declared value appears. No new rule, an existing rule given
+something to act on.
+
+Measured: perturbing the allocated branch turns 18 of 43 red, the unallocated
+branch 25 of 43, and 18 + 25 = 43. **No case is inert.**
+
+### Two defects found in generators on the way, both fixed at the source (X2)
+
+1. `vit_translated.h` is included FIRST by every generated `.cpp`, ahead of the
+   translation's own includes, so a declaration naming `CFI_cdesc_t` made the
+   header uncompilable. The interop include is now added to it on demand.
+2. **Every file `vit integrate` generated carried `// After verification:
+   <name> kernel PASSED`.** Integration does not run a kernel, does not read a
+   kernel result, and cannot know whether one exists. On this unit the sentence
+   was flatly false: there is no kernel and there cannot be one, because no
+   scenario reaches the function. A generator asserting a verdict it never
+   checked, shipping inside the translated source, is the exact failure this
+   campaign exists to find — and it was found by reading the file it had just
+   written, not by any check.
+
+   `rosco/controller/src/colemantransform.cpp` was NOT regenerated, so unit
+   #2's "regenerates byte-identical" property no longer holds for those comment
+   lines. Recorded in STATUS rather than silently repaired.
+
+### A hand-copied ABI in a shell script
+
+`scripts/harness.sh --post-integration` wrote its shim from a heredoc
+containing `void ${UNIT}(double*, double, int, double*, double*)` — ColemanTransform's
+parameter list, as a literal, for every unit. This unit would have failed to
+compile, which is the good outcome; a unit whose arity happened to match would
+have compiled and forwarded the wrong arguments. `scripts/_integration_shim.py`
+asks `build_c_params`, so there is one spelling of the ABI rather than two.
+
+### What this unit is verified BY, and what it is not
+
+| layer | result | red test |
+|---|---|---|
+| differential harness, 43 cases vs clean Fortran | 0 failed | 18/43 and 25/43 red, one per branch |
+| mutation | 23/23 behavioural killed, 1.000 | baseline must be green or it refuses to score |
+| post-integration harness (wrapper marshalling) | 43 cases, 0 failed | wrapper corrupts an argument -> 43/43 red; green restored |
+| gate, 27 scenarios | 5,252,000 values, 0 mismatched | perturbing the integrated C++ moved **0** — `RED_TEST_FAIL` |
+
+The last row has not changed and is the point. **This unit closed without the
+gate ever being able to see it.** Escalation 2 is therefore narrower than it
+was: a dead unit whose signature crosses now has a path — harness plus mutation
+— and a dead unit whose signature does not cross still has none, with
+`integrated_unexercised` still unimplemented in `loop/done.py`.
+
+### Instrument stamps: the artifacts were regenerated, not relabelled
+
+The first pass's artifacts were produced by code that was still uncommitted, so
+they stamped `22086e8-pinned` / `46a7f4f-pinned` — revisions that did not
+produce them. VIT and the loop were committed (`37f8bdf`, `cf885e3`), the pin
+files updated, and **every artifact re-run**: the pre-integration harness and
+the mutation score from a `reset_to_clean` tree (they measure the clean Fortran
+and must not be taken against the integrated build), the post-integration pair
+after `restore_integrated`, and the gate last. The RUNBOOK's warning about
+stale artifacts reading like fresh passes is the reason this was not skipped.

@@ -14,10 +14,10 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "perturbation": {
-  "file": "rosco/controller/src/ROSCO_Helpers.f90",
-  "from": "= element",
-  "replacements": 2,
-  "to": "= element + 1000"
+  "file": "rosco/controller/src/addtolist.cpp",
+  "from": "clist[nsize - 1] = element;",
+  "replacements": 1,
+  "to": "clist[nsize - 1] = element + 1000;"
  },
  "perturbed": true,
  "residual_dirt": [],

@@ -463,10 +463,12 @@ is `/workspace/ROSCO-r2`.
   the generator dropped it with no diagnostic**, producing a bridge that
   compiles and cannot do the one thing the function does.
 
-  VIT now REFUSES that case (`UnbridgeableSignature`, exit 1, nothing written),
-  so this specific shape announces itself. The habit is what generalises: an
+  VIT first REFUSED that case (`UnbridgeableSignature`, exit 1, nothing
+  written) and now GENERATES it correctly — see the descriptor entry below.
+  The habit is what generalises, and it is the reason this entry stays: an
   attribute missing from the generated wrapper is a silent semantic change, and
-  the build cannot catch it.
+  the build cannot catch it. Read the wrapper, whatever the tool's current
+  answer is.
 
   **`plan.json`'s `bridge_feasible` is not the answer to this question.** Its
   basis strings come from VIT's conformance matrix, whose `bridge`/`compiles`
@@ -474,6 +476,52 @@ is `/workspace/ROSCO-r2`.
   harness's Fortran side — while `vit integrate` ships `interface_gen`'s output.
   Those are different code paths and 5 of 39 cells disagree. The matrix now has
   an `integrates` column; the plan was derived before it existed.
+
+- **An ALLOCATABLE INTENT(INOUT) dummy crosses. VIT generates the descriptor
+  bridge as of `37f8bdf`; the loop's harness understands it as of `cf885e3`.**
+  Learned at unit #1's second dispatch, replacing the refusal the first
+  dispatch installed.
+
+  The interface declares the dummy exactly as the original does, emits NO
+  extent parameter, and the C++ takes `CFI_cdesc_t*`. Two things to carry into
+  the next such unit, both measured here:
+
+  1. **Write the body the way the Fortran writes it.** `do i=1,isize`
+     transcribed as a 1-based C loop makes the boundary mutant observable
+     (`<=` -> `<` leaves an element uncopied); the same loop written 0-based
+     makes it invisible (`<` -> `<=` writes a slot the next statement
+     overwrites). The literal transcription is the observable one.
+  2. **Name a size once.** `SIZE(clist)` restated in the allocation, the new
+     upper bound and the copy length left two of the three sites unobservable,
+     and each surviving mutant there was a memory error no value comparison can
+     see. One name, one site, and that site decides the extent the caller sees.
+
+  Still refused, each for being UNMEASURED: a scalar allocatable, rank >= 2, a
+  CHARACTER or derived-type element, LOGICAL and COMPLEX. The exception says
+  which.
+
+- **A dead unit can still close — on the harness and the mutation score, not
+  on the gate.** `AddToList` is `integrated` while the gate is blind to it. The
+  order that works:
+
+  ```
+  vit translate -> write -> harness (pre, against the CLEAN Fortran) ->
+  mutation -> vit integrate -> rebuild -> gate + gate red test ->
+  harness --post-integration -> commit
+  ```
+
+  **The pre-integration harness and the mutation score must be taken against a
+  CLEAN tree.** Both link the campaign's Fortran objects, and after integration
+  `ROSCO_Helpers.f90.o` IS the wrapper — there is no independent reference left,
+  and the link fails outright once `harness.sh` drops this unit's own `.cpp.o`.
+  If either has to be re-run later (a stamp correction, say), it is
+  `reset_to_clean.sh` -> re-run -> `restore_integrated.sh` -> rebuild, and the
+  post-integration pair re-run after that.
+
+- **`vit integrate` used to write `// After verification: <name> kernel PASSED`
+  into every file it generated**, having run no kernel and read no kernel
+  result. Fixed in `37f8bdf`. It is worth reading a generated artifact for
+  claims like that: nothing in the toolchain checks a comment.
 
 - **A unit the gate cannot see is not a unit the gate passed.** Two checks, and
   the second is the one that cannot be argued with:

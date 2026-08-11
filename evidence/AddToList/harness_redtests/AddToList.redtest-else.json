@@ -1,0 +1,115 @@
+{
+ "unit": "AddToList",
+ "against": "translation",
+ "checked": 43,
+ "failed": 25,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    1 varied extent(s) at [3], NO index parameter identified, array elements distinct",
+  "  applied  R2_flag_values             2 value(s) across 1 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  N/A      R6_reference_literals      no numeric literal in the reference source, or none inside any parameter's range -- no boundary this rule can reach",
+  "  N/A      R3_no_dead_signal          no real parameter",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 1 out-parameter(s): list"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "list",
+   "ref": "0100000001000000000000000100000000000000a8fdffff",
+   "got": "0100000001000000000000000100000000000000a9fdffff"
+  },
+  {
+   "case": 1,
+   "output": "list",
+   "ref": "0100000001000000000000000100000000000000a8fdffff",
+   "got": "0100000001000000000000000100000000000000a9fdffff"
+  },
+  {
+   "case": 2,
+   "output": "list",
+   "ref": "0100000001000000000000000100000000000000d6030000",
+   "got": "0100000001000000000000000100000000000000d7030000"
+  },
+  {
+   "case": 3,
+   "output": "list",
+   "ref": "01000000010000000000000001000000000000000a010000",
+   "got": "01000000010000000000000001000000000000000b010000"
+  },
+  {
+   "case": 4,
+   "output": "list",
+   "ref": "010000000100000000000000010000000000000093feffff",
+   "got": "010000000100000000000000010000000000000094feffff"
+  },
+  {
+   "case": 5,
+   "output": "list",
+   "ref": "010000000100000000000000010000000000000091ffffff",
+   "got": "010000000100000000000000010000000000000092ffffff"
+  },
+  {
+   "case": 6,
+   "output": "list",
+   "ref": "010000000100000000000000010000000000000097fcffff",
+   "got": "010000000100000000000000010000000000000098fcffff"
+  },
+  {
+   "case": 7,
+   "output": "list",
+   "ref": "0100000001000000000000000100000000000000fd000000",
+   "got": "0100000001000000000000000100000000000000fe000000"
+  },
+  {
+   "case": 8,
+   "output": "list",
+   "ref": "01000000010000000000000001000000000000006e030000",
+   "got": "01000000010000000000000001000000000000006f030000"
+  },
+  {
+   "case": 9,
+   "output": "list",
+   "ref": "0100000001000000000000000100000000000000a7feffff",
+   "got": "0100000001000000000000000100000000000000a8feffff"
+  },
+  {
+   "case": 19,
+   "output": "list",
+   "ref": "010000000100000000000000010000000000000074fcffff",
+   "got": "010000000100000000000000010000000000000075fcffff"
+  },
+  {
+   "case": 20,
+   "output": "list",
+   "ref": "01000000010000000000000001000000000000002c010000",
+   "got": "01000000010000000000000001000000000000002d010000"
+  },
+  {
+   "case": 21,
+   "output": "list",
+   "ref": "010000000100000000000000010000000000000062fcffff",
+   "got": "010000000100000000000000010000000000000063fcffff"
+  },
+  {
+   "case": 22,
+   "output": "list",
+   "ref": "010000000100000000000000010000000000000096030000",
+   "got": "010000000100000000000000010000000000000097030000"
+  },
+  {
+   "case": 23,
+   "output": "list",
+   "ref": "010000000100000000000000010000000000000044010000",
+   "got": "010000000100000000000000010000000000000045010000"
+  },
+  {
+   "case": 25,
+   "output": "list",
+   "ref": "0100000001000000000000000100000000000000d3030000",
+   "got": "0100000001000000000000000100000000000000d4030000"
+  }
+ ],
+ "loop_rev": "cf885e3-pinned",
+ "vit_rev": "37f8bdf-pinned"
+}
