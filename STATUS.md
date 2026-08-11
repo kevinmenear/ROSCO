@@ -479,6 +479,47 @@ gap in Open below.
 - **Reset-to-clean**, which did not exist: `scripts/reset_to_clean.sh` and
   `scripts/restore_integrated.sh`, red-tested.
 
+## Unit #5, second dispatch — 2026-08-11
+
+**The first dispatch's blocking claim was wrong, and saying so is the result.**
+It closed `blocked` on "there is no runnable oracle for ExtController anywhere in
+this campaign" and on the judgement that closing the `CHARACTER(:)` gap "would
+not close this unit". The first is refuted; the second rested on the first.
+
+- **The oracle runs.** `fixtures/bladed_stub/discon_stub.c` — 60 lines of C
+  exporting `DISCON` — makes the ORIGINAL Fortran execute to completion with
+  `Ext_Mode = 1`: `exit_status: 0`, `returned_normally: true`
+  (`probe_ext_mode_1_with_oracle.json`). The SIGSEGV was a property of the INPUT:
+  `DLL_FileName` is `"unused"` in all 14 inputs and no such library existed in
+  the tree. Both probe artifacts are kept and are meant to be read together.
+  It changes **no verification default** — the differential harness does not run
+  scenarios, so the gate's 27 scenarios, its baselines and its pinned
+  `compared = 5252000` are untouched.
+- **`CHARACTER(:), ALLOCATABLE` crosses a view struct** — VIT `a2e2c30`. The
+  37-of-69 blocker, closed. `vit translate ExtController` now succeeds and
+  `vit interface` emits all five arguments over a five-argument bridge.
+- **A generated differential bridge is no longer past Fortran's 132-column
+  limit** — VIT `83d25f9`, found on the way and recorded before it was fixed.
+  Decomposing `ControlParameters` (214 fields) and `LocalVariables` (168)
+  produced an 11,747-character `SUBROUTINE` statement and 1,153 diagnostics that
+  never named the cause. **Every unit here taking either type — most of ROSCO's
+  controllers — was outside `vit test-validate` entirely, and nothing said so.**
+
+**Still `blocked`, for a third and smaller reason.** P11 and P12 still FAIL; the
+artifacts still do not exist and manufacturing them is still the trade this
+campaign refuses. What remains is named in `plan.json`'s escalation: (A) a
+deferred-length CHARACTER *field* of a decomposed type in `vit test-validate`,
+(B) CHARACTER fields supplied by the loop's `expand_derived`, and (C) a
+judgement — every generated case must supply a loadable `DLL_FileName` and the
+SAVE `DLL_Ext` constrains case order, which is pinning an input in a generator
+built to refuse narrowed domains. (C) is raised, not made.
+
+**A gitignore hazard, again.** `.gitignore:65`'s `*build*` silently swallowed
+`fixtures/bladed_stub/build.sh`, so the first commit left a committed evidence
+file naming a library nothing committed could build (K3), with a clean
+`git status` throughout. Same shape as the gitignored `Examples/DISCON.IN`.
+`git check-ignore -v` each file of a new fixture.
+
 ## Done-condition, unit #5
 
 `python3.12 scripts/done_check.py ExtController --baseline 05a64cd` returns

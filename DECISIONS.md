@@ -1491,3 +1491,175 @@ unexercised` is close and wrong — it claims translation and verification, and
 `AddToList` shows the campaign already uses plain `integrated` for a verified-
 but-unexercised unit. The gap is a name for *verified by nothing, and here is
 why*. Raised, not resolved.
+
+## Unit #5 — ExtController, second dispatch, 2026-08-11: the blocking claim was wrong, and two substrate gaps are closed
+
+### The decision
+
+The first dispatch closed this unit `blocked` on an argument with two legs.
+**One leg is refuted by measurement. The other has been removed by building the
+thing it said had to be built.** The disposition stays `blocked` — P11 and P12
+still cannot be produced — but for a *third* reason, which is smaller, named,
+and ordinary engineering rather than an impossibility.
+
+The first dispatch's own words, from `plan.json`:
+
+> THERE IS NO RUNNABLE ORACLE. […] So P7 — the oracle is the original source —
+> has nothing to point at. […] a unit whose reference implementation cannot be
+> executed to completion on any input the campaign possesses.
+
+The last clause is the one that is true, and the one that was over-read. It
+*possessed* no such input. It does now.
+
+### 1. The oracle runs
+
+`ExtController` crashed because `dlopen` failed, not because the function is
+unrunnable. `DLL_FileName` is the literal string `"unused"` in all 14
+`Examples/*.IN`; no external Bladed-style library was shipped anywhere in the
+tree; `ExtController` does not check `ErrVar%ErrStat` after `LoadDynamicLib`, so
+`ProcAddr(1)` stays `C_NULL_FUNPTR` and the CALL two statements later is the
+signal. Every step of that chain is a fact about the INPUT.
+
+`fixtures/bladed_stub/discon_stub.c` is 60 lines of C exporting `DISCON` with the
+signature `ExtControl.f90`'s own `ABSTRACT INTERFACE` declares.
+`probe_ext_mode_1_with_oracle.json`:
+
+```
+exit_status: 0    returned_normally: true    discon_in_restored_by_parent: true
+```
+
+Three properties are load-bearing and are argued in the fixture's own header:
+deterministic (both sides of a differential comparison call it), dependent on its
+inputs (a stub writing constants would let a translation that never fills
+`ExtDLL%avrSWAP` pass — unit #2's all-zero-window vacuity again), and stateless.
+
+**It is an addition, not a verification-default change, and getting that wrong is
+what made this a Driver question.** The first dispatch escalated "construct an
+oracle" under SPEC §8.4 on the grounds that it "adds a gate scenario and so
+changes the gate's compared count and its baseline set". That is true of a gate
+scenario and false of this: the **differential harness does not run scenarios**,
+it calls the unit directly. The 27 scenarios keep `Ext_Mode = 0`, no baseline
+moves, and `gate/__gate__.json`'s pinned `compared = 5252000` is untouched. P5
+permits it outright. The general form is in the RUNBOOK: before escalating "an
+oracle must be constructed", ask *which instrument* needs it.
+
+The probe is a new file beside the old one rather than an edit of it. The SIGSEGV
+result is still true of the campaign's own inputs and both artifacts stand.
+
+### 2. `CHARACTER(:), ALLOCATABLE` crosses — VIT `a2e2c30`
+
+The first dispatch declined to close this gap with an argument worth quoting,
+because it is the argument that has to be rejected:
+
+> The difference is that building it **would not close this unit.** Even with a
+> bridge there would be nothing to compare the translation against.
+
+The premise was §1, and §1 is false. With an oracle, the bridge is exactly what
+is needed. The gap was already known to block **37 of 69 units**; declining it
+cost two dispatches.
+
+A deferred-length CHARACTER has no C type because its LENGTH is part of its
+allocation. It crosses as three members — a staging buffer the populator module
+owns, the current length, and the writable **capacity** — with the reallocating
+assignment done by the reverse copy. The capacity is what makes the field
+*writable* rather than merely readable, and without it
+`ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)` could not be translated
+at all. An over-long assignment is **refused and reported, never truncated**: a
+shortened error message is a plausible wrong answer, which is the one kind of
+wrong answer a bit-for-bit comparison cannot catch.
+
+`vit analyze-types --fix character` is still refused for the same P7 reason and
+is now also unnecessary.
+
+**A defect inside the fix, found by RUNNING the generated code, not reading it.**
+The populator's first draft filled the buffer with `buf = src%ErrMsg` — a
+whole-variable assignment to a deferred-length ALLOCATABLE, so Fortran 2003
+automatic reallocation applies and the buffer comes straight back out at
+`LEN(src%ErrMsg)`, discarding the headroom allocated one line above and making
+the capacity published to C++ **a lie in the dangerous direction**. Every shape
+assertion passed. The round-trip fixture reported `cap=5` where 4101 had been
+allocated. That is the whole argument for
+`tests/test_deferred_char_roundtrip.py`, which compiles and runs the generated
+bridge; red-tested in both directions.
+
+### 3. A generated bridge no compiler could read — VIT `83d25f9` (C12)
+
+Found on the way and **larger than this unit**. `vit test-validate` emitted the
+differential bridge's dummy list on one line. Decomposing `ControlParameters`
+(214 fields) and `LocalVariables` (168) produced a `SUBROUTINE` statement
+**11,747 characters long**; free-form Fortran stops at 132 columns, so gfortran
+truncated it and reported **1,153 diagnostics, none of which name the cause**.
+
+**Every unit in this campaign taking either type — most of ROSCO's controllers —
+was outside `vit test-validate` entirely, and nothing said so.** P11 and P12 are
+mandatory for all of them. The first four units took scalars, arrays and strings
+and never touched a derived type, which is the only reason this went unmeasured.
+
+Fixed as a rule about line *contents* rather than a list of emission sites,
+because wrapping the dummy list alone left the array copy-in statements at
+133–153 columns. Two defects in the fix itself, both caught by testing rather
+than reading: an offset-tracking loop that never terminated and **hung the test
+suite**, and a test that asserted the wrong property and failed against a correct
+implementation. `statemachine_bridge.f90` goes from 1,153 errors to 0.
+
+### 4. What still blocks it, and why the disposition is still `blocked`
+
+`harness/ExtController.postintegration.json` and `mutation/ExtController.json`
+still do not exist, so P11 and P12 still FAIL and `done_check.py` is still right.
+Manufacturing either remains the trade this campaign refuses. What changed is the
+*reason*, and there are three, all named in `plan.json`'s escalation:
+
+* **A.** `vit test-validate` must cross a deferred-length CHARACTER **field** of
+  a decomposed type. Same three-member shape as §2, one generator over; same 37
+  of 69 units.
+* **B.** `harness/vitbridge.py`'s `expand_derived` drops every CHARACTER field —
+  its own comment says so — so VIT's bridge would declare parameters the case
+  generator does not produce. Unit #4 built the `char[]` kind for CHARACTER
+  *arguments*; this is fields.
+* **C.** *A judgement, not a feature.* Every generated case must supply a
+  **loadable** `DLL_FileName` or the reference crashes, and the SAVE `DLL_Ext`
+  means case ORDER matters too. That is pinning a field to a fixture path and
+  constraining ordering, in a generator whose stated premise is that narrowing
+  the input domain is the blindness it exists to remove. It is defensible — the
+  admissible domain really is that narrow, because the original crashes on the
+  rest of it, which is itself a finding about upstream ROSCO — but it is a
+  decision about what the harness may hold constant and the artifact must report
+  it. **Raised, not made.**
+
+Also unmeasured and cheaper: the `TYPE(ExtDLL_Type)` production bridge for
+`LoadDynamicLib` and its SAVE state (X1 forbids inlining), and whether
+`ALLOCATE(ExtDLL%avrSWAP(max_avr_entries))` is auto-extracted by
+`vit/allocate_extract.py`.
+
+### 5. On the first dispatch's candidate method amendment
+
+It proposed splitting `blocked` into blocked-on-a-tool-gap and blocked-because-
+no-oracle-exists, on the grounds that the second is "a permanent property of the
+campaign's fixtures until someone adds one".
+
+**This dispatch is evidence against that amendment**, and it is worth saying so
+because the amendment was raised from this unit. The distinction it draws did
+not survive contact: what looked like a permanent property of the fixtures was
+60 lines of C. A vocabulary that had let this unit be filed as categorically
+different would have made the wrong answer easier to keep. The existing
+`evidence` field carried the difference in prose, and prose was reviewable.
+
+The second candidate — a name for *verified by nothing, and here is why* — is not
+affected and still stands.
+
+### A defect in this session's own gitignore hygiene
+
+`.gitignore:65` is `*build*`, which silently matched
+`fixtures/bladed_stub/build.sh`. The first commit of the fixture added the `.c`
+and left the script untracked, so a committed evidence file named a library
+nothing committed could produce (K3) — and `git status` was clean throughout.
+Same shape as the gitignored `Examples/DISCON.IN` the first dispatch found. After
+committing a new fixture, `git check-ignore -v` each file rather than trusting a
+clean status.
+
+### NOT method, target
+
+All of it. The oracle-vs-instrument distinction, the 132-column limit, the
+deferred-CHARACTER shape and the gitignore hazard are RUNBOOK target-layer
+entries. No amendment to the invariant layer is proposed; the one the first
+dispatch proposed is argued against above.

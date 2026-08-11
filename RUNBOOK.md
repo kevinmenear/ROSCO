@@ -538,6 +538,75 @@ is `/workspace/ROSCO-r2`.
   stayed clean and `done.py`'s P2 could not have caught it. Any restore that
   must survive a crash goes in the parent.
 
+- **A unit whose original CRASHES is not a unit with no oracle. Ask what it
+  crashed ON.** Learned at unit #5's second dispatch, and it reverses that
+  unit's first conclusion.
+
+  The measurement was right: `Ext_Mode = 1` on this campaign's own inputs makes
+  the original Fortran die on signal 11. The reading -- "no runnable oracle
+  exists anywhere in this campaign" -- was one step too far. The crash is a
+  property of the INPUT. `DLL_FileName` is the literal string `"unused"` in all
+  14 `Examples/*.IN`, no external Bladed-style library was shipped anywhere in
+  the tree, `dlopen` fails, and `ExtController` does not check
+  `ErrVar%ErrStat`. Ship a library that loads and every step succeeds:
+
+  ```
+  docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2 && \
+      bash fixtures/bladed_stub/build.sh && \
+      python3 evidence/ExtController/probe_ext_mode_1_with_oracle.py"
+  ```
+  `exit_status: 0`, `returned_normally: true`. 60 lines of C.
+
+  **And building it is not a verification-default change.** That was the other
+  half of the wrong conclusion. Constructing an oracle sounds like adding a gate
+  scenario, which would move the compared count and the baseline set and so
+  belongs to the Driver (SPEC 8.4). The DIFFERENTIAL HARNESS DOES NOT RUN
+  SCENARIOS -- it calls the unit directly -- so a fixture it links against is an
+  ADDITION under P5 and touches nothing the gate measures. Before escalating
+  "an oracle must be constructed", ask which instrument needs it.
+
+  The probe is an ADDITION beside `probe_ext_mode_1.py`, not an edit of it. The
+  SIGSEGV artifact is still true of the campaign's own inputs and the two are
+  meant to be read together.
+
+- **`vit test-validate` emitted a bridge no compiler could read, for MOST OF
+  THIS CAMPAIGN, in silence.** Learned at unit #5's second dispatch and worth
+  checking before any unit that takes a derived type.
+
+  Decomposing a derived type emits one bridge dummy per FIELD.
+  `ControlParameters` has 214 and `LocalVariables` 168, so the `SUBROUTINE`
+  statement came out **11,747 characters long on one line**. Free-form Fortran
+  stops at 132 columns; gfortran truncated it and then reported 1,153
+  diagnostics, the first of which is `Unexpected junk in formal argument list`
+  and none of which name the cause.
+
+  So every unit here taking either type -- most of ROSCO's controllers -- was
+  outside `vit test-validate` entirely, and P11 and P12 are mandatory for all of
+  them. The first four units took scalars, arrays and strings and never touched
+  a derived type, which is the only reason it went unmeasured this long.
+
+  Fixed in VIT `83d25f9`. The check is one line and belongs before believing any
+  generated Fortran:
+
+  ```
+  awk '{ if (length($0)>132) c++ } END { print "over 132: " c+0 }' <generated>.f90
+  ```
+
+  **Wrapping only the dummy list was not enough**, measured rather than
+  predicted: the array copy-in statements were still 133-153 columns, one
+  statement holding two decomposed field names, neither shortenable. A fix that
+  names the sites emitting long lines is a fix the next site escapes.
+
+- **A `.gitignore` pattern broad enough to catch a directory is broad enough to
+  catch a file somebody needs.** `.gitignore:65` is `*build*`, which silently
+  swallowed `fixtures/bladed_stub/build.sh` -- so the first commit of the oracle
+  fixture added the `.c` and left the script that builds it untracked, leaving
+  an evidence file naming a library nothing committed could produce (K3). `git
+  status` was clean throughout. Same shape as the gitignored `Examples/DISCON.IN`
+  that let a crashed probe reconfigure the gate. After committing any new
+  fixture, run `git check-ignore -v <each file>` rather than trusting a clean
+  `git status`.
+
 - **`coverage/line_coverage.json` cannot tell "never ran" from "never
   instrumented", and four files read the same either way.** `scripts/coverage.py`
   stores only lines with a NON-ZERO hit count, so a fully-dead file is an empty

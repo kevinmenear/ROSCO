@@ -1,1696 +1,1706 @@
 {
- "units": [
-  {
-   "order": 1,
-   "name": "AddToList",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'",
-    "observed": "PREDICTION REFUTED, in two dispatches, and the split is the finding.\n\nFIRST DISPATCH -- verdict confirmed against the tool as it stood, basis refuted. `vit interface` emitted `INTEGER(C_INT), INTENT(INOUT) :: list(*)` plus `INTEGER(C_INT), VALUE :: n_list`, under a wrapper declaring `INTEGER(4), INTENT(INOUT) :: list(:)` -- the ALLOCATABLE attribute dropped with no diagnostic, although fortran_parser had recorded is_allocatable=True. Measured against the original on the live ROSCO path (allocate 4, append 3x): the caller's array was still 4 elements, the appended values written one past the end of its heap block, and nothing -- gfortran, g++, or the run -- said so. A hand-written Fortran 2018 CFI bridge reproduced the oracle BYTE FOR BYTE on both branches, so the limit was VIT's, not the argument's. evidence/AddToList/bridge_probe/result.json.\n\nSECOND DISPATCH -- the verdict is refuted too. VIT 37f8bdf generates that bridge: the dummy is declared in the BIND(C) interface exactly as the original declares it (`DIMENSION(:), ALLOCATABLE, INTENT(INOUT)`), no extent parameter is emitted, and the C side receives the caller's own CFI_cdesc_t*. The unit is INTEGRATED on that path. Nothing about it is hand-written: interface block, wrapper, C++ scaffold, the differential harness's Fortran bridge and the post-integration shim are all generated (X1, X2). The loop's harness learned the same convention (cf885e3) -- three generators, which is what the escalation said it would take.\n\nWHERE THE BASIS CAME FROM: tests/conformance/matrix.toml's `[c_alloc_inout] compiles = \"no\"` was measured from `test_validate.generate_fortran_bridge` -- the DIFFERENTIAL HARNESS's Fortran side, never linked into the library -- while `vit integrate` ships `interface_gen`'s output, which compiled clean and did nothing. The cell now reads compiles=\"yes\", integrates=\"yes\", re-measured. The prediction was right by luck of a different generator failing.\n\nSTILL REFUSED by VIT, for being UNMEASURED rather than impossible, each with its reason in the exception message: a SCALAR allocatable, rank >= 2, a CHARACTER or derived-type element, and any type/kind the interface cannot declare as the actual's own (LOGICAL, COMPLEX). The three other `bridge_feasible: no` entries waiting on this -- Read_OL_Input, ParseInAry_Opt, ParseDbAry_Opt -- are not thereby unblocked: their verdicts were derived from the same pre-`integrates` matrix and have to be re-measured, not inferred from this one."
-   },
-   "observability": "THE GATE CANNOT SEE THIS UNIT. VERIFICATION IS THE DIFFERENTIAL HARNESS AND THE MUTATION SCORE, NOT THE GATE.\n\nThe body and all five call sites have zero hits in all 27 scenarios (coverage/line_coverage.json). Measured a second time, independently of gcov, and now against the INTEGRATED build: perturbing the C++ translation (`clist[nsize - 1] = element` -> `element + 1000`), rebuilding and re-gating moved 0 of 5,252,000 values. gate/AddToList.redtest.json, verdict RED_TEST_FAIL. So gate/AddToList.json -- 5,252,000 values compared, 0 mismatched -- is a green that constrains nothing about AddToList, and is committed next to the red test that says why.\n\nThere is no kernel either, for the same reason: no scenario reaches a call site, so there is no runtime state to capture. `vit extract` reporting `No state data captured` during setup was this deadness, not a tool defect.\n\nWhat DOES constrain it, all red-tested:\n  * 43 differential cases against the clean Fortran, 0 failed. Perturbing the allocated branch turns 18 red and the unallocated branch 25; 18 + 25 = 43, so no case is inert.\n  * mutation 23/23 behavioural killed, score 1.000, 2 declared equivalent with reasons (CFI_allocate's elem_len is ignored for a non-CHARACTER type, F2018 18.5.5.5).\n  * 43 post-integration cases against the integrated build, 0 failed; the wrapper corrupting one argument turns all 43 red.\n\nThe unallocated actual is a distinct input that extent 0 is not, and the harness's generator had no rule that would produce it -- `_extent_plan` ranges over 1, 3, 4, ... It is now a two-valued flag, so R2 guarantees both states appear. That is 25 of the 43 cases.\n\nKNOWN GAP, stated rather than left to be found: with one extent parameter, `_extent_plan` gives it the same value (3) in every case, so the harness varies allocated/unallocated but NOT the length. A defect that only appears at another length is not covered by these 43 cases.",
-   "disposition": "integrated",
-   "evidence": [
-    "evidence/AddToList/README.md",
-    "translations/ROSCO_Helpers/addtolist.cpp",
-    "rosco/controller/src/addtolist.cpp",
-    "harness/AddToList.json",
-    "harness/AddToList.postintegration.json",
-    "harness/AddToList.postintegration.redtest.json",
-    "evidence/AddToList/harness_redtests/AddToList.redtest-append.json",
-    "evidence/AddToList/harness_redtests/AddToList.redtest-else.json",
-    "mutation/AddToList.json",
-    "mutation/AddToList.equivalences.json",
-    "gate/AddToList.json",
-    "gate/AddToList.redtest.json",
-    "evidence/AddToList/bridge_probe/run.sh",
-    "evidence/AddToList/bridge_probe/mod_orig.f90",
-    "evidence/AddToList/bridge_probe/mod_vit.f90",
-    "evidence/AddToList/bridge_probe/addtolist_vit.cpp",
-    "evidence/AddToList/bridge_probe/mod_cfi.f90",
-    "evidence/AddToList/bridge_probe/addtolist_cfi.cpp",
-    "evidence/AddToList/bridge_probe/driver.F90",
-    "evidence/AddToList/bridge_probe/result.json",
-    "evidence/AddToList/bridge_probe/result.redtest.json",
-    "evidence/AddToList/generators.py",
-    "evidence/AddToList/generators.json",
-    "evidence/AddToList/vit_interface.stdout.txt",
-    "evidence/AddToList/vit_translate.stdout.txt",
-    "evidence/AddToList/addtolist.scaffold.cpp",
-    "coverage/line_coverage.json"
-   ],
-   "translation": "translations/ROSCO_Helpers/addtolist.cpp",
-   "harness_required": true
-  },
-  {
-   "order": 2,
-   "name": "ColemanTransform",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'",
-    "observed": "CONFIRMED, and re-confirmed on a second pass with a different VIT. All 5 arguments cross with no decomposition: rootMOOP(3) -> double* by reference, aziAngle/nHarmonic by value, axTOut/axYOut (INTENT(OUT) scalars) by reference. The integrated wrapper is a 9-line CALL colemantransform_c(...) and the gate is bit-identical across 5,252,000 values. The prediction was about the SIGNATURE and it held.\n\nWhat did NOT hold, first pass, is the assumption that a crossable signature is crossed correctly by every generator: VIT's test-validate bridge declared rootMOOP a by-value scalar, and the loop's harness mapping made it a one-element buffer read three deep. interface_gen -- the generator the kernel and the integration actually use -- got it right. Both others fixed; see DECISIONS.md.\n\nSecond pass, after VIT was reconciled with canonical (d85b33b -> d07a716, 89 commits): `vit integrate` regenerated the interface block, the wrapper and the .cpp BYTE-IDENTICAL to what the old VIT produced -- `git diff` over Functions.f90, CMakeLists.txt and colemantransform.cpp is empty. The crossing does not depend on which of the two VITs generated it."
-   },
-   "observability": "The kernel exercises nHarmonic=1 ONLY: KGen's callsite region is the single CALL at Controllers.f90:510, so the NP_2 call at :511 is replayed from state rather than recomputed. nHarmonic=2 is covered by the differential harness, which varies it, and by the gate, which runs both calls.\n\nThe kernel window is load-bearing and was wrong once: at invocation 1-20 every input is zero and a stub passes 21/21. At the 63 cases actually used (scenario 27, three ranges) the same stub produces 124 differing field entries. evidence/ColemanTransform/.\n\nWhat NOTHING here sees: the post-integration harness cannot compare arithmetic -- after integration the Fortran body IS the translation -- so it measures the wrapper's marshalling only. The 35 mutants include 2 killed by failing to compile rather than by a case mismatch, so the behavioural kill count is 33 of 33 scoreable.",
-   "disposition": "integrated",
-   "evidence": [
-    "translations/Functions/colemantransform.cpp",
-    "rosco/controller/src/colemantransform.cpp",
-    "gate/ColemanTransform.json",
-    "gate/ColemanTransform.redtest.json",
-    "harness/ColemanTransform.json",
-    "harness/ColemanTransform.postintegration.json",
-    "harness/ColemanTransform.postintegration.redtest.json",
-    "mutation/ColemanTransform.json",
-    "evidence/ColemanTransform/README.md",
-    "evidence/ColemanTransform/kernel-window-27.verify_fields.csv",
-    "evidence/ColemanTransform/kernel-window-27.stub-fails.verify_fields.csv",
-    "evidence/ColemanTransform/kernel-window-1-20.stub-passes.verify_fields.csv",
-    "evidence/ColemanTransform/kernel-window-27.vit-d07a716.verify_fields.csv",
-    "evidence/ColemanTransform/kernel-window-27.vit-d07a716.stub-fails.verify_fields.csv",
-    "evidence/ColemanTransform/kernel-window-27.vit-d07a716.statefiles.lst",
-    "coverage/line_coverage.json"
-   ],
-   "translation": "translations/Functions/colemantransform.cpp",
-   "harness_required": true
-  },
-  {
-   "order": 3,
-   "name": "ColemanTransformInverse",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'",
-    "observed": "CONFIRMED. All six arguments cross with no decomposition, and the one that could have been decomposed was not: `PitComIPC` is `REAL(DbKi), INTENT(OUT), DIMENSION(3)` and the generated interface declares it `REAL(C_DOUBLE), INTENT(OUT) :: PitComIPC(*)` -- by reference, rank preserved, no extent parameter emitted and none needed, because the extent is fixed by the dummy's own declaration. The five scalars go by VALUE. The integrated wrapper is a 9-line CALL colemantransforminverse_c(...).\n\nThe RUNBOOK's habit was applied before any C++ was written: `vit interface` was run and its wrapper compared to the original attribute by attribute (evidence/ColemanTransformInverse/vit_interface.stdout.txt). Nothing was dropped -- REAL(DbKi)->REAL(8), INTEGER(IntKi)->INTEGER(4), every INTENT preserved, PitComIPC still (3). That is the check unit #1 failed silently, so it is run whatever the tool's current answer is.\n\nThe plan's basis string is still the honest one and is still not the answer: it says only that no blocker was DETECTABLE, which is a statement about the matrix's resolution and not about this signature. The verdict here comes from having run the generator that ships, plus a post-integration harness that turns red when the wrapper corrupts an argument."
-   },
-   "observability": "THE GATE SEES THIS UNIT, AND MEASURED SO. Perturbing the integrated C++ (`PitComIPC[0] = 1.000001 * std::cos(...)`), rebuilding and re-gating moved 389,644 of 5,252,000 values; reverting returned 0. gate/ColemanTransformInverse.redtest.json, verdict RED_TEST_PASS. Five call sites reach it (Controllers.f90:561, 562, 699, 781, 826) across scenarios 2, 5, 6, 8, 15, 16, 18, 21, 26 and 27.\n\nWHAT NEITHER THE KERNEL NOR THE GATE SEES: `aziOffset`. It is 0 at every call site in every scenario -- `IPC_aziOffset` is 0.000 in all 14 Examples/DISCON*.IN and no scenario patches it, `AWC_phaseoffset` is 0.0 in all of them and the one scenario that patches it (15) patches it to '0.0', and the fifth site passes the literal 0.0_DbKi. A translation that ignored aziOffset entirely would pass the kernel 63/63 and the gate 5,252,000/5,252,000. Only the differential harness varies it; the three `aziAngle + aziOffset` -> `-` mutants die in 81 of 257 cases each, and those 81 cases are the entirety of what constrains that argument in this campaign. `nHarmonic` is similarly only ever 1 or 2 in the scenarios, and the kernel's call site fixes it at NP_1 = 1.\n\nTHE KERNEL WINDOW IS ALIVE, and the ONLY thing that shows it is the stub. RUNBOOK's recipe for this -- count non-zero `reference` values in verify_fields.csv -- CANNOT BE RUN on this unit: its only output is an array, and VIT logs an array field as one row with an EMPTY reference column and `diff=size=3`. Against the zero-writing stub, 61 of 63 cases go OUT_TOL; the 2 that do not are invocations 1 and 2, simulation start, where the axis inputs are still zero. evidence/ColemanTransformInverse/.\n\nTHE KERNEL'S PASS CONDITION IS NOT BIT-IDENTITY. Read out of the generated `kv_ipc_real__dbki_dim1`: equality gives IDENTICAL, otherwise an ABSOLUTE RMS difference is compared against kgen_tolerance = 1e-14 and anything under it counts as IN_TOL and still prints PASSED. This unit's outputs are of order 1e-3 rad. What makes its kernel evidence bit-exact is that all 63 fields landed in the equality branch -- status=IDENTICAL in the field log -- not that the kernel demanded it.\n\nThe post-integration harness measures the WRAPPER only, by construction: after integration the Fortran body IS the translation. 257 cases, 0 failed; swapping axTIn and axYIn in the wrapper's CALL turns 256 of 257 red (the one survivor is a case where the two are equal or both zero).\n\nMUTATION: 24 of 24 behavioural killed, 1.000, 0 declared equivalent; 2 `compare_op` mutants did not compile and are excluded rather than counted. 2 of the 24 kills are CRASHES -- `[2] -> [2 + 1]` and `'2' -> '3'` both write past the end of the caller's 3-element array -- so 22 of 24 were killed by a case mismatch. The harness's own note records the remaining blind spot: PitComIPC's extent is FIXED at 3 by the type and is not varied (R5 N/A).",
-   "disposition": "integrated",
-   "translation": "translations/Functions/colemantransforminverse.cpp",
-   "harness_required": true,
-   "evidence": [
-    "evidence/ColemanTransformInverse/README.md",
-    "translations/Functions/colemantransforminverse.cpp",
-    "rosco/controller/src/colemantransforminverse.cpp",
-    "gate/ColemanTransformInverse.json",
-    "gate/ColemanTransformInverse.redtest.json",
-    "harness/ColemanTransformInverse.json",
-    "harness/ColemanTransformInverse.postintegration.json",
-    "harness/ColemanTransformInverse.postintegration.redtest.json",
-    "mutation/ColemanTransformInverse.json",
-    "evidence/ColemanTransformInverse/kernel-window-27.verify_fields.csv",
-    "evidence/ColemanTransformInverse/kernel-window-27.stub-fails.verify_fields.csv",
-    "evidence/ColemanTransformInverse/kernel-window-27.statefiles.lst",
-    "evidence/ColemanTransformInverse/vit_interface.stdout.txt",
-    "evidence/ColemanTransformInverse/vit_translate.stdout.txt",
-    "evidence/ColemanTransformInverse/colemantransforminverse.scaffold.cpp",
-    "coverage/line_coverage.json"
-   ]
-  },
-  {
-   "order": 4,
-   "name": "Conv2UC",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'",
-    "observed": "CONFIRMED, and the shape is new to this campaign. `Str` is `CHARACTER(*), INTENT(INOUT)` and crosses whole: the generated interface declares `CHARACTER(KIND=C_CHAR), INTENT(INOUT) :: Str(*)` plus `INTEGER(C_INT), VALUE :: len_Str`, and the wrapper declares the dummy exactly as the original does -- `CHARACTER(*), INTENT(INOUT) :: Str` -- copying into a C_CHAR array of LEN(Str) and back out again. Nothing is dropped. Read attribute by attribute before any C++ was written, per the habit unit #1 installed: evidence/Conv2UC/vit_interface.stdout.txt.\n\nThe plan's basis string remains the honest one and remains not the answer: `c_fn_alloc_character` is one of the five features it names as undetectable, and this signature has nothing allocatable in it. The verdict here comes from having run the generator that ships, plus a post-integration harness that turns red when the wrapper misstates the length (LEN(Str) -> LEN(Str) - 1, 24 of 118 cases).\n\nWHAT DID NOT CROSS WAS THE HARNESS, NOT THE SIGNATURE. `harness/generate.py` had kinds real / int / real[] and no string, so `vit_harness.py` reported `Str` comparable-but-held-constant and then died: `C parameter 'Str' is not in the mapped signature`. 20 of this campaign's 69 units take a CHARACTER dummy and P11/P12 are mandatory for all of them, so none of the 20 had a path to close. Fixed rather than worked around (X2): loop `9bee569` adds a `char[]` kind, in which the length is an extent the rules already vary and the bytes are an array the case stream already carries. A CHARACTER ARRAY dummy (`FileLines(:)`) is still REFUSED, with its reason, for being unmeasured -- element width and element count are two extents where `char[]` has one."
-   },
-   "observability": "THE GATE CANNOT SEE THIS UNIT, AND NOT BECAUSE THE CODE IS DEAD. `Conv2UC` runs 1,333,146 times across the 27 scenarios and converts 4,558,823 characters -- among the hottest procedures in the controller (coverage/line_coverage.json, clean lines 1579/1595). Two perturbations of the integrated C++ were rebuilt and re-gated and EACH MOVED 0 OF 5,252,000 VALUES: `ch - 32` -> `ch - 31` (every conversion off by one), and the guard forced false so that NO conversion happens at all. Both artifacts record replacements: 1, perturbed: true, reverted: true, revert_verified: true, so the perturbed library was genuinely built and run. gate/Conv2UC.redtest.json and evidence/Conv2UC/gate_redtests/.\n\nThe cause is structural. Every value this unit produces is consumed by an equality test against ANOTHER of its own outputs: FindLine converts the expected parameter name (ROSCO_Helpers.f90:1106) and the file's word (1118) with the same function and compares them. A perturbation applied to both operands preserves equality, and the no-conversion run shows equality survives even the non-injective case on the inputs these scenarios carry. So gate/Conv2UC.json -- 5,252,000 values compared, 0 mismatched -- is a green that constrains nothing about Conv2UC, and is committed next to the red tests that say why.\n\nThis is a THIRD shape of P9 in four units, and the sharpest: #1 was a line no scenario reached, #3 was an argument constant in every scenario, and this is an executed line whose result is cancelled downstream. A hit count of 1.3M says nothing about observability.\n\nWHAT DOES CONSTRAIN IT, all red-tested:\n  * kernel replay, 63 cases from scenario 1 at ROSCO_Helpers.f90:1118, 63/63 IDENTICAL. The window is alive and TWO instruments say so: decoding the state files shows 31 of the 63 captured strings actually change, and a no-op stub scores exactly 31 OUT_TOL. For a CHARACTER field a kernel PASS *is* a bit-identity claim -- KGen's generated comparison has no tolerance branch at all, which is the per-TYPE counterpart to unit #3's finding rather than a contradiction of it.\n  * 118 differential cases against the clean Fortran, 0 failed; the no-op stub turns 27 of them red. Strings at lengths 1/3/8 in three shapes (mixed, word-then-blanks, all-blank) over a 22-character corpus built from the reference's own 'a' and 'z' plus their collating neighbours.\n  * mutation 14/14 behavioural killed, 1.000, 0 declared equivalent. 2 of the 14 are CRASHES rather than case mismatches (both index before the buffer), so the killed-by-comparison count is 12 of 14.\n  * 118 post-integration cases, 0 failed; misstating the length in the wrapper (LEN(Str) -> LEN(Str) - 1) turns 24 of 118 red.\n\nKNOWN GAPS, stated rather than left to be found:\n  * 4 mutants did not compile and are excluded from the score. All four are harness/cppmutate.py reading `static_cast<unsigned char>`'s template bracket as a comparison. 22% against the 25% at which vit_mutate.py refuses to score -- one more cast and this unit would have been unscoreable for a reason with nothing to do with it.\n  * The harness varies the string's length over {1, 3, 8}, not over the 200 that MaxParamLength actually gives it. A defect that only appears past the eighth character is not covered by these 118 cases.\n  * VIT declined to construct its own kernel red test (no by-value floating-point parameter) and reported NON_DISCRIMINATING. That verdict is kept in the record; the manual stub is what answers it.",
-   "disposition": "integrated",
-   "translation": "translations/ROSCO_Helpers/conv2uc.cpp",
-   "harness_required": true,
-   "evidence": [
-    "evidence/Conv2UC/README.md",
-    "translations/ROSCO_Helpers/conv2uc.cpp",
-    "rosco/controller/src/conv2uc.cpp",
-    "gate/Conv2UC.json",
-    "gate/Conv2UC.redtest.json",
-    "evidence/Conv2UC/gate_redtests/Conv2UC.redtest-offbyone.json",
-    "evidence/Conv2UC/gate_redtests/Conv2UC.redtest-noconversion.json",
-    "harness/Conv2UC.json",
-    "harness/Conv2UC.postintegration.json",
-    "harness/Conv2UC.postintegration.redtest.json",
-    "evidence/Conv2UC/harness_redtests/Conv2UC.redtest-noop.json",
-    "mutation/Conv2UC.json",
-    "evidence/Conv2UC/kernel-window-1.cases.tsv",
-    "evidence/Conv2UC/kernel-window-1.verify_fields.csv",
-    "evidence/Conv2UC/kernel-window-1.stub-fails.verify_fields.csv",
-    "evidence/Conv2UC/kernel-window-1.statefiles.lst",
-    "evidence/Conv2UC/kernel-generated-ROSCO_Helpers.f90",
-    "evidence/Conv2UC/vit_interface.stdout.txt",
-    "evidence/Conv2UC/vit_translate.stdout.txt",
-    "evidence/Conv2UC/conv2uc.scaffold.cpp",
-    "evidence/Conv2UC/conv2uc.stub.cpp",
-    "coverage/line_coverage.json"
-   ]
-  },
-  {
-   "order": 5,
-   "name": "ExtController",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [
-    "LoadDynamicLib"
-   ],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "NONE AVAILABLE -- measured, not assumed. The plan's hypothesis was 'kernel replay or direct-call harness; bit-identical'. Both are refuted: there is no live call site to capture from (ExtControl.f90 is 0/28 executable lines in all 27 scenarios), and there is no runnable oracle for a direct-call harness to compare against (forcing Ext_Mode=1 makes the ORIGINAL Fortran segfault, signal 11). See observability.",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'",
-    "observed": "PREDICTION NEITHER CONFIRMED NOR REFUTED -- the signature was never reached. VIT REFUSES to generate anything for this unit, deterministically and with a correct message:\n\n    ERROR: Cannot map Fortran type 'CHARACTER(:)' ... Deferred-length CHARACTER(:) is not C-compatible.\n\nTYPE(ErrorVariables) has four fields and exactly one blocks it: `CHARACTER(:), ALLOCATABLE :: ErrMsg`. This is NOT a defect and was not worked around. It is also not local to this unit: 37 of this campaign's 69 units take a TYPE(ErrorVariables) dummy argument, so the gap sits on the critical path and has to be built in VIT the way unit #1 built the descriptor bridge and unit #4 built the string kind. The function ASSIGNS to the field (`ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)`), which is a REALLOCATING assignment on a deferred-length allocatable, so the feature is not read-only access -- the C++ side has to be able to reallocate it.\n\nTHE REMEDY VIT'S OWN MESSAGE SUGGESTS IS REFUSED. `vit analyze-types --fix character` rewrites ROSCO's type definition to a fixed length. That changes LEN(ErrVar%ErrMsg), which sizes avcMSG, which is a behavioural change to the oracle. P7.\n\nA SILENT DROP FOUND ON THE WAY, RECORDED BEFORE IT WAS FIXED (C12). With no `strategy: view` configured for LocalVariables and ErrorVariables, `vit interface` emitted `CALL extcontroller_c(avrSWAP, C_LOC(CntrPar_view), C_LOC(ExtDLL_view))` -- five arguments in the wrapper's dummy list, THREE in the bridge -- with no diagnostic anywhere in its output. LocalVar%iStatus is the guard on the entire initialisation branch, so that bridge could never have loaded the library it exists to call, and it compiles and links. Same shape as unit #1's dropped ALLOCATABLE attribute, one level up: there an attribute went missing, here two whole arguments. The wrong artifact is kept at evidence/ExtController/vit_interface.no_view_strategy.stdout.txt. Fixed in VIT (f8ab74f), additively and red-tested in both directions: `dropped_derived_args` already existed and only `test_validate` asked it, so the warning now lives in `generate_fortran_wrapper`, which every path that ships a wrapper goes through.\n\nWITH the view strategies configured, `vit interface` emits all five arguments -- and USEs `vit_errorvariables_view`, a module nothing can generate. The tool has two answers for this signature and neither is a working bridge.\n\nSECOND BRIDGE NEEDED, NOT MEASURED: plan.json already declares LoadDynamicLib a permanent bridge, so TYPE(ExtDLL_Type) must cross too -- five fields including TYPE(C_PTR), TYPE(C_FUNPTR) :: ProcAddr(3) and CHARACTER(1024) :: ProcName(3), a CHARACTER ARRAY, which the differential harness also still refuses (RUNBOOK, unit #4). X1 forbids inlining LoadDynamicLib to avoid it."
-   },
-   "observability": "NO INSTRUMENT IN THIS CAMPAIGN CAN SEE THIS UNIT, AND THE REASON IS NOT THE TRANSLATION.\n\nTHE GATE. ExtControl.f90 measures 0 of 28 EXECUTABLE lines in all 27 scenarios. The denominator matters and had to be regenerated to get it: coverage/line_coverage.json stores only lines with a NON-ZERO hit count, so a file that never ran and a file that was never instrumented are the same empty dictionary -- ExtControl.f90 reads as empty there, and so do Constants.f90, ROSCO_Types.f90 and ZeroMQInterface.f90. evidence/ExtController/coverage_extcontrol.json prints 0/28 twenty-seven times, which distinguishes them. Cause: Ext_Mode is 0 in all 14 Examples/*.IN -- one distinct value across every input file -- vit_sim.py never patches it, and DISCON.F90:90 sits under IF (CntrPar%Ext_Mode > 0 ...).\n\nMeasured a SECOND time against the Release build rather than gcov, both directions recording replacements: 1 and revert_verified: true:\n  * Record 49 perturbed (LEN(avcMSG) + 1 -> + 1000000): 0 of 5,252,000 values moved.\n  * The unit made a NO-OP (first statement -> RETURN): 0 of 5,252,000 values moved.\nThe second is the stronger form the RUNBOOK prescribes -- perturbing toward ABSENCE, so a gate that still cannot move is blind to the unit entirely rather than to the perturbation chosen. gate/ExtController.json's green -- 5,252,000 compared, 0 mismatched -- constrains nothing, and is committed beside both failed red tests.\n\nTHE KERNEL. No scenario reaches a call site, so there is no runtime state to capture. `vit extract` was not run: unit #1's lesson is that a capture failure at a call site with no hits is deadness rather than a tool defect, and the coverage query comes first.\n\nTHE DIFFERENTIAL HARNESS AND THE MUTATION SCORE -- and this is what makes the unit different from AddToList. AddToList was equally dead and still closed `integrated`, because the harness could RUN THE CLEAN FORTRAN as an oracle and the mutation score could be taken against it. Here that route is gone twice over:\n  (a) VIT cannot emit a bridge at all (see bridge_feasible.observed), so there is nothing for the harness to call; and\n  (b) THERE IS NO RUNNABLE ORACLE. Forcing the guard on -- Ext_Mode=1 through vit_sim.py's own write_discon(patches=...) -- makes the ORIGINAL FORTRAN SEGFAULT: exit status -11, signal 11, artifact evidence/ExtController/probe_ext_mode_1.json. DLL_FileName is the literal string \"unused\" in all 14 inputs and no external Bladed-style library is shipped anywhere in the tree; ExtController does NOT check ErrVar%ErrStat after LoadDynamicLib, so dlopen fails, ProcAddr(1) stays C_NULL_FUNPTR, the code prints \"Library loaded successfully\", and the next two statements are C_F_PROCPOINTER on that null and a CALL through it.\n\nSo P7 -- the oracle is the original source -- has nothing to point at. This is a FOURTH shape of unobservability in five units, and the first that is not about the instrument: #1 was a line no scenario reached, #3 an argument constant in every scenario, #4 an executed line whose result is cancelled downstream, and this is a unit whose reference implementation cannot be executed to completion on any input the campaign possesses.\n\nNO harness/ExtController.json AND NO mutation/ExtController.json EXIST. Their absence is the finding, not an omission: P11 and P12 are mandatory for every unit here, and done_check.py will report both FAIL. That verdict is correct and is kept rather than argued away.\n\nA DEFECT IN THE PROBE ITSELF, worth keeping. Its first draft restored Examples/DISCON.IN in a `finally`, and a `finally` does not run through SIGSEGV. The run left Ext_Mode = 1 in the gate's own input file -- and Examples/DISCON.IN is GITIGNORED (.gitignore:78), so git status stayed clean and done.py's clean-tree predicate could not have caught it. Every gate run afterwards would have measured a silently reconfigured controller. The probe now snapshots and restores in a PARENT process and lets the child crash.",
-   "disposition": "blocked",
-   "translation": null,
-   "harness_required": true,
-   "escalation": "blocked_substrate: the blockage is in the substrate (VIT cannot map CHARACTER(:), ALLOCATABLE, which blocks 37 of 69 units) and in the campaign FIXTURES (no external Bladed-style library exists, so the original cannot be run as an oracle). Neither is a property of the function. Unblocking needs three independent things, listed in evidence/ExtController/README.md; the third -- constructing an oracle -- adds a gate scenario and so is a verification-default change, which SPEC 8.4 makes the Driver's call.",
-   "evidence": [
-    "evidence/ExtController/README.md",
-    "evidence/ExtController/done_check.txt",
-    "evidence/ExtController/coverage_extcontrol.json",
-    "evidence/ExtController/coverage_extcontrol.denominators.txt",
-    "evidence/ExtController/probe_ext_mode_1.py",
-    "evidence/ExtController/probe_ext_mode_1.json",
-    "evidence/ExtController/vit_translate.stdout.txt",
-    "evidence/ExtController/vit_interface.no_view_strategy.stdout.txt",
-    "evidence/ExtController/vit_interface.view_strategy.stdout.txt",
-    "evidence/ExtController/extcontroller.scaffold.cpp",
-    "evidence/ExtController/gate_redtests/ExtController.redtest-record49.json",
-    "evidence/ExtController/gate_redtests/ExtController.redtest-noop.json",
-    "gate/ExtController.json",
-    "gate/ExtController.redtest.json",
-    "coverage/line_coverage.json"
-   ]
-  },
-  {
-   "order": 6,
-   "name": "GetPath",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 7,
-   "name": "GetRoot",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 8,
-   "name": "GetWords",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 9,
-   "name": "HPFilter",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 10,
-   "name": "Int2LStr",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 11,
-   "name": "LPFilter",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 12,
-   "name": "NonDecreasing",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 13,
-   "name": "NotchFilter",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 14,
-   "name": "NotchFilterSlopes",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 15,
-   "name": "PathIsRelative",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 16,
-   "name": "ReadAvrSWAP",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 17,
-   "name": "Read_OL_Input",
-   "contract": "respecify",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "generated harness + mutation score (P13); the gate cannot decide",
-   "why": "performs external I/O on Unit_OL_Input that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
-   "bridge_feasible": {
-    "value": "no",
-    "basis": "channels: c_assumed_shape_2d does not cross (UNSUPPORTED: a rank-2 assumed-shape dummy is passed as m(1:n_m), a ran)"
-   },
-   "observability": null
-  },
-  {
-   "order": 18,
-   "name": "SecLPFilter",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 19,
-   "name": "SecLPFilter_Vel",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 20,
-   "name": "StateMachine",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 21,
-   "name": "UpdateZeroMQ",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 22,
-   "name": "identity",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 23,
-   "name": "interp1d",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 24,
-   "name": "saturate",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 25,
-   "name": "sigma",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 26,
-   "name": "unwrap",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 27,
-   "name": "wrap_180",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 28,
-   "name": "wrap_360",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 29,
-   "name": "CheckInputs",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "AddToList",
-    "NonDecreasing"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 30,
-   "name": "ChkParseData",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "Conv2UC",
-    "Int2LStr"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 31,
-   "name": "Debug",
-   "contract": "respecify",
-   "absorbs": [
-    "GetNewUnit"
-   ],
-   "depends_on": [
-    "AddToList",
-    "Int2LStr"
-   ],
-   "permanent_bridges": [
-    "CurDate",
-    "CurTime"
-   ],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "generated harness + mutation score (P13); the gate cannot decide",
-   "why": "performs external I/O on UnDb, UnDb2, UnDb3 that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 32,
-   "name": "FindLine",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "Conv2UC",
-    "GetWords"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 33,
-   "name": "PIController",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "saturate"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 34,
-   "name": "PIDController",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "LPFilter",
-    "saturate"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 35,
-   "name": "PIIController",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "saturate"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 36,
-   "name": "PitchSaturation",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "interp1d"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 37,
-   "name": "PowerControlSetpoints",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "interp1d"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature; writes to unit 401 without opening it -- an UNCOMPARED output, not a missing input",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 38,
-   "name": "PreFilterMeasuredSignals",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "HPFilter",
-    "LPFilter",
-    "NotchFilter",
-    "NotchFilterSlopes",
-    "SecLPFilter",
-    "wrap_180"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 39,
-   "name": "ResController",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "saturate"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 40,
-   "name": "SetpointSmoother",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "LPFilter"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 41,
-   "name": "Shutdown",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "LPFilter",
-    "wrap_180"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 42,
-   "name": "Startup",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "LPFilter",
-    "sigma"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 43,
-   "name": "StructuralControl",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "interp1d"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 44,
-   "name": "YawRateControl",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "LPFilter",
-    "interp1d",
-    "wrap_180"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 45,
-   "name": "interp2d",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "interp1d"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "no",
-    "basis": "zdata: c_assumed_shape_2d does not cross (UNSUPPORTED: a rank-2 assumed-shape dummy is passed as m(1:n_m), a ran)"
-   },
-   "observability": null
-  },
-  {
-   "order": 46,
-   "name": "ratelimit",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "saturate"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 47,
-   "name": "ActiveWakeControl",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "ColemanTransform",
-    "ColemanTransformInverse",
-    "PIController",
-    "ResController",
-    "wrap_360"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 48,
-   "name": "AeroDynTorque",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "interp2d"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 49,
-   "name": "CableControl",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "PIController",
-    "SecLPFilter_Vel",
-    "interp1d"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 50,
-   "name": "FlapControl",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "ColemanTransform",
-    "ColemanTransformInverse",
-    "PIController",
-    "PIIController",
-    "saturate"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 51,
-   "name": "FloatingFeedback",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "PIController",
-    "interp1d"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 52,
-   "name": "ForeAftDamping",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "PIController"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 53,
-   "name": "IPC",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "ColemanTransform",
-    "ColemanTransformInverse",
-    "LPFilter",
-    "PIController",
-    "sigma",
-    "wrap_360"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 54,
-   "name": "ParseDbAry_Opt",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "FindLine",
-    "GetWords",
-    "Int2LStr"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 55,
-   "name": "ParseInAry_Opt",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "FindLine",
-    "GetWords",
-    "Int2LStr"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 56,
-   "name": "ParseInput_Dbl_Opt",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "FindLine",
-    "GetWords",
-    "Int2LStr"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 57,
-   "name": "ParseInput_Int_Opt",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "FindLine",
-    "GetWords",
-    "Int2LStr"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 58,
-   "name": "ParseInput_Str_Opt",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "FindLine",
-    "GetWords",
-    "Int2LStr"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 59,
-   "name": "RefSpeedExclusion",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "ratelimit"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 60,
-   "name": "VariableSpeedControl",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "PIController",
-    "PIDController",
-    "interp1d",
-    "ratelimit",
-    "saturate",
-    "unwrap"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 61,
-   "name": "WriteRestartFile",
-   "contract": "respecify",
-   "absorbs": [],
-   "depends_on": [
-    "Debug"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 2,
-   "verification": "generated harness + mutation score (P13); the gate cannot decide",
-   "why": "performs external I/O on Un that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 62,
-   "name": "ComputeVariablesSetpoints",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "LPFilter",
-    "RefSpeedExclusion",
-    "interp1d",
-    "saturate"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 3,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 63,
-   "name": "PitchControl",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "ActiveWakeControl",
-    "FloatingFeedback",
-    "ForeAftDamping",
-    "IPC",
-    "LPFilter",
-    "PIController",
-    "PitchSaturation",
-    "SecLPFilter",
-    "interp1d",
-    "ratelimit",
-    "saturate"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 3,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 64,
-   "name": "ReadControlParameterFileSub",
-   "contract": "respecify",
-   "absorbs": [
-    "ParseDbAry",
-    "ParseInAry",
-    "ParseInput_Dbl",
-    "ParseInput_Int",
-    "ParseInput_Str"
-   ],
-   "depends_on": [
-    "ChkParseData",
-    "Debug",
-    "GetPath",
-    "GetWords",
-    "Int2LStr",
-    "ParseDbAry_Opt",
-    "ParseInAry_Opt",
-    "ParseInput_Dbl_Opt",
-    "ParseInput_Int_Opt",
-    "ParseInput_Str_Opt",
-    "PathIsRelative",
-    "Read_OL_Input",
-    "unwrap"
-   ],
-   "permanent_bridges": [
-    "CurDate",
-    "CurTime"
-   ],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 3,
-   "verification": "generated harness + mutation score (P13); the gate cannot decide",
-   "why": "opens and closes UnControllerParameters, UnEc itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 65,
-   "name": "WindSpeedEstimator",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "AeroDynTorque",
-    "LPFilter",
-    "identity",
-    "interp1d",
-    "interp2d",
-    "saturate"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 3,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 66,
-   "name": "ReadCpFile",
-   "contract": "respecify",
-   "absorbs": [
-    "ReadEmptyLine"
-   ],
-   "depends_on": [
-    "Debug",
-    "ParseDbAry_Opt",
-    "ParseInAry_Opt",
-    "ReadControlParameterFileSub"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 4,
-   "verification": "generated harness + mutation score (P13); the gate cannot decide",
-   "why": "opens and closes UnPerfParameters itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 67,
-   "name": "ReadRestartFile",
-   "contract": "respecify",
-   "absorbs": [],
-   "depends_on": [
-    "Debug",
-    "ReadControlParameterFileSub",
-    "ReadCpFile"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 5,
-   "verification": "generated harness + mutation score (P13); the gate cannot decide",
-   "why": "performs external I/O on Un that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 68,
-   "name": "SetParameters",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "CheckInputs",
-    "LPFilter",
-    "ReadControlParameterFileSub",
-    "ReadCpFile",
-    "interp1d"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 5,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature; writes to standard output (a side effect, not compared)",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  },
-  {
-   "order": 69,
-   "name": "DISCON",
-   "contract": "mirror",
-   "absorbs": [],
-   "depends_on": [
-    "CableControl",
-    "ComputeVariablesSetpoints",
-    "Debug",
-    "ExtController",
-    "FlapControl",
-    "GetRoot",
-    "PitchControl",
-    "PowerControlSetpoints",
-    "PreFilterMeasuredSignals",
-    "ReadAvrSWAP",
-    "ReadRestartFile",
-    "SetParameters",
-    "SetpointSmoother",
-    "Shutdown",
-    "Startup",
-    "StateMachine",
-    "StructuralControl",
-    "UpdateZeroMQ",
-    "VariableSpeedControl",
-    "WindSpeedEstimator",
-    "WriteRestartFile",
-    "YawRateControl"
-   ],
-   "permanent_bridges": [],
-   "reached_by": [
-    "DISCON"
-   ],
-   "dependency_depth": 6,
-   "verification": "kernel replay or direct-call harness; bit-identical",
-   "why": "every input and output crosses the signature",
-   "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
-   },
-   "observability": null
-  }
- ],
- "excluded": {
-  "CPfunction": {
-   "kind": "dead",
-   "why": "not reachable from any declared entry point"
-  },
-  "FreeDynamicLib": {
-   "kind": "dead",
-   "why": "not reachable from any declared entry point"
-  },
-  "LoadDynamicLib": {
-   "kind": "out_of_scope",
-   "why": "declared out of scope: /SysFiles/"
-  },
-  "LoadDynamicLibProc": {
-   "kind": "out_of_scope",
-   "why": "declared out of scope: /SysFiles/"
-  },
-  "matinv3": {
-   "kind": "dead",
-   "why": "not reachable from any declared entry point"
-  },
-  "CurDate": {
-   "kind": "boundary",
-   "why": "reads state no signature mentions (DATE_AND_TIME); no lifetime bounds it, so no enclosing scope closes the contract"
-  },
-  "CurTime": {
-   "kind": "boundary",
-   "why": "reads state no signature mentions (DATE_AND_TIME); no lifetime bounds it, so no enclosing scope closes the contract"
-  }
- },
- "cycles": [],
- "notes": [
-  "3 of 83 procedures (4%) are unreachable from ['DISCON']. For a library the entry points are the public API, not a driver -- check the list before treating these as dead"
- ],
- "schema_version": 1,
- "matrix_source": {
-  "path": "/workspace/vit/tests/conformance/matrix.toml",
-  "vit_rev": "37f8bdf-pinned"
- },
- "derived_from": {
-  "source": "/workspace/ROSCO-r2/rosco/controller/src",
-  "entry_points": [
-   "DISCON"
+  "units": [
+    {
+      "order": 1,
+      "name": "AddToList",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'",
+        "observed": "PREDICTION REFUTED, in two dispatches, and the split is the finding.\n\nFIRST DISPATCH -- verdict confirmed against the tool as it stood, basis refuted. `vit interface` emitted `INTEGER(C_INT), INTENT(INOUT) :: list(*)` plus `INTEGER(C_INT), VALUE :: n_list`, under a wrapper declaring `INTEGER(4), INTENT(INOUT) :: list(:)` -- the ALLOCATABLE attribute dropped with no diagnostic, although fortran_parser had recorded is_allocatable=True. Measured against the original on the live ROSCO path (allocate 4, append 3x): the caller's array was still 4 elements, the appended values written one past the end of its heap block, and nothing -- gfortran, g++, or the run -- said so. A hand-written Fortran 2018 CFI bridge reproduced the oracle BYTE FOR BYTE on both branches, so the limit was VIT's, not the argument's. evidence/AddToList/bridge_probe/result.json.\n\nSECOND DISPATCH -- the verdict is refuted too. VIT 37f8bdf generates that bridge: the dummy is declared in the BIND(C) interface exactly as the original declares it (`DIMENSION(:), ALLOCATABLE, INTENT(INOUT)`), no extent parameter is emitted, and the C side receives the caller's own CFI_cdesc_t*. The unit is INTEGRATED on that path. Nothing about it is hand-written: interface block, wrapper, C++ scaffold, the differential harness's Fortran bridge and the post-integration shim are all generated (X1, X2). The loop's harness learned the same convention (cf885e3) -- three generators, which is what the escalation said it would take.\n\nWHERE THE BASIS CAME FROM: tests/conformance/matrix.toml's `[c_alloc_inout] compiles = \"no\"` was measured from `test_validate.generate_fortran_bridge` -- the DIFFERENTIAL HARNESS's Fortran side, never linked into the library -- while `vit integrate` ships `interface_gen`'s output, which compiled clean and did nothing. The cell now reads compiles=\"yes\", integrates=\"yes\", re-measured. The prediction was right by luck of a different generator failing.\n\nSTILL REFUSED by VIT, for being UNMEASURED rather than impossible, each with its reason in the exception message: a SCALAR allocatable, rank >= 2, a CHARACTER or derived-type element, and any type/kind the interface cannot declare as the actual's own (LOGICAL, COMPLEX). The three other `bridge_feasible: no` entries waiting on this -- Read_OL_Input, ParseInAry_Opt, ParseDbAry_Opt -- are not thereby unblocked: their verdicts were derived from the same pre-`integrates` matrix and have to be re-measured, not inferred from this one."
+      },
+      "observability": "THE GATE CANNOT SEE THIS UNIT. VERIFICATION IS THE DIFFERENTIAL HARNESS AND THE MUTATION SCORE, NOT THE GATE.\n\nThe body and all five call sites have zero hits in all 27 scenarios (coverage/line_coverage.json). Measured a second time, independently of gcov, and now against the INTEGRATED build: perturbing the C++ translation (`clist[nsize - 1] = element` -> `element + 1000`), rebuilding and re-gating moved 0 of 5,252,000 values. gate/AddToList.redtest.json, verdict RED_TEST_FAIL. So gate/AddToList.json -- 5,252,000 values compared, 0 mismatched -- is a green that constrains nothing about AddToList, and is committed next to the red test that says why.\n\nThere is no kernel either, for the same reason: no scenario reaches a call site, so there is no runtime state to capture. `vit extract` reporting `No state data captured` during setup was this deadness, not a tool defect.\n\nWhat DOES constrain it, all red-tested:\n  * 43 differential cases against the clean Fortran, 0 failed. Perturbing the allocated branch turns 18 red and the unallocated branch 25; 18 + 25 = 43, so no case is inert.\n  * mutation 23/23 behavioural killed, score 1.000, 2 declared equivalent with reasons (CFI_allocate's elem_len is ignored for a non-CHARACTER type, F2018 18.5.5.5).\n  * 43 post-integration cases against the integrated build, 0 failed; the wrapper corrupting one argument turns all 43 red.\n\nThe unallocated actual is a distinct input that extent 0 is not, and the harness's generator had no rule that would produce it -- `_extent_plan` ranges over 1, 3, 4, ... It is now a two-valued flag, so R2 guarantees both states appear. That is 25 of the 43 cases.\n\nKNOWN GAP, stated rather than left to be found: with one extent parameter, `_extent_plan` gives it the same value (3) in every case, so the harness varies allocated/unallocated but NOT the length. A defect that only appears at another length is not covered by these 43 cases.",
+      "disposition": "integrated",
+      "evidence": [
+        "evidence/AddToList/README.md",
+        "translations/ROSCO_Helpers/addtolist.cpp",
+        "rosco/controller/src/addtolist.cpp",
+        "harness/AddToList.json",
+        "harness/AddToList.postintegration.json",
+        "harness/AddToList.postintegration.redtest.json",
+        "evidence/AddToList/harness_redtests/AddToList.redtest-append.json",
+        "evidence/AddToList/harness_redtests/AddToList.redtest-else.json",
+        "mutation/AddToList.json",
+        "mutation/AddToList.equivalences.json",
+        "gate/AddToList.json",
+        "gate/AddToList.redtest.json",
+        "evidence/AddToList/bridge_probe/run.sh",
+        "evidence/AddToList/bridge_probe/mod_orig.f90",
+        "evidence/AddToList/bridge_probe/mod_vit.f90",
+        "evidence/AddToList/bridge_probe/addtolist_vit.cpp",
+        "evidence/AddToList/bridge_probe/mod_cfi.f90",
+        "evidence/AddToList/bridge_probe/addtolist_cfi.cpp",
+        "evidence/AddToList/bridge_probe/driver.F90",
+        "evidence/AddToList/bridge_probe/result.json",
+        "evidence/AddToList/bridge_probe/result.redtest.json",
+        "evidence/AddToList/generators.py",
+        "evidence/AddToList/generators.json",
+        "evidence/AddToList/vit_interface.stdout.txt",
+        "evidence/AddToList/vit_translate.stdout.txt",
+        "evidence/AddToList/addtolist.scaffold.cpp",
+        "coverage/line_coverage.json"
+      ],
+      "translation": "translations/ROSCO_Helpers/addtolist.cpp",
+      "harness_required": true
+    },
+    {
+      "order": 2,
+      "name": "ColemanTransform",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'",
+        "observed": "CONFIRMED, and re-confirmed on a second pass with a different VIT. All 5 arguments cross with no decomposition: rootMOOP(3) -> double* by reference, aziAngle/nHarmonic by value, axTOut/axYOut (INTENT(OUT) scalars) by reference. The integrated wrapper is a 9-line CALL colemantransform_c(...) and the gate is bit-identical across 5,252,000 values. The prediction was about the SIGNATURE and it held.\n\nWhat did NOT hold, first pass, is the assumption that a crossable signature is crossed correctly by every generator: VIT's test-validate bridge declared rootMOOP a by-value scalar, and the loop's harness mapping made it a one-element buffer read three deep. interface_gen -- the generator the kernel and the integration actually use -- got it right. Both others fixed; see DECISIONS.md.\n\nSecond pass, after VIT was reconciled with canonical (d85b33b -> d07a716, 89 commits): `vit integrate` regenerated the interface block, the wrapper and the .cpp BYTE-IDENTICAL to what the old VIT produced -- `git diff` over Functions.f90, CMakeLists.txt and colemantransform.cpp is empty. The crossing does not depend on which of the two VITs generated it."
+      },
+      "observability": "The kernel exercises nHarmonic=1 ONLY: KGen's callsite region is the single CALL at Controllers.f90:510, so the NP_2 call at :511 is replayed from state rather than recomputed. nHarmonic=2 is covered by the differential harness, which varies it, and by the gate, which runs both calls.\n\nThe kernel window is load-bearing and was wrong once: at invocation 1-20 every input is zero and a stub passes 21/21. At the 63 cases actually used (scenario 27, three ranges) the same stub produces 124 differing field entries. evidence/ColemanTransform/.\n\nWhat NOTHING here sees: the post-integration harness cannot compare arithmetic -- after integration the Fortran body IS the translation -- so it measures the wrapper's marshalling only. The 35 mutants include 2 killed by failing to compile rather than by a case mismatch, so the behavioural kill count is 33 of 33 scoreable.",
+      "disposition": "integrated",
+      "evidence": [
+        "translations/Functions/colemantransform.cpp",
+        "rosco/controller/src/colemantransform.cpp",
+        "gate/ColemanTransform.json",
+        "gate/ColemanTransform.redtest.json",
+        "harness/ColemanTransform.json",
+        "harness/ColemanTransform.postintegration.json",
+        "harness/ColemanTransform.postintegration.redtest.json",
+        "mutation/ColemanTransform.json",
+        "evidence/ColemanTransform/README.md",
+        "evidence/ColemanTransform/kernel-window-27.verify_fields.csv",
+        "evidence/ColemanTransform/kernel-window-27.stub-fails.verify_fields.csv",
+        "evidence/ColemanTransform/kernel-window-1-20.stub-passes.verify_fields.csv",
+        "evidence/ColemanTransform/kernel-window-27.vit-d07a716.verify_fields.csv",
+        "evidence/ColemanTransform/kernel-window-27.vit-d07a716.stub-fails.verify_fields.csv",
+        "evidence/ColemanTransform/kernel-window-27.vit-d07a716.statefiles.lst",
+        "coverage/line_coverage.json"
+      ],
+      "translation": "translations/Functions/colemantransform.cpp",
+      "harness_required": true
+    },
+    {
+      "order": 3,
+      "name": "ColemanTransformInverse",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'",
+        "observed": "CONFIRMED. All six arguments cross with no decomposition, and the one that could have been decomposed was not: `PitComIPC` is `REAL(DbKi), INTENT(OUT), DIMENSION(3)` and the generated interface declares it `REAL(C_DOUBLE), INTENT(OUT) :: PitComIPC(*)` -- by reference, rank preserved, no extent parameter emitted and none needed, because the extent is fixed by the dummy's own declaration. The five scalars go by VALUE. The integrated wrapper is a 9-line CALL colemantransforminverse_c(...).\n\nThe RUNBOOK's habit was applied before any C++ was written: `vit interface` was run and its wrapper compared to the original attribute by attribute (evidence/ColemanTransformInverse/vit_interface.stdout.txt). Nothing was dropped -- REAL(DbKi)->REAL(8), INTEGER(IntKi)->INTEGER(4), every INTENT preserved, PitComIPC still (3). That is the check unit #1 failed silently, so it is run whatever the tool's current answer is.\n\nThe plan's basis string is still the honest one and is still not the answer: it says only that no blocker was DETECTABLE, which is a statement about the matrix's resolution and not about this signature. The verdict here comes from having run the generator that ships, plus a post-integration harness that turns red when the wrapper corrupts an argument."
+      },
+      "observability": "THE GATE SEES THIS UNIT, AND MEASURED SO. Perturbing the integrated C++ (`PitComIPC[0] = 1.000001 * std::cos(...)`), rebuilding and re-gating moved 389,644 of 5,252,000 values; reverting returned 0. gate/ColemanTransformInverse.redtest.json, verdict RED_TEST_PASS. Five call sites reach it (Controllers.f90:561, 562, 699, 781, 826) across scenarios 2, 5, 6, 8, 15, 16, 18, 21, 26 and 27.\n\nWHAT NEITHER THE KERNEL NOR THE GATE SEES: `aziOffset`. It is 0 at every call site in every scenario -- `IPC_aziOffset` is 0.000 in all 14 Examples/DISCON*.IN and no scenario patches it, `AWC_phaseoffset` is 0.0 in all of them and the one scenario that patches it (15) patches it to '0.0', and the fifth site passes the literal 0.0_DbKi. A translation that ignored aziOffset entirely would pass the kernel 63/63 and the gate 5,252,000/5,252,000. Only the differential harness varies it; the three `aziAngle + aziOffset` -> `-` mutants die in 81 of 257 cases each, and those 81 cases are the entirety of what constrains that argument in this campaign. `nHarmonic` is similarly only ever 1 or 2 in the scenarios, and the kernel's call site fixes it at NP_1 = 1.\n\nTHE KERNEL WINDOW IS ALIVE, and the ONLY thing that shows it is the stub. RUNBOOK's recipe for this -- count non-zero `reference` values in verify_fields.csv -- CANNOT BE RUN on this unit: its only output is an array, and VIT logs an array field as one row with an EMPTY reference column and `diff=size=3`. Against the zero-writing stub, 61 of 63 cases go OUT_TOL; the 2 that do not are invocations 1 and 2, simulation start, where the axis inputs are still zero. evidence/ColemanTransformInverse/.\n\nTHE KERNEL'S PASS CONDITION IS NOT BIT-IDENTITY. Read out of the generated `kv_ipc_real__dbki_dim1`: equality gives IDENTICAL, otherwise an ABSOLUTE RMS difference is compared against kgen_tolerance = 1e-14 and anything under it counts as IN_TOL and still prints PASSED. This unit's outputs are of order 1e-3 rad. What makes its kernel evidence bit-exact is that all 63 fields landed in the equality branch -- status=IDENTICAL in the field log -- not that the kernel demanded it.\n\nThe post-integration harness measures the WRAPPER only, by construction: after integration the Fortran body IS the translation. 257 cases, 0 failed; swapping axTIn and axYIn in the wrapper's CALL turns 256 of 257 red (the one survivor is a case where the two are equal or both zero).\n\nMUTATION: 24 of 24 behavioural killed, 1.000, 0 declared equivalent; 2 `compare_op` mutants did not compile and are excluded rather than counted. 2 of the 24 kills are CRASHES -- `[2] -> [2 + 1]` and `'2' -> '3'` both write past the end of the caller's 3-element array -- so 22 of 24 were killed by a case mismatch. The harness's own note records the remaining blind spot: PitComIPC's extent is FIXED at 3 by the type and is not varied (R5 N/A).",
+      "disposition": "integrated",
+      "translation": "translations/Functions/colemantransforminverse.cpp",
+      "harness_required": true,
+      "evidence": [
+        "evidence/ColemanTransformInverse/README.md",
+        "translations/Functions/colemantransforminverse.cpp",
+        "rosco/controller/src/colemantransforminverse.cpp",
+        "gate/ColemanTransformInverse.json",
+        "gate/ColemanTransformInverse.redtest.json",
+        "harness/ColemanTransformInverse.json",
+        "harness/ColemanTransformInverse.postintegration.json",
+        "harness/ColemanTransformInverse.postintegration.redtest.json",
+        "mutation/ColemanTransformInverse.json",
+        "evidence/ColemanTransformInverse/kernel-window-27.verify_fields.csv",
+        "evidence/ColemanTransformInverse/kernel-window-27.stub-fails.verify_fields.csv",
+        "evidence/ColemanTransformInverse/kernel-window-27.statefiles.lst",
+        "evidence/ColemanTransformInverse/vit_interface.stdout.txt",
+        "evidence/ColemanTransformInverse/vit_translate.stdout.txt",
+        "evidence/ColemanTransformInverse/colemantransforminverse.scaffold.cpp",
+        "coverage/line_coverage.json"
+      ]
+    },
+    {
+      "order": 4,
+      "name": "Conv2UC",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'",
+        "observed": "CONFIRMED, and the shape is new to this campaign. `Str` is `CHARACTER(*), INTENT(INOUT)` and crosses whole: the generated interface declares `CHARACTER(KIND=C_CHAR), INTENT(INOUT) :: Str(*)` plus `INTEGER(C_INT), VALUE :: len_Str`, and the wrapper declares the dummy exactly as the original does -- `CHARACTER(*), INTENT(INOUT) :: Str` -- copying into a C_CHAR array of LEN(Str) and back out again. Nothing is dropped. Read attribute by attribute before any C++ was written, per the habit unit #1 installed: evidence/Conv2UC/vit_interface.stdout.txt.\n\nThe plan's basis string remains the honest one and remains not the answer: `c_fn_alloc_character` is one of the five features it names as undetectable, and this signature has nothing allocatable in it. The verdict here comes from having run the generator that ships, plus a post-integration harness that turns red when the wrapper misstates the length (LEN(Str) -> LEN(Str) - 1, 24 of 118 cases).\n\nWHAT DID NOT CROSS WAS THE HARNESS, NOT THE SIGNATURE. `harness/generate.py` had kinds real / int / real[] and no string, so `vit_harness.py` reported `Str` comparable-but-held-constant and then died: `C parameter 'Str' is not in the mapped signature`. 20 of this campaign's 69 units take a CHARACTER dummy and P11/P12 are mandatory for all of them, so none of the 20 had a path to close. Fixed rather than worked around (X2): loop `9bee569` adds a `char[]` kind, in which the length is an extent the rules already vary and the bytes are an array the case stream already carries. A CHARACTER ARRAY dummy (`FileLines(:)`) is still REFUSED, with its reason, for being unmeasured -- element width and element count are two extents where `char[]` has one."
+      },
+      "observability": "THE GATE CANNOT SEE THIS UNIT, AND NOT BECAUSE THE CODE IS DEAD. `Conv2UC` runs 1,333,146 times across the 27 scenarios and converts 4,558,823 characters -- among the hottest procedures in the controller (coverage/line_coverage.json, clean lines 1579/1595). Two perturbations of the integrated C++ were rebuilt and re-gated and EACH MOVED 0 OF 5,252,000 VALUES: `ch - 32` -> `ch - 31` (every conversion off by one), and the guard forced false so that NO conversion happens at all. Both artifacts record replacements: 1, perturbed: true, reverted: true, revert_verified: true, so the perturbed library was genuinely built and run. gate/Conv2UC.redtest.json and evidence/Conv2UC/gate_redtests/.\n\nThe cause is structural. Every value this unit produces is consumed by an equality test against ANOTHER of its own outputs: FindLine converts the expected parameter name (ROSCO_Helpers.f90:1106) and the file's word (1118) with the same function and compares them. A perturbation applied to both operands preserves equality, and the no-conversion run shows equality survives even the non-injective case on the inputs these scenarios carry. So gate/Conv2UC.json -- 5,252,000 values compared, 0 mismatched -- is a green that constrains nothing about Conv2UC, and is committed next to the red tests that say why.\n\nThis is a THIRD shape of P9 in four units, and the sharpest: #1 was a line no scenario reached, #3 was an argument constant in every scenario, and this is an executed line whose result is cancelled downstream. A hit count of 1.3M says nothing about observability.\n\nWHAT DOES CONSTRAIN IT, all red-tested:\n  * kernel replay, 63 cases from scenario 1 at ROSCO_Helpers.f90:1118, 63/63 IDENTICAL. The window is alive and TWO instruments say so: decoding the state files shows 31 of the 63 captured strings actually change, and a no-op stub scores exactly 31 OUT_TOL. For a CHARACTER field a kernel PASS *is* a bit-identity claim -- KGen's generated comparison has no tolerance branch at all, which is the per-TYPE counterpart to unit #3's finding rather than a contradiction of it.\n  * 118 differential cases against the clean Fortran, 0 failed; the no-op stub turns 27 of them red. Strings at lengths 1/3/8 in three shapes (mixed, word-then-blanks, all-blank) over a 22-character corpus built from the reference's own 'a' and 'z' plus their collating neighbours.\n  * mutation 14/14 behavioural killed, 1.000, 0 declared equivalent. 2 of the 14 are CRASHES rather than case mismatches (both index before the buffer), so the killed-by-comparison count is 12 of 14.\n  * 118 post-integration cases, 0 failed; misstating the length in the wrapper (LEN(Str) -> LEN(Str) - 1) turns 24 of 118 red.\n\nKNOWN GAPS, stated rather than left to be found:\n  * 4 mutants did not compile and are excluded from the score. All four are harness/cppmutate.py reading `static_cast<unsigned char>`'s template bracket as a comparison. 22% against the 25% at which vit_mutate.py refuses to score -- one more cast and this unit would have been unscoreable for a reason with nothing to do with it.\n  * The harness varies the string's length over {1, 3, 8}, not over the 200 that MaxParamLength actually gives it. A defect that only appears past the eighth character is not covered by these 118 cases.\n  * VIT declined to construct its own kernel red test (no by-value floating-point parameter) and reported NON_DISCRIMINATING. That verdict is kept in the record; the manual stub is what answers it.",
+      "disposition": "integrated",
+      "translation": "translations/ROSCO_Helpers/conv2uc.cpp",
+      "harness_required": true,
+      "evidence": [
+        "evidence/Conv2UC/README.md",
+        "translations/ROSCO_Helpers/conv2uc.cpp",
+        "rosco/controller/src/conv2uc.cpp",
+        "gate/Conv2UC.json",
+        "gate/Conv2UC.redtest.json",
+        "evidence/Conv2UC/gate_redtests/Conv2UC.redtest-offbyone.json",
+        "evidence/Conv2UC/gate_redtests/Conv2UC.redtest-noconversion.json",
+        "harness/Conv2UC.json",
+        "harness/Conv2UC.postintegration.json",
+        "harness/Conv2UC.postintegration.redtest.json",
+        "evidence/Conv2UC/harness_redtests/Conv2UC.redtest-noop.json",
+        "mutation/Conv2UC.json",
+        "evidence/Conv2UC/kernel-window-1.cases.tsv",
+        "evidence/Conv2UC/kernel-window-1.verify_fields.csv",
+        "evidence/Conv2UC/kernel-window-1.stub-fails.verify_fields.csv",
+        "evidence/Conv2UC/kernel-window-1.statefiles.lst",
+        "evidence/Conv2UC/kernel-generated-ROSCO_Helpers.f90",
+        "evidence/Conv2UC/vit_interface.stdout.txt",
+        "evidence/Conv2UC/vit_translate.stdout.txt",
+        "evidence/Conv2UC/conv2uc.scaffold.cpp",
+        "evidence/Conv2UC/conv2uc.stub.cpp",
+        "coverage/line_coverage.json"
+      ]
+    },
+    {
+      "order": 5,
+      "name": "ExtController",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [
+        "LoadDynamicLib"
+      ],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "ROUTE EXISTS, NOT YET RUN. The first dispatch recorded 'NONE AVAILABLE'. That is no longer the measurement. An oracle now RUNS: fixtures/bladed_stub/discon_stub.c is a Bladed-style library exporting DISCON, and with Ext_Mode=1 and DLL_FileName pointing at it the ORIGINAL Fortran executes to completion -- exit_status 0, returned_normally true, evidence/ExtController/probe_ext_mode_1_with_oracle.json. The intended route is the differential harness (P11) and the mutation score (P12) against that oracle, called directly, exactly as the equally-dead AddToList closed. The gate remains blind to this unit and that is unchanged and still recorded. What is not yet built is the last link of the harness chain -- see escalation.",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "yes, for the integration wrapper; not yet for the differential bridge",
+        "basis": "the first dispatch's basis -- five undetectable blocking features in the conformance matrix -- is superseded by direct measurement of the generator that ships",
+        "observed": "PREDICTION NOW RESOLVED FOR THE INTEGRATION PATH. The first dispatch recorded that VIT REFUSES to generate anything for this unit, deterministically, because TYPE(ErrorVariables) carries `CHARACTER(:), ALLOCATABLE :: ErrMsg`. That refusal was correct and is now CLOSED, in VIT (a2e2c30), additively and red-tested.\n\nA deferred-length CHARACTER has no C type, because its LENGTH is part of its allocation: reassigning it reallocates it, and C++ cannot reallocate Fortran's storage. It therefore crosses as THREE members -- a staging buffer the populator module owns, the current length, and the writable CAPACITY -- with the reallocating assignment performed by the reverse copy. The capacity is the member that makes the field writable rather than merely readable; without it the C++ cannot know how much room it has and `ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)` could not be translated at all. Over-long assignment is REFUSED and reported, never truncated: a shortened error message is a plausible wrong answer, the one kind a bit comparison cannot catch.\n\n`vit analyze-types --fix character`, the remedy VIT's own message suggested, is still REFUSED and now unnecessary. It rewrites ROSCO's type definition to a fixed length, changing LEN(ErrVar%ErrMsg), which sizes avcMSG, which is Record 49. P7.\n\nMEASURED AFTER THE FIX: `vit translate ExtController` succeeds; `vit interface` emits all five arguments over a five-argument bridge -- read attribute by attribute against the original and matching, including REAL(4) for REAL(ReKi) (an explicit kind is not promoted by -fdefault-real-8). Generated view populators are committed at rosco/controller/src/vit_{controlparameters,localvariables,extcontroltype,errorvariables}_view.f90 and compile.\n\nA SECOND VIT DEFECT FOUND ON THE WAY, RECORDED BEFORE IT WAS FIXED (C12), and much larger than this unit. `vit test-validate` emitted the differential bridge's dummy list on ONE LINE. Decomposing ControlParameters (214 fields) and LocalVariables (168) produced a SUBROUTINE statement 11,747 characters long; free-form Fortran's limit is 132 columns, so gfortran truncated it and reported 1,153 diagnostics, none of which named the cause. EVERY unit in this campaign taking either type -- most of ROSCO's controllers -- was outside `vit test-validate` entirely, and nothing said so. The campaign's first four units took scalars, arrays and strings and never touched a derived type, which is why it went unmeasured until here. Fixed in VIT (83d25f9) as a rule about line CONTENTS rather than a list of emission sites, because wrapping only the dummy list left the array copy-in statements at 133-153 columns. statemachine_bridge.f90 now compiles; the wrong artifact is kept at evidence/ExtController/vit_defects/.\n\nSTILL REFUSED, and this is what now blocks the unit: a deferred-length CHARACTER FIELD of a DECOMPOSED derived type, in `vit test-validate`. `_decomposed_param_names` classifies on is_allocatable first, so ErrMsg is routed to the array path and `get_type_mapping` raises. The fix is the same three-member shape already built for the view struct, one generator over.\n\nSECOND BRIDGE, STILL NOT MEASURED: plan.json declares LoadDynamicLib a permanent bridge, and ExtController's SAVE local `DLL_Ext` is a TYPE(ExtDLL_Type) -- five fields including TYPE(C_FUNPTR) :: ProcAddr(3) and CHARACTER(1024) :: ProcName(3). It does not cross the signature, so it needs a production bridge that owns the SAVE state, not a view. X1 forbids inlining LoadDynamicLib to avoid it."
+      },
+      "observability": "THE GATE STILL CANNOT SEE THIS UNIT, AND THAT IS UNCHANGED AND STILL LOAD-BEARING.\n\nExtControl.f90 measures 0 of 28 EXECUTABLE lines in all 27 scenarios (evidence/ExtController/coverage_extcontrol.json prints 0/28 twenty-seven times; the denominator had to be regenerated because coverage/line_coverage.json stores only non-zero hit counts, so 'never ran' and 'never instrumented' are the same empty dictionary). Measured a second time against the Release build, both directions recording replacements: 1 and revert_verified: true: perturbing Record 49 moved 0 of 5,252,000 values, and making the unit a NO-OP moved 0 of 5,252,000. gate/ExtController.json's green constrains nothing and is committed beside both failed red tests.\n\nNothing about that changes with the oracle fixture. DISCON.F90's own comment says it: 'Data from external dll is in ExtDLL%avrSWAP, it's unused in the following code'. Even a working external controller writes nothing the gate compares. The gate is the wrong instrument for this unit and always was.\n\nWHAT DID CHANGE IS THE INSTRUMENT THAT IS RIGHT FOR IT. The first dispatch's finding was that the differential-harness route was gone twice over: no bridge, and no runnable oracle. Both halves are now answered.\n  (a) The bridge: VIT generates it. See bridge_feasible.observed.\n  (b) THE ORACLE RUNS. probe_ext_mode_1_with_oracle.json records exit_status 0 and returned_normally true for the original Fortran with Ext_Mode=1 and DLL_FileName pointing at fixtures/bladed_stub/libdiscon_stub.so. The SIGSEGV the first dispatch measured was a property of the INPUT -- DLL_FileName is the literal string 'unused' in all 14 Examples inputs and no external library existed anywhere in the tree -- not of the function. probe_ext_mode_1.json still stands as the measurement of the campaign's own inputs; the two artifacts are meant to be read together.\n\nSo this unit is NOT 'a unit whose reference implementation cannot be executed to completion on any input the campaign possesses'. It is a unit whose reference implementation could not be executed on any input the campaign POSSESSED, and the campaign now possesses one. That distinction is the whole of the difference between the two dispatches.\n\nharness/ExtController.json, harness/ExtController.postintegration.json and mutation/ExtController.json STILL DO NOT EXIST, so P11 and P12 still FAIL, and done_check.py is still right to say so. Their absence is no longer 'the finding' -- it is now unfinished work with a named remaining cause (a deferred-length CHARACTER FIELD in vit test-validate, plus the ExtDLL_Type production bridge, plus a decision about holding DLL_FileName constant) rather than an impossibility.",
+      "disposition": "blocked",
+      "translation": null,
+      "harness_required": true,
+      "escalation": "blocked_substrate, NARROWED. The first dispatch escalated three independent things and two of them are done.\n\nDONE, in VIT, both fixed at the source and red-tested:\n  1. CHARACTER(:), ALLOCATABLE in a view struct -- a2e2c30. This was the 37-of-69 blocker and it is off the critical path.\n  2. (not on the original list, found here) A generated differential bridge past Fortran's 132-column limit -- 83d25f9. This one was blocking MOST OF THE CAMPAIGN silently: every unit taking ControlParameters or LocalVariables.\n\nDONE, in this repository, as an addition that changes no verification default:\n  3. The oracle. fixtures/bladed_stub/discon_stub.c + build.sh. The first dispatch listed this as the Driver's call under SPEC 8.4 because it assumed constructing an oracle meant ADDING A GATE SCENARIO, which would change the compared count and the baseline set. It does not: the differential harness calls the unit directly and does not run scenarios, so the fixture lives entirely inside the harness. The gate's 27 scenarios keep Ext_Mode = 0, no baseline moves, and gate/__gate__.json's pinned compared count of 5,252,000 is untouched. This is P5, not SPEC 8.4.\n\nREMAINING, and all three are ordinary engineering with a known endpoint:\n  A. `vit test-validate` must cross a DEFERRED-LENGTH CHARACTER FIELD of a decomposed derived type. Blocks every unit taking TYPE(ErrorVariables) through the differential harness -- the same 37 of 69, one generator further along. The shape is already built and tested for the view struct (buffer + length + capacity); this is the same shape in _decomposed_param_names and generate_fortran_bridge.\n  B. The loop's harness must SUPPLY CHARACTER fields. harness/vitbridge.py's expand_derived drops every CHARACTER field of a decomposed type -- its own comment says so -- so VIT's bridge would declare parameters the case generator does not produce, which is the failure unit #4 hit for CHARACTER ARGUMENTS and fixed for those only. unit #4 already built the char[] kind in generate.py and emit.py.\n  C. THE ONE THAT IS A JUDGEMENT, NOT A FEATURE. Every generated case must supply a LOADABLE DLL_FileName, or the reference crashes -- ExtController does not check ErrVar%ErrStat after LoadDynamicLib and calls through a null ProcAddr(1). It also holds SAVE state (DLL_Ext), so a case with iStatus /= 0 before any iStatus == 0 case crashes for the same reason. That means pinning a field to a fixture path and constraining case ORDER, in a generator whose stated premise is that narrowing the input domain is the blindness it exists to remove. It is defensible -- the domain really is that narrow, because the original crashes on the rest of it, and that is a fact about upstream ROSCO worth recording -- but it is a decision about what the harness may hold constant, and the artifact must report it. Raised, not made.\n\nAlso unmeasured, and cheaper: the TYPE(ExtDLL_Type) production bridge for LoadDynamicLib and the SAVE local (X1 forbids inlining it), and whether `ALLOCATE(ExtDLL%avrSWAP(max_avr_entries))` is auto-extracted by vit/allocate_extract.py or falls to its 'local size expression' category.",
+      "evidence": [
+        "evidence/ExtController/README.md",
+        "evidence/ExtController/done_check.txt",
+        "evidence/ExtController/coverage_extcontrol.json",
+        "evidence/ExtController/coverage_extcontrol.denominators.txt",
+        "evidence/ExtController/probe_ext_mode_1.py",
+        "evidence/ExtController/probe_ext_mode_1.json",
+        "evidence/ExtController/probe_ext_mode_1_with_oracle.py",
+        "evidence/ExtController/probe_ext_mode_1_with_oracle.json",
+        "fixtures/bladed_stub/discon_stub.c",
+        "fixtures/bladed_stub/build.sh",
+        "evidence/ExtController/vit_defects/README.md",
+        "evidence/ExtController/vit_defects/statemachine_bridge.truncated_head.f90",
+        "evidence/ExtController/vit_defects/statemachine_bridge.line_lengths.txt",
+        "evidence/ExtController/vit_defects/test_validate.extcontroller.remaining_refusal.txt",
+        "evidence/ExtController/vit_generated/vit_errorvariables_view.f90",
+        "evidence/ExtController/vit_generated/errorvariables_view_t.h",
+        "evidence/ExtController/vit_translate.stdout.txt",
+        "evidence/ExtController/vit_interface.no_view_strategy.stdout.txt",
+        "evidence/ExtController/vit_interface.view_strategy.stdout.txt",
+        "evidence/ExtController/extcontroller.scaffold.cpp",
+        "evidence/ExtController/gate_redtests/ExtController.redtest-record49.json",
+        "evidence/ExtController/gate_redtests/ExtController.redtest-noop.json",
+        "gate/ExtController.json",
+        "gate/ExtController.redtest.json",
+        "coverage/line_coverage.json"
+      ]
+    },
+    {
+      "order": 6,
+      "name": "GetPath",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 7,
+      "name": "GetRoot",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 8,
+      "name": "GetWords",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 9,
+      "name": "HPFilter",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 10,
+      "name": "Int2LStr",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 11,
+      "name": "LPFilter",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 12,
+      "name": "NonDecreasing",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 13,
+      "name": "NotchFilter",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 14,
+      "name": "NotchFilterSlopes",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 15,
+      "name": "PathIsRelative",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 16,
+      "name": "ReadAvrSWAP",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 17,
+      "name": "Read_OL_Input",
+      "contract": "respecify",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "generated harness + mutation score (P13); the gate cannot decide",
+      "why": "performs external I/O on Unit_OL_Input that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
+      "bridge_feasible": {
+        "value": "no",
+        "basis": "channels: c_assumed_shape_2d does not cross (UNSUPPORTED: a rank-2 assumed-shape dummy is passed as m(1:n_m), a ran)"
+      },
+      "observability": null
+    },
+    {
+      "order": 18,
+      "name": "SecLPFilter",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 19,
+      "name": "SecLPFilter_Vel",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 20,
+      "name": "StateMachine",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 21,
+      "name": "UpdateZeroMQ",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 22,
+      "name": "identity",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 23,
+      "name": "interp1d",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 24,
+      "name": "saturate",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 25,
+      "name": "sigma",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 26,
+      "name": "unwrap",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 27,
+      "name": "wrap_180",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 28,
+      "name": "wrap_360",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 0,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 29,
+      "name": "CheckInputs",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "AddToList",
+        "NonDecreasing"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 30,
+      "name": "ChkParseData",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "Conv2UC",
+        "Int2LStr"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 31,
+      "name": "Debug",
+      "contract": "respecify",
+      "absorbs": [
+        "GetNewUnit"
+      ],
+      "depends_on": [
+        "AddToList",
+        "Int2LStr"
+      ],
+      "permanent_bridges": [
+        "CurDate",
+        "CurTime"
+      ],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "generated harness + mutation score (P13); the gate cannot decide",
+      "why": "performs external I/O on UnDb, UnDb2, UnDb3 that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 32,
+      "name": "FindLine",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "Conv2UC",
+        "GetWords"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 33,
+      "name": "PIController",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "saturate"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 34,
+      "name": "PIDController",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "LPFilter",
+        "saturate"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 35,
+      "name": "PIIController",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "saturate"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 36,
+      "name": "PitchSaturation",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "interp1d"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 37,
+      "name": "PowerControlSetpoints",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "interp1d"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature; writes to unit 401 without opening it -- an UNCOMPARED output, not a missing input",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 38,
+      "name": "PreFilterMeasuredSignals",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "HPFilter",
+        "LPFilter",
+        "NotchFilter",
+        "NotchFilterSlopes",
+        "SecLPFilter",
+        "wrap_180"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 39,
+      "name": "ResController",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "saturate"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 40,
+      "name": "SetpointSmoother",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "LPFilter"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 41,
+      "name": "Shutdown",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "LPFilter",
+        "wrap_180"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 42,
+      "name": "Startup",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "LPFilter",
+        "sigma"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 43,
+      "name": "StructuralControl",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "interp1d"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 44,
+      "name": "YawRateControl",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "LPFilter",
+        "interp1d",
+        "wrap_180"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 45,
+      "name": "interp2d",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "interp1d"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "no",
+        "basis": "zdata: c_assumed_shape_2d does not cross (UNSUPPORTED: a rank-2 assumed-shape dummy is passed as m(1:n_m), a ran)"
+      },
+      "observability": null
+    },
+    {
+      "order": 46,
+      "name": "ratelimit",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "saturate"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 1,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 47,
+      "name": "ActiveWakeControl",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "ColemanTransform",
+        "ColemanTransformInverse",
+        "PIController",
+        "ResController",
+        "wrap_360"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 48,
+      "name": "AeroDynTorque",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "interp2d"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 49,
+      "name": "CableControl",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "PIController",
+        "SecLPFilter_Vel",
+        "interp1d"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 50,
+      "name": "FlapControl",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "ColemanTransform",
+        "ColemanTransformInverse",
+        "PIController",
+        "PIIController",
+        "saturate"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 51,
+      "name": "FloatingFeedback",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "PIController",
+        "interp1d"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 52,
+      "name": "ForeAftDamping",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "PIController"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 53,
+      "name": "IPC",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "ColemanTransform",
+        "ColemanTransformInverse",
+        "LPFilter",
+        "PIController",
+        "sigma",
+        "wrap_360"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 54,
+      "name": "ParseDbAry_Opt",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "FindLine",
+        "GetWords",
+        "Int2LStr"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 55,
+      "name": "ParseInAry_Opt",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "FindLine",
+        "GetWords",
+        "Int2LStr"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 56,
+      "name": "ParseInput_Dbl_Opt",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "FindLine",
+        "GetWords",
+        "Int2LStr"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 57,
+      "name": "ParseInput_Int_Opt",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "FindLine",
+        "GetWords",
+        "Int2LStr"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 58,
+      "name": "ParseInput_Str_Opt",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "FindLine",
+        "GetWords",
+        "Int2LStr"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature; writes to unit UnEc without opening it -- an UNCOMPARED output, not a missing input",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 59,
+      "name": "RefSpeedExclusion",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "ratelimit"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 60,
+      "name": "VariableSpeedControl",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "PIController",
+        "PIDController",
+        "interp1d",
+        "ratelimit",
+        "saturate",
+        "unwrap"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 61,
+      "name": "WriteRestartFile",
+      "contract": "respecify",
+      "absorbs": [],
+      "depends_on": [
+        "Debug"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 2,
+      "verification": "generated harness + mutation score (P13); the gate cannot decide",
+      "why": "performs external I/O on Un that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 62,
+      "name": "ComputeVariablesSetpoints",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "LPFilter",
+        "RefSpeedExclusion",
+        "interp1d",
+        "saturate"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 3,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 63,
+      "name": "PitchControl",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "ActiveWakeControl",
+        "FloatingFeedback",
+        "ForeAftDamping",
+        "IPC",
+        "LPFilter",
+        "PIController",
+        "PitchSaturation",
+        "SecLPFilter",
+        "interp1d",
+        "ratelimit",
+        "saturate"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 3,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 64,
+      "name": "ReadControlParameterFileSub",
+      "contract": "respecify",
+      "absorbs": [
+        "ParseDbAry",
+        "ParseInAry",
+        "ParseInput_Dbl",
+        "ParseInput_Int",
+        "ParseInput_Str"
+      ],
+      "depends_on": [
+        "ChkParseData",
+        "Debug",
+        "GetPath",
+        "GetWords",
+        "Int2LStr",
+        "ParseDbAry_Opt",
+        "ParseInAry_Opt",
+        "ParseInput_Dbl_Opt",
+        "ParseInput_Int_Opt",
+        "ParseInput_Str_Opt",
+        "PathIsRelative",
+        "Read_OL_Input",
+        "unwrap"
+      ],
+      "permanent_bridges": [
+        "CurDate",
+        "CurTime"
+      ],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 3,
+      "verification": "generated harness + mutation score (P13); the gate cannot decide",
+      "why": "opens and closes UnControllerParameters, UnEc itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 65,
+      "name": "WindSpeedEstimator",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "AeroDynTorque",
+        "LPFilter",
+        "identity",
+        "interp1d",
+        "interp2d",
+        "saturate"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 3,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 66,
+      "name": "ReadCpFile",
+      "contract": "respecify",
+      "absorbs": [
+        "ReadEmptyLine"
+      ],
+      "depends_on": [
+        "Debug",
+        "ParseDbAry_Opt",
+        "ParseInAry_Opt",
+        "ReadControlParameterFileSub"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 4,
+      "verification": "generated harness + mutation score (P13); the gate cannot decide",
+      "why": "opens and closes UnPerfParameters itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 67,
+      "name": "ReadRestartFile",
+      "contract": "respecify",
+      "absorbs": [],
+      "depends_on": [
+        "Debug",
+        "ReadControlParameterFileSub",
+        "ReadCpFile"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 5,
+      "verification": "generated harness + mutation score (P13); the gate cannot decide",
+      "why": "performs external I/O on Un that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 68,
+      "name": "SetParameters",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "CheckInputs",
+        "LPFilter",
+        "ReadControlParameterFileSub",
+        "ReadCpFile",
+        "interp1d"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 5,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature; writes to standard output (a side effect, not compared)",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    },
+    {
+      "order": 69,
+      "name": "DISCON",
+      "contract": "mirror",
+      "absorbs": [],
+      "depends_on": [
+        "CableControl",
+        "ComputeVariablesSetpoints",
+        "Debug",
+        "ExtController",
+        "FlapControl",
+        "GetRoot",
+        "PitchControl",
+        "PowerControlSetpoints",
+        "PreFilterMeasuredSignals",
+        "ReadAvrSWAP",
+        "ReadRestartFile",
+        "SetParameters",
+        "SetpointSmoother",
+        "Shutdown",
+        "Startup",
+        "StateMachine",
+        "StructuralControl",
+        "UpdateZeroMQ",
+        "VariableSpeedControl",
+        "WindSpeedEstimator",
+        "WriteRestartFile",
+        "YawRateControl"
+      ],
+      "permanent_bridges": [],
+      "reached_by": [
+        "DISCON"
+      ],
+      "dependency_depth": 6,
+      "verification": "kernel replay or direct-call harness; bit-identical",
+      "why": "every input and output crosses the signature",
+      "bridge_feasible": {
+        "value": "unknown",
+        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+      },
+      "observability": null
+    }
   ],
-  "exclude_paths": [
-   "/SysFiles/"
+  "excluded": {
+    "CPfunction": {
+      "kind": "dead",
+      "why": "not reachable from any declared entry point"
+    },
+    "FreeDynamicLib": {
+      "kind": "dead",
+      "why": "not reachable from any declared entry point"
+    },
+    "LoadDynamicLib": {
+      "kind": "out_of_scope",
+      "why": "declared out of scope: /SysFiles/"
+    },
+    "LoadDynamicLibProc": {
+      "kind": "out_of_scope",
+      "why": "declared out of scope: /SysFiles/"
+    },
+    "matinv3": {
+      "kind": "dead",
+      "why": "not reachable from any declared entry point"
+    },
+    "CurDate": {
+      "kind": "boundary",
+      "why": "reads state no signature mentions (DATE_AND_TIME); no lifetime bounds it, so no enclosing scope closes the contract"
+    },
+    "CurTime": {
+      "kind": "boundary",
+      "why": "reads state no signature mentions (DATE_AND_TIME); no lifetime bounds it, so no enclosing scope closes the contract"
+    }
+  },
+  "cycles": [],
+  "notes": [
+    "3 of 83 procedures (4%) are unreachable from ['DISCON']. For a library the entry points are the public API, not a driver -- check the list before treating these as dead"
   ],
-  "exclude_names": []
- }
+  "schema_version": 1,
+  "matrix_source": {
+    "path": "/workspace/vit/tests/conformance/matrix.toml",
+    "vit_rev": "37f8bdf-pinned"
+  },
+  "derived_from": {
+    "source": "/workspace/ROSCO-r2/rosco/controller/src",
+    "entry_points": [
+      "DISCON"
+    ],
+    "exclude_paths": [
+      "/SysFiles/"
+    ],
+    "exclude_names": []
+  }
 }

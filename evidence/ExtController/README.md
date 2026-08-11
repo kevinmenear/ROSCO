@@ -1,3 +1,33 @@
+> **SUPERSEDED IN PART — 2026-08-11, second dispatch. Read this first.**
+>
+> Everything below is the FIRST dispatch's record. Its measurements stand; **one
+> of its conclusions does not**, and it is the one the disposition rested on.
+>
+> §3 concludes *"the clean Fortran cannot be run to completion on any input this
+> campaign possesses"* and the one-sentence summary generalises that to *"there is
+> no runnable oracle for `ExtController` anywhere in this campaign."*
+> **That is refuted.** The SIGSEGV is a property of the INPUT, not of the
+> function: `DLL_FileName` is the literal string `"unused"` in all 14 inputs and
+> no external Bladed-style library was shipped in the tree.
+> `fixtures/bladed_stub/discon_stub.c` is that library, and with it the original
+> runs — `exit_status: 0`, `returned_normally: true`,
+> `probe_ext_mode_1_with_oracle.json`.
+>
+> §4's refusal is **closed** (VIT `a2e2c30`), and "What would unblock it" item 3
+> is **not** a verification-default change: the differential harness does not run
+> scenarios, so a fixture it links against touches nothing the gate measures.
+>
+> A third defect, found only by trying: `vit test-validate` was emitting bridges
+> past Fortran's 132-column line limit, which had put **most of this campaign**
+> outside the differential harness in silence. VIT `83d25f9`;
+> `vit_defects/README.md`.
+>
+> The unit is still `blocked`, for a third and smaller reason. See
+> `plan.json`'s escalation, `../../DECISIONS.md` and `../../STATUS.md`.
+>
+> The text below is kept unedited, deliberately: a conclusion that was wrong is
+> worth more as a record than as a deletion.
+
 # ExtController — unit #5, `blocked`
 
 **Date:** 2026-08-11
