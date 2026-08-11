@@ -1,0 +1,120 @@
+{
+ "unit": "HPFilter",
+ "against": "translation",
+ "checked": 829,
+ "failed": 829,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  N/A      R5_non_degenerate_shape    0 varied extent(s); 46 FIXED by the type at [1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024] -- not varied, NO index parameter identified, array elements distinct",
+  "  applied  R2_flag_values             4 value(s) across 2 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R6_reference_literals      160 value(s) from 7 literal(s) in the reference, each under every declared value of 2 flag(s)",
+  "  applied  R3_no_dead_signal          6 real value(s), none zero in every case; 44 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 47 out-parameter(s): FP_lpf1_a1, FP_lpf1_a0, FP_lpf1_b1, FP_lpf1_b0, FP_lpf1_InputSignalLast, FP_lpf1_OutputSignalLast, FP_lpf2_a2, FP_lpf2_a1, FP_lpf2_a0, FP_lpf2_b2, FP_lpf2_b1, FP_lpf2_b0, FP_lpf2_InputSignalLast2, FP_lpf2_OutputSignalLast2, FP_lpf2_InputSignalLast1, FP_lpf2_OutputSignalLast1, FP_lpfV_a2, FP_lpfV_a1, FP_lpfV_a0, FP_lpfV_b2, FP_lpfV_b1, FP_lpfV_b0, FP_lpfV_InputSignalLast2, FP_lpfV_OutputSignalLast2, FP_lpfV_InputSignalLast1, FP_lpfV_OutputSignalLast1, FP_hpf_InputSignalLast, FP_hpf_OutputSignalLast, FP_nfs_OutputSignalLast1, FP_nfs_OutputSignalLast2, FP_nfs_InputSignalLast1, FP_nfs_InputSignalLast2, FP_nfs_b2, FP_nfs_b0, FP_nfs_a2, FP_nfs_a1, FP_nfs_a0, FP_nf_OutputSignalLast1, FP_nf_OutputSignalLast2, FP_nf_InputSignalLast1, FP_nf_InputSignalLast2, FP_nf_b2, FP_nf_b1, FP_nf_b0, FP_nf_a1, FP_nf_a0, inst"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "FP.hpf_InputSignalLast",
+   "ref": "9f58413bad2e8fc0f4ba980d3e1f8fc03b8e343951108fc0c7e1b91a09018fc0...",
+   "got": "9f58413bad2e8fc0f4ba980d3e1f8fc03b8e343951108fc0c7e1b91a09018fc0..."
+  },
+  {
+   "case": 0,
+   "output": "FP.hpf_OutputSignalLast",
+   "ref": "d0150ad0432f8fc0f23acf75c51e8fc09b1f8202c9108fc0feca4b0ff9ff8ec0...",
+   "got": "d0150ad0432f8fc0f23acf75c51e8fc09b1f8202c9108fc0feca4b0ff9ff8ec0..."
+  },
+  {
+   "case": 0,
+   "output": "inst",
+   "ref": "2d010000",
+   "got": "2c010000"
+  },
+  {
+   "case": 1,
+   "output": "FP.hpf_InputSignalLast",
+   "ref": "a17f8c26d22e8fc0b5cfd817141f8fc0b4a4eac5a70f8fc0113efb1195008fc0...",
+   "got": "a17f8c26d22e8fc0b5cfd817141f8fc0b4a4eac5a70f8fc0113efb1195008fc0..."
+  },
+  {
+   "case": 1,
+   "output": "FP.hpf_OutputSignalLast",
+   "ref": "4a4c6b9031308fc0310d5a3f971f8fc0cd35a3aa44108fc0b4e59f62ea008fc0...",
+   "got": "4a4c6b9031308fc0310d5a3f971f8fc0cd35a3aa44108fc0b4e59f62ea008fc0..."
+  },
+  {
+   "case": 1,
+   "output": "inst",
+   "ref": "2d010000",
+   "got": "2c010000"
+  },
+  {
+   "case": 2,
+   "output": "vit_result",
+   "ref": "aa78438cfac23740",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 2,
+   "output": "FP.hpf_InputSignalLast",
+   "ref": "4563d64bfd0383c0cb507fe427fe82c0988f9bf067f782c07607013ae1f182c0...",
+   "got": "4563d64bfd0383c0cb507fe427fe82c0988f9bf067f782c07607013ae1f182c0..."
+  },
+  {
+   "case": 2,
+   "output": "FP.hpf_OutputSignalLast",
+   "ref": "29709c5dd0455fc086d5075a22055fc008a9c87189c35ec05de5f649f2855ec0...",
+   "got": "29709c5dd0455fc086d5075a22055fc008a9c87189c35ec05de5f649f2855ec0..."
+  },
+  {
+   "case": 2,
+   "output": "inst",
+   "ref": "69000000",
+   "got": "68000000"
+  },
+  {
+   "case": 3,
+   "output": "vit_result",
+   "ref": "9a7a4d9e43364140",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 3,
+   "output": "FP.hpf_InputSignalLast",
+   "ref": "bb86dad7f42988c0648127d6921d88c0e1e2a723f81088c0ad0b6b09b70488c0...",
+   "got": "bb86dad7f42988c0648127d6921d88c0e1e2a723f81088c0ad0b6b09b70488c0..."
+  },
+  {
+   "case": 3,
+   "output": "FP.hpf_OutputSignalLast",
+   "ref": "f75d5cd330f673c0702f5a4972ec73c0e88b1c9694e373c051de3b5ba5da73c0...",
+   "got": "f75d5cd330f673c0702f5a4972ec73c0e88b1c9694e373c051de3b5ba5da73c0..."
+  },
+  {
+   "case": 3,
+   "output": "inst",
+   "ref": "e3010000",
+   "got": "e2010000"
+  },
+  {
+   "case": 4,
+   "output": "vit_result",
+   "ref": "ff9546996a3c5240",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 4,
+   "output": "FP.lpfV_OutputSignalLast1",
+   "ref": "0000000000000000000000000000000000000000000000000000000000000000...",
+   "got": "0000000000000000000000000000000000000000000000000000000000000000..."
+  }
+ ],
+ "loop_rev": "5b40e1c-nogit",
+ "vit_rev": "300da9c-nogit",
+ "red_test": {
+  "perturbation": "the unit as a no-op: reads nothing, writes nothing, returns 0.0",
+  "result": "829 of 829 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

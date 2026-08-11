@@ -23,7 +23,26 @@ MODULE Filters
 !...............................................................................................................................
     USE Constants
     USE Functions
+    USE ISO_C_BINDING
     IMPLICIT NONE
+
+
+    ! Auto-generated interface for C++ implementation of HPFilter
+    INTERFACE
+        FUNCTION hpfilter_c(InputSignal, DT, CornerFreq, FP, iStatus, reset, inst, has_InitialValue, InitialValue) BIND(C, NAME='hpfilter_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: InputSignal
+            REAL(C_DOUBLE), VALUE :: DT
+            REAL(C_DOUBLE), VALUE :: CornerFreq
+            TYPE(C_PTR), VALUE :: FP
+            INTEGER(C_INT), VALUE :: iStatus
+            INTEGER(C_INT), VALUE :: reset
+            INTEGER(C_INT), INTENT(INOUT) :: inst
+            INTEGER(C_INT), VALUE :: has_InitialValue
+            REAL(C_DOUBLE), VALUE :: InitialValue
+            REAL(C_DOUBLE) :: hpfilter_c
+        END FUNCTION hpfilter_c
+    END INTERFACE
 
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -173,42 +192,31 @@ CONTAINS
     END FUNCTION SecLPFilter_Vel
 
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION HPFilter( InputSignal, DT, CornerFreq, FP, iStatus, reset, inst, InitialValue)
-    ! Discrete time High-Pass Filter
+    FUNCTION HPFilter(InputSignal, DT, CornerFreq, FP, iStatus, reset, inst, InitialValue) RESULT(HPFilter_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : FilterParameters
-        TYPE(FilterParameters),       INTENT(INOUT)       :: FP 
+        IMPLICIT NONE
+        REAL(8), INTENT(IN) :: InputSignal
+        REAL(8), INTENT(IN) :: DT
+        REAL(8), INTENT(IN) :: CornerFreq
+        TYPE(FILTERPARAMETERS), INTENT(INOUT), TARGET :: FP
+        INTEGER(4), INTENT(IN) :: iStatus
+        LOGICAL(4), INTENT(IN) :: reset
+        INTEGER(4), INTENT(INOUT) :: inst
+        REAL(8), INTENT(IN), OPTIONAL :: InitialValue
+        REAL(8) :: HPFilter_result
 
-        REAL(DbKi), INTENT(IN)     :: InputSignal
-        REAL(DbKi), INTENT(IN)     :: DT                       ! time step [s]
-        REAL(DbKi), INTENT(IN)     :: CornerFreq               ! corner frequency [rad/s]
-        INTEGER(IntKi), INTENT(IN)     :: iStatus                  ! A status flag set by the simulation as follows: 0 if this is the first call, 1 for all subsequent time steps, -1 if this is the final call at the end of the simulation.
-        INTEGER(IntKi), INTENT(INOUT)  :: inst                     ! Instance number. Every instance of this function needs to have an unique instance number to ensure instances don't influence each other.
-        LOGICAL(4), INTENT(IN)  :: reset                    ! Reset the filter to the input signal
-        ! Local
-        REAL(DbKi)                 :: K                        ! Constant gain
-        REAL(DbKi), OPTIONAL,  INTENT(IN)          :: InitialValue           ! Value to set when reset 
-        
-        REAL(DbKi)                          :: InitialValue_           ! Value to set when reset
+        ! Local variables for OPTIONAL args
+        INTEGER(C_INT) :: has_InitialValue_flag
+        REAL(C_DOUBLE) :: InitialValue_val
 
-        ! Defaults
-        InitialValue_ = InputSignal
-        IF (PRESENT(InitialValue)) InitialValue_ = InitialValue  
-
-        ! Initialization
-        IF ((iStatus == 0) .OR. reset)  THEN
-            FP%hpf_OutputSignalLast(inst) = InitialValue_
-            FP%hpf_InputSignalLast(inst) = InitialValue_
-        ENDIF
-        K = 2.0 / DT
-
-        ! Body
-        HPFilter = K/(CornerFreq + K)*InputSignal - K/(CornerFreq + K)*FP%hpf_InputSignalLast(inst) - (CornerFreq - K)/(CornerFreq + K)*FP%hpf_OutputSignalLast(inst)
-
-        ! Save signals for next time step
-        FP%HPF_InputSignalLast(inst)   = InputSignal
-        FP%HPF_OutputSignalLast(inst)  = HPFilter
-        inst = inst + 1
-
+        has_InitialValue_flag = 0
+        InitialValue_val = 0.0D0
+        IF (PRESENT(InitialValue)) THEN
+            has_InitialValue_flag = 1
+            InitialValue_val = REAL(InitialValue, C_DOUBLE)
+        END IF
+        HPFilter_result = REAL(hpfilter_c(InputSignal, DT, CornerFreq, C_LOC(FP), iStatus, MERGE(1_C_INT, 0_C_INT, reset), inst, has_InitialValue_flag, InitialValue_val), 8)
     END FUNCTION HPFilter
 !-------------------------------------------------------------------------------------------------------------------------------
     REAL(DbKi) FUNCTION NotchFilterSlopes(InputSignal, DT, CornerFreq, Damp, FP, iStatus, reset, inst, Moving, InitialValue)

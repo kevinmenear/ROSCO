@@ -84,6 +84,9 @@ fortran:
 verification:
   tolerance: 1.0e-14
 translations:
+  HPFilter:
+    status: integrated
+    cpp_file: translations/Filters/hpfilter.cpp
   ColemanTransform:
     status: integrated
     cpp_file: translations/Functions/colemantransform.cpp

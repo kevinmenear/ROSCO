@@ -1,0 +1,32 @@
+
+
+using namespace vitharness;
+
+extern "C" void hpfilter_f90(double InputSignal, double DT, double CornerFreq, void* FP_ptr, int iStatus, int32_t reset, int* inst, int has_InitialValue, double InitialValue, double* vit_result);
+
+int main(int argc, char** argv) {
+    const char* path = argc > 1 ? argv[1] : "hpfilter_cases.bin";
+    Reader r(path);
+    int checked = 0, failed = 0, inadmissible = 0;
+    std::vector<Diff> diffs;
+        int iStatus_a = (int)r.i();
+        int iStatus_b = iStatus_a;
+        int reset_a = (int)r.i();
+        int reset_b = reset_a;
+        int inst_a = (int)r.i();
+        int inst_b = inst_a;
+        int has_InitialValue_a = (int)r.i();
+        int has_InitialValue_b = has_InitialValue_a;
+        double InitialValue_a = (double)r.d();
+        double InitialValue_b = InitialValue_a;
+
+        double ret_a = HPFilter(InputSignal_a, DT_a, CornerFreq_a, &FP_a, iStatus_a, reset_a, &inst_a, has_InitialValue_a, InitialValue_a);
+        double ret_b = 0;
+        hpfilter_f90(InputSignal_b, DT_b, CornerFreq_b, &FP_b, iStatus_b, reset_b, &inst_b, has_InitialValue_b, InitialValue_b, &ret_b);
+        int bad = 0;
+        #define VITCMP(nm, pa, pb, sz) \
+            if (!same((pa), (pb), (sz))) { bad++; if (diffs.size() < 16) \
+                diffs.push_back(Diff{c, nm, hexbytes((pb), (sz)), hexbytes((pa), (sz))}); }
+        VITCMP("vit_result", &ret_a, &ret_b, sizeof(ret_a));
+        VITCMP("FP.lpf1_a1", &FP_a.lpf1_a1, &FP_b.lpf1_a1, sizeof(FP_a.lpf1_a1));
+        VITCMP("FP.lpf1_a0", &FP_a.lpf1_a0, &FP_b.lpf1_a0, sizeof(FP_a.lpf1_a0));

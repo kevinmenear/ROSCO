@@ -87,6 +87,7 @@ set(SOURCES
     src/getpath.cpp
     src/getroot.cpp
     src/getwords.cpp
+    src/hpfilter.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
