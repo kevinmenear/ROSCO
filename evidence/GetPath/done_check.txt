@@ -1,0 +1,30 @@
+# python3.12 scripts/done_check.py GetPath
+#
+# Taken after BOTH commits and against a clean ROSCO-r2 tree, per RUNBOOK's
+# "Finishing a unit" step 8. Transcribed rather than piped: creating the file
+# would have dirtied the tree and made P2 describe the capture instead of the
+# unit (unit #5's second dispatch learned that the hard way).
+#
+# The FIRST attempt at this run did not produce a verdict at all -- it raised
+# UnicodeDecodeError inside loop/gitrepo.py's file_at, because this unit's
+# evidence includes a BINARY artifact (kernel.GetPath.0.0.1.statefile) and
+# `_resolves` was reading `git show` as text merely to ask whether the path
+# resolved. Fixed in the loop repo (74742bc), not by dropping the artifact.
+
+baseline (inferred): 61de68f  -- the commit before beb061b touched translations/ROSCO_Helpers/getpath.cpp
+
+GetPath: Verdict.COMPLETE  (13/13 PASS)
+
+[  ok  ] P1   commits exist                      
+[  ok  ] P2   clean tree                         
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[  ok  ] P5   evidence resolves                  
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[  ok  ] P9   gate compared and matched          
+[  ok  ] P12  mutation score for this unit       25/25 mutant(s) killed
+[  ok  ] P11  post-integration harness re-run    236 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible

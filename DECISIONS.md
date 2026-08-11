@@ -1865,3 +1865,233 @@ FIELDS it named is what showed four of them had never been compared before. A
 red test that reports WHICH outputs moved is strictly more informative than one
 that reports that some did, and this campaign's harness already does it. Nothing
 to amend — worth knowing.
+
+## Unit #6 — GetPath, 2026-08-11: `integrated`, and the gate is blind for a NEW reason
+
+`GetPath` parses the directory prefix off a filename. Two `CHARACTER(*)` dummies,
+no callees, one call site. It closes `integrated` on the differential harness and
+the mutation score, with a green gate committed beside a FAILED gate red test —
+the third unit in six to close that way, and the reason is different from the
+other two.
+
+### 1. The gate's blindness here is a CONSUMER property, and it is a fourth shape
+
+Making the unit a NO-OP moved **0 of 5,252,000** values
+(`gate/GetPath.redtest-noop.json`, `perturbation.replacements: 1`,
+`revert_verified: true`). The line is not dead — `ReadSetParameters.f90:331`
+runs 28 times across the 27 scenarios, and so do both of the readers of its
+output. The result is *produced and never consumed*:
+
+```fortran
+IF (PathIsRelative(CntrPar%PerfFileName)) CntrPar%PerfFileName = TRIM(PriPath)//...
+IF (PathIsRelative(CntrPar%OL_Filename))  CntrPar%OL_Filename  = TRIM(PriPath)//...
+```
+
+`PerfFileName` is one ABSOLUTE path in all 14 `Examples/*.IN`, so the guard is
+false and `PriPath` is unused. `OL_Filename` is the literal `"unused"` in most of
+them — relative, so the concatenation DOES happen — but `OL_Mode` is 0 there and
+nothing opens the result; in the three scenarios that do open it the path is
+absolute again. The one class of scenario that reads `PriPath` throws the answer
+away, and the one that would need a filename supplies it whole.
+
+So the campaign now has four distinct shapes of P9, and coverage can express none
+of them: unexercised line (#1), argument constant in every scenario (#3),
+result cancelled downstream by a symmetric consumer (#4), and result never
+consumed because its consumer's guard is false wherever it would matter (#6).
+The verification ledger (E5.2) needs the fourth column too; #4 already asked for
+the third.
+
+A SECOND gate red test is committed and it is the WEAK one, deliberately: forcing
+the `I == 0` branch off also moved 0, and coverage already said clean line 1240
+has zero hits in all 27 scenarios. That is RUNBOOK's "attempt 1" reproduced on
+purpose, so the record shows which of the two perturbations carries the claim.
+
+### 2. THE KERNEL HAS ONE CASE AND A LOOKUP TABLE PASSES IT
+
+`vit verify` reports `1/1 IDENTICAL`. A stub reading NEITHER input and writing
+the literal `/workspace/ROSCO-r2/Examples/` blank-padded ALSO reports
+`1/1 IDENTICAL` (`evidence/GetPath/kernel.constant-stub-PASSES.verify_fields.csv`).
+
+This is unit #2's all-zero window in a new costume, and the difference matters
+for what to do about it. There the window was widenable and widening it was the
+fix. Here `ReadSetParameters.f90:331` executes **once per process**, so there is
+no second invocation to widen onto, and every scenario builds the argument as
+`os.path.join(this_dir, '<one of 14 DISCON*.IN names>')` — the answer is the same
+string in all 27. The kernel is not badly configured; it is structurally
+one-case for this unit, and no configuration change reaches it.
+
+Recorded rather than smoothed over: `plan.json`'s `verification` hypothesis was
+"kernel replay or direct-call harness". Kernel replay EXISTS and RAN and is worth
+almost nothing. The harness is what verifies this unit.
+
+### 3. A KGEN DEFECT, FIXED IN KGEN (X2)
+
+Extraction succeeded and the generated kernel would not compile:
+
+```
+CHARACTER(LEN=accinfile_size), DIMENSION(:), ALLOCATABLE :: accinfile
+Error: Variable 'accinfile_size' cannot appear in the expression at (1)
+```
+
+KGen hoists the call site's enclosing procedure's dummies into the kernel
+driver's PROGRAM scope. `ReadControlParameterFileSub` declares
+`CHARACTER(accINFILE_size) :: accINFILE(accINFILE_size)` — an AUTOMATIC length:
+legal on a dummy, illegal on a local. KGen already had the whole mechanism for
+the neighbouring case, `CHARACTER(*)` (commit `c839e1a`, unit #4's era): make the
+driver local `CHARACTER(LEN=:), ALLOCATABLE` and carry the element length in the
+state file. It keyed on `selector[0] == '*'`, and an automatic length is not
+that.
+
+Fixed in KGen, additively: a new `is_automatic_length_char` beside the existing
+predicate, and `hoists_as_deferred_length` for the generators that need both.
+Three things about the fix are worth carrying:
+
+* **It is deliberately narrow.** It fires only when the length expression names
+  an entity THIS SCOPE declares (`typedecl is not None`) as a non-PARAMETER
+  variable. `CHARACTER(MaxParamLength)`, which `ROSCO_Helpers` uses everywhere
+  and which resolves through a `USE`, is a constant in the driver too and is left
+  alone. `get_variable()` is not used for that test: it CREATES the variable when
+  the name is absent, which would report every intrinsic in the expression as a
+  variable.
+* **The read and write sides must decide it identically or the state file
+  desynchronises.** The length record is written first and read first; one side
+  emitting it without the other shifts every field after it. Only the CALLER
+  knows whether it is hoisting an ARGUMENT (becomes a PROGRAM local — defer) or a
+  LOCAL (stays in a subroutine — an automatic length is legal, leave it), so the
+  flag is passed in rather than recomputed inside `create_read_subr` /
+  `create_write_subr`. The `argintype` test qualifies only the automatic half:
+  `CHARACTER(*)` is not legal on a local at all, so that half is an argument by
+  construction.
+* **This was not a usage error.** The pragma was at a call site, the parentblock
+  is a subroutine, and the declaration KGen copied is ordinary legal Fortran.
+  CLAUDE.md's prior is that a KGen failure is almost never a KGen bug; this is
+  the exception it allows for, and the fix went into the KGen repo.
+
+Unlike the `CHARACTER(*)` case this one fails LOUDLY, at the kernel build, so it
+cost a diagnosis rather than a wrong answer. **It is on the critical path for
+much of what remains**: `ReadControlParameterFileSub` is the enclosing procedure
+for the `ParseInput_*`, `ParseAry`, `FindLine` and `GetWords` call sites, so any
+unit extracted from there would have hit the same wall.
+
+### 4. THE FIX WAS RED-TESTED IN BOTH DIRECTIONS, AND THE CONTROL FOUND SOMETHING ELSE
+
+Red direction: the pre-fix driver is kept at
+`evidence/GetPath/kgen_driver.automatic_char_len.f90` with gfortran's diagnostic.
+
+Green direction: re-extracted `Conv2UC` (`ROSCO_Helpers.f90:1118`, scenario 1),
+whose enclosing `FindLine` has `CHARACTER(*)` dummies AND `CHARACTER(MaxParamLength)`
+locals — exactly the two shapes the predicate must treat differently. The
+generated kernel came back **byte-identical to unit #4's committed copy apart from
+its timestamp comment**, and re-verified 62/62 IDENTICAL against the committed
+`conv2uc.cpp`.
+
+**62, where unit #4 recorded 63** — and that is NOT this change. Stashing the KGen
+patch and re-running the identical command also yields 62. The configured window
+is `0:0:1-20,0:0:12000-12020,0:0:23900-23920`, which is 20 + 21 + 21 = **62**;
+unit #4's committed statefile list carries one extra, `Conv2UC.0.0.21`, outside
+the first range. An extra IDENTICAL case does not weaken that unit's 63/63, so
+nothing about #4's conclusion changes — but its count is one more than its own
+window specifies, and the likeliest cause is a stale state file from an earlier
+run being swept up. Worth knowing before any future run compares case counts
+across passes as if they were stable.
+
+### 5. Removing an unobservable restatement raised the score from 0.882 to 1.000 — the FOURTH time
+
+Two survivors, both `<` → `<=`, both in the 0-based form of `char_assign`
+(`mutation/GetPath.survivors_0based.json`). On the copy loop the mutant writes
+`dst[n]`, which the fill loop immediately overwrites; on the fill loop it writes
+`dst[len_dst]`, one byte past the buffer. Neither is a wrong ANSWER, so no value
+comparison can see either.
+
+Rewriting both loops 1-BASED — the way the Fortran states the assignment — turns
+the same mutant into "leaves a byte unwritten", which the comparison sees. 25 of
+25 killed, 0 declared equivalent.
+
+This is unit #1's rule verbatim ("the literal transcription is the observable
+one") and the first time it has been RE-MEASURED on a different unit, so it is
+now a rule with two independent measurements rather than one. One refinement
+worth recording: the mutant COUNT went UP, 17 → 25. The 1-based form has more
+mutable sites, and all of them are observable. The thing to optimise is not the
+number of sites but whether a site can change an output.
+
+### 6. Two tool defects observed and NOT worked around
+
+**`vit interface` emits a copy-IN for an `INTENT(OUT)` argument.** The shipped
+wrapper reads `PathName` — undefined on entry, by definition of INTENT(OUT) —
+into the C_CHAR staging array before the call. It does not change this unit's
+answer, because the translation writes every one of `len_PathName` bytes. It does
+change what the instruments can see: it is exactly why the no-op stub survives 2
+of 236 differential cases (a no-op returns the incoming bytes, and twice those
+already equalled the answer), and it would mask a translation that failed to
+write the tail. Left in the generated wrapper with the finding recorded, rather
+than hand-edited: a hand-edit would make the shipped bridge disagree with the
+generator for every future unit.
+
+**`vit check -f <file>` attributed both of its findings to other procedures.**
+`narrowing-local` on `ExpUCVarName` (clean line 1051, inside `FindLine`) and
+`delimiter-set` on `'\/'` (clean line 1284, inside `GetRoot`), reported against a
+GetPath translation containing neither. Second sighting; already open in
+`STATUS.md`. Re-attributed by hand, as that entry says to.
+
+**`vit integrate` did NOT write `verification: simulation` into `vit.yaml` this
+time** — the only keys it added under `GetPath:` were `status` and `cpp_file`.
+Recorded because unit #5 found it doing so; whatever the trigger is, it is not
+every integration.
+
+### 7. A hazard in this campaign's own scripts, paid for once
+
+`restore_integrated.sh` restores the integrated sources **from HEAD**, and
+GetPath's integration was not yet committed — so running the reset/restore pair
+after the post-integration measurements silently reverted the wrapper, leaving an
+orphaned `getpath.cpp` and a library with no GetPath in it. The script prints
+this warning; it was run anyway. Every post-integration artifact taken before
+that point was DELETED and re-taken after re-integrating, which is what the
+warning tells you to do. The RUNBOOK's existing rule — commit before exercising
+the reset/restore cycle — is the rule that covers it, and it is a target-layer
+entry, not a method gap.
+
+### 8. NOT method, target
+
+All of it. The consumer-shaped P9, the structurally-one-case kernel, the KGen
+predicate, the 1-based loop measurement and the two VIT defects are RUNBOOK
+target-layer entries. No amendment to the invariant layer is proposed.
+
+One observation for the Driver, again NOT an amendment: **C6 ("verify against
+captured state") was performed, passed, and is worth almost nothing here, and
+nothing in the cycle says so.** The unit is not exempt from C6 and should not be
+— running it is what produced the constant-stub measurement, which is the
+evidence that the kernel is vacuous. The existing rules reach this: X4 says never
+take a green at face value on first use, and X4 is what turned C6's green into a
+finding. Worth knowing that a mandatory step's whole value can be the red test
+that discredits its own green.
+
+### 9. Unit #6 postscript — the done-condition crashed, and the fix went into the loop repo
+
+`scripts/done_check.py GetPath` raised `UnicodeDecodeError` instead of printing a
+verdict. `loop/gitrepo.py`'s `file_at` ran `git show` under `text=True`, and
+`done.py::_resolves` — the K3/P6 predicate that checks every evidence reference
+names a committed artifact — calls it purely for its exit status. It never reads
+the bytes. Unit #6 is the first in this campaign to commit a BINARY evidence
+artifact (`evidence/GetPath/kernel.GetPath.0.0.1.statefile`, the captured KGen
+state), and that was enough to abort the whole verifier.
+
+Two things make this worth a decision entry rather than a one-line fix note.
+
+**The failure mode is the campaign's own subject.** A verifier that CANNOT
+REPORT is worse than one that reports FAIL, because a session cannot distinguish
+"the unit is not finished" from "the check is broken". Unit #2 was re-dispatched
+for setting a disposition nothing had asked the done-condition about; a
+done-condition that throws puts a session back in exactly that position while
+looking like the unit's fault.
+
+**The obvious workaround would have weakened the evidence.** The quickest way to
+a green here is to drop the statefile from `plan.json`'s evidence list — which
+removes the one artifact that lets anyone check the constant-stub claim, in
+order to satisfy a defect in the instrument reading the list. Fixed in the loop
+repo (`74742bc`) instead, additively: `errors="replace"` only changes bytes that
+would previously have thrown, and every caller that actually reads the text is
+UTF-8 by construction. X2.
+
+Red-tested in both directions on this unit: before, a traceback and no verdict;
+after, COMPLETE 13/13 on the same evidence list. The transcript is at
+`evidence/GetPath/done_check.txt` and says so.

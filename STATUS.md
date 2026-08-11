@@ -4,7 +4,83 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-11: unit #5 `ExtController` is `integrated` and CLOSED**, on its
+**As of 2026-08-11: unit #6 `GetPath` is `integrated` and CLOSED**, first
+dispatch.
+
+**BOTH BIT-EXACT LAYERS ARE VACUOUS FOR THIS UNIT, AND EACH SAYS SO IN AN
+ARTIFACT.** The gate is blind and the kernel has one case that a lookup table
+passes. What verifies `GetPath` is the differential harness and the mutation
+score.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, **1 case**, scenario 1 | 1/1 `IDENTICAL` over the full `CHARACTER(1024)` | no-op stub → `OUT_TOL`. **AND A CONSTANT STUB PASSES 1/1** |
+| differential harness vs clean Fortran | 236 checked, 0 failed | no-op stub → 234/236 failed, naming `PathName`; green restored |
+| mutation score | 25/25 behavioural killed, 1.000, 0 declared equivalent, 0 nocompile | refuses to score unless the baseline is green |
+| post-integration harness (wrapper only) | 236 checked, 0 failed | `LEN(PathName)` → `LEN(PathName) - 1` in the CALL → 199/236 failed; green restored |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED TEST FAILED — 0 of 5,252,000 moved** |
+
+4 of the 25 mutation kills are CRASHES rather than case mismatches, so the
+killed-by-comparison count is 21 of 25.
+
+**A FOURTH SHAPE OF P9, AND IT IS A PROPERTY OF THE CONSUMER.** `GetPath` is not
+dead: `ReadSetParameters.f90:331` runs 28 times across the 27 scenarios, and so
+do both readers of its output. The result is **produced and never consumed**.
+`PriPath`'s only two readers are guarded by `PathIsRelative`, and the guard is
+false exactly where the answer would matter — `PerfFileName` is one absolute path
+in all 14 `Examples/*.IN`; `OL_Filename` is the literal `"unused"` (relative, so
+the concatenation happens) in the scenarios where `OL_Mode` is 0 and nothing
+opens it, and absolute in the three that do. Six units, four shapes, and
+`coverage/line_coverage.json` can express none of them:
+
+| unit | shape |
+|---|---|
+| #1 `AddToList` | the line is never executed |
+| #3 `ColemanTransformInverse` | an argument is constant in every scenario |
+| #4 `Conv2UC` | 1.3M executions, result cancelled by a symmetric consumer |
+| #6 `GetPath` | result produced, consumer's guard false wherever it would matter |
+
+Two gate red tests are committed and the record says which one carries the
+claim: the no-op (decisive) and the `I == 0` branch forced off (deliberately
+weak — coverage already showed that branch has zero hits in all 27, so it is
+RUNBOOK's "attempt 1" reproduced on purpose).
+
+**THE KERNEL IS STRUCTURALLY ONE CASE.** The call site runs ONCE PER PROCESS, so
+no invocation window can widen it, and every scenario builds the argument as
+`os.path.join(this_dir, '<one of 14 DISCON*.IN names>')` — one answer in all 27.
+Measured, not argued: a stub reading NEITHER input and writing that literal
+blank-padded scores **1/1 IDENTICAL**
+(`evidence/GetPath/kernel.constant-stub-PASSES.verify_fields.csv`). Unit #2's
+all-zero window in a new costume, and unlike #2 there is nothing to widen.
+
+**A KGEN DEFECT WAS FIXED IN KGEN, AND IT IS ON THE CRITICAL PATH FOR MUCH OF
+WHAT REMAINS.** The generated kernel would not compile: KGen hoists the enclosing
+procedure's dummies into the driver's PROGRAM scope, and
+`ReadControlParameterFileSub` declares `CHARACTER(accINFILE_size) ::
+accINFILE(accINFILE_size)` — an AUTOMATIC length, legal on a dummy and illegal on
+a local. KGen already had the machinery for `CHARACTER(*)` (`c839e1a`) and keyed
+on `selector[0] == '*'`. Fixed additively with a narrow new predicate, and
+red-tested in both directions: the pre-fix driver plus gfortran's diagnostic is
+kept, and a re-extraction of `Conv2UC` — whose enclosing `FindLine` has both a
+`CHARACTER(*)` dummy and `CHARACTER(MaxParamLength)` locals, the two shapes the
+predicate must treat differently — regenerated **byte-identical to unit #4's
+committed kernel apart from its timestamp** and re-verified 62/62 IDENTICAL.
+`ReadControlParameterFileSub` encloses the `ParseInput_*`, `ParseAry`, `FindLine`
+and `GetWords` call sites, so any unit extracted from there would have hit it.
+
+**Removing an unobservable restatement raised the score from 0.882 to 1.000 —
+the fourth time in six units, and the first RE-measurement of unit #1's exact
+rule.** Both loops in `char_assign` written 0-based left two `<` → `<=` survivors
+that write one byte past a buffer or into a byte the next loop overwrites —
+neither a wrong answer, so no value comparison can see either. Written 1-based,
+the way the Fortran states the assignment, the same mutant leaves a byte
+UNWRITTEN and both die. The mutant count went UP, 17 → 25: the observable form
+has more sites, not fewer.
+
+---
+
+
+**Unit #5 `ExtController` is `integrated` and CLOSED**, on its
 third dispatch. Two dispatches closed it `blocked`; both blocking claims are now
 refuted by measurement, and the second one cost less than the first.
 
@@ -116,16 +192,17 @@ fields — those are hypotheses, not facts. Run
 
 ## Counts
 
-5 attempted / **5 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+6 attempted / **6 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / 0 blocked.
 
-69 units in `plan.json`; 64 remain.
+69 units in `plan.json`; 63 remain.
 
-**3 of the 5 integrated units are invisible to the gate**, for three different
+**4 of the 6 integrated units are invisible to the gate**, for four different
 reasons: `AddToList` is never called, `Conv2UC` is called constantly and
-cancelled, and `ExtController` is never called *and* has no observable effect on
-any channel the gate compares even when it is. Each carries a green gate
-artifact committed beside the red test that says it constrains nothing.
+cancelled, `ExtController` is never called *and* has no observable effect on any
+channel the gate compares even when it is, and `GetPath` is called in every
+scenario and its answer is never consumed. Each carries a green gate artifact
+committed beside the red test that says it constrains nothing.
 
 **Every unit now has a `harness/` and a `mutation/` artifact.** `ExtController`
 was the exception for two dispatches and the absence was recorded as the
@@ -312,8 +389,82 @@ and `avcOUTNAME` (record 46) and the incoming `aviFAIL` (record 44). A stub that
 answers without reading its inputs is unit #2's all-zero kernel window in
 another costume.
 
+### GetPath — every layer, and the two red tests that failed
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 1 case, scenario 1, `ReadSetParameters.f90:331` | 1/1 `IDENTICAL` over `CHARACTER(1024)` | no-op stub → `OUT_TOL`; **constant stub → PASSES 1/1** |
+| differential harness vs clean Fortran | 236 checked, 0 failed | no-op stub → 234/236 failed, naming `PathName` |
+| mutation score | 25/25 behavioural killed, 1.000, 0 declared equivalent, 0 nocompile | refuses to score unless the baseline is green |
+| post-integration harness (wrapper only) | 236 checked, 0 failed | `LEN(PathName) - 1` in the CALL → 199/236 failed; green restored |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED TEST FAILED — 0 of 5,252,000 moved, twice** |
+
+The signature crosses whole and `vit interface` was read attribute by attribute
+before any C++ was written: `CHARACTER(*) INTENT(IN)` and `CHARACTER(*)
+INTENT(OUT)` each become `CHARACTER(KIND=C_CHAR) :: x(*)` plus
+`INTEGER(C_INT), VALUE :: len_x`, with the wrapper declaring both dummies exactly
+as the original does. `plan.json`'s `bridge_feasible` said `unknown`, from the
+pre-`integrates` conformance matrix; it is now `yes`, from the generator that
+ships.
+
+The no-op red test fails **234 of 236**, not all 236, and the two survivors are
+the `INTENT(OUT)` copy-in defect below rather than slack in the harness.
+
+`PathSep` is `CHARACTER(1), PARAMETER :: PathSep = '/'` from
+`SysFiles/SysGnuLinux.f90` — confirmed from the build log's `Setting system file
+as:` line, not read off `CMakeLists.txt`. The forward-slash SEARCH takes the
+literal `'/'` and not `PathSep`, because in the reference they are two different
+things and only the fallback uses the platform parameter (P7).
+
 ## Open
 
+- **`vit interface` EMITS A COPY-IN FOR AN `INTENT(OUT)` ARGUMENT.** New at unit
+  #6. The shipped `GetPath` wrapper reads `PathName` — undefined on entry, by
+  definition of `INTENT(OUT)` — into the C_CHAR staging array before the call. It
+  does not change this unit's answer, because the translation writes every one of
+  `len_PathName` bytes. It changes what the instruments can SEE: it is exactly
+  why a no-op stub survives 2 of 236 differential cases (a no-op hands back the
+  caller's bytes, and twice those already equalled the answer), and it would mask
+  a translation that failed to write the tail. Left in the generated wrapper with
+  the finding recorded rather than hand-edited — a hand-edit would make the
+  shipped bridge disagree with the generator for every unit after it. Fix belongs
+  in VIT (X2). **20 of this campaign's 69 units take a CHARACTER dummy**, so this
+  will recur.
+- **The done-condition CRASHED rather than answering, on a unit whose evidence
+  was complete.** `loop/gitrepo.py`'s `file_at` ran `git show` under `text=True`,
+  and `_resolves` (K3/P6) calls it only to ask WHETHER an evidence reference
+  names a committed artifact — it never reads the bytes. Unit #6 is the first to
+  commit a BINARY evidence artifact (the captured KGen state file), so it raised
+  `UnicodeDecodeError` out of `subprocess.communicate` and produced no verdict
+  and no predicate list. A verifier that cannot report is worse than one that
+  reports FAIL: a session cannot tell "the unit is not finished" from "the check
+  is broken", and the obvious next move — drop the artifact from the evidence
+  list — would have made the evidence WEAKER to satisfy a defect in the thing
+  measuring it. Fixed in the loop repo (`74742bc`), verified in both directions.
+  CLOSED; kept here because it is the second time an instrument's own failure
+  looked like a finding about a unit.
+- **The campaign now has FOUR shapes of P9 and the verification ledger (E5.2)
+  needs a column for each.** Unit #4 asked for a "hot but cancelled" column;
+  unit #6 adds "produced but never consumed", which is neither that nor
+  "unexercised" nor "argument held constant". All four are consumer- or
+  input-space properties that `coverage/line_coverage.json` cannot express,
+  because coverage counts entries to a line and every one of these lines is
+  entered.
+- **A unit's kernel can be STRUCTURALLY one case, and no configuration reaches
+  it.** `GetPath`'s call site runs once per process. Unit #2's answer to a
+  vacuous window — widen it — does not apply, and `vit.yaml`'s `invocation` is
+  irrelevant for any unit called once during initialisation. The check that
+  works is the constant stub: a translation that reads NO input and writes the
+  captured answer. If it passes, the kernel is a lookup table. This belongs
+  beside the existing all-zero-window recipe in RUNBOOK, and it is there.
+- **Unit #4's kernel case count is one more than its own window specifies.**
+  Re-extracting `Conv2UC` with the identical command yields **62**, both with and
+  without unit #6's KGen change; `evidence/Conv2UC/kernel-window-1.statefiles.lst`
+  has 63, the extra being `Conv2UC.0.0.21` — outside the configured
+  `0:0:1-20`. 20 + 21 + 21 = 62. An extra IDENTICAL case does not weaken that
+  unit's 63/63, so nothing about its conclusion changes, but a future run
+  comparing case counts across passes should not treat them as stable. Likeliest
+  cause is a stale state file from an earlier attempt being swept up.
 - **ESCALATION 3 IS CLOSED.** All three items are done and the unit is
   `integrated`. (1) `CHARACTER(:), ALLOCATABLE` crosses a view struct (VIT
   `a2e2c30`) and now a decomposed differential bridge too (`8c34ceb`) — the

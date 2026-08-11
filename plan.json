@@ -262,13 +262,49 @@
         "DISCON"
       ],
       "dependency_depth": 0,
-      "verification": "kernel replay or direct-call harness; bit-identical",
+      "verification": "ROUTE EXISTS AND WAS RUN, and the strongest layer is NOT the one this field predicted.\n\n  kernel replay              1/1 IDENTICAL over the full CHARACTER(1024), scenario 1, ReadSetParameters.f90:331 (clean). STRUCTURALLY ONE CASE and effectively vacuous: the call site runs ONCE PER PROCESS, so no invocation window can widen it, and all 27 scenarios build the argument as os.path.join(this_dir, '<one of 14 DISCON*.IN names>') -- one answer, '/workspace/ROSCO-r2/Examples/', in every one. MEASURED, not argued: a stub reading NEITHER input and writing that literal blank-padded also scores 1/1 IDENTICAL (evidence/GetPath/kernel.constant-stub-PASSES.verify_fields.csv). A no-op stub scores OUT_TOL, so the instrument can move. VIT declined to build its own red test (NON_DISCRIMINATING) and was right to: this signature has no by-value floating-point argument. For a CHARACTER output the KGen comparison has no tolerance branch at all, so the PASS is a bit-identity claim -- unit #4's per-TYPE fact, re-read out of this unit's generated comparison rather than assumed.\n  differential harness       236 checked, 0 failed, against the CLEAN Fortran. Corpus drawn from the reference's own literals ('\\\\', '/', '.') and their collating neighbours, 26 characters, both strings, lengths 1/4/9, mixed / word-then-blanks / all-blank. RED-TESTED: the unit as a no-op fails 234 of 236 naming PathName. The 2 that survive are the wrapper defect in `observability`, not slack in the harness. harness/GetPath{,.redtest}.json\n  mutation score             25 of 25 behavioural killed, 1.000, 0 declared equivalent, 0 nocompile. 4 of the 25 are CRASHES rather than case mismatches, so the killed-by-comparison count is 21 of 25. Reached 1.000 by REMOVING an unobservable restatement, not by declaring one: the 0-based form of char_assign scored 0.882 with two `<`->`<=` survivors that write one past a buffer or into a byte the next loop overwrites (mutation/GetPath.survivors_0based.json). mutation/GetPath.json\n  post-integration harness   236 checked, 0 failed -- the WRAPPER's marshalling. RED-TESTED: LEN(PathName) -> LEN(PathName) - 1 in the wrapper's CALL fails 199 of 236; green restored.\n  gate, 27 scenarios         5,252,000 values / 351 channels, 0 mismatched, AND ITS RED TEST FAILED: making the unit a no-op moved 0 of 5,252,000 (replacements: 1, revert_verified: true). A second, deliberately WEAK red test on the never-executed `I == 0` branch also moved 0 and is committed as such. That green constrains nothing; see `observability`.",
       "why": "every input and output crosses the signature",
       "bridge_feasible": {
-        "value": "unknown",
-        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+        "value": "yes -- measured on the generator that ships",
+        "basis": "the recorded basis -- five blocking features in the conformance matrix that no FEATURE_CELLS pattern can attribute -- is superseded by running `vit interface` and reading the wrapper attribute by attribute before any C++ was written (evidence/GetPath/vit_interface.stdout.txt)",
+        "observed": "Both dummies cross whole. CHARACTER(*) INTENT(IN) -> CHARACTER(KIND=C_CHAR), INTENT(IN) :: GivenFil(*) plus INTEGER(C_INT), VALUE :: len_GivenFil; CHARACTER(*) INTENT(OUT) -> the same shape with INTENT(OUT). The wrapper declares both dummies exactly as the original does and drops nothing. This is the shape unit #4 (Conv2UC, INTENT(INOUT)) already proved; the INTENT(OUT) half is new here and brought one defect with it -- see `observability`."
       },
-      "observability": null
+      "observability": "THE GATE IS BLIND TO THIS UNIT, AND FOR A REASON THE CAMPAIGN HAD NOT SEEN. Making the unit a no-op moved 0 of 5,252,000 values. The line is NOT dead -- ReadSetParameters.f90:331 runs 28 times across the 27 scenarios and so do both readers of its output. The result is PRODUCED AND NEVER CONSUMED. PriPath has exactly two readers (clean ReadSetParameters.f90:673, 674), both guarded by PathIsRelative: PerfFileName is one ABSOLUTE path in all 14 Examples/*.IN so the guard is false and PriPath is unused; OL_Filename is the literal \"unused\" in most inputs -- relative, so the concatenation happens -- but OL_Mode is 0 there and nothing opens the result, and in the three scenarios that DO open it the path is absolute again. Fourth distinct shape of P9 in six units, after unexercised line (#1), constant argument (#3) and cancelled-downstream result (#4), and coverage/line_coverage.json can express none of them.\n\nTHE KERNEL IS STRUCTURALLY ONE CASE and a lookup table passes it; see `verification`. The gate and the kernel together constrain nothing about this unit. The differential harness and the mutation score are the whole of the evidence.\n\nTHE `I == 0` BRANCH IS NEVER TAKEN by any scenario -- clean ROSCO_Helpers.f90:1240 has zero hits in all 27 -- so the fallback '.'//PathSep is covered by the harness corpus and by nothing else.\n\nCOST, STATED: `vit interface` emits a copy-IN for PathName, an INTENT(OUT) dummy that is undefined on entry. It does not change this unit's answer, because the translation writes every one of len_PathName bytes -- but it means a no-op returns the CALLER's bytes rather than indeterminate ones, which is why 2 of 236 differential cases survive the no-op red test, and it would mask a translation that failed to write the tail. Left in the generated wrapper with the defect recorded in STATUS.md rather than hand-edited, so the shipped bridge does not diverge from the generator.",
+      "disposition": "integrated",
+      "evidence": [
+        "evidence/GetPath/README.md",
+        "evidence/GetPath/done_check.txt",
+        "evidence/GetPath/vit_interface.stdout.txt",
+        "evidence/GetPath/vit_translate.stdout.txt",
+        "evidence/GetPath/vit_check.stdout.txt",
+        "evidence/GetPath/getpath.scaffold.cpp",
+        "evidence/GetPath/vit_verify.stdout.txt",
+        "evidence/GetPath/kernel.verify_fields.csv",
+        "evidence/GetPath/kernel.noop-stub.verify_fields.csv",
+        "evidence/GetPath/kernel.constant-stub-PASSES.verify_fields.csv",
+        "evidence/GetPath/getpath.noop-stub.cpp",
+        "evidence/GetPath/getpath.constant-stub.cpp",
+        "evidence/GetPath/kernel.GetPath.0.0.1.statefile",
+        "evidence/GetPath/kernel-generated-ReadSetParameters.f90",
+        "evidence/GetPath/kernel-generated-kernel_driver.f90",
+        "evidence/GetPath/kgen_driver.automatic_char_len.f90",
+        "harness/GetPath.json",
+        "harness/GetPath.redtest.json",
+        "harness/GetPath.postintegration.json",
+        "harness/GetPath.postintegration.redtest.json",
+        "mutation/GetPath.json",
+        "mutation/GetPath.survivors_0based.json",
+        "gate/GetPath.json",
+        "gate/GetPath.redtest.json",
+        "evidence/GetPath/gate_redtests/GetPath.redtest-noop.json",
+        "evidence/GetPath/gate_redtests/GetPath.redtest-deadbranch.json",
+        "evidence/GetPath/harness_redtests/GetPath.redtest-noop.json",
+        "translations/ROSCO_Helpers/getpath.cpp",
+        "rosco/controller/src/getpath.cpp"
+      ],
+      "source_file": "rosco/controller/src/ROSCO_Helpers.f90",
+      "translation": "translations/ROSCO_Helpers/getpath.cpp",
+      "harness_required": true
     },
     {
       "order": 7,

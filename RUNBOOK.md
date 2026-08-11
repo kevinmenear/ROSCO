@@ -414,6 +414,55 @@ is `/workspace/ROSCO-r2`.
   many times per timestep in every scenario) and confirm green returns after the
   revert, or the red is not attributable to the perturbation.
 
+- **A KGen kernel that will not COMPILE is a different failure from one that
+  captures nothing, and this one is on the critical path.** Learned at unit #6.
+  `vit extract` reported success, and `vit verify` died in the kernel build:
+
+  ```
+  CHARACTER(LEN=accinfile_size), DIMENSION(:), ALLOCATABLE :: accinfile
+  Error: Variable 'accinfile_size' cannot appear in the expression at (1)
+  ```
+
+  KGen hoists the call site's ENCLOSING procedure's dummies into the kernel
+  driver's PROGRAM scope, and `ReadControlParameterFileSub` declares
+  `CHARACTER(accINFILE_size) :: accINFILE(accINFILE_size)` — an AUTOMATIC length:
+  legal on a dummy, illegal on a local. That procedure also encloses the
+  `ParseInput_*`, `ParseAry`, `FindLine` and `GetWords` call sites, so a large
+  share of the remaining units reach the same wall.
+
+  FIXED IN KGEN (X2), additively — `is_automatic_length_char` beside the existing
+  `is_assumed_length_char`, reusing the deferred-length machinery `c839e1a`
+  already built for `CHARACTER(*)`. Two things to know before touching it again:
+
+  1. The predicate is deliberately narrow. It fires only when the length names an
+     entity THIS SCOPE declares as a non-PARAMETER variable, so
+     `CHARACTER(MaxParamLength)` — a `USE`d constant, all over `ROSCO_Helpers` —
+     is untouched and no already-measured kernel changes shape.
+  2. The read and write sides must decide it IDENTICALLY. The element length is
+     one record at the front of the state file; one side emitting it without the
+     other shifts every field after it. Only the caller knows whether it is
+     hoisting an ARGUMENT (becomes a PROGRAM local → defer) or a LOCAL (stays in
+     a subroutine → legal, leave it), so the flag is passed in.
+
+  Red-test a KGen change in both directions before believing it, and pick the
+  control by SHAPE: re-extracting `Conv2UC` exercises `FindLine`, which has both
+  a `CHARACTER(*)` dummy and `CHARACTER(MaxParamLength)` locals. Its generated
+  kernel must come back byte-identical apart from the timestamp comment:
+
+  ```
+  diff <(sed 3d kernel/Conv2UC/ROSCO_Helpers.f90) \
+       <(sed 3d evidence/Conv2UC/kernel-generated-ROSCO_Helpers.f90)
+  ```
+
+- **The captured case count is NOT stable across runs of the identical command.**
+  Unit #4 recorded 63 cases for `Conv2UC`; the same command on the same clean
+  source now yields 62, with and without unit #6's KGen change. The configured
+  window `0:0:1-20,0:0:12000-12020,0:0:23900-23920` is 20 + 21 + 21 = **62**, and
+  #4's committed list carries one extra outside the first range
+  (`Conv2UC.0.0.21`) — most likely a stale state file swept up from an earlier
+  attempt. Compare the INDICES against the window, not the totals against a
+  previous run.
+
 - **Extract / capture:** WORKS. Point it at a call site that RUNS.
   ```
   docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2 && \
@@ -537,6 +586,67 @@ is `/workspace/ROSCO-r2`.
   and because `Examples/DISCON.IN` is GITIGNORED (`.gitignore:78`) `git status`
   stayed clean and `done.py`'s P2 could not have caught it. Any restore that
   must survive a crash goes in the parent.
+
+- **A kernel window can be VACUOUS WITH NO WIDER SETTING, and the check is a
+  CONSTANT stub, not a zero stub.** Learned at unit #6. `GetPath`'s only call
+  site is in initialisation, so it runs ONCE PER PROCESS: `vit extract` captures
+  1 case whatever `vit.yaml`'s `invocation` says, and every scenario builds the
+  argument the same way, so the expected answer is one string in all 27.
+
+  Unit #2's recipe — count non-zero references, then widen the window — cannot
+  reach this. The zero-stub test cannot either, because the reference values are
+  not zero; they are *constant*. The test that works:
+
+  ```
+  # a stub that reads NO argument and writes the captured answer as a literal
+  cp evidence/<Unit>/<unit>.constant-stub.cpp translations/<Module>/<unit>.cpp
+  vit verify <Unit> ... --kernel-dir kernel/<Unit>      # if this PASSES, the kernel is a lookup table
+  ```
+
+  It passed 1/1 here, and that artifact is committed
+  (`evidence/GetPath/kernel.constant-stub-PASSES.verify_fields.csv`) beside the
+  no-op stub's `OUT_TOL`, which shows the instrument can still move. Run BOTH:
+  the no-op says the kernel is alive, the constant stub says whether being alive
+  buys anything.
+
+  **Do not skip C6 on that account.** Running it is what produced the
+  measurement. A mandatory step's whole value can be the red test that
+  discredits its own green.
+
+- **Before writing an observability note, ask whether the unit's result is
+  CONSUMED — the line running is not the question, and neither is the line that
+  reads it.** Learned at unit #6, and it is a fourth distinct shape after
+  unexercised (#1), constant argument (#3) and cancelled-downstream (#4).
+
+  `GetPath` runs 28 times across the 27 scenarios. `PriPath`, its output, has
+  exactly two readers, and BOTH of those run 28 times too. Making the unit a
+  no-op still moved 0 of 5,252,000. The readers are guarded:
+
+  ```fortran
+  IF (PathIsRelative(CntrPar%PerfFileName)) CntrPar%PerfFileName = TRIM(PriPath)//...
+  IF (PathIsRelative(CntrPar%OL_Filename))  CntrPar%OL_Filename  = TRIM(PriPath)//...
+  ```
+
+  and the guard is false exactly where the answer would matter. So the recipe is
+  to follow the OUTPUT, not the call:
+
+  ```
+  grep -n '<the out-argument>' rosco/controller/src/*.f90     # every reader
+  grep -h '<each parameter those readers test>' Examples/*.IN | sort -u
+  ```
+
+  A reader whose guard has one value across all 14 inputs is a reader that
+  cannot carry the result out. Hit counts on the reader's own line say nothing:
+  here they are 28 of 28.
+
+- **`restore_integrated.sh` restores from HEAD, so run it before the unit's
+  commit and you lose the unit's own wrapper.** Paid for once at unit #6: the
+  script prints the warning, it was run anyway, and the result was an orphaned
+  `getpath.cpp`, a library with no GetPath in it, and a gate artifact no longer
+  reproducible from the tree. Every post-integration artifact taken before that
+  point has to be DELETED and re-taken after `vit integrate ... --apply` is
+  re-run — which is what the warning says. The existing rule covers it: commit
+  before exercising the reset/restore pair.
 
 - **Before believing a differential harness's green, ask WHICH FIELDS its red
   test named.** Learned at unit #5's third dispatch, and it is the entry that
