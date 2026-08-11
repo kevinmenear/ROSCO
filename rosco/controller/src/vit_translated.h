@@ -8,6 +8,10 @@
 #ifndef VIT_TRANSLATED_H
 #define VIT_TRANSLATED_H
 
+// A translated function takes an ALLOCATABLE dummy, which crosses as
+// a Fortran 2018 C descriptor.
+#include <ISO_Fortran_binding.h>
+
 // vit_types.h is generated only once a translated function uses a derived
 // type. A leaf-first translation order means the first few functions may be
 // pure scalar arithmetic, so this header can legitimately not exist yet.
@@ -26,6 +30,7 @@ extern "C" {
 #endif
 
 void colemantransform_c(double* rootMOOP, double aziAngle, int nHarmonic, double* axTOut, double* axYOut);
+void addtolist_c(CFI_cdesc_t* list, int element);
 
 #ifdef __cplusplus
 }

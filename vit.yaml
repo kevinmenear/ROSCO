@@ -87,6 +87,9 @@ translations:
   ColemanTransform:
     status: integrated
     cpp_file: translations/Functions/colemantransform.cpp
+  AddToList:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/addtolist.cpp
 types:
   ControlParameters:
     strategy: view

@@ -71,6 +71,7 @@ set(SOURCES
     src/ZeroMQInterface.f90
     src/ExtControl.f90
     src/colemantransform.cpp
+    src/addtolist.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

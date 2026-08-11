@@ -44,6 +44,16 @@ MODULE ROSCO_Helpers
     INTEGER(IntKi), PARAMETER       :: MaxLineLength    = 2048      ! characters
     INTEGER(IntKi), PARAMETER       :: MaxParamLength   = 200         ! characters, file paths can be long
 
+
+    ! Auto-generated interface for C++ implementation of AddToList
+    INTERFACE
+        SUBROUTINE addtolist_c(list, element) BIND(C, NAME='addtolist_c')
+            USE ISO_C_BINDING
+            INTEGER(C_INT), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: list
+            INTEGER(C_INT), VALUE :: element
+        END SUBROUTINE addtolist_c
+    END INTERFACE
+
 CONTAINS
 
     !=======================================================================
@@ -1626,35 +1636,13 @@ END SUBROUTINE Read_OL_Input
 
 !=======================================================================
 
-    subroutine AddToList(list, element)
-        ! Credit to: https://stackoverflow.com/questions/28048508/how-to-add-new-element-to-dynamical-array-in-fortran-90
-        ! This is set up for integers, will need to make interface for other types
-          IMPLICIT NONE
-
-          integer :: i, isize
-          Integer(IntKi), intent(in) :: element
-          Integer(IntKi), dimension(:), allocatable, intent(inout) :: list
-          Integer(IntKi), dimension(:), allocatable :: clist
-
-
-          if(allocated(list)) then
-              isize = size(list)
-              allocate(clist(isize+1))
-              do i=1,isize          
-              clist(i) = list(i)
-              end do
-              clist(isize+1) = element
-
-              deallocate(list)
-              call move_alloc(clist, list)
-
-          else
-              allocate(list(1))
-              list(1) = element
-          end if
-
-
-      end subroutine AddToList
+    SUBROUTINE AddToList(list, element)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        INTEGER(4), INTENT(INOUT), ALLOCATABLE :: list(:)
+        INTEGER(4), INTENT(IN) :: element
+        CALL addtolist_c(list, element)
+    END SUBROUTINE AddToList
 
     !-------------------------------------------------------------------------------------------------------------------------------
     ! Copied from NWTC_IO.f90
