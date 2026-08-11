@@ -110,6 +110,9 @@ translations:
   GetPath:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/getpath.cpp
+  GetRoot:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/getroot.cpp
 types:
   ControlParameters:
     strategy: view

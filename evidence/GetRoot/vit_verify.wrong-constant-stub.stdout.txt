@@ -1,0 +1,70 @@
+Setting up C++ verification in kernel/GetRoot...
+  Build succeeded on iteration 1
+  Modified 9 files
+
+Running verification...
+
+✗ VERIFICATION FAILED: 0/62 passed
+  Field log: kernel/GetRoot/verify_fields.csv (62 entries)
+  FAILED: Verification FAILED withGetRoot.0.0.1
+  FAILED: Verification FAILED withGetRoot.0.0.2
+  FAILED: Verification FAILED withGetRoot.0.0.3
+  FAILED: Verification FAILED withGetRoot.0.0.4
+  FAILED: Verification FAILED withGetRoot.0.0.5
+  FAILED: Verification FAILED withGetRoot.0.0.6
+  FAILED: Verification FAILED withGetRoot.0.0.7
+  FAILED: Verification FAILED withGetRoot.0.0.8
+  FAILED: Verification FAILED withGetRoot.0.0.9
+  FAILED: Verification FAILED withGetRoot.0.0.10
+  FAILED: Verification FAILED withGetRoot.0.0.11
+  FAILED: Verification FAILED withGetRoot.0.0.12
+  FAILED: Verification FAILED withGetRoot.0.0.13
+  FAILED: Verification FAILED withGetRoot.0.0.14
+  FAILED: Verification FAILED withGetRoot.0.0.15
+  FAILED: Verification FAILED withGetRoot.0.0.16
+  FAILED: Verification FAILED withGetRoot.0.0.17
+  FAILED: Verification FAILED withGetRoot.0.0.18
+  FAILED: Verification FAILED withGetRoot.0.0.19
+  FAILED: Verification FAILED withGetRoot.0.0.20
+  FAILED: Verification FAILED withGetRoot.0.0.12000
+  FAILED: Verification FAILED withGetRoot.0.0.12001
+  FAILED: Verification FAILED withGetRoot.0.0.12002
+  FAILED: Verification FAILED withGetRoot.0.0.12003
+  FAILED: Verification FAILED withGetRoot.0.0.12004
+  FAILED: Verification FAILED withGetRoot.0.0.12005
+  FAILED: Verification FAILED withGetRoot.0.0.12006
+  FAILED: Verification FAILED withGetRoot.0.0.12007
+  FAILED: Verification FAILED withGetRoot.0.0.12008
+  FAILED: Verification FAILED withGetRoot.0.0.12009
+  FAILED: Verification FAILED withGetRoot.0.0.12010
+  FAILED: Verification FAILED withGetRoot.0.0.12011
+  FAILED: Verification FAILED withGetRoot.0.0.12012
+  FAILED: Verification FAILED withGetRoot.0.0.12013
+  FAILED: Verification FAILED withGetRoot.0.0.12014
+  FAILED: Verification FAILED withGetRoot.0.0.12015
+  FAILED: Verification FAILED withGetRoot.0.0.12016
+  FAILED: Verification FAILED withGetRoot.0.0.12017
+  FAILED: Verification FAILED withGetRoot.0.0.12018
+  FAILED: Verification FAILED withGetRoot.0.0.12019
+  FAILED: Verification FAILED withGetRoot.0.0.12020
+  FAILED: Verification FAILED withGetRoot.0.0.23900
+  FAILED: Verification FAILED withGetRoot.0.0.23901
+  FAILED: Verification FAILED withGetRoot.0.0.23902
+  FAILED: Verification FAILED withGetRoot.0.0.23903
+  FAILED: Verification FAILED withGetRoot.0.0.23904
+  FAILED: Verification FAILED withGetRoot.0.0.23905
+  FAILED: Verification FAILED withGetRoot.0.0.23906
+  FAILED: Verification FAILED withGetRoot.0.0.23907
+  FAILED: Verification FAILED withGetRoot.0.0.23908
+  FAILED: Verification FAILED withGetRoot.0.0.23909
+  FAILED: Verification FAILED withGetRoot.0.0.23910
+  FAILED: Verification FAILED withGetRoot.0.0.23911
+  FAILED: Verification FAILED withGetRoot.0.0.23912
+  FAILED: Verification FAILED withGetRoot.0.0.23913
+  FAILED: Verification FAILED withGetRoot.0.0.23914
+  FAILED: Verification FAILED withGetRoot.0.0.23915
+  FAILED: Verification FAILED withGetRoot.0.0.23916
+  FAILED: Verification FAILED withGetRoot.0.0.23917
+  FAILED: Verification FAILED withGetRoot.0.0.23918
+  FAILED: Verification FAILED withGetRoot.0.0.23919
+  FAILED: Verification FAILED withGetRoot.0.0.23920

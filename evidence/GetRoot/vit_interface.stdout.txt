@@ -1,0 +1,47 @@
+
+SUBROUTINE GetRoot
+  File: rosco/controller/src/ROSCO_Helpers.f90:1279
+  Module: ROSCO_Helpers
+  Arguments:
+    GivenFil: CHARACTER(*) INTENT(IN)
+    RootName: CHARACTER(*) INTENT(OUT)
+  C name: getroot_c
+
+✓ Interface block:  /tmp/getroot_iface/getroot_interface.f90
+✓ Wrapper function: /tmp/getroot_iface/getroot_wrapper.f90
+
+--- Interface Block ---
+    ! Auto-generated interface for C++ implementation of GetRoot
+    INTERFACE
+        SUBROUTINE getroot_c(GivenFil, len_GivenFil, RootName, len_RootName) BIND(C, NAME='getroot_c')
+            USE ISO_C_BINDING
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: GivenFil(*)
+            INTEGER(C_INT), VALUE :: len_GivenFil
+            CHARACTER(KIND=C_CHAR), INTENT(OUT) :: RootName(*)
+            INTEGER(C_INT), VALUE :: len_RootName
+        END SUBROUTINE getroot_c
+    END INTERFACE
+
+--- Wrapper Function ---
+    SUBROUTINE GetRoot(GivenFil, RootName)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        CHARACTER(*), INTENT(IN) :: GivenFil
+        CHARACTER(*), INTENT(OUT) :: RootName
+        CHARACTER(KIND=C_CHAR) :: GivenFil_c(LEN(GivenFil))
+        INTEGER :: vit_i_GivenFil
+        CHARACTER(KIND=C_CHAR) :: RootName_c(LEN(RootName))
+        INTEGER :: vit_i_RootName
+        ! Convert CHARACTER args to C_CHAR arrays
+        DO vit_i_GivenFil = 1, LEN(GivenFil)
+            GivenFil_c(vit_i_GivenFil) = GivenFil(vit_i_GivenFil:vit_i_GivenFil)
+        END DO
+        DO vit_i_RootName = 1, LEN(RootName)
+            RootName_c(vit_i_RootName) = RootName(vit_i_RootName:vit_i_RootName)
+        END DO
+        CALL getroot_c(GivenFil_c, LEN(GivenFil), RootName_c, LEN(RootName))
+        ! Copy C_CHAR arrays back to CHARACTER args (INTENT OUT/INOUT)
+        DO vit_i_RootName = 1, LEN(RootName)
+            RootName(vit_i_RootName:vit_i_RootName) = RootName_c(vit_i_RootName)
+        END DO
+    END SUBROUTINE GetRoot

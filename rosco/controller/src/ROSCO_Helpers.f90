@@ -76,6 +76,18 @@ MODULE ROSCO_Helpers
         END SUBROUTINE getpath_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of GetRoot
+    INTERFACE
+        SUBROUTINE getroot_c(GivenFil, len_GivenFil, RootName, len_RootName) BIND(C, NAME='getroot_c')
+            USE ISO_C_BINDING
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: GivenFil(*)
+            INTEGER(C_INT), VALUE :: len_GivenFil
+            CHARACTER(KIND=C_CHAR), INTENT(OUT) :: RootName(*)
+            INTEGER(C_INT), VALUE :: len_RootName
+        END SUBROUTINE getroot_c
+    END INTERFACE
+
 CONTAINS
 
     !=======================================================================
@@ -1276,60 +1288,28 @@ END SUBROUTINE GetWords
 !! We'll count everything after the last period as the extension.
 !! Borrowed from NWTC_IO...thanks!
 
-   SUBROUTINE GetRoot ( GivenFil, RootName )
-
-      ! Argument declarations.
-
-   CHARACTER(*), INTENT(IN)     :: GivenFil                                     !< The name of the given file.
-   CHARACTER(*), INTENT(OUT)    :: RootName                                     !< The parsed root name of the given file.
-
-
-      ! Local declarations.
-
-   INTEGER                      :: I                                            ! DO index for character position.
-
-
-
-      ! Deal with a couple of special cases.
-
-   IF ( ( TRIM( GivenFil ) == "." ) .OR. (  TRIM( GivenFil ) == ".." ) )  THEN
-      RootName = TRIM( GivenFil )
-      RETURN
-   END IF
-
-
-      ! More-normal cases.
-
-   DO I=LEN_TRIM( GivenFil ),1,-1
-
-
-      IF ( GivenFil(I:I) == '.' )  THEN
-
-
-         IF ( I < LEN_TRIM( GivenFil ) ) THEN                   ! Make sure the index I is okay
-            IF ( INDEX( '\/', GivenFil(I+1:I+1)) == 0 ) THEN    ! Make sure we don't have the RootName in a different directory
-               RootName = GivenFil(:I-1)
-            ELSE
-               RootName = GivenFil                              ! This does not have a file extension
-            END IF
-         ELSE
-            IF ( I == 1 ) THEN
-               RootName = ''
-            ELSE
-               RootName = GivenFil(:I-1)
-            END IF
-         END IF
-
-         RETURN
-
-      END IF
-   END DO ! I
-
-   RootName =  GivenFil
-
-
-   RETURN
-   END SUBROUTINE GetRoot
+    SUBROUTINE GetRoot(GivenFil, RootName)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        CHARACTER(*), INTENT(IN) :: GivenFil
+        CHARACTER(*), INTENT(OUT) :: RootName
+        CHARACTER(KIND=C_CHAR) :: GivenFil_c(LEN(GivenFil))
+        INTEGER :: vit_i_GivenFil
+        CHARACTER(KIND=C_CHAR) :: RootName_c(LEN(RootName))
+        INTEGER :: vit_i_RootName
+        ! Convert CHARACTER args to C_CHAR arrays
+        DO vit_i_GivenFil = 1, LEN(GivenFil)
+            GivenFil_c(vit_i_GivenFil) = GivenFil(vit_i_GivenFil:vit_i_GivenFil)
+        END DO
+        DO vit_i_RootName = 1, LEN(RootName)
+            RootName_c(vit_i_RootName) = RootName(vit_i_RootName:vit_i_RootName)
+        END DO
+        CALL getroot_c(GivenFil_c, LEN(GivenFil), RootName_c, LEN(RootName))
+        ! Copy C_CHAR arrays back to CHARACTER args (INTENT OUT/INOUT)
+        DO vit_i_RootName = 1, LEN(RootName)
+            RootName(vit_i_RootName:vit_i_RootName) = RootName_c(vit_i_RootName)
+        END DO
+    END SUBROUTINE GetRoot
 !=======================================================================
 !> This routine determines if the given file name is absolute or relative.
 !! We will consider an absolute path one that satisfies one of the

@@ -1,0 +1,130 @@
+
+SUBROUTINE GetRoot
+  File: rosco/controller/src/ROSCO_Helpers.f90:1253
+  Module: ROSCO_Helpers
+  Arguments:
+    GivenFil: CHARACTER(*) INTENT(IN)
+    RootName: CHARACTER(*) INTENT(OUT)
+  C name: getroot_c
+
+✓ Scaffold written: translations/ROSCO_Helpers/getroot.cpp
+  Module: ROSCO_Helpers
+
+────────────────────────────────────────────────────────────
+Translation prompt:
+────────────────────────────────────────────────────────────
+
+# Translate Fortran function `GetRoot` to C++
+
+## Original Fortran Source
+
+From `rosco/controller/src/ROSCO_Helpers.f90`:
+
+```fortran
+SUBROUTINE GetRoot ( GivenFil, RootName )
+
+      ! Argument declarations.
+
+   CHARACTER(*), INTENT(IN)     :: GivenFil                                     !< The name of the given file.
+   CHARACTER(*), INTENT(OUT)    :: RootName                                     !< The parsed root name of the given file.
+
+
+      ! Local declarations.
+
+   INTEGER                      :: I                                            ! DO index for character position.
+
+
+
+      ! Deal with a couple of special cases.
+
+   IF ( ( TRIM( GivenFil ) == "." ) .OR. (  TRIM( GivenFil ) == ".." ) )  THEN
+      RootName = TRIM( GivenFil )
+      RETURN
+   END IF
+
+
+      ! More-normal cases.
+
+   DO I=LEN_TRIM( GivenFil ),1,-1
+
+
+      IF ( GivenFil(I:I) == '.' )  THEN
+
+
+         IF ( I < LEN_TRIM( GivenFil ) ) THEN                   ! Make sure the index I is okay
+            IF ( INDEX( '\/', GivenFil(I+1:I+1)) == 0 ) THEN    ! Make sure we don't have the RootName in a different directory
+               RootName = GivenFil(:I-1)
+            ELSE
+               RootName = GivenFil                              ! This does not have a file extension
+            END IF
+         ELSE
+            IF ( I == 1 ) THEN
+               RootName = ''
+            ELSE
+               RootName = GivenFil(:I-1)
+            END IF
+         END IF
+
+         RETURN
+
+      END IF
+   END DO ! I
+
+   RootName =  GivenFil
+
+
+   RETURN
+   END SUBROUTINE GetRoot
+```
+
+## C++ Scaffold (correct signature — preserve exactly)
+
+```cpp
+// VIT Translation Scaffold
+// Function: GetRoot
+// Source: ROSCO_Helpers.f90
+// Module: ROSCO_Helpers
+// Fortran: SUBROUTINE GetRoot(GivenFil, RootName)
+// Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+// Source MD5: 9d68a808d661
+// VIT: 0.1.0
+// Status: unverified
+// Generated: 2026-08-11T15:09:54Z
+
+void GetRoot(char* GivenFil, int len_GivenFil, char* RootName, int len_RootName) {
+    // TODO: implement GetRoot
+}
+```
+
+Replace the `// TODO` placeholder with the algorithm. Do not change the function signature.
+
+## Known-shape defects (generated from VIT's check registry)
+
+`vit check` enforces each of these mechanically; they are listed so you can avoid them, not so you can be trusted to.
+
+- Do not `#include "vit_translated.h"` or `"vit_kernel_callees.h"`. VIT injects callee declarations itself, and injects a different header while verifying than after integration.
+- Never use `toupper`/`tolower` for a Fortran case conversion — they are locale-dependent and undefined on negative `char`. Fortran's `CHAR(ICHAR(c)-32)` guarded by `'a'..'z'` is plain ASCII; compare through `unsigned char`.
+- Do not use `strftime` or `%b` for a Fortran date string — `%b` is locale-dependent. Reproduce the hardcoded English month table, and keep the day zero-padded.
+- Fortran `NINT` is round-half-away-from-zero. `rint`/`nearbyint` are half-to-even and a cast truncates; all three agree on values exact in the source type, so this survives a kernel sample. Use `std::lround`.
+- A bare cast TRUNCATES; Fortran `NINT` rounds half away from zero. If the reference uses `NINT`, the translation needs `std::lround` — a cast is only right where the Fortran says `INT`.
+- `MINVAL`/`MAXVAL` are not the first/last element. Substituting the endpoints is identical for sorted input and differs for exactly the malformed input the surrounding check exists to report.
+- A Fortran `SAVE` local — including the implicit form, a declaration with an initialiser — becomes a function-local `static`. It is load-bearing wherever a path reads it without having written it on that call.
+- Fortran `a*x**2` means `a * (x*x)`; C++ `a * x * x` means `(a*x) * x`, and the different intermediate rounding is 1-3 ULP. Parenthesise the power: `a * (x * x)`.
+- Fortran is column-major: `X(row, col)` flattens to `X[(col-1) * n_X_rows + (row-1)]` — the stride is the ROW count. Striding by the column count is silently wrong for any non-square array.
+- A Fortran CHARACTER assignment blank-fills the entire declared width. `buf[0] = '\0'` sets one byte, passes baselines because callers trim at the first space, and fails a byte-for-byte kernel compare. Use `std::memset(buf, ' ', <width>)`.
+- gfortran expands `x**N` by repeated multiplication for an INTEGER exponent and for the real literal `2.0`, but emits a libm `pow` call for a REAL exponent of 3.0 or more — and the two differ by 1 ULP. Match the reference: `std::pow(x, 3.0)`, not `x*x*x`.
+- `/` and `*` have equal precedence and associate left to right, so `1.0/a * b` is a reciprocal then a multiply — which rounds differently from `b/a`. Transcribe the shape, not the algebra.
+- A Fortran array section is not a pointer. `A(i, :)` is a STRIDED row of a column-major array and must be gathered element by element; its length is the other dimension. (`A(:, j)` is contiguous and can be passed as `&buf[(j-1)*rows]`.)
+- A CHARACTER local narrower than what is assigned into it truncates silently — no cast, no warning — and every later comparison runs on the truncated value. Read each CHARACTER local's declared length before translating.
+- `SCAN`/`INDEX`/`VERIFY` take a character SET, and the set is load-bearing — `>1`, `==1` and `==0` mean word, skip and stop. Carry the Fortran literal across exactly.
+
+## Instructions
+
+Consider the Fortran code carefully and be intentional about every translation choice. Pay attention to:
+- Array indexing (Fortran is 1-based, C++ is 0-based)
+- Fortran intrinsic functions and their C++ equivalents
+- Integer vs. floating-point division
+- Any implicit type conversions
+
+If anything is unclear or ambiguous, ask rather than assume.
+

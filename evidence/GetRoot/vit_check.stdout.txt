@@ -1,0 +1,7 @@
+  ✗ narrowing-local: `ExpUCVarName` is CHARACTER(20) but is assigned from `ExpVarName`, which is CHARACTER(*); the assignment TRUNCATES to 20 characters and any later comparison runs on the truncated value. The width does not appear in the translation  [ExpUCVarName = ExpVarName]
+  ✗ delimiter-set: the Fortran matches against the character set ':/', which no literal in the translation contains; a delimiter set that differs changes which branch runs  [':/']
+
+✗ GetRoot: 2 finding(s) — 15 check(s) ran
+--- self-test of the registry ---
+usage: vit check [-h] [--file FILE] [--function FUNCTION] [--list] cpp_file
+vit check: error: the following arguments are required: cpp_file
