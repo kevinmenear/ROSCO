@@ -1,0 +1,4 @@
+  ✗ narrowing-local: `ExpUCVarName` is CHARACTER(20) but is assigned from `ExpVarName`, which is CHARACTER(*); the assignment TRUNCATES to 20 characters and any later comparison runs on the truncated value. The width does not appear in the translation  [ExpUCVarName = ExpVarName]
+  ✗ delimiter-set: the Fortran matches against the character set ':/', which no literal in the translation contains; a delimiter set that differs changes which branch runs  [':/']
+
+✗ GetWords: 2 finding(s) — 15 check(s) ran

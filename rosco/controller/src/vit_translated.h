@@ -36,6 +36,7 @@ void conv2uc_c(char* Str, int len_Str);
 void extcontroller_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, extcontroltype_view_t* ExtDLL, errorvariables_view_t* ErrVar);
 void getpath_c(char* GivenFil, int len_GivenFil, char* PathName, int len_PathName);
 void getroot_c(char* GivenFil, int len_GivenFil, char* RootName, int len_RootName);
+void getwords_c(char* Line, int len_Line, char* Words, int len_Words, int NumWords);
 
 #ifdef __cplusplus
 }

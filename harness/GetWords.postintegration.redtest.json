@@ -1,0 +1,121 @@
+{
+ "unit": "GetWords",
+ "against": "integrated",
+ "checked": 1370,
+ "failed": 1323,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    3 varied extent(s) at [3, 4, 5], NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      264 character value(s) from a corpus of 33 (the reference's own character literals and their collating neighbours) across 2 string(s), each at length(s) [1, 2, 4, 9] and in the mixed / padded / all-blank / leading-blank shapes, plus 984 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+  "  N/A      R3_no_dead_signal          no real parameter",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 1 out-parameter(s): Words"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "Words",
+   "ref": "202020202020202020202020202020202c2d3a3b",
+   "got": "2020202020202020202020202020202020202020"
+  },
+  {
+   "case": 1,
+   "output": "Words",
+   "ref": "202020202020202020205f60616279",
+   "got": "202020202020202020202020202020"
+  },
+  {
+   "case": 2,
+   "output": "Words",
+   "ref": "202020202020202020202020202020202f303138",
+   "got": "2020202020202020202020202020202020202020"
+  },
+  {
+   "case": 3,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202021222326",
+   "got": "2020202020202020202020202020202020202020"
+  },
+  {
+   "case": 4,
+   "output": "Words",
+   "ref": "202020202020202020202020202020202627282b",
+   "got": "2020202020202020202020202020202020202020"
+  },
+  {
+   "case": 5,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202030313839",
+   "got": "2020202020202020202020202020202020202020"
+  },
+  {
+   "case": 6,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020212223",
+   "got": "2020202020202020202020202020202020202020"
+  },
+  {
+   "case": 7,
+   "output": "Words",
+   "ref": "20202020202020202020202020202020595a5b5e",
+   "got": "2020202020202020202020202020202020202020"
+  },
+  {
+   "case": 8,
+   "output": "Words",
+   "ref": "202020202020202020202020202020205e5f6061",
+   "got": "2020202020202020202020202020202020202020"
+  },
+  {
+   "case": 9,
+   "output": "Words",
+   "ref": "20202020202020202020202020202020595a5b5e",
+   "got": "2020202020202020202020202020202020202020"
+  },
+  {
+   "case": 10,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202023262728",
+   "got": "2020202020202020202020202020202020202020"
+  },
+  {
+   "case": 11,
+   "output": "Words",
+   "ref": "20202020202020202020202020202020595a5b5e",
+   "got": "2020202020202020202020202020202020202020"
+  },
+  {
+   "case": 12,
+   "output": "Words",
+   "ref": "202020202020202020202020202020202d3a3b3c",
+   "got": "2020202020202020202020202020202020202020"
+  },
+  {
+   "case": 13,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202062797a7b",
+   "got": "2020202020202020202020202020202020202020"
+  },
+  {
+   "case": 14,
+   "output": "Words",
+   "ref": "202020202020202020202020202020203a3b3c2f",
+   "got": "2020202020202020202020202020202020202020"
+  },
+  {
+   "case": 15,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202040414259",
+   "got": "2020202020202020202020202020202020202020"
+  }
+ ],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "5b40e1c",
+ "vit_rev": "87a3847",
+ "red_test": {
+  "perturbation": "wrapper: the copy-back loop stops one element short, so Words(NumWords) -- the only element any ROSCO caller reads -- never leaves the bridge",
+  "result": "1323 of 1370 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

@@ -1,0 +1,13 @@
+Three IDENTICAL runs of vit_mutate.py, same translation, same 1370 cases, no
+--equivalences, 2026-08-11.  The only difference between them is what happened
+to be in the heap past the end of the Line buffer.
+
+  killed 57 of 58 ... score 0.983   SURVIVOR 91681005 arith_op: 'len_Line - Ch' -> 'len_Line + Ch'
+  killed 58 of 58 ... score 1.000   (no survivor)
+  killed 57 of 58 ... score 0.983   SURVIVOR 91681005 arith_op: 'len_Line - Ch' -> 'len_Line + Ch'
+
+A score that flaps on memory the program does not own is not a measurement, and
+the run reading 1.000 is the one that measured LEAST -- it is a kill obtained by
+undefined behaviour.  See mutation/GetWords.equivalences.md for the exhaustive
+probe, and the loop repo (5b40e1c) for the fix that makes a declaration a
+statement about the MUTANT rather than about one run.

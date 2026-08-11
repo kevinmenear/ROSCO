@@ -88,6 +88,19 @@ MODULE ROSCO_Helpers
         END SUBROUTINE getroot_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of GetWords
+    INTERFACE
+        SUBROUTINE getwords_c(Line, len_Line, Words, len_Words, NumWords) BIND(C, NAME='getwords_c')
+            USE ISO_C_BINDING
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: Line(*)
+            INTEGER(C_INT), VALUE :: len_Line
+            CHARACTER(KIND=C_CHAR), INTENT(OUT) :: Words(*)
+            INTEGER(C_INT), VALUE :: len_Words
+            INTEGER(C_INT), VALUE :: NumWords
+        END SUBROUTINE getwords_c
+    END INTERFACE
+
 CONTAINS
 
     !=======================================================================
@@ -1191,73 +1204,35 @@ END subroutine ReadEmptyLine
 !! It uses spaces, tabs, commas, semicolons, single quotes, and double quotes ("whitespace")
 !! as word separators. If there aren't NumWords in the line, the remaining array elements will remain empty.
 !! Use CountWords (nwtc_io::countwords) to count the number of words in a line.
-SUBROUTINE GetWords ( Line, Words, NumWords )
-
-    ! Argument declarations.
-
-    INTEGER, INTENT(IN)          :: NumWords                                     !< The number of words to look for.
-
-    CHARACTER(*), INTENT(IN)     :: Line                                         !< The string to search.
-    CHARACTER(*), INTENT(OUT)    :: Words(NumWords)                              !< The array of found words.
-
-
-        ! Local declarations.
-
-    INTEGER                      :: Ch                                           ! Character position within the string.
-    INTEGER                      :: IW                                           ! Word index.
-    INTEGER                      :: NextWhite                                    ! The location of the next whitespace in the string.
-    CHARACTER(1), PARAMETER       :: Tab      = CHAR( 9 ) 
-
-
-
-        ! Let's prefill the array with blanks.
-
-    DO IW=1,NumWords
-        Words(IW) = ' '
-    END DO ! IW
-
-
-        ! Let's make sure we have text on this line.
-
-    IF ( LEN_TRIM( Line ) == 0 )  RETURN
-
-
-        ! Parse words separated by any combination of spaces, tabs, commas,
-        ! semicolons, single quotes, and double quotes ("whitespace").
-
-    Ch = 0
-    IW = 0
-
-    DO
-
-        NextWhite = SCAN( Line(Ch+1:) , ' ,!;''"'//Tab )
-
-        IF ( NextWhite > 1 )  THEN
-
-        IW        = IW + 1
-        Words(IW) = Line(Ch+1:Ch+NextWhite-1)
-
-        IF ( IW == NumWords )  EXIT
-
-        Ch = Ch + NextWhite
-
-        ELSE IF ( NextWhite == 1 )  THEN
-
-        Ch = Ch + 1
-
-        CYCLE
-
-        ELSE
-
-        EXIT
-
-        END IF
-
-    END DO
-
-
-    RETURN
-END SUBROUTINE GetWords
+    SUBROUTINE GetWords(Line, Words, NumWords)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: NumWords
+        CHARACTER(*), INTENT(IN) :: Line
+        CHARACTER(*), INTENT(OUT) :: Words(NUMWORDS)
+        CHARACTER(KIND=C_CHAR) :: Line_c(LEN(Line))
+        INTEGER :: vit_i_Line
+        CHARACTER(KIND=C_CHAR) :: Words_c((LEN(Words)) * ((NUMWORDS)))
+        INTEGER :: vit_i_Words, vit_j_Words
+        ! Convert CHARACTER args to C_CHAR arrays
+        DO vit_i_Line = 1, LEN(Line)
+            Line_c(vit_i_Line) = Line(vit_i_Line:vit_i_Line)
+        END DO
+        DO vit_j_Words = 1, (NUMWORDS)
+            DO vit_i_Words = 1, LEN(Words)
+                Words_c((vit_j_Words - 1) * (LEN(Words)) + vit_i_Words) = &
+                    Words(vit_j_Words)(vit_i_Words:vit_i_Words)
+            END DO
+        END DO
+        CALL getwords_c(Line_c, LEN(Line), Words_c, LEN(Words), NumWords)
+        ! Copy C_CHAR arrays back to CHARACTER args (INTENT OUT/INOUT)
+        DO vit_j_Words = 1, (NUMWORDS)
+            DO vit_i_Words = 1, LEN(Words)
+                Words(vit_j_Words)(vit_i_Words:vit_i_Words) = &
+                    Words_c((vit_j_Words - 1) * (LEN(Words)) + vit_i_Words)
+            END DO
+        END DO
+    END SUBROUTINE GetWords
 !=======================================================================
 !> Let's parse the path name from the name of the given file.
 !! We'll count everything before (and including) the last "\" or "/".

@@ -1,0 +1,120 @@
+{
+ "unit": "GetWords",
+ "against": "translation",
+ "checked": 1370,
+ "failed": 1343,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    3 varied extent(s) at [3, 4, 5], NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      264 character value(s) from a corpus of 33 (the reference's own character literals and their collating neighbours) across 2 string(s), each at length(s) [1, 2, 4, 9] and in the mixed / padded / all-blank / leading-blank shapes, plus 984 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+  "  N/A      R3_no_dead_signal          no real parameter",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 1 out-parameter(s): Words"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "5f606162797a7b09202122232627282b2c2d3a3b"
+  },
+  {
+   "case": 1,
+   "output": "Words",
+   "ref": "202020202020202020202020202020",
+   "got": "313839404142595a5b5e5f60616279"
+  },
+  {
+   "case": 2,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "7a7b09202122232627282b2c2d3a3b3c2f303138"
+  },
+  {
+   "case": 3,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "404142595a5b5e5f606162797a7b092021222326"
+  },
+  {
+   "case": 4,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "595a5b5e5f606162797a7b09202122232627282b"
+  },
+  {
+   "case": 5,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "7b09202122232627282b2c2d3a3b3c2f30313839"
+  },
+  {
+   "case": 6,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "39404142595a5b5e5f606162797a7b0920212223"
+  },
+  {
+   "case": 7,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "27282b2c2d3a3b3c2f30313839404142595a5b5e"
+  },
+  {
+   "case": 8,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "2c2d3a3b3c2f30313839404142595a5b5e5f6061"
+  },
+  {
+   "case": 9,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "27282b2c2d3a3b3c2f30313839404142595a5b5e"
+  },
+  {
+   "case": 10,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "42595a5b5e5f606162797a7b0920212223262728"
+  },
+  {
+   "case": 11,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "27282b2c2d3a3b3c2f30313839404142595a5b5e"
+  },
+  {
+   "case": 12,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "606162797a7b09202122232627282b2c2d3a3b3c"
+  },
+  {
+   "case": 13,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "3c2f30313839404142595a5b5e5f606162797a7b"
+  },
+  {
+   "case": 14,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "6162797a7b09202122232627282b2c2d3a3b3c2f"
+  },
+  {
+   "case": 15,
+   "output": "Words",
+   "ref": "2020202020202020202020202020202020202020",
+   "got": "22232627282b2c2d3a3b3c2f3031383940414259"
+  }
+ ],
+ "loop_rev": "5b40e1c-nogit",
+ "vit_rev": "87a3847-nogit",
+ "red_test": {
+  "perturbation": "the unit as a no-op: reads no argument and writes nothing",
+  "result": "1343 of 1370 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

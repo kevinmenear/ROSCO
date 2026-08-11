@@ -86,6 +86,7 @@ set(SOURCES
     src/extcontroller.cpp
     src/getpath.cpp
     src/getroot.cpp
+    src/getwords.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

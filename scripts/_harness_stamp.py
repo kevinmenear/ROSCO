@@ -25,6 +25,47 @@ MEASURES = (
 )
 
 
+def _rev(root: Path) -> str:
+    """What revision `root` is at: measured if possible, claimed if not.
+
+    Three reads, in decreasing order of what they can see, and each says which
+    one it was so nobody has to guess:
+
+      `<sha>` / `<sha>-dirty`  git ran; it can also see an edited tree
+      `<sha>-nogit`            `.git/HEAD` read as text; the revision is right
+                               and a local edit is invisible
+      `<sha>-pinned`           a hand-written pin file; it can see nothing, and
+                               this campaign has twice found it stale
+      `unknown`                nothing to claim, said rather than invented
+    """
+    import subprocess
+    try:
+        r = subprocess.run(["git", "-C", str(root), "rev-parse", "--short", "HEAD"],
+                           capture_output=True, text=True, timeout=10)
+        if rev := r.stdout.strip():
+            s = subprocess.run(["git", "-C", str(root), "status", "--porcelain"],
+                               capture_output=True, text=True, timeout=10)
+            return rev + ("-dirty" if s.stdout.strip() else "")
+    except Exception:
+        pass
+    head = root / ".git" / "HEAD"
+    if head.is_file():
+        try:
+            text = head.read_text().strip()
+            if text.startswith("ref:"):
+                p = root / ".git" / text.split(None, 1)[1].strip()
+                if p.is_file():
+                    return p.read_text().strip()[:7] + "-nogit"
+            elif text:
+                return text[:7] + "-nogit"
+        except Exception:
+            pass
+    for pin in (root / ".loop_rev", root / ".vit_rev"):
+        if pin.is_file() and pin.read_text().strip():
+            return pin.read_text().strip() + "-pinned"
+    return "unknown"
+
+
 def main(argv: list[str]) -> int:
     # `--pre` stamps a PRE-integration run, which needs the red-test record and
     # nothing else: its `against` is already what vit_harness.py wrote, and
@@ -54,13 +95,26 @@ def main(argv: list[str]) -> int:
     # loop_rev AND vit_rev; this artifact carried only loop_rev, so the one
     # measurement of the INTEGRATION WRAPPER -- the thing VIT generates -- was
     # the one that did not say which VIT generated it. That is exactly backwards.
-    # Read as pins because neither repo has git inside the container that
-    # produced the run, and never dressed up as a verified read.
+    #
+    # ONLY WHERE THE RUN DID NOT ALREADY SAY, and that is a correction made at
+    # unit #8. This block used to overwrite unconditionally, from the two PIN
+    # FILES -- which are hand-written, gitignored and stale by construction
+    # (`vit` commit ae7a2d8 says so in its subject). So a run that had correctly
+    # read `57c6fe3` had it replaced by a claimed `6d13949-pinned`, and the
+    # campaign's red-test artifacts named an instrument two commits behind the
+    # one that produced them. A measured value must never be clobbered by a
+    # claimed one; this now fills a MISSING or `unknown` key and nothing else.
+    #
+    # And it runs on the MAC, where git exists -- so the pin is the last resort
+    # here too, not the first. Third site of this same read, after
+    # `vit_harness.py` and `vit_mutate.py`; not imported because those two are
+    # deliberately standalone and this one is the campaign's, not the loop's.
     base = Path.home() / "Artifacts/vit_translation"
-    for key, pin in (("loop_rev", base / "translation-loop/.loop_rev"),
-                     ("vit_rev", base / "vit/.vit_rev")):
-        if pin.is_file() and pin.read_text().strip():
-            d[key] = pin.read_text().strip() + "-pinned"
+    for key, root in (("loop_rev", base / "translation-loop"),
+                      ("vit_rev", base / "vit")):
+        if d.get(key) and d[key] != "unknown":
+            continue
+        d[key] = _rev(root)
     if red is not None:
         # A red run INVERTS the verdict: failing is the result, and passing is
         # the finding -- a harness that stays green under a deliberate

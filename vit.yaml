@@ -113,6 +113,9 @@ translations:
   GetRoot:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/getroot.cpp
+  GetWords:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/getwords.cpp
 types:
   ControlParameters:
     strategy: view

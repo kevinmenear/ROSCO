@@ -1,0 +1,56 @@
+
+SUBROUTINE GetWords
+  File: rosco/controller/src/ROSCO_Helpers.f90:1207
+  Module: ROSCO_Helpers
+  Arguments:
+    Line: CHARACTER(*) INTENT(IN)
+    Words: CHARACTER(*) INTENT(OUT)(NUMWORDS)
+    NumWords: INTEGER INTENT(IN)
+  C name: getwords_c
+
+✓ Interface block:  /tmp/gw_iface/getwords_interface.f90
+✓ Wrapper function: /tmp/gw_iface/getwords_wrapper.f90
+
+--- Interface Block ---
+    ! Auto-generated interface for C++ implementation of GetWords
+    INTERFACE
+        SUBROUTINE getwords_c(Line, len_Line, Words, len_Words, NumWords) BIND(C, NAME='getwords_c')
+            USE ISO_C_BINDING
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: Line(*)
+            INTEGER(C_INT), VALUE :: len_Line
+            CHARACTER(KIND=C_CHAR), INTENT(OUT) :: Words(*)
+            INTEGER(C_INT), VALUE :: len_Words
+            INTEGER(C_INT), VALUE :: NumWords
+        END SUBROUTINE getwords_c
+    END INTERFACE
+
+--- Wrapper Function ---
+    SUBROUTINE GetWords(Line, Words, NumWords)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: NumWords
+        CHARACTER(*), INTENT(IN) :: Line
+        CHARACTER(*), INTENT(OUT) :: Words(NUMWORDS)
+        CHARACTER(KIND=C_CHAR) :: Line_c(LEN(Line))
+        INTEGER :: vit_i_Line
+        CHARACTER(KIND=C_CHAR) :: Words_c((LEN(Words)) * ((NUMWORDS)))
+        INTEGER :: vit_i_Words, vit_j_Words
+        ! Convert CHARACTER args to C_CHAR arrays
+        DO vit_i_Line = 1, LEN(Line)
+            Line_c(vit_i_Line) = Line(vit_i_Line:vit_i_Line)
+        END DO
+        DO vit_j_Words = 1, (NUMWORDS)
+            DO vit_i_Words = 1, LEN(Words)
+                Words_c((vit_j_Words - 1) * (LEN(Words)) + vit_i_Words) = &
+                    Words(vit_j_Words)(vit_i_Words:vit_i_Words)
+            END DO
+        END DO
+        CALL getwords_c(Line_c, LEN(Line), Words_c, LEN(Words), NumWords)
+        ! Copy C_CHAR arrays back to CHARACTER args (INTENT OUT/INOUT)
+        DO vit_j_Words = 1, (NUMWORDS)
+            DO vit_i_Words = 1, LEN(Words)
+                Words(vit_j_Words)(vit_i_Words:vit_i_Words) = &
+                    Words_c((vit_j_Words - 1) * (LEN(Words)) + vit_i_Words)
+            END DO
+        END DO
+    END SUBROUTINE GetWords
