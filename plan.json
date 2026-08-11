@@ -546,13 +546,42 @@
         "DISCON"
       ],
       "dependency_depth": 0,
-      "verification": "kernel replay or direct-call harness; bit-identical",
+      "verification": "ROUTE EXISTS AND WAS RUN. FIVE LAYERS, ALL FIVE ALIVE -- the first unit in this campaign of which that is true; units #5 to #10 each closed with the gate proved blind.\n\n  kernel replay              62/62 cases, 14,508 compared field rows, ALL `IDENTICAL`, scenario 1 (the default `run_cmd`), call site clean Filters.f90:347 -- `LocalVar%GenSpeedF = LPFilter(LocalVar%GenSpeed, ...)`, 408,000 calls across 23 of the 27 scenarios. The window is exactly the configured 0:0:1-20,12000-12020,23900-23920 = 62 and the committed statefile list carries no stray (unit #4's index check). NOT VACUOUS, and that was measured rather than assumed: `genspeedf` has 62 DISTINCT reference values across the 62 cases, where unit #9's first HPFilter window had a zero stub scoring 14,508/14,508. VIT's own automatic red test was DISCRIMINATING (`InputSignal` scaled by 1.00001). Two stubs beside it:\n      zero stub               172 of 14,508 rows `OUT_TOL` -- the comparison is ALIVE, and the rows it moves are exactly this unit's outputs: `genspeedf` plus all six `lpf1_*` arrays. The other 14,336 are the enclosing procedure's untouched state.\n      hardcoded-CornerFreq    14,508 of 14,508 `IDENTICAL` -- IT PASSES, measured on the second dispatch. The kernel CANNOT CONSTRAIN `CornerFreq`: it is 1.57080 in all 14 `Examples/*.IN`. Sharper than unit #9's version of this, and the sharpening is a count: `CornerFreq` is read ONLY inside the initialisation branch, and exactly 1 of the 62 captured cases has `istatus == 0`. So 61 cases cannot observe the argument AT ALL -- not 'it has one value', but 'it is not read' -- and the 62nd sees the one value the inputs carry.\n  differential harness       996 checked, 0 failed, against the CLEAN Fortran. RED-TESTED: the unit as a no-op fails 996 of 996 and the mismatch list NAMES every output -- `vit_result`, all six `FP.lpf1_*` arrays and `inst`. R4 reports the return value plus 47 out-parameters compared. THAT RED TEST COULD NOT RUN AT FIRST and the reason was an instrument defect, fixed by addition -- see DECISIONS.md and evidence/LPFilter/instrument_defect/.\n  mutation score             38 of 38 BEHAVIOURAL killed, score 1.000, 0 declared equivalent, 2 excluded as `killed (no compile)`. No survivor at any point and no corpus repair was needed to get there -- the second unit of which that is true, after HPFilter. Both `inst` mutants, all sixteen `[i]` index-offset mutants and `negate_cond` on the OPTIONAL flag all die.\n  post-integration harness   996 checked, 0 failed -- the WRAPPER's marshalling, which here includes `C_LOC(FP)` on a 46-field derived type, `MERGE(1_C_INT, 0_C_INT, reset)` and an OPTIONAL crossing as a PRESENT() flag. RED-TESTED with the rebuild between edit and run: the marshalled result scaled by 1.000001 fails 656 of 996 (the other 340 have a reference result of exactly 0.0). The campaign's STANDARD post-integration perturbation -- swapping two INTENT(IN) arguments -- is EQUIVALENT for this unit and stayed green at 0 of 996; kept as evidence with the reason, which is that `DT` and `CornerFreq` are read only as the symmetric product `CornerFreq*DT` inside the initialisation branch.\n  gate, 27 scenarios         5,252,000 values / 351 channels, 0 mismatched -- AND ITS RED TEST WENT RED. Scaling the returned value by 1.000001 moved 1,592,059 of 5,252,000, and the revert returned 0 of 5,252,000 (`replacements: 1`, `revert_verified: true`). No same-build control was needed: a red test that goes red has just demonstrated the chain it would have controlled for.",
       "why": "every input and output crosses the signature",
       "bridge_feasible": {
-        "value": "unknown",
-        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+        "value": "yes -- measured on the generator that ships",
+        "basis": "the recorded basis -- five blocking features in the conformance matrix that no FEATURE_CELLS pattern can attribute -- is superseded by reading `vit interface`'s wrapper attribute by attribute before writing any C++, and `vit integrate --dry-run`'s before applying it",
+        "observed": "All eight dummies cross and nothing is dropped: the wrapper forwards nine arguments to a nine-parameter C signature, byte-for-byte the shape unit #9 measured for HPFilter one function up the same file. TYPE(FilterParameters) crosses as `C_LOC(FP)` onto a flat C struct with no view populator -- sound only because the type is 46 fixed-size `REAL(DbKi), DIMENSION(1024)` fields; the field ORDER was re-verified name-by-name against ROSCO_Types.f90 (46 == 46, order and names match) before the C++ was believed. `LOGICAL(4) :: reset` crosses as `MERGE(1_C_INT, 0_C_INT, reset)`, so the C++ tests `!= 0`. The OPTIONAL `InitialValue` crosses as a value plus a `has_InitialValue` flag."
       },
-      "observability": null
+      "observability": "THE GATE SEES THIS UNIT. gate/LPFilter.redtest.json: scaling the returned value by 1.000001 moved 1,592,059 of 5,252,000 compared values across the 27 scenarios, and green returned after the revert. Fourth of eleven units to be gate-visible, after ColemanTransform (124,353), ColemanTransformInverse (389,644) and GetWords (1,857,893).\n\nWHY, and it is the mirror of unit #9's entry one function up the same file: 21 call sites, 18 of them live, 3,527,912 calls across 23 of the 27 scenarios, and the output of the busiest of them is `LocalVar%GenSpeedF` -- the speed error both the torque controller (`VS_SpdErr`, `VS_KOmega2_GenTq`) and the pitch controller (`PC_SpdErr`) are built on. Nothing multiplies it by a gain that is zero in the input files, which is exactly what made HPFilter invisible at every one of its four sites.\n\nTHREE CALL SITES ARE DEAD in all 27 scenarios -- Controllers.f90:570 (IPC), Controllers.f90:1100 (the `PIController`-style helper) and ReadSetParameters.f90:289 (open-loop input) -- and they are recorded because a dead site is a piece of the unit's domain no simulation-based layer reaches, whatever the other eighteen do.\n\nWHAT NO BIT-EXACT LAYER HERE CONSTRAINS: `CornerFreq`. `CntrPar%F_LPFCornerFreq` is 1.57080 in all 14 `Examples/*.IN` and `vit_sim.py` never patches it, and the other live sites pass `F_WECornerFreq`, `F_YawErr`, `PRC_LPF_Freq` and friends -- each also a single value across the inputs. So a translation ignoring the argument and hardcoding the number passes the kernel 14,508 of 14,508 -- `evidence/LPFilter/kernel.hardcoded-cornerfreq-stub-PASSES.verify_fields.csv`, and 61 of the 62 cases never reach the branch that reads it. The differential harness is the only instrument that varies it, and the mutation run is the evidence that varying it constrains anything (`const_tweak` on the coefficients dies 889 and 656 of 996).\n\nOUTSIDE THE KERNEL BUT NOT DEAD: the OPTIONAL `InitialValue`. Exactly one live call site passes it -- ControllerBlocks.f90:377, `LPFilter(LocalVar%HorWindV, ..., LocalVar%WE_Vw)`, 407,976 calls in 23 scenarios -- so the `PRESENT` branch IS exercised by the simulation, though not at Filters.f90:347 where the kernel window was taken. This is the first unit here whose OPTIONAL is live at all; HPFilter's was 0 at all four sites.",
+      "disposition": "integrated",
+      "source_file": "rosco/controller/src/Filters.f90",
+      "translation": "translations/Filters/lpfilter.cpp",
+      "harness_required": true,
+      "evidence": [
+        "evidence/LPFilter/README.md",
+        "evidence/LPFilter/lpfilter.final.cpp",
+        "evidence/LPFilter/lpfilter.zero-stub.cpp",
+        "evidence/LPFilter/lpfilter.hardcoded-cornerfreq-stub.cpp",
+        "evidence/LPFilter/kernel.verify_fields.csv",
+        "evidence/LPFilter/kernel.zero-stub-FAILS.verify_fields.csv",
+        "evidence/LPFilter/kernel.hardcoded-cornerfreq-stub-PASSES.verify_fields.csv",
+        "evidence/LPFilter/kernel-window.statefiles.lst",
+        "evidence/LPFilter/kernel-generated-Filters.post-verify.f90",
+        "evidence/LPFilter/vit_check.stdout.txt",
+        "evidence/LPFilter/instrument_defect/harness-noop-redtest.no-json.log",
+        "evidence/LPFilter/instrument_defect/harness-green.mutant-left-by-killed-mutation-run.log",
+        "evidence/LPFilter/harness.postintegration.redtest.args-swapped-EQUIVALENT.json",
+        "harness/LPFilter.json",
+        "harness/LPFilter.redtest.json",
+        "harness/LPFilter.postintegration.json",
+        "harness/LPFilter.postintegration.redtest.json",
+        "mutation/LPFilter.json",
+        "gate/LPFilter.json",
+        "gate/LPFilter.redtest.json",
+        "translations/Filters/lpfilter.cpp",
+        "rosco/controller/src/lpfilter.cpp"
+      ]
     },
     {
       "order": 12,

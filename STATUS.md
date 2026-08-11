@@ -4,6 +4,56 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-11: unit #11 `LPFilter` is `integrated` and CLOSED**, on the
+SECOND dispatch. The first ran all five layers and then ran out of time with the
+tree dirty, the state uncommitted, and one evidence reference naming a file that
+did not exist — `kernel.hardcoded-cornerfreq-stub.verify_fields.csv`, described
+in prose in both `plan.json` and the evidence README while only the stub `.cpp`
+was on disk. The second dispatch RAN that verify (it passes, 14,508 of 14,508)
+rather than deleting the claim, and committed. `done_check.py`'s
+`P5:unresolved_evidence` is what named it.
+
+**FIVE LAYERS, ALL FIVE ALIVE — the first unit in this campaign of which that is
+true.** Units #5 to #10 each closed with the gate proved blind to them.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases, scenario 1 | 14,508 field rows, ALL `IDENTICAL` | zero stub → 172 rows `OUT_TOL`, naming every output; VIT's own `InputSignal * 1.00001` DISCRIMINATING; hardcoded-`CornerFreq` stub → 14,508 of 14,508 IDENTICAL, i.e. the kernel cannot see that argument at all |
+| differential harness vs clean Fortran | 996 checked, 0 failed | the unit as a no-op → **996 of 996 failed**, naming `vit_result`, six `FP.lpf1_*` arrays and `inst` |
+| mutation score | **38/38 behavioural killed, 1.000**, 0 declared equivalent, 2 nocompile | no survivor at any point, no corpus repair needed |
+| post-integration harness (wrapper only) | 996 checked, 0 failed | marshalled result × 1.000001 → 656 of 996; the standard ARGUMENT-SWAP perturbation is EQUIVALENT here and stayed green, kept with the reason |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED: 1,592,059 of 5,252,000 moved**, 0 after revert |
+
+**THE GATE SEES IT, AND THE CALL GRAPH SAYS WHY.** 21 call sites, 18 live,
+3,527,912 calls across 23 of the 27 scenarios, and the busiest one produces
+`LocalVar%GenSpeedF` — the speed error both the torque and the pitch controller
+are built on. Nothing scales it by a gain that is zero in the input files, which
+is precisely what made `HPFilter`, one function up the same file, invisible at
+all four of its sites.
+
+**TWO INSTRUMENT DEFECTS, BOTH RECORDED BEFORE THEY WERE FIXED, ONE STILL
+UNFIXED.**
+
+1. **The differential harness read the INDEX ROLE off the TRANSLATION**, so the
+   no-op red test — which contains no subscript — left `inst` an ordinary scalar
+   integer. The generator drew it from unit #10's decade ladder up to `INT_MAX`
+   and handed it to a REFERENCE that subscripts a `DIMENSION(1024)` array:
+   SIGSEGV, *"harness produced no JSON"*, no artifact. The one run that proves
+   the harness can fail was the one run it could not complete. Fixed by ADDITION
+   in the loop repo — `infer_indexes_fortran` asks the REFERENCE, which is the
+   oracle (P7), and runs second so it can only fill a gap the C++ left. The red
+   run then came back at 996 cases, the green run's own figure.
+2. **`vit_mutate.py` mutates the translation IN PLACE**, so a run killed
+   mid-flight leaves the mutant in the tree. One did, and left
+   `*inst = *inst + 2;` in the file `vit integrate` reads next. `git status`
+   said nothing — the path was untracked either way. Caught by re-running the
+   harness for an unrelated reason and getting 996 of 996 failed where the same
+   command had passed minutes earlier. NOT yet fixed in the loop repo; the
+   RUNBOOK now requires diffing the translation against a saved copy after every
+   mutation run. See DECISIONS.md.
+
+---
+
 **As of 2026-08-11: unit #10 `Int2LStr` is `integrated` and CLOSED**, first
 dispatch.
 
@@ -562,15 +612,16 @@ fields — those are hypotheses, not facts. Run
 
 ## Counts
 
-10 attempted / **10 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+11 attempted / **11 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / 0 blocked.
 
-69 units in `plan.json`; 59 remain.
+69 units in `plan.json`; 58 remain.
 
 (This block read `8 / 8 / 61 remain` through unit #9, which did not update it.
-Recounted from `plan.json` at unit #10 rather than incremented.)
+Recounted from `plan.json` at unit #10 rather than incremented, and recounted
+again at unit #11.)
 
-**7 of the 10 integrated units are invisible to the gate**, for six different
+**7 of the 11 integrated units are invisible to the gate**, for six different
 reasons: `AddToList` is never called, `Conv2UC` is called constantly and
 cancelled, `ExtController` is never called *and* has no observable effect on any
 channel the gate compares even when it is, `GetPath` is called in every scenario
@@ -584,6 +635,12 @@ the red test that says it constrains nothing.
 perturbation re-run on that unit's own build — because a red test that comes back
 green is indistinguishable from a broken instrument without one. The five units
 before #9 do not have theirs; that is recorded under Open.
+
+**Unit #11 needs no control**, and that is the point of the rule rather than an
+exception to it: `LPFilter`'s gate red test WENT RED (1,592,059 of 5,252,000), so
+it demonstrated the chain a control would have been asked to demonstrate. Four of
+the eleven units are gate-visible — ColemanTransform 124,353,
+ColemanTransformInverse 389,644, GetWords 1,857,893, LPFilter 1,592,059.
 
 **Every unit now has a `harness/` and a `mutation/` artifact.** `ExtController`
 was the exception for two dispatches and the absence was recorded as the

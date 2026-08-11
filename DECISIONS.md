@@ -2860,3 +2860,154 @@ regression of it: a stamp that cannot see a dirty tree is strictly better than
 one that reports a stale pin as fact, and it still leaves the campaign relying on
 prose for the one case that matters — measurements taken while fixing the
 instrument, which is every measurement that finds an instrument defect.
+
+## 2026-08-11 — Unit #11 `LPFilter`: five layers, all five alive
+
+**The gate red test went RED, and that is the whole difference from the six
+units before it.** 1,592,059 of 5,252,000 values moved when the returned value
+was scaled by 1.000001; 0 moved after the revert. Nothing about the method
+changed — the same `gate.py`, the same 27 scenarios, the same bit comparison. The
+unit is in a different place in the controller: 18 live call sites, 3,527,912
+calls across 23 scenarios, and the busiest one produces `LocalVar%GenSpeedF`,
+which the torque and pitch controllers subtract from their reference speeds. No
+gain multiplies it away.
+
+So **no same-build control was taken, deliberately**. Unit #9 established that a
+gate red test coming back GREEN needs a control, because "the gate cannot see
+this unit" and "the chain is broken today" produce the identical artifact. A red
+test that goes RED has just exercised that chain end to end. Adding a control run
+here would cost three minutes and measure something already measured.
+
+### Two instrument findings, and the order they were found in matters
+
+**1. The differential harness's INPUT DOMAIN was a function of the code under
+test.** `map_signature` promotes a scalar to `role="index"` by finding
+`FP->lpf1_a1[i]` in the **C++**. The no-op red test has no subscript in it, so
+`inst` stayed an ordinary scalar integer; unit #10's integer decade ladder then
+drew `INT_MAX` for it and handed that to the REFERENCE, which subscripts a
+`DIMENSION(1024)` array with it. Signal 11. `harness.sh` printed *"harness
+produced no JSON"* — the same sentence a reference that PRINTs produces (unit
+#5) — and wrote no artifact at all.
+
+The consequence is worse than a missing red test. P11's green is only a claim
+about a corpus; the red test is what says the harness can move. Here the red test
+was the ONE run the instrument could not complete, so the failure mode was
+invisible in exactly the case built to expose it.
+
+Fixed by ADDITION in the loop repo (`54d792f`), not worked around (X2). **Every
+artifact of this unit stamps `d79f39e-nogit`, which is the commit BEFORE the fix**
+— the same residue unit #10 recorded: the `-nogit` stamp reads `.git/HEAD` and
+cannot see a dirty tree, and the fix sat uncommitted in the working tree while
+the measurements that justify it were taken. `d79f39e` plus the diff that became
+`54d792f` is what ran, and nothing but this paragraph records it.
+`infer_indexes_fortran`
+asks the same question of the REFERENCE — `arg%field(expr)` in the unit's own
+Fortran body — and runs AFTER the C++ pass, so it can only fill a gap the
+translation left and no already-measured unit's corpus moves. The number that
+says it worked is the case count: 1157 before (an `inst` nobody constrained),
+**996 after — the green run's own figure** — with 996 of 996 failed.
+
+A second, smaller thing fell out of it and is worth carrying: the existing
+body-locating search in `char_literals_from` anchors `FUNCTION` at the start of a
+line, so a TYPED function — `REAL(DbKi) FUNCTION LPFilter(...)`, which is how
+every filter in ROSCO is declared — never matched it. There the miss is silent
+and benign (the character corpus falls back to its base set). The new
+`unit_body()` allows the type prefix, because here a silent miss would have
+returned the unfixed behaviour while looking fixed.
+
+**2. `vit_mutate.py` mutates the translation IN PLACE, so a killed run leaves the
+mutant in the tree.** A run was stopped with `pkill` to correct a comment before
+re-running it. It restores the file when it completes; killed, it does not. What
+it left was `*inst = *inst + 2;` in `translations/Filters/lpfilter.cpp` — the
+file `vit integrate` reads next — in a file whose own header still said
+`Status: unverified`, at a path `git status` had been listing as untracked all
+along.
+
+It was caught by accident: the harness was re-run for an unrelated reason and
+reported `checked 996  failed 996` where the identical command had passed ten
+minutes earlier. **The instrument that caught it is the one whose red test the
+first finding had just repaired.**
+
+NOT fixed in the loop repo, and the reason is stated rather than assumed: the
+fix is not obviously "restore on SIGTERM" — a mutation run that dies of anything
+(OOM, a killed container, a full disk) has the same problem, and a handler that
+restores on the signals it thought of is the same shape of partial fix this
+campaign has recorded twice (the 132-column bridge, the two `get_typedecl_subpname`
+sites). The RUNBOOK entry requires the check that works regardless of how the run
+died: save a copy before, diff after. Recorded in `TOOL_GAPS` terms here rather
+than patched under time pressure.
+
+### A red test that stayed green, kept because it should have
+
+The campaign's standard post-integration perturbation — swap two INTENT(IN)
+arguments in the wrapper — failed **0 of 996** here. That is correct, not broken:
+`DT` and `CornerFreq` are read only inside the initialisation branch and only as
+the product `CornerFreq*DT`, which is symmetric. The artifact is kept as
+`evidence/LPFilter/harness.postintegration.redtest.args-swapped-EQUIVALENT.json`
+beside the real red test (the marshalled result scaled by 1.000001, 656 of 996).
+
+The transferable part: a red test that stays green is either a broken instrument
+or an equivalent perturbation, and the two are distinguished by READING THE UNIT,
+not by re-running. HPFilter's identical swap failed 85 of 829 because `K = 2.0/DT`
+reads `DT` alone.
+
+### NOT method, target
+
+The index-role fix, the mutation-run rule and the equivalent-perturbation note
+are all RUNBOOK target-layer entries. No amendment to the invariant layer is
+proposed.
+
+**One observation for the Driver.** Unit #10 reported that the instrument-repair
+count tracks *new declaration shapes*, not convergence, and predicted it from
+`plan.json`. This unit is evidence for that reading: its declaration shape is
+`HPFilter`'s exactly — same file, same nine parameters, same derived type, same
+OPTIONAL — and it inherited that path working, needing no signature-level repair
+at all. Both of its findings came from somewhere else entirely: one from a RED
+TEST rather than from the unit, and one from an interrupted tool. Neither is
+predictable from a declaration, and neither would have appeared in a run that
+skipped a red test on the grounds that the green looked convincing.
+
+## 2026-08-11 — Unit #11 `LPFilter`, second dispatch: a claim without its artifact
+
+The first dispatch of this unit ran all five layers, wrote everything above, and
+then ended without closing: `done_check.py` reported `P2:dirty_tree`,
+`P7:no_state_commit`, and — the interesting one —
+`P5:unresolved_evidence:evidence/LPFilter/kernel.hardcoded-cornerfreq-stub.verify_fields.csv`.
+
+**`plan.json` and the evidence README both described that measurement in prose
+and the file did not exist.** What did exist, committed, was
+`lpfilter.hardcoded-cornerfreq-stub.cpp` — the stub itself. That is the trap and
+it is worth naming: *a stub committed as evidence is the INPUT to a measurement,
+not the measurement.* The directory looked complete because the hard-to-write
+part of the artifact was there. This is precisely the shape K3 exists for, and
+K3 caught it — the first time in this campaign that a done-condition predicate,
+rather than a person, found a verification claim resting on nothing.
+
+**Run rather than retract**, because the claim was true and the number is worth
+having. The stub scores **14,508 of 14,508 `IDENTICAL`** — the kernel cannot
+constrain `CornerFreq` at all.
+
+And running it made the finding SHARPER than the prose had it. The prose said
+what unit #3 and unit #9 said: the argument has one distinct value across all 14
+`Examples/*.IN`, so the kernel cannot tell a translation that reads it from one
+that writes the literal. True, and not the whole of it. `CornerFreq` is read
+**only inside the initialisation branch**, and exactly **1 of the 62 captured
+cases has `istatus == 0`**. So 61 of the 62 cases do not read the argument at
+all — the pass is 61 parts blindness and 1 part coincidence, where a
+constant-argument blindness is 62 parts coincidence. Two different weaknesses
+with the same green, and only the CSV distinguishes them. That distinction is
+now in `plan.json`'s `verification` block instead of a paragraph asserting a
+sameness that was not there.
+
+**Method or target?** Target — the campaign already has the rule (K3), and the
+rule worked. What belongs in the RUNBOOK's target layer is the recipe for
+re-running a kernel verify AFTER integration without resetting the source tree,
+which is what made "run it" cheap enough to prefer over "delete the claim", plus
+the `vit.yaml` hazard that comes with it: `vit verify` rewrote `vit.yaml`,
+stripping every provenance comment (already recorded) AND adding a
+`translations.LPFilter` record — `cases_passed: 62`, `red_test: demonstrated` —
+describing **the stub's run**. Committing that would have left a machine-readable
+claim, in the config the next unit reads, that the shipped translation was
+verified by a run of something else. Restored with `git checkout -- vit.yaml`.
+
+No amendment to the invariant layer is proposed.
