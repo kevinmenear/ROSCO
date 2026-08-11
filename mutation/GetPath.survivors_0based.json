@@ -1,0 +1,37 @@
+{
+ "unit": "GetPath",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "index_offset",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "mutants": 17,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 17,
+ "killed": 15,
+ "survived": 2,
+ "equivalent": 0,
+ "score": 0.8824,
+ "loop_rev": "99b57ab-pinned",
+ "vit_rev": "8c34ceb-pinned",
+ "survivors": [
+  {
+   "id": "72bb3570",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "83dc755d",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  }
+ ]
+}

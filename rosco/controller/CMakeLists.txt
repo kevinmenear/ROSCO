@@ -84,6 +84,7 @@ set(SOURCES
     src/vit_localvariables_view.f90
     src/vit_controlparameters_view.f90
     src/extcontroller.cpp
+    src/getpath.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

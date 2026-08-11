@@ -34,6 +34,7 @@ void addtolist_c(CFI_cdesc_t* list, int element);
 void colemantransforminverse_c(double axTIn, double axYIn, double aziAngle, int nHarmonic, double aziOffset, double* PitComIPC);
 void conv2uc_c(char* Str, int len_Str);
 void extcontroller_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, extcontroltype_view_t* ExtDLL, errorvariables_view_t* ErrVar);
+void getpath_c(char* GivenFil, int len_GivenFil, char* PathName, int len_PathName);
 
 #ifdef __cplusplus
 }

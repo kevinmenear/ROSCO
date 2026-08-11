@@ -64,6 +64,18 @@ MODULE ROSCO_Helpers
         END SUBROUTINE conv2uc_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of GetPath
+    INTERFACE
+        SUBROUTINE getpath_c(GivenFil, len_GivenFil, PathName, len_PathName) BIND(C, NAME='getpath_c')
+            USE ISO_C_BINDING
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: GivenFil(*)
+            INTEGER(C_INT), VALUE :: len_GivenFil
+            CHARACTER(KIND=C_CHAR), INTENT(OUT) :: PathName(*)
+            INTEGER(C_INT), VALUE :: len_PathName
+        END SUBROUTINE getpath_c
+    END INTERFACE
+
 CONTAINS
 
     !=======================================================================
@@ -1237,34 +1249,28 @@ END SUBROUTINE GetWords
 !=======================================================================
 !> Let's parse the path name from the name of the given file.
 !! We'll count everything before (and including) the last "\" or "/".
-SUBROUTINE GetPath ( GivenFil, PathName )
-
-    ! Argument declarations.
-
- CHARACTER(*), INTENT(IN)     :: GivenFil                                     !< The name of the given file.
- CHARACTER(*), INTENT(OUT)    :: PathName                                     !< The path name of the given file (based solely on the GivenFil text string).
-
-
-    ! Local declarations.
-
- INTEGER                      :: I                                            ! DO index for character position.
-
-
-    ! Look for path separators
-
- I = INDEX( GivenFil, '\', BACK=.TRUE. )
- I = MAX( I, INDEX( GivenFil, '/', BACK=.TRUE. ) )
-
- IF ( I == 0 ) THEN
-    ! we don't have a path specified, return '.'
-    PathName = '.'//PathSep
- ELSE
-    PathName = GivenFil(:I)
- END IF
-
-
- RETURN
- END SUBROUTINE GetPath
+    SUBROUTINE GetPath(GivenFil, PathName)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        CHARACTER(*), INTENT(IN) :: GivenFil
+        CHARACTER(*), INTENT(OUT) :: PathName
+        CHARACTER(KIND=C_CHAR) :: GivenFil_c(LEN(GivenFil))
+        INTEGER :: vit_i_GivenFil
+        CHARACTER(KIND=C_CHAR) :: PathName_c(LEN(PathName))
+        INTEGER :: vit_i_PathName
+        ! Convert CHARACTER args to C_CHAR arrays
+        DO vit_i_GivenFil = 1, LEN(GivenFil)
+            GivenFil_c(vit_i_GivenFil) = GivenFil(vit_i_GivenFil:vit_i_GivenFil)
+        END DO
+        DO vit_i_PathName = 1, LEN(PathName)
+            PathName_c(vit_i_PathName) = PathName(vit_i_PathName:vit_i_PathName)
+        END DO
+        CALL getpath_c(GivenFil_c, LEN(GivenFil), PathName_c, LEN(PathName))
+        ! Copy C_CHAR arrays back to CHARACTER args (INTENT OUT/INOUT)
+        DO vit_i_PathName = 1, LEN(PathName)
+            PathName(vit_i_PathName:vit_i_PathName) = PathName_c(vit_i_PathName)
+        END DO
+    END SUBROUTINE GetPath
 !=======================================================================
 !> Let's parse the root file name from the name of the given file.
 !! We'll count everything after the last period as the extension.

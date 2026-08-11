@@ -1,0 +1,23 @@
+{
+ "unit": "GetPath",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "mutants": 25,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 25,
+ "killed": 25,
+ "survived": 0,
+ "equivalent": 0,
+ "score": 1.0,
+ "loop_rev": "99b57ab-pinned",
+ "vit_rev": "8c34ceb-pinned",
+ "survivors": []
+}

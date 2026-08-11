@@ -107,6 +107,9 @@ translations:
   ExtController:
     status: integrated
     cpp_file: translations/ExtControl/extcontroller.cpp
+  GetPath:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/getpath.cpp
 types:
   ControlParameters:
     strategy: view

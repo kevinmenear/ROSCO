@@ -1,0 +1,120 @@
+{
+ "unit": "GetPath",
+ "against": "translation",
+ "checked": 236,
+ "failed": 234,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    2 varied extent(s) at [3, 4], NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      156 character value(s) from a corpus of 26 (the reference's own character literals and their collating neighbours) across 2 string(s), each at length(s) [1, 4, 9] and in the mixed / padded / all-blank shapes",
+  "  N/A      R3_no_dead_signal          no real parameter",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 1 out-parameter(s): PathName"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "PathName",
+   "ref": "2e2f2020",
+   "got": "7a7b2d2e"
+  },
+  {
+   "case": 1,
+   "output": "PathName",
+   "ref": "2e2f20",
+   "got": "2e2f30"
+  },
+  {
+   "case": 2,
+   "output": "PathName",
+   "ref": "2e2f2020",
+   "got": "595a5e5f"
+  },
+  {
+   "case": 3,
+   "output": "PathName",
+   "ref": "2e2f2020",
+   "got": "3a404142"
+  },
+  {
+   "case": 4,
+   "output": "PathName",
+   "ref": "2f202020",
+   "got": "3138393a"
+  },
+  {
+   "case": 5,
+   "output": "PathName",
+   "ref": "2e2f2020",
+   "got": "393a4041"
+  },
+  {
+   "case": 6,
+   "output": "PathName",
+   "ref": "2e2f2020",
+   "got": "5d202131"
+  },
+  {
+   "case": 7,
+   "output": "PathName",
+   "ref": "5c202020",
+   "got": "5b5c5d20"
+  },
+  {
+   "case": 8,
+   "output": "PathName",
+   "ref": "2e2f2020",
+   "got": "5b5c5d20"
+  },
+  {
+   "case": 9,
+   "output": "PathName",
+   "ref": "2e2f2020",
+   "got": "305b5c5d"
+  },
+  {
+   "case": 10,
+   "output": "PathName",
+   "ref": "2e2f2020",
+   "got": "7b2d2e2f"
+  },
+  {
+   "case": 11,
+   "output": "PathName",
+   "ref": "2e2f2020",
+   "got": "5a5e5f60"
+  },
+  {
+   "case": 12,
+   "output": "PathName",
+   "ref": "2e2f2020",
+   "got": "7b2d2e2f"
+  },
+  {
+   "case": 13,
+   "output": "PathName",
+   "ref": "2e2f2020",
+   "got": "5b5c5d20"
+  },
+  {
+   "case": 14,
+   "output": "PathName",
+   "ref": "2e2f2020",
+   "got": "305b5c5d"
+  },
+  {
+   "case": 15,
+   "output": "PathName",
+   "ref": "2e2f2020",
+   "got": "2f305b5c"
+  }
+ ],
+ "loop_rev": "99b57ab-pinned",
+ "vit_rev": "8c34ceb-pinned",
+ "red_test": {
+  "perturbation": "the unit as a no-op: reads neither input, writes nothing",
+  "result": "234 of 236 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

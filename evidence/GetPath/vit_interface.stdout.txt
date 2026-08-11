@@ -1,0 +1,47 @@
+
+SUBROUTINE GetPath
+  File: rosco/controller/src/ROSCO_Helpers.f90:1240
+  Module: ROSCO_Helpers
+  Arguments:
+    GivenFil: CHARACTER(*) INTENT(IN)
+    PathName: CHARACTER(*) INTENT(OUT)
+  C name: getpath_c
+
+✓ Interface block:  /tmp/getpath_iface/getpath_interface.f90
+✓ Wrapper function: /tmp/getpath_iface/getpath_wrapper.f90
+
+--- Interface Block ---
+    ! Auto-generated interface for C++ implementation of GetPath
+    INTERFACE
+        SUBROUTINE getpath_c(GivenFil, len_GivenFil, PathName, len_PathName) BIND(C, NAME='getpath_c')
+            USE ISO_C_BINDING
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: GivenFil(*)
+            INTEGER(C_INT), VALUE :: len_GivenFil
+            CHARACTER(KIND=C_CHAR), INTENT(OUT) :: PathName(*)
+            INTEGER(C_INT), VALUE :: len_PathName
+        END SUBROUTINE getpath_c
+    END INTERFACE
+
+--- Wrapper Function ---
+    SUBROUTINE GetPath(GivenFil, PathName)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        CHARACTER(*), INTENT(IN) :: GivenFil
+        CHARACTER(*), INTENT(OUT) :: PathName
+        CHARACTER(KIND=C_CHAR) :: GivenFil_c(LEN(GivenFil))
+        INTEGER :: vit_i_GivenFil
+        CHARACTER(KIND=C_CHAR) :: PathName_c(LEN(PathName))
+        INTEGER :: vit_i_PathName
+        ! Convert CHARACTER args to C_CHAR arrays
+        DO vit_i_GivenFil = 1, LEN(GivenFil)
+            GivenFil_c(vit_i_GivenFil) = GivenFil(vit_i_GivenFil:vit_i_GivenFil)
+        END DO
+        DO vit_i_PathName = 1, LEN(PathName)
+            PathName_c(vit_i_PathName) = PathName(vit_i_PathName:vit_i_PathName)
+        END DO
+        CALL getpath_c(GivenFil_c, LEN(GivenFil), PathName_c, LEN(PathName))
+        ! Copy C_CHAR arrays back to CHARACTER args (INTENT OUT/INOUT)
+        DO vit_i_PathName = 1, LEN(PathName)
+            PathName(vit_i_PathName:vit_i_PathName) = PathName_c(vit_i_PathName)
+        END DO
+    END SUBROUTINE GetPath
