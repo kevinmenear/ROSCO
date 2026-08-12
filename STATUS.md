@@ -4,9 +4,56 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-12: unit #17 `Read_OL_Input` is `blocked`**, first dispatch, and
+**As of 2026-08-12: unit #17 `Read_OL_Input` is `blocked`**, SECOND dispatch, and
 it is the campaign's **first `respecify` unit** and the **first REFUTED plan
 prediction**.
+
+**THE SECOND DISPATCH CLOSED P11 AND PRODUCED P12; THE UNIT IS NOW BLOCKED ON
+THE SCORE ITSELF RATHER THAN ON A MISSING INSTRUMENT.** The three unmet
+conditions were `P12:mutation_missing`, `P11:harness_not_rerun` and
+`P13:respecify_unscored`. P11 passes (740 checks against the integrated build).
+P12 and P13 now fail with a different reason -- `mutation_below_threshold`,
+**0.726 against 1.000** -- which is a measurement where there was none.
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (P11), pre-integration | **740 cases, 0 failed**, against the real Fortran | it went red on the way: 80 of 657 cases on a real translation defect, below |
+| differential harness, post-integration | **740 cases, 0 failed** | transposing the two allocate-on-return extents in the wrapper fails **106 of 740** |
+| mutation score (P12) | **0.726** -- 98 of 135 behavioural, 0 declared equivalent, 29 no-compile excluded, **4 killed by a watchdog** rather than by a compared value | n/a |
+| gate, 27 scenarios | 5,252,000 / 0 mismatched, re-run on the rebuilt integrated library | unchanged from the first dispatch |
+
+**BOTH GENERATORS CROSS THE SIGNATURE NOW.** The first dispatch refuted the
+prediction for the SHIPPING bridge and left the matrix's actual subject standing:
+`test_validate.generate_fortran_bridge` really did emit `Channels(1:n_Channels)`
+for a rank-2 ALLOCATABLE and really did not compile. Fixed in VIT (`117bff1`),
+not worked around -- the harness bridge now mirrors `interface_gen`, naming its
+extents with the same helper, and a fixed-width `CHARACTER(1024)` dummy no longer
+gets a `len_` parameter the prototype does not have.
+
+**THE HARNESS FOUND A DEFECT THE KERNEL AND THE GATE COULD NOT.**
+`ALLOCATE(Channels(rows, cols))` with `cols < 0` is an extent of ZERO in Fortran,
+not a negative extent. The translation returned the raw `NumChannels`, which
+would size a `C_F_POINTER` shape by a negative number. **80 of 657 cases.** This
+unit allocates on neither of the paths the kernel and the gate reach.
+
+**THE REFERENCE DOES NOT TERMINATE ON THREE INPUTS**, measured with an 8-second
+timeout on `Read_OL_Input` itself: an EMPTY file, a COMMENTS-ONLY file, and a
+name resolving to a DIRECTORY. A failed `READ(u,'(A)',IOSTAT=IOS) LINE` leaves
+`LINE` unchanged under gfortran, so the comment loop never exits. The
+translation stops instead, so the two disagree there and no differential case can
+be written for it
+(`evidence/Read_OL_Input/reference.does-not-terminate-empty-allcomment-directory.txt`).
+
+**37 SURVIVORS, THREE FAMILIES, NONE A SCATTER** -- buffer-size constants and
+end-of-record guard positions (undefined behaviour no value comparison can see),
+three branches this corpus cannot reach, and one site the reference itself leaves
+undefined. Listed with source lines in
+`evidence/Read_OL_Input/mutation.37-survivors-with-source-lines.txt`. The remedy
+is unit #15's and it has already worked once here: rewriting `scan_real` and
+`scan_repeat` to let `strtod`/`strtoul` do the scanning deleted 31 survivors and
+moved 0.708 -> 0.726.
+
+--- what the FIRST dispatch recorded, unchanged below ---
 
 **THE SIGNATURE CROSSED.** `plan.json` predicted `bridge_feasible: no` on
 `channels: c_assumed_shape_2d`. `vit interface` crosses the rank-2 assumed-shape

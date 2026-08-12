@@ -3754,3 +3754,94 @@ The verdict is correct and is kept.
 The allocate-on-return bridge, the view-populator fix, the KGen deferred-length
 gap, the three-scenario footprint and the two harness mappings are all in the
 RUNBOOK's target layer. The invariant layer is untouched.
+
+## 2026-08-12 — Unit #17 `Read_OL_Input`, second dispatch: the corpus can write the file
+
+**The unit's principal input is a file on disk, and the first dispatch recorded
+that as the blind spot no widening of any ladder could close.** It was wrong
+about "no widening". Every ladder in `harness/generate.py` varies something the
+SIGNATURE carries; this one varies something it *names*. `file_params_from`
+reads the `FILE=` specifier out of the reference — the oracle — and the corpus
+then WRITES the files it will pass the names of. 82 fixtures, crossed with the
+io-list trip count read out of the reference's own `READ (TmpData(I),
+I=1,NumChannels)`, because two ladders that never cross cannot reach a branch
+that needs both (unit #16, one input kind over).
+
+**A file-valued parameter is now HELD everywhere else, and that is the half
+worth keeping.** R6's character ladder exists to reach the reference's own
+character predicates. A file NAME is not read that way: the unit trims it and
+hands it to the operating system, so several hundred generated names all answer
+one question with one answer. Unit #16's "ladder aimed at a name" exactly. It
+was not merely wasted — case 11 of the first generated corpus was 1024 `/`
+characters, which resolve to the ROOT DIRECTORY, and the reference spun at 100%
+CPU for thirteen minutes.
+
+**Which is a defect in ROSCO, and it is recorded rather than repaired.**
+`Read_OL_Input` does not terminate on an empty file, on a comments-only file, or
+on a name resolving to a directory: `READ(u,'(A)',IOSTAT=IOS) LINE` leaves
+`LINE` unchanged on failure under gfortran, so a file whose records run out
+while `LINE` still holds a comment marker loops for ever. ROSCO's own author
+left the comment — *"NWTC_IO has some error catching here that we'll skip for
+now"* — at the omission. **P7: the oracle is the original source.** Repairing it
+would move the oracle and re-take every artifact measured against it, so it is
+measured (8-second timeout, three inputs, three exit-124s), the corpus states
+which shapes it therefore cannot contain, and the disagreement — the translation
+stops — is in the unit's observability. **Candidate for the Driver**, alongside
+the two upstream ROSCO bugs the RUNBOOK already carries: a fourth, of the same
+kind, in a procedure no test in the ROSCO repository exercises.
+
+**A case that depends on its predecessors is not a differential case.** The
+reference leaves its Fortran unit CONNECTED on the success path. Two cases
+sharing a fixture therefore fail two different ways: the same unit again is
+positioned at end of file and the comment loop never exits; the same FILE again
+cannot be connected to a second unit, so the OPEN fails and the reference
+answers "Cannot open" where the C++ reads the file. One file and one unit number
+per case. This is the first time this campaign has had to choose an input value
+to make a unit a function of its arguments, and it is a property of the
+reference rather than of the generator.
+
+**What the harness found that nothing else could.**
+`ALLOCATE(Channels(NumDataLines, NumChannels))` with `NumChannels < 0` is an
+extent of ZERO in Fortran, not a negative extent. The translation returned the
+raw argument, which would size a `C_F_POINTER` shape by a negative number. 80 of
+657 cases. The kernel sees 1 case and the gate's three scenarios all take
+`.NOT. FileExists`, so neither reaches a path on which this unit allocates at
+all — the differential harness is the only instrument that could have asked.
+
+**0.726, and the survivors are not a scatter.** Three families: buffer-size
+constants and end-of-record guard positions (`1024` -> `1025`, `rec[pos]` ->
+`rec[pos + 1]`), which read one byte past a buffer and are undefined behaviour
+no value comparison can see; three branches this corpus cannot reach; and one
+site the REFERENCE itself leaves undefined (`TmpData` is an uninitialized
+automatic array there and zero-initialised here). The remedy for the first
+family is unit #15's — rewrite the code so the position vanishes — and it has
+already worked once here: `scan_real` was walking the number by hand and then
+handing the same text to `strtod` anyway, two implementations of one grammar of
+which only the second produces a value anything reads. Deleting the walk removed
+31 of 47 survivors.
+
+**An evidence reference into `kernel/` does not survive the reset/restore
+cycle.** The first dispatch's evidence list named
+`kernel/Read_OL_Input/verify_fields.csv`; `kernel/` is untracked and
+`reset_to_clean.sh` removes it, so P5 passed only while the directory happened to
+be on disk. E4.2 says COMMITTED artifact. The entry is dropped; the committed
+copies of the same measurement are under `evidence/Read_OL_Input/`.
+
+### NOT method, target
+
+R8, the file-valued input, the io-unit handle, the `alloc_out` mapping, the
+fixed-width CHARACTER mapping, the predicate-knob ladder's low side and the
+mutation watchdog are all instrument changes committed to the loop and VIT
+repos, and their findings are in the RUNBOOK's target layer. The invariant layer
+is untouched.
+
+### Candidate for the Driver
+
+A differential harness compares two implementations **on inputs both return
+from**. This campaign has now met a reference that does not, and the corpus had
+to state an exclusion rather than measure it. A per-case watchdog in the
+generated program — fork per case, or an alarm — would turn that exclusion into
+a reported outcome. `vit_mutate.py` got exactly that for MUTANTS this session
+(`killed_by_timeout`, self-calibrated from the baseline run); the reference side
+did not, because it would change every already-measured unit's generated harness
+and that is X3.

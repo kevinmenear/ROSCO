@@ -339,6 +339,160 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **THE OTHER GENERATOR CROSSES IT TOO, AND THE MATRIX'S CELL WAS A REAL
+  DEFECT IN A REAL GENERATOR.** Unit #17, second dispatch, and it is the half
+  of the refutation the first dispatch could not reach.
+
+  `test_validate.generate_fortran_bridge` -- the DIFFERENTIAL HARNESS's Fortran
+  side, which is what the matrix's `bridge`/`compiles` columns measure -- really
+  did emit
+
+  ```fortran
+  REAL(C_DOUBLE), INTENT(OUT) :: Channels(*)
+  CALL Read_OL_Input(..., Channels(1:n_Channels), ...)   ! rank-1 section ->
+  ```                                                    ! rank-2 ALLOCATABLE
+
+  and really did not compile. Fixed in VIT rather than worked around (X2): the
+  bridge now mirrors `interface_gen`, and it names its extents with
+  `_alloc_return_extent_names` -- **the same helper** -- so the two spellings of
+  one ABI cannot drift. A second disagreement rode with it: `build_c_params`
+  emits `int len_<x>` only for `CHARACTER(*)`, and the bridge was emitting one
+  for `CHARACTER(1024)` too. **One argument more than the prototype, on a C
+  linkage no linker checks.**
+
+  Ask BOTH generators before believing a `bridge_feasible`, and ask them with
+  the same command:
+
+  ```
+  python3 -c "from vit.interface_gen import build_c_params; ..."     # the ABI
+  vit test-validate <Unit> <cpp> -f <f90> -m <Module> --force        # the bridge
+  diff <(the first) <(grep 'SUBROUTINE <unit>_f90' -A 20 the second)
+  ```
+
+- **THE CORPUS CAN WRITE THE FILE, AND THE FIRST DISPATCH WAS WRONG THAT IT
+  COULD NOT.** Unit #17, second dispatch. R8_file_contents, and it is the first
+  rule here that varies an input the signature only NAMES.
+
+  `file_params_from` reads the `FILE=` specifier out of the REFERENCE and the
+  corpus writes 82 fixtures -- absent, blank, 1/2/3 records, no trailing
+  newline, CRLF, four separator forms, the null value, the `/` terminator,
+  `r*value` repeats, the e/d and letter-less exponents, -0.0, the representable
+  extremes, short and long records, malformed first and second records, a record
+  past the 1024-byte `A` edit, and comment lines led by **each character literal
+  the reference itself names**. Crossed with the io-list trip count read out of
+  the reference's own `READ (X(I), I=1,N)`, because two ladders that never cross
+  cannot reach a branch that needs both (unit #16).
+
+  **And the file parameter is HELD everywhere else**, which is the half that
+  costs nothing and buys the most. A file NAME is dereferenced, not read, so
+  R6's character ladder produces several hundred names for one answer -- and one
+  of them was 1024 `/` characters, which resolve to the ROOT DIRECTORY.
+
+  ```
+  grep -n "FILE *=" <the unit's Fortran>     # is a DUMMY the specifier?
+  ```
+
+- **THE REFERENCE DOES NOT TERMINATE ON THREE INPUTS, AND A DIFFERENTIAL
+  HARNESS CAN ONLY COMPARE INPUTS BOTH SIDES RETURN FROM.** Unit #17, second
+  dispatch, and it is a fourth upstream ROSCO defect of the same kind as the two
+  already in this file.
+
+  ```fortran
+  DO WHILE ( INDEX(LINE,'!') > 0 .OR. INDEX(LINE,'#') > 0 .OR. INDEX(LINE,'%') > 0 )
+      NumComments = NumComments + 1
+      READ(Unit_OL_Input,'( A )',IOSTAT=IOS) LINE
+      ! NWTC_IO has some error catching here that we'll skip for now
+  ```
+
+  A failed READ leaves `LINE` UNCHANGED under gfortran. So an EMPTY file, a
+  COMMENTS-ONLY file and a name resolving to a DIRECTORY all loop for ever --
+  measured, three exit-124s at an 8-second timeout
+  (`evidence/Read_OL_Input/reference.does-not-terminate-empty-allcomment-directory.txt`).
+  The translation stops instead, so the two DISAGREE there and no case can be
+  written for it. `file_shapes()` states the exclusion in the rule's own
+  detail line rather than omitting the shapes in silence.
+
+  **The symptom is a 100%-CPU `./test` with no output**, and the generated
+  program prints only at the end. Two lines find it:
+
+  ```
+  # a CASE print at the top of the loop, and one between the two calls
+  sed -i 's/        r.marker(c);/&\n        fprintf(stderr,"CASE %d\\n",c);fflush(stderr);/' <unit>_test.cpp
+  ```
+
+- **A CASE THAT DEPENDS ON ITS PREDECESSORS IS NOT A DIFFERENTIAL CASE, AND AN
+  OPEN FORTRAN UNIT IS HOW.** Unit #17, second dispatch.
+
+  `Read_OL_Input` CLOSEs its unit on both error branches and not on the success
+  branch. Two cases sharing a fixture then fail two different ways, and both
+  were seen here:
+
+  ```
+  the same UNIT again   positioned at end of file -> every READ fails -> the
+                        comment loop above never exits
+  the same FILE again   Fortran forbids connecting one file to two units, so the
+                        OPEN fails and the reference answers "Cannot open" where
+                        the C++ reads the file   (68 of 739 cases)
+  ```
+
+  R8 gives every file case its own file AND its own unit number
+  (`io_unit_params_from`). It is the first time this campaign has had to choose
+  an input VALUE to make a unit a function of its arguments.
+
+- **THE DIFFERENTIAL HARNESS SAW A DEFECT THE KERNEL AND THE GATE COULD NOT,
+  AND IT WAS AN ALLOCATION EXTENT.** Unit #17, second dispatch.
+
+  `ALLOCATE(Channels(NumDataLines, NumChannels))` with `NumChannels < 0` is an
+  extent of **ZERO** in Fortran -- a bound `1:n` with `n < 0` -- not a negative
+  extent. The translation returned the raw argument, which would size a
+  `C_F_POINTER` shape by a negative number. **80 of 657 cases.** The kernel sees
+  1 case and the gate's three scenarios all take `.NOT. FileExists`, so neither
+  reaches a path on which this unit allocates at all.
+
+  ```
+  # every ALLOCATE whose bound is an argument, and whether anything bounds it
+  grep -n 'ALLOCATE(' <the unit's Fortran>
+  ```
+
+- **31 OF 47 SURVIVORS WERE ONE REDUNDANT SCANNER, AND DELETING IT WAS THE
+  FIX.** Unit #17, second dispatch, and it is unit #15's `INDEX` finding in a
+  second shape.
+
+  `scan_real` walked a list-directed datum by hand -- sign, digits, point,
+  exponent letter, exponent sign, exponent digits -- and then handed **the same
+  text to `strtod` anyway**. Two implementations of one grammar, of which only
+  the second produces a value anything reads, so every `rec[i]` -> `rec[i + 1]`
+  and every `i < n` -> `i <= n` inside the walk moved a position `strtod`
+  recomputes four lines later. Replacing the walk with "the datum ends at a
+  separator, and `strtod` must consume all of it" took **0.708 -> 0.726 and 47
+  survivors -> 37**, and the same treatment on `scan_repeat` (`strtoul`) removed
+  four more.
+
+  The check is one question asked of every hand-written scanner:
+
+  ```
+  # does anything READ the position this loop computes, or is it recomputed?
+  ```
+
+- **A MUTANT CAN FAIL TO TERMINATE, AND WITHOUT A WATCHDOG THE WHOLE SCORING
+  RUN STOPS WITH NOTHING WRITTEN.** Unit #17, second dispatch.
+  `vit_mutate.py` had no timeout on `./test`, and this unit is a parser with
+  four `while` loops. The watchdog is **self-calibrating** -- 20x the baseline
+  run, floor 60s -- so it is derived from the unit rather than picked, and a
+  hang is counted as a kill and **reported separately** (`killed_by_timeout`, 4
+  here): it was killed by a watchdog, not by a value the corpus supplied. Same
+  rule the file already had for `killed (no compile)`.
+
+- **AN EVIDENCE REFERENCE INTO `kernel/` DOES NOT SURVIVE THE RESET/RESTORE
+  CYCLE.** Unit #17, second dispatch. `kernel/` is UNTRACKED and
+  `reset_to_clean.sh` removes it, so `P5 evidence resolves` passed only while the
+  directory happened to be on disk -- and E4.2 asks for a COMMITTED artifact.
+  Copy what you need into `evidence/<Unit>/` and cite that.
+
+  ```
+  git ls-files kernel | head -1     # empty: nothing under kernel/ is committed
+  ```
+
 - **`bridge_feasible: no` MEASURED THE WRONG GENERATOR, AND THE SIGNATURE
   CROSSED.** Unit #17, and it is the first prediction this campaign has
   REFUTED rather than confirmed.
