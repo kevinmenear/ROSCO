@@ -935,13 +935,39 @@
         "DISCON"
       ],
       "dependency_depth": 0,
-      "verification": "kernel replay or direct-call harness; bit-identical",
+      "verification": "ROUTE EXISTS AND WAS RUN. FIVE LAYERS, ALL FIVE ALIVE -- the fourth unit in this campaign of which that is true, after #11, #13 and #18. Counts and what each layer is blind to are in `observability`; the artifacts are listed in `evidence`.",
       "why": "every input and output crosses the signature",
       "bridge_feasible": {
-        "value": "unknown",
-        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+        "value": "yes",
+        "basis": "MEASURED, not predicted, and it REFUTES this unit's inherited `unknown`. `vit interface` crosses all ten arguments in the identical shape unit #18 measured for the sibling signature: the TYPE(FilterParameters) INOUT dummy as C_LOC(FP) against a flat filterparameters_t view, the LOGICAL(4) as MERGE(1_C_INT,0_C_INT,reset), the INTEGER(INOUT) `inst` by pointer, and the OPTIONAL REAL as VIT's PRESENT() flag plus a value. The plan's `unknown` -- 5 blocking features no FEATURE_CELLS pattern could attribute to a declaration -- was the honest answer and none of the five is in this signature. Builds, links, passes the gate 27/27."
       },
-      "observability": null
+      "observability": "FIVE LAYERS, ALL FIVE ALIVE. What each one CANNOT see, measured rather than reasoned:\n\n  kernel replay          62/62, 14,818 compared field rows ALL IDENTICAL. The tree has EXACTLY ONE call site: clean Controllers.f90:941 in CableControl, `LocalVar%CC_ActuatedDL(I_GROUP) = SecLPFilter_Vel(LocalVar%CC_DesiredL(I_GROUP), ...)`. Coverage: scenario 3 15,999 hits, 7 23,999, 27 23,999. Scenario 27 chosen; window exactly the configured 0:0:1-20,12000-12020,23900-23920 = 62, no stray index, Time 0.0 -> 597.975.\n    THE VERDICT PASSED A STUB WHOSE WHOLE RETURN VALUE IS 0.0 (C12). The reference output has decayed to -2.97e-52 in the window and kgen_tolerance is 1e-14 ABSOLUTE, so the 63 field rows that move are classified `NOT IDENTICAL(within tolerance)` and counted as passes: `vit verify` prints 62/62 for it (evidence/SecLPFilter_Vel/kernel.zero-output-stub-PASSES-verdict-63-rows-move.run.txt). The FIELD LOG is not blind -- the shipped translation's 14,818 rows are all IDENTICAL and the stub's are not -- which is unit #3's rule: the bit-exact claim is the status column, never the verdict line.\n    41 OF 62 CASES ARE VACUOUS IN THE OUTPUT. The zero-output stub moves rows in 21 of 62; the other 41 are the cases with Time <= 500, where CableControl's `IF (LocalVar%Time > 500)` has not yet assigned CC_DesiredL, so the filter is handed 0 with all histories 0 and returns 0 for any coefficients. Scenario 3 is vacuous for the whole run and vit_sim.py's own comment says so (tlen=400 < 500), which is why it was not chosen.\n    CANNOT CONSTRAIN FOUR OF THE TEN ARGUMENTS. A stub pinning CornerFreq to the literal 2*PI/20, Damp to 1.0 and ignoring InitialValue passes 62/62, moving 5 within-tolerance rows in case 1 alone. Exactly 1 of the 62 cases has istatus == 0, so 61 never read CornerFreq or Damp at all -- unit #11's 'not read' rather than 'has one value'.\n  differential harness   2,884 checked, 0 failed, 0 inadmissible, against the CLEAN Fortran. RED-TESTED: the unit as a no-op fails 2,884 of 2,884. R4 reports the return value plus 47 out-parameters, the six lpfV_ coefficient arrays among them.\n    HELD, so untested by construction: 72 parameters. 36 held reals are zero in every case, so a scaling defect confined to one of those cannot move any output.\n  mutation score         79 of 79 BEHAVIOURAL killed, 1.000, 0 declared equivalent, 2 excluded as `killed (no compile)`. assoc_reorder ran and left nothing alive -- the direct dividend of unit #18's two corpus additions (hot rungs UNPINNED, and +/-sqrt(DBL_MAX) as a third isolating pin), made because this unit's a1 is the same bare product `2.0*DT**2.0*CornerFreq**2.0 - 8.0`. Inherited, not re-earned.\n  post-integration       2,884 checked, 0 failed, against the integrated build -- the generated wrapper marshals all ten arguments correctly. RED-TESTED with the rebuild between the edit and the run: CornerFreq and Damp swapped at the seclpfilter_vel_c call fails 1,100 of 2,884.\n  gate, 27 scenarios     5,252,000 values / 351 channels, 0 mismatched. RED-TESTED: the returned value scaled by 1.000001 moves 14,140, revert returns 0, scenarios_failed empty, perturbation_broke_scenarios empty. The moved channels are the unit's entire footprint and nothing else -- cc_actuated_dl 3071/24000 and cc_actuated_l 3999/24000 in scenarios 7 and 27, and scenario 3 does not appear. 14,140 matches no other committed redtest artifact.\n    The gate reads this unit only through the cable-control pair, and only in the 100 s after Time > 500. CC_Mode == 2 (the open-loop cable path) is reached by no scenario the gate runs: scenario 24 sets it, and coverage records scenario 24 executing no controller code at all.",
+      "disposition": "integrated",
+      "evidence": [
+        "evidence/SecLPFilter_Vel/README.md",
+        "evidence/SecLPFilter_Vel/done_check.txt",
+        "evidence/SecLPFilter_Vel/seclpfilter_vel.final.cpp",
+        "evidence/SecLPFilter_Vel/kernel.verification-PASSES-62of62.run.txt",
+        "evidence/SecLPFilter_Vel/kernel.zero-stub-FAILS.run.txt",
+        "evidence/SecLPFilter_Vel/seclpfilter_vel.zero-stub.cpp",
+        "evidence/SecLPFilter_Vel/kernel.zero-output-stub-PASSES-verdict-63-rows-move.run.txt",
+        "evidence/SecLPFilter_Vel/seclpfilter_vel.zero-output-stub.cpp",
+        "evidence/SecLPFilter_Vel/kernel.hardcoded-arguments-stub-PASSES.run.txt",
+        "evidence/SecLPFilter_Vel/seclpfilter_vel.hardcoded-arguments-stub.cpp",
+        "evidence/SecLPFilter_Vel/kernel_field_rows.txt",
+        "evidence/SecLPFilter_Vel/kernel_field_rows.py",
+        "translations/Filters/seclpfilter_vel.cpp",
+        "gate/SecLPFilter_Vel.json",
+        "gate/SecLPFilter_Vel.redtest.json",
+        "harness/SecLPFilter_Vel.json",
+        "harness/SecLPFilter_Vel.redtest.json",
+        "harness/SecLPFilter_Vel.postintegration.json",
+        "harness/SecLPFilter_Vel.postintegration.redtest.json",
+        "mutation/SecLPFilter_Vel.json"
+      ],
+      "source_file": "rosco/controller/src/Filters.f90",
+      "translation": "translations/Filters/seclpfilter_vel.cpp",
+      "harness_required": true
     },
     {
       "order": 20,

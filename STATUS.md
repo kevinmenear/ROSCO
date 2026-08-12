@@ -4,6 +4,54 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-12: unit #19 `SecLPFilter_Vel` is `integrated` and CLOSED**,
+first dispatch. **Five layers, all five alive** — the fourth unit in this
+campaign of which that is true, after #11, #13 and #18.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases, scenario 27 | 14,818 field rows, ALL `IDENTICAL` | zero stub **0/62**, 477 rows moved |
+| differential harness vs clean Fortran | **2,884** checked, 0 failed, 0 inadmissible | the unit as a no-op fails **2,884 of 2,884** |
+| mutation score | **79 of 79 behavioural killed, 1.000**, 0 declared equivalent, 2 no-compile | `assoc_reorder` ran and left nothing alive — on the corpus unit #18 widened, not on a new one |
+| post-integration harness (wrapper only) | **2,884 checked, 0 failed** | `CornerFreq`/`Damp` swapped at the `seclpfilter_vel_c` call, rebuilt between edit and run: **1,100 of 2,884** |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | ×1.000001 moves **14,140 of 5,252,000**, matching no other committed red test |
+
+**A STUB WHOSE ENTIRE RETURN VALUE IS THE CONSTANT `0.0` PASSED THE KERNEL
+VERDICT 62/62 (C12).** Not a build defect this time — arithmetic. This is the
+VELOCITY form of #18's filter, so it is a differentiator, and at the only call
+site in the tree its input is a step that settles: by the captured window the
+reference output has decayed to **-2.97e-52**. `kgen_tolerance` is `1.D-14` and
+**ABSOLUTE**, so the 63 field rows the stub does move come back
+`NOT IDENTICAL(within tolerance)` and are **counted as passes**. The field log
+is not blind — the shipped translation's 14,818 rows are all `IDENTICAL` and the
+stub's are not — but the verdict line is, which is unit #3's rule in its
+starkest sighting. The wrong artifact is committed at
+`evidence/SecLPFilter_Vel/kernel.zero-output-stub-PASSES-verdict-63-rows-move.run.txt`.
+NOT FIXED HERE: changing what `vit verify` calls a pass is X3, eighteen
+committed artifacts wide. Recorded in DECISIONS.md as a candidate, with the
+addition that would close it without moving any of them.
+
+**41 OF THE 62 CAPTURED CASES ARE VACUOUS IN THE OUTPUT**, and the same
+sentence explains the scenario choice. The only call site is inside
+`CableControl`'s `CC_Mode == 1` branch, whose `CC_DesiredL` assignments are
+guarded by `IF (LocalVar%Time > 500)`; before that the filter is handed 0 with
+all histories 0 and returns 0 for *any* coefficients. Coverage offered
+scenarios 3, 7 and 27; scenario 3 was rejected on `Examples/vit_sim.py`'s own
+comment — *"with CC_Group_N=1 and tlen=400 < 500, the filter processes zero
+input the entire run"* — which is P9 written into the source by a previous
+author. Scenario 27 runs to 600 s and 21 of its 62 captured cases are past the
+step.
+
+**THE MUTATION SCORE WAS INHERITED, NOT RE-EARNED, AND THAT IS THE RESULT.**
+Unit #18 spent its cycle proving two `assoc_reorder` survivors killable and
+adding the hot rungs UNPINNED plus `±sqrt(DBL_MAX)` to `harness/generate.py`,
+because `2.0*DT**2.0*CornerFreq**2.0` is a bare product with no term to remove.
+This unit's `lpfV_a1` is that identical expression. It scored **1.000 on the
+first run** with no corpus work at all — the first time in this campaign a
+corpus addition has paid for a later unit rather than for the one that made it.
+
+---
+
 **As of 2026-08-12: unit #18 `SecLPFilter` is `integrated` and CLOSED**, first
 dispatch. **Five layers, all five alive** — the third unit in this campaign of
 which that is true, after #11 and #13.
@@ -960,16 +1008,27 @@ fields — those are hypotheses, not facts. Run
 
 ## Counts
 
-16 attempted / **16 integrated** / 0 integrated_unexercised / 0 out_of_scope /
-0 deferred / 0 blocked.
+19 attempted / **18 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+0 deferred / **1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 53 remain.
+69 units in `plan.json`; 50 remain.
 
 (This block read `8 / 8 / 61 remain` through unit #9, which did not update it.
 Recounted from `plan.json` at unit #10 rather than incremented, and recounted
-again at unit #11.)
+again at unit #11, and again at unit #19 — it had gone stale at `16 / 16 / 53`
+across units #17 and #18. Recount, never increment.)
 
-**8 of the 16 integrated units are invisible to the gate**, for seven different
+**Ten of the 18 integrated units are gate-visible**, each with a red-test count
+that matches no other: ColemanTransform 124,353, ColemanTransformInverse
+389,644, GetWords 1,857,893, LPFilter 1,592,059, NonDecreasing 1,857,893
+(*shared* with GetWords — see below), NotchFilter 551,278, NotchFilterSlopes
+128,918, ReadAvrSWAP 1,487,557, SecLPFilter 1,349,326, SecLPFilter_Vel 14,140.
+`SecLPFilter_Vel`'s is the smallest yet and the most precisely attributable: the
+four moved channels are `cc_actuated_dl` and `cc_actuated_l` in scenarios 7 and
+27 and nothing else, 3,999 of 24,000 samples each, which is exactly the tail
+after `Time > 500`.
+
+**8 of the first 16 integrated units are invisible to the gate**, for seven different
 reasons. `ReadAvrSWAP` is NOT one of them — its red test moves 1,487,557 of
 5,252,000 — but it carries the campaign's largest *partial* blindness instead:
 23 of its 43 output fields move nothing at the gate and nothing in the kernel,
@@ -995,12 +1054,9 @@ before #9 do not have theirs; that is recorded under Open.
 
 **Unit #11 needs no control**, and that is the point of the rule rather than an
 exception to it: `LPFilter`'s gate red test WENT RED (1,592,059 of 5,252,000), so
-it demonstrated the chain a control would have been asked to demonstrate. Eight
-of the sixteen units are gate-visible — ColemanTransform 124,353,
-ColemanTransformInverse 389,644, GetWords 1,857,893, LPFilter 1,592,059,
-NonDecreasing 1,857,893, NotchFilter 551,278, NotchFilterSlopes 128,918,
-ReadAvrSWAP 1,487,557. **Unit #16 needs no control either**, for the same
-reason as #11: its red test went red.
+it demonstrated the chain a control would have been asked to demonstrate. The
+gate-visible list is kept once, in the recount above. **Units #16, #18 and #19
+need no control either**, for the same reason as #11: their red tests went red.
 
 **Unit #15 needed a control and it is the reason the rule exists.** Both of
 `PathIsRelative`'s red tests came back with 0 values moved, and on that build the

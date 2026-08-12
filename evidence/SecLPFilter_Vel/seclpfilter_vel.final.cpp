@@ -1,0 +1,140 @@
+// VIT Translation Scaffold
+// Function: SecLPFilter_Vel
+// Source: Filters.f90
+// Module: Filters
+// Fortran: FUNCTION SecLPFilter_Vel(InputSignal, DT, CornerFreq, Damp, FP, iStatus, reset, inst, InitialValue)
+// Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+// Source MD5: f4f0ae146c7d
+// VIT: 0.1.0
+// Status: unverified
+// Generated: 2026-08-12T15:15:29Z
+
+#include "vit_types.h"
+
+double SecLPFilter_Vel(double InputSignal, double DT, double CornerFreq, double Damp, filterparameters_t* FP, int iStatus, int32_t reset, int* inst, int has_InitialValue, double InitialValue) {
+    // `inst` is a 1-based Fortran index into every FP array. Named ONCE, here,
+    // so the 0-based conversion has a single site -- the same shape units #9,
+    // #11, #13 and #18 use in this file. The increment at the end is written
+    // against `*inst` directly, because the Fortran increments the dummy and the
+    // caller sees it.
+    const int i = *inst - 1;
+
+    // REAL(DbKi) :: InitialValue_
+    //   InitialValue_ = InputSignal
+    //   IF (PRESENT(InitialValue)) InitialValue_ = InitialValue
+    // Transcribed as the Fortran writes it -- a default that is then overwritten
+    // -- rather than folded into a conditional expression. `has_InitialValue` is
+    // VIT's PRESENT() flag, and for THIS unit it is dead in the whole campaign:
+    // the only call site in the tree is Controllers.f90:941 (CableControl), which
+    // passes eight arguments and no InitialValue. So the branch is transcribed
+    // but nothing in the simulation reaches it; only the differential harness
+    // varies the flag.
+    double InitialValue_ = InputSignal;
+    if (has_InitialValue) InitialValue_ = InitialValue;
+
+    // IF ((iStatus == 0) .OR. reset) THEN
+    // `reset` is LOGICAL(4); the generated wrapper hands it over as
+    // MERGE(1_C_INT, 0_C_INT, reset), so any non-zero value is .TRUE.
+    if ((iStatus == 0) || (reset != 0)) {
+        // Source order. All four are set to the same value, so their relative
+        // order is unobservable -- transcribed in source order anyway, because
+        // nothing justifies moving them, and all four are read by the filter
+        // expression below or by the history shift after it.
+        FP->lpfV_OutputSignalLast1[i] = InitialValue_;
+        FP->lpfV_OutputSignalLast2[i] = InitialValue_;
+        FP->lpfV_InputSignalLast1[i] = InitialValue_;
+        FP->lpfV_InputSignalLast2[i] = InitialValue_;
+
+        // Coefficients. The Fortran is
+        //
+        //   FP%lpfV_a2(inst) = DT**2.0*CornerFreq**2.0 + 4.0 + 4.0*Damp*CornerFreq*DT
+        //   FP%lpfV_a1(inst) = 2.0*DT**2.0*CornerFreq**2.0 - 8.0
+        //   FP%lpfV_a0(inst) = DT**2.0*CornerFreq**2.0 + 4.0 - 4.0*Damp*CornerFreq*DT
+        //   FP%lpfV_b2(inst) = 2.0*DT*CornerFreq**2.0
+        //   FP%lpfV_b1(inst) = 0.0
+        //   FP%lpfV_b0(inst) = -2.0*DT*CornerFreq**2.0
+        //
+        // The `a` coefficients are the same expressions SecLPFilter (#18) carries
+        // and the two parse facts that decide their parentheses are the same,
+        // both measured on this compiler in this file rather than assumed:
+        //
+        // 1. `**` binds TIGHTER than `*`, so `DT**2.0*CornerFreq**2.0` is
+        //    `(DT**2.0) * (CornerFreq**2.0)`. Written as
+        //    `DT * DT * CornerFreq * CornerFreq` the C++ would accumulate
+        //    `((DT*DT)*CornerFreq)*CornerFreq`, a different intermediate
+        //    rounding -- the `exponent-grouping` check's shape.
+        // 2. A REAL exponent of exactly 2.0 is expanded by gfortran as a
+        //    multiplication, not a libm `pow` call, so `DT**2.0` is `DT*DT`
+        //    exactly. Measured for these flags at unit #13 over 200,010 values
+        //    including the overflow-to-Inf and underflow-to-zero endpoints
+        //    (`evidence/NotchFilter/pow_two_probe.f90`); this unit writes the
+        //    identical `**2.0` form. A REAL exponent of 3.0 or more would NOT be
+        //    safe to write this way.
+        //
+        // The `b` coefficients are where this unit DIFFERS from SecLPFilter --
+        // it is the velocity form, so its numerator carries a single `DT` and a
+        // sign, not `DT**2.0`:
+        //
+        //   `2.0*DT*CornerFreq**2.0` is `(2.0*DT) * (CornerFreq*CornerFreq)` --
+        //   `*` is left-associative and `**` has already bound the square, so the
+        //   `2.0*DT` product is formed FIRST. Writing `2.0 * (DT * (C*C))` would
+        //   be a different rounding, and it is exactly the regrouping unit #18's
+        //   two surviving assoc_reorder mutants were.
+        //
+        //   `-2.0*DT*CornerFreq**2.0`: Fortran has no negative literals, and
+        //   unary minus binds LOOSER than `*`, so the Fortran is
+        //   `-((2.0*DT)*(C*C))`. In C++ unary minus binds tighter, so a literal
+        //   `-2.0 * DT * ...` would be `((-2.0)*DT)*...`. Those two are in fact
+        //   bit-identical -- IEEE negation is exact and commutes with a rounded
+        //   product -- but the parenthesised form is what the Fortran PARSES as,
+        //   and transcribing the parse is what keeps the claim checkable rather
+        //   than resting on that argument.
+        //
+        // `4.0*Damp*CornerFreq*DT` is a plain left-associative chain in both
+        // languages, `((4.0*Damp)*CornerFreq)*DT`, and needs no parentheses. The
+        // `+ 4.0 +` / `+ 4.0 -` chains are likewise left-associative in both, so
+        // the products meet the literal in source order.
+        FP->lpfV_a2[i] = (DT * DT) * (CornerFreq * CornerFreq) + 4.0 + 4.0 * Damp * CornerFreq * DT;
+        FP->lpfV_a1[i] = 2.0 * (DT * DT) * (CornerFreq * CornerFreq) - 8.0;
+        FP->lpfV_a0[i] = (DT * DT) * (CornerFreq * CornerFreq) + 4.0 - 4.0 * Damp * CornerFreq * DT;
+        FP->lpfV_b2[i] = 2.0 * DT * (CornerFreq * CornerFreq);
+        FP->lpfV_b1[i] = 0.0;
+        FP->lpfV_b0[i] = -(2.0 * DT * (CornerFreq * CornerFreq));
+    }
+
+    // SecLPFilter_Vel = 1.0/FP%lpfV_a2(inst) * (FP%lpfV_b2(inst)*InputSignal
+    //                                         + FP%lpfV_b1(inst)*FP%lpfV_InputSignalLast1(inst)
+    //                                         + FP%lpfV_b0(inst)*FP%lpfV_InputSignalLast2(inst)
+    //                                         - FP%lpfV_a1(inst)*FP%lpfV_OutputSignalLast1(inst)
+    //                                         - FP%lpfV_a0(inst)*FP%lpfV_OutputSignalLast2(inst))
+    //
+    // Transcribed shape-for-shape, NOT algebraically. `/` and `*` are equal
+    // precedence and left-associative in both languages, so `1.0/a2 * (...)` is
+    // a RECIPROCAL then a multiply -- which rounds differently from `(...)/a2`.
+    // The five terms inside the parentheses accumulate left to right in both, so
+    // they are written in source order with no regrouping.
+    //
+    // The `b1` term is NOT dropped even though `b1` is written as the literal
+    // 0.0 above: `b1` is a stored array element that this call may not have
+    // written (the coefficients are set only in the initialisation branch), and
+    // `0.0 * x` is not the identity for an infinite or NaN `x` anyway.
+    const double SecLPFilter_Vel_result =
+        1.0 / FP->lpfV_a2[i] * (FP->lpfV_b2[i] * InputSignal
+                                + FP->lpfV_b1[i] * FP->lpfV_InputSignalLast1[i]
+                                + FP->lpfV_b0[i] * FP->lpfV_InputSignalLast2[i]
+                                - FP->lpfV_a1[i] * FP->lpfV_OutputSignalLast1[i]
+                                - FP->lpfV_a0[i] * FP->lpfV_OutputSignalLast2[i]);
+
+    // Save signals for next time step. Order is load-bearing: each `Last2` is
+    // written FROM its `Last1` before that `Last1` is overwritten, so the four
+    // assignments are a shift and cannot be reordered. All four reads in the
+    // filter expression above happen first.
+    FP->lpfV_InputSignalLast2[i] = FP->lpfV_InputSignalLast1[i];
+    FP->lpfV_InputSignalLast1[i] = InputSignal;
+    FP->lpfV_OutputSignalLast2[i] = FP->lpfV_OutputSignalLast1[i];
+    FP->lpfV_OutputSignalLast1[i] = SecLPFilter_Vel_result;
+
+    *inst = *inst + 1;
+
+    return SecLPFilter_Vel_result;
+}

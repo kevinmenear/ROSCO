@@ -1,0 +1,22 @@
+Transcript of `python3.12 scripts/done_check.py SecLPFilter_Vel`, run after both
+commits and before this file existed -- P2 counts an untracked file as a dirty
+tree, so a capture written by redirection would have described itself rather
+than the unit (RUNBOOK, unit #5). Committed by amending the state commit.
+
+baseline (inferred): 9e5792f  -- the commit before 66bbcfe touched translations/Filters/seclpfilter_vel.cpp
+
+SecLPFilter_Vel: Verdict.COMPLETE  (13/13 PASS)
+
+[  ok  ] P1   commits exist
+[  ok  ] P2   clean tree
+[  ok  ] P3   disposition recorded
+[  ok  ] P4   evidence recorded
+[  ok  ] P5   evidence resolves
+[  ok  ] P6   functional commit
+[  ok  ] P7   state brought current
+[  ok  ] P8   unit named in state
+[  ok  ] P9   gate compared and matched
+[  ok  ] P12  mutation score for this unit       79/79 mutant(s) killed
+[  ok  ] P11  post-integration harness re-run    2884 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible

@@ -4221,3 +4221,124 @@ finite, which is the only one of the three that survives a later subtraction.
 A fourth shape probably exists for a QUOTIENT and has not been needed yet; the
 question to ask of a survivor is not "is the rung present" but **"what does the
 rest of the expression do to the rung's difference before it reaches an output"**.
+
+## The kernel verdict passed a stub whose whole return value is 0.0, and the cause is an absolute tolerance meeting a decaying signal
+
+**Unit #19 `SecLPFilter_Vel`, and it is unit #3's rule reaching the case that
+makes it expensive.**
+
+`seclpfilter_vel.zero-output-stub.cpp` is identical to the shipped translation
+in every state write — the four history slots, all six coefficients, the history
+shift, the instance increment — with the filter expression replaced by the
+constant `0.0`. The kernel's own summary on it reads
+
+```
+    Total number of verification cases  :    62
+    Number of verification-passed cases :    62
+    kernel: SecLPFilter_Vel: PASSED verification
+```
+
+and `vit verify` prints `✓ VERIFICATION PASSED: 62/62 passed`.
+
+Nothing is broken. This unit is the VELOCITY form of the second-order filter —
+`b2 = +2.0*DT*CornerFreq**2.0`, `b1 = 0.0`, `b0 = -2.0*DT*CornerFreq**2.0` — so
+it is a differentiator, and at its only call site the input is a step at
+`Time > 500` that then holds constant. By the captured window (`Time` 597.9) the
+output has decayed to **-2.97e-52**. KGen compares an array field as
+
+```
+IF (ALL(var == kgenref_var)) -> IDENTICAL
+ELSE rmsdiff = SQRT(SUM((var-ref)**2)/n)
+     IF (rmsdiff > kgen_tolerance) -> OUT_TOL  ELSE -> IN_TOL
+```
+
+with `kgen_tolerance = 1.D-14`, **absolute**, and `n = 1024` for the `lpfV_`
+arrays. So a difference of 3e-52 in one element is an RMS of 1e-53, the row
+comes back `NOT IDENTICAL(within tolerance)`, and the case is **counted as
+passed**. 63 rows move across 21 cases and the verdict is 62/62.
+
+**The field log is not blind.** The shipped translation's 14,818 rows are all
+`IDENTICAL`; the stub's are not. The bit-exact claim was always the `status`
+column and this is the sighting that shows what the verdict costs when they
+disagree — a translation returning a constant would have been recorded as
+verified by anyone reading the line VIT prints.
+
+**NOT FIXED HERE.** Two candidate fixes and why neither was taken in this unit:
+
+1. *Make the verdict bit-exact* — i.e. count `IN_TOL` as a failure. That changes
+   what every committed kernel green in this campaign means, eighteen units
+   wide. X3 and SPEC §8.4: the Driver's call.
+2. *Print the status counts beside the verdict* — pure addition, changes no
+   recorded number, and it is the same gap unit #16 already found from the other
+   side: `run_kernel_verify` computes a field-coverage line into `result.output`
+   and `cmd_verify` never prints `result.output` at all. This is the cheap one
+   and it is recorded as a candidate rather than done, because a change to the
+   tool that produced this unit's own evidence does not belong inside the cycle
+   that produced it.
+
+Until one of them lands, the RUNBOOK recipe stands and this unit is its worked
+example: **read the row statuses, never the verdict line.**
+`evidence/SecLPFilter_Vel/kernel_field_rows.py` now prints the two next to each
+other for every run log, which is the smallest thing that makes the disagreement
+impossible to miss.
+
+### The same tolerance also softened the hardcoded-argument stub
+
+`seclpfilter_vel.hardcoded-arguments-stub.cpp` pins `CornerFreq` to the literal
+`2*PI/20`, `Damp` to `1.0`, and ignores `InitialValue`. It passes 62/62 — the
+expected result, since exactly **1 of the 62 cases has `istatus == 0`** and the
+other 61 never read those arguments. But it is *not* bit-identical: it moves
+**five rows in case 1**, all within tolerance, because a hand-written `2*PI/20`
+differs in the last bits from `2*PI/CntrPar%CC_ActTau`. Read off the verdict
+that is "the kernel cannot constrain four arguments". Read off the rows it is
+"the kernel cannot constrain four arguments, and would not have noticed a
+last-bit error in the one case that reads them either". The second is the true
+statement and only one of the two artifacts contains it.
+
+## A corpus addition paid for a later unit, which is the first time that has happened here
+
+**Unit #19, and it is worth recording because it is the return on unit #18's
+cycle rather than on this one.**
+
+`SecLPFilter_Vel`'s `lpfV_a1` is `2.0*DT**2.0*CornerFreq**2.0 - 8.0` — the same
+expression, character for character, that left `SecLPFilter` at **0.975** with
+two `assoc_reorder` survivors. Unit #18 proved both killable over the reachable
+inputs and closed them by two additions to `harness/generate.py`: the hot
+magnitude rungs run UNPINNED, and `±sqrt(DBL_MAX)` as a third isolating pin
+beside `0.0` and `1e300`.
+
+This unit scored **1.000 on the first mutation run**, 79 of 79 behavioural, 0
+declared equivalent, with `assoc_reorder` among the operators and no survivor.
+No corpus work was done in this cycle at all.
+
+Two things follow. **An addition to the corpus is campaign capital, not unit
+overhead** — the argument for spending a cycle proving a survivor killable
+instead of declaring it equivalent is not only that the declaration would have
+been false, it is that the next sibling unit gets the kill for free. And the
+generator's rule_coverage line is what makes that legible: it names both blocks
+by their reasons in `harness/SecLPFilter_Vel.json`, so a reader of THIS unit's
+artifact can see which of its kills it did not earn.
+
+## The gate can see a unit through two channels and 100 seconds, and that is a real sighting
+
+**Unit #19.** The red test — the returned value scaled by 1.000001 — moves
+**14,140 of 5,252,000**, the smallest non-zero figure this campaign has
+recorded, and it is more precisely attributable than any of the large ones. The
+moved channels are exactly
+
+```
+scenario_7:cc_actuated_dl  3071/24000     scenario_27:cc_actuated_dl  3071/24000
+scenario_7:cc_actuated_l   3999/24000     scenario_27:cc_actuated_l   3999/24000
+```
+
+3,999 of 24,000 is the tail after `Time > 500`; scenario 3, which coverage lists
+as the third caller, does not appear at all because its run ends at 400 s. So
+the count is small for a reason the artifact itself states, `scenarios_failed`
+and `perturbation_broke_scenarios` are both empty, and 14,140 matches no other
+committed redtest figure. Unit #12's comparison check was run and passed.
+
+**What the gate cannot reach**: `CC_Mode == 2`, the open-loop cable path. One
+scenario configures it — 24 — and coverage records scenario 24 executing no
+controller code at all, which STATUS.md has carried since phase 3 as an E3.3
+failure. So the branch above this unit's call site has one scenario and that
+scenario is one of the three dead ones.

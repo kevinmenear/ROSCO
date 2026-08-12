@@ -1,0 +1,35 @@
+real translation: 62 cases, 14818 compared field rows
+    kernel verdict line: 62 of 62 cases PASSED
+    row statuses: {'IDENTICAL': 14818}
+
+zero stub: 62 cases, 14818 compared field rows
+    kernel verdict line: 0 of 62 cases PASSED
+    row statuses: {'IDENTICAL': 14341, 'NOT IDENTICAL (out of tol)': 414, 'NOT IDENTICAL (within tol)': 63}
+    moved in  62 of 62 case(s) [1..23920]: fp%lpfv_a0
+    moved in  62 of 62 case(s) [1..23920]: fp%lpfv_a1
+    moved in  62 of 62 case(s) [1..23920]: fp%lpfv_a2
+    moved in  62 of 62 case(s) [1..23920]: fp%lpfv_b0
+    moved in  62 of 62 case(s) [1..23920]: fp%lpfv_b2
+    moved in  21 of 62 case(s) [23900..23920]: fp%lpfv_inputsignallast1
+    moved in  21 of 62 case(s) [23900..23920]: fp%lpfv_inputsignallast2
+    moved in  21 of 62 case(s) [23900..23920]: fp%lpfv_outputsignallast1
+    moved in  21 of 62 case(s) [23900..23920]: fp%lpfv_outputsignallast2
+    moved in  21 of 62 case(s) [23900..23920]: localvar%cc_actuateddl
+    moved in  62 of 62 case(s) [1..23920]: localvar%fp
+
+hardcoded-argument stub: 62 cases, 14818 compared field rows
+    kernel verdict line: 62 of 62 cases PASSED
+    row statuses: {'IDENTICAL': 14813, 'NOT IDENTICAL (within tol)': 5}
+    moved in   1 of 62 case(s) [1]: fp%lpfv_a0
+    moved in   1 of 62 case(s) [1]: fp%lpfv_a2
+    moved in   1 of 62 case(s) [1]: fp%lpfv_b0
+    moved in   1 of 62 case(s) [1]: fp%lpfv_b2
+    moved in   1 of 62 case(s) [1]: localvar%fp
+
+zero-output stub: 62 cases, 14818 compared field rows
+    kernel verdict line: 62 of 62 cases PASSED
+    row statuses: {'IDENTICAL': 14755, 'NOT IDENTICAL (within tol)': 63}
+    moved in  21 of 62 case(s) [23900..23920]: fp%lpfv_outputsignallast1
+    moved in  21 of 62 case(s) [23900..23920]: localvar%cc_actuateddl
+    moved in  21 of 62 case(s) [23900..23920]: localvar%fp
+

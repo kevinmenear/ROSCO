@@ -339,6 +339,44 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A STUB WHOSE WHOLE RETURN VALUE IS `0.0` CAN PASS THE KERNEL VERDICT 62/62,
+  AND THE TELL IS IN THE ROWS RATHER THAN ANYWHERE IN THE RUN.** Unit #19, and
+  it is unit #3's tolerance rule reaching the case that costs something.
+
+  KGen scores an array field `IN_TOL` when `SQRT(SUM((var-ref)**2)/n)` is under
+  `kgen_tolerance = 1.D-14` -- **ABSOLUTE**, and `n` is the DECLARED extent, 1024
+  for every `FP` array. So a unit whose output has decayed small enough is
+  compared against nothing: `SecLPFilter_Vel`'s reference output is
+  `-2.97e-52` in the captured window, one element of 1024, giving an RMS of
+  1e-53. A stub identical to the translation in every state write with the
+  filter expression replaced by `0.0` moved **63 rows in 21 of 62 cases** and
+  the kernel printed `Number of verification-passed cases : 62`.
+
+  **A zero stub is not enough to establish that a kernel can see the RESULT.**
+  The ordinary zero stub also zeroes the coefficients, which the reference
+  writes in one case and leaves alone in the other 61 -- so it fails every case
+  for a reason that has nothing to do with the returned value. Build the second
+  stub, the one that perturbs ONLY the thing you are asking about:
+
+  ```
+  # identical in every state write; the filter expression -> 0.0
+  # then count the ROWS, not the cases:
+  grep -c "is IDENTICAL" evidence/<U>/<log>          # and
+  grep -c "NOT IDENTICAL"  evidence/<U>/<log>        # (within tolerance) counts as PASSED
+  ```
+
+  `evidence/SecLPFilter_Vel/kernel_field_rows.py` prints the verdict line and
+  the row statuses next to each other for every run log, which is the smallest
+  thing that makes the disagreement impossible to miss. Copy it, not the
+  SecLPFilter version -- that one has no tolerance column.
+
+  The same tolerance softens a HARDCODED-ARGUMENT stub into a weaker claim than
+  it looks: this unit's passes 62/62 and still moves 5 within-tolerance rows,
+  because `2*PI/20` written by hand differs in the last bits from
+  `2*PI/CntrPar%CC_ActTau`. "The kernel cannot constrain this argument" and
+  "the kernel would not have seen a last-bit error in it either" are two claims
+  and only the row table contains the second.
+
 - **A HAND-RUN `make` IN A KERNEL DIRECTORY REPORTS THE PREVIOUS
   TRANSLATION'S VERDICT, AND A ZERO STUB "PASSED 62/62" ON IT.** Unit #18, and
   it is a defect in a recipe TWO entries below this one already teach.
