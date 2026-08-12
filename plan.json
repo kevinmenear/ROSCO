@@ -864,7 +864,10 @@
         "evidence/Read_OL_Input/harness.REFUSED-filename-not-in-mapped-signature.log",
         "gate/Read_OL_Input.json",
         "gate/Read_OL_Input.redtest.json"
-      ]
+      ],
+      "source_file": "rosco/controller/src/ROSCO_Helpers.f90",
+      "translation": "translations/ROSCO_Helpers/read_ol_input.cpp",
+      "harness_required": true
     },
     {
       "order": 18,

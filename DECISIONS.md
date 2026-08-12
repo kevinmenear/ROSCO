@@ -3732,6 +3732,23 @@ THIRD thing: the oracle runs, the bridge ships, the gate passes — and the
 instrument's input space has the wrong SHAPE for the unit. Still the Driver's
 call; recorded, not decided.
 
+### P13 fires for the first time in this campaign
+
+`done_check.py` reports **INCOMPLETE, 9 of 13**, failing P11, P12 and P13. The
+first two are the two artifacts that do not exist. **P13 is new here**: sixteen
+`mirror` units never reached it, and its message is the whole reason this unit
+cannot be closed on what it does have --
+
+```
+P13  respecify_unscored: ... a reimplementation closes on a mutation score,
+     not on the gate
+```
+
+A `respecify` unit is not held to a bit-identical transcription, so a passing
+gate is not evidence about it in the way it is for a `mirror` unit. The
+condition already knew that and said so on the first `respecify` unit it saw.
+The verdict is correct and is kept.
+
 ### NOT method, target
 
 The allocate-on-return bridge, the view-populator fix, the KGen deferred-length
