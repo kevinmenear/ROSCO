@@ -32,3 +32,24 @@ sigma: Verdict.INCOMPLETE  (12/13 PASS)
 [  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
 [  ok  ] P10  evidence reproducible              
 
+
+--- SECOND TAKE, at 05e4e0f, with this file committed and the tree clean ---
+
+baseline (inferred): 3ce40ea  -- the commit before 87dd2bb touched translations/Functions/sigma.cpp
+
+sigma: Verdict.COMPLETE  (13/13 PASS)
+
+[  ok  ] P1   commits exist                      
+[  ok  ] P2   clean tree                         
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[  ok  ] P5   evidence resolves                  
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[  ok  ] P9   gate compared and matched          
+[  ok  ] P12  mutation score for this unit       42/42 mutant(s) killed, 3 declared equivalent
+[  ok  ] P11  post-integration harness re-run    1069 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible              
+

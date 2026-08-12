@@ -5,7 +5,8 @@
 stand*. One copy of every count — do not duplicate them anywhere else.
 
 **As of 2026-08-12: unit #25 `sigma` is `integrated` and CLOSED**, first
-dispatch. **Five layers, all five alive — and on two of the unit's three
+dispatch. **`scripts/done_check.py sigma` returns COMPLETE, 13 of 13**
+(`evidence/sigma/done_check.txt`, both takes kept). **Five layers, all five alive — and on two of the unit's three
 branches one instrument scores exactly ZERO where another scores in the
 hundreds.** Its section is directly below; unit #24 `saturate` is below that.
 
