@@ -1,0 +1,22 @@
+real translation: 62 cases, 14260 compared field rows
+    kernel verdict line: 62 of 62 cases PASSED
+    row statuses: {'IDENTICAL': 14260}
+
+no-op stub: 62 cases, 14260 compared field rows
+    kernel verdict line: 60 of 62 cases PASSED
+    row statuses: {'IDENTICAL': 14257, 'NOT IDENTICAL (out of tol)': 3}
+    moved in   1 of 62 case(s) [2]: localvar%pc_state
+    moved in   2 of 62 case(s) [1..2]: localvar%vs_state
+
+right-constant stub: 62 cases, 14260 compared field rows
+    kernel verdict line: 61 of 62 cases PASSED
+    row statuses: {'IDENTICAL': 14258, 'NOT IDENTICAL (out of tol)': 2}
+    moved in   1 of 62 case(s) [1]: localvar%pc_state
+    moved in   1 of 62 case(s) [1]: localvar%vs_state
+
+wrong-constant stub: 62 cases, 14260 compared field rows
+    kernel verdict line: 0 of 62 cases PASSED
+    row statuses: {'IDENTICAL': 14137, 'NOT IDENTICAL (out of tol)': 123}
+    moved in  61 of 62 case(s) [2..23920]: localvar%pc_state
+    moved in  62 of 62 case(s) [1..23920]: localvar%vs_state
+

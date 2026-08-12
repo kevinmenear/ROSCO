@@ -48,6 +48,7 @@ void readavrswap_c(float* avrSWAP, localvariables_view_t* LocalVar, controlparam
 void read_ol_input_c(char* OL_InputFileName, int Unit_OL_Input, int NumChannels, double** Channels, int* n_Channels_rows, int* n_Channels_cols, errorvariables_view_t* ErrVar);
 double seclpfilter_c(double InputSignal, double DT, double CornerFreq, double Damp, filterparameters_t* FP, int iStatus, int32_t reset, int* inst, int has_InitialValue, double InitialValue);
 double seclpfilter_vel_c(double InputSignal, double DT, double CornerFreq, double Damp, filterparameters_t* FP, int iStatus, int32_t reset, int* inst, int has_InitialValue, double InitialValue);
+void statemachine_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar);
 
 #ifdef __cplusplus
 }

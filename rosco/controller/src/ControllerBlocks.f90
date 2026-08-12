@@ -22,6 +22,16 @@ USE SysSubs
 
 IMPLICIT NONE
 
+
+    ! Auto-generated interface for C++ implementation of StateMachine
+    INTERFACE
+        SUBROUTINE statemachine_c(CntrPar, LocalVar) BIND(C, NAME='statemachine_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: LocalVar
+        END SUBROUTINE statemachine_c
+    END INTERFACE
+
 CONTAINS
 
     SUBROUTINE PowerControlSetpoints(CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -193,75 +203,21 @@ CONTAINS
     END SUBROUTINE ComputeVariablesSetpoints
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE StateMachine(CntrPar, LocalVar)
-    ! State machine, determines the state of the wind turbine to specify the corresponding control actions
-    ! PC States:
-    !       PC_State = PC_State_Disabled (0), No pitch control active, BldPitch = PC_MinPit
-    !       PC_State = PC_State_Enabled  (1), Active PI blade pitch control enabled
-    ! VS States
-    !       VS_State = VS_State_Error             (0), Error state, for debugging purposes, GenTq = VS_RtTq
-    !       VS_State = VS_State_Region_1_5        (1), Region 1(.5) operation, torque control to keep the rotor at cut-in speed towards the Cp-max operational curve
-    !       VS_State = VS_State_Region_2          (2), Region 2 operation, maximum rotor power efficiency (Cp-max) tracking using K*omega^2 law, fixed fine-pitch angle in BldPitch controller
-    !       VS_State = VS_State_Region_2_5        (3), Region 2.5, transition between below and above-rated operating conditions (near-rated region) using PI torque control
-    !       VS_State = VS_State_Region_3_ConstTrq (4), above-rated operation using pitch control (constant torque mode)
-    !       VS_State = VS_State_Region_3_ConstPwr (5), above-rated operation using pitch and torque control (constant power mode)
-    !       VS_State = VS_State_Region_3_FBP      (6), above-rated operation using fixed-pitch torque control
-    !       VS_State = VS_State_PI                (7), Tip-Speed-Ratio tracking PI controller
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : LocalVariables, ControlParameters
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
         IMPLICIT NONE
-    
-        ! Inputs
-        TYPE(ControlParameters),    INTENT(IN   )       :: CntrPar
-        TYPE(LocalVariables),       INTENT(INOUT)       :: LocalVar
-        
-        ! Initialize State machine if first call
-        IF (LocalVar%iStatus == 0) THEN ! .TRUE. if we're on the first call to the DLL
-
-            IF (LocalVar%PitCom(1) >= LocalVar%VS_Rgn3Pitch) THEN ! We are in region 3
-                LocalVar%PC_State = PC_State_Enabled
-                IF (CntrPar%VS_ConstPower == VS_Mode_ConstPwr) THEN ! Constant power tracking
-                    LocalVar%VS_State = VS_State_Region_3_ConstPwr
-                ELSE ! Constant torque tracking
-                    LocalVar%VS_State = VS_State_Region_3_ConstTrq
-                END IF
-            ELSE ! We are in Region 2
-                LocalVar%VS_State = VS_State_Region_2
-                LocalVar%PC_State = PC_State_Disabled
-            END IF
-
-        ! Operational States
-        ELSE
-            ! --- Pitch controller state machine ---
-            IF (CntrPar%PC_ControlMode == 1) THEN
-                LocalVar%PC_State = PC_State_Enabled
-            ELSE 
-                LocalVar%PC_State = PC_State_Disabled
-            END IF
-            
-            ! --- Torque control state machine ---
-            IF (LocalVar%BlPitchCMeas >= LocalVar%VS_Rgn3Pitch) THEN       
-                IF (CntrPar%VS_ConstPower == VS_Mode_ConstPwr) THEN                   ! Region 3
-                    LocalVar%VS_State = VS_State_Region_3_ConstPwr ! Constant power tracking
-                ELSE 
-                    LocalVar%VS_State = VS_State_Region_3_ConstTrq ! Constant torque tracking
-                END IF
-            ELSE
-                IF (LocalVar%GenArTq >= CntrPar%VS_MaxOMTq*1.01) THEN       ! Region 2 1/2 - active PI torque control
-                    IF (CntrPar%VS_FBP == VS_FBP_Variable_Pitch) THEN
-                        LocalVar%VS_State = VS_State_Region_2_5
-                    ELSE
-                        LocalVar%VS_State = VS_State_Region_3_FBP ! Region 3 - fixed blade pitch torque control
-                    END IF
-                ELSEIF ((LocalVar%GenSpeedF < CntrPar%VS_RefSpd) .AND. &
-                        (LocalVar%GenBrTq >= CntrPar%VS_MinOMTq)) THEN      ! Region 2 - optimal torque is proportional to the square of the generator speed
-                    LocalVar%VS_State = VS_State_Region_2
-                ELSEIF (LocalVar%GenBrTq < CntrPar%VS_MinOMTq) THEN         ! Region 1 1/2
-                
-                    LocalVar%VS_State = VS_State_Region_1_5
-                ELSE                                                        ! Error state, Debug
-                    LocalVar%VS_State = VS_State_Error
-                END IF
-            END IF
-        END IF
+        TYPE(CONTROLPARAMETERS), INTENT(IN), TARGET :: CntrPar
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL statemachine_c(C_LOC(CntrPar_view), C_LOC(LocalVar_view))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
     END SUBROUTINE StateMachine
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE WindSpeedEstimator(LocalVar, CntrPar, objInst, PerfData, DebugVar, ErrVar)

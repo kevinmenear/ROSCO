@@ -1,0 +1,12 @@
+Setting up C++ verification in kernel/StateMachine...
+  Build succeeded on iteration 1
+  Modified 15 files
+
+Running verification...
+
+✓ VERIFICATION PASSED: 62/62 passed
+  Field log: kernel/StateMachine/verify_fields.csv (13950 entries)
+
+  Red test: NOT CONSTRUCTED — no by-value floating-point parameter and no floating-point result: every input arrives behind a pointer or inside a derived type, and perturbing one of those could change what BOTH implementations compute. The kernel's discriminating power is therefore UNMEASURED for this function
+
+✗ StateMachine: NON_DISCRIMINATING — 62 case(s) compared IDENTICAL, and the kernel did not report a mismatch when the translation was deliberately changed. The pass is not evidence.

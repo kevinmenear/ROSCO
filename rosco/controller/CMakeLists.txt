@@ -98,6 +98,7 @@ set(SOURCES
     src/read_ol_input.cpp
     src/seclpfilter.cpp
     src/seclpfilter_vel.cpp
+    src/statemachine.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

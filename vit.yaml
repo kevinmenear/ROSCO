@@ -184,6 +184,22 @@ translations:
   SecLPFilter_Vel:
     status: integrated
     cpp_file: translations/Filters/seclpfilter_vel.cpp
+  # ADDED BY HAND at unit #20, for the reason units #14, #16 and #18 all
+  # recorded: `vit verify` and `vit integrate` rewrite this file through a YAML
+  # round-trip that DELETES EVERY COMMENT in it, so restoring the commented
+  # file is the only way to keep the file's own reasoning -- and then the entry
+  # has to be re-added. Paid for twice here: the second `vit integrate` of this
+  # unit stripped the file again, and the `git checkout --` that repaired it
+  # took this entry with it.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
+  # The gate DID run for this unit and DID see it -- a whole-unit no-op moves
+  # 1,526,538 of 5,252,000 values -- and the line is still the wrong claim,
+  # written by a command that ran no simulation and read no result. What
+  # verified this unit is in plan.json's `evidence`.
+  StateMachine:
+    status: integrated
+    cpp_file: translations/ControllerBlocks/statemachine.cpp
 types:
   ControlParameters:
     strategy: view

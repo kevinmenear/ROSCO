@@ -1,0 +1,17 @@
+PROBE init: iStatus==0                   217
+PROBE init: PitCom(1)>=Rgn3Pitch         36
+PROBE init/rgn3: ConstPwr                12
+PROBE init/rgn3: ConstTrq                24
+PROBE init: Region_2+PC_Disabled         181
+PROBE op: PC_ControlMode==1 -> Enabled   217
+PROBE op: PC_Disabled                    2456
+PROBE op: BlPitchCMeas>=Rgn3Pitch        2451
+PROBE op/rgn3: ConstPwr                  217
+PROBE op/rgn3: ConstTrq                  2234
+PROBE op: GenArTq>=MaxOMTq*1.01          24
+PROBE op: Region_2_5                     0
+PROBE op: Region_3_FBP                   24
+PROBE op: Region_2                       2
+PROBE op: Region_1_5                     176
+PROBE op: Error                          20
+HARNESS PASS: checked 2890  failed 0  inadmissible 0
