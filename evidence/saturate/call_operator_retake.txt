@@ -1,0 +1,19 @@
+# re-take of the 6 already-scored units the THREE NEW call operators reach
+# each writes mutation/<U>.call_operators.json; mutation/<U>.json is untouched
+#
+ColemanTransform           6 of   6 new mutant(s) killed   score 1.000
+ColemanTransformInverse    6 of   6 new mutant(s) killed   score 1.000
+GetPath                    3 of   6 new mutant(s) killed   score 0.500
+                           SURVIVOR 0400667a drop_call: 'std::min(len_src, len_dst)' -> 'len_src'
+                           SURVIVOR 0978657a swap_call_args: 'len_src, len_dst' -> 'len_dst, len_src'
+                           SURVIVOR 2b3e9b05 swap_call_args: "I, index_back(GivenFil, len_GivenFil, '/')" -> "index_back(GivenFil, len_GivenFil, '/'), I"
+GetRoot                    2 of   6 new mutant(s) killed   score 0.333
+                           SURVIVOR aba60910 drop_call: 'std::max(la, lb)' -> 'la'
+                           SURVIVOR de456b74 drop_call: 'std::min(len_src, len_dst)' -> 'len_src'
+                           SURVIVOR a3d1d5c7 swap_call_args: 'la, lb' -> 'lb, la'
+                           SURVIVOR 1a517b78 swap_call_args: 'len_src, len_dst' -> 'len_dst, len_src'
+GetWords                   2 of   3 new mutant(s) killed   score 0.667
+                           SURVIVOR 0581c7dd swap_call_args: 'len_src, len_dst' -> 'len_dst, len_src'
+ReadAvrSWAP              NOT MEASURED (rc=2) -- baseline is not green (nocompile); refusing to score
+#
+# done. mutation/<U>.json for these 12 units is unchanged by this script.

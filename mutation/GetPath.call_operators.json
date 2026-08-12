@@ -1,0 +1,49 @@
+{
+ "unit": "GetPath",
+ "operators": [
+  "drop_call",
+  "swap_call_args",
+  "swap_callee"
+ ],
+ "operators_filter": [
+  "drop_call",
+  "swap_call_args",
+  "swap_callee"
+ ],
+ "operators_filter_unmatched": [],
+ "mutants": 6,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 6,
+ "killed": 3,
+ "survived": 3,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.5,
+ "loop_rev": "23b4ef1-nogit",
+ "vit_rev": "ab75fa0-nogit",
+ "survivors": [
+  {
+   "id": "0400667a",
+   "operator": "drop_call",
+   "before": "std::min(len_src, len_dst)",
+   "after": "len_src"
+  },
+  {
+   "id": "0978657a",
+   "operator": "swap_call_args",
+   "before": "len_src, len_dst",
+   "after": "len_dst, len_src"
+  },
+  {
+   "id": "2b3e9b05",
+   "operator": "swap_call_args",
+   "before": "I, index_back(GivenFil, len_GivenFil, '/')",
+   "after": "index_back(GivenFil, len_GivenFil, '/'), I"
+  }
+ ]
+}

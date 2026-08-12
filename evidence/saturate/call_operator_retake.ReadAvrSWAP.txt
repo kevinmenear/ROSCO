@@ -1,0 +1,13 @@
+ReadAvrSWAP -- NOT MEASURED, and the reason is not the operator.
+
+  readavrswap_test.cpp:92:20: error: too few arguments to function
+    void ReadAvrSWAP(float*, localvariables_view_t*, controlparameters_view_t*, errorvariables_view_t*)
+
+The generated test .cpp left in that unit's directory predates the signature
+its translation now has, so the BASELINE will not compile and vit_mutate.py
+refuses to score -- correctly, and before any mutant ran. That is a stale
+generated artifact in another unit's untracked _test directory, not a property
+of the two new mutants (both drop_call) that this sweep would have scored.
+Regenerating it is `bash scripts/harness.sh ReadAvrSWAP ReadSetParameters
+readavrswap rosco/controller/src/ReadSetParameters.f90`, which re-runs that
+unit's whole harness and belongs to that unit, not to this one.

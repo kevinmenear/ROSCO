@@ -1,0 +1,37 @@
+{
+ "unit": "GetWords",
+ "operators": [
+  "drop_call",
+  "swap_call_args",
+  "swap_callee"
+ ],
+ "operators_filter": [
+  "drop_call",
+  "swap_call_args",
+  "swap_callee"
+ ],
+ "operators_filter_unmatched": [],
+ "mutants": 3,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 3,
+ "killed": 2,
+ "survived": 1,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.6667,
+ "loop_rev": "23b4ef1-nogit",
+ "vit_rev": "ab75fa0-nogit",
+ "survivors": [
+  {
+   "id": "0581c7dd",
+   "operator": "swap_call_args",
+   "before": "len_src, len_dst",
+   "after": "len_dst, len_src"
+  }
+ ]
+}

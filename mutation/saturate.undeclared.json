@@ -1,0 +1,37 @@
+{
+ "unit": "saturate",
+ "operators": [
+  "drop_call",
+  "swap_call_args",
+  "swap_callee"
+ ],
+ "mutants": 6,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 6,
+ "killed": 4,
+ "survived": 2,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.6667,
+ "loop_rev": "23b4ef1-nogit",
+ "vit_rev": "ab75fa0-nogit",
+ "survivors": [
+  {
+   "id": "81c88359",
+   "operator": "swap_call_args",
+   "before": "std::fmax(inputValue, minValue), maxValue",
+   "after": "maxValue, std::fmax(inputValue, minValue)"
+  },
+  {
+   "id": "a78eb3f3",
+   "operator": "swap_call_args",
+   "before": "inputValue, minValue",
+   "after": "minValue, inputValue"
+  }
+ ]
+}

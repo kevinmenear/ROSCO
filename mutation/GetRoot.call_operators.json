@@ -1,0 +1,55 @@
+{
+ "unit": "GetRoot",
+ "operators": [
+  "drop_call",
+  "swap_call_args",
+  "swap_callee"
+ ],
+ "operators_filter": [
+  "drop_call",
+  "swap_call_args",
+  "swap_callee"
+ ],
+ "operators_filter_unmatched": [],
+ "mutants": 6,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 6,
+ "killed": 2,
+ "survived": 4,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.3333,
+ "loop_rev": "23b4ef1-nogit",
+ "vit_rev": "ab75fa0-nogit",
+ "survivors": [
+  {
+   "id": "aba60910",
+   "operator": "drop_call",
+   "before": "std::max(la, lb)",
+   "after": "la"
+  },
+  {
+   "id": "de456b74",
+   "operator": "drop_call",
+   "before": "std::min(len_src, len_dst)",
+   "after": "len_src"
+  },
+  {
+   "id": "a3d1d5c7",
+   "operator": "swap_call_args",
+   "before": "la, lb",
+   "after": "lb, la"
+  },
+  {
+   "id": "1a517b78",
+   "operator": "swap_call_args",
+   "before": "len_src, len_dst",
+   "after": "len_dst, len_src"
+  }
+ ]
+}
