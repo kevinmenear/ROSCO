@@ -1,6 +1,6 @@
 baseline (inferred): a76126e  -- the commit before d47550a touched translations/Functions/saturate.cpp
 
-saturate: Verdict.COMPLETE  (13/13 PASS)
+saturate: Verdict.INCOMPLETE  (12/13 PASS)
 
 [  ok  ] P1   commits exist                      
 [  ok  ] P2   clean tree                         
@@ -11,17 +11,8 @@ saturate: Verdict.COMPLETE  (13/13 PASS)
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
 [  ok  ] P9   gate compared and matched          
-[  ok  ] P12  mutation score for this unit       4/4 mutant(s) killed, 2 declared equivalent
+[ FAIL ] P12  mutation score for this unit       mutation_no_mutants:mutation/saturate.json -- the operator set reached nothing in this unit, so it says nothing about the instrument
 [  ok  ] P11  post-integration harness re-run    451 check(s) against the integrated build
 [  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
 [  ok  ] P10  evidence reproducible              
 
-
---- NOTE ---
-Taken at b9845ca, the state commit above. The capture is committed on top of
-that, so P2 read a clean tree at the moment the verdict was taken and this file
-did not yet exist -- the ordering unit #5 records, where writing the transcript
-first made the tree dirty and the artifact described itself rather than the
-unit. The first dispatch's INCOMPLETE 12-of-13 is kept beside it as
-done_check.first_dispatch.txt: a verdict that was correct when it was taken is
-worth more than a deletion.
