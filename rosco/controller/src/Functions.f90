@@ -60,6 +60,16 @@ IMPLICIT NONE
         END SUBROUTINE colemantransforminverse_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of identity
+    INTERFACE
+        SUBROUTINE identity_c(n, identity_result) BIND(C, NAME='identity_c')
+            USE ISO_C_BINDING
+            INTEGER(C_INT), VALUE :: n
+            REAL(C_DOUBLE), INTENT(OUT) :: identity_result(*)
+        END SUBROUTINE identity_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     REAL(DbKi) FUNCTION saturate(inputValue, minValue, maxValue)
@@ -355,24 +365,11 @@ CONTAINS
 
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION identity(n) RESULT(A)
-    ! Produces an identity matrix of size n x n
-
-        INTEGER, INTENT(IN)         :: n
-        REAL(DbKi), DIMENSION(n, n)    :: A
-        INTEGER                     :: i
-        INTEGER                     :: j
-
-        ! Build identity matrix 
-        DO i=1,n  
-            DO j = 1,n
-                IF (i == j) THEN 
-                    A(i,j) = 1.0
-                ELSE
-                    A(i,j) = 0.0
-                ENDIF
-            ENDDO
-        ENDDO
-    
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: n
+        REAL(8), DIMENSION(n, n) :: A
+        CALL identity_c(n, A)
     END FUNCTION identity
 
 !-------------------------------------------------------------------------------------------------------------------------------

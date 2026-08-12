@@ -50,6 +50,7 @@ double seclpfilter_c(double InputSignal, double DT, double CornerFreq, double Da
 double seclpfilter_vel_c(double InputSignal, double DT, double CornerFreq, double Damp, filterparameters_t* FP, int iStatus, int32_t reset, int* inst, int has_InitialValue, double InitialValue);
 void statemachine_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar);
 void updatezeromq_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_view_t* ErrVar);
+void identity_c(int n, double* identity_result);
 
 #ifdef __cplusplus
 }

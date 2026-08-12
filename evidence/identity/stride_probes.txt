@@ -1,0 +1,18 @@
+Three defects harness/cppmutate.py cannot generate, run by hand.
+Produced by evidence/identity/stride_probes.sh against the 29-case
+pre-integration corpus (harness/identity.json). See that script for why.
+
+  case 1 is R5's SECOND SHAPE, n = 4; case 4 is a predicate knob, n = 2.
+  Both differ from the n = 3 of every other case, and both are needed:
+  the second shape did not exist before this unit -- _extent_plan's
+  `rotate` is the identity on ONE free extent, so R5 emitted one shape
+  and reported "1 varied extent(s) at [3]" while doing so.
+
+  row-major-transpose moves NOTHING, at any n, and no corpus can change
+  that: the identity matrix is SYMMETRIC, so A(i,j) and A(j,i) are the
+  same value in every element. The column-major rule VIT's own check
+  registry enforces is UNFALSIFIABLE on this unit's output.
+
+stride-literal-3       checked 29  failed 2  cases [1, 4]
+stride-divide          checked 29  failed 2  cases [1, 4]
+row-major-transpose    checked 29  failed 0  cases []

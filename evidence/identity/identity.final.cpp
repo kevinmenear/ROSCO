@@ -1,0 +1,28 @@
+// VIT Translation Scaffold
+// Function: identity
+// Source: Functions.f90
+// Module: Functions
+// Fortran: FUNCTION identity(n) RESULT(A)
+// Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+// Source MD5: 4622ff47c2f8
+// VIT: 0.1.0
+// Status: unverified
+// Generated: 2026-08-12T18:56:44Z
+
+// A is REAL(DbKi), DIMENSION(n, n) -- an automatic array, so its extent is the
+// argument and n <= 0 gives a zero-sized result that neither side writes.
+// Column-major: A(i, j) is element (j - 1) * n + (i - 1). The row count is the
+// stride, and for this unit the array is square, so a stride error is only
+// visible when the corpus varies n away from the single value the reference's
+// one call site passes.
+void identity(int n, double* identity_result) {
+    for (int i = 1; i <= n; ++i) {
+        for (int j = 1; j <= n; ++j) {
+            if (i == j) {
+                identity_result[(j - 1) * n + (i - 1)] = 1.0;
+            } else {
+                identity_result[(j - 1) * n + (i - 1)] = 0.0;
+            }
+        }
+    }
+}

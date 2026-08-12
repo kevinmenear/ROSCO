@@ -1,0 +1,122 @@
+{
+ "unit": "identity",
+ "against": "integrated",
+ "checked": 29,
+ "failed": 28,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    1 varied extent(s) at [3] and [4], NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  N/A      R6_reference_literals      3 combination(s) of the 1 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead -- no boundary this rule can reach",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          1 real value(s), none zero in every case",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 1 out-parameter(s): identity_result"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "identity_result",
+   "ref": "000000000000f03f00000000000000000000000000000000000000000000f03f...",
+   "got": "000000000000f03f000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 1,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "000000000000f03f000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 3,
+   "output": "identity_result",
+   "ref": "b00a93638be10000",
+   "got": "000000000000f03f"
+  },
+  {
+   "case": 4,
+   "output": "identity_result",
+   "ref": "000000000000f03fb00a93638be1000000000000000000000000000000000000",
+   "got": "000000000000f03f00000000000000000000000000000000000000000000f03f"
+  },
+  {
+   "case": 5,
+   "output": "identity_result",
+   "ref": "000000000000f03f00000000000000000000000000000000000000000000f03f...",
+   "got": "000000000000f03f000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 6,
+   "output": "identity_result",
+   "ref": "000000000000f03f00000000000000000000000000000000000000000000f03f...",
+   "got": "000000000000f03f000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 7,
+   "output": "identity_result",
+   "ref": "000000000000f03f00000000000000000000000000000000000000000000f03f...",
+   "got": "000000000000f03f000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 8,
+   "output": "identity_result",
+   "ref": "000000000000f03f00000000000000000000000000000000000000000000f03f...",
+   "got": "000000000000f03f000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 9,
+   "output": "identity_result",
+   "ref": "000000000000f03f00000000000000000000000000000000000000000000f03f...",
+   "got": "000000000000f03f000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 10,
+   "output": "identity_result",
+   "ref": "000000000000f03f00000000000000000000000000000000000000000000f03f...",
+   "got": "000000000000f03f000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 11,
+   "output": "identity_result",
+   "ref": "000000000000f03f00000000000000000000000000000000000000000000f03f...",
+   "got": "000000000000f03f000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 12,
+   "output": "identity_result",
+   "ref": "000000000000f03f00000000000000000000000000000000000000000000f03f...",
+   "got": "000000000000f03f000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 13,
+   "output": "identity_result",
+   "ref": "000000000000f03f00000000000000000000000000000000000000000000f03f...",
+   "got": "000000000000f03f000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 14,
+   "output": "identity_result",
+   "ref": "000000000000f03f00000000000000000000000000000000000000000000f03f...",
+   "got": "000000000000f03f000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 15,
+   "output": "identity_result",
+   "ref": "000000000000f03f00000000000000000000000000000000000000000000f03f...",
+   "got": "000000000000f03f000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 16,
+   "output": "identity_result",
+   "ref": "000000000000f03f00000000000000000000000000000000000000000000f03f...",
+   "got": "000000000000f03f000000000000000000000000000000000000000000000000..."
+  }
+ ],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "1eca4e9-dirty",
+ "vit_rev": "56282b3-dirty",
+ "red_test": {
+  "perturbation": "wrapper: CALL identity_c(n, A) -> CALL identity_c(n - 1, A), so the C++ is told a smaller extent than the result A declares",
+  "result": "28 of 29 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

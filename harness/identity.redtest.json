@@ -1,0 +1,121 @@
+{
+ "unit": "identity",
+ "against": "translation",
+ "checked": 29,
+ "failed": 28,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    1 varied extent(s) at [3] and [4], NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  N/A      R6_reference_literals      3 combination(s) of the 1 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead -- no boundary this rule can reach",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          1 real value(s), none zero in every case",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 1 out-parameter(s): identity_result"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "cffba9395c5088c089daa671582282c012e515cf0a5178c07797b3cd942868c0..."
+  },
+  {
+   "case": 1,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "e35ce6ec714b8bc0ad992d6a897687c0a4cfa27db8fa83c027283d78cf6880c0..."
+  },
+  {
+   "case": 3,
+   "output": "identity_result",
+   "ref": "000000000000f03f",
+   "got": "398bff22ac2e2a40"
+  },
+  {
+   "case": 4,
+   "output": "identity_result",
+   "ref": "000000000000f03f00000000000000000000000000000000000000000000f03f",
+   "got": "ca8eab6f620b82c0bcca6aec7b0765c00888ba1940ef6e4032bb34b61b528440"
+  },
+  {
+   "case": 5,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "67a0b6b94c7068c0215495c19c5650c0f42398a5e8124a4039603cb605a86440..."
+  },
+  {
+   "case": 6,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "c0b0a3d90d9f6ac0386f9ef4dde755c0782f662b609a4640010a8f3e33c96340..."
+  },
+  {
+   "case": 7,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "cb196462f9c57ec015aaa9050dae7ac094a41263543777c0e24e15bc2b1d73c0..."
+  },
+  {
+   "case": 8,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "83bbf246225a7fc0648b63b3476676c0017837e6ccb86bc0251c7e2f137453c0..."
+  },
+  {
+   "case": 9,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "9d31966c34e088c06f0e0aef4f0585c00c7ad118963381c0d4e6f7f3f1e37ac0..."
+  },
+  {
+   "case": 10,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "d96b8c6371b130c064e3cdc258cc524057edce643a5d644043ca833c87287040..."
+  },
+  {
+   "case": 11,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "295e96c703c088c07a16e5d53a8e83c0e3b9751df7597cc03e8838f16e7e71c0..."
+  },
+  {
+   "case": 12,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "3d30f8f82a7b54c0b35c1939cb8c32403266484fb0655f403c4e4bc6ed1f6b40..."
+  },
+  {
+   "case": 13,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "f88d96ac77fe7fc01a50c54b482277c036fca9d74b296cc0b9f3d224f72051c0..."
+  },
+  {
+   "case": 14,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "62857ca3b4db4340453e2982d6e65b40899694a2e8ae6840b96c44c9d5397140..."
+  },
+  {
+   "case": 15,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "1c7de7c4e75b8ac0a0d42ef7affb85c0309a9b4d537682c09cce1cc759ea7cc0..."
+  },
+  {
+   "case": 16,
+   "output": "identity_result",
+   "ref": "000000000000f03f000000000000000000000000000000000000000000000000...",
+   "got": "8893e6b4b78788c07543382c8b4d82c0b1e11ce7693779c07605c656b6596ac0..."
+  }
+ ],
+ "loop_rev": "1eca4e9-nogit",
+ "vit_rev": "56282b3-nogit",
+ "red_test": {
+  "perturbation": "the unit as a no-op: reads no argument and writes no element of the result",
+  "result": "28 of 29 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

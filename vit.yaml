@@ -215,6 +215,24 @@ translations:
   UpdateZeroMQ:
     status: integrated
     cpp_file: translations/ZeroMQInterface/updatezeromq.cpp
+  # ADDED BY HAND at unit #22, for the reason units #14, #16, #18 and #20 all
+  # recorded: `vit verify` and `vit integrate` rewrite this file through a YAML
+  # round-trip that DELETES EVERY COMMENT in it, so restoring the commented file
+  # is the only way to keep the file's own reasoning -- and then the entry has to
+  # be re-added. Paid for twice here as well: three STUB `vit verify` runs (the
+  # no-op, the constant and the wrong-constant of evidence/identity/) each wrote
+  # a `cases_passed` record for a run of something that is not the translation,
+  # which is unit #11's finding, so each was reverted wholesale.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
+  # For this unit the gate DID run and DID see it -- 1,462,798 of 5,252,000
+  # values moved across 115 channels and 22 scenarios -- so the line would even
+  # have been true, and it is still the wrong claim: it is written by a command
+  # that ran no simulation and read no result. What verified this unit is in
+  # plan.json's `evidence`.
+  identity:
+    status: integrated
+    cpp_file: translations/Functions/identity.cpp
 types:
   ControlParameters:
     strategy: view

@@ -100,6 +100,7 @@ set(SOURCES
     src/seclpfilter_vel.cpp
     src/statemachine.cpp
     src/updatezeromq.cpp
+    src/identity.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

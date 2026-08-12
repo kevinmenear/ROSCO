@@ -1,0 +1,19 @@
+{
+ "unit": "identity",
+ "against": "translation",
+ "checked": 29,
+ "failed": 0,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    1 varied extent(s) at [3] and [4], NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  N/A      R6_reference_literals      3 combination(s) of the 1 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead -- no boundary this rule can reach",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          1 real value(s), none zero in every case",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 1 out-parameter(s): identity_result"
+ ],
+ "mismatches": [],
+ "loop_rev": "1eca4e9-nogit",
+ "vit_rev": "56282b3-nogit"
+}
