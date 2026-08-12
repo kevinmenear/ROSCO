@@ -4,7 +4,67 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-12: unit #21 `UpdateZeroMQ` is `integrated` and CLOSED**, first
+**As of 2026-08-12: unit #22 `identity` is `integrated` and CLOSED**, first
+dispatch. **Five layers, all five alive — and the kernel's VERDICT LINE is not
+one of them.** Its section is directly below; unit #21 `UpdateZeroMQ` is below
+that.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay | 62 cases, 225 fields, **13,950 of 13,950 IDENTICAL** | **the verdict cannot go red** — a no-op stub scores `✓ 62/62 passed`; the DETERMINATE wrong-constant stub scores **0 of 62** and is what says the comparison is alive |
+| differential harness vs clean Fortran | **29** checked, 0 failed, 0 inadmissible | the unit as a no-op fails **28 of 29**; the survivor is `n == 0`, where neither side writes |
+| mutation score | **20 of 20 behavioural killed, 1.000**, 0 declared equivalent, 0 no-compile, on the first run | 9 of the 20 are CRASHES, so killed-by-comparison is **11 of 20** |
+| post-integration harness (wrapper only) | **29 checked, 0 failed** | `CALL identity_c(n, A)` → `identity_c(n - 1, A)`, rebuilt between edit and run: **28 of 29** |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | the diagonal written `2.0` moves **1,462,798 of 5,252,000** across **115 channels and 22 scenarios** |
+
+**A NO-OP STUB PASSES THE KERNEL BECAUSE `NaN > 1.D-14` IS FALSE.** KGen scores
+an array field `IN_TOL` when `SQRT(SUM((var-ref)**2)/n)` is not greater than the
+tolerance, and a NaN is not greater than anything — so a translation that writes
+nothing leaves the automatic array uninitialised, `LocalVar%WE%P` comes back NaN,
+the field scores `IN_TOL`, and the kernel prints `Number of verification-passed
+cases : 62`. **This is not the tolerance-versus-magnitude shape unit #19
+recorded**, and the difference was measured rather than argued: a determinate,
+finite wrong-constant stub — the 3x3 identity with `2.0` on the diagonal — scores
+0 of 62 with `p` OUT_TOL at `rms = 0.378`. `p` is of order 1 and the comparison
+is alive. C12: the wrong artifact is committed
+(`evidence/identity/kernel.noop-stub.verify_fields.csv`) and the instrument is
+NOT fixed here — a NaN guard changes the pass basis of every kernel this
+campaign has run (X3, SPEC §8.4). DECISIONS.md carries it as a candidate.
+
+**THE KERNEL CANNOT CONSTRAIN THE ARGUMENT AT ALL.** The reference's one call
+site is the literal `identity(3)`, so every captured case has `n == 3` and no
+invocation window can widen it — `n` is not data. A constant stub reading no
+argument and writing a hardcoded 3x3 identity scores **13,950 of 13,950
+IDENTICAL**. Everything this campaign knows about `identity` as a function of
+`n` comes from 29 differential cases at five values of it.
+
+**`bridge_feasible: unknown` WAS ANSWERED DIFFERENTLY BY THE TWO GENERATORS, AND
+ONE ANSWER WAS A DEFECT.** `vit interface` has crossed an array-valued FUNCTION
+RESULT since the campaign began — `REAL(C_DOUBLE), INTENT(OUT) ::
+identity_result(*)`, with the wrapper declaring `REAL(8), DIMENSION(n, n) :: A`.
+`test_validate.generate_fortran_bridge` declared the same result a SCALAR:
+*Incompatible ranks 0 and 2 in assignment*. Third disagreement between these two
+generators (units #8, #17, #22), second on a RESULT. Fixed in VIT `ab75fa0`
+(X2). The loop had the matching gap and it was worse than a build failure — the
+result mapped as a scalar INPUT and **the unit's only output varied on the
+±1e3 default** — fixed in `20b0dbb` together with two defects that fell out of
+it: a predicate knob on an EXTENT desynchronised the case stream, and **R5
+emitted ONE SHAPE for every unit with ONE free extent**, silently, while
+reporting "1 varied extent(s) at [3]".
+
+**TWO THINGS ARE UNFALSIFIABLE HERE RATHER THAN UNTESTED.** Transposing the
+index expression moves 0 of 29 cases at every `n`, because the identity matrix
+is symmetric — VIT's own column-major rule is enforced on this translation and
+cannot be tested by it. And the STRIDE has no mutant at all: `cppmutate`'s
+`_OPERAND` is `identifier | number`, so the parenthesised `(j - 1) * n` produces
+no `arith_op`, `drop_factor` or `swap_operands` mutant — and the parenthesis is
+required by VIT's own `exponent-grouping` check. Run by hand instead
+(`evidence/identity/stride_probes.txt`): `* 3` fails 2 of 29 and `/ n` fails 2 of
+29, and **one of those two cases is the shape the R5 fix adds**.
+
+## Unit #21 — UpdateZeroMQ — 2026-08-12
+
+**Unit #21 `UpdateZeroMQ` is `integrated` and CLOSED**, first
 dispatch. **Four layers alive, one absent by measurement** — the kernel, and it
 is the first unit in this campaign with no kernel at all: both call sites are
 guarded by `ZMQ_Mode > 0`, which is 0 in all 14 inputs, so there is no state to
@@ -1108,27 +1168,42 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-19 attempted / **18 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+22 attempted / **21 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / **1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 50 remain.
+69 units in `plan.json`; 47 remain.
 
 (This block read `8 / 8 / 61 remain` through unit #9, which did not update it.
 Recounted from `plan.json` at unit #10 rather than incremented, and recounted
 again at unit #11, and again at unit #19 — it had gone stale at `16 / 16 / 53`
-across units #17 and #18. Recount, never increment.)
+across units #17 and #18 — and again at unit #22, stale at `19 / 18 / 50` across
+units #20 and #21. Recount, never increment: **twice now the block has gone two
+units stale, and both times the unit that fixed it was not the unit that broke
+it.** The recount is one command and it is in this file's own instructions:
+`python3 -c "import json,collections; print(collections.Counter(u.get('disposition') for u in json.load(open('plan.json'))['units']))"`)
 
-**Ten of the 18 integrated units are gate-visible**, each with a red-test count
-that matches no other: ColemanTransform 124,353, ColemanTransformInverse
-389,644, GetWords 1,857,893, LPFilter 1,592,059, NonDecreasing 1,857,893
-(*shared* with GetWords — see below), NotchFilter 551,278, NotchFilterSlopes
-128,918, ReadAvrSWAP 1,487,557, SecLPFilter 1,349,326, SecLPFilter_Vel 14,140.
+**Twelve of the 21 integrated units are gate-visible**, each with a red-test
+count that matches no other: ColemanTransform 124,353, ColemanTransformInverse
+389,644, GetWords 1,857,893, **identity 1,462,798**, LPFilter 1,592,059,
+NonDecreasing 1,857,893 (*shared* with GetWords — see below), NotchFilter
+551,278, NotchFilterSlopes 128,918, ReadAvrSWAP 1,487,557, SecLPFilter
+1,349,326, SecLPFilter_Vel 14,140, StateMachine 1,526,538 (whole-unit no-op).
+`identity`'s is the widest in CHANNELS rather than in values — 115 of 351,
+across 22 of 27 scenarios — because its result feeds the wind-speed estimator's
+covariance, and the estimated wind speed feeds both the pitch and the torque
+schedule.
 `SecLPFilter_Vel`'s is the smallest yet and the most precisely attributable: the
 four moved channels are `cc_actuated_dl` and `cc_actuated_l` in scenarios 7 and
 27 and nothing else, 3,999 of 24,000 samples each, which is exactly the tail
 after `Time > 500`.
 
-**8 of the first 16 integrated units are invisible to the gate**, for seven different
+**9 of the 21 integrated units are invisible to the gate** — the 8 below plus
+`UpdateZeroMQ`, which is a ninth reason and the only one that is simple: it is
+never called, its guard is `ZMQ_Mode > 0` and `ZMQ_Mode` is 0 in all 14 inputs.
+12 visible + 9 invisible = 21, and that identity is worth checking each time
+this block is edited; it did not hold across units #20 and #21.
+
+The 8 are **of the first 16 integrated units**, for seven different
 reasons. `ReadAvrSWAP` is NOT one of them — its red test moves 1,487,557 of
 5,252,000 — but it carries the campaign's largest *partial* blindness instead:
 23 of its 43 output fields move nothing at the gate and nothing in the kernel,

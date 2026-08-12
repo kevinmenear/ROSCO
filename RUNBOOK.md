@@ -339,6 +339,125 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **`NaN > kgen_tolerance` IS FALSE, SO A NaN OUTPUT SCORES `IN_TOL` AND THE
+  KERNEL PRINTS PASSED.** Unit #22, and it is a SECOND kernel-scoring hole
+  beside unit #19's, with a different cause and the same symptom.
+
+  Unit #19's is about MAGNITUDE -- an absolute tolerance against an output near
+  1e-52. This one is about the COMPARISON ITSELF: KGen's tolerance branch is
+  `IF (rmsdiff > kgen_tolerance) -> OUT_TOL ELSE -> IN_TOL`, and IEEE says a
+  NaN is not greater than anything. A translation that leaves an automatic array
+  uninitialised makes the downstream field NaN and the kernel scores it PASSED.
+
+  ```
+  # the tell is in the CSV, not the verdict -- grep the rms, not the status
+  grep ',array,IN_TOL' kernel/<U>/verify_fields.csv | grep -i nan
+  ```
+
+  Telling the two apart costs one stub and the reading is opposite each way.
+  Build one that is DETERMINATE and FINITE and wrong -- here the 3x3 identity
+  with `2.0` on the diagonal -- and score it:
+
+  ```
+  no-op stub              62 of 62 PASSED,  p IN_TOL, rms = NaN
+  wrong-constant stub      0 of 62 passed,  p OUT_TOL, rms = 0.37807928263323742
+  ```
+
+  The second line says the window is fine and `p` is of order 1. Reading the
+  first alone gives "the kernel cannot see this unit", which is false.
+
+  NOT FIXED HERE: a NaN guard changes the pass basis of every kernel this
+  campaign has run. X3 and SPEC 8.4, the Driver's call; DECISIONS.md.
+
+- **A UNIT WHOSE ONLY ARGUMENT IS A LITERAL AT ITS ONLY CALL SITE HAS A KERNEL
+  THAT IS A ONE-ROW LOOKUP TABLE, AND THE WIDENED INVOCATION WINDOW CANNOT
+  HELP.** Unit #22, and it is unit #6's `GetPath` shape reached from the
+  argument side rather than the call-count side.
+
+  `MATMUL(identity(3) - ...)` -- the argument is written in the SOURCE. 62
+  captured cases, one input value, and a constant stub reading nothing scores
+  **13,950 of 13,950 IDENTICAL**. Widening `kgen.invocation` varies the
+  SURROUNDING state, never the argument, so no window setting reaches it. Ask
+  the call site before choosing a window:
+
+  ```
+  grep -n '<Unit>(' <every caller>     # is every actual argument a LITERAL?
+  ```
+
+- **THE DIFFERENTIAL HARNESS MAPPED AN ARRAY-VALUED FUNCTION RESULT AS A SCALAR
+  INPUT, AND THE ONLY REASON ANYONE FOUND OUT IS THAT THE FORTRAN SIDE WOULD NOT
+  COMPILE.** Unit #22, both halves fixed rather than worked around (X2), VIT
+  `ab75fa0` and loop `20b0dbb`.
+
+  `FUNCTION identity(n) RESULT(A)` with `REAL(DbKi), DIMENSION(n, n) :: A`.
+  `vit interface` has crossed it since the campaign began --
+  `REAL(C_DOUBLE), INTENT(OUT) :: identity_result(*)`, the wrapper declaring the
+  automatic array and passing it. `test_validate.generate_fortran_bridge`
+  declared the result a SCALAR: *Incompatible ranks 0 and 2 in assignment*.
+
+  The loop's `map_signature` had the matching gap and it is the one that
+  matters: `build_c_params` emits `double* <Func>_result` with NO extent, and
+  `arg_by_name` has no entry for a RESULT, so it fell past even the "treated as
+  a SCALAR" note an array DUMMY gets -- **the unit's only output was varied as
+  an input on the +/-1e3 default and eight bytes of it were compared.** Had the
+  bridge compiled, that harness would have passed and been committed.
+
+  Third disagreement between VIT's two generators (units #8, #17, #22). The
+  RUNBOOK already says to ask both; what this adds is that **the loud one is not
+  the dangerous one**.
+
+- **R5 EMITTED ONE SHAPE FOR EVERY UNIT WITH ONE FREE EXTENT, AND REPORTED IT AS
+  A VARIED ONE.** Unit #22, the fourteenth corpus blind spot, in `generate.py`'s
+  `_extent_plan` (loop `20b0dbb`).
+
+  R5's second shape comes from `rotate=1`, which PERMUTES the sizes among the
+  extents -- and a permutation of one element is the identity. So `ex1 == ex0`,
+  the append was skipped in silence, every case ran at the same shape, and the
+  coverage line read `1 varied extent(s) at [3]`. `bump=1` shifts the size
+  instead; the line now reads `at [3] and [4]`.
+
+  Load-bearing immediately: a hardcoded stride (`* n` written `* 3`) dies on
+  exactly two of 29 cases here and **one of them is the n = 4 case this fix
+  adds**. Read the rule's own detail line rather than its `applied` flag:
+
+  ```
+  python3 -c "import json;print([r for r in json.load(open('harness/<U>.json'))\
+      ['rule_coverage'] if 'R5' in r])"     # one bracket or two?
+  ```
+
+- **`cppmutate` CANNOT MUTATE A PARENTHESISED OPERAND, AND VIT'S OWN CHECK
+  REGISTRY REQUIRES THE PARENTHESES.** Unit #22. `_OPERAND` is
+  `identifier | number`, so `(j - 1) * n` produces no `arith_op`, no
+  `drop_factor` and no `swap_operands` mutant -- the stride multiplier of a
+  column-major index expression is unmutated, in every translation that follows
+  the `exponent-grouping` check.
+
+  NOT FIXED HERE, and for a stronger reason than the KGen entry above: widening
+  the operand pattern changes the MUTANT SET of every unit already scored, and
+  unlike a corpus addition -- which can only kill more -- a new operator can
+  produce a SURVIVOR in a unit that closed at 1.000. Campaign-wide re-take, the
+  Driver's call.
+
+  What to do meanwhile is one unit's worth of the missing measurement, by hand
+  and committed. `evidence/identity/stride_probes.sh` is the pattern -- and note
+  `make -s test`, not `make -s`: the generated harness Makefile's FIRST target is
+  `<stem>.hpp`, so a bare `make` copies the header, relinks nothing, and `./test`
+  reports the PREVIOUS translation's verdict. All three probes read `failed 0`
+  that way, which is unit #18's kernel finding in the harness Makefile. And
+  `|| true` on the run: `./test` exits non-zero when cases fail, which under
+  `set -e` kills the script and leaves an EMPTY artifact.
+
+- **ASK WHETHER A DEFECT CLASS IS UNFALSIFIABLE ON THIS UNIT BEFORE COUNTING ITS
+  ABSENCE AS COVERAGE.** Unit #22. Transposing the index expression --
+  `(i - 1) * n + (j - 1)` -- moves **0 of 29 cases at every n**, because the
+  identity matrix is SYMMETRIC and `A(i,j)` equals `A(j,i)` in every element. No
+  corpus can distinguish column-major from row-major here.
+
+  That is not a gap in the corpus and it is not a mutant to declare equivalent;
+  it is a property of the unit's output, and it means VIT's column-major rule is
+  ENFORCED on this translation and UNTESTABLE by it. Worth asking of any unit
+  whose output has a symmetry: a diagonal matrix, a sorted array, a set.
+
 - **A REFERENCE CAN HAVE NO ANSWER, AND THE TELL IS A HANDFUL OF CASES THAT
   DISAGREE WHILE THOUSANDS AGREE.** Unit #21, and it is the first output in this
   campaign that no instrument could constrain because the ORACLE is absent

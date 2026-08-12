@@ -1077,13 +1077,41 @@
     "DISCON"
    ],
    "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
+   "verification": "ROUTE EXISTS AND WAS RUN, AND THE LAYER THE PLAN NAMED FIRST IS THE ONE WHOSE VERDICT CANNOT FAIL. The hypothesis was `kernel replay or direct-call harness; bit-identical`. Both were built. The kernel's row table is bit-identical and its VERDICT LINE is vacuous, for a reason that is about the instrument.\n\n  kernel replay              62 cases, 225 fields, 13,950 of 13,950 IDENTICAL, scenario 1, clean ControllerBlocks.f90:454. THE VERDICT CANNOT GO RED: a NO-OP stub that writes no element of the result scores `VERIFICATION PASSED: 62/62`, because the uninitialised automatic array makes `LocalVar%WE%P` NaN, KGen's `IF (rmsdiff > kgen_tolerance)` is FALSE for a NaN, and IN_TOL counts as PASSED (evidence/identity/kernel.noop-stub.verify_fields.csv, `p ... rms=NaN`). That is NOT a magnitude problem and it was measured rather than assumed: a DETERMINATE wrong-constant stub -- the 3x3 identity with 2.0 on the diagonal -- scores 0 of 62 with `p` OUT_TOL at rms 0.378, so the comparison is alive and `p` is of order 1. C12: the wrong artifact is committed and the instrument is NOT fixed here (X3, SPEC 8.4; DECISIONS.md).\n                             AND THE KERNEL CANNOT CONSTRAIN THE ARGUMENT. The reference's one call site is the literal `identity(3)`, so every captured case has n == 3 and no invocation window can widen it. A CONSTANT stub reading no argument and writing a hardcoded 3x3 identity scores 13,950 of 13,950 IDENTICAL (evidence/identity/kernel.constant-stub.verify_fields.csv). VIT reported NON_DISCRIMINATING and was right to: no by-value floating-point parameter and no floating-point result.\n  differential harness       29 checked, 0 failed, against the CLEAN Fortran, and it EXISTS ONLY BECAUSE TWO GENERATORS WERE FIXED -- see `bridge_feasible`. n over {0, 1, 2, 3, 4}: three predicate knobs, R5's first shape at 3 and its second at 4. RED-TESTED: the unit as a no-op fails 28 of 29, the survivor being n == 0 where neither side writes. harness/identity{,.redtest}.json\n  mutation score             20 of 20 behavioural killed, 1.000, 0 declared equivalent, 0 no-compile, on the FIRST run. 9 of the 20 are CRASHES rather than case mismatches, so the killed-by-comparison count is 11 of 20. What the score does NOT include is the STRIDE: `cppmutate`'s `_OPERAND` is `identifier | number`, so the parenthesised `(j - 1) * n` produces no arith_op, drop_factor or swap_operands mutant at all. Run by hand instead -- `* 3` fails 2 of 29 and `/ n` fails 2 of 29 (evidence/identity/stride_probes.txt). mutation/identity.json\n  post-integration harness   29 checked, 0 failed -- the WRAPPER's marshalling. RED-TESTED with the rebuild between the edit and the run: `CALL identity_c(n, A)` -> `identity_c(n - 1, A)` fails 28 of 29; reverted, rebuilt, green returns. harness/identity.postintegration{,.redtest}.json\n  gate, 27 scenarios         5,252,000 values / 351 channels, 0 mismatched, AND ITS RED TEST PASSED: writing 2.0 on the diagonal moves 1,462,798 of 5,252,000 across 115 channels and 22 of 27 scenarios (perturbed: true, revert_verified: true, scenarios_failed: []). gate/identity{,.redtest}.json",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+    "value": "yes",
+    "basis": "MEASURED, replacing the matrix-derived `unknown` -- and the two generators gave DIFFERENT answers, which is the finding rather than a footnote. The matrix named `c_fn_array` among five undetectable blockers. `vit interface` has crossed it since the campaign began: an array-valued FUNCTION RESULT is `result_is_out_param`, so `A` becomes `REAL(C_DOUBLE), INTENT(OUT) :: identity_result(*)` and the wrapper declares `REAL(8), DIMENSION(n, n) :: A` and passes it -- it compiles, links, and the gate's red test moves 1,462,798 values through it. `test_validate.generate_fortran_bridge`, the DIFFERENTIAL harness's Fortran side, declared the same result a SCALAR and emitted `vit_result = identity(n)`: *Incompatible ranks 0 and 2 in assignment*, a bridge that does not compile. Fixed in VIT rather than worked around (X2), `ab75fa0`; the loop's matching gap -- the result mapped as a scalar INPUT and varied on the +/-1e3 default -- in `20b0dbb`."
    },
-   "observability": null
+   "observability": "THE GATE SEES THIS UNIT ALMOST EVERYWHERE, AND THE KERNEL SEES ONE VALUE OF ITS ONLY INPUT. Both are properties of the same fact: `identity(3)` is called from one place, inside the wind-speed estimator's Kalman measurement update (`LocalVar%WE%P = MATMUL(identity(3) - MATMUL(K,H), P)`), 330,797 times across 22 of the 27 scenarios.\n\nGATE-VISIBLE, and by the widest margin so far: 1,462,798 of 5,252,000 values across 115 of 351 channels -- blade pitch, generator speed/torque/power, flap angle and nacelle yaw -- in every scenario except 10, 13, 14, 17 and 24, which are the ones STATUS.md has carried since phase 3 as executing no controller code. The covariance feeds the estimated wind speed, which feeds the pitch and torque schedules, so a wrong identity matrix is a different simulation.\n\nWHAT NO SIMULATION-BASED LAYER CONSTRAINS: the argument. `n` is the literal 3 at the only call site, in every scenario, forever. A constant stub passes the kernel 13,950 of 13,950 and would pass the gate too. Everything this campaign knows about `identity` AS A FUNCTION OF n comes from 29 differential cases at five values of it.\n\nTWO THINGS ARE UNFALSIFIABLE HERE RATHER THAN UNTESTED, and the difference matters:\n  * COLUMN-MAJOR vs ROW-MAJOR. Transposing the index expression moves 0 of 29 cases at every n, because the identity matrix is SYMMETRIC. No corpus can distinguish them. VIT's own column-major check is enforced on this translation and cannot be tested by it.\n  * THE KERNEL'S VERDICT. Not `the window is vacuous` (it is not -- `p` is order 1 and a wrong constant scores 0/62) but `a NaN output is scored IN_TOL`. Every unit whose failure mode is NaN has the same hole, and this is the first one to produce a NaN and be measured.\n\nWHAT THE MUTATION SCORE DOES NOT COVER: the stride multiplier, for a syntactic reason with nothing to do with this unit -- `cppmutate` cannot mutate a parenthesised operand, and the parenthesis is required by VIT's own `exponent-grouping` check. Two hand-run probes kill on 2 of 29 each. The score is 1.000 of what was generated, and what was generated is 20 mutants of a 9-line function.",
+   "disposition": "integrated",
+   "source_file": "rosco/controller/src/Functions.f90",
+   "translation": "translations/Functions/identity.cpp",
+   "harness_required": true,
+   "evidence": [
+    "evidence/identity/README.md",
+    "evidence/identity/done_check.txt",
+    "evidence/identity/identity.final.cpp",
+    "evidence/identity/identity.noop-stub.cpp",
+    "evidence/identity/identity.constant-stub.cpp",
+    "evidence/identity/identity.wrong-constant-stub.cpp",
+    "evidence/identity/kernel.translation.run.txt",
+    "evidence/identity/kernel.translation.verify_fields.csv",
+    "evidence/identity/kernel.noop-stub.verify.txt",
+    "evidence/identity/kernel.noop-stub.verify_fields.csv",
+    "evidence/identity/kernel.constant-stub.verify_fields.csv",
+    "evidence/identity/kernel.wrong-constant-stub.verify_fields.csv",
+    "evidence/identity/stride_probes.sh",
+    "evidence/identity/stride_probes.txt",
+    "harness/identity.json",
+    "harness/identity.redtest.json",
+    "harness/identity.postintegration.json",
+    "harness/identity.postintegration.redtest.json",
+    "mutation/identity.json",
+    "gate/identity.json",
+    "gate/identity.redtest.json",
+    "translations/Functions/identity.cpp"
+   ]
   },
   {
    "order": 23,

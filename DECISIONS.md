@@ -2,6 +2,96 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #22 — identity — 2026-08-12
+
+**A NaN OUTPUT SCORES `IN_TOL`, AND THE KERNEL VERDICT FOR THIS UNIT CANNOT GO
+RED.** KGen's generated comparison is `IF (rmsdiff > kgen_tolerance) -> OUT_TOL
+ELSE -> IN_TOL`, and IEEE says `NaN > x` is false for every `x`. A translation
+whose output is NaN therefore falls to `IN_TOL`, which the verdict counts as
+PASSED. Measured here on a no-op stub: it writes no element of the automatic
+array, `LocalVar%WE%P` comes back NaN, the field log reads
+`p,array,IN_TOL,,,n_diff=8 rms=NaN`, and `vit verify` prints
+`✓ VERIFICATION PASSED: 62/62 passed`.
+
+This is a DIFFERENT defect from unit #19's, and separating them cost one stub.
+Unit #19's is about MAGNITUDE — an absolute tolerance against an output that has
+decayed to 1e-52. Here `p` is of order 1, and the determinate wrong-constant
+stub (the 3x3 identity with `2.0` on the diagonal) scores 0 of 62 with
+`rms = 0.378`. The window is fine, the comparison is alive, and the SCORING has
+a hole. Reading the no-op's pass as "the kernel cannot see this unit" would have
+been wrong in a way that no amount of re-reading the artifact would have caught;
+what caught it was building the second stub, which is the habit unit #19 wrote
+down.
+
+**NOT FIXED HERE**, and the reasoning is unit #17's precedent rather than a new
+judgement. Adding `IF (ISNAN(rmsdiff)) -> OUT_TOL` changes the pass/fail basis of
+every kernel this campaign has run. It cannot flip an already-committed
+`IDENTICAL` — those never reach the tolerance branch — but "cannot flip" is an
+argument, and X3 says a verification default does not change mid-run on an
+argument. SPEC §8.4, the Driver's call. The wrong artifact is committed under
+C12 (`evidence/identity/kernel.noop-stub.verify_fields.csv` and
+`kernel.noop-stub.verify.txt`) and this unit's claim rests on the ROW TABLE —
+13,950 of 13,950 IDENTICAL — which the defect does not touch.
+
+**THE MUTATION SCORE IS 1.000 AND THE STRIDE HAS NO MUTANT.**
+`harness/cppmutate.py`'s `_OPERAND` is `identifier | number`, so an operand in
+PARENTHESES matches nothing: `(j - 1) * n` produces no `arith_op`, no
+`drop_factor` and no `swap_operands` mutant, and this translation's stride
+multiplier — the one thing in it that a column-major transcription can get wrong
+in an observable way — was never mutated. The parenthesis is not a style choice:
+`exponent-grouping`, one of VIT's own checks, requires this spelling, so **the
+campaign's own rule about how to write C++ is what makes the operator blind.**
+
+Also not fixed here, and for a sharper reason than the KGen one. Widening
+`_OPERAND` to admit a parenthesised expression changes the MUTANT SET of every
+unit already scored, so all 21 committed `mutation/*.json` scores would be
+measuring a different thing from the next one — and unlike a corpus addition,
+which can only ever kill more, a new operator can produce a SURVIVOR in a unit
+that closed at 1.000 six weeks ago. That is a campaign-wide re-take and it is
+the Driver's call. What was done instead is one unit's worth of the missing
+measurement, by hand and committed: `evidence/identity/stride_probes.sh` runs
+`* n` as `* 3` and as `/ n` against the same 29-case corpus, and each fails 2 of
+29. The corpus would have killed them; the operator never asked.
+
+**A THIRD PROBE WAS RUN AND IT MOVES NOTHING, WHICH IS THE POINT OF RUNNING IT.**
+Transposing the index — `(i - 1) * n + (j - 1)` — fails 0 of 29 at every `n`.
+The identity matrix is symmetric, so column-major and row-major produce the same
+bytes in every element, and no corpus can distinguish them. VIT's column-major
+rule is enforced on this translation and is unfalsifiable by it. That is an
+`equivalent` in the strict sense, and it is recorded as an observability fact
+rather than as a declared-equivalent mutant because `cppmutate` never generated
+it either.
+
+**R5 EMITTED ONE SHAPE FOR EVERY SINGLE-EXTENT UNIT, AND SAID IT EMITTED A
+VARIED ONE.** The rule's second shape comes from `_extent_plan(rotate=1)`, which
+permutes the sizes AMONG the extents — and a permutation of one element is the
+identity. So for any unit with exactly one free extent `ex1 == ex0`, the append
+was skipped in silence, every case ran at the same shape, and the coverage line
+went on reading "1 varied extent(s) at [3]". The fix is `bump=1`, which shifts
+the size instead of permuting it, and the detail line now names BOTH shapes so
+the artifact says whether a second one exists.
+
+This is a corpus addition under P5 and it is campaign capital, not unit
+overhead — the same argument unit #19 made. It is also immediately load-bearing:
+the hardcoded-stride probe above dies on exactly two of 29 cases, and one of them
+is `n = 4`, the shape this fix adds. A single-extent unit is precisely the one
+that can least afford it, because its only array is the one under test.
+
+**THE TWO GENERATORS DISAGREED AGAIN, AND THE LOOP'S SIDE WAS THE DANGEROUS
+ONE.** `vit interface` crosses an array-valued FUNCTION RESULT and always has;
+`test_validate.generate_fortran_bridge` declared it a scalar and would not
+compile. A bridge that does not compile is a loud failure and cost twenty
+minutes. What was quiet is the loop's `map_signature`: `build_c_params` emits
+`double* identity_result` with no extent, `arg_by_name` has no entry for a
+result, so the parameter fell past even the "treated as a SCALAR" note an array
+DUMMY gets — and the harness **varied the unit's only output as an input** on
+the ±1e3 default and compared eight bytes of a buffer the reference writes n*n
+of. Had the Fortran side compiled, that harness would have run, passed, and been
+committed. **The build failure is the only reason the silent defect was found**,
+which is an argument for the RUNBOOK's existing rule — ask BOTH generators — and
+against relying on either to fail loudly.
+
+
 ## Unit #21 — UpdateZeroMQ — 2026-08-12
 
 **THE REFERENCE HAS NO ANSWER ON SIX OF ITS TEN OUTPUTS, AND THE HARNESS WAS
