@@ -4,6 +4,48 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-12: unit #16 `ReadAvrSWAP` is `integrated` and CLOSED**, second
+dispatch. (The first dispatch integrated it and passed the gate, then ran out of
+time with the mutation score unrun, the post-integration harness unrun and the
+tree dirty.)
+
+**FIVE LAYERS ALIVE — and two of them cannot constrain half of what the unit
+writes.**
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases | 14,135 field rows, ALL `IDENTICAL` | the no-op stub FAILS — **and the stub with 23 of the 43 output fields DELETED passes 62 of 62** |
+| differential harness vs clean Fortran | **27,656** checked, 0 failed, 0 inadmissible | the unit as a no-op fails **27,656 of 27,656**; the 23-field-deleted stub fails 26,198 of 26,198 and names the fields |
+| mutation score | ****110 of 110 behavioural killed, 1.000**, 1 declared equivalent, 2 no-compile** | the inherited corpus scores **0.874, 14 survivors** — see below |
+| post-integration harness (wrapper only) | **27,656 checked, 0 failed** | **the assumed-size array forwarded as `avrSWAP(2)` at the CALL — the `BIND(C)` interface block untouched, rebuilt between the edit and the run — fails **27,656 of 27,656**; revert, rebuild, green returns** |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | `GenSpeed` × 1.000001 moves **1,487,557 of 5,252,000**, matching no other committed red test — this unit's own signature |
+
+**23 OF 43 OUTPUT FIELDS ARE INVISIBLE TO BOTH BIT-EXACT LAYERS AT ONCE**, and
+it is the largest single blind spot this campaign has measured. A stub with the
+whole `Ext_Interface` block plus `VS_MechGenPwr`, `FA_Acc_TT`, `SS_Acc_TT`,
+`NacIMU_FA_RAcc` and `FA_Acc_Nac` deleted passes the kernel 62/62 and moves 0 of
+5,252,000 at the gate. Three mechanisms — no data at all (`avrSWAP(1001..1018)`
+is written by nothing in this tree), data written and then overwritten by
+`control_interface.py` before the DLL sees it, and no reader the gate reads —
+and only the second is repairable by widening the scenarios. Not repaired here:
+it moves `baseline_arrays` and the compared count (X3, SPEC §8.4).
+
+**A LADDER AIMED AT A NAME IS NOT A LADDER OVER THE QUANTITY.** The corpus
+CONTAINED `iStatus = 0` — `LocalVar_iStatus` is a scalar integer parameter and
+unit #10's decade ladder gave it every boundary — and every one of those cases
+was dead, because the unit's first statement is
+`LocalVar%iStatus = NINT(avrSWAP(1))` and `_fill_array` puts element 1 of a
+3000-element ramp at about **-999 in every case ever generated**. Same for
+`NumBl` and `Time`. Second and separate: **two ladders that never cross cannot
+reach a branch that needs both** — the pitch-fault loop needs `PF_Mode == 1` and
+`NumBl >= 2` and `iStatus /= 0` in the SAME case, and every stage of the
+generator sets one parameter and leaves the rest at base. Closed by addition
+(`predicate_knobs_from` + an R7 cross-product block, appended last, bounded at
+4096 combinations with an all-pairs fallback that reports itself): 26,198 →
+27,656 cases.
+
+---
+
 **As of 2026-08-12: unit #15 `PathIsRelative` is `integrated` and CLOSED**, first
 dispatch.
 
@@ -764,17 +806,21 @@ fields — those are hypotheses, not facts. Run
 
 ## Counts
 
-15 attempted / **15 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+16 attempted / **16 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / 0 blocked.
 
-69 units in `plan.json`; 54 remain.
+69 units in `plan.json`; 53 remain.
 
 (This block read `8 / 8 / 61 remain` through unit #9, which did not update it.
 Recounted from `plan.json` at unit #10 rather than incremented, and recounted
 again at unit #11.)
 
-**8 of the 15 integrated units are invisible to the gate**, for seven different
-reasons. `PathIsRelative` is the new one and it is a seventh shape: its answer is
+**8 of the 16 integrated units are invisible to the gate**, for seven different
+reasons. `ReadAvrSWAP` is NOT one of them — its red test moves 1,487,557 of
+5,252,000 — but it carries the campaign's largest *partial* blindness instead:
+23 of its 43 output fields move nothing at the gate and nothing in the kernel,
+recorded above rather than counted here, because the unit as a whole is visible.
+`PathIsRelative` is the newest invisible one and it is a seventh shape: its answer is
 `.FALSE.` at the call site where the value would matter and `.TRUE.` at the one
 whose value nothing reads, so no wrong answer it can give moves a compared value
 — while the wrong answer in the *other* direction does not produce a wrong number
@@ -795,10 +841,12 @@ before #9 do not have theirs; that is recorded under Open.
 
 **Unit #11 needs no control**, and that is the point of the rule rather than an
 exception to it: `LPFilter`'s gate red test WENT RED (1,592,059 of 5,252,000), so
-it demonstrated the chain a control would have been asked to demonstrate. Seven
-of the fifteen units are gate-visible — ColemanTransform 124,353,
+it demonstrated the chain a control would have been asked to demonstrate. Eight
+of the sixteen units are gate-visible — ColemanTransform 124,353,
 ColemanTransformInverse 389,644, GetWords 1,857,893, LPFilter 1,592,059,
-NonDecreasing 1,857,893, NotchFilter 551,278, NotchFilterSlopes 128,918.
+NonDecreasing 1,857,893, NotchFilter 551,278, NotchFilterSlopes 128,918,
+ReadAvrSWAP 1,487,557. **Unit #16 needs no control either**, for the same
+reason as #11: its red test went red.
 
 **Unit #15 needed a control and it is the reason the rule exists.** Both of
 `PathIsRelative`'s red tests came back with 0 values moved, and on that build the

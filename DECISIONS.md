@@ -3411,3 +3411,225 @@ exists in this unit's six-line body or its Fortran — both come from other
 functions in the same file. Unit #4 recorded that `-f` scopes cross-source checks
 to the FILE and `--function` only sets the report header. No action; the entry
 already exists in the target layer.
+
+## 2026-08-12 — Unit #16 `ReadAvrSWAP`: `integrated`, and an input surface no
+## scenario drives
+
+**The unit is the controller's whole front door — 444,000 calls across all 27
+scenarios, every one of them at the single call site `DISCON.F90:81` — and
+`vit verify` and `gate.py` between them can constrain fewer than half of what it
+writes.** 62 of 62 cases `IDENTICAL` across 14,135 field rows, 5,252,000 of
+5,252,000 gate values agreeing, and a stub with **23 of the unit's 43 output
+fields simply deleted** passes both. The differential harness fails that same
+stub 26,198 of 26,198 and names the fields, which is what makes this a statement
+about the simulation rather than about the method.
+
+### What the two bit-exact layers cannot see, and the three reasons
+
+`evidence/ReadAvrSWAP/readavrswap.zero-fed-outputs-deleted-stub.cpp` is the
+stub. It drops the entire `IF (CntrPar%Ext_Interface > 0)` block — 18 `Ptfm*`
+assignments — plus `VS_MechGenPwr`, `FA_Acc_TT`, `SS_Acc_TT`, `NacIMU_FA_RAcc`
+and `FA_Acc_Nac`. Three distinct mechanisms put those 23 out of reach, and they
+are not the same finding:
+
+1. **No data at all.** `avrSWAP(14)`, `avrSWAP(54)` and `avrSWAP(1001..1018)`
+   are never written by anything in this tree. `rosco/toolbox/control_interface.py`
+   allocates `np.zeros(3000)` and writes 24 indices, none of them these; the
+   scenarios add six more, none of them these. The extended Bladed interface is
+   a real input surface — `Ext_Interface = 1` in all 14 `Examples/DISCON*.IN`,
+   and coverage puts the block at 443,972 executions — that a Python driver
+   emulating ServoDyn simply does not supply.
+
+2. **Data written and then overwritten.** Scenario 27 injects
+   `controller_int.avrSWAP[52]` (tower-top acceleration, for its `TD_Mode = 1`)
+   and `[82]` (nacelle IMU, for its `Fl_Mode = 2`) and then calls
+   `call_controller`, whose first act is a block of `self.avrSWAP[...] =`
+   assignments that includes `except KeyError: self.avrSWAP[82] = 0`. The
+   `turbine_state` dict it is handed carries neither key. **Both injections are
+   zeroed before the DLL is called**, and the two modes the scenario exists to
+   exercise run on zeros. Scenarios 7 and 26 inject the same two indices and
+   lose them the same way.
+
+3. **No reader the gate reads.** Unit #7's question, asked of each output. The
+   18 `Ptfm*` fields have no consumer in the controller *at all*: outside this
+   one assignment they appear only in `ROSCO_IO`'s debug `WRITE`, its
+   restart-file `READ`, and the `LocalVarOutData` table — and `gate.py` compares
+   `baseline_arrays/*.npz`, built from the arrays crossing the DLL boundary.
+   `VS_MechGenPwr` is the same plus `ZeroMQInterface`, and `ZMQ_Mode` is `0` in
+   all 14 inputs. So for those 19 fields, fixing (1) would not help.
+
+`FA_Acc_Nac` is the one to keep in view: its readers are live and unconditional
+(`Filters.f90:372` and `:395`, a `SecLPFilter` and an `HPFilter` every
+timestep). It is invisible **only** because both of its inputs are zero — which
+is mechanism (2), not (1) or (3), and is therefore the one a driver fix would
+actually repair.
+
+**Not fixed here, deliberately.** Repairing (2) changes what the 27 scenarios
+feed the controller; that moves `baseline_arrays` and the compared count, which
+is X3 and SPEC §8.4 — the Driver's call, not a unit's. Recorded as a candidate.
+Its cost is written into `plan.json`'s `observability` rather than left to be
+discovered.
+
+### The kernel said FAILED; `vit verify` said 62/62; both were right
+
+`kernel.exe`'s own summary reads `Total number of verification cases : 62 /
+Number of verification-passed cases : 61 / kernel: ReadAvrSWAP: FAILED
+verification`, and `verify_fields.csv` — the artifact this campaign commits as
+the green — carries one `OUT_TOL` row: case 2, `alreadyinitialized`, computed 1
+against reference 0. `vit verify` printed `✓ VERIFICATION PASSED: 62/62 passed`.
+Both artifacts are committed, the wrong one first (C12):
+`evidence/ReadAvrSWAP/vit_defects/kernel.run-says-FAILED-61-of-62.txt` beside
+`evidence/ReadAvrSWAP/kernel.green.vit_verify.stdout.txt`.
+
+The override is VIT's design and it is correct. `run_kernel_verify` runs the
+ORIGINAL FORTRAN through the same kernel first and compares field logs; when
+they match, the kernel's per-case failures are state-capture artifacts rather
+than translation defects. **Measured rather than taken on trust**: the original
+`ReadSetParameters.f90` rebuilt into this kernel produces `alreadyinitialized`
+= 1 against reference 0 on case 2 and reports 61 of 62 FAILED —
+`evidence/ReadAvrSWAP/kernel.original-fortran-replay-FAILS-case2.txt`.
+
+The cause is this campaign's own `vit.yaml`. `kgen.dll_persistence.resets`
+inserts `LocalVar%AlreadyInitialized = 0` before every line matching
+`CALL ReadAvrSWAP` **in the instrumented source** — that is, between KGen's
+input capture and the call — and the generated kernel does not carry the
+inserted line. The reference output was therefore produced by a statement the
+replay does not execute. It is observable on exactly one case: case 1's captured
+input is already 0, and from case 3 on the previous call's reset left it 0. A
+`dll_persistence` reset naming a variable the unit itself READS is this shape,
+and this unit is the only one in the campaign whose signature reaches the
+variable that config names.
+
+**What is missing in VIT is a print, not a verdict.** `run_kernel_verify`
+already computes `Note: N state file artifacts detected (Fortran and C++ match
+each other)` and a field-coverage line into `result.output`, and `cmd_verify`
+never prints `result.output`. So the screen says `62/62` where the instrument
+says 61 of 62 plus an override, and nothing on it says an override happened.
+Not repaired inside this unit: the fix is print-only and cannot change a
+verdict, but it changes what every future run's transcript says, and this unit's
+own evidence was taken with the current build. Left as a one-line addition for
+the next unit, with the two artifacts above as its red test.
+
+### Transcription notes worth keeping
+
+`REAL(ReKi)` is `C_FLOAT` (`Constants.f90:18`), so `avrSWAP` crosses as
+`float*` and **every read in this unit is a float widened to a double** — not a
+double read. `R2D` and `D2R` are `REAL(DbKi)` initialised from literals with no
+kind suffix, so under `-fdefault-real-8` the literals are themselves kind 8 and
+nothing narrows. `REAL(LocalVar%NumBl)` likewise names no kind and is kind 8, so
+`(1 / REAL(NumBl))` is a double reciprocal formed BEFORE the multiply — written
+`(1.0 / (double)NumBl) * ((BlPitch[0] + BlPitch[1]) + BlPitch[2])`, left-to-right
+inside the parentheses, because that is the shape the reference has. `NINT` is
+`std::lround`, twice.
+
+`ErrVar%ErrMsg = '...'` on a `CHARACTER(:), ALLOCATABLE` field is a
+REALLOCATING assignment: the new length is the literal's 58, not the old one's.
+The view carries `n_ErrMsg_cap`; an assignment that does not fit is refused and
+reported, never truncated. Coverage of the clean source puts
+`IF (LocalVar%AlreadyInitialized == 0)` at **28 hits**, its TRUE branch at 28
+and **its ELSE branch — the two statements that write `aviFAIL` and `ErrMsg` —
+at zero, in all 27 scenarios**. No scenario loads the library twice, so that
+branch is transcribed and unverifiable by any layer here except the harness.
+
+## 2026-08-12 — Unit #16 `ReadAvrSWAP`, second dispatch: a ladder aimed at a
+## NAME, and two ladders that never crossed
+
+The first dispatch closed with the mutation score unrun and the tree dirty. The
+score, run here, came back **0.874 — 14 of 111 behavioural mutants alive**, the
+lowest first-pass score in this campaign. Every one of the fourteen is a corpus
+gap, and the corpus had two distinct holes in it, only the first of which is a
+variation on something already recorded.
+
+### 1. The corpus CONTAINED the value and the branch was still unreachable
+
+`ReadAvrSWAP` branches four times on `LocalVar%iStatus == 0`, and
+`LocalVar_iStatus` **is** a scalar integer parameter of the mapped signature —
+so unit #10's integer decade ladder gave it `0`, along with every other decade
+boundary and both 32-bit extremes. Every one of those cases was dead. The unit's
+first statement is
+
+```fortran
+LocalVar%iStatus = NINT(avrSWAP(1))
+```
+
+so the value the branch reads is not the parameter the ladder moved; it is
+element 1 of an array. `harness/generate.py`'s `_fill_array` returns
+`lo + span*(k+1) + jitter` — one ascending ramp across ±1e3 for 3000 elements —
+so `avrSWAP(1)` is about **-999 in every case this generator has ever
+produced**, and `iStatus == 0` was FALSE in the whole 26,198-case corpus. The
+same holds for `NINT(avrSWAP(61))` → `NumBl`, the trip count of the unit's only
+loop (about -959), and for `avrSWAP(2)` → `Time`.
+
+This is the tenth corpus blind spot recorded here and the first of this shape.
+Unit #10's was a range never reached, #12's an ordering never generated, #13's a
+magnitude drowned by its neighbours, #14's a value the dedup absorbed. Here the
+generator reached the value, at the right type, in the right parameter — and the
+reference had already overwritten the name before the first branch read it.
+**A ladder over a name is not a ladder over the quantity when the reference
+reassigns that name from somewhere else.**
+
+### 2. Two ladders that never cross cannot reach a branch that needs both
+
+Separate, and it cost as much. Every stage in `generate()` sets ONE parameter
+and leaves the rest at base; `flag_variants` crosses only DECLARED flags, and a
+scalar integer the reference compares against a literal is not one — the only
+flag in this unit's signature is `LocalVar_restart`, which the reference
+overwrites unconditionally, so R2's whole "2 values across 1 flag" is dead too.
+
+The seven mutants on the pitch-fault loop need
+
+```
+CntrPar%PF_Mode == 1   AND   NINT(avrSWAP(61)) >= 2   AND   NINT(avrSWAP(1)) /= 0
+```
+
+**in the same case**. `PF_Mode == 1` was individually reachable (the integer
+ladder produces it); the conjunction was not. R2's own header already says the
+rule is "additive across flags — the sum of their arities, not the product",
+which is a correct statement of what it claims and a precise statement of what
+it cannot reach.
+
+### The fix, by addition, and what it is bounded by
+
+`scripts/vit_harness.py` gains `predicate_knobs_from`, which reads the
+REFERENCE (P7 — a red-test stub contains no predicate, unit #11's rule) for
+every quantity a predicate tests, follows `LHS = ... arr(lit) ...` back to the
+element the quantity ENTERS by, and returns `(parameter, element index or None,
+values)`. The values are `{0, 1, 2}` — the trip counts at which a `DO K = 1, N`
+body runs never, once and twice, and three values at which `== 0`, `== 1` and
+`> 0` each take both answers — plus every literal the reference compares the
+quantity against, and that literal plus one.
+
+`harness/generate.py` gains an R7 block, appended LAST and silent when no knob
+is found, that emits the CROSS PRODUCT of the knobs. Six knobs here
+(`Ext_Interface`, `PF_Mode`, `AlreadyInitialized`, and elements 1, 2 and 61 of
+`avrSWAP`), 729 combinations, **26,198 → 27,656 cases**. The product is
+exponential in the number of knobs, so it is bounded at 4096 combinations and
+the bound is REPORTED rather than silent: past it the block covers all PAIRS
+instead and its own coverage line says so. No silent caps.
+
+Five earlier units would now fire the detector — `GetWords` (`NumWords`),
+`HPFilter`, `LPFilter`, `NotchFilter` (`iStatus`) and `NotchFilterSlopes`
+(`iStatus`, `CornerFreq`), one or two knobs each. The block appends, so **every
+case those units were scored on is byte-for-byte unchanged** and no committed
+artifact moves; a re-run would add cases, not renumber any.
+
+### One survivor is left and it is declared, with the same reason as unit #5's
+
+`e82a5f90`, `compare_op '<=' -> '<'` at
+`if (ALREADY_LOADED_LEN <= (int)ErrVar->n_ErrMsg_cap)`. The two forms differ on
+exactly one input, `n_ErrMsg_cap == 58`, and the capacity cannot be 58 on either
+side of the boundary: the harness sets it to `LEN(ErrMsg) + ALLOC_HEADROOM`
+(`harness/emit.py`, 4096) and the integrated build to
+`LEN(src%ErrMsg) + VIT_DEFERRED_CHAR_HEADROOM` (`vit_errorvariables_view.f90:63`,
+also 4096). **Same site, same reason, same declaration as `ExtController`'s
+`11d2c9cc`** — the two units share the `CHARACTER(:), ALLOCATABLE` assignment
+idiom and this is the second unit to reach it. Not removed: the guard is what
+makes an over-long assignment a refusal rather than a truncation, and a
+truncated error message is the one wrong answer a bit comparison cannot catch.
+The OTHER mutant on that same line — `negate_cond`, which inverts the whole
+guard — is killed by the new corpus, which is the difference between an
+unobservable site and an unreached one.
+
+`mutation/ReadAvrSWAP.survivors_before_predicate_knobs.json` is the 0.874 run,
+kept: it is the measurement that makes the generator change a finding rather
+than a preference.

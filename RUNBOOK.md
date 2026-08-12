@@ -339,6 +339,144 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A LADDER AIMED AT A NAME IS NOT A LADDER OVER THE QUANTITY -- ASK WHERE THE
+  TESTED VALUE ENTERS, NOT WHAT IT IS CALLED.** Unit #16, and it is the tenth
+  corpus blind spot: the first where the corpus DID contain the value and the
+  branch was still unreachable.
+
+  `ReadAvrSWAP` branches four times on `LocalVar%iStatus == 0`.
+  `LocalVar_iStatus` IS a scalar integer parameter, so the integer decade ladder
+  (unit #10) gave it 0 -- and every one of those cases was DEAD, because the
+  unit's first statement is `LocalVar%iStatus = NINT(avrSWAP(1))`. The value that
+  decides the branch arrives as ONE ELEMENT of an array, and `_fill_array` gives
+  an array a single ascending ramp, so `avrSWAP(1)` is about **-999 in every case
+  this generator has ever produced**. Same for `NINT(avrSWAP(61))` -> `NumBl`,
+  the trip count of the unit's only loop, and `avrSWAP(2)` -> `Time`.
+
+  The second half is separate and cost as much: **two ladders that never cross
+  cannot reach a branch that needs both.** Every stage sets ONE parameter and
+  leaves the rest at base; `flag_variants` crosses only DECLARED flags, and a
+  scalar integer compared against a literal is not one. The loop body needs
+  `PF_Mode == 1` AND `NumBl >= 2` AND `iStatus /= 0` **in the same case**. Each
+  was individually reachable; the conjunction was not.
+
+  Together: **14 of 111 mutants survived a 26,198-case green, 0.874**, and all
+  fourteen sit in the two blocks those conjunctions guard. The check is two
+  greps against the reference and it costs a minute:
+
+  ```
+  # 1. is the tested NAME reassigned before the branch reads it?
+  grep -n 'iStatus\|NumBl' <the unit's Fortran> | grep '='
+  # 2. how many predicates must hold AT ONCE for the survivor's line to run?
+  ```
+
+  Closed by addition: `predicate_knobs_from` (in `vit_harness.py`) reads the
+  reference's own predicates, follows `LHS = ... arr(lit) ...` back to the
+  element the quantity ENTERS by, and `generate.py`'s R7 block emits the CROSS
+  PRODUCT of them -- 729 combinations of six quantities here, bounded at 4096
+  with an all-pairs fallback that reports itself. 26,198 -> 27,656 cases.
+
+- **AN INPUT SURFACE NO SCENARIO DRIVES IS INVISIBLE TO EVERY BIT-COMPARING
+  LAYER AT ONCE, AND `avrSWAP` HAS ONE.** Unit #16, and it is the largest
+  single blind spot this campaign has measured: **23 of `ReadAvrSWAP`'s 43
+  output fields**, in one unit.
+
+  A stub with those 23 assignments DELETED passes the kernel **62 of 62
+  IDENTICAL, 14,135 field rows**
+  (`evidence/ReadAvrSWAP/kernel.zero-fed-outputs-deleted-stub-PASSES.verify_fields.csv`),
+  and disabling the same block at the gate moves **0 of 5,252,000** on a build
+  whose `GenSpeed` perturbation moves 1,487,557. The differential harness fails
+  it **26,198 of 26,198** and names the fields, so the blindness is the
+  simulation's and not the method's.
+
+  Three separate mechanisms, and asking which one applies is the whole check:
+
+  ```
+  # 1. NO DATA. Who writes the index the unit READS?
+  grep -n 'avrSWAP\[' rosco/toolbox/control_interface.py Examples/vit_sim.py
+  # 2. NO READER THE GATE READS -- unit #7's question, asked of each output
+  grep -n '<the output field>' rosco/controller/src/*.f90 | grep -v vit_
+  # 3. and the value itself, straight out of the green field log
+  python3.12 -c "import csv;r=list(csv.DictReader(open('kernel/<U>/verify_fields.csv')));\
+      print({x['computed'] for x in r if x['field']=='<field>'})"
+  ```
+
+  Here: `avrSWAP(1001..1018)` -- the extended Bladed interface that
+  `Ext_Interface = 1` turns on in all 14 inputs and coverage shows running
+  443,972 times -- is **read in exactly one place in the whole tree and written
+  in none**. `avr_size` is 3000 zeros. Those 18 fields also have no consumer in
+  the controller at all: every other occurrence is a `ROSCO_IO` debug `WRITE`,
+  a restart-file `READ`, or the `LocalVarOutData` table, and `gate.py` never
+  opens a `.RO.dbg`. Double blindness -- no data AND no reader -- so no widening
+  of the scenario set alone would fix it.
+
+- **A SCENARIO CAN INJECT A SIGNAL AND THE DRIVER CAN OVERWRITE IT BEFORE THE
+  DLL SEES IT.** Unit #16, and it is the second mechanism above -- new, cheap
+  to check, and it makes a scenario's stated purpose false.
+
+  `Examples/vit_sim.py`'s scenario 27 sets `controller_int.avrSWAP[52]` (the
+  tower-top acceleration, for `TD_Mode = 1`) and `[82]` (the nacelle IMU, for
+  `Fl_Mode = 2`) and then calls `call_controller`, which opens with a block of
+  its own `avrSWAP[...] =` assignments -- including
+
+  ```python
+  try:    self.avrSWAP[82] = turbine_state["NacIMU_FA_RAcc"]
+  except KeyError: self.avrSWAP[82] = 0
+  ```
+
+  and `turbine_state` carries neither key. Both injections are **overwritten
+  with 0**, and the green field log confirms it: `fa_acc_tt`, `ss_acc_tt`,
+  `nacimu_fa_racc` and `fa_acc_nac` have exactly **one distinct value, 0.0, in
+  all 62 cases**. The scenarios that inject `[23]`, `[29..31]`, `[36]` and
+  `[59]` are unaffected -- `call_controller` either does not touch those indices
+  or writes the same signal through `turbine_state`.
+
+  ```
+  # the injections, then the driver's own writes; any index in BOTH is dead
+  grep -n 'controller_int.avrSWAP\[' Examples/vit_sim.py
+  grep -n 'self.avrSWAP\[' rosco/toolbox/control_interface.py
+  ```
+
+  **NOT FIXED HERE.** Repairing it changes what the 27 scenarios feed the
+  controller, which moves the baselines and the compared count -- X3 and SPEC
+  §8.4, the Driver's call. Recorded in DECISIONS.md as a candidate.
+
+- **`vit verify` PRINTS ITS OWN OVERRIDE, NOT THE KERNEL'S COUNT -- and the
+  green field log it commits still carries the red row.** Unit #16.
+
+  The kernel's own summary reads `Total number of verification cases : 62 /
+  Number of verification-passed cases : 61 / kernel: ReadAvrSWAP: FAILED
+  verification`
+  (`evidence/ReadAvrSWAP/vit_defects/kernel.run-says-FAILED-61-of-62.txt`).
+  `vit verify` printed `✓ VERIFICATION PASSED: 62/62 passed`.
+
+  The override is CORRECT and is the design: `run_kernel_verify` runs the
+  ORIGINAL FORTRAN through the same kernel first, and when the two field logs
+  match it declares the kernel's failures state-capture artifacts. Measured
+  rather than read -- the original Fortran, rebuilt into this kernel, produces
+  the identical wrong answer on the identical case
+  (`evidence/ReadAvrSWAP/kernel.original-fortran-replay-FAILS-case2.txt`). What
+  is missing is that `run_kernel_verify` COMPUTES a `Note: N state file
+  artifacts detected` line and a field-coverage line into `result.output`, and
+  `cmd_verify` never prints `result.output` at all.
+
+  So read the artifact, not the verdict, before recording a kernel green:
+
+  ```
+  python3.12 -c "import csv,collections;r=list(csv.DictReader(open('kernel/<U>/verify_fields.csv')));\
+      print(collections.Counter(x['status'] for x in r));\
+      [print(x) for x in r if x['status']!='IDENTICAL']"
+  ```
+
+  The cause here is this campaign's OWN `vit.yaml`. `kgen.dll_persistence`
+  inserts `LocalVar%AlreadyInitialized = 0` before every line matching
+  `CALL ReadAvrSWAP` in the INSTRUMENTED source -- which puts it between KGen's
+  input capture and the call -- and the generated kernel does not carry it. So
+  the reference output was produced by a statement the replay does not execute,
+  on exactly the one case where it is observable (case 1's input is already 0;
+  from case 3 on the previous call left it 0). A `dll_persistence` reset that
+  touches a variable the unit itself READS is this shape.
+
 - **A GATE RED TEST CAN BE SEEN BY KILLING THE RUN, AND `went_red` COUNTS ONLY
   VALUES.** Unit #15, and it is the first `gate/*.json` in this campaign with a
   non-empty `scenarios_failed`.
