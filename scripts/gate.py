@@ -276,6 +276,25 @@ def main(argv=None) -> int:
             payload["revert_compared"] = after["compared"]
             payload["revert_mismatched"] = after["mismatched"]
             payload["revert_verified"] = (after["mismatched"] == 0 and after["compared"] > 0)
+            # ADDED at unit #15, by ADDITION: a perturbation can be visible to
+            # the simulation without moving a single compared VALUE, by stopping
+            # the scenario from producing output at all. PathIsRelative forced
+            # to answer .TRUE. prefixes PriPath onto an already-absolute
+            # PerfFileName, and 24 of the 27 scenarios die in the Fortran
+            # runtime rather than finishing wrong
+            # (evidence/PathIsRelative/gate.always-true-scenario1-runtime-error.log).
+            # `went_red` counts value mismatches and so reads False, and the
+            # message under it -- "the line is never executed, or the gate
+            # cannot observe it" -- is then FALSE of this run.
+            #
+            # `went_red` and the exit code are deliberately NOT changed: every
+            # artifact this campaign has already committed means what it says,
+            # and re-defining the verdict mid-run is exactly what X3 forbids.
+            # What is added is the measurement a reader needs, named so it
+            # cannot be missed, plus an accurate message below.
+            payload["revert_scenarios_failed"] = after["scenarios_failed"]
+            payload["perturbation_broke_scenarios"] = sorted(
+                set(payload["scenarios_failed"]) - set(after["scenarios_failed"]))
 
         v, rc = verdict_of(payload)
         payload["verdict"] = v
@@ -308,7 +327,15 @@ def main(argv=None) -> int:
                   f"{payload['mismatched']} of {payload['compared']} compared value(s); "
                   f"after revert {payload['revert_mismatched']} of "
                   f"{payload['revert_compared']}")
-            if not went_red:
+            broke = payload.get("perturbation_broke_scenarios") or []
+            if not went_red and broke:
+                print(f"  NOT 'the gate cannot see it': the perturbation STOPPED "
+                      f"{len(broke)} of {len(scenarios)} scenario(s) from running at all "
+                      f"({broke}), and those scenarios ran on the revert. A scenario that "
+                      f"dies produces no values to mismatch, so `went_red` -- which counts "
+                      f"VALUES -- reads False. Read `perturbation_broke_scenarios`.",
+                      file=sys.stderr)
+            elif not went_red:
                 print("  the gate did not see the perturbation -- either the line is "
                       "never executed by these scenarios, or the gate cannot observe it. "
                       "See RUNBOOK.md: this is exactly attempt 1.", file=sys.stderr)

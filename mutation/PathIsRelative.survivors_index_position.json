@@ -1,0 +1,37 @@
+{
+ "unit": "PathIsRelative",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "mutants": 32,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 32,
+ "killed": 30,
+ "survived": 2,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.9375,
+ "loop_rev": "5d83048-nogit",
+ "vit_rev": "300da9c-nogit",
+ "survivors": [
+  {
+   "id": "c1e89f7b",
+   "operator": "arith_op",
+   "before": "len_s - len_sub",
+   "after": "len_s + len_sub"
+  },
+  {
+   "id": "0924587a",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  }
+ ]
+}

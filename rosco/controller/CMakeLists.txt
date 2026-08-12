@@ -93,6 +93,7 @@ set(SOURCES
     src/nondecreasing.cpp
     src/notchfilter.cpp
     src/notchfilterslopes.cpp
+    src/pathisrelative.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

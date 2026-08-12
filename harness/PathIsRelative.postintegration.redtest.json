@@ -1,0 +1,49 @@
+{
+ "unit": "PathIsRelative",
+ "against": "integrated",
+ "checked": 387,
+ "failed": 4,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    1 varied extent(s) at [3], NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      104 character value(s) from a corpus of 26 (the reference's own character literals and their collating neighbours) across 1 string(s), each at length(s) [1, 2, 3, 8] and in the mixed / padded / all-blank / leading-blank shapes, plus 210 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+  "  N/A      R3_no_dead_signal          no real parameter",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 0 out-parameter(s): none"
+ ],
+ "mismatches": [
+  {
+   "case": 135,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 136,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 139,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 140,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  }
+ ],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "5d83048",
+ "vit_rev": "300da9c",
+ "red_test": {
+  "perturbation": "wrapper: LEN(GivenFil) -> LEN(GivenFil) - 1 in the CALL to pathisrelative_c, with a rebuild between the edit and the run",
+  "result": "4 of 387 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

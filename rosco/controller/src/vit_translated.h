@@ -43,6 +43,7 @@ double lpfilter_c(double InputSignal, double DT, double CornerFreq, filterparame
 int32_t nondecreasing_c(double* Array, int n_Array);
 double notchfilter_c(double InputSignal, double DT, double omega, double betaNum, double betaDen, filterparameters_t* FP, int iStatus, int32_t reset, int* inst, int has_InitialValue, double InitialValue);
 double notchfilterslopes_c(double InputSignal, double DT, double CornerFreq, double Damp, filterparameters_t* FP, int iStatus, int32_t reset, int* inst, int has_Moving, int32_t Moving, int has_InitialValue, double InitialValue);
+int32_t pathisrelative_c(char* GivenFil, int len_GivenFil);
 
 #ifdef __cplusplus
 }

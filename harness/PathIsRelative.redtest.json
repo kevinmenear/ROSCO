@@ -1,0 +1,120 @@
+{
+ "unit": "PathIsRelative",
+ "against": "translation",
+ "checked": 387,
+ "failed": 387,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    1 varied extent(s) at [3], NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      104 character value(s) from a corpus of 26 (the reference's own character literals and their collating neighbours) across 1 string(s), each at length(s) [1, 2, 3, 8] and in the mixed / padded / all-blank / leading-blank shapes, plus 210 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+  "  N/A      R3_no_dead_signal          no real parameter",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 0 out-parameter(s): none"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 1,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 2,
+   "output": "vit_result",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 3,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 4,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 5,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 6,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 7,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 8,
+   "output": "vit_result",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 9,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 10,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 11,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 12,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 13,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 14,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 15,
+   "output": "vit_result",
+   "ref": "01000000",
+   "got": "00000000"
+  }
+ ],
+ "loop_rev": "5d83048-nogit",
+ "vit_rev": "300da9c-nogit",
+ "red_test": {
+  "perturbation": "the shipped translation with its answer INVERTED",
+  "result": "387 of 387 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

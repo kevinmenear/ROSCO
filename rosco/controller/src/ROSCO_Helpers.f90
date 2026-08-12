@@ -122,6 +122,17 @@ MODULE ROSCO_Helpers
         END FUNCTION nondecreasing_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of PathIsRelative
+    INTERFACE
+        FUNCTION pathisrelative_c(GivenFil, len_GivenFil) BIND(C, NAME='pathisrelative_c')
+            USE ISO_C_BINDING
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: GivenFil(*)
+            INTEGER(C_INT), VALUE :: len_GivenFil
+            INTEGER(C_INT) :: pathisrelative_c
+        END FUNCTION pathisrelative_c
+    END INTERFACE
+
 CONTAINS
 
     !=======================================================================
@@ -1316,33 +1327,19 @@ END subroutine ReadEmptyLine
 !!     4. It starts with "\"
 !!   
 !! All others are considered relative.
- FUNCTION PathIsRelative ( GivenFil )
-
-    ! Argument declarations.
-
- CHARACTER(*), INTENT(IN)     :: GivenFil                                            !< The name of the given file.
- LOGICAL                      :: PathIsRelative                                      !< The function return value
-
- 
-
-    ! Determine if file name begins with an absolute path name or if it is relative 
-    !    note that Doxygen has serious issues if you use the single quote instead of  
-    !    double quote characters in the strings below:
-
- PathIsRelative = .FALSE.
-
- IF ( ( INDEX( GivenFil, ":/") == 0 ) .AND. ( INDEX( GivenFil, ":\") == 0 ) ) THEN   ! No drive is specified (by ":\" or ":/")
-
-    IF ( INDEX( "/\", GivenFil(1:1) ) == 0 ) THEN                                    ! The file name doesn't start with "\" or "/"
-
-       PathIsRelative = .TRUE.
-
-    END IF
-
- END IF
-
- RETURN
- END FUNCTION PathIsRelative
+    FUNCTION PathIsRelative(GivenFil) RESULT(PathIsRelative_result)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        CHARACTER(*), INTENT(IN) :: GivenFil
+        LOGICAL :: PathIsRelative_result
+        CHARACTER(KIND=C_CHAR) :: GivenFil_c(LEN(GivenFil))
+        INTEGER :: vit_i_GivenFil
+        ! Convert CHARACTER args to C_CHAR arrays
+        DO vit_i_GivenFil = 1, LEN(GivenFil)
+            GivenFil_c(vit_i_GivenFil) = GivenFil(vit_i_GivenFil:vit_i_GivenFil)
+        END DO
+        PathIsRelative_result = pathisrelative_c(GivenFil_c, LEN(GivenFil))
+    END FUNCTION PathIsRelative
 !=======================================================================
 ! ------------------------------------------------------
     ! Read Open Loop Control Inputs

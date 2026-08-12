@@ -1,0 +1,23 @@
+PathIsRelative -- what the 387-case differential corpus actually contains.
+Decoded from translations/ROSCO_Helpers/pathisrelative_test/pathisrelative_cases.bin
+(marker int32, len int32, len bytes), and the reference predicate re-evaluated
+in Python. Unit #12's recipe: count the DISTINCT ANSWERS before believing any
+green on a unit whose output is a predicate.
+
+cases                  387
+lengths                {1: 38, 2: 108, 3: 133, 8: 108}
+distinct characters     !./0189:;@ABYZ[\]^_`abyz{
+
+ANSWER DISTRIBUTION   .TRUE. 331   .FALSE. 56
+  CONFIRMED INDEPENDENTLY by two constant stubs run through the harness itself:
+  a stub returning .FALSE. fails 331 of 387; one returning .TRUE. fails 56 of 387.
+  Both answers are reachable, so no constant could have been the red test.
+
+THE TWO-CHARACTER DRIVE SETS, which decide contains_pair's loop bounds:
+  cases containing ':/' or ':\'   12   ["':/ '", "':/'", "':/A'", "':\\\\ '", "':\\\\'", "':\\\\A'", "'AA:/    '", "'AA:/AAAA'", "'AA:\\\\    '", "'AA:\\\\AAAA'"]
+  ... at the START of the string   8  -> kills `i = 2` -> `i = 3`
+  ... at the END of the string     4  -> kills `i <= len_s` -> `i < len_s`
+
+FIRST CHARACTER, which is the whole of the second test's input:
+  '/' 22    '\\' 22   -> both ends of the 2-byte Separators set are exercised,
+  which is what kills contains_char's `i = 1` -> `i = 2` and `i <= 2` -> `i < 2`.

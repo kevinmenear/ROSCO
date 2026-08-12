@@ -1,0 +1,24 @@
+{
+ "unit": "PathIsRelative",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "mutants": 26,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 26,
+ "killed": 26,
+ "survived": 0,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 1.0,
+ "loop_rev": "5d83048-nogit",
+ "vit_rev": "300da9c-nogit",
+ "survivors": []
+}

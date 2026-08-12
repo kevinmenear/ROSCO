@@ -1,0 +1,151 @@
+// VIT Translation Scaffold
+// Function: PathIsRelative
+// Source: ROSCO_Helpers.f90
+// Module: ROSCO_Helpers
+// Fortran: FUNCTION PathIsRelative(GivenFil)
+// Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+// Source MD5: a6079f5b6340
+// VIT: 0.1.0
+// Status: unverified
+// Generated: 2026-08-12T01:30:18Z
+
+#include <cstdint>
+
+// Fortran:
+//     PathIsRelative = .FALSE.
+//     IF ( ( INDEX( GivenFil, ":/") == 0 ) .AND. ( INDEX( GivenFil, ":\") == 0 ) ) THEN
+//        IF ( INDEX( "/\", GivenFil(1:1) ) == 0 ) THEN
+//           PathIsRelative = .TRUE.
+//        END IF
+//     END IF
+//
+// The LOGICAL result crosses as INTEGER(C_INT): the generated wrapper writes
+// `PathIsRelative_result = pathisrelative_c(...)`, a LOGICAL = INTEGER
+// assignment that is a gfortran EXTENSION rather than standard Fortran. Unit
+// #12 measured what the extension does on this compiler rather than reading it
+// -- evidence/NonDecreasing/logical_result_conversion_probe.f90 -- and it
+// NORMALISES: 0 -> .FALSE.; 1, 2, -1 and 256 all -> .TRUE. with
+// TRANSFER(L,0) == 1. Returning 1/0 from here is therefore exact.
+//
+// GivenFil arrives as a CHARACTER(KIND=C_CHAR) array of exactly len_GivenFil
+// bytes. It is not NUL-terminated, so len_GivenFil is the only statement of its
+// extent and is named once.
+
+// THE THREE INDEX CALLS ARE TRANSCRIBED AS PREDICATES, AND THAT IS A DEPARTURE
+// FROM LITERAL TRANSCRIPTION WITH A PROOF AND A MEASUREMENT.
+//
+// Claim: `INDEX(S, SUB) == 0` is exactly `.NOT. contains(S, SUB)`, so a
+// translation that computes only the predicate answers every one of the three
+// tests identically. INDEX returns 0 when no occurrence exists and the 1-based
+// position of the first occurrence otherwise; every position is >= 1, so the
+// test `== 0` partitions the result into exactly those two cases and reads
+// nothing else about it. The reference uses INDEX nowhere else: all three calls
+// are immediately compared against 0, and no other statement in the function
+// mentions a position.
+//
+// WHY DEPART, rather than write INDEX and declare its survivors equivalent.
+// Both halves were measured on this unit, and each is a rule this campaign
+// already paid for once:
+//
+//   1. The POSITION IS A QUANTITY NOTHING DOWNSTREAM CAN READ (unit #4's
+//      LEN_TRIM lesson, one intrinsic over). Any site computing which position
+//      matched is unobservable by construction: a mutant that returns a
+//      different NON-ZERO position gives the identical answer at all three call
+//      sites, for every input.
+//   2. A general INDEX(s, len_s, sub, len_sub) needs a loop bound of the form
+//      `len_s - len_sub + 1`, and that bound's LOOSENING mutants are
+//      OUT-OF-BOUNDS READS, not wrong answers. Measured: that form scores 0.938
+//      with exactly two survivors, `len_s - len_sub` -> `len_s + len_sub` and
+//      `+ 1` -> `+ 2`, both of which run the search past the end of the buffer
+//      (mutation/PathIsRelative.survivors_index_position.json). A mutant whose
+//      behaviour is undefined cannot honestly be DECLARED equivalent; it can
+//      only be deleted along with the site that admits it -- unit #6's finding
+//      on GetPath's 0-based char_assign, in a different shape.
+//
+// Both loops below are written 1-based, the way the Fortran indexes strings, so
+// that the boundary mutants stay observable: `i <= len_s` -> `i < len_s` leaves
+// the LAST position unexamined and `i = 2` -> `i = 3` leaves the FIRST one, and
+// the corpus contains the reference's own two-character sets at both ends of a
+// string (4 cases ending in one, 8 beginning with one, out of 387).
+
+// INDEX(S, SUB) /= 0 for a TWO-character SUB. `i` is the 1-based position of the
+// SECOND character of the candidate pair, which is what removes arithmetic from
+// the loop bound: a pair needs a predecessor, so the first candidate is i = 2
+// and the last is i = len_s. A string shorter than the pair runs no iteration
+// and answers false, which is what INDEX returns when SUB is longer than S.
+static bool contains_pair(const char* s, int len_s, char c1, char c2) {
+    for (int i = 2; i <= len_s; ++i) {
+        if (s[(i - 1) - 1] == c1 && s[i - 1] == c2) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// INDEX(S, SUB) /= 0 for a ONE-character SUB -- the forward search, no BACK.
+// This is GetRoot's index_first with the position dropped, for the reason
+// written above it.
+static bool contains_char(const char* s, int len_s, char c) {
+    for (int i = 1; i <= len_s; ++i) {
+        if (s[i - 1] == c) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// The reference's third character literal, as an ARRAY with its own size rather
+// than a C string literal with a length written beside it -- unit #1's "name a
+// size once". It also keeps the NUL terminator a C string literal carries out
+// of a comparison the Fortran cannot make: a CHARACTER argument in this
+// campaign never contains a NUL.
+//
+// In Fortran a backslash is an ordinary character (this build does not pass
+// -fbackslash), so `"/\"` is the two bytes 0x2F 0x5C; in C++ the backslash has
+// to be escaped to mean itself. The byte order is transcribed exactly as
+// written -- slash then backslash -- which is the reverse of the set GetRoot
+// uses two functions up in the same file. Order cannot change the answer of a
+// membership test, and it is carried across anyway because the literal is the
+// oracle.
+static const char Separators[] = { '/', '\\' };   // "/\"
+
+// The two drive sets are passed to contains_pair as their two bytes rather than
+// as arrays: the pair's length is then fixed by that function's own signature
+// and is not restated at either call site.
+
+int32_t PathIsRelative(char* GivenFil, int len_GivenFil) {
+    int32_t PathIsRelative = 0;                                          // PathIsRelative = .FALSE.
+
+    // No drive is specified (by ":\" or ":/").
+    //
+    // Fortran's .AND. does not promise short-circuit evaluation and C++'s &&
+    // does. Neither operand has a side effect, so the two forms compute the
+    // same value; the difference is unobservable here.
+    if (!contains_pair(GivenFil, len_GivenFil, ':', '/') &&
+        !contains_pair(GivenFil, len_GivenFil, ':', '\\')) {
+
+        // The file name doesn't start with "\" or "/".
+        //
+        // Note the operand order, which is the reverse of the two tests above:
+        // in the reference the two-character SET is the string being SEARCHED
+        // and the first character of the file name is the substring, so this is
+        // a membership test on `Separators` -- not a search of GivenFil.
+        //
+        // The reference reads GivenFil(1:1) with no test that GivenFil has a
+        // first character. On a zero-length actual argument that is a bounds
+        // violation in the ORIGINAL, and this transcription reproduces it
+        // rather than repairing it (P7): a guard here would answer .TRUE. where
+        // the reference's behaviour is undefined, which is a different
+        // function. The differential harness's length ladder starts at 1, so no
+        // generated case reaches it, and both call sites in this campaign pass
+        // a CHARACTER(1024) component.
+        if (!contains_char(Separators, (int)sizeof Separators, GivenFil[1 - 1])) {
+
+            PathIsRelative = 1;                                          // PathIsRelative = .TRUE.
+
+        }
+
+    }
+
+    return PathIsRelative;
+}

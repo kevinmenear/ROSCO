@@ -141,6 +141,9 @@ translations:
   NotchFilterSlopes:
     status: integrated
     cpp_file: translations/Filters/notchfilterslopes.cpp
+  PathIsRelative:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/pathisrelative.cpp
 types:
   ControlParameters:
     strategy: view

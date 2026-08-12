@@ -1,0 +1,18 @@
+{
+ "unit": "PathIsRelative",
+ "against": "translation",
+ "checked": 387,
+ "failed": 0,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    1 varied extent(s) at [3], NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      104 character value(s) from a corpus of 26 (the reference's own character literals and their collating neighbours) across 1 string(s), each at length(s) [1, 2, 3, 8] and in the mixed / padded / all-blank / leading-blank shapes, plus 210 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+  "  N/A      R3_no_dead_signal          no real parameter",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 0 out-parameter(s): none"
+ ],
+ "mismatches": [],
+ "loop_rev": "5d83048-nogit",
+ "vit_rev": "300da9c-nogit"
+}
