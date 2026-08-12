@@ -4,6 +4,51 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-12: unit #18 `SecLPFilter` is `integrated` and CLOSED**, first
+dispatch. **Five layers, all five alive** — the third unit in this campaign of
+which that is true, after #11 and #13.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases, scenario 1 | 14,818 field rows, ALL `IDENTICAL` | zero stub **0/62**, 404 rows moved — but see below: the FIRST run of that stub said PASSED |
+| differential harness vs clean Fortran | **2,884** checked, 0 failed, 0 inadmissible | the unit as a no-op fails **2,884 of 2,884** |
+| mutation score | **80 of 80 behavioural killed, 1.000**, 0 declared equivalent, 2 no-compile | the inherited corpus scores **0.975, two `assoc_reorder` survivors** — see below |
+| post-integration harness (wrapper only) | **2,884 checked, 0 failed** | `CornerFreq`/`Damp` swapped at the `seclpfilter_c` call, rebuilt between edit and run: **1,040 of 2,884**; revert, rebuild, green returns |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | ×1.000001 moves **1,349,326 of 5,252,000**, matching no other committed red test — this unit's own signature |
+
+**A ZERO STUB THAT READS NO ARGUMENT PASSED THE KERNEL 62/62, AND THE CAUSE WAS
+A MISSING MAKEFILE PREREQUISITE (C12).** VIT writes the TRANSLATION to
+`<stem>.hpp` and a three-line `extern "C"` wrapper to `<stem>.cpp`, and the
+generated rule was `seclpfilter.o: seclpfilter.cpp` — so `make` reused an object
+built from the real translation and the stub was never compiled. `vit verify`
+never sees it (`_build_and_run_kernel` runs `make clean` first); the two RUNBOOK
+recipes that hand-run `make` in the kernel directory do, and both are how a stub
+or an original-Fortran replay gets re-run. Fixed in VIT `5ba5e7e` by addition,
+measured in both directions. **No committed artifact is affected** — every
+kernel green in this campaign came through `vit verify`.
+
+**THE MUTATION SCORE REACHED 1.000 BY TWO CORPUS ADDITIONS, AND NEITHER MUTANT
+WAS EQUIVALENT.** Both survivors were `2.0*(DT*DT)` → `(2.0*DT)*DT` — unit #13's
+`assoc_reorder` shape in a sibling expression — and both were proven killable
+over the reachable inputs before anything changed. The hot rungs
+(`1e-156`/`1e-158`/`1e-160`) lived ONLY in the joint block, which pins every
+other defaulted real to `0.0` or `1e300`; that is right for `NotchFilter`, whose
+coefficient is a SUM, and wrong here, where `FP%lpf2_b1` is a bare PRODUCT with
+no term to remove. Running the hot rungs UNPINNED took 0.975 → **0.988**. The
+`a1` mutant survived that too, because `~1e-306 - 8.0` is exactly `-8.0` under
+both spellings; of the **1,936** ladder-by-ladder pairs exactly **six** separate
+them and all six are `(hot rung, ±sqrt(DBL_MAX))` — the largest x whose square
+is still FINITE. Adding it as a third isolating pin took 0.988 → **1.000**.
+2,284 → 2,884 cases (`translation-loop` `9ee71de`).
+
+**THE KERNEL CANNOT CONSTRAIN FOUR OF THE TEN ARGUMENTS**, and the sharp form is
+a count: the six `lpf2` coefficient arrays are the only fields written inside
+`IF ((iStatus == 0) .OR. reset)`, and the zero stub moves each in **1 of 62**
+cases — so 61 of 62 cases do not READ `CornerFreq` or `Damp` at all. A stub
+writing the literals the simulation carries passes 14,818 of 14,818.
+
+---
+
 **As of 2026-08-12: unit #17 `Read_OL_Input` is `blocked`**, SECOND dispatch, and
 it is the campaign's **first `respecify` unit** and the **first REFUTED plan
 prediction**.

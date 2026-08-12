@@ -339,6 +339,94 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A HAND-RUN `make` IN A KERNEL DIRECTORY REPORTS THE PREVIOUS
+  TRANSLATION'S VERDICT, AND A ZERO STUB "PASSED 62/62" ON IT.** Unit #18, and
+  it is a defect in a recipe TWO entries below this one already teach.
+
+  VIT writes the TRANSLATION to `<stem>.hpp` and a three-line `extern "C"`
+  wrapper to `<stem>.cpp`. The generated rule named only the .cpp, so `make`
+  reused an object built from the real translation and never compiled the stub:
+
+  ```make
+  seclpfilter.o: seclpfilter.cpp        # the translation is in the .hpp
+  ```
+
+  `vit verify` is NOT affected -- `_build_and_run_kernel` runs `make clean`
+  first, so every kernel green in this campaign came through a full rebuild.
+  What is affected is every recipe here that hand-runs `make`: the stub re-run,
+  and unit #17's original-Fortran replay. Both are used exactly when the
+  question is whether the comparison can fail at all.
+
+  Fixed in VIT `5ba5e7e` (X2), and the tell was nearly missed -- the "passing"
+  stub printed `Number of output variables: 2`, identical to the real run.
+  Until a kernel is regenerated with that VIT, force it:
+
+  ```
+  cd kernel/<Unit> && rm -f <stem>.o kernel.exe && make -s build && ./kernel.exe
+  ```
+
+- **A KERNEL RUN'S OWN STDOUT SURVIVES THE CYCLE AND `verify_fields.csv` DOES
+  NOT.** Unit #18, and it is the entry below about `kernel/` being untracked,
+  one step further on: knowing to copy something out is no help once
+  `reset_to_clean.sh` has already run. The harness and mutation steps of a
+  normal cycle BOTH need a clean tree, so `kernel/` is gone by the time the
+  evidence directory is written.
+
+  The kernel prints `<field> is IDENTICAL.` per case per field -- the same
+  verdicts the CSV carries -- so redirect every run to a file AT THE TIME and
+  cite that. `evidence/SecLPFilter/kernel_field_rows.py` parses the three logs
+  back into the per-field table.
+
+  ```
+  docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2/kernel/<U> && ./kernel.exe" \
+      > evidence/<U>/kernel.<what-this-run-was>.run.txt 2>&1
+  ```
+
+  What the CSV has and the stdout does not is the VALUES, so a non-vacuity claim
+  of the form "62 distinct reference values" cannot be made from the log. Make
+  it from the ZERO STUB instead, which is committed and is stronger: the count
+  of rows it moves is the unit's footprint, and the count of CASES each row
+  moves in tells you how many reach the branch that writes it. Here the six
+  coefficient arrays move in 1 of 62 -- so 61 cases never read `CornerFreq` or
+  `Damp`, which is unit #11's "not read" rather than "has one value", derived
+  from an artifact that survives.
+
+- **TWO ISOLATING VALUES ARE NOT ENOUGH, AND WHICH ONE WORKS IS DECIDED BY WHAT
+  THE EXPRESSION DOES TO THE RUNG AFTERWARDS.** Unit #18, and it is unit #13's
+  joint magnitude block meeting the case it was not shaped for.
+
+  `0.0` and `1e300` isolate by REMOVING the other parameter -- to nothing, or to
+  Inf by overflowing its square. Right for a SUM (`NotchFilter`), useless for a
+  PRODUCT: `2.0*DT**2.0*CornerFreq**2.0` is 0 under both spellings at
+  `CornerFreq = 0.0` and Inf under both at `1e300`. **A product has no term to
+  remove.** And the plain ladder cannot reach it either -- it carries `1e-155`,
+  which unit #13 already measured as NOT distinguishing the regrouping, while
+  the rungs that do (`1e-156`, `1e-158`, `1e-160`) live only in the pinned
+  block.
+
+  Then the same mutant one subtraction later needs a THIRD value:
+  `2.0*DT**2.0*CornerFreq**2.0 - 8.0` is exactly `-8.0` under both spellings at
+  any ordinary `CornerFreq`. `sqrt(DBL_MAX)` -- the largest x whose `x*x` is
+  still FINITE -- is the only isolating value that amplifies rather than
+  annihilates. Of **1,936** ladder-by-ladder pairs, exactly **SIX** kill it and
+  all six are `(hot rung, +/-sqrt(DBL_MAX))`. 0.975 -> 0.988 -> 1.000, 0
+  declared equivalent.
+
+  **Search the corpus's own values against each other before believing a
+  survivor is out of reach.** The witness was already in the ladder; what was
+  missing was the pairing, and the search is twenty lines:
+
+  ```
+  # evidence/SecLPFilter/assoc_reorder_ladder_pair_search.py
+  # every (ladder value, ladder value) pair through both spellings, bits compared
+  ```
+
+  And ask the question the other way round: not "is the rung present" but
+  **what does the rest of the expression do to the rung's difference before it
+  reaches an output.** Powers of two never distinguish a regrouping at all --
+  `x*x` is exact there -- so an exact-mantissa probe grid answers nothing, which
+  cost one wrong "0 witnesses" reading here.
+
 - **THE OTHER GENERATOR CROSSES IT TOO, AND THE MATRIX'S CELL WAS A REAL
   DEFECT IN A REAL GENERATOR.** Unit #17, second dispatch, and it is the half
   of the refutation the first dispatch could not reach.

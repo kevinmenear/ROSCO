@@ -4109,3 +4109,115 @@ unit close.** It re-arms once a unit session commits to the clone, i.e. unit
 instrument silently disarms the only check watching it, which already happened
 once and stayed quiet for four units — and it is not evidence that the
 instruments are green.
+
+## A generated Makefile that does not name the file the translation lives in
+
+**Unit #18, `SecLPFilter`. C12: the wrong artifact is committed
+(`evidence/SecLPFilter/kernel.zero-stub-FAILS.run.txt` is the RE-run; the first
+run of the same stub reported `kernel: SecLPFilter: PASSED verification`,
+`62 / 62`) and the fix came after it.**
+
+VIT writes the TRANSLATION to `<stem>.hpp` and a three-line `extern "C"` wrapper
+to `<stem>.cpp`. The generated rule named only the .cpp:
+
+```make
+seclpfilter.o: seclpfilter.cpp        # the translation is in seclpfilter.hpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+```
+
+so `make` reused an object built from the real translation and the stub was
+never compiled at all. The verdict it printed was the previous translation's.
+
+**`vit verify` is not affected and never was**: `_build_and_run_kernel` runs
+`make clean` before every build, so every kernel green in this campaign's
+seventeen closed units came through a full rebuild. What is affected is the two
+recipes the RUNBOOK itself teaches — re-running a stub in the kernel directory,
+and replaying the ORIGINAL FORTRAN through an existing kernel (unit #17's
+`cp ROSCO_Helpers.f90.kgen ... && make -s && ./kernel.exe`). Both hand-run
+`make`, and both are used precisely when the question is "can this comparison
+fail at all".
+
+Fixed in VIT `5ba5e7e` rather than worked around (X2):
+
+```make
+seclpfilter.o: seclpfilter.cpp $(wildcard seclpfilter.hpp vit_types.h)
+```
+
+`$(wildcard ...)` and not a literal list, because `_patch_kernel_makefile` runs
+before those files are necessarily on disk and a named prerequisite make cannot
+build is a hard error; wildcard re-expands on every invocation. `$<` is still
+the .cpp, so no recipe changes and nothing already measured moves.
+
+Measured in both directions on the run that found it: with the old rule, editing
+the .hpp did not recompile and the zero stub "PASSED 62/62"; removing the object
+by hand turned the same stub 0/62; with the new rule the same edit recompiles
+and the real translation is back to 62/62.
+
+**The general shape is worth more than the fix.** A stub test is an instrument
+pointed at another instrument, and it has its own failure mode: it can report
+that the thing under test is fine when what actually happened is that the stub
+never ran. The tell was cheap and was nearly missed — the "passing" stub's
+summary read `Number of output variables: 2`, identical to the real run's,
+which is what a cached binary looks like.
+
+## The joint magnitude block is blind wherever the coefficient is a bare product
+
+**Unit #18, and it is unit #13's fix meeting the case it was not shaped for.**
+
+`SecLPFilter` scored **0.975** with two survivors, both
+`assoc_reorder: '2.0 * (DT * DT)' -> '(2.0 * DT) * DT'`. Unit #13 closed exactly
+this shape in `NotchFilter` by adding hot magnitude rungs run with every OTHER
+defaulted scalar real pinned to an isolating `0.0` or `1e300` — because its
+coefficient is a SUM and a rung on one term is drowned by the others.
+
+This unit's is a PRODUCT:
+
+```fortran
+FP%lpf2_b1(inst) = 2.0*DT**2.0*CornerFreq**2.0
+FP%lpf2_a1(inst) = 2.0*DT**2.0*CornerFreq**2.0 - 8.0
+```
+
+**A product has no term to remove.** At `CornerFreq = 0.0` the whole thing is 0
+under both spellings; at `1e300` its square overflows and it is Inf under both.
+So the hot rungs — which live ONLY in the joint block — could never fire here,
+and the plain ladder carries `1e-155`, which does not distinguish the regrouping
+(unit #13 measured that too, and it is why `1e-156`/`1e-158`/`1e-160` exist).
+
+Two additions, both proven before either was written
+(`evidence/SecLPFilter/assoc_reorder_*`):
+
+1. **The hot rungs UNPINNED**, every other real at its ordinary ±1e3 default.
+   `DT = 1e-156` with `CornerFreq` at `1e3` gives `1.9999999999969307e-306`
+   against the mutant's `2.0000000000018713e-306`. **2,284 → 2,484 cases,
+   0.975 → 0.988.**
+2. **`±sqrt(DBL_MAX)` as a third isolating pin.** The `a1` mutant survived (1):
+   at any ordinary `CornerFreq` the product is ~1e-306 and `- 8.0` returns
+   exactly `-8.0` under both spellings — **the subtraction annihilates it.**
+   `sqrt(DBL_MAX)` is the largest x whose `x*x` is still FINITE, so it amplifies
+   the rung to the top of the exponent range instead of overflowing it away. Of
+   the **1,936** ladder-by-ladder pairs exactly **SIX** separate the two
+   spellings of `a1`, and all six are `(hot rung, ±sqrt(DBL_MAX))`.
+   **2,484 → 2,884 cases, 0.988 → 1.000.**
+
+`equivalent_declared` stayed **0**. A declaration would have been false twice,
+and the second one would have been the easy mistake: after addition (1) the
+remaining survivor looked exactly like an unreachable rounding artefact, and it
+took a search over the ladder's own cross product to find the six pairs that
+kill it. **Search the corpus's own values against each other before believing a
+survivor is out of reach** — the witness was already in the ladder; what was
+missing was the pairing.
+
+Both blocks are additive, appended in place, drawing no random numbers when they
+do not fire (`translation-loop` `9ee71de`). Earlier units' committed artifacts
+are unaffected; a re-run of any of them would report a larger case count, which
+is the expected and already-recorded behaviour of an additive corpus.
+
+### Two isolating values were never enough, and that generalises
+
+`0.0` and `1e300` isolate by REMOVING the other parameter's contribution — one
+to nothing, one to infinity. Both are the right move for a SUM and the wrong one
+for a PRODUCT. `sqrt(DBL_MAX)` isolates by MAXIMISING it while keeping it
+finite, which is the only one of the three that survives a later subtraction.
+A fourth shape probably exists for a QUOTIENT and has not been needed yet; the
+question to ask of a survivor is not "is the rung present" but **"what does the
+rest of the expression do to the rung's difference before it reaches an output"**.
