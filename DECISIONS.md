@@ -2,6 +2,100 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #24 — saturate — 2026-08-12
+
+**THE MUTATION SCORE IS ABSENT, NOT LOW, AND I DID NOT WRITE THE ARTIFACT THAT
+WOULD HAVE CLOSED THE UNIT.** `cppmutate` returns ZERO mutants for
+`std::fmin(std::fmax(inputValue, minValue), maxValue)`. All nine of its operators
+need an arithmetic operator, a comparison, a subscript or a numeric literal; a
+call expression has none of them, and neither its argument order nor its callee
+name is a site. `done.py`'s P12 fails `total <= 0` by name --
+*"the operator set reached nothing in this unit, so it says nothing about the
+instrument"* -- which is the right verdict.
+
+Three courses were available and the choice matters, so it is written down.
+
+1. **Add a `swap_call_args` / `substitute_callee` operator to `cppmutate`.**
+   Refused. Unit #22 already reasoned this class out: a new operator changes the
+   mutant set of every unit already scored, and unlike a corpus addition -- which
+   can only kill more -- it can produce a SURVIVOR in a unit that closed at 1.000.
+   That is a campaign-wide re-take. X3 and SPEC §8.4, the Driver's call.
+2. **Hand-write `mutation/saturate.json` with the hand-run numbers.** Refused,
+   and this is the one worth arguing, because `done.py`'s own `nocompile_refused`
+   comment explicitly contemplates *"an artifact produced by an older or hand-run
+   mutator"*, so a hand-run artifact is not forbidden by the letter. It is still
+   the wrong move here. `min_mutation_score` is 1.0 precisely so that the cheap
+   way out is closed, and a session that authors both the mutants and the artifact
+   that grades them has closed nothing -- it has graded its own paper. Unit #22's
+   precedent does not cover it either: unit #22's hand-run stride probes were
+   SUPPLEMENTARY to twenty real cppmutate mutants scoring 1.000, not a substitute
+   for the artifact P12 reads.
+3. **Commit the tool's artifact unaltered, make the missing measurement by hand
+   beside it, and take the `blocked`.** Chosen. `mutation/saturate.json` reads
+   `mutants: 0, score 0.000` because that is what the tool produced.
+
+The hand measurement is real evidence and is committed
+(`evidence/saturate/hand_mutants.{sh,txt}`): 13 mutants against this unit's own
+451-case differential corpus, **11 of 11 behavioural killed, 2 declared equivalent
+and proved** rather than argued -- IEEE `maxNum`/`minNum` are commutative
+including at a signed zero and at a NaN, which `minmax_probe` measures directly,
+and both mutants die on 0 of 451 as that predicts.
+
+**FOR THE DRIVER.** The question this unit raises is not "should cppmutate get a
+call operator" -- that is a tool change with a known cost. It is whether P12 is
+satisfiable at all for a unit whose faithful transcription has no mutable site,
+and if so by what artifact. Three answers are coherent: add the operator and
+re-take the campaign; state that a hand-run artifact satisfies P12 when the tool
+reports zero, with a required provenance field so it cannot be confused with a
+tool run; or accept that such units close as `blocked` and count them in the P4
+report. This session took the third because it is the only one that does not
+change a verification default mid-run.
+
+**THE TRANSLATION'S ONE DECISION WAS MEASURED, AND THE MARGIN IS ONE CASE.** The
+reference is `REAL(MIN(MAX(inputValue,minValue),maxValue),DbKi)`; the `REAL(...)`
+is the identity, so the unit is two intrinsics. gfortran's `MAX`/`MIN` are
+`fmax`/`fmin` bit-for-bit, and both branch spellings are wrong at a signed zero
+and at a NaN in opposite directions -- 0, 789 and 561 disagreements over 12,167
+triples. Unit #14's rule is not inverted by this: there the Fortran wrote an
+explicit `IF` and `fmax` was the mutant's answer. Both times the rule is
+*transcribe the shape the reference has*, and both times the discriminating input
+is a negative zero. The margin: the branch spelling dies on **exactly 1 of 451**
+corpus cases -- the one unit #14's signed-zero block added, after finding that
+`list(dict.fromkeys(...))` absorbed `-0.0` into `0.0`. Two units later, that
+block is the whole of why this unit's only real defect class is visible at all.
+
+**A CALL SITE IS CHOSEN ON A STUB, NOT ON A HIT COUNT.** Coverage recommended
+`ControllerBlocks.f90:332` -- 407,976 hits, 23 scenarios, and non-aliased, which
+unit #7 and unit #20 both say to prefer. Its kernel is alive (zero stub fails 39
+of 62 rows) and **cannot see either clamp**: the passthrough stub, with no
+saturation at all, passes 62 of 62. `Controllers.f90:102` has fewer of everything
+and its passthrough stub fails 22 of 62. Both artifacts are committed, because
+the rejected one is the measurement that justifies the choice. The general form,
+for any unit whose body is a guard or a clamp: **the liveness stub and the
+does-it-reach-the-branch stub are different stubs, and only the second chooses a
+call site.**
+
+**KGEN: ONE TYPO FIXED, ONE DESIGN GAP RECORDED.** `set_args` sets
+`node.tosubr = True`; `SubProgramStatement.tokgen` read `tosurb` in both copies of
+the file, so a FUNCTION parent block kept its `FUNCTION` header while its end
+statement became `END SUBROUTINE` and the driver `CALL`ed it. Fixed in KGen rather
+than worked around (X2, `d3d6516`), and inert for a SUBROUTINE parent block by
+construction rather than by sampling -- `clsname` is `'SUBROUTINE'` on both
+branches and the two `if not tosubr:` blocks read `typedecl` and `result`, which a
+Subroutine statement does not have.
+
+The fix does not make such a kernel work, and the honest report is that it gets
+one error further: the parent block becomes `SUBROUTINE picontroller`, so
+`PIController = saturate(...)` is an assignment to the subroutine's own name, and
+the function RESULT is neither declared as a local nor captured as state
+(`!local output variables` is empty). Not attempted here -- it is a change to
+KGen's state analysis, and it blocked nothing, because 8 of `saturate`'s 17 call
+sites are in SUBROUTINE scope and C2 selects the call site anyway. Choosing one of
+those is not X2 evasion; it is C2. It WILL block a unit whose only usable call
+sites sit inside a FUNCTION body.
+
+---
+
 ## Unit #22 — identity — 2026-08-12
 
 **A NaN OUTPUT SCORES `IN_TOL`, AND THE KERNEL VERDICT FOR THIS UNIT CANNOT GO

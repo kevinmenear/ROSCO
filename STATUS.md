@@ -4,6 +4,73 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-12: unit #24 `saturate` is `blocked`**, first dispatch, and the
+block is of a kind this campaign has not had before: **the mutation score is not
+low, it is ABSENT.** `cppmutate` generates ZERO mutants for this translation, and
+`done.py` fails zero by name (`mutation_no_mutants`). Every other layer ran and
+four of the five are alive. Its section is directly below; unit #23 `interp1d` is
+below that.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases, scenario 1 | 13,950 field rows, **all IDENTICAL** | zero stub passes only **21 of 62**, moving 41 rows; **the MIN deleted passes 62 of 62** |
+| differential harness vs clean Fortran | **451** checked, 0 failed, 0 inadmissible | the unit as a no-op fails **315 of 451**; no saturation at all fails **202 of 451** |
+| mutation score | **NOT PRODUCED — 0 mutants, score 0.000**, committed unaltered | n/a; the missing measurement was made BY HAND: 11 of 11 behavioural killed, 2 equivalent and proved |
+| post-integration harness (wrapper only) | **451 checked, 0 failed** | the two BOUNDS swapped at the CALL, rebuilt between edit and run: **271 of 451** |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | the saturation removed moves **2,255,249 of 5,252,000** — the largest red in this campaign, matching no other |
+
+**`cppmutate` CANNOT MUTATE A TRANSLATION WHOSE BODY IS A CALL.** All nine
+operators need an arithmetic operator, a comparison, a subscript or a numeric
+literal. `std::fmin(std::fmax(inputValue, minValue), maxValue)` has none, and
+neither its argument order nor its callee name is a site. This is **not** unit
+#22's parenthesised-operand gap — that one DISPLACES mutants, this one produces
+zero. Not closed here: a new operator changes the mutant set of every unit
+already scored and, unlike a corpus addition, can produce a SURVIVOR in a unit
+that closed at 1.000 (X3, SPEC §8.4, the Driver's call). **And the artifact
+`done.py` reads was not hand-written to make the unit close** — `min_mutation_score`
+is 1.0 exactly so that the cheap way out is shut, and authoring both the mutants
+and the artifact that grades them is the cheap way out. Unit #22's meanwhile
+instead: `evidence/saturate/hand_mutants.{sh,txt}`, 13 mutants against this unit's
+own 451-case corpus, **11 of 11 behavioural killed, 2 equivalent and proved**.
+
+**THE WHOLE UNIT IS TWO INTRINSICS, AND THE SPELLING WAS MEASURED.** gfortran's
+`MAX`/`MIN` are `fmax`/`fmin` bit-for-bit; **both** branch spellings are wrong at
+a signed zero and at a NaN, in opposite directions. Over 12,167 triples the
+shipped spelling differs from gfortran on **0**, branch A on **789**, branch B on
+**561** (`evidence/saturate/saturate_expr_sweep.*`). This is not unit #14's rule
+inverted — there the Fortran wrote an explicit `IF (CornerFreq < 0)` and `fmax`
+was the *mutant's* answer; here the Fortran writes the intrinsic. The sharp part
+is what says so: **the branch spelling dies on exactly 1 of 451 corpus cases**,
+the negative-zero one, which exists only because unit #14 added a signed-zero
+block after its own `dict.fromkeys` dedup absorbed `-0.0` into `0.0`. A corpus
+addition made two units ago is the entire margin by which this unit's only real
+defect class is visible.
+
+**THE CALL SITE WAS CHOSEN ON A STUB, NOT ON A HIT COUNT.** The kernel is alive
+(zero stub 21 of 62) and blind to the upper clamp: deleting the `MIN` scores
+**62 of 62 PASSED, 14,260 of 14,260 IDENTICAL**. The site tried first,
+`ControllerBlocks.f90:332` — 407,976 hits, 23 scenarios, non-aliased, everything
+coverage recommends — is *worse*: there the passthrough stub passes **62 of 62**
+and **neither** clamp is visible, because `BlPitchCMeas` is interior to its bounds
+in every captured case. Both artifacts are committed. "The kernel is alive" and
+"the kernel can see what the unit is FOR" are two claims, and only the second
+chooses a call site.
+
+**TWO KGEN DEFECTS, THE FIRST CALL SITE IN THIS CAMPAIGN INSIDE A FUNCTION BODY.**
+`gen_kernel_callsite_file` sets `tosubr` to convert the hoisted parent block into
+a SUBROUTINE; `SubProgramStatement.tokgen` read **`tosurb`**, a transposed typo,
+in both copies of the file. So the kernel carried a `FUNCTION` header, an
+`END SUBROUTINE`, and a driver that `CALL`s it — 29 compile errors. Fixed in KGen
+(X2, `d3d6516`); inert for a SUBROUTINE parent block by construction, and the
+subroutine path was exercised end to end twice at 62/62. The fix does **not** make
+such a kernel work: the parent block becomes `SUBROUTINE picontroller` and the
+callsite statement `PIController = saturate(...)` is then an assignment to the
+subroutine's own name, and the function RESULT is neither declared nor captured as
+state. That second gap is recorded rather than attempted, and it blocked nothing
+here — 8 of `saturate`'s 17 call sites are in SUBROUTINE scope.
+
+---
+
 **As of 2026-08-12: unit #23 `interp1d` is `integrated` and CLOSED**, first
 dispatch. **Five layers, all five alive — and one of them went RED on a defect
 the other four passed.** Its section is directly below; unit #22 `identity` is

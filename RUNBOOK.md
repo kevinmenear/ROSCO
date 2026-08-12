@@ -339,6 +339,130 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A TRANSLATION WHOSE BODY IS A CALL GETS ZERO MUTANTS, AND ZERO IS A
+  DIFFERENT FAILURE FROM A LOW SCORE.** Unit #24, and it is unit #22's
+  `cppmutate` finding one step past displacement into absence.
+
+  All nine operators need an arithmetic operator, a comparison, a subscript or a
+  numeric literal. `std::fmin(std::fmax(inputValue, minValue), maxValue)` has
+  none, and neither its ARGUMENT ORDER nor its CALLEE NAME is a site.
+  `done.py`'s P12 fails `total <= 0` by name, which is right: the operator set
+  reached nothing, so it says nothing about the instrument.
+
+  ```
+  python3 -c "import sys;sys.path.insert(0,'/workspace/translation-loop');\
+      from harness.cppmutate import mutants;\
+      print(len(mutants('<U>', open('<cpp>').read())))"    # 0 -> P12 cannot pass
+  ```
+
+  Ask it BEFORE integrating, not after: it decides the disposition and it costs
+  one command. NOT closed by adding an operator (X3 -- a new operator can produce
+  a SURVIVOR in a unit that closed at 1.000, campaign-wide re-take, the Driver's
+  call), and NOT closed by hand-writing `mutation/<U>.json` -- authoring both the
+  mutants and the artifact that grades them is exactly what
+  `min_mutation_score: 1.0` exists to shut. Unit #22's meanwhile is what to do:
+  one unit's worth of the missing measurement, by hand and committed
+  (`evidence/saturate/hand_mutants.sh`), and take the `blocked`. DECISIONS.md
+  carries the three coherent resolutions for the Driver.
+
+- **THE LIVENESS STUB AND THE DOES-IT-REACH-THE-BRANCH STUB ARE DIFFERENT STUBS,
+  AND ONLY THE SECOND CHOOSES A CALL SITE.** Unit #24, and it is interp1d's
+  no-boundary-branches finding turned into a step of C2 rather than a note
+  written afterwards.
+
+  Coverage recommended `ControllerBlocks.f90:332` -- 407,976 hits, 23 scenarios,
+  and NON-ALIASED, which units #7 and #20 both say to prefer. Its kernel is alive
+  and blind to the whole point of the unit:
+
+  ```
+  ControllerBlocks.f90:332   zero stub 23 of 62 rows IDENTICAL -> ALIVE
+                             passthrough (no saturation)  62 of 62 PASSED
+  Controllers.f90:102        zero stub  21 of 62 cases   -> ALIVE
+                             passthrough  40 of 62 -- a clamp fires in 22
+                             the MIN deleted  62 of 62, 14,260 of 14,260 IDENTICAL
+  ```
+
+  So the first site sees NEITHER clamp and the second sees ONE, and no hit count
+  distinguishes them. Build the stub that deletes the branch the unit EXISTS for
+  and run it at each candidate site before spending the cycle on one. Keep the
+  rejected site's artifact -- it is the measurement that justifies the choice.
+
+- **gfortran's `MIN`/`MAX` ARE `fmin`/`fmax`, AND BOTH BRANCH SPELLINGS ARE WRONG
+  AT A SIGNED ZERO.** Unit #24. Unit #14 says an explicit `IF (CornerFreq < 0)`
+  must NOT be written as `fmax` -- true, and it does not generalise to the
+  INTRINSIC, which is what a careless reading of it would do here.
+
+  ```
+  # evidence/saturate/saturate_expr_sweep.sh -- 12,167 triples, bits not values
+  fmin(fmax(v, lo), hi)                       0 differ
+  t = (v > lo) ? v : lo; (t < hi) ? t : hi  789 differ
+  t = (lo > v) ? lo : v; (hi < t) ? hi : t  561 differ
+  ```
+
+  Read the values AT RUNTIME. A probe with literal operands measures gfortran's
+  front end folding them, and the shipped controller runs the back end. The rule
+  is the same one in both places -- transcribe the shape the reference has -- and
+  in both places the discriminating input is a negative zero: the branch spelling
+  dies on **exactly 1 of 451** corpus cases, the rung unit #14 added after its own
+  `dict.fromkeys` dedup absorbed `-0.0`. Two units later that block is the entire
+  margin.
+
+- **A CALL SITE INSIDE A `FUNCTION` BODY PRODUCES A KERNEL THAT WILL NOT COMPILE,
+  AND THE FIRST CAUSE IS A TRANSPOSED TYPO IN KGEN.** Unit #24.
+
+  `gen_kernel_callsite_file.set_args` sets `node.tosubr = True` to convert the
+  hoisted parent block into a SUBROUTINE the driver can `CALL`, and
+  `EndFunction.tokgen` reads `tosubr`. `SubProgramStatement.tokgen` read
+  **`tosurb`** -- in `kgen/parser/block_statements.py` AND `base/`, the two-site
+  shape this file has recorded four times. So the kernel came out with a
+  `FUNCTION` header, an `END SUBROUTINE`, and a `CALL`: 29 errors, opening with
+  `Function result 'picontroller' has no IMPLICIT type`. Fixed in KGen (X2,
+  `d3d6516`); inert for a SUBROUTINE parent block by construction, not by
+  sampling -- `clsname` is `'SUBROUTINE'` on both branches, and the two
+  `if not tosubr:` blocks read `typedecl` and `result`, which a Subroutine
+  statement has not got.
+
+  **The fix gets one error further and does not make it work.** The parent block
+  becomes `SUBROUTINE picontroller`, so the callsite statement
+  `PIController = saturate(...)` is an assignment to the subroutine's OWN NAME --
+  *"has already been host associated"* -- and the function RESULT is neither
+  declared as a local nor captured as state, so `!local output variables` is
+  empty and the kernel would compare nothing even if it built. NOT FIXED: it is
+  a change to the state analysis. Ask the question before extracting:
+
+  ```
+  # what encloses the call site -- a SUBROUTINE, or a FUNCTION?
+  awk 'NR<=<CALL_LINE>' <caller>.f90 | grep -nE '^ *(RECURSIVE )?(REAL|INTEGER|LOGICAL|TYPE)?.*\b(SUBROUTINE|FUNCTION)\b' | tail -1
+  ```
+
+  It blocked nothing here -- 8 of `saturate`'s 17 call sites are in SUBROUTINE
+  scope, and picking one of those is C2, not an X2 evasion. It WILL block a unit
+  whose only usable call sites sit inside a FUNCTION body.
+
+- **A BIND-MOUNTED FILE DOES NOT RELIABLY `stat()` NEWER THAN WHAT WAS BUILT FROM
+  IT, SO `make` KEEPS A STALE HEADER AND THE RUN REPORTS THE PREVIOUS MUTANT.**
+  Unit #24, and it is unit #18's symptom with a DIFFERENT cause -- worth knowing
+  because unit #18's fix does not prevent it.
+
+  The generated harness Makefile's prerequisites are CORRECT here
+  (`saturate_test.o: saturate_test.cpp saturate.hpp` and
+  `saturate.hpp: <the translation>`), so there is nothing to fix in it. The file
+  is written on the Mac and `stat()`ed from inside the container, and the mtime
+  does not always come back newer than the artifact built from it seconds
+  earlier. A first hand-mutant run read `passthrough 100 of 451` where
+  `scripts/harness.sh` had independently measured **202**, and adjacent mutants
+  came back in EQUAL PAIRS -- which is the tell, and it is more legible than any
+  single number.
+
+  ```
+  rm -f <stem>.hpp <stem>_test.o test && make -s test     # delete, do not trust a timestamp
+  ```
+
+  Cross-check one hand-run figure against the same measurement taken through
+  `scripts/harness.sh`. Two instruments agreeing on one number is what says the
+  recipe is sound; here `271` appears independently as the hand mutant for
+  swapped bounds and as the post-integration red test for the same defect.
+
 - **`vit integrate` WITHOUT `--reverse-copy` SILENTLY DROPS EVERY WRITE A UNIT
   MAKES TO A SCALAR FIELD OF A VIEW-TYPE INOUT DUMMY, AND BOTH BIT-EXACT
   LAYERS PASS IT.** Unit #23. This is the case the post-integration harness
