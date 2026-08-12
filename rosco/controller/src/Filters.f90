@@ -62,6 +62,26 @@ MODULE Filters
         END FUNCTION lpfilter_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of NotchFilter
+    INTERFACE
+        FUNCTION notchfilter_c(InputSignal, DT, omega, betaNum, betaDen, FP, iStatus, reset, inst, has_InitialValue, InitialValue) BIND(C, NAME='notchfilter_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: InputSignal
+            REAL(C_DOUBLE), VALUE :: DT
+            REAL(C_DOUBLE), VALUE :: omega
+            REAL(C_DOUBLE), VALUE :: betaNum
+            REAL(C_DOUBLE), VALUE :: betaDen
+            TYPE(C_PTR), VALUE :: FP
+            INTEGER(C_INT), VALUE :: iStatus
+            INTEGER(C_INT), VALUE :: reset
+            INTEGER(C_INT), INTENT(INOUT) :: inst
+            INTEGER(C_INT), VALUE :: has_InitialValue
+            REAL(C_DOUBLE), VALUE :: InitialValue
+            REAL(C_DOUBLE) :: notchfilter_c
+        END FUNCTION notchfilter_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION LPFilter(InputSignal, DT, CornerFreq, FP, iStatus, reset, inst, InitialValue) RESULT(LPFilter_result)
@@ -281,54 +301,33 @@ CONTAINS
 
     END FUNCTION NotchFilterSlopes
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION NotchFilter(InputSignal, DT, omega, betaNum, betaDen, FP, iStatus, reset, inst, InitialValue)
-    ! Discrete time Notch Filter 
-    !                               Continuous Time Form: G(s) = (s^2 + 2*omega*betaNum*s + omega^2)/(s^2 + 2*omega*betaDen*s + omega^2)
-    !                               Discrete Time Form:   H(z) = (b2*z^2 +b1*z^2 + b0*z)/((z^2 +a1*z^2 + a0*z))
+    FUNCTION NotchFilter(InputSignal, DT, omega, betaNum, betaDen, FP, iStatus, reset, inst, InitialValue) RESULT(NotchFilter_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : FilterParameters
-        TYPE(FilterParameters),       INTENT(INOUT)       :: FP 
+        IMPLICIT NONE
+        REAL(8), INTENT(IN) :: InputSignal
+        REAL(8), INTENT(IN) :: DT
+        REAL(8), INTENT(IN) :: omega
+        REAL(8), INTENT(IN) :: betaNum
+        REAL(8), INTENT(IN) :: betaDen
+        TYPE(FILTERPARAMETERS), INTENT(INOUT), TARGET :: FP
+        INTEGER(4), INTENT(IN) :: iStatus
+        LOGICAL(4), INTENT(IN) :: reset
+        INTEGER(4), INTENT(INOUT) :: inst
+        REAL(8), INTENT(IN), OPTIONAL :: InitialValue
+        REAL(8) :: NotchFilter_result
 
-        REAL(DbKi), INTENT(IN)     :: InputSignal
-        REAL(DbKi), INTENT(IN)     :: DT                       ! time step [s]
-        REAL(DbKi), INTENT(IN)     :: omega                    ! corner frequency [rad/s]
-        REAL(DbKi), INTENT(IN)     :: betaNum                  ! Dampening constant in numerator of filter transfer function
-        REAL(DbKi), INTENT(IN)     :: betaDen                  ! Dampening constant in denominator of filter transfer function
-        INTEGER(IntKi), INTENT(IN)     :: iStatus                  ! A status flag set by the simulation as follows: 0 if this is the first call, 1 for all subsequent time steps, -1 if this is the final call at the end of the simulation.
-        INTEGER(IntKi), INTENT(INOUT)  :: inst                     ! Instance number. Every instance of this function needs to have an unique instance number to ensure instances don't influence each other.
-        LOGICAL(4), INTENT(IN)  :: reset                    ! Reset the filter to the input signal
-        REAL(DbKi), OPTIONAL,  INTENT(IN)          :: InitialValue           ! Value to set when reset 
-        ! Local
-        REAL(DbKi)                 :: K                        ! Constant gain
-        REAL(DbKi)                          :: InitialValue_           ! Value to set when reset
+        ! Local variables for OPTIONAL args
+        INTEGER(C_INT) :: has_InitialValue_flag
+        REAL(C_DOUBLE) :: InitialValue_val
 
-        ! Defaults
-        InitialValue_ = InputSignal
-        IF (PRESENT(InitialValue)) InitialValue_ = InitialValue  
-
-        ! Initialization
-        K = 2.0/DT
-        IF ((iStatus == 0) .OR. reset) THEN
-            FP%nf_OutputSignalLast1(inst)  = InitialValue_
-            FP%nf_OutputSignalLast2(inst)  = InitialValue_
-            FP%nf_InputSignalLast1(inst)   = InitialValue_
-            FP%nf_InputSignalLast2(inst)   = InitialValue_
-            FP%nf_b2(inst) = (K**2.0 + 2.0*omega*BetaNum*K + omega**2.0)/(K**2.0 + 2.0*omega*BetaDen*K + omega**2.0)
-            FP%nf_b1(inst) = (2.0*omega**2.0 - 2.0*K**2.0)  / (K**2.0 + 2.0*omega*BetaDen*K + omega**2.0);
-            FP%nf_b0(inst) = (K**2.0 - 2.0*omega*BetaNum*K + omega**2.0) / (K**2.0 + 2.0*omega*BetaDen*K + omega**2.0)
-            FP%nf_a1(inst) = (2.0*omega**2.0 - 2.0*K**2.0)  / (K**2.0 + 2.0*omega*BetaDen*K + omega**2.0)
-            FP%nf_a0(inst) = (K**2.0 - 2.0*omega*BetaDen*K + omega**2.0)/ (K**2.0 + 2.0*omega*BetaDen*K + omega**2.0)
-        ENDIF
-        
-        ! Body
-        NotchFilter = FP%nf_b2(inst)*InputSignal + FP%nf_b1(inst)*FP%nf_InputSignalLast1(inst) + FP%nf_b0(inst)*FP%nf_InputSignalLast2(inst) - FP%nf_a1(inst)*FP%nf_OutputSignalLast1(inst) - FP%nf_a0(inst)*FP%nf_OutputSignalLast2(inst)
-
-        ! Save signals for next time step
-        FP%nf_InputSignalLast2(inst)   = FP%nf_InputSignalLast1(inst)
-        FP%nf_InputSignalLast1(inst)   = InputSignal                  ! Save input signal for next time step
-        FP%nf_OutputSignalLast2(inst)  = FP%nf_OutputSignalLast1(inst)      ! Save input signal for next time step
-        FP%nf_OutputSignalLast1(inst)  = NotchFilter
-        inst = inst + 1
-
+        has_InitialValue_flag = 0
+        InitialValue_val = 0.0D0
+        IF (PRESENT(InitialValue)) THEN
+            has_InitialValue_flag = 1
+            InitialValue_val = REAL(InitialValue, C_DOUBLE)
+        END IF
+        NotchFilter_result = REAL(notchfilter_c(InputSignal, DT, omega, betaNum, betaDen, C_LOC(FP), iStatus, MERGE(1_C_INT, 0_C_INT, reset), inst, has_InitialValue_flag, InitialValue_val), 8)
     END FUNCTION NotchFilter
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE PreFilterMeasuredSignals(CntrPar, LocalVar, DebugVar, objInst, ErrVar)

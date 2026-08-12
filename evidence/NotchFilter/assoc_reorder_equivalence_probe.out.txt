@@ -1,0 +1,7 @@
+omega-mutant WITNESS  DT=2.4406824148637749e+204 K=8.1944295079932752e-205 omega=1.3397359972566569e-154 betaDen=0
+   base=2  mutant=2.0000000000000004
+triples drawn                     : 200000000
+  with K*K subnormal              : 2516908
+  with omega*omega subnormal      : 2533746
+K-mutant distinguished by         : 352788
+omega-mutant distinguished by     : 319542

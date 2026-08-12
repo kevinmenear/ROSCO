@@ -1,0 +1,31 @@
+What the two corpus additions bought, measured on the same translation and the
+same command -- only harness/generate.py changed between the three runs.
+
+  corpus                                     cases   killed   score   survivors
+  ------------------------------------------------------------------------------
+  as inherited (unit #12's generator)         1380   122/126  0.968   4
+  + one-at-a-time real magnitude ladder       2172   122/126  0.968   4
+  + the same rungs with every OTHER defaulted
+    scalar real pinned to 0.0 / 1e300         2652   126/126  1.000   0
+
+The four survivors were identical in shape at both of the first two rows:
+
+  95f5788b  assoc_reorder  '2.0 * (omega * omega)' -> '(2.0 * omega) * omega'
+  3227266f  assoc_reorder  '2.0 * (K * K)'         -> '(2.0 * K) * K'
+  eddd5776  assoc_reorder  '2.0 * (omega * omega)' -> '(2.0 * omega) * omega'
+  6154466d  assoc_reorder  '2.0 * (K * K)'         -> '(2.0 * K) * K'
+
+Two of each because nf_b1 and nf_a1 are the same expression written twice, which
+is how the Fortran writes it.
+
+MIDDLE ROW IS THE FINDING. Reaching the magnitude was not enough. A rung puts
+one parameter at 1e-158; the OTHER terms of the same expression stay at the
++/-1e3 default and a 2^-1074 difference is annihilated in the subtraction. Only
+when the others are pinned out of the way -- 0.0, or 1e300 so that K = 2.0/DT
+underflows -- does the regrouping reach an output.
+
+0 declared equivalent. These mutants were never equivalent: see
+assoc_reorder_survivor_probe (130,696 of 20,000,000 differ in isolation),
+assoc_reorder_equivalence_probe (a witness through the whole coefficient at the
+reachable DT=2.44e204, omega=1.34e-154) and hot_mantissa_probe (126 of 256
+mantissas at exponent -535, end to end).

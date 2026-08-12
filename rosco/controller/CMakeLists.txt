@@ -91,6 +91,7 @@ set(SOURCES
     src/int2lstr.cpp
     src/lpfilter.cpp
     src/nondecreasing.cpp
+    src/notchfilter.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

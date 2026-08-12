@@ -1,0 +1,20 @@
+exp  -512 :   0 of 256 mantissas differ, first m=0  (x=0)
+exp  -520 :   0 of 256 mantissas differ, first m=0  (x=0)
+exp  -530 :   0 of 256 mantissas differ, first m=0  (x=0)
+exp  -535 : 126 of 256 mantissas differ, first m=1.0078125  (x=8.9604962088617186e-162)
+exp  -540 :   0 of 256 mantissas differ, first m=0  (x=0)
+exp  -545 :   0 of 256 mantissas differ, first m=0  (x=0)
+exp  -550 :   0 of 256 mantissas differ, first m=0  (x=0)
+round rung 1e-155 : differs=0
+round rung 1e-156 : differs=1
+round rung 9.9999999999999994e-158 : differs=0
+round rung 1.0000000000000001e-158 : differs=1
+round rung 9.9999999999999999e-160 : differs=1
+round rung 9.9999999999999999e-161 : differs=0
+round rung 1e-161 : differs=0
+round rung 9.9999999999999995e-163 : differs=0
+round rung 1.4916681462400413e-154 : differs=0
+round rung 2.2227587494850775e-162 : differs=0
+DT=1e+300  K*K=0 : 126 of 256 omega mantissas kill the omega-mutant, first omega=8.9604962088617186e-162
+DT=1e+250  K*K=0 : 126 of 256 omega mantissas kill the omega-mutant, first omega=8.9604962088617186e-162
+DT=1e+204  K*K=0 : 126 of 256 omega mantissas kill the omega-mutant, first omega=8.9604962088617186e-162

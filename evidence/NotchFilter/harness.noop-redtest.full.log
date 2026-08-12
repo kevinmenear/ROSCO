@@ -1,0 +1,40 @@
+harness.sh: VIT wrote the per-unit layout directly (translations/Filters/notchfilter_test); no move needed
+NotchFilter: 102 C parameter(s), 46 extent(s), 47 output(s)
+  note: FP: expanded 92 param(s) from 46 field(s)
+  note: inst: indexes FP_nf_OutputSignalLast1 (read from the reference)
+
+NotchFilter: 28 parameter(s) varied, 74 held at an inert value
+  DT: read WHOLE (passed to a callee) -- every field varied
+  FP: reads 9 field(s): nf_InputSignalLast1, nf_InputSignalLast2, nf_OutputSignalLast1, nf_OutputSignalLast2, nf_a0, nf_a1, nf_b0, nf_b1, nf_b2
+  InitialValue: read WHOLE (passed to a callee) -- every field varied
+  InputSignal: read WHOLE (passed to a callee) -- every field varied
+  betaDen: read WHOLE (passed to a callee) -- every field varied
+  betaNum: read WHOLE (passed to a callee) -- every field varied
+  iStatus: read WHOLE (passed to a callee) -- every field varied
+  inst: read WHOLE (passed to a callee) -- every field varied
+  omega: read WHOLE (passed to a callee) -- every field varied
+  reset: read WHOLE (passed to a callee) -- every field varied
+  HELD, so untested by construction: 74 parameter(s). A defect confined to one of these is invisible to this harness.
+  UNCONSTRAINED: 15 varied parameter(s) on the +/-1e3 default: DT, FP_nf_InputSignalLast1, FP_nf_InputSignalLast2, FP_nf_OutputSignalLast1, FP_nf_OutputSignalLast2, FP_nf_a0, FP_nf_a1, FP_nf_b0, FP_nf_b1, FP_nf_b2, InitialValue, InputSignal, betaDen, betaNum, omega
+
+1380 case(s)
+  applied  R5_non_degenerate_shape    0 varied extent(s); 46 FIXED by the type at [1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024] -- not varied, 1 index(es) at 1/interior/n, array elements distinct
+  applied  R2_flag_values             4 value(s) across 2 flag(s), each with 8 case(s) of the remaining inputs varied under it
+  applied  R6_reference_literals      240 value(s) from 7 literal(s) in the reference, each under every declared value of 2 flag(s); 41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared
+  applied  R3_no_dead_signal          15 real value(s), none zero in every case; 37 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output
+  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it
+  applied  R4_compare_all_outputs     return value + 47 out-parameter(s): FP_lpf1_a1, FP_lpf1_a0, FP_lpf1_b1, FP_lpf1_b0, FP_lpf1_InputSignalLast, FP_lpf1_OutputSignalLast, FP_lpf2_a2, FP_lpf2_a1, FP_lpf2_a0, FP_lpf2_b2, FP_lpf2_b1, FP_lpf2_b0, FP_lpf2_InputSignalLast2, FP_lpf2_OutputSignalLast2, FP_lpf2_InputSignalLast1, FP_lpf2_OutputSignalLast1, FP_lpfV_a2, FP_lpfV_a1, FP_lpfV_a0, FP_lpfV_b2, FP_lpfV_b1, FP_lpfV_b0, FP_lpfV_InputSignalLast2, FP_lpfV_OutputSignalLast2, FP_lpfV_InputSignalLast1, FP_lpfV_OutputSignalLast1, FP_hpf_InputSignalLast, FP_hpf_OutputSignalLast, FP_nfs_OutputSignalLast1, FP_nfs_OutputSignalLast2, FP_nfs_InputSignalLast1, FP_nfs_InputSignalLast2, FP_nfs_b2, FP_nfs_b0, FP_nfs_a2, FP_nfs_a1, FP_nfs_a0, FP_nf_OutputSignalLast1, FP_nf_OutputSignalLast2, FP_nf_InputSignalLast1, FP_nf_InputSignalLast2, FP_nf_b2, FP_nf_b1, FP_nf_b0, FP_nf_a1, FP_nf_a0, inst
+
+wrote /workspace/ROSCO-r2/translations/Filters/notchfilter_test/notchfilter_test.cpp  (1380 cases, 520122000 bytes of case data)
+
+HARNESS FAIL: checked 1380  failed 1380  inadmissible 0
+  case 0 vit_result: ref 0000a7852b225440 != got 0000000000000000
+  case 0 FP.nf_OutputSignalLast1: ref 0000a7852b225440f4ba980d3e1f8fc03b8e343951108fc0c7e1b91a09018fc0... != got 9f58413bad2e8fc0f4ba980d3e1f8fc03b8e343951108fc0c7e1b91a09018fc0...
+  case 0 FP.nf_OutputSignalLast2: ref 9f58413bad2e8fc0f23acf75c51e8fc09b1f8202c9108fc0feca4b0ff9ff8ec0... != got d0150ad0432f8fc0f23acf75c51e8fc09b1f8202c9108fc0feca4b0ff9ff8ec0...
+  case 0 FP.nf_InputSignalLast1: ref 0000000000000000b5cfd817141f8fc0b4a4eac5a70f8fc0113efb1195008fc0... != got a17f8c26d22e8fc0b5cfd817141f8fc0b4a4eac5a70f8fc0113efb1195008fc0...
+  case 0 FP.nf_InputSignalLast2: ref a17f8c26d22e8fc0310d5a3f971f8fc0cd35a3aa44108fc0b4e59f62ea008fc0... != got 4a4c6b9031308fc0310d5a3f971f8fc0cd35a3aa44108fc0b4e59f62ea008fc0...
+  case 0 inst: ref 02000000 != got 01000000
+  case 1 vit_result: ref 0000baf983e47040 != got 0000000000000000
+  case 1 FP.nf_OutputSignalLast1: ref 0000baf983e470401a9897cf8d1f8fc0da142a2bb4108fc021f0706d2c008fc0... != got 4c606852ab2e8fc01a9897cf8d1f8fc0da142a2bb4108fc021f0706d2c008fc0...
+artifact: harness/NotchFilter.redtest.json
+PRE-INTEGRATION RED TEST OK (went red): checked 1380  failed 1380

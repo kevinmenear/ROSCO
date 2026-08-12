@@ -1,0 +1,7 @@
+|x| <= 1e3            : 0 of 20000000 differ
+full exponent range   : 130696 of 20000000 differ
+x*x subnormal         : 49146 of 20000000 differ
+FIRST WITNESS x = 1.3462737399449473e-155  (bits 1fc71ad05ffddcfe)
+  2.0*(x*x)  = 3.6249059657306676e-310  (bits 000042ba8807972c)
+  (2.0*x)*x  = 3.624905965730717e-310  (bits 000042ba8807972d)
+VERDICT: the mutant is NOT equivalent -- a distinguishing double exists.

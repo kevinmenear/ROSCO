@@ -1,0 +1,87 @@
+# What the 27 scenarios hand NotchFilter, measured rather than traced
+
+## The only live call site (clean Filters.f90:356), and what it passes
+        DO n = 1,CntrPar%F_GenSpdNotch_N
+            LocalVar%GenSpeedF = NotchFilter(LocalVar%GenSpeedF, LocalVar%DT, &
+                                            CntrPar%F_NotchFreqs(CntrPar%F_GenSpdNotch_Ind(n)), &
+                                            CntrPar%F_NotchBetaNum(CntrPar%F_GenSpdNotch_Ind(n)), &
+                                            CntrPar%F_NotchBetaDen(CntrPar%F_GenSpdNotch_Ind(n)), &
+                                            LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotch)
+        END DO
+
+## grep -h 'F_Notch*' Examples/*.IN | sort -u   -- every value in every input file
+0                   ! F_GenSpdNotch_N   - Number of notch filters on generator speed
+0                   ! F_NumNotchFilts   - Number of notch filters placed on sensors
+0.0000              ! F_NotchBetaDen    - Damping value of denominator (determines the depth of notch). Array with length F_NumNotchFilts, [-]
+0.0000              ! F_NotchBetaNum    - Damping value of numerator (determines the width of notch). Array with length F_NumNotchFilts, [-]
+0.0000              ! F_NotchFreqs      - Natural frequency of the notch filters. Array with length F_NumNotchFilts
+0.2500              ! F_NotchBetaDen    - Damping value of denominator (determines the depth of notch). Array with length F_NumNotchFilts, [-]
+1                   ! F_GenSpdNotch_N   - Number of notch filters on generator speed
+1                   ! F_NumNotchFilts   - Number of notch filters placed on sensors
+1.0000              ! F_NotchFreqs      - Natural frequency of the notch filters. Array with length F_NumNotchFilts
+
+## and every value vit_sim.py patches them to (grep -n "'F_Notch" Examples/vit_sim.py)
+  391:        'F_NotchFreqs': '1.0000',
+  392:        'F_NotchBetaNum': '0.0000',
+  393:        'F_NotchBetaDen': '0.2500',
+  394:        'F_GenSpdNotch_N': 1,
+  625:        'F_NotchFreqs': '1.0000',
+  626:        'F_NotchBetaNum': '0.0000',
+  627:        'F_NotchBetaDen': '0.2500',
+  628:        'F_GenSpdNotch_N': 1,
+  765:        'F_NotchFreqs': '1.0000',
+  766:        'F_NotchBetaNum': '0.0000',
+  767:        'F_NotchBetaDen': '0.2500',
+  768:        'F_GenSpdNotch_N': 1,
+  1295:        'F_NotchFreqs': '1.0000',
+  1296:        'F_NotchBetaNum': '0.0000',
+  1297:        'F_NotchBetaDen': '0.2500',
+  1298:        'F_GenSpdNotch_N': 1,
+  1657:        'F_NotchFreqs': '1.0000',
+  1658:        'F_NotchBetaNum': '0.0000',
+  1659:        'F_NotchBetaDen': '0.2500',
+  1660:        'F_GenSpdNotch_N': 1,
+  1795:        'F_NotchFreqs': '1.0000',
+  1796:        'F_NotchBetaNum': '0.0000',
+  1797:        'F_NotchBetaDen': '0.2500',
+  1798:        'F_GenSpdNotch_N': 1,
+
+## READING: omega=1.0, betaNum=0.0, betaDen=0.25 in every scenario that runs the unit.
+   Six scenarios run it (3,7,8,18,26,27) and all six patch the same three values;
+   the 14 unpatched input files carry F_GenSpdNotch_N=0, so they never call it.
+   betaNum = 0 additionally collapses nf_b2 and nf_b0 to the SAME expression.
+
+## every reader of LocalVar%GenSpeedF -- the variable the live call site writes
+  rosco/controller/src/ControllerBlocks.f90:116:        LocalVar%PC_SpdErr = LocalVar%PC_RefSpd - LocalVar%GenSpeedF            ! Speed error
+  rosco/controller/src/ControllerBlocks.f90:179:        LocalVar%VS_SpdErr = LocalVar%VS_RefSpd - LocalVar%GenSpeedF
+  rosco/controller/src/ControllerBlocks.f90:182:        LocalVar%VS_SpdErrAr = LocalVar%VS_RefSpd - LocalVar%GenSpeedF               ! Current speed error - Region 2.5 PI-control (Above Rated)
+  rosco/controller/src/ControllerBlocks.f90:183:        LocalVar%VS_SpdErrBr = CntrPar%VS_MinOMSpd - LocalVar%GenSpeedF     ! Current speed error - Region 1.5 PI-control (Below Rated)
+  rosco/controller/src/ControllerBlocks.f90:254:                ELSEIF ((LocalVar%GenSpeedF < CntrPar%VS_RefSpd) .AND. &
+  rosco/controller/src/ControllerBlocks.f90:663:        LocalVar%SD_GenSpeedF = LPFilter(LocalVar%Genspeed, LocalVar%DT, CntrPar%SD_GenSpdCornerFreq, LocalVar%FP,LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
+  rosco/controller/src/ControllerBlocks.f90:679:            IF (CntrPar%SD_EnableGenSpeed==1 .AND. LocalVar%SD_GenSpeedF > CntrPar%SD_MaxGenSpd) THEN
+  rosco/controller/src/Controllers.f90:236:        LocalVar%VS_KOmega2_GenTq = CntrPar%VS_Rgn2K*LocalVar%GenSpeedF*LocalVar%GenSpeedF
+  rosco/controller/src/Controllers.f90:237:        LocalVar%VS_ConstPwr_GenTq = (CntrPar%VS_RtPwr/(CntrPar%VS_GenEff/100.0))/LocalVar%GenSpeedF * LocalVar%PRC_R_Torque
+  rosco/controller/src/Filters.f90:347:            LocalVar%GenSpeedF = LPFilter(LocalVar%GenSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
+  rosco/controller/src/Filters.f90:350:            LocalVar%GenSpeedF = SecLPFilter(LocalVar%GenSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, CntrPar%F_LPFDamping, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF) ! Second-order low-pass filter on generator speed
+  rosco/controller/src/Filters.f90:356:            LocalVar%GenSpeedF = NotchFilter(LocalVar%GenSpeedF, LocalVar%DT, &
+  rosco/controller/src/Filters.f90:435:        DebugVar%GenSpeedF = LocalVar%GenSpeedF
+  rosco/controller/src/ROSCO_IO.f90:91:        WRITE( Un, IOSTAT=ErrStat) LocalVar%GenSpeedF
+  rosco/controller/src/ROSCO_IO.f90:173:        WRITE( Un, IOSTAT=ErrStat) LocalVar%SD_GenSpeedF
+  rosco/controller/src/ROSCO_IO.f90:434:        READ( Un, IOSTAT=ErrStat) LocalVar%GenSpeedF
+  rosco/controller/src/ROSCO_IO.f90:516:        READ( Un, IOSTAT=ErrStat) LocalVar%SD_GenSpeedF
+  rosco/controller/src/ROSCO_IO.f90:748:    DebugOutData(10) = DebugVar%GenSpeedF
+  rosco/controller/src/ROSCO_IO.f90:766:                                      'WE_Vt', 'WE_Vw', 'WE_lambda', 'PC_PICommand', 'GenSpeedF', & 
+  rosco/controller/src/ROSCO_IO.f90:821:    LocalVarOutData(43) = LocalVar%GenSpeedF
+  rosco/controller/src/ROSCO_IO.f90:891:    LocalVarOutData(113) = LocalVar%SD_GenSpeedF
+  rosco/controller/src/ROSCO_IO.f90:981:    LocalVarOutStrings(43) = 'GenSpeedF'
+  rosco/controller/src/ROSCO_IO.f90:1051:    LocalVarOutStrings(113) = 'SD_GenSpeedF'
+  rosco/controller/src/ROSCO_IO.f90:1151:        WRITE(*, 100) LocalVar%GenSpeedF*RPS2RPM, LocalVar%BlPitch(1)*R2D, avrSWAP(15)/1000.0, LocalVar%WE_Vw
+  rosco/controller/src/ROSCO_Types.f90:350:    REAL(DbKi)                    :: GenSpeedF                   ! Filtered HSS (generator) speed [rad/s].
+  rosco/controller/src/ROSCO_Types.f90:420:    REAL(DbKi)                    :: SD_GenSpeedF                ! Generator speed signal filtered for shutdown
+  rosco/controller/src/ROSCO_Types.f90:506:    REAL(DbKi)                    :: GenSpeedF                   ! Filtered generator speed [rad/s]
+  rosco/controller/src/vit_localvariables_view.f90:144:        REAL(C_DOUBLE) :: GenSpeedF = 0
+  rosco/controller/src/vit_localvariables_view.f90:214:        REAL(C_DOUBLE) :: SD_GenSpeedF = 0
+  rosco/controller/src/vit_localvariables_view.f90:322:        view%GenSpeedF = REAL(src%GenSpeedF, C_DOUBLE)
+  rosco/controller/src/vit_localvariables_view.f90:392:        view%SD_GenSpeedF = REAL(src%SD_GenSpeedF, C_DOUBLE)
+  rosco/controller/src/vit_localvariables_view.f90:568:        dest%GenSpeedF = REAL(view%GenSpeedF, C_DOUBLE)
+  rosco/controller/src/vit_localvariables_view.f90:638:        dest%SD_GenSpeedF = REAL(view%SD_GenSpeedF, C_DOUBLE)
