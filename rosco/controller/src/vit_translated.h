@@ -52,6 +52,7 @@ void statemachine_c(controlparameters_view_t* CntrPar, localvariables_view_t* Lo
 void updatezeromq_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_view_t* ErrVar);
 void identity_c(int n, double* identity_result);
 double interp1d_c(double* xData, int n_xData, double* yData, int n_yData, double xq, errorvariables_view_t* ErrVar);
+double saturate_c(double inputValue, double minValue, double maxValue);
 
 #ifdef __cplusplus
 }

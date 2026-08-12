@@ -102,6 +102,7 @@ set(SOURCES
     src/updatezeromq.cpp
     src/identity.cpp
     src/interp1d.cpp
+    src/saturate.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

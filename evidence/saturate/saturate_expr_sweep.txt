@@ -1,0 +1,4 @@
+triples: 12167
+shipped differs from gfortran on 0 of 12167 triples
+branchA differs from gfortran on 789 of 12167 triples
+branchB differs from gfortran on 561 of 12167 triples

@@ -85,19 +85,28 @@ IMPLICIT NONE
         END FUNCTION interp1d_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of saturate
+    INTERFACE
+        FUNCTION saturate_c(inputValue, minValue, maxValue) BIND(C, NAME='saturate_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: inputValue
+            REAL(C_DOUBLE), VALUE :: minValue
+            REAL(C_DOUBLE), VALUE :: maxValue
+            REAL(C_DOUBLE) :: saturate_c
+        END FUNCTION saturate_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION saturate(inputValue, minValue, maxValue)
-    ! Saturates inputValue. Makes sure it is not smaller than minValue and not larger than maxValue
-
+    FUNCTION saturate(inputValue, minValue, maxValue) RESULT(saturate_result)
+        USE ISO_C_BINDING
         IMPLICIT NONE
-
-        REAL(DbKi), INTENT(IN)     :: inputValue
-        REAL(DbKi), INTENT(IN)     :: minValue
-        REAL(DbKi), INTENT(IN)     :: maxValue
-
-        saturate = REAL(MIN(MAX(inputValue,minValue), maxValue),DbKi)
-
+        REAL(8), INTENT(IN) :: inputValue
+        REAL(8), INTENT(IN) :: minValue
+        REAL(8), INTENT(IN) :: maxValue
+        REAL(8) :: saturate_result
+        saturate_result = REAL(saturate_c(inputValue, minValue, maxValue), 8)
     END FUNCTION saturate
     
 !-------------------------------------------------------------------------------------------------------------------------------

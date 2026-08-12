@@ -1,0 +1,152 @@
+gfortran -fdefault-real-8 -fdefault-double-8 -ffp-contract=off -O2 -c -o Controllers.o Controllers.f90
+Controllers.f90:87:18:
+
+   87 |     TYPE(check_t) :: check_status
+      |                  1
+Error: Derived type 'check_t' at (1) is being used before it is defined
+Controllers.f90:114:25:
+
+  114 |             PIController = saturate(PTerm + piP%ITerm(inst), minValue, maxValue)
+      |                         1
+Error: Symbol 'picontroller' at (1) has already been host associated
+Controllers.f90:124:34:
+
+  124 |                 IF (check_status%rank == 0) THEN
+      |                                  1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:128:38:
+
+  128 |                     IF (check_status%rank == 0) THEN
+      |                                      1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:129:83:
+
+  129 |                         WRITE (*, *) "Number of output variables: ", check_status%numTotal
+      |                                                                                   1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:130:86:
+
+  130 |                         WRITE (*, *) "Number of identical variables: ", check_status%numIdentical
+      |                                                                                      1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:131:107:
+
+  131 |                         WRITE (*, *) "Number of non-identical variables within tolerance: ", check_status%numInTol
+      |                                                                                                           1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:132:107:
+
+  132 |                         WRITE (*, *) "Number of non-identical variables out of tolerance: ", check_status%numOutTol
+      |                                                                                                           1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:135:19:
+
+  135 |                 END IF
+      |                   1
+Error: Expecting END SUBROUTINE statement at (1)
+Controllers.f90:136:34:
+
+  136 |                 IF (check_status%rank == 0) THEN
+      |                                  1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:138:19:
+
+  138 |                 END IF
+      |                   1
+Error: Expecting END SUBROUTINE statement at (1)
+Controllers.f90:139:34:
+
+  139 |                 IF (check_status%numOutTol > 0) THEN
+      |                                  1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:140:38:
+
+  140 |                     IF (check_status%rank == 0) THEN
+      |                                      1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:142:23:
+
+  142 |                     END IF
+      |                       1
+Error: Expecting END SUBROUTINE statement at (1)
+Controllers.f90:143:34:
+
+  143 |                     check_status%Passed = .FALSE.
+      |                                  1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:145:21:
+
+  145 |                 ELSE
+      |                     1
+Error: Unexpected ELSE statement at (1)
+Controllers.f90:146:38:
+
+  146 |                     IF (check_status%rank == 0) THEN
+      |                                      1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:148:23:
+
+  148 |                     END IF
+      |                       1
+Error: Expecting END SUBROUTINE statement at (1)
+Controllers.f90:149:34:
+
+  149 |                     check_status%Passed = .TRUE.
+      |                                  1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:151:19:
+
+  151 |                 END IF
+      |                   1
+Error: Expecting END SUBROUTINE statement at (1)
+Controllers.f90:152:34:
+
+  152 |                 IF (check_status%rank == 0) THEN
+      |                                  1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:154:19:
+
+  154 |                 END IF
+      |                   1
+Error: Expecting END SUBROUTINE statement at (1)
+Controllers.f90:157:25:
+
+  157 |             PIController = saturate(PTerm + piP%ITerm(inst), minValue, maxValue)
+      |                         1
+Error: Symbol 'picontroller' at (1) has already been host associated
+Controllers.f90:161:34:
+
+  161 |                 IF (check_status%rank==0) THEN
+      |                                  1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:163:19:
+
+  163 |                 END IF
+      |                   1
+Error: Expecting END SUBROUTINE statement at (1)
+Controllers.f90:164:15:
+
+  164 |             END IF
+      |               1
+Error: Expecting END SUBROUTINE statement at (1)
+Controllers.f90:119:49:
+
+  119 |                 CALL kgen_init_check(check_status, rank=kgen_mpirank)
+      |                                                 1
+Error: Symbol 'check_status' at (1) has no IMPLICIT type
+Controllers.f90:133:66:
+
+  133 |                         WRITE (*, *) "Tolerance: ", kgen_tolerance
+      |                                                                  1
+Error: Symbol 'kgen_tolerance' at (1) has no IMPLICIT type; did you mean 'kgen_filepath'?
+Controllers.f90:127:37:
+
+  127 |                 IF (kgen_verboseLevel > 0) THEN
+      |                                     1
+Error: Symbol 'kgen_verboselevel' at (1) has no IMPLICIT type
+Controllers.f90:118:48:
+
+  118 |                 CALL kgen_init_verify(tolerance=1.D-14, minvalue=1.D-14, verboseLevel=1)
+      |                                                1
+Error: Keyword argument requires explicit interface for procedure 'kgen_init_verify' at (1)
+make: *** [Makefile:13: Controllers.o] Error 1

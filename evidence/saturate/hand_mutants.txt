@@ -1,0 +1,22 @@
+# hand-run mutants of translations/Functions/saturate.cpp
+# instrument: the unit's own differential corpus, 451 cases
+#
+BASELINE (the shipped translation, unmutated)              killed on     0 of   451 cases
+fmin/fmax transposed                                       killed on   299 of   451 cases
+the two BOUNDS transposed                                  killed on   271 of   451 cases
+upper clamp dropped (the MIN deleted)                      killed on   151 of   451 cases
+lower clamp dropped (the MAX deleted)                      killed on   100 of   451 cases
+both clamps dropped (passthrough)                          killed on   202 of   451 cases
+clamped against minValue twice                             killed on   320 of   451 cases
+clamped against maxValue twice                             killed on   267 of   451 cases
+std::min/std::max instead of fmin/fmax                     killed on     1 of   451 cases
+branch spelling A (first arg wins ties)                    killed on     1 of   451 cases
+branch spelling B (second arg wins ties)                   killed on     1 of   451 cases
+#
+# COMMUTATIVITY -- fmax(a,b) and fmax(b,a) agree on every input INCLUDING
+# a signed zero and a NaN (evidence/saturate/minmax_probe.txt), so these two
+# are EQUIVALENT mutants rather than uncaught ones. Listed to be counted.
+fmax arguments swapped (equivalent)                        killed on     0 of   451 cases
+fmin arguments swapped (equivalent)                        killed on     0 of   451 cases
+#
+# translation restored, byte-identical to the shipped file

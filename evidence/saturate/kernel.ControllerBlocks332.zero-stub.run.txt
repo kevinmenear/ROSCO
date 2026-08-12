@@ -1,0 +1,948 @@
+# stub:   evidence/saturate/saturate.zero-stub.cpp
+# md5:    464158454c11790f45955f689469b5d8   (verified inside the container)
+#
+ 
+ ***************** Verification against 'saturate.0.0.1' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.1
+ 
+ saturate : Time per call (usec):   0.12500000000000000     
+ 
+ ***************** Verification against 'saturate.0.0.2' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.2
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.3' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    2.4175008629616530E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.3
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.4' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    2.4175008629616530E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.4
+ 
+ saturate : Time per call (usec):   0.12500000000000000     
+ 
+ ***************** Verification against 'saturate.0.0.5' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    2.4158729874026790E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.5
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.6' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    2.4093986319144254E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.6
+ 
+ saturate : Time per call (usec):   0.12500000000000000     
+ 
+ ***************** Verification against 'saturate.0.0.7' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    2.3965605841162409E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.7
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.8' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    2.3775043388617597E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.8
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.9' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    2.3523723468969462E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.9
+ 
+ saturate : Time per call (usec):   0.12500000000000000     
+ 
+ ***************** Verification against 'saturate.0.0.10' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    2.3213040780146873E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.10
+ 
+ saturate : Time per call (usec):    8.3000000000000004E-002
+ 
+ ***************** Verification against 'saturate.0.0.11' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    2.2844360829002903E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.11
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.12' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    2.2419020536947132E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.12
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.13' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    2.1938328833028395E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.13
+ 
+ saturate : Time per call (usec):    8.3000000000000004E-002
+ 
+ ***************** Verification against 'saturate.0.0.14' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    2.1403567234719451E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.14
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.15' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    2.0815990416664229E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.15
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.16' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    2.0176826767638279E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.16
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.17' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    1.9487278935958884E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.17
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.18' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    1.8748524363588611E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.18
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.19' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    1.7961715809173961E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.19
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.20' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    1.7127981860237944E-003
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.20
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.12000' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12000
+ 
+ saturate : Time per call (usec):    8.3000000000000004E-002
+ 
+ ***************** Verification against 'saturate.0.0.12001' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12001
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.12002' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12002
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.12003' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12003
+ 
+ saturate : Time per call (usec):    8.3000000000000004E-002
+ 
+ ***************** Verification against 'saturate.0.0.12004' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12004
+ 
+ saturate : Time per call (usec):    8.4000000000000005E-002
+ 
+ ***************** Verification against 'saturate.0.0.12005' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12005
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.12006' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12006
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.12007' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12007
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.12008' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12008
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.12009' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12009
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.12010' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12010
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.12011' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12011
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.12012' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12012
+ 
+ saturate : Time per call (usec):    8.4000000000000005E-002
+ 
+ ***************** Verification against 'saturate.0.0.12013' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12013
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.12014' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12014
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.12015' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12015
+ 
+ saturate : Time per call (usec):    0.0000000000000000     
+ 
+ ***************** Verification against 'saturate.0.0.12016' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12016
+ 
+ saturate : Time per call (usec):    0.0000000000000000     
+ 
+ ***************** Verification against 'saturate.0.0.12017' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12017
+ 
+ saturate : Time per call (usec):    8.4000000000000005E-002
+ 
+ ***************** Verification against 'saturate.0.0.12018' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12018
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.12019' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12019
+ 
+ saturate : Time per call (usec):    8.3000000000000004E-002
+ 
+ ***************** Verification against 'saturate.0.0.12020' *****************
+ we_inp_pitch is IDENTICAL.
+ Difference is            0
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with saturate.0.0.12020
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.23900' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5425614129573595E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23900
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.23901' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5425909972870261E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23901
+ 
+ saturate : Time per call (usec):    8.3000000000000004E-002
+ 
+ ***************** Verification against 'saturate.0.0.23902' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5426205778752314E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23902
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.23903' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5426501548963123E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23903
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.23904' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5426797284563798E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23904
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.23905' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5427092986035232E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23905
+ 
+ saturate : Time per call (usec):    8.3000000000000004E-002
+ 
+ ***************** Verification against 'saturate.0.0.23906' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5427388653366142E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23906
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.23907' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5427684286128135E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23907
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.23908' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5427979883540210E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23908
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.23909' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5428275444523801E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23909
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.23910' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5428570967750177E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23910
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.23911' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5428866451681084E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23911
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.23912' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5429161894604015E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23912
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.23913' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5429457296007215E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23913
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.23914' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5429752657691131E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23914
+ 
+ saturate : Time per call (usec):    0.0000000000000000     
+ 
+ ***************** Verification against 'saturate.0.0.23915' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5430047981966624E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23915
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.23916' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5430343270183017E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23916
+ 
+ saturate : Time per call (usec):    8.3000000000000004E-002
+ 
+ ***************** Verification against 'saturate.0.0.23917' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5430638522880696E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23917
+ 
+ saturate : Time per call (usec):    0.0000000000000000     
+ 
+ ***************** Verification against 'saturate.0.0.23918' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5430933739921218E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23918
+ 
+ saturate : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'saturate.0.0.23919' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5431228920598855E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23919
+ 
+ saturate : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'saturate.0.0.23920' *****************
+ we_inp_pitch is NOT IDENTICAL(out of tolerance).
+ Difference is    6.5431524063735896E-002
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withsaturate.0.0.23920
+ 
+ saturate : Time per call (usec):    0.0000000000000000     
+ 
+****************************************************
+    kernel execution summary: saturate
+****************************************************
+    Total number of verification cases  :    62
+    Number of verification-passed cases :    23
+ 
+    kernel: saturate: FAILED verification
+ 
+    number of processes  1
+ 
+    Average call time (usec):  0.510E-01
+    Minimum call time (usec):  0.000E+00
+    Maximum call time (usec):  0.125E+00
+****************************************************

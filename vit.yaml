@@ -84,6 +84,9 @@ fortran:
 verification:
   tolerance: 1.0e-14
 translations:
+  saturate:
+    status: integrated
+    cpp_file: translations/Functions/saturate.cpp
   HPFilter:
     status: integrated
     cpp_file: translations/Filters/hpfilter.cpp

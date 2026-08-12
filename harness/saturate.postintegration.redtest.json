@@ -1,0 +1,122 @@
+{
+ "unit": "saturate",
+ "against": "integrated",
+ "checked": 451,
+ "failed": 271,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  N/A      R5_non_degenerate_shape    no array or extent parameter -- nothing whose SHAPE could be degenerate; this is not a pass",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      150 value(s) from 9 literal(s) in the reference, each under every declared value of 0 flag(s); 99 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 120 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 30 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 3 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          3 real value(s), none zero in every case",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 0 out-parameter(s): none"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 1,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 2,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "000000000000f03f"
+  },
+  {
+   "case": 3,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "000000000000f0bf"
+  },
+  {
+   "case": 4,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "000000000000e03f"
+  },
+  {
+   "case": 5,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "000000000000d0bf"
+  },
+  {
+   "case": 6,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "000000000000c03f"
+  },
+  {
+   "case": 8,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "0000000000c07240"
+  },
+  {
+   "case": 11,
+   "output": "vit_result",
+   "ref": "000000000000f0bf",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 13,
+   "output": "vit_result",
+   "ref": "000000000000d0bf",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 15,
+   "output": "vit_result",
+   "ref": "0000000000408fc0",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 17,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 18,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 19,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "000000000000f0bf"
+  },
+  {
+   "case": 20,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 21,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "000000000000d0bf"
+  }
+ ],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "a2183c0-dirty",
+ "vit_rev": "ab75fa0",
+ "red_test": {
+  "perturbation": "wrapper: the two BOUNDS swapped at the saturate_c call",
+  "result": "271 of 451 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}
