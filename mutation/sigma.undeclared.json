@@ -1,0 +1,47 @@
+{
+ "unit": "sigma",
+ "operators": [
+  "arith_op",
+  "assoc_reorder",
+  "compare_op",
+  "const_tweak",
+  "drop_factor",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "mutants": 45,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 45,
+ "killed": 42,
+ "survived": 3,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.9333,
+ "loop_rev": "b9fb5ee-nogit",
+ "vit_rev": "ab75fa0-nogit",
+ "survivors": [
+  {
+   "id": "7ad82e7d",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "532e4d37",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "2524b715",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  }
+ ]
+}

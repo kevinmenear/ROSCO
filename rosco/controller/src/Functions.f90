@@ -97,6 +97,21 @@ IMPLICIT NONE
         END FUNCTION saturate_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of sigma
+    INTERFACE
+        FUNCTION sigma_c(x, x0, x1, y0, y1, ErrVar) BIND(C, NAME='sigma_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: x
+            REAL(C_DOUBLE), VALUE :: x0
+            REAL(C_DOUBLE), VALUE :: x1
+            REAL(C_DOUBLE), VALUE :: y0
+            REAL(C_DOUBLE), VALUE :: y1
+            TYPE(C_PTR), VALUE :: ErrVar
+            REAL(C_DOUBLE) :: sigma_c
+        END FUNCTION sigma_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION saturate(inputValue, minValue, maxValue) RESULT(saturate_result)
@@ -464,40 +479,24 @@ CONTAINS
 
     END FUNCTION wrap_360
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION sigma(x, x0, x1, y0, y1, ErrVar)
-    ! Generic sigma function
+    FUNCTION sigma(x, x0, x1, y0, y1, ErrVar) RESULT(sigma_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : ErrorVariables
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
         IMPLICIT NONE
-    
-        ! Inputs
-        TYPE(ErrorVariables), INTENT(INOUT) :: ErrVar
-
-        REAL(DbKi), Intent(IN)  :: x, x0, x1
-        REAL(DbKi), Intent(IN)  :: y0, y1
-            
-        ! Local
-        REAL(DbKi) :: a3, a2, a1, a0
-
-        CHARACTER(*), PARAMETER                 :: RoutineName = 'sigma'
-
-        a3 = 2/(x0-x1)**3
-        a2 = -3*(x0+x1)/(x0-x1)**3
-        a1 = 6*x1*x0/(x0-x1)**3
-        a0 = (x0-3*x1)*x0**2/(x0-x1)**3
-
-        IF (x < x0) THEN
-            sigma = y0
-        ELSEIF (x > x1) THEN
-            sigma = y1
-        ELSE
-            sigma = (a3*x**3 + a2*x**2 + a1*x + a0)*(y1-y0) + y0
-        ENDIF 
-
-        ! Add RoutineName to error message
-        IF (ErrVar%aviFAIL < 0) THEN
-            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
-        ENDIF
-        
+        REAL(8), INTENT(IN) :: x
+        REAL(8), INTENT(IN) :: x0
+        REAL(8), INTENT(IN) :: x1
+        REAL(8), INTENT(IN) :: y0
+        REAL(8), INTENT(IN) :: y1
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        REAL(8) :: sigma_result
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        sigma_result = REAL(sigma_c(x, x0, x1, y0, y1, C_LOC(ErrVar_view)), 8)
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
     END FUNCTION sigma
 
 

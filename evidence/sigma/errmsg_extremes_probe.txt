@@ -1,0 +1,13 @@
+ "mismatches": [
+ ]
+}
+
+
+PROBE sigma over the harness corpus
+  calls                                     1069
+  assign_errmsg calls                       1022
+  ErrVar->n_ErrMsg on entry, min .. max     1 .. 8
+  ErrVar->n_ErrMsg_cap, min .. max          4097 .. 4104
+  largest message offered to assign_errmsg  14
+  calls with s.size() == cap  (7ad82e7d)    0
+  calls with n_ErrMsg <= 0    (2524b715)    0

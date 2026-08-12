@@ -1,0 +1,122 @@
+{
+ "unit": "sigma",
+ "against": "integrated",
+ "checked": 1069,
+ "failed": 1022,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    1 varied extent(s) at [3] and [4], NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      250 value(s) from 9 literal(s) in the reference, each under every declared value of 0 flag(s); 41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 165 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 200 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 50 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 5 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits; 4 combination(s) of the 1 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead; 20 case(s) across 2 predicate(s) the reference writes between TWO VARIED QUANTITIES, each with one side set FROM the other -- at equality, where an ordering predicate changes its answer, under every knob combination, plus the two neighbouring representable values once for strictness; a ladder on either side alone cannot reach these, because whichever base value is larger is larger in every case; 88 character value(s) from a corpus of 22 (the reference's own character literals and their collating neighbours) across 1 string(s), each at length(s) [1, 2, 3, 8] and in the mixed / padded / all-blank / leading-blank shapes, plus 132 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          5 real value(s), none zero in every case",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 5 out-parameter(s): ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "03000000",
+   "got": "09000000"
+  },
+  {
+   "case": 0,
+   "output": "ErrVar.ErrMsg",
+   "ref": "5a5b5e0000000000000000000000000000000000000000000000000000000000...",
+   "got": "7369676d613a5a5b5e0000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 1,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "04000000",
+   "got": "0a000000"
+  },
+  {
+   "case": 1,
+   "output": "ErrVar.ErrMsg",
+   "ref": "5b5e5f6000000000000000000000000000000000000000000000000000000000...",
+   "got": "7369676d613a5b5e5f6000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 2,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "03000000",
+   "got": "09000000"
+  },
+  {
+   "case": 2,
+   "output": "ErrVar.ErrMsg",
+   "ref": "212f300000000000000000000000000000000000000000000000000000000000...",
+   "got": "7369676d613a212f300000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 3,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "03000000",
+   "got": "09000000"
+  },
+  {
+   "case": 3,
+   "output": "ErrVar.ErrMsg",
+   "ref": "4041420000000000000000000000000000000000000000000000000000000000...",
+   "got": "7369676d613a4041420000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 4,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "03000000",
+   "got": "09000000"
+  },
+  {
+   "case": 4,
+   "output": "ErrVar.ErrMsg",
+   "ref": "6061620000000000000000000000000000000000000000000000000000000000...",
+   "got": "7369676d613a6061620000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 5,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "03000000",
+   "got": "09000000"
+  },
+  {
+   "case": 5,
+   "output": "ErrVar.ErrMsg",
+   "ref": "5f60610000000000000000000000000000000000000000000000000000000000...",
+   "got": "7369676d613a5f60610000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 6,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "03000000",
+   "got": "09000000"
+  },
+  {
+   "case": 6,
+   "output": "ErrVar.ErrMsg",
+   "ref": "5a5b5e0000000000000000000000000000000000000000000000000000000000...",
+   "got": "7369676d613a5a5b5e0000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 7,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "03000000",
+   "got": "09000000"
+  },
+  {
+   "case": 7,
+   "output": "ErrVar.ErrMsg",
+   "ref": "4142590000000000000000000000000000000000000000000000000000000000...",
+   "got": "7369676d613a4142590000000000000000000000000000000000000000000000..."
+  }
+ ],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "b9fb5ee",
+ "vit_rev": "ab75fa0",
+ "red_test": {
+  "perturbation": "wrapper: CALL vit_copy_scalars_to_errorvariables deleted (the --reverse-copy line)",
+  "result": "1022 of 1069 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

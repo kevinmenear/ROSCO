@@ -1,0 +1,8 @@
+532e4d37  `n > 0 ? (size_t)n : 0`  vs  `n >= 0 ? (size_t)n : 0`
+  int values swept                 4294967296
+  values at which the LENGTH differs 0
+  n =  -2147483648   tight = 0   loose = 0
+  n =           -1   tight = 0   loose = 0
+  n =            0   tight = 0   loose = 0
+  n =            1   tight = 1   loose = 1
+  n =   2147483647   tight = 2147483647   loose = 2147483647
