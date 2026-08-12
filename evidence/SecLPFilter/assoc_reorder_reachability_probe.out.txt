@@ -1,0 +1,17 @@
+power-of-two sweep: b1 differs in 0 pairs, a1 differs in 0 pairs
+first witness: DT=0 CF=0
+  DT=1e-155       distinguishing CornerFreq values: 0 of 7
+  DT=1e-156       distinguishing CornerFreq values: 4 of 7
+  DT=1e-158       distinguishing CornerFreq values: 4 of 7
+  DT=1e-160       distinguishing CornerFreq values: 0 of 7
+  DT=1e-161       distinguishing CornerFreq values: 0 of 7
+  DT=1e-162       distinguishing CornerFreq values: 0 of 7
+  DT=1e-170       distinguishing CornerFreq values: 0 of 7
+  DT=1e-200       distinguishing CornerFreq values: 0 of 7
+  DT=1e-300       distinguishing CornerFreq values: 0 of 7
+  DT=1.492e-154   distinguishing CornerFreq values: 0 of 7
+  DT=1e+300       distinguishing CornerFreq values: 0 of 7
+  DT=1e+150       distinguishing CornerFreq values: 0 of 7
+  DT=1            distinguishing CornerFreq values: 0 of 7
+  DT=0.1          distinguishing CornerFreq values: 0 of 7
+  DT=0.025        distinguishing CornerFreq values: 0 of 7

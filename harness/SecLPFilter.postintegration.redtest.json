@@ -1,0 +1,122 @@
+{
+ "unit": "SecLPFilter",
+ "against": "integrated",
+ "checked": 2884,
+ "failed": 1040,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    0 varied extent(s); 46 FIXED by the type at [1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024] -- not varied, 1 index(es) at 1/interior/n, array elements distinct",
+  "  applied  R2_flag_values             4 value(s) across 2 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R6_reference_literals      200 value(s) from 7 literal(s) in the reference, each under every declared value of 2 flag(s); 41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 165 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 200 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 50 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 5 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits; 4 combination(s) of the 1 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          15 real value(s), none zero in every case; 36 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 47 out-parameter(s): FP_lpf1_a1, FP_lpf1_a0, FP_lpf1_b1, FP_lpf1_b0, FP_lpf1_InputSignalLast, FP_lpf1_OutputSignalLast, FP_lpf2_a2, FP_lpf2_a1, FP_lpf2_a0, FP_lpf2_b2, FP_lpf2_b1, FP_lpf2_b0, FP_lpf2_InputSignalLast2, FP_lpf2_OutputSignalLast2, FP_lpf2_InputSignalLast1, FP_lpf2_OutputSignalLast1, FP_lpfV_a2, FP_lpfV_a1, FP_lpfV_a0, FP_lpfV_b2, FP_lpfV_b1, FP_lpfV_b0, FP_lpfV_InputSignalLast2, FP_lpfV_OutputSignalLast2, FP_lpfV_InputSignalLast1, FP_lpfV_OutputSignalLast1, FP_hpf_InputSignalLast, FP_hpf_OutputSignalLast, FP_nfs_OutputSignalLast1, FP_nfs_OutputSignalLast2, FP_nfs_InputSignalLast1, FP_nfs_InputSignalLast2, FP_nfs_b2, FP_nfs_b0, FP_nfs_a2, FP_nfs_a1, FP_nfs_a0, FP_nf_OutputSignalLast1, FP_nf_OutputSignalLast2, FP_nf_InputSignalLast1, FP_nf_InputSignalLast2, FP_nf_b2, FP_nf_b1, FP_nf_b0, FP_nf_a1, FP_nf_a0, inst"
+ ],
+ "mismatches": [
+  {
+   "case": 13,
+   "output": "FP.lpf2_a2",
+   "ref": "000010a842601e4233695e2b921f8fc0a794dd85290f8fc0b44525f1a3008fc0...",
+   "got": "00004070c1fafe4133695e2b921f8fc0a794dd85290f8fc0b44525f1a3008fc0..."
+  },
+  {
+   "case": 13,
+   "output": "FP.lpf2_a1",
+   "ref": "0000f00fc32c2e427d1257670d208fc07b6f19350a118fc0e571a909e9008fc0...",
+   "got": "0000c00fc32c0e427d1257670d208fc07b6f19350a118fc0e571a909e9008fc0..."
+  },
+  {
+   "case": 13,
+   "output": "FP.lpf2_a0",
+   "ref": "0000107843f91d422e9e5e5d9f1f8fc088c7c2694f0f8fc0a85022fbdeff8ec0...",
+   "got": "000040b0c45efd412e9e5e5d9f1f8fc088c7c2694f0f8fc0a85022fbdeff8ec0..."
+  },
+  {
+   "case": 13,
+   "output": "FP.lpf2_b2",
+   "ref": "00000010c32c1e427ce86a8f84208fc0cd10f3fea00f8fc0e4a50a03f9ff8ec0...",
+   "got": "00000010c32cfe417ce86a8f84208fc0cd10f3fea00f8fc0e4a50a03f9ff8ec0..."
+  },
+  {
+   "case": 13,
+   "output": "FP.lpf2_b1",
+   "ref": "00000010c32c2e427c469843371f8fc06df1d40e81108fc0cb191c37cb008fc0...",
+   "got": "00000010c32c0e427c469843371f8fc06df1d40e81108fc0cb191c37cb008fc0..."
+  },
+  {
+   "case": 13,
+   "output": "FP.lpf2_b0",
+   "ref": "00000010c32c1e4294de5288b2208fc0d2c095d6fd108fc0fa07c5225c008fc0...",
+   "got": "00000010c32cfe4194de5288b2208fc0d2c095d6fd108fc0fa07c5225c008fc0..."
+  },
+  {
+   "case": 14,
+   "output": "vit_result",
+   "ref": "8a6306bc3ed88b40",
+   "got": "da4880bdccf18b40"
+  },
+  {
+   "case": 14,
+   "output": "FP.lpf2_a2",
+   "ref": "f00cf8ffffa066c04f7c7b93919166c0dba84ffad48066c000143231086f66c0...",
+   "got": "f00cf8ffffa066c04f7c7b93919166c0dba84ffad48066c000143231086f66c0..."
+  },
+  {
+   "case": 14,
+   "output": "FP.lpf2_a1",
+   "ref": "328ec59252cc8ac03cb1f1ff23c08ac00816f0e214b58ac010488264aaa88ac0...",
+   "got": "328ec59252cc8ac03cb1f1ff23c08ac00816f0e214b58ac010488264aaa88ac0..."
+  },
+  {
+   "case": 14,
+   "output": "FP.lpf2_a0",
+   "ref": "9dc2d49cb08c80c0826e7efb588180c0656af78b167680c0a4e121dd4a6a80c0...",
+   "got": "9dc2d49cb08c80c0826e7efb588180c0656af78b167680c0a4e121dd4a6a80c0..."
+  },
+  {
+   "case": 14,
+   "output": "FP.lpf2_b2",
+   "ref": "511123b66d2785c0175cb8b3a01e85c0e37227f7b51585c0e80dca26a70d85c0...",
+   "got": "511123b66d2785c0175cb8b3a01e85c0e37227f7b51585c0e80dca26a70d85c0..."
+  },
+  {
+   "case": 14,
+   "output": "FP.lpf2_b1",
+   "ref": "b1d9a21d949d89c05e82ee20ba9189c09a7df2df9e8589c01f41043d717a89c0...",
+   "got": "b1d9a21d949d89c05e82ee20ba9189c09a7df2df9e8589c01f41043d717a89c0..."
+  },
+  {
+   "case": 14,
+   "output": "FP.lpf2_b0",
+   "ref": "299ca812ccc68ac0888551fbbebd8ac0c453d01173b58ac0c645e4bd55ac8ac0...",
+   "got": "299ca812ccc68ac0888551fbbebd8ac0c453d01173b58ac0c645e4bd55ac8ac0..."
+  },
+  {
+   "case": 14,
+   "output": "FP.lpf2_OutputSignalLast1",
+   "ref": "ca27d38086e58ec07bdcb5f436d68ec09dd7f8f579c88ec0555ec348b0ba8ec0...",
+   "got": "ca27d38086e58ec07bdcb5f436d68ec09dd7f8f579c88ec0555ec348b0ba8ec0..."
+  },
+  {
+   "case": 15,
+   "output": "vit_result",
+   "ref": "d86214a1f8f575c0",
+   "got": "d56214a1f8f575c0"
+  },
+  {
+   "case": 15,
+   "output": "FP.lpf2_a2",
+   "ref": "d50b59c5c1bf8dc031d81d6520b08dc0951f7cb107a18dc0967cb91f48928dc0...",
+   "got": "d50b59c5c1bf8dc031d81d6520b08dc0951f7cb107a18dc0967cb91f48928dc0..."
+  }
+ ],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "8a3569b-dirty",
+ "vit_rev": "5ba5e7e",
+ "red_test": {
+  "perturbation": "wrapper: CornerFreq and Damp swapped at the seclpfilter_c call site",
+  "result": "1040 of 2884 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

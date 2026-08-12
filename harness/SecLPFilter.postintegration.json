@@ -1,0 +1,20 @@
+{
+ "unit": "SecLPFilter",
+ "against": "integrated",
+ "checked": 2884,
+ "failed": 0,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    0 varied extent(s); 46 FIXED by the type at [1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024] -- not varied, 1 index(es) at 1/interior/n, array elements distinct",
+  "  applied  R2_flag_values             4 value(s) across 2 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R6_reference_literals      200 value(s) from 7 literal(s) in the reference, each under every declared value of 2 flag(s); 41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 165 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 200 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 50 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 5 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits; 4 combination(s) of the 1 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          15 real value(s), none zero in every case; 36 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 47 out-parameter(s): FP_lpf1_a1, FP_lpf1_a0, FP_lpf1_b1, FP_lpf1_b0, FP_lpf1_InputSignalLast, FP_lpf1_OutputSignalLast, FP_lpf2_a2, FP_lpf2_a1, FP_lpf2_a0, FP_lpf2_b2, FP_lpf2_b1, FP_lpf2_b0, FP_lpf2_InputSignalLast2, FP_lpf2_OutputSignalLast2, FP_lpf2_InputSignalLast1, FP_lpf2_OutputSignalLast1, FP_lpfV_a2, FP_lpfV_a1, FP_lpfV_a0, FP_lpfV_b2, FP_lpfV_b1, FP_lpfV_b0, FP_lpfV_InputSignalLast2, FP_lpfV_OutputSignalLast2, FP_lpfV_InputSignalLast1, FP_lpfV_OutputSignalLast1, FP_hpf_InputSignalLast, FP_hpf_OutputSignalLast, FP_nfs_OutputSignalLast1, FP_nfs_OutputSignalLast2, FP_nfs_InputSignalLast1, FP_nfs_InputSignalLast2, FP_nfs_b2, FP_nfs_b0, FP_nfs_a2, FP_nfs_a1, FP_nfs_a0, FP_nf_OutputSignalLast1, FP_nf_OutputSignalLast2, FP_nf_InputSignalLast1, FP_nf_InputSignalLast2, FP_nf_b2, FP_nf_b1, FP_nf_b0, FP_nf_a1, FP_nf_a0, inst"
+ ],
+ "mismatches": [],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "8a3569b-dirty",
+ "vit_rev": "5ba5e7e"
+}

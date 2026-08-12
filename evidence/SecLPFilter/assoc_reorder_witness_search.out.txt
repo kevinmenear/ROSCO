@@ -1,0 +1,4 @@
+b1 form (bare product): 442062 witness(es) in 4e7 draws
+   e.g. DT=9.2419818871610185e-159 CF=7.931218282328994e+82 -> 1.0745831234876838e-150 vs 1.0745831545664996e-150
+a1 form (product - 8.0): 13727 witness(es) in the SAME draws
+   e.g. DT=1.3706293843754506e-162 CF=4.917556876452322e+154 -> nan vs inf

@@ -1,0 +1,37 @@
+real translation: 62 cases, 14818 compared field rows, {'IDENTICAL': 14818}
+
+zero stub: 62 cases, 14818 compared field rows, {'IDENTICAL': 14414, 'NOT IDENTICAL': 404}
+    moved in   1 of 62 case(s): fp%lpf2_a0
+    moved in   1 of 62 case(s): fp%lpf2_a1
+    moved in   1 of 62 case(s): fp%lpf2_a2
+    moved in   1 of 62 case(s): fp%lpf2_b0
+    moved in   1 of 62 case(s): fp%lpf2_b1
+    moved in   1 of 62 case(s): fp%lpf2_b2
+    moved in  44 of 62 case(s): fp%lpf2_inputsignallast1
+    moved in  44 of 62 case(s): fp%lpf2_inputsignallast2
+    moved in  62 of 62 case(s): fp%lpf2_outputsignallast1
+    moved in  62 of 62 case(s): fp%lpf2_outputsignallast2
+    moved in  62 of 62 case(s): localvar%fp
+    moved in  62 of 62 case(s): localvar%vs_lastgentrqf
+    moved in  62 of 62 case(s): objinst%instseclpf
+
+hardcoded-argument stub: 62 cases, 14818 compared field rows, {'IDENTICAL': 14818}
+
+Derived from the three committed kernel run logs in this directory by
+evidence/SecLPFilter/kernel_field_rows.py. `kernel/` is untracked and
+reset_to_clean.sh removes it, so the kernel's own stdout is the artifact that
+survives -- not VIT's verify_fields.csv (RUNBOOK, unit #17).
+
+Two things this table says that the verdict line does not:
+
+1. The comparison is ALIVE and its live rows are exactly this unit's outputs.
+   The zero stub moves 404 rows and every one of them is a field SecLPFilter
+   writes; the other ~14,400 are the enclosing procedure's untouched state and
+   would read IDENTICAL for any translation at all.
+
+2. The INITIALISATION BRANCH is reached in exactly ONE of the 62 cases. The six
+   lpf2 coefficient arrays are the only fields written inside
+   `IF ((iStatus == 0) .OR. reset)`, and the zero stub moves each of them in 1
+   case. So 61 of 62 cases cannot observe CornerFreq or Damp AT ALL -- they are
+   not read on those calls -- which is the sharper form of the constant-argument
+   blindness the hardcoded-argument stub demonstrates below.

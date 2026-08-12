@@ -96,6 +96,7 @@ set(SOURCES
     src/pathisrelative.cpp
     src/readavrswap.cpp
     src/read_ol_input.cpp
+    src/seclpfilter.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

@@ -103,6 +103,25 @@ MODULE Filters
         END FUNCTION notchfilterslopes_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of SecLPFilter
+    INTERFACE
+        FUNCTION seclpfilter_c(InputSignal, DT, CornerFreq, Damp, FP, iStatus, reset, inst, has_InitialValue, InitialValue) BIND(C, NAME='seclpfilter_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: InputSignal
+            REAL(C_DOUBLE), VALUE :: DT
+            REAL(C_DOUBLE), VALUE :: CornerFreq
+            REAL(C_DOUBLE), VALUE :: Damp
+            TYPE(C_PTR), VALUE :: FP
+            INTEGER(C_INT), VALUE :: iStatus
+            INTEGER(C_INT), VALUE :: reset
+            INTEGER(C_INT), INTENT(INOUT) :: inst
+            INTEGER(C_INT), VALUE :: has_InitialValue
+            REAL(C_DOUBLE), VALUE :: InitialValue
+            REAL(C_DOUBLE) :: seclpfilter_c
+        END FUNCTION seclpfilter_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION LPFilter(InputSignal, DT, CornerFreq, FP, iStatus, reset, inst, InitialValue) RESULT(LPFilter_result)
@@ -132,54 +151,32 @@ CONTAINS
         LPFilter_result = REAL(lpfilter_c(InputSignal, DT, CornerFreq, C_LOC(FP), iStatus, MERGE(1_C_INT, 0_C_INT, reset), inst, has_InitialValue_flag, InitialValue_val), 8)
     END FUNCTION LPFilter
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION SecLPFilter(InputSignal, DT, CornerFreq, Damp, FP, iStatus, reset, inst, InitialValue)
-    ! Discrete time Low-Pass Filter of the form:
-    !                               Continuous Time Form:   H(s) = CornerFreq^2/(s^2 + 2*CornerFreq*Damp*s + CornerFreq^2)
-    !                               Discrete Time From:     H(z) = (b2*z^2 + b1*z + b0) / (a2*z^2 + a1*z + a0)
+    FUNCTION SecLPFilter(InputSignal, DT, CornerFreq, Damp, FP, iStatus, reset, inst, InitialValue) RESULT(SecLPFilter_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : FilterParameters
-        TYPE(FilterParameters),       INTENT(INOUT)       :: FP 
-        REAL(DbKi), INTENT(IN)         :: InputSignal
-        REAL(DbKi), INTENT(IN)         :: DT                       ! time step [s]
-        REAL(DbKi), INTENT(IN)         :: CornerFreq               ! corner frequency [rad/s]
-        REAL(DbKi), INTENT(IN)         :: Damp                     ! Dampening constant
-        INTEGER(IntKi), INTENT(IN)      :: iStatus                  ! A status flag set by the simulation as follows: 0 if this is the first call, 1 for all subsequent time steps, -1 if this is the final call at the end of the simulation.
-        INTEGER(IntKi), INTENT(INOUT)   :: inst                     ! Instance number. Every instance of this function needs to have an unique instance number to ensure instances don't influence each other.
-        LOGICAL(4), INTENT(IN)          :: reset                    ! Reset the filter to the input signal
-        REAL(DbKi), OPTIONAL,  INTENT(IN)          :: InitialValue           ! Value to set when reset 
-        
-        REAL(DbKi)                          :: InitialValue_           ! Value to set when reset
+        IMPLICIT NONE
+        REAL(8), INTENT(IN) :: InputSignal
+        REAL(8), INTENT(IN) :: DT
+        REAL(8), INTENT(IN) :: CornerFreq
+        REAL(8), INTENT(IN) :: Damp
+        TYPE(FILTERPARAMETERS), INTENT(INOUT), TARGET :: FP
+        INTEGER(4), INTENT(IN) :: iStatus
+        LOGICAL(4), INTENT(IN) :: reset
+        INTEGER(4), INTENT(INOUT) :: inst
+        REAL(8), INTENT(IN), OPTIONAL :: InitialValue
+        REAL(8) :: SecLPFilter_result
 
-        ! Defaults
-        InitialValue_ = InputSignal
-        IF (PRESENT(InitialValue)) InitialValue_ = InitialValue  
+        ! Local variables for OPTIONAL args
+        INTEGER(C_INT) :: has_InitialValue_flag
+        REAL(C_DOUBLE) :: InitialValue_val
 
-        ! Initialization
-        IF ((iStatus == 0) .OR. reset )  THEN
-            FP%lpf2_OutputSignalLast1(inst)  = InitialValue_
-            FP%lpf2_OutputSignalLast2(inst)  = InitialValue_
-            FP%lpf2_InputSignalLast1(inst)   = InitialValue_
-            FP%lpf2_InputSignalLast2(inst)   = InitialValue_
-            
-            ! Coefficients
-            FP%lpf2_a2(inst) = DT**2.0*CornerFreq**2.0 + 4.0 + 4.0*Damp*CornerFreq*DT
-            FP%lpf2_a1(inst) = 2.0*DT**2.0*CornerFreq**2.0 - 8.0
-            FP%lpf2_a0(inst) = DT**2.0*CornerFreq**2.0 + 4.0 - 4.0*Damp*CornerFreq*DT
-            FP%lpf2_b2(inst) = DT**2.0*CornerFreq**2.0
-            FP%lpf2_b1(inst) = 2.0*DT**2.0*CornerFreq**2.0
-            FP%lpf2_b0(inst) = DT**2.0*CornerFreq**2.0
-        ENDIF
-
-        ! Filter
-        SecLPFilter = 1.0/FP%lpf2_a2(inst) * (FP%lpf2_b2(inst)*InputSignal + FP%lpf2_b1(inst)*FP%lpf2_InputSignalLast1(inst) + FP%lpf2_b0(inst)*FP%lpf2_InputSignalLast2(inst) - FP%lpf2_a1(inst)*FP%lpf2_OutputSignalLast1(inst) - FP%lpf2_a0(inst)*FP%lpf2_OutputSignalLast2(inst))
-
-        ! Save signals for next time step
-        FP%lpf2_InputSignalLast2(inst)   = FP%lpf2_InputSignalLast1(inst)
-        FP%lpf2_InputSignalLast1(inst)   = InputSignal
-        FP%lpf2_OutputSignalLast2(inst)  = FP%lpf2_OutputSignalLast1(inst)
-        FP%lpf2_OutputSignalLast1(inst)  = SecLPFilter
-
-        inst = inst + 1
-
+        has_InitialValue_flag = 0
+        InitialValue_val = 0.0D0
+        IF (PRESENT(InitialValue)) THEN
+            has_InitialValue_flag = 1
+            InitialValue_val = REAL(InitialValue, C_DOUBLE)
+        END IF
+        SecLPFilter_result = REAL(seclpfilter_c(InputSignal, DT, CornerFreq, Damp, C_LOC(FP), iStatus, MERGE(1_C_INT, 0_C_INT, reset), inst, has_InitialValue_flag, InitialValue_val), 8)
     END FUNCTION SecLPFilter
 
 !-------------------------------------------------------------------------------------------------------------------------------

@@ -167,6 +167,20 @@ translations:
   Read_OL_Input:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/read_ol_input.cpp
+  # ADDED BY HAND at unit #18, for the reason units #14 and #16 both recorded:
+  # `vit verify` rewrites this file through a YAML round-trip that DELETES EVERY
+  # COMMENT in it, so restoring the commented file is the only way to keep the
+  # file's own reasoning -- and then the entry has to be re-added.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
+  # For this unit the gate DID run and DID see it -- 1,349,326 of 5,252,000
+  # values moved under a 1.000001 perturbation -- so the line would even have
+  # been true, and it is still the wrong claim: it is written by a command that
+  # ran no simulation and read no result. What verified this unit is in
+  # plan.json's `evidence`.
+  SecLPFilter:
+    status: integrated
+    cpp_file: translations/Filters/seclpfilter.cpp
 types:
   ControlParameters:
     strategy: view
