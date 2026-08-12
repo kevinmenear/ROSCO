@@ -339,6 +339,86 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **THE BOUND A UNIT COMPARES AGAINST CAN BE A CONSTANT OF THE CONFIGURATION,
+  AND THEN NO INVOCATION WINDOW REACHES THE BRANCH IT GUARDS.** Unit #25, and
+  it is unit #22's constant-argument finding with one level of indirection --
+  there the argument was a literal in the SOURCE, here it is a literal in the
+  fourteen `.IN` files.
+
+  `sigma` clamps to `y0` below `x0` and to `y1` above `x1`. At
+  `Controllers.f90:526` the bounds are `CntrPar%IPC_Vramp(1:2)`, which is
+  `9.120  11.400` in **all 14** `Examples/DISCON*.IN`, and the 62 captured
+  values of `x` run 9.5804 .. 10.7998:
+
+  ```
+  the LOWER clamp deleted   62 of 62 PASSED      the differential harness: 116 of 1069
+  the UPPER clamp deleted   62 of 62 PASSED      the differential harness:  94 of 1069
+  the cubic replaced by y0  32 of 62, 30 rows    the differential harness: 812 of 1069
+  ```
+
+  Not a small kernel and a large harness -- on those two branches the kernel's
+  answer is an ABSENCE. Widening the window cannot help, for unit #22's reason:
+  a window varies the surrounding state, never a constant. Ask it of any
+  predicate whose other side is a `CntrPar%` field, before choosing a site:
+
+  ```
+  grep -h '<the field>' Examples/*.IN | sort | uniq -c    # one line -> a constant
+  ```
+
+  What reached them is R6's two-sided-predicate block, added at unit #20. A
+  corpus rule added five units earlier is the entire reason two of this unit's
+  three branches are tested at all -- the same shape as unit #24's signed-zero
+  margin, and the second time in three units that a rule's value showed up long
+  after the unit that paid for it.
+
+- **A CALL SITE WITH FEWER CALLS THAN THE WINDOW'S LATER RANGES CANNOT BE
+  CAPTURED THERE, AND THAT IS A REJECTION ON A COUNT RATHER THAN ON A STUB.**
+  Unit #25. Unit #24 says to run the branch-deleting stub at EACH candidate site
+  before spending the cycle on one; this is the case where the committed
+  coverage settles it one step earlier and cheaper.
+
+  ```
+  ControllerBlocks.f90:612   800 hits, one scenario
+  kgen.invocation            0:0:1-20, 0:0:12000-12020, 0:0:23900-23920
+  ```
+
+  **Two of the three ranges are past that site's last call**, so 42 of the 62
+  slots do not exist and the capture is the first 20 invocations -- for a ramp,
+  the 20 timesteps where `x` is a hair above `x0`. Coverage says the same about
+  the branches: the `sigma = y0` line has no hits at all in that site's only
+  scenario. Do the arithmetic before extracting; it costs one query, and unit
+  #24's rule is served by its PURPOSE (choose on what the kernel can see) even
+  where its procedure is not followed literally. **Say which you did.**
+
+- **THE DETERMINATE-WRONG CONSTANT IS CHOSEN AGAINST THE CALL SITE'S ARGUMENTS,
+  NOT AGAINST THE TYPE.** Unit #25, and it is one turn past unit #22's rule that
+  a liveness stub must be determinate and finite.
+
+  `sigma`'s `y0` is the literal `0.0_DbKi` at `Controllers.f90:526`, so a ZERO
+  stub returns the right answer for every case that takes the lower clamp -- the
+  campaign's default liveness stub, measuring this unit's argument list instead
+  of its kernel. `-7.25` passes **0 of 62**. Read the actual arguments at the
+  chosen call site and pick a constant none of them can be:
+
+  ```
+  grep -n '<Unit>(' <the caller>.f90     # any LITERAL actual argument?
+  ```
+
+- **A CAPACITY GUARD IS UNREACHABLE FOR TWO DIFFERENT REASONS AND ONLY ONE OF
+  THEM IS BY CONSTRUCTION.** Unit #25, the fifth unit to carry
+  `assign_errmsg`'s `s.size() > n_ErrMsg_cap` and the first whose message is not
+  a fixed literal.
+
+  ReadAvrSWAP, ExtController, UpdateZeroMQ and interp1d assign literals of known
+  length into a 4 KiB staging buffer, so the guard cannot fire in any
+  configuration this campaign can build. `sigma` assigns
+  `'sigma:' // TRIM(ErrMsg)`, whose length **grows with its input**, so the
+  guard is unreachable only because the generator supplies no `ErrMsg` within
+  six characters of the buffer -- a claim about the CORPUS, not about the
+  program. Same site, same declaration, weaker evidence. Write the weaker one
+  down as the weaker one; a declaration inherited by its site name is a
+  declaration nobody re-checked.
+
 - **A TRANSLATION WHOSE BODY IS A CALL GETS ZERO MUTANTS, AND ZERO IS A
   DIFFERENT FAILURE FROM A LOW SCORE.** Unit #24, and it is unit #22's
   `cppmutate` finding one step past displacement into absence.

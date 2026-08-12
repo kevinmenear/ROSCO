@@ -1,0 +1,34 @@
+# Run AFTER both commits, which is the only time the condition can be true
+# (P2 needs a clean tree, P6/P7 need the commits to exist). This file is
+# itself named in plan.json's evidence, so the FIRST take reported
+# P5:unresolved_evidence naming this very file -- the chicken-and-egg unit #5
+# recorded from the other side, where writing the transcript first made the
+# tree dirty and the artifact described itself rather than the unit.
+#
+# Both takes are kept. The first is below; the second is at the end of this
+# file, taken after the first was committed into the state commit, so at that
+# moment the tree was CLEAN and every evidence reference resolved. That is
+# unit #24's ordering: the capture is committed on top of the verdict it
+# reports, and a verdict that was correct when it was taken is worth more than
+# a deletion.
+
+--- FIRST TAKE, at 7e03118, before this file existed ---
+
+baseline (inferred): 3ce40ea  -- the commit before 87dd2bb touched translations/Functions/sigma.cpp
+
+sigma: Verdict.INCOMPLETE  (12/13 PASS)
+
+[  ok  ] P1   commits exist                      
+[  ok  ] P2   clean tree                         
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[ FAIL ] P5   evidence resolves                  unresolved_evidence:evidence/sigma/done_check.txt
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[  ok  ] P9   gate compared and matched          
+[  ok  ] P12  mutation score for this unit       42/42 mutant(s) killed, 3 declared equivalent
+[  ok  ] P11  post-integration harness re-run    1069 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible              
+

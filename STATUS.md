@@ -4,6 +4,74 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-12: unit #25 `sigma` is `integrated` and CLOSED**, first
+dispatch. **Five layers, all five alive — and on two of the unit's three
+branches one instrument scores exactly ZERO where another scores in the
+hundreds.** Its section is directly below; unit #24 `saturate` is below that.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases, scenario 27, clean `Controllers.f90:526` | **14,136 field rows, all IDENTICAL**, 62 of 62 | a constant stub reading no argument passes **0 of 62**; **BOTH CLAMPS PASS 62 of 62** |
+| differential harness vs clean Fortran | **1,069** checked, 0 failed, 0 inadmissible | no-op **1069 of 1069**; lower clamp deleted **116**; upper clamp deleted **94**; the ramp deleted **812** |
+| mutation score | **42 of 42 behavioural killed, 1.000**, 3 declared equivalent, 0 no-compile | the undeclared run is committed at **0.933** so the survivors are on the record before they were excused |
+| post-integration harness (wrapper only) | **1,069 checked, 0 failed** | the `--reverse-copy` line deleted from the wrapper fails **1,022 of 1,069** |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | the cubic replaced by `y0` moves **229,165 of 5,252,000**, 18 channels, 3 scenarios; revert verified |
+
+**THE KERNEL'S RED TEST ON BOTH CLAMPS IS NOT SMALL, IT IS ZERO.** `sigma` is
+`y0` below `x0`, `y1` above `x1`, and a Hermite cubic between. Deleting either
+clamp from the shipped translation passes the kernel **62 of 62** and fails the
+differential harness **116 of 1069** and **94 of 1069**. The cause is a property
+of the shipped program: `IPC_Vramp` is `9.120  11.400` in **all 14**
+`Examples/DISCON*.IN`, so at this call site the two bounds are constants, and
+the 62 captured wind-speed estimates run **9.5804 .. 10.7998** — strictly
+inside them. What reaches the clamps in the harness is R6's two-sided-predicate
+block, added at unit #20: `x` against `x0` and `x` against `x1` are predicates
+between two VARIED quantities, so 20 cases set one side from the other at
+equality and at its two neighbouring representable values. A rule added five
+units ago is the entire reason two of this unit's three branches are tested at
+all.
+
+**THE SECOND CALL SITE WAS REJECTED ON A COUNT, NOT ON A STUB, AND THAT IS A
+DEVIATION RECORDED RATHER THAN HIDDEN.** Unit #24's rule is to run the
+branch-deleting stub at each candidate site. The alternative,
+`ControllerBlocks.f90:612`, executes **800 times** while `kgen.invocation` is
+`0:0:1-20,0:0:12000-12020,0:0:23900-23920` — two of the three ranges are past
+its last call, so a capture there is at most 20 cases, all in the first 20
+timesteps of a load ramp. Coverage also gives line 502 (`sigma = y0`) no
+scenario-9 hits, so it cannot reach the lower clamp either. See DECISIONS.md.
+
+**THE LIVENESS STUB IS `-7.25`, NOT ZERO, AND THE CALL SITE DECIDED THAT.** `y0`
+is the literal `0.0_DbKi` at `Controllers.f90:526`, so a zero stub agrees with
+every case that takes the lower clamp and would have measured the argument list
+rather than the kernel. Unit #22's determinate-finite-and-wrong rule, with this
+call site's own arguments deciding what "wrong" is.
+
+**`--reverse-copy` WAS DECIDED BEFORE INTEGRATING, AND ITS RED TEST REPRODUCED A
+NUMBER A SECOND INSTRUMENT HAD ALREADY PRODUCED.** Unit #23's two greps name
+`ErrVar%ErrMsg` as the one scalar field of an `INTENT(INOUT)` view-type dummy
+this unit writes. Deleting the generated `CALL vit_copy_scalars_to_errorvariables`
+fails **1,022 of 1,069** — and `evidence/sigma/errmsg_extremes_probe.txt`,
+written to answer a *mutation* question, independently counts **1,022**
+`assign_errmsg` calls over the same corpus.
+
+**THREE SURVIVORS, ALL THE `CHARACTER(:), ALLOCATABLE` IDIOM, AND NONE IN THE
+ARITHMETIC.** The cubic, both clamps, all four coefficients and every literal in
+them die — including the two `negate_cond` mutants on the clamps the kernel
+cannot see (991 and 914 of 1069). `532e4d37` is EQUIVALENT and proved over all
+**4,294,967,296** values of a 32-bit int; `2524b715` and `7ad82e7d` are
+UNREACHABLE OVER THIS CORPUS, which is a blind spot and is recorded as one. The
+capacity guard's unreachability is **weaker here than in the four earlier units
+carrying the same site** — their messages are fixed-length literals, this one's
+grows with its input — and the declaration says so.
+
+**`**` WITH AN INTEGER EXPONENT WAS MEASURED, NOT READ.** 60,022 bit patterns
+through `v**2` against `v*v` and `v**3` against `v*v*v`, both signed zeros
+included: **0 differ** (`evidence/sigma/int_pow_probe.txt`). `(x0-x1)**3` is
+written once in the translation — the reference spells it four times and it is
+the same value in all four, so three of those are restatements.
+
+---
+
 **As of 2026-08-12: unit #24 `saturate` is `integrated`**, on its second
 dispatch. The first closed `blocked` on a block of a kind this campaign had not
 had before — **the mutation score was not low, it was ABSENT**, `cppmutate`

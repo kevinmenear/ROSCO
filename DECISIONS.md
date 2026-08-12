@@ -2,6 +2,80 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #25 — sigma — 2026-08-12
+
+**THE TWO CLAMPS ARE THE FIRST BRANCHES IN THIS CAMPAIGN THAT ONE INSTRUMENT
+SCORES AT EXACTLY ZERO AND ANOTHER SCORES IN THE HUNDREDS.** `sigma` is three
+branches: `y0` below `x0`, `y1` above `x1`, a Hermite cubic between. Deleting
+either clamp from the shipped translation passes the kernel **62 of 62** and
+fails the differential harness **116 of 1069** and **94 of 1069**. That is not
+a small kernel and a large harness; on those two branches the kernel's answer
+is an absence.
+
+The cause is a property of the shipped program, not of the extraction.
+`IPC_Vramp` is `9.120  11.400` in **all 14** `Examples/DISCON*.IN`, so at the
+chosen call site `x0` and `x1` are constants, and the 62 captured wind-speed
+estimates run 9.5804 .. 10.7998 — strictly inside them. No invocation window
+reaches a bound that the inputs hold fixed and a signal never crosses during
+the captured slices. This is unit #22's constant-argument finding
+(`MATMUL(identity(3)…)`) with one level of indirection: the argument is not a
+literal in the source, it is a literal in the *configuration*.
+
+**The second call site was rejected on a count rather than on a stub, and that
+is a deviation from unit #24's rule, taken deliberately.** Unit #24 says to run
+the branch-deleting stub at each candidate site before spending the cycle. The
+alternative here is `ControllerBlocks.f90:612` (`Startup`, scenario 9 only),
+and the committed coverage settles it one step earlier: that site executes
+**800 times**, while `kgen.invocation` is `0:0:1-20,0:0:12000-12020,0:0:23900-23920`
+— **two of the three ranges are past its last call**, so a capture there is at
+most 20 cases, all in the first 20 timesteps of a load ramp, where `x` is a
+hair above `x0`. Coverage also shows line 502 (`sigma = y0`) with no
+scenario-9 hits at all, so that site cannot reach the lower clamp either. The
+rule's *purpose* — choose the site on what the kernel can see, not on the hit
+count — was served; its literal procedure was not, and the reason is here
+rather than absent.
+
+**`--reverse-copy` was decided before integrating, by unit #23's two greps, and
+its red test found a number a second instrument had already produced.** `sigma`
+writes exactly one field of its `INTENT(INOUT)` view-type dummy, `ErrVar%ErrMsg`.
+Deleting the generated `CALL vit_copy_scalars_to_errorvariables` fails **1,022
+of 1,069** — and `evidence/sigma/errmsg_extremes_probe.txt`, written to answer
+a *mutation* question, independently counts **1,022** `assign_errmsg` calls over
+the same corpus. Two instruments, one number, arrived at for different reasons.
+
+**Three survivors, all in the `CHARACTER(:), ALLOCATABLE` staging-buffer idiom,
+and the fifth unit to reach it.** None is in the arithmetic: the cubic, both
+clamps, all four coefficients and every literal in them die, including the two
+`negate_cond` mutants on the clamps the kernel cannot see. The declarations are
+two kinds and `mutation/sigma.equivalences.json` keeps them apart —
+`532e4d37` is EQUIVALENT and proved over all 2³² ints; `2524b715` and
+`7ad82e7d` are UNREACHABLE OVER THIS CORPUS, which is a blind spot.
+
+**One of them is a weaker claim here than in the four earlier units, and the
+declaration says so.** ReadAvrSWAP, ExtController, UpdateZeroMQ and interp1d
+all assign fixed-length literals, so `s.size() > cap` is unreachable *by
+construction*. `sigma`'s only message is `'sigma:' // TRIM(ErrMsg)`, whose
+length grows with its input, so the guard is unreachable only because the
+generator supplies no `ErrMsg` within six characters of a 4 KiB buffer. Same
+site, same declaration, different strength of evidence — recorded rather than
+inherited unexamined.
+
+### Carried forward, unchanged and still open
+
+* **A corpus rung at a CHARACTER extent of zero and at its unallocated
+  sentinel.** interp1d recorded this and this unit inherits it verbatim: it
+  would close `2524b715` in both units and in the three before them. Not taken
+  inside a unit because the character-length ladder is an EXISTING block in
+  `harness/generate.py`, and a rung added there shifts the random draws of
+  every unit already scored (X3). The Driver's call. Note the reference has an
+  answer at length **zero** (`TRIM('')` is `''`) and none at the unallocated
+  sentinel, so the rung is one value, not two.
+* **A shared header for the `assign_errmsg` / `errmsg_trim` pair.** Five units
+  now carry near-identical copies. `vit.yaml` has no `shared_files` list in this
+  campaign — deliberately, it postdates the setup commit this configuration was
+  derived from — so introducing one changes what every unit compiles (X3). A
+  candidate, not a defect.
+
 ## Unit #24 — saturate — second dispatch — 2026-08-12
 
 **THE FIRST DISPATCH ASKED THE DRIVER TO CHOOSE BETWEEN THREE RESOLUTIONS. THE
