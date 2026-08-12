@@ -80,3 +80,84 @@ LocalVar_iStatus = { values = [0] }
 # It is also the input the shipped program has: the guard is `iStatus == 0`,
 # the first call, where the field has never been allocated.
 ExtDLL_avrSWAP_n = { lo = -1, hi = -1 }
+
+# ---------------------------------------------------------------------------
+# UpdateZeroMQ
+#
+# One pin, and like ExtController's four it exists because the REFERENCE STOPS
+# on the rest of the domain rather than because the translation would.
+
+[UpdateZeroMQ]
+
+# `CntrPar%ZMQ_CommAddress` is `CHARACTER(256)` and so is the local it is
+# written into:
+#
+#     character(256) :: zmq_address
+#     write (zmq_address, '(A,A)') TRIM(CntrPar%ZMQ_CommAddress), C_NULL_CHAR
+#
+# An address occupying the full declared width therefore needs LEN_TRIM + 1 =
+# 257 characters of a 256-character record, and gfortran ends the program:
+# `Fortran runtime error: End of record`, exit 2, measured standalone at
+# `evidence/UpdateZeroMQ/domain_aborts.run.txt` and then measured AGAIN by this
+# harness -- the first generated run died at ZeroMQInterface.f90:53 and wrote no
+# JSON at all, which is what a corpus case reaching it looks like from here.
+# `harness/generate.py` plants corpus characters at an interior position of an
+# ORDINARY string, and an ordinary string of a 256-wide parameter is 256
+# characters with no trailing blank.
+#
+# That is upstream ROSCO's defect (the fourth this campaign has recorded), not
+# something a translation can mirror: a run that aborts produces no case, so
+# there is nothing for either side to answer.
+#
+# THE COST, STATED: the address is held at one value, so nothing this harness
+# does can distinguish a translation that reads `ZMQ_CommAddress` from one that
+# ignores it. It costs less here than the same pin would cost anywhere else --
+# in the configuration under translation (`ZMQ_CLIENT` undefined) the reference
+# writes the address into a local that only the uncompiled `zmq_client` call
+# reads, so there is no answer that depends on it. See the header of
+# `translations/ZeroMQInterface/updatezeromq.cpp`.
+#
+# The value is the one all 14 `Examples/DISCON*.IN` carry.
+CntrPar_ZMQ_CommAddress = { text = "tcp://localhost:5555" }
+
+# THE EIGHT OUTPUTS THE REFERENCE HAS NO ANSWER FOR.
+#
+# `no_oracle` is not a range and does not narrow the input domain: it says that
+# on this OUTPUT the reference is not a function of its arguments, so comparing
+# against it decides nothing about either implementation. Every entry is
+# reported in the run's own artifact (`no_oracle_outputs`) and a name matching
+# no compared field is an error, so the cost cannot be paid silently.
+#
+# `UpdateZeroMQ` declares `real(C_DOUBLE) :: setpoints(8)`, and in the
+# configuration this campaign compiles -- `ZMQ_CLIENT` undefined, because
+# `pkg_check_modules(PC_ZeroMQ libzmq)` does not find the library -- NOTHING
+# WRITES IT. The `call zmq_client(zmq_address, turbine_measurements, setpoints)`
+# that would is inside the `#ifdef`. The procedure then copies the array into
+# these eight fields.
+#
+# MEASURED TWICE, FROM BOTH SIDES:
+#   evidence/UpdateZeroMQ/setpoints_indeterminate.run.txt
+#       three calls in one process. Fresh frame -> NaN, 9.75e-310, 2.62e-322.
+#       After a routine that fills the same stack region with 1.0 -> 1.0.
+#       After one that fills it with -7.25 -> -7.25. Six of the eight track the
+#       previous frame verbatim.
+#   evidence/UpdateZeroMQ/harness.setpoints-indeterminate-FAILS-4-of-4179.json
+#       the first generated run: 4175 of 4179 cases agreed on every output and
+#       4 disagreed on these fields alone, the reference answering
+#       `68bb11a718b90000` -- a leftover pointer -- where the translation
+#       answers 0.
+#
+# So the disagreement is not between two implementations of one thing. It is
+# between one implementation and an absence, and it is upstream ROSCO's.
+#
+# THE COST, STATED: nothing in this harness can constrain what a translation
+# writes to these eight fields, and every mutant confined to those eight
+# assignments is unkillable for the same reason -- see mutation/UpdateZeroMQ.json.
+# What is NOT excluded, and is what this unit's green then means: `aviFAIL`,
+# `ErrMsg`, and the two predicates that decide whether either is written.
+LocalVar_ZMQ_TorqueOffset = { no_oracle = "setpoints(1), never assigned in this build" }
+LocalVar_ZMQ_YawOffset    = { no_oracle = "setpoints(2), never assigned in this build" }
+LocalVar_ZMQ_PitOffset    = { no_oracle = "setpoints(3:5), never assigned in this build" }
+LocalVar_ZMQ_R_Speed      = { no_oracle = "setpoints(6), never assigned in this build" }
+LocalVar_ZMQ_R_Torque     = { no_oracle = "setpoints(7), never assigned in this build" }
+LocalVar_ZMQ_R_Pitch      = { no_oracle = "setpoints(8), never assigned in this build" }

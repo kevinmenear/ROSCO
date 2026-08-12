@@ -1,0 +1,268 @@
+{
+ "unit": "UpdateZeroMQ",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "index_offset",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "mutants": 54,
+ "equivalent_declared": 0,
+ "nocompile": 15,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.2174,
+ "nocompile_refused": false,
+ "total": 69,
+ "killed": 14,
+ "survived": 40,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.2593,
+ "loop_rev": "21ed899-nogit",
+ "vit_rev": "5ba5e7e-nogit",
+ "survivors": [
+  {
+   "id": "9e76d5ab",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "a846951b",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "8a241cd5",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "b98f8ac8",
+   "operator": "arith_op",
+   "before": "n - 1",
+   "after": "n + 1"
+  },
+  {
+   "id": "06203d97",
+   "operator": "swap_operands",
+   "before": "n - 1",
+   "after": "1 - n"
+  },
+  {
+   "id": "d9ef5e66",
+   "operator": "index_offset",
+   "before": "[8]",
+   "after": "[8 + 1]"
+  },
+  {
+   "id": "059e4ae8",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "c14786fd",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "038bb997",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "05a7518b",
+   "operator": "index_offset",
+   "before": "[2]",
+   "after": "[2 + 1]"
+  },
+  {
+   "id": "c7a6a9d9",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "d1629385",
+   "operator": "index_offset",
+   "before": "[3]",
+   "after": "[3 + 1]"
+  },
+  {
+   "id": "2ec212bf",
+   "operator": "index_offset",
+   "before": "[2]",
+   "after": "[2 + 1]"
+  },
+  {
+   "id": "319ba1d9",
+   "operator": "index_offset",
+   "before": "[4]",
+   "after": "[4 + 1]"
+  },
+  {
+   "id": "1b13641f",
+   "operator": "index_offset",
+   "before": "[5]",
+   "after": "[5 + 1]"
+  },
+  {
+   "id": "358426a7",
+   "operator": "index_offset",
+   "before": "[6]",
+   "after": "[6 + 1]"
+  },
+  {
+   "id": "2df632e6",
+   "operator": "index_offset",
+   "before": "[7]",
+   "after": "[7 + 1]"
+  },
+  {
+   "id": "abc0cfd4",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "8d267f87",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "8e440dd7",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "8b15c5a9",
+   "operator": "const_tweak",
+   "before": "8",
+   "after": "9"
+  },
+  {
+   "id": "262bd4b6",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "785a452e",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "13d71c11",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "37c4f0e6",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "5b775fff",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "50d4ea27",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "42f3044c",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "29f7e860",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "ca8486f6",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "942d5a3e",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "cfbcb15b",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "5d6e6e0c",
+   "operator": "const_tweak",
+   "before": "2",
+   "after": "3"
+  },
+  {
+   "id": "bd9b2a29",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "83f31a85",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "8c0393cb",
+   "operator": "const_tweak",
+   "before": "2",
+   "after": "3"
+  },
+  {
+   "id": "35cf6b47",
+   "operator": "const_tweak",
+   "before": "4",
+   "after": "5"
+  },
+  {
+   "id": "9ed05bd3",
+   "operator": "const_tweak",
+   "before": "5",
+   "after": "6"
+  },
+  {
+   "id": "b91d274e",
+   "operator": "const_tweak",
+   "before": "6",
+   "after": "7"
+  },
+  {
+   "id": "c099324e",
+   "operator": "const_tweak",
+   "before": "7",
+   "after": "8"
+  }
+ ]
+}

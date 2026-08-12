@@ -339,6 +339,164 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A REFERENCE CAN HAVE NO ANSWER, AND THE TELL IS A HANDFUL OF CASES THAT
+  DISAGREE WHILE THOUSANDS AGREE.** Unit #21, and it is the first output in this
+  campaign that no instrument could constrain because the ORACLE is absent
+  rather than because an instrument is blind.
+
+  `UpdateZeroMQ` declares `real(C_DOUBLE) :: setpoints(8)` and copies it into
+  eight `LocalVar%ZMQ_*` fields. Nothing writes it: the `call zmq_client(...)`
+  that would is inside `#ifdef ZMQ_CLIENT`, and this campaign's build does not
+  define it. The harness said so before anyone read the source that way --
+  **4,175 of 4,179 cases agreed on every output and 4 disagreed on those fields
+  alone**, the reference answering `68bb11a718b90000`, a leftover pointer.
+
+  A near-green with a tiny, field-clustered failure set is the shape. Ask which
+  fields, then ask what writes them:
+
+  ```
+  python3.12 -c "import json;d=json.load(open('harness/<U>.json'));\
+      import collections;print(collections.Counter(m['output'] for m in d['mismatches']))"
+  grep -n '<the local the fields are copied from>' <the unit's Fortran>   # assigned where?
+  ```
+
+  Three calls in one process settle it beyond argument -- fresh frame, then
+  after a routine that fills the same stack region with a recognisable value:
+  `evidence/UpdateZeroMQ/setpoints_indeterminate_probe.f90` returns `NaN`, then
+  `1.0`, then `-7.25`. **Six of the eight track the previous frame verbatim.**
+
+  `harness/ranges.toml` now takes `{ no_oracle = "why" }` beside its ranges, and
+  the two are different judgements on purpose: a range narrows an INPUT domain,
+  `no_oracle` says the reference is not a function of its arguments on an
+  OUTPUT. Never silent -- it prints, it lands in the artifact's
+  `no_oracle_outputs`, and a stated name matching no compared field is an error,
+  because an exclusion that excludes nothing reads as a cost that was paid.
+
+  The translation still WRITES those fields. The write happens in the reference
+  and destroys what was there; only the VALUE is undefined. What it must not do
+  is spell one undefined value eight times -- see the next entry.
+
+- **A RATE GATE IS UNREACHABLE BY EVERY LADDER, AND A SAMPLE OF THE CORPUS IS
+  NOT A SAMPLE OF ITS CONJUNCTIONS.** Unit #21, the thirteenth corpus blind spot
+  and the largest by reach: **4,175 of 4,179 cases entered nothing at all.**
+
+  `MOD(LocalVar%n_DT, CntrPar%n_DT_ZMQ) == 0 .OR. LocalVar%iStatus == -1` is the
+  whole procedure. `MOD(A, B) == r` is true only on the multiples of B, so two
+  independent ladders hit it by accident or not at all -- and unit #20's
+  two-sided-predicate rule cannot cross it either, because its crossing value is
+  the other side's value and here it is a MULTIPLE of the other side.
+  `predicate_knobs_from` cannot see it: its left-hand side must be a NAME.
+
+  R9 (`divisibility_pairs_from` in `vit_harness.py`, the block in
+  `generate.py`). **Two wrong versions came first and each is the lesson:**
+
+  ```
+  120 fresh cases, one per knob combination per divisor   score 0.2593 -> 0.2593
+  a strided sample of the corpus, re-run with A from B    score 0.2593 -> 0.2593
+  EVERY case re-run with the gate satisfied               score 0.2593 -> 0.600
+  ```
+
+  A gate does not need cases of its own; it needs **every other rule's cases to
+  arrive at a procedure that does something**. And the stride is what killed the
+  second version: 20 of 4,179 cases are the knob combinations, and
+  `CntrPar%ZMQ_Mode > 0` against `>= 0` differ only at `ZMQ_Mode == 0`, which
+  only a knob produces, and it has to meet the gate IN THE SAME CASE. With every
+  case re-run that mutant dies on 7 of 8,334.
+
+  The no-op red test is the cheap way to see reach before scoring anything:
+
+  ```
+  # it must fail every case that reaches the body -- here 12 of 4,179 before,
+  # 4,167 of 8,334 after, and the second number is half the corpus by construction
+  ```
+
+- **ONE INDETERMINATE VALUE SPELLED EIGHT TIMES IS SEVENTEEN UNKILLABLE
+  MUTANTS.** Unit #21, and it is unit #1's "name a size once" and unit #4's
+  restatement rule meeting an output no comparison can see.
+
+  Written as `double setpoints[8] = {0.0, ...}` with eight subscripted copies,
+  the translation offered eight initialisers, eight subscripts and an extent --
+  seventeen sites on a quantity no input can change and no oracle covers.
+  One `const double no_setpoint = 0.0` leaves three, which the reference itself
+  has (`ZMQ_PitOffset(1:3)`), and those are declared with their measurement.
+
+  The third restatement in the same file was found by the score rather than by
+  reading, and is worth the habit:
+
+  ```fortran
+  ErrVar%ErrMsg = ' >> ...'                               ! statement 1
+  ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)   ! TRIM of statement 1
+  ```
+
+  **TRIM applied to a value the line above just assigned is TRIM of a literal.**
+  Its four transcribed sites -- the bound, the decrement, the `n > 0` guard and
+  the `<= 0` early return -- all survived. Ask of every intrinsic: does its
+  argument come from an INPUT, or from a statement in this same procedure?
+
+- **THE DECOMPOSED BRIDGE DECLARES TYPES THE REFERENCE NEVER NAMES, AND EVERY
+  EARLIER UNIT COMPILED BY ACCIDENT.** Unit #21, fixed in VIT rather than worked
+  around (X2).
+
+  `vit test-validate` copies the reference's own USE statements into the bridge.
+  `UpdateZeroMQ` carries `USE ROSCO_Types, ONLY : LocalVariables,
+  ControlParameters, ErrorVariables` -- correct for the reference, and the
+  bridge then declares `TYPE(rlParams), POINTER :: vit_nested_LocalVar_rlP` for
+  every nested-type FIELD, names no `ONLY` list written for the reference can
+  contain. gfortran: *"Derived type 'rlparams' is being used before it is
+  defined"* plus five *"has no IMPLICIT type"*.
+
+  `ReadAvrSWAP` decomposes the SAME `LocalVariables` and builds -- because
+  `ReadSetParameters` USEs `ROSCO_Types` at module scope and re-exports it, so
+  its bridge reaches the nested types through `USE ReadSetParameters`. **A module
+  that keeps its imports inside its procedures has no such route.** Check the
+  file, not the type:
+
+  ```
+  grep -n 'USE ROSCO_Types' <the unit's Fortran>   # at MODULE scope, or inside?
+  ```
+
+- **`compare_op` WAS MUTATING `static_cast<...>`, AND IT WAS EATING THE GUARD
+  THAT CATCHES A BROKEN MUTATION RUN.** Unit #21 (X2).
+
+  Ten of this unit's thirty mutants were `static_cast<=int32_t>` and cannot
+  compile -- 33%, above the 25% at which `vit_mutate` REFUSES to score. That
+  refusal exists for a real failure: after integration the build tree can hold a
+  second definition of the function, every mutant fails to LINK, and the old
+  arithmetic scored 1.000 while measuring nothing. Spending it on punctuation
+  is how a real broken run would slip under it.
+
+  ```
+  python3 -c "import sys;sys.path.insert(0,'/workspace/translation-loop');\
+      from harness.cppmutate import mutants;\
+      print([str(m) for m in mutants('<U>', open('<cpp>').read()) if 'cast' in m.before])"
+  ```
+
+  Fixed by masking template brackets in `harness/cppmutate.py`, the same
+  discipline the comment and literal masks already use. **A capped operator hides
+  it**: on a large file `compare_op` stops at 40 sites, so the brackets do not
+  raise the mutant count, they DISPLACE real comparisons. `Read_OL_Input`'s
+  committed artifact carries 29 of 135 no-compile, 21% -- under the limit, same
+  cause, and its 135 include brackets in place of comparisons nobody scored.
+
+- **A DEAD UNIT'S GATE RED TEST IS ITS CONTROL'S JOB, AND THE CALLER'S COVERAGE
+  IS WHAT PROVES THE UNIT DEAD.** Unit #21, and it is the answer to the case
+  where `coverage/line_coverage.json` holds an EMPTY dictionary for the unit's
+  own file -- which the RUNBOOK already says cannot tell "never ran" from "never
+  instrumented".
+
+  Read the CALL SITE's file instead, which is instrumented and has hits:
+
+  ```
+  python3 -c "import json;d=json.load(open('coverage/line_coverage.json'));\
+      h=d['hits']['DISCON.F90'];print([(l, sum(h[str(l)].values()) if str(l) in h else 0) \
+      for l in (103,104,141,142)])"
+  # 103 the guard 407,976   104 the CALL 0   141 the guard 36,024   142 the CALL 0
+  ```
+
+  A guard with hundreds of thousands of hits and a CALL with none is a
+  measurement, not an absence -- and it says in advance that the gate red test
+  will move 0, so take the same-build control in the same session.
+
 - **A UNIT WHOSE OUTPUT IS A FIELD IT ALSO READS IS SELF-ALIASING THROUGH TIME,
   AND ITS NO-OP STUB PASSES 60 OF 62.** Unit #20, and it is unit #7's
   `CALL GetRoot(RootName,RootName)` finding reached from the other direction --

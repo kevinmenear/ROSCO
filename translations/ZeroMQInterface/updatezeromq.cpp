@@ -1,0 +1,217 @@
+// VIT Translation Scaffold
+// Function: UpdateZeroMQ
+// Source: ZeroMQInterface.f90
+// Module: ZeroMQInterface
+// Fortran: SUBROUTINE UpdateZeroMQ(LocalVar, CntrPar, ErrVar)
+// Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+// Source MD5: 5d1a1f7b4251
+// VIT: 0.1.0
+// Status: unverified
+// Generated: 2026-08-12T17:40:03Z
+//
+// CONTRACT: mirror (plan.json).
+//
+// WHICH BRANCH OF THE REFERENCE THIS IS. `ZeroMQInterface.f90` is written twice,
+// under `#ifdef ZMQ_CLIENT` and `#else`, and only one of them is in the library
+// this campaign compares against: `rosco/controller/CMakeLists.txt:131` gates
+// the definition on `pkg_check_modules(PC_ZeroMQ libzmq)`, and this tree's
+// `rosco/controller/build/CMakeCache.txt` records `PC_ZeroMQ_FOUND:INTERNAL=`
+// -- empty, not found. So `ZMQ_CLIENT` is UNDEFINED, `zmq_client` is neither
+// compiled nor linked, and the `#else` branch below is the object being
+// replaced. Everything this file says about dead code and about indeterminate
+// values is a statement about THAT configuration and is false of the other one.
+//
+// THREE STATEMENTS OF THE REFERENCE ARE NOT TRANSCRIBED, and each is measured
+// rather than argued. They are listed here because a reader comparing this file
+// against the Fortran line by line must be able to find them.
+//
+// 1. `turbine_measurements(1..17)` -- SEVENTEEN DEAD STORES. The array is a
+//    local whose only reader is `call zmq_client(...)`, which is inside the
+//    `#ifdef` and is not compiled. Nothing else in the procedure, the module or
+//    the program can observe it. Unit #4's rule applies unchanged: a quantity no
+//    input can make change an output is not an equivalent-mutant site, it is an
+//    unobservable one, and the fix is to delete it and write the proof here.
+//    WHAT IS LOST, STATED: the reference READS `ZMQ_ID`, `iStatus`, `Time`,
+//    `VS_MechGenPwr`, `VS_GenPwr`, `GenSpeed`, `RotSpeed`, `GenTqMeas`,
+//    `NacHeading`, `NacVane`, `HorWindV`, `rootMOOP(1..3)`, `FA_Acc_TT`,
+//    `NacIMU_FA_RAcc` and `Azimuth` to fill it. This translation reads none of
+//    them, and no instrument can tell the two apart -- because the reference's
+//    reads have no effect either.
+//
+// 2. `write (zmq_address, '(A,A)') TRIM(CntrPar%ZMQ_CommAddress), C_NULL_CHAR`
+//    -- dead in the same way (`zmq_address` is passed only to `zmq_client`),
+//    with ONE input-dependent effect that is not dead: it ABORTS. Both the
+//    dummy's field and the local are `CHARACTER(256)`, so an address occupying
+//    the full width needs `LEN_TRIM + 1 = 257` characters of a 256-character
+//    record. Measured, not read:
+//    `evidence/UpdateZeroMQ/domain_aborts_probe.f90` at `LEN_TRIM = 256` dies
+//    with `Fortran runtime error: End of record`, exit 2
+//    (`evidence/UpdateZeroMQ/domain_aborts.run.txt`). That is upstream ROSCO's
+//    defect, not this translation's, and it cannot be transcribed into a value
+//    a differential harness compares -- a run that aborts produces no case. The
+//    shapes that abort are excluded in `harness/ranges.toml`, where the cost is
+//    stated; within the admissible domain the statement is unobservable and is
+//    omitted with the rest.
+//
+// 3. `real(C_DOUBLE) :: setpoints(8)` IS NEVER ASSIGNED IN THIS CONFIGURATION,
+//    and the eight assignments below copy it into `LocalVar`. See the block
+//    comment at those lines: the write is transcribed, the VALUE has no oracle.
+//    Nothing is omitted there; it is the one place where a choice had to be
+//    made, and it is made explicitly.
+
+#include "vit_types.h"
+
+#include <cstdio>
+#include <cstring>
+#include <string>
+
+namespace {
+
+// `ErrVar%ErrMsg = <expr>` on a `CHARACTER(:), ALLOCATABLE` field is a
+// REALLOCATING assignment: the new length is the right-hand side's. The view's
+// staging buffer is finite, so an assignment that does not fit is REFUSED and
+// reported rather than truncated -- a shortened error message is the one wrong
+// answer a byte comparison cannot tell from a right one. Same shape, same
+// convention (`n < 0` unallocated, `n == 0` allocated-empty, `n > 0` allocated)
+// as Read_OL_Input and ReadAvrSWAP.
+void assign_errmsg(errorvariables_view_t* ErrVar, const std::string& s) {
+    if (ErrVar->ErrMsg == nullptr) {
+        std::fprintf(stderr,
+                     "VIT: UpdateZeroMQ: ErrVar%%ErrMsg has no staging buffer; "
+                     "the assignment of %d bytes is refused\n",
+                     static_cast<int>(s.size()));
+        return;
+    }
+    if (static_cast<int32_t>(s.size()) > ErrVar->n_ErrMsg_cap) {
+        std::fprintf(stderr,
+                     "VIT: UpdateZeroMQ: ErrVar%%ErrMsg needs %d bytes, "
+                     "staging buffer holds %d; field left unchanged\n",
+                     static_cast<int>(s.size()), static_cast<int>(ErrVar->n_ErrMsg_cap));
+        return;
+    }
+    std::memcpy(ErrVar->ErrMsg, s.data(), s.size());
+    ErrVar->n_ErrMsg = static_cast<int32_t>(s.size());
+}
+
+// CHARACTER(*), PARAMETER :: RoutineName = 'UpdateZeroMQ'
+const char* const RoutineName = "UpdateZeroMQ";
+
+// The message, as ONE name. The reference builds it from two source literals
+// joined by a continuation and then rebuilds it around itself; both statements
+// are transcribed below, and this is the value the first one establishes.
+const char* const NOT_INSTALLED_MSG =
+    " >> The ZeroMQ client has not been properly installed, "
+    "please install it to use ZMQ_Mode > 0.";
+
+// NO TRIM LOOP, and that is a departure with a proof rather than an omission.
+// The reference's second statement is
+//
+//     ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
+//
+// and the TRIM applies to the value the statement IMMEDIATELY ABOVE it just
+// assigned -- a literal ending in `.` with no trailing blank -- on every path
+// that reaches it, for every input. So a transcribed trim loop computes a
+// quantity no input can change, and it adds four mutable sites doing it: the
+// bound, the decrement, the `n > 0` guard and the `<= 0` early return all
+// survived a 5,841-case green as unobservable mutants, which is unit #4's
+// `LEN_TRIM` finding in a second shape (mutation/UpdateZeroMQ.survivors_before_restatements.json).
+//
+// The C-side refusal in `assign_errmsg` does not weaken this. Fortran's
+// reallocating assignment cannot fail, so the reference's TRIM always sees the
+// literal; the refusal exists because the view's staging buffer is finite, and
+// on a path where it fired the translation has already deviated and says so on
+// stderr.
+
+}  // namespace
+
+void UpdateZeroMQ(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_view_t* ErrVar) {
+    // real(C_DOUBLE) :: setpoints(8)
+    //
+    // THE REFERENCE NEVER WRITES THIS ARRAY, so the eight fields it copies into
+    // `LocalVar` below are whatever the caller's frame left on the stack.
+    // Measured rather than inferred, three calls in one process
+    // (`evidence/UpdateZeroMQ/setpoints_indeterminate_probe.f90`, output at
+    // `evidence/UpdateZeroMQ/setpoints_indeterminate.run.txt`): on a fresh frame
+    // the outputs come back `NaN`, `9.75e-310`, `2.62e-322`, ...; after a
+    // routine that fills the same region with `1.0` they come back `1.0`; after
+    // one that fills it with `-7.25` they come back `-7.25`. Six of the eight
+    // track the previous frame verbatim.
+    //
+    // So the reference is NOT A FUNCTION OF ITS ARGUMENTS on these eight
+    // outputs, and no bit comparison against it can call any value here wrong --
+    // including the reference's own, on a second run. `0.0` is chosen for the
+    // three reasons that survive review: it is stable, it is what a reader of
+    // `LocalVar%ZMQ_*` in the rest of ROSCO is entitled to expect
+    // (`ReadSetParameters.f90:187-188` initialises `ZMQ_YawOffset` and
+    // `ZMQ_PitOffset` to 0), and reading an uninitialised local in C++ is
+    // undefined behaviour a compiler may exploit -- a strictly worse mirror of
+    // an indeterminate Fortran value than a defined arbitrary one.
+    //
+    // THE COST, STATED HERE AND IN plan.json: the eight outputs are excluded
+    // from the differential comparison (`harness/ranges.toml`), because a
+    // reference with no answer cannot be an oracle, and every mutant confined to
+    // these eight lines is unkillable for the same reason.
+    //
+    // ONE NAME, NOT AN ARRAY OF EIGHT LITERALS. `setpoints(1)` through
+    // `setpoints(8)` are eight spellings of one value here, and writing them as
+    // an eight-element array put seventeen mutable sites -- eight initialisers,
+    // eight subscripts and the extent -- on a quantity no input can change and
+    // no comparison can see. Unit #1's "name a size once" and unit #4's rule
+    // about restatements, met a third time. Which element goes to which field
+    // is still transcribed, in the comments, because that is the part a reader
+    // checks against the Fortran.
+    const double no_setpoint = 0.0;
+
+    // IF ( MOD(LocalVar%n_DT, CntrPar%n_DT_ZMQ) == 0 .OR. LocalVar%iStatus == -1 ) THEN
+    //
+    // Fortran MOD and C++ `%` are both truncated-division remainders and agree
+    // on sign for every representable pair. They agree on nothing at
+    // `n_DT_ZMQ == 0`: the Fortran standard leaves MOD by zero undefined and C++
+    // leaves `%` by zero undefined, so neither side has a behaviour to mirror.
+    // Measured on this build (aarch64 gfortran, `-O2`) the reference does not
+    // trap -- it returns with the branch NOT taken -- and that is an artifact of
+    // the divide instruction, not a semantic. `harness/ranges.toml` excludes it
+    // with the measurement; the shipped call sites cannot reach it, since both
+    // are guarded by `CntrPar%ZMQ_Mode > 0` and `n_DT_ZMQ` is only ever set from
+    // an input file the guard makes unreadable.
+    if (LocalVar->n_DT % CntrPar->n_DT_ZMQ == 0 || LocalVar->iStatus == -1) {
+        // The 17 `turbine_measurements` assignments and the `write` to
+        // `zmq_address` stand here in the reference. See the header.
+
+        // ErrVar%aviFAIL = -1
+        // Unconditional inside the branch -- it fires even when ZMQ_Mode == 0,
+        // which is the only reason a caller can distinguish "the threshold was
+        // reached" from "it was not".
+        ErrVar->aviFAIL = -1;
+
+        // IF (CntrPar%ZMQ_Mode > 0) THEN
+        if (CntrPar->ZMQ_Mode > 0) {
+            // ErrVar%ErrMsg = ' >> The ZeroMQ client has not been properly installed, ' &
+            //                 //'please install it to use ZMQ_Mode > 0.'
+            // Two source literals joined by a continuation, transcribed as two
+            // literals so that a mutation of either is a mutation of one.
+            assign_errmsg(ErrVar, NOT_INSTALLED_MSG);
+
+            // ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
+            // A second reallocating assignment that reads the first back. Both
+            // statements are kept -- the field really does hold the bare
+            // message between them, and a caller that read it there would see
+            // it -- and the TRIM is the value the line above established. See
+            // the note on the trim loop at the top of this file.
+            assign_errmsg(ErrVar,
+                          std::string(RoutineName) + ":" + NOT_INSTALLED_MSG);
+        }
+
+        // LocalVar%ZMQ_* = setpoints(1..8). The write happens -- the reference
+        // destroys whatever these fields held -- and the value it writes has no
+        // oracle. See the declaration above.
+        LocalVar->ZMQ_TorqueOffset = no_setpoint;   // setpoints(1)
+        LocalVar->ZMQ_YawOffset = no_setpoint;      // setpoints(2)
+        LocalVar->ZMQ_PitOffset[0] = no_setpoint;   // setpoints(3)
+        LocalVar->ZMQ_PitOffset[1] = no_setpoint;   // setpoints(4)
+        LocalVar->ZMQ_PitOffset[2] = no_setpoint;   // setpoints(5)
+        LocalVar->ZMQ_R_Speed = no_setpoint;        // setpoints(6)
+        LocalVar->ZMQ_R_Torque = no_setpoint;       // setpoints(7)
+        LocalVar->ZMQ_R_Pitch = no_setpoint;        // setpoints(8)
+    }
+}

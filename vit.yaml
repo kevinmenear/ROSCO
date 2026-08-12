@@ -200,6 +200,21 @@ translations:
   StateMachine:
     status: integrated
     cpp_file: translations/ControllerBlocks/statemachine.cpp
+  # ADDED BY HAND at unit #21, for the reason units #14, #16, #18 and #20 all
+  # recorded: `vit integrate` rewrites this file through a YAML round-trip that
+  # DELETES EVERY COMMENT in it, so restoring the commented file is the only way
+  # to keep the file's own reasoning -- and then the entry has to be re-added.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again,
+  # and for this unit the line is not merely unchecked, it is FALSE. The gate
+  # ran, compared 5,252,000 values and is BLIND to this unit: both call sites
+  # are guarded by `ZMQ_Mode > 0`, which is 0 in all 14 inputs, so a whole-unit
+  # no-op moves nothing (gate/UpdateZeroMQ.redtest.json, with a same-build
+  # control that moves 1,857,893). What verified this unit is the differential
+  # harness and the mutation score; that lives in plan.json's `evidence`.
+  UpdateZeroMQ:
+    status: integrated
+    cpp_file: translations/ZeroMQInterface/updatezeromq.cpp
 types:
   ControlParameters:
     strategy: view

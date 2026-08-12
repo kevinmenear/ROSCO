@@ -1,0 +1,7 @@
+# ./probe -- three calls in one process; ZMQ_CLIENT undefined
+fresh frame      :                     NaN  9.3878397649254288-310  2.6185479229586067-322  1.3803271201594916-309  0.0000000000000000E+00  1.3803271204088959-309  1.3906698900286667-309  1.3803271195951698-309
+   aviFAIL=-1  ErrMsg=UpdateZeroMQ: >> The ZeroMQ client has not been properly installed, please install it to use ZMQ_Mode > 0.
+after +1.0 fill  :                     NaN  9.3878397649254288-310  1.0000000000000118E+00  1.0000000000000000E+00  1.0000000000000000E+00  1.0000000000000000E+00  1.0000000000000000E+00  1.0000000000000000E+00
+   aviFAIL=-1  ErrMsg=UpdateZeroMQ: >> The ZeroMQ client has not been properly installed, please install it to use ZMQ_Mode > 0.
+after -7.25 fill :                     NaN  9.3878397649254288-310 -7.2500000000000471E+00 -7.2500000000000000E+00 -7.2500000000000000E+00 -7.2500000000000000E+00 -7.2500000000000000E+00 -7.2500000000000000E+00
+   aviFAIL=-1  ErrMsg=UpdateZeroMQ: >> The ZeroMQ client has not been properly installed, please install it to use ZMQ_Mode > 0.

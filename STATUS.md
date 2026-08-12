@@ -4,6 +4,63 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-12: unit #21 `UpdateZeroMQ` is `integrated` and CLOSED**, first
+dispatch. **Four layers alive, one absent by measurement** — the kernel, and it
+is the first unit in this campaign with no kernel at all: both call sites are
+guarded by `ZMQ_Mode > 0`, which is 0 in all 14 inputs, so there is no state to
+capture. Its section is directly below; unit #20 `StateMachine` is below that.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay | **NOT AVAILABLE** — clean `DISCON.F90:103` (the guard) 407,976 hits, `:104` (the CALL) **0**; `:141` 36,024, `:142` **0** | n/a |
+| differential harness vs clean Fortran | **8,334** checked, 0 failed, 0 inadmissible — **6 outputs declared `no_oracle`** | the unit as a no-op fails **4,167 of 8,334**, every case that reaches the body |
+| mutation score | **12 of 12 behavioural killed, 1.000**, **8 declared equivalent**, 0 no-compile | the inherited corpus scores **0.2593, forty survivors** — 32 closed, 8 declared |
+| post-integration harness (wrapper only) | **8,334 checked, 0 failed** | the `ErrVar` reverse copy removed from the wrapper, rebuilt between edit and run: **4,167 of 8,334** |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | whole-unit no-op moves **0** — the unit is DEAD; same-build control moves **1,857,893** |
+
+**THE REFERENCE IS NOT A FUNCTION OF ITS ARGUMENTS ON SIX OF ITS TEN OUTPUTS.**
+`real(C_DOUBLE) :: setpoints(8)` is never assigned in the configuration this
+campaign compiles — `ZMQ_CLIENT` is undefined, because `pkg_check_modules`
+does not find libzmq — and the procedure copies it into eight `LocalVar%ZMQ_*`
+fields. Measured three calls in one process: `NaN` and denormals on a fresh
+frame, `1.0` after a routine that fills that stack region with `1.0`, `-7.25`
+after one that fills it with `-7.25`. The harness saw the same thing from the
+other side before anything was stated: **4,175 of 4,179 cases agreed on every
+output and 4 disagreed on these fields alone**, the reference answering
+`68bb11a718b90000` — a leftover pointer. `harness/ranges.toml` grew a second
+kind of entry for it, `no_oracle`, which is not a range: a range narrows an
+INPUT domain, this says an OUTPUT has no answer. It is reported in the run's own
+artifact (`no_oracle_outputs`) and a name matching no field is a hard error.
+
+**4,175 OF 4,179 CASES ENTERED NOTHING, AND THE FIX WAS NOT MORE CASES.** The
+whole body sits inside `MOD(LocalVar%n_DT, CntrPar%n_DT_ZMQ) == 0 .OR.
+LocalVar%iStatus == -1` — a rate gate, true only on the multiples of a second
+varied parameter, which no ladder reaches and which the two-sided-predicate rule
+cannot cross either. New rule **R9** re-runs EVERY existing case with the gate
+satisfied; 120 fresh cases moved the score by 0.000 first, and so did a strided
+sample, because **a sample of a corpus is not a sample of its conjunctions**.
+0.2593 → 1.000, with 32 of the 40 survivors closed rather than declared.
+
+**THREE INSTRUMENT DEFECTS FIXED, NONE WORKED AROUND (X2).** `vit
+test-validate` emitted a bridge that would not compile — it declares POINTERs to
+NESTED types the reference's own `USE ... ONLY` list omits, and every earlier
+unit escaped it only because its module re-exported `ROSCO_Types`. `compare_op`
+was mutating the angle brackets of `static_cast<...>`: 10 of 30 mutants failed
+to build, 33%, above the 25% at which `vit_mutate` REFUSES to score — a guard
+meant to catch a build with two definitions of the function, spent on
+punctuation. And R9 above. Details in DECISIONS.md and the RUNBOOK's target
+layer.
+
+**TWO MORE UPSTREAM ROSCO DEFECTS.** A full-width `ZMQ_CommAddress` aborts the
+controller (`CHARACTER(256)` plus `C_NULL_CHAR` into a 256-character record →
+`End of record`, exit 2; the harness hit it too). And `n_DT_ZMQ` is `NINT(
+ZMQ_UpdatePeriod/DT)` where `ZMQ_UpdatePeriod` is parsed only when `ZMQ_Mode /=
+0` — so the divisor is 0 on every input this campaign carries, and the
+`ZMQ_Mode > 0` guard on the call is the only thing between the shipped
+controller and a division by zero.
+
+---
+
 **As of 2026-08-12: unit #20 `StateMachine` is `integrated` and CLOSED**, first
 dispatch — its section is directly below. Unit #19 `SecLPFilter_Vel` is `integrated` and
 CLOSED, first dispatch. **Five layers, all five alive** — the fourth unit in

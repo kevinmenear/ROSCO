@@ -2,6 +2,93 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #21 — UpdateZeroMQ — 2026-08-12
+
+**THE REFERENCE HAS NO ANSWER ON SIX OF ITS TEN OUTPUTS, AND THE HARNESS WAS
+TAUGHT TO SAY SO RATHER THAN TO AVERAGE OVER IT.** `real(C_DOUBLE) ::
+setpoints(8)` is never assigned in the configuration this campaign compiles
+(`ZMQ_CLIENT` undefined — `PC_ZeroMQ_FOUND` is empty in the CMake cache), and
+the procedure copies it into eight `LocalVar%ZMQ_*` fields. Measured twice:
+three calls in one process return `NaN` and denormals on a fresh frame, then
+`1.0` after a routine filling that stack region with `1.0`, then `-7.25`; and
+the first harness run had 4,175 of 4,179 cases agreeing on every output with 4
+disagreeing on those fields alone, the reference returning a leftover pointer.
+
+The choice was between calling the unit `blocked` and stating the absence. It is
+stated: `harness/ranges.toml` grew a second kind of entry, `no_oracle`, which is
+NOT a range — a range narrows an INPUT domain, this says the reference is not a
+function of its arguments on an OUTPUT. It is deliberately not silent. Every
+dropped field is printed and lands in the artifact's `no_oracle_outputs`, a
+stated name matching no compared field is a hard error, and the two judgements
+travel through different code paths (`split_no_oracle`) so an output exclusion
+can never be mistaken for a stated input bound in the UNCONSTRAINED report.
+
+The alternative — leaving the fields compared and reporting `blocked` on 4
+failing cases — would have recorded the absence as a defect in the translation,
+which is the one thing it is not.
+
+**THE TRANSLATION WRITES THE FIELDS, AND WRITES THEM FROM ONE NAME.** The write
+must happen (the reference destroys whatever the fields held); the value has no
+oracle, so `0.0` is a choice among equals and is chosen for being stable,
+sanitiser-clean, and what `ReadSetParameters.f90:187-188` establishes for these
+fields elsewhere. Writing it as an eight-element array of literals put SEVENTEEN
+mutable sites on a quantity no input can change — unit #1's "name a size once"
+and unit #4's rule about restatements, met a third time — so it is one
+`const double no_setpoint`. Three subscript sites remain because the reference
+has three, and those are declared with the measurement.
+
+**A THIRD RESTATEMENT WAS FOUND BY THE MUTATION SCORE, NOT BY READING.**
+`ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)` applies TRIM to a value
+the statement immediately above it just assigned — a literal with no trailing
+blank, on every path, for every input. A transcribed trim loop's four sites all
+survived as unobservable mutants. Deleted, with the proof in the file.
+
+**R9 (DIVISIBILITY) IS AN ADDITION UNDER P5, AND THE FIRST VERSION OF IT WAS
+WORTH NOTHING.** `MOD(A, B) == 0` is true only on the multiples of `B`, which no
+ladder over either name reaches and which `relational_pairs_from` cannot cross
+either — its crossing value is the other side's value, and here it is a MULTIPLE
+of the other side. 4,175 of 4,179 cases entered nothing; the unit's whole body
+is inside that gate. The first implementation emitted 120 fresh cases with
+everything else at base and moved the score by 0.000. What works is re-running
+EVERY existing case with the gate satisfied: a rate gate does not need its own
+cases, it needs every other rule's cases to arrive at a procedure that does
+something. A strided sample was tried in between and also moved nothing, because
+20 of 4,179 cases are the knob combinations and **a sample of a corpus is not a
+sample of its conjunctions** — `ZMQ_Mode > 0` against `>= 0` differ only at
+`ZMQ_Mode == 0`, which only a knob produces, and it has to meet the gate in the
+same case. With every case re-run it dies on 7 of 8,334.
+
+**EIGHT DECLARED EQUIVALENT IS THE LARGEST SET IN THIS CAMPAIGN, AND IT IS TWO
+REASONS.** Seven are unobservable for the single reason stated once in
+ranges.toml; the eighth is the `CHARACTER(:), ALLOCATABLE` capacity guard that
+ExtController and ReadAvrSWAP each declared before it, same site, same argument.
+What was NOT declared is the number that matters: the first run left forty
+survivors at 0.2593, and thirty-two of them are gone because the corpus was
+widened and the restatements removed. A survivor is a question about the
+instrument until the instrument has been asked.
+
+**TWO MORE UPSTREAM ROSCO DEFECTS, both measured and neither fixed here.** A
+full-width `ZMQ_CommAddress` aborts the controller (`CHARACTER(256)` written
+with a trailing `C_NULL_CHAR` needs 257 characters of a 256-character record —
+`End of record`, exit 2), and `n_DT_ZMQ` is 0 on every input this campaign
+carries, so `MOD(n_DT, 0)` is one guard away from the shipped controller. Fixing
+either edits ROSCO's own behaviour, which is P7's oracle; the first is pinned in
+ranges.toml with its cost stated, the second is unreachable behind the same
+guard that makes the unit dead.
+
+**A CANDIDATE FOR THE DRIVER, and it is about a guard rather than a defect.**
+`compare_op` was mutating the angle brackets of `static_cast<...>`: ten of this
+unit's thirty mutants could not compile, 33%, and `vit_mutate` REFUSES to score
+above 25% — a guard that exists to catch a build holding two definitions of the
+function. It was being spent on punctuation. Fixed here by masking template
+brackets (`harness/cppmutate.py`), same discipline as the existing comment and
+literal masks. The candidate is what that implies for artifacts already
+committed: `mutation/Read_OL_Input.json` carries 29 of 135 no-compile, 21%,
+under the limit but for the same reason, and its denominator was capped at 40
+per operator — so some of its 135 scoreable mutants were brackets rather than
+comparisons. Re-scoring it would move a committed number (X3, SPEC §8.4).
+
+
 ## Unit #20 — StateMachine — 2026-08-12
 
 **The nine surviving mutants were fixed in the CORPUS, not declared
