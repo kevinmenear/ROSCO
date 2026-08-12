@@ -919,7 +919,10 @@
         "harness/SecLPFilter.postintegration.json",
         "harness/SecLPFilter.postintegration.redtest.json",
         "mutation/SecLPFilter.json"
-      ]
+      ],
+      "source_file": "rosco/controller/src/Filters.f90",
+      "translation": "translations/Filters/seclpfilter.cpp",
+      "harness_required": true
     },
     {
       "order": 19,
