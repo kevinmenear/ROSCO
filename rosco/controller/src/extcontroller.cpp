@@ -86,7 +86,22 @@ void ExtController(float* avrSWAP, controlparameters_view_t* CntrPar,
                                         (int)sizeof(CntrPar->DLL_InFile));
     // LEN(ErrVar%ErrMsg). The view carries it because the length of a
     // deferred-length CHARACTER is part of its allocation.
-    const int len_ErrMsg = (int)ErrVar->n_ErrMsg;
+    //
+    // n_ErrMsg is ALSO the absence signal. Since 47d5fc6 an UNALLOCATED field
+    // crosses as n < 0 -- VIT_CHAR_UNALLOCATED, published at the struct in the
+    // generated vit_types.h -- because the buffer had to become non-null so the
+    // C++ could assign to a field Fortran left unallocated, which forfeited
+    // null-as-absence. That is a STATE, not a length, and all three uses below
+    // are length uses: a buffer size, an extent handed to the bridge, and a trim
+    // bound. -1 is wrong in each, and wrong quietly: `(size_t)(-1) + 1` wraps to
+    // zero, so avcMSG below would be a ZERO-length vector that the writes after
+    // it run straight past. An unallocated field holds no characters, so the
+    // length is 0; how much may be WRITTEN is n_ErrMsg_cap, and never this.
+    //
+    // The test is `< 0` rather than `== -1` deliberately: the three states the
+    // contract publishes are n < 0, n == 0 and n > 0, so the state boundary is
+    // the part of the contract to depend on, not the particular value.
+    const int len_ErrMsg = ErrVar->n_ErrMsg < 0 ? 0 : (int)ErrVar->n_ErrMsg;
 
     // CHARACTER(KIND=C_CHAR) :: accINFILE(LEN_TRIM(CntrPar%DLL_InFile)+1)
     // CHARACTER(KIND=C_CHAR) :: avcOUTNAME(LEN_TRIM(ExtRootName)+1)
@@ -160,6 +175,20 @@ void ExtController(float* avrSWAP, controlparameters_view_t* CntrPar,
                                               (int)sizeof(CntrPar->DLL_FileName));
         const int len_DLL_ProcName = len_trim(CntrPar->DLL_ProcName,
                                               (int)sizeof(CntrPar->DLL_ProcName));
+        // An UNALLOCATED ErrMsg reaches here as len_ErrMsg == 0, and
+        // LoadDynamicLib writes its message through a `CHARACTER(*),
+        // INTENT(OUT)` dummy -- so a zero extent means a load failure is
+        // diagnosed into nowhere and the caller sees only ErrStat. The original
+        // cannot reach this state (Fortran forbids passing an unallocated
+        // allocatable to an assumed-length dummy), so there is no behaviour to
+        // match here; the choice is between losing the message silently and
+        // saying that it was lost. Silence is the defect, so: say it.
+        if (ErrVar->n_ErrMsg < 0) {
+            std::fprintf(stderr,
+                         "VIT: ExtController: ErrVar%%ErrMsg arrived UNALLOCATED; "
+                         "LoadDynamicLib has no buffer to report into and any "
+                         "message it produces is lost\n");
+        }
         vit_extcontroller_loaddll_c(CntrPar->DLL_FileName, len_DLL_FileName,
                                     CntrPar->DLL_ProcName, len_DLL_ProcName,
                                     &ErrVar->ErrStat, ErrVar->ErrMsg, len_ErrMsg);
