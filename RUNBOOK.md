@@ -343,11 +343,11 @@ is `/workspace/ROSCO-r2`.
   DIFFERENT FAILURE FROM A LOW SCORE.** Unit #24, and it is unit #22's
   `cppmutate` finding one step past displacement into absence.
 
-  All nine operators need an arithmetic operator, a comparison, a subscript or a
-  numeric literal. `std::fmin(std::fmax(inputValue, minValue), maxValue)` has
-  none, and neither its ARGUMENT ORDER nor its CALLEE NAME is a site.
-  `done.py`'s P12 fails `total <= 0` by name, which is right: the operator set
-  reached nothing, so it says nothing about the instrument.
+  All nine of the original operators need an arithmetic operator, a comparison,
+  a subscript or a numeric literal. `std::fmin(std::fmax(inputValue, minValue),
+  maxValue)` has none, and neither its ARGUMENT ORDER nor its CALLEE NAME was a
+  site. `done.py`'s P12 fails `total <= 0` by name, which is right: the operator
+  set reached nothing, so it says nothing about the instrument.
 
   ```
   python3 -c "import sys;sys.path.insert(0,'/workspace/translation-loop');\
@@ -356,14 +356,71 @@ is `/workspace/ROSCO-r2`.
   ```
 
   Ask it BEFORE integrating, not after: it decides the disposition and it costs
-  one command. NOT closed by adding an operator (X3 -- a new operator can produce
-  a SURVIVOR in a unit that closed at 1.000, campaign-wide re-take, the Driver's
-  call), and NOT closed by hand-writing `mutation/<U>.json` -- authoring both the
-  mutants and the artifact that grades them is exactly what
-  `min_mutation_score: 1.0` exists to shut. Unit #22's meanwhile is what to do:
-  one unit's worth of the missing measurement, by hand and committed
-  (`evidence/saturate/hand_mutants.sh`), and take the `blocked`. DECISIONS.md
-  carries the three coherent resolutions for the Driver.
+  one command. **CLOSED, on unit #24's second dispatch, by adding the operator
+  and paying its price in the same cycle** -- `drop_call`, `swap_call_args`,
+  `swap_callee`, loop `b9fb5ee`. Still NOT closable by hand-writing
+  `mutation/<U>.json`: authoring both the mutants and the artifact that grades
+  them is exactly what `min_mutation_score: 1.0` exists to shut, and the hand
+  measurement's role is to CROSS-CHECK the tool (it reports the same 151 and 100
+  the tool's two `drop_call` mutants do), never to replace its artifact.
+
+- **THE X3 COST OF A NEW OPERATOR IS TWO SEPARATE QUESTIONS AND ONLY ONE OF THEM
+  IS EXPENSIVE.** Unit #24, second dispatch, and it is the resolution of the
+  refusal units #21 and #22 both recorded.
+
+  Unit #22 declined to add an operator because *"a new operator changes the
+  mutant set of every unit already scored, and unlike a corpus addition it can
+  produce a SURVIVOR in a unit that closed at 1.000."* Both halves are true.
+  They are also both MEASURABLE, and the first one is free -- `_mid` is derived
+  from `unit|operator|before|after|nth`, so an addition cannot move an existing
+  id:
+
+  ```
+  # old tool vs new, over every already-scored translation. Run BEFORE deciding.
+  git show HEAD:harness/cppmutate.py > /tmp/oldmut/cppmutate_old.py
+  # ... mutants() from each, compare the id SETS per unit
+  #   0 lost, 35 gained, 7 of 24 units affected  -> every committed artifact and
+  #   every declared equivalence still resolves; the gap is what is UNMEASURED
+  ```
+
+  Lost ids would be a re-take. **Zero lost is not a re-take, it is a debt**, and
+  the debt is only the new mutants in the affected units -- 6 units here, scored
+  in one sweep into `mutation/<U>.call_operators.json` beside their untouched
+  artifacts (`vit_mutate.py --operator`, which stamps `operators_filter` so a
+  filtered run cannot be read as a full one).
+
+  And unit #22's fear was correct: **8 survivors in three units that had closed
+  at 1.000** -- GetPath 0.500, GetRoot 0.333, GetWords 0.667, every one the same
+  `std::min(len_src, len_dst)` bounded-copy clamp and its argument swap. That is
+  a newly VISIBLE defect class, not a newly created one, and their committed
+  scores stay true about what they scored.
+
+- **A TOKEN-LEVEL OPERATOR THAT REWRITES A CALL IS TYPE-BLIND, AND THE
+  NOCOMPILE LIMIT IS WHAT TELLS YOU SO.** Unit #24, second dispatch, and it cost
+  two full sweeps to learn.
+
+  `drop_call` replaces a call with its first argument and `swap_call_args`
+  exchanges two -- both well typed only when the types agree, which no regex and
+  no scanner can know. Unrestricted, this campaign's string units came back
+  **38%, 43%, 55%, 60%, 73%, 80%, 89%, 91% and 100% unbuildable**:
+  `std::strtod(c, &stop) -> c` is a `char*` where a `double` is wanted.
+
+  ```
+  REFUSING TO SCORE: 21 of 23 mutants (91%) failed to COMPILE, above the 25% limit
+  ```
+
+  **Do not raise the limit.** It is the guard that catches a genuinely broken
+  build -- a second definition of the unit in the link, every mutant failing,
+  1.000 measured on nothing -- and spending it on punctuation is unit #21's
+  finding repeated. Restrict the OPERATOR instead: `_VALUE_PRESERVING` is a
+  table of callees whose result type is their first argument's type and whose
+  arguments share one type. 231 mutants across 13 units became 35 across 7, and
+  every one of them compiles.
+
+  Same shape one level down: a `{` after the close paren does not identify a
+  definition head, because a constructor's member-initialiser list starts with
+  `:`. The test that needs no list of type names is that **a PARAMETER is two
+  bare identifiers in a row**, which no C++ expression is.
 
 - **THE LIVENESS STUB AND THE DOES-IT-REACH-THE-BRANCH STUB ARE DIFFERENT STUBS,
   AND ONLY THE SECOND CHOOSES A CALL SITE.** Unit #24, and it is interp1d's

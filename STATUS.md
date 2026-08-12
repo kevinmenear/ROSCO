@@ -4,34 +4,61 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-12: unit #24 `saturate` is `blocked`**, first dispatch, and the
-block is of a kind this campaign has not had before: **the mutation score is not
-low, it is ABSENT.** `cppmutate` generates ZERO mutants for this translation, and
-`done.py` fails zero by name (`mutation_no_mutants`). Every other layer ran and
-four of the five are alive. Its section is directly below; unit #23 `interp1d` is
-below that.
+**As of 2026-08-12: unit #24 `saturate` is `integrated`**, on its second
+dispatch. The first closed `blocked` on a block of a kind this campaign had not
+had before — **the mutation score was not low, it was ABSENT**, `cppmutate`
+generating ZERO mutants for a translation whose body is a call expression, which
+`done.py` fails by name as `mutation_no_mutants`. The second dispatch closed it
+by adding the operator and paying its campaign-wide price in the same cycle. Its
+section is directly below; unit #23 `interp1d` is below that.
 
 | layer | result | red-tested |
 |---|---|---|
 | kernel replay, 62 cases, scenario 1 | 13,950 field rows, **all IDENTICAL** | zero stub passes only **21 of 62**, moving 41 rows; **the MIN deleted passes 62 of 62** |
 | differential harness vs clean Fortran | **451** checked, 0 failed, 0 inadmissible | the unit as a no-op fails **315 of 451**; no saturation at all fails **202 of 451** |
-| mutation score | **NOT PRODUCED — 0 mutants, score 0.000**, committed unaltered | n/a; the missing measurement was made BY HAND: 11 of 11 behavioural killed, 2 equivalent and proved |
+| mutation score | **1.000 — 4 of 4 behavioural killed**, 2 declared equivalent and proved, 0 no-compile | the undeclared run is committed at **0.667** so the survivors are on the record before they were excused |
 | post-integration harness (wrapper only) | **451 checked, 0 failed** | the two BOUNDS swapped at the CALL, rebuilt between edit and run: **271 of 451** |
 | gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | the saturation removed moves **2,255,249 of 5,252,000** — the largest red in this campaign, matching no other |
 
-**`cppmutate` CANNOT MUTATE A TRANSLATION WHOSE BODY IS A CALL.** All nine
-operators need an arithmetic operator, a comparison, a subscript or a numeric
-literal. `std::fmin(std::fmax(inputValue, minValue), maxValue)` has none, and
-neither its argument order nor its callee name is a site. This is **not** unit
-#22's parenthesised-operand gap — that one DISPLACES mutants, this one produces
-zero. Not closed here: a new operator changes the mutant set of every unit
-already scored and, unlike a corpus addition, can produce a SURVIVOR in a unit
-that closed at 1.000 (X3, SPEC §8.4, the Driver's call). **And the artifact
-`done.py` reads was not hand-written to make the unit close** — `min_mutation_score`
-is 1.0 exactly so that the cheap way out is shut, and authoring both the mutants
-and the artifact that grades them is the cheap way out. Unit #22's meanwhile
-instead: `evidence/saturate/hand_mutants.{sh,txt}`, 13 mutants against this unit's
-own 451-case corpus, **11 of 11 behavioural killed, 2 equivalent and proved**.
+**THE OPERATOR SET NOW REACHES A CALL EXPRESSION, AND THE X3 COST WAS MEASURED
+RATHER THAN ARGUED.** Three operators added to `harness/cppmutate.py` (loop
+`b9fb5ee`): `drop_call`, `swap_call_args`, `swap_callee`. Unit #22 had refused
+this class because *a new operator can produce a SURVIVOR in a unit that closed
+at 1.000*. That is two questions and only one is expensive:
+
+* **Does it invalidate what is already scored?** No, and it cannot — `_mid` is
+  content-derived, so an addition cannot move an existing id. Across all 24
+  scored units: **0 ids lost, 35 gained, 7 units affected.** A re-take is what
+  LOST ids would force; zero lost is a debt, and the debt is only the new
+  mutants in the affected units.
+* **Does it produce survivors?** **Yes — 8, in 3 units that had closed at
+  1.000.** GetPath **0.500**, GetRoot **0.333**, GetWords **0.667**, every one
+  the same `std::min(len_src, len_dst)` bounded-copy clamp or its argument swap.
+
+The debt was paid here, into separate artifacts: `mutation/<U>.call_operators.json`
+for the 6 other affected units, with `mutation/<U>.json` untouched because it is
+not wrong — it says what the nine operators found and it still does. Sweep and
+transcript: `evidence/saturate/call_operator_retake.{sh,txt}`. **`ReadAvrSWAP` is
+the one affected unit NOT measured**: its generated `readavrswap_test.cpp`
+predates its translation's current signature, so the baseline will not compile
+and `vit_mutate.py` refused before any mutant ran
+(`evidence/saturate/call_operator_retake.ReadAvrSWAP.txt`).
+
+**TWO RESTRICTIONS, BOTH FORCED BY A LIVE SWEEP.** A token-level operator that
+rewrites a call is type-blind: unrestricted, the string-handling units came back
+38%, 43%, 55%, 60%, 73%, 80%, 89%, 91% and 100% **unbuildable**, and
+`NOCOMPILE_LIMIT` refused all of them. Raising that limit would have been the
+wrong repair — it is what catches a genuinely broken build. Restricting
+`drop_call` and `swap_call_args` to `_VALUE_PRESERVING` took 231 mutants across
+13 units to 35 across 7, all of which compile. And `_call_sites` needed a real
+test for a definition head, because a constructor's member-initialiser list is
+followed by `:` rather than `{`: a **parameter is two bare identifiers in a
+row**, a shape no C++ expression has.
+
+The hand measurement the first dispatch made keeps its value as a **cross-check
+rather than a substitute**: `evidence/saturate/hand_mutants.txt` reports 151 and
+100 for the two clamp deletions, and the tool's two `drop_call` mutants report
+the same 151 and 100. Two instruments, two numbers, taken a dispatch apart.
 
 **THE WHOLE UNIT IS TWO INTRINSICS, AND THE SPELLING WAS MEASURED.** gfortran's
 `MAX`/`MIN` are `fmax`/`fmin` bit-for-bit; **both** branch spellings are wrong at

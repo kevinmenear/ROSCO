@@ -2,6 +2,110 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #24 — saturate — second dispatch — 2026-08-12
+
+**THE FIRST DISPATCH ASKED THE DRIVER TO CHOOSE BETWEEN THREE RESOLUTIONS. THE
+RE-DISPATCH NAMED P12 AS A CONDITION TO MEET, SO THE FIRST OF THE THREE WAS
+TAKEN — AND THE REASON IT HAD BEEN REFUSED TURNED OUT TO BE TWO SEPARATE
+QUESTIONS, ONLY ONE OF WHICH IS EXPENSIVE.** The section below this one records
+the choice as it stood; this one records what changed and what it cost.
+
+Unit #22's refusal, inherited and correct as far as it goes:
+
+> a new operator changes the mutant set of every unit already scored, and unlike
+> a corpus addition — which can only kill more — it can produce a SURVIVOR in a
+> unit that closed at 1.000. Campaign-wide re-take, the Driver's call.
+
+Both halves are measurable and neither had been measured.
+
+1. **Does an addition INVALIDATE existing artifacts?** No, and it cannot:
+   `_mid` is `sha256(unit|operator|before|after|nth)`, so an id is a function of
+   the mutant's own content. Run old-tool against new-tool over every scored
+   translation: **0 existing ids lost, 35 gained, 7 of 24 units affected.**
+   Every committed artifact remains a true statement about exactly the mutants
+   it scored and every declared equivalence still resolves. This is the
+   difference between a re-take and a debt, and it is one script.
+2. **Does it produce survivors in units that closed at 1.000?** **Yes — eight,
+   in three units.** GetPath 0.500, GetRoot 0.333, GetWords 0.667, and all eight
+   are one shape: `std::min(len_src, len_dst)` / `std::max(la, lb)` — a bounded
+   string-copy length clamp — and its argument swap. Those corpora never make
+   the two lengths differ in the direction that matters.
+
+So the fear was justified in substance and wrong about the remedy. The debt was
+paid in this cycle rather than deferred: the 6 other affected units were
+re-scored into **their own** artifacts, `mutation/<U>.call_operators.json`,
+leaving `mutation/<U>.json` untouched because it is not wrong — it says what the
+nine operators found and it still does. `vit_mutate.py --operator` stamps
+`operators_filter` into a restricted run so it cannot be read as a full one.
+
+**FOR THE DRIVER, and it is a different question from the one the first dispatch
+asked.** Three `integrated` units now have a named, id'd defect class their
+harnesses do not catch. That does not retroactively falsify their scores and
+this session did not reopen them — it is not this unit's cycle. What it is:
+GetPath `0400667a`/`0978657a`/`2b3e9b05`, GetRoot `aba60910`/`de456b74`/
+`a3d1d5c7`/`1a517b78`, GetWords `0581c7dd`. All eight are killable by one corpus
+addition (a case where the source and destination lengths straddle), which by
+unit #20's rule can only kill more.
+
+**TWO RESTRICTIONS ON THE OPERATOR, BOTH FORCED BY A LIVE SWEEP AND NEITHER
+CHOSEN UP FRONT.** This is the part worth carrying, because the first version
+looked right and was not.
+
+*Type-blindness.* `drop_call` replaces a call with its first argument and
+`swap_call_args` exchanges two. Unrestricted, the campaign's string-handling
+units came back **38%, 43%, 55%, 60%, 73%, 80%, 89%, 91% and 100%
+unbuildable** — `std::strtod(c, &stop) -> c` is a `char*` where a `double` is
+wanted; `assign_errmsg(ErrVar, msg)` swapped is a `std::string` where an
+`ErrorVariables*` is. `vit_mutate.py` refused to score all of them, which is
+`NOCOMPILE_LIMIT` doing its job. **Raising that limit was the available wrong
+answer**: it is what catches a genuinely broken build — a second definition of
+the unit in the link, every mutant failing, 1.000 measured on nothing — and unit
+#21 already recorded what spending it on punctuation costs. Restricting the
+operator to `_VALUE_PRESERVING`, a table of callees whose result type is their
+first argument's type, took 231 mutants across 13 units to 35 across 7, all of
+which compile. What that table excludes is now `UNMODELLED`, by name.
+
+*Definition heads.* A `{` after the close paren does not identify one: a
+constructor with a member-initialiser list is followed by `:`, and
+`FileRecords(std::FILE* f)` and `OneRecord(std::string r)` both came through the
+first sweep as call sites. A type-word test cannot see `std::string r` either.
+The test that works needs no list of names — **a PARAMETER is two bare
+identifiers in a row, and no C++ expression has that shape.**
+
+**THE EQUIVALENCES WERE RE-DERIVED, NOT INHERITED.** The two surviving
+`swap_call_args` mutants are the same two the first dispatch measured by hand at
+0 of 451, and "0 of 451" is a statement about the corpus, not about the mutant —
+this file's own rule since unit #23. The claim declared here is the stronger
+one and the proof is four rows of an already-committed artifact: a two-argument
+selection function can fail to be commutative at exactly two kinds of input, a
+tie with distinct bit patterns (which for `double` is only `±0.0`) and a NaN
+operand. `evidence/saturate/minmax_probe.txt` runs **both orders of both** and
+compares BITS: `fmin(-0.0,+0.0)` and `fmin(+0.0,-0.0)` both `8000000000000000`,
+`fmax` both `0000000000000000`, `fmin(NaN,1.0)` and `fmin(1.0,NaN)` both
+`3FF0000000000000`. Commutative on every input the type admits, so these are
+equivalences rather than blind spots. The undeclared run is committed at 0.667
+(`mutation/saturate.undeclared.json`) so that what survived is on the record
+before anything excused it.
+
+**WHAT THIS SESSION DID NOT MEASURE, named rather than left as a gap.**
+`ReadAvrSWAP` is the seventh affected unit and it was NOT scored: the generated
+`readavrswap_test.cpp` in its untracked `_test` directory predates the signature
+its translation now has, so the BASELINE will not compile and `vit_mutate.py`
+refused before any mutant ran. That is a stale generated artifact belonging to
+that unit, not a property of the two `drop_call` mutants this sweep would have
+scored. `evidence/saturate/call_operator_retake.ReadAvrSWAP.txt` carries the
+compiler's own words and the one command that regenerates it.
+
+**A METHOD-LEVEL OBSERVATION, for the Driver to raise or discard.** The first
+dispatch closed `blocked` on a claim about the instrument and the second
+refuted it by measuring the claim instead of reasoning about it — which is what
+STATUS.md already records happening three times on unit #5. The pattern is now
+four for four: *every* `blocked` in this campaign that a later dispatch looked
+at again was closable. That may belong in the method as a rule about what a
+`blocked` disposition has to contain — specifically, that a blocking claim about
+a TOOL must state the measurement that would refute it, and take that
+measurement if it costs less than the cycle already has.
+
 ## Unit #24 — saturate — 2026-08-12
 
 **THE MUTATION SCORE IS ABSENT, NOT LOW, AND I DID NOT WRITE THE ARTIFACT THAT

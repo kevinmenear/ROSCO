@@ -6,10 +6,11 @@
 saturate = REAL(MIN(MAX(inputValue,minValue), maxValue),DbKi)
 ```
 
-Disposition: **`blocked`**, on P12 and nothing else. Every other layer ran, and
-four of the five are alive. The block is that `cppmutate` generates **zero**
-mutants for this translation, so the score is not low — it is *absent*, and
-`done.py` fails that by name (`mutation_no_mutants`). See §4.
+Disposition: **`integrated`**, on the second dispatch. The first closed
+`blocked` on P12 and nothing else: `cppmutate` generated **zero** mutants for
+this translation, so the score was not low — it was *absent*, which `done.py`
+fails by name (`mutation_no_mutants`). The second dispatch added the operator
+and paid its campaign-wide price in the same cycle. See §4.
 
 ---
 
@@ -78,31 +79,118 @@ the second decides a call site.
 more often than the simulation does, and reaches the *upper* clamp, which the
 kernel never does.
 
-## 4. Mutation — `cppmutate` produced NOTHING, and that is the block
+## 4. Mutation — 1.000, on an operator set that did not exist before this unit
 
-`mutation/saturate.json` is the tool's own artifact and it reads **0 mutants,
-score 0.000**. It is committed unaltered.
+`mutation/saturate.json`: **4 of 4 behavioural mutants killed, 2 declared
+equivalent and proved, 0 failed to compile — score 1.000.** Produced by
+`vit_mutate.py` against the CLEAN build (`reset_to_clean.sh` → score →
+`restore_integrated.sh`; with the integrated build in place `Functions.f90.o`
+holds a wrapper calling `saturate_c` and the harness baseline will not link).
 
-The cause is structural, not a bug: this translation's body is a **call
-expression**, and all nine of `cppmutate`'s operators need an arithmetic
-operator, a comparison, a subscript or a numeric literal. A call has none, and
-neither its argument order nor its callee name is a site. This is *not* unit
-#22's parenthesised-operand gap — that one displaces mutants; this one produces
-zero. Recorded in the tool's own `UNMODELLED` table as `call_expression`
-(`translation-loop` `harness/cppmutate.py`), which is documentation and changes
-no unit's mutant set.
+```
+drop_call      fmin(fmax(v,lo),hi) -> fmax(v,lo)   killed 151/451   the MIN deleted
+drop_call      fmax(v,lo)          -> v            killed 100/451   the MAX deleted
+swap_call_args fmax(v,lo), hi      -> hi, fmax(..)  SURVIVED        EQUIVALENT, proved
+swap_call_args v, lo               -> lo, v         SURVIVED        EQUIVALENT, proved
+swap_callee    fmin                -> fmax          killed 418/451
+swap_callee    fmax                -> fmin          killed 339/451
+```
 
-**It is not closed here.** Adding a mutation operator changes the mutant set of
+**Two instruments, one figure, a dispatch apart.** The hand-run measurement the
+first dispatch made — before any operator could reach this body — reports
+`upper clamp dropped 151` and `lower clamp dropped 100` (§4a). The tool's two
+`drop_call` mutants report the same 151 and 100. That is what says the recipe is
+sound; a single number from a single instrument would not.
+
+### The operator, and why it was refused until now
+
+This translation's body is a **call expression**, and all nine of the original
+operators need an arithmetic operator, a comparison, a subscript or a numeric
+literal. A call has none, and neither its argument order nor its callee name was
+a site. Three operators were added to `harness/cppmutate.py` (loop `b9fb5ee`),
+from a balanced-paren **scanner** rather than a regex, because a call whose
+argument is another call is not reachable by a pattern over `_OPERAND`.
+
+Unit #22 had refused exactly this: *a new operator changes the mutant set of
 every unit already scored, and unlike a corpus addition — which can only kill
-more — a new operator can produce a *survivor* in a unit that closed at 1.000.
-That is X3 and SPEC §8.4, the Driver's call. And the artifact `done.py` reads was
-**not** hand-written to make the unit close: `min_mutation_score` is 1.0 exactly
-so the cheap way out is shut, and authoring both the mutants and the artifact
-that grades them is the cheap way out.
+more — it can produce a SURVIVOR in a unit that closed at 1.000.* That is two
+questions, and only one is expensive.
 
-What *was* done is unit #22's meanwhile — one unit's worth of the missing
-measurement, by hand and committed (`hand_mutants.sh`, `hand_mutants.txt`),
-against this unit's own 451-case corpus:
+| question | answer | how |
+|---|---|---|
+| does it invalidate existing artifacts? | **no** — `_mid` is content-derived, so an addition cannot move an existing id. **0 lost, 35 gained, 7 of 24 units affected** | old tool vs new over every scored translation, diffed on id sets |
+| does it produce survivors in closed units? | **yes — 8, in 3 units.** GetPath **0.500**, GetRoot **0.333**, GetWords **0.667** | `call_operator_retake.{sh,txt}` |
+
+Lost ids would force a re-take. **Zero lost is a debt, not a re-take**, and the
+debt was paid in this cycle: the 6 other affected units were re-scored into
+`mutation/<U>.call_operators.json`, leaving `mutation/<U>.json` untouched because
+it is not wrong — it says what the nine operators found and it still does.
+`vit_mutate.py --operator` stamps `operators_filter` so a restricted run cannot
+be read as a full one.
+
+All eight survivors are one shape — `std::min(len_src, len_dst)` /
+`std::max(la, lb)`, a bounded string-copy length clamp, and its argument swap.
+Those corpora never make the two lengths differ in the direction that matters.
+This is a **newly visible** defect class, not a newly created one; the three
+units' committed scores remain true about what they scored, and reopening them
+is the Driver's call (DECISIONS.md, with all eight ids).
+
+**`ReadAvrSWAP` is the one affected unit NOT measured.** Its generated
+`readavrswap_test.cpp` predates the signature its translation now has, so the
+BASELINE will not compile and `vit_mutate.py` refused before any mutant ran —
+a stale generated artifact in another unit's untracked directory, not a property
+of the two mutants this sweep would have scored.
+`call_operator_retake.ReadAvrSWAP.txt` has the compiler's own words.
+
+### Two restrictions, both forced by a live sweep
+
+Neither was chosen up front and the first version looked right.
+
+**Type-blindness.** `drop_call` replaces a call with its first argument;
+`swap_call_args` exchanges two. Unrestricted, the campaign's string-handling
+units came back **38%, 43%, 55%, 60%, 73%, 80%, 89%, 91% and 100%
+unbuildable** — `std::strtod(c, &stop) -> c` is a `char*` where a `double` is
+wanted. `vit_mutate.py` refused all of them, which is `NOCOMPILE_LIMIT` working.
+**Raising that limit was the available wrong answer**: it is what catches a
+genuinely broken build (a second definition in the link, every mutant failing,
+1.000 measured on nothing). Restricting both operators to `_VALUE_PRESERVING` —
+callees whose result type is their first argument's type and whose arguments
+share one type — took 231 mutants across 13 units to 35 across 7, all compiling.
+
+**Definition heads.** A `{` after the close paren does not identify one: a
+constructor's member-initialiser list starts with `:`, and
+`FileRecords(std::FILE* f)` and `OneRecord(std::string r)` both came through the
+first sweep as call sites. A type-word test cannot see `std::string r` either.
+The test that works needs no list of names — **a parameter is two bare
+identifiers in a row**, and no C++ expression has that shape.
+
+### The two equivalences are proved, not inherited
+
+The two surviving `swap_call_args` mutants are the same two the first dispatch
+hand-measured at 0 of 451 — and *0 of 451* is a statement about the corpus, not
+about the mutant. The claim declared in `mutation/saturate.equivalences.json` is
+the stronger one, and its proof is four rows of an artifact that already
+existed. A two-argument selection function can fail to be commutative at exactly
+two kinds of input: a tie with distinct bit patterns, which for `double` is only
+`±0.0`, and a NaN operand. `minmax_probe.txt` runs **both orders of both** and
+compares bits:
+
+```
+case 1  fmin(-0.0, +0.0) = 8000000000000000     fmax(-0.0, +0.0) = 0000000000000000
+case 2  fmin(+0.0, -0.0) = 8000000000000000     fmax(+0.0, -0.0) = 0000000000000000
+case 5  fmin( NaN,  1.0) = 3FF0000000000000     fmax( NaN,  1.0) = 3FF0000000000000
+case 6  fmin( 1.0,  NaN) = 3FF0000000000000     fmax( 1.0,  NaN) = 3FF0000000000000
+```
+
+Commutative on every input the type admits, so these are equivalences and not
+blind spots. The **undeclared** run is committed beside them
+(`mutation/saturate.undeclared.json`, score 0.667) so that what survived is on
+the record before anything excused it.
+
+## 4a. The hand measurement (first dispatch), kept as the cross-check
+
+Made when no operator could reach this body, against this unit's own 451-case
+corpus (`hand_mutants.sh`, `hand_mutants.txt`):
 
 ```
 BASELINE (unmutated)                                killed   0 of 451
@@ -120,16 +208,17 @@ fmax arguments swapped        (EQUIVALENT)          killed   0 of 451
 fmin arguments swapped        (EQUIVALENT)          killed   0 of 451
 ```
 
-**11 of 11 behavioural killed; 2 equivalent.** The two equivalences are not
-argued away — IEEE `maxNum`/`minNum` are commutative, including at a signed zero
-and at a NaN, which `minmax_probe` measures directly, and both die on 0 of 451
-as that predicts.
+**11 of 11 behavioural killed; 2 equivalent.** It reaches seven defect classes
+the operator set still does not, so it is kept rather than superseded — and it
+supplies the 151 and 100 that the tool's `drop_call` mutants independently
+reproduce.
 
-The sharp line is the last three: the difference between the shipped spelling and
-the careless one is visible on **exactly 1 of 451 cases** — the negative-zero
-case, which exists only because unit #14 added a signed-zero block after
-discovering its own `dict.fromkeys` dedup absorbed `-0.0` into `0.0`. Without
-that block, the defect this unit's whole §1 is about would survive silently.
+The sharp line is the last three: the difference between the shipped spelling
+and the careless one is visible on **exactly 1 of 451 cases** — the
+negative-zero case, which exists only because unit #14 added a signed-zero block
+after discovering its own `dict.fromkeys` dedup absorbed `-0.0` into `0.0`.
+Without that block, the defect this unit's whole §1 is about would survive
+silently.
 
 **The first run of `hand_mutants.sh` was wrong and is worth the warning.** It
 reported passthrough at 100 where `scripts/harness.sh` had independently measured
@@ -205,6 +294,12 @@ in this campaign whose **enclosing procedure is a FUNCTION**.
 | `kernel.Controllers102.*` | §2, the shipped kernel and its four stub runs |
 | `kernel.ControllerBlocks332.*` | §2, the rejected call site: passthrough **passes 62 of 62** |
 | `harness.passthrough-stub.json` | §3, 202 of 451 |
-| `hand_mutants.{sh,txt}` | §4, the measurement `cppmutate` cannot make |
+| `hand_mutants.{sh,txt}` | §4a, the first dispatch's hand measurement — now the cross-check |
+| `call_operator_retake.sh`, `call_operator_retake.txt` | §4, the 6 other affected units re-scored against the new operators |
+| `call_operator_retake.ReadAvrSWAP.txt` | §4, the one affected unit that could NOT be scored, and why |
+| `../../mutation/saturate.json` | §4, the score: 4 of 4, 1.000 |
+| `../../mutation/saturate.undeclared.json` | §4, the same run with nothing declared: 4 of 6, 0.667 |
+| `../../mutation/saturate.equivalences.json` | §4, the two declarations and their proofs |
+| `../../mutation/*.call_operators.json` | §4, per-unit results of the re-take (`mutation/<U>.json` untouched) |
 | `kgen.*` | §6, both defects |
 | `done_check.txt` | the done-condition as it stood at the state commit |
