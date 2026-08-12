@@ -120,3 +120,18 @@ eight declared-equivalent mutants are unkillable for that one reason.
    `harness/cppmutate.py::_mask_template_brackets`, same discipline as the
    existing comment and literal masks. Unit #17's committed artifact carries
    29 of 135, 21% — just under the limit.
+
+## A note on this unit's artifact stamps
+
+Every `harness/UpdateZeroMQ*.json` and `mutation/UpdateZeroMQ.json` here carries
+`loop_rev: 21ed899-nogit` and `vit_rev: 5ba5e7e-nogit`. Those were the two
+repositories' HEADs when the runs happened, and they are **not** the code that
+produced the numbers: all three instrument fixes above were uncommitted working
+-tree changes at the time, and they are now loop `1eca4e9` and vit `56282b3`.
+
+The `-nogit` suffix is the stamp saying exactly what it cannot see -- the
+container has no git binary, so the reader falls back to `.git/HEAD` and cannot
+tell a dirty tree from a clean one (unit #8). Re-running the five artifacts to
+re-stamp them would cost about forty minutes and change no number, so the
+provenance is recorded here instead: **to reproduce these counts, use loop
+`1eca4e9` and vit `56282b3`, not the revisions the files name.**
