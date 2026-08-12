@@ -339,6 +339,86 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A LADDER THAT VARIES ONE PARAMETER AT A TIME IS BLIND TO ANY DEFECT THE
+  OTHER PARAMETERS CAN DOMINATE.** Unit #13, and it is the eighth corpus blind
+  spot -- the one where reaching the right magnitude bought nothing at all.
+
+  Four `assoc_reorder` mutants survived `NotchFilter` at 0.968:
+  `2.0 * (x*x)` regrouped as `(2.0*x) * x`. Adding a REAL magnitude ladder --
+  unit #10's integer decade ladder, one type over, and the obvious fix -- moved
+  the case count 1380 -> 2172 and **the score not at all**. The rung puts `omega`
+  at 1e-158; the coefficient is
+
+  ```
+  (2.0*(omega*omega) - 2.0*(K*K)) / ((K*K) + 2.0*omega*betaDen*K + (omega*omega))
+  ```
+
+  and the second term is still at the +/-1e3 default, so a 2^-1074 difference is
+  annihilated in the subtraction. The fix is to run each rung again with every
+  OTHER defaulted scalar real **pinned out of the way** -- `0.0`, and `1e300` so
+  that a reciprocal like `K = 2.0/DT` underflows. 2652 cases, **126 of 126,
+  1.000, 0 declared equivalent**
+  (`evidence/NotchFilter/joint_magnitude_block_kills_the_assoc_mutants.txt`).
+
+  Two things generalise, and the second is the cheaper one:
+
+  1. Before adding corpus values for a survivor, ask what else appears in **the
+     same expression** and whether it will drown them.
+  2. **A round decimal is a bad rung for a rounding defect.** Measured:
+     `1e-155`, `1e-161` and `sqrt(DBL_MIN)` do NOT distinguish the regrouping;
+     `1e-156`, `1e-158`, `1e-160` do, and at exponent -535 so do 126 of 256
+     mantissas. `evidence/NotchFilter/hot_mantissa_probe.cpp` is three loops.
+
+- **PROVE the survivor before declaring it, and prove it over the REACHABLE
+  inputs -- not over the expression's free variables.** Unit #13, and the second
+  half is what nearly produced a wrong answer.
+
+  The first equivalence probe drew `K` directly and found witnesses at
+  `K = 7.4e-313`. `K` is not an input: the reference computes `K = 2.0/DT`, so
+  `|K|` below `2.0/DBL_MAX` is unreachable from any finite timestep and every
+  such witness is fiction. Drawing `DT` and deriving `K` gives a REAL witness
+  (`DT = 2.44e204`, `omega = 1.34e-154`) -- which is what makes the mutant
+  killable rather than equivalent, and so decides the whole disposition.
+
+  ```
+  # draw the ARGUMENTS the signature has, then compute the locals the way the
+  # reference computes them; a local's own range is not an input domain
+  ```
+
+  `equivalent_declared` stayed **0**. A declaration would have been false, and
+  `min_mutation_score` is 1.0 precisely so that the cheap way out is closed.
+
+- **A REAL exponent of exactly 2.0 is `x*x`; 3.0 and up is a libm call. Measure
+  the one you have.** Unit #13. `NotchFilter` writes `K**2.0` and `omega**2.0`
+  five times, and the check registry's own line says gfortran emits `pow` for a
+  real exponent of 3.0 or more.
+
+  ```
+  gfortran -O3 -fdefault-real-8 -fdefault-double-8 -ffp-contract=off probe.f90
+  # evidence/NotchFilter/pow_two_probe.f90 -- TRANSFER both to INTEGER(8), compare bits
+  ```
+
+  Identical on 200,010 values including the overflow-to-Inf and
+  underflow-to-zero endpoints, so `K * K` is exact here. Two minutes, and it is
+  the difference between transcribing and hoping. **`**` still binds tighter
+  than `*`**: `2.0*omega**2.0` is `2.0 * (omega*omega)`, and it was the four
+  parentheses that made those the only surviving mutants in the first place.
+
+- **A post-integration red test can stay green because the perturbation matched
+  TWO sites and so was applied to NEITHER.** Unit #13, and it is a second cause
+  for unit #7's symptom -- upstream of the rebuild rather than downstream.
+
+  `notchfilter_c(InputSignal, DT, omega, betaNum, betaDen,` occurs twice in the
+  integrated `Filters.f90`: once in the `BIND(C)` interface block VIT emits and
+  once at the call. A single-occurrence replacement asserted out, the source was
+  left untouched, the rebuild rebuilt nothing, and the run reported
+  `checked 2652  failed 0`. Anchor on the call: the interface has no
+  `C_LOC(FP)` in it.
+
+  ```
+  grep -n '<unit>_c(<first arg>' rosco/controller/src/<File>.f90   # expect TWO
+  ```
+
 - **Build:** WORKS.
   ```
   docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2/rosco/controller && \

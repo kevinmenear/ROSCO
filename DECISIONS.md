@@ -3098,3 +3098,101 @@ claim, in the config the next unit reads, that the shipped translation was
 verified by a run of something else. Restored with `git checkout -- vit.yaml`.
 
 No amendment to the invariant layer is proposed.
+
+## 2026-08-11 — Unit #13 `NotchFilter`: `integrated`, five live layers, and a
+## survivor that was a corpus gap rather than an equivalent mutant
+
+`REAL(DbKi) FUNCTION NotchFilter(InputSignal, DT, omega, betaNum, betaDen, FP,
+iStatus, reset, inst, InitialValue)`, `Filters.f90`. Same shape as unit #11 —
+`TYPE(FilterParameters)` crossing as `C_LOC(FP)`, an `inst` index the caller
+sees advance, an OPTIONAL `InitialValue` — so the bridge was not the interesting
+part. Five layers, all five alive; the second unit here of which that is true.
+
+    kernel     62/62, 14,508 field rows all IDENTICAL, scenario 7, clean
+               Filters.f90:356. Window exactly the configured 62 indices, no
+               strays. `genspeedf` has 62 DISTINCT non-zero references, so the
+               window is not vacuous. Zero stub 0/62 (375 rows move, all this
+               unit's outputs). Hardcoded-arguments stub PASSES 14,508/14,508.
+    harness    2652 checked, 0 failed, 0 inadmissible, vs the clean Fortran.
+               No-op red test 2652 of 2652.
+    mutation   126 of 126 behavioural, 1.000, 0 declared equivalent.
+    post-int   2652 checked, 0 failed; betaNum/betaDen swapped at the bridge
+               call fails 980 of 2652.
+    gate       5,252,000 / 351 channels, 0 mismatched. RED 551,278, 0 after
+               revert — its own figure, matching no other committed redtest.
+
+### The decision this unit actually turned on
+
+The mutation score came in at **0.968** with four survivors, all
+`assoc_reorder`: `2.0 * (x*x)` regrouped as `(2.0*x) * x`. `min_mutation_score`
+is 1.0 and the RUNBOOK forbids unsetting the flag, so there were exactly two
+honest routes — kill them, or declare them equivalent with a reason.
+
+**Declaring would have been false, and proving that took three probes** (unit
+#8's rule: prove a survivor exhaustively rather than reasoning about it).
+
+1. In isolation the two groupings differ on 130,696 of 20,000,000 full-range
+   draws and **0 of 20,000,000 inside ±1e3**. Multiplying by two is exact and
+   rounding is scale-invariant under powers of two — in the NORMAL range. Once
+   `x*x` is subnormal the grid is absolute and the invariance fails.
+2. Through the whole coefficient, over the **reachable** inputs. The first pass
+   of this probe drew `K` directly and found witnesses at `K = 7.4e-313` —
+   fiction, because `K = 2.0/DT` and `|K|` below `2/DBL_MAX` is unreachable from
+   any finite timestep. Redrawing `DT` and deriving `K` gives a real witness at
+   `DT = 2.44e204, omega = 1.34e-154`. **A local's range is not an input
+   domain**, and getting that backwards would have inverted the disposition.
+3. Which magnitudes: at exponent −535, 126 of 256 mantissas differ, end to end.
+   Round decades `1e-155`, `1e-161` and `sqrt(DBL_MIN)` do not; `1e-156`,
+   `1e-158`, `1e-160` do.
+
+So the mutants were killable and the corpus could not reach them — the same
+blind spot unit #10 found for scalar integers, one type over: `harness/generate.py`
+had **never drawn a real outside ±1e3**, because `_ladder` and `_literal_values`
+are both driven off `_bounds`, whose default is ±1e3, and a REAL(8) spans 1e±308.
+
+### Two additions to `harness/generate.py`, and the second is the finding
+
+`_real_magnitude_ladder` — the thresholds where a product first goes subnormal,
+first flushes to zero and first overflows, plus a decade inside each region,
+across defaulted scalar reals. The obvious fix. **It bought nothing**: 1380 →
+2172 cases, score still 0.968, same four survivors.
+
+The reason is worth more than the fix. A rung puts `omega` at 1e-158 and leaves
+`K` at the ±1e3 default, and the coefficient subtracts the two — so a 2⁻¹⁰⁷⁴
+difference in the first term is annihilated before it can reach an output. **A
+ladder that varies one parameter at a time is blind to any defect the other
+parameters can dominate.** The second addition runs each rung again with every
+other defaulted scalar real pinned to an isolating `0.0` or `1e300` (so a
+reciprocal like `2.0/DT` underflows): 2652 cases, 126 of 126, **1.000**.
+
+Both are appended last, both draw no random numbers when they do not fire, and
+both are gated on a DEFAULTED scalar real with no role — so a declared range in
+`harness/ranges.toml` still means what it says, and `role is None` keeps them off
+anything the reference indexes with, which is the shape that segfaulted the
+reference when unit #10's integer ladder first fired. Loop repo test suite: 422
+passed, 2 skipped, before and after.
+
+**Not an X3 change.** No default is loosened, no existing case is altered, and
+the effect is strictly more input and strictly more mutants killed — the same
+argument unit #10 recorded. What DOES change for any earlier unit with a
+defaulted scalar real is its case COUNT, and the `R_random` tail after the R6
+block now draws from a further-advanced RNG. That was already true of the
+integer ladder; it is stated here because no entry had said it.
+
+### For the Driver
+
+Two candidates, neither acted on here.
+
+1. **`vit.yaml`'s `translations:` block is now one unit behind the tree.** Unit
+   #12 correctly reverted `vit.yaml` wholesale after a STUB verify wrote a false
+   record into it, and `NonDecreasing` went with it. Twelve entries, thirteen
+   integrated units. Cosmetic — nothing reads it as a disposition — but it is a
+   machine-readable file that disagrees with `plan.json`, and the campaign has
+   been bitten by exactly that shape before.
+2. **The harness prints at most 8 mismatch lines.** Unit #5's rule is that a
+   no-op red test must fail every case AND the mismatch list must name every
+   output. For a unit with more outputs than fit in 8 lines the list cannot be
+   read off the log — here it named 6 of 11, and the five coefficient arrays
+   only differ in cases where the init branch fires. The `R4` line does
+   enumerate what is compared, and the mutation run is what actually constrains
+   them, but the rule as written cannot be satisfied by reading the artifact.

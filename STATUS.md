@@ -662,16 +662,16 @@ fields — those are hypotheses, not facts. Run
 
 ## Counts
 
-11 attempted / **11 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+13 attempted / **13 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / 0 blocked.
 
-69 units in `plan.json`; 58 remain.
+69 units in `plan.json`; 56 remain.
 
 (This block read `8 / 8 / 61 remain` through unit #9, which did not update it.
 Recounted from `plan.json` at unit #10 rather than incremented, and recounted
 again at unit #11.)
 
-**7 of the 11 integrated units are invisible to the gate**, for six different
+**7 of the 13 integrated units are invisible to the gate**, for six different
 reasons: `AddToList` is never called, `Conv2UC` is called constantly and
 cancelled, `ExtController` is never called *and* has no observable effect on any
 channel the gate compares even when it is, `GetPath` is called in every scenario
@@ -688,9 +688,19 @@ before #9 do not have theirs; that is recorded under Open.
 
 **Unit #11 needs no control**, and that is the point of the rule rather than an
 exception to it: `LPFilter`'s gate red test WENT RED (1,592,059 of 5,252,000), so
-it demonstrated the chain a control would have been asked to demonstrate. Four of
-the eleven units are gate-visible — ColemanTransform 124,353,
-ColemanTransformInverse 389,644, GetWords 1,857,893, LPFilter 1,592,059.
+it demonstrated the chain a control would have been asked to demonstrate. Six of
+the thirteen units are gate-visible — ColemanTransform 124,353,
+ColemanTransformInverse 389,644, GetWords 1,857,893, LPFilter 1,592,059,
+NonDecreasing 1,857,893, NotchFilter 551,278.
+
+**Unit #12's is not a sixth sighting; unit #13's is.** `NonDecreasing`'s
+1,857,893 is byte-identical to `GetWords`' — both perturbations end in the
+controller rejecting its own input file, which has ONE output signature — so
+what the gate constrains there is a single boolean. `NotchFilter`'s 551,278
+matches no other committed redtest figure, and it is a third of `LPFilter`'s
+because only 6 of the 27 scenarios configure a notch filter at all. Compare the
+moved count against every committed artifact before writing "the gate sees this
+unit".
 
 **Every unit now has a `harness/` and a `mutation/` artifact.** `ExtController`
 was the exception for two dispatches and the absence was recorded as the
