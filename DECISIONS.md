@@ -3292,3 +3292,122 @@ with a comment saying so, alongside this unit's own entry: fourteen and
 fourteen, and `plan.json` and `vit.yaml` now name the same set.
 
 No amendment to the invariant layer is proposed.
+
+## 2026-08-12 — Unit #15 `PathIsRelative`: `integrated`, and a red test that was
+## seen in a way its own verdict cannot express
+
+`LOGICAL FUNCTION PathIsRelative(GivenFil)` — three `INDEX` tests deciding
+whether a file name is absolute. Four live layers, a kernel that is a lookup
+table, mutation 1.000, gate green over 5,252,000 values, and two findings that
+are not about this unit.
+
+### The gate saw the perturbation by KILLING 24 of 27 scenarios, and reported
+### `went_red: false`
+
+Recorded first, fixed second (C12). `gate/PathIsRelative.redtest.json` as first
+taken is kept unmodified at
+`evidence/PathIsRelative/gate.redtest.as-taken-scenarios-died.json`.
+
+Forcing the unit to answer `.TRUE.` makes `ReadControlParameterFileSub` prefix
+`PriPath` onto a `CntrPar%PerfFileName` that is already absolute in all 14
+input files. The scenarios do not finish with wrong numbers — they **abort**:
+
+```
+At line 879 of file rosco/controller/src/ReadSetParameters.f90 (unit = 10)
+Fortran runtime error: Cannot open file
+  '/workspace/ROSCO-r2/Examples//workspace/ROSCO-r2/Examples/.../Cp_Ct_Cq.NREL5MW.txt'
+```
+
+24 of 27 died, `compared` fell from 5,252,000 to 260,000, `mismatched` stayed 0.
+`went_red` is `mismatched > 0 and compared > 0`, so it read **false**, and the
+message printed under it — *"either the line is never executed by these
+scenarios, or the gate cannot observe it"* — is false of this run. A perturbation
+that stops the simulation is the most visible failure available, and the
+instrument classified it as invisibility.
+
+`verdict_of` already treats `scenarios_failed` as broken **for an ordinary gate
+run**; only the red-test path ignores it. So this is one branch's omission, not
+a missing concept.
+
+**Fixed by addition (P5), not by redefinition (X3).** `scripts/gate.py` now also
+writes `revert_scenarios_failed` and `perturbation_broke_scenarios` (the
+scenarios that failed under the perturbation and ran on the revert), and prints
+an accurate message when that list is non-empty. `went_red` and the exit code
+are deliberately UNCHANGED: fourteen committed red-test artifacts mean what they
+say today, and re-defining a verdict mid-campaign is exactly what X3 forbids. A
+reader who needs the distinction reads the new field; nobody's old number moves.
+
+**Nothing already committed is re-read by this**, and that was checked rather
+than assumed: every `gate/*.json` in the tree was scanned and
+`PathIsRelative.redtest.json` is the first with a non-empty `scenarios_failed`.
+
+**This may belong to the method rather than to this campaign.** The Driver is
+the one to decide. E3.2 asks for "gate observed red under a deliberate
+perturbation" and P3 for a green that "must be able to go red"; neither says how
+a red test should classify a perturbation that prevents the run from producing
+output at all. The rule that would generalise is: *a red test must distinguish
+"nothing moved" from "the run did not happen", and the second is not evidence of
+blindness.* No edit to the invariant layer is made here; this paragraph is the
+signal.
+
+### Both directions of wrongness are invisible to the gate, for opposite reasons
+
+The two call sites are one line apart, and coverage of the clean source shows
+they take different branches: `PathIsRelative = .TRUE.` has 25 hits against the
+function's 56, so one call answers each way in 24 of the 27 scenarios.
+
+* `PerfFileName` is absolute everywhere, so the answer is `.FALSE.`, the branch
+  is skipped, and a wrong `.FALSE.` changes nothing. A wrong `.TRUE.` kills the
+  run — above.
+* `OL_Filename` is the literal `"unused"` wherever `OL_Mode = 0`, so the answer
+  is `.TRUE.` and the branch **does** run. The name it builds is read only when
+  `OL_Mode > 0`, and every scenario with `OL_Mode > 0` is handed an absolute path
+  by `vit_sim.py`. The live `.TRUE.` answer writes a string nothing opens.
+
+Forcing `.FALSE.` moves 0 of 5,252,000 with all 27 scenarios alive
+(`replacements: 1`, `revert_verified: true`). Unit #9's rule applied because a
+red test came back green: the same-build GetWords control reproduces 1,857,893
+of 5,252,000 byte-identically, so the chain is alive and the quiet is the unit's.
+
+This is unit #6's `GetPath` finding measured from the other side. `PriPath` is
+invisible *because* this guard is false where it would matter; `PathIsRelative`
+is invisible *because* it is only true where nothing reads the result.
+
+### Mutation 1.000 was reached by DELETING sites, not by adding cases
+
+The first form transcribed the reference's `INDEX` literally, as
+`index_of(s, len_s, sub, len_sub)` returning the position. It scores **0.938**,
+and both survivors are its loop bound `len_s - len_sub + 1`:
+`len_s - len_sub` → `len_s + len_sub`, and `+ 1` → `+ 2`. Neither is a wrong
+answer. Both run the search **past the end of the buffer** — undefined
+behaviour, which cannot honestly be DECLARED equivalent (unit #8's rule about
+out-of-bounds survivors), and which no value comparison can see.
+
+The position is also a quantity nothing downstream reads: all three `INDEX`
+calls are immediately compared against `0`, so any site computing *which*
+position matched is unobservable by construction. That is unit #4's `LEN_TRIM`
+finding one intrinsic over, and its remedy is the same — delete the restatement
+and write the proof in the file, rather than declare the blindness away.
+
+Rewritten as two predicates — `contains_pair`, indexed on the position of the
+SECOND character so the bound is a bare `i <= len_s`, and `contains_char` — the
+**same 387 cases** kill **26 of 26**. Both harness runs report 387 cases
+(`evidence/PathIsRelative/harness.index_position.json` is the first form's), so
+the score difference is the code and not the corpus. This is the first unit since
+#4 whose score gap was a transcription choice rather than a generator gap.
+
+The corpus was checked before that conclusion, not after: decoding
+`pathisrelative_cases.bin` gives 331 `.TRUE.` against 56 `.FALSE.`, the two
+constant stubs fail 331 and 56 respectively, and the reference's own
+two-character sets appear 8 times at the start of a string and 4 times at the end
+— which is exactly what the two boundary mutants of the predicate form need in
+order to die (`evidence/PathIsRelative/corpus_answer_distribution.txt`).
+
+### Re-observed, already recorded
+
+`vit check -f ROSCO_Helpers.f90 --function PathIsRelative` reported two findings
+(`narrowing-local` on `ExpUCVarName`, `delimiter-set` on `'!'`), neither of which
+exists in this unit's six-line body or its Fortran — both come from other
+functions in the same file. Unit #4 recorded that `-f` scopes cross-source checks
+to the FILE and `--function` only sets the report header. No action; the entry
+already exists in the target layer.

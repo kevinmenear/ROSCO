@@ -4,6 +4,55 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-12: unit #15 `PathIsRelative` is `integrated` and CLOSED**, first
+dispatch.
+
+**FOUR LAYERS ALIVE; THE KERNEL IS A LOOKUP TABLE AND ITS OWN STUB SAYS SO.**
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 1 case, scenario 1 | 197 field rows, ALL `IDENTICAL` | constant `.TRUE.` → 1 of 197 `OUT_TOL`, naming `perffilename`; **the constant `.FALSE.` stub, reading no argument, PASSES 197 of 197** |
+| differential harness vs clean Fortran | 387 checked, 0 failed, 0 inadmissible | the answer INVERTED → **387 of 387 failed**, naming `vit_result`. A constant could not have been the red test: the corpus answers `.TRUE.` 331 times and `.FALSE.` 56 |
+| mutation score | **26/26 behavioural killed, 1.000**, 0 declared equivalent, 0 nocompile | the literal `INDEX` form scores 0.938 — see below |
+| post-integration harness (wrapper only) | 387 checked, 0 failed | `LEN(GivenFil)` → `LEN(GivenFil) - 1` at the bridge CALL → **4 of 387**, which is exactly the number of cases whose answer depends on the last character; revert, rebuild, green |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **neither direction moved a value** — and the `.TRUE.` direction **killed 24 of the 27 scenarios** |
+
+**A PERTURBATION CAN BE MAXIMALLY VISIBLE AND STILL READ `went_red: false`.**
+Forcing the unit to answer `.TRUE.` prefixes `PriPath` onto an already-absolute
+`CntrPar%PerfFileName`, and the scenarios do not finish wrong — they **abort**:
+`Fortran runtime error: Cannot open file '.../Examples//workspace/.../Cp_Ct_Cq.NREL5MW.txt'`
+at `ReadSetParameters.f90:879`. 24 of 27 die; `compared` falls 5,252,000 →
+260,000; `mismatched` stays 0, so `went_red` — which counts VALUES — reads false
+beside the message *"either the line is never executed by these scenarios, or the
+gate cannot observe it"*, which is false of this run. The artifact **as first
+taken** is kept at `evidence/PathIsRelative/gate.redtest.as-taken-scenarios-died.json`
+(C12). `scripts/gate.py` now also records `perturbation_broke_scenarios` and
+prints the accurate message; `went_red` and the exit code are deliberately
+unchanged (X3). **No earlier `gate/*.json` has a non-empty `scenarios_failed`**,
+so nothing already committed is re-read by this.
+
+**THE TWO CALL SITES ARE ONE LINE APART AND FAIL IN OPPOSITE DIRECTIONS.**
+`PerfFileName` is absolute in all 14 inputs, so the answer is `.FALSE.` and the
+branch is skipped — a wrong `.FALSE.` changes nothing and a wrong `.TRUE.` kills
+the run. `OL_Filename` is the literal `"unused"` wherever `OL_Mode = 0`, so the
+answer IS `.TRUE.` and the branch DOES run, 25 times — and the name it builds is
+read only when `OL_Mode > 0`, where `vit_sim.py` supplies an absolute path and
+the answer is `.FALSE.` again. Forcing `.FALSE.` moves **0 of 5,252,000** with
+all 27 scenarios alive. This is the guard that makes unit #6's `GetPath`
+invisible, measured from the other side.
+
+**REACHING 1.000 MEANT DELETING SITES, NOT ADDING CASES — the first such unit
+since #4.** The reference's three `INDEX` calls written literally, as a function
+returning a POSITION, score **0.938**, and both survivors are its loop bound
+`len_s - len_sub + 1`: the loosening mutants read **past the end of the buffer**,
+so they are undefined behaviour rather than wrong answers, and the position they
+return is a quantity nothing downstream reads — all three calls are immediately
+compared against `0`. Rewritten as two predicates whose loop bounds carry no
+arithmetic, **the same 387 cases kill 26 of 26**. Both harness runs report 387,
+which is what says the corpus was never the problem.
+
+---
+
 **As of 2026-08-11: unit #14 `NotchFilterSlopes` is `integrated` and CLOSED**,
 first dispatch.
 
@@ -715,17 +764,22 @@ fields — those are hypotheses, not facts. Run
 
 ## Counts
 
-14 attempted / **14 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+15 attempted / **15 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / 0 blocked.
 
-69 units in `plan.json`; 55 remain.
+69 units in `plan.json`; 54 remain.
 
 (This block read `8 / 8 / 61 remain` through unit #9, which did not update it.
 Recounted from `plan.json` at unit #10 rather than incremented, and recounted
 again at unit #11.)
 
-**7 of the 14 integrated units are invisible to the gate**, for six different
-reasons: `AddToList` is never called, `Conv2UC` is called constantly and
+**8 of the 15 integrated units are invisible to the gate**, for seven different
+reasons. `PathIsRelative` is the new one and it is a seventh shape: its answer is
+`.FALSE.` at the call site where the value would matter and `.TRUE.` at the one
+whose value nothing reads, so no wrong answer it can give moves a compared value
+— while the wrong answer in the *other* direction does not produce a wrong number
+at all, it **aborts 24 of the 27 scenarios**. The remaining six: `AddToList` is
+never called, `Conv2UC` is called constantly and
 cancelled, `ExtController` is never called *and* has no observable effect on any
 channel the gate compares even when it is, `GetPath` is called in every scenario
 and its answer is never consumed, `GetRoot`'s answer IS consumed — by a live line
@@ -742,9 +796,17 @@ before #9 do not have theirs; that is recorded under Open.
 **Unit #11 needs no control**, and that is the point of the rule rather than an
 exception to it: `LPFilter`'s gate red test WENT RED (1,592,059 of 5,252,000), so
 it demonstrated the chain a control would have been asked to demonstrate. Seven
-of the fourteen units are gate-visible — ColemanTransform 124,353,
+of the fifteen units are gate-visible — ColemanTransform 124,353,
 ColemanTransformInverse 389,644, GetWords 1,857,893, LPFilter 1,592,059,
 NonDecreasing 1,857,893, NotchFilter 551,278, NotchFilterSlopes 128,918.
+
+**Unit #15 needed a control and it is the reason the rule exists.** Both of
+`PathIsRelative`'s red tests came back with 0 values moved, and on that build the
+GetWords control reproduced 1,857,893 exactly — so the quiet is the unit's, not
+the chain's. It also produced the first `gate/*.json` in this campaign with a
+non-empty `scenarios_failed`: 24 of 27, which is a perturbation the gate saw in
+the only way a killed scenario can be seen. `went_red` cannot express that, and
+`perturbation_broke_scenarios` was added beside it rather than in place of it.
 
 **Unit #12's is not a sixth sighting; unit #13's is.** `NonDecreasing`'s
 1,857,893 is byte-identical to `GetWords`' — both perturbations end in the

@@ -339,6 +339,93 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A GATE RED TEST CAN BE SEEN BY KILLING THE RUN, AND `went_red` COUNTS ONLY
+  VALUES.** Unit #15, and it is the first `gate/*.json` in this campaign with a
+  non-empty `scenarios_failed`.
+
+  Forcing `PathIsRelative` to answer `.TRUE.` prefixes `PriPath` onto an
+  already-absolute `PerfFileName`, and the scenarios do not finish wrong -- they
+  ABORT, in the Fortran runtime, before writing anything. 24 of 27 died,
+  `compared` fell 5,252,000 -> 260,000, `mismatched` stayed 0, and
+  `went_red` (`mismatched > 0`) read **false** under the message *"either the
+  line is never executed by these scenarios, or the gate cannot observe it"* --
+  which is false of that run. The most visible failure available, filed as
+  invisibility.
+
+  `verdict_of` already treats `scenarios_failed` as broken for an ORDINARY gate
+  run; only the red-test branch ignored it. `gate.py` now also writes
+  `perturbation_broke_scenarios` and prints an accurate line; `went_red` and the
+  exit code are UNCHANGED on purpose (X3 -- fourteen committed artifacts mean
+  what they say). Read the field, and read it before writing an observability
+  note:
+
+  ```
+  python3.12 -c "import json,glob; [print(f, json.load(open(f)).get('scenarios_failed')) \
+      for f in sorted(glob.glob('gate/*redtest*.json'))]"
+  ```
+
+  A perturbation that can make the controller REJECT or FAIL TO READ its own
+  input file is this shape -- anything touching a file name, a unit number, or a
+  validity check. Diagnose it rather than reporting it: one scenario, run by
+  hand, prints the runtime error
+  (`evidence/PathIsRelative/gate.always-true-scenario1-runtime-error.log`), and
+  that is the difference between "24 scenarios failed" and a cause.
+
+- **ASK WHICH DIRECTION OF WRONGNESS THE GATE COULD SEE -- a unit can answer
+  both ways in the campaign and still have neither answer observable.** Unit
+  #15, and it is unit #6's `GetPath` finding from the other side.
+
+  Coverage of the clean source is what says it, in one line: the function is
+  entered 56 times and `PathIsRelative = .TRUE.` has 25 hits, so the two call
+  sites one line apart take DIFFERENT branches. And each is invisible for its
+  own reason -- `PerfFileName` is absolute everywhere, so a wrong `.FALSE.`
+  changes nothing; `OL_Filename` is `"unused"` and the name the branch builds is
+  read only when `OL_Mode > 0`, where the path is absolute and the answer is
+  `.FALSE.` again. Two red tests, opposite directions, 0 values moved by either.
+
+  ```
+  # the branch BODIES, not the branch -- unit #7's recipe, and it costs seconds
+  python3.12 -c "import json;d=json.load(open('coverage/line_coverage.json'));\
+      h=d['hits']['<File>.f90'];print([(l, sum(h[str(l)].values()) if str(l) in h else 0) \
+      for l in range(<lo>,<hi>)])"
+  ```
+
+  **Beware the line numbers.** Coverage is indexed against the CLEAN source, and
+  an integrated tree has moved every line below each wrapper -- here by two. A
+  first reading of this unit's coverage landed one statement off and said the
+  `.TRUE.` branch was dead, which would have been the wrong observability note
+  entirely. Re-`grep` the function in the file the coverage was generated from.
+
+- **A POSITION NOTHING READS IS AN UNOBSERVABLE SITE, AND `INDEX` IS FULL OF
+  THEM.** Unit #15, and it is the first score gap since unit #4 that was the
+  TRANSCRIPTION rather than the corpus.
+
+  `PathIsRelative` calls `INDEX` three times and compares all three against `0`.
+  Written literally -- a function returning the POSITION -- it scores **0.938**,
+  and both survivors are its loop bound `len_s - len_sub + 1`
+  (`-` -> `+`, and `+ 1` -> `+ 2`). Neither is a wrong answer: both read PAST
+  THE END of the buffer, so they are undefined behaviour that no value
+  comparison can see and that cannot honestly be declared equivalent. The
+  position is also a quantity nothing downstream reads, so every site computing
+  WHICH position matched is unobservable by construction.
+
+  Rewritten as predicates -- `contains_pair`, indexed on the position of the
+  SECOND character so the bound is a bare `i <= len_s`, and `contains_char` --
+  the SAME 387 cases kill **26 of 26**.
+
+  Two checks, and the second is what tells corpus from code:
+
+  ```
+  # 1. does the reference ever READ the value, or only test it against 0?
+  grep -n 'INDEX(' <the unit's Fortran>
+  # 2. do the two runs report the SAME case count? then the corpus did not move
+  python3.12 -c "import json; [print(f, json.load(open(f))['checked']) for f in \
+      ('harness/<Unit>.json','evidence/<Unit>/harness.<first form>.json')]"
+  ```
+
+  Keep the first form's mutation artifact. `mutation/PathIsRelative.survivors_index_position.json`
+  is the measurement that makes the departure a finding rather than a preference.
+
 - **A CORPUS CANNOT CONTAIN A VALUE ITS OWN DEDUP COLLAPSES, and `-0.0` is the
   first one.** Unit #14, and it is the ninth corpus blind spot -- the one where
   the value was not missing from the ladder, it was unrepresentable in it.
