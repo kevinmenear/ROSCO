@@ -133,6 +133,21 @@ MODULE ROSCO_Helpers
         END FUNCTION pathisrelative_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of Read_OL_Input
+    INTERFACE
+        SUBROUTINE read_ol_input_c(OL_InputFileName, Unit_OL_Input, NumChannels, Channels_cptr, n_Channels_rows, n_Channels_cols, ErrVar) BIND(C, NAME='read_ol_input_c')
+            USE ISO_C_BINDING
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: OL_InputFileName(*)
+            INTEGER(C_INT), VALUE :: Unit_OL_Input
+            INTEGER(C_INT), VALUE :: NumChannels
+            TYPE(C_PTR), INTENT(OUT) :: Channels_cptr
+            INTEGER(C_INT), INTENT(OUT) :: n_Channels_rows
+            INTEGER(C_INT), INTENT(OUT) :: n_Channels_cols
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE read_ol_input_c
+    END INTERFACE
+
 CONTAINS
 
     !=======================================================================
@@ -1347,132 +1362,51 @@ END subroutine ReadEmptyLine
     ! Timeseries or lookup tables of the form
     ! index (time or wind speed)   channel_1 \t channel_2 \t channel_3 ...
     ! This could be used to read any group of data of unspecified length ...
-SUBROUTINE Read_OL_Input(OL_InputFileName, Unit_OL_Input, NumChannels, Channels, ErrVar)
-
-    USE ROSCO_Types, ONLY : ErrorVariables
-
-    CHARACTER(1024), INTENT(IN)                             :: OL_InputFileName    ! DISCON input filename
-    INTEGER(IntKi), INTENT(IN)                              :: Unit_OL_Input 
-    INTEGER(IntKi), INTENT(IN)                              :: NumChannels     ! Number of open loop channels being defined
-    ! REAL(DbKi), INTENT(OUT), DIMENSION(:), ALLOCATABLE      :: Breakpoints    ! Breakpoints of open loop Channels
-    REAL(DbKi), INTENT(OUT), DIMENSION(:,:), ALLOCATABLE    :: Channels         ! Open loop channels
-    TYPE(ErrorVariables),         INTENT(INOUT)          :: ErrVar   ! Current line of input
-
-
-    LOGICAL                                                 :: FileExists
-    INTEGER                                                 :: IOS                                                 ! I/O status of OPEN.
-    CHARACTER(1024)                                         :: Line              ! Temp variable for reading whole line from file
-    INTEGER(IntKi)                                          :: NumComments
-    INTEGER(IntKi)                                          :: NumDataLines
-    REAL(DbKi)                                              :: TmpData(NumChannels)  ! Temp variable for reading all columns from a line
-    CHARACTER(15)                                           :: NumString
-
-    INTEGER(IntKi)                                          :: I,J
-
-    CHARACTER(*),               PARAMETER                   :: RoutineName = 'Read_OL_Input'
-
-    !-------------------------------------------------------------------------------------------------
-    ! Read from input file, borrowed (read: copied) from (Open)FAST team...thanks!
-    !-------------------------------------------------------------------------------------------------
-
-    !-------------------------------------------------------------------------------------------------
-    ! Open the file for reading
-    !-------------------------------------------------------------------------------------------------
-
-    INQUIRE (FILE = OL_InputFileName, EXIST = FileExists)
-
-    IF ( .NOT. FileExists) THEN
-        ErrVar%aviFAIL = -1
-        ErrVar%ErrMsg = TRIM(OL_InputFileName)// ' does not exist'
-
-    ELSE
-
-        OPEN( Unit_OL_Input, FILE=TRIM(OL_InputFileName), STATUS='OLD', FORM='FORMATTED', IOSTAT=IOS, ACTION='READ' )
-
-        IF (IOS /= 0) THEN
-            ErrVar%aviFAIL = -1
-            ErrVar%ErrMsg = 'Cannot open '//TRIM(OL_InputFileName)
-        
-        ELSE
-            ! Do all the stuff!
-            !-------------------------------------------------------------------------------------------------
-            ! Find the number of comment lines
-            !-------------------------------------------------------------------------------------------------
-
-            LINE = '!'                          ! Initialize the line for the DO WHILE LOOP
-            NumComments = -1                    ! the last line we read is not a comment, so we'll initialize this to -1 instead of 0
-
-            DO WHILE ( (INDEX( LINE, '!' ) > 0) .OR. (INDEX( LINE, '#' ) > 0) .OR. (INDEX( LINE, '%' ) > 0) ) ! Lines containing "!" are treated as comment lines
-                NumComments = NumComments + 1
-                
-                READ(Unit_OL_Input,'( A )',IOSTAT=IOS) LINE
-
-                ! NWTC_IO has some error catching here that we'll skip for now
-        
-            END DO !WHILE
-
-            !-------------------------------------------------------------------------------------------------
-            ! Find the number of data lines
-            !-------------------------------------------------------------------------------------------------
-
-            NumDataLines = 0
-
-            READ(LINE,*,IOSTAT=IOS) ( TmpData(I), I=1,NumChannels ) ! this line was read when we were figuring out the comment lines; let's make sure it contains
-
-            DO WHILE (IOS == 0)  ! read the rest of the file (until an error occurs)
-                NumDataLines = NumDataLines + 1
-                
-                READ(Unit_OL_Input,*,IOSTAT=IOS) ( TmpData(I), I=1,NumChannels )
-            
-            END DO !WHILE
-        
-        
-            IF (NumDataLines < 1) THEN
-                WRITE (NumString,'(I11)')  NumComments
-                ErrVar%aviFAIL = -1
-                ErrVar%ErrMsg = 'Error: '//TRIM(NumString)//' comment lines were found in the uniform wind file, '// &
-                            'but the first data line does not contain the proper format.'
-                CLOSE(Unit_OL_Input)
-            END IF
-
-            !-------------------------------------------------------------------------------------------------
-            ! Allocate arrays for the uniform wind data
-            !-------------------------------------------------------------------------------------------------
-            ALLOCATE(Channels(NumDataLines,NumChannels))
-
-            !-------------------------------------------------------------------------------------------------
-            ! Rewind the file (to the beginning) and skip the comment lines
-            !-------------------------------------------------------------------------------------------------
-
-            REWIND( Unit_OL_Input )
-
-            DO I=1,NumComments
-                READ(Unit_OL_Input,'( A )',IOSTAT=IOS) LINE
-            END DO !I
-        
-            !-------------------------------------------------------------------------------------------------
-            ! Read the data arrays
-            !-------------------------------------------------------------------------------------------------
-        
-            DO I=1,NumDataLines
-            
-                READ(Unit_OL_Input,*,IOSTAT=IOS) ( TmpData(J), J=1,NumChannels )
-
-                IF (IOS > 0) THEN
-                    CLOSE(Unit_OL_Input)
-                END IF
-
-                Channels(I,:)        = TmpData
-        
-            END DO !I     
+    SUBROUTINE Read_OL_Input(OL_InputFileName, Unit_OL_Input, NumChannels, Channels, ErrVar)
+        USE ISO_C_BINDING
+        USE ROSCO_Types, ONLY : ErrorVariables
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
+        IMPLICIT NONE
+        INTEGER(4), INTENT(IN) :: Unit_OL_Input
+        INTEGER(4), INTENT(IN) :: NumChannels
+        REAL(8), INTENT(OUT), ALLOCATABLE :: Channels(:,:)
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        CHARACTER(1024), INTENT(IN) :: OL_InputFileName
+        CHARACTER(KIND=C_CHAR) :: OL_InputFileName_c(1024)
+        INTEGER :: vit_i_OL_InputFileName
+        ! VIT allocate-on-return: the C++ side discovers the extent,
+        ! allocates, and hands back a pointer; the wrapper copies into the
+        ! Fortran ALLOCATABLE and frees. C_NULL_PTR means 'not allocated'.
+        INTERFACE
+            SUBROUTINE vit_free(vit_p) BIND(C, NAME='vit_free')
+                USE ISO_C_BINDING
+                TYPE(C_PTR), VALUE :: vit_p
+            END SUBROUTINE vit_free
+        END INTERFACE
+        TYPE(C_PTR) :: Channels_cptr
+        INTEGER(C_INT) :: n_Channels_rows
+        INTEGER(C_INT) :: n_Channels_cols
+        REAL(8), POINTER :: Channels_fptr(:,:)
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        ! Convert CHARACTER args to C_CHAR arrays
+        DO vit_i_OL_InputFileName = 1, 1024
+            OL_InputFileName_c(vit_i_OL_InputFileName) = OL_InputFileName(vit_i_OL_InputFileName:vit_i_OL_InputFileName)
+        END DO
+        Channels_cptr = C_NULL_PTR
+        n_Channels_rows = 0
+        n_Channels_cols = 0
+        CALL read_ol_input_c(OL_InputFileName_c, Unit_OL_Input, NumChannels, Channels_cptr, n_Channels_rows, n_Channels_cols, C_LOC(ErrVar_view))
+        IF (C_ASSOCIATED(Channels_cptr)) THEN
+            CALL C_F_POINTER(Channels_cptr, Channels_fptr, [n_Channels_rows, n_Channels_cols])
+            ALLOCATE(Channels(n_Channels_rows, n_Channels_cols))
+            Channels = Channels_fptr
+            CALL vit_free(Channels_cptr)
         END IF
-    END IF
-
-    IF (ErrVar%aviFAIL < 0) THEN
-        ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
-    ENDIF
-
-END SUBROUTINE Read_OL_Input
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
+    END SUBROUTINE Read_OL_Input
 
 !=======================================================================
 !> This routine returns the next unit number greater than 9 that is not currently in use.

@@ -1,0 +1,435 @@
+ 
+ ***************** Verification against 'Read_OL_Input.0.0.1' *****************
+VIT: Read_OL_Input: ErrVar%ErrMsg is not allocated; the assignment of 77 bytes is refused
+VIT: Read_OL_Input: ErrVar%ErrMsg is not allocated; the assignment of 14 bytes is refused
+VIT: Read_OL_Input: ErrVar%ErrMsg is not allocated; the assignment of 77 bytes is refused
+VIT: Read_OL_Input: ErrVar%ErrMsg is not allocated; the assignment of 14 bytes is refused
+VIT: Read_OL_Input: ErrVar%ErrMsg is not allocated; the assignment of 77 bytes is refused
+VIT: Read_OL_Input: ErrVar%ErrMsg is not allocated; the assignment of 14 bytes is refused
+ cntrpar%zmq_id is IDENTICAL.
+ [VIT_FIELD] zmq_id | IDENTICAL |            0  |            0
+ cntrpar%logginglevel is IDENTICAL.
+ [VIT_FIELD] logginglevel | IDENTICAL |            1  |            1
+ cntrpar%echo is IDENTICAL.
+ [VIT_FIELD] echo | IDENTICAL |            0  |            0
+ cntrpar%ext_interface is IDENTICAL.
+ [VIT_FIELD] ext_interface | IDENTICAL |            1  |            1
+ cntrpar%dt_out is IDENTICAL.
+ [VIT_FIELD] dt_out | IDENTICAL |   0.10000000149011612       |   0.10000000149011612     
+ cntrpar%n_dt_out is IDENTICAL.
+ [VIT_FIELD] n_dt_out | IDENTICAL |            1  |            1
+ cntrpar%n_dt_zmq is IDENTICAL.
+ [VIT_FIELD] n_dt_zmq | IDENTICAL |           10  |           10
+ cntrpar%f_lpftype is IDENTICAL.
+ [VIT_FIELD] f_lpftype | IDENTICAL |            1  |            1
+ cntrpar%f_lpfcornerfreq is IDENTICAL.
+ [VIT_FIELD] f_lpfcornerfreq | IDENTICAL |    1.5708000000000000       |    1.5708000000000000     
+ cntrpar%f_lpfdamping is IDENTICAL.
+ [VIT_FIELD] f_lpfdamping | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%f_numnotchfilts is IDENTICAL.
+ [VIT_FIELD] f_numnotchfilts | IDENTICAL |            0  |            0
+ cntrpar%f_genspdnotch_n is IDENTICAL.
+ [VIT_FIELD] f_genspdnotch_n | IDENTICAL |            0  |            0
+ cntrpar%f_twrtopnotch_n is IDENTICAL.
+ [VIT_FIELD] f_twrtopnotch_n | IDENTICAL |            0  |            0
+ cntrpar%f_notchfreqs is IDENTICAL.
+ [VIT_ARRAY] f_notchfreqs | IDENTICAL | size=           1
+ cntrpar%f_notchbetanum is IDENTICAL.
+ [VIT_ARRAY] f_notchbetanum | IDENTICAL | size=           1
+ cntrpar%f_notchbetaden is IDENTICAL.
+ [VIT_ARRAY] f_notchbetaden | IDENTICAL | size=           1
+ cntrpar%f_sscornerfreq is IDENTICAL.
+ [VIT_FIELD] f_sscornerfreq | IDENTICAL |   0.62829999999999997       |   0.62829999999999997     
+ cntrpar%f_wecornerfreq is IDENTICAL.
+ [VIT_FIELD] f_wecornerfreq | IDENTICAL |   0.20943999999999999       |   0.20943999999999999     
+ cntrpar%f_flcornerfreq is IDENTICAL.
+ [VIT_ARRAY] f_flcornerfreq | IDENTICAL | size=           2
+ cntrpar%f_flhighpassfreq is IDENTICAL.
+ [VIT_FIELD] f_flhighpassfreq | IDENTICAL |    1.0420000000000000E-002  |    1.0420000000000000E-002
+ cntrpar%f_yawerr is IDENTICAL.
+ [VIT_FIELD] f_yawerr | IDENTICAL |   0.17952000000000001       |   0.17952000000000001     
+ cntrpar%f_flpcornerfreq is IDENTICAL.
+ [VIT_ARRAY] f_flpcornerfreq | IDENTICAL | size=           2
+ cntrpar%f_vsrefspdcornerfreq is IDENTICAL.
+ [VIT_FIELD] f_vsrefspdcornerfreq | IDENTICAL |   0.20943999999999999       |   0.20943999999999999     
+ cntrpar%tra_mode is IDENTICAL.
+ [VIT_FIELD] tra_mode | IDENTICAL |            0  |            0
+ cntrpar%tra_exclspeed is IDENTICAL.
+ [VIT_FIELD] tra_exclspeed | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%tra_exclband is IDENTICAL.
+ [VIT_FIELD] tra_exclband | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%tra_ratelimit is IDENTICAL.
+ [VIT_FIELD] tra_ratelimit | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%td_mode is IDENTICAL.
+ [VIT_FIELD] td_mode | IDENTICAL |            0  |            0
+ cntrpar%fa_hpfcornerfreq is IDENTICAL.
+ [VIT_FIELD] fa_hpfcornerfreq | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%fa_intsat is IDENTICAL.
+ [VIT_FIELD] fa_intsat | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%fa_ki is IDENTICAL.
+ [VIT_FIELD] fa_ki | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%ipc_controlmode is IDENTICAL.
+ [VIT_FIELD] ipc_controlmode | IDENTICAL |            0  |            0
+ cntrpar%ipc_vramp is IDENTICAL.
+ [VIT_ARRAY] ipc_vramp | IDENTICAL | size=           2
+ cntrpar%ipc_intsat is IDENTICAL.
+ [VIT_FIELD] ipc_intsat | IDENTICAL |   0.29999999999999999       |   0.29999999999999999     
+ cntrpar%ipc_satmode is IDENTICAL.
+ [VIT_FIELD] ipc_satmode | IDENTICAL |            2  |            2
+ cntrpar%ipc_kp is IDENTICAL.
+ [VIT_ARRAY] ipc_kp | IDENTICAL | size=           2
+ cntrpar%ipc_ki is IDENTICAL.
+ [VIT_ARRAY] ipc_ki | IDENTICAL | size=           2
+ cntrpar%ipc_azioffset is IDENTICAL.
+ [VIT_ARRAY] ipc_azioffset | IDENTICAL | size=           2
+ cntrpar%ipc_cornerfreqact is IDENTICAL.
+ [VIT_FIELD] ipc_cornerfreqact | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%pc_controlmode is IDENTICAL.
+ [VIT_FIELD] pc_controlmode | IDENTICAL |            1  |            1
+ cntrpar%pc_gs_n is IDENTICAL.
+ [VIT_FIELD] pc_gs_n | IDENTICAL |           30  |           30
+ cntrpar%pc_gs_angles is IDENTICAL.
+ [VIT_ARRAY] pc_gs_angles | IDENTICAL | size=          30
+ cntrpar%pc_gs_kp is IDENTICAL.
+ [VIT_ARRAY] pc_gs_kp | IDENTICAL | size=          30
+ cntrpar%pc_gs_ki is IDENTICAL.
+ [VIT_ARRAY] pc_gs_ki | IDENTICAL | size=          30
+ cntrpar%pc_gs_kd is IDENTICAL.
+ [VIT_ARRAY] pc_gs_kd | IDENTICAL | size=          30
+ cntrpar%pc_gs_tf is IDENTICAL.
+ [VIT_ARRAY] pc_gs_tf | IDENTICAL | size=          30
+ cntrpar%pc_maxpit is IDENTICAL.
+ [VIT_FIELD] pc_maxpit | IDENTICAL |    1.5700000000000001       |    1.5700000000000001     
+ cntrpar%pc_minpit is IDENTICAL.
+ [VIT_FIELD] pc_minpit | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%pc_maxrat is IDENTICAL.
+ [VIT_FIELD] pc_maxrat | IDENTICAL |   0.17449999999999999       |   0.17449999999999999     
+ cntrpar%pc_minrat is IDENTICAL.
+ [VIT_FIELD] pc_minrat | IDENTICAL |  -0.17449999999999999       |  -0.17449999999999999     
+ cntrpar%pc_refspd is IDENTICAL.
+ [VIT_FIELD] pc_refspd | IDENTICAL |    122.90967000000001       |    122.90967000000001     
+ cntrpar%pc_finepit is IDENTICAL.
+ [VIT_FIELD] pc_finepit | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%pc_switch is IDENTICAL.
+ [VIT_FIELD] pc_switch | IDENTICAL |    1.7450000000000000E-002  |    1.7450000000000000E-002
+ cntrpar%vs_controlmode is IDENTICAL.
+ [VIT_FIELD] vs_controlmode | IDENTICAL |            2  |            2
+ cntrpar%vs_constpower is IDENTICAL.
+ [VIT_FIELD] vs_constpower | IDENTICAL |            1  |            1
+ cntrpar%vs_fbp is IDENTICAL.
+ [VIT_FIELD] vs_fbp | IDENTICAL |            0  |            0
+ cntrpar%vs_geneff is IDENTICAL.
+ [VIT_FIELD] vs_geneff | IDENTICAL |    94.400000000000006       |    94.400000000000006     
+ cntrpar%vs_arsattq is IDENTICAL.
+ [VIT_FIELD] vs_arsattq | IDENTICAL |    43093.500000000000       |    43093.500000000000     
+ cntrpar%vs_maxrat is IDENTICAL.
+ [VIT_FIELD] vs_maxrat | IDENTICAL |    40000.000000000000       |    40000.000000000000     
+ cntrpar%vs_maxtq is IDENTICAL.
+ [VIT_FIELD] vs_maxtq | IDENTICAL |    47402.900000000001       |    47402.900000000001     
+ cntrpar%vs_mintq is IDENTICAL.
+ [VIT_FIELD] vs_mintq | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%vs_minomspd is IDENTICAL.
+ [VIT_FIELD] vs_minomspd | IDENTICAL |    34.642859999999999       |    34.642859999999999     
+ cntrpar%vs_rgn2k is IDENTICAL.
+ [VIT_FIELD] vs_rgn2k | IDENTICAL |    2.3105500000000001       |    2.3105500000000001     
+ cntrpar%vs_rtpwr is IDENTICAL.
+ [VIT_FIELD] vs_rtpwr | IDENTICAL |    5000000.0000000000       |    5000000.0000000000     
+ cntrpar%vs_rttq is IDENTICAL.
+ [VIT_FIELD] vs_rttq | IDENTICAL |    43093.500000000000       |    43093.500000000000     
+ cntrpar%vs_refspd is IDENTICAL.
+ [VIT_FIELD] vs_refspd | IDENTICAL |    122.90967000000001       |    122.90967000000001     
+ cntrpar%vs_n is IDENTICAL.
+ [VIT_FIELD] vs_n | IDENTICAL |            1  |            1
+ cntrpar%vs_kp is IDENTICAL.
+ [VIT_ARRAY] vs_kp | IDENTICAL | size=           1
+ cntrpar%vs_ki is IDENTICAL.
+ [VIT_ARRAY] vs_ki | IDENTICAL | size=           1
+ cntrpar%vs_tsropt is IDENTICAL.
+ [VIT_FIELD] vs_tsropt | IDENTICAL |    7.5000000000000000       |    7.5000000000000000     
+ cntrpar%vs_fbp_n is IDENTICAL.
+ [VIT_FIELD] vs_fbp_n | IDENTICAL |           60  |           60
+ cntrpar%vs_fbp_u is IDENTICAL.
+ [VIT_ARRAY] vs_fbp_u | IDENTICAL | size=          60
+ cntrpar%vs_fbp_omega is IDENTICAL.
+ [VIT_ARRAY] vs_fbp_omega | IDENTICAL | size=          60
+ cntrpar%vs_fbp_tau is IDENTICAL.
+ [VIT_ARRAY] vs_fbp_tau | IDENTICAL | size=          60
+ cntrpar%ss_mode is IDENTICAL.
+ [VIT_FIELD] ss_mode | IDENTICAL |            1  |            1
+ cntrpar%ss_vsgain is IDENTICAL.
+ [VIT_FIELD] ss_vsgain | IDENTICAL |    1.0000000000000000       |    1.0000000000000000     
+ cntrpar%ss_pcgain is IDENTICAL.
+ [VIT_FIELD] ss_pcgain | IDENTICAL |    5.0000000000000003E-002  |    5.0000000000000003E-002
+ cntrpar%prc_mode is IDENTICAL.
+ [VIT_FIELD] prc_mode | IDENTICAL |            0  |            0
+ cntrpar%prc_comm is IDENTICAL.
+ [VIT_FIELD] prc_comm | IDENTICAL |            0  |            0
+ cntrpar%prc_windspeeds is IDENTICAL.
+ [VIT_ARRAY] prc_windspeeds | IDENTICAL | size=           2
+ cntrpar%prc_genspeeds is IDENTICAL.
+ [VIT_ARRAY] prc_genspeeds | IDENTICAL | size=           2
+ cntrpar%prc_n is IDENTICAL.
+ [VIT_FIELD] prc_n | IDENTICAL |            2  |            2
+ cntrpar%prc_lpf_freq is IDENTICAL.
+ [VIT_FIELD] prc_lpf_freq | IDENTICAL |    7.8539999999999999E-002  |    7.8539999999999999E-002
+ cntrpar%prc_r_torque is IDENTICAL.
+ [VIT_FIELD] prc_r_torque | IDENTICAL |    1.0000000000000000       |    1.0000000000000000     
+ cntrpar%prc_r_speed is IDENTICAL.
+ [VIT_FIELD] prc_r_speed | IDENTICAL |    1.0000000000000000       |    1.0000000000000000     
+ cntrpar%prc_r_pitch is IDENTICAL.
+ [VIT_FIELD] prc_r_pitch | IDENTICAL |    1.0000000000000000       |    1.0000000000000000     
+ cntrpar%prc_table_n is IDENTICAL.
+ [VIT_FIELD] prc_table_n | IDENTICAL |           20  |           20
+ cntrpar%prc_pitch_table is IDENTICAL.
+ [VIT_ARRAY] prc_pitch_table | IDENTICAL | size=          20
+ cntrpar%prc_r_table is IDENTICAL.
+ [VIT_ARRAY] prc_r_table | IDENTICAL | size=          20
+ cntrpar%we_mode is IDENTICAL.
+ [VIT_FIELD] we_mode | IDENTICAL |            2  |            2
+ cntrpar%we_bladeradius is IDENTICAL.
+ [VIT_FIELD] we_bladeradius | IDENTICAL |    63.000000000000000       |    63.000000000000000     
+ cntrpar%we_cp_n is IDENTICAL.
+ [VIT_FIELD] we_cp_n | IDENTICAL |            0  |            0
+ cntrpar%we_gamma is IDENTICAL.
+ [VIT_FIELD] we_gamma | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%we_gearboxratio is IDENTICAL.
+ [VIT_FIELD] we_gearboxratio | IDENTICAL |    97.000000000000000       |    97.000000000000000     
+ cntrpar%we_jtot is IDENTICAL.
+ [VIT_FIELD] we_jtot | IDENTICAL |    43702538.056999996       |    43702538.056999996     
+ cntrpar%we_rhoair is IDENTICAL.
+ [VIT_FIELD] we_rhoair | IDENTICAL |    1.2250000000000001       |    1.2250000000000001     
+ cntrpar%perffilename is IDENTICAL.
+ [VIT_FIELD] perffilename | IDENTICAL | /workspace/ROSCO-r2/Examples/Tune_Cases/../Test_Cases/NREL-5MW/Cp_Ct_Cq.NREL5MW.txt                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | /workspace/ROSCO-r2/Examples/Tune_Cases/../Test_Cases/NREL-5MW/Cp_Ct_Cq.NREL5MW.txt                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+ cntrpar%perftablesize is IDENTICAL.
+ [VIT_ARRAY] perftablesize | IDENTICAL | size=           2
+ cntrpar%we_fopoles_n is IDENTICAL.
+ [VIT_FIELD] we_fopoles_n | IDENTICAL |           60  |           60
+ cntrpar%we_fopoles_v is IDENTICAL.
+ [VIT_ARRAY] we_fopoles_v | IDENTICAL | size=          60
+ cntrpar%we_fopoles is IDENTICAL.
+ [VIT_ARRAY] we_fopoles | IDENTICAL | size=          60
+ cntrpar%y_controlmode is IDENTICAL.
+ [VIT_FIELD] y_controlmode | IDENTICAL |            0  |            0
+ cntrpar%y_uswitch is IDENTICAL.
+ [VIT_FIELD] y_uswitch | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%y_errthresh is IDENTICAL.
+ [VIT_ARRAY] y_errthresh | IDENTICAL | size=           2
+ cntrpar%y_rate is IDENTICAL.
+ [VIT_FIELD] y_rate | IDENTICAL |   0.49847328176309996       |   0.49847328176309996     
+ cntrpar%y_merrset is IDENTICAL.
+ [VIT_FIELD] y_merrset | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%y_ipc_intsat is IDENTICAL.
+ [VIT_FIELD] y_ipc_intsat | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%y_ipc_kp is IDENTICAL.
+ [VIT_FIELD] y_ipc_kp | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%y_ipc_ki is IDENTICAL.
+ [VIT_FIELD] y_ipc_ki | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%ps_mode is IDENTICAL.
+ [VIT_FIELD] ps_mode | IDENTICAL |            1  |            1
+ cntrpar%ps_bldpitchmin_n is IDENTICAL.
+ [VIT_FIELD] ps_bldpitchmin_n | IDENTICAL |           60  |           60
+ cntrpar%ps_windspeeds is IDENTICAL.
+ [VIT_ARRAY] ps_windspeeds | IDENTICAL | size=          60
+ cntrpar%ps_bldpitchmin is IDENTICAL.
+ [VIT_ARRAY] ps_bldpitchmin | IDENTICAL | size=          60
+ cntrpar%su_mode is IDENTICAL.
+ [VIT_FIELD] su_mode | IDENTICAL |            0  |            0
+ cntrpar%su_starttime is IDENTICAL.
+ [VIT_FIELD] su_starttime | IDENTICAL |    120.00000000000000       |    120.00000000000000     
+ cntrpar%su_fw_minduration is IDENTICAL.
+ [VIT_FIELD] su_fw_minduration | IDENTICAL |    200.00000000000000       |    200.00000000000000     
+ cntrpar%su_rotorspeedthresh is IDENTICAL.
+ [VIT_FIELD] su_rotorspeedthresh | IDENTICAL |   0.52000000000000002       |   0.52000000000000002     
+ cntrpar%su_rotorspeedcornerfreq is IDENTICAL.
+ [VIT_FIELD] su_rotorspeedcornerfreq | IDENTICAL |   0.41887999999999997       |   0.41887999999999997     
+ cntrpar%su_loadstages_n is IDENTICAL.
+ [VIT_FIELD] su_loadstages_n | IDENTICAL |            2  |            2
+ cntrpar%su_loadstages is IDENTICAL.
+ [VIT_ARRAY] su_loadstages | IDENTICAL | size=           2
+ cntrpar%su_loadrampduration is IDENTICAL.
+ [VIT_ARRAY] su_loadrampduration | IDENTICAL | size=           2
+ cntrpar%su_loadholdduration is IDENTICAL.
+ [VIT_ARRAY] su_loadholdduration | IDENTICAL | size=           2
+ cntrpar%sd_mode is IDENTICAL.
+ [VIT_FIELD] sd_mode | IDENTICAL |            0  |            0
+ cntrpar%sd_timeactivate is IDENTICAL.
+ [VIT_FIELD] sd_timeactivate | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%sd_enablepitch is IDENTICAL.
+ [VIT_FIELD] sd_enablepitch | IDENTICAL |            0  |            0
+ cntrpar%sd_enableyawerror is IDENTICAL.
+ [VIT_FIELD] sd_enableyawerror | IDENTICAL |            0  |            0
+ cntrpar%sd_enablegenspeed is IDENTICAL.
+ [VIT_FIELD] sd_enablegenspeed | IDENTICAL |            0  |            0
+ cntrpar%sd_enabletime is IDENTICAL.
+ [VIT_FIELD] sd_enabletime | IDENTICAL |            0  |            0
+ cntrpar%sd_maxpit is IDENTICAL.
+ [VIT_FIELD] sd_maxpit | IDENTICAL |   0.40205000000000002       |   0.40205000000000002     
+ cntrpar%sd_pitchcornerfreq is IDENTICAL.
+ [VIT_FIELD] sd_pitchcornerfreq | IDENTICAL |   0.41887999999999997       |   0.41887999999999997     
+ cntrpar%sd_maxyawerror is IDENTICAL.
+ [VIT_FIELD] sd_maxyawerror | IDENTICAL |    30.000000000000000       |    30.000000000000000     
+ cntrpar%sd_yawerrorcornerfreq is IDENTICAL.
+ [VIT_FIELD] sd_yawerrorcornerfreq | IDENTICAL |   0.41887999999999997       |   0.41887999999999997     
+ cntrpar%sd_maxgenspd is IDENTICAL.
+ [VIT_FIELD] sd_maxgenspd | IDENTICAL |    147.49160000000001       |    147.49160000000001     
+ cntrpar%sd_genspdcornerfreq is IDENTICAL.
+ [VIT_FIELD] sd_genspdcornerfreq | IDENTICAL |   0.41887999999999997       |   0.41887999999999997     
+ cntrpar%sd_time is IDENTICAL.
+ [VIT_FIELD] sd_time | IDENTICAL |    9999.0000000000000       |    9999.0000000000000     
+ cntrpar%sd_method is IDENTICAL.
+ [VIT_FIELD] sd_method | IDENTICAL |            1  |            1
+ cntrpar%sd_maxtorquerate is IDENTICAL.
+ [VIT_ARRAY] sd_maxtorquerate | IDENTICAL | size=           1
+ cntrpar%sd_maxpitchrate is IDENTICAL.
+ [VIT_ARRAY] sd_maxpitchrate | IDENTICAL | size=           1
+ cntrpar%sd_stagepitch is IDENTICAL.
+ [VIT_ARRAY] sd_stagepitch | IDENTICAL | size=           1
+ cntrpar%sd_stagetime is IDENTICAL.
+ [VIT_ARRAY] sd_stagetime | IDENTICAL | size=           1
+ cntrpar%sd_stage_n is IDENTICAL.
+ [VIT_FIELD] sd_stage_n | IDENTICAL |            1  |            1
+ cntrpar%fl_mode is IDENTICAL.
+ [VIT_FIELD] fl_mode | IDENTICAL |            0  |            0
+ cntrpar%fl_n is IDENTICAL.
+ [VIT_FIELD] fl_n | IDENTICAL |            1  |            1
+ cntrpar%fl_kp is IDENTICAL.
+ [VIT_ARRAY] fl_kp | IDENTICAL | size=           1
+ cntrpar%fl_u is IDENTICAL.
+ [VIT_ARRAY] fl_u | IDENTICAL | size=           1
+ cntrpar%flp_mode is IDENTICAL.
+ [VIT_FIELD] flp_mode | IDENTICAL |            0  |            0
+ cntrpar%flp_angle is IDENTICAL.
+ [VIT_FIELD] flp_angle | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%flp_kp is IDENTICAL.
+ [VIT_FIELD] flp_kp | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%flp_ki is IDENTICAL.
+ [VIT_FIELD] flp_ki | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%flp_maxpit is IDENTICAL.
+ [VIT_FIELD] flp_maxpit | IDENTICAL |   0.17449999999999999       |   0.17449999999999999     
+ cntrpar%ol_filename is IDENTICAL.
+ [VIT_FIELD] ol_filename | IDENTICAL | /workspace/ROSCO-r2/Examples/example_inputs/OL_Mode2_Input.dat                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | /workspace/ROSCO-r2/Examples/example_inputs/OL_Mode2_Input.dat                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+ cntrpar%ol_mode is IDENTICAL.
+ [VIT_FIELD] ol_mode | IDENTICAL |            2  |            2
+ cntrpar%ol_bp_mode is IDENTICAL.
+ [VIT_FIELD] ol_bp_mode | IDENTICAL |            0  |            0
+ cntrpar%ol_bp_filtfreq is IDENTICAL.
+ [VIT_FIELD] ol_bp_filtfreq | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%ind_breakpoint is IDENTICAL.
+ [VIT_FIELD] ind_breakpoint | IDENTICAL |            1  |            1
+ cntrpar%ind_bldpitch is IDENTICAL.
+ [VIT_ARRAY] ind_bldpitch | IDENTICAL | size=           3
+ cntrpar%ind_gentq is IDENTICAL.
+ [VIT_FIELD] ind_gentq | IDENTICAL |            5  |            5
+ cntrpar%ind_yawrate is IDENTICAL.
+ [VIT_FIELD] ind_yawrate | IDENTICAL |            0  |            0
+ cntrpar%ind_r_speed is IDENTICAL.
+ [VIT_FIELD] ind_r_speed | IDENTICAL |            0  |            0
+ cntrpar%ind_r_torque is IDENTICAL.
+ [VIT_FIELD] ind_r_torque | IDENTICAL |            0  |            0
+ cntrpar%ind_r_pitch is IDENTICAL.
+ [VIT_FIELD] ind_r_pitch | IDENTICAL |            0  |            0
+ cntrpar%ind_azimuth is IDENTICAL.
+ [VIT_FIELD] ind_azimuth | IDENTICAL |            6  |            6
+ cntrpar%rp_gains is IDENTICAL.
+ [VIT_ARRAY] rp_gains | IDENTICAL | size=           4
+ cntrpar%ind_cablecontrol is IDENTICAL.
+ [VIT_ARRAY] ind_cablecontrol | IDENTICAL | size=           1
+ cntrpar%ind_structcontrol is IDENTICAL.
+ [VIT_ARRAY] ind_structcontrol | IDENTICAL | size=           1
+ cntrpar%pa_mode is IDENTICAL.
+ [VIT_FIELD] pa_mode | IDENTICAL |            0  |            0
+ cntrpar%pa_cornerfreq is IDENTICAL.
+ [VIT_FIELD] pa_cornerfreq | IDENTICAL |    3.1400000000000001       |    3.1400000000000001     
+ cntrpar%pa_damping is IDENTICAL.
+ [VIT_FIELD] pa_damping | IDENTICAL |   0.70699999999999996       |   0.70699999999999996     
+ cntrpar%awc_mode is IDENTICAL.
+ [VIT_FIELD] awc_mode | IDENTICAL |            0  |            0
+ cntrpar%awc_nummodes is IDENTICAL.
+ [VIT_FIELD] awc_nummodes | IDENTICAL |            1  |            1
+ cntrpar%awc_n is IDENTICAL.
+ [VIT_ARRAY] awc_n | IDENTICAL | size=           1
+ cntrpar%awc_harmonic is IDENTICAL.
+ [VIT_ARRAY] awc_harmonic | IDENTICAL | size=           1
+ cntrpar%awc_freq is IDENTICAL.
+ [VIT_ARRAY] awc_freq | IDENTICAL | size=           1
+ cntrpar%awc_amp is IDENTICAL.
+ [VIT_ARRAY] awc_amp | IDENTICAL | size=           1
+ cntrpar%awc_clockangle is IDENTICAL.
+ [VIT_ARRAY] awc_clockangle | IDENTICAL | size=           1
+ cntrpar%awc_phaseoffset is IDENTICAL.
+ [VIT_FIELD] awc_phaseoffset | IDENTICAL |    0.0000000000000000       |    0.0000000000000000     
+ cntrpar%awc_cntrgains is IDENTICAL.
+ [VIT_ARRAY] awc_cntrgains | IDENTICAL | size=           2
+ cntrpar%pf_mode is IDENTICAL.
+ [VIT_FIELD] pf_mode | IDENTICAL |            0  |            0
+ cntrpar%pf_offsets is IDENTICAL.
+ [VIT_ARRAY] pf_offsets | IDENTICAL | size=           3
+ cntrpar%pf_timestuck is IDENTICAL.
+ [VIT_ARRAY] pf_timestuck | IDENTICAL | size=           3
+ cntrpar%ext_mode is IDENTICAL.
+ [VIT_FIELD] ext_mode | IDENTICAL |            0  |            0
+ cntrpar%dll_filename is IDENTICAL.
+ [VIT_FIELD] dll_filename | IDENTICAL | unused                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | unused                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+ cntrpar%dll_infile is IDENTICAL.
+ [VIT_FIELD] dll_infile | IDENTICAL | unused                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | unused                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+ cntrpar%dll_procname is IDENTICAL.
+ [VIT_FIELD] dll_procname | IDENTICAL | DISCON                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | DISCON                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+ cntrpar%zmq_mode is IDENTICAL.
+ [VIT_FIELD] zmq_mode | IDENTICAL |            0  |            0
+ cntrpar%zmq_commaddress is IDENTICAL.
+ [VIT_FIELD] zmq_commaddress | IDENTICAL | tcp://localhost:5555                                                                                                                                                                                                                                             | tcp://localhost:5555                                                                                                                                                                                                                                            
+ cntrpar%zmq_updateperiod is IDENTICAL.
+ [VIT_FIELD] zmq_updateperiod | IDENTICAL |    1.0000000000000000       |    1.0000000000000000     
+ cntrpar%cc_mode is IDENTICAL.
+ [VIT_FIELD] cc_mode | IDENTICAL |            0  |            0
+ cntrpar%cc_group_n is IDENTICAL.
+ [VIT_FIELD] cc_group_n | IDENTICAL |            1  |            1
+ cntrpar%cc_acttau is IDENTICAL.
+ [VIT_FIELD] cc_acttau | IDENTICAL |    20.000000000000000       |    20.000000000000000     
+ cntrpar%cc_groupindex is IDENTICAL.
+ [VIT_ARRAY] cc_groupindex | IDENTICAL | size=           1
+ cntrpar%stc_mode is IDENTICAL.
+ [VIT_FIELD] stc_mode | IDENTICAL |            0  |            0
+ cntrpar%stc_group_n is IDENTICAL.
+ [VIT_FIELD] stc_group_n | IDENTICAL |            1  |            1
+ cntrpar%stc_groupindex is IDENTICAL.
+ [VIT_ARRAY] stc_groupindex | IDENTICAL | size=           1
+ cntrpar%pc_rttq99 is IDENTICAL.
+ [VIT_FIELD] pc_rttq99 | IDENTICAL |    42662.565000000002       |    42662.565000000002     
+ cntrpar%vs_maxomtq is IDENTICAL.
+ [VIT_FIELD] vs_maxomtq | IDENTICAL |    34904.986655504290       |    34904.986655504290     
+ cntrpar%vs_minomtq is IDENTICAL.
+ [VIT_FIELD] vs_minomtq | IDENTICAL |    2772.9551704048149       |    2772.9551704048149     
+ errvar%size_avcmsg is IDENTICAL.
+ [VIT_FIELD] size_avcmsg | IDENTICAL |          500  |          500
+ errvar%avifail is IDENTICAL.
+ [VIT_FIELD] avifail | IDENTICAL |           -1  |           -1
+ errvar%errstat is IDENTICAL.
+ [VIT_FIELD] errstat | IDENTICAL |            0  |            0
+ 
+ Number of output variables:            2
+ Number of identical variables:            2
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            0
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification PASSED with Read_OL_Input.0.0.1
+ 
+VIT: Read_OL_Input: ErrVar%ErrMsg is not allocated; the assignment of 77 bytes is refused
+VIT: Read_OL_Input: ErrVar%ErrMsg is not allocated; the assignment of 14 bytes is refused
+ Read_OL_Input : Time per call (usec):    98.793999999999997     
+ 
+****************************************************
+    kernel execution summary: Read_OL_Input
+****************************************************
+    Total number of verification cases  :     1
+    Number of verification-passed cases :     1
+ 
+    kernel: Read_OL_Input: PASSED verification
+ 
+    number of processes  1
+ 
+    Average call time (usec):  0.988E+02
+    Minimum call time (usec):  0.988E+02
+    Maximum call time (usec):  0.988E+02
+****************************************************

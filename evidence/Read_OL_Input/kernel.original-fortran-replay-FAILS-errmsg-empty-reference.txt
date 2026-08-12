@@ -1,0 +1,40 @@
+ [VIT_FIELD] pc_rttq99 | IDENTICAL |    42662.565000000002       |    42662.565000000002     
+ cntrpar%vs_maxomtq is IDENTICAL.
+ [VIT_FIELD] vs_maxomtq | IDENTICAL |    34904.986655504290       |    34904.986655504290     
+ cntrpar%vs_minomtq is IDENTICAL.
+ [VIT_FIELD] vs_minomtq | IDENTICAL |    2772.9551704048149       |    2772.9551704048149     
+ errvar%size_avcmsg is IDENTICAL.
+ [VIT_FIELD] size_avcmsg | IDENTICAL |          500  |          500
+ errvar%avifail is IDENTICAL.
+ [VIT_FIELD] avifail | IDENTICAL |           -1  |           -1
+ errvar%errstat is IDENTICAL.
+ [VIT_FIELD] errstat | IDENTICAL |            0  |            0
+ errvar%errmsg is NOT IDENTICAL.
+ [VIT_FIELD] errmsg | OUT_TOL | Read_OL_Input:/workspace/ROSCO-r2/Examples/example_inputs/OL_Mode2_Input.dat does not exist | 
+ NOT IMPLEMENTED YET
+ 
+ 
+ Number of output variables:            2
+ Number of identical variables:            1
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withRead_OL_Input.0.0.1
+ 
+ Read_OL_Input : Time per call (usec):    25.792999999999999     
+ 
+****************************************************
+    kernel execution summary: Read_OL_Input
+****************************************************
+    Total number of verification cases  :     1
+    Number of verification-passed cases :     0
+ 
+    kernel: Read_OL_Input: FAILED verification
+ 
+    number of processes  1
+ 
+    Average call time (usec):  0.258E+02
+    Minimum call time (usec):  0.258E+02
+    Maximum call time (usec):  0.258E+02
+****************************************************

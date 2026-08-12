@@ -157,6 +157,16 @@ translations:
   ReadAvrSWAP:
     status: integrated
     cpp_file: translations/ReadSetParameters/readavrswap.cpp
+  # Unit #17, and the FIRST `respecify` unit in this campaign. `status:
+  # integrated` here is a statement about the BUILD -- the wrapper ships, the
+  # library links and the gate compares 5,252,000 values with 0 mismatched --
+  # and NOT about verification. The disposition in plan.json is `blocked`: the
+  # differential harness refuses the signature, so there is no mutation score.
+  # `vit integrate` also wrote `verification: simulation` here again; removed
+  # again, for the reason recorded above ExtController.
+  Read_OL_Input:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/read_ol_input.cpp
 types:
   ControlParameters:
     strategy: view

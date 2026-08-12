@@ -62,9 +62,12 @@ CONTAINS
             view%n_ErrMsg = INT(LEN(src%ErrMsg), C_INT32_T)
             view%n_ErrMsg_cap = INT(LEN(vit_defchar_errmsg_errorvariables), C_INT32_T)
         ELSE
-            view%ErrMsg = C_NULL_PTR
-            view%n_ErrMsg = 0
-            view%n_ErrMsg_cap = 0
+            IF (.NOT. ALLOCATED(vit_defchar_errmsg_errorvariables)) &
+                ALLOCATE(CHARACTER(LEN=VIT_DEFERRED_CHAR_HEADROOM) :: vit_defchar_errmsg_errorvariables)
+            vit_defchar_errmsg_errorvariables(1:LEN(vit_defchar_errmsg_errorvariables)) = ''   ! blank-fill; substring so it does not reallocate
+            view%ErrMsg = C_LOC(vit_defchar_errmsg_errorvariables(1:1))
+            view%n_ErrMsg = -1_C_INT32_T   ! NOT ALLOCATED, distinct from length 0
+            view%n_ErrMsg_cap = INT(LEN(vit_defchar_errmsg_errorvariables), C_INT32_T)
         END IF
 
     END SUBROUTINE vit_populate_errorvariables

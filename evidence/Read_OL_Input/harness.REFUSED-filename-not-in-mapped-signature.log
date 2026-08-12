@@ -1,0 +1,31 @@
+harness.sh: VIT wrote the per-unit layout directly (translations/ROSCO_Helpers/read_ol_input_test); no move needed
+harness.sh: dropping read_ol_input.cpp.o from LIBS -- the harness compiles its own copy
+Traceback (most recent call last):
+  File "/workspace/translation-loop/scripts/vit_harness.py", line 731, in <module>
+Read_OL_Input: 10 C parameter(s), 3 extent(s), 5 output(s)
+  UNOBSERVABLE [character-arg] OL_InputFileName: crosses as char* but build_c_params emitted no len_OL_InputFileName, so nothing states how many bytes either side may read; neither supplied nor compared
+  note: ErrVar: expanded 5 param(s) from 4 field(s)
+
+Read_OL_Input: 10 parameter(s) varied, 0 held at an inert value
+  Channels: read WHOLE (passed to a callee) -- every field varied
+  ErrVar: read WHOLE (passed to a callee) -- every field varied
+  NumChannels: read WHOLE (passed to a callee) -- every field varied
+  OL_InputFileName: read WHOLE (passed to a callee) -- every field varied
+  Unit_OL_Input: read WHOLE (passed to a callee) -- every field varied
+  UNCONSTRAINED: 1 varied parameter(s) on the +/-1e3 default: Channels
+
+499 case(s)
+  applied  R5_non_degenerate_shape    3 varied extent(s) at [3, 4, 5], NO index parameter identified, array elements distinct
+  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach
+  applied  R6_reference_literals      205 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 88 character value(s) from a corpus of 22 (the reference's own character literals and their collating neighbours) across 1 string(s), each at length(s) [1, 2, 5, 10] and in the mixed / padded / all-blank / leading-blank shapes, plus 132 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour
+  applied  R3_no_dead_signal          1 real value(s), none zero in every case
+  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it
+  applied  R4_compare_all_outputs     return value + 5 out-parameter(s): ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/translation-loop/scripts/vit_harness.py", line 681, in main
+    spec = emitmod.build_call(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/workspace/translation-loop/harness/emit.py", line 459, in build_call
+    raise EmitError(f"{unit}: C parameter {name!r} is not in the mapped "
+harness.emit.EmitError: Read_OL_Input: C parameter 'OL_InputFileName' is not in the mapped signature; the two disagree about the call

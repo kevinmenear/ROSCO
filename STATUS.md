@@ -4,6 +4,68 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-12: unit #17 `Read_OL_Input` is `blocked`**, first dispatch, and
+it is the campaign's **first `respecify` unit** and the **first REFUTED plan
+prediction**.
+
+**THE SIGNATURE CROSSED.** `plan.json` predicted `bridge_feasible: no` on
+`channels: c_assumed_shape_2d`. `vit interface` crosses the rank-2 assumed-shape
+ALLOCATABLE INTENT(OUT) by **allocate-on-return** -- `double** Channels,
+int* n_Channels_rows, int* n_Channels_cols` plus `vit_free`, with `C_NULL_PTR`
+carrying NOT-ALLOCATED -- and `TYPE(ErrorVariables)` crosses as
+`C_LOC(ErrVar_view)`. It builds, links and passes the gate. The prediction
+measured `test_validate.generate_fortran_bridge` (the differential harness's
+Fortran side); `vit integrate` ships `interface_gen`. Both are true of what each
+measured, and the RUNBOOK already warned that `bridge_feasible` answers the other
+question.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 1 case, scenario 10 | 201 field rows, 200 `IDENTICAL` + **`errmsg` `OUT_TOL`** | the **ORIGINAL FORTRAN** rebuilt into the same kernel fails the same case with the same message against an EMPTY reference -- the mismatch is KGen's, not the translation's |
+| differential harness (P11) | **REFUSED** -- `EmitError: C parameter 'OL_InputFileName' is not in the mapped signature` | n/a |
+| mutation score (P12) | **NOT PRODUCED** -- there is no harness to mutate against | n/a |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | the whole unit as a no-op **killed exactly scenarios [10, 14, 24]**, 5,252,000 -> 4,992,000; `went_red` counts VALUES and reads false |
+
+**THE KERNEL PASSED A TRANSLATION THAT WROTE NOTHING (C12).** `ErrVar%ErrMsg`
+arrives UNALLOCATED, and `vit_populate_errorvariables` published
+`C_NULL_PTR / n = 0 / cap = 0` for that case -- P6-correct and **no buffer at
+all**, so the reference's own `ErrVar%ErrMsg = <expr>` (a reallocating
+assignment) had no C representation. The translation refused the write, printed
+to stderr six times, and the kernel scored **200 of 200 IDENTICAL**, because
+KGen guards the comparison on `IF (ALLOCATED(var%errmsg))` -- the KERNEL's value.
+**An output the translation fails to allocate deletes its own comparison.** The
+wrong artifact is committed. Fixed by addition in `vit/view_populator.py`: the
+staging buffer is supplied either way and NOT-ALLOCATED moves onto the length as
+`n < 0`, the convention this codebase already used for an ALLOCATABLE extent.
+Gate re-run after the change: 5,252,000 / 0.
+
+**AND THEN THE FIELD IS STILL NOT COMPARABLE.** With the buffer supplied,
+`errmsg` appears and reads `OUT_TOL` against an EMPTY reference: KGen's generated
+reader is `READ (UNIT = kgen_unit) var%errmsg` into a field it just deallocated,
+with **no length record**, so a deferred-length CHARACTER never round-trips. Not
+fixed here -- it changes the state-file format for every type carrying such a
+field, including `ReadAvrSWAP`'s and `ExtController`'s committed kernels (X3,
+SPEC 8.4). What the kernel actually constrains for this unit is `avifail == -1`.
+
+**WHY IT IS `blocked`, AND THE THIRD REASON IS THE ONE THAT MATTERS.** Two
+ordinary generator gaps: `CHARACTER(1024)` is a width compiled into both sides,
+so `build_c_params` emits `char*` with no `len_` and `map_signature` refuses it
+(unit #10's shape, one declaration over); and `Channels` maps as an INPUT
+`real[]` on the +/-1e3 default where the shipping bridge makes it
+allocate-on-return. Underneath both: **this unit's principal input is not in its
+signature.** Its behaviour is a function of a FILE ON DISK, and no generator here
+has a notion of a file-valued input. Fixing the two mappings would produce a
+harness that varies a name and never the bytes.
+
+**23 OF THE UNIT'S 126 LINES ARE ALL THAT ANY SCENARIO RUNS.** The clean call
+site `ReadSetParameters.f90:778` runs **3 times in all 27 scenarios** -- 10, 14
+and 24, the three coverage records as executing no controller code -- and all
+three take `.NOT. FileExists`, because `Examples/example_inputs/OL_Mode2_Input.dat`
+is not in this tree. Every line from the `OPEN` to the final read loop is dead
+campaign-wide.
+
+---
+
 **As of 2026-08-12: unit #16 `ReadAvrSWAP` is `integrated` and CLOSED**, second
 dispatch. (The first dispatch integrated it and passed the gate, then ran out of
 time with the mutation score unrun, the post-integration harness unrun and the

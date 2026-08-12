@@ -3633,3 +3633,107 @@ unobservable site and an unreached one.
 `mutation/ReadAvrSWAP.survivors_before_predicate_knobs.json` is the 0.874 run,
 kept: it is the measurement that makes the generator change a finding rather
 than a preference.
+
+## 2026-08-12 — Unit #17 Read_OL_Input: the prediction is refuted, and the disposition is `blocked`
+
+### The prediction, and which generator it measured
+
+`plan.json` predicted this unit's signature CANNOT cross, basis
+`channels: c_assumed_shape_2d does not cross`. **REFUTED.** `vit interface`
+crosses it by allocate-on-return: `double** Channels, int* n_Channels_rows,
+int* n_Channels_cols` plus a `vit_free` interface, with `C_NULL_PTR` carrying
+NOT-ALLOCATED so P6 survives; `TYPE(ErrorVariables)` crosses as
+`C_LOC(ErrVar_view)`. Integrated, rebuilt, gate 5,252,000 / 0 mismatched.
+
+The disagreement is not a contradiction. The conformance matrix's
+`bridge`/`compiles` columns measure `test_validate.generate_fortran_bridge` --
+the differential harness's Fortran side -- and `vit integrate` ships
+`interface_gen`. The RUNBOOK's unit #1 entry already says `bridge_feasible` is
+not the answer to "does the signature cross"; this is the first unit where the
+two answers actually differ, and the harness side is still `no`. Both columns
+are right about the thing each measured. `plan.json`'s `bridge_feasible` for
+this unit is updated to `yes` with that basis written in.
+
+### C12 — a green that should have been red, recorded with the wrong artifact
+
+`ErrVar%ErrMsg` is `CHARACTER(:), ALLOCATABLE` and arrives UNALLOCATED at this
+unit's only reachable call site. `vit_populate_errorvariables` published
+`C_NULL_PTR / n = 0 / cap = 0` for that case. That carries the P6 distinction
+correctly and leaves the C++ **with no buffer**, so the reference's own
+`ErrVar%ErrMsg = TRIM(OL_InputFileName)//' does not exist'` -- a reallocating
+assignment, which ALLOCATES -- had no representation on the C side.
+
+The translation refused the write and said so on stderr six times. The kernel
+reported **1/1 passed, 200 of 200 IDENTICAL**, because KGen guards the field
+comparison on `IF (ALLOCATED(var%errmsg))` where `var` is the KERNEL's own
+value: **an output the translation fails to allocate deletes its own
+comparison.** The as-taken artifact is committed at
+`evidence/Read_OL_Input/kernel.errmsg-never-written-still-PASSES.verify_fields.csv`
+beside the run log naming the refusals.
+
+Fixed in VIT (X2 — a tool we control), by ADDITION: the staging buffer is now
+supplied whether or not the field arrived allocated, and NOT-ALLOCATED moves
+onto the length using the convention this codebase already had for an
+ALLOCATABLE array extent (`n < 0` unallocated, `n == 0` allocated-empty,
+`n > 0` allocated). `vit_copy_scalars_to_*` already guarded `n >= 0`, so a
+field the C++ does not touch stays unallocated exactly as before. **Not an X3
+change:** no default is loosened and no existing comparison is altered; the
+only behaviour that moves is a write that was previously REFUSED, and every
+such refusal disagreed with the reference. Measured: gate 5,252,000 / 0 after
+the change, with ReadAvrSWAP and ExtController in the same library.
+
+### CANDIDATE, NOT MADE — KGen does not round-trip a deferred-length CHARACTER
+
+With the buffer supplied, `errmsg` appears in the field log and reads
+`OUT_TOL` against an **empty** reference. The generated reader is
+`READ (UNIT = kgen_unit) var%errmsg` into a field it has just DEALLOCATED, with
+no length record written anywhere. Measured rather than argued: the ORIGINAL
+FORTRAN, rebuilt into this same kernel, fails the same case with the same
+message
+(`evidence/Read_OL_Input/kernel.original-fortran-replay-FAILS-errmsg-empty-reference.txt`).
+
+X2 says fix it in KGen. It is NOT fixed here because writing a length record
+changes the STATE FILE FORMAT for every type carrying such a field --
+`ErrorVariables` is one, and `ReadAvrSWAP`'s and `ExtController`'s committed
+kernel artifacts both rest on it. That re-takes committed evidence for closed
+units, which is X3 and SPEC 8.4: the Driver's call, not this session's.
+
+### The disposition: `blocked`, on three reasons, and the third is the one
+
+Measured, not predicted —
+
+```
+bash scripts/harness.sh Read_OL_Input ROSCO_Helpers read_ol_input <file>.f90 --against translation
+EmitError: Read_OL_Input: C parameter 'OL_InputFileName' is not in the mapped signature
+```
+
+1. `CHARACTER(1024), INTENT(IN)` is a width COMPILED INTO BOTH SIDES, so
+   `build_c_params` emits `char*` with no `len_` and `map_signature` refuses
+   what it cannot size. Unit #10's CHARACTER-function-result shape, one
+   declaration over, and closable the same way.
+2. `Channels` maps as an INPUT `real[]` on the `+/-1e3` default where the
+   shipping bridge makes it allocate-on-return. The harness's own report says
+   so: `UNCONSTRAINED: 1 varied parameter(s) ... Channels`.
+3. **The unit's principal input is not in its signature.** Its behaviour is a
+   function of a FILE ON DISK; the signature carries the file's NAME. No
+   generator in this campaign has a notion of a file-valued input, so with (1)
+   and (2) both fixed the corpus would vary a name and never the bytes the unit
+   reads. A meaningful P11 here needs a FIXTURE CORPUS OF FILES and a way to
+   pin the name to each — a new kind of input, not a wider ladder.
+
+`ExtController`'s precedent governs: manufacturing a harness artifact to make
+`done_check.py` green would make the campaign's evidence weaker, silently. The
+absence of `harness/Read_OL_Input.json` and `mutation/Read_OL_Input.json` is the
+load-bearing evidence and is named in `plan.json`'s `observability`.
+
+**This sharpens the candidate amendment unit #5 raised.** That entry asked for a
+distinction *within* `blocked` between no-oracle and tool-gap. This unit is a
+THIRD thing: the oracle runs, the bridge ships, the gate passes — and the
+instrument's input space has the wrong SHAPE for the unit. Still the Driver's
+call; recorded, not decided.
+
+### NOT method, target
+
+The allocate-on-return bridge, the view-populator fix, the KGen deferred-length
+gap, the three-scenario footprint and the two harness mappings are all in the
+RUNBOOK's target layer. The invariant layer is untouched.

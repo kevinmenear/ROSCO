@@ -45,6 +45,7 @@ double notchfilter_c(double InputSignal, double DT, double omega, double betaNum
 double notchfilterslopes_c(double InputSignal, double DT, double CornerFreq, double Damp, filterparameters_t* FP, int iStatus, int32_t reset, int* inst, int has_Moving, int32_t Moving, int has_InitialValue, double InitialValue);
 int32_t pathisrelative_c(char* GivenFil, int len_GivenFil);
 void readavrswap_c(float* avrSWAP, localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_view_t* ErrVar);
+void read_ol_input_c(char* OL_InputFileName, int Unit_OL_Input, int NumChannels, double** Channels, int* n_Channels_rows, int* n_Channels_cols, errorvariables_view_t* ErrVar);
 
 #ifdef __cplusplus
 }

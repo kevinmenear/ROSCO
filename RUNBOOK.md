@@ -339,6 +339,141 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **`bridge_feasible: no` MEASURED THE WRONG GENERATOR, AND THE SIGNATURE
+  CROSSED.** Unit #17, and it is the first prediction this campaign has
+  REFUTED rather than confirmed.
+
+  The plan said `channels: c_assumed_shape_2d does not cross`. `vit interface`
+  crosses it, in a shape nothing in the plan names: **ALLOCATE-ON-RETURN.**
+  `REAL(DbKi), INTENT(OUT), DIMENSION(:,:), ALLOCATABLE :: Channels` becomes
+  three C parameters --
+
+  ```
+  double** Channels, int* n_Channels_rows, int* n_Channels_cols
+  ```
+
+  -- the C++ mallocs and hands back a pointer, and the wrapper does
+  `C_F_POINTER(...,[rows,cols])`, `ALLOCATE`, copy, `vit_free`. `C_NULL_PTR`
+  means NOT ALLOCATED, so P6 survives. It builds, links and passes the gate.
+
+  The prediction is not merely wrong, it is wrong about **which generator**, and
+  the RUNBOOK already said so two hundred lines down: the matrix's
+  `bridge`/`compiles` columns measure `test_validate.generate_fortran_bridge` --
+  the DIFFERENTIAL HARNESS's Fortran side -- and `vit integrate` ships
+  `interface_gen`. Both answers were true of the thing each measured. Ask the
+  shipping generator first; it costs one command:
+
+  ```
+  vit interface <Unit> -f <file> -o /tmp/<u>_iface && cat /tmp/<u>_iface/*_wrapper.f90
+  ```
+
+- **A DEFERRED-LENGTH `CHARACTER(:), ALLOCATABLE` FIELD THAT ARRIVES
+  UNALLOCATED HAD NO REPRESENTATION ON THE C SIDE, AND THE KERNEL SCORED IT
+  200 OF 200 IDENTICAL.** Unit #17. C12: the wrong artifact is committed
+  (`evidence/Read_OL_Input/kernel.errmsg-never-written-still-PASSES.verify_fields.csv`)
+  and the fix came after it.
+
+  `vit_populate_errorvariables` published `C_NULL_PTR / n = 0 / cap = 0` for an
+  unallocated field. That carries P6 correctly and leaves the C++ **with no
+  buffer at all** -- so a reference whose own statement is
+  `ErrVar%ErrMsg = <expr>`, a REALLOCATING assignment that allocates, cannot be
+  transcribed. `Read_OL_Input`'s only reachable path is exactly that statement.
+
+  The translation wrote nothing, printed its refusal to stderr 6 times, and the
+  kernel **passed**: KGen guards the comparison on `IF (ALLOCATED(var%errmsg))`
+  -- the KERNEL's own value -- so **an output the translation fails to allocate
+  DELETES ITS OWN COMPARISON.** Read the stderr of a kernel run, not only its
+  verdict, and count the fields:
+
+  ```
+  ./kernel.exe 2>&1 | grep -c "^VIT:"          # a refusal the verdict cannot see
+  python3.12 -c "import csv; r=list(csv.DictReader(open('kernel/<U>/verify_fields.csv'))); \
+      print([x['field'] for x in r if x['field'] in ('<the outputs>',)])"
+  ```
+
+  Fixed by ADDITION in `vit/view_populator.py`: the staging buffer is supplied
+  either way and the not-allocated signal moves onto the LENGTH, using the
+  convention this codebase already had for an ALLOCATABLE array extent --
+  **`n < 0` unallocated, `n == 0` allocated-empty, `n > 0` allocated**.
+  `vit_copy_scalars_to_*` already guarded `n >= 0`, so a field the C++ does not
+  touch stays unallocated exactly as before, and no already-measured unit moves
+  (gate re-run: 5,252,000 / 0). With the fix the field appears and the case goes
+  `OUT_TOL` -- which is the next entry.
+
+- **KGEN DOES NOT ROUND-TRIP A `CHARACTER(:), ALLOCATABLE` FIELD: THE REFERENCE
+  COMES BACK EMPTY.** Unit #17, and it is why the fix above turned a false
+  green into a red that is also not about the translation.
+
+  The generated reader is `READ (UNIT = kgen_unit) var%errmsg` into a field it
+  has just DEALLOCATED -- no length record anywhere. So `errmsg`'s reference
+  column is `''` while the computed column is the exact string
+  `ROSCO_Helpers.f90` constructs. Measured, not read: the **ORIGINAL FORTRAN**,
+  rebuilt into this same kernel, fails the same case with the same message
+  (`evidence/Read_OL_Input/kernel.original-fortran-replay-FAILS-errmsg-empty-reference.txt`).
+
+  ```
+  cd kernel/<U> && cp ROSCO_Helpers.f90 /tmp/bridge.f90 && cp ROSCO_Helpers.f90.kgen ROSCO_Helpers.f90 \
+      && make -s && ./kernel.exe 2>&1 | grep VIT_FIELD ; cp /tmp/bridge.f90 ROSCO_Helpers.f90 && make -s
+  ```
+
+  NOT FIXED HERE. Writing a length record changes the STATE FILE FORMAT for
+  every type carrying such a field -- `ErrorVariables` is one, and
+  `ReadAvrSWAP`'s and `ExtController`'s committed kernels both use it -- so it
+  re-takes their artifacts. X3 and SPEC 8.4, the Driver's call; recorded in
+  DECISIONS.md as a candidate.
+
+- **A UNIT'S PRINCIPAL INPUT CAN BE ABSENT FROM ITS SIGNATURE, AND THEN NO
+  GENERATOR IN THIS CAMPAIGN CAN REACH IT.** Unit #17, and it is the eleventh
+  corpus blind spot -- the one no widening of any ladder can close.
+
+  `Read_OL_Input`'s behaviour is a function of **a file on disk**. The signature
+  carries the file's NAME. `harness/generate.py` varies numbers, strings and
+  array shapes; it has no notion of a file-valued input, so a corpus could vary
+  the name for ever and never vary the bytes the unit reads. That is a third
+  blocker underneath two ordinary ones, and it is the one that decides the
+  disposition.
+
+  The two ordinary ones, both measured:
+
+  ```
+  bash scripts/harness.sh Read_OL_Input ROSCO_Helpers read_ol_input <file>.f90 --against translation
+  # -> EmitError: C parameter 'OL_InputFileName' is not in the mapped signature
+  ```
+
+  1. `CHARACTER(1024), INTENT(IN)` is a width **compiled into both sides**, so
+     `build_c_params` emits `char*` with no `len_` and `map_signature` refuses
+     what it cannot size -- unit #10's CHARACTER-function-result shape, one
+     declaration over.
+  2. `Channels` maps as an INPUT `real[]` varied on the +/-1e3 default, when the
+     shipping bridge makes it ALLOCATE-ON-RETURN. The report says so in one
+     line: `UNCONSTRAINED: 1 varied parameter(s) ... Channels`.
+
+- **THE GATE CAN SEE A UNIT BY KILLING EXACTLY THE SCENARIOS THAT CALL IT.**
+  Unit #17, and it is unit #15's `perturbation_broke_scenarios` shape reached
+  from the opposite end -- there 24 of 27 died and it was noise; here **3 of 27
+  died and they are the entire footprint.**
+
+  The clean call site `ReadSetParameters.f90:778` runs **exactly three times in
+  all 27 scenarios** -- once each in 10, 14 and 24, which coverage already
+  records as executing NO controller code -- and all three take
+  `.NOT. FileExists`, because `Examples/example_inputs/OL_Mode2_Input.dat` is
+  not in this tree. Every line from the `OPEN` to the final read loop is dead in
+  the whole campaign. The whole-unit no-op stopped precisely [10, 14, 24]
+  (compared 5,252,000 -> 4,992,000) because without `aviFAIL = -1` the caller
+  does not `RETURN` and reads an unallocated `CntrPar%OL_Channels`.
+
+  So `went_red` reads false and the unit is not invisible. Read the field:
+
+  ```
+  python3.12 -c "import json; d=json.load(open('gate/<U>.redtest.json')); \
+      print(d.get('perturbation_broke_scenarios'), d['compared'], d['mismatched'])"
+  ```
+
+  And the first perturbation attempt is worth keeping as the lesson: forcing
+  `FileExists = false` moved 0, because the branch it forced is the branch every
+  scenario **already takes**. Perturb toward the behaviour the scenarios do NOT
+  produce.
+
 - **A LADDER AIMED AT A NAME IS NOT A LADDER OVER THE QUANTITY -- ASK WHERE THE
   TESTED VALUE ENTERS, NOT WHAT IT IS CALLED.** Unit #16, and it is the tenth
   corpus blind spot: the first where the corpus DID contain the value and the
