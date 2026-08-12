@@ -23,121 +23,44 @@ MODULE ReadSetParameters
     IMPLICIT NONE
 
 
+
+    ! Auto-generated interface for C++ implementation of ReadAvrSWAP
+    INTERFACE
+        SUBROUTINE readavrswap_c(avrSWAP, LocalVar, CntrPar, ErrVar) BIND(C, NAME='readavrswap_c')
+            USE ISO_C_BINDING
+            REAL(C_FLOAT), INTENT(INOUT) :: avrSWAP(*)
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE readavrswap_c
+    END INTERFACE
+
 CONTAINS
  ! -----------------------------------------------------------------------------------
     ! Read avrSWAP array passed from ServoDyn    
     SUBROUTINE ReadAvrSWAP(avrSWAP, LocalVar, CntrPar, ErrVar)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : LocalVariables
-
-        REAL(ReKi), INTENT(INOUT) :: avrSWAP(*)   ! The swap array, used to pass data to, and receive data from, the DLL controller.
-        TYPE(LocalVariables), INTENT(INOUT) :: LocalVar
-        TYPE(ControlParameters), INTENT(IN) :: CntrPar
-        TYPE(ErrorVariables), INTENT(INOUT) :: ErrVar
-
-        ! Allocate Variables:
-        INTEGER(IntKi)                                  :: K         ! Index used for looping through blades.
-
-        ! Load variables from calling program (See Appendix A of Bladed User's Guide):
-        LocalVar%iStatus            = NINT(avrSWAP(1))
-        LocalVar%Time               = avrSWAP(2)
-        LocalVar%DT                 = avrSWAP(3)
-        LocalVar%VS_MechGenPwr      = avrSWAP(14)
-        LocalVar%VS_GenPwr          = avrSWAP(15)
-        LocalVar%GenSpeed           = avrSWAP(20)
-        LocalVar%RotSpeed           = avrSWAP(21)
-        LocalVar%GenTqMeas          = avrSWAP(23)
-        LocalVar%NacVane            = avrSWAP(24) * R2D
-        LocalVar%HorWindV           = avrSWAP(27)
-        LocalVar%rootMOOP(1)        = avrSWAP(30)
-        LocalVar%rootMOOP(2)        = avrSWAP(31)
-        LocalVar%rootMOOP(3)        = avrSWAP(32)
-        LocalVar%NacHeading         = avrSWAP(37) * R2D
-        LocalVar%FA_Acc_TT          = avrSWAP(53)  ! This is the translational acceleration of the tower top in the non-rotating frame
-        LocalVar%SS_Acc_TT          = avrSWAP(54)  ! This is the translational acceleration of the tower top in the non-rotating frame
-        LocalVar%NacIMU_FA_RAcc      = avrSWAP(83)  ! This is the rotational aceleration of the nacelle in the shaft frame
-        LocalVar%Azimuth            = avrSWAP(60)
-        LocalVar%NumBl              = NINT(avrSWAP(61))
-
-        if (CntrPar%Ext_Interface > 0) THEN ! Use extended bladed interface
-
-            ! Platform signals 
-            LocalVar%PtfmTDX            = avrSWAP(1001)
-            LocalVar%PtfmTDY            = avrSWAP(1002)
-            LocalVar%PtfmTDZ            = avrSWAP(1003)
-            LocalVar%PtfmRDX            = avrSWAP(1004)
-            LocalVar%PtfmRDY            = avrSWAP(1005)
-            LocalVar%PtfmRDZ            = avrSWAP(1006)
-            LocalVar%PtfmTVX            = avrSWAP(1007)
-            LocalVar%PtfmTVY            = avrSWAP(1008)
-            LocalVar%PtfmTVZ            = avrSWAP(1009)
-            LocalVar%PtfmRVX            = avrSWAP(1010)
-            LocalVar%PtfmRVY            = avrSWAP(1011)
-            LocalVar%PtfmRVZ            = avrSWAP(1012)
-            LocalVar%PtfmTAX            = avrSWAP(1013)
-            LocalVar%PtfmTAY            = avrSWAP(1014)
-            LocalVar%PtfmTAZ            = avrSWAP(1015)
-            LocalVar%PtfmRAX            = avrSWAP(1016)
-            LocalVar%PtfmRAY            = avrSWAP(1017)
-            LocalVar%PtfmRAZ            = avrSWAP(1018)
-
-        ENDIF
-
-
-        ! Check that we haven't already loaded this dynamic library
-        IF (LocalVar%iStatus == 0) THEN
-            IF (LocalVar%AlreadyInitialized == 0) THEN
-                LocalVar%AlreadyInitialized = 1
-            ELSE
-                ErrVar%aviFAIL = -1
-                ErrVar%ErrMsg  = 'ERROR: This ROSCO dynamic library has already been loaded.'
-                RETURN
-            ENDIF
-        ENDIF
-
-
-        
-
-        ! --- NJA: usually feedback back the previous pitch command helps for numerical stability, sometimes it does not...
-        IF (LocalVar%iStatus == 0) THEN
-            LocalVar%BlPitch(1) = avrSWAP(4)
-            LocalVar%BlPitch(2) = avrSWAP(33)
-            LocalVar%BlPitch(3) = avrSWAP(34)
-        ELSE
-            
-            ! Subtract pitch actuator fault for blade K - This in a sense would make the controller blind to the pitch fault
-            IF (CntrPar%PF_Mode == 1) THEN
-                DO K = 1, LocalVar%NumBl
-                    ! This assumes that the pitch actuator fault is hardware fault
-                    LocalVar%BlPitch(K) = LocalVar%PitComAct(K) - CntrPar%PF_Offsets(K) ! why is PitCom used and not PitComAct??
-                END DO
-            ELSE
-                LocalVar%BlPitch(1) = LocalVar%PitComAct(1)
-                LocalVar%BlPitch(2) = LocalVar%PitComAct(2)
-                LocalVar%BlPitch(3) = LocalVar%PitComAct(3)     
-            END IF
-
-        ENDIF
-
-        LocalVar%BlPitchCMeas = (1 / REAL(LocalVar%NumBl)) * (LocalVar%BlPitch(1) + LocalVar%BlPitch(2) + LocalVar%BlPitch(3)) 
-
-        IF (LocalVar%iStatus == 0) THEN     ! TODO: Technically, LocalVar%Time > 0, too, but this restart is in many places as a reset
-            LocalVar%restart = .True.
-        ELSE
-            LocalVar%restart = .False.
-        ENDIF
-
-        ! FA_Acc_TT is in the non-rotating tower-top frame, so we need to convert it to the rotating (nacelle) frame of reference
-        LocalVar%FA_Acc_Nac = LocalVar%FA_Acc_TT * COS(LocalVar%NacHeading * D2R) + LocalVar%SS_Acc_TT * SIN(LocalVar%NacHeading * D2R)
-
-
-        ! Increment timestep counter
-        IF (LocalVar%iStatus == 0 .AND. LocalVar%Time == 0) THEN
-            LocalVar%n_DT = 0
-        ELSE
-            LocalVar%n_DT = LocalVar%n_DT + 1
-        ENDIF
-
-    END SUBROUTINE ReadAvrSWAP    
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
+        IMPLICIT NONE
+        REAL(4), INTENT(INOUT) :: avrSWAP(*)
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(CONTROLPARAMETERS), INTENT(IN), TARGET :: CntrPar
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        CALL readavrswap_c(avrSWAP, C_LOC(LocalVar_view), C_LOC(CntrPar_view), C_LOC(ErrVar_view))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
+    END SUBROUTINE ReadAvrSWAP
 ! -----------------------------------------------------------------------------------
     ! Define parameters for control actions
     SUBROUTINE SetParameters(avrSWAP, accINFILE, size_avcMSG, CntrPar, LocalVar, objInst, PerfData, RootName, ErrVar)

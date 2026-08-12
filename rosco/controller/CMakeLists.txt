@@ -94,6 +94,7 @@ set(SOURCES
     src/notchfilter.cpp
     src/notchfilterslopes.cpp
     src/pathisrelative.cpp
+    src/readavrswap.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

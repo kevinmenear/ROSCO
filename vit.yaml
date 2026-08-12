@@ -144,6 +144,19 @@ translations:
   PathIsRelative:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/pathisrelative.cpp
+  # ADDED BY HAND at unit #16, for the reason unit #14 recorded: `vit verify`
+  # rewrites this file through a YAML round-trip that DELETES EVERY COMMENT in
+  # it, so the only way to keep both the entry and the file's own reasoning is
+  # to restore the commented file and re-add the entry. `vit integrate` also
+  # wrote `verification: simulation` here again; REMOVED again, and this unit is
+  # the case that shows why the rule is not pedantry. The gate DID run for
+  # ReadAvrSWAP and it DID pass -- and 23 of the unit's 43 output fields are
+  # invisible to it (see plan.json `observability`). "Verified by simulation" is
+  # a true sentence and a misleading one, written by a command that read no
+  # result.
+  ReadAvrSWAP:
+    status: integrated
+    cpp_file: translations/ReadSetParameters/readavrswap.cpp
 types:
   ControlParameters:
     strategy: view
