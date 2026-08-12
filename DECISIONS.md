@@ -3845,3 +3845,33 @@ a reported outcome. `vit_mutate.py` got exactly that for MUTANTS this session
 (`killed_by_timeout`, self-calibrated from the baseline run); the reference side
 did not, because it would change every already-measured unit's generated harness
 and that is X3.
+
+### X3 exposure from this session's generator changes — for the Driver
+
+Five instrument changes landed this session. **Four are gated so tightly that no
+already-measured unit can enter them, and one is not.** Stated here rather than
+left to be discovered by a re-run that produces a different case count.
+
+| change | gate | can an earlier unit enter it? |
+|---|---|---|
+| `alloc_out` mapping + emitter | `alloc_return_args(sig)` non-empty | no unit before #17 has an `INTENT(OUT), ALLOCATABLE` array |
+| R8 file corpus + io-unit handle | `file_params_from` non-empty | no earlier reference names a dummy in a `FILE=` specifier |
+| `_case_impl` explicit held string | `isinstance(v, (list, tuple))` | no earlier held value is a list |
+| mutation watchdog | a run that exceeds 20x the baseline | only a mutant that does not terminate |
+| **fixed-width `CHARACTER(N)` dummy** | `_character_dummy_len(a)` on a path that previously produced `UNOBSERVABLE [character-arg]` | **yes, for any unit with such a dummy** |
+| **predicate-knob ladder `v - 1`** | every knob | **yes, for every unit with a predicate knob** |
+
+Both of the last two **strengthen**: the first supplies and compares an argument
+that was previously neither, the second adds one value to a ladder. Neither can
+remove a case. But both change the CASE COUNT of an earlier unit if its harness
+is re-run, and `harness/<Unit>.json` records `checked`. `ReadAvrSWAP` is the one
+unit with predicate knobs (`harness/ReadAvrSWAP.json`, 27,656 checked); it was
+not re-measured here, so whether its score moves is UNKNOWN rather than
+unchanged. **Do not read a later re-run's different count as a regression.**
+
+An attempt to re-measure it from a temporary clean copy produced 73 cases rather
+than 27,656 — which is not the knob change (a union that only adds values cannot
+remove 27,583 cases) but the invocation: `avrSWAP` maps as a SCALAR unless
+`vit.yaml`'s `kgen.assumed_size_arrays` names it, and `vit.yaml` was restored
+from HEAD for this unit. Recorded because a re-measurement run has to reproduce
+the ORIGINAL invocation, and the artifact does not record it.
