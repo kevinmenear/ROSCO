@@ -2,6 +2,51 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #20 — StateMachine — 2026-08-12
+
+**The nine surviving mutants were fixed in the CORPUS, not declared
+equivalent.** `min_mutation_score` is 1.0 precisely so the cheap way out is
+closed, and a declaration would have been false: every one of the nine was
+reachable, and 3610 cases now kill all 39. The two additions are in the loop
+repo (`21ed899`) and are described in the RUNBOOK's target layer. Both are
+appended last, fire only when the reference contains the shape, draw no random
+numbers when they do not fire, and report themselves in `rule_coverage` — so
+no already-measured unit's corpus moves, and this is an addition under P5
+rather than an X3 change to a verification default.
+
+**The state constants are restated in the translation as `constexpr`, and that
+is a departure worth stating.** `PC_State_Enabled` and the eight `VS_State_*`
+values are PARAMETERs in `Constants.f90`, outside the unit. Restating them
+creates eleven mutable sites the Fortran does not have — the shape unit #4
+warned about, where a restatement buys unobservable mutants. It is kept here
+because every one of the eleven is OBSERVABLE: each names a value the unit
+writes, and the mutation run kills all eleven (`'3' -> '4'` on
+`VS_State_Region_2_5` needed the corpus fix to become killable, which is the
+proof rather than the exception). The alternative — bare integer literals in
+the C++ — would make the transcription uncheckable by eye against a reference
+that reads by name.
+
+**A candidate for the Driver, not taken here.** `mutation/<Unit>.json`'s
+`survivors` records carry `id`, `operator`, `before` and `after` — and NOT the
+`line`, which `harness.cppmutate.CppMutant` already has. Mapping nine survivors
+back to their sites therefore took a separate re-derivation run, and for
+operators like `const_tweak '0' -> '1'` (five candidate sites in this unit) the
+mapping is by ordinal position and is easy to get wrong. Adding the field is
+additive and changes no number any committed artifact carries. Recorded rather
+than done because it edits the shared loop repo mid-campaign and nothing in
+this unit was blocked by it.
+
+**A second candidate, observed twice in one unit.** `restore_integrated.sh`
+restores `vit.yaml` from HEAD, so a unit that re-integrates after a second
+`reset_to_clean` loses its own hand-added `translations:` entry — and so does
+the `git checkout -- vit.yaml` that repairs the comment-stripping `vit
+integrate` performs. The file is machine-readable and every later unit reads
+it; a disagreement between it and `plan.json` is a shape this campaign has been
+bitten by before (unit #14). The remedy is either that VIT round-trips comments
+or that the provenance moves somewhere VIT does not write — both are the
+Driver's call.
+
+
 ## 2026-08-11 — Unit #12 `NonDecreasing`: the corpus had one ordering in it
 
 **Every array this generator has ever produced was sorted ascending, and the

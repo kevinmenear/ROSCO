@@ -1,0 +1,41 @@
+# done_check.py StateMachine — unit #20
+
+Run on the two committed commits (5e8add3 the unit, ba7ef4c the state),
+with a clean tree. The FIRST run is below and reads INCOMPLETE 12/13 on
+exactly one predicate: P5, naming THIS FILE, which could not exist before
+the run that produced it. Captured as a transcript and added to the state
+commit by amend, which is the same order unit #5 recorded — a
+done-condition capture has to be taken before the file that captures it
+exists. The second run, after the amend, is at the bottom.
+
+## First run — before this file existed
+
+```
+baseline (inferred): 29386a3  -- the commit before 5e8add3 touched translations/ControllerBlocks/statemachine.cpp
+
+StateMachine: Verdict.INCOMPLETE  (12/13 PASS)
+
+[  ok  ] P1   commits exist                      
+[  ok  ] P2   clean tree                         
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[ FAIL ] P5   evidence resolves                  unresolved_evidence:evidence/StateMachine/done_check.txt
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[  ok  ] P9   gate compared and matched          
+[  ok  ] P12  mutation score for this unit       39/39 mutant(s) killed
+[  ok  ] P11  post-integration harness re-run    3610 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible
+```
+
+## Second run — after the amend
+
+```
+StateMachine: Verdict.COMPLETE  (13/13 PASS)
+```
+
+All thirteen predicates pass, P5 included. The verdict above is the one that
+stands; the first is kept because a verdict that was correct when it was taken
+is worth more than a deletion (unit #5).

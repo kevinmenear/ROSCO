@@ -980,13 +980,46 @@
         "DISCON"
       ],
       "dependency_depth": 0,
-      "verification": "kernel replay or direct-call harness; bit-identical",
+      "verification": "ROUTE EXISTS AND WAS RUN. FIVE LAYERS, ALL FIVE ALIVE -- the fifth unit in this campaign of which that is true, after #11, #13, #18 and #19. Counts and what each layer is blind to are in `observability`; the artifacts are listed in `evidence`.",
       "why": "every input and output crosses the signature",
       "bridge_feasible": {
-        "value": "unknown",
-        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+        "value": "yes",
+        "basis": "MEASURED, not predicted, and it REFUTES this unit's inherited `unknown`. The plan's basis was that the matrix records 5 blocking features no FEATURE_CELLS pattern can attribute to a declaration -- the honest answer, and none of the five is in this signature. `vit interface` crosses both arguments as C_LOC onto the flat view structs the campaign already has for these types: TYPE(ControlParameters) INTENT(IN) and TYPE(LocalVariables) INTENT(INOUT) become two TYPE(C_PTR), VALUE dummies, with vit_populate_* before the call and vit_copy_scalars_to_localvariables after it. The reverse-copy is LOAD-BEARING and not optional here: both outputs are INTEGER SCALARS of the INOUT argument, so neither travels back through a C_LOC'd buffer the way an array field does -- `vit integrate --reverse-copy`, and removing that one CALL fails the post-integration harness 3610 of 3610. Builds, links, passes the gate 27/27."
       },
-      "observability": null
+      "observability": "FIVE LAYERS, ALL FIVE ALIVE. What each one CANNOT see, measured rather than reasoned:\n\n  kernel replay          62/62, 14,260 compared field rows ALL IDENTICAL (225 fields; the verify_fields.csv carries 13,950 of them). The tree has EXACTLY ONE call site: clean DISCON.F90:115, `CALL StateMachine(CntrPar, LocalVar)`, 407,976 hits across all 27 scenarios. Scenario 1 chosen -- the highest count at 79,998, and the only scenario whose coverage spans TWO operating states (47,608 Region_1_5 and 32,388 Region_3_ConstPwr). Window exactly the configured 0:0:1-20,12000-12020,23900-23920 = 62, no stray index.\n    THE NO-OP IS A MIRROR AND PASSES 60 OF 62. Both outputs are fields of the INTENT(INOUT) argument, so they arrive carrying the PREVIOUS call's answer, and a state machine holds its state -- so on any call where the state does not change, writing nothing and writing the right answer are the same bytes. Unit #7's aliasing shape reached through TIME rather than through two dummies. The liveness test is therefore the WRONG-CONSTANT stub (VS_State = 7, a value no branch produces): 0 of 62 PASSED, 123 rows moved in all 62 cases.\n    61 OF 62 CASES HAVE THE SAME ANSWER. A stub reading no argument and writing PC_State = 1, VS_State = 1 passes 61 of 62 -- the kernel is a lookup table on everything but the initialisation case. GenArTq and GenBrTq are 0.0 in ALL 62 captured cases, which pins the whole Region 2 / 2.5 / error sub-tree onto one path.\n  coverage of the reference  SEVEN OF THE THIRTEEN ASSIGNMENT SITES ARE DEAD IN ALL 27 SCENARIOS: the entire region-3 INITIALISATION sub-tree (clean lines 220/222/224 -- every scenario's first call takes the Region_2 leaf), op PC_State_Disabled (237; PC_ControlMode is 1 in all 14 Examples/*.IN), op Region_3_ConstTrq (245), Region_2_5 (250), Region_3_FBP (252) and VS_State_Error (261). Region_2 (256) is written in SCENARIO 12 ALONE. So no bit-comparing layer built on the 27 scenarios can constrain more than six of the thirteen, and the differential harness is the only layer that reaches the other seven.\n  differential harness   3610 checked, 0 failed, 0 inadmissible, against the CLEAN Fortran. RED-TESTED: the unit as a no-op fails 3610 of 3610 and the mismatch list names both outputs and only them (LocalVar.PC_State, LocalVar.VS_State), against the harness's own INOUT fill. R4 reports 160 out-parameters. HELD, so untested by construction: 448 parameters, of which 268 held reals are zero in every case. UNOBSERVABLE by the bridge: five nested types (WE, FP, piP, resP, rlP), LocalVar%ACC_INFILE (a CHARACTER ARRAY -- element width and element count are two extents where char[] has one, refused since unit #8) and LocalVar%AWC_complexangle (COMPLEX(DbKi), unmapped). None of the seven is read by this unit.\n  mutation score         39 of 39 BEHAVIOURAL killed, 1.000, 0 declared equivalent, 0 excluded as `killed (no compile)`. It read 0.769 with NINE survivors on the first corpus, and not one was a transcription defect: a branch-reachability probe (the shipped translation with a counter per leaf) showed two whole sub-trees entered by ZERO of 2028 cases, and all nine sat inside them. Closed by two ADDITIONS to harness/generate.py, both with precise detectors -- (1) a predicate against a NAMED PARAMETER produced no knob, because the extractor read numeric literals only, so VS_ConstPower and VS_FBP were never varied at their branch points; (2) a predicate between TWO VARIED QUANTITIES has no crossing value in any ladder, because whichever base value is larger is larger in every case the generator has ever produced -- and a two-sided predicate can be GATED by another, so each pair is run with every other pair pinned just below and just above its own crossing point. 2028 -> 2890 -> 3610 cases, all 16 branch leaves reached.\n  post-integration       3610 checked, 0 failed, against the integrated build. RED-TESTED with the rebuild between the edit and the run: the vit_copy_scalars_to_localvariables reverse-copy removed fails 3610 of 3610, and green returns after the revert and a second rebuild.\n  gate, 27 scenarios     5,252,000 values / 351 channels, 0 mismatched. RED-TESTED: VS_State_Region_1_5 written as VS_State_Region_2 moves 36,577, revert returns 0, scenarios_failed empty, perturbation_broke_scenarios empty. That red is NARROW and reading it as the footprint would have been wrong -- every moved channel is in scenario 12, and the five scenarios that write Region_1_5 hundreds of thousands of times moved nothing under it. The whole-unit no-op is what sizes the footprint: 1,526,538 of 5,252,000 across 22 of 27 scenarios and 135 channels (evidence/StateMachine/gate.whole-unit-no-op-MOVES.json). A red test proves visibility; it does not measure it. Neither number matches any other committed redtest artifact.",
+      "disposition": "integrated",
+      "evidence": [
+        "evidence/StateMachine/README.md",
+        "evidence/StateMachine/done_check.txt",
+        "evidence/StateMachine/statemachine.final.cpp",
+        "evidence/StateMachine/kernel.verification.run.txt",
+        "evidence/StateMachine/kernel.verification-PASSES-62of62.run.txt",
+        "evidence/StateMachine/kernel.verification-PASSES-62of62.verify_fields.csv",
+        "evidence/StateMachine/kernel.no-op-stub.run.txt",
+        "evidence/StateMachine/statemachine.no-op-stub.cpp",
+        "evidence/StateMachine/kernel.right-constant-stub.run.txt",
+        "evidence/StateMachine/statemachine.right-constant-stub.cpp",
+        "evidence/StateMachine/kernel.wrong-constant-stub.run.txt",
+        "evidence/StateMachine/statemachine.wrong-constant-stub.cpp",
+        "evidence/StateMachine/kernel_field_rows.txt",
+        "evidence/StateMachine/kernel_field_rows.py",
+        "evidence/StateMachine/statemachine.branch_probe.cpp",
+        "evidence/StateMachine/branch_reachability.2028-case-corpus.txt",
+        "evidence/StateMachine/branch_reachability.2890-case-corpus.txt",
+        "evidence/StateMachine/branch_reachability.3610-case-corpus.txt",
+        "evidence/StateMachine/gate.whole-unit-no-op-MOVES.json",
+        "translations/ControllerBlocks/statemachine.cpp",
+        "gate/StateMachine.json",
+        "gate/StateMachine.redtest.json",
+        "harness/StateMachine.json",
+        "harness/StateMachine.redtest.json",
+        "harness/StateMachine.postintegration.json",
+        "harness/StateMachine.postintegration.redtest.json",
+        "mutation/StateMachine.json"
+      ],
+      "source_file": "rosco/controller/src/ControllerBlocks.f90",
+      "translation": "translations/ControllerBlocks/statemachine.cpp",
+      "harness_required": true
     },
     {
       "order": 21,

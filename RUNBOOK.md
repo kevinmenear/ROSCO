@@ -339,6 +339,133 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A UNIT WHOSE OUTPUT IS A FIELD IT ALSO READS IS SELF-ALIASING THROUGH TIME,
+  AND ITS NO-OP STUB PASSES 60 OF 62.** Unit #20, and it is unit #7's
+  `CALL GetRoot(RootName,RootName)` finding reached from the other direction --
+  there two dummies aliased one variable, here ONE FIELD aliases its own
+  previous value.
+
+  `StateMachine` writes `LocalVar%PC_State` and `LocalVar%VS_State`, both fields
+  of the `INTENT(INOUT)` argument, so they arrive carrying the previous
+  timestep's answer. Holding its state is what a state machine is FOR, so on
+  every call where the state does not change, "write nothing" and "write the
+  right answer" are the same bytes:
+
+  ```
+  no-op stub            60 of 62 PASSED,   3 rows move (cases 1 and 2 only)
+  right-constant stub   61 of 62 PASSED,   2 rows move (case 1 only)
+  wrong-constant stub    0 of 62 PASSED, 123 rows move (all 62 cases)
+  ```
+
+  So the WRONG-constant stub is the liveness test, exactly as unit #7 said, and
+  the right-constant stub says how little is left: **61 of the 62 captured cases
+  have the SAME ANSWER.** Ask it of the outputs before choosing the stubs:
+
+  ```
+  grep -n 'INTENT(INOUT)' <the unit's Fortran>   # then: does the unit READ a
+  # field it also WRITES, or is the write unconditional on every path?
+  ```
+
+  A unit whose every path writes every output is NOT exempt -- this one's are,
+  and the mirror is about the VALUE being unchanged, not about the write being
+  skipped.
+
+- **A RED TEST PROVES VISIBILITY; IT DOES NOT MEASURE IT, AND THE TWO DIFFER
+  HERE BY A FACTOR OF FORTY.** Unit #20.
+
+  `VS_State_Region_1_5` written as `VS_State_Region_2` moved **36,577 of
+  5,252,000**, and every moved channel was in **scenario 12** -- while the five
+  scenarios that write `Region_1_5` hundreds of thousands of times moved
+  nothing at all. Read forwards that is a nearly-invisible unit. The whole-unit
+  no-op, which unit #4 already recommends as a habit, moves **1,526,538 across
+  22 of 27 scenarios and 135 channels.**
+
+  ```
+  # the narrow red says the gate CAN see the unit; the no-op says HOW MUCH
+  python3.12 scripts/gate.py <U> --perturb-file rosco/controller/src/<u>.cpp \
+      --perturb-from 'void <U>(<the signature>) {' \
+      --perturb-to   'void <U>(<the signature>) { if (<args>) return;' \
+      --out evidence/<U>/gate.whole-unit-no-op-MOVES.json
+  ```
+
+  Run BOTH when the unit's output is an enumerated STATE. Which state you
+  perturb to decides everything: two states whose downstream control law
+  coincides on a scenario's operating point produce a green that is about the
+  perturbation and not about the unit.
+
+- **SEVEN OF THIRTEEN ASSIGNMENT SITES DEAD IN ALL 27 SCENARIOS, AND THE UNIT
+  IS STILL THE MOST GATE-VISIBLE ONE SO FAR.** Unit #20. Both facts are true at
+  once and they answer different questions -- coverage of the WRITE SITES says
+  what the simulation exercises, the no-op perturbation says what it propagates.
+
+  ```
+  python3.12 -c "import json;d=json.load(open('coverage/line_coverage.json'));\
+      h=d['hits']['<File>.f90'];print([(l, sum(h[str(l)].values()) if str(l) in h else 0) \
+      for l in range(<lo>,<hi>)])"
+  ```
+
+  For `StateMachine`: the whole region-3 INITIALISATION sub-tree is dead
+  because every scenario's first call takes the Region-2 leaf; `PC_ControlMode`
+  is 1 in all 14 `Examples/*.IN`; `Region_2` is written in scenario 12 alone.
+  A unit that enumerates MODES has this shape by construction, and the
+  differential harness is the only layer that reaches the modes the campaign's
+  inputs do not select.
+
+- **A PREDICATE THE REFERENCE WRITES AGAINST A NAMED PARAMETER, OR BETWEEN TWO
+  VARIED QUANTITIES, WAS UNREACHABLE BY EVERY CORPUS RULE.** Unit #20, and it
+  is the twelfth corpus blind spot -- two of them, closed together in the loop
+  repo (`21ed899`), 0.769 -> 1.000.
+
+  Nine of 39 mutants survived a 2028-case green, and NOT ONE was a
+  transcription defect. What said so was a branch-reachability probe, which is
+  twenty lines and is worth building before reasoning about any survivor:
+
+  ```
+  # the shipped translation with a counter per leaf, run through the harness
+  # evidence/StateMachine/statemachine.branch_probe.cpp is the pattern
+  ```
+
+  All nine sat inside two sub-trees that ZERO cases entered.
+
+  1. `predicate_knobs_from` matched `NAME <op> NUMERIC LITERAL` only, so
+     `IF (CntrPar%VS_FBP == VS_FBP_Variable_Pitch)` produced no knob at all --
+     the value is an `INTEGER(IntKi), PARAMETER` in `Constants.f90`. **A
+     reference that names its magic numbers is being CLEARER than one that
+     inlines them, and it was the clearer spelling the corpus could not read.**
+  2. A predicate whose two sides are BOTH varied has no crossing value in any
+     ladder: every rule sets one parameter and leaves the rest at base, so
+     **whichever base value is larger is larger in every case this generator
+     has ever produced.** `PitCom(1) >= VS_Rgn3Pitch` was false in all 2028.
+     The crossing point is the OTHER SIDE's value in that same case.
+
+  And the half that was not obvious: **a two-sided predicate can be GATED by
+  another one.** `GenArTq >= VS_MaxOMTq*1.01` sits inside the ELSE of
+  `BlPitchCMeas >= VS_Rgn3Pitch`, true in 2451 of 2890 cases under the ordinary
+  draw, so pinning the inner pair alone still left its leaf unwritten. Each
+  pair now runs with every OTHER pair pinned just below its crossing point and
+  again just above.
+
+- **`restore_integrated.sh` TAKES `vit.yaml`'s HAND-ADDED ENTRY WITH IT, AND SO
+  DOES THE `git checkout --` THAT REPAIRS THE FILE.** Unit #20, and it is the
+  entry units #14/#16/#18 wrote, one loop further round: a unit that
+  re-integrates after a second `reset_to_clean` runs `vit integrate` TWICE, so
+  the comment-stripping and the hand re-add both happen twice. Re-check the
+  entry after the LAST `git checkout -- vit.yaml`, not after the first:
+
+  ```
+  grep -c 'StateMachine' vit.yaml     # 0 means the checkout ate it
+  ```
+
+- **THE PRE-INTEGRATION HARNESS CANNOT BE RE-RUN ON AN INTEGRATED TREE, AND IT
+  FAILS BY WRITING AN EMPTY FILE.** Unit #20. Re-taking a probe artifact after
+  integration produced a zero-byte evidence file and no error anyone would
+  read -- the rule the RUNBOOK already states ("both link the campaign's
+  Fortran objects, and after integration `<File>.f90.o` IS the wrapper"), met
+  as a silent empty artifact rather than as a link error. The fix is the
+  documented one and it costs about four minutes: `reset_to_clean.sh` -> re-run
+  -> `restore_integrated.sh` -> `vit integrate --apply` -> rebuild -> re-run
+  the gate. Do that rather than hand-copying the numbers out of a transcript.
+
 - **A STUB WHOSE WHOLE RETURN VALUE IS `0.0` CAN PASS THE KERNEL VERDICT 62/62,
   AND THE TELL IS IN THE ROWS RATHER THAN ANYWHERE IN THE RUN.** Unit #19, and
   it is unit #3's tolerance rule reaching the case that costs something.

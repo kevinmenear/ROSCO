@@ -4,9 +4,10 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-12: unit #19 `SecLPFilter_Vel` is `integrated` and CLOSED**,
-first dispatch. **Five layers, all five alive** — the fourth unit in this
-campaign of which that is true, after #11, #13 and #18.
+**As of 2026-08-12: unit #20 `StateMachine` is `integrated` and CLOSED**, first
+dispatch — its section is directly below. Unit #19 `SecLPFilter_Vel` is `integrated` and
+CLOSED, first dispatch. **Five layers, all five alive** — the fourth unit in
+this campaign of which that is true, after #11, #13 and #18.
 
 | layer | result | red-tested |
 |---|---|---|
@@ -1005,6 +1006,48 @@ Next: the lowest-order remaining unit in `plan.json`. Confirm it against
 `plan.json` before starting, including its `phase` and `proposed_verification`
 fields — those are hypotheses, not facts. Run
 `python3.12 scripts/done_check.py <Unit>` before setting any disposition.
+
+## Unit #20 — StateMachine — 2026-08-12
+
+`SUBROUTINE StateMachine(CntrPar, LocalVar)`, `ControllerBlocks.f90`.
+**`integrated`.** Five layers, all five alive — the fifth unit of which that is
+true, after #11, #13, #18 and #19.
+
+| layer | result | red test |
+|---|---|---|
+| kernel replay | 62/62, **14,260 field rows all IDENTICAL** | wrong-constant stub 0 of 62, 123 rows |
+| differential harness | **3610 checked, 0 failed** | no-op fails 3610 of 3610, naming both outputs |
+| mutation score | **39 of 39**, 1.000, 0 declared equivalent | — |
+| post-integration | 3610 checked, 0 failed | reverse-copy removed: 3610 of 3610 |
+| gate, 27 scenarios | 5,252,000 / 0 mismatched | **RED 36,577**, revert 0 |
+
+The unit is a pure decision tree — nine `LocalVar` reads, six `CntrPar` reads,
+two writes, no arithmetic — and its `bridge_feasible: unknown` is **refuted**:
+both derived types cross as `C_LOC` onto view structs the campaign already had.
+`--reverse-copy` is load-bearing rather than optional, because both outputs are
+INTEGER scalars of the INOUT argument; removing that one `CALL` fails the
+post-integration harness 3610 of 3610.
+
+**Three measurements worth carrying, all in the RUNBOOK:**
+
+1. **The no-op stub is a MIRROR and passes 60 of 62 kernel cases.** Both
+   outputs are fields of the INOUT argument, so they arrive carrying the
+   previous timestep's answer, and holding its state is what the unit is for.
+   Unit #7's aliasing shape reached through TIME. A right-constant stub passes
+   61 of 62 — the window has one answer in all but the initialisation case.
+2. **Seven of the thirteen assignment sites are dead in all 27 scenarios**, and
+   the unit is nonetheless the most gate-visible one measured so far: a
+   whole-unit no-op moves **1,526,538 of 5,252,000** across 22 of 27 scenarios.
+   The committed red test moves 36,577, all in scenario 12 — so a red test
+   proves visibility and does not measure it. Both artifacts are committed.
+3. **The mutation score read 0.769 with nine survivors and none was a
+   transcription defect.** A branch-reachability probe put all nine inside two
+   sub-trees no case of a 2028-case corpus entered. Two corpus gaps, closed by
+   addition in the loop repo (`21ed899`): a predicate written against a named
+   PARAMETER produced no knob at all, and a predicate between two VARIED
+   quantities has no crossing value in any ladder. 2028 → 2890 → 3610 cases,
+   all 16 leaves reached, 39 of 39 killed.
+
 
 ## Counts
 
