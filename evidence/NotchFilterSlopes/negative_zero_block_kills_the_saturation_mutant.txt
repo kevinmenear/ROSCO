@@ -1,0 +1,57 @@
+What the NEGATIVE-ZERO corpus block bought, measured on this unit
+=================================================================
+
+The survivor
+------------
+
+  38bbc289  compare_op   'if (CornerFreq < 0)'  ->  'if (CornerFreq <= 0)'
+
+the saturation guard NotchFilterSlopes opens with. It was the ONLY mutant alive
+after a 4468-case green differential run.
+
+The two predicates disagree on exactly one input, CornerFreq == 0. At +0.0 the
+two branches produce identical bits, so no amount of magnitude coverage can
+separate them. The witness is NEGATIVE zero, and the corpus could not hold one:
+`harness/generate.py`'s `_real_magnitude_ladder` and `_ladder` both end in
+`list(dict.fromkeys(out))`, and `0.0 == -0.0`, so a `-0.0` written into either
+list is absorbed by the `0.0` already there. Every other rung this generator has
+ever gained could be added where it belonged. This one could not, which is why
+it went in as a block appended last rather than as an entry.
+
+Not equivalent -- proved, not argued (evidence/NotchFilterSlopes/negative_zero_survivor_probe.*)
+------------------------------------------------------------------------------------------------
+
+  CornerFreq = +0.0    differ  0 of 36
+  CornerFreq = -0.0    differ 36 of 36    first differing output: nfs_b2
+
+  witness  InputSignal=1.0  DT=0.0125  CornerFreq=-0.0  Damp=0.7
+    reference nfs_b2 = -0   bits 8000000000000000
+    mutant    nfs_b2 =  0   bits 0000000000000000
+    reference nfs_b0 =  0   bits 0000000000000000
+    mutant    nfs_b0 = -0   bits 8000000000000000
+    return value      AGREES
+
+The last line is the sharper half of the finding. In all 36 differing draws the
+RETURN VALUE is bit-identical, because IEEE addition collapses (+0.0) + (-0.0)
+to +0.0. A differential harness comparing only the unit's result could not have
+killed this mutant at ANY input; it is reachable only because
+R4_compare_all_outputs compares the coefficient out-parameters too.
+
+The numbers
+-----------
+
+  corpus                                cases   killed   score   survivors
+  ------------------------------------  ------  -------  ------  ---------
+  as inherited (loop 0c6c9bb)             4468   83/84    0.988      1
+  + negative-zero block (loop 5d83048)    4508   84/84    1.000      0
+
+The mutant dies on **2 of 4508** cases -- and 2 is the count that says the block
+is what did it. The block adds 40 cases (5 defaulted scalar reals x 8 flag
+variants); only the two that put CornerFreq itself at -0.0 AND enter the
+coefficient branch can move an output. Nothing in the other 4468 reaches it.
+
+  [  5/87] compare_op       '<' -> '<='  killed (2/4508 cases)
+
+Both instruments stamp loop 5d83048 / vit 300da9c, and the green and red
+pre-integration harness runs both report 4508 cases -- unit #11's check that the
+red test measured the same corpus the green did.

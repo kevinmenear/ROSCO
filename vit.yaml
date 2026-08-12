@@ -125,9 +125,22 @@ translations:
   LPFilter:
     status: integrated
     cpp_file: translations/Filters/lpfilter.cpp
+  # ADDED BY HAND at unit #14, not by `vit integrate`. Unit #12 correctly
+  # reverted vit.yaml wholesale after a STUB `vit verify` wrote a false
+  # `cases_passed` record into it, and `NonDecreasing`'s own entry went with the
+  # revert -- so this file listed twelve translations against thirteen
+  # integrated units. Recorded by unit #13 as a candidate for the Driver;
+  # closed here, because a machine-readable file disagreeing with plan.json is
+  # the shape this campaign has been bitten by before.
+  NonDecreasing:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/nondecreasing.cpp
   NotchFilter:
     status: integrated
     cpp_file: translations/Filters/notchfilter.cpp
+  NotchFilterSlopes:
+    status: integrated
+    cpp_file: translations/Filters/notchfilterslopes.cpp
 types:
   ControlParameters:
     strategy: view

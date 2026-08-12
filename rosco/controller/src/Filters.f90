@@ -82,6 +82,27 @@ MODULE Filters
         END FUNCTION notchfilter_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of NotchFilterSlopes
+    INTERFACE
+        FUNCTION notchfilterslopes_c(InputSignal, DT, CornerFreq, Damp, FP, iStatus, reset, inst, has_Moving, Moving, has_InitialValue, InitialValue) BIND(C, NAME='notchfilterslopes_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: InputSignal
+            REAL(C_DOUBLE), VALUE :: DT
+            REAL(C_DOUBLE), VALUE :: CornerFreq
+            REAL(C_DOUBLE), VALUE :: Damp
+            TYPE(C_PTR), VALUE :: FP
+            INTEGER(C_INT), VALUE :: iStatus
+            INTEGER(C_INT), VALUE :: reset
+            INTEGER(C_INT), INTENT(INOUT) :: inst
+            INTEGER(C_INT), VALUE :: has_Moving
+            INTEGER(C_INT), VALUE :: Moving
+            INTEGER(C_INT), VALUE :: has_InitialValue
+            REAL(C_DOUBLE), VALUE :: InitialValue
+            REAL(C_DOUBLE) :: notchfilterslopes_c
+        END FUNCTION notchfilterslopes_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION LPFilter(InputSignal, DT, CornerFreq, FP, iStatus, reset, inst, InitialValue) RESULT(LPFilter_result)
@@ -240,65 +261,41 @@ CONTAINS
         HPFilter_result = REAL(hpfilter_c(InputSignal, DT, CornerFreq, C_LOC(FP), iStatus, MERGE(1_C_INT, 0_C_INT, reset), inst, has_InitialValue_flag, InitialValue_val), 8)
     END FUNCTION HPFilter
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION NotchFilterSlopes(InputSignal, DT, CornerFreq, Damp, FP, iStatus, reset, inst, Moving, InitialValue)
-    ! Discrete time inverted Notch Filter with descending slopes, G = CornerFreq*s/(Damp*s^2+CornerFreq*s+Damp*CornerFreq^2)
+    FUNCTION NotchFilterSlopes(InputSignal, DT, CornerFreq, Damp, FP, iStatus, reset, inst, Moving, InitialValue) RESULT(NotchFilterSlopes_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : FilterParameters
-        TYPE(FilterParameters),       INTENT(INOUT)       :: FP 
+        IMPLICIT NONE
+        REAL(8), INTENT(IN) :: InputSignal
+        REAL(8), INTENT(IN) :: DT
+        REAL(8), INTENT(IN) :: CornerFreq
+        REAL(8), INTENT(IN) :: Damp
+        TYPE(FILTERPARAMETERS), INTENT(INOUT), TARGET :: FP
+        INTEGER(4), INTENT(IN) :: iStatus
+        LOGICAL(4), INTENT(IN) :: reset
+        INTEGER(4), INTENT(INOUT) :: inst
+        LOGICAL, INTENT(IN), OPTIONAL :: Moving
+        REAL(8), INTENT(IN), OPTIONAL :: InitialValue
+        REAL(8) :: NotchFilterSlopes_result
 
-        REAL(DbKi), INTENT(IN)                  :: InputSignal
-        REAL(DbKi), INTENT(IN)                  :: DT               ! time step [s]
-        REAL(DbKi), INTENT(IN)                  :: CornerFreq       ! corner frequency [rad/s]
-        REAL(DbKi), INTENT(IN)                  :: Damp             ! Dampening constant
-        INTEGER(IntKi), INTENT(IN)              :: iStatus          ! A status flag set by the simulation as follows: 0 if this is the first call, 1 for all subsequent time steps, -1 if this is the final call at the end of the simulation.
-        INTEGER(IntKi), INTENT(INOUT)           :: inst             ! Instance number. Every instance of this function needs to have an unique instance number to ensure instances don't influence each other.
-        LOGICAL(4), INTENT(IN)                  :: reset            ! Reset the filter to the input signal
-        LOGICAL, OPTIONAL,  INTENT(IN)          :: Moving           ! Moving CornerFreq flag
-        REAL(DbKi), OPTIONAL,  INTENT(IN)          :: InitialValue           ! Value to set when reset 
+        ! Local variables for OPTIONAL args
+        INTEGER(C_INT) :: has_Moving_flag
+        INTEGER(C_INT) :: Moving_val
+        INTEGER(C_INT) :: has_InitialValue_flag
+        REAL(C_DOUBLE) :: InitialValue_val
 
-        LOGICAL                                 :: Moving_          ! Local version
-        REAL(DbKi)                              :: CornerFreq_          ! Local version
-        REAL(DbKi)                          :: InitialValue_           ! Value to set when reset
-
-        ! Defaults
-        InitialValue_ = InputSignal
-        IF (PRESENT(InitialValue)) InitialValue_ = InitialValue  
-
-        Moving_ = .FALSE.
-        IF (PRESENT(Moving)) Moving_ = Moving   
-
-        ! Saturate Corner Freq at 0
-        IF (CornerFreq < 0) THEN 
-            CornerFreq_ = 0
-        ELSE
-            CornerFreq_ = CornerFreq
-        ENDIF
-        
-        ! Initialization
-        IF ((iStatus == 0) .OR. reset) THEN
-            FP%nfs_OutputSignalLast1(inst)  = InitialValue_
-            FP%nfs_OutputSignalLast2(inst)  = InitialValue_
-            FP%nfs_InputSignalLast1(inst)   = InitialValue_
-            FP%nfs_InputSignalLast2(inst)   = InitialValue_
-        ENDIF
-
-        IF ((iStatus == 0) .OR. reset .OR. Moving_) THEN
-            FP%nfs_b2(inst) = 2.0 * DT * CornerFreq_
-            FP%nfs_b0(inst) = -FP%nfs_b2(inst)
-            FP%nfs_a2(inst) = Damp*DT**2.0*CornerFreq_**2.0 + 2.0*DT*CornerFreq_ + 4.0*Damp
-            FP%nfs_a1(inst) = 2.0*Damp*DT**2.0*CornerFreq_**2.0 - 8.0*Damp
-            FP%nfs_a0(inst) = Damp*DT**2.0*CornerFreq_**2.0 - 2*DT*CornerFreq_ + 4.0*Damp
-        ENDIF
-
-        NotchFilterSlopes = 1.0/FP%nfs_a2(inst) * (FP%nfs_b2(inst)*InputSignal + FP%nfs_b0(inst)*FP%nfs_InputSignalLast1(inst) &
-                            - FP%nfs_a1(inst)*FP%nfs_OutputSignalLast1(inst)  - FP%nfs_a0(inst)*FP%nfs_OutputSignalLast2(inst))
-
-        ! Save signals for next time step
-        FP%nfs_InputSignalLast2(inst)   = FP%nfs_InputSignalLast1(inst)
-        FP%nfs_InputSignalLast1(inst)   = InputSignal          !Save input signal for next time step
-        FP%nfs_OutputSignalLast2(inst)  = FP%nfs_OutputSignalLast1(inst)      !Save input signal for next time step
-        FP%nfs_OutputSignalLast1(inst)  = NotchFilterSlopes
-        inst = inst + 1
-
+        has_Moving_flag = 0
+        Moving_val = 0
+        IF (PRESENT(Moving)) THEN
+            has_Moving_flag = 1
+            Moving_val = MERGE(1_C_INT, 0_C_INT, Moving)
+        END IF
+        has_InitialValue_flag = 0
+        InitialValue_val = 0.0D0
+        IF (PRESENT(InitialValue)) THEN
+            has_InitialValue_flag = 1
+            InitialValue_val = REAL(InitialValue, C_DOUBLE)
+        END IF
+        NotchFilterSlopes_result = REAL(notchfilterslopes_c(InputSignal, DT, CornerFreq, Damp, C_LOC(FP), iStatus, MERGE(1_C_INT, 0_C_INT, reset), inst, has_Moving_flag, Moving_val, has_InitialValue_flag, InitialValue_val), 8)
     END FUNCTION NotchFilterSlopes
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION NotchFilter(InputSignal, DT, omega, betaNum, betaDen, FP, iStatus, reset, inst, InitialValue) RESULT(NotchFilter_result)

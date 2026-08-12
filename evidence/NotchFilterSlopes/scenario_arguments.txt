@@ -1,0 +1,127 @@
+=== every reader of LocalVar%RootMOOPF in the controller (clean source) ===
+rosco/controller/src/Filters.f90:405:                LocalVar%RootMOOPF(K) = NotchFilterSlopes(LocalVar%rootMOOP(K), LocalVar%DT, LocalVar%RotSpeedF, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotchSlopes, .TRUE.)
+rosco/controller/src/Filters.f90:408:                LocalVar%RootMOOPF(K) = SecLPFilter(LocalVar%rootMOOP(K),LocalVar%DT, CntrPar%F_FlpCornerFreq(1), CntrPar%F_FlpCornerFreq(2), LocalVar%FP, LocalVar%iStatus, LocalVar%restart,objInst%instSecLPF)
+rosco/controller/src/Filters.f90:409:                LocalVar%RootMOOPF(K) = HPFilter(LocalVar%rootMOOPF(K),LocalVar%DT, 0.1_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart,objInst%instHPF)
+rosco/controller/src/Filters.f90:413:                    LocalVar%RootMOOPF(K) = NotchFilter(LocalVar%RootMOOPF(K), LocalVar%DT, &
+rosco/controller/src/Filters.f90:420:                LocalVar%RootMOOPF(K) = LocalVar%rootMOOP(K)
+
+=== the ONE call site, and what it hands over ===
+405:                LocalVar%RootMOOPF(K) = NotchFilterSlopes(LocalVar%rootMOOP(K), LocalVar%DT, LocalVar%RotSpeedF, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotchSlopes, .TRUE.)
+
+=== the guard on that call site: IPC_ControlMode > 0 .OR. Flp_Mode == 3 ===
+DISCON_awc.IN:0
+DISCON_filters.IN:0
+DISCON_flap26.IN:0
+DISCON_flp.IN:0
+DISCON_ol_cc_stc.IN:0
+DISCON_ol_mode1.IN:0
+DISCON_ol_mode2.IN:0
+DISCON_su_sd_tra.IN:0
+DISCON_synth.IN:0
+DISCON_yaw.IN:0
+DISCON.IN:0
+DISCON_ipc_awc.IN:1
+DISCON_ipc.IN:1
+DISCON_stress27.IN:1
+
+DISCON_awc.IN:0
+DISCON_ipc_awc.IN:0
+DISCON_ipc.IN:0
+DISCON_ol_cc_stc.IN:0
+DISCON_ol_mode1.IN:0
+DISCON_ol_mode2.IN:0
+DISCON_stress27.IN:0
+DISCON_su_sd_tra.IN:0
+DISCON_yaw.IN:0
+DISCON.IN:0
+DISCON_filters.IN:1
+DISCON_synth.IN:1
+DISCON_flp.IN:2
+DISCON_flap26.IN:3
+
+=== does any scenario PATCH those two? ===
+16:  4. Flap control simulation with Flp_Mode=2
+20:  6. IPC simulation with IPC_ControlMode=1
+377:    - FlapControl: Flp_Mode=1 (IPC-based flap control)
+380:    Note: NotchFilterSlopes requires IPC_ControlMode=1, which conflicts with
+381:    Flp_Mode > 0 (ROSCO mutual exclusion). Use Scenario 6 for NotchFilterSlopes.
+396:        # Note: NotchFilterSlopes requires IPC_ControlMode=1, but ROSCO rejects
+397:        # IPC_ControlMode > 0 AND Flp_Mode > 0 simultaneously. Since this scenario
+398:        # needs Flp_Mode=1, NotchFilterSlopes must use Scenario 6 instead.
+421:        # FlapControl: enable IPC-based flap control (Flp_Mode=1).
+423:        'Flp_Mode': 1,
+424:        'F_FlpCornerFreq': '1.0 0.7',  # Required when Flp_Mode > 0
+449:# Scenario 4: Flap control (Flp_Mode=2 → PIIController)
+452:    """Sim with Flp_Mode=2 to exercise PIIController.
+454:    Flp_Mode=2 enables proportional flap control using PIIController
+456:    (mutual exclusion: IPC_ControlMode=0 when Flp_Mode > 0).
+462:    print("Scenario 4: Flap control (Flp_Mode=2, PIIController)")
+467:        'Flp_Mode': 2,
+468:        'IPC_ControlMode': 0,  # Mutual exclusion with Flp_Mode > 0
+469:        # F_FlpCornerFreq(1) must be > 0 when Flp_Mode > 0
+541:# Scenario 6: IPC (IPC_ControlMode=1 → NotchFilterSlopes)
+544:    """Sim with IPC_ControlMode=1 to exercise NotchFilterSlopes.
+546:    IPC_ControlMode=1 enables Individual Pitch Control, which calls
+548:    (gated by IPC_ControlMode > 0 in PreFilterMeasuredSignals).
+550:    Flp_Mode must be 0: ROSCO rejects IPC_ControlMode > 0 AND Flp_Mode > 0
+557:    print("Scenario 6: IPC (IPC_ControlMode=1, NotchFilterSlopes)")
+562:        'IPC_ControlMode': 1,
+563:        'Flp_Mode': 0,       # Mutual exclusion with IPC_ControlMode > 0
+602:    CC_Mode=1, Flp_Mode=1. IPC_ControlMode=0 (mutual exclusion with Flp_Mode).
+619:        'Flp_Mode': 1,
+622:        'IPC_ControlMode': 0,
+741:    IPC_ControlMode=1 with non-zero gains + AWC_Mode=4 with rootMOOP feedback.
+742:    Also exercises NotchFilterSlopes (triggered by IPC_ControlMode > 0 in
+745:    Flp_Mode=0 (mutual exclusion with IPC_ControlMode > 0).
+753:        'IPC_ControlMode': 1,
+763:        'Flp_Mode': 0,
+1194:# Scenario 16: Flp_Mode=3 (Coleman transform flap control)
+1197:    """Sim with Flp_Mode=3 to exercise Coleman transform cyclic flap control.
+1199:    Flp_Mode=3 uses ColemanTransform to decompose blade root moments into
+1204:    print("Scenario 16: Coleman transform flap control (Flp_Mode=3)")
+1209:        'Flp_Mode': 3,
+1210:        'IPC_ControlMode': 0,
+1232:    print("Scenario 16: PASSED (Flp_Mode=3 Coleman transform flap exercised)")
+1274:# Scenario 18: IPC_ControlMode=2 (1P + 2P individual pitch control)
+1277:    """Sim with IPC_ControlMode=2 to exercise 2P harmonic IPC.
+1279:    IPC_ControlMode=2 enables both 1P and 2P harmonic individual pitch
+1285:    print("Scenario 18: 1P+2P individual pitch control (IPC_ControlMode=2)")
+1290:        'IPC_ControlMode': 2,
+1293:        'Flp_Mode': 0,
+1318:    print("Scenario 18: PASSED (IPC_ControlMode=2, 1P+2P exercised)")
+1630:# Scenario 26: Flp_Mode=3 with synthetic rootMOOP (non-zero flap output)
+1633:    """Exercises FlapControl Flp_Mode=3 (Coleman transform cyclic) with non-zero output.
+1637:    all other flap scenarios have zero rootMOOP (1-DOF sim) or use Flp_Mode=1
+1640:    Flp_Mode=3 path: rootMOOP → NotchFilterSlopes → ColemanTransform →
+1644:    print("Scenario 26: Flp_Mode=3 with synthetic rootMOOP (non-zero flap output)")
+1649:        'Flp_Mode': 3,
+1654:        'IPC_ControlMode': 0,
+1744:    print("Scenario 26: PASSED (Flp_Mode=3 with non-zero flap output exercised)")
+1768:        'IPC_ControlMode': 1,
+1793:        'Flp_Mode': 0,
+
+=== coverage of the call site, clean Filters.f90:405 ===
+405 (NotchFilterSlopes call): {'6': 12000, '8': 48000, '16': 48000, '18': 48000, '26': 48000, '27': 72000}
+total hits: 276000
+
+=== which of the six scenarios drive the unit with a NON-ZERO input ===
+
+`Examples/vit_sim.py` injects a synthetic per-blade rootMOOP in four scenarios
+(7, 8, 26, 27 -- avrSWAP(30..32), lines 714, 836, 1727, 1884). Scenario 7 does
+not reach this call site (IPC_ControlMode 0, Flp_Mode 0), so of the SIX
+scenarios that run the unit only THREE hand it anything but zero:
+
+  scenario   calls at Filters.f90:405   rootMOOP injected   gate red test moved
+  --------   ------------------------   -----------------   -------------------
+     6                12,000                   no                   no
+     8                48,000                   yes                  yes
+    16                48,000                   no                   no
+    18                48,000                   no                   no
+    26                48,000                   yes                  yes
+    27                72,000                   yes                  yes
+
+The two columns agree exactly, and that is the point: 108,000 of the 276,000
+calls run on a zero input, where the filter's output is zero and scaling it by
+1.000001 is the identity. Hit count is not visibility (P9); this is the same
+shape unit #2 measured on ColemanTransform, at the level of the gate rather
+than of the kernel.

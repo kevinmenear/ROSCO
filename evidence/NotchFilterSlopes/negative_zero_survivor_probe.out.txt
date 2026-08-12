@@ -1,0 +1,11 @@
+CornerFreq = +0.0   differ 0 of 36
+CornerFreq = -0.0   differ 36 of 36   first differing output: nfs_b2
+
+witness  InputSignal=1.0  DT=0.0125  CornerFreq=-0.0  Damp=0.7
+  reference nfs_b2 = -0  bits 8000000000000000
+  mutant    nfs_b2 = 0  bits 0000000000000000
+  reference nfs_b0 = 0  bits 0000000000000000
+  mutant    nfs_b0 = -0  bits 8000000000000000
+  return value      AGREES -- the return value alone cannot kill this mutant
+
+VERDICT: NOT EQUIVALENT -- a reachable argument value distinguishes the two
