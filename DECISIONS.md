@@ -4052,3 +4052,60 @@ Constructing the missing case — three comment lines, three data lines — kill
 honest disposition until that file exists.** Do not declare an equivalence here
 and do not lower `min_mutation_score`: the mutant is not equivalent, the corpus
 simply cannot see it.
+
+## What this restart is running, recorded by hand because nothing stamps it
+
+**The driver executes the loop as of PROCESS START, and no artifact records which
+revision that was.** `driver_rev` was never implemented. Unit-side tooling
+(`vit_harness.py`, `vit_mutate.py`) spawns fresh per unit and does pick up
+current on-disk code, which is why `loop_rev` tracks the clone honestly while
+the driver's own verdicts came from a snapshot nothing names.
+
+That gap is not hypothetical here. It produced five `isolation_violation`
+escalations on LPFilter, NonDecreasing, NotchFilter and NotchFilterSlopes, all
+false, because the running driver held `permissions.py` from before `f56013c`
+(landed 16:56; driver started 16:08) and could not parse
+`REAL(DbKi) FUNCTION X(...)`. Diagnosing that cost hours and had to be done by
+re-running the canonical code against each unit by hand.
+
+So, for the run starting **2026-08-12**:
+
+| | |
+|---|---|
+| translation-loop (canonical **and** clone, identical) | `8a3569b` |
+| vit | `8771390` |
+| ROSCO-r2 | `09885e4` |
+| KGen | `4457cd2` |
+
+All five checkouts at `ahead=0`, `dirty=0`, all pushed, backed up and bundle-
+verified at `~/Backups/vit-replication/20260812-100615`.
+
+### A prediction this restart can falsify
+
+`f56013c` (typed-function proc spans) has been committed and dormant since
+before the halt; it goes live with this process. **The five typed-function
+`isolation_violation` escalations should therefore stop.**
+
+That makes the next one informative. If an `isolation_violation` fires on a
+`REAL(DbKi) FUNCTION` or a `LOGICAL FUNCTION` after this restart, **it is a new
+finding and must not be waved through as the known noise.** The verification
+that cleared the earlier five — canonical `permissions.py` returns
+`integration_only=True` where the running code returned `False`, with
+`PathIsRelative`, an untyped `FUNCTION`, as the negative control — expired the
+moment the driver stopped running January's code. Re-derive, do not cite.
+
+`HPFilter`'s escalation was always a different shape and is not covered by this
+prediction: `vit integrate` emits `USE ISO_C_BINDING` as its own hunk carrying
+no `_c` token, so `_is_bridge_decl` rejects it. That recurs for the first unit
+in any file.
+
+### One silence to expect and not read as a pass
+
+The instrument suite runs only for **drifted** instruments (`driver.py`, the
+`if label not in drifted: continue` gate). Every checkout is at `ahead=0` and
+nothing drifts at launch, so **the instrument check will not run at the first
+unit close.** It re-arms once a unit session commits to the clone, i.e. unit
+#18. That brief quiet is the known drift-gating defect — pushing a red
+instrument silently disarms the only check watching it, which already happened
+once and stayed quiet for four units — and it is not evidence that the
+instruments are green.
