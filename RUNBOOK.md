@@ -339,6 +339,81 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A CORPUS CANNOT CONTAIN A VALUE ITS OWN DEDUP COLLAPSES, and `-0.0` is the
+  first one.** Unit #14, and it is the ninth corpus blind spot -- the one where
+  the value was not missing from the ladder, it was unrepresentable in it.
+
+  `NotchFilterSlopes` opens with `IF (CornerFreq < 0) THEN CornerFreq_ = 0`, and
+  `compare_op '<' -> '<='` was the only mutant alive at 0.988. The two
+  predicates disagree on exactly one input, `CornerFreq == 0`, and at `+0.0`
+  they are bit-identical -- so no magnitude rung, at any exponent, can separate
+  them. `harness/generate.py`'s `_real_magnitude_ladder` and `_ladder` both end
+  in `list(dict.fromkeys(out))`, and `0.0 == -0.0`, so a `-0.0` written into
+  either list disappears into the `0.0` already there. Every earlier rung could
+  be added where it belonged; this one had to be a block appended after the
+  dedup. 4468 -> 4508 cases, **0.988 -> 1.000**, and the mutant dies on **2 of
+  4508** (`evidence/NotchFilterSlopes/negative_zero_block_kills_the_saturation_mutant.txt`).
+
+  Two checks, and the first is five seconds:
+
+  ```
+  python3 -c "from harness.generate import _real_magnitude_ladder as L; \
+      import math; print(any(math.copysign(1,v)<0 and v==0 for v in L()))"
+  grep -n 'CornerFreq < 0\|<= *0\|>= *0' <the unit's Fortran>   # a zero-guard?
+  ```
+
+  A unit with a comparison against zero on a value that then flows into a
+  PRODUCT is the shape: the sign survives multiplication and is visible in the
+  bits of the result.
+
+- **A MUTANT'S DIFFERENCE CAN CANCEL IN THE RETURN VALUE AND SURVIVE ONLY IN AN
+  OUT-PARAMETER.** Same unit, and it is the half worth more than the fix.
+
+  At `CornerFreq = -0.0` the reference carries the sign into `2.0*DT*CornerFreq_`
+  and the mutant substitutes `+0.0`, so `FP%nfs_b2` differs -- 36 of 36 draws.
+  In **all 36 the returned value is bit-identical**, because `(+0.0) + (-0.0)`
+  is `+0.0` under round-to-nearest and the two signed zeros meet inside the
+  filter expression. A differential harness comparing only the unit's result
+  could not have killed this mutant at any input, at any magnitude, ever.
+
+  `R4_compare_all_outputs` has until now read like thoroughness. Here it is the
+  whole of the discrimination, and the check before trusting any survivor
+  analysis is to ask WHICH output the witness moves:
+
+  ```
+  # the probe pattern: evidence/NotchFilterSlopes/negative_zero_survivor_probe.cpp
+  # compare EVERY field the unit writes, not the result -- and print which one
+  # differed FIRST, because "the result agrees" is not "the mutant is equivalent"
+  ```
+
+- **TRANSCRIBE THE BRANCH, NOT `fmax` -- the shape rule buys an OBSERVABLE
+  defect, not merely a matching one.** Unit #14. `IF (CornerFreq < 0) THEN
+  CornerFreq_ = 0 ELSE CornerFreq_ = CornerFreq` is not `std::fmax(CornerFreq,
+  0.0)`: `fmax(-0.0, 0.0)` returns `+0.0`, which is exactly the mutant's answer,
+  and `fmax(NaN, 0.0)` returns `0.0` where the Fortran takes the ELSE. Written
+  as `fmax` the translation would have been indistinguishable from the mutant --
+  the mutation score would have read 1.000 for the wrong reason, and there would
+  have been nothing to find.
+
+- **THE GATE RED TEST'S PER-SCENARIO CHANNEL LIST SAYS WHICH SCENARIOS DRIVE THE
+  UNIT WITH REAL DATA.** Unit #14, and it is a cheaper route to unit #2's
+  finding than decoding a kernel window.
+
+  `gate/<Unit>.redtest.json`'s `mismatched_channels` is `scenario_N:channel
+  k/total`. `NotchFilterSlopes` runs in six scenarios and the perturbation moved
+  channels in three -- 8, 26 and 27. One grep says why:
+
+  ```
+  grep -n 'rootMOOP\|<the unit's input signal>' Examples/vit_sim.py   # who INJECTS it
+  ```
+
+  Those three are exactly the scenarios `vit_sim.py` injects a synthetic
+  per-blade `rootMOOP` into. The other three execute the call site 108,000 times
+  between them on a zero input, where the output is zero and scaling it is the
+  identity. Read the scenario numbers out of the red test before writing an
+  observability note; they partition the hit count into the part that can carry
+  a defect and the part that cannot.
+
 - **A LADDER THAT VARIES ONE PARAMETER AT A TIME IS BLIND TO ANY DEFECT THE
   OTHER PARAMETERS CAN DOMINATE.** Unit #13, and it is the eighth corpus blind
   spot -- the one where reaching the right magnitude bought nothing at all.

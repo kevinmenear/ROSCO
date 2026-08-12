@@ -4,6 +4,59 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-11: unit #14 `NotchFilterSlopes` is `integrated` and CLOSED**,
+first dispatch.
+
+**FIVE LAYERS ALIVE — the third unit here of which that is true, after #11 and
+#13.**
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases, scenario 27 | 14,508 field rows, ALL `IDENTICAL` | zero stub → 0/62, moving 661 rows that name all 11 of this unit's outputs; **the constant-arguments stub PASSES 14,508 of 14,508** |
+| differential harness vs clean Fortran | 4508 checked, 0 failed, 0 inadmissible | the unit as a no-op → **4508 of 4508 failed** |
+| mutation score | **84/84 behavioural killed, 1.000**, 0 declared equivalent, 3 nocompile excluded | — |
+| post-integration harness (wrapper only) | 4508 checked, 0 failed | `CornerFreq`/`Damp` swapped at the bridge CALL → 2192 of 4508; revert, rebuild, green |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | **RED: 128,918 of 5,252,000** across 15 channels, 0 after revert |
+
+**THE CORPUS COULD NOT CONTAIN A NEGATIVE ZERO, AND ITS OWN DEDUP IS WHY.** One
+mutant survived a 4468-case green: `if (CornerFreq < 0)` → `if (CornerFreq <= 0)`
+on the saturation guard. The two predicates disagree on exactly one input,
+`CornerFreq == 0`, and at `+0.0` they are bit-identical — so magnitude coverage
+can never separate them. `_real_magnitude_ladder` and `_ladder` both end in
+`list(dict.fromkeys(out))` and `0.0 == -0.0`, so a `-0.0` written into either
+list is absorbed by the `0.0` already there. First rung this generator has
+gained that could not be added where it belonged. Closed by a signed-zero block
+appended last (loop `5d83048`): 4468 → 4508 cases, 0.988 → **1.000**, and the
+mutant dies on exactly **2 of 4508**.
+
+**AND THE RETURN VALUE AGREES IN EVERY DIFFERING DRAW.** At `-0.0` the reference
+carries the sign into `2.0*DT*CornerFreq_` and the mutant does not, so
+`FP%nfs_b2` differs — 36 of 36 draws — but `(+0.0) + (-0.0)` is `+0.0`, so the
+value the function RETURNS is bit-identical in all 36. **A harness comparing only
+the unit's result could not have killed this mutant at any input.**
+`R4_compare_all_outputs` is the whole of the discrimination here. The same
+argument covers the translation: writing the saturation as the Fortran's branch
+rather than `std::fmax(CornerFreq, 0.0)` is what made the two distinguishable —
+`fmax(-0.0, 0.0)` returns `+0.0`, which is the mutant's answer.
+
+**THREE OF THE SIX SCENARIOS THAT RUN IT RUN IT ON ZEROS.** The gate red test
+moves channels in scenarios 8, 26 and 27 and in no others; `Examples/vit_sim.py`
+injects a synthetic per-blade `rootMOOP` in exactly those three. Scenarios 6, 16
+and 18 execute the call site **108,000 times between them on a zero input**. The
+two columns agree exactly — unit #2's finding at the level of the gate rather
+than of the kernel window, and the check is one grep of the scenario driver.
+
+**WHAT THE KERNEL CANNOT SEE: five of twelve C parameters, and a whole branch.**
+The unit has ONE call site in the controller and it passes `Damp` as the literal
+`0.7_DbKi`, `Moving` as `.TRUE.` and no `InitialValue`; `CornerFreq` is a rotor
+speed, so the saturation assignment never executes. A translation with all five
+as literals and the branch deleted scores 14,508 of 14,508 `IDENTICAL`. What the
+kernel CAN see, and #13's could not: because `Moving = .TRUE.`, the coefficient
+block runs on every call, so all 62 cases read `DT` and `CornerFreq` and
+`rotspeedf` has 23 distinct non-zero references.
+
+---
+
 **As of 2026-08-11: unit #12 `NonDecreasing` is `integrated` and CLOSED**, first
 dispatch.
 
@@ -662,16 +715,16 @@ fields — those are hypotheses, not facts. Run
 
 ## Counts
 
-13 attempted / **13 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+14 attempted / **14 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / 0 blocked.
 
-69 units in `plan.json`; 56 remain.
+69 units in `plan.json`; 55 remain.
 
 (This block read `8 / 8 / 61 remain` through unit #9, which did not update it.
 Recounted from `plan.json` at unit #10 rather than incremented, and recounted
 again at unit #11.)
 
-**7 of the 13 integrated units are invisible to the gate**, for six different
+**7 of the 14 integrated units are invisible to the gate**, for six different
 reasons: `AddToList` is never called, `Conv2UC` is called constantly and
 cancelled, `ExtController` is never called *and* has no observable effect on any
 channel the gate compares even when it is, `GetPath` is called in every scenario
@@ -688,10 +741,10 @@ before #9 do not have theirs; that is recorded under Open.
 
 **Unit #11 needs no control**, and that is the point of the rule rather than an
 exception to it: `LPFilter`'s gate red test WENT RED (1,592,059 of 5,252,000), so
-it demonstrated the chain a control would have been asked to demonstrate. Six of
-the thirteen units are gate-visible — ColemanTransform 124,353,
+it demonstrated the chain a control would have been asked to demonstrate. Seven
+of the fourteen units are gate-visible — ColemanTransform 124,353,
 ColemanTransformInverse 389,644, GetWords 1,857,893, LPFilter 1,592,059,
-NonDecreasing 1,857,893, NotchFilter 551,278.
+NonDecreasing 1,857,893, NotchFilter 551,278, NotchFilterSlopes 128,918.
 
 **Unit #12's is not a sixth sighting; unit #13's is.** `NonDecreasing`'s
 1,857,893 is byte-identical to `GetWords`' — both perturbations end in the
@@ -700,7 +753,9 @@ what the gate constrains there is a single boolean. `NotchFilter`'s 551,278
 matches no other committed redtest figure, and it is a third of `LPFilter`'s
 because only 6 of the 27 scenarios configure a notch filter at all. Compare the
 moved count against every committed artifact before writing "the gate sees this
-unit".
+unit". `NotchFilterSlopes`' 128,918 matches none of them either, and it is
+smaller again because only 3 of the 6 scenarios that call it hand it a non-zero
+input.
 
 **Every unit now has a `harness/` and a `mutation/` artifact.** `ExtController`
 was the exception for two dispatches and the absence was recorded as the

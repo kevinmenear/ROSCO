@@ -700,13 +700,44 @@
     "DISCON"
    ],
    "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
+   "verification": "ROUTE EXISTS AND WAS RUN. FIVE LAYERS, ALL FIVE ALIVE -- the third unit in this campaign of which that is true, after #11 and #13.\n\n  kernel replay              62/62 cases, 14,508 compared field rows, ALL `IDENTICAL`. Scenario 27 (synthetic azimuth and per-blade rootMOOP), call site clean Filters.f90:405 -- `LocalVar%RootMOOPF(K) = NotchFilterSlopes(...)` inside `DO K = 1,LocalVar%NumBl`, guarded by `IPC_ControlMode > 0 .OR. Flp_Mode == 3`. That is the unit's ONLY call site in the whole controller. 276,000 calls across 6 of 27 scenarios (6, 8, 16, 18, 26, 27). Window is exactly the configured 0:0:1-20,12000-12020,23900-23920 = 62, and `evidence/NotchFilterSlopes/kernel-window.statefiles.lst` records an EXACT index match, no strays. NOT VACUOUS: `rotspeedf` (the CornerFreq argument) has 23 DISTINCT non-zero reference values, and because the call site passes `Moving = .TRUE.` the coefficient block runs on EVERY call rather than only at initialisation -- so all 62 cases read DT and CornerFreq, which is the weakness #13 recorded and this unit does not have. VIT's own automatic red test was DISCRIMINATING. Two stubs beside it:\n      zero stub               0/62 passed, 661 of 14,508 rows `OUT_TOL` -- ALIVE, and the fields it moves are exactly this unit's 11 outputs (`rootmoopf`, the four `nfs_*SignalLast*`, the five coefficient arrays, `instnotchslopes`).\n      constant-arguments      14,508 of 14,508 `IDENTICAL` -- IT PASSES. The kernel cannot constrain FIVE of the twelve C parameters (`Damp`, `has_Moving`, `Moving`, `has_InitialValue`, `InitialValue`) and cannot reach the CornerFreq saturation branch at all. See `observability`.\n  differential harness       4508 checked, 0 failed, 0 inadmissible, against the CLEAN Fortran. RED-TESTED: the unit as a no-op fails 4508 of 4508, naming `vit_result`, `FP.nfs_InputSignalLast1/2`, `FP.nfs_OutputSignalLast1/2` and `inst`. R4 reports the return value plus 47 out-parameters compared, the five coefficient arrays among them. Green and red both report 4508 cases and both stamp loop 5d83048 / vit 300da9c -- unit #11's and unit #8's checks.\n  mutation score             84 of 84 BEHAVIOURAL killed, score 1.000, 0 declared equivalent (3 excluded as `killed (no compile)`). REACHED BY MEASUREMENT, NOT BY DECLARATION: the inherited corpus scored 0.988 with one `compare_op` survivor, and closing it took one addition to `harness/generate.py`. See `observability` and DECISIONS.md.\n  post-integration harness   4508 checked, 0 failed, against the integrated build -- so the generated wrapper marshals all twelve C parameters correctly. RED-TESTED with the rebuild between the edit and the run, and anchored on the CALL rather than the BIND(C) interface block (unit #13's rule -- the bridge name occurs at both, Filters.f90:88 and :298): swapping `CornerFreq` and `Damp` at the call fails 2192 of 4508. Revert, rebuild, green returns.\n  gate, 27 scenarios         5,252,000 values across 351 channels, 0 mismatched. RED: scaling the returned value by 1.000001 moves 128,918 of 5,252,000 across 15 channels, `replacements: 1`, and 0 after the revert. NO CONTROL NEEDED -- a red test that goes red has just demonstrated the chain a control would be asked to demonstrate (unit #9's rule). 128,918 matches no other committed redtest figure, so it is this unit's own signature.\n",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "unknown",
     "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
-   "observability": null
+   "observability": "THE GATE CAN SEE THIS UNIT. `LocalVar%RootMOOPF` is the filtered blade-root bending moment that individual pitch control and Coleman-transform flap control are both built on; the 15 moved channels are blade pitch (x3), generator speed, torque and power, and flap angle (x3). Sixth gate-visible unit of fourteen (124,353 / 389,644 / 1,857,893 / 1,592,059 / 551,278 / 128,918).\n\nBUT THREE OF THE SIX SCENARIOS THAT RUN IT RUN IT ON ZEROS, and the red test says so precisely: it moves channels in scenarios 8, 26 and 27 and in no others. `Examples/vit_sim.py` injects a synthetic per-blade `rootMOOP` (avrSWAP(30..32)) in exactly those three of the six. Scenarios 6, 16 and 18 execute clean Filters.f90:405 108,000 times between them on a zero input, where the filter's output is zero and scaling it by 1.000001 is the identity. `evidence/NotchFilterSlopes/scenario_arguments.txt` puts the two columns side by side; they agree exactly. Hit count is not visibility (P9) -- the same shape unit #2 measured on ColemanTransform, one layer up.\n\nWHAT THE KERNEL CANNOT SEE: five of twelve C parameters, and one whole branch. The unit has ONE call site and it passes `Damp` as the literal `0.7_DbKi`, `Moving` as the literal `.TRUE.` and no `InitialValue` at all; `CornerFreq` is `LocalVar%RotSpeedF`, a filtered rotor speed, so `CornerFreq < 0` is false in every captured case and the saturation assignment is never executed. `evidence/NotchFilterSlopes/kernel.constant-args-stub-PASSES.verify_fields.csv` is that measurement: a translation with all five replaced by literals and the branch deleted scores 14,508 of 14,508 IDENTICAL. Only the differential harness varies any of it -- and the surviving mutant was on exactly that unreachable branch.\n\nWHAT THE HARNESS CANNOT SEE: it holds 74 of the 103 C parameters inert, all of them the other filters' coefficient arrays inside `TYPE(FilterParameters)`. A defect confined to one of those is invisible to it -- and this unit cannot touch them.\n\nCOST PAID TO REACH 1.000, and it is a finding about the INSTRUMENT rather than about the unit. One `compare_op` mutant -- `if (CornerFreq < 0)` -> `if (CornerFreq <= 0)` -- survived the inherited 4468-case corpus. It was NOT equivalent, and that was proved rather than argued: the two predicates disagree on exactly one input, `CornerFreq == 0`, they are bit-identical at +0.0 (0 of 36 draws differ) and they differ at -0.0 in `FP%nfs_b2` (36 of 36, `8000000000000000` against `0000000000000000`). It was unreachable because the corpus CANNOT CONTAIN A NEGATIVE ZERO: `_real_magnitude_ladder` and `_ladder` both end in `list(dict.fromkeys(out))` and `0.0 == -0.0`, so a `-0.0` is absorbed by the `0.0` already there. Closed by one addition, a signed-zero block appended last; the mutant now dies on 2 of 4508 cases. The sharper half, and the reason it is a finding about instruments generally: in all 36 differing draws THE RETURN VALUE AGREES, because `(+0.0) + (-0.0)` is `+0.0`. A harness comparing only the unit's result could not have killed it at any input.",
+   "disposition": "integrated",
+   "evidence": [
+    "evidence/NotchFilterSlopes/README.md",
+    "evidence/NotchFilterSlopes/notchfilterslopes.final.cpp",
+    "evidence/NotchFilterSlopes/kernel.verify_fields.csv",
+    "evidence/NotchFilterSlopes/kernel.zero-stub-FAILS.verify_fields.csv",
+    "evidence/NotchFilterSlopes/kernel.constant-args-stub-PASSES.verify_fields.csv",
+    "evidence/NotchFilterSlopes/notchfilterslopes.zero-stub.cpp",
+    "evidence/NotchFilterSlopes/notchfilterslopes.constant-args-stub.cpp",
+    "evidence/NotchFilterSlopes/notchfilterslopes.noop-stub.cpp",
+    "evidence/NotchFilterSlopes/kernel-window.statefiles.lst",
+    "evidence/NotchFilterSlopes/kernel-generated-Filters.post-verify.f90",
+    "evidence/NotchFilterSlopes/scenario_arguments.txt",
+    "evidence/NotchFilterSlopes/pow_two_probe.f90",
+    "evidence/NotchFilterSlopes/pow_two_probe.out.txt",
+    "evidence/NotchFilterSlopes/negative_zero_survivor_probe.cpp",
+    "evidence/NotchFilterSlopes/negative_zero_survivor_probe.out.txt",
+    "evidence/NotchFilterSlopes/negative_zero_block_kills_the_saturation_mutant.txt",
+    "evidence/NotchFilterSlopes/harness.noop-redtest.full.log",
+    "harness/NotchFilterSlopes.json",
+    "harness/NotchFilterSlopes.redtest.json",
+    "harness/NotchFilterSlopes.postintegration.json",
+    "harness/NotchFilterSlopes.postintegration.redtest.json",
+    "mutation/NotchFilterSlopes.json",
+    "gate/NotchFilterSlopes.json",
+    "gate/NotchFilterSlopes.redtest.json",
+    "translations/Filters/notchfilterslopes.cpp"
+   ],
+   "source_file": "rosco/controller/src/Filters.f90",
+   "translation": "translations/Filters/notchfilterslopes.cpp",
+   "harness_required": true
   },
   {
    "order": 15,

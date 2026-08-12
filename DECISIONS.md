@@ -3196,3 +3196,99 @@ Two candidates, neither acted on here.
    only differ in cases where the init branch fires. The `R4` line does
    enumerate what is compared, and the mutation run is what actually constrains
    them, but the rule as written cannot be satisfied by reading the artifact.
+
+## 2026-08-11 — Unit #14 `NotchFilterSlopes`: `integrated`, and a corpus that
+## could not contain a negative zero
+
+`REAL(DbKi) FUNCTION NotchFilterSlopes(InputSignal, DT, CornerFreq, Damp, FP,
+iStatus, reset, inst, Moving, InitialValue)`, `Filters.f90`. Unit #13's shape
+with two additions — a second OPTIONAL (`Moving`), and a `CornerFreq < 0`
+saturation branch — so the bridge was again not the interesting part. Five
+layers, all five alive; the third unit here of which that is true.
+
+    kernel     62/62, 14,508 field rows all IDENTICAL, scenario 27, clean
+               Filters.f90:405 — the unit's ONLY call site in the controller.
+               Window exactly the configured 62 indices, no strays. `rotspeedf`
+               has 23 DISTINCT non-zero references and the site passes
+               `Moving = .TRUE.`, so all 62 cases enter the coefficient block —
+               the weakness #13 recorded (61 of 62 reading none of four
+               arguments) is absent here. Zero stub 0/62, 661 rows moving,
+               naming all 11 of this unit's outputs. Constant-arguments stub
+               PASSES 14,508/14,508.
+    harness    4508 checked, 0 failed, 0 inadmissible, vs the clean Fortran.
+               No-op red test 4508 of 4508.
+    mutation   84 of 84 behavioural, 1.000, 0 declared equivalent.
+    post-int   4508 checked, 0 failed; CornerFreq/Damp swapped at the bridge
+               CALL (not the interface block — #13's rule) fails 2192 of 4508.
+    gate       5,252,000 / 351 channels, 0 mismatched. RED 128,918, 0 after
+               revert — its own figure, matching no other committed redtest.
+
+### The decision this unit actually turned on
+
+The mutation score came in at **0.988** with one survivor:
+
+    38bbc289  compare_op  'if (CornerFreq < 0)' -> 'if (CornerFreq <= 0)'
+
+on the saturation guard. The two predicates disagree on exactly one input,
+`CornerFreq == 0`, and at `+0.0` both branches produce identical bits — so no
+amount of magnitude coverage can separate them. **The witness is a negative
+zero, and the corpus could not hold one.**
+
+`harness/generate.py`'s `_real_magnitude_ladder` and `_ladder` both end in
+`list(dict.fromkeys(out))`, and `0.0 == -0.0` in Python as in IEEE, so a `-0.0`
+written into either list is silently absorbed by the `0.0` already there. Every
+rung this generator has gained since unit #7 could be added where it belonged.
+This one could not — **the dedup that keeps the ladders honest is what makes the
+value unrepresentable** — which is why it went in as a block appended last
+rather than as an entry, gated on the same defaulted-scalar-real test the
+magnitude ladder uses. Loop repo `5d83048`.
+
+Proved killable rather than declared equivalent, per unit #8's rule
+(`evidence/NotchFilterSlopes/negative_zero_survivor_probe.*`): at `+0.0`, 0 of
+36 draws differ; at `-0.0`, 36 of 36, because the reference carries the sign
+into `2.0*DT*CornerFreq_` and the mutant substitutes `+0.0`, giving
+`FP%nfs_b2 = 8000000000000000` against `0000000000000000`. 4468 cases / 0.988
+→ **4508 cases / 1.000**, and the mutant dies on exactly **2 of 4508** — the two
+new cases that put `CornerFreq` itself at `-0.0` and enter the coefficient
+branch. Nothing in the other 4468 reaches it.
+
+### The transferable half: the RETURN VALUE agrees in all 36
+
+This is the part worth more than the fix. `(+0.0) + (-0.0)` is `+0.0` under
+round-to-nearest, so the sign difference in `nfs_b2` and `nfs_b0` cancels inside
+the filter expression and the value the function RETURNS is bit-identical in
+every differing draw. **A differential harness comparing only the unit's result
+could not have killed this mutant at any input, at any magnitude, ever.** It is
+reachable only because `R4_compare_all_outputs` compares the coefficient
+out-parameters as well — a rule that has until now read like thoroughness and
+here is the whole of the discrimination.
+
+The same argument applies to the translation itself. Writing the saturation as
+the Fortran's branch rather than as `std::fmax(CornerFreq, 0.0)` is what made
+the reference and the mutant distinguishable at all: `fmax(-0.0, 0.0)` returns
+`+0.0`, which is precisely the mutant's answer. "Transcribe the shape, not the
+algebra" bought an observable defect here, not just a matching one.
+
+### An observability shape the coverage data alone does not show
+
+The gate red test moves channels in scenarios 8, 26 and 27 and in none of the
+other three that run the unit. `Examples/vit_sim.py` injects a synthetic
+per-blade `rootMOOP` in exactly those three; scenarios 6, 16 and 18 execute the
+call site **108,000 times between them on a zero input**, where the filter's
+output is zero and scaling it by 1.000001 is the identity. The two columns are
+put side by side in `evidence/NotchFilterSlopes/scenario_arguments.txt` and they
+agree exactly. This is unit #2's finding — a line that runs is not a line that
+runs on data — at the level of the GATE rather than of the kernel window, and
+the check is one grep of the scenario driver rather than a decoding of captured
+state.
+
+### Housekeeping closed here
+
+`vit.yaml`'s `translations:` block listed twelve entries against thirteen
+integrated units — `NonDecreasing`'s record was lost when unit #12 correctly
+reverted the file wholesale after a stub verify wrote a false `cases_passed`
+into it. Unit #13 recorded it as a candidate for the Driver. Added by hand here,
+with a comment saying so, alongside this unit's own entry: fourteen and
+fourteen, and `plan.json` and `vit.yaml` now name the same set.
+
+No amendment to the invariant layer is proposed.
