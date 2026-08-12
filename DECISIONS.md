@@ -3875,3 +3875,50 @@ remove 27,583 cases) but the invocation: `avrSWAP` maps as a SCALAR unless
 `vit.yaml`'s `kgen.assumed_size_arrays` names it, and `vit.yaml` was restored
 from HEAD for this unit. Recorded because a re-measurement run has to reproduce
 the ORIGINAL invocation, and the artifact does not record it.
+
+---
+
+## An absent revision renders as `unknown`, never as a stale value (P6)
+
+**Decision.** The revision-stamp ladder loses its pin-file rung. `vit_rev` and
+`loop_rev` now read the repository (`git rev-parse`), fall back to reading
+`.git/HEAD` directly where no git binary exists, and otherwise return
+`unknown`. `.vit_rev` and `.loop_rev` are deleted.
+
+**Why.** Tier 3 was the only rung that could state a falsehood. Tiers 1 and 2
+read the repository and tier 4 declares absence; tier 3 reported whatever a file
+said, and that file cannot be kept correct in either direction:
+
+* **Tracked**, it is stale *by construction* — writing HEAD into a file changes
+  the tree, which changes the hash, so the committed value always names the
+  previous revision. Measured: `.vit_rev` read `37f8bdf` at HEAD `22c3bc5`.
+* **Untracked**, nothing writes it. Both trees were grepped; only reader
+  definitions exist. `.vit_rev` was an 8-byte orphan last written at 04:21,
+  reading `8c34ceb` while HEAD was `300da9c`.
+
+**P6 is why this matters rather than being tidiness.** A provenance stamp exists
+so a verdict can be traced to the code that produced it. `unknown` is a
+statement about *our knowledge* and a reader treats it as one. A pinned value is
+a statement about *the world*, indistinguishable from a verified read, and it
+was wrong. An artifact that cannot say what produced it is a known gap; an
+artifact that says the wrong thing is a false record, and the second is worse.
+
+**Scope of the damage, measured.** 33 of the campaign's 68 evidence artifacts
+carry `-pinned` revisions, in six groups, and every group has *both* stamps
+pinned — there is no artifact with one resolved and one pinned. That follows:
+both ladders fall through together, in the same execution context that has
+neither the git binary nor a readable `.git`. So this is one unverifiable
+population of 33, not two overlapping ones. Adding the 21 `gate/*.json` that
+carried no stamps at all, **54 of 68 artifacts cannot name what produced them.**
+
+They are not necessarily wrong. They are unverifiable, which for a provenance
+stamp is the same problem, and they must not be counted in any agreement rate.
+
+**Tier 3 was already dormant when it was removed.** Today's artifacts stamp
+`300da9c` and `300da9c-nogit` — tiers 1 and 2. The `-nogit` rung added in the
+clone's `335bb74` catches the container case that used to fall to the pin, and
+every one of the 33 pinned artifacts predates it. The fix worked; it just did
+not remove the thing it replaced. That is the general lesson: **a superseded
+fallback is not harmless, because it stays reachable and it is the rung that
+lies.**
+

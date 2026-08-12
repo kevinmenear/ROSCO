@@ -103,6 +103,76 @@ def elementwise_bits(a: np.ndarray) -> np.ndarray:
     return flat.view(np.uint8).reshape(flat.size, flat.dtype.itemsize)
 
 
+def _rev(root: Path) -> str:
+    """The revision of an instrument checkout, or `unknown`.
+
+    Two rungs and a floor, deliberately. `git rev-parse` when git is available;
+    a direct read of `.git/HEAD` when it is not -- `vit-dev`, the container the
+    gate runs in, has no git binary -- and `unknown` otherwise.
+
+    There is NO pin-file rung. A file recording a revision cannot be kept
+    correct: tracked it is stale by construction, because writing it changes the
+    tree it names; untracked nothing writes it at all. Both were true here.
+    `unknown` is a statement about knowledge; a stale pin is a statement about
+    the world, and it was false. See DECISIONS.md, P6.
+    """
+    try:
+        r = subprocess.run(["git", "-C", str(root), "rev-parse", "--short", "HEAD"],
+                           capture_output=True, text=True, timeout=10)
+        rev = r.stdout.strip()
+        if rev:
+            d = subprocess.run(["git", "-C", str(root), "status", "--porcelain"],
+                               capture_output=True, text=True, timeout=10)
+            return rev + ("-dirty" if d.stdout.strip() else "")
+    except Exception:
+        pass
+    try:
+        head = (root / ".git" / "HEAD").read_text().strip()
+        if head.startswith("ref: "):
+            ref = (root / ".git" / head[5:]).read_text().strip()
+            return f"{ref[:7]}-nogit"
+        if head:
+            return f"{head[:7]}-nogit"
+    except Exception:
+        pass
+    return "unknown"
+
+
+def _instrument_revs() -> dict:
+    """Which instruments produced this artifact.
+
+    All 21 gate/*.json written before this carried nothing -- not `unknown`, but
+    no key at all -- so a gate result could not name the code that produced it.
+    That includes the red tests carrying unit #9's blind-gate finding and
+    `gate/GetWords.redtest.json`, the control it is measured against.
+
+    Each instrument is looked for in the container (`/workspace/...`, where the
+    gate actually runs), then beside the campaign, then -- for VIT -- wherever
+    it is importable. A first draft knew only the container paths and stamped
+    `unknown/unknown` when run on the host, which is honest but useless, and
+    exactly the kind of thing a dry run is for.
+    """
+    root = Path(__file__).resolve().parents[1]          # the campaign
+    def _first(*cands):
+        for c in cands:
+            if c and (Path(c) / ".git").exists():
+                return Path(c)
+        return None
+
+    loop = _first(os.environ.get("LOOP_ROOT"),
+                  "/workspace/translation-loop",
+                  root.parent / "translation-loop")
+    try:
+        import vit as _vit
+        importable = Path(_vit.__file__).resolve().parents[1]
+    except Exception:
+        importable = None
+    vit_root = _first("/workspace/vit", root.parent / "vit", importable)
+
+    return {"loop_rev": _rev(loop) if loop else "unknown",
+            "vit_rev": _rev(vit_root) if vit_root else "unknown"}
+
+
 def compare(baseline: Path, current: Path, scenarios: list[int]) -> dict:
     """Value-level comparison of every channel of every scenario."""
     out = {
@@ -348,6 +418,13 @@ def main(argv=None) -> int:
             if payload["compared"] <= 0:
                 print("  compared NOTHING -- a green here would be vacuous", file=sys.stderr)
 
+        # WHICH INSTRUMENTS PRODUCED THIS. All 21 gate artifacts written
+        # before this carried no provenance at all -- not `unknown`, but no
+        # key -- including both HPFilter red tests carrying the blind-gate
+        # finding and GetWords.redtest.json, the control they are measured
+        # against. A verdict that cannot name the code that produced it
+        # cannot be reproduced or disputed.
+        payload.update(_instrument_revs())
         dest.write_text(json.dumps(payload, indent=1, sort_keys=True) + "\n")
         # `relative_to` RAISES on an --out outside the campaign root, after the
         # artifact is already written and after the verdict is already decided.
