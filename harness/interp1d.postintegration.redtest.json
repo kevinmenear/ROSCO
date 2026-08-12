@@ -1,0 +1,122 @@
+{
+ "unit": "interp1d",
+ "against": "integrated",
+ "checked": 497,
+ "failed": 454,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    3 varied extent(s) at [3, 3, 5] and [3, 4, 4]; TIED, so NOT pairwise distinct and a stride error that agrees when they are equal is unreachable here: n_yData follows n_xData, NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      50 value(s) from 9 literal(s) in the reference, each under every declared value of 0 flag(s); 41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 33 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 10 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 1 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits; 4 combination(s) of the 1 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead; 10 case(s) across 1 predicate(s) the reference writes between TWO VARIED QUANTITIES, each with one side set FROM the other -- at equality, where an ordering predicate changes its answer, under every knob combination, plus the two neighbouring representable values once for strictness; a ladder on either side alone cannot reach these, because whichever base value is larger is larger in every case; 24 case(s) across 2 predicate(s) the reference writes against a REDUCTION of a varied array (MAXVAL(xData), MINVAL(xData)), the scalar set FROM that reduction of the body drawn in the SAME case, at the value itself and its two neighbouring representable numbers, over the ordinary body and its REVERSE so the extremum is once first and once last; the other side is a FUNCTION of a parameter, so it has no name to pin and no ladder can reach the equality; 22 array ordering(s) -- reversed, one adjacent pair inverted at the first / an interior / the last position, an adjacent EQUAL pair, and the constant array -- across the array(s) the reference subscripts twice in one statement; 88 character value(s) from a corpus of 22 (the reference's own character literals and their collating neighbours) across 1 string(s), each at length(s) [1, 2, 3] and in the mixed / padded / all-blank / leading-blank shapes, plus 132 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          3 real value(s), none zero in every case",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 5 out-parameter(s): ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "05000000",
+   "got": "0e000000"
+  },
+  {
+   "case": 0,
+   "output": "ErrVar.ErrMsg",
+   "ref": "4142595a5b000000000000000000000000000000000000000000000000000000...",
+   "got": "696e7465727031643a4142595a5b000000000000000000000000000000000000..."
+  },
+  {
+   "case": 1,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "03000000",
+   "got": "0c000000"
+  },
+  {
+   "case": 1,
+   "output": "ErrVar.ErrMsg",
+   "ref": "6162790000000000000000000000000000000000000000000000000000000000...",
+   "got": "696e7465727031643a6162790000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 2,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "05000000",
+   "got": "0e000000"
+  },
+  {
+   "case": 2,
+   "output": "ErrVar.ErrMsg",
+   "ref": "7b20212f30000000000000000000000000000000000000000000000000000000...",
+   "got": "696e7465727031643a7b20212f30000000000000000000000000000000000000..."
+  },
+  {
+   "case": 3,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "05000000",
+   "got": "0e000000"
+  },
+  {
+   "case": 3,
+   "output": "ErrVar.ErrMsg",
+   "ref": "6162797a7b000000000000000000000000000000000000000000000000000000...",
+   "got": "696e7465727031643a6162797a7b000000000000000000000000000000000000..."
+  },
+  {
+   "case": 4,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "05000000",
+   "got": "0e000000"
+  },
+  {
+   "case": 4,
+   "output": "ErrVar.ErrMsg",
+   "ref": "5a5b5e5f60000000000000000000000000000000000000000000000000000000...",
+   "got": "696e7465727031643a5a5b5e5f60000000000000000000000000000000000000..."
+  },
+  {
+   "case": 5,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "05000000",
+   "got": "0e000000"
+  },
+  {
+   "case": 5,
+   "output": "ErrVar.ErrMsg",
+   "ref": "42595a5b5e000000000000000000000000000000000000000000000000000000...",
+   "got": "696e7465727031643a42595a5b5e000000000000000000000000000000000000..."
+  },
+  {
+   "case": 6,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "05000000",
+   "got": "0e000000"
+  },
+  {
+   "case": 6,
+   "output": "ErrVar.ErrMsg",
+   "ref": "6162797a7b000000000000000000000000000000000000000000000000000000...",
+   "got": "696e7465727031643a6162797a7b000000000000000000000000000000000000..."
+  },
+  {
+   "case": 7,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "05000000",
+   "got": "0e000000"
+  },
+  {
+   "case": 7,
+   "output": "ErrVar.ErrMsg",
+   "ref": "6162797a7b000000000000000000000000000000000000000000000000000000...",
+   "got": "696e7465727031643a6162797a7b000000000000000000000000000000000000..."
+  }
+ ],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "20b0dbb-dirty",
+ "vit_rev": "ab75fa0",
+ "red_test": {
+  "perturbation": "wrapper: the vit_copy_scalars_to_errorvariables reverse copy deleted, so the C++ writes to ErrVar%aviFAIL and ErrVar%ErrMsg never reach the Fortran type; rebuilt between the edit and the run",
+  "result": "454 of 497 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

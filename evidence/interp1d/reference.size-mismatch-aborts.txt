@@ -1,0 +1,15 @@
+ LEN after the assignment =          38
+ characters the WRITE formats =          53
+At line 23 of file size_mismatch_probe.f90
+Fortran runtime error: End of record
+
+Error termination. Backtrace:
+#0  0xff8ee198d44b in ???
+#1  0xff8ee198e277 in ???
+#2  0xff8ee1a95653 in ???
+#3  0xff8ee1aa2013 in ???
+#4  0xff8ee1a98bfb in ???
+#5  0xff8ee1a98f6b in ???
+#6  0xac65ece00cd3 in MAIN__
+#7  0xac65ece00df7 in main
+EXIT=2

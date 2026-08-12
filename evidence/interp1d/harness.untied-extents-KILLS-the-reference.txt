@@ -1,0 +1,47 @@
+# The SAME harness command, with harness/ranges.toml's `interp1d` tie removed
+# (harness/ranges.untied.toml is that file truncated above the [interp1d] table).
+# This is the measurement the tie rests on: with extents pairwise distinct the
+# reference ABORTS on the first case and the run produces no artifact at all.
+# Re-take with:
+#   bash scripts/harness.sh interp1d Functions interp1d \
+#       rosco/controller/src/Functions.f90 --against translation \
+#       --ranges harness/ranges.untied.toml --out /tmp/interp1d.untied.json
+
+harness.sh: VIT wrote the per-unit layout directly (translations/Functions/interp1d_test); no move needed
+VIT: interp1d: SIZE(xData) = 3 and SIZE(yData) = 4 are not the same; the reference aborts here (End of record) and this translation continues
+At line 118 of file /workspace/ROSCO-r2/rosco/controller/src/Functions.f90
+Fortran runtime error: End of record
+
+harness produced no JSON
+interp1d: 10 C parameter(s), 3 extent(s), 5 output(s)
+  note: ErrVar: expanded 5 param(s) from 4 field(s)
+  note: ErrVar_ErrMsg[len_RoutineName]: subscript not traceable to a parameter -- its index is NOT exercised by R5
+
+interp1d: 8 parameter(s) varied, 2 held at an inert value
+  ErrVar: reads 2 field(s): ErrMsg, aviFAIL
+  xData: read WHOLE (passed to a callee) -- every field varied
+  xq: read WHOLE (passed to a callee) -- every field varied
+  yData: read WHOLE (passed to a callee) -- every field varied
+  HELD, so untested by construction: 2 parameter(s). A defect confined to one of these is invisible to this harness.
+  UNCONSTRAINED: 3 varied parameter(s) on the +/-1e3 default: xData, xq, yData
+
+  ORDER-SENSITIVE: xData, yData -- the reference compares two elements of the same array, so its ORDERING decides a branch
+
+  RELATIONAL PAIR: xq against xData -- both sides are varied, so the predicate is decided by whichever base value is larger unless a case sets one FROM the other
+
+  PREDICATE KNOB: ErrVar_aviFAIL at [-1.0, 0.0, 1.0, 2.0]
+
+475 case(s)
+  applied  R5_non_degenerate_shape    3 varied extent(s) at [3, 4, 5] and [3, 4, 5], NO index parameter identified, array elements distinct
+  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach
+  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy
+  applied  R3_no_dead_signal          3 real value(s), none zero in every case
+  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it
+  applied  R4_compare_all_outputs     return value + 5 out-parameter(s): ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg
+
+wrote /workspace/ROSCO-r2/translations/Functions/interp1d_test/interp1d_test.cpp  (475 cases, 45997 bytes of case data)
+
+
+exit status of the harness: nonzero, and /tmp/interp1d.untied.json:
+ls: /tmp/interp1d.untied.json: No such file or directory
+  (not written)

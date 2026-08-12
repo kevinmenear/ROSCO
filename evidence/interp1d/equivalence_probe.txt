@@ -1,0 +1,8 @@
+20f2a843 / 23097b47  reduction `<`/`>` against `<=`/`>=`
+  tuples swept (lengths 0..4 over 16 values): 69905
+  tuples whose stored min/max BITS differ:    1666
+  (tuple, xq) pairs whose CONSUMER differs:   0
+
+b61327db  `n > 0 ? (size_t)n : 0` against `n >= 0 ? ...`
+  every value of a 32-bit int swept: 4294967296
+  values at which the LENGTH differs: 0

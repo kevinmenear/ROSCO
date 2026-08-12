@@ -233,6 +233,25 @@ translations:
   identity:
     status: integrated
     cpp_file: translations/Functions/identity.cpp
+  # ADDED BY HAND at unit #23, for the reason units #14, #16, #18, #20, #21 and
+  # #22 all recorded: `vit verify` and `vit integrate` rewrite this file through
+  # a YAML round-trip that DELETES EVERY COMMENT in it, so restoring the
+  # commented file is the only way to keep the file's own reasoning -- and then
+  # the entry has to be re-added. Paid for three times here: two `vit integrate`
+  # runs (the second added `--reverse-copy`, see below) and one `vit verify`.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
+  # For this unit the gate DID run and DID see it -- 1,341,803 of 5,252,000
+  # values moved under a x1.000001 perturbation -- so the line would even have
+  # been true, and it is still the wrong claim: it is written by a command that
+  # ran no simulation and read no result. What verified this unit is in
+  # plan.json's `evidence`, and one layer of it went RED first: the wrapper
+  # `vit integrate` generated WITHOUT `--reverse-copy` dropped every write this
+  # unit makes to `ErrVar%aviFAIL` and `ErrVar%ErrMsg`, and the kernel and the
+  # gate both passed it (evidence/interp1d/harness.postintegration.NO-REVERSE-COPY-FAILS-454-of-497.json).
+  interp1d:
+    status: integrated
+    cpp_file: translations/Functions/interp1d.cpp
 types:
   ControlParameters:
     strategy: view

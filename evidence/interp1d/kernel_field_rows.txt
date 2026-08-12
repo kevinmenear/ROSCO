@@ -1,0 +1,13 @@
+real translation: 62 cases, 248 compared field rows
+    kernel verdict line: 62 of 62 cases PASSED
+    row statuses: {'IDENTICAL': 248}
+
+zero stub: 62 cases, 248 compared field rows
+    kernel verdict line: 0 of 62 cases PASSED
+    row statuses: {'IDENTICAL': 186, 'NOT IDENTICAL (out of tol)': 62}
+    moved in  62 of 62 case(s) [1..23920]: a_op
+
+no-boundary-branches stub: 62 cases, 248 compared field rows
+    kernel verdict line: 62 of 62 cases PASSED
+    row statuses: {'IDENTICAL': 248}
+

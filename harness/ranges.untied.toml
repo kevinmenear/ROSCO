@@ -203,5 +203,3 @@ LocalVar_ZMQ_R_Pitch      = { no_oracle = "setpoints(8), never assigned in this 
 # NOT excluded, and is what a green then means: all three interpolation
 # branches, the strictly-increasing scan, the RoutineName prefix, and every
 # arithmetic site in the interpolation itself.
-[interp1d]
-n_yData = { same_as = "n_xData" }
