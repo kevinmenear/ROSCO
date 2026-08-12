@@ -1,0 +1,51 @@
+--- dir
+calling Read_OL_Input on /
+exit=124 (124 = killed by timeout after 8s)
+--- empty
+calling Read_OL_Input on /tmp/rolprobe/empty.dat
+exit=124 (124 = killed by timeout after 8s)
+--- comments
+calling Read_OL_Input on /tmp/rolprobe/comments.dat
+exit=124 (124 = killed by timeout after 8s)
+
+WHAT THIS IS
+------------
+`Read_OL_Input` in rosco/controller/src/ROSCO_Helpers.f90 (clean, 54dd134):
+
+    LINE = '!'
+    NumComments = -1
+    DO WHILE ( (INDEX(LINE,'!') > 0) .OR. (INDEX(LINE,'#') > 0) .OR. (INDEX(LINE,'%') > 0) )
+        NumComments = NumComments + 1
+        READ(Unit_OL_Input,'( A )',IOSTAT=IOS) LINE
+        ! NWTC_IO has some error catching here that we'll skip for now
+    END DO
+
+A READ that fails LEAVES `LINE` UNCHANGED under gfortran. So whenever the file
+runs out of records while `LINE` still contains one of the three comment
+markers, the loop increments `NumComments` for ever and reads nothing. Three
+reachable inputs do that, all measured above with an 8-second timeout:
+
+  a name that resolves to a DIRECTORY   OPEN succeeds, every READ fails
+  an EMPTY file                         the first READ is already end-of-file
+  a file of COMMENT LINES ONLY          the READ after the last comment is EOF
+
+The comment ROSCO's own author left -- "NWTC_IO has some error catching here
+that we'll skip for now" -- is exactly the omission.
+
+WHY IT IS RECORDED HERE RATHER THAN FIXED
+-----------------------------------------
+P7: the oracle is the original source. The differential harness compares the
+translation against THIS procedure, so repairing it would move the oracle and
+every artifact measured against it. It is recorded, and R8's file corpus states
+which shapes it therefore cannot contain.
+
+The translation does NOT share the defect: `read_ol_input.cpp` stops when the
+record source runs out, which is the only behaviour that terminates. The two
+implementations therefore DISAGREE on these three inputs, and no differential
+case can be written for them -- the harness would hang, not fail.
+
+The directory case is how this was found. Case 11 of the first generated corpus
+gave `OL_InputFileName` 1024 '/' characters, which resolve to the root
+directory, and the harness spun at 100% CPU for 13 minutes before it was killed.
+That case existed because the character ladder was varying the BYTES OF A FILE
+NAME -- unit #16's "ladder aimed at a name", one input kind over.

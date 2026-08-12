@@ -1,0 +1,37 @@
+cf9a402b   57 compare_op     '>'                      -> '>='           | while (n > 0 && buf[n - 1] == ' ') --n;
+eebb5aca   81 compare_op     '>'                      -> '>='           | if (static_cast<int32_t>(s.size()) > ErrVar->n_ErrMsg_cap) {
+b1658c73   94 compare_op     '<='                     -> '<'            | if (ErrVar->ErrMsg == nullptr || ErrVar->n_ErrMsg <= 0) return std::string();
+87c206c8  110 compare_op     '<'                      -> '<='           | while (i < rec.size() && !is_sep(rec[i]) && rec[i] != '/') ++i;
+01a75952  144 compare_op     '<'                      -> '<='           | for (size_t k = 1; k < tok.size(); ++k) {
+5e2aecd4  166 compare_op     '>='                     -> '>'            | if (pos >= rec.size() || rec[pos] < '0' || rec[pos] > '9') return 0;
+b8f1c98f  166 compare_op     '<'                      -> '<='           | if (pos >= rec.size() || rec[pos] < '0' || rec[pos] > '9') return 0;
+cde2a979  166 compare_op     '>'                      -> '>='           | if (pos >= rec.size() || rec[pos] < '0' || rec[pos] > '9') return 0;
+3c74615c  146 arith_op       'k - 1'                  -> 'k + 1'        | else if ((tok[k] == '+' || tok[k] == '-') && tok[k - 1] != 'e' && tok[k - 1] != 
+30c8f2a5  146 swap_operands  'k - 1'                  -> '1 - k'        | else if ((tok[k] == '+' || tok[k] == '-') && tok[k - 1] != 'e' && tok[k - 1] != 
+af4cdcfa  110 index_offset   '[i]'                    -> '[i + 1]'      | while (i < rec.size() && !is_sep(rec[i]) && rec[i] != '/') ++i;
+18df050b  145 index_offset   '[k]'                    -> '[k + 1]'      | if (tok[k] == 'd' || tok[k] == 'D' || tok[k] == 'q' || tok[k] == 'Q') tok[k] = '
+b6b09329  145 index_offset   '[k]'                    -> '[k + 1]'      | if (tok[k] == 'd' || tok[k] == 'D' || tok[k] == 'q' || tok[k] == 'Q') tok[k] = '
+1b6ff796  145 index_offset   '[k]'                    -> '[k + 1]'      | if (tok[k] == 'd' || tok[k] == 'D' || tok[k] == 'q' || tok[k] == 'Q') tok[k] = '
+55cda33a  146 index_offset   '[k]'                    -> '[k + 1]'      | else if ((tok[k] == '+' || tok[k] == '-') && tok[k - 1] != 'e' && tok[k - 1] != 
+01f24f32  166 index_offset   '[pos]'                  -> '[pos + 1]'    | if (pos >= rec.size() || rec[pos] < '0' || rec[pos] > '9') return 0;
+a58534f7  258 index_offset   '[pos]'                  -> '[pos + 1]'    | if (pos >= rec.size() || is_sep(rec[pos]) || rec[pos] == '/') {
+a1f3db08  258 index_offset   '[pos]'                  -> '[pos + 1]'    | if (pos >= rec.size() || is_sep(rec[pos]) || rec[pos] == '/') {
+50faed7c  354 index_offset   '[16]'                   -> '[16 + 1]'     | char NumString[16];
+33d9cfcd   53 const_tweak    '1024'                   -> '1025'         | constexpr int OL_INPUT_FILENAME_LEN = 1024;
+7226ca9c   57 const_tweak    '0'                      -> '1'            | while (n > 0 && buf[n - 1] == ' ') --n;
+880881e2   94 const_tweak    '0'                      -> '1'            | if (ErrVar->ErrMsg == nullptr || ErrVar->n_ErrMsg <= 0) return std::string();
+4804231b  144 const_tweak    '1'                      -> '2'            | for (size_t k = 1; k < tok.size(); ++k) {
+8664d340  146 const_tweak    '1'                      -> '2'            | else if ((tok[k] == '+' || tok[k] == '-') && tok[k - 1] != 'e' && tok[k - 1] != 
+48e0a8ff  166 const_tweak    '0'                      -> '1'            | if (pos >= rec.size() || rec[pos] < '0' || rec[pos] > '9') return 0;
+06838198  168 const_tweak    '10'                     -> '11'           | const unsigned long r = std::strtoul(rec.c_str() + pos, &stop, 10);
+8203b04c  179 const_tweak    '1'                      -> '2'            | enum class ListIO { Ok = 0, Eof = -1, Bad = 1 };
+fd0a0545  179 const_tweak    '1'                      -> '2'            | enum class ListIO { Ok = 0, Eof = -1, Bad = 1 };
+910a9c08  227 const_tweak    '0'                      -> '1'            | size_t pos = 0;
+70bb060f  232 const_tweak    '0.0'                    -> '1.0'          | double repeat_value = 0.0;
+0f7f4071  305 const_tweak    '1'                      -> '2'            | ErrVar->aviFAIL = -1;
+aaacdb6d  309 const_tweak    '0'                      -> '1'            | std::vector<double> TmpData(NumChannels > 0 ? static_cast<size_t>(NumChannels) :
+69ddf0d5  309 const_tweak    '0.0'                    -> '1.0'          | std::vector<double> TmpData(NumChannels > 0 ? static_cast<size_t>(NumChannels) :
+35a9843d  324 const_tweak    '1024'                   -> '1025'         | if (rec.size() > 1024) rec.resize(1024);
+d5c5434b  324 const_tweak    '1024'                   -> '1025'         | if (rec.size() > 1024) rec.resize(1024);
+36f135d1  354 const_tweak    '16'                     -> '17'           | char NumString[16];
+9ea0571b  392 negate_cond    'if (!src.next(rec))'    -> 'if (!(!src.next(rec)))' | if (!src.next(rec)) break;

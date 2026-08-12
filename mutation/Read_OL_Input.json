@@ -1,0 +1,256 @@
+{
+ "unit": "Read_OL_Input",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "mutants": 135,
+ "equivalent_declared": 0,
+ "nocompile": 29,
+ "killed_by_timeout": 4,
+ "killed_by_timeout_ids": [
+  "62296b60",
+  "1d0b8e3b",
+  "ff6b49eb",
+  "7852fb47"
+ ],
+ "nocompile_ratio": 0.1768,
+ "nocompile_refused": false,
+ "total": 164,
+ "killed": 98,
+ "survived": 37,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.7259,
+ "loop_rev": "da67142-nogit",
+ "vit_rev": "47d5fc6-nogit",
+ "survivors": [
+  {
+   "id": "cf9a402b",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "eebb5aca",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "b1658c73",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "87c206c8",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "01a75952",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "5e2aecd4",
+   "operator": "compare_op",
+   "before": ">=",
+   "after": ">"
+  },
+  {
+   "id": "b8f1c98f",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "cde2a979",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "3c74615c",
+   "operator": "arith_op",
+   "before": "k - 1",
+   "after": "k + 1"
+  },
+  {
+   "id": "30c8f2a5",
+   "operator": "swap_operands",
+   "before": "k - 1",
+   "after": "1 - k"
+  },
+  {
+   "id": "af4cdcfa",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "18df050b",
+   "operator": "index_offset",
+   "before": "[k]",
+   "after": "[k + 1]"
+  },
+  {
+   "id": "b6b09329",
+   "operator": "index_offset",
+   "before": "[k]",
+   "after": "[k + 1]"
+  },
+  {
+   "id": "1b6ff796",
+   "operator": "index_offset",
+   "before": "[k]",
+   "after": "[k + 1]"
+  },
+  {
+   "id": "55cda33a",
+   "operator": "index_offset",
+   "before": "[k]",
+   "after": "[k + 1]"
+  },
+  {
+   "id": "01f24f32",
+   "operator": "index_offset",
+   "before": "[pos]",
+   "after": "[pos + 1]"
+  },
+  {
+   "id": "a58534f7",
+   "operator": "index_offset",
+   "before": "[pos]",
+   "after": "[pos + 1]"
+  },
+  {
+   "id": "a1f3db08",
+   "operator": "index_offset",
+   "before": "[pos]",
+   "after": "[pos + 1]"
+  },
+  {
+   "id": "50faed7c",
+   "operator": "index_offset",
+   "before": "[16]",
+   "after": "[16 + 1]"
+  },
+  {
+   "id": "33d9cfcd",
+   "operator": "const_tweak",
+   "before": "1024",
+   "after": "1025"
+  },
+  {
+   "id": "7226ca9c",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "880881e2",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "4804231b",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "8664d340",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "48e0a8ff",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "06838198",
+   "operator": "const_tweak",
+   "before": "10",
+   "after": "11"
+  },
+  {
+   "id": "8203b04c",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "fd0a0545",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "910a9c08",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "70bb060f",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "0f7f4071",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "aaacdb6d",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "69ddf0d5",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "35a9843d",
+   "operator": "const_tweak",
+   "before": "1024",
+   "after": "1025"
+  },
+  {
+   "id": "d5c5434b",
+   "operator": "const_tweak",
+   "before": "1024",
+   "after": "1025"
+  },
+  {
+   "id": "36f135d1",
+   "operator": "const_tweak",
+   "before": "16",
+   "after": "17"
+  },
+  {
+   "id": "9ea0571b",
+   "operator": "negate_cond",
+   "before": "if (!src.next(rec))",
+   "after": "if (!(!src.next(rec)))"
+  }
+ ]
+}

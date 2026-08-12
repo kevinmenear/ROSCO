@@ -111,65 +111,75 @@ std::string trimmed_errmsg(const errorvariables_view_t* ErrVar) {
 
 bool is_sep(char c) { return c == ' ' || c == ',' || c == '\t'; }
 
+// Where the datum starting at `pos` ends: a list-directed value runs to the
+// next separator, to the `/` terminator, or to the end of the record. That
+// boundary IS observable -- it decides whether the next item is read from this
+// record -- unlike the positions inside the number, which nothing reads.
+size_t datum_end(const std::string& rec, size_t pos) {
+    size_t i = pos;
+    while (i < rec.size() && !is_sep(rec[i]) && rec[i] != '/') ++i;
+    return i;
+}
+
 // One list-directed REAL datum out of `rec` starting at `pos`.
 // Returns false on a malformed datum (the reference's IOS > 0).
+//
+// THE GRAMMAR IS `strtod`'s, AND IS NOT RESTATED HERE.
+//
+// This function used to walk the datum by hand -- sign, digits, point, digits,
+// exponent letter, exponent sign, exponent digits -- and then hand the same
+// text to `strtod` anyway. Two implementations of one grammar, of which only
+// the SECOND produces a value anything reads. 31 of the 47 mutants that
+// survived the first differential run (0.708) were inside that walk: `rec[i]`
+// -> `rec[i + 1]`, `i < n` -> `i <= n`, a digit counter's initialiser. None is
+// a wrong answer that any input can expose, because the position they move is
+// recomputed by `strtod` a few lines later. Unit #15's `PathIsRelative` finding
+// exactly: A POSITION NOTHING READS IS AN UNOBSERVABLE SITE.
+//
+// So the datum's EXTENT is found by the one rule the reference cares about (it
+// ends at a separator), and its VALUE is found by the converter. Fortran's real
+// forms differ from `strtod`'s in exactly two ways, and both are rewrites of
+// the token rather than re-scans of it:
+//
+//   D / d / Q / q are exponent letters       -> 'e'
+//   the exponent letter may be OMITTED       -> insert 'e' before a sign that
+//   (`1.5-3` is `1.5e-3`)                       does not already follow one
+//
+// `strtod` must then consume the WHOLE token, which is what rejects `1.5x` and
+// `abc` with the reference's IOS > 0.
 bool scan_real(const std::string& rec, size_t& pos, double& value) {
-    const size_t n = rec.size();
-    size_t i = pos;
-    const size_t start = i;
-    if (i < n && (rec[i] == '+' || rec[i] == '-')) ++i;
-    size_t digits = 0;
-    while (i < n && rec[i] >= '0' && rec[i] <= '9') { ++i; ++digits; }
-    if (i < n && rec[i] == '.') {
-        ++i;
-        while (i < n && rec[i] >= '0' && rec[i] <= '9') { ++i; ++digits; }
-    }
-    if (digits == 0) return false;
-    // Exponent: an explicit letter, or gfortran's letter-less signed form.
-    if (i < n && (rec[i] == 'e' || rec[i] == 'E' || rec[i] == 'd' || rec[i] == 'D' ||
-                  rec[i] == 'q' || rec[i] == 'Q')) {
-        size_t save = i;
-        ++i;
-        if (i < n && (rec[i] == '+' || rec[i] == '-')) ++i;
-        size_t ed = 0;
-        while (i < n && rec[i] >= '0' && rec[i] <= '9') { ++i; ++ed; }
-        if (ed == 0) { i = save; }
-    } else if (i < n && (rec[i] == '+' || rec[i] == '-')) {
-        size_t save = i;
-        ++i;
-        size_t ed = 0;
-        while (i < n && rec[i] >= '0' && rec[i] <= '9') { ++i; ++ed; }
-        if (ed == 0) { i = save; }
-    }
-    // The datum must end at a separator or at the end of the record.
-    if (i < n && !is_sep(rec[i]) && rec[i] != '/') return false;
-
-    // strtod does not know 'D'/'Q'; normalise the exponent letter, and supply
-    // an 'e' for the letter-less form so the same converter handles both.
-    std::string tok = rec.substr(start, i - start);
+    const size_t end = datum_end(rec, pos);
+    if (end == pos) return false;
+    std::string tok = rec.substr(pos, end - pos);
     for (size_t k = 1; k < tok.size(); ++k) {
         if (tok[k] == 'd' || tok[k] == 'D' || tok[k] == 'q' || tok[k] == 'Q') tok[k] = 'e';
         else if ((tok[k] == '+' || tok[k] == '-') && tok[k - 1] != 'e' && tok[k - 1] != 'E')
             { tok.insert(k, 1, 'e'); ++k; }
     }
     const char* c = tok.c_str();
-    char* end = nullptr;
-    value = std::strtod(c, &end);
-    if (end == c) return false;
-    pos = i;
+    char* stop = nullptr;
+    const double v = std::strtod(c, &stop);
+    if (stop != c + tok.size()) return false;   // trailing junk: IOS > 0
+    value = v;
+    pos = end;
     return true;
 }
 
 // An unsigned integer repeat count followed by '*'. Returns 0 when there is none.
+//
+// `strtoul` for the same reason: the accumulation `r = r * 10 + (rec[i] - '0')`
+// is a second implementation of a conversion the C library already has, and its
+// `10`, its `[i]` and its digit counter were four more unobservable sites. The
+// leading character is required to be a DIGIT because `strtoul` would otherwise
+// accept the sign of `-3*x` and read a repeat count that is not one.
 long scan_repeat(const std::string& rec, size_t& pos) {
-    size_t i = pos;
-    const size_t n = rec.size();
-    size_t d = 0;
-    long r = 0;
-    while (i < n && rec[i] >= '0' && rec[i] <= '9') { r = r * 10 + (rec[i] - '0'); ++i; ++d; }
-    if (d == 0 || i >= n || rec[i] != '*' || r <= 0) return 0;
+    if (pos >= rec.size() || rec[pos] < '0' || rec[pos] > '9') return 0;
+    char* stop = nullptr;
+    const unsigned long r = std::strtoul(rec.c_str() + pos, &stop, 10);
+    const size_t i = static_cast<size_t>(stop - rec.c_str());
+    if (i >= rec.size() || rec[i] != '*' || r == 0) return 0;
     pos = i + 1;
-    return r;
+    return static_cast<long>(r);
 }
 
 // The IOSTAT contract of the reference's reads, reproduced:
@@ -365,9 +375,19 @@ void Read_OL_Input(char* OL_InputFileName, int Unit_OL_Input, int NumChannels, d
             }
 
             // ALLOCATE(Channels(NumDataLines,NumChannels))
-            const long rows = NumDataLines;
-            const long cols = NumChannels;
-            const long nelem = (rows > 0 && cols > 0) ? rows * cols : 0;
+            //
+            // A Fortran bound `1:n` with n < 0 is an extent of ZERO, not a
+            // negative extent: the array is allocated and `SIZE(Channels,2)`
+            // answers 0. `NumChannels` is INTENT(IN) and nothing constrains it
+            // to be positive, so this is reachable, and reporting the raw
+            // argument instead is the one thing the caller cannot recover from
+            // -- it would size a `C_F_POINTER` shape by a negative number.
+            // Found by the differential harness at 80 of 657 cases; the kernel
+            // and the gate could not see it, because this unit allocates on
+            // neither of the paths they reach.
+            const long rows = NumDataLines > 0 ? NumDataLines : 0;
+            const long cols = NumChannels > 0 ? NumChannels : 0;
+            const long nelem = rows * cols;
             double* buf = static_cast<double*>(std::malloc(
                 static_cast<size_t>(nelem > 0 ? nelem : 1) * sizeof(double)));
             *Channels = buf;
