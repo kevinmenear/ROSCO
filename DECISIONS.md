@@ -4564,3 +4564,164 @@ scenario configures it — 24 — and coverage records scenario 24 executing no
 controller code at all, which STATUS.md has carried since phase 3 as an E3.3
 failure. So the branch above this unit's call site has one scenario and that
 scenario is one of the three dead ones.
+
+# Unit #23 — interp1d
+
+## The wrapper dropped every write the unit makes, and the two bit-exact layers both passed it
+
+**This is the sharpest instance so far of "a unit the gate cannot see is not a
+unit the gate passed" — because here the gate DID see the unit.**
+
+`vit integrate --apply` without `--reverse-copy` generates
+
+```fortran
+CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+interp1d_result = REAL(interp1d_c(..., C_LOC(ErrVar_view)), 8)
+END FUNCTION interp1d
+```
+
+`interp1d` writes `ErrVar%aviFAIL` and `ErrVar%ErrMsg` on both error paths and
+in the `RoutineName` prefix. Nothing copies the view back, so after integration
+those writes went nowhere.
+
+**The kernel scored 62 of 62 and the gate compared 5,252,000 values with 0
+mismatched, on that build.** Neither is broken and neither is at fault:
+
+- the KERNEL marshals the view itself, so the generated wrapper is not on its
+  path at all;
+- the GATE's 27 scenarios hand `interp1d` well-formed, strictly increasing
+  tables with `aviFAIL == 0` on entry, so the dropped fields are never written
+  in the first place. A perturbation of the *return value* moves 1,341,803
+  values — the unit is maximally visible — and the gate is still blind to an
+  entire output of it.
+
+The post-integration differential harness is the only layer that could see it,
+and it did, on the first run: **454 of 497 cases, the mismatch list naming
+`ErrVar.ErrMsg` and `ErrVar.n_ErrMsg` and nothing else.** C12: the failing
+artifact is committed at
+`evidence/interp1d/harness.postintegration.NO-REVERSE-COPY-FAILS-454-of-497.json`
+before the fix, and the red re-take after the fix — the
+`CALL vit_copy_scalars_to_errorvariables` line deleted, rebuilt between the
+edit and the run — reproduces the same 454.
+
+**What this says about `--reverse-copy` as a flag.** It is not a tuning knob;
+it is a correctness requirement derivable from the unit's own body — does the
+function assign to a scalar field of a view-type INOUT dummy? VIT knows the
+answer: it parses the body to build the read set for the harness. A candidate
+for the Driver, in VIT rather than here: `vit integrate` should either infer
+the flag or REFUSE without it when the translation writes such a field. Not
+done in this unit's cycle because it changes the wrapper every unit ships (X3)
+and 12 of the campaign's integrated units take a `TYPE(ErrorVariables)` dummy.
+
+## `harness/ranges.toml` grew a third kind of entry, and it says two INPUTS are only jointly admissible
+
+`lo`/`hi`/`values`/`text` narrow ONE parameter's domain on its own.
+`no_oracle` (unit #21) says an OUTPUT has no answer. Neither can express what
+`interp1d` needs, which is `SIZE(yData) == SIZE(xData)` — and needs it because
+the reference **aborts** otherwise:
+
+```fortran
+ErrVar%ErrMsg  = ' xData and yData are not the same size'   ! reallocates to 38
+WRITE(ErrVar%ErrMsg,"(A,I2,A,I2,A)") ...                    ! formats 53
+```
+
+`Fortran runtime error: End of record`, exit 2, measured in isolation
+(`evidence/interp1d/reference.size-mismatch-aborts.txt`) and in situ
+(`harness.untied-extents-KILLS-the-reference.txt`). `_extent_plan` makes
+extents **pairwise distinct on purpose** — that is what catches a transposed
+stride — so the very first generated case had `n_xData = 3, n_yData = 4` and
+killed the oracle before any comparison happened.
+
+`same_as = "<other extent>"` is the entry. It is reported in the run
+(`TIED EXTENT:`), it appears in R5's own detail line ("TIED, so NOT pairwise
+distinct…"), it lands in the artifact as `tied_extents`, and a name matching no
+extent is a hard error. It is the fifth upstream ROSCO defect this campaign has
+measured, and the second of the "the reference does not return" family after
+unit #17's three non-terminating inputs.
+
+**A tie also had to survive the rules that build their own extent map.** The
+character ladder and the ORDER ladder both write `{**ex0, d: L}`; on this unit
+the order ladder fires for `xData` AND `yData`, so the tie held everywhere
+except inside the one rule most likely to break it. `_extents_with` re-applies
+the tie, and propagates it in BOTH directions so that shortening the follower
+shortens the leader rather than silently undoing the rule.
+
+## R10 — a predicate whose other side is a REDUCTION of a varied array
+
+**The fifteenth corpus blind spot, and the one the kernel could not have
+compensated for.**
+
+```fortran
+IF (xq <= MINVAL(xData)) THEN
+    interp1d = yData(1)
+ELSEIF (xq >= MAXVAL(xData)) THEN
+    interp1d = yData(SIZE(xData))
+```
+
+`relational_pairs_from` (unit #20) needs both sides to be PARAMETERS. Here one
+side is a *function of* a parameter: it has no name to pin and its value is not
+in the case stream at all — it is whatever `_fill_array` happened to draw. So
+`<=` against `<` and `>=` against `>` differ on exactly one input each, and
+**473 cases produced neither**. Both mutants survived a full green.
+
+The kernel cannot help: a stub with both endpoint branches DELETED scores
+**62 of 62 PASSED, 248 of 248 IDENTICAL**, because every query captured at the
+wind-speed estimator's call site is interior. So on those two branches the
+differential harness is the only instrument there is, and it was blind.
+
+R10 draws the array body first, computes the reduction, and sets the scalar to
+it and to its two neighbouring representable numbers — over the ordinary body
+**and its reverse**, so the extremum is once the first element and once the
+last. That second body is not decoration: a translation that substitutes
+`xData(1)` for `MINVAL(xData)` — the exact defect the strictly-increasing check
+upstream exists to report — agrees with the reference on an ascending body and
+disagrees on a descending one. 473 → 497 cases; 0.865 → 0.920.
+
+## Two survivors were UNREACHABLE and three were EQUIVALENT, and the artifact says which is which
+
+`mutation/interp1d.equivalences.json` declares five, and it deliberately does
+not call them all the same thing.
+
+- **Equivalent, proved exhaustively.** The MINVAL/MAXVAL reduction comparisons
+  and the view-length guard. The reduction result is *not* identical under the
+  loosened comparison — **1,666 of 69,905 swept tuples have different stored
+  bits**, because `-0.0 <= 0.0` is true where `-0.0 < 0.0` is false. What makes
+  the mutants equivalent is the weaker, sufficient claim: the two consumers
+  (`xq <= xData_min`, `xq >= xData_max`) cannot tell, and **0** of the
+  (tuple, xq) pairs disagree. The third is swept over all **4,294,967,296**
+  values of a 32-bit int.
+- **Unreachable here, counted rather than argued.** The capacity guard and the
+  unallocated-length branch. `evidence/interp1d/errmsg_extremes_probe.cpp` is
+  the shipped translation with three counters and nothing else changed, run
+  over all 497 cases: `n_ErrMsg 1..10`, `cap 4097..4106`, largest message 42,
+  `s.size() == cap: 0`, `n_ErrMsg <= 0: 0`.
+
+**The second pair is a blind spot and is recorded as one.** The generator has
+no rung that puts a CHARACTER extent at zero or at VIT's own
+`VIT_CHAR_UNALLOCATED` sentinel, though `vit_types.h` defines it and the
+translation must handle it. NOT closed inside this unit's cycle, and the reason
+is the one unit #14 recorded: the character-length ladder is an EXISTING block,
+and a rung added there shifts the random draws of every unit already scored.
+The addition belongs in a block appended last, like the signed-zero and order
+ladders. **A candidate for the Driver.**
+
+## Eight of thirteen survivors were closed by widening or by deleting, not by declaring
+
+0.865 → 0.920 (R10) → 0.930 (one deleted branch) → 1.000 (five declared).
+
+The deletions are worth the specific mention because they are unit #15's and
+unit #17's rule arriving a third time. `TRIM` was written as
+`while (n > 0 && s[n - 1] == ' ') --n;` — whose loosening mutant reads the byte
+**before** the buffer, undefined behaviour rather than a wrong answer, which no
+value comparison can be relied on to catch. Rewritten as
+`v.substr(0, v.find_last_not_of(' ') + 1)`, it has no such site: `npos + 1` is
+0 by the defined wraparound of an unsigned type, so the all-blank string falls
+out of the same expression and the `== npos` branch disappears with it. The
+`RoutineName` prefix likewise: a hand-written `memmove` with a capacity test of
+its own became one call to `assign_errmsg`, which removed a second unkillable
+guard rather than declaring it.
+
+And one restatement was found by the score rather than by reading: the two
+error branches each spelled `ErrVar%aviFAIL = -1`, and the copy inside the
+unreachable size-mismatch branch was unkillable for that reason alone. One
+lambda, one site, killed by the branch that *is* reachable.

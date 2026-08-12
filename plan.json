@@ -1124,13 +1124,49 @@
     "DISCON"
    ],
    "dependency_depth": 0,
-   "verification": "kernel replay or direct-call harness; bit-identical",
+   "verification": "ROUTE EXISTS AND WAS RUN, AND THE LAYER THAT WENT RED IS THE ONE THE OTHER FOUR CANNOT REPLACE. The hypothesis was `kernel replay or direct-call harness; bit-identical`. Both were built, plus the gate, the mutation score and the post-integration harness -- five layers, all five alive, and one of them FAILED FIRST on a real defect.\n\n  kernel replay              62 cases, 248 field rows, ALL IDENTICAL, scenario 1, clean ControllerBlocks.f90:421 (the wind-speed estimator's pole lookup, 330,797 hits across 22 scenarios). RED-TESTED: a DETERMINATE zero stub reading no argument scores 0 of 62 and moves `a_op` in all 62 cases; the 62 captured references are 62 DISTINCT non-zero values. VIT's own red test (`xq` x 1.00001) reported DISCRIMINATING.\n                             AND IT CANNOT SEE TWO OF THE THREE INTERPOLATION BRANCHES. The shipped translation with `IF (xq <= MINVAL(xData))` and `ELSEIF (xq >= MAXVAL(xData))` DELETED scores 62 of 62 PASSED, 248 of 248 IDENTICAL (evidence/interp1d/kernel.no-boundary-branches-stub.run.txt): every captured query is interior. Nor does it see either error branch or the RoutineName prefix -- `avifail` is 0 in all 62 cases.\n  differential harness       497 checked, 0 failed, against the CLEAN Fortran. RED-TESTED: the unit as a no-op fails 497 of 497. It required TWO instrument fixes to exist at all and one stated judgement -- see `bridge_feasible`. harness/interp1d{,.redtest}.json\n  mutation score             66 of 66 behavioural killed, 1.000, 5 DECLARED equivalent, 1 no-compile. The inherited corpus scores 0.865 with THIRTEEN survivors; eight are gone rather than declared -- R10 (a predicate whose other side is a REDUCTION of a varied array) killed the two endpoint comparisons the kernel is also blind to, and four restatements were removed from the translation, including a `while (n > 0 && s[n-1] == ' ')` scan whose loosening mutant read the byte BEFORE the buffer. The five declarations are PROVED: 69,905 swept tuples and a full 32-bit sweep (evidence/interp1d/equivalence_probe.txt), and a counter over all 497 corpus cases (evidence/interp1d/errmsg_extremes_probe.txt). mutation/interp1d{,.equivalences}.json\n  post-integration harness   497 checked, 0 failed -- AFTER a fix. THE FIRST WRAPPER `vit integrate` GENERATED DROPPED EVERY WRITE THIS UNIT MAKES: without `--reverse-copy` nothing copies `ErrVar_view` back, so `ErrVar%aviFAIL` and `ErrVar%ErrMsg` were lost, and 454 of 497 cases failed naming those two fields and nothing else. The kernel passed it 62/62 and the gate passed it 5,252,000/0. C12: the wrong artifact is committed at evidence/interp1d/harness.postintegration.NO-REVERSE-COPY-FAILS-454-of-497.json. RED-TESTED after the fix by deleting the `CALL vit_copy_scalars_to_errorvariables` line and rebuilding between the edit and the run: the same 454 of 497; restored, rebuilt, green returns. harness/interp1d.postintegration{,.redtest}.json\n  gate, 27 scenarios         5,252,000 values / 351 channels, 0 mismatched, RE-RUN on the final `--reverse-copy` build rather than on the one the first integration produced. RED TEST PASSED: `interp1d_result` x 1.000001 moves 1,341,803 of 5,252,000; after revert 0 of 5,252,000, scenarios_failed empty. gate/interp1d{,.redtest}.json",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+    "value": "yes",
+    "basis": "MEASURED, replacing the matrix-derived `unknown`, and BOTH generators cross it -- but the differential one needed two fixes and one stated judgement before it could run a single case. `vit interface` emits `REAL(C_DOUBLE), INTENT(IN) :: xData(*)` plus `INTEGER(C_INT), VALUE :: n_xData` for each assumed-shape array and `TYPE(C_PTR), VALUE :: ErrVar` for the derived type; it builds, links, and the gate's red test moves 1,341,803 values through it. What it does NOT do by default is copy the view back: see `verification`, and note that the flag is not optional for this unit. `test_validate.generate_fortran_bridge` compiles the same signature unchanged. The LOOP's generator did not: `relational_pairs_from` matched `IF (xq <= xData(I))` and reported the array side with NO index -- indistinguishable from `the predicate names the parameter` -- and `_pin` then wrote a scalar over an array parameter, `TypeError: 'float' object is not iterable` out of `emit.write_cases`, with no case file written. Fixed by ADDITION in harness/generate.py: an array side with an unresolved subscript pins an INTERIOR element. The judgement is `harness/ranges.toml`'s third kind of entry, `same_as`, and it exists because the REFERENCE has no answer: `SIZE(xData) /= SIZE(yData)` reallocates ErrMsg to 38 characters and then formats 53 into it -- `End of record`, exit 2, measured (evidence/interp1d/reference.size-mismatch-aborts.txt). `_extent_plan` makes extents pairwise distinct on purpose, so every case killed the oracle until the two were tied."
    },
-   "observability": null
+   "observability": "THE GATE SEES THIS UNIT WIDELY AND THE KERNEL SEES ONE THIRD OF IT, AND THE WRAPPER TURNED OUT TO SEE NONE OF WHAT IT WRITES TO ErrVar.\n\nGATE-VISIBLE: 1,341,803 of 5,252,000 values move under a x1.000001 perturbation of the return value. `interp1d` has 24 call sites, and the live ones are the pitch controller's gain schedule (`PC_GS_angles` -> KP/KI/KD/TF, 407,976 calls), the wind-speed estimator's first-order pole (330,797), the peak-shaving minimum-pitch schedule (391,977) and the floating feedback gain (79,996). Every one of those feeds blade pitch or generator torque directly.\n\nWHAT THE KERNEL CANNOT SEE, and it is two thirds of the control flow rather than an argument: both ENDPOINT branches. A stub with `xq <= MINVAL(xData)` and `xq >= MAXVAL(xData)` deleted passes 62 of 62 with 248 of 248 rows IDENTICAL, because every query captured at ControllerBlocks.f90:421 falls inside the table. Also invisible: both error branches and the RoutineName prefix -- `avifail` is 0 in all 62 captured cases, so the whole `IF (ErrVar%aviFAIL < 0)` tail is unentered. Everything this campaign knows about those five paths comes from 497 differential cases.\n\nWHAT NO INSTRUMENT CAN CONSTRAIN, because the reference has no answer there: the `SIZE(xData) /= SIZE(yData)` branch. The reference ABORTS in it (exit 2, `End of record`), so a comparison cannot be written at all; `harness/ranges.toml` ties the two extents and states the cost, which includes any defect that needs the extents to DIFFER -- a translation reading `n_yData` where the reference reads `SIZE(xData)` agrees on every case here.\n\nAND ONE THING THAT WAS INVISIBLE TO EVERY SIMULATION-BASED LAYER AT ONCE: the wrapper's reverse copy. The first integration dropped this unit's writes to `ErrVar%aviFAIL` and `ErrVar%ErrMsg` and both the kernel and the 27-scenario gate passed it, because the scenarios hand `interp1d` well-formed monotone tables and `aviFAIL == 0`. Only the post-integration differential harness could see it. That is the sharpest form so far of `a unit the gate cannot see is not a unit the gate passed` -- here the gate DID see the unit, 1.3 million values wide, and was still blind to an entire output.\n\nTHE CORPUS BLIND SPOT THIS UNIT CLOSED (R10, the fifteenth): a predicate whose OTHER SIDE is a REDUCTION of a varied array has no name to pin -- its crossing value is not in the case stream at all, it is whatever `_fill_array` drew. `xq <= MINVAL(xData)` against `<` and `xq >= MAXVAL(xData)` against `>` differ on exactly one input each, and 473 cases produced neither. R10 draws the array body first, computes the reduction, and sets the scalar to it and to its two neighbouring representable numbers, over the body and its REVERSE so the extremum is once first and once last.",
+   "disposition": "integrated",
+   "source_file": "rosco/controller/src/Functions.f90",
+   "translation": "translations/Functions/interp1d.cpp",
+   "harness_required": true,
+   "evidence": [
+    "evidence/interp1d/README.md",
+    "evidence/interp1d/done_check.txt",
+    "evidence/interp1d/interp1d.final.cpp",
+    "evidence/interp1d/interp1d.zero-stub.cpp",
+    "evidence/interp1d/interp1d.no-boundary-branches-stub.cpp",
+    "evidence/interp1d/kernel.translation.run.txt",
+    "evidence/interp1d/kernel.translation.verify_fields.csv",
+    "evidence/interp1d/kernel.zero-stub.run.txt",
+    "evidence/interp1d/kernel.no-boundary-branches-stub.run.txt",
+    "evidence/interp1d/kernel_field_rows.py",
+    "evidence/interp1d/kernel_field_rows.txt",
+    "evidence/interp1d/size_mismatch_probe.f90",
+    "evidence/interp1d/reference.size-mismatch-aborts.txt",
+    "evidence/interp1d/harness.untied-extents-KILLS-the-reference.txt",
+    "evidence/interp1d/equivalence_probe.cpp",
+    "evidence/interp1d/equivalence_probe.txt",
+    "evidence/interp1d/errmsg_extremes_probe.cpp",
+    "evidence/interp1d/errmsg_extremes_probe.txt",
+    "evidence/interp1d/harness.postintegration.NO-REVERSE-COPY-FAILS-454-of-497.json",
+    "harness/ranges.toml",
+    "harness/ranges.untied.toml",
+    "harness/interp1d.json",
+    "harness/interp1d.redtest.json",
+    "harness/interp1d.postintegration.json",
+    "harness/interp1d.postintegration.redtest.json",
+    "mutation/interp1d.json",
+    "mutation/interp1d.equivalences.json",
+    "gate/interp1d.json",
+    "gate/interp1d.redtest.json",
+    "translations/Functions/interp1d.cpp"
+   ]
   },
   {
    "order": 24,

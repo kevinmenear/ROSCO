@@ -4,6 +4,57 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-12: unit #23 `interp1d` is `integrated` and CLOSED**, first
+dispatch. **Five layers, all five alive — and one of them went RED on a defect
+the other four passed.** Its section is directly below; unit #22 `identity` is
+below that.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases, scenario 1 | 248 field rows, **all IDENTICAL** | determinate zero stub **0 of 62**, `a_op` moves in all 62; **the no-boundary-branches stub PASSES 62 of 62** |
+| differential harness vs clean Fortran | **497** checked, 0 failed, 0 inadmissible | the unit as a no-op fails **497 of 497** |
+| mutation score | **66 of 66 behavioural killed, 1.000**, **5 declared equivalent**, 1 no-compile | the inherited corpus scores **0.865, thirteen survivors** — 8 closed, 5 declared |
+| post-integration harness (wrapper only) | **497 checked, 0 failed** — after a fix | **IT FAILED FIRST: 454 of 497**, see below; the deliberate red re-take reproduces the same 454 |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | `interp1d_result` × 1.000001 moves **1,341,803 of 5,252,000**, revert verified |
+
+**THE WRAPPER THREW AWAY EVERY WRITE THIS UNIT MAKES, AND THE KERNEL AND THE
+GATE BOTH PASSED IT (C12).** `vit integrate --apply` without `--reverse-copy`
+populates `ErrVar_view`, calls the C++ and returns — nothing copies the view
+back — so `interp1d`'s writes to `ErrVar%aviFAIL` and `ErrVar%ErrMsg` went
+nowhere. The kernel marshals the view itself and never touches the wrapper; the
+gate's 27 scenarios hand this unit well-formed monotone tables with
+`aviFAIL == 0`, so the dropped fields are never written. **The gate is not blind
+to the unit** — a perturbed return value moves 1.3 million values — **it is
+blind to an entire output of it.** The post-integration harness caught it on the
+first run, 454 of 497, naming `ErrVar.ErrMsg` and `ErrVar.n_ErrMsg` and nothing
+else. The failing artifact is committed
+(`evidence/interp1d/harness.postintegration.NO-REVERSE-COPY-FAILS-454-of-497.json`).
+DECISIONS.md carries the candidate: `--reverse-copy` is derivable from the
+unit's own body and should be inferred or REFUSED, not left to the caller.
+
+**THE KERNEL CANNOT SEE TWO OF THE THREE INTERPOLATION BRANCHES.** A stub with
+`IF (xq <= MINVAL(xData))` and `ELSEIF (xq >= MAXVAL(xData))` deleted scores
+**62 of 62 PASSED, 248 of 248 IDENTICAL**: every query captured at the wind-speed
+estimator's call site is interior, at any invocation window. Both error branches
+and the whole `IF (ErrVar%aviFAIL < 0)` tail are unentered too — `avifail` is 0
+in all 62 cases. So the differential harness is the only instrument on five of
+this unit's paths, and on two of them **it was blind as well**: `xq` against
+`MINVAL(xData)` is a predicate whose other side is a REDUCTION, with no name to
+pin and no value in the case stream, and `<=`-vs-`<` survived 473 cases. New
+rule **R10** draws the array body first and sets the scalar FROM the reduction,
+over the body and its reverse. 0.865 → 0.920 → 0.930 → **1.000**.
+
+**THE REFERENCE ABORTS ON ITS OWN ERROR PATH.** `SIZE(xData) /= SIZE(yData)`
+reallocates `ErrVar%ErrMsg` to 38 characters and then formats 53 into that
+record — `Fortran runtime error: End of record`, exit 2, measured. The fifth
+upstream ROSCO defect here, and the second of the "the reference does not
+return" family after unit #17. `harness/ranges.toml` grew a **third kind of
+entry** for it, `same_as`, which says two INPUTS are only jointly admissible —
+a range narrows one parameter alone, `no_oracle` excludes an output, and neither
+can say this.
+
+---
+
 **As of 2026-08-12: unit #22 `identity` is `integrated` and CLOSED**, first
 dispatch. **Five layers, all five alive — and the kernel's VERDICT LINE is not
 one of them.** Its section is directly below; unit #21 `UpdateZeroMQ` is below

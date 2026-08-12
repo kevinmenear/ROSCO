@@ -339,6 +339,150 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **`vit integrate` WITHOUT `--reverse-copy` SILENTLY DROPS EVERY WRITE A UNIT
+  MAKES TO A SCALAR FIELD OF A VIEW-TYPE INOUT DUMMY, AND BOTH BIT-EXACT
+  LAYERS PASS IT.** Unit #23. This is the case the post-integration harness
+  exists for, and the first time in this campaign it has caught something.
+
+  `interp1d` writes `ErrVar%aviFAIL` and `ErrVar%ErrMsg`. The generated wrapper
+  populated the view, called the C++ and returned. **The kernel scored 62 of 62
+  and the gate compared 5,252,000 values with 0 mismatched on that build** --
+  the kernel marshals the view itself so the wrapper is not on its path, and
+  the 27 scenarios hand the unit well-formed tables with `aviFAIL == 0` so the
+  dropped fields are never written. A perturbed return value moves 1,341,803
+  values: the gate is not blind to the UNIT, it is blind to an OUTPUT of it.
+
+  ```
+  grep -n 'INTENT(INOUT)' <the unit's Fortran>   # then, for each view-type one:
+  grep -n '<Dummy>%<scalar field> *=' <the unit's Fortran>   # any hit -> --reverse-copy
+  ```
+
+  The post-integration run is what says so, and it says it in the mismatch
+  LIST rather than the count -- 454 of 497 cases, naming `ErrVar.ErrMsg` and
+  `ErrVar.n_ErrMsg` and nothing else. Re-integrating is cheap and does NOT need
+  a reset: `git checkout HEAD -- <the .f90> CMakeLists.txt vit_translated.h`,
+  then `vit integrate ... --apply --reverse-copy`.
+
+  RE-RUN THE GATE AFTERWARDS. The first gate artifact measured the build with
+  the broken wrapper; it passes either way, which is exactly why it has to be
+  re-taken rather than kept.
+
+  NOT FIXED IN VIT HERE: inferring the flag changes the wrapper every unit
+  ships (X3) and 12 integrated units take a `TYPE(ErrorVariables)` dummy.
+  DECISIONS.md, as a candidate.
+
+- **A REFERENCE CAN ABORT ON ITS OWN ERROR PATH, AND THEN EVERY GENERATED CASE
+  KILLS THE ORACLE BEFORE ANY COMPARISON HAPPENS.** Unit #23, and it is unit
+  #17's non-termination finding one exit code over.
+
+  `interp1d`'s size-mismatch branch assigns a 38-character literal to
+  `CHARACTER(:), ALLOCATABLE :: ErrMsg` -- which REALLOCATES it to 38 -- and
+  then formats 53 characters into that record with an internal WRITE:
+
+  ```
+  LEN after the assignment = 38     characters the WRITE formats = 53
+  Fortran runtime error: End of record        exit 2
+  ```
+
+  `_extent_plan` makes extents PAIRWISE DISTINCT on purpose, so the very first
+  case had `n_xData = 3, n_yData = 4` and the run reported only
+  *harness produced no JSON*. The tell is the Fortran runtime error ABOVE that
+  line -- read the whole stderr, not the last line.
+
+  `harness/ranges.toml` now takes a THIRD kind of entry beside its ranges and
+  `no_oracle`: `{ same_as = "<other extent>" }`, which says two INPUTS are only
+  JOINTLY admissible. A range narrows one parameter alone and `no_oracle`
+  excludes an OUTPUT; neither can state this. Never silent -- it prints, it
+  lands in R5's own detail line as `TIED, so NOT pairwise distinct`, it lands
+  in the artifact's `tied_extents`, and a name matching no extent is an error.
+
+  **And a tie has to survive the rules that build their own extent map.** The
+  character ladder and the ORDER ladder both write `{**ex0, d: L}`; here the
+  order ladder fires for BOTH arrays, so the tie held everywhere except in the
+  one rule most likely to break it. `_extents_with` re-applies it, and
+  propagates it in BOTH directions -- shortening the follower shortens the
+  leader, rather than silently undoing the ladder.
+
+- **A PREDICATE WHOSE OTHER SIDE IS A REDUCTION OF A VARIED ARRAY HAS NO NAME
+  TO PIN, AND ITS CROSSING VALUE IS NOT IN THE CASE STREAM AT ALL.** Unit #23,
+  the fifteenth corpus blind spot (R10, `reduction_pairs_from` in
+  `vit_harness.py`, the block in `generate.py`).
+
+  `IF (xq <= MINVAL(xData))` and `ELSEIF (xq >= MAXVAL(xData))` are the whole
+  shape of a table lookup outside its own table. Unit #20's two-sided rule
+  needs both sides to be PARAMETERS; here one side is a FUNCTION of one, whose
+  value is whatever `_fill_array` drew. `<=` against `<` and `>=` against `>`
+  differ on exactly one input each and **473 cases produced neither**.
+
+  What makes it load-bearing rather than tidy is that the KERNEL is blind to
+  the same two branches, and the check is one stub:
+
+  ```
+  # the shipped translation with the two ENDPOINT branches deleted
+  cp evidence/<U>/<u>.no-boundary-branches-stub.cpp kernel/<U>/<u>.hpp
+  cd kernel/<U> && rm -f <u>.o kernel.exe && make -s build && ./kernel.exe
+  # 62 of 62 PASSED, 248 of 248 IDENTICAL -- every captured query is interior
+  ```
+
+  R10 draws the body FIRST, computes the reduction, sets the scalar to it and
+  to its two neighbouring representable numbers -- over the ordinary body AND
+  ITS REVERSE, so the extremum is once the first element and once the last. The
+  reverse is not decoration: a translation substituting `xData(1)` for
+  `MINVAL(xData)` agrees on an ascending body and disagrees on a descending one.
+
+- **`cp` ONTO A BIND-MOUNTED FILE IS READ HALF-WRITTEN OFTEN ENOUGH TO NEED A
+  GUARD, NOT A WARNING.** Unit #23, and the RUNBOOK has carried the warning
+  since unit #4. It happened twice in one cycle here, and the first time it
+  looked like a syntax error in a file that has none:
+
+  ```
+  interp1d.hpp:25:11: error: 'ch' does not name a type; did you mean 'char'?
+     25 | constexpr char MsgSizeMismatch[] = " xData and ...";
+  ```
+
+  gcc printed the line from the file it could read a moment later and the
+  compiler had read a truncated one. Hash it from INSIDE the container before
+  building anything:
+
+  ```bash
+  cp "$src" kernel/<U>/<u>.hpp
+  want=$(md5 -q "$src")
+  for i in 1 2 3; do
+    got=$(docker exec vit-dev bash -lc "md5sum /workspace/.../<u>.hpp | cut -d' ' -f1")
+    [ "$want" = "$got" ] && break; cp "$src" kernel/<U>/<u>.hpp
+  done
+  [ "$want" = "$got" ] || { echo "HASH MISMATCH"; exit 1; }
+  ```
+
+  Print the hash into the artifact. A stub run whose input nobody verified is
+  a measurement of an unknown program.
+
+- **A SURVIVOR THAT IS UNREACHABLE AND A SURVIVOR THAT IS EQUIVALENT ARE TWO
+  DIFFERENT CLAIMS, AND THE ARTIFACT MUST SAY WHICH.** Unit #23, five declared.
+
+  Three are EQUIVALENT and the proof is not the obvious one. Loosening the
+  MINVAL reduction's `<` to `<=` makes it re-assign on a tie, and that DOES
+  change the stored bits -- **1,666 of 69,905 swept tuples** -- because
+  `-0.0 <= 0.0` is true where `-0.0 < 0.0` is false. What makes the mutant
+  equivalent is the weaker, sufficient claim: the CONSUMERS cannot tell, and
+  the probe reports **0** disagreeing (tuple, xq) pairs. Sweep the consumer,
+  not the intermediate.
+
+  Two are UNREACHABLE, and the honest form of that claim is a COUNT over the
+  corpus rather than an argument about it. The pattern is the shipped
+  translation plus counters and nothing else changed, run through the harness's
+  own Makefile:
+
+  ```
+  evidence/interp1d/errmsg_extremes_probe.cpp
+  #   n_ErrMsg 1 .. 10   cap 4097 .. 4106   largest message 42
+  #   s.size() == cap: 0        n_ErrMsg <= 0: 0
+  ```
+
+  Note `make -s test` overwrites `<u>.hpp` from the translation -- the FIRST
+  Makefile rule is `<u>.hpp: <the translation>` -- so swap the probe over
+  `translations/<Module>/<u>.cpp` itself and restore afterwards.
+
 - **`NaN > kgen_tolerance` IS FALSE, SO A NaN OUTPUT SCORES `IN_TOL` AND THE
   KERNEL PRINTS PASSED.** Unit #22, and it is a SECOND kernel-scoring hole
   beside unit #19's, with a different cause and the same symptom.
