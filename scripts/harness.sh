@@ -163,6 +163,47 @@ if [ "$MODE" = "pre" ]; then
         fi
     fi
 
+    # 2c. AND DROP EVERY TRANSLATED CALLEE'S OBJECT TOO.
+    #
+    # The comment above says other units' `.cpp.o` files stay, because
+    # "integrated callees reached through their `_c` bridges are part of the
+    # reference build". That was true of every unit up to rosco-r2 #28 and it
+    # was true because none of them HAD a callee. `CheckInputs` calls
+    # `NonDecreasing` and `AddToList`, and `vit test-validate` writes
+    # `<stem>_callees.f90` defining `nondecreasing_c` and `addtolist_c` --
+    # which the integrated `nondecreasing.cpp.o` and `addtolist.cpp.o` in the
+    # build tree also define:
+    #
+    #   /usr/bin/ld: multiple definition of `addtolist_c';
+    #                checkinputs_callees.o: first defined here
+    #
+    # THE FORTRAN BRIDGE WINS, and that is not a coin toss. VIT generates it
+    # precisely so both sides of the comparison call the SAME callee
+    # implementation -- the ORIGINAL Fortran -- so that a mismatch is
+    # attributable to the unit under test. Linking the C++ callee instead would
+    # put the translated `NonDecreasing` on one side and the Fortran one on the
+    # other, where a pair of compensating errors can cancel.
+    #
+    # Driven by the bridge file's own BIND(C) names, so it maintains itself as
+    # callees are added. If a translated callee's object is not named after it,
+    # the link still fails -- with the symbol named -- which is the loud
+    # outcome, not the silent one.
+    cal="$ROOT/$UNIT_DIR/${STEM}_callees.f90"
+    if [ -f "$cal" ]; then
+        for cname in $(grep -oE "BIND\(C, *NAME='[a-z0-9_]+_c'\)" "$cal" \
+                       | sed -E "s/.*NAME='([a-z0-9_]+)_c'.*/\1/" | sort -u); do
+            if grep -q "/${cname}\.cpp\.o" "$mk"; then
+                echo "harness.sh: dropping ${cname}.cpp.o from LIBS -- ${STEM}_callees.f90 defines ${cname}_c"
+                sed -i.bak "\#/${cname}\.cpp\.o#d" "$mk"
+                rm -f "$mk.bak"
+                if grep -q "/${cname}\.cpp\.o" "$mk"; then
+                    echo "harness.sh: LIBS edit did not take -- ${cname}.cpp.o is still in $mk" >&2
+                    exit 1
+                fi
+            fi
+        done
+    fi
+
     # The skeleton in MOD_DIR is discarded: nothing reads it there and leaving
     # it invites a human to edit the file the harness does not use.
     #
