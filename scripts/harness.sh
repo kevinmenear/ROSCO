@@ -47,10 +47,31 @@ shift 4
 MODE=pre
 OUT=""
 REDTEST=""
+GENERATE=1
 ARGS=()
 while [ $# -gt 0 ]; do
     case "$1" in
         --post-integration) MODE=post ;;
+        # --no-generate: REBUILD THE HARNESS FOR THE CURRENT TREE, KEEP THE
+        # CORPUS. Steps 1, 2, 2b, 2c and 2d run; step 3 (vit_harness.py) does
+        # not, so `<stem>_cases.bin` and `<stem>_test.cpp` are left exactly as
+        # the generating run wrote them.
+        #
+        # Added at unit #29's second dispatch, for the mutation re-take. The
+        # mutation sweep must run on the CLEAN tree -- on an integrated one both
+        # sides of the comparison end in the harness's own copy of the mutant --
+        # and what has to change between the two configurations is the LINK
+        # (LIBS derived from the clean CMake target, callee bridges kept because
+        # no `<callee>.cpp.o` is in the build), not the corpus.
+        #
+        # Regenerating the corpus instead would be the more obvious move and is
+        # the wrong one: unit #26's finding is that a red result and the green it
+        # certifies must name the same case count, and `harness/<U>.json`'s green
+        # was taken on the corpus already on disk. Re-deriving it -- from a
+        # planner whose inputs include `literals_from(<the Fortran>)` -- risks a
+        # different count, which would silently make the mutation score a
+        # statement about a corpus no green ever passed.
+        --no-generate) GENERATE=0 ;;
         --out) OUT="$2"; ARGS+=("$1" "$2"); shift ;;
         # --red-test "<what was perturbed>": this run is EXPECTED to fail, and
         # the perturbation is recorded into the artifact by the tool instead of
@@ -81,6 +102,21 @@ UNIT_DIR="$MOD_DIR/${STEM}_test"
 # the case file all persist from the generating run, which is exactly what the
 # note further down says post mode reuses.
 if [ "$MODE" = "pre" ]; then
+    # Under the per-unit layout `vit test-validate --force` writes its skeleton
+    # ON TOP of the generated test .cpp. Step 3 normally rewrites it moments
+    # later; with --no-generate nothing does, so it is kept here and put back
+    # after step 2. Copy-then-overwrite, never delete-then-write: the bind mount
+    # does not make a host unlink and a container create of one path atomic.
+    if [ "$GENERATE" = "0" ]; then
+        [ -f "$ROOT/$UNIT_DIR/${STEM}_test.cpp" ] || {
+            echo "harness.sh --no-generate: no $UNIT_DIR/${STEM}_test.cpp to keep." >&2
+            echo "  --no-generate reuses the generating run's corpus and test source;" >&2
+            echo "  run without it first." >&2
+            exit 1; }
+        [ -f "$ROOT/$UNIT_DIR/${STEM}_cases.bin" ] || {
+            echo "harness.sh --no-generate: no $UNIT_DIR/${STEM}_cases.bin." >&2; exit 1; }
+        cp "$ROOT/$UNIT_DIR/${STEM}_test.cpp" "$ROOT/$UNIT_DIR/${STEM}_test.cpp.keep"
+    fi
     docker exec "$CONTAINER" bash -lc \
         "cd $WORKDIR && vit test-validate $UNIT $MOD_DIR/$STEM.cpp -f $FFILE -m $MODULE --force" \
         > /dev/null
@@ -258,6 +294,17 @@ PYEOF
     # 20:01. The bind mount does not make a host unlink and a container create
     # of one path atomic with respect to each other. Overwrite, do not delete.
     rm -f "$ROOT/$MOD_DIR/${STEM}_test.cpp"
+
+    if [ "$GENERATE" = "0" ]; then
+        cp "$ROOT/$UNIT_DIR/${STEM}_test.cpp.keep" "$ROOT/$UNIT_DIR/${STEM}_test.cpp"
+        rm -f "$ROOT/$UNIT_DIR/${STEM}_test.cpp.keep"
+        # The .o is from the previous link and may have been compiled against a
+        # different bridge; make's timestamp rule cannot see that, so it goes.
+        rm -f "$ROOT/$UNIT_DIR/${STEM}_test.o" "$ROOT/$UNIT_DIR/test"
+        echo "harness.sh --no-generate: build files rebuilt for the current tree;"
+        echo "  ${STEM}_cases.bin and ${STEM}_test.cpp kept from the generating run."
+        exit 0
+    fi
 else
     for f in Makefile "${STEM}_bridge.f90" "${STEM}_cases.bin" "${STEM}_test.cpp"; do
         [ -f "$ROOT/$UNIT_DIR/$f" ] || {
