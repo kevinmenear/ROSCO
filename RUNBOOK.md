@@ -358,6 +358,85 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **THE CLEAN-TREE RE-TAKE OF AN INVALID MUTATION RUN LANDED NEXT TO IT, NOT AT
+  THE OTHER END OF THE RANGE -- SO THE ENTRY BELOW IS RIGHT ABOUT THE DEFECT AND
+  WRONG ABOUT ITS SIGNATURE.** Unit #29, second dispatch. Added rather than
+  edited (P5); the bullet it corrects is the next one down, which says "the same
+  mutants give scores at opposite ends of the range".
+
+  ```
+  integrated tree, mutant vs itself   4 killed of 173   0.0231   INVALID
+  clean tree, mutant vs Fortran       8 killed of 173   0.0462   valid
+  ```
+
+  So the shape-check that entry proposes -- `mutation/<U>.json`'s kills against
+  `harness/<U>.json`'s pass count -- fires IDENTICALLY on the valid run and
+  would have been read as "still invalid". A number cannot answer a question
+  about a configuration. **Read the reference object instead**, which is one
+  command and the thing `_mutation_stamp.py` writes into the artifact:
+
+  ```
+  nm <build>/<Source>.f90.o | grep -E '_MOD_<unit>|<unit>_c'
+  #   defines _MOD_<unit>, no undefined <unit>_c  -> the Fortran body: VALID
+  #   undefined <unit>_c                          -> the wrapper: the mutant
+  ```
+
+- **A VALIDATOR WITH NO EARLY RETURN HAS ONE OBSERVABLE OUTPUT NO MATTER HOW
+  MANY CHECKS IT HAS, AND A CORPUS THAT TRIPS TWO OF THEM AT ONCE MEASURES ONE.**
+  Unit #29, second dispatch, and it is that unit's kernel finding one layer up:
+  the kernel is blind because the capture is a VALID configuration and nothing
+  fails; the differential harness is blind because in all 16,769 cases something
+  ALWAYS fails, twice.
+
+  `CheckInputs` writes only `ErrVar%aviFAIL` and `ErrVar%ErrMsg`, ~180 checks
+  assign both, and none returns -- so the last failing check wins. Three
+  one-line perturbations of the single message sink say what that costs:
+
+  ```
+  aviFAIL = -1 -> -7 everywhere   16,769 of 16,769 FAILED   <- control: alive
+  no ErrMsg ever written          16,769 of 16,769 FAILED   <- >=1 error always
+  first-writer-wins               16,769 of 16,769 FAILED   <- >=2 errors always
+  the translation                          0 FAILED
+  mutation score                  8 of 173, 0.0462
+  ```
+
+  The second and third are the measurement: `aviFAIL` is `-1` in every case, so
+  it distinguishes nothing, and the first failing check differs from the last in
+  every case, so no case isolates one. 165 of 173 mutants are above the last
+  check and invisible. **`first-writer-wins` is the probe that separates "the
+  corpus does not reach it" from "the corpus reaches it and cannot see it"**,
+  and it is one line at the message sink:
+
+  ```cpp
+  if (ErrVar->aviFAIL != 0) return;   // in assign_errmsg
+  ```
+
+  Ask it of any unit whose outputs are an error code and a message. Both probes
+  are meaningless on an integrated tree, for the same reason the mutation run
+  was: `bash evidence/CheckInputs/errmsg_masking.sh` (exit 0 == masking holds)
+  opens and closes the reset window itself.
+
+- **A SWEEP THAT DOES NOT FIT IN ONE FOREGROUND COMMAND IS SPLIT BY OPERATOR,
+  NEVER BACKGROUNDED, AND THE UNION MUST BE ABLE TO REFUSE.** Unit #29, second
+  dispatch. 192 mutants at ~9.5 s is 32 minutes against a 600-second command.
+
+  ```
+  vit_mutate.py <U> --operator <op> [--operator <op>...] --out mutation/<U>.clean.<name>.json
+  python3 scripts/_mutation_merge.py --unit <U> --cpp <the .cpp> --part ... --out mutation/<U>.json
+  ```
+
+  The merge derives the operator population from `harness.cppmutate`, not from
+  the parts -- **a filtered run's own `operators` field is computed AFTER the
+  filter**, so a union checked against it is a tautology, and the first version
+  of the merge was written that way and caught by its own refusal. The
+  per-operator COUNT then also settles that each part scored every mutant its
+  operators produce:
+
+  ```
+  arith_op 17  compare_op 40  const_tweak 40  drop_call 2  drop_factor 6
+  index_offset 33  negate_cond 40  swap_callee 2  swap_operands 12   = 192
+  ```
+
 - **A MUTATION RUN ON AN INTEGRATED TREE COMPARES THE MUTANT AGAINST ITSELF,
   AND THE ARTIFACT CANNOT SAY SO.** Unit #29, and it is unit #21's and unit
   #24's "a green that measured nothing" with the sign flipped -- here it is a

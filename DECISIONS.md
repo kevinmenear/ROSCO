@@ -5816,3 +5816,100 @@ carries `not_evaluable` and `compared_against` as FIELDS, so a reader of the
 number sees the disclaimer in the same file rather than in a neighbouring
 document they may not open. `vit_mutate` refuses the run outright, so the
 invalid artifact is not produced in the first place.
+
+## Unit #29 — CheckInputs — the mutation re-take — 2026-08-13
+
+**THE INVALID RUN AND THE VALID ONE ARE NEXT TO EACH OTHER, AND THE ARGUMENT
+FOR RE-TAKING IT PREDICTED THE OPPOSITE.** This is the finding, and it is a
+correction to something this campaign wrote down as settled.
+
+```
+integrated tree, mutant vs itself   4 killed of 173    0.0231   INVALID
+clean tree, mutant vs Fortran       8 killed of 173    0.0462   valid
+```
+
+`RUNBOOK.md`'s target-layer entry and `scripts/_mutation_stamp.py`'s docstring
+both say that *"the same mutants scored on a CLEAN tree give a number at the
+other end of the range"*. They do not. The score doubles and stays at the
+bottom. The reasoning that DETECTED the invalid run — "169 survivors on a corpus
+that passes 16,769 of 16,769 clean is the tell" — reached a true conclusion from
+a false premise: 165 survivors is what this unit's corpus produces when the
+instrument is working perfectly.
+
+The consequence is procedural. The RUNBOOK proposes a shape-check on the number
+(compare `mutation/<U>.json`'s kills against `harness/<U>.json`'s pass count).
+On this unit that check fires identically for the valid run and would have been
+read as "still invalid". What actually settles it is one `nm` on the reference
+object, which is what `_mutation_stamp.py` does and why its field, not its
+prose, is the part worth keeping:
+
+```
+ReadSetParameters.f90.o  defines __readsetparameters_MOD_checkinputs
+                         references no checkinputs_c    -> the Fortran body
+```
+
+**WHY 165 SURVIVE, MEASURED RATHER THAN ARGUED.** Three one-line perturbations
+of `assign_errmsg`, the single sink every message in the translation goes
+through, on the clean tree and the same 16,769-case corpus:
+
+```
+aviFAIL = -1 -> -7 everywhere    16,769 of 16,769 FAILED   (control: alive)
+no ErrMsg ever written           16,769 of 16,769 FAILED
+first-writer-wins                16,769 of 16,769 FAILED
+unperturbed                               0 FAILED
+```
+
+The second says every case raises at least one error, so `aviFAIL` is `-1` in
+all 16,769 and distinguishes nothing. The third says the FIRST failing check's
+message differs from the LAST in every case — so every case raises at least
+TWO, and `CheckInputs` has no early return, so the last one wins. **The single
+discriminating output of a 180-check validator is the message of whichever check
+happens to be last.** A mutant anywhere above it changes nothing observable.
+
+That is not weak coverage and it is not a bad corpus. It is a shape: the
+generator varies many parameters at once and this unit answers with one string.
+Reaching the survivors needs cases that fail exactly ONE check — a near-valid
+configuration perturbed one check at a time — and no rule in `harness/` makes
+one. Writing that rule is a corpus feature, not a repair to this unit, and it is
+NOT attempted here (X3: it would move every unit's corpus).
+
+**DISPOSITION `deferred`, not `integrated`.** The translation is written,
+integrated, and shipping: 16,769 differential cases green against clean Fortran,
+16,769 more against the integrated build, the gate at 5,252,000 values / 0
+mismatched over 27 scenarios. What is missing is P12, at 0.046 against a
+threshold of 1.0. A previous dispatch recorded `integrated` while its own
+`done_check.txt` said INCOMPLETE, and the Driver reverted it; the number has not
+improved, so neither has the claim. `integrated_unexercised` was considered and
+rejected — this campaign has reserved that word for units NO SCENARIO REACHES
+(DECISIONS §"Can a unit no scenario reaches ever close?"), and `CheckInputs` is
+called 25 times across 24 of 27 scenarios.
+
+**The survivors are NOT declared equivalent, and that is the whole point.**
+`negate_cond` on `(LoggingLevel < 0) || (LoggingLevel > 3)` inverts a real check.
+It survives because the instrument cannot see it, not because it does nothing.
+Declaring 165 equivalences would produce a 1.000 and would be exactly the false
+equivalence `min_mutation_score: 1.0` exists to shut.
+
+**A 32-MINUTE SWEEP DOES NOT FIT IN A 600-SECOND FOREGROUND COMMAND, AND THE
+OBVIOUS WAY ROUND IT IS THE ONE THIS CAMPAIGN HAS ALREADY PAID FOR TWICE.** 192
+mutants at ~9.5 s each. Backgrounding it orphans the sweep in the container,
+where it writes into the tree after the session that launched it is gone —
+`CheckInputs`' own previous dispatch did this and ran 25 minutes as an orphan.
+Run instead as five `--operator` invocations, each blocking, unioned by
+`scripts/_mutation_merge.py`.
+
+The union is a coverage claim, so it is built to fail. The operator population
+is asked of `harness.cppmutate` directly and never derived from the parts: a
+filtered run's own `operators` field is computed AFTER the filter, so a union
+checked against it would be a tautology — which is how the first version of the
+merge was written and what its refusal caught. Being a per-operator COUNT it
+also answers the stronger question, that each part scored every mutant its own
+operators produce (39+33+40+40+40 = 192).
+
+**The window was opened twice and closed twice**, with a commit before each
+opening and immediately after each closing. The second opening was for the
+`assign_errmsg` probes, which are meaningless on an integrated tree for the same
+reason the mutation run was. `evidence/CheckInputs/errmsg_masking.sh` now opens
+and closes that window itself on a `trap ... EXIT` — correct THERE and still
+wrong in `reset_to_clean.sh`, because a probe's window lives for one measurement
+and the reset's is meant to outlive the script.

@@ -1693,16 +1693,20 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-29 attempted / **28 integrated** / 0 integrated_unexercised / 0 out_of_scope /
-0 deferred / **1 blocked** (unit #17 `Read_OL_Input`).
+29 attempted / **27 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+**1 deferred** (unit #29 `CheckInputs`) / **1 blocked** (unit #17
+`Read_OL_Input`).
 
-69 units in `plan.json`; 40 remain. 28 + 1 + 40 = 69.
+69 units in `plan.json`; 40 remain. 27 + 1 + 1 + 40 = 69.
 
-**One of the 28 is integrated but NOT closed**: unit #29 `CheckInputs` stands at
-`done_check` 12 of 13, P12 failing on a mutation run that compared the mutant
-against itself. Recorded here rather than in the integrated count because the
-disposition is what it is -- the translation ships, the gate and both harness
-runs are green -- and the missing measurement is named in its own evidence.
+**Unit #29 `CheckInputs` moved from the integrated count to `deferred`, and the
+count is one lower than it was.** Its translation ships and its three green
+layers are unchanged -- 16,769 differential cases against clean Fortran, 16,769
+against the integrated build, the gate at 5,252,000 values / 0 mismatched. What
+changed is that its mutation score is now a real number instead of an invalid
+one: **0.0462**, taken on the clean tree with the reference side asserted by
+`nm`, against a threshold of 1.0. `done_check` is 12 of 13 with P12 failing, and
+the disposition now says so rather than the prose beneath it.
 
 (This block read `8 / 8 / 61 remain` through unit #9, which did not update it.
 Recounted from `plan.json` at unit #10 rather than incremented, and recounted
@@ -2516,3 +2520,58 @@ that file, and **creating the file made the tree dirty**, so the artifact
 recorded `P2 FAIL dirty_tree` — describing itself rather than the unit. A
 done-condition capture has to be taken before the file that captures it exists,
 or written as a transcript.
+
+## Unit #29 `CheckInputs` — the mutation re-take (third dispatch)
+
+The one thing left was a valid mutation run. `mutation/CheckInputs.json` carried
+`not_evaluable: true` and `compared_against: "THE MUTANT ITSELF -- INVALID"`,
+and `vit_mutate` refuses that configuration outright now. Re-taken on the clean
+tree:
+
+```
+192 mutants   19 nocompile   173 behavioural   8 killed   165 survived   0.0462
+reference side, from nm:   ReadSetParameters.f90.o defines
+                           __readsetparameters_MOD_checkinputs, no checkinputs_c
+```
+
+**The prediction in `bridge_feasible` is CONFIRMED and nothing in this dispatch
+disturbs it.** The signature crosses: three view types (`LocalVariables`,
+`ControlParameters`, `ErrorVariables`) populated and passed by `C_LOC`, an
+assumed-size `REAL(ReKi)` array, a scalar `INTEGER`, all three views
+reverse-copied back. `--reverse-copy` is required because the unit's only
+outputs are `ErrVar%aviFAIL` and `ErrVar%ErrMsg`, both inside a view. That
+wrapper is what the harness's Fortran side calls in the post-integration run
+(16,769 / 0) and what the gate exercised over 27 scenarios — and it is also
+exactly why the mutation run had to leave the integrated tree, since a wrapper
+that works is a wrapper that routes the reference call back into the mutant.
+
+**Two findings, and the first is a correction to this campaign's own RUNBOOK.**
+
+1. The invalid run scored 0.0231 and the valid one scores 0.0462. The target
+   layer said a clean-tree re-take gives "a number at the other end of the
+   range"; it does not. The tell that found the defect — 169 survivors on a
+   corpus that passes 16,769 of 16,769 — is a true observation that does not
+   discriminate, because 165 survivors is what this unit produces when the
+   instrument is working. `nm` on the reference object is what settles it.
+2. Why 165 survive, measured on the clean tree with three one-line
+   perturbations of the single message sink: a no-op `ErrMsg` fails 16,769 of
+   16,769 (so every case raises an error and `aviFAIL` is `-1` in all of them)
+   and a first-writer-wins `ErrMsg` also fails 16,769 of 16,769 (so the first
+   failing check differs from the last in every case — every case raises at
+   least two). `CheckInputs` has no early return, so the last check wins, and
+   the single discriminating output of a 180-check validator is whichever check
+   happens to be last. Everything above it is invisible.
+
+Killing the remaining 165 needs cases that fail exactly ONE check. No rule in
+`harness/` generates one, and writing it would move every unit's corpus (X3), so
+it is named here and not attempted. The survivors are **not** declared
+equivalent: `negate_cond` on `(LoggingLevel < 0) || (LoggingLevel > 3)` inverts a
+real check and survives because nothing can see it.
+
+**Procedure.** The sweep is 32 minutes against a 600-second foreground command,
+so it ran as five `--operator` invocations, each blocking, unioned by
+`scripts/_mutation_merge.py` — which refuses a union that does not cover the
+sweep, taking the operator population from `harness.cppmutate` rather than from
+the parts. The reset window was opened twice and closed twice, with a commit
+before each opening and immediately after each closing; nothing was backgrounded
+and nothing polled.
