@@ -4,6 +4,92 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-13: unit #29 `CheckInputs` is `integrated` and CLOSED**, first
+dispatch. It is the campaign's largest unit by an order of magnitude — 857 lines
+and about 180 validity checks against a previous maximum of three statements —
+and **six defects fell out of it, none of them in the translation**.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay | **1 of 1**, 426 of 426 field rows `IDENTICAL` | VIT declined to construct one (`NON_DISCRIMINATING`); a determinate wrong constant `aviFAIL = -7` scores **0 of 1**, and the **whole unit deleted scores 1 of 1** |
+| differential harness vs clean Fortran | **16,769** checked, 0 failed, 0 inadmissible — **this unit's primary evidence** | the `ErrMsg` tail left alone **16,729**; blank-filled **16,769** |
+| post-integration harness (wrapper only) | **16,769 checked, 0 failed** | pending |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, **0 mismatched** | pending |
+| mutation score | pending | — |
+
+**THE KERNEL IS ALIVE AND BLIND, AND THE REASON GENERALISES TO EVERY VALIDATION
+ROUTINE.** The wrong-constant stub fails and the whole-unit no-op passes, both
+on the same build, so this is blindness and not a broken chain. The cause is in
+the capture: the one case KGen could keep is scenario 27's VALID configuration,
+so `aviFAIL` is `0` on both sides and `ErrMsg` is never allocated — KGen guards
+its comparison on `ALLOCATED` and `errmsg` does not appear among the 426
+compared rows at all. The body is not skipped in that case; it runs broadly
+(`AWC_Mode=4`, `CC_Mode=1`, `StC_Mode=1`, `PS_Mode=1`, `Fl_Mode=2`,
+`IPC_ControlMode=1`) and every check it reaches answers "fine". **A unit whose
+only output is an error signal is invisible to any capture taken on a working
+configuration.**
+
+**ONE CASE IS NOT A WINDOW THAT WAS TOO NARROW.** The single call site
+(`ReadSetParameters.f90:269`, inside `SUBROUTINE SetParameters`) is called once
+per scenario at invocation index 1 of its own counter, so all 24 scenarios that
+reach it write `CheckInputs.0.0.1` and overwrite one another. Widening
+`kgen.invocation` cannot change that; it is a name collision, not an empty
+range.
+
+**THREE OF THE 27 SCENARIOS NEVER REACH THE CALL SITE, AND THEY ARE THE
+INTERESTING THREE.** Scenarios 10, 14 and 24 set `OL_Mode > 0`;
+`ReadControlParameterFileSub` fails on the missing `OL_Mode2_Input.dat` (unit
+#17, unit #26) and `SetParameters` RETURNs at line 224 before the call. So
+CheckInputs' entire `IF (CntrPar%OL_Mode > 0)` block — the `ALLOCATE`, both
+`AddToList` loops and nine checks — is **unreachable in every scenario this
+campaign can run**, and the generated corpus is the only thing that tests it.
+Unit #26's finding one level up.
+
+**SIX DEFECTS, AND THE UNIT'S SIZE IS WHY.** Four in the corpus generator's R7
+rule, two in the callee-declaration generators; details in
+`evidence/CheckInputs/harness_scaling_wall.md` and
+`evidence/CheckInputs/kernel_callees_header_defect.txt`.
+
+```
+generator OOM, exit 137          287,425 cases planned, ~150 KB each, 7.9 GB
+                                 -> _KNOB_PAIR_LIMIT = 512, 21,852 cases
+a knob naming a WHOLE array      7 of 86; wrote a float into an array slot
+a knobbed body vs a knobbed extent   SU_LoadStages_N IS SU_LoadStages' extent
+the same block in TWO copies     R7 fixed, R7b still wrong in 3,078 cases
+vit_kernel_callees.h             names CFI_cdesc_t and int32_t, includes neither
+vit test-validate                DEFINES <callee>_c, declares it nowhere
+```
+
+**AND TWO MORE IN THE HARNESS SCRIPT, THE SECOND CREATED BY THE FIRST REPAIR.**
+`checkinputs_callees.f90` defines `addtolist_c` and so does the integrated
+`addtolist.cpp.o`. Dropping the object to keep the bridge fixed the duplicate
+symbol and produced a LOOP — on an integrated tree the Fortran `AddToList` is a
+wrapper around `addtolist_c`, so bridge → wrapper → bridge, SIGSEGV on case 0
+with no message and a core file. Inverted: drop the bridge, keep the object.
+Then `vit_mutate` refused to score (`baseline is not green (nocompile)`) because
+`<stem>.cpp.o` is dropped and the integrated wrapper calls `checkinputs_c`; the
+integration shim now goes into the Makefile rather than onto post mode's command
+line.
+
+**THE MARGIN IS ONE `memset`, AND TWO RED RUNS DID NOT SETTLE ITS DIRECTION.**
+`ErrVar%ErrMsg` is `CHARACTER(:), ALLOCATABLE`, so an assignment reallocates to
+exactly `LEN` and the reference has no bytes past the new length. Leaving the
+previous message's tail fails **16,729 of 16,769**; blank-filling fails
+**16,769 of 16,769**; clearing to NUL passes. The two red counts differ by 40
+and both name `ErrVar.ErrMsg`. What settled it was the first differing BYTE —
+`a=0x20 b=0x00` at exactly index `n_ErrMsg` — because the oracle side is a
+zeroed buffer the bridge writes `n_ErrMsg` bytes into.
+
+**THREE PINS IN `harness/ranges.toml`, ALL BECAUSE THE ORACLE READS OUT OF
+BOUNDS.** `CheckInputs` validates `AWC_NumModes` against 0 and against 2 and
+never against `SIZE(CntrPar%AWC_freq)`, and then loops over it. Case 9544 killed
+the Fortran with `AWC_NumModes = 99999` against `n_AWC_freq = 28`. The
+translation survived the same loop, which is luck: ~800 KB past a 28-element
+allocation happened to be mapped on the C++ heap and not on the Fortran one.
+Bounds are the reference's own predicates (`-1..3`, `0..2`, `0..2`), so no
+branch is lost; the cost — a count larger than its array is untested — is in the
+file. Seventh of the "the reference has no answer" family.
+
 **As of 2026-08-13: unit #28 `wrap_360` is `integrated` and CLOSED**, first
 dispatch. Five layers available, five run, all green, all red-tested. **It is
 unit #27's sibling and its counterexample**: three statements, one screen down
