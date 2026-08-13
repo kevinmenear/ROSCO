@@ -1,6 +1,6 @@
 baseline (inferred): 1d3bd13  -- the commit before e0f2f8c touched translations/Functions/wrap_360.cpp
 
-wrap_360: Verdict.INCOMPLETE  (11/13 PASS)
+wrap_360: Verdict.INCOMPLETE  (12/13 PASS)
 
 [  ok  ] P1   commits exist                      
 [ FAIL ] P2   clean tree                         dirty_tree
@@ -8,7 +8,7 @@ wrap_360: Verdict.INCOMPLETE  (11/13 PASS)
 [  ok  ] P4   evidence recorded                  
 [  ok  ] P5   evidence resolves                  
 [  ok  ] P6   functional commit                  
-[ FAIL ] P7   state brought current              no_state_commit
+[  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
 [  ok  ] P9   gate compared and matched          
 [  ok  ] P12  mutation score for this unit       11/11 mutant(s) killed
