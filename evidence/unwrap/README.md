@@ -18,10 +18,10 @@ the whole of the evidence, which is unit #1's (`AddToList`) and unit #21's
 | layer | result | red-tested |
 |---|---|---|
 | kernel replay | **NOT AVAILABLE** — no scenario reaches either call site; there is no state to capture | n/a |
-| differential harness vs clean Fortran | **403** checked, 0 failed, 0 inadmissible | the unit as a no-op fails **363 of 403**; the `+2·PI` loop deleted **4 of 403**; the `-2·PI` loop deleted **361 of 403** |
+| differential harness vs clean Fortran | **403** checked, 0 failed, 0 inadmissible | the unit as a no-op fails **373 of 403** (`harness/unwrap.redtest.json`). At the narrower 377-case corpus, the no-op fails **363 of 377**, the `+2·PI` loop deleted **4 of 377** and the `-2·PI` loop deleted **361 of 377** — see the correction below the transcript in §4 |
 | mutation score | see `mutation/unwrap.json` | the undeclared run is committed at **0.925**, and the run against the corpus as it stood BEFORE this unit widened it at **0.875**, so both sets of survivors are on the record before any was excused |
-| post-integration harness (wrapper only) | see `harness/unwrap.postintegration.json` | see `harness/unwrap.postintegration.redtest.json` |
-| gate, 27 scenarios | see `gate/unwrap.json` | see `gate/unwrap.redtest.json` and the same-build control |
+| post-integration harness (wrapper only) | **403** checked, 0 failed (`harness/unwrap.postintegration.json`) | the `--reverse-copy` line deleted from the wrapper fails **370 of 403**, naming `ErrVar.n_ErrMsg` and `ErrVar.ErrMsg` and nothing else (`harness/unwrap.postintegration.redtest.json`); reverted, rebuilt and re-run green at `harness.postintegration.revert-verified.json` |
+| gate, 27 scenarios | **5,252,000** compared / 0 mismatched, taken on the INTEGRATED build (`gate/unwrap.json`) | the whole unit as a no-op moves **0 of 5,252,000** (`gate/unwrap.redtest.json`) — blind, not weak. The same-build control moves **1,857,893 of 5,252,000** (`gate.control-getwords-perturbed-MOVES.json`) |
 
 ---
 
@@ -113,9 +113,21 @@ inside the container — unit #23):
 
 | red test | failed |
 |---|---|
-| the whole unit as a no-op, both loops deleted (`harness.noop-stub.json`) | **363 of 403** |
-| the `y(i)-y(i-1) .LE. -PI` guard and its `+2·PI` shift deleted (`harness.no-plus-loop-stub.json`) | **4 of 403** |
-| the `y(i)-y(i-1) .GE. PI` guard and its `-2·PI` shift deleted (`harness.no-minus-loop-stub.json`) | **361 of 403** |
+| the whole unit as a no-op, both loops deleted (`harness.noop-stub.json`) | **363 of 377** |
+| the `y(i)-y(i-1) .LE. -PI` guard and its `+2·PI` shift deleted (`harness.no-plus-loop-stub.json`) | **4 of 377** |
+| the `y(i)-y(i-1) .GE. PI` guard and its `-2·PI` shift deleted (`harness.no-minus-loop-stub.json`) | **361 of 377** |
+
+**Corrected 2026-08-12, at the integration half.** This table read "of 403" for
+all three rows and no artifact ever said that. All three stub runs were taken at
+the **377**-case corpus and their committed JSON says so; `harness_stubs.txt`
+records the sequence honestly. When the corpus was widened the last step — the
+reference's own constants as adjacent differences — only the GREEN was re-taken
+at 403, and these three numbers were carried forward without re-running them.
+
+Re-run at 403, the no-op fails **373**, not 363 (`harness/unwrap.redtest.json`).
+The other two stubs have **not** been re-measured at 403 and their 403 figures
+are therefore unknown rather than equal to their 377 ones. The transcript's last
+row below is corrected the same way.
 
 **The `+2·PI` branch scored ZERO until the corpus was widened twice, and the
 two widenings are two different rules.** `harness_stubs.txt` keeps the sequence:
@@ -125,8 +137,15 @@ corpus            cases   no-op fails   +2*PI-deleted fails
 as inherited        355          355                    0
 + order ladder      366          355                    0
 + range-spanning    377          363                    4
-+ constant steps    403          363                    4      <- and the mutants die
++ constant steps    403          373                    ?      <- and the mutants die
 ```
+
+The last row's two figures were `363` and `4` — the 377-row's numbers, carried
+down rather than measured. The no-op is **373** at 403, re-run into
+`harness/unwrap.redtest.json`; the `+2·PI`-deleted stub was never re-run at 403,
+so its cell is `?` and not a number. What the row is actually evidence for is
+unchanged: the constant-step block is what kills the `<=`/`<` mutant, and that
+is read off `mutation/unwrap.json`, not off this column.
 
 * **The order predicate is written against a name the corpus cannot set.**
   `order_arrays_from` looks for the same NAME subscripted twice in one
@@ -214,6 +233,50 @@ guard's unreachability here is the WEAKER kind and is written as the weaker one:
 only because the corpus supplies no `ErrMsg` within seven characters of a 4 KiB
 buffer — a claim about the corpus, not about the program.
 
+## 8. The integration half, and the two numbers that were predicted before they were measured
+
+Second dispatch, 2026-08-12. The `.cpp` is byte-identical to the one the harness
+and mutation artifacts were measured against (md5
+`8207e99323b9fbfb62cfa6df5921c902`, unchanged since `284df58`, where all of them
+were committed together).
+
+**`--reverse-copy` was required, and the RUNBOOK's two-line test says so before
+the wrapper is read.** `ErrVar` is `INTENT(INOUT)` and the body writes
+`ErrVar%ErrMsg` — a scalar field of a view-type dummy, which is exactly unit
+#23's defect, where the wrapper populated the view, called the C++ and discarded
+every such write while the kernel scored 62 of 62 and the gate compared
+5,252,000 values with 0 mismatched.
+
+Both post-integration numbers were predicted by an artifact that already
+existed, which is the point of recording them:
+
+| measurement | predicted by | measured |
+|---|---|---|
+| the gate red test moves **0** of 5,252,000 | `coverage_deadness.py`, from committed coverage — both call sites, zero hits, all 27 scenarios | 0 |
+| the reverse-copy red test fails **370** of 403 | `errmsg_extremes_probe.txt`, written for a *mutation* question, counts `calls to assign_errmsg 370` over this same corpus | 370 |
+
+The 370 also rules out the staleness those `make` clock-skew warnings keep
+announcing (unit #24): a stale library returns the green, not a number that
+matches an independent count. And the red test's mismatch LIST is the evidence
+rather than its count — `ErrVar.n_ErrMsg` and `ErrVar.ErrMsg`, nothing else.
+`unwrap_result` does not move, because the result crosses through its own
+INTENT(OUT) pointer and never touches the view. The 33 passing cases are the
+ones that never enter `IF (ErrVar%aviFAIL < 0)`.
+
+**The gate red test needed its control to mean anything.** "The gate cannot see
+this unit" and "the build-install-simulate-compare chain is broken today"
+produce the identical `0 of 5,252,000` artifact, and `revert_verified: true` is
+true in both worlds (unit #9). GetWords' already-committed perturbation, re-run
+against this same libdiscon, reproduces `gate/GetWords.redtest.json` to the
+value: **1,857,893 of 5,252,000 across 147 channels**, all three figures
+identical. The chain is alive; the blindness is specific to `unwrap`.
+
+One cut worth naming: `CALL vit_copy_scalars_to_errorvariables(ErrVar_view,
+ErrVar)` appears **three times** in `Functions.f90` — interp1d, sigma, unwrap. A
+`str.replace` would have perturbed three units and measured none of them. The
+edit asserts its neighbouring lines before removing anything and verifies the
+other two survive.
+
 ## Files
 
 | file | what it is |
@@ -229,3 +292,5 @@ buffer — a claim about the corpus, not about the program.
 | `equivalence_probe.{cpp,txt}` | §7, `bf2ce388` |
 | `errmsg_extremes_probe.cpp`, `run_errmsg_probe.sh`, `errmsg_extremes_probe.txt` | §7, `af5a7c94` and `10e6dfb3` |
 | `vit_translate.stdout.txt` | the scaffold prompt, as generated (C4) |
+| `gate.control-getwords-perturbed-MOVES.json` | §8 — the same-build control, 1,857,893 of 5,252,000 |
+| `harness.postintegration.revert-verified.json` | §8 — the green returning after the reverse-copy line was put back |
