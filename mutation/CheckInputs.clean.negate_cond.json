@@ -30,14 +30,38 @@
  "nocompile_ratio": 0.025,
  "nocompile_refused": false,
  "total": 40,
- "killed": 36,
- "survived": 3,
+ "killed": 33,
+ "survived": 6,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.9231,
- "loop_rev": "813e7a2-nogit",
+ "score": 0.8462,
+ "loop_rev": "2e2295f-nogit",
  "vit_rev": "477fc47-nogit",
  "survivors": [
+  {
+   "id": "0bfb81cb",
+   "operator": "negate_cond",
+   "before": "if (a == nullptr)",
+   "after": "if (!(a == nullptr))"
+  },
+  {
+   "id": "2e9d2296",
+   "operator": "negate_cond",
+   "before": "if (a == nullptr)",
+   "after": "if (!(a == nullptr))"
+  },
+  {
+   "id": "1871a628",
+   "operator": "negate_cond",
+   "before": "if (a == nullptr)",
+   "after": "if (!(a == nullptr))"
+  },
+  {
+   "id": "b5ce0de9",
+   "operator": "negate_cond",
+   "before": "if (!(a[i] < v))",
+   "after": "if (!(!(a[i] < v)))"
+  },
   {
    "id": "2c246bb3",
    "operator": "negate_cond",
@@ -49,12 +73,6 @@
    "operator": "negate_cond",
    "before": "if (a[i] < r)",
    "after": "if (!(a[i] < r))"
-  },
-  {
-   "id": "1042577b",
-   "operator": "negate_cond",
-   "before": "if (CntrPar->ZMQ_Mode > 0)",
-   "after": "if (!(CntrPar->ZMQ_Mode > 0))"
   }
  ]
 }

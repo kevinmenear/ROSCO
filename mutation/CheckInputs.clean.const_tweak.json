@@ -30,12 +30,12 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 40,
- "killed": 22,
- "survived": 18,
+ "killed": 23,
+ "survived": 17,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.55,
- "loop_rev": "813e7a2-nogit",
+ "score": 0.575,
+ "loop_rev": "2e2295f-nogit",
  "vit_rev": "477fc47-nogit",
  "survivors": [
   {
@@ -127,12 +127,6 @@
    "operator": "const_tweak",
    "before": "1",
    "after": "2"
-  },
-  {
-   "id": "8ea1df39",
-   "operator": "const_tweak",
-   "before": "2",
-   "after": "3"
   },
   {
    "id": "a1f04734",

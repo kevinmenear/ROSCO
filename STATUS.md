@@ -4,19 +4,23 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-13: unit #29 `CheckInputs` is `integrated` and NOT CLOSED** —
-`done_check.py` reads **12 of 13**, and the one failure is `P12`. First
-dispatch. It is the campaign's largest unit by an order of magnitude — 857 lines
-and about 180 validity checks against a previous maximum of three statements —
-and **six defects fell out of it, none of them in the translation**.
+**As of 2026-08-13: unit #29 `CheckInputs` is `deferred` and NOT CLOSED** —
+`done_check.py` fails `P12`, now at an honest number rather than an
+incommensurable one. It is the campaign's largest unit by an order of magnitude
+— 857 lines and about 180 validity checks against a previous maximum of three
+statements — and **six defects fell out of it, none of them in the
+translation**.
+
+Every count below is read from the committed artifact named in its row, not
+carried forward in prose.
 
 | layer | result | red-tested |
 |---|---|---|
 | kernel replay | **1 of 1**, 426 of 426 field rows `IDENTICAL` | VIT declined to construct one (`NON_DISCRIMINATING`); a determinate wrong constant `aviFAIL = -7` scores **0 of 1**, and the **whole unit deleted scores 1 of 1** |
-| differential harness vs clean Fortran | **16,769** checked, 0 failed, 0 inadmissible — **this unit's primary evidence** | the `ErrMsg` tail left alone **16,729**; blank-filled **16,769** |
-| post-integration harness (wrapper only) | **16,769 checked, 0 failed** | not taken |
+| differential harness (`harness/CheckInputs.json`, `2e2295f`) | **23,076** checked, 0 failed, 0 inadmissible — **this unit's primary evidence** | at 16,769 cases: the `ErrMsg` tail left alone **16,729**; blank-filled **16,769** |
+| post-integration harness (wrapper only, `813e7a2`) | **22,824 checked, 0 failed** — one corpus revision BEHIND the row above | not taken |
 | gate, 27 scenarios | 5,252,000 values / 351 channels, **0 mismatched** | not taken |
-| mutation score | **INVALID — 173 mutants, 4 killed, 0.0231** | the score is not a result; see below |
+| mutation score (`2e2295f`, all five parts) | **173 behavioural of 192, 78 killed, 0.4509** — below the 1.0 threshold | the reference side is stamped `fortran`, read with `nm` |
 
 **THE KERNEL IS ALIVE AND BLIND, AND THE REASON GENERALISES TO EVERY VALIDATION
 ROUTINE.** The wrong-constant stub fails and the whole-unit no-op passes, both
@@ -1700,13 +1704,14 @@ post-integration harness 3610 of 3610.
 69 units in `plan.json`; 40 remain. 27 + 1 + 1 + 40 = 69.
 
 **Unit #29 `CheckInputs` moved from the integrated count to `deferred`, and the
-count is one lower than it was.** Its translation ships and its three green
-layers are unchanged -- 16,769 differential cases against clean Fortran, 16,769
-against the integrated build, the gate at 5,252,000 values / 0 mismatched. What
-changed is that its mutation score is now a real number instead of an invalid
-one: **0.0462**, taken on the clean tree with the reference side asserted by
-`nm`, against a threshold of 1.0. `done_check` is 12 of 13 with P12 failing, and
-the disposition now says so rather than the prose beneath it.
+count is one lower than it was.** Its translation ships and its green layers are
+unchanged -- 23,076 differential cases against clean Fortran, 22,824 against the
+integrated build, the gate at 5,252,000 values / 0 mismatched. What changed is
+that its mutation score is now a real number instead of an invalid one, and then
+instead of an incommensurable one: **0.4509**, all five per-operator parts taken
+on the clean tree at loop_rev `2e2295f`, reference side asserted by `nm`, against
+a threshold of 1.0. `done_check` fails P12 and the disposition says so rather
+than the prose beneath it.
 
 (This block read `8 / 8 / 61 remain` through unit #9, which did not update it.
 Recounted from `plan.json` at unit #10 rather than incremented, and recounted

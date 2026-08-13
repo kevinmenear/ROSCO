@@ -6061,3 +6061,115 @@ HEAD and is silent on cleanliness. The loop checkout is clean now and still at
 commensurable; whether the three existing parts were taken against a clean loop
 tree is not recoverable. This is finding 4 once more — the artifact records the
 conclusion (`2e2295f`) and withholds the input that would make it checkable.
+
+## 2026-08-13 09:30 — CheckInputs: one score, of one corpus, of one reference side
+
+The two stale operators were re-taken, the merge accepted all five, and this
+unit has for the first time a number that is a score of something nameable.
+
+**What the number is.**
+
+```
+mutation/CheckInputs.json   192 mutants   19 nocompile   173 behavioural
+                            78 killed     95 survived    score 0.4509
+```
+
+and it is a score OF, in the three axes that have each been wrong here once:
+
+- **corpus** — `harness/CheckInputs.json` at **23,076 cases**, loop_rev
+  `2e2295f-nogit`. Not regenerated, not widened, not pinned: untouched by this
+  dispatch. The generator's identity is the same `2e2295f` for all five parts,
+  which is the thing `_mutation_merge.py:189` refuses across.
+- **reference side** — `fortran`, stamped by `_mutation_stamp.py` BEFORE the
+  restore, from `nm` on the build tree as it stood: `ReadSetParameters.f90.o`
+  defines `_MOD_checkinputs` and references no `checkinputs_c`, so the reference
+  side ran the Fortran body and nothing routed back into the mutant.
+- **population** — 192 mutants over 9 operators, the population asked of
+  `harness.cppmutate` over `translations/ReadSetParameters/checkinputs.cpp` and
+  never derived from the parts.
+
+**Per operator, across the corpus boundary.** Only the last two rows were
+re-taken; the other three were already at `2e2295f` and are byte-unchanged.
+
+```
+operator      behavioural   813e7a2      2e2295f
+calls_arith        29         --          8      (already re-taken 06:37-06:53)
+compare_op         32         --         11
+index_offset       33         --          3
+const_tweak        40         22         23      <- re-taken here
+negate_cond        39         36         33      <- re-taken here
+                  ---                   ---
+                  173         84*         78
+```
+
+`*` the committed `84/173 = 0.4855` was the 06:14 merge with all five at
+`813e7a2`. It is superseded, not corrected: the two artifacts describe different
+corpora and neither number is a refinement of the other. **The re-takes moved in
+opposite directions** — `const_tweak` up one, `negate_cond` down three — which is
+the corpus REPLACEMENT of the 07:15 entry showing up one more time. An extension
+could only move kills upward.
+
+**And a third number, which is the one to keep.** `plan.json` and `STATUS.md`
+were both still carrying `0.0462` (8 of 173), from the single clean-tree sweep
+taken before R11 existed. That sweep's corpus was **16,769 cases**; the five-part
+sweeps ran against 22,824 and then 23,076. So the sequence 0.0462 → 0.4855 →
+0.4509 is not an instrument settling down, it is three corpora:
+
+```
+16,769 cases   8 of 173    the masking argument at its strongest
+22,824 cases  84 of 173    R11's admissible-state probes reach 76 more mutants
+23,076 cases  78 of 173    R11's whole-array knob PLACED as well as broadcast
+```
+
+The masking finding is therefore **narrower than it was written, and not
+withdrawn**. `CheckInputs` still has no early return, still writes one message,
+and 95 mutants above the last failing check still change nothing observable. But
+"165 of 173 are invisible" was a fact about a 16,769-case corpus and reads as a
+fact about the unit; at 23,076 it is 95. A blindness claim carries its corpus or
+it decays into a claim about the code.
+
+**Disposition `deferred`, restored.** `c1311bc` cleared it to null because the
+number `deferred` rested on had been withdrawn. That reason is now resolved and
+nothing else about the unit moved: the translation is byte-identical
+(`bcdf486d`, proved twice by `mutate_guarded.sh`), the gate artifact after the
+restore differs from its predecessor **in no field at all** — not even
+`loop_rev`, since the predecessor was already at `2e2295f` — and 27 scenarios /
+351 channels / 5,252,000 values / 0 mismatched. `P12` fails at 0.4509 against a
+threshold of 1.0. **That is the honest outcome of this dispatch and not a
+shortfall of it**: the alternative was declaring 95 equivalences, and the
+`negate_cond` survivors include `if (a == nullptr)` inversions that plainly are
+not equivalent.
+
+**The signature prediction is CONFIRMED, and it was confirmed by evidence that
+already existed rather than by anything run here.** Three view types
+(`CntrPar`, `LocalVar`, `ErrVar`), an assumed-size `REAL(ReKi)` array and a
+scalar `INTEGER`; none of the five blocking features the conformance matrix
+could not attribute (`c_alloc_out`, `c_fn_alloc_character`, `c_fn_array`,
+`c_unit_read`, `c_unit_write`) appears in it. The wrapper `vit integrate --apply
+--reverse-copy` emitted is in the shipping library right now — this dispatch
+de-integrated the tree and put it back, and the gate is bit-identical across
+that round trip, which is a stronger statement about the bridge than the
+original integration was. `--reverse-copy` is required and remains so: both
+outputs live inside a view. No argument failed and no feature blocked.
+
+### Two artifacts observed stale, NEITHER touched
+
+Named for the supervisor because acting on either is a corpus decision:
+
+1. `harness/CheckInputs.postintegration.json` is at loop_rev **`813e7a2`** with
+   **22,824** cases — one corpus revision behind the pre-integration artifact it
+   is paired with (23,076 at `2e2295f`). This is unit #26's red-test-corpus-skew
+   census in its post-integration form, which that census reported as
+   `26 of 26 EQUAL` precisely because post mode reuses the generating run's case
+   file. Regenerating the corpus broke the structural guarantee. `P11` passes on
+   it, and what it measures — the wrapper's marshalling — is not corpus-sensitive
+   in the way the arithmetic is. Re-taking it is one harness run and no corpus
+   change; it was not in this dispatch's scope.
+2. `harness/CheckInputs.json` carries `"against": "integrated"` while occupying
+   the pre-integration slot, written by `c0f8356`'s recovery. The mutation
+   numbers above do not rest on that field — `vit_mutate.py` performs its own
+   comparison on the clean tree and `_mutation_stamp.py` read the reference side
+   out of `nm` rather than out of any artifact — but a configuration field that
+   disagrees with its slot is exactly the defect `compared_against` was added to
+   close, one file over. It is finding 1 again, in the harness rather than the
+   mutation artifact.
