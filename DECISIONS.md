@@ -2,6 +2,125 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #27 — wrap_180 — 2026-08-13
+
+**A UNIT CAN BE EXERCISED 675,987 TIMES AND HAVE EVERY ONE OF ITS BRANCHES DEAD,
+AND THAT IS A THIRD KIND OF BLINDNESS THIS CAMPAIGN HAD NOT SEEN.** Units #1, #21
+and #26 were gate-blind because no scenario reached a call site. `wrap_180`
+reaches six call sites across 23 of 27 scenarios and **every single call takes the
+pass-through arm**: hits at the FUNCTION line, hits summed over the six call
+sites, and hits on the ELSE line are all 675,987, with 0 on each wrapping branch
+body. So the gate's red test is *green in the useful sense* — a whole-unit no-op
+moves 206,976 values — while the stub deleting both branches moves 0 of
+5,252,000. "The gate can see this unit" and "the gate can see what this unit does"
+came apart, and only the first is what a per-unit red-test number reports.
+
+Three instruments on that one stub: **gate 0 of 5,252,000, kernel 62 of 62
+PASSED, harness 31 of 136 FAILED.**
+
+### The deadness has a cause outside ROSCO, and it is NOT fixed here
+
+Reading `Examples/vit_sim.py` says scenarios 7 and 27 drive this unit hard —
+`avrSWAP[36] = 350°`, injected under the comment *"Inject avrSWAP values not
+handled by call_controller"*. `rosco/toolbox/control_interface.py:211` writes that
+same index from `turbine_state['Yaw_fromNorth']` **after** the injection and before
+`call_discon`. Two of the six indices under that comment are in fact handled by
+`call_controller`; index 23 survives only by coincidence, because `Y_MeasErr`
+carries the identical value two lines above, and index 36 is replaced by the
+accumulated yaw position, which starts at 0.
+
+Refuted from committed artifacts, with nothing run: `Yaw_Err` is
+`wrap_180(NacHeadingTarget − NacHeading)` and both operands are `.dbg` channels,
+so a heading of 350 constrains `Yaw_Err` to `[-3.3, +34.0]` — and **10,632 of
+23,999 timesteps sit outside it**.
+
+**NOT FIXED (X3, and the Driver's call.)** Repairing the injection changes what
+all 27 scenarios feed the controller, which moves every committed baseline and
+every `compared` count in the campaign. The cost of not fixing it is stated
+instead: `wrap_180`'s two branches are reachable by exactly one of five layers.
+Recorded in STATUS.md under Open with the check that finds the next instance —
+grep `control_interface.py` for the index before believing a scenario's comment
+about it.
+
+### The call site was chosen on argument domain, and coverage beat the stub to it
+
+Unit #24's rule is to build the stub that deletes the branch the unit exists for
+and run it at each candidate site before spending a cycle on one. **Not followed
+literally here, and the reason is unit #25's:** the committed coverage says the
+branch bodies have zero hits at *every* one of the six sites, so no stub run could
+separate sites on that axis — the measurement is free and one step earlier. What
+did decide it is a property no hit count shows: **three of the six sites pass
+`atan2(…)·R2D`, whose range is `[-180, 180]`, so at those the `x > 180` branch is
+unreachable by construction rather than by corpus.** `Controllers.f90:400` takes a
+plain sum and so admits both branches in principle. Purpose served, procedure not
+followed, said out loud as unit #25 requires.
+
+The stubs were still run, at the chosen site, because "the kernel is alive" and
+"the kernel sees the point of the unit" are two claims: `-7.25` passes 0 of 62,
+the branch-deleting stub passes 62 of 62, and the campaign's **default zero stub
+passes 1 of 62** — on the one captured case where `x` is `0.0` exactly. That is
+unit #25's determinate-wrong-constant rule recurring two units later.
+
+### Nothing survived, so nothing was declared — and the absence is structural
+
+`mutation/wrap_180.json`: 11 mutants, 11 killed, score 1.000, **0 declared
+equivalent, 0 uncompilable**. There is no `.equivalences.json` and no
+`.undeclared.json` for this unit, and that is not an omission: with an empty
+survivor set an undeclared run is byte-identical to the declared one and there is
+nothing to excuse. `mutation/wrap_180.undeclared.json` was produced and then
+deleted for exactly that reason, rather than committed as a duplicate that implies
+a judgement was made.
+
+**The margin is two cases, and it was counted rather than trusted.** `'<=' → '<'`
+and `'>' → '>='` each differ from the reference on exactly one input value, so
+`2 of 136` is not a sample statistic — it is the multiplicity of `-180.0` and
+`+180.0` in the generated case file, computed both ways from the `.bin` the
+harness ran. R6 emits each boundary twice (the literal ladder and the predicate
+knob); remove that block and both mutants survive at any corpus size. Third unit
+in a row where a corpus rule added earlier is the entire margin (#24's signed
+zero, #26's named constants, #27's predicate knob) — and the first where the rule
+needed no extension, because `-180.0` and `180.0` are literals in the unit's own
+body.
+
+### The claim I got wrong, and why it is worth a rule
+
+`ad9f755`'s commit message explained two red tests both reporting `130 of 136` as
+*"the same reason: 0.0 and -0.0 map to themselves under negation, and the
+symmetric rungs of the magnitude ladder pair up."* Written from an argument. Wrong
+twice, and the wrong version stays in the git log (C12) beside
+`evidence/wrap_180/the_six_insensitive_cases.{py,txt}`:
+
+| perturbation | blind on | mechanism |
+|---|---|---|
+| no-op `return 0.0` | 4 cases at `x = 0.0`, plus `x = ±360.0` | `ref(x)` **is** `0.0` there |
+| sign flip `-x` | the **four boundary cases** `x = ±180.0`, plus `x = ±360.0` | `ref(x) == ref(-x)` |
+
+Overlap two, not six. The negation half is the better finding: `.le.` on the low
+guard and `.gt.` on the high one send **both** endpoints to `+180`, so a sign flip
+is unobservable at exactly the four cases that exist to pin this unit's asymmetry
+— the property the translation is written to preserve is what hides the
+perturbation. And `-0.0` is in **neither** set, so the one mechanism the wrong
+claim named is the one the corpus rules already close.
+
+**PROPOSED AS A METHOD-LEVEL CANDIDATE, not taken here.** Unit #26's
+`redtest_corpus_skew.py` compares red-test counts *across* corpora and reports
+`0 SKEWED` for this unit, correctly. The same-corpus form is invisible to it and
+to every other check, because a red-test artifact records a COUNT and not the set
+of cases that failed. Emitting the failing case indices into the artifact would
+make two red tests comparable as sets for free — and it changes the artifact
+schema every scored unit writes, so it is X3 and the Driver's.
+
+### `vit integrate` stripped `vit.yaml`'s comments for the TENTH consecutive unit
+
+213 lines this time, measured on the diff. Units #14, #16, #18, #20, #21, #22,
+#23, #25, #26 and now #27 have each restored the file by hand and re-added the
+entry afterwards. Ten in a row is no longer a note on a unit; it is a defect in
+VIT with a ten-unit cost history, and it is repeated here so the tally is in one
+place. Still not fixed inside a unit's cycle, for the reason each of the nine
+earlier units gave: the fix is in VIT's YAML round-trip, it touches the file every
+unit's integration writes, and a unit has no standing to change the instrument
+mid-campaign (X3).
+
 ## Unit #26 — unwrap — 2026-08-12
 
 **THE UNIT IS DEAD IN ALL 27 SCENARIOS, AND ITS TWO CALL SITES ARE DEAD FOR TWO

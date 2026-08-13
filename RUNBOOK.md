@@ -358,6 +358,91 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A SCENARIO'S INJECTED INPUT CAN BE OVERWRITTEN BEFORE THE CONTROLLER READS
+  IT, SO THE SIM SOURCE SAYS WHAT WAS INTENDED AND THE COMMITTED `.dbg` SAYS WHAT
+  ARRIVED.** Unit #27, and it is the reason two of five layers are blind for that
+  unit. `Examples/vit_sim.py` writes, under its own comment:
+
+  ```python
+  # Inject avrSWAP values not handled by call_controller
+  controller_int.avrSWAP[23] = nac_vane_rad      # avrSWAP(24) NacVane
+  controller_int.avrSWAP[36] = nac_heading_rad   # avrSWAP(37) NacHeading = 350 deg
+  ```
+
+  Two of the six indices under that comment ARE handled by `call_controller`
+  (`control_interface.py:209` and `:211`), which runs after the injection and
+  before `call_discon`. Index 23 survives only because `Y_MeasErr` is set to the
+  same value two lines above; **index 36 is silently replaced by the accumulated
+  yaw position**, so the one input in this whole corpus aimed at `wrap_180`'s
+  branches never reaches the controller.
+
+  Refutable from committed artifacts with nothing run, which is what makes it
+  cheap: `Yaw_Err` and `NacHeadingTarget` are both `.dbg` channels and
+  `Yaw_Err = wrap_180(NacHeadingTarget - NacHeading)`, so a heading of 350 forces
+  an interval and **10,632 of 23,999 timesteps sit outside it**.
+
+  ```
+  grep -n 'avrSWAP\[<N>\]' rosco/toolbox/control_interface.py   # a hit -> injection lost
+  python3 evidence/wrap_180/heading_injection_discarded.py      # exit 0 == refuted
+  ```
+
+  NOT FIXED (X3): repairing it moves every baseline and every compared count.
+  Ask it of any unit whose inputs come from an injected `avrSWAP` index, BEFORE
+  reading the scenario's comment as true.
+
+- **TWO RED TESTS WITH THE SAME FAILURE COUNT ON THE SAME CORPUS ARE NOT THE SAME
+  MEASUREMENT, AND NOTHING IN THIS CAMPAIGN CAN TELL.** Unit #27, found by
+  getting it wrong in a commit message first. `wrap_180`'s pre-integration no-op
+  and its post-integration sign flip both report **130 of 136**:
+
+  ```
+  no-op (return 0.0)  blind on 6: four at x = 0.0, plus x = +/-360.0  (ref(x) IS 0.0)
+  sign flip (-x)      blind on 6: the FOUR BOUNDARY cases +/-180.0, plus +/-360.0
+  overlap                      2, not 6
+  -0.0                         in NEITHER set
+  ```
+
+  The negation set is the point: `.le.` low and `.gt.` high send BOTH endpoints to
+  `+180`, so a sign flip is invisible at exactly the cases that pin the unit's
+  asymmetry. Unit #26's `redtest_corpus_skew.py` compares counts ACROSS corpora
+  and says `0 SKEWED` here, correctly -- the same-corpus form is invisible to it
+  because a red-test artifact records a COUNT and not a SET.
+
+  ```
+  python3 evidence/wrap_180/the_six_insensitive_cases.py   # exit 0 == sets differ
+  ```
+
+  Until an artifact carries the failing case indices, do not explain two equal
+  counts -- compute the two sets. An explanation from an argument was wrong here
+  in both of its halves.
+
+- **A UNIT CAN BE EXERCISED 675,987 TIMES WITH EVERY BRANCH DEAD, WHICH IS NOT
+  THE SAME BLINDNESS AS AN UNREACHED CALL SITE.** Unit #27, the fourth blind unit
+  after #1, #21 and #26 and the first that is not dead. The check is an identity
+  over three counts derived three different ways, and it needs no new tooling:
+
+  ```
+  hits at the FUNCTION line              675,987
+  hits summed over the six CALL SITES    675,987   EQUAL
+  hits on the ELSE line (pass-through)   675,987   EQUAL   <- so both branches: 0
+  ```
+
+  The P10 control belongs in the same run and for this unit it was in the same
+  FILE: `wrap_360`, two screens down, is the same shape with a live branch
+  (`x >= 360`, 15,199 hits), so an absent coverage key means zero rather than
+  un-instrumented.
+
+  What it changes is the reading of the gate. A whole-unit no-op moves 206,976
+  values, so `wrap_180` lands on STATUS.md's gate-visible list -- and the stub
+  deleting BOTH branches moves 0 of 5,252,000. **One number per unit answers "can
+  the gate see this unit", never "which of its branches", and three units now have
+  a second number sitting in their evidence** (`saturate`'s upper clamp, `sigma`'s
+  two clamps, these two branches).
+
+  ```
+  python3 evidence/wrap_180/coverage_branch_deadness.py    # exit 0 == branches dead
+  ```
+
 - **A RED TEST AND THE GREEN IT CERTIFIES MUST NAME THE SAME CASE COUNT, AND SIX
   OF THIS CAMPAIGN'S TWENTY-ONE COMPARABLE PAIRS DO NOT.** Unit #26, second
   dispatch. The unit's own README tabulated three stub red tests as "of 403";

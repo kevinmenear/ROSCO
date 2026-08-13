@@ -4,6 +4,92 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-13: unit #27 `wrap_180` is `integrated` and CLOSED**, first
+dispatch. Five layers available, five run, all green, all red-tested — and the
+thing to know about this unit is not the translation, which is three statements,
+but that **the two bit-exact layers watch it run 675,987 times and never once see
+it do the thing it exists to do.**
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay | 62 of 62, **13,950 of 13,950** field rows `IDENTICAL` | VIT's own (`x × 1.00001`); plus a determinate wrong constant `-7.25` at **0 of 62** and the branch-deleting stub at **62 of 62** |
+| differential harness vs clean Fortran | **136** checked, 0 failed, 0 inadmissible — **this unit's primary evidence** | no-op **130 of 136**; both branches deleted **31**; low branch alone **13**; high branch alone **18** |
+| mutation score | **11 of 11 killed, 1.000**, **0 declared equivalent**, 0 no-compile, 5 operators | the score *is* the red test, eleven times |
+| post-integration harness (wrapper only) | **136 checked, 0 failed** | the wrapper hands `-x` to `wrap_180_c`: **130 of 136**, revert verified green |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | whole unit as a no-op moves **206,976**; **both branches deleted moves 0** |
+
+**BOTH WRAPPING BRANCHES ARE DEAD AT ALL SIX CALL SITES IN ALL 27 SCENARIOS, AND
+THE UNIT IS NOT DEAD.** This is a different shape from units #1, #21 and #26,
+which had no live call site at all. Here the unit is called 675,987 times across
+23 of 27 scenarios and **every one of those calls takes the pass-through arm**.
+Three independently derived counts say so and they are equal:
+hits at the FUNCTION line = hits summed over the six CALL SITES = hits on the
+ELSE line = 675,987, with 0 on each branch body. The P10 control is in the same
+file: `wrap_360`, two screens down, is the same shape with a live branch
+(`x >= 360`, 15,199 hits, scenario 22), so a branch body does get its own
+coverage entry when it runs.
+
+**THE REASON IS A DEFECT IN THE SIMULATION HARNESS, AND READING THE SCENARIO
+SOURCE GIVES THE OPPOSITE ANSWER.** Scenarios 7 and 27 inject
+`avrSWAP[36] = 350°` specifically to drive this unit past +180, under the comment
+*"Inject avrSWAP values not handled by call_controller"* — and
+`rosco/toolbox/control_interface.py:211` overwrites it from
+`turbine_state['Yaw_fromNorth']` before `call_discon`. Two of the six injected
+indices *are* handled by `call_controller`; index 23 survives only by coincidence
+(`Y_MeasErr` carries the same value) and index 36 is replaced by the accumulated
+yaw position, which starts at 0. Refuted from the committed `.dbg` without
+running anything: a heading of 350 would force `Yaw_Err` into `[-3.3, +34.0]`, and
+**10,632 of 23,999 timesteps sit outside it**. NOT FIXED — repairing it changes
+what the 27 scenarios feed the controller, which moves every baseline and every
+committed compared count (X3). Logged under Open.
+
+**THE GATE'S OWN RED TEST IS ITS CONTROL, SO NO BORROWED CONTROL WAS NEEDED.**
+Two perturbations on the same libdiscon, both anchored to
+`double wrap_180(double x) {` (asserted unique in the tree, unit #26): the
+whole-unit no-op moves 206,976 of 5,252,000, and the stub with both branches
+deleted moves 0. The first proves the chain is alive, so the second is blindness
+rather than breakage. `unwrap` had to re-run GetWords' perturbation for this;
+here the unit supplies its own.
+
+**THREE INSTRUMENTS, ONE STUB, THREE ANSWERS.** Both wrapping branches deleted:
+gate **0 of 5,252,000**, kernel **62 of 62 PASSED**, harness **31 of 136
+FAILED**. Two bit-exact layers over 675,987 real calls certify a translation
+missing half its body; a 136-case generated corpus does not.
+
+**THE CALL SITE WAS CHOSEN ON ARGUMENT DOMAIN, AND THE COVERAGE SETTLED IT MORE
+CHEAPLY THAN A STUB WOULD.** Three of the six sites pass `atan2(…)·R2D`, whose
+range is `[-180, 180]`, so at those the `x > 180` branch is unreachable **by
+construction** and not merely by corpus. `Controllers.f90:400` is a plain sum, so
+it admits both branches in principle. Unit #24 says to run the branch-deleting
+stub at each candidate site before spending a cycle on one; here the committed
+coverage answers it one step earlier (unit #25) because the branch bodies have
+zero hits at *every* site — no stub could separate sites on that axis. Purpose
+served, literal procedure not followed, said out loud as unit #25 requires.
+
+**THE MUTATION SCORE'S MARGIN IS TWO CASES, AND THEY WERE COUNTED RATHER THAN
+TRUSTED.** `'<=' → '<'` and `'>' → '>='` each differ from the reference on
+**exactly one input value**, so `2 of 136` is not a sample statistic — it is the
+multiplicity of `-180.0` and `+180.0` in the case file, which R6 puts there twice
+each (the literal ladder and the predicate knob). Computed both ways from the
+`.bin` the harness ran. Take that block away and both mutants survive at any
+corpus size. **Nothing survived and nothing was declared equivalent**, so this
+unit has no `.equivalences.json` and no `.undeclared.json`, and the absence is
+structural rather than an omission.
+
+**TWO RED TESTS REPORTING `130 of 136` ARE NOT ONE MEASUREMENT, AND I GOT THIS
+WRONG FIRST.** The commit message of `ad9f755` explained the matching counts from
+an argument — *"the same reason: 0.0 and -0.0 map to themselves under negation"* —
+and the wrong claim is left standing in the git log (C12) beside the artifact that
+corrects it. The blind sets are **different six cases, overlapping in two**. The
+no-op is blind where `ref(x)` *is* `0.0`; the sign flip is blind on the **four
+boundary cases**, because `.le.` on the low guard and `.gt.` on the high one send
+*both* endpoints to `+180` — the very asymmetry the translation exists to preserve
+is what hides that perturbation. And `-0.0` is in **neither** set: the one
+mechanism the wrong claim named is the one the corpus rules already close. Unit
+#26's census compares red-test counts *across* corpora; this is the same hazard
+with the corpus held fixed, where nothing looks wrong at all. Logged under Open
+as a candidate check.
+
 **As of 2026-08-12: unit #26 `unwrap` is `integrated` and CLOSED**, on its second
 dispatch — the first produced everything except the integration half and ended
 before committing it; the driver committed that work at `284df58` and
@@ -1433,10 +1519,10 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-26 attempted / **25 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+27 attempted / **26 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / **1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 43 remain. 25 + 1 + 43 = 69.
+69 units in `plan.json`; 42 remain. 26 + 1 + 42 = 69.
 
 (This block read `8 / 8 / 61 remain` through unit #9, which did not update it.
 Recounted from `plan.json` at unit #10 rather than incremented, and recounted
@@ -1447,7 +1533,7 @@ units stale, and both times the unit that fixed it was not the unit that broke
 it.** The recount is one command and it is in this file's own instructions:
 `python3 -c "import json,collections; print(collections.Counter(u.get('disposition') for u in json.load(open('plan.json'))['units']))"`)
 
-**Fifteen of the 25 integrated units are gate-visible.** Recounted at unit #26
+**Sixteen of the 26 integrated units are gate-visible.** Recounted at unit #27
 by READING every `gate/*.redtest.json` rather than by editing this list, which is
 what the recount instruction above means and which is how the `StateMachine`
 discrepancy below was found:
@@ -1456,9 +1542,24 @@ discrepancy below was found:
 saturate 2,255,249 · GetWords 1,857,893 · NonDecreasing 1,857,893 (shared —
 see below) · LPFilter 1,592,059 · ReadAvrSWAP 1,487,557 · identity 1,462,798 ·
 SecLPFilter 1,349,326 · interp1d 1,341,803 · NotchFilter 551,278 ·
-ColemanTransformInverse 389,644 · sigma 229,165 · NotchFilterSlopes 128,918 ·
-ColemanTransform 124,353 · StateMachine 36,577 · SecLPFilter_Vel 14,140
+ColemanTransformInverse 389,644 · sigma 229,165 · wrap_180 206,976 ·
+NotchFilterSlopes 128,918 · ColemanTransform 124,353 · StateMachine 36,577 ·
+SecLPFilter_Vel 14,140
 ```
+
+The ten that are gate-blind: `AddToList`, `Conv2UC`, `ExtController`, `GetPath`,
+`GetRoot`, `HPFilter`, `Int2LStr`, `PathIsRelative`, `Read_OL_Input`,
+`UpdateZeroMQ`, `unwrap` — eleven names for ten units, because `Read_OL_Input` is
+`blocked` and not counted among the 26.
+
+**`wrap_180` is gate-visible and gate-blind at once, and the list above cannot
+say that.** Its red test moves 206,976 values, so it belongs on this list; the
+stub deleting **both of its wrapping branches** moves 0 of 5,252,000, so the gate
+certifies a translation missing half the unit. A single per-unit number answers
+*can the gate see this unit at all* and says nothing about *which parts*. Every
+entry above is that same one number, and at least three units now have a second
+one worth carrying (`saturate`'s upper clamp, `sigma`'s two clamps, `wrap_180`'s
+two branches). Logged under Open.
 
 **`StateMachine`'s committed artifact does not hold the number this file has
 been quoting.** This block read **1,526,538 (whole-unit no-op)**;
@@ -1750,6 +1851,55 @@ literal `'/'` and not `PathSep`, because in the reference they are two different
 things and only the fallback uses the platform parameter (P7).
 
 ## Open
+
+- **THE SIMULATION HARNESS DISCARDS `avrSWAP(37)`, AND IT IS THE ONE INPUT IN
+  THIS CORPUS AIMED AT `wrap_180`'s BRANCHES.** Unit #27.
+  `Examples/vit_sim.py` writes `avrSWAP[36] = 350°` in scenarios 7 and 27 under
+  the comment *"Inject avrSWAP values not handled by call_controller"*, and
+  `rosco/toolbox/control_interface.py:211` overwrites it from
+  `turbine_state['Yaw_fromNorth']` before `call_discon`. Index 23 is injected
+  under the same comment and *also* overwritten — it survives only because
+  `Y_MeasErr` happens to carry the same value two lines above. Refuted from
+  committed `.dbg` channels, no run needed: a heading of 350 would force
+  `Yaw_Err` into `[-3.3, +34.0]` and 10,632 of 23,999 timesteps sit outside it
+  (`evidence/wrap_180/heading_injection_discarded.{py,txt}`).
+
+  **NOT FIXED, on purpose.** Repairing it changes what the 27 scenarios feed the
+  controller, which moves every baseline and every committed `compared` count —
+  X3, and the Driver's call. The consequence is priced: with it, `wrap_180`'s two
+  branches would be gate-visible and kernel-visible; without it, they are reached
+  only by the differential harness. Worth asking of any unit whose inputs come
+  from an injected `avrSWAP` index: **grep
+  `rosco/toolbox/control_interface.py` for that index before believing the
+  scenario's comment.**
+
+- **TWO RED TESTS WITH THE SAME FAILURE COUNT ON THE SAME CORPUS ARE NOT ONE
+  MEASUREMENT, AND THERE IS NO CHECK FOR IT.** Unit #27, found by getting it
+  wrong: `harness/wrap_180.redtest.json` and
+  `harness/wrap_180.postintegration.redtest.json` both report **130 of 136** and
+  are blind to **different six cases, overlapping in two**
+  (`evidence/wrap_180/the_six_insensitive_cases.{py,txt}`). The wrong explanation
+  is left standing in `ad9f755`'s commit message beside the correction (C12).
+
+  Unit #26's `redtest_corpus_skew.py` catches the *across-corpora* form of this
+  and reports `0 SKEWED` here, correctly — both runs are 136 of 136. The
+  same-corpus form is invisible to it and to everything else, because a red-test
+  artifact records a COUNT and not the set of cases that failed. **A candidate
+  addition, not taken here:** have the harness emit the failing case INDICES into
+  the artifact, at which point two red tests can be compared as sets for free.
+  That changes the artifact schema every scored unit writes (X3), so it is the
+  Driver's call.
+
+- **THE GATE-VISIBILITY LIST CARRIES ONE NUMBER PER UNIT AND AT LEAST THREE UNITS
+  NEED TWO.** Unit #27. `wrap_180` is on the list at 206,976 *and* its
+  branch-deleting stub moves 0 of 5,252,000 — the gate can see the unit and
+  certifies a translation missing half of it. `saturate`'s upper clamp
+  (62 of 62 kernel-invisible) and `sigma`'s two clamps (0 of 5,252,000 each) are
+  the same shape. The list answers *can the gate see this unit at all*; nothing
+  in this file answers *which of its branches*, and three units now have that
+  second number sitting in their evidence. Raised rather than restructured: the
+  recount instruction above says read the artifacts, and the artifacts would
+  support a second column.
 
 - **`gate/StateMachine.redtest.json` holds 36,577; this file quoted 1,526,538
   for it from unit #20 until unit #26 recounted.** The artifact's perturbation is
