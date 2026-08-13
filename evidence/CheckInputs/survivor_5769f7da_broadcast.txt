@@ -1,0 +1,27 @@
+# Survivor 5769f7da, and the repair, measured rather than argued
+# 2026-08-13T10:23:21Z  ROSCO-r2 f16ca91
+#
+# The mutant is index_offset '[0]' -> '[0 + 1]' at checkinputs.cpp:347,
+#     if (CntrPar->F_FlCornerFreq[0] <= 0.0)
+# applied by hand to a copy of the translation. Two states, both admissible
+# apart from one negative element, differing ONLY in whether the other
+# elements of F_FlCornerFreq carry the same value or an admissible one.
+#
+#   broadcast     {fill: -1.0}          <- what R11 emits for a whole-array knob today
+#   one_element   {fill: 1.0, 0: -1.0}  <- the value at ONE element, rest admissible
+
+broadcast    checkinputs.cpp          aviFAIL -1  ErrStat 0  n_ErrMsg 56  ErrMsg 'CheckInputs:F_FlCornerFreq(2) must be greater than zero.'
+broadcast    mutant_5769f7da.cpp      aviFAIL -1  ErrStat 0  n_ErrMsg 56  ErrMsg 'CheckInputs:F_FlCornerFreq(2) must be greater than zero.'
+one_element  checkinputs.cpp          aviFAIL -1  ErrStat 0  n_ErrMsg 56  ErrMsg 'CheckInputs:F_FlCornerFreq(1) must be greater than zero.'
+one_element  mutant_5769f7da.cpp      aviFAIL 0  ErrStat 0  n_ErrMsg 0  ErrMsg ''
+# broadcast:   both sides report element (2) -- the LAST failing element wins and
+#              a shift from [0] to [1] lands inside a run of identical values.
+#              INDISTINGUISHABLE: this is why the mutant survived.
+# one_element: the reference reports (1) and the mutant reports NOTHING AT ALL.
+#              A case shaped like this kills it.
+#
+# R5 already says 'array elements distinct' about the corpus. R11's own arrays
+# were not: the inert fill is zeros and a whole-array knob BROADCASTS. R7
+# broadcasts for a stated reason -- setting one element leaves the FALSE side at
+# _fill_array's ramp, which straddles the tested literal -- and that reason does
+# not hold here, because R11's other elements are ADMISSIBLE by construction.
