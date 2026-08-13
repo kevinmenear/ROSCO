@@ -55,6 +55,7 @@ double interp1d_c(double* xData, int n_xData, double* yData, int n_yData, double
 double saturate_c(double inputValue, double minValue, double maxValue);
 double sigma_c(double x, double x0, double x1, double y0, double y1, errorvariables_view_t* ErrVar);
 void unwrap_c(double* x, int n_x, errorvariables_view_t* ErrVar, double* unwrap_result);
+double wrap_180_c(double x);
 
 #ifdef __cplusplus
 }

@@ -124,6 +124,16 @@ IMPLICIT NONE
         END SUBROUTINE unwrap_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of wrap_180
+    INTERFACE
+        FUNCTION wrap_180_c(x) BIND(C, NAME='wrap_180_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: x
+            REAL(C_DOUBLE) :: wrap_180_c
+        END FUNCTION wrap_180_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION saturate(inputValue, minValue, maxValue) RESULT(saturate_result)
@@ -463,18 +473,12 @@ CONTAINS
         
     END FUNCTION AeroDynTorque
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION wrap_180(x) 
-    ! Function modifies input angle, x, such that -180<=x<=180, preventing windup
-        REAL(DbKi), INTENT(IN) :: x         ! angle, degrees
-
-        IF (x .le. -180.0) THEN
-            wrap_180 = x + 360.0
-        ELSEIF (x .gt. 180.0) THEN
-            wrap_180 = x - 360.0
-        ELSE
-            wrap_180 = x
-        ENDIF
-
+    FUNCTION wrap_180(x) RESULT(wrap_180_result)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        REAL(8), INTENT(IN) :: x
+        REAL(8) :: wrap_180_result
+        wrap_180_result = REAL(wrap_180_c(x), 8)
     END FUNCTION wrap_180
 !-------------------------------------------------------------------------------------------------------------------------------
     REAL(DbKi) FUNCTION wrap_360(x) 
