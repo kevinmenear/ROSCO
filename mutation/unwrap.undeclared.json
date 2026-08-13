@@ -1,0 +1,59 @@
+{
+ "unit": "unwrap",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "mutants": 40,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 11,
+ "killed_by_timeout_ids": [
+  "4a724a32",
+  "a6a8781d",
+  "217678e8",
+  "af72575c",
+  "07005b98",
+  "ac43e8fb",
+  "d0680392",
+  "f6303e15",
+  "28558043",
+  "d83c1f55",
+  "2f7a73e8"
+ ],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 40,
+ "killed": 37,
+ "survived": 3,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.925,
+ "loop_rev": "b9fb5ee-nogit",
+ "vit_rev": "ab75fa0-nogit",
+ "survivors": [
+  {
+   "id": "10e6dfb3",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "bf2ce388",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "af5a7c94",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  }
+ ]
+}

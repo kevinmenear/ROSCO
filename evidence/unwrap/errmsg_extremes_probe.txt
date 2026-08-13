@@ -1,0 +1,13 @@
+probe md5 (verified inside the container): d1b79dc8cc73d296bfb2e23b8e58b7bc
+--- the probe's counters (stderr) ---
+calls to unwrap                        403
+ErrVar->n_ErrMsg on entry, min .. max  1 .. 9
+calls with n_ErrMsg <= 0               0     <- af5a7c94 needs > 0
+ErrVar->n_ErrMsg_cap, min .. max       4097 .. 4105
+calls with ErrMsg == nullptr           0
+calls to assign_errmsg                 370
+largest message offered                16
+assignments with s.size() == cap       0     <- 10e6dfb3 needs > 0
+assignments with s.size() >  cap       0
+--- the run's own verdict (stdout) ---
+checked 403 failed 0

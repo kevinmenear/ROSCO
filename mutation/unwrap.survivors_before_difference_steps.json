@@ -1,0 +1,68 @@
+{
+ "unit": "unwrap",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "mutants": 40,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 8,
+ "killed_by_timeout_ids": [
+  "4a724a32",
+  "a6a8781d",
+  "217678e8",
+  "07005b98",
+  "d0680392",
+  "f6303e15",
+  "28558043",
+  "2f7a73e8"
+ ],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 40,
+ "killed": 35,
+ "survived": 5,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.875,
+ "loop_rev": "b9fb5ee-nogit",
+ "vit_rev": "ab75fa0-nogit",
+ "survivors": [
+  {
+   "id": "10e6dfb3",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "bf2ce388",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "c4fb7fd1",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "6f318ce8",
+   "operator": "compare_op",
+   "before": ">=",
+   "after": ">"
+  },
+  {
+   "id": "af5a7c94",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  }
+ ]
+}

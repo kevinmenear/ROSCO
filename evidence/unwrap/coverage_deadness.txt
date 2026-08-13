@@ -1,0 +1,33 @@
+coverage baseline commit : 54dd134
+scenarios in the dataset : [3, 4, 5, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
+scenarios that failed    : []
+
+== Controllers.f90
+    322  hits=407976     scenarios=[1,2,3,4,5,6,7,8,9,11,12,15,16,17,18,19,20,21,22,23,25,26,27]  IF ((CntrPar%OL_Mode > 0) .AND. (CntrPar%Ind_GenTq > 0)) THEN
+    329  hits=0          scenarios=[-           ]  IF (CntrPar%OL_Mode == 2) THEN
+    337  hits=0          scenarios=[-           ]  LocalVar%AzBuffer(1) = LocalVar%AzBuffer(2)
+    338  hits=0          scenarios=[-           ]  LocalVar%AzBuffer(2) = LocalVar%Azimuth
+    339  hits=0          scenarios=[-           ]  LocalVar%AzBuffer = UNWRAP(LocalVar%AzBuffer, ErrVar)
+    340  hits=0          scenarios=[-           ]  LocalVar%AzUnwrapped = LocalVar%AzBuffer(2)
+
+== ReadSetParameters.f90
+    773  hits=3          scenarios=[10,14,24    ]  IF (CntrPar%OL_Mode == 2) THEN
+    778  hits=3          scenarios=[10,14,24    ]  CALL Read_OL_Input(CntrPar%OL_Filename,UnOpenLoop,OL_Count,CntrPar%OL_Ch
+    780  hits=3          scenarios=[10,14,24    ]  RETURN
+    783  hits=0          scenarios=[-           ]  CntrPar%OL_Breakpoints = CntrPar%OL_Channels(:,CntrPar%Ind_Breakpoint)
+    806  hits=0          scenarios=[-           ]  IF (CntrPar%Ind_Azimuth > 0) THEN
+    807  hits=0          scenarios=[-           ]  CntrPar%OL_Azimuth = Unwrap(CntrPar%OL_Channels(:,CntrPar%Ind_Azimuth),E
+
+== Functions.f90
+    518  hits=0          scenarios=[-           ]  FUNCTION unwrap(x, ErrVar) result(y)
+    537  hits=0          scenarios=[-           ]  y = x ! set initial
+    538  hits=0          scenarios=[-           ]  DO i = 2, SIZE(x)
+    539  hits=0          scenarios=[-           ]  DO while (y(i) - y(i-1) .LE. -PI)
+    540  hits=0          scenarios=[-           ]  y(i:SIZE(x)) = y(i:SIZE(x)) + 2 * PI
+    543  hits=0          scenarios=[-           ]  DO while (y(i) - y(i-1) .GE. PI)
+    544  hits=0          scenarios=[-           ]  y(i:SIZE(x)) = y(i:SIZE(x)) - 2 * PI
+    549  hits=0          scenarios=[-           ]  IF (ErrVar%aviFAIL < 0) THEN
+    550  hits=0          scenarios=[-           ]  ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
+
+Functions.f90 lines 518..557 (the whole of unwrap) with ANY hit: NONE
+total hits inside unwrap across all 27 scenarios: 0

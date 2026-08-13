@@ -339,6 +339,130 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A UNIT CAN BE DEAD BECAUSE ITS CALLER STOPS ONE STATEMENT SHORT, AND THE
+  GUARD-BESIDE-THE-CALL READING IS WHAT SAYS SO.** Unit #26. `unwrap` has two
+  call sites and both are dead in all 27 scenarios -- the third such unit after
+  #1 (`AddToList`) and #21 (`UpdateZeroMQ`) -- but only one of them is dead for
+  #21's reason.
+
+  ```
+  Controllers.f90:322  IF ((OL_Mode > 0) .AND. (Ind_GenTq > 0))   407,976 hits
+  Controllers.f90:339  LocalVar%AzBuffer = UNWRAP(...)                  0 hits
+  ReadSetParameters.f90:778  CALL Read_OL_Input(...)          3 hits (10,14,24)
+  ReadSetParameters.f90:780  RETURN                           3 hits (10,14,24)
+  ReadSetParameters.f90:807  CntrPar%OL_Azimuth = Unwrap(...)           0 hits
+  ```
+
+  The first is an unentered guard. The second is not: the three scenarios that
+  set `OL_Mode > 0` DO reach the block, and then `Read_OL_Input` fails --
+  `Examples/example_inputs/OL_Mode2_Input.dat` is not in this tree (unit #17) --
+  and the `RETURN` two statements later takes them out. **Reading the guard
+  alone would have said "no scenario configures it"; reading the RETURN says
+  "three scenarios configure it and a missing FILE stops them".** Print the
+  whole path from the guard to the call, not the guard and the call:
+
+  ```
+  python3 evidence/unwrap/coverage_deadness.py     # exit 0 == the body is dead
+  ```
+
+- **A `DO WHILE` WHOSE ONLY PROGRESS IS AN ADDITION DOES NOT TERMINATE ONCE THE
+  ADDITION ROUNDS TO NOTHING, AND THE TRANSLATION MUST NOT TERMINATE EITHER.**
+  Unit #26, the sixth upstream ROSCO defect of the "the reference has no answer"
+  family (#17 non-termination, #21 indeterminate, #23 abort).
+
+  ```
+  smallest 2**k with v + 2*PI == v :  7.2057594037927936e16   (2**56)
+  y(2) = 1e17    still looping after 17,900,000,000 iterations, y(2) unmoved
+  y(2) = 1e300   still looping after 17,900,000,000 iterations, y(2) unmoved
+  y(2) = 1e3     TERMINATED after 159 iterations
+  ```
+
+  Nothing in this campaign's corpus reaches it, and that is a fact about the
+  CORPUS: `_bounds` defaults an array to +/-1e3 and `_real_magnitude_ladder` is
+  gated on `not q.dims`, so no hot rung can land in an array. **No
+  `harness/ranges.toml` entry was written**, deliberately -- a pin narrows a
+  domain, and this one is already narrow enough that the branch is unreachable
+  without one. Ask it of any `DO WHILE` whose body is `x = x + <constant>`.
+
+- **AN ORDER LADDER VARIES THE SIGN OF A DIFFERENCE AND PINS ITS MAGNITUDE AT
+  ONE, SO A PREDICATE ON THE SIZE OF A STEP IS UNREACHABLE BY IT.** Unit #26,
+  and it is unit #12's `NonDecreasing` finding one predicate over.
+
+  Unit #12 added the ORDER LADDER because `_fill_array` returns a strictly
+  ascending ramp in every case and `A(i+1) - A(i) <= 0` therefore had one
+  answer. Its bodies are `[1.0, 2.0, ..., L]` and its permutations, which is
+  exactly right for a predicate on the SIGN of a difference and reaches nothing
+  at all for one on its MAGNITUDE. `unwrap` tests
+  `y(i) - y(i-1) .LE. -PI`, and the reversed unit-step run gives `-1`:
+
+  ```
+  order ladder off (355 cases)      the `+2*PI` branch DELETED   0 of 355 fail
+  order ladder, unit steps (366)                                 0 of 366 fail
+  + steps spanning +/-1e3   (377)                                4 of 377 fail
+  + steps at the reference's own constants (403)   the `<=`/`<` mutant DIES
+  ```
+
+  Three scales, and the third is a different rule from the second: spanning the
+  range makes the branch REACHED, naming the reference's own constant makes the
+  branch's BOUNDARY reached. `-PI` is not a literal anywhere in `Functions.f90`
+  -- it is a named `PARAMETER` in `Constants.f90` -- so `literals_from`, which
+  mines numbers out of the unit's own file, cannot see it and
+  `named_constants_from`, which mines named PARAMETERs campaign-wide, can. Ask
+  it of any predicate whose left side is an EXPRESSION rather than a name:
+
+  ```
+  grep -nE '\([Ii][^)]*\) *[-+] *[A-Za-z_]+\([Ii]' <the unit's Fortran>
+  ```
+
+- **AN ORDER PREDICATE WRITTEN AGAINST A LOCAL COPY OF A PARAMETER IS INVISIBLE
+  TO A RULE THAT MATCHES PARAMETER NAMES.** Unit #26. `order_arrays_from` looks
+  for the same NAME subscripted twice in one statement, and `unwrap` writes
+
+  ```fortran
+  y = x                                ! whole array, no subscripts
+  DO while (y(i) - y(i-1) .LE. -PI)    ! the order predicate, on `y`
+  ```
+
+  so the detector returned the empty set and the ladder never fired. Closed by
+  ONE HOP through a whole-array copy -- `LHS = RHS`, both bare names, RHS a
+  parameter -- and no further: a copy of a SLICE, of an EXPRESSION, or a second
+  hop are each a claim about the reference the scan cannot check. Measured
+  against the CLEAN baseline source and not the working tree, which matters
+  more than it sounds: 21 of the 25 scored units have a WRAPPER for a body now,
+  a wrapper contains no subscript at all, and a sweep over the tree reports
+  `old=[] new=[]` for every one of them and looks like a proof.
+
+  ```
+  bash evidence/unwrap/x3_cost_order_alias.sh    # 4 detectors fire, 1 moves
+  ```
+
+- **THE THREE GENERATORS DISAGREE ABOUT `DIMENSION(SIZE(x))` ON A FUNCTION
+  RESULT, AND ONLY ONE OF THE THREE IS RIGHT BY ACCIDENT.** Unit #26, the
+  fourth such disagreement (units #8, #17, #22) and the second on a RESULT.
+
+  ```
+  vit interface (the SHIPPING wrapper)   fine -- its `x` is the original `x(:)`
+  test_validate (the harness bridge)     `REAL(8), DIMENSION(SIZE(x))` on `x(*)`
+                                         -> "The upper bound in the last dimension
+                                            must appear in the reference to the
+                                            assumed size array 'x'"
+  harness map_signature                  REFUSED the result outright, then
+                                         `EmitError: C parameter 'unwrap_result'
+                                         is not in the mapped signature`
+  ```
+
+  All three carry the FUNCTION's own dimension text across, and the text is
+  legal in exactly the scope the reference wrote it in. Fixed in both (X2, VIT
+  and loop, `_bridge_result_dims` and `_result_extents`' `size_of`), each
+  resolving `SIZE(<arg>)` to the extent parameter `build_c_params` already
+  emits rather than evaluating anything. `SIZE(x) + 1` still falls to the same
+  refusal, on purpose.
+
+  And one level down: **one extent that sizes TWO arrays was written into the
+  case stream twice and declared twice**, `error: redeclaration of 'int32_t
+  n_x_a'`. That one needs no X3 argument -- a duplicate declaration is a
+  COMPILE error, so no already-scored unit can have been carrying one.
+
 - **THE BOUND A UNIT COMPARES AGAINST CAN BE A CONSTANT OF THE CONFIGURATION,
   AND THEN NO INVOCATION WINDOW REACHES THE BRANCH IT GUARDS.** Unit #25, and
   it is unit #22's constant-argument finding with one level of indirection --

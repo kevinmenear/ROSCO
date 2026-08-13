@@ -1,0 +1,17 @@
+=== the shipped translation ===
+checked 377 failed 0 inadmissible 0
+
+=== stub: noop ===
+stub md5 (verified inside the container): 056f2daf4bc8d6db61b0d14e31e86a0d  <- evidence/unwrap/unwrap.noop-stub.cpp
+artifact: evidence/unwrap/harness.noop-stub.json
+PRE-INTEGRATION RED TEST OK (went red): checked 377  failed 363
+
+=== stub: no-plus-loop ===
+stub md5 (verified inside the container): 33ba6dfeef19f8a984071cddc9de0269  <- evidence/unwrap/unwrap.no-plus-loop-stub.cpp
+artifact: evidence/unwrap/harness.no-plus-loop-stub.json
+PRE-INTEGRATION RED TEST OK (went red): checked 377  failed 4
+
+=== stub: no-minus-loop ===
+stub md5 (verified inside the container): 11bd18cb08fb32918c404009642ad13f  <- evidence/unwrap/unwrap.no-minus-loop-stub.cpp
+artifact: evidence/unwrap/harness.no-minus-loop-stub.json
+PRE-INTEGRATION RED TEST OK (went red): checked 377  failed 361

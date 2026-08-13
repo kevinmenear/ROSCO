@@ -1,0 +1,30 @@
+source read from 54dd134 (clean, pre-integration): .x3_clean_src/rosco/controller/src
+
+  AddToList                old=[]                     new=[]                    
+  ColemanTransform         old=['rootMOOP']           new=['rootMOOP']          
+  ColemanTransformInverse  old=[]                     new=[]                    
+  Conv2UC                  no array argument
+  ExtController            old=[]                     new=[]                    
+  GetPath                  no array argument
+  GetRoot                  no array argument
+  GetWords                 old=[]                     new=[]                    
+  HPFilter                 no array argument
+  Int2LStr                 no array argument
+  LPFilter                 no array argument
+  NonDecreasing            old=['Array']              new=['Array']             
+  NotchFilter              no array argument
+  NotchFilterSlopes        no array argument
+  PathIsRelative           no array argument
+  ReadAvrSWAP              old=[]                     new=[]                    
+  Read_OL_Input            old=[]                     new=[]                    
+  SecLPFilter              no array argument
+  SecLPFilter_Vel          no array argument
+  StateMachine             no array argument
+  UpdateZeroMQ             no array argument
+  identity                 no array argument
+  interp1d                 old=['xData', 'yData']     new=['xData', 'yData']    
+  saturate                 no array argument
+  sigma                    no array argument
+  unwrap                   old=[]                     new=['x']                    <-- CHANGED
+
+units with a committed harness artifact whose order-sensitive set MOVES: 1 ['unwrap']

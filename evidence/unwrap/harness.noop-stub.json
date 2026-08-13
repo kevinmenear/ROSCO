@@ -1,0 +1,121 @@
+{
+ "unit": "unwrap",
+ "against": "translation",
+ "checked": 377,
+ "failed": 363,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    2 varied extent(s) at [3, 4] and [3, 4], NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 4 combination(s) of the 1 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead; 22 array ordering(s) -- reversed, one adjacent pair inverted at the first / an interior / the last position, an adjacent EQUAL pair, and the constant array, each at UNIT steps and again at steps spanning the parameter's admissible range, because an ordering at one step size varies the SIGN of a difference and never its MAGNITUDE -- across the array(s) the reference subscripts twice in one statement, directly or through a whole-array copy; 92 character value(s) from a corpus of 23 (the reference's own character literals and their collating neighbours) across 1 string(s), each at length(s) [1, 2, 3] and in the mixed / padded / all-blank / leading-blank shapes, plus 144 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          2 real value(s), none zero in every case",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 6 out-parameter(s): ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg, unwrap_result"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "unwrap_result",
+   "ref": "09eb5120cdd17bc0a06e4674acf17bc061decbb5e7e87bc0",
+   "got": "09eb5120cdd17bc08adaed3d2ea24840a9a1247db27a8040"
+  },
+  {
+   "case": 1,
+   "output": "unwrap_result",
+   "ref": "4d3a34fcc76681c064d7c1cca67081c07eb71fa6f88381c0a30d3bb30a8081c0",
+   "got": "4d3a34fcc76681c02adedcaf94b562c0ed57094ecb536b40cc382b4bee328440"
+  },
+  {
+   "case": 2,
+   "output": "unwrap_result",
+   "ref": "04a81131793b7ec05c6360e186137ec0a52d73140bf27dc0",
+   "got": "04a81131793b7ec0bdddd9be16914d4011d60e670c9f8140"
+  },
+  {
+   "case": 3,
+   "output": "unwrap_result",
+   "ref": "3b70514b35997bc0831b957f8a757bc05d4af77bbd4e7bc0",
+   "got": "3b70514b35997bc0b567670ebf3a46404d6366a383958040"
+  },
+  {
+   "case": 4,
+   "output": "unwrap_result",
+   "ref": "57570ed8576b7ec0ff69fa0972597ec09708eb91152d7ec0",
+   "got": "57570ed8576b7ec01517703afff44140c23e085733868040"
+  },
+  {
+   "case": 5,
+   "output": "unwrap_result",
+   "ref": "eadfa98965317fc094799179b33d7fc05752f752c5237fc0",
+   "got": "eadfa98965317fc0e2b1d967f16347409e2ad363636f8040"
+  },
+  {
+   "case": 6,
+   "output": "unwrap_result",
+   "ref": "a64ade198ae57dc0d03659801c057ec04b7efe4fc2e67dc0",
+   "got": "a64ade198ae57dc0683602f2eabb4740a4944fe5e40d8140"
+  },
+  {
+   "case": 7,
+   "output": "unwrap_result",
+   "ref": "ca797115c2517bc0808236ce1b5e7bc04d359457e1677bc0",
+   "got": "ca797115c2517bc0a5b5e403741a4a40d5ed97b5f1888040"
+  },
+  {
+   "case": 8,
+   "output": "unwrap_result",
+   "ref": "8ed2914924437dc00a6f0d1de9677dc0cd68ab8fa0387dc0",
+   "got": "8ed2914924437dc0c7a25a1a139833402fed85fd5d378040"
+  },
+  {
+   "case": 9,
+   "output": "unwrap_result",
+   "ref": "111322a09b557bc0ecd3d14f0a657bc077bc49852d3b7bc0",
+   "got": "111322a09b557bc08a1ef921819a43409eb265958fd18040"
+  },
+  {
+   "case": 10,
+   "output": "unwrap_result",
+   "ref": "d6411a6435447ec0028b9706b9467ec0af82d98648357ec0",
+   "got": "d6411a6435447ec02dde93ad26e727402e2333b7294b8140"
+  },
+  {
+   "case": 11,
+   "output": "unwrap_result",
+   "ref": "11c47d2995e27ec036b16041c1b17ec07b79f077d4c47ec0",
+   "got": "11c47d2995e27ec0f46ed7be439f484084b8f8abeb678140"
+  },
+  {
+   "case": 12,
+   "output": "unwrap_result",
+   "ref": "2c250dadc60d7dc00f2da2a5770a7dc04954f998fd1b7dc0",
+   "got": "2c250dadc60d7dc079c20e912a6f3940e9188153bf0e8140"
+  },
+  {
+   "case": 13,
+   "output": "unwrap_result",
+   "ref": "6b5333bf587d7cc03cd3e2fcbb747cc02fd6f65ea14e7cc0",
+   "got": "6b5333bf587d7cc066c11bce30d24a4020ae379f197a8040"
+  },
+  {
+   "case": 14,
+   "output": "unwrap_result",
+   "ref": "b847f49161867bc004a4e06f5b687bc07fa47f11fa517bc0",
+   "got": "b847f49161867bc089a993f676c84940882900fcaa957f40"
+  },
+  {
+   "case": 15,
+   "output": "unwrap_result",
+   "ref": "c6673089017a7ec04201f0d08e907ec0253b352d137b7ec0",
+   "got": "c6673089017a7ec001f617c37ddbf03f1d9dba92f02c8040"
+  }
+ ],
+ "loop_rev": "b9fb5ee-nogit",
+ "vit_rev": "ab75fa0-nogit",
+ "red_test": {
+  "perturbation": "noop stub",
+  "result": "363 of 377 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

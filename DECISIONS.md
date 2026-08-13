@@ -2,6 +2,136 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #26 — unwrap — 2026-08-12
+
+**THE UNIT IS DEAD IN ALL 27 SCENARIOS, AND ITS TWO CALL SITES ARE DEAD FOR TWO
+DIFFERENT REASONS.** Third such unit after #1 (`AddToList`) and #21
+(`UpdateZeroMQ`), and the first where the deadness is not simply an unentered
+guard. `Controllers.f90:322` is unit #21's shape — the `OL_Mode > 0 .AND.
+Ind_GenTq > 0` guard is evaluated 407,976 times and is never true.
+`ReadSetParameters.f90:807` is not: scenarios 10, 14 and 24 **do** configure
+`OL_Mode > 0` (scenario 10 sets `OL_Mode = 2` and `Ind_Azimuth = 6`, which is
+exactly this unit's configuration), reach `CALL Read_OL_Input` at :778, and are
+taken out by the `RETURN` at :780 because
+`Examples/example_inputs/OL_Mode2_Input.dat` is not in this tree. Reading the
+guard alone would have recorded "no scenario configures it"; reading the RETURN
+records "three scenarios configure it and a missing FILE stops them". Only the
+second is true, and the difference decides whether widening the scenarios could
+ever help. `evidence/unwrap/coverage_deadness.{py,txt}`.
+
+**THE ORDER LADDER VARIES THE SIGN OF A DIFFERENCE AND PINS ITS MAGNITUDE AT
+ONE, AND THAT COST THIS UNIT AN ENTIRE BRANCH.** Unit #12 added the order ladder
+because `_fill_array` returns an ascending ramp in every case and
+`A(i+1) - A(i) <= 0` therefore had one answer. Its bodies are `[1.0, 2.0, …]`,
+which is right for a predicate on the SIGN of a difference and reaches nothing
+for one on its MAGNITUDE. `unwrap` tests `y(i) - y(i-1) .LE. -PI`, so the
+reversed unit-step run gives `-1`. Measured at each step:
+
+```
+corpus            cases   no-op fails   the `+2*PI` branch DELETED
+as inherited        355          355                            0
++ order ladder      366          355                            0
++ range-spanning    377          363                            4
++ constant steps    403          363                            4   <- and the mutants die
+```
+
+Three additions, and they are three rules rather than one:
+
+1. **The predicate is written against a name the corpus cannot set.**
+   `order_arrays_from` matches the same NAME subscripted twice in one statement;
+   `unwrap` writes `y = x` and then subscripts `y`, so the detector returned the
+   empty set and the ladder never fired at all. Closed by ONE HOP through a
+   whole-array copy — `LHS = RHS`, both bare names, RHS a parameter — and no
+   further. A copy of a SLICE, of an EXPRESSION, or a second hop are each a
+   claim about the reference the scan cannot check, and a wrongly-ordered array
+   is outside the admissible domain of any unit that searches a sorted one.
+2. **Reaching the branch needed a step the size of the domain**, so the same
+   shapes are run again at steps spanning the parameter's admissible range —
+   which is where `_fill_array` already draws every ordinary case from, so no
+   new judgement about the domain enters. Written without jitter and so without
+   an `rng` draw: the extra CASES move the stream for a unit whose detector
+   fires, and a draw would move it for one whose detector does not.
+3. **Reaching the branch is not reaching its BOUNDARY.** `.LE.` against `.LT.`
+   differ on exactly one input, a difference of exactly `-PI`, and both guards'
+   comparison mutants survived the 377-case green
+   (`mutation/unwrap.survivors_before_difference_steps.json`, 0.875). The third
+   scale runs the same shapes with each constant the reference itself names as
+   the adjacent difference. `-PI` is not a literal anywhere in `Functions.f90` —
+   it is a named `PARAMETER` in `Constants.f90` — so `literals_from`, which mines
+   numbers out of the unit's own file, cannot see it and `named_constants_from`,
+   which mines named PARAMETERs campaign-wide, can. 0.875 → 0.925, both guards
+   dead.
+
+**THE X3 COST WAS MEASURED AGAINST THE CLEAN BASELINE AND NOT THE WORKING TREE,
+AND THAT IS NOT A DETAIL.** `evidence/unwrap/x3_cost_order_alias.{sh,txt}` runs
+the old `order_arrays_from` against the new one over every unit with a committed
+harness artifact. The tree is INTEGRATED: 21 of the 25 have a wrapper for a
+body, and a wrapper contains no subscript at all — so a sweep over the working
+tree reports `old=[] new=[]` for every one of them and reads as a proof. Read
+from `54dd134` instead, four detectors fire (`ColemanTransform`,
+`NonDecreasing`, `interp1d`, `unwrap`) and exactly one moves. The corpus of the
+other three DOES grow if they are re-run, which is a corpus addition — it can
+only add cases and only kill more — and their committed artifacts stay true
+about what they measured.
+
+**THREE GENERATORS DISAGREED ABOUT `DIMENSION(SIZE(x))`, AND THE ONE THAT WAS
+RIGHT WAS RIGHT BY ACCIDENT.** Fourth such disagreement (units #8, #17, #22),
+second on a RESULT. All three carry the FUNCTION's own dimension text across,
+and the text is legal in exactly the scope the reference wrote it in:
+`vit interface` declares the wrapper inside `unwrap` itself, where `x` is still
+the original `x(:)`, so `SIZE(x)` is its extent; `test_validate`'s bridge and
+the harness both declare `x` assumed-size, where gfortran rejects `SIZE(x)`
+outright and `map_signature` refuses the result and then dies on
+`EmitError: C parameter 'unwrap_result' is not in the mapped signature`. Fixed
+in both (X2) by resolving `SIZE(<arg>)` to the extent parameter
+`build_c_params` already emits — a lookup in the table the array's own extent
+comes from, not an evaluation. `SIZE(x) + 1` still falls to the same refusal:
+the moment arithmetic is involved the harness would be computing a buffer size
+the reference computes somewhere else, and a disagreement there is a read past
+the end of what the reference wrote.
+
+One level down, `n_x` sizes TWO arrays — `x` and the result — and it was written
+into the case stream twice and declared twice: `error: redeclaration of
+'int32_t n_x_a'`. That one needs no X3 argument at all. A duplicate declaration
+is a COMPILE error, so no already-scored unit can have been carrying one.
+
+**THE REFERENCE DOES NOT TERMINATE ABOVE 2^56, AND THE TRANSLATION MUST NOT
+EITHER.** The sixth upstream ROSCO defect here and the third of the "the
+reference has no answer" family (#17 non-termination, #21 indeterminate, #23
+abort). The `DO WHILE` loops progress only by `y(i:) = y(i:) ± 2*PI`, and
+`7.2057594037927936e16` is the smallest power of two at which `v + 2*PI == v`;
+at `1e17` and `1e300` the loop was still running after 17.9 billion iterations
+with `y(2)` unmoved. A translation that broke out would be a DIFFERENT function
+on inputs the reference simply never answers for, so it does not.
+
+**NO `harness/ranges.toml` ENTRY WAS WRITTEN FOR IT, AND THAT IS THE DECISION.**
+Units #21 and #23 both closed a non-answering domain with a pin. This one is
+already unreachable without one: `_bounds` defaults an array to ±1e3 and
+`_real_magnitude_ladder` is gated on `not q.dims`, so no hot rung can land in
+`x`. A pin NARROWS the admissible domain, which is the blindness the generator
+exists to remove, and a pin that excludes nothing reads as a cost that was paid.
+The fact is recorded in `evidence/unwrap/README.md` §2 as a property of the
+CORPUS, which is what it is — and it stops being true the moment the array
+magnitude ladder that `af5a7c94` wants is added.
+
+**`PI` IS NOT π, AND IT WAS MEASURED ON BOTH COMPILERS RATHER THAN READ.**
+`Constants.f90:24` is `REAL(DbKi), PARAMETER :: PI = 3.14159265359` — twelve
+digits of a decimal literal. `M_PI` differs by `2.069456e-13`, which is 466 ULP
+at this magnitude, far too large to be mistaken for rounding, and it would have
+made the translation a different function on every input whose unwrapping
+crosses a threshold. `400921FB54442EEA` out of gfortran and out of g++;
+`400921FB54442D18` is `M_PI`. `evidence/unwrap/pi_literal_probe.{f90,cpp,txt}`.
+
+**THREE SURVIVORS, ALL THE `CHARACTER(:), ALLOCATABLE` STAGING-BUFFER IDIOM, THE
+SIXTH UNIT TO REACH IT, AND NONE IN THE ARITHMETIC.** Both `DO WHILE` guards,
+both shifts, the `2*PI` constant, the `PI` literal, the slice bound, every
+subscript and the `y = x` copy die. `bf2ce388` is EQUIVALENT and proved over all
+4,294,967,296 values of a 32-bit int; `af5a7c94` and `10e6dfb3` are UNREACHABLE
+OVER THIS CORPUS and say so. The capacity guard's unreachability is the WEAKER
+kind, as in sigma and unlike the four units before it: `'unwrap:' // TRIM(ErrMsg)`
+grows with its input, so the guard is unreachable only because no case supplies
+an `ErrMsg` within seven characters of a 4 KiB buffer.
+
 ## Unit #25 — sigma — 2026-08-12
 
 **THE TWO CLAMPS ARE THE FIRST BRANCHES IN THIS CAMPAIGN THAT ONE INSTRUMENT

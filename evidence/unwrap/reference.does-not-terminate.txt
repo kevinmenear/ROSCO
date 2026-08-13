@@ -1,0 +1,19 @@
+--- mode 0: the threshold
+smallest 2**k with v + 2*PI == v :  0.72057594037927936E+17
+2**52 * 2*PI                     :  0.28296951008115624E+17
+a y(i) at or above that magnitude cannot leave either loop
+--- mode 3: y(2) = 1e3, inside _bounds default +/-1e3
+TERMINATED for big =  0.10000000000000000E+04 after 159 iterations
+exit=0
+--- mode 1: y(2) = 1e17, just above the threshold
+  still looping after 100000000 iterations, y(2) =  0.10000000000000000E+18
+  still looping after 200000000 iterations, y(2) =  0.10000000000000000E+18
+  ... [176 identical progress lines elided; every one reports the same y(2)] ...
+  still looping after 17900000000 iterations, y(2) =  0.10000000000000000E+18
+exit=124 (124 = killed by timeout after 10s)
+--- mode 2: y(2) = 1e300, the R3 magnitude ladder rung
+  still looping after 100000000 iterations, y(2) =  0.10000000000000001+301
+  still looping after 200000000 iterations, y(2) =  0.10000000000000001+301
+  ... [176 identical progress lines elided; every one reports the same y(2)] ...
+  still looping after 17900000000 iterations, y(2) =  0.10000000000000001+301
+exit=124 (124 = killed by timeout after 10s)

@@ -1,0 +1,19 @@
+{
+ "unit": "unwrap",
+ "against": "translation",
+ "checked": 403,
+ "failed": 0,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    2 varied extent(s) at [3, 4] and [3, 4], NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 4 combination(s) of the 1 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead; 48 array ordering(s) -- reversed, one adjacent pair inverted at the first / an interior / the last position, an adjacent EQUAL pair, and the constant array, each at UNIT steps, again at steps spanning the parameter's admissible range, and again with each of 3 constant(s) the reference itself names as the adjacent DIFFERENCE, because an ordering at one step size varies the SIGN of a difference and never its MAGNITUDE -- across the array(s) the reference subscripts twice in one statement, directly or through a whole-array copy; 92 character value(s) from a corpus of 23 (the reference's own character literals and their collating neighbours) across 1 string(s), each at length(s) [1, 2, 3] and in the mixed / padded / all-blank / leading-blank shapes, plus 144 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          2 real value(s), none zero in every case",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 6 out-parameter(s): ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg, unwrap_result"
+ ],
+ "mismatches": [],
+ "loop_rev": "b9fb5ee-nogit",
+ "vit_rev": "ab75fa0-nogit"
+}

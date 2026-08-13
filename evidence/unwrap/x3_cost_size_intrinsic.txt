@@ -1,0 +1,9 @@
+units with a committed harness artifact: 25
+of those, with an ARRAY-VALUED FUNCTION RESULT -- the only shape the new
+branch can reach: 1
+  identity       Functions.f90      result_dims='n, n'
+
+A dimension that is a bare NAME (`n`) or an INTEGER LITERAL was already
+accepted and takes the same path it always did. The new branch fires only
+on `SIZE(<arr>)`, which the old code REFUSED -- so it can turn a refusal
+into a mapping and cannot turn a mapping into anything else.
