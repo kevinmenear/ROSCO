@@ -290,6 +290,12 @@ def main(argv=None) -> int:
                     help="path relative to the campaign root; makes this a RED TEST")
     ap.add_argument("--perturb-from", default=None)
     ap.add_argument("--perturb-to", default=None)
+    ap.add_argument("--note", action="append", default=[],
+                    help="a statement recorded INTO the artifact, repeatable. For "
+                         "a unit the gate cannot observe, `compared` and "
+                         "`mismatched` read as strong evidence to whoever opens "
+                         "the file later; the reason they are not belongs in the "
+                         "same file, not only in a report elsewhere.")
     ap.add_argument("--out", default=None)
     a = ap.parse_args(argv)
 
@@ -311,6 +317,14 @@ def main(argv=None) -> int:
     payload: dict = {"unit": a.unit, "unit_of_count": "values",
                      "generated_by": "scripts/gate.py",
                      "baseline": "baseline_arrays", "perturbed": perturbing}
+    # Recorded beside the counts, deliberately. A gate that compares 5,252,000
+    # values and matches on all of them looks identical whether the unit under
+    # test ran or not -- and for a unit dead at every call site in all 27
+    # scenarios it did not run, so the comparison could not have moved whatever
+    # the translation does. That is a green establishing nothing, and it must
+    # say so in the artifact rather than in a report someone may not have.
+    if a.note:
+        payload["notes"] = list(a.note)
     try:
         if not perturbing:
             payload.update(gate_once(scenarios, work))

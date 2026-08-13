@@ -20,10 +20,15 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
+ "loop_rev": "a05eb59",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
+ "notes": [
+  "BLIND FOR THIS UNIT. `unwrap` is dead at both call sites in all 27 scenarios (Controllers.f90:339 and ReadSetParameters.f90:807, 0 hits each), so nothing this gate compared was produced by the unit under test. The 5,252,000 matched values are a whole-controller regression result and are evidence that the tree still builds and reproduces baseline; they are NOT evidence about this translation.",
+  "Verification for this unit is the differential harness (harness/unwrap.json, 403 cases) and the mutation score (mutation/unwrap.json), not this artifact. Same shape as ExtController, whose red test moved 0 of 5,252,000."
+ ],
  "perturbed": false,
  "residual_dirt": [],
  "scenarios": [
@@ -57,12 +62,8 @@
  ],
  "scenarios_failed": [],
  "shape_mismatches": [],
- "unit": "ExtController",
+ "unit": "unwrap",
  "unit_of_count": "values",
  "verdict": "PASS",
- "notes": [
-  "BLIND FOR THIS UNIT. `Ext_Mode = 0` in all 14 Examples/*.IN, so ExtController never executes in the 27-scenario set. Nothing this gate compared was produced by the unit under test. Measured directly: gate/ExtController.redtest.json moved 0 of 5,252,000 values -- the red test could not make this gate go red.",
-  "The 5,252,000 matched values are a whole-controller regression result, not evidence about this translation. Verification for this unit is the differential harness, and its post-integration harness does not link (undefined reference to extcontroller_c), which is recorded as outstanding.",
-  "NOTE ADDED WITHOUT RE-MEASURING, by the driver, after the unit closed. Every measured field below is the original run's. A retroactive re-run would have replaced a closed unit's evidence with a different measurement, which is the one thing this note exists to prevent elsewhere."
- ]
+ "vit_rev": "ab75fa0-dirty"
 }
