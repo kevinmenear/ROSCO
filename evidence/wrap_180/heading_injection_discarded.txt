@@ -1,0 +1,22 @@
+== vit_sim7.RO.dbg   23,999 timesteps
+  NacHeadingTarget observed        [ -13.3032,  +23.9830]
+  Yaw_Err          observed        [ -19.0082,  +19.0082]
+  Yaw_Err PREDICTED if heading=350 [  -3.3032,  +33.9830]   <- wrap_180(target - 350)
+  timesteps OUTSIDE that interval  10,632 of 23,999
+  |Yaw_Err - wrap_180(target - 0)|  max 10.6674   <- = the accumulated yaw travel, not 350
+  max |x| seen by the unit here    23.9830   (both are wrap_180 OUTPUTS at :419 and :423)
+
+== vit_sim27.RO.dbg   23,999 timesteps
+  NacHeadingTarget observed        [ -13.3032,  +23.9830]
+  Yaw_Err          observed        [ -19.0082,  +19.0082]
+  Yaw_Err PREDICTED if heading=350 [  -3.3032,  +33.9830]   <- wrap_180(target - 350)
+  timesteps OUTSIDE that interval  10,632 of 23,999
+  |Yaw_Err - wrap_180(target - 0)|  max 10.6674   <- = the accumulated yaw travel, not 350
+  max |x| seen by the unit here    23.9830   (both are wrap_180 OUTPUTS at :419 and :423)
+
+VERDICT: heading = 350 is refuted in both scenarios that inject it -- 10,632
+         of 23,999 timesteps fall outside the interval it would force, and one
+         would have been enough. avrSWAP(37) is
+         overwritten by call_controller before the controller reads it, so
+         the corpus never drives `x` outside [-180, 180] and both wrapping
+         branches are unreachable by the gate and by any kernel.

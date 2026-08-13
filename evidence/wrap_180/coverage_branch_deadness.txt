@@ -1,0 +1,49 @@
+coverage baseline commit : 54dd134
+scenarios in the dataset : 27 -> [3, 4, 5, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
+scenarios that failed    : []
+
+== wrap_180 -- the unit
+    452  hits=675987     scen=[1,2,3,4,5,6,7,8,9,11,12,15,16,17,18,19,20,21,22,23,25,26,27]  REAL(DbKi) FUNCTION wrap_180(x)                    <- entry
+    456  hits=675987     scen=[1,2,3,4,5,6,7,8,9,11,12,15,16,17,18,19,20,21,22,23,25,26,27]  IF (x .le. -180.0) THEN                            <- guard 1
+    457  hits=0          scen=[-         ]  wrap_180 = x + 360.0                               <- BRANCH 1
+    458  hits=675987     scen=[1,2,3,4,5,6,7,8,9,11,12,15,16,17,18,19,20,21,22,23,25,26,27]  ELSEIF (x .gt. 180.0) THEN                         <- guard 2
+    459  hits=0          scen=[-         ]  wrap_180 = x - 360.0                               <- BRANCH 2
+    461  hits=675987     scen=[1,2,3,4,5,6,7,8,9,11,12,15,16,17,18,19,20,21,22,23,25,26,27]  wrap_180 = x                                       <- ELSE
+    464  hits=675987     scen=[1,2,3,4,5,6,7,8,9,11,12,15,16,17,18,19,20,21,22,23,25,26,27]  END FUNCTION wrap_180
+
+== wrap_360 -- THE CONTROL: same shape, one live branch
+    466  hits=19998      scen=[2,22      ]  REAL(DbKi) FUNCTION wrap_360(x)                    <- entry
+    470  hits=19998      scen=[2,22      ]  IF (x .lt. 0.0) THEN                               <- guard 1
+    471  hits=0          scen=[-         ]  wrap_360 = x + 360.0                               <- BRANCH 1
+    472  hits=19998      scen=[2,22      ]  ELSEIF (x .ge. 360.0) THEN                         <- guard 2
+    473  hits=15199      scen=[22        ]  wrap_360 = x - 360.0                               <- BRANCH 2
+    475  hits=4799       scen=[2,22      ]  wrap_360 = x                                       <- ELSE
+
+== the six call sites (all of them; every caller of wrap_180)
+  Filters.f90:432  hits=408000    scen=[1,2,3,4,5,6,7,8,9,11,12,15,16,17,18,19,20,21,22,23,25,26,27] enclosing=PreFilterMeasuredSignals
+        arg is a atan2*R2D    LocalVar%NacVaneF = wrap_180(atan2(NacVaneSinF, NacVaneCosF) * R2D)
+  Controllers.f90:400  hits=63997     scen=[3,7,27    ] enclosing=YawRateControl
+        arg is a sum          LocalVar%WindDir = wrap_180(LocalVar%NacHeading + LocalVar%NacVane)
+  Controllers.f90:416  hits=63997     scen=[3,7,27    ] enclosing=YawRateControl
+        arg is a sum          WindDirPlusOffset = wrap_180(LocalVar%WindDir + NacVaneOffset)
+  Controllers.f90:419  hits=63997     scen=[3,7,27    ] enclosing=YawRateControl
+        arg is a atan2*R2D    NacHeadingTarget = wrap_180(atan2(WindDirPlusOffsetSinF, ...) * R2D)
+  Controllers.f90:423  hits=63997     scen=[3,7,27    ] enclosing=YawRateControl
+        arg is a difference   NacHeadingError = wrap_180(NacHeadingTarget - LocalVar%NacHeading)
+  ControllerBlocks.f90:668  hits=11999     scen=[9         ] enclosing=ComputeVariablesSetpoints
+        arg is a atan2*R2D    LocalVar%SD_NacVaneF = wrap_180(atan2(SD_NacVaneSinF, ...) * R2D)
+
+== the arithmetic
+  hits at the FUNCTION line               675,987
+  hits summed over the six CALL SITES     675,987   EQUAL
+  hits on the ELSE line (pass-through)    675,987   EQUAL
+  hits on BRANCH 1 (x <= -180 -> +360)          0
+  hits on BRANCH 2 (x >   180 -> -360)          0
+
+== the control, read the same way
+  wrap_360 entry                           19,998
+  wrap_360 ELSE + BRANCH1 + BRANCH2        19,998   EQUAL
+  wrap_360 BRANCH 2 (x >= 360 -> -360)     15,199   <- a branch body DOES get its own entry when it runs
+
+VERDICT: every one of the 675,987 calls to wrap_180 in all 27 scenarios took the
+         PASS-THROUGH branch. Both wrapping branches are dead at every call site.
