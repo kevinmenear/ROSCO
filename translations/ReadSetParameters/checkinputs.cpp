@@ -53,19 +53,25 @@ void assign_errmsg(errorvariables_view_t* ErrVar, std::string_view s) {
         return;
     }
     std::memcpy(ErrVar->ErrMsg, s.data(), s.size());
-    // AND BLANK THE REST OF THE STAGING BUFFER. The Fortran assignment
-    // REPLACES the value, and the populator that renders the replaced value
-    // into this buffer writes `buffer(1:LEN(buffer)) = src%ErrMsg` -- a
-    // CHARACTER assignment, so it blank-fills to the full width. Leaving the
-    // previous message's tail behind gives a buffer that agrees with the
-    // reference for `n_ErrMsg` bytes and disagrees after it.
+    // AND CLEAR THE REST OF THE STAGING BUFFER.
+    //
+    // `ErrVar%ErrMsg` is CHARACTER(:), ALLOCATABLE. The assignment REALLOCATES
+    // it to exactly LEN of the right-hand side, so in the reference there are
+    // no bytes past the new length at all -- the previous message's storage is
+    // gone. Leaving the previous message's tail in this buffer renders a value
+    // the reference does not have.
     //
     // Invisible after integration, where the reverse copy reads only
-    // `buffer(1:n_ErrMsg)`. NOT invisible to the differential harness, which
-    // compares the whole buffer: 16,729 of 16,769 cases failed on exactly this
-    // and on nothing else, every one of them with `n_ErrMsg` IDENTICAL.
+    // `buffer(1:n_ErrMsg)` -- and the whole margin in the differential
+    // harness, which compares the buffer. MEASURED, in both directions:
+    // leaving the tail alone fails 16,729 of 16,769 and blank-filling it fails
+    // 16,769 of 16,769, every one on `ErrVar.ErrMsg` and none on `n_ErrMsg`.
+    // The oracle side is a freshly zeroed buffer that the bridge writes
+    // `n_ErrMsg` bytes into, so the discarded region reads as NUL and not as
+    // blank -- the first differing byte is `a=0x20 b=0x00` at exactly index
+    // `n_ErrMsg`, which is what said so.
     if (ErrVar->n_ErrMsg_cap > static_cast<int32_t>(s.size())) {
-        std::memset(ErrVar->ErrMsg + s.size(), ' ',
+        std::memset(ErrVar->ErrMsg + s.size(), 0,
                     static_cast<size_t>(ErrVar->n_ErrMsg_cap) - s.size());
     }
     ErrVar->n_ErrMsg = static_cast<int32_t>(s.size());
