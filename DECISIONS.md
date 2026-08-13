@@ -2,6 +2,88 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #29 — CheckInputs — 2026-08-13
+
+**THE CAMPAIGN'S LARGEST UNIT IS ALSO ITS FIRST TOOLING WALL, AND THE TWO ARE
+THE SAME FACT.** `CheckInputs` is 857 lines and about 180 validity checks — an
+order of magnitude past anything before it — and every one of the six defects it
+found is a rule that had never been asked a question this size. R7's all-pairs
+fallback is quadratic in the knob count (86 here, 6 for the previous largest);
+its `idx is None` path assumes a scalar and seven of those knobs name a whole
+array through `ANY`; its bodies and its extents can be knobbed independently;
+and it exists in two copies, so fixing one fixes half the corpus. None of these
+is a defect that a smaller unit could have exposed, and none was found by
+reading — each was found by a run failing.
+
+**AN ERROR THAT NAMES ITS PARAMETER COSTS ONE PASS; ONE THAT DOES NOT COSTS
+THREE.** The same emitter raised both. `CntrPar_SU_LoadStages has 17 element(s)
+but its extents say 0` was diagnosed and fixed in a single cycle.
+`TypeError: 'float' object is not iterable`, raised four rules downstream of
+each of its three distinct causes and naming neither the parameter nor the rule,
+took three. That is the whole difference, measured on one unit in one afternoon.
+
+**THREE GENERATORS NAMED A SYMBOL AND DECLARED NONE OF THEM.**
+`vit_kernel_callees.h` emitted `void addtolist_c(CFI_cdesc_t*, int)` with no
+`<ISO_Fortran_binding.h>` and `int32_t nondecreasing_c(...)` with no
+`<stdint.h>`; `vit test-validate` wrote Fortran bridges DEFINING both and no C
+declaration at all. Both were already right in the INTEGRATION path — the
+generator that has had a callee since unit #1. `CheckInputs` is the first unit
+whose *kernel* and whose *differential harness* have a callee, and the two
+paths that had never been exercised were the two that were wrong. **A generator
+pair with one exercised half is a generator pair with one untested half**, and
+nothing in this campaign was asking.
+
+**"OTHER UNITS' OBJECTS STAY, THEY ARE PART OF THE REFERENCE BUILD" WAS TRUE FOR
+28 UNITS BECAUSE NONE OF THEM HAD A CALLEE.** `harness.sh` said so in a comment
+and it was right until this unit. `checkinputs_callees.f90` defines
+`addtolist_c`; so does the integrated `addtolist.cpp.o`. The first repair —
+drop the object, keep the bridge — fixed the duplicate symbol and created a
+loop, because on an integrated tree the Fortran `AddToList` IS a wrapper around
+`addtolist_c`: bridge → wrapper → bridge, SIGSEGV on case 0 with no message.
+**The right resolution inverts it**: drop the bridge, keep the object. VIT's
+one-callee-implementation property then holds trivially — the Fortran callee is
+a wrapper around the same C++, so both sides of the comparison reach it.
+
+**A DEFERRED-LENGTH STRING HAS NO BYTES PAST ITS LENGTH, AND WHAT THE HARNESS
+RENDERS THERE IS DECIDED BY WHOEVER ALLOCATED THE BUFFER.** `ErrVar%ErrMsg` is
+`CHARACTER(:), ALLOCATABLE`; an assignment reallocates it to exactly `LEN`. The
+staging buffer the view crosses on is wider, and the region past `n_ErrMsg` is
+not part of any value the reference has. Three renderings, all measured:
+
+```
+leave the previous message's tail   16,729 of 16,769 FAILED
+blank-fill it                       16,769 of 16,769 FAILED
+clear it to NUL                              0 FAILED
+```
+
+Neither red run tells you which way to go — they differ by 40 cases and both
+say "ErrMsg". What settled it was the first differing BYTE, `a=0x20 b=0x00` at
+exactly index `n_ErrMsg`: the oracle side is a zeroed vector the bridge writes
+`n_ErrMsg` bytes into. **Two red tests on the same output are a direction only
+if you look at the bytes**, which is unit #27's "compute the two sets" one
+representation lower down.
+
+**AN INPUT-VALIDATION ROUTINE THAT READS PAST ITS OWN INPUT.** `CheckInputs`
+tests `AWC_NumModes` against 0 and against 2 and never against
+`SIZE(CntrPar%AWC_freq)`, then loops `DO Imode = 1,AWC_NumModes` reading
+`AWC_freq(Imode)`. Case 9544 killed the ORACLE with 99999 against an extent of
+28. Three pins in `harness/ranges.toml`, bounded by the reference's own
+predicates so no branch is lost. Upstream ROSCO's defect, and the seventh of the
+"the reference has no answer" family. **The translation survived the same loop
+and that is luck, not correctness** — ~800 KB past a 28-element allocation
+happened to be mapped on the C++ heap and not on the Fortran one.
+
+**THE KERNEL IS ALIVE AND BLIND, AND FOR A REASON THAT GENERALISES.** A
+determinate wrong constant scores 0 of 1; the whole unit deleted scores 1 of 1.
+The single captured case is a VALID configuration, so `aviFAIL` is 0 on both
+sides and `ErrMsg` is never allocated — KGen guards its comparison on
+`ALLOCATED` and `errmsg` is absent from all 426 compared rows. **A unit whose
+only output is an error signal is invisible to any capture taken on a working
+configuration**, however many of its branches that configuration executes. And
+one case rather than twenty is not a window that was too narrow: the site is
+called once per scenario at invocation index 1 of its own counter, so all 24
+scenarios write `CheckInputs.0.0.1` and overwrite each other.
+
 ## Unit #28 — wrap_360 — 2026-08-13
 
 **A LIVE BRANCH AND A DEAD ONE IN THE SAME THREE-STATEMENT UNIT, AND THE
