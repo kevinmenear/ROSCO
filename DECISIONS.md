@@ -5127,3 +5127,69 @@ And one restatement was found by the score rather than by reading: the two
 error branches each spelled `ErrVar%aviFAIL = -1`, and the copy inside the
 unreachable size-mismatch branch was unkillable for that reason alone. One
 lambda, one site, killed by the branch that *is* reachable.
+
+## A session that stopped for no reason we can name, and what it cost
+
+Unit #26 `unwrap`, session `785f03cb-c4f9-4a53-bf80-852c6e1c61ac`, halted the
+campaign with `NO_PROGRESS`. The driver was right to stop: `run()` will not
+start a unit it cannot close. But the *reason* the session ended is unexplained,
+and that is the part worth keeping.
+
+| | |
+|---|---|
+| wall clock | **51 min** of a 120-min `--timeout-s 7200` |
+| turns | 159 |
+| peak context | 339,714 tokens |
+| output / cache-read | 106,059 / 31,365,165 |
+| `stop_reason` | **None** |
+| final record | `last-prompt` — it ended **mid-sentence, writing a progress summary** |
+
+**Not a timeout. Not context exhaustion.** Both would be explanations; neither
+applies. Nothing observed here says it will not recur on the next unit.
+
+Recorded because its whole value is in existing *before* a second instance. If
+this never happens again it is a curiosity. If it does, the difference between
+having this row and not having it is whether there are two data points or a
+vague memory of one.
+
+**What it cost is instructive on its own.** The session had already done the
+expensive, durable work — 403 harness cases, 40 mutants at 1.00 over 7
+operators with 3 declared equivalences, and the dead-call-site diagnosis. What
+it lost was the step that made any of it *count*: it never committed, so every
+done-predicate read the committed head and found nothing. `P12:mutation_missing`
+fired while `mutation/unwrap.json` sat on disk, complete.
+
+**The prevention is incremental commits, not a reordered final step.** "Commit
+before the final report" would have saved this session, but only by luck of
+where it died — it stopped after mutation and before integration. A session
+dying between harness and mutation would still have lost the mutation run. The
+rule that survives an arbitrary death point is: **commit each expensive artifact
+as it is produced.** Multi-commit units are already normal here (`SecLPFilter`
+closed across three), so this costs no attribution clarity.
+
+Detection already worked and needed no change: `P1:no_commits` fired correctly
+and the driver halted rather than proceeding over it. What was missing was
+prevention, and prevention must not depend on a session's judgement under
+pressure.
+
+## `unwrap`'s evidence has mixed provenance, and the split is recorded
+
+Not a K1 exception. K1 says a unit's last action is a commit that brings state
+current, and `unwrap` will still close with a session's own commit — the
+invariant holds. What is true, and narrower, is that when it closes some of its
+evidence will have come from a session and some from the driver:
+
+| artifact | produced by | committed at |
+|---|---|---|
+| `translations/Functions/unwrap.cpp` | session `785f03cb` | `284df58` (driver) |
+| `harness/unwrap.json` (403 cases) | session `785f03cb` | `284df58` (driver) |
+| `mutation/unwrap.*` (1.00, 3 equiv) | session `785f03cb` | `284df58` (driver) |
+| `evidence/unwrap/` | session `785f03cb` | `284df58` (driver) |
+| this file and `RUNBOOK.md`, its words | session `785f03cb` | `284df58` (driver) |
+| `gate/unwrap.json` | **driver**, `scripts/gate.py` | `aabf439` |
+| the integration half | a future session | not yet |
+
+Stated as a claim someone can check — which artifact, by whom, at which sha —
+rather than as a violated invariant. In a campaign whose argument is that
+provenance is the difference between evidence and assertion, calling this a K1
+exception would overstate it, and leaving it unrecorded would understate it.
