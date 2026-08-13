@@ -57,6 +57,7 @@ double sigma_c(double x, double x0, double x1, double y0, double y1, errorvariab
 void unwrap_c(double* x, int n_x, errorvariables_view_t* ErrVar, double* unwrap_result);
 double wrap_180_c(double x);
 double wrap_360_c(double x);
+void checkinputs_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, float* avrSWAP, errorvariables_view_t* ErrVar, int size_avcMSG);
 
 #ifdef __cplusplus
 }
