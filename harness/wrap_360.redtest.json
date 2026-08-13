@@ -1,0 +1,121 @@
+{
+ "unit": "wrap_360",
+ "against": "translation",
+ "checked": 134,
+ "failed": 127,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  N/A      R5_non_degenerate_shape    no array or extent parameter -- nothing whose SHAPE could be degenerate; this is not a pass",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      50 value(s) from 9 literal(s) in the reference, each under every declared value of 0 flag(s); 33 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 10 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 1 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits; 7 combination(s) of the 1 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          1 real value(s), none zero in every case",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 0 out-parameter(s): none"
+ ],
+ "mismatches": [
+  {
+   "case": 2,
+   "output": "vit_result",
+   "ref": "000000000000f03f",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 3,
+   "output": "vit_result",
+   "ref": "0000000000707640",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 4,
+   "output": "vit_result",
+   "ref": "000000000000e03f",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 5,
+   "output": "vit_result",
+   "ref": "00000000007c7640",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 6,
+   "output": "vit_result",
+   "ref": "000000000000c03f",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 7,
+   "output": "vit_result",
+   "ref": "00000000000084c0",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 8,
+   "output": "vit_result",
+   "ref": "0000000000008440",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 9,
+   "output": "vit_result",
+   "ref": "000000000000e03f",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 10,
+   "output": "vit_result",
+   "ref": "0000000000787640",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 11,
+   "output": "vit_result",
+   "ref": "000000000000f03f",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 12,
+   "output": "vit_result",
+   "ref": "0000000000707640",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 13,
+   "output": "vit_result",
+   "ref": "000000000000f83f",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 14,
+   "output": "vit_result",
+   "ref": "010000000000e03f",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 15,
+   "output": "vit_result",
+   "ref": "ffffffffffffdf3f",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 16,
+   "output": "vit_result",
+   "ref": "d1dcffffffffdf3f",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 17,
+   "output": "vit_result",
+   "ref": "0000000000000040",
+   "got": "0000000000000000"
+  }
+ ],
+ "loop_rev": "ff1e6e1-nogit",
+ "vit_rev": "6cd3c75-nogit",
+ "red_test": {
+  "perturbation": "the whole unit as a no-op: reads no argument, returns 0.0",
+  "result": "127 of 134 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}
