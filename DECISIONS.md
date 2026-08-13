@@ -2,6 +2,91 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #28 — wrap_360 — 2026-08-13
+
+**A LIVE BRANCH AND A DEAD ONE IN THE SAME THREE-STATEMENT UNIT, AND THE
+PER-UNIT GATE NUMBER CANNOT REPORT EITHER.** Unit #27 recorded that "the gate
+can see this unit" and "the gate can see what this unit does" come apart.
+`wrap_360` is the case where they come apart *within one unit*: its whole-unit
+no-op moves 84,477 values, deleting **both** arms moves 31,579, deleting the
+HIGH arm alone moves 31,579, and deleting the LOW arm alone moves **0**. Three
+different questions, three different numbers, and STATUS.md's gate-visibility
+list carries exactly one of them.
+
+The same partition comes back from three instruments and they disagree about one
+arm, which is the finding rather than an inconsistency:
+
+```
+                    low arm alone   high arm alone   both
+kernel, 41 cases              0            21          21
+harness, 134 cases           36            15          51
+gate, 5,252,000 values        0        31,579      31,579
+```
+
+`x < 0` has 0 hits at both call sites in all 27 scenarios, so the generated
+corpus is the ONLY thing that tests `x + 360.0`. That is a weaker claim than the
+other arm's and it is written down as the weaker one (unit #25's rule). It is
+also a different *kind* of absence from unit #27's: there the arm is dead
+because `rosco/toolbox/control_interface.py:211` discards the injection aimed at
+it, a defect in the simulation harness; here `360*Time*AWC_freq(1)` is
+non-negative by construction and `NacHeading + NacVane` simply never goes
+negative in the one scenario that reaches the other site. **Nothing needs
+repairing for this one, which is why it is worth distinguishing.**
+
+**THE DEFECT A SIBLING UNIT IS EXPOSED TO IS THE SIBLING.** `wrap_180` and
+`wrap_360` are one screen apart in `Functions.f90`, three statements each, and
+their comparison pairs are opposites: `.le. / .gt.` gives `(-180, 180]` and
+`.lt. / .ge.` gives `[0, 360)`. Reading either across into the other moves
+exactly `x = 0.0`, `x = -0.0` and `x = 360.0` and nothing else in the real
+line — 7 of 134 differential cases, killed by R6's predicate knob and by unit
+#14's signed-zero rung. Two units in a row have now had that rung inside their
+margin. **When two units in one file differ only in a comparison spelling, make
+the sibling's spelling an explicit red test**; it is the one perturbation a
+translator is actually likely to produce, and it is invisible to both bit-exact
+layers here (the kernel's 41 cases hold neither boundary).
+
+**A PROBE THAT COMPARES AGAINST A MATHEMATICAL CONSTANT WHERE THE PROGRAM USES
+ITS OWN LITERAL REPORTS FAILURE ON A CORRECT RUN.** `evidence/wrap_360/
+captured_domain.py` checks that deleting the wrap moves each affected case by
+exactly 360 degrees in the caller's post-multiplied units. Compared against
+`2*math.pi` it said DOES NOT MATCH; ROSCO's `Constants.f90:23` defines
+`D2R = 0.01745329251`, eleven digits, so the right number is `6.2831853036` and
+`2*PI` is `6.2831853072`. They differ at the tenth digit, which is *above* the
+printed precision of the kernel's own difference line — so the check was neither
+obviously right nor obviously wrong until the constant was parsed out of the
+source. **P7 applies to the probe and not only to the translation**, and this is
+the cheapest place this campaign has seen it bite: a probe that reads a constant
+from mathematics rather than from the program is measuring a different program.
+
+**A MODEL OF A CALL SITE IS AN ARGUMENT WHERE A STUB RUN IS A MEASUREMENT.** The
+first version of the same script recovered the kernel's input domain from
+`x = 0.45·(n−1)` degrees, read off the first two cases. It puts every case in
+the right arm and reproduces **6 of 41** captured values bit for bit, because
+`LocalVar%Time` accumulates by `DT` rather than being multiplied out. What
+replaced it costs nothing extra: the pass-through, no-low-arm and no-high-arm
+stub runs had to happen as red tests anyway, and read together they identify
+each case's arm by *definition* — a case the pass-through stub matches is a case
+the reference did not wrap. Kept in the git history as what it was.
+
+### Carried forward, not acted on here
+
+**The per-arm number has no home.** Four units now have a second gate number
+worth carrying that STATUS.md's one-number-per-unit list cannot hold
+(`saturate`'s upper clamp, `sigma`'s two clamps, `wrap_180`'s two branches,
+`wrap_360`'s low arm). Unit #27 logged this under Open; this unit is the fourth
+instance and the first where one of the two per-arm numbers is NON-ZERO, which
+makes the list actively misleading rather than merely incomplete: `wrap_360`
+reads as a visible unit and one of its two arms is invisible. Still not fixed
+here — it is a change to the shape of a state file every unit writes.
+
+**`vit check` cross-source findings are file-scoped, not unit-scoped.** Running
+it on this translation with `-f rosco/controller/src/Functions.f90` reported
+`minval-endpoints` and `array-section-row` — both true of *other* functions in
+that file and neither present in `wrap_360`, whose entire body is three
+comparisons. Not acted on (it is a VIT change and X3-adjacent for every unit
+that has run it), and recorded because a reader of a future green run should
+know the two findings are not about the unit named in the header.
+
 ## Unit #27 — wrap_180 — 2026-08-13
 
 **A UNIT CAN BE EXERCISED 675,987 TIMES AND HAVE EVERY ONE OF ITS BRANCHES DEAD,

@@ -4,6 +4,72 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-13: unit #28 `wrap_360` is `integrated` and CLOSED**, first
+dispatch. Five layers available, five run, all green, all red-tested. **It is
+unit #27's sibling and its counterexample**: three statements, one screen down
+in the same file, the opposite comparison pair — and where `wrap_180`'s two arms
+are dead at all six of its call sites, `wrap_360` has **one live arm and one
+dead one**, and every layer says which.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay | **41 of 41**, 41 of 41 field rows `IDENTICAL` | VIT's own (`x × 1.00001`); wrong constant `-7.25` **0 of 41**; both arms deleted **20 of 41**; the low arm alone **41 of 41** |
+| differential harness vs clean Fortran | **134** checked, 0 failed, 0 inadmissible | no-op **127**; both arms **51**; low arm alone **36**; high arm alone **15**; the sibling's comparison spelling **7** |
+| mutation score | **11 of 11 killed, 1.000**, **0 declared equivalent**, 0 no-compile, 5 operators | the score *is* the red test, eleven times |
+| post-integration harness (wrapper only) | **134 checked, 0 failed** | the wrapper hands `-x` to `wrap_360_c`: **129 of 134**, revert verified green |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | whole unit → `0.0` moves **84,477**; both arms deleted **31,579**; high arm alone **31,579**; low arm alone **0** |
+
+**THE SAME PARTITION FROM THREE INSTRUMENTS, AND THEY DISAGREE ABOUT ONE ARM.**
+The two arms are disjoint, so deleting them singly must account for deleting
+both — and all three layers say so independently:
+
+| instrument | low arm alone | high arm alone | both |
+|---|---|---|---|
+| kernel, 41 cases | 0 | 21 | 21 |
+| differential harness, 134 cases | **36** | 15 | 51 |
+| gate, 5,252,000 values | 0 | 31,579 | 31,579 |
+
+The low arm (`x < 0 → x + 360`) has **0 hits at both call sites in all 27
+scenarios**, so the two bit-exact layers move nothing when it is deleted, and
+the generated corpus is the only thing that tests it. Both zeros have their
+control on the **same build** — the whole-unit no-op and the both-arms stub move
+84,477 and 31,579 — which is what makes them blindness rather than a broken
+chain. Unlike unit #27's dead arms this is not caused by a defect in the
+simulation harness: `360*Time*AWC_freq(1)` is non-negative by construction.
+
+**THE CALL SITE WAS CHOSEN ON THE ARM, AND THE HOT SITE HAPPENED TO BE THE RIGHT
+ONE.** `Controllers.f90:515` runs 3,999 times in scenario 2 and **every one of
+those calls takes the pass-through arm** — a kernel captured there would be unit
+#27's situation repeated. `Controllers.f90:845` runs 15,999 times in scenario 22
+and 15,199 of them wrap. Unit #24's rule is served by its purpose rather than by
+its literal procedure: the committed coverage settles it one step earlier and
+cheaper (unit #25), because line 473 has hits in exactly one scenario and it is
+not 515's. Said out loud, as unit #25 requires.
+
+**THE INVOCATION WINDOW'S THIRD RANGE WAS PREDICTED EMPTY BEFORE EXTRACTING.**
+Unit #25's arithmetic, which costs one query: the window is
+`0:0:1-20, 0:0:12000-12020, 0:0:23900-23920` and the site has 15,999 calls, so
+the last range contributes 0 and the capture is 20 + 21 = **41 cases**. It came
+back 41, with exactly those indices.
+
+**THE DEFECT THIS UNIT IS ACTUALLY EXPOSED TO IS ITS SIBLING.** `wrap_180` is
+`.le.` low and `.gt.` high — the half-open interval `(-180, 180]`. `wrap_360` is
+`.lt.` low and `.ge.` high — `[0, 360)`. Reading one across into the other moves
+exactly `x = 0.0`, `x = -0.0` and `x = 360.0`, and **nothing else in the whole
+real line**. That stub fails 7 of 134 differential cases, and the corpus rules
+that give it those 7 are R6's predicate knob and the signed-zero rung unit #14
+added — the same rung that was unit #24's entire margin.
+
+**A PROBE COMPARING AGAINST `2·π` REPORTED FAILURE ON A CORRECT RUN.** The
+kernel's caller multiplies by ROSCO's own `D2R = 0.01745329251`
+(`Constants.f90:23`, eleven digits), so the per-case difference a wrap deletion
+produces is `360·D2R = 6.2831853036`, not `2·π = 6.2831853072` — a disagreement
+in the tenth digit, above the printed precision of the kernel's own difference
+line. **P7 reaches the probe as well as the translation.** The same script's
+first version recovered the input domain from a *model* of the call site rather
+than from a measurement, and that model reproduced only 6 of 41 captured values
+bit for bit; it was replaced by three stub runs that had to happen anyway.
+
 **As of 2026-08-13: unit #27 `wrap_180` is `integrated` and CLOSED**, first
 dispatch. Five layers available, five run, all green, all red-tested — and the
 thing to know about this unit is not the translation, which is three statements,
@@ -1519,10 +1585,10 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-27 attempted / **26 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+28 attempted / **27 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / **1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 42 remain. 26 + 1 + 42 = 69.
+69 units in `plan.json`; 41 remain. 27 + 1 + 41 = 69.
 
 (This block read `8 / 8 / 61 remain` through unit #9, which did not update it.
 Recounted from `plan.json` at unit #10 rather than incremented, and recounted
@@ -1533,24 +1599,33 @@ units stale, and both times the unit that fixed it was not the unit that broke
 it.** The recount is one command and it is in this file's own instructions:
 `python3 -c "import json,collections; print(collections.Counter(u.get('disposition') for u in json.load(open('plan.json'))['units']))"`)
 
-**Sixteen of the 26 integrated units are gate-visible.** Recounted at unit #27
-by READING every `gate/*.redtest.json` rather than by editing this list, which is
-what the recount instruction above means and which is how the `StateMachine`
-discrepancy below was found:
+**Seventeen of the 27 integrated units are gate-visible.** Recounted at unit
+#28 by READING every `gate/*.redtest.json` rather than by editing this list,
+which is what the recount instruction above means and which is how the
+`StateMachine` discrepancy below was found:
 
 ```
 saturate 2,255,249 · GetWords 1,857,893 · NonDecreasing 1,857,893 (shared —
 see below) · LPFilter 1,592,059 · ReadAvrSWAP 1,487,557 · identity 1,462,798 ·
 SecLPFilter 1,349,326 · interp1d 1,341,803 · NotchFilter 551,278 ·
 ColemanTransformInverse 389,644 · sigma 229,165 · wrap_180 206,976 ·
-NotchFilterSlopes 128,918 · ColemanTransform 124,353 · StateMachine 36,577 ·
-SecLPFilter_Vel 14,140
+NotchFilterSlopes 128,918 · ColemanTransform 124,353 · wrap_360 84,477 ·
+StateMachine 36,577 · SecLPFilter_Vel 14,140
 ```
 
 The ten that are gate-blind: `AddToList`, `Conv2UC`, `ExtController`, `GetPath`,
 `GetRoot`, `HPFilter`, `Int2LStr`, `PathIsRelative`, `Read_OL_Input`,
 `UpdateZeroMQ`, `unwrap` — eleven names for ten units, because `Read_OL_Input` is
-`blocked` and not counted among the 26.
+`blocked` and not counted among the 27.
+
+**`wrap_360` is the counterexample this list has been waiting for, and it is
+the same three statements one screen down.** Its whole-unit no-op moves 84,477
+and the stub deleting **both of its arms moves 31,579** — where `wrap_180`'s
+identical stub moves 0. One arm of the two is live (15,199 of 19,998 calls take
+`x >= 360`, all in scenario 22), so the per-arm numbers are `31,579` for the
+high arm and `0` for the low one, and the second zero has its control on the
+same build. A per-arm number can be non-zero here; the list below still cannot
+carry it.
 
 **`wrap_180` is gate-visible and gate-blind at once, and the list above cannot
 say that.** Its red test moves 206,976 values, so it belongs on this list; the
@@ -1559,7 +1634,7 @@ certifies a translation missing half the unit. A single per-unit number answers
 *can the gate see this unit at all* and says nothing about *which parts*. Every
 entry above is that same one number, and at least three units now have a second
 one worth carrying (`saturate`'s upper clamp, `sigma`'s two clamps, `wrap_180`'s
-two branches). Logged under Open.
+two branches, `wrap_360`'s low arm). Logged under Open.
 
 **`StateMachine`'s committed artifact does not hold the number this file has
 been quoting.** This block read **1,526,538 (whole-unit no-op)**;
