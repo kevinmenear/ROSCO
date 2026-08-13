@@ -1,0 +1,30 @@
+# scripts/_baseline_probe.py against translations/ReadSetParameters/checkinputs.cpp
+# 2026-08-13T09:27:33Z  ROSCO-r2 48ec858
+# aviFAIL 0 with no message == the TRANSLATION raises nothing on this state.
+# The FORTRAN's verdict on it is the corpus case beside it, not this file.
+
+== --state modes_off
+aviFAIL 0  ErrStat 0  n_ErrMsg 0  ErrMsg ''
+
+== --state modes_on
+ ROSCO WARNING: Individual pitch control and active wake control are both enabled. Performance may be compromised.
+aviFAIL 0  ErrStat 0  n_ErrMsg 0  ErrMsg ''
+
+== --state open_loop_flap_fbp
+aviFAIL 0  ErrStat 0  n_ErrMsg 0  ErrMsg ''
+
+== the all-inert state, for contrast: what the probe says when a state is NOT admissible
+FIRED DT_Out must be greater than 0
+FIRED F_LPFType must be 1 or 2.
+FIRED F_LPFCornerFreq must be greater than zero.
+FIRED F_SSCornerFreq must be greater than zero.
+FIRED F_WECornerFreq must be greater than zero.
+FIRED PC_GS_n must be greater than 0
+FIRED PC_MinPit must be less than PC_MaxPit.
+FIRED PC_RefSpd must be greater than zero.
+FIRED PC_MaxRat must be greater than zero.
+FIRED PC_MinRat must be less than zero.
+FIRED VS_MaxRat must be greater than zero.
+FIRED DT must be greater than zero.
+FIRED CheckInputs:DT must be greater than zero.
+aviFAIL -1  ErrStat 0  n_ErrMsg 41  ErrMsg 'CheckInputs:DT must be greater than zero.'
