@@ -205,3 +205,51 @@ LocalVar_ZMQ_R_Pitch      = { no_oracle = "setpoints(8), never assigned in this 
 # arithmetic site in the interpolation itself.
 [interp1d]
 n_yData = { same_as = "n_xData" }
+
+# ---------------------------------------------------------------------------
+# CheckInputs
+#
+# THREE PINS, ALL THREE BECAUSE THE REFERENCE READS PAST THE END OF AN ARRAY.
+# Same shape as ExtController's four above: the domain really is this narrow,
+# and what the generator would otherwise produce is not more coverage but a
+# SIGSEGV in the oracle.
+#
+# `CheckInputs` validates `AWC_NumModes` against 0 and against 2 and never
+# against `SIZE(CntrPar%AWC_freq)`, and then, four lines later:
+#
+#     DO Imode = 1,CntrPar%AWC_NumModes
+#         IF (CntrPar%AWC_freq(Imode) < 0.0) THEN
+#
+# `AWC_freq`, `AWC_clockangle` and `AWC_harmonic` are ALLOCATABLE and sized
+# from the DISCON file; nothing in this subroutine relates the count to the
+# extent. An input-validation routine reading out of bounds on its own input
+# is upstream ROSCO's defect, not the harness's and not the translation's.
+#
+# MEASURED, not argued. R6's integer ladder put `AWC_NumModes` at 99999 with
+# `n_AWC_freq` at 28, and case 9544 killed the ORACLE:
+#
+#     CASE 9544
+#     CPP        <- the translation returned
+#     F90        <- and then ./test died, SIGSEGV, core dumped
+#
+# The translation survived the same loop, which is luck and not correctness:
+# 99999 doubles past a 28-element allocation is ~800 KB, and the C++ heap
+# happened to have it mapped where the Fortran one did not. Both are undefined.
+#
+# THE BOUNDS ARE THE REFERENCE'S OWN PREDICATES, so no branch is lost:
+# `AWC_NumModes` is tested `< 0`, `> 2` and `< 1`, so -1..3 reaches every arm
+# of both `AWC_Mode == 1` and `AWC_Mode == 2`. `CC_Group_N` and `StC_Group_N`
+# are pure loop bounds over `CC_GroupIndex` / `StC_GroupIndex`, whose only
+# predicate is on the ELEMENT, so 0..2 reaches the empty loop, one iteration
+# and more than one.
+#
+# THE COST, STATED: a translation that mis-handled a count LARGER than its
+# array has nothing here to disagree with. That defect is unreachable in the
+# reference too -- it has no defined answer there -- which is why the pin is
+# admissible and why it is not free.
+
+[CheckInputs]
+
+CntrPar_AWC_NumModes = { lo = -1, hi = 3 }
+CntrPar_CC_Group_N = { lo = 0, hi = 2 }
+CntrPar_StC_Group_N = { lo = 0, hi = 2 }
