@@ -1,0 +1,43 @@
+# C12 -- RECORDED BEFORE THE FIX, with the artifact it produced.
+# `bash scripts/harness.sh CheckInputs ... --post-integration` at 7618834, 2026-08-13T10:16:54Z
+#
+# The LINK FAILS and the script reports a PASS, at the case count of a
+# corpus that no longer exists. Two defects, one line apart:
+#
+#  1. duplicate shim. Pre mode step 2d now puts vit_integration_shim.o
+#     in the MAKEFILE (it has to: vit_mutate runs `make test` itself).
+#     Post mode asks make what LIBS is -- which now INCLUDES the shim --
+#     and appends it again. The comment in post mode says a command-line
+#     LIBS= overrides a makefile assignment, and it does; what it does
+#     not do is remove the shim from the value it just read back.
+#
+#  2. a failed build re-stamps the PREVIOUS artifact. `make ... && ./test
+#     > $OUT` never runs, $OUT still holds the last run's JSON, and the
+#     parse check below it only asks whether the file exists and parses.
+#     So the run prints PASS 16769/0 -- the count of the corpus from
+#     before the R11 re-take, on a build that did not link.
+
+/usr/bin/ld: /workspace/ROSCO-r2/translations/ReadSetParameters/checkinputs_test/vit_integration_shim.o: in function `checkinputs_c':
+vit_integration_shim.cpp:(.text+0x0): multiple definition of `checkinputs_c'; /workspace/ROSCO-r2/translations/ReadSetParameters/checkinputs_test/vit_integration_shim.o:vit_integration_shim.cpp:(.text+0x0): first defined here
+collect2: error: ld returned 1 exit status
+make: *** [Makefile:71: test] Error 1
+POST-INTEGRATION PASS: checked 16769  failed 0
+
+# exit: 0
+# and the artifact it left, unchanged from the previous dispatch:
+{'unit': 'CheckInputs', 'against': 'integrated', 'checked': 16769, 'failed': 0, 'inadmissible': 0, 'measures': "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.", 'loop_rev': '351edc7', 'vit_rev': '477fc47'}
+
+# --- AFTER THE FIX, both halves, 2026-08-13T10:18:33Z ---
+
+# 1. the run that used to link twice:
+POST-INTEGRATION PASS: checked 22824  failed 0
+
+# 2. the repair's own red test -- one nonexistent object appended to the
+#    generated Makefile's LIBS. A failed build must not report a pass.
+make: *** [Makefile:71: test] Error 1
+harness.sh: no parseable artifact at harness/CheckInputs.postintegration.json -- the build or the run died (rc=2)
+#    exit: 2, and the artifact is ABSENT rather than stale:
+ls: harness/CheckInputs.postintegration.json: No such file or directory
+
+# 3. and the real run again, to leave the artifact the campaign keeps:
+POST-INTEGRATION PASS: checked 22824  failed 0

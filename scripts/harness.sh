@@ -426,17 +426,31 @@ docker exec "$CONTAINER" bash -lc \
 #
 # `include Makefile` and an explicit target: naming the target means the
 # generated Makefile's own default rule is not run, so this only reads.
+# AND DROP THE SHIM FROM WHAT MAKE REPORTS, for the same reason `<stem>.cpp.o`
+# is dropped one clause over. Step 2b's note that "a command-line LIBS=
+# overrides a makefile assignment outright, so post mode does not link it twice"
+# was true when the shim was only ever on THIS command line. Step 2d then put it
+# in the Makefile -- it had to, because `vit_mutate.py` runs `make test` itself
+# and gets the file's own LIBS -- and this line reads that value back and
+# appends the shim to it:
+#
+#   multiple definition of `checkinputs_c';
+#     vit_integration_shim.o ... first defined here
+#
+# Observed 2026-08-13 on this unit, and it did not look like a link failure: see
+# `evidence/CheckInputs/postintegration_stale_pass.txt` and the `rm -f $OUT`
+# below, which is the half that made it print PASS.
 docker exec "$CONTAINER" bash -lc "cd $WORKDIR/$UNIT_DIR && \
   g++ -O2 -fPIC -ffp-contract=off -c vit_integration_shim.cpp -o vit_integration_shim.o && \
   printf 'include Makefile\nvit-print-libs:\n\t@echo \$(LIBS)\n' > .vit_libs.mk && \
-  LIBS=\$(make -s -f .vit_libs.mk vit-print-libs | sed 's#[^ ]*${STEM}\.cpp\.o##') && \
+  LIBS=\$(make -s -f .vit_libs.mk vit-print-libs | sed 's#[^ ]*${STEM}\.cpp\.o##; s#[^ ]*vit_integration_shim\.o##') && \
   rm -f .vit_libs.mk && \
   for o in $WORKDIR/rosco/controller/build/CMakeFiles/discon.dir/src/*.o; do \
       case \"\$o\" in *${STEM}.cpp.o) continue;; esac; \
       case \" \$LIBS \" in *\" \$o \"*) ;; *) LIBS=\"\$o \$LIBS\";; esac; \
   done && \
   case \"\$LIBS\" in *LIBS*|*'+='*) echo \"harness.sh: LIBS did not evaluate: \$LIBS\" >&2; exit 3;; esac && \
-  rm -f test ${STEM}_test.o && \
+  rm -f test ${STEM}_test.o $WORKDIR/$OUT && \
   make test LIBS=\"\$LIBS $WORKDIR/$UNIT_DIR/vit_integration_shim.o\" >/dev/null && \
   ./test ${STEM}_cases.bin > $WORKDIR/$OUT" && rc=0 || rc=$?
 
@@ -475,6 +489,16 @@ fi
 #
 # A link failure is still a hard stop: no artifact is written at all, so there
 # is nothing to stamp and nothing was measured.
+#
+# "NO ARTIFACT IS WRITTEN" WAS AN ASSUMPTION AND IT WAS FALSE. The redirection
+# is inside the `&&` chain, so a build that fails never truncates `$OUT` -- and
+# `$OUT` is the artifact of the LAST run, which exists, parses, and says PASS.
+# On 2026-08-13 this reported `POST-INTEGRATION PASS: checked 16769 failed 0`
+# over a link error, at the case count of a corpus that had been replaced by a
+# 22,824-case one. The `rm -f $OUT` in the command above is the repair: the file
+# is removed BEFORE the build, so the check below has nothing stale to read and
+# a failed build reaches it as an absence. Recorded with the wrong artifact it
+# produced, before the fix, in evidence/CheckInputs/postintegration_stale_pass.txt.
 if [ ! -s "$ROOT/$OUT" ] || ! python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$ROOT/$OUT" 2>/dev/null; then
     echo "harness.sh: no parseable artifact at $OUT -- the build or the run died (rc=$rc)" >&2
     exit "${rc:-1}"
