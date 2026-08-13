@@ -30,12 +30,12 @@
  "nocompile_ratio": 0.2,
  "nocompile_refused": false,
  "total": 40,
- "killed": 15,
- "survived": 17,
+ "killed": 11,
+ "survived": 21,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.4688,
- "loop_rev": "813e7a2-nogit",
+ "score": 0.3438,
+ "loop_rev": "2e2295f-nogit",
  "vit_rev": "477fc47-nogit",
  "survivors": [
   {
@@ -57,10 +57,34 @@
    "after": "<"
   },
   {
-   "id": "81dbfeda",
+   "id": "dabf5c70",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "7af3cb40",
    "operator": "compare_op",
    "before": "<",
    "after": "<="
+  },
+  {
+   "id": "6b7567ff",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "b94f1a9e",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "5e6d8c55",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
   },
   {
    "id": "0173d7dc",
@@ -69,7 +93,19 @@
    "after": "<="
   },
   {
+   "id": "7e1e9eb7",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
    "id": "4f10aee0",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "3021e827",
    "operator": "compare_op",
    "before": "<",
    "after": "<="
@@ -123,19 +159,7 @@
    "after": ">="
   },
   {
-   "id": "36317c82",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
    "id": "8f7572d1",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "c7770aac",
    "operator": "compare_op",
    "before": ">",
    "after": ">="

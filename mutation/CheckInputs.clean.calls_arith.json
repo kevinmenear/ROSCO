@@ -38,20 +38,14 @@
  "nocompile_ratio": 0.2564,
  "nocompile_refused": true,
  "total": 39,
- "killed": 7,
- "survived": 22,
+ "killed": 8,
+ "survived": 21,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.2414,
- "loop_rev": "813e7a2-nogit",
+ "score": 0.2759,
+ "loop_rev": "2e2295f-nogit",
  "vit_rev": "477fc47-nogit",
  "survivors": [
-  {
-   "id": "1b723864",
-   "operator": "arith_op",
-   "before": "CntrPar->ZMQ_UpdatePeriod - LocalVar->DT",
-   "after": "CntrPar->ZMQ_UpdatePeriod + LocalVar->DT"
-  },
   {
    "id": "29e57417",
    "operator": "arith_op",
@@ -113,6 +107,18 @@
    "after": "I + 1"
   },
   {
+   "id": "63e42cb8",
+   "operator": "swap_operands",
+   "before": "I - 1",
+   "after": "1 - I"
+  },
+  {
+   "id": "52226cd0",
+   "operator": "swap_operands",
+   "before": "I - 1",
+   "after": "1 - I"
+  },
+  {
    "id": "e7dc92ae",
    "operator": "swap_operands",
    "before": "Imode - 1",
@@ -147,18 +153,6 @@
    "operator": "swap_operands",
    "before": "Imode - 1",
    "after": "1 - Imode"
-  },
-  {
-   "id": "ad39a19a",
-   "operator": "swap_operands",
-   "before": "I - 1",
-   "after": "1 - I"
-  },
-  {
-   "id": "2ff40d30",
-   "operator": "swap_operands",
-   "before": "I - 1",
-   "after": "1 - I"
   },
   {
    "id": "44bc2497",

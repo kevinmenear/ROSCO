@@ -30,22 +30,16 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 33,
- "killed": 4,
- "survived": 29,
+ "killed": 3,
+ "survived": 30,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.1212,
- "loop_rev": "813e7a2-nogit",
+ "score": 0.0909,
+ "loop_rev": "2e2295f-nogit",
  "vit_rev": "477fc47-nogit",
  "survivors": [
   {
    "id": "507ea435",
-   "operator": "index_offset",
-   "before": "[i]",
-   "after": "[i + 1]"
-  },
-  {
-   "id": "a8269567",
    "operator": "index_offset",
    "before": "[i]",
    "after": "[i + 1]"
@@ -64,12 +58,6 @@
   },
   {
    "id": "fe1a4d80",
-   "operator": "index_offset",
-   "before": "[i]",
-   "after": "[i + 1]"
-  },
-  {
-   "id": "5a06f7b8",
    "operator": "index_offset",
    "before": "[i]",
    "after": "[i + 1]"
@@ -177,6 +165,12 @@
    "after": "[0 + 1]"
   },
   {
+   "id": "56825c66",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
    "id": "e0e8bbf5",
    "operator": "index_offset",
    "before": "[0]",
@@ -195,10 +189,10 @@
    "after": "[2 + 1]"
   },
   {
-   "id": "541975c0",
+   "id": "ba11ef8e",
    "operator": "index_offset",
-   "before": "[9]",
-   "after": "[9 + 1]"
+   "before": "[27]",
+   "after": "[27 + 1]"
   },
   {
    "id": "0748e02b",
@@ -211,6 +205,18 @@
    "operator": "index_offset",
    "before": "[2]",
    "after": "[2 + 1]"
+  },
+  {
+   "id": "06e5b20f",
+   "operator": "index_offset",
+   "before": "[27]",
+   "after": "[27 + 1]"
+  },
+  {
+   "id": "b4d9af1a",
+   "operator": "index_offset",
+   "before": "[27]",
+   "after": "[27 + 1]"
   }
  ]
 }
