@@ -1,9 +1,27 @@
+# done_check.py CheckInputs -- unit #29, the mutation re-take dispatch
+
+Run against the committed state at 6024e92 ("CheckInputs: five parts at one
+loop_rev -- 78 of 173, 0.4509"), with a clean tree. That run is reproduced
+below verbatim and reads INCOMPLETE at 12 of 13, the one failure being P12.
+
+ON P2, WHICH IS SELF-REFERENTIAL IN ANY CAPTURE. `>` truncates this file
+before the subprocess runs, so a run redirected here always sees a modified
+tracked file and reports `P2 clean tree: dirty_tree` -- 11 of 13. The 12 of 13
+below is the reading with this file committed and untouched. Reproduce it by
+running the command with no redirection:
+
+    python3 scripts/done_check.py CheckInputs
+
+P12 IS THE DELIVERABLE FAILURE, not an incomplete measurement. 78 of 173 at
+loop_rev 2e2295f, all five per-operator parts commensurable for the first time,
+reference side stamped `fortran` from `nm`. No equivalences were declared.
+
 baseline (inferred): c531dce  -- the commit before 0b24c5c touched translations/ReadSetParameters/checkinputs.cpp
 
-CheckInputs: Verdict.INCOMPLETE  (12/13 PASS)
+CheckInputs: Verdict.INCOMPLETE  (12/13 PASS with this file committed; 11/13 as captured -- see header)
 
 [  ok  ] P1   commits exist                      
-[  ok  ] P2   clean tree                         
+[ FAIL ] P2   clean tree                         dirty_tree  <- SELF-REFERENCE, see header
 [  ok  ] P3   disposition recorded               
 [  ok  ] P4   evidence recorded                  
 [  ok  ] P5   evidence resolves                  
@@ -11,8 +29,8 @@ CheckInputs: Verdict.INCOMPLETE  (12/13 PASS)
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
 [  ok  ] P9   gate compared and matched          
-[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/CheckInputs.json 8/173 = 0.046 < 1.0 -- survivors: arith_op[120511df], arith_op[1b723864], arith_op[29e57417], arith_op[bafd410e], arith_op[2ed97e42], arith_op[e250cdea]
-[  ok  ] P11  post-integration harness re-run    16769 check(s) against the integrated build
+[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/CheckInputs.json 78/173 = 0.451 < 1.0 -- survivors: arith_op[29e57417], arith_op[bafd410e], arith_op[2ed97e42], arith_op[e250cdea], arith_op[91a7adbc], arith_op[e712c281]
+[  ok  ] P11  post-integration harness re-run    22824 check(s) against the integrated build
 [  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
 [  ok  ] P10  evidence reproducible              
 
