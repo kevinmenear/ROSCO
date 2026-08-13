@@ -1,0 +1,9 @@
+Setting up C++ verification in kernel/CheckInputs...
+  Build succeeded on iteration 1
+  Modified 15 files
+
+Running verification...
+
+✗ VERIFICATION FAILED: 0/1 passed
+  Field log: kernel/CheckInputs/verify_fields.csv (426 entries)
+  FAILED: Verification FAILED withCheckInputs.0.0.1

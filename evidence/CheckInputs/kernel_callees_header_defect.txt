@@ -1,0 +1,60 @@
+C12 record -- the defect and the WRONG ARTIFACT, taken before the fix.
+
+`vit verify CheckInputs ...` at ROSCO-r2 0b24c5c, VIT 6cd3c75.
+
+CheckInputs is the first unit in this campaign whose kernel calls a callee
+with an ALLOCATABLE dummy (AddToList) and the first whose kernel calls a
+callee returning LOGICAL (NonDecreasing, bridged as int32_t). The generated
+`vit_kernel_callees.h` names both types and declares neither:
+
+--- kernel/CheckInputs/vit_kernel_callees.h, as generated ---------------------
+// VIT: Kernel callee bridge declarations
+// Auto-generated - allows C++ translations to call
+// original Fortran functions via BIND(C) bridges.
+
+#ifndef VIT_KERNEL_CALLEES_H
+#define VIT_KERNEL_CALLEES_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void addtolist_c(CFI_cdesc_t* list, int element);
+int32_t nondecreasing_c(double* Array, int n_Array);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // VIT_KERNEL_CALLEES_H
+-------------------------------------------------------------------------------
+
+g++ -O2 -fPIC -ffp-contract=off -c checkinputs.cpp -o checkinputs.o
+In file included from checkinputs.cpp:6:
+vit_kernel_callees.h:12:6: error: variable or field 'addtolist_c' declared void
+   12 | void addtolist_c(CFI_cdesc_t* list, int element);
+      |      ^~~~~~~~~~~
+vit_kernel_callees.h:12:18: error: 'CFI_cdesc_t' was not declared in this scope; did you mean 'CFI_CDESC_T'?
+vit_kernel_callees.h:12:31: error: 'list' was not declared in this scope
+vit_kernel_callees.h:12:37: error: expected primary-expression before 'int'
+checkinputs.hpp:804:13: error: 'addtolist_c' was not declared in this scope
+checkinputs.hpp:809:13: error: 'addtolist_c' was not declared in this scope
+make: *** [Makefile:13: checkinputs.o] Error 1
+
+WHY IT IS THE HEADER AND NOT THE TRANSLATION. checkinputs.cpp does include
+<ISO_Fortran_binding.h>, at its own line 14 -- and VIT injects the callees
+header at line 6, four lines ABOVE it. A translation cannot include a header
+earlier than the line the tool injects. The g++ "did you mean CFI_CDESC_T"
+is the proof the include is present but LATER: that macro comes from the very
+header whose typedef is being reported missing.
+
+THE OTHER LAYER GETS THIS RIGHT, WHICH IS WHY IT SURVIVED 28 UNITS.
+`generate_c_wrapper` (interface_gen.py:91) emits `#include <ISO_Fortran_binding.h>`
+when `cfi_args(sig)` is non-empty, and `vit_translated.h` -- the header the
+INTEGRATED build uses -- carries it unconditionally. So `addtolist_c` has been
+callable from an integrated translation since unit #1 and was never callable
+from a kernel. The two headers exist for the same purpose and only one of them
+was taught the rule.
+
+NOT WORKED AROUND (X2). VIT is in this campaign's control. Fixed in
+vit/interface_gen.py:generate_kernel_callees_header.
