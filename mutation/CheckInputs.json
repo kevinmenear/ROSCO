@@ -1055,5 +1055,8 @@
    "before": "max",
    "after": "min"
   }
- ]
+ ],
+ "compared_against": "THE MUTANT ITSELF -- INVALID",
+ "not_evaluable": true,
+ "not_evaluable_reason": "The reference side of this run was not Fortran. On an INTEGRATED tree the harness's Fortran side calls the wrapper `vit integrate` wrote, which calls checkinputs_c, which links the harness's OWN compiled copy -- the mutant. Both sides are the mutant, so every behavioural difference cancels and the 4 'kills' are the nocompile and crash cases. score 0.0231 IS NOT A SCORE: it is the absence of a measurement. Read as a number it says the translation fails catastrophically; what it means is that the instrument compared a thing to itself. A valid run needs a CLEAN tree (scripts/reset_to_clean.sh), where ReadSetParameters.f90.o carries the real 857-line body and nothing routes back into the translation. harness/CheckInputs.json (16,769 / 0 failed) WAS taken on a clean tree and is valid; this was not."
 }

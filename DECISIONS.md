@@ -5781,3 +5781,38 @@ in a tree a live session could have committed at any moment.
 
 **And stopping without asking was right.** State-about-to-be-destroyed is the
 one condition where the delay of asking is itself the risk.
+
+## A safeguard that existed only in the sentence describing it
+
+`evidence/CheckInputs/mutation_measured_nothing.md` diagnosed the vacuous
+mutation run correctly, in detail, and then said:
+
+> The artifact is committed as `mutation.integrated-build-INVALID.json` so the
+> number cannot be read as this unit's score
+
+**That file was never written.** Only `mutation/CheckInputs.json` exists,
+carrying `score: 0.0231` with nothing marking it invalid. The safeguard was
+described, the description was committed, and the description was believed --
+which is exactly why `0.023` sat in the ledger reading like a measurement, and
+why `plan.json` could say `integrated` while the unit's own `done_check.txt`
+said `INCOMPLETE 11/13` with nobody noticing across a session, a driver kill and
+a recovery.
+
+This belongs beside the tautological assertion inside the tautology test, and it
+is the same failure one level of indirection out. There, a check could not fail.
+Here, **a guard was believed to exist because a sentence said so.** No artifact
+was checked against the claim, and the claim was in the very document whose
+subject was a measurement that established nothing.
+
+The general form is worth stating, because it is not about carelessness: **prose
+describing a safeguard is not the safeguard, and a document is the one place a
+missing file leaves no trace.** A missing test fails a suite. A missing artifact
+fails a done-predicate. A missing file described in a paragraph fails nothing at
+all -- the paragraph reads exactly the same either way.
+
+The repair is the one already taken for the encoding contract and the operator
+roster: put the statement where a consumer must meet it. `mutation/<U>.json` now
+carries `not_evaluable` and `compared_against` as FIELDS, so a reader of the
+number sees the disclaimer in the same file rather than in a neighbouring
+document they may not open. `vit_mutate` refuses the run outright, so the
+invalid artifact is not produced in the first place.
