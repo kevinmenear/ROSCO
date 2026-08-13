@@ -163,45 +163,57 @@ if [ "$MODE" = "pre" ]; then
         fi
     fi
 
-    # 2c. AND DROP EVERY TRANSLATED CALLEE'S OBJECT TOO.
+    # 2c. A CALLEE THAT IS ALREADY TRANSLATED MUST NOT GET A BRIDGE.
     #
-    # The comment above says other units' `.cpp.o` files stay, because
-    # "integrated callees reached through their `_c` bridges are part of the
-    # reference build". That was true of every unit up to rosco-r2 #28 and it
-    # was true because none of them HAD a callee. `CheckInputs` calls
-    # `NonDecreasing` and `AddToList`, and `vit test-validate` writes
-    # `<stem>_callees.f90` defining `nondecreasing_c` and `addtolist_c` --
-    # which the integrated `nondecreasing.cpp.o` and `addtolist.cpp.o` in the
-    # build tree also define:
+    # `vit test-validate` writes `<stem>_callees.f90` with a Fortran BIND(C)
+    # bridge per callee, each `<callee>_c` calling the ORIGINAL Fortran callee
+    # -- so that both sides of the comparison share one callee implementation.
+    # That is right on a CLEAN tree and it is a loop on an integrated one:
     #
-    #   /usr/bin/ld: multiple definition of `addtolist_c';
-    #                checkinputs_callees.o: first defined here
+    #     C++ CheckInputs -> addtolist_c   (the bridge)
+    #                     -> Fortran AddToList
+    #                     -> addtolist_c   (the WRAPPER `vit integrate` wrote)
     #
-    # THE FORTRAN BRIDGE WINS, and that is not a coin toss. VIT generates it
-    # precisely so both sides of the comparison call the SAME callee
-    # implementation -- the ORIGINAL Fortran -- so that a mismatch is
-    # attributable to the unit under test. Linking the C++ callee instead would
-    # put the translated `NonDecreasing` on one side and the Fortran one on the
-    # other, where a pair of compensating errors can cancel.
+    # `ROSCO_Helpers.f90`'s `AddToList` IS a wrapper now. The bridge and the
+    # wrapper call each other, and `./test` dies with SIGSEGV on case 0 --
+    # stack exhaustion, no message, a core file and nothing that names a cause.
+    # Linking both definitions instead is a duplicate-symbol error, which is
+    # how this was first seen; dropping the translated object was the WRONG
+    # repair and produced the recursion.
     #
-    # Driven by the bridge file's own BIND(C) names, so it maintains itself as
-    # callees are added. If a translated callee's object is not named after it,
-    # the link still fails -- with the symbol named -- which is the loud
-    # outcome, not the silent one.
+    # DROP THE BRIDGE, KEEP THE OBJECT. `<callee>.cpp.o` defines `<callee>_c`
+    # already, and it is the definition the shipped program calls. VIT's
+    # one-implementation property still holds and is now trivial: the Fortran
+    # callee is a wrapper around that same C++, so both sides reach it.
+    #
+    # Driven by what is actually IN the link, not by a list of names, so it
+    # maintains itself as units are integrated. rosco-r2 unit #29 is the first
+    # unit with a callee at all.
     cal="$ROOT/$UNIT_DIR/${STEM}_callees.f90"
     if [ -f "$cal" ]; then
-        for cname in $(grep -oE "BIND\(C, *NAME='[a-z0-9_]+_c'\)" "$cal" \
-                       | sed -E "s/.*NAME='([a-z0-9_]+)_c'.*/\1/" | sort -u); do
-            if grep -q "/${cname}\.cpp\.o" "$mk"; then
-                echo "harness.sh: dropping ${cname}.cpp.o from LIBS -- ${STEM}_callees.f90 defines ${cname}_c"
-                sed -i.bak "\#/${cname}\.cpp\.o#d" "$mk"
-                rm -f "$mk.bak"
-                if grep -q "/${cname}\.cpp\.o" "$mk"; then
-                    echo "harness.sh: LIBS edit did not take -- ${cname}.cpp.o is still in $mk" >&2
-                    exit 1
-                fi
-            fi
-        done
+        python3 - "$cal" "$ROOT/$UNIT_DIR/Makefile" <<'PYEOF'
+import re, sys
+cal, mk = sys.argv[1], sys.argv[2]
+text = open(cal).read()
+mktext = open(mk).read()
+MARK = "! VIT: Kernel callee bridge for "
+parts = text.split(MARK)
+head, blocks = parts[0], parts[1:]
+kept, dropped = [], []
+for b in blocks:
+    m = re.search(r"NAME='([a-z0-9_]+)_c'", b)
+    name = m.group(1) if m else None
+    if name and f"/{name}.cpp.o" in mktext:
+        dropped.append(name)
+    else:
+        kept.append(b)
+if dropped:
+    open(cal, "w").write(head + "".join(MARK + b for b in kept))
+    for n in dropped:
+        print(f"harness.sh: dropping the {n}_c bridge -- {n}.cpp.o already "
+              f"defines it, and the Fortran {n} is a wrapper around it")
+    print(f"harness.sh: {len(kept)} bridge(s) kept in {cal}")
+PYEOF
     fi
 
     # The skeleton in MOD_DIR is discarded: nothing reads it there and leaving
