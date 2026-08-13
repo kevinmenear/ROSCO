@@ -112,6 +112,18 @@ IMPLICIT NONE
         END FUNCTION sigma_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of unwrap
+    INTERFACE
+        SUBROUTINE unwrap_c(x, n_x, ErrVar, unwrap_result) BIND(C, NAME='unwrap_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), INTENT(IN) :: x(*)
+            INTEGER(C_INT), VALUE :: n_x
+            TYPE(C_PTR), VALUE :: ErrVar
+            REAL(C_DOUBLE), INTENT(OUT) :: unwrap_result(*)
+        END SUBROUTINE unwrap_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION saturate(inputValue, minValue, maxValue) RESULT(saturate_result)
@@ -501,45 +513,20 @@ CONTAINS
 
 
 !-------------------------------------------------------------------------------------------------------------------------------
-    FUNCTION unwrap(x, ErrVar) result(y)
-    ! Unwrap function
-    ! If difference between signal elements is < -pi, add 2 pi to reset of signal, and the opposite
-    ! Someday, generalize period and check difference is less than period/2
+    FUNCTION unwrap(x, ErrVar) RESULT(y)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : ErrorVariables
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
         IMPLICIT NONE
-    
-        ! Inputs
-        TYPE(ErrorVariables), INTENT(INOUT) :: ErrVar
-        REAL(DbKi), DIMENSION(:), Intent(IN)  :: x
-
-        ! Output
-        REAL(DbKi), DIMENSION(SIZE(x)) :: y
-            
-        ! Local
-        INTEGER(IntKi) :: i
-
-        CHARACTER(*), PARAMETER                 :: RoutineName = 'unwrap'
-
-        y = x ! set initial
-        DO i = 2, SIZE(x)
-            DO while (y(i) - y(i-1) .LE. -PI)
-                y(i:SIZE(x)) = y(i:SIZE(x)) + 2 * PI
-            END DO
-
-            DO while (y(i) - y(i-1) .GE. PI)
-                y(i:SIZE(x)) = y(i:SIZE(x)) - 2 * PI
-            END DO
-        END DO
-
-        ! Add RoutineName to error message
-        IF (ErrVar%aviFAIL < 0) THEN
-            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
-        ENDIF
-
-        ! Debug
-        ! write(400,*) x
-        ! write(401,*) y
-        
+        REAL(8), INTENT(IN) :: x(:)
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        REAL(8), DIMENSION(SIZE(x)) :: y
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        CALL unwrap_c(x, SIZE(x), C_LOC(ErrVar_view), y)
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
     END FUNCTION unwrap
 
 

@@ -104,6 +104,7 @@ set(SOURCES
     src/interp1d.cpp
     src/saturate.cpp
     src/sigma.cpp
+    src/unwrap.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
