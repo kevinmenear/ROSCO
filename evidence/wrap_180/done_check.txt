@@ -1,0 +1,18 @@
+baseline (inferred): 8908181  -- the commit before d25c3bf touched translations/Functions/wrap_180.cpp
+
+wrap_180: Verdict.COMPLETE  (13/13 PASS)
+
+[  ok  ] P1   commits exist                      
+[  ok  ] P2   clean tree                         
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[  ok  ] P5   evidence resolves                  
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[  ok  ] P9   gate compared and matched          
+[  ok  ] P12  mutation score for this unit       11/11 mutant(s) killed
+[  ok  ] P11  post-integration harness re-run    136 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible              
+
