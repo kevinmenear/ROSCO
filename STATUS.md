@@ -4,7 +4,8 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-13: unit #29 `CheckInputs` is `integrated` and CLOSED**, first
+**As of 2026-08-13: unit #29 `CheckInputs` is `integrated` and NOT CLOSED** —
+`done_check.py` reads **12 of 13**, and the one failure is `P12`. First
 dispatch. It is the campaign's largest unit by an order of magnitude — 857 lines
 and about 180 validity checks against a previous maximum of three statements —
 and **six defects fell out of it, none of them in the translation**.
@@ -13,9 +14,9 @@ and **six defects fell out of it, none of them in the translation**.
 |---|---|---|
 | kernel replay | **1 of 1**, 426 of 426 field rows `IDENTICAL` | VIT declined to construct one (`NON_DISCRIMINATING`); a determinate wrong constant `aviFAIL = -7` scores **0 of 1**, and the **whole unit deleted scores 1 of 1** |
 | differential harness vs clean Fortran | **16,769** checked, 0 failed, 0 inadmissible — **this unit's primary evidence** | the `ErrMsg` tail left alone **16,729**; blank-filled **16,769** |
-| post-integration harness (wrapper only) | **16,769 checked, 0 failed** | pending |
-| gate, 27 scenarios | 5,252,000 values / 351 channels, **0 mismatched** | pending |
-| mutation score | pending | — |
+| post-integration harness (wrapper only) | **16,769 checked, 0 failed** | not taken |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, **0 mismatched** | not taken |
+| mutation score | **INVALID — 173 mutants, 4 killed, 0.0231** | the score is not a result; see below |
 
 **THE KERNEL IS ALIVE AND BLIND, AND THE REASON GENERALISES TO EVERY VALIDATION
 ROUTINE.** The wrong-constant stub fails and the whole-unit no-op passes, both
@@ -79,6 +80,27 @@ previous message's tail fails **16,729 of 16,769**; blank-filling fails
 and both name `ErrVar.ErrMsg`. What settled it was the first differing BYTE —
 `a=0x20 b=0x00` at exactly index `n_ErrMsg` — because the oracle side is a
 zeroed buffer the bridge writes `n_ErrMsg` bytes into.
+
+**THE MUTATION RUN MEASURED THE MUTANT AGAINST ITSELF, AND ONLY THE SHAPE OF
+THE NUMBER SAYS SO.** 173 mutants, 4 killed, **0.0231**. On an integrated tree
+`vit_mutate`'s build routes the harness's Fortran side through the wrapper, into
+`checkinputs_c`, into `vit_integration_shim.o`, into the harness's own compiled
+copy — the mutant. Both sides run the mutant and every behavioural difference
+cancels. **169 survivors on a corpus that passes 16,769 of 16,769 against real
+Fortran is the tell**: 40 `compare_op` flips cannot all be equivalent. It is
+unit #21's and unit #24's "a green that measured nothing" with the sign flipped,
+and nothing in `mutation/<U>.json` records which side the reference was — the
+harness artifact has a `measures:` field for exactly this and the mutation
+artifact has none.
+
+The measurement needs the CLEAN tree, where `ReadSetParameters.f90.o` carries
+the real 857-line body — the configuration `harness/CheckInputs.json` was taken
+in. **Not re-run in this dispatch**, and the reason is stated rather than
+hidden: reset, rebuild, regenerate, and a ~50-minute sweep, after six tool
+defects had already consumed the budget. Kept as
+`evidence/CheckInputs/mutation.integrated-build-INVALID.json` so the number
+cannot be read as a score. **The unit is integrated, gate-green and
+harness-green; it is not closed.**
 
 **THREE PINS IN `harness/ranges.toml`, ALL BECAUSE THE ORACLE READS OUT OF
 BOUNDS.** `CheckInputs` validates `AWC_NumModes` against 0 and against 2 and

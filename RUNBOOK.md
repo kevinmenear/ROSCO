@@ -358,6 +358,42 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A MUTATION RUN ON AN INTEGRATED TREE COMPARES THE MUTANT AGAINST ITSELF,
+  AND THE ARTIFACT CANNOT SAY SO.** Unit #29, and it is unit #21's and unit
+  #24's "a green that measured nothing" with the sign flipped -- here it is a
+  RED that measured nothing, which is no better.
+
+  ```
+  173 mutants   4 killed   score 0.0231
+  the same corpus, against real Fortran:   16,769 of 16,769, 0 failed
+  ```
+
+  169 survivors on a corpus that clean is the tell: 40 `compare_op` flips
+  cannot all be equivalent. The build is why. `harness.sh` drops
+  `<stem>.cpp.o`, so the integrated wrapper's `<unit>_c` is undefined and the
+  integration shim supplies it -- and then
+
+  ```
+  <unit>_f90 -> the WRAPPER -> <unit>_c -> vit_integration_shim.o
+             -> the harness's own copy of the translation   <- the MUTANT
+  ```
+
+  Both sides run the mutant. **Run the mutation sweep on the CLEAN tree**, the
+  same configuration the pre-integration harness runs in, where the caller's
+  object carries the real Fortran body.
+
+  `harness/<U>.postintegration.json` carries a `measures:` field naming exactly
+  what its run can and cannot see. `mutation/<U>.json` has no equivalent, and
+  the same mutants give scores at opposite ends of the range depending on an
+  answer it does not record. Check the number's SHAPE against the unit's own
+  harness before believing it:
+
+  ```
+  python3 -c "import json;m=json.load(open('mutation/<U>.json'));\
+      h=json.load(open('harness/<U>.json'));\
+      print(m['killed'],'/',m['mutants'],' vs harness',h['checked'],h['failed'])"
+  ```
+
 - **AN ERROR THAT NAMES ITS PARAMETER COSTS ONE PASS; ONE THAT DOES NOT COSTS
   THREE. SAME FILE, SAME UNIT, SAME AFTERNOON.** Unit #29, and it is the
   cheapest rule this campaign has produced because it changes nothing you run,
