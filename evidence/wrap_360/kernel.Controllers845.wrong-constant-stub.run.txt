@@ -1,0 +1,633 @@
+# stub:   evidence/wrap_360/wrap_360.wrong-constant-stub.cpp
+# md5:    d33cfbaf72e28ed257f47725bd1f09d0   (verified inside the container)
+#
+ 
+ ***************** Verification against 'wrap_360.0.0.1' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.12653637069749998     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.1
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.10' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.19722220349046482     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.10
+ 
+ wrap_360 : Time per call (usec):   0.12500000000000000     
+ 
+ ***************** Verification against 'wrap_360.0.0.11' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.20507618699249996     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.11
+ 
+ wrap_360 : Time per call (usec):    8.4000000000000005E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.21293017049453511     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12000' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.083278556943981     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12000
+ 
+ wrap_360 : Time per call (usec):    0.0000000000000000     
+ 
+ ***************** Verification against 'wrap_360.0.0.12001' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.091130621097491     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12001
+ 
+ wrap_360 : Time per call (usec):    8.3000000000000004E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12002' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.098982685251002     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12002
+ 
+ wrap_360 : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12003' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.106834749404527     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12003
+ 
+ wrap_360 : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12004' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.114696400937959     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12004
+ 
+ wrap_360 : Time per call (usec):    0.0000000000000000     
+ 
+ ***************** Verification against 'wrap_360.0.0.12005' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.122548465091469     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12005
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12006' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.130400529244994     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12006
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12007' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.138252593398505     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12007
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12008' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.146104657552016     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12008
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12009' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.153966309085462     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12009
+ 
+ wrap_360 : Time per call (usec):    8.3000000000000004E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12010' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.161818373238972     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12010
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12011' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.169670437392483     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12011
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12012' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.177522501546008     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12012
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12013' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.185374565699519     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12013
+ 
+ wrap_360 : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12014' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.193236217232965     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12014
+ 
+ wrap_360 : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12015' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.201088281386475     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12015
+ 
+ wrap_360 : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12016' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.208940345539986     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12016
+ 
+ wrap_360 : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12017' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.216792409693511     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12017
+ 
+ wrap_360 : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12018' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.224644473847022     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12018
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12019' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.232506125380453     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12019
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.12020' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is    88.240358189533978     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.12020
+ 
+ wrap_360 : Time per call (usec):    0.0000000000000000     
+ 
+ ***************** Verification against 'wrap_360.0.0.13' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.22078415399657025     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.13
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.14' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.22863812813592971     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.14
+ 
+ wrap_360 : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.15' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.23649211163796485     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.15
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.16' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.24434609514000000     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.16
+ 
+ wrap_360 : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.17' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.25220007864203509     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.17
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.18' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.26005406214407023     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.18
+ 
+ wrap_360 : Time per call (usec):    0.0000000000000000     
+ 
+ ***************** Verification against 'wrap_360.0.0.19' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.26790803628342968     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.19
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.2' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.13439035244403344     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.2
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.20' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.27576201978546483     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.20
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.3' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.14224433419056687     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.3
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.4' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.15009831652226754     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.4
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.5' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.15795229768363378     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.5
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.6' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.16580627884499999     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.6
+ 
+ wrap_360 : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.7' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.17366026234703513     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.7
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.8' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.18151424116773240     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.8
+ 
+ wrap_360 : Time per call (usec):    4.1000000000000002E-002
+ 
+ ***************** Verification against 'wrap_360.0.0.9' *****************
+ strazimuth is NOT IDENTICAL(out of tolerance).
+ Difference is   0.18936822466976755     
+ 
+ 
+ Number of output variables:            1
+ Number of identical variables:            0
+ Number of non-identical variables within tolerance:            0
+ Number of non-identical variables out of tolerance:            1
+ Tolerance:    1.0000000000000000E-014
+ 
+ Verification FAILED withwrap_360.0.0.9
+ 
+ wrap_360 : Time per call (usec):    4.2000000000000003E-002
+ 
+****************************************************
+    kernel execution summary: wrap_360
+****************************************************
+    Total number of verification cases  :    41
+    Number of verification-passed cases :     0
+ 
+    kernel: wrap_360: FAILED verification
+ 
+    number of processes  1
+ 
+    Average call time (usec):  0.427E-01
+    Minimum call time (usec):  0.000E+00
+    Maximum call time (usec):  0.125E+00
+****************************************************

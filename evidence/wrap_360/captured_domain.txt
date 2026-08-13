@@ -1,0 +1,42 @@
+compared field : strazimuth  (1 distinct)
+cases          : 41   indices 1..20, 12000..12020
+
+== the three stub runs, counted
+  passthrough  (both arms deleted)   20 IDENTICAL   21 NOT IDENTICAL
+  no-low-branch (x<0 arm deleted)    41 IDENTICAL    0 NOT IDENTICAL
+  no-high-branch(x>=360 deleted)     20 IDENTICAL   21 NOT IDENTICAL
+
+== what the deleted statement is worth, per failing case
+  distinct |difference| over the 21 wrapped cases : [6.2831853036]
+  360 * D2R, D2R = 0.01745329251 from Constants.f90:23   : 6.2831853036
+  2*PI, for contrast -- NOT what the caller multiplies by  : 6.283185307179586
+  MATCHES -- the mismatch IS the subtracted 360
+
+== the recovered input domain (x, degrees), read back through the arm each case took
+  case     1   x =       0.0000 deg   -> else (pass-through)
+  case     2   x =       0.4500 deg   -> else (pass-through)
+  case     3   x =       0.9000 deg   -> else (pass-through)
+  case    20   x =       8.5500 deg   -> else (pass-through)
+  case 12000   x =    5399.5501 deg   -> high (x >= 360)
+  case 12001   x =    5400.0000 deg   -> high (x >= 360)
+  case 12020   x =    5408.5501 deg   -> high (x >= 360)
+  ...   the ELSE cases span [0.0000, 8.5500] and the HIGH cases span [5399.5501, 5408.5501]
+
+  NOTE the high-arm inputs are ~5400 degrees and the results are ~5040. The
+  reference wraps ONCE and leaves the rest, which is why `std::fmod` is not
+  the same function -- it would have returned ~0..360 for every one of them.
+
+== the independent check: gcov over all 27 scenarios (clean baseline 54dd134)
+  Controllers.f90:845 hits (scenario 22)             15,999
+  Controllers.f90:515 hits (scenario 2)               3,999
+  Functions.f90:475 ELSE   (all scenarios)            4,799
+  Functions.f90:473 x>=360 (all scenarios)           15,199
+  Functions.f90:471 x<0    (all scenarios)                0
+  ELSE + HIGH + LOW = 19,998   vs the two sites' 19,998   EQUAL
+  the LOW arm is reached 0 times in 27 scenarios at BOTH call sites, and
+  0 times in this kernel capture -- the two agree.
+
+VERDICT: the kernel capture reaches the pass-through arm 20 times and the
+         `x >= 360` arm 21 times, each wrapped case differing from the
+         unwrapped answer by exactly 360*D2R. The `x < 0` arm is reached 0
+         times here and 0 times in all 27 scenarios at both call sites.

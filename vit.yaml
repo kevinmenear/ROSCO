@@ -313,6 +313,20 @@ translations:
   wrap_180:
     status: integrated
     cpp_file: translations/Functions/wrap_180.cpp
+  # wrap_360: the same shape one screen down and the OPPOSITE comparison pair
+  # (`.lt.` low, `.ge.` high -> [0, 360)). Unlike wrap_180 its high branch is
+  # LIVE: 15,199 of 19,998 calls take it, all in scenario 22, and the kernel
+  # captured at Controllers.f90:845 sees 21 of its 41 cases wrapped. The LOW
+  # branch (x < 0) is dead at both call sites in all 27 scenarios.
+  wrap_360:
+    status: verified
+    cases_passed: 41
+    cases_total: 41
+    cases_skipped: 0
+    cpp_file: translations/Functions/wrap_360.cpp
+    kernel_dir: kernel/wrap_360
+    red_test: demonstrated
+    red_test_detail: the kernel reported a mismatch with input `x` scaled by 1.00001
 types:
   ControlParameters:
     strategy: view
