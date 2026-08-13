@@ -5308,3 +5308,122 @@ Stated as a claim someone can check — which artifact, by whom, at which sha �
 rather than as a violated invariant. In a campaign whose argument is that
 provenance is the difference between evidence and assertion, calling this a K1
 exception would overstate it, and leaving it unrecorded would understate it.
+
+## DRIVER RULING — the call-expression operators, and what the re-take is
+
+Unit #24 `saturate` escalated three options **FOR THE DRIVER** and took the
+third. This closes that escalation. It is a ruling made after the fact, and
+saying so is part of it.
+
+### What happened, stated precisely
+
+`saturate`'s faithful transcription -- `std::fmin(std::fmax(v, lo), hi)` -- has
+no mutable site, so the sweep returned zero mutants and P12 failed by name as
+`mutation_no_mutants`. That session behaved correctly at every step: it refused
+to add an operator ("a campaign-wide re-take, X3 and SPEC 8.4, the Driver's
+call"), refused to hand-write the artifact ("a session that authors both the
+mutants and the artifact that grades them has graded its own paper"), committed
+the tool's output unaltered at `d47550a` reading `mutants: 0, score 0.000`, took
+the `blocked`, and escalated.
+
+Thirty-three minutes later a retry added the three call operators (`b9fb5ee`)
+and re-scored, and `saturate` closed `integrated` at `7620bf1`.
+
+**X3 was not violated.** Its text is "never change a verification default
+mid-run *without recording the comparability cost*", and `b9fb5ee` recorded it
+by measurement rather than argument: purely additive (0 existing mutant ids
+lost, 35 gained across 24 units), and it does produce survivors (8, in three
+units that had closed at 1.000, all one shape). What was not done is the other
+half of the option it chose -- the campaign-wide re-take.
+
+### Ruling
+
+1. **The addition stands.** It is measured, additive, and it closes a real hole:
+   without it a unit whose body is a call expression cannot be scored at all.
+2. **Ratified after the fact is not authorised at the time.** The escalation
+   named this decision as the Driver's and a session took it. No sanction
+   attaches -- the session's reasoning was better than most of what it replaced
+   -- but the precedent is recorded so it is not cited as one.
+3. **The re-take is a separate pass**, not the tail of this one, and it is
+   deferred rather than dropped.
+
+### The re-take, when it runs
+
+**Selector: an artifact whose `operators_offered` is ABSENT, or short of the
+roster at the time of the pass.** Not "lacks a call operator" -- that conflates
+two different things, because `operators` records the operators that found a
+SITE, so its absence is ambiguous between "the instrument did not have them" and
+"this body has no call sites and was correctly measured".
+
+**No count is stated here, and none can be yet.** Every artifact predating
+`ff1e6e1` lacks `operators_offered`, so for those the two cases above are
+indistinguishable. **Upper bound: 26 closed units, all of them.** The true number
+is smaller by however many were scored with the full roster and simply had no
+call sites, and the direction is known -- the bound can only come down.
+
+`loop_rev` does NOT answer it, and this was tested rather than assumed.
+`mutation/saturate.json` stamps `loop_rev: 23b4ef1-nogit` while recording
+`drop_call`, `swap_call_args` and `swap_callee` -- and `drop_call` has **zero**
+occurrences in `cppmutate.py` at `23b4ef1` and eight at `b9fb5ee`. The artifact
+was produced by code that was not committed at its own stamped revision: the
+stamp names committed HEAD, not the working tree that ran, and carries no
+`-dirty` marker although that mechanism exists. A revision stamp that can name
+code which did not produce the artifact cannot be used to date the instrument.
+
+**The mechanism, because "loop_rev is unusable" reads as a quirk of one field
+and this is a fixable defect.** The ladder has two rungs and a floor
+(`scripts/gate.py`). Tier 1 runs `git rev-parse`, then `git status --porcelain`,
+and appends `-dirty` when the tree is dirty. **Tier 2 reads `.git/HEAD`
+directly** -- the container the gate runs in has no git binary -- **and returns
+`f"{ref[:7]}-nogit"` with no dirtiness check anywhere in that path.** So on a
+`-nogit` stamp the absence of `-dirty` carries NO information, and that is
+exactly how `saturate.json` stamped `23b4ef1-nogit` while running code that
+existed only at `b9fb5ee`.
+
+Counted across every JSON artifact in this campaign (359 `loop_rev`/`vit_rev`
+stamps, including `translations/`): **156 carry `-nogit`, whose dirty state is
+unknowable; 49 carry `-dirty`, which proves the marker works when tier 1 runs.**
+It is the tier-3 defect one rung up: a stamp that cannot distinguish two states
+renders as the benign one, and its working sibling is what makes the silence
+read as "clean".
+
+The repair is small and is a task, not a blocker: tier 2 either establishes
+dirtiness another way, or stamps `-nogit-dirtyunknown` so the two cases stop
+looking alike.
+
+**Carry into the re-take's design: `collapse_stride`.** It is in `_RULES` and
+appears in NO closed unit's `operators`, which is the same ambiguity as the call
+operators one layer out -- either no closed unit has a strided subscript, or the
+rule never fires. `operators_offered` does not resolve it either, because it
+records what was swept and this rule IS swept. Only running it answers this, and
+noting it here stops it being rediscovered mid-pass.
+
+**Output paths: a re-take writes `mutation/<Unit>.retake-<rev>.json` and never
+`mutation/<Unit>.json`.** The artifact under the plain name is what that unit
+measured AT CLOSE, and it stays that. `saturate` is why: `7620bf1` wrote over
+`d47550a`, and although the original is still recoverable from git, a reader
+should not need `git log` to find what a unit measured when it closed.
+
+### `saturate`'s disposition
+
+**Stays `integrated`.** The translation is correct and was verified: 13 hand
+mutants against its own 451-case differential corpus, 11 of 11 behavioural
+killed, 2 declared equivalent and *proved* -- IEEE `maxNum`/`minNum` commute,
+including at a signed zero and a NaN, measured directly rather than argued.
+
+Recorded against the unit, because two things read identically and are not:
+
+> `mutation/saturate.json` at `d47550a` reads `mutants: 0, killed: 0,
+> score: 0.000`. **This is not a unit that was measured and scored zero.** It is
+> a unit where the operator sweep found NO SITE to mutate -- the instrument
+> reached nothing, which says nothing about the translation. A score of 0.000
+> over 0 mutants and a score of 0.000 over 40 are opposite findings and the
+> field cannot tell them apart. The current artifact at `7620bf1` reads
+> `mutants: 6, score: 1.000` and was produced by a roster added AFTER this unit
+> first closed.
+
+That is P12's version of the same defect P10 names, and it is worth a rule of
+its own rather than a note on one unit: **a mutation score computed over zero
+mutants is NOT_EVALUABLE, never a pass and never a failure.** Whether P12 should
+say so in code is left open here; `done.py` currently fails it by name as
+`mutation_no_mutants`, which is the safe direction and the right one.
