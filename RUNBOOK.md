@@ -66,6 +66,25 @@ unexercised after N units are the P4 report: inherited, never tested against thi
 **Origin:** SPEC.md §3 (method)
 **Status here:** inherited, unexercised
 
+### P10 — A pass built from an empty set must name the set and prove it could have been non-empty
+**Implements:** P10
+**Origin:** SPEC.md §3 (method)
+**Status here:** **EXERCISED — five instances in one session, all of them
+ad-hoc probes rather than registered checks.** `git log --not --remotes`
+reported nothing unreachable while the clone was 2 commits ahead; a scan reading
+`Procedure.body` reported 0 file-valued units against an attribute that does not
+exist; a C digest with a bad format string reported 740/740 identical having
+compared nothing; `ahead=0` read against a remote-tracking ref whose remote was
+a deleted `/private/tmp` path; and a bundle census filtered on branch names it
+did not include, reporting the wrong sha for one repo and none for another. In
+every case the campaign's own check was right and the ad-hoc probe was wrong.
+
+A positive control is necessary and not sufficient, and one probe showed both
+halves: `file_params_from` was repaired by a control, then still reported "0 of
+52 pending units have file-valued inputs" and missed five, because its notion of
+a filename is a bare dummy while the reachable ones are an array element, a
+derived-type field and two locals. Naming the set is the other half.
+
 ## Contracts
 
 ### K1 — The last action of every unit is a commit that brings state current
