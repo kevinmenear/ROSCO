@@ -6022,3 +6022,42 @@ unit has, for the first time, one commensurable number.
    the reference side, this is about the corpus and the population — three
    instances now, which is what makes it a method question rather than a
    rosco-r2 one.
+
+### Refinement, same day: the corpus changed on BOTH sides at 06:29
+
+The entry above attributes the replacement to `7f75ca4`'s state edit. That is
+half of it, and the half visible from inside this campaign. The loop-side commit
+`2e2295f` — *"R11: an admissible array must be DISTINCT, and a whole-array knob
+is placed"* — landed at 06:29:27, sixteen seconds before `7f75ca4` at 06:29:43.
+They are one change made in two repositories, and `harness/generate.py` moved 37
+lines:
+
+- R11 now accepts `{"ramp": [start, step]}` in a baseline state at all. The state
+  edit could not have been written before the generator understood it.
+- **A whole-array knob is now PLACED at one element — first, interior, last —
+  as well as broadcast.** Previously only broadcast.
+
+That second item is where the +252 comes from: a whole-array knob now yields
+four cases where it yielded one. And it independently explains why prior indices
+moved even where a state's values were untouched — the knob's placement changed,
+so the case at a given index is a different case.
+
+The loop-side message states the defect in the terms this campaign found it:
+49 of 89 survivors were one shape, because R11's inert fill is zeros and its
+whole-array knob broadcast, so every array in its block was constant — and an
+index shift, a loop-bound shift and a `<` on a loop bound all land inside a run
+of identical values. *"R5 already requires 'array elements distinct' of the
+corpus; the rule written to remove masking did not have that property itself."*
+
+**So `loop_rev` is not a version label, it is the corpus generator's identity,
+and `_mutation_merge.py:189` refuses across it for exactly the right reason.**
+The guard would have been correct here even if the states had never been edited.
+
+One residual, named because it is not resolvable from the artifacts: `-nogit`
+means the rev was read from `.git/HEAD` directly, because `vit-dev` has no git
+binary, and that path CANNOT SEE A DIRTY TREE. `2e2295f-nogit` therefore asserts
+HEAD and is silent on cleanliness. The loop checkout is clean now and still at
+`2e2295f` with no commits since 06:29:27, so the pending re-take is
+commensurable; whether the three existing parts were taken against a clean loop
+tree is not recoverable. This is finding 4 once more — the artifact records the
+conclusion (`2e2295f`) and withholds the input that would make it checkable.
