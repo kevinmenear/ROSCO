@@ -104,6 +104,73 @@ def artifacts(names: list[str], core_only: bool) -> dict[str, dict[str, str | No
 
 
 SPLIT, ABSENT, DIRTY = "BASE-SHA SPLIT", "NO loop_rev", "DIRTY TREE"
+NOREAD, RETRO = "NO RECORDED READING", "RETROACTIVE READING"
+
+
+def _git(*a: str) -> str:
+    import subprocess
+    r = subprocess.run(["git", "-C", str(ROOT), *a], capture_output=True, text=True)
+    return r.stdout if r.returncode == 0 else ""
+
+
+def readings(disp: dict[str, str | None]) -> dict[str, tuple[str, str]] | None:
+    """Did a CLOSED unit ever have the done-condition read WHILE IT WAS CURRENT?
+
+    A closed unit with no `evidence/<u>/done_check.txt` has no recorded reading
+    of the condition it had to satisfy. That is NOT_EVALUABLE, and the tempting
+    fix -- capture one now -- is the defect this whole file exists to name: every
+    predicate done_check evaluates reads the CURRENT tree, so a capture made
+    today for a unit closed on 08-11 describes today while reading, to anyone
+    later, as the reading taken at the close. A loud honest absence would become
+    a quiet dishonest presence, and this check would go green having learned
+    nothing.
+
+    So the question is not "does a file exist" -- which generating a file would
+    answer -- but "was the reading taken while this unit was still the unit being
+    worked". Measured WITHOUT a time threshold: no OTHER unit may have gained a
+    disposition between this unit's closing commit and its capture's commit. On
+    this campaign that separates 11 contemporaneous captures (zero units in
+    between) from 3 retroactive ones (19, 6 and 1) with nothing near the boundary
+    -- and generating the 14 missing files today would move them from NO
+    RECORDED READING to RETROACTIVE READING, not to clean.
+
+    Returns None when git history cannot be read, which is reported and never
+    silently passed."""
+    log = _git("log", "--format=%H", "--reverse", "--", "plan.json")
+    order = _git("log", "--format=%H", "--reverse")
+    if not log.strip() or not order.strip():
+        return None
+    pos = {s: i for i, s in enumerate(order.split())}
+    closed_at: dict[str, str] = {}
+    seq: list[tuple[str, str]] = []
+    for sha in log.split():
+        raw = _git("show", f"{sha}:plan.json")
+        if not raw:
+            continue
+        try:
+            units = json.loads(raw)["units"]
+        except Exception:
+            continue
+        for u in units:
+            if u.get("disposition") and u["name"] not in closed_at:
+                closed_at[u["name"]] = sha
+                seq.append((sha, u["name"]))
+    out: dict[str, tuple[str, str]] = {}
+    for n, close in closed_at.items():
+        if not disp.get(n):
+            continue          # re-opened since; not a closed unit now
+        ev = f"evidence/{n}/done_check.txt"
+        cap = _git("log", "-1", "--format=%H", "--", ev).strip()
+        if not cap:
+            out[n] = (NOREAD, f"closed at {close[:7]} with no {ev}")
+            continue
+        a, b = pos.get(close, -1), pos.get(cap, -1)
+        moved = [m for s, m in seq if m != n and a < pos.get(s, -1) <= b]
+        if moved:
+            out[n] = (RETRO, f"{ev} committed at {cap[:7]}, after the campaign "
+                             f"closed {len(moved)} other unit(s): {', '.join(moved[:4])}"
+                             + (" ..." if len(moved) > 4 else ""))
+    return out
 
 
 def findings(arts: dict[str, str | None]) -> list[tuple[str, str]]:
@@ -144,6 +211,7 @@ def main() -> int:
     names = [u["name"] for u in plan]
     disp = {u["name"]: u.get("disposition") for u in plan}
     found = artifacts(names, a.core)
+    reads = readings(disp)
 
     if a.unit:
         if a.unit not in names:
@@ -156,6 +224,10 @@ def main() -> int:
             print("  NOT_EVALUABLE -- no result artifact carries a revision to check.")
             return 3
         fs = findings(arts)
+        if reads is None:
+            print("  READING CHECK UNAVAILABLE -- git history unreadable; not a pass")
+        elif a.unit in reads:
+            fs = fs + [reads[a.unit]]
         for p, r in sorted(arts.items()):
             print(f"    {r or '(no loop_rev)':18} {p}")
         for code, detail in fs:
@@ -183,8 +255,13 @@ def main() -> int:
         if not arts:
             if disp.get(n):
                 ne.append(n)
+                if reads and n in reads:
+                    advisory.append((n, disp.get(n), [reads[n]]))
+                    counts[reads[n][0]] += 1
             continue
         fs = findings(arts)
+        if reads and n in reads:
+            fs = fs + [reads[n]]
         if not fs:
             continue
         for code, _ in fs:
@@ -202,7 +279,9 @@ def main() -> int:
         print(f"\nNOT_EVALUABLE -- closed with no result artifact: {len(ne)}  {', '.join(ne)}")
 
     print("\nby assertion:")
-    for k in (SPLIT, ABSENT, DIRTY):
+    if reads is None:
+        print("\n  READING CHECK UNAVAILABLE -- git history unreadable; not a pass")
+    for k in (SPLIT, ABSENT, DIRTY, NOREAD, RETRO):
         print(f"  {k:24} {counts.get(k, 0)} unit(s)")
 
     if ne:

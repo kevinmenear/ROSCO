@@ -106,6 +106,74 @@ with tempfile.TemporaryDirectory() as t:
     rc2, _ = run(tmp, "--strict")
     ck("--strict exit", rc2, 2)
 
-print("\nrevcheck.redtest: all seven as expected" if not FAIL else
+# --- the reading assertions, which need REAL git history ---------------------
+#
+# The property under test is not "does a file exist" but "was it there while the
+# unit was current". Case 10 is the one that matters: it takes case 9's missing
+# reading and GENERATES the file, which is the tempting fix, and asserts the
+# finding does not clear -- it becomes RETROACTIVE. If that ever passes clean, a
+# future session can make this check green by manufacturing evidence.
+import subprocess
+
+
+def git_repo(t: Path):
+    def g(*a):
+        subprocess.run(["git", "-C", str(t), *a], capture_output=True, text=True)
+    g("init", "-q", ".")
+    g("config", "user.email", "t@t")
+    g("config", "user.name", "t")
+    for d in ("scripts", "mutation", "harness", "gate"):
+        (t / d).mkdir(parents=True, exist_ok=True)
+    shutil.copy(SRC, t / "scripts" / "revcheck.py")
+
+    def plan(a_disp, b_disp):
+        (t / "plan.json").write_text(json.dumps({"units": [
+            {"name": "UnitA", "order": 1, "disposition": a_disp},
+            {"name": "UnitB", "order": 2, "disposition": b_disp}]}))
+    for u in ("UnitA", "UnitB"):
+        for rel in (f"mutation/{u}.json", f"harness/{u}.json"):
+            (t / rel).write_text(json.dumps({"checked": 1, "loop_rev": "aaaaaaa"}))
+    plan(None, None); g("add", "-A"); g("commit", "-qm", "open")
+    plan("integrated", None); g("add", "-A"); g("commit", "-qm", "close A")
+    plan("integrated", "integrated"); g("add", "-A"); g("commit", "-qm", "close B")
+    return g
+
+
+print("\n8 GREEN  a CLOSED unit whose reading was taken while it was current")
+with tempfile.TemporaryDirectory() as t:
+    tmp = Path(t); g = git_repo(tmp)
+    (tmp / "evidence" / "UnitB").mkdir(parents=True)
+    (tmp / "evidence" / "UnitB" / "done_check.txt").write_text("13/13\n")
+    g("add", "-A"); g("commit", "-qm", "B evidence")
+    rc, out = run(tmp, "--unit", "UnitB")
+    ck("no reading finding", "RECORDED READING" in out or "RETROACTIVE" in out, False)
+    ck("exit", rc, 0)
+
+print("\n9 RED    a CLOSED unit with NO reading is NOT_EVALUABLE")
+with tempfile.TemporaryDirectory() as t:
+    tmp = Path(t); g = git_repo(tmp)
+    rc, out = run(tmp, "--unit", "UnitA")
+    ck("reports NO RECORDED READING", "NO RECORDED READING" in out, True)
+    ck("exit", rc, 2)
+
+print("\n10 RED   GENERATING the file does NOT clear it -- it becomes RETROACTIVE")
+with tempfile.TemporaryDirectory() as t:
+    tmp = Path(t); g = git_repo(tmp)
+    (tmp / "evidence" / "UnitA").mkdir(parents=True)
+    (tmp / "evidence" / "UnitA" / "done_check.txt").write_text("13/13\n")
+    g("add", "-A"); g("commit", "-qm", "manufactured later")
+    rc, out = run(tmp, "--unit", "UnitA")
+    ck("no longer NO RECORDED READING", "NO RECORDED READING" in out, False)
+    ck("now RETROACTIVE READING", "RETROACTIVE READING" in out, True)
+    ck("still exits 2", rc, 2)
+
+print("\n11 n/e   git history unreadable is reported, never silently passed")
+with tempfile.TemporaryDirectory() as t:
+    tmp = Path(t)
+    build(tmp, GOOD)                      # no git repo at all
+    rc, out = run(tmp, "--unit", OPEN_U)
+    ck("says UNAVAILABLE", "READING CHECK UNAVAILABLE" in out, True)
+
+print("\nrevcheck.redtest: all eleven as expected" if not FAIL else
       "\nrevcheck.redtest: FAILURES ABOVE")
 raise SystemExit(FAIL)
