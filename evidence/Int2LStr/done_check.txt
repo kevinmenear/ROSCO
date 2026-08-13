@@ -1,28 +1,29 @@
-# Int2LStr — done-condition transcript
+# done_check.py Int2LStr -- captured 2026-08-13T15:53:00Z by scripts/capture_done_check.sh
 
-Two runs, and the first is kept because it is honest about why it failed.
+Run against the committed state at e5117c7 ("CheckInputs: done_check re-captured -- 12 of 13, and the header 73d3521 dropped"), with a CLEAN tree, with stdout
+going to a file outside the repository. The run is reproduced below verbatim.
 
-## Run 1 — taken BEFORE this file existed
+ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
+target before the subprocess runs, so
 
-BOTH FAILURE MODES OF THIS ARTIFACT, IN ORDER, AND THEY ARE MUTUALLY EXCLUSIVE
-UNTIL A COMMIT SEPARATES THEM.
+    python3 scripts/done_check.py Int2LStr > evidence/Int2LStr/done_check.txt
 
-The run taken before this file existed failed P5 -- `unresolved_evidence:
-evidence/Int2LStr/done_check.txt` -- because the transcript is listed in
-plan.json's evidence and had not been written. Writing it fixes P5 and
-immediately breaks P2: the file is untracked, so the tree is dirty, and the
-artifact describes ITSELF rather than the unit. That is unit #5's trap, and the
-capture below is what it looks like when it fires.
+always sees a modified tracked file and reports `P2 clean tree: dirty_tree`,
+one predicate worse than the truth. That is why this file is captured out of
+tree and moved in, and why it is written by a script rather than by hand: the
+header was added once at 48b9ae3 and a plain re-capture at 73d3521 removed it.
+Reproduce the reading below with no redirection:
 
-Only a commit closes both. Run 2 is taken after this file is committed.
+    python3 scripts/done_check.py Int2LStr
 
-```
+done_check exited 0 (0 only when COMPLETE).
+
 baseline (inferred): dc325e9  -- the commit before 180e339 touched translations/ROSCO_Helpers/int2lstr.cpp
 
-Int2LStr: Verdict.INCOMPLETE  (12/13 PASS)
+Int2LStr: Verdict.COMPLETE  (13/13 PASS)
 
 [  ok  ] P1   commits exist                      
-[ FAIL ] P2   clean tree                         dirty_tree
+[  ok  ] P2   clean tree                         
 [  ok  ] P3   disposition recorded               
 [  ok  ] P4   evidence recorded                  
 [  ok  ] P5   evidence resolves                  
@@ -35,29 +36,3 @@ Int2LStr: Verdict.INCOMPLETE  (12/13 PASS)
 [  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
 [  ok  ] P10  evidence reproducible              
 
-```
-
-## Run 2 — taken after run 1 was committed
-
-Clean tree, transcript tracked, evidence resolving. This is the verdict.
-
-```
-baseline (inferred): dc325e9  -- the commit before 180e339 touched translations/ROSCO_Helpers/int2lstr.cpp
-
-Int2LStr: Verdict.INCOMPLETE  (12/13 PASS)
-
-[  ok  ] P1   commits exist                      
-[ FAIL ] P2   clean tree                         dirty_tree
-[  ok  ] P3   disposition recorded               
-[  ok  ] P4   evidence recorded                  
-[  ok  ] P5   evidence resolves                  
-[  ok  ] P6   functional commit                  
-[  ok  ] P7   state brought current              
-[  ok  ] P8   unit named in state                
-[  ok  ] P9   gate compared and matched          
-[  ok  ] P12  mutation score for this unit       14/14 mutant(s) killed, 5 declared equivalent
-[  ok  ] P11  post-integration harness re-run    144 check(s) against the integrated build
-[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
-[  ok  ] P10  evidence reproducible              
-
-```
