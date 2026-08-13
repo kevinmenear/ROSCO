@@ -1,0 +1,28 @@
+case file        1,632 bytes -> 136 cases at 12 bytes each
+markers          1 distinct value(s) [1447646303]   <- one marker per case, so the stride is right
+distinct x       116 of 136
+range of x       [-1.79769e+308, 1.79769e+308]
+
+'<=' -> '<'
+   cases where it differs from the reference   2
+   cases holding x == -180.0                  2
+   the differing cases are exactly those        True
+   mutation/wrap_180.json reports killed on     2 of 136
+
+'>' -> '>='
+   cases where it differs from the reference   2
+   cases holding x == +180.0                  2
+   the differing cases are exactly those        True
+   mutation/wrap_180.json reports killed on     2 of 136
+
+where those values come from -- the generator said so on stdout:
+   PREDICATE KNOB: x at [-181.0, -180.0, -179.0, 0.0, 1.0, 2.0, 179.0, 180.0, 181.0]
+   -180.0 in the knob: True     +180.0 in the knob: True
+
+   multiplicity: {180.0: 2, -180.0: 2}   <- R6 emits each boundary twice (the literal
+                 ladder and the predicate knob), which is where the 2 comes from
+
+VERDICT: both boundary mutants are killed by the cases holding the boundary
+         VALUE and by nothing else. Remove the R6 predicate knob and they
+         survive at any corpus size -- the margin is a corpus rule, not a
+         sample size.

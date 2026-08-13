@@ -1,0 +1,40 @@
+{
+ "unit": "wrap_180",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "mutants": 11,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 11,
+ "killed": 11,
+ "survived": 0,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 1.0,
+ "loop_rev": "ff1e6e1-nogit",
+ "vit_rev": "6cd3c75-nogit",
+ "survivors": []
+}
