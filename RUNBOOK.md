@@ -358,6 +358,100 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A PROBE THAT READS A CONSTANT FROM MATHEMATICS RATHER THAN FROM THE PROGRAM
+  IS MEASURING A DIFFERENT PROGRAM, AND IT CAN REPORT FAILURE ON A CORRECT RUN.**
+  Unit #28, and it is P7 applied to the instrument instead of to the translation.
+
+  `wrap_360`'s call site is `StrAzimuth = wrap_360(...)*D2R`, so a kernel stub
+  that deletes the wrap moves each affected case by 360 degrees *in the caller's
+  post-multiplied units*. A check written against `2*math.pi` said
+  `DOES NOT MATCH` on a green run:
+
+  ```
+  the kernel's own difference line        6.2831853036
+  360 * D2R, Constants.f90:23             6.2831853036   <- eleven digits
+  2 * PI                                  6.2831853072
+  ```
+
+  ROSCO defines `D2R = 0.01745329251` and `PI = 3.14159265359` as truncated
+  literals. The disagreement is in the TENTH digit -- above the printed
+  precision of the line being checked, so the probe was neither obviously right
+  nor obviously wrong until the constant was parsed out of the source. Parse it:
+
+  ```
+  grep -nE ':: *(D2R|R2D|PI) ' rosco/controller/src/Constants.f90
+  ```
+
+  Ask it of any check that converts units, compares an angle, or reproduces an
+  arithmetic identity the reference also computes.
+
+- **A MODEL OF A CALL SITE IS AN ARGUMENT; THE STUB RUNS YOU ALREADY OWE ARE A
+  MEASUREMENT.** Unit #28. The kernel's field log records the CALLER's local,
+  not the unit's argument, so "what domain did the capture cover" has no direct
+  answer in it. The first attempt modelled the site -- `x = 0.45*(n-1)` degrees,
+  read off the first two cases -- which put every case in the right arm and
+  reproduced **6 of 41** captured values bit for bit, because `LocalVar%Time`
+  accumulates by `DT` rather than being multiplied out.
+
+  What replaced it costs no extra build, because C6's red tests are these runs:
+
+  ```
+  passthrough  (both arms deleted)   20 IDENTICAL  21 NOT   <- IDENTICAL == did not wrap
+  no-low-branch (x<0 arm deleted)    41 IDENTICAL   0 NOT   <- excludes the low arm
+  no-high-branch(x>=360 deleted)     20 IDENTICAL  21 NOT   <- 0 + 21 = 21, the partition
+  ```
+
+  A case the pass-through stub matches is a case the reference did not wrap, by
+  definition rather than by inference; the no-low run then makes the other 21
+  unambiguous. Read the red tests for the second thing they can say before
+  writing a model of the caller.
+
+- **WHEN TWO UNITS IN ONE FILE DIFFER ONLY IN A COMPARISON SPELLING, THE SIBLING
+  IS THE RED TEST.** Unit #28. `wrap_180` is `.le.` low and `.gt.` high --
+  `(-180, 180]`. `wrap_360`, one screen down and otherwise the same three
+  statements, is `.lt.` low and `.ge.` high -- `[0, 360)`. Reading either across
+  into the other moves `x = 0.0`, `x = -0.0` and `x = 360.0` and **nothing else
+  in the real line**, so it is invisible to both bit-exact layers (the kernel's
+  41 cases hold neither boundary) and it is the perturbation a translator is
+  most likely to actually produce.
+
+  ```
+  the sibling's comparison spelling    7 of 134 differential cases FAILED
+  ```
+
+  Those 7 come from R6's predicate knob and unit #14's signed-zero rung -- the
+  second unit in a row with that rung inside its margin. Grep the unit's own
+  file for a neighbour of the same shape before writing the translation:
+
+  ```
+  grep -nE '\.(lt|le|gt|ge)\.' <the unit's Fortran>   # then read the neighbours' pairs
+  ```
+
+- **A UNIT CAN HAVE ONE LIVE ARM AND ONE DEAD ONE, AND THE PER-UNIT GATE NUMBER
+  REPORTS NEITHER.** Unit #28, the fourth unit with a second gate number worth
+  carrying (after `saturate`'s upper clamp, `sigma`'s two clamps and
+  `wrap_180`'s two branches) and **the first where one of the two is non-zero**.
+
+  ```
+  whole unit -> 0.0            84,477 of 5,252,000     <- what STATUS.md's list carries
+  BOTH arms deleted            31,579
+  the HIGH arm alone           31,579
+  the LOW arm alone                 0                  <- and this is invisible in it
+  ```
+
+  So `wrap_360` reads as a gate-VISIBLE unit while one of its two arms is
+  invisible, which is worse than the incompleteness unit #27 recorded: there the
+  reader is told nothing, here the reader is told something true that points the
+  wrong way. Run the arms singly and check the partition -- the arms are
+  disjoint, so `low + high` must equal `both`, and unit #28 got that identity
+  from three instruments (kernel 0+21=21, harness 36+15=51, gate 0+31,579).
+
+  The two zeros are blindness and not breakage because their control is on the
+  SAME BUILD. And the CAUSE matters: unit #27's dead arms are dead because the
+  simulation harness discards the injection aimed at them, which is repairable;
+  this one is dead because `360*Time*AWC_freq(1)` is non-negative by
+  construction, which is not. **Say which kind before logging it as a gap.**
+
 - **A SCENARIO'S INJECTED INPUT CAN BE OVERWRITTEN BEFORE THE CONTROLLER READS
   IT, SO THE SIM SOURCE SAYS WHAT WAS INTENDED AND THE COMMITTED `.dbg` SAYS WHAT
   ARRIVED.** Unit #27, and it is the reason two of five layers are blind for that
