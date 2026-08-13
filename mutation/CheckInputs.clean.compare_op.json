@@ -30,12 +30,12 @@
  "nocompile_ratio": 0.2,
  "nocompile_refused": false,
  "total": 40,
- "killed": 2,
- "survived": 30,
+ "killed": 15,
+ "survived": 17,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.0625,
- "loop_rev": "891fde3-nogit",
+ "score": 0.4688,
+ "loop_rev": "813e7a2-nogit",
  "vit_rev": "477fc47-nogit",
  "survivors": [
   {
@@ -57,46 +57,10 @@
    "after": "<"
   },
   {
-   "id": "dabf5c70",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
-   "id": "7af3cb40",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "6b7567ff",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "b94f1a9e",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
    "id": "81dbfeda",
    "operator": "compare_op",
    "before": "<",
    "after": "<="
-  },
-  {
-   "id": "5e6d8c55",
-   "operator": "compare_op",
-   "before": "<=",
-   "after": "<"
-  },
-  {
-   "id": "5486d30a",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
   },
   {
    "id": "0173d7dc",
@@ -105,34 +69,10 @@
    "after": "<="
   },
   {
-   "id": "dc92affc",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "7e1e9eb7",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
    "id": "4f10aee0",
    "operator": "compare_op",
    "before": "<",
    "after": "<="
-  },
-  {
-   "id": "3021e827",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "ce438d51",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
   },
   {
    "id": "6e9e78f5",
@@ -165,18 +105,6 @@
    "after": "<="
   },
   {
-   "id": "9e089686",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "1b8d5ab3",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
    "id": "5e7c786f",
    "operator": "compare_op",
    "before": "<=",
@@ -205,12 +133,6 @@
    "operator": "compare_op",
    "before": ">",
    "after": ">="
-  },
-  {
-   "id": "689a2980",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
   },
   {
    "id": "c7770aac",

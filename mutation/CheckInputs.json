@@ -45,12 +45,12 @@
  "nocompile_ratio": 0.099,
  "nocompile_refused": false,
  "total": 192,
- "killed": 8,
- "survived": 165,
+ "killed": 84,
+ "survived": 89,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.0462,
- "loop_rev": "891fde3-nogit",
+ "score": 0.4855,
+ "loop_rev": "813e7a2-nogit",
  "vit_rev": "477fc47-nogit",
  "merged_from": [
   {
@@ -65,9 +65,9 @@
    "total": 39,
    "mutants": 29,
    "nocompile": 10,
-   "killed": 1,
-   "survived": 28,
-   "score": 0.0345
+   "killed": 7,
+   "survived": 22,
+   "score": 0.2414
   },
   {
    "part": "mutation/CheckInputs.clean.index_offset.json",
@@ -77,9 +77,9 @@
    "total": 33,
    "mutants": 33,
    "nocompile": 0,
-   "killed": 0,
-   "survived": 33,
-   "score": 0.0
+   "killed": 4,
+   "survived": 29,
+   "score": 0.1212
   },
   {
    "part": "mutation/CheckInputs.clean.compare_op.json",
@@ -89,9 +89,9 @@
    "total": 40,
    "mutants": 32,
    "nocompile": 8,
-   "killed": 2,
-   "survived": 30,
-   "score": 0.0625
+   "killed": 15,
+   "survived": 17,
+   "score": 0.4688
   },
   {
    "part": "mutation/CheckInputs.clean.const_tweak.json",
@@ -101,9 +101,9 @@
    "total": 40,
    "mutants": 40,
    "nocompile": 0,
-   "killed": 2,
-   "survived": 38,
-   "score": 0.05
+   "killed": 22,
+   "survived": 18,
+   "score": 0.55
   },
   {
    "part": "mutation/CheckInputs.clean.negate_cond.json",
@@ -113,20 +113,14 @@
    "total": 40,
    "mutants": 39,
    "nocompile": 1,
-   "killed": 3,
-   "survived": 36,
-   "score": 0.0769
+   "killed": 36,
+   "survived": 3,
+   "score": 0.9231
   }
  ],
- "merged_why": "192 mutants at ~9.5s each is a 32-minute sweep; a dispatch's foreground command may block for 600s. Five foreground --operator runs rather than one backgrounded sweep -- backgrounding is the failure this campaign has already paid for twice.",
+ "merged_why": "192 mutants at ~9.5s each does not fit one 600-second foreground command; five --operator runs, each blocking, unioned here. The R11 re-take: 22,824 cases, the first corpus with an admissible baseline in it.",
  "merged_by": "scripts/_mutation_merge.py",
  "survivors": [
-  {
-   "id": "120511df",
-   "operator": "arith_op",
-   "before": "CntrPar->DT_Out - LocalVar->DT",
-   "after": "CntrPar->DT_Out + LocalVar->DT"
-  },
   {
    "id": "1b723864",
    "operator": "arith_op",
@@ -194,30 +188,6 @@
    "after": "I + 1"
   },
   {
-   "id": "202264d1",
-   "operator": "swap_operands",
-   "before": "CntrPar->DT_Out - LocalVar->DT",
-   "after": "LocalVar->DT - CntrPar->DT_Out"
-  },
-  {
-   "id": "8c59ac4f",
-   "operator": "swap_operands",
-   "before": "CntrPar->ZMQ_UpdatePeriod - LocalVar->DT",
-   "after": "LocalVar->DT - CntrPar->ZMQ_UpdatePeriod"
-  },
-  {
-   "id": "63e42cb8",
-   "operator": "swap_operands",
-   "before": "I - 1",
-   "after": "1 - I"
-  },
-  {
-   "id": "52226cd0",
-   "operator": "swap_operands",
-   "before": "I - 1",
-   "after": "1 - I"
-  },
-  {
    "id": "e7dc92ae",
    "operator": "swap_operands",
    "before": "Imode - 1",
@@ -264,12 +234,6 @@
    "operator": "swap_operands",
    "before": "I - 1",
    "after": "1 - I"
-  },
-  {
-   "id": "4cef0996",
-   "operator": "drop_call",
-   "before": "std::fabs(CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out))",
-   "after": "CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out)"
   },
   {
    "id": "44bc2497",
@@ -428,12 +392,6 @@
    "after": "[0 + 1]"
   },
   {
-   "id": "56825c66",
-   "operator": "index_offset",
-   "before": "[0]",
-   "after": "[0 + 1]"
-  },
-  {
    "id": "e0e8bbf5",
    "operator": "index_offset",
    "before": "[0]",
@@ -458,12 +416,6 @@
    "after": "[9 + 1]"
   },
   {
-   "id": "ba11ef8e",
-   "operator": "index_offset",
-   "before": "[27]",
-   "after": "[27 + 1]"
-  },
-  {
    "id": "0748e02b",
    "operator": "index_offset",
    "before": "[1]",
@@ -474,18 +426,6 @@
    "operator": "index_offset",
    "before": "[2]",
    "after": "[2 + 1]"
-  },
-  {
-   "id": "06e5b20f",
-   "operator": "index_offset",
-   "before": "[27]",
-   "after": "[27 + 1]"
-  },
-  {
-   "id": "b4d9af1a",
-   "operator": "index_offset",
-   "before": "[27]",
-   "after": "[27 + 1]"
   },
   {
    "id": "51c0202f",
@@ -506,46 +446,10 @@
    "after": "<"
   },
   {
-   "id": "dabf5c70",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
-   "id": "7af3cb40",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "6b7567ff",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "b94f1a9e",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
    "id": "81dbfeda",
    "operator": "compare_op",
    "before": "<",
    "after": "<="
-  },
-  {
-   "id": "5e6d8c55",
-   "operator": "compare_op",
-   "before": "<=",
-   "after": "<"
-  },
-  {
-   "id": "5486d30a",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
   },
   {
    "id": "0173d7dc",
@@ -554,34 +458,10 @@
    "after": "<="
   },
   {
-   "id": "dc92affc",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "7e1e9eb7",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
    "id": "4f10aee0",
    "operator": "compare_op",
    "before": "<",
    "after": "<="
-  },
-  {
-   "id": "3021e827",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "ce438d51",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
   },
   {
    "id": "6e9e78f5",
@@ -614,18 +494,6 @@
    "after": "<="
   },
   {
-   "id": "9e089686",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "1b8d5ab3",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
    "id": "5e7c786f",
    "operator": "compare_op",
    "before": "<=",
@@ -654,12 +522,6 @@
    "operator": "compare_op",
    "before": ">",
    "after": ">="
-  },
-  {
-   "id": "689a2980",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
   },
   {
    "id": "c7770aac",
@@ -728,30 +590,6 @@
    "after": "1"
   },
   {
-   "id": "e7d0b332",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "db04b4b1",
-   "operator": "const_tweak",
-   "before": "3",
-   "after": "4"
-  },
-  {
-   "id": "42cd743d",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "ee8bf711",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
    "id": "9b706bcb",
    "operator": "const_tweak",
    "before": "1",
@@ -759,18 +597,6 @@
   },
   {
    "id": "316503f1",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "53849836",
-   "operator": "const_tweak",
-   "before": "0.001",
-   "after": "1.001"
-  },
-  {
-   "id": "dd47af66",
    "operator": "const_tweak",
    "before": "1",
    "after": "2"
@@ -794,94 +620,10 @@
    "after": "2"
   },
   {
-   "id": "e7fb54be",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "d5580a70",
-   "operator": "const_tweak",
-   "before": "2",
-   "after": "3"
-  },
-  {
-   "id": "5214906e",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "b3261799",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
    "id": "8ea1df39",
    "operator": "const_tweak",
    "before": "2",
    "after": "3"
-  },
-  {
-   "id": "6f3729a9",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "844fb070",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "1bbd5224",
-   "operator": "const_tweak",
-   "before": "4",
-   "after": "5"
-  },
-  {
-   "id": "289ee328",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "ea3ff034",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "dc969eec",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "89410770",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "fded8c1e",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "2f3a75e8",
-   "operator": "const_tweak",
-   "before": "3",
-   "after": "4"
-  },
-  {
-   "id": "c88b11f5",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
   },
   {
    "id": "a1f04734",
@@ -896,66 +638,6 @@
    "after": "1"
   },
   {
-   "id": "0bfb81cb",
-   "operator": "negate_cond",
-   "before": "if (a == nullptr)",
-   "after": "if (!(a == nullptr))"
-  },
-  {
-   "id": "01a91990",
-   "operator": "negate_cond",
-   "before": "if (a[i] < v)",
-   "after": "if (!(a[i] < v))"
-  },
-  {
-   "id": "2e9d2296",
-   "operator": "negate_cond",
-   "before": "if (a == nullptr)",
-   "after": "if (!(a == nullptr))"
-  },
-  {
-   "id": "be2393aa",
-   "operator": "negate_cond",
-   "before": "if (a[i] <= v)",
-   "after": "if (!(a[i] <= v))"
-  },
-  {
-   "id": "5f89dffc",
-   "operator": "negate_cond",
-   "before": "if (a == nullptr)",
-   "after": "if (!(a == nullptr))"
-  },
-  {
-   "id": "3f8b4dc7",
-   "operator": "negate_cond",
-   "before": "if (a[i] > v)",
-   "after": "if (!(a[i] > v))"
-  },
-  {
-   "id": "1871a628",
-   "operator": "negate_cond",
-   "before": "if (a == nullptr)",
-   "after": "if (!(a == nullptr))"
-  },
-  {
-   "id": "b5ce0de9",
-   "operator": "negate_cond",
-   "before": "if (!(a[i] < v))",
-   "after": "if (!(!(a[i] < v)))"
-  },
-  {
-   "id": "fecca525",
-   "operator": "negate_cond",
-   "before": "if (a == nullptr)",
-   "after": "if (!(a == nullptr))"
-  },
-  {
-   "id": "c7a620a9",
-   "operator": "negate_cond",
-   "before": "if (a[i] > r)",
-   "after": "if (!(a[i] > r))"
-  },
-  {
    "id": "2c246bb3",
    "operator": "negate_cond",
    "before": "if (a == nullptr)",
@@ -968,148 +650,10 @@
    "after": "if (!(a[i] < r))"
   },
   {
-   "id": "c131ffdd",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->LoggingLevel < 0) || (CntrPar->LoggingLevel > 3))",
-   "after": "if (!((CntrPar->LoggingLevel < 0) || (CntrPar->LoggingLevel > 3)))"
-  },
-  {
-   "id": "5a47bc8b",
-   "operator": "negate_cond",
-   "before": "if (CntrPar->DT_Out <= 0)",
-   "after": "if (!(CntrPar->DT_Out <= 0))"
-  },
-  {
-   "id": "4676e30c",
-   "operator": "negate_cond",
-   "before": "if (CntrPar->DT_Out < LocalVar->DT)",
-   "after": "if (!(CntrPar->DT_Out < LocalVar->DT))"
-  },
-  {
-   "id": "aca437f4",
-   "operator": "negate_cond",
-   "before": "if (std::fabs(CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out)) > 0.001)",
-   "after": "if (!(std::fabs(CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out)) > 0.001))"
-  },
-  {
    "id": "1042577b",
    "operator": "negate_cond",
    "before": "if (CntrPar->ZMQ_Mode > 0)",
    "after": "if (!(CntrPar->ZMQ_Mode > 0))"
-  },
-  {
-   "id": "aa9bfbd1",
-   "operator": "negate_cond",
-   "before": "if (std::fabs(CntrPar->ZMQ_UpdatePeriod - LocalVar->DT * static_cast<double>(CntrPar->n_DT_ZMQ)) > 0.001)",
-   "after": "if (!(std::fabs(CntrPar->ZMQ_UpdatePeriod - LocalVar->DT * static_cast<double>(CntrPar->n_DT_ZMQ)) > 0.001))"
-  },
-  {
-   "id": "426e38c4",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->F_LPFType < 1) || (CntrPar->F_LPFType > 2))",
-   "after": "if (!((CntrPar->F_LPFType < 1) || (CntrPar->F_LPFType > 2)))"
-  },
-  {
-   "id": "09aabe97",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->IPC_ControlMode < 0) || (CntrPar->IPC_ControlMode > 2))",
-   "after": "if (!((CntrPar->IPC_ControlMode < 0) || (CntrPar->IPC_ControlMode > 2)))"
-  },
-  {
-   "id": "4a4ffdb4",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->VS_ControlMode < 0) || (CntrPar->VS_ControlMode > 4))",
-   "after": "if (!((CntrPar->VS_ControlMode < 0) || (CntrPar->VS_ControlMode > 4)))"
-  },
-  {
-   "id": "27b9eb39",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->VS_ConstPower < 0) || (CntrPar->VS_ConstPower > 1))",
-   "after": "if (!((CntrPar->VS_ConstPower < 0) || (CntrPar->VS_ConstPower > 1)))"
-  },
-  {
-   "id": "15e98c6e",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->VS_FBP < 0) || (CntrPar->VS_FBP > 3))",
-   "after": "if (!((CntrPar->VS_FBP < 0) || (CntrPar->VS_FBP > 3)))"
-  },
-  {
-   "id": "6376ac8e",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->VS_FBP > 0) && (CntrPar->PC_ControlMode > 0))",
-   "after": "if (!((CntrPar->VS_FBP > 0) && (CntrPar->PC_ControlMode > 0)))"
-  },
-  {
-   "id": "9e1219c4",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->VS_FBP > 0) && (CntrPar->PRC_Mode > 0))",
-   "after": "if (!((CntrPar->VS_FBP > 0) && (CntrPar->PRC_Mode > 0)))"
-  },
-  {
-   "id": "7304c012",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->VS_FBP > 0) && (CntrPar->VS_ConstPower > 0))",
-   "after": "if (!((CntrPar->VS_FBP > 0) && (CntrPar->VS_ConstPower > 0)))"
-  },
-  {
-   "id": "02009454",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->PC_ControlMode < 0) || (CntrPar->PC_ControlMode > 1))",
-   "after": "if (!((CntrPar->PC_ControlMode < 0) || (CntrPar->PC_ControlMode > 1)))"
-  },
-  {
-   "id": "5a02677b",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->Y_ControlMode < 0) || (CntrPar->Y_ControlMode > 2))",
-   "after": "if (!((CntrPar->Y_ControlMode < 0) || (CntrPar->Y_ControlMode > 2)))"
-  },
-  {
-   "id": "2f3e216b",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->IPC_ControlMode > 0) && (CntrPar->Y_ControlMode > 1))",
-   "after": "if (!((CntrPar->IPC_ControlMode > 0) && (CntrPar->Y_ControlMode > 1)))"
-  },
-  {
-   "id": "af00ca55",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->SS_Mode < 0) || (CntrPar->SS_Mode > 1))",
-   "after": "if (!((CntrPar->SS_Mode < 0) || (CntrPar->SS_Mode > 1)))"
-  },
-  {
-   "id": "2ee32c07",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->WE_Mode < 0) || (CntrPar->WE_Mode > 2))",
-   "after": "if (!((CntrPar->WE_Mode < 0) || (CntrPar->WE_Mode > 2)))"
-  },
-  {
-   "id": "a2bb0397",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->PS_Mode < 0) || (CntrPar->PS_Mode > 3))",
-   "after": "if (!((CntrPar->PS_Mode < 0) || (CntrPar->PS_Mode > 3)))"
-  },
-  {
-   "id": "be667c6b",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->SU_Mode < 0) || (CntrPar->SU_Mode > 1))",
-   "after": "if (!((CntrPar->SU_Mode < 0) || (CntrPar->SU_Mode > 1)))"
-  },
-  {
-   "id": "e594a224",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->SD_Mode < 0) || (CntrPar->SD_Mode > 1))",
-   "after": "if (!((CntrPar->SD_Mode < 0) || (CntrPar->SD_Mode > 1)))"
-  },
-  {
-   "id": "c44ed088",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->Fl_Mode < 0) || (CntrPar->Fl_Mode > 2))",
-   "after": "if (!((CntrPar->Fl_Mode < 0) || (CntrPar->Fl_Mode > 2)))"
-  },
-  {
-   "id": "6ec85054",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->Flp_Mode < 0) || (CntrPar->Flp_Mode > 3))",
-   "after": "if (!((CntrPar->Flp_Mode < 0) || (CntrPar->Flp_Mode > 3)))"
   }
  ],
  "measures": "The translation against the ORIGINAL Fortran. ReadSetParameters.f90.o defines _MOD_checkinputs and references no checkinputs_c, so the reference side runs the Fortran body and nothing routes back into the mutant. vit_integration_shim.o is linked but unreferenced here: on a clean tree nothing calls checkinputs_c.",
@@ -1121,6 +665,6 @@
   "shim_in_libs": true,
   "own_object_in_libs": false
  },
- "stamped_at": "2026-08-13T04:49:53-0400",
- "stamped_at_head": "685f3f4"
+ "stamped_at": "2026-08-13T06:14:12-0400",
+ "stamped_at_head": "4699246"
 }

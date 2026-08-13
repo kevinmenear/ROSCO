@@ -30,74 +30,14 @@
  "nocompile_ratio": 0.025,
  "nocompile_refused": false,
  "total": 40,
- "killed": 3,
- "survived": 36,
+ "killed": 36,
+ "survived": 3,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.0769,
- "loop_rev": "891fde3-nogit",
+ "score": 0.9231,
+ "loop_rev": "813e7a2-nogit",
  "vit_rev": "477fc47-nogit",
  "survivors": [
-  {
-   "id": "0bfb81cb",
-   "operator": "negate_cond",
-   "before": "if (a == nullptr)",
-   "after": "if (!(a == nullptr))"
-  },
-  {
-   "id": "01a91990",
-   "operator": "negate_cond",
-   "before": "if (a[i] < v)",
-   "after": "if (!(a[i] < v))"
-  },
-  {
-   "id": "2e9d2296",
-   "operator": "negate_cond",
-   "before": "if (a == nullptr)",
-   "after": "if (!(a == nullptr))"
-  },
-  {
-   "id": "be2393aa",
-   "operator": "negate_cond",
-   "before": "if (a[i] <= v)",
-   "after": "if (!(a[i] <= v))"
-  },
-  {
-   "id": "5f89dffc",
-   "operator": "negate_cond",
-   "before": "if (a == nullptr)",
-   "after": "if (!(a == nullptr))"
-  },
-  {
-   "id": "3f8b4dc7",
-   "operator": "negate_cond",
-   "before": "if (a[i] > v)",
-   "after": "if (!(a[i] > v))"
-  },
-  {
-   "id": "1871a628",
-   "operator": "negate_cond",
-   "before": "if (a == nullptr)",
-   "after": "if (!(a == nullptr))"
-  },
-  {
-   "id": "b5ce0de9",
-   "operator": "negate_cond",
-   "before": "if (!(a[i] < v))",
-   "after": "if (!(!(a[i] < v)))"
-  },
-  {
-   "id": "fecca525",
-   "operator": "negate_cond",
-   "before": "if (a == nullptr)",
-   "after": "if (!(a == nullptr))"
-  },
-  {
-   "id": "c7a620a9",
-   "operator": "negate_cond",
-   "before": "if (a[i] > r)",
-   "after": "if (!(a[i] > r))"
-  },
   {
    "id": "2c246bb3",
    "operator": "negate_cond",
@@ -111,148 +51,10 @@
    "after": "if (!(a[i] < r))"
   },
   {
-   "id": "c131ffdd",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->LoggingLevel < 0) || (CntrPar->LoggingLevel > 3))",
-   "after": "if (!((CntrPar->LoggingLevel < 0) || (CntrPar->LoggingLevel > 3)))"
-  },
-  {
-   "id": "5a47bc8b",
-   "operator": "negate_cond",
-   "before": "if (CntrPar->DT_Out <= 0)",
-   "after": "if (!(CntrPar->DT_Out <= 0))"
-  },
-  {
-   "id": "4676e30c",
-   "operator": "negate_cond",
-   "before": "if (CntrPar->DT_Out < LocalVar->DT)",
-   "after": "if (!(CntrPar->DT_Out < LocalVar->DT))"
-  },
-  {
-   "id": "aca437f4",
-   "operator": "negate_cond",
-   "before": "if (std::fabs(CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out)) > 0.001)",
-   "after": "if (!(std::fabs(CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out)) > 0.001))"
-  },
-  {
    "id": "1042577b",
    "operator": "negate_cond",
    "before": "if (CntrPar->ZMQ_Mode > 0)",
    "after": "if (!(CntrPar->ZMQ_Mode > 0))"
-  },
-  {
-   "id": "aa9bfbd1",
-   "operator": "negate_cond",
-   "before": "if (std::fabs(CntrPar->ZMQ_UpdatePeriod - LocalVar->DT * static_cast<double>(CntrPar->n_DT_ZMQ)) > 0.001)",
-   "after": "if (!(std::fabs(CntrPar->ZMQ_UpdatePeriod - LocalVar->DT * static_cast<double>(CntrPar->n_DT_ZMQ)) > 0.001))"
-  },
-  {
-   "id": "426e38c4",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->F_LPFType < 1) || (CntrPar->F_LPFType > 2))",
-   "after": "if (!((CntrPar->F_LPFType < 1) || (CntrPar->F_LPFType > 2)))"
-  },
-  {
-   "id": "09aabe97",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->IPC_ControlMode < 0) || (CntrPar->IPC_ControlMode > 2))",
-   "after": "if (!((CntrPar->IPC_ControlMode < 0) || (CntrPar->IPC_ControlMode > 2)))"
-  },
-  {
-   "id": "4a4ffdb4",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->VS_ControlMode < 0) || (CntrPar->VS_ControlMode > 4))",
-   "after": "if (!((CntrPar->VS_ControlMode < 0) || (CntrPar->VS_ControlMode > 4)))"
-  },
-  {
-   "id": "27b9eb39",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->VS_ConstPower < 0) || (CntrPar->VS_ConstPower > 1))",
-   "after": "if (!((CntrPar->VS_ConstPower < 0) || (CntrPar->VS_ConstPower > 1)))"
-  },
-  {
-   "id": "15e98c6e",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->VS_FBP < 0) || (CntrPar->VS_FBP > 3))",
-   "after": "if (!((CntrPar->VS_FBP < 0) || (CntrPar->VS_FBP > 3)))"
-  },
-  {
-   "id": "6376ac8e",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->VS_FBP > 0) && (CntrPar->PC_ControlMode > 0))",
-   "after": "if (!((CntrPar->VS_FBP > 0) && (CntrPar->PC_ControlMode > 0)))"
-  },
-  {
-   "id": "9e1219c4",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->VS_FBP > 0) && (CntrPar->PRC_Mode > 0))",
-   "after": "if (!((CntrPar->VS_FBP > 0) && (CntrPar->PRC_Mode > 0)))"
-  },
-  {
-   "id": "7304c012",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->VS_FBP > 0) && (CntrPar->VS_ConstPower > 0))",
-   "after": "if (!((CntrPar->VS_FBP > 0) && (CntrPar->VS_ConstPower > 0)))"
-  },
-  {
-   "id": "02009454",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->PC_ControlMode < 0) || (CntrPar->PC_ControlMode > 1))",
-   "after": "if (!((CntrPar->PC_ControlMode < 0) || (CntrPar->PC_ControlMode > 1)))"
-  },
-  {
-   "id": "5a02677b",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->Y_ControlMode < 0) || (CntrPar->Y_ControlMode > 2))",
-   "after": "if (!((CntrPar->Y_ControlMode < 0) || (CntrPar->Y_ControlMode > 2)))"
-  },
-  {
-   "id": "2f3e216b",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->IPC_ControlMode > 0) && (CntrPar->Y_ControlMode > 1))",
-   "after": "if (!((CntrPar->IPC_ControlMode > 0) && (CntrPar->Y_ControlMode > 1)))"
-  },
-  {
-   "id": "af00ca55",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->SS_Mode < 0) || (CntrPar->SS_Mode > 1))",
-   "after": "if (!((CntrPar->SS_Mode < 0) || (CntrPar->SS_Mode > 1)))"
-  },
-  {
-   "id": "2ee32c07",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->WE_Mode < 0) || (CntrPar->WE_Mode > 2))",
-   "after": "if (!((CntrPar->WE_Mode < 0) || (CntrPar->WE_Mode > 2)))"
-  },
-  {
-   "id": "a2bb0397",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->PS_Mode < 0) || (CntrPar->PS_Mode > 3))",
-   "after": "if (!((CntrPar->PS_Mode < 0) || (CntrPar->PS_Mode > 3)))"
-  },
-  {
-   "id": "be667c6b",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->SU_Mode < 0) || (CntrPar->SU_Mode > 1))",
-   "after": "if (!((CntrPar->SU_Mode < 0) || (CntrPar->SU_Mode > 1)))"
-  },
-  {
-   "id": "e594a224",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->SD_Mode < 0) || (CntrPar->SD_Mode > 1))",
-   "after": "if (!((CntrPar->SD_Mode < 0) || (CntrPar->SD_Mode > 1)))"
-  },
-  {
-   "id": "c44ed088",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->Fl_Mode < 0) || (CntrPar->Fl_Mode > 2))",
-   "after": "if (!((CntrPar->Fl_Mode < 0) || (CntrPar->Fl_Mode > 2)))"
-  },
-  {
-   "id": "6ec85054",
-   "operator": "negate_cond",
-   "before": "if ((CntrPar->Flp_Mode < 0) || (CntrPar->Flp_Mode > 3))",
-   "after": "if (!((CntrPar->Flp_Mode < 0) || (CntrPar->Flp_Mode > 3)))"
   }
  ]
 }

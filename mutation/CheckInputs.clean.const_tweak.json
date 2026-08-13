@@ -30,12 +30,12 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 40,
- "killed": 2,
- "survived": 38,
+ "killed": 22,
+ "survived": 18,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.05,
- "loop_rev": "891fde3-nogit",
+ "score": 0.55,
+ "loop_rev": "813e7a2-nogit",
  "vit_rev": "477fc47-nogit",
  "survivors": [
   {
@@ -99,30 +99,6 @@
    "after": "1"
   },
   {
-   "id": "e7d0b332",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "db04b4b1",
-   "operator": "const_tweak",
-   "before": "3",
-   "after": "4"
-  },
-  {
-   "id": "42cd743d",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "ee8bf711",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
    "id": "9b706bcb",
    "operator": "const_tweak",
    "before": "1",
@@ -130,18 +106,6 @@
   },
   {
    "id": "316503f1",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "53849836",
-   "operator": "const_tweak",
-   "before": "0.001",
-   "after": "1.001"
-  },
-  {
-   "id": "dd47af66",
    "operator": "const_tweak",
    "before": "1",
    "after": "2"
@@ -165,94 +129,10 @@
    "after": "2"
   },
   {
-   "id": "e7fb54be",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "d5580a70",
-   "operator": "const_tweak",
-   "before": "2",
-   "after": "3"
-  },
-  {
-   "id": "5214906e",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "b3261799",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
    "id": "8ea1df39",
    "operator": "const_tweak",
    "before": "2",
    "after": "3"
-  },
-  {
-   "id": "6f3729a9",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "844fb070",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "1bbd5224",
-   "operator": "const_tweak",
-   "before": "4",
-   "after": "5"
-  },
-  {
-   "id": "289ee328",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "ea3ff034",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "dc969eec",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "89410770",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "fded8c1e",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "2f3a75e8",
-   "operator": "const_tweak",
-   "before": "3",
-   "after": "4"
-  },
-  {
-   "id": "c88b11f5",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
   },
   {
    "id": "a1f04734",

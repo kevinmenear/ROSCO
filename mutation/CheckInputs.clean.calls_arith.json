@@ -38,20 +38,14 @@
  "nocompile_ratio": 0.2564,
  "nocompile_refused": true,
  "total": 39,
- "killed": 1,
- "survived": 28,
+ "killed": 7,
+ "survived": 22,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.0345,
- "loop_rev": "891fde3-nogit",
+ "score": 0.2414,
+ "loop_rev": "813e7a2-nogit",
  "vit_rev": "477fc47-nogit",
  "survivors": [
-  {
-   "id": "120511df",
-   "operator": "arith_op",
-   "before": "CntrPar->DT_Out - LocalVar->DT",
-   "after": "CntrPar->DT_Out + LocalVar->DT"
-  },
   {
    "id": "1b723864",
    "operator": "arith_op",
@@ -119,30 +113,6 @@
    "after": "I + 1"
   },
   {
-   "id": "202264d1",
-   "operator": "swap_operands",
-   "before": "CntrPar->DT_Out - LocalVar->DT",
-   "after": "LocalVar->DT - CntrPar->DT_Out"
-  },
-  {
-   "id": "8c59ac4f",
-   "operator": "swap_operands",
-   "before": "CntrPar->ZMQ_UpdatePeriod - LocalVar->DT",
-   "after": "LocalVar->DT - CntrPar->ZMQ_UpdatePeriod"
-  },
-  {
-   "id": "63e42cb8",
-   "operator": "swap_operands",
-   "before": "I - 1",
-   "after": "1 - I"
-  },
-  {
-   "id": "52226cd0",
-   "operator": "swap_operands",
-   "before": "I - 1",
-   "after": "1 - I"
-  },
-  {
    "id": "e7dc92ae",
    "operator": "swap_operands",
    "before": "Imode - 1",
@@ -189,12 +159,6 @@
    "operator": "swap_operands",
    "before": "I - 1",
    "after": "1 - I"
-  },
-  {
-   "id": "4cef0996",
-   "operator": "drop_call",
-   "before": "std::fabs(CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out))",
-   "after": "CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out)"
   },
   {
    "id": "44bc2497",
