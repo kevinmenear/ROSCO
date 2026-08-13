@@ -6278,3 +6278,67 @@ of them is a shape no rule in this campaign detects.
    between rules. This is finding 4 once more — the artifact carries the
    conclusion (*"exactly one quantity away from admissible"*) and withholds what
    would test it (which CHECKS that quantity reaches).
+
+## 2026-08-13 10:30 — the evidence-hygiene audit, and why the predicate is NOT in the loop
+
+`scripts/revcheck.py` asks three questions of every unit's result artifacts and
+`scripts/revcheck.redtest.py` proves it can answer them wrongly. Standing result
+on this campaign, re-runnable rather than recorded:
+
+    BASE-SHA SPLIT   9 units    (4 over the five core families alone)
+    NO loop_rev     17 units
+    DIRTY TREE      12 units
+
+**None of this shows any closed unit's result is WRONG.** It shows the evidence
+cannot be checked for commensurability, which is a different and weaker claim —
+the same distinction between "the corpus change is global" and "the
+concentration is narrow". 24 of the findings are on closed units and are
+reported as ADVISORY. Reopening 27 dispositions on evidence-hygiene grounds
+would cost more than it buys, and `--strict` exists for the run where that is
+actually the question.
+
+**WHY THIS IS A CAMPAIGN SCRIPT AND NOT A PREDICATE IN `loop/done.py`.** The
+obvious home is the done-condition: P1–P13 already live in the loop, and this is
+the same kind of question. It is not there, and the reason is mechanical rather
+than procedural.
+
+`loop_rev` is the loop checkout's own HEAD. **Committing the predicate to the
+loop bumps `loop_rev` for every artifact taken afterwards.** CheckInputs is
+currently split `mutation @ 2e2295f` against `postintegration @ 813e7a2`, and
+the fix is to re-run post-integration at `2e2295f`. Add the predicate to the
+loop first and that re-run stamps the NEW rev, leaving `mutation` at `2e2295f`
+alone — the split does not close, it MOVES, and the check would be reporting a
+condition its own installation created. The tool that measures the corpus
+generator cannot ship inside the corpus generator without perturbing what it
+measures, which is this repo's read-only-evaluation rule arriving from an
+unexpected direction.
+
+So the order is: campaign script now, post-integration re-run at `2e2295f`,
+**then** the loop-level predicate as a proposed method amendment — by which
+time a rev bump costs nothing because nothing is mid-split.
+
+### Finding 4, third instance, now with a shape to fix
+
+Raised for the method rather than applied. `_mutation_merge.py:189` refuses
+parts from different `loop_rev`s inside a merge; the done-condition asks nothing
+equivalent across a unit's artifacts, and 17 units carry artifacts where the
+question cannot be asked at all because the field is absent. The durable form is
+a loop predicate asserting all three, with `harness/` and `gate/` writers
+stamping `loop_rev` unconditionally so assertion 2 becomes unfalsifiable-by-
+construction rather than commonly violated.
+
+### A note on how both errors in this investigation were caught
+
+The last two exchanges each contained one measurement error. A campaign-wide
+grep for array intrinsics ran against an INTEGRATED tree, where 27 closed units
+are wrappers, and reported zero intrinsic uses in CheckInputs while its
+translation carried 18 helper call sites. A hand comparison of `loop_rev`s
+compared the SUFFIXED strings and reported `interp1d` as split when it is
+`20b0dbb` throughout.
+
+Neither was caught by care. Both were caught by a second number contradicting
+the first — and `revcheck.py` then reproduced the same shape twice in its own
+output, printing `NO loop_rev on 0 unit(s)` directly beneath seventeen units
+reporting it. That is the argument for the predicate stated more honestly than
+any reasoning about diligence: the apparatus is what holds a fact between the
+moment someone measures it and the moment anyone needs it again.
