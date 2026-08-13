@@ -62,3 +62,45 @@ Both zeros have their control on the SAME build.
 produced, before the fix. Both were in the KERNEL side of the callee bridge and
 both were already right on the INTEGRATION side; CheckInputs is the first unit
 whose kernel calls `AddToList`. Fixed in VIT `d29bfc2`.
+
+## Differential harness (P11) — this unit's primary evidence
+
+| run | result |
+|---|---|
+| against the CLEAN Fortran | **16,769 checked, 0 failed, 0 inadmissible** |
+| against the INTEGRATED build (the wrapper only) | **16,769 checked, 0 failed** |
+
+`harness_scaling_wall.md` records what it cost to get there: five defects, four
+of them in the corpus generator's R7 rule and one in the callee-declaration
+generator, none of which any earlier unit could have found. 148 parameters
+varied, 325 held, **86 predicate knobs against 6 for the largest unit before
+this one**.
+
+Three pins in `harness/ranges.toml`, all three because the ORACLE reads past the
+end of an array: `AWC_NumModes`, `CC_Group_N`, `StC_Group_N` are loop counts the
+reference never checks against the extents of `AWC_freq`, `CC_GroupIndex` and
+`StC_GroupIndex`. Case 9544 killed the Fortran with `AWC_NumModes = 99999`
+against `n_AWC_freq = 28`; the translation survived the same loop, which is luck
+and not correctness.
+
+**The margin is one `memset`, and it took both directions to find.** A
+deferred-length `CHARACTER(:), ALLOCATABLE` assignment reallocates to exactly
+`LEN`, so the reference has no bytes past the new length — the previous
+message's storage is gone. Rendering that region as the previous message's tail
+fails **16,729 of 16,769**; rendering it as blanks fails **16,769 of 16,769**;
+clearing it to NUL passes. The oracle side is a zeroed buffer the bridge writes
+`n_ErrMsg` bytes into, and the first differing byte — `a=0x20 b=0x00` at exactly
+index `n_ErrMsg` — is what said so. Two red artifacts, and the one that says
+*which way* is the second.
+
+`harness.errmsg_padding_red.json` is the first of the two, kept.
+
+## Gate (C9)
+
+```
+GATE PASS: compared 5,252,000 value(s) across 351 channel(s) / 27 scenario(s);
+           mismatched 0
+```
+
+Taken on the integrated build; the `vit integrate` that put `checkinputs.cpp`
+in the library is the commit before it (unit #26's re-take rule).
