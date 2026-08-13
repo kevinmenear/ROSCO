@@ -6342,3 +6342,53 @@ output, printing `NO loop_rev on 0 unit(s)` directly beneath seventeen units
 reporting it. That is the argument for the predicate stated more honestly than
 any reasoning about diligence: the apparatus is what holds a fact between the
 moment someone measures it and the moment anyone needs it again.
+
+## 2026-08-13 12:15 — the 14 units with no reading, and the fix that would have hidden them
+
+`revcheck.py` now asks five questions, not three. The last two were added by
+DECIDING NOT TO FIX something, which is worth recording as a decision rather
+than as an absence.
+
+14 of 29 closed units carry no `evidence/<u>/done_check.txt`. The one-line
+remedy exists — `bash scripts/capture_done_check.sh <u>` — and taking it would
+have been a fresh instance of the defect this campaign has spent two days
+removing. Every predicate `done_check` evaluates reads the CURRENT tree. A
+capture made today for a unit closed on 08-11 describes today, while reading, to
+anyone later, as the reading taken at the close. **A visible honest absence
+would have become an invisible dishonest presence, and the check that would have
+caught it is the one the capture had just satisfied.**
+
+So the encoded question is not "does a file exist" — which generating a file
+answers — but "was the reading taken while this unit was still the unit being
+worked", measured with no time threshold: no other unit may have gained a
+disposition between the closing commit and the capture's commit.
+
+    NO RECORDED READING   14      RETROACTIVE READING   3
+
+The three retroactive ones are this session's own re-captures of `Int2LStr`,
+`interp1d` and `wrap_360`. They are accurate readings of today and those units
+are genuinely COMPLETE 13/13 — and they are still not readings taken at the
+close, so the check reports that about work committed an hour earlier. That is
+the property worth having: it does not exempt its author.
+
+### Two results from today that generalise past this campaign
+
+**These defects are not biased toward over-claiming.** `Int2LStr`, `interp1d`
+and `wrap_360` were PENALISED by their own evidence — recorded INCOMPLETE 12/13
+when they are COMPLETE 13/13, the sole failure being an artifact of how the file
+was captured. Every prior instance in this campaign flattered its subject, which
+made "silent failures flatter" an easy assumption to hold without stating. It is
+false. The failures are noise, and noise is symmetric; it was merely silent in
+both directions.
+
+**Four things surfaced today, and none was found by care.** The kill-count
+anomaly, the integrated-tree grep, the suffixed-`loop_rev` comparison, and this
+file's own summary printing `NO loop_rev on 0 unit(s)` beneath seventeen units
+reporting it. Each surfaced because two numbers disagreed. A fifth: three
+unrelated units reporting an identical P2 failure, which was the checker reading
+a tree its own uncommitted output had dirtied — the same self-reference as the
+`>` truncation, one level up, and a contradiction detector nobody designed.
+
+The apparatus is not a substitute for attention. It is the thing that holds a
+fact between the moment someone measures it and the moment anyone needs it
+again, and today it was more reliable than either party to the conversation.
