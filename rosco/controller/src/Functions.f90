@@ -134,6 +134,16 @@ IMPLICIT NONE
         END FUNCTION wrap_180_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of wrap_360
+    INTERFACE
+        FUNCTION wrap_360_c(x) BIND(C, NAME='wrap_360_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: x
+            REAL(C_DOUBLE) :: wrap_360_c
+        END FUNCTION wrap_360_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION saturate(inputValue, minValue, maxValue) RESULT(saturate_result)
@@ -481,18 +491,12 @@ CONTAINS
         wrap_180_result = REAL(wrap_180_c(x), 8)
     END FUNCTION wrap_180
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION wrap_360(x) 
-    ! Function modifies input angle, x, such that 0<=x<=360, preventing windup
-        REAL(DbKi), INTENT(IN) :: x         ! angle, degrees
-
-        IF (x .lt. 0.0) THEN
-            wrap_360 = x + 360.0
-        ELSEIF (x .ge. 360.0) THEN
-            wrap_360 = x - 360.0
-        ELSE
-            wrap_360 = x
-        ENDIF
-
+    FUNCTION wrap_360(x) RESULT(wrap_360_result)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        REAL(8), INTENT(IN) :: x
+        REAL(8) :: wrap_360_result
+        wrap_360_result = REAL(wrap_360_c(x), 8)
     END FUNCTION wrap_360
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION sigma(x, x0, x1, y0, y1, ErrVar) RESULT(sigma_result)
