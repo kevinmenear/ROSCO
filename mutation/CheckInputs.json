@@ -1,0 +1,1059 @@
+{
+ "unit": "CheckInputs",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "mutants": 173,
+ "equivalent_declared": 0,
+ "nocompile": 19,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.099,
+ "nocompile_refused": false,
+ "total": 192,
+ "killed": 4,
+ "survived": 169,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.0231,
+ "loop_rev": "351edc7-nogit",
+ "vit_rev": "477fc47-nogit",
+ "survivors": [
+  {
+   "id": "4930efc0",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "51c0202f",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "21671e50",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "22d5ebc9",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "dabf5c70",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "7af3cb40",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "6b7567ff",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "b94f1a9e",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "81dbfeda",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "5e6d8c55",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "5486d30a",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "0173d7dc",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "dc92affc",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "7e1e9eb7",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "4f10aee0",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "3021e827",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "ce438d51",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "6e9e78f5",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "680369cc",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "b5778627",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "2749fd57",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "9446e460",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "9e089686",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "1b8d5ab3",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "5e7c786f",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "6f6c1760",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "178cca7e",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "36317c82",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "8f7572d1",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "689a2980",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "c7770aac",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "120511df",
+   "operator": "arith_op",
+   "before": "CntrPar->DT_Out - LocalVar->DT",
+   "after": "CntrPar->DT_Out + LocalVar->DT"
+  },
+  {
+   "id": "1b723864",
+   "operator": "arith_op",
+   "before": "CntrPar->ZMQ_UpdatePeriod - LocalVar->DT",
+   "after": "CntrPar->ZMQ_UpdatePeriod + LocalVar->DT"
+  },
+  {
+   "id": "29e57417",
+   "operator": "arith_op",
+   "before": "I - 1",
+   "after": "I + 1"
+  },
+  {
+   "id": "bafd410e",
+   "operator": "arith_op",
+   "before": "I - 1",
+   "after": "I + 1"
+  },
+  {
+   "id": "2ed97e42",
+   "operator": "arith_op",
+   "before": "Imode - 1",
+   "after": "Imode + 1"
+  },
+  {
+   "id": "e250cdea",
+   "operator": "arith_op",
+   "before": "Imode - 1",
+   "after": "Imode + 1"
+  },
+  {
+   "id": "91a7adbc",
+   "operator": "arith_op",
+   "before": "Imode - 1",
+   "after": "Imode + 1"
+  },
+  {
+   "id": "e712c281",
+   "operator": "arith_op",
+   "before": "Imode - 1",
+   "after": "Imode + 1"
+  },
+  {
+   "id": "a50841f1",
+   "operator": "arith_op",
+   "before": "Imode - 1",
+   "after": "Imode + 1"
+  },
+  {
+   "id": "1262a174",
+   "operator": "arith_op",
+   "before": "Imode - 1",
+   "after": "Imode + 1"
+  },
+  {
+   "id": "69a82f24",
+   "operator": "arith_op",
+   "before": "I - 1",
+   "after": "I + 1"
+  },
+  {
+   "id": "f9828789",
+   "operator": "arith_op",
+   "before": "I - 1",
+   "after": "I + 1"
+  },
+  {
+   "id": "202264d1",
+   "operator": "swap_operands",
+   "before": "CntrPar->DT_Out - LocalVar->DT",
+   "after": "LocalVar->DT - CntrPar->DT_Out"
+  },
+  {
+   "id": "8c59ac4f",
+   "operator": "swap_operands",
+   "before": "CntrPar->ZMQ_UpdatePeriod - LocalVar->DT",
+   "after": "LocalVar->DT - CntrPar->ZMQ_UpdatePeriod"
+  },
+  {
+   "id": "63e42cb8",
+   "operator": "swap_operands",
+   "before": "I - 1",
+   "after": "1 - I"
+  },
+  {
+   "id": "52226cd0",
+   "operator": "swap_operands",
+   "before": "I - 1",
+   "after": "1 - I"
+  },
+  {
+   "id": "e7dc92ae",
+   "operator": "swap_operands",
+   "before": "Imode - 1",
+   "after": "1 - Imode"
+  },
+  {
+   "id": "de41e5a4",
+   "operator": "swap_operands",
+   "before": "Imode - 1",
+   "after": "1 - Imode"
+  },
+  {
+   "id": "3e793404",
+   "operator": "swap_operands",
+   "before": "Imode - 1",
+   "after": "1 - Imode"
+  },
+  {
+   "id": "c067d124",
+   "operator": "swap_operands",
+   "before": "Imode - 1",
+   "after": "1 - Imode"
+  },
+  {
+   "id": "e22506bc",
+   "operator": "swap_operands",
+   "before": "Imode - 1",
+   "after": "1 - Imode"
+  },
+  {
+   "id": "9057ca6e",
+   "operator": "swap_operands",
+   "before": "Imode - 1",
+   "after": "1 - Imode"
+  },
+  {
+   "id": "ad39a19a",
+   "operator": "swap_operands",
+   "before": "I - 1",
+   "after": "1 - I"
+  },
+  {
+   "id": "2ff40d30",
+   "operator": "swap_operands",
+   "before": "I - 1",
+   "after": "1 - I"
+  },
+  {
+   "id": "507ea435",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "a8269567",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "295daf9c",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "e146c6a9",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "fe1a4d80",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "5a06f7b8",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "967c5a0d",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "9949672c",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "5769f7da",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "7919e88c",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "5f091afb",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "e82c8f3a",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "7b545b0a",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "326984ba",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "db20ff2d",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "6ef824a4",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "9a06512c",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "8e2842e6",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "99adcf8f",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "54dc1bd1",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "bfbbd817",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "5b52420b",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "22bcd520",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "56825c66",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "e0e8bbf5",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "3e51f772",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "c7a5ffaa",
+   "operator": "index_offset",
+   "before": "[2]",
+   "after": "[2 + 1]"
+  },
+  {
+   "id": "541975c0",
+   "operator": "index_offset",
+   "before": "[9]",
+   "after": "[9 + 1]"
+  },
+  {
+   "id": "ba11ef8e",
+   "operator": "index_offset",
+   "before": "[27]",
+   "after": "[27 + 1]"
+  },
+  {
+   "id": "0748e02b",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "eba5e37e",
+   "operator": "index_offset",
+   "before": "[2]",
+   "after": "[2 + 1]"
+  },
+  {
+   "id": "06e5b20f",
+   "operator": "index_offset",
+   "before": "[27]",
+   "after": "[27 + 1]"
+  },
+  {
+   "id": "b4d9af1a",
+   "operator": "index_offset",
+   "before": "[27]",
+   "after": "[27 + 1]"
+  },
+  {
+   "id": "dff5a74c",
+   "operator": "const_tweak",
+   "before": "2",
+   "after": "3"
+  },
+  {
+   "id": "ab101688",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "13c21a14",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "65d528a8",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "eb6fe466",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "57f9a7fd",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "fff8a13f",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "8c6b685c",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "8f86ef27",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "4905808d",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "e5619189",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "e7d0b332",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "db04b4b1",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "42cd743d",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "ee8bf711",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "9b706bcb",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "316503f1",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "53849836",
+   "operator": "const_tweak",
+   "before": "0.001",
+   "after": "1.001"
+  },
+  {
+   "id": "dd47af66",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "43d4fe83",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "a5a8c2e8",
+   "operator": "const_tweak",
+   "before": "0.001",
+   "after": "1.001"
+  },
+  {
+   "id": "9354f6d8",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "e7fb54be",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "d5580a70",
+   "operator": "const_tweak",
+   "before": "2",
+   "after": "3"
+  },
+  {
+   "id": "5214906e",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "b3261799",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "8ea1df39",
+   "operator": "const_tweak",
+   "before": "2",
+   "after": "3"
+  },
+  {
+   "id": "6f3729a9",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "844fb070",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "1bbd5224",
+   "operator": "const_tweak",
+   "before": "4",
+   "after": "5"
+  },
+  {
+   "id": "289ee328",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "ea3ff034",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "dc969eec",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "89410770",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "fded8c1e",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "2f3a75e8",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "c88b11f5",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "a1f04734",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "dc787a64",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "979926ee",
+   "operator": "negate_cond",
+   "before": "if (ErrVar->ErrMsg == nullptr)",
+   "after": "if (!(ErrVar->ErrMsg == nullptr))"
+  },
+  {
+   "id": "2406475c",
+   "operator": "negate_cond",
+   "before": "if (static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap)",
+   "after": "if (!(static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap))"
+  },
+  {
+   "id": "0bfb81cb",
+   "operator": "negate_cond",
+   "before": "if (a == nullptr)",
+   "after": "if (!(a == nullptr))"
+  },
+  {
+   "id": "01a91990",
+   "operator": "negate_cond",
+   "before": "if (a[i] < v)",
+   "after": "if (!(a[i] < v))"
+  },
+  {
+   "id": "2e9d2296",
+   "operator": "negate_cond",
+   "before": "if (a == nullptr)",
+   "after": "if (!(a == nullptr))"
+  },
+  {
+   "id": "be2393aa",
+   "operator": "negate_cond",
+   "before": "if (a[i] <= v)",
+   "after": "if (!(a[i] <= v))"
+  },
+  {
+   "id": "5f89dffc",
+   "operator": "negate_cond",
+   "before": "if (a == nullptr)",
+   "after": "if (!(a == nullptr))"
+  },
+  {
+   "id": "3f8b4dc7",
+   "operator": "negate_cond",
+   "before": "if (a[i] > v)",
+   "after": "if (!(a[i] > v))"
+  },
+  {
+   "id": "1871a628",
+   "operator": "negate_cond",
+   "before": "if (a == nullptr)",
+   "after": "if (!(a == nullptr))"
+  },
+  {
+   "id": "b5ce0de9",
+   "operator": "negate_cond",
+   "before": "if (!(a[i] < v))",
+   "after": "if (!(!(a[i] < v)))"
+  },
+  {
+   "id": "fecca525",
+   "operator": "negate_cond",
+   "before": "if (a == nullptr)",
+   "after": "if (!(a == nullptr))"
+  },
+  {
+   "id": "c7a620a9",
+   "operator": "negate_cond",
+   "before": "if (a[i] > r)",
+   "after": "if (!(a[i] > r))"
+  },
+  {
+   "id": "2c246bb3",
+   "operator": "negate_cond",
+   "before": "if (a == nullptr)",
+   "after": "if (!(a == nullptr))"
+  },
+  {
+   "id": "5e1b6243",
+   "operator": "negate_cond",
+   "before": "if (a[i] < r)",
+   "after": "if (!(a[i] < r))"
+  },
+  {
+   "id": "c131ffdd",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->LoggingLevel < 0) || (CntrPar->LoggingLevel > 3))",
+   "after": "if (!((CntrPar->LoggingLevel < 0) || (CntrPar->LoggingLevel > 3)))"
+  },
+  {
+   "id": "5a47bc8b",
+   "operator": "negate_cond",
+   "before": "if (CntrPar->DT_Out <= 0)",
+   "after": "if (!(CntrPar->DT_Out <= 0))"
+  },
+  {
+   "id": "4676e30c",
+   "operator": "negate_cond",
+   "before": "if (CntrPar->DT_Out < LocalVar->DT)",
+   "after": "if (!(CntrPar->DT_Out < LocalVar->DT))"
+  },
+  {
+   "id": "aca437f4",
+   "operator": "negate_cond",
+   "before": "if (std::fabs(CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out)) > 0.001)",
+   "after": "if (!(std::fabs(CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out)) > 0.001))"
+  },
+  {
+   "id": "1042577b",
+   "operator": "negate_cond",
+   "before": "if (CntrPar->ZMQ_Mode > 0)",
+   "after": "if (!(CntrPar->ZMQ_Mode > 0))"
+  },
+  {
+   "id": "aa9bfbd1",
+   "operator": "negate_cond",
+   "before": "if (std::fabs(CntrPar->ZMQ_UpdatePeriod - LocalVar->DT * static_cast<double>(CntrPar->n_DT_ZMQ)) > 0.001)",
+   "after": "if (!(std::fabs(CntrPar->ZMQ_UpdatePeriod - LocalVar->DT * static_cast<double>(CntrPar->n_DT_ZMQ)) > 0.001))"
+  },
+  {
+   "id": "426e38c4",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->F_LPFType < 1) || (CntrPar->F_LPFType > 2))",
+   "after": "if (!((CntrPar->F_LPFType < 1) || (CntrPar->F_LPFType > 2)))"
+  },
+  {
+   "id": "09aabe97",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->IPC_ControlMode < 0) || (CntrPar->IPC_ControlMode > 2))",
+   "after": "if (!((CntrPar->IPC_ControlMode < 0) || (CntrPar->IPC_ControlMode > 2)))"
+  },
+  {
+   "id": "4a4ffdb4",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->VS_ControlMode < 0) || (CntrPar->VS_ControlMode > 4))",
+   "after": "if (!((CntrPar->VS_ControlMode < 0) || (CntrPar->VS_ControlMode > 4)))"
+  },
+  {
+   "id": "27b9eb39",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->VS_ConstPower < 0) || (CntrPar->VS_ConstPower > 1))",
+   "after": "if (!((CntrPar->VS_ConstPower < 0) || (CntrPar->VS_ConstPower > 1)))"
+  },
+  {
+   "id": "15e98c6e",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->VS_FBP < 0) || (CntrPar->VS_FBP > 3))",
+   "after": "if (!((CntrPar->VS_FBP < 0) || (CntrPar->VS_FBP > 3)))"
+  },
+  {
+   "id": "6376ac8e",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->VS_FBP > 0) && (CntrPar->PC_ControlMode > 0))",
+   "after": "if (!((CntrPar->VS_FBP > 0) && (CntrPar->PC_ControlMode > 0)))"
+  },
+  {
+   "id": "9e1219c4",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->VS_FBP > 0) && (CntrPar->PRC_Mode > 0))",
+   "after": "if (!((CntrPar->VS_FBP > 0) && (CntrPar->PRC_Mode > 0)))"
+  },
+  {
+   "id": "7304c012",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->VS_FBP > 0) && (CntrPar->VS_ConstPower > 0))",
+   "after": "if (!((CntrPar->VS_FBP > 0) && (CntrPar->VS_ConstPower > 0)))"
+  },
+  {
+   "id": "02009454",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->PC_ControlMode < 0) || (CntrPar->PC_ControlMode > 1))",
+   "after": "if (!((CntrPar->PC_ControlMode < 0) || (CntrPar->PC_ControlMode > 1)))"
+  },
+  {
+   "id": "5a02677b",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->Y_ControlMode < 0) || (CntrPar->Y_ControlMode > 2))",
+   "after": "if (!((CntrPar->Y_ControlMode < 0) || (CntrPar->Y_ControlMode > 2)))"
+  },
+  {
+   "id": "2f3e216b",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->IPC_ControlMode > 0) && (CntrPar->Y_ControlMode > 1))",
+   "after": "if (!((CntrPar->IPC_ControlMode > 0) && (CntrPar->Y_ControlMode > 1)))"
+  },
+  {
+   "id": "af00ca55",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->SS_Mode < 0) || (CntrPar->SS_Mode > 1))",
+   "after": "if (!((CntrPar->SS_Mode < 0) || (CntrPar->SS_Mode > 1)))"
+  },
+  {
+   "id": "2ee32c07",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->WE_Mode < 0) || (CntrPar->WE_Mode > 2))",
+   "after": "if (!((CntrPar->WE_Mode < 0) || (CntrPar->WE_Mode > 2)))"
+  },
+  {
+   "id": "a2bb0397",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->PS_Mode < 0) || (CntrPar->PS_Mode > 3))",
+   "after": "if (!((CntrPar->PS_Mode < 0) || (CntrPar->PS_Mode > 3)))"
+  },
+  {
+   "id": "be667c6b",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->SU_Mode < 0) || (CntrPar->SU_Mode > 1))",
+   "after": "if (!((CntrPar->SU_Mode < 0) || (CntrPar->SU_Mode > 1)))"
+  },
+  {
+   "id": "e594a224",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->SD_Mode < 0) || (CntrPar->SD_Mode > 1))",
+   "after": "if (!((CntrPar->SD_Mode < 0) || (CntrPar->SD_Mode > 1)))"
+  },
+  {
+   "id": "c44ed088",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->Fl_Mode < 0) || (CntrPar->Fl_Mode > 2))",
+   "after": "if (!((CntrPar->Fl_Mode < 0) || (CntrPar->Fl_Mode > 2)))"
+  },
+  {
+   "id": "6ec85054",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->Flp_Mode < 0) || (CntrPar->Flp_Mode > 3))",
+   "after": "if (!((CntrPar->Flp_Mode < 0) || (CntrPar->Flp_Mode > 3)))"
+  },
+  {
+   "id": "4cef0996",
+   "operator": "drop_call",
+   "before": "std::fabs(CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out))",
+   "after": "CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out)"
+  },
+  {
+   "id": "44bc2497",
+   "operator": "drop_call",
+   "before": "std::fabs(CntrPar->ZMQ_UpdatePeriod - LocalVar->DT * static_cast<double>(CntrPar->n_DT_ZMQ))",
+   "after": "CntrPar->ZMQ_UpdatePeriod - LocalVar->DT * static_cast<double>(CntrPar->n_DT_ZMQ)"
+  },
+  {
+   "id": "70e1ff11",
+   "operator": "swap_callee",
+   "before": "max",
+   "after": "min"
+  },
+  {
+   "id": "26e3d464",
+   "operator": "swap_callee",
+   "before": "max",
+   "after": "min"
+  }
+ ]
+}
