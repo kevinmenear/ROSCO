@@ -1693,10 +1693,16 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-28 attempted / **27 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+29 attempted / **28 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / **1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 41 remain. 27 + 1 + 41 = 69.
+69 units in `plan.json`; 40 remain. 28 + 1 + 40 = 69.
+
+**One of the 28 is integrated but NOT closed**: unit #29 `CheckInputs` stands at
+`done_check` 12 of 13, P12 failing on a mutation run that compared the mutant
+against itself. Recorded here rather than in the integrated count because the
+disposition is what it is -- the translation ships, the gate and both harness
+runs are green -- and the missing measurement is named in its own evidence.
 
 (This block read `8 / 8 / 61 remain` through unit #9, which did not update it.
 Recounted from `plan.json` at unit #10 rather than incremented, and recounted
