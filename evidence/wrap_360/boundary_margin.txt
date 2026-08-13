@@ -1,0 +1,35 @@
+case file        1,608 bytes -> 134 cases at 12 bytes each
+markers          1 distinct value(s) [1447646303]   <- one marker per case, so the stride is right
+distinct x       114 of 134
+range of x       [-1.79769e+308, 1.79769e+308]
+
+'<' -> '<='
+   cases where it differs from the reference   5
+   cases holding x in ['0.0', '-0.0']         5
+   the differing cases are exactly those       True
+   mutation/wrap_360.json reports killed on    5 of 134
+
+'>=' -> '>'
+   cases where it differs from the reference   2
+   cases holding x in ['360.0']               2
+   the differing cases are exactly those       True
+   mutation/wrap_360.json reports killed on    2 of 134
+
+'360.0' -> '361.0' (the comparison)
+   cases where it differs from the reference   3
+   cases holding x in ['360.0', '360.00000000000006']      3
+   the differing cases are exactly those       True
+   mutation/wrap_360.json reports killed on    3 of 134
+
+where those values come from -- the generator said so on its own stdout:
+   PREDICATE KNOB: x at [-1.0, 0.0, 1.0, 2.0, 359.0, 360.0, 361.0]
+   plus R6's signed-zero rung, "1 scalar real(s) at NEGATIVE ZERO"
+   multiplicity in the stream: {'0.0': 4, '360.0': 2, '-0.0': 1}
+
+mutation/wrap_360.json: 11 of 11 killed, 0 declared equivalent, 0 did not compile, score 1.0
+
+VERDICT: the three thin mutants are killed by the cases holding the boundary
+         VALUES (and, for the const mutant, the interval it opens) and by
+         nothing else. Remove R6's predicate knob and its signed-zero rung
+         and all three survive at any corpus size -- the margin is two
+         corpus rules, not a sample size.
