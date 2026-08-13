@@ -319,14 +319,8 @@ translations:
   # captured at Controllers.f90:845 sees 21 of its 41 cases wrapped. The LOW
   # branch (x < 0) is dead at both call sites in all 27 scenarios.
   wrap_360:
-    status: verified
-    cases_passed: 41
-    cases_total: 41
-    cases_skipped: 0
+    status: integrated
     cpp_file: translations/Functions/wrap_360.cpp
-    kernel_dir: kernel/wrap_360
-    red_test: demonstrated
-    red_test_detail: the kernel reported a mismatch with input `x` scaled by 1.00001
 types:
   ControlParameters:
     strategy: view
