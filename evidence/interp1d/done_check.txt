@@ -1,15 +1,29 @@
-# Run AFTER both commits, which is the only time the condition can be true
-# (P2 needs a clean tree, P6/P7 need the commits to exist). This file is
-# itself named in plan.json's evidence, so the first run reported
-# P5:unresolved_evidence naming it; the run below is the re-take, and the
-# state commit was amended to carry it.
+# done_check.py interp1d -- captured 2026-08-13T15:53:05Z by scripts/capture_done_check.sh
+
+Run against the committed state at 5bf5ef9 ("Int2LStr: done_check re-captured -- COMPLETE 13 of 13, not INCOMPLETE 12 of 13"), with a CLEAN tree, with stdout
+going to a file outside the repository. The run is reproduced below verbatim.
+
+ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
+target before the subprocess runs, so
+
+    python3 scripts/done_check.py interp1d > evidence/interp1d/done_check.txt
+
+always sees a modified tracked file and reports `P2 clean tree: dirty_tree`,
+one predicate worse than the truth. That is why this file is captured out of
+tree and moved in, and why it is written by a script rather than by hand: the
+header was added once at 48b9ae3 and a plain re-capture at 73d3521 removed it.
+Reproduce the reading below with no redirection:
+
+    python3 scripts/done_check.py interp1d
+
+done_check exited 0 (0 only when COMPLETE).
 
 baseline (inferred): a314ebf  -- the commit before 3082685 touched translations/Functions/interp1d.cpp
 
-interp1d: Verdict.INCOMPLETE  (12/13 PASS)
+interp1d: Verdict.COMPLETE  (13/13 PASS)
 
 [  ok  ] P1   commits exist                      
-[ FAIL ] P2   clean tree                         dirty_tree
+[  ok  ] P2   clean tree                         
 [  ok  ] P3   disposition recorded               
 [  ok  ] P4   evidence recorded                  
 [  ok  ] P5   evidence resolves                  
