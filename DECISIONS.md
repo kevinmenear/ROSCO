@@ -6173,3 +6173,108 @@ Named for the supervisor because acting on either is a corpus decision:
    disagrees with its slot is exactly the defect `compared_against` was added to
    close, one file over. It is finding 1 again, in the harness rather than the
    mutation artifact.
+
+## 2026-08-13 09:53 — the six named survivors: four unreached, two reached and overwritten
+
+The re-take dispatch's eight steps were already complete at `48b9ae3` — five
+parts at `2e2295f`, a merged artifact the merge agreed to write, a stamp naming
+`fortran` as the reference side, a gate proving the restore, `done_check` at 12
+of 13. What remained open is P12's own list: six `arith_op` survivors, to be
+sorted into equivalent / unreachable / uncovered-gap. **None of the six is
+equivalent. Four are (b) and two are (c)**, and the classification is measured
+rather than argued — `evidence/CheckInputs/corpus_index_shift_reach.py` reads
+the 23,076-case corpus these mutants were scored against and reports, per site,
+whether the mutant's branch answer ever differs from the reference's. Full
+triage in `evidence/CheckInputs/survivors_arith_op.md`.
+
+All six, and four unnamed siblings, are one shape: `[i - 1]` -> `[i + 1]`, the
+zero-based index conversion inside a Fortran-indexed loop.
+
+**DISTINCT IS NOT DISCRIMINATING, AND THE `ramp` REPAIR SUPPLIED THE FIRST.**
+Round one found 49 of 89 survivors alive because R11's arrays were constant, and
+`2e2295f` fixed that with `{"ramp": [start, step]}` and a placed whole-array
+knob. The fix worked and these mutants still survive:
+
+```
+mutant      line array              guard    iters  valdiff  conddiff   cases
+2ed97e42     925 AWC_freq           18616       19       19         0       0
+e250cdea     932 AWC_clockangle       462        6        6         0       0
+91a7adbc     933 AWC_clockangle       462        6        6         0       0
+e712c281     946 AWC_clockangle        31        0        0         0       0
+```
+
+`valdiff` is every iteration and `conddiff` is none of them. The two elements
+the mutant confuses are different numbers each time and the predicate gives them
+the same answer each time, because **every element of an R11 array is admissible
+by construction** — `AWC_freq` ramps 1.0, 2.0, 3.0 and `< 0.0` is false at both
+indices. Killing an index shift needs three properties: the loop must run, the
+array must be distinct, and some element must sit on the far side of the tested
+literal. R11 supplies the second. The other two are each a SECOND quantity away
+from baseline, and R11 moves one on purpose. Bucket A's structural limit
+arriving from a new direction, with the same answer: a state is how R11 reaches
+a conjunction.
+
+`e712c281` is the strongest form: its block is `AWC_Mode == 2`, the corpus holds
+31 such cases and **none has `AWC_NumModes >= 1`**, so the body never executes.
+Nor can a range reach it — the reference refuses `AWC_NumModes` outside `{1,2}`
+under `AWC_Mode == 2`, so an admissible configuration must set both, and all
+three baseline states carry `AWC_Mode` of 0 or 1.
+
+**A KNOB THAT ARMS THE CHECK IT WAS AIMED AT ALSO ARMS THE ONE BELOW IT.** This
+is the (c), it is new, and it is the finding of this dispatch. `29e57417` and
+`bafd410e` ARE reached — by a case built to reach them:
+
+```
+  cable  cases whose SEGMENT differs        18611
+  cable  cases whose any_lt DIFFERS             1
+  case 22752 segment  [-1, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+```
+
+Case 22752 is the `open_loop_flap_fbp` state with exactly one knob:
+`Ind_CableControl(1) = -1`. The reference reads element 1, sees `-1`, raises
+*"All open loop control indices must be greater than zero"*; the mutant starts
+at element 3 and does not. R11 did exactly what it was written to do. Then,
+twenty-four lines down, `any_gt(Ind_CableControl, 0) .AND. CC_Mode /= 2` reads
+**the same array**, fires on the `11, 12, 13, ...` the knob did not touch, and —
+there being no early return — overwrites the message. Both programs end with
+`aviFAIL = -1` and the identical string. 18,103 of the 18,161 cases with a
+negative cable index are dominated this way.
+
+The recorded masking finding does not cover this. Its form is statistical —
+*every case raises at least two errors, so the last wins* — and its repair IS
+R11, a case that fails exactly one check. Here R11 succeeded and the case still
+fails two, because the two checks read **one parameter**, so no one-at-a-time
+perturbation can separate them. And the ramp repair guarantees it: a constant
+zero array leaves `any_gt(..., 0)` false and the dominating check silent, so
+making the array admissible-and-distinct is exactly what arms it. **The repair
+for the first survivor is the mechanism that hides the second.** That is not an
+argument against the repair — it moved the score from 8 to 78 — it is an
+interaction between two corpus rules that nothing in the apparatus can see.
+
+**Nothing was applied.** The repairs are named per mutant and withheld: a fourth
+baseline state at `AWC_Mode = 2, AWC_NumModes = 2`; ramps that straddle the
+tested literal inside the first `N+2` positions; and, for the (c) pair, a state
+carrying `CC_Mode = 2` and `StC_Mode = 2` so the dominating check is already
+satisfied when the knob moves the earlier one. Every one of those edits
+`harness/baseline.CheckInputs.json`, which changes the corpus and invalidates
+the five parts `0.4509` rests on — the exact thing the re-take existed to
+establish. `equivalent_declared` stays at **0**: not one of the six agrees with
+the reference on every admissible input, and declaring otherwise is the false
+equivalence a threshold of 1.0 exists to shut.
+
+**P12 still fails, at 78 of 173 = 0.4509, and the disposition stays `deferred`.**
+The score did not move and was not supposed to. What is new is that every one of
+the six now has a reason and a repair attached to it, and that the reason for two
+of them is a shape no rule in this campaign detects.
+
+### A fifth finding for the METHOD
+
+5. **A corpus rule can be defeated by a second rule that its own repair
+   strengthens, and no artifact relates the two.** R11 isolates a check by
+   moving one quantity; `ramp` makes the array distinct so an index shift is
+   visible. Together they arm a *later* check on the same parameter, and the
+   isolation R11 claims in its `rule_coverage` prose is silently false for any
+   parameter that two checks read. The claim is per-rule and the defect is
+   between rules. This is finding 4 once more — the artifact carries the
+   conclusion (*"exactly one quantity away from admissible"*) and withholds what
+   would test it (which CHECKS that quantity reaches).
