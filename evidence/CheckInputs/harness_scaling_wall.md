@@ -170,3 +170,27 @@ case, and it is raised four rules downstream of every one of these causes. The
 one error that DID name its parameter and its numbers — `CntrPar_SU_LoadStages
 has 17 element(s) but its extents say 0` — was diagnosed and fixed in a single
 pass. That difference is the whole cost.
+
+## A fifth, in a third generator
+
+With the corpus emitted, the harness's own test source would not compile:
+
+```
+checkinputs.hpp:371: error: 'nondecreasing_c' was not declared in this scope
+checkinputs.hpp:804: error: 'addtolist_c' was not declared in this scope
+```
+
+`vit test-validate` writes `checkinputs_callees.f90`, which DEFINES both
+symbols, and nothing declared them on the C++ side. The generated test source
+includes the translation on its first line, so the translation cannot supply the
+declaration itself — the error surfaces inside the translation's body and reads
+like a defect in it.
+
+This is the same defect as the kernel one at the top of this unit's cycle
+(`kernel_callees_header_defect.txt`), in a **third** generator. Every unit before
+this one had a differential harness with no callee at all, so there was nothing
+to declare.
+
+`vit test-validate` now returns the C header alongside the Fortran bridges and
+writes `<unit>_callees.h` (VIT `f192538`); the harness includes it, guarded with
+`__has_include` because a leaf unit has no such file (loop `351edc7`).
