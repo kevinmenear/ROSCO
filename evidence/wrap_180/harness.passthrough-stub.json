@@ -1,0 +1,121 @@
+{
+ "unit": "wrap_180",
+ "against": "translation",
+ "checked": 136,
+ "failed": 31,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  N/A      R5_non_degenerate_shape    no array or extent parameter -- nothing whose SHAPE could be degenerate; this is not a pass",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      50 value(s) from 9 literal(s) in the reference, each under every declared value of 0 flag(s); 33 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 10 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 1 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits; 9 combination(s) of the 1 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          1 real value(s), none zero in every case",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 0 out-parameter(s): none"
+ ],
+ "mismatches": [
+  {
+   "case": 7,
+   "output": "vit_result",
+   "ref": "00000000000084c0",
+   "got": "0000000000408fc0"
+  },
+  {
+   "case": 8,
+   "output": "vit_result",
+   "ref": "0000000000008440",
+   "got": "0000000000408f40"
+  },
+  {
+   "case": 47,
+   "output": "vit_result",
+   "ref": "0000000000806640",
+   "got": "00000000008066c0"
+  },
+  {
+   "case": 48,
+   "output": "vit_result",
+   "ref": "0000000000000000",
+   "got": "0000000000807640"
+  },
+  {
+   "case": 49,
+   "output": "vit_result",
+   "ref": "0000000000000000",
+   "got": "00000000008076c0"
+  },
+  {
+   "case": 50,
+   "output": "vit_result",
+   "ref": "0000000000806640",
+   "got": "0000000000e08040"
+  },
+  {
+   "case": 51,
+   "output": "vit_result",
+   "ref": "ffffffffff7f66c0",
+   "got": "0100000000806640"
+  },
+  {
+   "case": 54,
+   "output": "vit_result",
+   "ref": "0000000000807640",
+   "got": "0000000000808640"
+  },
+  {
+   "case": 55,
+   "output": "vit_result",
+   "ref": "00000000008076c0",
+   "got": "00000000008086c0"
+  },
+  {
+   "case": 56,
+   "output": "vit_result",
+   "ref": "000000000000303d",
+   "got": "0100000000807640"
+  },
+  {
+   "case": 57,
+   "output": "vit_result",
+   "ref": "00000000000030bd",
+   "got": "ffffffffff7f7640"
+  },
+  {
+   "case": 58,
+   "output": "vit_result",
+   "ref": "0000000000bdf8bd",
+   "got": "43e7ffffff7f7640"
+  },
+  {
+   "case": 84,
+   "output": "vit_result",
+   "ref": "0000c0145fa00242",
+   "got": "000000205fa00242"
+  },
+  {
+   "case": 85,
+   "output": "vit_result",
+   "ref": "0000c0145fa002c2",
+   "got": "000000205fa002c2"
+  },
+  {
+   "case": 103,
+   "output": "vit_result",
+   "ref": "0000000000606640",
+   "got": "0000000000a066c0"
+  },
+  {
+   "case": 104,
+   "output": "vit_result",
+   "ref": "0000000000806640",
+   "got": "00000000008066c0"
+  }
+ ],
+ "loop_rev": "ff1e6e1-nogit",
+ "vit_rev": "6cd3c75-nogit",
+ "red_test": {
+  "perturbation": "both wrapping branches deleted -- the stub the kernel passes 62 of 62",
+  "result": "31 of 136 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}
