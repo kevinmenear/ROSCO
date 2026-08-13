@@ -20,14 +20,15 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "a05eb59",
+ "loop_rev": "a1d364c",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
   "BLIND FOR THIS UNIT. `unwrap` is dead at both call sites in all 27 scenarios (Controllers.f90:339 and ReadSetParameters.f90:807, 0 hits each), so nothing this gate compared was produced by the unit under test. The 5,252,000 matched values are a whole-controller regression result and are evidence that the tree still builds and reproduces baseline; they are NOT evidence about this translation.",
-  "Verification for this unit is the differential harness (harness/unwrap.json, 403 cases) and the mutation score (mutation/unwrap.json), not this artifact. Same shape as ExtController, whose red test moved 0 of 5,252,000."
+  "TAKEN ON THE INTEGRATED BUILD. The artifact this replaces (committed aabf439) was taken BEFORE `vit integrate` ran, so it measured a library containing no unwrap C++ at all. It passed, which is exactly why it had to be re-taken rather than kept -- unit #23's rule, one build earlier.",
+  "Verification for this unit is the differential harness (harness/unwrap.json, 403 cases, red-tested at harness/unwrap.redtest.json), the mutation score (mutation/unwrap.json) and the post-integration harness. Not this artifact. Same shape as AddToList and UpdateZeroMQ, whose red tests also moved 0 of 5,252,000; the same-build control is at evidence/unwrap/gate.control-getwords-perturbed-MOVES.json."
  ],
  "perturbed": false,
  "residual_dirt": [],
@@ -65,5 +66,5 @@
  "unit": "unwrap",
  "unit_of_count": "values",
  "verdict": "PASS",
- "vit_rev": "ab75fa0-dirty"
+ "vit_rev": "6cd3c75"
 }
