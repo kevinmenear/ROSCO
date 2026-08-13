@@ -1510,16 +1510,39 @@
     "DISCON"
    ],
    "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
+   "verification": "FOUR LAYERS AVAILABLE, FOUR RUN, THREE GREEN AND RED-TESTED, ONE INVALID.\n\n  kernel replay              1 case, 426 of 426 field rows IDENTICAL, scenario 27 (DISCON_stress27.IN), clean ReadSetParameters.f90:269 inside SUBROUTINE SetParameters -- the unit's ONLY call site, 25 hits across 24 of 27 scenarios. VIT declined to construct its own red test (NON_DISCRIMINATING: no by-value floating-point parameter and no floating-point result), so two stubs replace it: a determinate wrong constant aviFAIL=-7 passes 0 of 1, and THE WHOLE UNIT DELETED PASSES 1 OF 1. ALIVE AND BLIND, both controls on the same build. The cause is the capture: the one case KGen could keep is a VALID configuration, so aviFAIL is 0 on both sides and ErrMsg is never allocated -- KGen guards its comparison on ALLOCATED and errmsg is absent from all 426 rows. One case and not twenty because the site is called once per scenario at invocation index 1 of its own counter, so all 24 scenarios write CheckInputs.0.0.1 and overwrite each other. evidence/CheckInputs/kernel.*.run.txt, kernel.translation.verify_fields.csv\n  differential harness       16,769 checked, 0 failed, 0 inadmissible, against the CLEAN Fortran. THIS UNIT'S PRIMARY EVIDENCE. 148 parameters varied, 325 held; 86 predicate knobs against 6 for the largest unit before this one. RED-TESTED twice on the same output and in opposite directions: the ErrMsg staging tail left alone fails 16,729 of 16,769 and blank-filled fails 16,769 of 16,769; NUL passes. Three pins in harness/ranges.toml (AWC_NumModes, CC_Group_N, StC_Group_N), all three because the ORACLE reads past the end of an array -- case 9544 killed the Fortran with AWC_NumModes=99999 against n_AWC_freq=28. harness/CheckInputs.json\n  post-integration harness   16,769 checked, 0 failed, against the integrated build. Measures the WRAPPER only: three view types populated and reverse-copied. harness/CheckInputs.postintegration.json\n  gate, 27 scenarios         5,252,000 values / 351 channels, 0 mismatched, on the integrated build. gate/CheckInputs.json\n  mutation score             INVALID, NOT A RESULT. 173 mutants, 4 killed, 0.0231 -- because on an integrated tree vit_mutate's build routes the harness's Fortran side through the wrapper into vit_integration_shim.o into the harness's own copy of the MUTANT, so both sides run the mutant. 169 survivors on a corpus that passes 16,769 of 16,769 against real Fortran is the tell. Needs the clean tree; not re-run in this dispatch. evidence/CheckInputs/mutation_measured_nothing.md",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+    "value": "yes",
+    "basis": "ANSWERED BY RUNNING THE SHIPPING GENERATOR. The plan recorded `unknown` because the conformance matrix could not attribute five blocking features (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write) to any declaration; none of the five is in this signature, which is three view types, an assumed-size REAL(ReKi) array and a scalar INTEGER. `vit integrate --apply --reverse-copy` emitted a wrapper that populates three views, calls checkinputs_c through C_LOC, and reverse-copies all three back. It builds, links, passes the gate on 27 scenarios and passes 16,769 post-integration differential cases. --reverse-copy IS required: the unit's only outputs are ErrVar%aviFAIL and ErrVar%ErrMsg, both inside a view."
    },
-   "observability": null,
+   "observability": "SEEN BY THREE LAYERS OF FOUR, AND THE GATE IS NOT ONE OF THEM IN THE WAY THE NUMBER SUGGESTS. The gate compares 5,252,000 values with 0 mismatched, but this unit's only outputs are ErrVar%aviFAIL and ErrVar%ErrMsg and no scenario in the corpus raises an error -- so what the gate certifies is that the unit stayed silent, not that it decided correctly. The kernel is worse and says so: the whole unit deleted passes 1 of 1. THE DIFFERENTIAL HARNESS IS THE ONLY LAYER THAT SEES THE BODY, and it sees 16,769 cases of it. Three of the 27 scenarios (10, 14, 24) never reach the call site at all -- ReadControlParameterFileSub fails on the missing OL_Mode2_Input.dat and SetParameters RETURNs first -- so the entire IF (CntrPar%OL_Mode > 0) block, including the ALLOCATE and both AddToList calls, is unreachable in every scenario this campaign can run and is tested only by the generated corpus. MUTATION IS UNMEASURED: the one run taken is invalid by construction.",
    "source_file": "rosco/controller/src/ReadSetParameters.f90",
    "translation": "translations/ReadSetParameters/checkinputs.cpp",
-   "harness_required": true
+   "harness_required": true,
+   "disposition": "integrated",
+   "evidence": [
+    "evidence/CheckInputs/README.md",
+    "evidence/CheckInputs/harness_scaling_wall.md",
+    "evidence/CheckInputs/harness_case_arithmetic.py",
+    "evidence/CheckInputs/kernel_callees_header_defect.txt",
+    "evidence/CheckInputs/vit_kernel_callees.before.h",
+    "evidence/CheckInputs/mutation_measured_nothing.md",
+    "evidence/CheckInputs/mutation.integrated-build-INVALID.json",
+    "evidence/CheckInputs/realloc_lhs_probe.f90",
+    "evidence/CheckInputs/print_format.f90",
+    "evidence/CheckInputs/stub_wrong_constant.cpp",
+    "evidence/CheckInputs/stub_whole_unit_noop.cpp",
+    "evidence/CheckInputs/kernel.translation.run.txt",
+    "evidence/CheckInputs/kernel.translation.verify_fields.csv",
+    "evidence/CheckInputs/kernel.stub_wrong_constant.run.txt",
+    "evidence/CheckInputs/kernel.stub_whole_unit_noop.run.txt",
+    "evidence/CheckInputs/harness.errmsg_padding_red.json",
+    "harness/CheckInputs.json",
+    "harness/CheckInputs.postintegration.json",
+    "mutation/CheckInputs.json",
+    "gate/CheckInputs.json"
+   ]
   },
   {
    "order": 30,
