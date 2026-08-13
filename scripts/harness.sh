@@ -189,6 +189,37 @@ if [ "$MODE" = "pre" ]; then
     # Driven by what is actually IN the link, not by a list of names, so it
     # maintains itself as units are integrated. rosco-r2 unit #29 is the first
     # unit with a callee at all.
+    # 2d. AND PUT THE INTEGRATION SHIM IN THE MAKEFILE'S OWN LIBS.
+    #
+    # 2b drops `<stem>.cpp.o`, which is the only definition of `<unit>_c` --
+    # and once the unit is integrated, the Fortran wrapper in
+    # `<File>.f90.o` CALLS it. `make test` on the Makefile alone then dies:
+    #
+    #   ReadSetParameters.f90:(.text+0x3f4): undefined reference to `checkinputs_c'
+    #
+    # Post mode already supplies the shim, on its own `make test LIBS=...`
+    # command line. `vit_mutate.py` runs `make -C <dir> test` ITSELF and gets
+    # the Makefile's LIBS, so the shim has to be IN the file -- which is the
+    # argument 2b already makes about its own edit, one object over. Without
+    # it: `baseline is not green (nocompile); refusing to score`.
+    #
+    # Harmless before integration: nothing references `<unit>_c` there, so the
+    # definition is simply unused. And a command-line `LIBS=` overrides a
+    # makefile assignment outright, so post mode does not link it twice.
+    docker exec "$CONTAINER" bash -lc \
+        "cd $WORKDIR && python3 scripts/_integration_shim.py $UNIT -f $FFILE" \
+        > "$ROOT/$UNIT_DIR/vit_integration_shim.cpp"
+    [ -s "$ROOT/$UNIT_DIR/vit_integration_shim.cpp" ] || {
+        echo "harness.sh: _integration_shim.py produced nothing for $UNIT" >&2; exit 3; }
+    if ! grep -q "vit_integration_shim.o" "$mk"; then
+        docker exec "$CONTAINER" bash -lc \
+            "cd $WORKDIR/$UNIT_DIR && g++ -O2 -fPIC -ffp-contract=off \
+                 -c vit_integration_shim.cpp -o vit_integration_shim.o"
+        printf '\nLIBS += %s/%s/vit_integration_shim.o\n' \
+            "$WORKDIR" "$UNIT_DIR" >> "$mk"
+        echo "harness.sh: added vit_integration_shim.o to LIBS -- ${STEM}.cpp.o was dropped and the integrated wrapper calls ${STEM}_c"
+    fi
+
     cal="$ROOT/$UNIT_DIR/${STEM}_callees.f90"
     if [ -f "$cal" ]; then
         python3 - "$cal" "$ROOT/$UNIT_DIR/Makefile" <<'PYEOF'
