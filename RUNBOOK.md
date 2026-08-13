@@ -358,6 +358,116 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **AN ERROR THAT NAMES ITS PARAMETER COSTS ONE PASS; ONE THAT DOES NOT COSTS
+  THREE. SAME FILE, SAME UNIT, SAME AFTERNOON.** Unit #29, and it is the
+  cheapest rule this campaign has produced because it changes nothing you run,
+  only what you write when you fix a generator.
+
+  ```
+  EmitError: CheckInputs: CntrPar_SU_LoadStages has 17 element(s)
+             but its extents say 0            <- diagnosed and fixed in ONE pass
+  TypeError: 'float' object is not iterable   <- THREE passes, three distinct causes
+  ```
+
+  Both come out of `harness/emit.py::write_cases`, four rules downstream of
+  every one of their causes. The second names no parameter, no rule and no
+  case, and it was raised by three different defects in a row -- a knob naming
+  a whole array in R7, the same block again in R7b, and a knobbed body against
+  a knobbed extent. Each round cost a full generate-and-emit.
+
+  **The way out is not to read the traceback again, it is to scan the artifact
+  the generator produced**: every array parameter holding a scalar, counted,
+  with the first offending case index. That found the R7b copy in one run and
+  named all seven parameters:
+
+  ```
+  CntrPar_F_NotchFreqs   scalar in 3078 case(s), first at case 18726
+  ```
+
+  3,078 is R7b's own reported case count and 18726 is where its block begins,
+  so the attribution is the count rather than an argument.
+
+- **"OTHER UNITS' OBJECTS STAY, THEY ARE PART OF THE REFERENCE BUILD" WAS TRUE
+  FOR 28 UNITS BECAUSE NONE OF THEM HAD A CALLEE -- AND THE OBVIOUS REPAIR
+  BUILDS A LOOP.** Unit #29, `harness.sh`. `checkinputs_callees.f90` defines
+  `addtolist_c`; so does the integrated `addtolist.cpp.o`. The link says
+  `multiple definition`, and there are two ways out of it:
+
+  ```
+  drop the OBJECT, keep the bridge   -> bridge -> Fortran AddToList -> WRAPPER
+                                        -> addtolist_c -> ... SIGSEGV, case 0,
+                                        no message, a core file
+  drop the BRIDGE, keep the object   -> one definition, and it is the one the
+                                        shipped program calls
+  ```
+
+  On an integrated tree the Fortran callee IS a wrapper around its own C++, so
+  VIT's "both sides share one callee implementation" holds trivially once the
+  bridge is gone. Read the integrated source before choosing which duplicate to
+  delete; the comment in the script said the opposite and had never been tested.
+
+  Two more fell out of the same corner. `vit test-validate` writes bridges
+  DEFINING `<callee>_c` and declared them nowhere, so the build failed inside
+  the translation's own body and read like the translation's fault. And
+  `vit_mutate` then refused to score -- `baseline is not green (nocompile)` --
+  because `<stem>.cpp.o` is dropped and the integrated wrapper calls
+  `<unit>_c`: the integration shim has to be in the MAKEFILE, which is
+  `harness.sh`'s own 2b argument one object over.
+
+  ```
+  grep -c '<callee>_c' <unit>_test/*.f90 <unit>_test/*.cpp   # who DEFINES it
+  nm -g --defined-only <the integrated .o> | grep '<callee>_c'
+  ```
+
+- **A UNIT WHOSE ONLY OUTPUT IS AN ERROR SIGNAL IS INVISIBLE TO ANY CAPTURE
+  TAKEN ON A WORKING CONFIGURATION.** Unit #29, and it is a different blindness
+  from #27's dead branches: here the body RUNS, broadly, and answers "fine"
+  every time.
+
+  ```
+  the translation            1 of 1, 426 of 426 IDENTICAL
+  wrong constant aviFAIL=-7  0 of 1     <- the chain is alive
+  the WHOLE UNIT deleted     1 of 1     <- and it sees none of it
+  ```
+
+  `errmsg` does not appear among the 426 rows at all: KGen guards its
+  comparison with `IF (ALLOCATED(var%errmsg))` and a passing configuration
+  never allocates it. **Check the field log for the unit's own output before
+  reading a kernel pass as evidence** -- a field that is absent is not a field
+  that matched.
+
+  And the one case is not a window that was too narrow. The site is called once
+  per scenario at invocation index 1 of its OWN counter, so all 24 scenarios
+  write `<Unit>.0.0.1` and overwrite each other. A name collision does not
+  respond to widening `kgen.invocation`:
+
+  ```
+  ls kernel/<Unit>/<Unit>.*.*.*     # one file -> every scenario overwrote the last
+  ```
+
+- **A DEFERRED-LENGTH STRING HAS NO BYTES PAST ITS LENGTH, AND TWO RED RUNS DO
+  NOT TELL YOU WHICH WAY TO GO.** Unit #29. `ErrVar%ErrMsg` is
+  `CHARACTER(:), ALLOCATABLE`; the assignment reallocates to exactly `LEN`. The
+  view crosses on a wider staging buffer, and what belongs in the region past
+  `n_ErrMsg` is decided by whoever allocated the buffer, not by ROSCO.
+
+  ```
+  leave the previous message's tail   16,729 of 16,769 FAILED
+  blank-fill it                       16,769 of 16,769 FAILED
+  clear it to NUL                              0 FAILED
+  ```
+
+  The two red counts differ by 40 and both say `ErrVar.ErrMsg`; neither points
+  anywhere. **The first differing BYTE does**: `a=0x20 b=0x00` at exactly index
+  `n_ErrMsg`, because the oracle side is a zeroed vector the bridge writes
+  `n_ErrMsg` bytes into. Unit #27 says to compute the two SETS rather than
+  explain two equal counts; this is that rule one representation lower down.
+  Print the offset and the two bytes before choosing a fill:
+
+  ```
+  for (k...) if (a[k] != b[k]) { first diff at k; break; }
+  ```
+
 - **A PROBE THAT READS A CONSTANT FROM MATHEMATICS RATHER THAN FROM THE PROGRAM
   IS MEASURING A DIFFERENT PROGRAM, AND IT CAN REPORT FAILURE ON A CORRECT RUN.**
   Unit #28, and it is P7 applied to the instrument instead of to the translation.
