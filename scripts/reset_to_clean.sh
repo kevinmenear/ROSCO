@@ -45,6 +45,29 @@ BUILD=1
 # The test is whether HEAD's version calls a `<name>_c(` bridge. That is what an
 # integration wrapper looks like and nothing else in this tree has one, so the
 # rule maintains itself as units are added rather than needing a list.
+# RAISE THE SENTINEL BEFORE TOUCHING A FILE, not after.
+#
+# Between this script and `restore_integrated.sh` the live tree carries every
+# integrated unit DE-INTEGRATED. The pair is manual and nothing makes the second
+# run: a session that is killed, times out, or simply ends inside that window
+# leaves the tree reverted. That happened twice on 2026-08-13 (HPFilter, then
+# CheckInputs), and the second time seven protected files were reverted while a
+# live session was still committing.
+#
+# A commit taken inside the window is the one IRREVERSIBLE outcome of this
+# failure mode -- both occurrences missed it by timing alone, and the
+# commit-each-artifact prompt rule multiplied the number of chances. The
+# pre-commit hook refuses while this file exists.
+#
+# Written before the loop so that a crash MID-reset still raises it. A sentinel
+# raised after the damage is a sentinel that misses the case it exists for.
+mkdir -p "$ROOT/.loop-run"
+cat > "$ROOT/.loop-run/TREE_IS_DE_INTEGRATED" <<SENTINEL
+$(date -u +%Y-%m-%dT%H:%M:%SZ) reset_to_clean.sh reverted this tree to $BASELINE.
+Every integrated unit's bridge is GONE from rosco/controller/src until
+scripts/restore_integrated.sh runs. Commits are refused while this file exists.
+SENTINEL
+
 n=0; skipped=""
 while read -r f; do
     [ -z "$f" ] && continue

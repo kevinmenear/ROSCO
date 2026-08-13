@@ -52,6 +52,11 @@ done < <(git ls-files rosco/controller/src)
 # the pair is asymmetric: reset removes them, restore does not put them back,
 # and the rebuilt library quietly contains no C++ at all while gating 27/27.
 git checkout HEAD -- rosco/controller/CMakeLists.txt
+
+# The window is closed: clear the sentinel the reset raised, which re-enables
+# commits. Cleared HERE, after the checkout, so a failure part-way through
+# leaves it raised rather than clearing it on a tree still half-reverted.
+rm -f "$ROOT/.loop-run/TREE_IS_DE_INTEGRATED"
 n=$((n + 1))
 
 echo "restore_integrated: $n file(s) restored from HEAD (vit_types.h untouched)"
