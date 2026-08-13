@@ -1,0 +1,31 @@
+cases in the stream                               136
+invisible to the NO-OP  (ref(x) == 0.0 in bits)     6  -> fails 130   harness/wrap_180.redtest.json says 130
+invisible to -x         (ref(x) == ref(-x))         6  -> fails 130   harness/wrap_180.postintegration.redtest.json says 130
+
+the same six cases?          False
+cases in both blind sets     [48, 49]   (x = [360.0, -360.0])
+
+no-op     cannot see -- ref(x) is 0.0, so returning 0.0 is correct there:
+   case    0  x =                      0.0   ref(x) = 0.0
+   case    1  x =                      0.0   ref(x) = 0.0
+   case   48  x =                    360.0   ref(x) = 0.0
+   case   49  x =                   -360.0   ref(x) = 0.0
+   case   59  x =                      0.0   ref(x) = 0.0
+   case  106  x =                      0.0   ref(x) = 0.0
+
+negation  cannot see -- ref(x) == ref(-x), so the sign cannot be observed:
+   case   46  x =                    180.0   ref(x) = 180.0
+   case   47  x =                   -180.0   ref(x) = 180.0
+   case   48  x =                    360.0   ref(x) = 0.0
+   case   49  x =                   -360.0   ref(x) = 0.0
+   case  104  x =                   -180.0   ref(x) = 180.0
+   case  110  x =                    180.0   ref(x) = 180.0
+
+negative zero in the corpus: 1 case(s) at [102]
+   ref(-0.0) = -0.0   in noop-blind set: False   in negation-blind set: False
+
+VERDICT: both artifacts report 130 of 136 and the two are blind to
+         DIFFERENT six cases, overlapping in two. The equal count is a
+         coincidence of set size; the negation-blind set is exactly the
+         four boundary cases, because this unit sends both endpoints
+         to +180.
