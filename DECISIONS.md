@@ -5937,3 +5937,88 @@ touched.
    that refuses to over-claim (`scripts/_mutation_merge.py` is this campaign's
    version, and its coverage check had to be derived from the mutator rather
    than from the parts to be non-vacuous).
+
+## 2026-08-13 07:15 — the kill counts that went DOWN: REPLACEMENT, not extension
+
+`c0f8356`'s closing paragraph is superseded. It says the re-takes "score LOWER
+than the components they replace, so any union of all five overstates." That
+framing is wrong, and appending the correction rather than amending it is
+deliberate: the message is evidence of what was believed at 07:05, and a
+campaign that rewrites its own history to look consistent removes the record
+this project exists to keep.
+
+**What was believed.** That the corpus grew (22,824 -> 23,076), that the five
+components therefore measured the same mutants against a superset of cases, and
+that the re-takes drifting downward meant the union was an over-estimate — a
+number to be corrected downward rather than discarded.
+
+**What was measured.**
+
+- The mutated source never changed. `translations/ReadSetParameters/checkinputs.cpp`
+  was last touched at 01:11 (`911affc`); the merged run is 06:14 and the re-takes
+  06:37–06:53. Per-operator mutant and nocompile counts are identical across the
+  two revisions (29/10, 33/0, 32/8).
+- **The three admissible baseline states were EDITED between the runs**, by
+  `7f75ca4` at 06:29 — 9 value lines removed against 176 added.
+  `CntrPar_VS_ControlMode: 1` deleted, six constant `fill` arrays replaced by
+  `{"ramp": [...]}`, the convention string rewritten.
+- The "strict extension" claim is true as scoped and false as read. It is prose
+  inside `rule_coverage`, and it says R11 is *appended after* R3's scan and the
+  random fill "so every case index the other rules produced is unchanged" — a
+  statement about rule ORDERING within one generation, not about stability
+  across a regeneration. Diffing the two harness artifacts, only R11's line
+  differs; the other seven rules are byte-identical. R11 went 1,095 -> 1,347,
+  and that +252 is the entire corpus delta. R11 is the last case-generating rule
+  (R1 and R4 produce none).
+
+So the corpus across the boundary is:
+
+      0 … 21,728    21,729 cases   unchanged
+ 21,729 … 22,823     1,095 cases   SAME INDEX, DIFFERENT CONTENT
+ 22,824 … 23,075       252 cases   new
+
+**4.8% of prior indices were regenerated, and they are precisely the
+admissible-state probes that exist to defeat masking.** That is a corpus
+REPLACEMENT, not an extension — which is why kills moved in both directions, and
+which means no union of the five is valid at all. Not an over-estimate to be
+adjusted: a comparison between incommensurable measurements. Nothing needs to be
+posited about nondeterminism.
+
+**The strongest evidence is a prediction made before the measurement.** Mutant
+`1b723864` (`ZMQ_UpdatePeriod - DT` -> `+ DT`) flipped survived->killed, and
+`7f75ca4`'s own message says it set `ZMQ_UpdatePeriod=0.05, n_DT_ZMQ=5, DT=0.01`
+specifically so that `a - b` and `a + b` stop agreeing. The state edit did what
+it claimed. It did it by replacing cases, not by adding them.
+
+**The apparatus was stricter than the summary.** `0.4624` was arithmetic in a
+supervising summary, carrying an accurate caveat ("mixing revisions"). It could
+never have entered an artifact: `_mutation_merge.py:189` refuses parts with
+differing `loop_rev`, verified by running it on the five real parts — exit 2,
+`the parts were produced by different instruments`, nothing written. A number
+with a caveat attached outlives its caveat; the refusal does not.
+
+**Consequence for the unit.** `const_tweak` (22/40) and `negate_cond` (36/39)
+are not merely un-re-taken, they are INVALID for the current corpus, measured
+against states that no longer exist. `84/173 = 0.4855` is a valid score for a
+corpus that no longer exists. Re-taking the two is 80 mutants at ~9.5 s ≈ 13
+minutes of compute, after which the merge accepts all five at `2e2295f` and this
+unit has, for the first time, one commensurable number.
+
+### A fourth finding for the METHOD
+
+4. **An artifact must record the INPUT that makes its claim recomputable, not
+   only the claim.** Two symptoms, one defect, and the second was found by
+   noticing the first could not be checked:
+   - `rule_coverage` asserts "a strict extension of the one before it" and
+     carries nothing by which a reader could test it. A hash of the generating
+     states would have made the 06:29 edit visible as a corpus change at the
+     moment the next sweep was stamped.
+   - The mutation artifacts record only SURVIVORS, so "the same population was
+     scored at both revisions" could only be inferred here from matching mutant
+     and nocompile counts. A mutant-ID list would have settled it directly.
+
+   These are the same fix applied twice, and the same shape as finding 1: the
+   artifact carries the conclusion and withholds the input. Finding 1 was about
+   the reference side, this is about the corpus and the population — three
+   instances now, which is what makes it a method question rather than a
+   rosco-r2 one.
