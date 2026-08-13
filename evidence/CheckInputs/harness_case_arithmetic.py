@@ -97,6 +97,24 @@ def _stub(*a, **k):
 
 G._case_impl = _stub
 
+# Sweep the bound: `python3 ... 4096 1024 256` prints the case count at each.
+if len(sys.argv) > 1:
+    for _lim in (int(a) for a in sys.argv[1:]):
+        G._KNOB_PAIR_LIMIT, N[0] = _lim, 0
+        try:
+            generate(signature, seed=0, n_random=24, literals=literals_from(SRC),
+                     plan=st, char_literals=char_literals_from(SRC, UNIT),
+                     order_arrays=sorted(ordered),
+                     order_steps=tuple(steps[:_ORDER_STEP_CAP]), knobs=knobs,
+                     rel_pairs=rel, div_pairs=div, red_pairs=red,
+                     file_inputs=[(f, bound) for f in fparams],
+                     io_units=tuple(units), tied_extents=dict(tied),
+                     disabled=frozenset())
+        except Exception:
+            pass
+        print(f"_KNOB_PAIR_LIMIT {_lim:>6}  ->  {N[0]:>8} case(s)")
+    raise SystemExit(0)
+
 try:
     generate(signature, seed=0, n_random=24, literals=literals_from(SRC),
              plan=st, char_literals=char_literals_from(SRC, UNIT),
