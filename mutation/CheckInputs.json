@@ -11,6 +11,17 @@
   "swap_callee",
   "swap_operands"
  ],
+ "operator_population": {
+  "compare_op": 40,
+  "drop_factor": 6,
+  "arith_op": 17,
+  "swap_operands": 12,
+  "index_offset": 33,
+  "const_tweak": 40,
+  "negate_cond": 40,
+  "drop_call": 2,
+  "swap_callee": 2
+ },
  "operators_offered": [
   "arith_op",
   "assoc_reorder",
@@ -25,6 +36,7 @@
   "swap_callee",
   "swap_operands"
  ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
  "mutants": 173,
  "equivalent_declared": 0,
  "nocompile": 19,
@@ -33,200 +45,82 @@
  "nocompile_ratio": 0.099,
  "nocompile_refused": false,
  "total": 192,
- "killed": 4,
- "survived": 169,
+ "killed": 8,
+ "survived": 165,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.0231,
- "loop_rev": "351edc7-nogit",
+ "score": 0.0462,
+ "loop_rev": "891fde3-nogit",
  "vit_rev": "477fc47-nogit",
+ "merged_from": [
+  {
+   "part": "mutation/CheckInputs.clean.calls_arith.json",
+   "operators_filter": [
+    "arith_op",
+    "drop_call",
+    "drop_factor",
+    "swap_callee",
+    "swap_operands"
+   ],
+   "total": 39,
+   "mutants": 29,
+   "nocompile": 10,
+   "killed": 1,
+   "survived": 28,
+   "score": 0.0345
+  },
+  {
+   "part": "mutation/CheckInputs.clean.index_offset.json",
+   "operators_filter": [
+    "index_offset"
+   ],
+   "total": 33,
+   "mutants": 33,
+   "nocompile": 0,
+   "killed": 0,
+   "survived": 33,
+   "score": 0.0
+  },
+  {
+   "part": "mutation/CheckInputs.clean.compare_op.json",
+   "operators_filter": [
+    "compare_op"
+   ],
+   "total": 40,
+   "mutants": 32,
+   "nocompile": 8,
+   "killed": 2,
+   "survived": 30,
+   "score": 0.0625
+  },
+  {
+   "part": "mutation/CheckInputs.clean.const_tweak.json",
+   "operators_filter": [
+    "const_tweak"
+   ],
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 2,
+   "survived": 38,
+   "score": 0.05
+  },
+  {
+   "part": "mutation/CheckInputs.clean.negate_cond.json",
+   "operators_filter": [
+    "negate_cond"
+   ],
+   "total": 40,
+   "mutants": 39,
+   "nocompile": 1,
+   "killed": 3,
+   "survived": 36,
+   "score": 0.0769
+  }
+ ],
+ "merged_why": "192 mutants at ~9.5s each is a 32-minute sweep; a dispatch's foreground command may block for 600s. Five foreground --operator runs rather than one backgrounded sweep -- backgrounding is the failure this campaign has already paid for twice.",
+ "merged_by": "scripts/_mutation_merge.py",
  "survivors": [
-  {
-   "id": "4930efc0",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
-   "id": "51c0202f",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "21671e50",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "22d5ebc9",
-   "operator": "compare_op",
-   "before": "<=",
-   "after": "<"
-  },
-  {
-   "id": "dabf5c70",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
-   "id": "7af3cb40",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "6b7567ff",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "b94f1a9e",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
-   "id": "81dbfeda",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "5e6d8c55",
-   "operator": "compare_op",
-   "before": "<=",
-   "after": "<"
-  },
-  {
-   "id": "5486d30a",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
-   "id": "0173d7dc",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "dc92affc",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "7e1e9eb7",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
-   "id": "4f10aee0",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "3021e827",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "ce438d51",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
-   "id": "6e9e78f5",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "680369cc",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "b5778627",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
-   "id": "2749fd57",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "9446e460",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "9e089686",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "1b8d5ab3",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "5e7c786f",
-   "operator": "compare_op",
-   "before": "<=",
-   "after": "<"
-  },
-  {
-   "id": "6f6c1760",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "178cca7e",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "36317c82",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "8f7572d1",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "689a2980",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "c7770aac",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
   {
    "id": "120511df",
    "operator": "arith_op",
@@ -370,6 +264,30 @@
    "operator": "swap_operands",
    "before": "I - 1",
    "after": "1 - I"
+  },
+  {
+   "id": "4cef0996",
+   "operator": "drop_call",
+   "before": "std::fabs(CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out))",
+   "after": "CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out)"
+  },
+  {
+   "id": "44bc2497",
+   "operator": "drop_call",
+   "before": "std::fabs(CntrPar->ZMQ_UpdatePeriod - LocalVar->DT * static_cast<double>(CntrPar->n_DT_ZMQ))",
+   "after": "CntrPar->ZMQ_UpdatePeriod - LocalVar->DT * static_cast<double>(CntrPar->n_DT_ZMQ)"
+  },
+  {
+   "id": "70e1ff11",
+   "operator": "swap_callee",
+   "before": "max",
+   "after": "min"
+  },
+  {
+   "id": "26e3d464",
+   "operator": "swap_callee",
+   "before": "max",
+   "after": "min"
   },
   {
    "id": "507ea435",
@@ -570,6 +488,186 @@
    "after": "[27 + 1]"
   },
   {
+   "id": "51c0202f",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "21671e50",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "22d5ebc9",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "dabf5c70",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "7af3cb40",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "6b7567ff",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "b94f1a9e",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "81dbfeda",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "5e6d8c55",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "5486d30a",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "0173d7dc",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "dc92affc",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "7e1e9eb7",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "4f10aee0",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "3021e827",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "ce438d51",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "6e9e78f5",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "680369cc",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "b5778627",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "2749fd57",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "9446e460",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "9e089686",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "1b8d5ab3",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "5e7c786f",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "6f6c1760",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "178cca7e",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "36317c82",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "8f7572d1",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "689a2980",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "c7770aac",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
    "id": "dff5a74c",
    "operator": "const_tweak",
    "before": "2",
@@ -583,12 +681,6 @@
   },
   {
    "id": "13c21a14",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "65d528a8",
    "operator": "const_tweak",
    "before": "0",
    "after": "1"
@@ -802,18 +894,6 @@
    "operator": "const_tweak",
    "before": "0",
    "after": "1"
-  },
-  {
-   "id": "979926ee",
-   "operator": "negate_cond",
-   "before": "if (ErrVar->ErrMsg == nullptr)",
-   "after": "if (!(ErrVar->ErrMsg == nullptr))"
-  },
-  {
-   "id": "2406475c",
-   "operator": "negate_cond",
-   "before": "if (static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap)",
-   "after": "if (!(static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap))"
   },
   {
    "id": "0bfb81cb",
@@ -1030,33 +1110,17 @@
    "operator": "negate_cond",
    "before": "if ((CntrPar->Flp_Mode < 0) || (CntrPar->Flp_Mode > 3))",
    "after": "if (!((CntrPar->Flp_Mode < 0) || (CntrPar->Flp_Mode > 3)))"
-  },
-  {
-   "id": "4cef0996",
-   "operator": "drop_call",
-   "before": "std::fabs(CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out))",
-   "after": "CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out)"
-  },
-  {
-   "id": "44bc2497",
-   "operator": "drop_call",
-   "before": "std::fabs(CntrPar->ZMQ_UpdatePeriod - LocalVar->DT * static_cast<double>(CntrPar->n_DT_ZMQ))",
-   "after": "CntrPar->ZMQ_UpdatePeriod - LocalVar->DT * static_cast<double>(CntrPar->n_DT_ZMQ)"
-  },
-  {
-   "id": "70e1ff11",
-   "operator": "swap_callee",
-   "before": "max",
-   "after": "min"
-  },
-  {
-   "id": "26e3d464",
-   "operator": "swap_callee",
-   "before": "max",
-   "after": "min"
   }
  ],
- "compared_against": "THE MUTANT ITSELF -- INVALID",
- "not_evaluable": true,
- "not_evaluable_reason": "The reference side of this run was not Fortran. On an INTEGRATED tree the harness's Fortran side calls the wrapper `vit integrate` wrote, which calls checkinputs_c, which links the harness's OWN compiled copy -- the mutant. Both sides are the mutant, so every behavioural difference cancels and the 4 'kills' are the nocompile and crash cases. score 0.0231 IS NOT A SCORE: it is the absence of a measurement. Read as a number it says the translation fails catastrophically; what it means is that the instrument compared a thing to itself. A valid run needs a CLEAN tree (scripts/reset_to_clean.sh), where ReadSetParameters.f90.o carries the real 857-line body and nothing routes back into the translation. harness/CheckInputs.json (16,769 / 0 failed) WAS taken on a clean tree and is valid; this was not."
+ "measures": "The translation against the ORIGINAL Fortran. ReadSetParameters.f90.o defines _MOD_checkinputs and references no checkinputs_c, so the reference side runs the Fortran body and nothing routes back into the mutant. vit_integration_shim.o is linked but unreferenced here: on a clean tree nothing calls checkinputs_c.",
+ "reference_side": "fortran",
+ "reference_side_basis": {
+  "object": "rosco/controller/build/CMakeFiles/discon.dir/src/ReadSetParameters.f90.o",
+  "defines_fortran_symbol": true,
+  "undefined_reference_to_unit_c": false,
+  "shim_in_libs": true,
+  "own_object_in_libs": false
+ },
+ "stamped_at": "2026-08-13T04:49:53-0400",
+ "stamped_at_head": "685f3f4"
 }

@@ -1,0 +1,218 @@
+{
+ "unit": "CheckInputs",
+ "operators": [
+  "arith_op",
+  "drop_call",
+  "drop_factor",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "arith_op",
+  "drop_call",
+  "drop_factor",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "operators_filter_unmatched": [],
+ "mutants": 29,
+ "equivalent_declared": 0,
+ "nocompile": 10,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.2564,
+ "nocompile_refused": true,
+ "total": 39,
+ "killed": 1,
+ "survived": 28,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.0345,
+ "loop_rev": "891fde3-nogit",
+ "vit_rev": "477fc47-nogit",
+ "survivors": [
+  {
+   "id": "120511df",
+   "operator": "arith_op",
+   "before": "CntrPar->DT_Out - LocalVar->DT",
+   "after": "CntrPar->DT_Out + LocalVar->DT"
+  },
+  {
+   "id": "1b723864",
+   "operator": "arith_op",
+   "before": "CntrPar->ZMQ_UpdatePeriod - LocalVar->DT",
+   "after": "CntrPar->ZMQ_UpdatePeriod + LocalVar->DT"
+  },
+  {
+   "id": "29e57417",
+   "operator": "arith_op",
+   "before": "I - 1",
+   "after": "I + 1"
+  },
+  {
+   "id": "bafd410e",
+   "operator": "arith_op",
+   "before": "I - 1",
+   "after": "I + 1"
+  },
+  {
+   "id": "2ed97e42",
+   "operator": "arith_op",
+   "before": "Imode - 1",
+   "after": "Imode + 1"
+  },
+  {
+   "id": "e250cdea",
+   "operator": "arith_op",
+   "before": "Imode - 1",
+   "after": "Imode + 1"
+  },
+  {
+   "id": "91a7adbc",
+   "operator": "arith_op",
+   "before": "Imode - 1",
+   "after": "Imode + 1"
+  },
+  {
+   "id": "e712c281",
+   "operator": "arith_op",
+   "before": "Imode - 1",
+   "after": "Imode + 1"
+  },
+  {
+   "id": "a50841f1",
+   "operator": "arith_op",
+   "before": "Imode - 1",
+   "after": "Imode + 1"
+  },
+  {
+   "id": "1262a174",
+   "operator": "arith_op",
+   "before": "Imode - 1",
+   "after": "Imode + 1"
+  },
+  {
+   "id": "69a82f24",
+   "operator": "arith_op",
+   "before": "I - 1",
+   "after": "I + 1"
+  },
+  {
+   "id": "f9828789",
+   "operator": "arith_op",
+   "before": "I - 1",
+   "after": "I + 1"
+  },
+  {
+   "id": "202264d1",
+   "operator": "swap_operands",
+   "before": "CntrPar->DT_Out - LocalVar->DT",
+   "after": "LocalVar->DT - CntrPar->DT_Out"
+  },
+  {
+   "id": "8c59ac4f",
+   "operator": "swap_operands",
+   "before": "CntrPar->ZMQ_UpdatePeriod - LocalVar->DT",
+   "after": "LocalVar->DT - CntrPar->ZMQ_UpdatePeriod"
+  },
+  {
+   "id": "63e42cb8",
+   "operator": "swap_operands",
+   "before": "I - 1",
+   "after": "1 - I"
+  },
+  {
+   "id": "52226cd0",
+   "operator": "swap_operands",
+   "before": "I - 1",
+   "after": "1 - I"
+  },
+  {
+   "id": "e7dc92ae",
+   "operator": "swap_operands",
+   "before": "Imode - 1",
+   "after": "1 - Imode"
+  },
+  {
+   "id": "de41e5a4",
+   "operator": "swap_operands",
+   "before": "Imode - 1",
+   "after": "1 - Imode"
+  },
+  {
+   "id": "3e793404",
+   "operator": "swap_operands",
+   "before": "Imode - 1",
+   "after": "1 - Imode"
+  },
+  {
+   "id": "c067d124",
+   "operator": "swap_operands",
+   "before": "Imode - 1",
+   "after": "1 - Imode"
+  },
+  {
+   "id": "e22506bc",
+   "operator": "swap_operands",
+   "before": "Imode - 1",
+   "after": "1 - Imode"
+  },
+  {
+   "id": "9057ca6e",
+   "operator": "swap_operands",
+   "before": "Imode - 1",
+   "after": "1 - Imode"
+  },
+  {
+   "id": "ad39a19a",
+   "operator": "swap_operands",
+   "before": "I - 1",
+   "after": "1 - I"
+  },
+  {
+   "id": "2ff40d30",
+   "operator": "swap_operands",
+   "before": "I - 1",
+   "after": "1 - I"
+  },
+  {
+   "id": "4cef0996",
+   "operator": "drop_call",
+   "before": "std::fabs(CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out))",
+   "after": "CntrPar->DT_Out - LocalVar->DT * static_cast<double>(CntrPar->n_DT_Out)"
+  },
+  {
+   "id": "44bc2497",
+   "operator": "drop_call",
+   "before": "std::fabs(CntrPar->ZMQ_UpdatePeriod - LocalVar->DT * static_cast<double>(CntrPar->n_DT_ZMQ))",
+   "after": "CntrPar->ZMQ_UpdatePeriod - LocalVar->DT * static_cast<double>(CntrPar->n_DT_ZMQ)"
+  },
+  {
+   "id": "70e1ff11",
+   "operator": "swap_callee",
+   "before": "max",
+   "after": "min"
+  },
+  {
+   "id": "26e3d464",
+   "operator": "swap_callee",
+   "before": "max",
+   "after": "min"
+  }
+ ]
+}

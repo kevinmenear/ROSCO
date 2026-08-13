@@ -1,0 +1,240 @@
+{
+ "unit": "CheckInputs",
+ "operators": [
+  "index_offset"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "index_offset"
+ ],
+ "operators_filter_unmatched": [],
+ "mutants": 33,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 33,
+ "killed": 0,
+ "survived": 33,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.0,
+ "loop_rev": "891fde3-nogit",
+ "vit_rev": "477fc47-nogit",
+ "survivors": [
+  {
+   "id": "507ea435",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "a8269567",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "295daf9c",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "e146c6a9",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "fe1a4d80",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "5a06f7b8",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "967c5a0d",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "9949672c",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "5769f7da",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "7919e88c",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "5f091afb",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "e82c8f3a",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "7b545b0a",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "326984ba",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "db20ff2d",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "6ef824a4",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "9a06512c",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "8e2842e6",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "99adcf8f",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "54dc1bd1",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "bfbbd817",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "5b52420b",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "22bcd520",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "56825c66",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "e0e8bbf5",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "3e51f772",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "c7a5ffaa",
+   "operator": "index_offset",
+   "before": "[2]",
+   "after": "[2 + 1]"
+  },
+  {
+   "id": "541975c0",
+   "operator": "index_offset",
+   "before": "[9]",
+   "after": "[9 + 1]"
+  },
+  {
+   "id": "ba11ef8e",
+   "operator": "index_offset",
+   "before": "[27]",
+   "after": "[27 + 1]"
+  },
+  {
+   "id": "0748e02b",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "eba5e37e",
+   "operator": "index_offset",
+   "before": "[2]",
+   "after": "[2 + 1]"
+  },
+  {
+   "id": "06e5b20f",
+   "operator": "index_offset",
+   "before": "[27]",
+   "after": "[27 + 1]"
+  },
+  {
+   "id": "b4d9af1a",
+   "operator": "index_offset",
+   "before": "[27]",
+   "after": "[27 + 1]"
+  }
+ ]
+}
