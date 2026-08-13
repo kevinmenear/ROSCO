@@ -1520,7 +1520,7 @@
    "source_file": "rosco/controller/src/ReadSetParameters.f90",
    "translation": "translations/ReadSetParameters/checkinputs.cpp",
    "harness_required": true,
-   "disposition": "deferred",
+   "disposition": null,
    "evidence": [
     "evidence/CheckInputs/README.md",
     "evidence/CheckInputs/harness_scaling_wall.md",
