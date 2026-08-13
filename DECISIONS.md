@@ -5913,3 +5913,27 @@ reason the mutation run was. `evidence/CheckInputs/errmsg_masking.sh` now opens
 and closes that window itself on a `trap ... EXIT` — correct THERE and still
 wrong in `reset_to_clean.sh`, because a probe's window lives for one measurement
 and the reset's is meant to outlive the script.
+
+### Three of the above may belong to the METHOD, not to rosco-r2
+
+Named here for the Driver to raise as amendments; the invariant layer was not
+touched.
+
+1. **A mutation artifact must record the reference side it was compared against,
+   read from the build rather than inferred.** `compared_against` and
+   `_mutation_stamp.py`'s `nm` read exist in this campaign because unit #29
+   needed them. Nothing in the spec requires a mutation result to say what was
+   on the other side of the comparison, and a score without that field is
+   unreadable — 0.0231 and 0.0462 came from the same 192 mutants.
+2. **A score cannot be validated by its shape.** This campaign's own rule was to
+   check the kill count against the harness's pass count; measured here, that
+   check does not discriminate a valid run from an invalid one. Whatever the
+   spec says about recognising a measurement that measured nothing, "the number
+   looks wrong" is not it.
+3. **A verification step longer than one foreground command needs a defined way
+   to be split, or it will be backgrounded.** Three units of this campaign lost
+   work to backgrounding or to polling. The prohibition is being enforced by
+   prose in the dispatch; the durable form is a tool that splits and a union
+   that refuses to over-claim (`scripts/_mutation_merge.py` is this campaign's
+   version, and its coverage check had to be derived from the mutator rather
+   than from the parts to be non-vacuous).
