@@ -17,7 +17,180 @@
     "CntrPar_PC_RefSpd": 1.0,
     "CntrPar_PC_MaxRat": 0.1,
     "CntrPar_PC_MinRat": -0.1,
-    "CntrPar_VS_MaxRat": 1000.0
+    "CntrPar_VS_MaxRat": 1000.0,
+    "CntrPar_F_NotchFreqs": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_F_NotchBetaDen": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_F_FlCornerFreq": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_F_FlpCornerFreq": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_IPC_KI": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_PC_GS_angles": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_VS_KP": {
+     "ramp": [
+      -1.0,
+      -1.0
+     ]
+    },
+    "CntrPar_VS_KI": {
+     "ramp": [
+      -1.0,
+      -1.0
+     ]
+    },
+    "CntrPar_PerfTableSize": {
+     "ramp": [
+      1,
+      1
+     ]
+    },
+    "CntrPar_WE_FOPoles_v": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_Y_ErrThresh": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_PS_WindSpeeds": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SU_LoadStages": {
+     "ramp": [
+      0.1,
+      0.1
+     ]
+    },
+    "CntrPar_SU_LoadRampDuration": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SU_LoadHoldDuration": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SD_MaxTorqueRate": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SD_MaxPitchRate": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SD_StagePitch": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SD_StageTime": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_Ind_BldPitch": {
+     "ramp": [
+      2,
+      1
+     ]
+    },
+    "CntrPar_Ind_CableControl": {
+     "ramp": [
+      10,
+      1
+     ]
+    },
+    "CntrPar_Ind_StructControl": {
+     "ramp": [
+      20,
+      1
+     ]
+    },
+    "CntrPar_AWC_harmonic": {
+     "ramp": [
+      1,
+      1
+     ]
+    },
+    "CntrPar_AWC_freq": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_AWC_clockangle": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_CC_GroupIndex": {
+     "ramp": [
+      2601,
+      1
+     ]
+    },
+    "CntrPar_StC_GroupIndex": {
+     "ramp": [
+      2801,
+      1
+     ]
+    },
+    "CntrPar_ZMQ_UpdatePeriod": 0.05,
+    "CntrPar_n_DT_ZMQ": 5,
+    "CntrPar_F_LPFDamping": 0.7,
+    "avrSWAP": {
+     "ramp": [
+      1.0,
+      1.0
+     ],
+     "9": 0.0,
+     "27": 1.0
+    }
    },
    "why": "Every mode selector at 0 -- the smallest state the reference accepts. Fourteen values, each one demanded by a check that fires on the all-inert state: DT and DT_Out and their factor relation, F_LPFType's 1-or-2, the four corner frequencies, PC_GS_n, the PC_MinPit < PC_MaxPit pair, PC_RefSpd, the two pitch rates and VS_MaxRat."
   },
@@ -43,7 +216,7 @@
     "CntrPar_TD_Mode": 1,
     "CntrPar_IPC_ControlMode": 1,
     "CntrPar_PC_ControlMode": 1,
-    "CntrPar_VS_ControlMode": 1,
+    "CntrPar_VS_ControlMode": 2,
     "CntrPar_SS_Mode": 1,
     "CntrPar_PRC_Mode": 1,
     "CntrPar_WE_Mode": 1,
@@ -60,14 +233,23 @@
     "CntrPar_CC_Mode": 1,
     "CntrPar_StC_Mode": 1,
     "CntrPar_F_FlCornerFreq": {
-     "fill": 1.0
+     "ramp": [
+      1.0,
+      1.0
+     ]
     },
     "CntrPar_F_FlHighPassFreq": 1.0,
     "CntrPar_F_FlpCornerFreq": {
-     "fill": 1.0
+     "ramp": [
+      1.0,
+      1.0
+     ]
     },
     "CntrPar_Y_ErrThresh": {
-     "fill": 1.0
+     "ramp": [
+      1.0,
+      1.0
+     ]
     },
     "CntrPar_Y_Rate": 1.0,
     "CntrPar_SD_Method": 1,
@@ -75,8 +257,160 @@
     "CntrPar_Ext_Interface": 1,
     "CntrPar_CC_ActTau": 1.0,
     "avrSWAP": {
+     "ramp": [
+      1.0,
+      1.0
+     ],
+     "9": 0.0,
      "27": 1.0
-    }
+    },
+    "CntrPar_F_NotchFreqs": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_F_NotchBetaDen": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_IPC_KI": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_PC_GS_angles": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_VS_KP": {
+     "ramp": [
+      -1.0,
+      -1.0
+     ]
+    },
+    "CntrPar_VS_KI": {
+     "ramp": [
+      -1.0,
+      -1.0
+     ]
+    },
+    "CntrPar_PerfTableSize": {
+     "ramp": [
+      1,
+      1
+     ]
+    },
+    "CntrPar_WE_FOPoles_v": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_PS_WindSpeeds": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SU_LoadStages": {
+     "ramp": [
+      0.1,
+      0.1
+     ]
+    },
+    "CntrPar_SU_LoadRampDuration": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SU_LoadHoldDuration": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SD_MaxTorqueRate": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SD_MaxPitchRate": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SD_StagePitch": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SD_StageTime": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_Ind_BldPitch": {
+     "ramp": [
+      2,
+      1
+     ]
+    },
+    "CntrPar_Ind_CableControl": {
+     "ramp": [
+      10,
+      1
+     ]
+    },
+    "CntrPar_Ind_StructControl": {
+     "ramp": [
+      20,
+      1
+     ]
+    },
+    "CntrPar_AWC_harmonic": {
+     "ramp": [
+      1,
+      1
+     ]
+    },
+    "CntrPar_AWC_freq": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_AWC_clockangle": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_CC_GroupIndex": {
+     "ramp": [
+      2601,
+      1
+     ]
+    },
+    "CntrPar_StC_GroupIndex": {
+     "ramp": [
+      2801,
+      1
+     ]
+    },
+    "CntrPar_ZMQ_UpdatePeriod": 0.05,
+    "CntrPar_n_DT_ZMQ": 5,
+    "CntrPar_F_LPFDamping": 0.7
    },
    "why": "Eighteen mode selectors ON at once, so the checks inside their blocks are reachable one at a time. Flp_Mode stays 0: the reference REFUSES IPC_ControlMode and Flp_Mode together, so no single state can hold both, which is why there are three states and not one. avrSWAP(28) is 1 because IPC, PF_Mode and AWC_Mode > 1 each require the extended interface's pitch actuator flag."
   },
@@ -119,14 +453,23 @@
     "CntrPar_CC_Mode": 1,
     "CntrPar_StC_Mode": 1,
     "CntrPar_F_FlCornerFreq": {
-     "fill": 1.0
+     "ramp": [
+      1.0,
+      1.0
+     ]
     },
     "CntrPar_F_FlHighPassFreq": 1.0,
     "CntrPar_F_FlpCornerFreq": {
-     "fill": 1.0
+     "ramp": [
+      1.0,
+      1.0
+     ]
     },
     "CntrPar_Y_ErrThresh": {
-     "fill": 1.0
+     "ramp": [
+      1.0,
+      1.0
+     ]
     },
     "CntrPar_Y_Rate": 1.0,
     "CntrPar_SD_Method": 1,
@@ -139,12 +482,164 @@
     "CntrPar_Ind_Breakpoint": 1,
     "CntrPar_Ind_GenTq": 2,
     "avrSWAP": {
+     "ramp": [
+      1.0,
+      1.0
+     ],
+     "9": 0.0,
      "27": 1.0
-    }
+    },
+    "CntrPar_F_NotchFreqs": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_F_NotchBetaDen": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_IPC_KI": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_PC_GS_angles": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_VS_KP": {
+     "ramp": [
+      -1.0,
+      -1.0
+     ]
+    },
+    "CntrPar_VS_KI": {
+     "ramp": [
+      -1.0,
+      -1.0
+     ]
+    },
+    "CntrPar_PerfTableSize": {
+     "ramp": [
+      1,
+      1
+     ]
+    },
+    "CntrPar_WE_FOPoles_v": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_PS_WindSpeeds": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SU_LoadStages": {
+     "ramp": [
+      0.1,
+      0.1
+     ]
+    },
+    "CntrPar_SU_LoadRampDuration": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SU_LoadHoldDuration": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SD_MaxTorqueRate": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SD_MaxPitchRate": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SD_StagePitch": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_SD_StageTime": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_Ind_BldPitch": {
+     "ramp": [
+      2,
+      1
+     ]
+    },
+    "CntrPar_Ind_CableControl": {
+     "ramp": [
+      10,
+      1
+     ]
+    },
+    "CntrPar_Ind_StructControl": {
+     "ramp": [
+      20,
+      1
+     ]
+    },
+    "CntrPar_AWC_harmonic": {
+     "ramp": [
+      1,
+      1
+     ]
+    },
+    "CntrPar_AWC_freq": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_AWC_clockangle": {
+     "ramp": [
+      1.0,
+      1.0
+     ]
+    },
+    "CntrPar_CC_GroupIndex": {
+     "ramp": [
+      2601,
+      1
+     ]
+    },
+    "CntrPar_StC_GroupIndex": {
+     "ramp": [
+      2801,
+      1
+     ]
+    },
+    "CntrPar_ZMQ_UpdatePeriod": 0.05,
+    "CntrPar_n_DT_ZMQ": 5,
+    "CntrPar_F_LPFDamping": 0.7
    },
    "why": "The three blocks modes_on cannot enter: OL_Mode with Ind_Breakpoint and one non-zero channel index, Flp_Mode with IPC off, and VS_FBP with PC_ControlMode, PRC_Mode and VS_ConstPower off -- the reference rejects each of those pairs. This is the only state that reaches the ALLOCATE and the two AddToList loops."
   }
  ],
  "how_found": "scripts/_baseline_probe.py, which calls the TRANSLATION on a state and, with --all-messages, prints every check that fired rather than the last one. Each state took two or three rounds. The translation is not the oracle here and is not taken as one: each state is ALSO a case in the generated corpus, and the corpus is compared against the clean Fortran -- so `the C++ raises nothing on this state` (the probe) and `the Fortran agrees with the C++ on this state` (the harness case) together say the FORTRAN raises nothing on it. Neither artifact says that alone: a harness case on which both sides raise the SAME error passes, so the harness cannot see an inadmissible baseline by itself.",
- "convention": "A varied parameter this file does not name takes the INERT value -- 0, 0.0, or a body of zeros at the case's own extent -- exactly as a HELD parameter does. Extents are never inert-filled: they keep the extent the case chose. An array may be given as a full body (a list) or as a sparse map of index -> value over the inert body, which is how avrSWAP names element 28 without carrying 3,000 zeros. R11 REFUSES a name that is not a varied parameter of this unit and a body whose length disagrees with its extent."
+ "convention": "A varied parameter this file does not name takes the INERT value -- 0, 0.0, or a body of zeros at the case's own extent -- exactly as a HELD parameter does. Extents are never inert-filled: they keep the extent the case chose. An array may be given as a full body (a list) or as a sparse map of index -> value over the inert body, which is how avrSWAP names element 28 without carrying 3,000 zeros. R11 REFUSES a name that is not a varied parameter of this unit and a body whose length disagrees with its extent. A `{\"ramp\": [start, step]}` is an array that is admissible AND DISTINCT: with every element equal, an index shift and a loop-bound shift land inside a run of identical values, which is 49 of unit #29's 89 first-round survivors."
 }

@@ -157,9 +157,14 @@ def main() -> int:
                 # The committed file's two array forms, applied exactly as
                 # `harness/generate.py::_baseline_state` applies them: `fill`
                 # over every element, then index overrides on top.
-                v = [v.get("fill", 0)] * n
-                for k, x in values[name].items():
-                    if k != "fill":
+                src = values[name]
+                if "ramp" in src:
+                    start, step = src["ramp"]
+                    v = [start + i * step for i in range(n)]
+                else:
+                    v = [src.get("fill", 0)] * n
+                for k, x in src.items():
+                    if k not in ("fill", "ramp"):
                         v[int(k)] = x
             if len(v) != n:
                 print(f"{name}: baseline gives {len(v)} element(s), the extents "
@@ -192,9 +197,13 @@ def main() -> int:
     n_avr = ext["n_avrSWAP"]
     v_avr = values.get("avrSWAP")
     if isinstance(v_avr, dict):
-        body_avr = [float(v_avr.get("fill", 0.0))] * n_avr
+        if "ramp" in v_avr:
+            start, step = v_avr["ramp"]
+            body_avr = [float(start + i * step) for i in range(n_avr)]
+        else:
+            body_avr = [float(v_avr.get("fill", 0.0))] * n_avr
         for k, x in v_avr.items():
-            if k != "fill":
+            if k not in ("fill", "ramp"):
                 body_avr[int(k)] = float(x)
     else:
         body_avr = [float(x) for x in (v_avr or [0.0] * n_avr)]

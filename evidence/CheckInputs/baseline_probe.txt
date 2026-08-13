@@ -1,7 +1,13 @@
 # scripts/_baseline_probe.py against translations/ReadSetParameters/checkinputs.cpp
-# 2026-08-13T09:27:33Z  ROSCO-r2 48ec858
+# 2026-08-13T10:29:12Z  ROSCO-r2 f542031
 # aviFAIL 0 with no message == the TRANSLATION raises nothing on this state.
 # The FORTRAN's verdict on it is the corpus case beside it, not this file.
+#
+# ROUND 2: every array a distinct RAMP rather than a constant fill, the ZMQ
+# pair non-zero and satisfying its own check, F_LPFDamping set, and
+# VS_ControlMode = 2 -- the other side of the TRA_Mode > 1 conjunction, so
+# that ONE knob reaches it. TRA_Mode itself stays 1: TRA_Mode = 2 is an
+# error in its own right, so no admissible state can carry it.
 
 == --state modes_off
 aviFAIL 0  ErrStat 0  n_ErrMsg 0  ErrMsg ''
