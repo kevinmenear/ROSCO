@@ -1,0 +1,75 @@
+units with a disposition: 26
+
+=== pre-integration: the green against the CLEAN Fortran, and its red test ===
+
+unit                         green  redtest  verdict
+ExtController                  163      163  ok
+GetPath                        236      236  ok
+GetRoot                        726      726  ok
+GetWords                      1370     1370  ok
+HPFilter                       832      829  SKEW
+Int2LStr                       144      103  SKEW
+LPFilter                       996      996  ok
+NonDecreasing                   36       36  ok
+NotchFilter                   2652     1380  SKEW
+NotchFilterSlopes             4508     4508  ok
+PathIsRelative                 387      387  ok
+ReadAvrSWAP                  27656    27656  ok
+SecLPFilter                   2884     2284  SKEW
+SecLPFilter_Vel               2884     2884  ok
+StateMachine                  2890     3610  SKEW
+UpdateZeroMQ                  8334     8334  ok
+identity                        29       29  ok
+interp1d                       497      473  SKEW
+saturate                       451      451  ok
+sigma                         1069     1069  ok
+unwrap                         403      403  ok
+
+pairs compared : 21
+SKEWED         : 6
+   HPFilter                 green 832, red test 829  (-3 cases in the red test)
+   Int2LStr                 green 144, red test 103  (-41 cases in the red test)
+   NotchFilter              green 2652, red test 1380  (-1272 cases in the red test)
+   SecLPFilter              green 2884, red test 2284  (-600 cases in the red test)
+   StateMachine             green 2890, red test 3610  (+720 cases in the red test)
+   interp1d                 green 497, red test 473  (-24 cases in the red test)
+not comparable : 5
+   AddToList                no red test
+   ColemanTransform         no red test
+   ColemanTransformInverse  no red test
+   Conv2UC                  no red test
+   Read_OL_Input            no red test
+
+=== post-integration: the wrapper's green, and its red test ===
+
+unit                         green  redtest  verdict
+AddToList                       43       43  ok
+ColemanTransform               199      199  ok
+ColemanTransformInverse        257      257  ok
+Conv2UC                        118      118  ok
+ExtController                  163      163  ok
+GetPath                        236      236  ok
+GetRoot                        726      726  ok
+GetWords                      1370     1370  ok
+HPFilter                       829      829  ok
+Int2LStr                       144      144  ok
+LPFilter                       996      996  ok
+NonDecreasing                   36       36  ok
+NotchFilter                   2652     2652  ok
+NotchFilterSlopes             4508     4508  ok
+PathIsRelative                 387      387  ok
+ReadAvrSWAP                  27656    27656  ok
+Read_OL_Input                  740      740  ok
+SecLPFilter                   2884     2884  ok
+SecLPFilter_Vel               2884     2884  ok
+StateMachine                  3610     3610  ok
+UpdateZeroMQ                  8334     8334  ok
+identity                        29       29  ok
+interp1d                       497      497  ok
+saturate                       451      451  ok
+sigma                         1069     1069  ok
+unwrap                         403      403  ok
+
+pairs compared : 26
+SKEWED         : 0
+not comparable : 0

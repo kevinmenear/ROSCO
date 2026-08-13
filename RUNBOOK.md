@@ -358,6 +358,77 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A RED TEST AND THE GREEN IT CERTIFIES MUST NAME THE SAME CASE COUNT, AND SIX
+  OF THIS CAMPAIGN'S TWENTY-ONE COMPARABLE PAIRS DO NOT.** Unit #26, second
+  dispatch. The unit's own README tabulated three stub red tests as "of 403";
+  all three were taken at **377** and their committed JSON said so. The corpus
+  was widened by the constant-step block, only the GREEN was re-taken, and the
+  three red numbers were carried down as if a wider corpus could not change them.
+  Re-run at 403 the no-op fails **373**, not 363.
+
+  A red test on a subset still shows the green can fail, so this invalidates no
+  disposition. What it invalidates is the PAIR: the two artifacts sit in the same
+  directory, each recording the one number that would settle it, related by
+  nothing. Census it -- read-only, over artifacts that already exist:
+
+  ```
+  python3 evidence/unwrap/redtest_corpus_skew.py    # pre AND post, per unit
+  ```
+
+  ```
+  NotchFilter 2652/1380   SecLPFilter 2884/2284   Int2LStr 144/103
+  interp1d 497/473        HPFilter 832/829        StateMachine 2890/3610  <- +720
+  post-integration                                26 of 26 EQUAL
+  ```
+
+  Three things the census says that an argument could not. It runs **both ways**
+  -- StateMachine's red test saw 720 cases its green never did, so there the
+  GREEN is the stale artifact -- which "re-take the red test after widening"
+  would not catch. Five units are **not comparable at all** (no pre-integration
+  red test), which is a different answer from "equal" and is reported as one.
+  And post-integration is clean STRUCTURALLY, not luckily: post mode reuses the
+  generating run's case file, so that pair cannot drift. **Regenerating the
+  corpus is the only step that can break it**, so ask it after any widening, of
+  the unit that widened and of every unit whose detectors the widening reaches.
+
+- **A GATE ARTIFACT TAKEN BEFORE `vit integrate` MEASURED A LIBRARY WITH NO C++
+  IN IT, AND IT PASSES WITH THE IDENTICAL NUMBER.** Unit #26, second dispatch,
+  and it is unit #23's re-take rule one build earlier -- there the wrapper was
+  missing `--reverse-copy`, here the wrapper is missing entirely.
+
+  ```
+  gate/unwrap.json @ aabf439   pre-integration    5,252,000 / 0
+  gate/unwrap.json @ 45e7daf   integrated build   5,252,000 / 0
+  ```
+
+  Nothing in the artifact distinguishes them and the number never will. If a
+  gate result predates the `vit integrate` that put the unit in the library,
+  RE-TAKE IT; the cost is one gate run and the alternative is a green that
+  measured a program the campaign is not shipping. Check before believing any
+  inherited gate artifact:
+
+  ```
+  git log --oneline -1 -- gate/<U>.json ; git log --oneline -1 -- rosco/controller/src/<u>.cpp
+  ```
+
+- **A GENERATED WRAPPER LINE IS IDENTICAL ACROSS UNITS, SO A WRAPPER
+  PERTURBATION MUST BE ANCHORED TO THE UNIT AND NEVER TO THE STRING.** Unit #26,
+  second dispatch. `CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)`
+  -- the line the post-integration red test deletes -- occurs **three times** in
+  `Functions.f90` (interp1d:198, sigma:511, unwrap:529), because a generator
+  wrote all three. A `str.replace` perturbs three units, measures none of them,
+  and produces a red artifact indistinguishable from the right one.
+
+  Assert the neighbours, cut by index, and verify the others survive:
+
+  ```
+  grep -c '<the generated line>' <the .f90>        # 1 -> safe. >1 -> anchor it.
+  ```
+
+  This is the `--reverse-copy` finding read from the other side: what makes
+  generated code convenient to write is what makes it dangerous to perturb by
+  matching.
+
 - **A UNIT CAN BE DEAD BECAUSE ITS CALLER STOPS ONE STATEMENT SHORT, AND THE
   GUARD-BESIDE-THE-CALL READING IS WHAT SAYS SO.** Unit #26. `unwrap` has two
   call sites and both are dead in all 27 scenarios -- the third such unit after

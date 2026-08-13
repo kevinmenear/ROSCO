@@ -9,11 +9,16 @@ FUNCTION unwrap(x, ErrVar) result(y)
 Phase-unwrapping: copy `x`, then walk the array and shift the whole tail by
 `±2·PI` until every adjacent difference lies in `(-PI, PI)`.
 
-Disposition: **`integrated`**, first dispatch. **THE GATE IS BLIND TO THIS UNIT
-BY MEASUREMENT** — both call sites have zero hits in all 27 scenarios — so the
-differential harness, the mutation score and the post-integration harness are
-the whole of the evidence, which is unit #1's (`AddToList`) and unit #21's
-(`UpdateZeroMQ`) shape.
+Disposition: **`integrated`**, on the **second** dispatch. The first produced
+everything up to and including the mutation score and ended before committing
+any of it; the driver committed that work at `284df58` and re-dispatched,
+because integration edits the protected `Functions.f90` and only a session holds
+`integration_only` standing. §8 is the second dispatch's half.
+
+**THE GATE IS BLIND TO THIS UNIT BY MEASUREMENT** — both call sites have zero
+hits in all 27 scenarios — so the differential harness, the mutation score and
+the post-integration harness are the whole of the evidence, which is unit #1's
+(`AddToList`) and unit #21's (`UpdateZeroMQ`) shape.
 
 | layer | result | red-tested |
 |---|---|---|
@@ -294,3 +299,4 @@ other two survive.
 | `vit_translate.stdout.txt` | the scaffold prompt, as generated (C4) |
 | `gate.control-getwords-perturbed-MOVES.json` | §8 — the same-build control, 1,857,893 of 5,252,000 |
 | `harness.postintegration.revert-verified.json` | §8 — the green returning after the reverse-copy line was put back |
+| `redtest_corpus_skew.{py,txt}` | the campaign-wide census this unit's own corrected table provoked — 6 of 21 pre-integration pairs skewed, post-integration 26 of 26 equal |

@@ -4,11 +4,62 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-12: unit #25 `sigma` is `integrated` and CLOSED**, first
-dispatch. **`scripts/done_check.py sigma` returns COMPLETE, 13 of 13**
-(`evidence/sigma/done_check.txt`, both takes kept). **Five layers, all five alive — and on two of the unit's three
-branches one instrument scores exactly ZERO where another scores in the
-hundreds.** Its section is directly below; unit #24 `saturate` is below that.
+**As of 2026-08-12: unit #26 `unwrap` is `integrated` and CLOSED**, on its second
+dispatch — the first produced everything except the integration half and ended
+before committing it; the driver committed that work at `284df58` and
+re-dispatched, because `Functions.f90` is protected and only a session holds
+`integration_only` standing. **THREE OF THE FIVE LAYERS ARE UNAVAILABLE OR BLIND
+HERE, AND ALL THREE ABSENCES ARE MEASURED RATHER THAN ASSERTED.**
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay | **NOT AVAILABLE** — no scenario reaches either call site, so there is no state to capture | n/a; the deadness itself is the measurement (`coverage_deadness.py`, exit 0) |
+| differential harness vs clean Fortran | **403** checked, 0 failed, 0 inadmissible — **this unit's primary evidence** | the unit as a no-op fails **373 of 403**. At the narrower 377-case corpus: no-op **363**, `+2·PI` loop deleted **4**, `-2·PI` loop deleted **361** |
+| mutation score | **37 of 40 killed, 1.000**, 3 declared equivalent, 0 no-compile, 7 operators | undeclared runs committed at **0.925** and at **0.875** against the pre-widening corpus |
+| post-integration harness (wrapper only) | **403 checked, 0 failed** | the `--reverse-copy` line deleted from the wrapper fails **370 of 403**, naming `ErrVar.n_ErrMsg` and `ErrVar.ErrMsg` and nothing else |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched — **and it establishes nothing about this translation** | the whole unit as a no-op moves **0 of 5,252,000**. Same-build control: **1,857,893** |
+
+**THE UNIT IS DEAD AT BOTH CALL SITES IN ALL 27 SCENARIOS, AND THE TWO SITES ARE
+DEAD FOR TWO DIFFERENT REASONS.** Third such unit after #1 `AddToList` and #21
+`UpdateZeroMQ`, and the first where one site is not simply an unentered guard.
+`Controllers.f90:339` is behind `OL_Mode > 0 .AND. Ind_GenTq > 0`, never true in
+407,976 evaluations. `ReadSetParameters.f90:807` is not that shape: scenarios
+**10, 14 and 24 do configure `OL_Mode = 2` and do reach the block**, then
+`Read_OL_Input` fails on `Examples/example_inputs/OL_Mode2_Input.dat`, absent
+from this tree (unit #17 measured the same absence from the other side), and the
+`RETURN` two statements later takes them out. Reading the guard alone would have
+said *no scenario configures it*, which is false. Print the whole path from the
+guard to the call.
+
+**BOTH POST-INTEGRATION NUMBERS WERE PREDICTED BY ARTIFACTS THAT ALREADY
+EXISTED.** The gate red test's 0 by `coverage_deadness.py`, from committed
+coverage, before any of it ran. The reverse-copy red test's **370** by
+`errmsg_extremes_probe.txt`, which was written to answer a *mutation* question
+about an unreachable capacity guard and counts exactly 370 `assign_errmsg` calls
+over the same 403-case corpus. Two instruments meeting at one number is unit
+#24's cross-check, and here it also rules out the bind-mount clock skew `make`
+warned about on every run: a stale library returns the green, not a figure that
+matches an independent count.
+
+**A RED TEST TAKEN AT A NARROWER CORPUS IS NOT A RED TEST FOR THE WIDER ONE.**
+`evidence/unwrap/README.md` tabulated three stub red tests as "of 403"; all three
+were taken at **377** and their committed JSON says so. Only the green was
+re-taken when the corpus was widened. Re-run at 403 the no-op fails **373**, not
+363; the other two were not re-run and their cells now say `?` rather than
+repeating the 377 figures. Corrected in the README, and raised in DECISIONS.md as
+a **candidate method amendment**: a red test certifies a green only if their
+`checked` counts match, which every artifact this campaign writes already records
+and nothing checks.
+
+**The gate artifact committed at `aabf439` had to be thrown away.** It predates
+`vit integrate`, so it measured a libdiscon containing no `unwrap` C++ at all —
+and it read 5,252,000 / 0, the identical number the integrated build produces.
+Unit #23's re-take rule, one build earlier: a gate green that passes either way
+must be re-taken, and the tell is never the number.
+
+Unit #25 `sigma`'s section is directly below; unit #24 `saturate` is below that.
+`scripts/done_check.py sigma` returned COMPLETE, 13 of 13
+(`evidence/sigma/done_check.txt`, both takes kept).
 
 | layer | result | red-tested |
 |---|---|---|
@@ -1382,10 +1433,10 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-22 attempted / **21 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+26 attempted / **25 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 0 deferred / **1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 47 remain.
+69 units in `plan.json`; 43 remain. 25 + 1 + 43 = 69.
 
 (This block read `8 / 8 / 61 remain` through unit #9, which did not update it.
 Recounted from `plan.json` at unit #10 rather than incremented, and recounted
@@ -1396,12 +1447,29 @@ units stale, and both times the unit that fixed it was not the unit that broke
 it.** The recount is one command and it is in this file's own instructions:
 `python3 -c "import json,collections; print(collections.Counter(u.get('disposition') for u in json.load(open('plan.json'))['units']))"`)
 
-**Twelve of the 21 integrated units are gate-visible**, each with a red-test
-count that matches no other: ColemanTransform 124,353, ColemanTransformInverse
-389,644, GetWords 1,857,893, **identity 1,462,798**, LPFilter 1,592,059,
-NonDecreasing 1,857,893 (*shared* with GetWords — see below), NotchFilter
-551,278, NotchFilterSlopes 128,918, ReadAvrSWAP 1,487,557, SecLPFilter
-1,349,326, SecLPFilter_Vel 14,140, StateMachine 1,526,538 (whole-unit no-op).
+**Fifteen of the 25 integrated units are gate-visible.** Recounted at unit #26
+by READING every `gate/*.redtest.json` rather than by editing this list, which is
+what the recount instruction above means and which is how the `StateMachine`
+discrepancy below was found:
+
+```
+saturate 2,255,249 · GetWords 1,857,893 · NonDecreasing 1,857,893 (shared —
+see below) · LPFilter 1,592,059 · ReadAvrSWAP 1,487,557 · identity 1,462,798 ·
+SecLPFilter 1,349,326 · interp1d 1,341,803 · NotchFilter 551,278 ·
+ColemanTransformInverse 389,644 · sigma 229,165 · NotchFilterSlopes 128,918 ·
+ColemanTransform 124,353 · StateMachine 36,577 · SecLPFilter_Vel 14,140
+```
+
+**`StateMachine`'s committed artifact does not hold the number this file has
+been quoting.** This block read **1,526,538 (whole-unit no-op)**;
+`gate/StateMachine.redtest.json` holds **36,577**, from a narrower perturbation
+(`VS_State_Region_1_5` → `VS_State_Region_2`, one replacement). Both are real
+red tests and the unit is gate-visible either way, so nothing about its
+disposition moves. The artifact's number is the one carried above, because the
+artifact is what exists. Which run produced 1,526,538, and whether it was
+superseded deliberately or overwritten, is **not** resolved here — it is another
+unit's evidence and is logged under Open. Found only because unit #26 recounted
+from the files instead of incrementing the list.
 `identity`'s is the widest in CHANNELS rather than in values — 115 of 351,
 across 22 of 27 scenarios — because its result feeds the wind-speed estimator's
 covariance, and the estimated wind speed feeds both the pitch and the torque
@@ -1411,10 +1479,13 @@ four moved channels are `cc_actuated_dl` and `cc_actuated_l` in scenarios 7 and
 27 and nothing else, 3,999 of 24,000 samples each, which is exactly the tail
 after `Time > 500`.
 
-**9 of the 21 integrated units are invisible to the gate** — the 8 below plus
-`UpdateZeroMQ`, which is a ninth reason and the only one that is simple: it is
-never called, its guard is `ZMQ_Mode > 0` and `ZMQ_Mode` is 0 in all 14 inputs.
-12 visible + 9 invisible = 21, and that identity is worth checking each time
+**10 of the 25 integrated units are invisible to the gate** — the 8 below, plus
+`UpdateZeroMQ`, which is a ninth reason and the only simple one (never called,
+its guard is `ZMQ_Mode > 0` and `ZMQ_Mode` is 0 in all 14 inputs), plus
+`unwrap`, which is a **tenth** and is the first with *two* causes in one unit:
+one call site is an unentered guard and the other is reached by three scenarios
+that a missing input file turns back two statements short of the call.
+15 visible + 10 invisible = 25, and that identity is worth checking each time
 this block is edited; it did not hold across units #20 and #21.
 
 The 8 are **of the first 16 integrated units**, for seven different
@@ -1679,6 +1750,53 @@ literal `'/'` and not `PathSep`, because in the reference they are two different
 things and only the fallback uses the platform parameter (P7).
 
 ## Open
+
+- **`gate/StateMachine.redtest.json` holds 36,577; this file quoted 1,526,538
+  for it from unit #20 until unit #26 recounted.** The artifact's perturbation is
+  narrow (`VS_State_Region_1_5` → `VS_State_Region_2`, one replacement), not the
+  whole-unit no-op the 1,526,538 was attributed to. Nothing about unit #20's
+  disposition turns on it — it is gate-visible under either number — so this is
+  a provenance question, not a correctness one: **which run produced 1,526,538,
+  and was the committed artifact a deliberate supersession or an overwrite?**
+  Left for the Driver or for unit #20's next dispatch rather than settled by unit
+  #26, which has no standing over another unit's evidence. Raised because the
+  recount that found it is the only reason anybody would.
+
+- **SIX of the 21 comparable units have a pre-integration red test taken against
+  a different corpus from the green it certifies.** Measured, not suspected:
+  `evidence/unwrap/redtest_corpus_skew.{py,txt}`, which reads `checked` out of
+  every committed `harness/<U>.json` and `harness/<U>.redtest.json` pair.
+
+  ```
+  NotchFilter    green 2652  red test 1380   (-1272)
+  SecLPFilter    green 2884  red test 2284   ( -600)
+  Int2LStr       green  144  red test  103   (  -41)
+  interp1d       green  497  red test  473   (  -24)
+  HPFilter       green  832  red test  829   (   -3)
+  StateMachine   green 2890  red test 3610   ( +720)   <- the other direction
+  ```
+
+  Five more are **not comparable at all** — AddToList, ColemanTransform,
+  ColemanTransformInverse, Conv2UC and Read_OL_Input have no pre-integration red
+  test to compare — and that is a different answer from "equal", so it is
+  reported separately rather than folded in.
+
+  Two things this does NOT say. It does not say any of those units is wrong:
+  `NotchFilter`'s red test moved 551,278 gate values whatever corpus it drew, and
+  a red test on a *subset* still demonstrates the green can fail. What it says is
+  that the pair no longer certifies what it appears to certify, and that
+  `StateMachine`'s runs the other way — its red test saw 720 cases its green
+  never did, and its own post-integration green is 3610, so the **pre**-green is
+  the stale artifact there.
+
+  And the post-integration layer is **26 of 26 clean**, which is structural
+  rather than lucky: post mode reuses the generating run's case file, so the pair
+  cannot drift. The defect lives exactly where the corpus is regenerated.
+
+  Not acted on here. Re-taking six units' red tests changes what closes a unit
+  and touches five other units' evidence; DECISIONS.md raises the mechanical rule
+  (a red test certifies a green only if their `checked` counts match) as a
+  candidate method amendment for the Driver.
 
 - **The differential harness's CHARACTER-ARRAY refusal is CLOSED, and the way it
   was found is the standing warning.** `vit interface` shipped a working bridge

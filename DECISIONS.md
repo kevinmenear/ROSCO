@@ -132,6 +132,114 @@ kind, as in sigma and unlike the four units before it: `'unwrap:' // TRIM(ErrMsg
 grows with its input, so the guard is unreachable only because no case supplies
 an `ErrMsg` within seven characters of a 4 KiB buffer.
 
+### Second dispatch — the integration half — 2026-08-12
+
+The first dispatch ended before `vit integrate`; the driver committed its work at
+`284df58` rather than reverting it, and re-dispatched, because integration edits
+`Functions.f90`, which is protected, and only a session holds `integration_only`
+standing. Nothing below re-derives what that commit contains — the `.cpp` is
+byte-identical (md5 `8207e99323b9fbfb62cfa6df5921c902`) to the one the harness
+and mutation artifacts were measured against, and `git show --stat 284df58`
+shows all of them landing together, which is the binding that makes them usable.
+
+**A RED TEST TAKEN AT A NARROWER CORPUS IS NOT A RED TEST FOR THE WIDER ONE, AND
+THE ARTIFACT'S OWN CASE COUNT IS WHAT SAYS SO.** `evidence/unwrap/README.md`
+tabulated three stub red tests as "of 403". All three were taken at **377** and
+their committed JSON says so. When the corpus was widened by the constant-step
+block — the widening that killed the `<=`/`<` mutant, so the one this unit most
+wanted to advertise — only the GREEN was re-taken at 403 and the three red
+numbers were carried down as if a wider corpus could not change them. Re-run at
+403 the no-op fails **373**, not 363. The other two were not re-run and their 403
+figures are now `?` rather than the 377 numbers repeated.
+
+Nothing was wrong with the translation and nothing was wrong with the artifacts;
+what was wrong was a table that outran them. It is worth being exact about the
+direction: the correction makes the red test *stronger* (26 more cases, 10 more
+failing). A prose number that drifts toward the flattering answer is the
+familiar failure; this one drifted toward the unflattering answer and was still
+unmeasured, which is the same defect and easier to miss for it.
+
+**CANDIDATE METHOD AMENDMENT, for the Driver.** P3 says a green must be able to
+name what it compared and be able to go red. It does not say *at what corpus*,
+and this is the case that shows the gap: widening a corpus silently invalidates
+every red test taken before the widening, and the two artifacts sit side by side
+in the same directory with no field relating them. The mechanical form of the
+rule — a red test certifies the green only if their `checked` counts match — is
+already available in every artifact this campaign writes and is checked by
+nothing. Raised here rather than acted on: it would change what closes a unit,
+which is X3 and the Driver's call.
+
+**AND THE SET IS NOT EMPTY, WHICH IS THE HALF THAT WOULD HAVE BEEN LEFT AS A
+GUESS.** This was first written down as "whether any earlier unit has the same
+skew is unchecked" — which is precisely the shape P10 exists to refuse, and the
+check is a read-only scan over artifacts that already exist. Run
+(`evidence/unwrap/redtest_corpus_skew.{py,txt}`): **6 of the 21 comparable units
+are skewed** — NotchFilter -1272 cases, SecLPFilter -600, Int2LStr -41, interp1d
+-24, HPFilter -3, and **StateMachine +720, in the opposite direction**. Five
+more units have no pre-integration red test at all, reported separately because
+"not comparable" and "comparable and equal" are different answers.
+
+Three things the scan settles that the argument could not. The skew is **common**
+rather than anecdotal, so unit #26's README was an instance of a class and not a
+slip. It runs **both ways** — StateMachine's red test saw 720 cases its green
+never did, and its own post-integration green is 3610, so there the *green* is
+the stale artifact — which no rule phrased as "re-take the red test after
+widening" would catch. And the post-integration layer is **26 of 26 clean**,
+structurally: post mode reuses the generating run's case file, so that pair
+cannot drift. The defect lives exactly where the corpus is regenerated, which
+tells the Driver where a check would have to sit.
+
+Nothing was re-taken. Six units' red tests are six other units' evidence, and
+a session has no standing over those.
+
+**A GATE ARTIFACT TAKEN BEFORE `vit integrate` MEASURED A LIBRARY WITHOUT THE
+UNIT IN IT.** `gate/unwrap.json` was committed at `aabf439`, before this half
+ran, reading 5,252,000 / 0. Re-taken on the integrated build it reads 5,252,000
+/ 0 — the identical number from a different program. Unit #23 established the
+re-take rule for a wrapper missing `--reverse-copy`; this is the same rule one
+build earlier, where the wrapper is missing entirely. A gate green that passes
+either way has to be re-taken rather than kept, and the tell is never the number.
+
+**THE UNIT'S TWO POST-INTEGRATION NUMBERS WERE BOTH PREDICTED BY ARTIFACTS THAT
+ALREADY EXISTED.** The gate red test moves 0 of 5,252,000, which
+`coverage_deadness.py` said in advance from committed coverage. The reverse-copy
+red test fails **370** of 403, and `errmsg_extremes_probe.txt` — written for a
+*mutation* question about an unreachable capacity guard — counts exactly 370
+`assign_errmsg` calls over the same corpus. Two instruments meeting at one
+number is unit #24's cross-check, and here it does a second job: it rules out
+the bind-mount clock skew that `make` warned about on every run in this half. A
+stale library returns the green, not a figure that matches an independent count.
+
+**A GENERATED WRAPPER LINE IS IDENTICAL ACROSS UNITS, SO A WRAPPER PERTURBATION
+MUST BE ANCHORED TO THE UNIT AND NOT TO THE STRING.** `CALL
+vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)` occurs **three times**
+in `Functions.f90` — interp1d, sigma, unwrap — because a generator wrote all
+three. A `str.replace` would have perturbed three units, measured none of them,
+and produced a red test that looked exactly like this one. The cut asserts its
+neighbouring lines before removing anything. This is the mirror of the
+`--reverse-copy` finding itself: what makes generated code convenient to write
+is what makes it dangerous to perturb by matching.
+
+**THE GREEN AND ITS RED TEST NOW CARRY THE SAME INSTRUMENT STAMP, AND THE ONLY
+WINDOW TO ARRANGE THAT WAS BEFORE `vit integrate`.** The committed green was
+stamped loop `b9fb5ee-nogit` / vit `ab75fa0-nogit`; both instruments had since
+moved, one of them by the driver committing this unit's own generator work. The
+argument that the old stamp was still good is available and correct — R8 is N/A
+here, and both runs draw 403 — and running it cost less than the argument. After
+integration the Fortran body IS the translation and there is no independent
+reference left, so a pre-integration green cannot be re-taken without a full
+`reset_to_clean` → re-run → `restore_integrated` cycle. `mutation/unwrap.json`
+is deliberately NOT re-taken and the commit message says why: re-scoring 40
+mutants to move a stamp is a different trade, and the `.cpp` it scored is
+byte-identical to the one both harness runs measured.
+
+**INVARIANT RULES THIS HALF EXERCISED, for the Driver to reflect in `Status
+here`.** Not edited here: this dispatch was told not to touch the invariant
+layer. P3 (the corpus-mismatched red test above), X4 (a gate green taken on the
+wrong build, and a README number nobody re-ran), C7/C8/C9 (integrate, rebuild,
+gate — all three run in the foreground), K3 (39 evidence references, all
+resolving), and P9 again (5,252,000 compared, nothing observed).
+
 ## Unit #25 — sigma — 2026-08-12
 
 **THE TWO CLAMPS ARE THE FIRST BRANCHES IN THIS CAMPAIGN THAT ONE INSTRUMENT
@@ -5186,8 +5294,15 @@ evidence will have come from a session and some from the driver:
 | `mutation/unwrap.*` (1.00, 3 equiv) | session `785f03cb` | `284df58` (driver) |
 | `evidence/unwrap/` | session `785f03cb` | `284df58` (driver) |
 | this file and `RUNBOOK.md`, its words | session `785f03cb` | `284df58` (driver) |
-| `gate/unwrap.json` | **driver**, `scripts/gate.py` | `aabf439` |
-| the integration half | a future session | not yet |
+| `gate/unwrap.json` | **driver**, `scripts/gate.py` | `aabf439`, and **superseded** — that run predates `vit integrate`, so it measured a libdiscon with no unwrap C++ in it. Re-taken by session `2` at `45e7daf` |
+| the integration half | session `2` (second dispatch) | `f3c0b57` pre-integration red test · `9b9c958` green re-taken · `eec0bb5` integrate + build · `45e7daf` gate · `5795c3b` gate red test + control · `adc04c6` post-integration · `6607c7a` post-integration red test · `74cebf7` README |
+
+Closed 2026-08-12. The split above is what it was written to be — a claim
+someone can check — and one row of it turned out to matter: the driver's own
+gate artifact was the one thing in the table that had to be thrown away, not
+because the driver produced it but because of *when*. Provenance recorded the
+authorship and the sha; what it did not record, and what the supersession turned
+on, is which BUILD each artifact measured.
 
 Stated as a claim someone can check — which artifact, by whom, at which sha —
 rather than as a violated invariant. In a campaign whose argument is that
