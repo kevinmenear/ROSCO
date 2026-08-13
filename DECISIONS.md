@@ -5713,3 +5713,71 @@ its own rather than a note on one unit: **a mutation score computed over zero
 mutants is NOT_EVALUABLE, never a pass and never a failure.** Whether P12 should
 say so in code is left open here; `done.py` currently fails it by name as
 `mutation_no_mutants`, which is the safe direction and the right one.
+
+## The reset/restore pair has a window, and it has now opened twice
+
+`scripts/reset_to_clean.sh` writes pre-integration Fortran over the LIVE tree
+(`git show "$BASELINE:$f" > "$f"`, baseline `54dd134`) because `vit extract` is
+not read-only and needs clean source. `scripts/restore_integrated.sh` puts the
+committed state back. **The pair is manual and nothing guarantees the second
+runs.** Between them the live tree carries 28 units de-integrated.
+
+**Unit #29 `CheckInputs`, 2026-08-13.** Measured from the two session
+transcripts:
+
+```
+975d09d1  first dispatch, $176.77, 909 turns
+  04:03:27  bash scripts/reset_to_clean.sh
+  04:05:54  git checkout -- Examples/ && bash scripts/restore_integrated.sh   RESTORED
+
+c30a4e3a  retry, $3.64
+  05:56:28  bash scripts/reset_to_clean.sh
+  05:58:34  harness.sh ... --no-generate
+  05:58:46  last operation
+            restore_integrated.sh NEVER RUN
+```
+
+The first dispatch did it correctly two minutes apart, so the session knew the
+pattern perfectly well. The retry reset, worked for two minutes, and the driver
+was killed at ~06:02 inside the window.
+
+**Not a runaway and not a reference build.** The driver-side hypothesis at the
+time was that a session had built the Fortran oracle in the live tree; that was
+falsified by the transcripts. The $176.77 is work volume -- kernel extract,
+translate, red-test stubs, harness, evidence, mutation, six defects -- not a
+loop. The 1,030-line growth in `ReadSetParameters.f90` is `reset_to_clean`
+restoring the original `CheckInputs` body where HEAD has a bridge.
+
+**SECOND OCCURRENCE.** `HPFilter` earlier the same day left
+`Filters.f90` at `2dbc9dfb033ad548` by the same mechanism -- a session that ran
+the reset and ended before restoring. One file's worth read as noise. Seven made
+it legible, which is the only reason this was diagnosed rather than filed.
+
+**Nothing was lost, and that is a property of the design rather than luck**: the
+reset writes only to the working tree, and all 28 integrated units kept their
+bridge token in HEAD. Recovery was `scripts/restore_integrated.sh` -- 57 files
+from HEAD, rebuilt and installed -- which is the campaign's own procedure and
+was used rather than a hand-rolled `git checkout`.
+
+**The fix that closes the window rather than narrowing it: extract in a git
+worktree at the clean pin.** `git worktree add <tmp> 54dd134` yields pristine
+source with the live tree never touched, so there is no window to end inside.
+A `trap ... EXIT` inside `reset_to_clean.sh` is NOT the smaller version of this
+-- it is wrong, because the script is *meant* to leave the tree clean for the
+session that follows it; the guarantee has to live for the SESSION's lifetime,
+not the script's. A sentinel file written by the reset and removed by the
+restore would at least make the state legible to the next reader.
+
+### Two costs of stopping, both accepted deliberately
+
+**`CheckInputs` was assessed and never logged.** The escalations fired from
+`_escalate` at 06:02:25--27, which runs after `_assess`; `_log` and
+`_save_state` come later in `run()` and the kill landed between them. Its
+verdict was computed and discarded, and **$180.41 across two dispatches is
+unledgered** -- `spent_usd` does not include it. The unit is still `pending`.
+
+That is the correct price. One row and $180.41 against 28 units of integration
+in a tree a live session could have committed at any moment.
+
+**And stopping without asking was right.** State-about-to-be-destroyed is the
+one condition where the delay of asking is itself the risk.
