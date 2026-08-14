@@ -1,0 +1,6 @@
+# gfortran's list-directed REAL(8) records against the SHIPPED formatter
+# sliced from translations/ControllerBlocks/powercontrolsetpoints.cpp
+# corpus regenerated from evidence/PowerControlSetpoints/list_directed_corpus.f90
+#
+values compared 22526
+mismatched     0

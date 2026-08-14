@@ -518,3 +518,68 @@ maxValue = { lo = 1e-3, hi = 1e9 }
 # source: `PS_BldPitchMin_N` is what ROSCO parses and the two extents follow it.
 [PitchSaturation]
 CntrPar_PS_WindSpeeds_n = { same_as = "CntrPar_PS_BldPitchMin_N" }
+
+# ---------------------------------------------------------------------------
+# PowerControlSetpoints (unit #37)
+#
+# FOUR TIES, AND THEY ARE PitchSaturation's ONE PIN TWICE OVER. This unit calls
+# `interp1d` at four sites with two distinct xData/yData families, and the
+# generator draws every extent independently:
+#
+#     interp1d(PRC_R_Table,    PRC_Pitch_Table, PRC_R_Pitch)   the PRC_Mode arm
+#     interp1d(OL_Breakpoints, OL_R_Speed,      OL_Index)      the OpenLoop arm
+#     interp1d(OL_Breakpoints, OL_R_Torque,     OL_Index)
+#     interp1d(OL_Breakpoints, OL_R_Pitch,      OL_Index)
+#
+# On a case where an xData/yData pair differ, `interp1d`'s upper-clamp arm
+# returns `yData(SIZE(xData))` -- past the end of the shorter allocation -- so
+# neither implementation has an answer. The untied run PRINTED that state, 14
+# times in one run, through interp1d's own diagnostic:
+#
+#     VIT: interp1d: SIZE(xData) = 4 and SIZE(yData) = 3 are not the same;
+#     the reference aborts here (End of record) and this translation continues
+#
+# and still reported 3596 checked / 0 failed. That is worth being exact about,
+# because it is NOT the same result PitchSaturation got from the same defect
+# (136 of 1292 failed): passing is what an out-of-bounds read does when the
+# slack it lands in happens to agree on both sides, and it is not evidence that
+# the domain is admissible. The untied artifact is kept at
+# evidence/PowerControlSetpoints/harness.UNTIED-EXTENTS.json.
+#
+# THE SOURCE LINES THAT FORCE IT, one per family, and in both the arrays are
+# allocated from ONE number:
+#
+#   ReadSetParameters.f90:432-434
+#     CALL ParseInput(..., 'PRC_Table_n',     CntrPar%PRC_Table_n, ...)
+#     CALL ParseAry(  ..., 'PRC_R_Table',     CntrPar%PRC_R_Table,     CntrPar%PRC_Table_n, ...)
+#     CALL ParseAry(  ..., 'PRC_Pitch_Table', CntrPar%PRC_Pitch_Table, CntrPar%PRC_Table_n, ...)
+#
+#   ReadSetParameters.f90:719, 747, 751, 755 -- all four OL_ arrays are COLUMNS
+#   of one matrix, so they share its row count by construction:
+#     CntrPar%OL_Breakpoints = CntrPar%OL_Channels(:, CntrPar%Ind_Breakpoint)
+#     CntrPar%OL_R_Speed     = CntrPar%OL_Channels(:, CntrPar%Ind_R_Speed)
+#     CntrPar%OL_R_Torque    = CntrPar%OL_Channels(:, CntrPar%Ind_R_Torque)
+#     CntrPar%OL_R_Pitch     = CntrPar%OL_Channels(:, CntrPar%Ind_R_Pitch)
+#
+# A case where any of these differ is not a program state ROSCO can reach.
+#
+# THE COST, STATED, and it is PitchSaturation's cost twice: with each family's
+# extents tied, nothing in this harness can distinguish a translation that
+# passes `n_OL_Breakpoints` as interp1d's xData extent from one that passes
+# `n_OL_R_Speed`, or `n_PRC_R_Table` from `n_PRC_Pitch_Table`. The kernel cannot
+# separate them either -- its arrays come from one DISCON.IN -- so this is a gap
+# and not a trade.
+#
+# THE TIE IS TO THE SYNTHESISED xData EXTENT, not to `PRC_Table_n`, and that is
+# deliberate. `PRC_Table_n` is a real field of the type and IS the number ROSCO
+# parses, but no `_EXTENT_FIELD_PATTERNS` spelling connects it to either array
+# (`PRC_R_Table_n`, `n_PRC_R_Table`, ... -- none is `PRC_Table_n`), so the
+# generator treats it as an ordinary scalar integer and runs the decade ladder
+# over it, up to the representable extremes of a 32-bit INTEGER. Tying an
+# ALLOCATION to that parameter would ask the harness to allocate 2^31 doubles.
+# It stays free, which is right: it is an input the reference does not read.
+[PowerControlSetpoints]
+CntrPar_PRC_Pitch_Table_n = { same_as = "CntrPar_PRC_R_Table_n" }
+CntrPar_OL_R_Speed_n = { same_as = "CntrPar_OL_Breakpoints_n" }
+CntrPar_OL_R_Torque_n = { same_as = "CntrPar_OL_Breakpoints_n" }
+CntrPar_OL_R_Pitch_n = { same_as = "CntrPar_OL_Breakpoints_n" }

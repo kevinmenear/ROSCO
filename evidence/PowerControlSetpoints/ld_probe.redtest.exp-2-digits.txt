@@ -1,0 +1,37 @@
+# RED TEST: the exponent padded to 2 digits instead of 3
+# gfortran's list-directed REAL(8) records against the SHIPPED formatter
+# sliced from translations/ControllerBlocks/powercontrolsetpoints.cpp
+# corpus regenerated from evidence/PowerControlSetpoints/list_directed_corpus.f90
+#
+MISMATCH 884  value 1.2345678901234564e-99
+  gfortran [   1.2345678901234564E-099]
+  C++      [    1.2345678901234564E-99]
+MISMATCH 885  value -1.2345678901234564e-99
+  gfortran [  -1.2345678901234564E-099]
+  C++      [   -1.2345678901234564E-99]
+MISMATCH 886  value 9.9999999999999961e-99
+  gfortran [   9.9999999999999961E-099]
+  C++      [    9.9999999999999961E-99]
+MISMATCH 888  value 1.2345678901234564e-98
+  gfortran [   1.2345678901234564E-098]
+  C++      [    1.2345678901234564E-98]
+MISMATCH 889  value -1.2345678901234564e-98
+  gfortran [  -1.2345678901234564E-098]
+  C++      [   -1.2345678901234564E-98]
+MISMATCH 890  value 9.9999999999999965e-98
+  gfortran [   9.9999999999999965E-098]
+  C++      [    9.9999999999999965E-98]
+MISMATCH 891  value 9.9999999999999978e-99
+  gfortran [   9.9999999999999978E-099]
+  C++      [    9.9999999999999978E-99]
+MISMATCH 892  value 1.2345678901234564e-97
+  gfortran [   1.2345678901234564E-097]
+  C++      [    1.2345678901234564E-97]
+MISMATCH 893  value -1.2345678901234564e-97
+  gfortran [  -1.2345678901234564E-097]
+  C++      [   -1.2345678901234564E-97]
+MISMATCH 894  value 9.999999999999997e-97
+  gfortran [   9.9999999999999970E-097]
+  C++      [    9.9999999999999970E-97]
+values compared 22526
+mismatched     12512

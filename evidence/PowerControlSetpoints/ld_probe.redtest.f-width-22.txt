@@ -1,0 +1,37 @@
+# RED TEST: the F-form field widened from 21 to 22
+# gfortran's list-directed REAL(8) records against the SHIPPED formatter
+# sliced from translations/ControllerBlocks/powercontrolsetpoints.cpp
+# corpus regenerated from evidence/PowerControlSetpoints/list_directed_corpus.f90
+#
+MISMATCH 4  value 0
+  gfortran [   0.0000000000000000     ]
+  C++      [    0.0000000000000000     ]
+MISMATCH 5  value -0
+  gfortran [  -0.0000000000000000     ]
+  C++      [   -0.0000000000000000     ]
+MISMATCH 6  value 0
+  gfortran [   0.0000000000000000     ]
+  C++      [    0.0000000000000000     ]
+MISMATCH 7  value 0
+  gfortran [   0.0000000000000000     ]
+  C++      [    0.0000000000000000     ]
+MISMATCH 8  value 0
+  gfortran [   0.0000000000000000     ]
+  C++      [    0.0000000000000000     ]
+MISMATCH 9  value -0
+  gfortran [  -0.0000000000000000     ]
+  C++      [   -0.0000000000000000     ]
+MISMATCH 10  value 0
+  gfortran [   0.0000000000000000     ]
+  C++      [    0.0000000000000000     ]
+MISMATCH 11  value 0
+  gfortran [   0.0000000000000000     ]
+  C++      [    0.0000000000000000     ]
+MISMATCH 12  value 0
+  gfortran [   0.0000000000000000     ]
+  C++      [    0.0000000000000000     ]
+MISMATCH 13  value -0
+  gfortran [  -0.0000000000000000     ]
+  C++      [   -0.0000000000000000     ]
+values compared 22526
+mismatched     8334

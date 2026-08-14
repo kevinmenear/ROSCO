@@ -1,0 +1,52 @@
+WHAT THE DIFFERENTIAL CORPUS ACTUALLY RUNS, BEFORE AND AFTER THE R11 BASELINE
+============================================================================
+
+`probes/arm_census.cpp` is the translation with one counter per arm and an
+atexit that writes them out. It changes no behaviour -- it fails 0 of the corpus
+-- and it answers the question a green cannot: which of this unit's twenty
+statements did the 3596 cases actually reach.
+
+                                    BEFORE      AFTER
+                                    3596        3648
+    calls                           3596        3648
+    PRC_Mode == 2                     17          63
+      PRC_Comm == Constant             1          21
+      PRC_Comm == OpenLoop             1          21
+        Ind_R_Speed  > 0               0          17
+        Ind_R_Speed <= 0               1           4
+        WRITE(401,*) executed          0          17
+        Ind_R_Torque  > 0              0          17
+        Ind_R_Torque <= 0              1           4
+        Ind_R_Pitch  > 0               0          17
+        Ind_R_Pitch <= 0               1           4
+      PRC_Comm == ZMQ                  1           3
+      PRC_Comm matched NOTHING        14          18
+      PRC_Min_Pitch = interp1d        17          63
+    the ELSE arm                    3579        3585
+
+BEFORE, ELEVEN OF THE TWENTY STATEMENTS WERE REACHED BY NO CASE -- the three
+`interp1d` calls of the OpenLoop arm, the three `= 1.0_DbKi` alternatives that
+were reached once each, and the `WRITE(401,*)`. A 3596-case green said nothing
+about them, and a mutation score taken on that corpus would have reported every
+mutant in them as a survivor: an instrument's blindness reported as a property
+of the translation.
+
+WHY, AND IT IS ARITHMETIC. R6 crosses the quantities the reference's own
+predicates test. Six knobs here -- Ind_R_Pitch, Ind_R_Speed, Ind_R_Torque (4
+values each), PRC_Comm (5), PRC_Mode (4), aviFAIL (4) -- and
+4*4*4*5*4*4 = 5120, past `generate.py::_KNOB_CASE_LIMIT` of 4096. Past the
+bound the block covers all PAIRS, and in the pair fallback every knob not being
+crossed is held at the FIRST value of its ladder, which for PRC_Mode is 0 --
+the ELSE arm. Reaching the WRITE needs PRC_Mode=2 AND PRC_Comm=1 AND
+Ind_R_Speed>0 in ONE case: a triple, which all-pairs cannot express by
+construction. 5120 against 4096 is the entire reason, and this is the first
+unit in this campaign to reach that fallback -- every earlier artifact's
+coverage line says `the full cross product`.
+
+AFTER: harness/baseline.PowerControlSetpoints.json states two admissible states
+and R11 walks each knob off them one quantity at a time, which is exactly the
+shape a triple needs. 52 cases added, the other 3596 unchanged -- the corpus is
+a strict extension, not a replacement, so the green before it is still the green
+inside it.
+
+THE ONE THING STILL AT ZERO IS NOTHING: every arm of this unit now runs.

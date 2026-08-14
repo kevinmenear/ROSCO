@@ -1,0 +1,15 @@
+calls                        3648
+PRC_Mode == 2                63
+  PRC_Comm == Constant       21
+  PRC_Comm == OpenLoop       21
+    Ind_R_Speed  > 0         17
+    Ind_R_Speed <= 0         4
+    WRITE(401,*) executed    17
+    Ind_R_Torque  > 0        17
+    Ind_R_Torque <= 0        4
+    Ind_R_Pitch  > 0         17
+    Ind_R_Pitch <= 0         4
+  PRC_Comm == ZMQ            3
+  PRC_Comm matched NOTHING   18
+  PRC_Min_Pitch = interp1d   63
+the ELSE arm                 3585

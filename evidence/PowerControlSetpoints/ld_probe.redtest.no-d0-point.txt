@@ -1,0 +1,37 @@
+# RED TEST: the d==0 decimal point removed -- gfortran F21.0 keeps it, %.0f drops it
+# gfortran's list-directed REAL(8) records against the SHIPPED formatter
+# sliced from translations/ControllerBlocks/powercontrolsetpoints.cpp
+# corpus regenerated from evidence/PowerControlSetpoints/list_directed_corpus.f90
+#
+MISMATCH 1344  value 12345678901234566
+  gfortran [   12345678901234566.     ]
+  C++      [    12345678901234566     ]
+MISMATCH 1345  value -12345678901234566
+  gfortran [  -12345678901234566.     ]
+  C++      [   -12345678901234566     ]
+MISMATCH 1346  value 99999999999999984
+  gfortran [   99999999999999984.     ]
+  C++      [    99999999999999984     ]
+MISMATCH 1347  value 10000000000000000
+  gfortran [   10000000000000000.     ]
+  C++      [    10000000000000000     ]
+MISMATCH 2564  value 48799502494966872
+  gfortran [   48799502494966872.     ]
+  C++      [    48799502494966872     ]
+MISMATCH 2565  value 92693709229934032
+  gfortran [   92693709229934032.     ]
+  C++      [    92693709229934032     ]
+MISMATCH 2608  value 24482348159926916
+  gfortran [   24482348159926916.     ]
+  C++      [    24482348159926916     ]
+MISMATCH 2609  value -57108124305159432
+  gfortran [  -57108124305159432.     ]
+  C++      [   -57108124305159432     ]
+MISMATCH 2696  value -30546641997716508
+  gfortran [  -30546641997716508.     ]
+  C++      [   -30546641997716508     ]
+MISMATCH 2697  value -98296546083247456
+  gfortran [  -98296546083247456.     ]
+  C++      [   -98296546083247456     ]
+values compared 22526
+mismatched     488
