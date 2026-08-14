@@ -358,6 +358,125 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A BRIDGE-VS-OBJECT RULE LEARNED ON AN INTEGRATED TREE IS SILENTLY WRONG ON A
+  CLEAN ONE, AND THE FAILURE IS A GREEN NUMBER.** Unit #30, and it is unit #29's
+  entry two bullets down read in the other tree state. That rule asks LIBS -- if
+  `<callee>.cpp.o` is in the link, drop the bridge -- and on a clean tree the
+  same condition holds for the OPPOSITE reason: the object is a stale artifact
+  of an earlier integrated build that `vit test-validate` globs in, and the
+  Fortran callee is the real body.
+
+  ```
+  integrated tree   bridge -> Fortran <callee> -> <callee>_c -> bridge   SIGSEGV
+  clean tree        C++ side -> <callee>.cpp.o      <- the TRANSLATION
+                    Fortran side -> __mod_MOD_<callee>   <- the REFERENCE
+                    links clean, runs, reports 1284 of 1284
+  ```
+
+  Two different implementations, one per side, so VIT's one-implementation
+  property is gone and a defect in the callee is attributed to the unit under
+  test. **Ask the TREE, not LIBS** -- it is `reset_to_clean.sh`'s own test and it
+  maintains itself as units are integrated:
+
+  ```
+  grep -nE '(^|[^A-Za-z0-9_])<callee>_c *\(' rosco/controller/src/*.f90
+  #   a hit -> a wrapper was integrated over it: DROP THE BRIDGE, keep the object
+  #   none   -> the Fortran is the real body:    KEEP THE BRIDGE, drop the object
+  ```
+
+  And the rule has to run in BOTH harness modes with the link set computed per
+  mode. Post mode adds every `.o` in the build tree on its own `make test LIBS=`
+  line, so an object absent from the Makefile is still in the link -- the first
+  post-integration run after the repair died on
+  `multiple definition of int2lstr_c`.
+
+- **A PROBE THAT WRITES TO AN OUTPUT THE REFERENCE NEVER TOUCHES IS THE CHEAPEST
+  COUNTING INSTRUMENT HERE, AND IT NEEDS NO NEW TOOLING.** Unit #30. The
+  differential harness reports a COUNT and not a SET (unit #27), so "how many
+  cases satisfy P" has no direct answer -- unless P is made to move an output.
+  `ErrVar%ErrStat` is compared by R4 and written by neither `CheckInputs` nor
+  `ChkParseData`, so a stub that bumps it under P fails exactly the cases where
+  P holds:
+
+  ```
+  ErrStat += 1 where Words(1) != Words(2)        990 of 1284
+  ErrStat += 1 where Words(2) IS the name         50 of 1284
+  the SILENT arm made to write aviFAIL = -7        2 of 1284
+  ```
+
+  Each is a stub through `run_harness_stub.sh` like any other. The third is the
+  one that matters most: a path that writes NOTHING is invisible to a no-op stub
+  by definition, so making it write is the only way to count it -- and
+  `1284 - 1282 = 2` would have been an inference. **Before explaining a count,
+  ask whether one stub can make the quantity an output.** Unit #30 explained one
+  from an argument first and was wrong (`57b2f37`), which is unit #27's rule
+  paid for twice.
+
+- **A CORPUS WHOSE STRING LENGTHS ALL FALL SHORT OF A TRUNCATION BOUNDARY CANNOT
+  SEE THE TRUNCATION, AND THE MUTANTS SAY SO THREE TIMES.** Unit #30. R6's
+  ladder is `sorted({1, 2, ex0, ex0 + 5})`; the reference assigns `CHARACTER(*)`
+  dummies into `CHARACTER(20)` locals.
+
+  ```
+  R6 lengths                    [1, 2, 6, 11]      every one below 20
+  the truncation removed         0 of 1284 fail    <- the only red test that stays green
+  '20' -> '21'                   SURVIVED
+  min(len_src,len_dst)->len_src  SURVIVED
+  ```
+
+  Ask it of any unit whose Fortran declares a fixed-width CHARACTER local and
+  assigns a `CHARACTER(*)` dummy into it -- `vit check`'s `narrowing-local`
+  finds exactly that shape statically, so the two instruments answer the same
+  question and only one of them is running:
+
+  ```
+  grep -nE 'CHARACTER\( *[0-9]+ *\)' <the unit's Fortran>   # then read what is assigned in
+  ```
+
+- **A MUTATION SWEEP CAN FAIL EVERY BUILD BECAUSE OF A `cp` THAT FINISHED
+  SECONDS EARLIER, AND THE ARTIFACT IT WRITES IS A SCORE.** Unit #30, and it is
+  unit #23's bind-mount hazard at sweep scale rather than at one file.
+
+  ```
+  31 of 31 mutants  "no compile"   score 0.000   <- run right after a stub restore
+  the identical command, 90s later  score 0.742   31 of 31 compiled
+  ```
+
+  Nothing in the run says "the build was broken"; `nocompile` is reported per
+  mutant and the summary is a number. What made it recoverable is
+  `mutate_guarded.sh`: it refused to clear its marker, printed the intended hash
+  and the live one, and the translation was put back from the evidence copy
+  before anything was built. **The guard built for a hard kill caught a race**,
+  which is worth saying because the argument for building it was about timeouts.
+  Re-run the sweep before believing a `nocompile` ratio near 1.
+
+- **TWO GENERATOR REFUSALS STOOD BETWEEN THIS CAMPAIGN AND ANY HARNESS FOR A
+  UNIT TAKING A CHARACTER ARRAY, AND BOTH NAMED THEIR OWN WAY OUT.** Unit #30,
+  fixed in the repo that owns each (X2).
+
+  ```
+  UNOBSERVABLE [character-array] Words          loop a1d76b0   map_signature
+    -> EmitError: C parameter 'Words' is not in the mapped signature
+  NotImplementedError: Callee bridge for 'Int2LStr' returns CHARACTER
+    -> chkparsedata.hpp:117: error: 'int2lstr_c' was not declared in this scope
+                                                  vit f4a711d   interface_gen
+  ```
+
+  The second is the one to recognise: a REFUSAL in the bridge generator becomes
+  a compile error inside the TRANSLATION's own body, because `test_validate`
+  catches the exception, notes it, and drops the callee from the declarations
+  header. The note is printed and easy to miss. Read the callee notes before
+  reading the C++:
+
+  ```
+  vit test-validate <U> <cpp> -f <file>.f90 --force 2>&1 | grep -i 'callee'
+  ```
+
+  Both refusals were narrow and stayed narrow: only a rank-1 CHARACTER array
+  whose element count is a LITERAL moves, and only a SCALAR CHARACTER result.
+  The X3 cost of the first was measured rather than argued -- exactly one dummy
+  of that shape exists in this campaign's clean source, `ChkParseData`'s own.
+
 - **THE CLEAN-TREE RE-TAKE OF AN INVALID MUTATION RUN LANDED NEXT TO IT, NOT AT
   THE OTHER END OF THE RANGE -- SO THE ENTRY BELOW IS RIGHT ABOUT THE DEFECT AND
   WRONG ABOUT ITS SIGNATURE.** Unit #29, second dispatch. Added rather than

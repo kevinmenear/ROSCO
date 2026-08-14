@@ -5,7 +5,10 @@
 stand*. One copy of every count — do not duplicate them anywhere else.
 
 **As of 2026-08-14: unit #30 `ChkParseData` is `deferred` and NOT CLOSED** —
-`done_check.py` fails `P12` at an honest **0.852** against a threshold of 1.000.
+`done_check.py` reports **13 of 14**, and the one failure is `P12` at an honest
+**0.852** against a threshold of 1.000 (`evidence/ChkParseData/done_check.txt`).
+`revcheck --unit ChkParseData` is **clean**: all six result artifacts name
+`a1d76b0`, none is missing a `loop_rev` and none was stamped at a dirty tree.
 Everything that CAN run for this unit ran and is green. What cannot run is two
 of the five layers, and the reason is the same one: **the unit is dead in all 27
 scenarios**, the fourth such unit after #1, #21 and #26.
