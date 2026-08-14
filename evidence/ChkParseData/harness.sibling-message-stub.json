@@ -114,7 +114,7 @@
    "got": "203e3e204120666174616c206572726f72206f63637572726564207768656e20..."
   }
  ],
- "loop_rev": "3c19267-nogit",
+ "loop_rev": "1386430-nogit",
  "vit_rev": "f4a711d-nogit",
  "red_test": {
   "perturbation": "arm 3 reports TRIM(Words(1)) where the reference reports TRIM(ExpVarName)",
