@@ -97,43 +97,8 @@
     {
       "after": ">=",
       "before": ">",
-      "id": "c0832dce",
-      "line": 103,
-      "operator": "compare_op"
-    },
-    {
-      "after": ">=",
-      "before": ">",
-      "id": "de817d8b",
-      "line": 140,
-      "operator": "compare_op"
-    },
-    {
-      "after": ">=",
-      "before": ">",
-      "id": "1757a711",
-      "line": 225,
-      "operator": "compare_op"
-    },
-    {
-      "after": ">=",
-      "before": ">",
       "id": "901840cc",
       "line": 286,
-      "operator": "compare_op"
-    },
-    {
-      "after": ">=",
-      "before": ">",
-      "id": "93110a39",
-      "line": 574,
-      "operator": "compare_op"
-    },
-    {
-      "after": "==",
-      "before": "!=",
-      "id": "ab104d1e",
-      "line": 642,
       "operator": "compare_op"
     },
     {
@@ -158,20 +123,6 @@
       "operator": "compare_op"
     },
     {
-      "after": ">",
-      "before": ">=",
-      "id": "25fca306",
-      "line": 148,
-      "operator": "compare_op"
-    },
-    {
-      "after": ">",
-      "before": ">=",
-      "id": "9f1af25e",
-      "line": 182,
-      "operator": "compare_op"
-    },
-    {
       "after": "<=",
       "before": "<",
       "id": "5b456058",
@@ -183,6 +134,99 @@
       "before": ">",
       "id": "1e024411",
       "line": 763,
+      "operator": "compare_op"
+    },
+    {
+      "after": "[13 + 1]",
+      "before": "[13]",
+      "id": "c933177d",
+      "line": 339,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[21 + 1]",
+      "before": "[21]",
+      "id": "4b100ace",
+      "line": 347,
+      "operator": "index_offset"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "1d75738a",
+      "line": 286,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "if (!(UnDb))",
+      "before": "if (UnDb)",
+      "id": "867065d9",
+      "line": 813,
+      "operator": "negate_cond"
+    },
+    {
+      "after": "DebugOutData[I]",
+      "before": "std::fabs(DebugOutData[I])",
+      "id": "c64442c8",
+      "line": 759,
+      "operator": "drop_call"
+    },
+    {
+      "after": "LocalVarOutData[I]",
+      "before": "std::fabs(LocalVarOutData[I])",
+      "id": "940f4622",
+      "line": 763,
+      "operator": "drop_call"
+    }
+  ],
+  "survivors_declared_equivalent": [
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "c0832dce",
+      "line": 103,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "de817d8b",
+      "line": 140,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "1757a711",
+      "line": 225,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "93110a39",
+      "line": 574,
+      "operator": "compare_op"
+    },
+    {
+      "after": "==",
+      "before": "!=",
+      "id": "ab104d1e",
+      "line": 642,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">",
+      "before": ">=",
+      "id": "25fca306",
+      "line": 148,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">",
+      "before": ">=",
+      "id": "9f1af25e",
+      "line": 182,
       "operator": "compare_op"
     },
     {
@@ -235,20 +279,6 @@
       "operator": "index_offset"
     },
     {
-      "after": "[13 + 1]",
-      "before": "[13]",
-      "id": "c933177d",
-      "line": 339,
-      "operator": "index_offset"
-    },
-    {
-      "after": "[21 + 1]",
-      "before": "[21]",
-      "id": "4b100ace",
-      "line": 347,
-      "operator": "index_offset"
-    },
-    {
       "after": "[26 + 1]",
       "before": "[26]",
       "id": "892b672e",
@@ -298,13 +328,6 @@
       "operator": "const_tweak"
     },
     {
-      "after": "1",
-      "before": "0",
-      "id": "1d75738a",
-      "line": 286,
-      "operator": "const_tweak"
-    },
-    {
       "after": "12",
       "before": "11",
       "id": "e62c7325",
@@ -331,27 +354,6 @@
       "id": "c185c70e",
       "line": 642,
       "operator": "negate_cond"
-    },
-    {
-      "after": "if (!(UnDb))",
-      "before": "if (UnDb)",
-      "id": "867065d9",
-      "line": 813,
-      "operator": "negate_cond"
-    },
-    {
-      "after": "DebugOutData[I]",
-      "before": "std::fabs(DebugOutData[I])",
-      "id": "c64442c8",
-      "line": 759,
-      "operator": "drop_call"
-    },
-    {
-      "after": "LocalVarOutData[I]",
-      "before": "std::fabs(LocalVarOutData[I])",
-      "id": "940f4622",
-      "line": 763,
-      "operator": "drop_call"
     },
     {
       "after": "remainder",

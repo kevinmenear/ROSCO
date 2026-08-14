@@ -177,6 +177,16 @@ def main() -> int:
     if len(survivors) != survived:
         return die(f"{len(survivors)} survivor records but survived={survived}")
 
+    # A declared equivalence is not a finding, and `survivors` is what a reader
+    # -- and loop/done.py's P12 message -- names first. Split them, so the
+    # failing predicate names the mutants that are actually open rather than
+    # the ones whose reason is written down. The two lists still sum to
+    # `survived`, which is the check that keeps the split honest.
+    survivors_equiv = [s for s in survivors if s["id"] in declared]
+    survivors = [s for s in survivors if s["id"] not in declared]
+    if len(survivors) + len(survivors_equiv) != survived:
+        return die("the survivor split lost a record")
+
     denom = beh - eq
     ratio = nocompile / total if total else 0.0
     first = parts[0][1]
@@ -202,6 +212,7 @@ def main() -> int:
         "compared_against": first["compared_against"],
         "oracle": first["oracle"],
         "survivors": survivors,
+        "survivors_declared_equivalent": survivors_equiv,
         # Named, with the reason, IN the artifact: an equivalence that lives
         # only in prose is a number nobody can check.
         "equivalences": declared,
