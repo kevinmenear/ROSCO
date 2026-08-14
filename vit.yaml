@@ -321,6 +321,9 @@ translations:
   wrap_360:
     status: integrated
     cpp_file: translations/Functions/wrap_360.cpp
+  ChkParseData:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/chkparsedata.cpp
 types:
   ControlParameters:
     strategy: view

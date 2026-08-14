@@ -108,6 +108,7 @@ set(SOURCES
     src/wrap_180.cpp
     src/wrap_360.cpp
     src/checkinputs.cpp
+    src/chkparsedata.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

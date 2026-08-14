@@ -1,0 +1,29 @@
+coverage/line_coverage.json, 27 scenario(s), ROSCO_Helpers.f90 @ 54dd134
+
+THE UNIT AND ITS FIVE CALL SITES -- every one must be ZERO
+   1023       0  SUBROUTINE ChkParseData
+     88       0  CALL ChkParseData, in ParseInput_Int
+    396       0  CALL ChkParseData, in ParseInput_Dbl
+    460       0  CALL ChkParseData, in ParseInput_Str
+    568       0  CALL ChkParseData, in ParseDbAry
+    691       0  CALL ChkParseData, in ParseInAry
+
+THE FIVE ENCLOSING PROCEDURES -- four never entered, ONE is
+     51       0  SUBROUTINE ParseInput_Int
+    359       0  SUBROUTINE ParseInput_Dbl
+    423       0  SUBROUTINE ParseInput_Str
+    489      50  SUBROUTINE ParseDbAry
+    612       0  SUBROUTINE ParseInAry
+
+THE P10 CONTROL -- an absent key is a ZERO and not un-instrumented,
+because the guard beside the dead call is itself hit, in the same file
+    552      50  inside ParseDbAry, before the guard
+    567      50  IF (CheckName_) THEN        <- the guard
+    572      50  inside ParseDbAry, after the block
+
+  guard reached 50 time(s); call taken 0 time(s); body continued 50 time(s)
+  -> the guard is REACHED and FALSE every time. Site 4 is dead because
+     ReadSetParameters.f90:822 and :824 pass CheckName = .FALSE.,
+     not because nothing calls ParseDbAry.
+
+VERDICT: the unit is DEAD in all 27 scenarios, and the control holds.

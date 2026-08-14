@@ -148,6 +148,22 @@ MODULE ROSCO_Helpers
         END SUBROUTINE read_ol_input_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of ChkParseData
+    INTERFACE
+        SUBROUTINE chkparsedata_c(Words, len_Words, ExpVarName, len_ExpVarName, FileName, len_FileName, FileLineNum, ErrVar) BIND(C, NAME='chkparsedata_c')
+            USE ISO_C_BINDING
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: Words(*)
+            INTEGER(C_INT), VALUE :: len_Words
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: ExpVarName(*)
+            INTEGER(C_INT), VALUE :: len_ExpVarName
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: FileName(*)
+            INTEGER(C_INT), VALUE :: len_FileName
+            INTEGER(C_INT), VALUE :: FileLineNum
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE chkparsedata_c
+    END INTERFACE
+
 CONTAINS
 
     !=======================================================================
@@ -1124,64 +1140,42 @@ END SUBROUTINE ParseDbAry_Opt
 
  !> This subroutine checks the data to be parsed to make sure it finds
     !! the expected variable name and an associated value.
-SUBROUTINE ChkParseData ( Words, ExpVarName, FileName, FileLineNum, ErrVar )
-
-    USE ROSCO_Types, ONLY : ErrorVariables
-
-
-        ! Arguments declarations.
-    TYPE(ErrorVariables),         INTENT(INOUT)          :: ErrVar   ! Current line of input
-
-    INTEGER(IntKi), INTENT(IN)             :: FileLineNum                   !< The number of the line in the file being parsed.
-    INTEGER(IntKi)                        :: NameIndx                      !< The index into the Words array that points to the variable name.
-
-    CHARACTER(*),   INTENT(IN)             :: ExpVarName                    !< The expected variable name.
-    CHARACTER(*),   INTENT(IN)             :: Words       (2)               !< The two words to be parsed from the line.
-
-    CHARACTER(*),   INTENT(IN)             :: FileName                      !< The name of the file being parsed.
-
-
-        ! Local declarations.
-
-    CHARACTER(20)                          :: ExpUCVarName                  ! The uppercase version of ExpVarName.
-    CHARACTER(20)                          :: FndUCVarName                  ! The uppercase version of the word being tested.
-
-
-
-
-        ! Convert the found and expected names to uppercase.
-
-    FndUCVarName = Words(1)
-    ExpUCVarName = ExpVarName
-
-    CALL Conv2UC ( FndUCVarName )
-    CALL Conv2UC ( ExpUCVarName )
-
-    ! See which word is the variable name.  Generate an error if it is the first
-        
-    IF ( TRIM( FndUCVarName ) == TRIM( ExpUCVarName ) )  THEN
-        NameIndx = 1
-            ErrVar%aviFAIL = -1
-            ErrVar%ErrMsg = ' >> A fatal error occurred when parsing data from "'//TRIM( FileName ) &
-                            //'".'//NewLine//' >> The variable "'//TRIM( Words(1) )//'" was not assigned a valid value on line #' &
-                            //TRIM( Int2LStr( FileLineNum ) )//'.' 
-        RETURN
-    ELSE
-        FndUCVarName = Words(2)
-        CALL Conv2UC ( FndUCVarName )
-        IF ( TRIM( FndUCVarName ) == TRIM( ExpUCVarName ) )  THEN
-        NameIndx = 2
-        ELSE
-            ErrVar%aviFAIL = -1
-            ErrVar%ErrMsg = ' >> A fatal error occurred when parsing data from "'//TRIM( FileName ) &
-                            //'".'//NewLine//' >> The variable "'//TRIM( ExpVarName )//'" was not assigned a valid value on line #' &
-                            //TRIM( Int2LStr( FileLineNum ) )//'.' 
-        RETURN
-        ENDIF
-    ENDIF
-
-
-END SUBROUTINE ChkParseData 
+    SUBROUTINE ChkParseData(Words, ExpVarName, FileName, FileLineNum, ErrVar)
+        USE ISO_C_BINDING
+        USE ROSCO_Types, ONLY : ErrorVariables
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
+        IMPLICIT NONE
+        INTEGER(4), INTENT(IN) :: FileLineNum
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        CHARACTER(*), INTENT(IN) :: Words(2)
+        CHARACTER(*), INTENT(IN) :: ExpVarName
+        CHARACTER(*), INTENT(IN) :: FileName
+        CHARACTER(KIND=C_CHAR) :: Words_c((LEN(Words)) * ((2)))
+        INTEGER :: vit_i_Words, vit_j_Words
+        CHARACTER(KIND=C_CHAR) :: ExpVarName_c(LEN(ExpVarName))
+        INTEGER :: vit_i_ExpVarName
+        CHARACTER(KIND=C_CHAR) :: FileName_c(LEN(FileName))
+        INTEGER :: vit_i_FileName
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        ! Convert CHARACTER args to C_CHAR arrays
+        DO vit_j_Words = 1, (2)
+            DO vit_i_Words = 1, LEN(Words)
+                Words_c((vit_j_Words - 1) * (LEN(Words)) + vit_i_Words) = &
+                    Words(vit_j_Words)(vit_i_Words:vit_i_Words)
+            END DO
+        END DO
+        DO vit_i_ExpVarName = 1, LEN(ExpVarName)
+            ExpVarName_c(vit_i_ExpVarName) = ExpVarName(vit_i_ExpVarName:vit_i_ExpVarName)
+        END DO
+        DO vit_i_FileName = 1, LEN(FileName)
+            FileName_c(vit_i_FileName) = FileName(vit_i_FileName:vit_i_FileName)
+        END DO
+        CALL chkparsedata_c(Words_c, LEN(Words), ExpVarName_c, LEN(ExpVarName), FileName_c, LEN(FileName), FileLineNum, C_LOC(ErrVar_view))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
+    END SUBROUTINE ChkParseData
 
 SUBROUTINE FindLine(FileLines, ParamName, FoundLine, Line, LineNum, AryLen)
     CHARACTER(*),   INTENT(IN   ), DIMENSION(:)    :: FileLines   ! Input file unit
