@@ -358,6 +358,132 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **THE GATE DOES NOT READ A UNIT, IT READS A STREAM -- AND FOR A UNIT WHOSE
+  EFFECT IS I/O THAT IS THE FIRST QUESTION, NOT THE COVERAGE ONE.** Unit #31,
+  and it is a blindness sharper than any this campaign had recorded. `Debug` is
+  called ~408,000 times across 23 of 27 scenarios and does its job every time,
+  so it is neither #27's dead branches nor #1/#21/#26's dead call sites:
+
+  ```
+  every DebugOutData value DOUBLED       0 of 5,252,000
+  GetWords perturbed, SAME libdiscon     1,857,893      <- the chain is alive
+  the same edit, seen by the .dbg files  21,792+ records
+  ```
+
+  `Examples/vit_sim.py` builds `baseline_arrays/*.npz` from the `avrSWAP`
+  channels the controller RETURNS; the unit writes `<RootName>.RO.dbg`, which
+  nothing in the gate path opens. **No input could change that**, which is what
+  makes it structural rather than a corpus gap -- and the two look identical in
+  a red test that returns 0. Ask it of any unit that writes a file, a socket or
+  a console line:
+
+  ```
+  grep -n "\.dbg\|open(\|savez" Examples/vit_sim.py   # what does the gate READ?
+  ```
+
+- **A UNIT THAT ASSIGNS NOTHING IN ITS SIGNATURE HAS NO GENERATED HARNESS, AND
+  THE ANSWER IS A DIFFERENT ORACLE RATHER THAN A WAIVED P13.** Unit #31.
+  `vit test-validate` compares MAPPED OUTPUTS; `Debug` writes only files, so the
+  generated harness would compare the empty set and `vit_mutate` would report
+  every mutant surviving -- a 0.000 that is a fact about the instrument.
+
+  What replaced it keeps P11's and P13's shape and changes only what is
+  compared: `scripts/dbgcheck.py` diffs the BYTES the unit writes between two
+  builds that differ in one thing, and `scripts/dbgmutate.py` scores mutants by
+  compiling each into `libdiscon.so` and re-running scenarios against the same
+  archive.
+
+  **And the reference being DATA dissolves unit #29's clean-tree requirement.**
+  That rule exists because `vit_mutate` on an integrated tree routes both sides
+  through the harness's own copy of the mutant. Here the reference is a
+  committed archive written by a build containing no C++ unit at all: fixed
+  before the sweep starts, unperturbable by it. **Where an oracle can be frozen
+  as bytes, the requirement is about the reference and not about the tree.**
+
+- **A CONFIGURATION SCALAR THAT EVERY SHIPPED INPUT HOLDS AT ONE VALUE HIDES
+  WHOLE ARMS, AND COVERAGE REPORTS THE GUARD AS EXECUTED.** Unit #31, and it is
+  the cheapest large win this campaign has had: one parameter, one new scenario,
+  a third of a unit.
+
+  ```
+  all 14 Examples/DISCON*.IN         LoggingLevel = 1
+  IF (LoggingLevel > 1) / (> 2)      REACHED in 23 scenarios, FALSE in all
+  ROSCO_IO.f90:1108 / :1116          hits          <- coverage says "executed"
+  ROSCO_IO.f90:1109 / :1118          none
+  a perturbation inside that half    0 of 408,072 records
+  the same edit at LoggingLevel = 3  15,999 of 48,014
+  compare_op kills                   12 of 40  ->  21 of 40
+  ```
+
+  The scenario is ADDED, not modified: `Examples/vit_sim.py::run_scenario_28` is
+  scenario 3's configuration with one patch, registered OUTSIDE
+  `scenario_order`, so `--scenario 0` and every gate run behave exactly as
+  before and no committed baseline moves (X3, P5). Pick the base scenario on
+  what the hidden arms NEED -- here only scenario 3 already sets `CC_Mode` and
+  `StC_Mode`, without which the dbg3 path's two `AddToList` loops stay
+  unreachable even at `LoggingLevel = 3`.
+
+  ```
+  grep -h '! LoggingLevel' Examples/DISCON*.IN | sort -u   # one value -> one arm
+  ```
+
+- **A NO-COMPILE CAN BE A HOLE IN COVERAGE WEARING A DENOMINATOR'S CLOTHES, AND
+  A MUTATOR FIX IS NOT VERIFIED BY THE OPERATOR THAT MOTIVATED IT.** Unit #31,
+  three `cppmutate` defects (X2, fixed in the loop repo, each costed across all
+  31 translations).
+
+  ```
+  template <=int W>            compare_op on a USER-DECLARED template   12 of 40
+  std::FILE / f, return / p    arith_op on a pointer decl / deref        6 of 25
+  1E + 99                      arith_op on a float's EXPONENT SIGN       5 of 25
+  buf.size - pos()             swap_operands moving a call's name        1 of 10
+  ```
+
+  The third row is the one to recognise. It is not noise in a ratio: it meant
+  the unit's two clamp constants had **no `arith_op` mutant at all**, so an
+  operator that appeared to be measuring them was measuring nothing there. Read
+  the no-compile list before accepting a ratio under the limit.
+
+  And the fourth defect was created by the fix for the second: `_not_arithmetic`
+  read `drop_factor`'s pattern group 2 as its OPERATOR, when for that rule group
+  2 is the right OPERAND -- so it fired for two rules of three, and 6 of 7
+  no-compiles survived in the very operator it was written to fix. Invisible in
+  the diff, obvious in the sweep.
+
+  ```
+  python3 -c "import json;d=json.load(open('mutation/<U>.<op>.json'));
+      [print(r['line'],r['before'],'->',r['after']) for r in d['results']
+       if r['outcome']=='nocompile']"
+  ```
+
+- **FORTRAN'S `TRn` IS POSITIONAL, SO A TRAILING TAB WRITES NOTHING -- AND THE
+  RECORD LENGTH IS WHERE A C++ REIMPLEMENTATION OF FORMATTED OUTPUT FIRST GOES
+  WRONG.** Unit #31. `(99(a20,TR5:))` with 27 items looks like 675 bytes and the
+  reference writes **670**: `TRn` moves the write position and emits nothing, so
+  blanks appear only where a later descriptor writes past them, and the colon
+  sits AFTER the `TR5` so the last item's tab is processed and then discarded.
+
+  Three more from the same unit, each measured against gfortran rather than read
+  out of a standard (`evidence/Debug/fmt_probe.sh`, 54 records byte-identical,
+  red-tested at 1 and 26):
+
+  ```
+  ESw.dEe            C's "%.*E" agrees, EXCEPT the exponent WIDTH: C emits at
+                     least 2 digits and as many as needed, Ee demands exactly e
+                     and fills the field with '*' above it
+  a CHARACTER(15) local   'NacHeadingTarget' SHIPS as 'NacHeadingTarge'; five of
+                     185 literals truncate, and the width must have ONE site or
+                     its mutant moves nothing
+  a group with no data descriptor   `N(TR22,"(-)")` runs its FULL repeat count
+                     after the one data item is consumed -- format control stops
+                     at a DATA descriptor with nothing left, not at the item
+  ```
+
+  Build the probe by INCLUDING the translation from the test, so the helpers
+  under test are the ones that ship (P4), and run it before integrating: it
+  costs one compile and it is the only layer that sees a formatting defect
+  without a full sweep.
+
 - **A RED TEST'S REVERT CAN BE A SILENT NO-OP, AND THEN THE GREEN IT CERTIFIES
   REPORTS THE RED TEST'S OWN NUMBER.** Unit #30, second dispatch, and it is
   unit #23's `cp`-across-a-bind-mount hazard at the one place nobody had put the
