@@ -1,0 +1,13 @@
+records: 54  bytes: 4598
+IDENTICAL
+
+RED TESTS (X4 -- the green above is not taken at face value on first use).
+Both perturb the C++ side only, rebuild, and re-compare against the SAME
+fmt_probe.f.out:
+
+  CHARACTER(15) -> CHARACTER(20) on the heading literals   1 of 54 records differ
+  ESw.dEe exponent width 2 -> 3                           26 of 54 records differ
+
+The first moves exactly the heading record, which is the only record carrying a
+truncated literal; the second moves exactly the 26 numeric records and none of
+the 27 others. Transcript of both runs is in fmt_probe.redtest.txt.

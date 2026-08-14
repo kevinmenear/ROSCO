@@ -75,6 +75,11 @@ set(SOURCES
     # not an integration wrapper, so it belongs in the build whether or not
     # ExtController is integrated -- the differential harness links it too.
     src/vit_extcontroller_dll.f90
+    # Production bridge for Debug's CurDate/CurTime calls (plan.json declares
+    # both PERMANENT BRIDGES for that unit). Same rule as the line above: a NEW
+    # file rather than an integration wrapper, so it is built whether or not
+    # Debug is integrated.
+    src/vit_debug_bridges.f90
     src/colemantransform.cpp
     src/addtolist.cpp
     src/colemantransforminverse.cpp

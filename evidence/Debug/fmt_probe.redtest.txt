@@ -1,0 +1,13 @@
+Red tests for evidence/Debug/fmt_probe.sh, run 2026-08-14 in vit-dev.
+Both perturbations are applied to a COPY of the translation and of the probe in
+/tmp/redtest; the reference side (fmt_probe.f.out) is the committed one.
+
+  $ sed 's/FChar<15>/FChar<20>/g' fmt_probe.cpp > p1.cpp   # the CHARACTER(15) width
+  red test 1 (CHARACTER(15)->(20)): differs, as required
+  1        <- records differing
+
+  $ sed 's/put_es(\(.*\), 20, 5, 2)/put_es(\1, 20, 5, 3)/' fmt_probe.cpp > p2.cpp
+  red test 2 (ES exponent E2->E3): differs, as required
+  26       <- records differing
+
+54 records, 4598 bytes compared in the green run.
