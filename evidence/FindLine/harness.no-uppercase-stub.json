@@ -17,7 +17,7 @@
   "  applied  R4_compare_all_outputs     return value + 3 out-parameter(s): FoundLine, Line, LineNum"
  ],
  "mismatches": [],
- "loop_rev": "9eeaf3f-nogit",
+ "loop_rev": "024982b-nogit",
  "gen_rev": "gen-cb96877be46b",
  "vit_rev": "d2de28c-nogit",
  "red_test": {
