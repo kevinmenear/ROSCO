@@ -115,6 +115,7 @@ set(SOURCES
     src/checkinputs.cpp
     src/chkparsedata.cpp
     src/debug.cpp
+    src/findline.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

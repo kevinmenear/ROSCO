@@ -164,6 +164,24 @@ MODULE ROSCO_Helpers
         END SUBROUTINE chkparsedata_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of FindLine
+    INTERFACE
+        SUBROUTINE findline_c(FileLines, n_FileLines, len_FileLines, ParamName, len_ParamName, FoundLine, Line, LineNum, has_AryLen, AryLen) BIND(C, NAME='findline_c')
+            USE ISO_C_BINDING
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: FileLines(*)
+            INTEGER(C_INT), VALUE :: n_FileLines
+            INTEGER(C_INT), VALUE :: len_FileLines
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: ParamName(*)
+            INTEGER(C_INT), VALUE :: len_ParamName
+            INTEGER(C_INT), INTENT(OUT) :: FoundLine
+            CHARACTER(KIND=C_CHAR), INTENT(OUT) :: Line(*)
+            INTEGER(C_INT), INTENT(OUT) :: LineNum
+            INTEGER(C_INT), VALUE :: has_AryLen
+            INTEGER(C_INT), VALUE :: AryLen
+        END SUBROUTINE findline_c
+    END INTERFACE
+
 CONTAINS
 
     !=======================================================================
@@ -1177,56 +1195,54 @@ END SUBROUTINE ParseDbAry_Opt
         CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
     END SUBROUTINE ChkParseData
 
-SUBROUTINE FindLine(FileLines, ParamName, FoundLine, Line, LineNum, AryLen)
-    CHARACTER(*),   INTENT(IN   ), DIMENSION(:)    :: FileLines   ! Input file unit
-    CHARACTER(*),   INTENT(IN)                     :: ParamName                       !< The array name we are trying to fill.
-    INTEGER(IntKi), INTENT(OUT)                    :: LineNum                       !< The number of the line to parse.
-    LOGICAL, INTENT(OUT)                    :: FoundLine
-    INTEGER(IntKi), OPTIONAL,      INTENT(IN   )          :: AryLen
-    CHARACTER(MaxLineLength), INTENT(OUT)          :: Line
-    
-    
-    CHARACTER(MaxParamLength), ALLOCATABLE  :: Words(:)               ! The two "words" parsed from the line
+    SUBROUTINE FindLine(FileLines, ParamName, FoundLine, Line, LineNum, AryLen)
+        USE ISO_C_BINDING
+        IMPLICIT NONE
+        LOGICAL, INTENT(OUT) :: FoundLine
+        INTEGER(4), INTENT(OUT) :: LineNum
+        INTEGER(4), INTENT(IN), OPTIONAL :: AryLen
+        CHARACTER(*), INTENT(IN) :: FileLines(:)
+        CHARACTER(*), INTENT(IN) :: ParamName
+        CHARACTER(MAXLINELENGTH), INTENT(OUT) :: Line
+        CHARACTER(KIND=C_CHAR) :: FileLines_c((LEN(FileLines)) * (SIZE(FileLines)))
+        INTEGER :: vit_i_FileLines, vit_j_FileLines
+        CHARACTER(KIND=C_CHAR) :: ParamName_c(LEN(ParamName))
+        INTEGER :: vit_i_ParamName
+        CHARACTER(KIND=C_CHAR) :: Line_c(maxlinelength)
+        INTEGER :: vit_i_Line
+        INTEGER(C_INT) :: FoundLine_lgc
 
-    CHARACTER(MaxParamLength)                      :: ParamNameUC, FileLineUC
-    INTEGER(IntKi)                                 :: I, WordInd
+        ! Local variables for OPTIONAL args
+        INTEGER(C_INT) :: has_AryLen_flag
+        INTEGER(C_INT) :: AryLen_val
 
-    IF (.NOT. PRESENT(AryLen)) THEN
-        WordInd = 2
-    ELSE
-        WordInd = AryLen + 1
-    ENDIF
-
-    ALLOCATE(Words(WordInd))   ! TODO: check error
-    
-    ! Make name uppercase
-    ParamNameUC = ParamName
-    CALL Conv2UC(ParamNameUC)
-    
-    ! Search for line in FileLines
-    FoundLine = .FALSE.
-    LineNum = 0
-    DO I = 1,SIZE(FileLines)
-
-        ! Separate line string into 2 words
-        CALL GetWords ( FileLines(I), Words, WordInd )  
-        
-        ! Make FileLines uppercase
-        FileLineUC = Words(WordInd)
-        CALL Conv2UC(FileLineUC)
-
-        ! WRITE(500,*) Words
-
-        ! PRINT *, TRIM(ParamNameUC), '==', TRIM(FileLineUC), '=', TRIM(FileLineUC)==TRIM(ParamNameUC)
-        
-        IF (FileLineUC == ParamNameUC) THEN
-            Line = FileLines(I)
-            LineNum = I
-            FoundLine = .TRUE.
+        has_AryLen_flag = 0
+        AryLen_val = 0
+        IF (PRESENT(AryLen)) THEN
+            has_AryLen_flag = 1
+            AryLen_val = INT(AryLen, C_INT)
         END IF
-    END DO
-
-END subroutine FindLine
+        ! Convert CHARACTER args to C_CHAR arrays
+        DO vit_j_FileLines = 1, SIZE(FileLines)
+            DO vit_i_FileLines = 1, LEN(FileLines)
+                FileLines_c((vit_j_FileLines - 1) * (LEN(FileLines)) + vit_i_FileLines) = &
+                    FileLines(vit_j_FileLines)(vit_i_FileLines:vit_i_FileLines)
+            END DO
+        END DO
+        DO vit_i_ParamName = 1, LEN(ParamName)
+            ParamName_c(vit_i_ParamName) = ParamName(vit_i_ParamName:vit_i_ParamName)
+        END DO
+        DO vit_i_Line = 1, maxlinelength
+            Line_c(vit_i_Line) = Line(vit_i_Line:vit_i_Line)
+        END DO
+        FoundLine_lgc = 0
+        CALL findline_c(FileLines_c, SIZE(FileLines), LEN(FileLines), ParamName_c, LEN(ParamName), FoundLine_lgc, Line_c, LineNum, has_AryLen_flag, AryLen_val)
+        FoundLine = (FoundLine_lgc /= 0)
+        ! Copy C_CHAR arrays back to CHARACTER args (INTENT OUT/INOUT)
+        DO vit_i_Line = 1, maxlinelength
+            Line(vit_i_Line:vit_i_Line) = Line_c(vit_i_Line)
+        END DO
+    END SUBROUTINE FindLine
 
 !=======================================================================
 subroutine ReadEmptyLine(Un,CurLine)

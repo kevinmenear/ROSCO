@@ -340,6 +340,30 @@ translations:
   Debug:
     status: integrated
     cpp_file: translations/ROSCO_IO/debug.cpp
+  # ADDED BY HAND at unit #32, for the reason units #14, #16, #18, #20, #21,
+  # #22, #23, #25, #26, #27 and #31 all recorded: `vit verify` and
+  # `vit integrate` rewrite this file through a YAML round-trip that DELETES
+  # EVERY COMMENT in it -- 245 lines of this file's own reasoning on this run's
+  # diff -- so restoring the commented file is the only way to keep it, and then
+  # the entry has to be re-added. Twelve units in a row; it is a defect in VIT
+  # and it is in DECISIONS.md.
+  #
+  # `vit verify` also wrote `status: non_discriminating`, `cases_passed: 20` and
+  # a `red_test: not_constructed` record here. REMOVED, and the removal is the
+  # point: VIT declined to build a red test for this unit (no by-value
+  # floating-point argument), so `cases_passed: 20` would be a machine-readable
+  # claim, in the config every later unit reads, resting on a run whose
+  # discriminating power that same command says is UNMEASURED. It was measured,
+  # by four stubs, and what they found is in plan.json's `observability` -- the
+  # kernel scores a FIRST-match-wins translation 20/20 IDENTICAL.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
+  # For this unit the gate DID run and DID see it: disabling the name match
+  # moves 1,857,893 of 5,252,000 values, revert-verified. What verified the
+  # unit is in plan.json's `evidence`.
+  FindLine:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/findline.cpp
 types:
   ControlParameters:
     strategy: view
