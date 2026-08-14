@@ -6441,3 +6441,65 @@ it looked wrong. What exposed it was three fixtures whose artifacts plainly
 existed on disk: the sixth time today a contradiction, not care, did the work.
 The except is now `ValueError`, narrow enough that a defect cannot pose as an
 absence.
+
+## 2026-08-13 14:20 — `loop_rev` is the loop's HEAD, not the generator's identity
+
+**`db7a550`'s conclusion is narrowed here.** It said *"loop_rev is not a version
+label, it is the corpus generator's identity"*. That was true of the case that
+produced it: between `813e7a2` and `2e2295f`, `harness/generate.py` genuinely
+moved 37 lines and the corpus genuinely changed. It is NOT true in general, and
+the counterexample arrived one commit later.
+
+`2e2295f -> 08f8166` (P14) touches `CLAUDE.md`, `README.md`, `loop/done.py`,
+`tests/test_done.py`, `tests/test_driver.py`. **Nothing under `harness/` changes
+at all** — not just `generate.py` but the whole generation path, confirmed by
+diff and by object hash (`2e2295f:harness/generate.py` and
+`08f8166:harness/generate.py` are the same blob). `loop_rev` is the loop REPO's
+HEAD, a superset of the generator, and it moves for reasons a corpus never sees.
+
+### So the all-or-none hazard recorded at a29e137 is mostly spurious
+
+A re-take of any CheckInputs artifact at `08f8166` would run an unchanged
+generation path over unchanged baseline states, and the regeneration determinism
+was measured this morning at `21ea985` — same inputs, byte-identical 567 MB case
+file. It would therefore produce the SAME corpus with a DIFFERENT stamp, and P14
+would report a split between artifacts that are substantively identical. The
+"all or none" cost is real as the tool behaves and largely fictional as the
+evidence stands.
+
+### And it generalises, which is the part that matters
+
+The planned Driver-level `revcheck` call lives in `loop/driver.py`, so it bumps
+`loop_rev` again without touching the generator. After it lands, **every unit
+closed before it is "one generation behind" exactly as CheckInputs is now**, each
+all-or-none on reopening for a reason having nothing to do with its corpus. Over
+40 units with any further loop commits, that set grows by one unit every time
+the loop is touched for any reason.
+
+P14 is still correct as built — it compares artifacts WITHIN a unit, so it raises
+nothing for units nobody reopens. The exposure is precisely at reopening, which
+is when a spurious signal is least welcome.
+
+### Promoting finding 4's generating-state hash
+
+The fix is already written down as finding 4: a stamp derived from
+`harness/generate.py` plus the baseline states, rather than from the loop's HEAD.
+Such a stamp would not move on a `done.py` commit, which would leave CheckInputs'
+nine artifacts commensurable with a future re-take instead of frozen against it.
+
+**Promoted from "a method question" to the amendment AFTER the Driver-level
+call.** Not urgent today — nothing is being reopened — but it is the thing that
+stops the all-or-none set growing by one unit every time the loop is touched,
+and the Driver call is itself the next event that would grow it.
+
+### Loop-side commits now have a second copy
+
+Three loop commits were made today (`813e7a2`, `2e2295f`, `08f8166`) and each
+existed only in the campaign clone's working tree until a manual backup ran.
+Canonical already has that clone registered as the remote `campaign-clone`, so
+the durable copy is a FETCH, not a push: `git -C <canonical> fetch
+campaign-clone` moved `campaign-clone/main` from `9119db2` to `08f8166` and
+copied every object. No branch was created, canonical's `main` is untouched at
+`891fde3`, and the name `campaign-work` was deliberately NOT reused — the clone
+already has a `campaign-work` at `cf885e3` which is NOT an ancestor of this work,
+so pushing this history under that name would have misdescribed it.
