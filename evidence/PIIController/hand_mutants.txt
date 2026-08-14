@@ -1,0 +1,33 @@
+# hand-run mutants of translations/Controllers/piicontroller.cpp
+# the three saturate_c call sites, which cppmutate's callee TABLE excludes
+# instrument: this unit's own differential corpus
+#
+BASELINE (the shipped translation, unmutated)              killed on     0 of  4528 cases
+#
+# drop_call -- the call replaced by its first argument
+ITerm clamp dropped                                        killed on  2250 of  4528 cases
+ITerm2 clamp dropped                                       killed on  2254 of  4528 cases
+output clamp dropped                                       killed on  2013 of  4528 cases
+BOTH integrator clamps dropped                             killed on  2255 of  4528 cases
+ALL THREE clamps dropped                                   killed on  2255 of  4528 cases
+#
+# swap_call_args -- the FIRST TWO arguments exchanged, which is the shape
+# cppmutate's operator produces. Proved EQUIVALENT on this toolchain at
+# evidence/saturate/minmax_probe.txt: fmax(a,b) and fmax(b,a) agree on
+# every input including a signed zero and a NaN.
+ITerm clamp:  value <-> minValue                           killed on     0 of  4528 cases
+ITerm2 clamp: value <-> minValue                           killed on     0 of  4528 cases
+output clamp: value <-> minValue                           killed on     0 of  4528 cases
+#
+# the two BOUNDS transposed -- not a shape cppmutate offers at all, and the
+# defect unit #24's own post-integration red test was built from
+ITerm clamp:  bounds transposed                            killed on   117 of  4528 cases
+ITerm2 clamp: bounds transposed                            killed on   290 of  4528 cases
+output clamp: bounds transposed                            killed on   199 of  4528 cases
+#
+# swap_callee -- the two integrator channels' clamps exchanged, so ITerm is
+# clamped into ITerm2's slot and back. A shape that exists only because this
+# unit has a SIBLING PAIR of clamps; no operator produces it at any unit.
+the two integrator clamps exchanged                        killed on    14 of  4528 cases
+#
+# translation restored, byte-identical to the shipped file
