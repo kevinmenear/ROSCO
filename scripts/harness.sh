@@ -256,30 +256,81 @@ if [ "$MODE" = "pre" ]; then
         echo "harness.sh: added vit_integration_shim.o to LIBS -- ${STEM}.cpp.o was dropped and the integrated wrapper calls ${STEM}_c"
     fi
 
+    # 2e. WHICH DEFINITION OF `<callee>_c` SURVIVES, AND IT DEPENDS ON THE TREE.
+    #
+    # Unit #29 settled this on an INTEGRATED tree: drop the bridge, keep the
+    # object, because there the Fortran callee IS a wrapper around that same
+    # object and the two would call each other. The rule it left behind keys on
+    # "is `<callee>.cpp.o` in LIBS", and on a CLEAN tree that question has the
+    # same answer for the opposite reason -- the object is a STALE artifact of
+    # an earlier integrated build that `vit test-validate` globs into LIBS, and
+    # the Fortran callee is the real body.
+    #
+    # Dropping the bridge there is silently wrong rather than loudly wrong.
+    # Nothing fails: the Fortran side of the comparison calls the Fortran
+    # callee, the C++ side calls the stale object's C++ callee, the link is
+    # clean and the harness reports a number. What it has stopped being is a
+    # test of THIS unit -- VIT's stated one-implementation property is gone, so
+    # a defect in the callee's translation is attributed here, and a
+    # compensating pair cancels. rosco-r2 unit #30, `ChkParseData`, is the
+    # first unit to run a callee-carrying harness on a clean tree.
+    #
+    # So ask the tree, not LIBS. The test is `reset_to_clean.sh`'s own: the
+    # Fortran source calls `<callee>_c(` if and only if a wrapper has been
+    # integrated over it. It maintains itself as units are integrated, and it
+    # is the same question read from the same place.
     cal="$ROOT/$UNIT_DIR/${STEM}_callees.f90"
     if [ -f "$cal" ]; then
-        python3 - "$cal" "$ROOT/$UNIT_DIR/Makefile" <<'PYEOF'
-import re, sys
-cal, mk = sys.argv[1], sys.argv[2]
+        python3 - "$cal" "$ROOT/$UNIT_DIR/Makefile" "$ROOT/$(dirname "$FFILE")" <<'PYEOF'
+import glob, os, re, sys
+cal, mk, srcdir = sys.argv[1], sys.argv[2], sys.argv[3]
 text = open(cal).read()
 mktext = open(mk).read()
+
+# The whole campaign's Fortran, comments stripped, once.
+src = []
+for f in sorted(glob.glob(os.path.join(srcdir, "*.f90"))
+                + glob.glob(os.path.join(srcdir, "*.F90"))):
+    for line in open(f, errors="replace").read().splitlines():
+        src.append(line.split("!", 1)[0])
+src = "\n".join(src)
+
 MARK = "! VIT: Kernel callee bridge for "
 parts = text.split(MARK)
 head, blocks = parts[0], parts[1:]
-kept, dropped = [], []
+kept, dropped, unlinked = [], [], []
 for b in blocks:
     m = re.search(r"NAME='([a-z0-9_]+)_c'", b)
     name = m.group(1) if m else None
-    if name and f"/{name}.cpp.o" in mktext:
+    if name is None:
+        kept.append(b)
+        continue
+    # A wrapper `vit integrate` wrote is the only thing in this tree that CALLS
+    # `<name>_c` from Fortran. The bridge itself is in a different file.
+    integrated = re.search(r"(?<![A-Za-z0-9_])%s_c\s*\(" % re.escape(name),
+                           src) is not None
+    if integrated and f"/{name}.cpp.o" in mktext:
         dropped.append(name)
     else:
         kept.append(b)
+        if f"/{name}.cpp.o" in mktext:
+            unlinked.append(name)
 if dropped:
-    open(cal, "w").write(head + "".join(MARK + b for b in kept))
     for n in dropped:
         print(f"harness.sh: dropping the {n}_c bridge -- {n}.cpp.o already "
               f"defines it, and the Fortran {n} is a wrapper around it")
-    print(f"harness.sh: {len(kept)} bridge(s) kept in {cal}")
+if unlinked:
+    # KEEP THE BRIDGE, DROP THE OBJECT -- the inverse repair, and it is only
+    # correct because the Fortran callee here is the real body.
+    for n in unlinked:
+        mktext = re.sub(r"\S*/%s\.cpp\.o\s*" % re.escape(n), "", mktext)
+        print(f"harness.sh: keeping the {n}_c bridge and dropping {n}.cpp.o "
+              f"from LIBS -- the Fortran {n} is the real body on this tree, so "
+              f"the bridge is what makes both sides share one callee")
+    open(mk, "w").write(mktext)
+if dropped or unlinked:
+    open(cal, "w").write(head + "".join(MARK + b for b in kept))
+print(f"harness.sh: {len(kept)} bridge(s) kept in {cal}")
 PYEOF
     fi
 
