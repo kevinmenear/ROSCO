@@ -1,0 +1,17 @@
+{
+  "a": "pre",
+  "b": "post",
+  "bytes_compared": 273377424,
+  "campaign_rev": "dab9bab-dirty",
+  "files_compared": 24,
+  "files_mismatched": 0,
+  "header_records_compared": 24,
+  "loop_rev": "45a692b",
+  "mismatches": [],
+  "only_in_a": [],
+  "only_in_b": [],
+  "records_compared": 408072,
+  "records_mismatched": 0,
+  "verdict": "IDENTICAL",
+  "vit_rev": "f4a711d"
+}

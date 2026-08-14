@@ -2,3 +2,9 @@ fmt_probe_f
 fmt_probe_c
 fmt_probe.f.out
 fmt_probe.c.out
+
+# The .dbg archives themselves are 273 MB per label. What is COMMITTED is each
+# label's _manifest.json -- per-file byte count and md5 -- and dbg.json, the
+# comparison. Both are re-derivable with:
+#   python3 scripts/dbgcheck.py capture --label <l>
+dbg/*/*.RO.dbg*

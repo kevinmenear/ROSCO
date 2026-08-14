@@ -59,6 +59,7 @@ double wrap_180_c(double x);
 double wrap_360_c(double x);
 void checkinputs_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, float* avrSWAP, errorvariables_view_t* ErrVar, int size_avcMSG);
 void chkparsedata_c(char* Words, int len_Words, char* ExpVarName, int len_ExpVarName, char* FileName, int len_FileName, int FileLineNum, errorvariables_view_t* ErrVar);
+void debug_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, debugvariables_t* DebugVar, errorvariables_view_t* ErrVar, float* avrSWAP, char* RootName, int size_avcOUTNAME);
 
 #ifdef __cplusplus
 }
