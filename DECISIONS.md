@@ -2,6 +2,94 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #32 — FindLine — 2026-08-14
+
+**A REFUSAL'S STATED REASON CAN BE FALSE, AND IT COSTS MORE THAN A REFUSAL WITH
+NO REASON WOULD.** `map_signature` declined `CHARACTER(*) :: FileLines(:)`
+saying it "carries its extent in a descriptor `build_c_params` does not emit".
+`build_c_params` emits it — `char* FileLines, int n_FileLines, int
+len_FileLines` — and one run of `vit interface` shows the generated wrapper
+passing `SIZE(FileLines)` and `LEN(FileLines)` as exactly those two arguments.
+The count had been sitting in `extent_of` under the ordinary `n_` name the whole
+time; only the CHARACTER branch never looked at `dims_of`. A refusal that names
+a mechanism is read as a fact about the boundary, and this one was read that way
+for as long as no unit had the shape. **Ask the generator; do not read the
+refusal.** (loop `9eeaf3f`)
+
+**TWO GENERATORS, ONE ABI, AND C LINKAGE CHECKS NEITHER.** `build_c_params`
+emits `n_X` before `len_X` for an assumed-shape CHARACTER array;
+`test_validate.generate_fortran_bridge` — a second, hand-restated spelling of
+the same call — emitted `len_X` before `n_X`. The differential harness therefore
+read a 4×3 array as 3×4, which is a well-formed array of the wrong shape, so
+nothing crashed and **2311 of 2358 cases still agreed**. The 47 that did not
+each had the reference's `LineNum` equal to `len_FileLines`: `DO I = 1,
+SIZE(FileLines)` iterating over the element WIDTH.
+
+The fix is not the reorder. It is that the bridge now **asks** `build_c_params`
+for its extent order and refuses when the two disagree, naming both lists. A
+restatement that cannot be checked is a defect waiting for the first input shape
+that distinguishes it — this one waited 31 units. (vit `d2de28c`)
+
+**A CHECK'S SCOPE IS PART OF ITS PRECISION.** `vit check` handed every
+Fortran-reading check the WHOLE FILE, so a sibling procedure could supply the
+Fortran half of a finding. `FindLine` contains no `SCAN`, `INDEX` or `VERIFY`
+and was reported as missing `GetPath`'s backslash from 900 lines away. It is the
+expensive kind of false positive: the finding names a real literal and a real
+absence, and only reading the reference shows they belong to different
+procedures. Latent for eight units in that file because `GetPath` and `GetRoot`
+happened to carry the same separators. When the name cannot be found the CLI
+falls back to the whole file **and prints that it did** — a slice that silently
+missed would turn ten checks off without a word. (vit `c4eb0ad`)
+
+**A CORPUS RULE AND A TRANSLATION SITE ARE TWO HALVES OF ONE MEASUREMENT.**
+R12_narrowing_width was extended to resolve a width written as a module
+PARAMETER rather than a literal, which put the 200-character truncation boundary
+into this unit's corpus: +12 cases, **0.667 before and 0.667 after**. It became
+three kills only when `char_assign` stopped computing its truncation through a
+`std::min` whose mutants write PAST the destination instead of changing an
+answer. Neither half is worth anything alone, and a rule that fires and kills
+nothing is not evidence that the rule is wrong.
+
+**THE COUNTING PROBE IS THE CHEAPEST INSTRUMENT HERE, AGAIN, AND IT REPLACED AN
+ARGUMENT.** "Most cases probably don't find the name" was an inference; making
+"a match happened" an OUTPUT turned it into **47 of 2370** — one stub, one run,
+`LineNum = -7` inside the arm. Five of six mutation survivors follow from that
+number directly. Unit #30 recorded this rule; this is its second use and it paid
+for itself in one command.
+
+**A POSITIVE CONTROL CAN BE A NO-OP FOR A REASON SPECIFIC TO THE PROGRAM UNDER
+TEST.** The canary probe backing this unit's two declared equivalences reported
+0 of 2370 disturbed. Its first control — `conv2uc_c(ParamNameUC,
+MaxParamLength + 1)` — reported **the same 0**, because Conv2UC writes a byte
+only when it is a lowercase letter and the sentinel was `\x7f`. For one run a
+dead control and a passing probe were the same number. P10 says a pass built
+from an empty set must prove the set could have been non-empty; the corollary
+this adds is that **the control must be chosen against the program, not against
+the probe** — an unconditional write, not a call that might write.
+
+**PROPOSED, NOT TAKEN: a corpus rule that plants one input inside another.**
+This unit's remaining gap is that `FileLines` and `ParamName` are drawn
+independently, so the predicate `FileLineUC == ParamNameUC` is true in 47 of
+2370 cases and everything downstream of it is unobservable in the other 2323.
+The rule shape: for a unit comparing a CHARACTER quantity derived from an ARRAY
+input against a scalar CHARACTER input, generate cases in which the scalar IS
+the *k*-th word of a chosen element, for each *k* the signature admits, and in
+which the case letters differ so the `Conv2UC` on the key is load-bearing. It is
+a change to a SHARED generator, so its X3 cost has to be measured across every
+scored unit before it is taken — unit #30 spent a whole dispatch doing exactly
+that for R12 and R13, and this is the same size of job.
+
+**FOR THE DRIVER — a method-level observation, not a target one.** Three of this
+unit's five layers were unavailable or wrong until a tool was fixed, and in each
+case the tool *reported* rather than crashed: a false refusal reason, a silent
+argument transposition, and a check answering about the wrong procedure. The
+campaign's existing rule is "never work around a tool bug you control" (X2). The
+gap this unit found is one step earlier: **a generator that REFUSES should be
+required to state its reason in terms a reader can check against the other
+generator's output**, because "UNMEASURED here" and "impossible here" read alike
+and only one of them is worth a dispatch. Raising it as a candidate; no runbook
+edit made.
+
 ## Unit #30 — ChkParseData — second dispatch — 2026-08-14
 
 **THE FOUR SURVIVING MUTANTS WERE TWO STATEMENTS ABOUT THE CORPUS, AND BOTH ARE

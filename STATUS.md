@@ -4,6 +4,108 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-14: unit #32 `FindLine` is `deferred` and NOT CLOSED** — the
+mutation score is an honest **0.760** against a threshold of 1.000, and the six
+survivors are five instances of ONE measured corpus gap plus one piece of
+undefined behaviour. Everything else this unit has ran and is green, and every
+green is red-tested. It is the campaign's first unit taking an **assumed-shape
+CHARACTER array**, and that one declaration broke three tool defects loose.
+
+Every count below is read from the committed artifact named in its row.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 20 cases (`evidence/FindLine/kernel.verify_fields.csv`) | 20/20, all 60 fields `IDENTICAL` | four stubs: 0/20 · 0/20 · **20/20** · 5/20 |
+| differential harness (`harness/FindLine.json`) | **2370 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | six stubs: 2367 · 47 · 20 · 47 · **0** · **0** |
+| mutation (`mutation/FindLine.json`) | **19 of 25 behavioural, 0.760**, 2 declared equivalent, 0 no-compile, 9 operators | the score *is* the red test, 25 times |
+| post-integration (`harness/FindLine.postintegration.json`) | 2370 checked, 0 failed | the wrapper's two extents transposed: **47 of 2370**, revert-verified 0 |
+| gate, 27 scenarios (`gate/FindLine.json`) | 5,252,000 values / 351 channels, 0 mismatched | the name match disabled moves **1,857,893**, revert-verified 0 |
+
+**ONE MEASUREMENT EXPLAINS FIVE OF THE SIX SURVIVORS, AND IT IS 47 OF 2370.**
+`evidence/FindLine/findline.match-count-probe.cpp` writes `LineNum = -7` inside
+the match arm — `LineNum` is compared by R4 and the reference writes only 0 or
+`I`, so `-7` cannot collide with a real answer — and the harness fails exactly
+47 of 2370. So **2323 cases never find the name at all**: `FoundLine` is false,
+`LineNum` is 0, `Line` is never written, and nothing downstream of
+`FileLineUC == ParamNameUC` is distinguishable in 98% of the corpus. The cause
+is structural rather than unlucky: `FileLines` and `ParamName` are drawn
+independently, so a match happens only where two independent draws coincide.
+That is unit #30's rule seen from the other side — *a rule aimed at a predicate
+must supply both sides of it* — and no rule here supplies both sides of this
+one. Two stubs report it as a zero: pinning `WordInd` at 2 fails **0 of 2370**,
+and deleting `CALL Conv2UC(ParamNameUC)` fails **0 of 2370**.
+
+**What would close it** is written down so the next dispatch need not rederive
+it: a corpus rule that plants one input inside another — for a unit comparing a
+CHARACTER quantity derived from an array input against a scalar CHARACTER
+input, generate cases in which the scalar IS the *k*-th word of a chosen
+element, for each *k* the signature admits, and in which the case letters
+differ. Not taken here because a new rule shifts every already-scored unit's
+draws and that X3 cost has to be measured across the campaign; unit #30 spent a
+whole dispatch on exactly that.
+
+**THE SIXTH SURVIVOR IS NOT A CORPUS GAP.** `'2048' -> '2049'` on
+`MaxLineLength` makes `char_assign` write one byte past the *caller's*
+2048-byte buffer. Bytes past the end are not a wrong answer, so no value
+comparison can see it, and unit #7 settled that a mutant observable only through
+a write outside its buffer cannot honestly be declared equivalent. Unlike the
+`std::min` this unit deleted for the same reason, the site cannot be removed:
+VIT emits no `len_Line`, so the width must be stated in the C++ exactly once.
+
+**THE TRANSLATION LOST TWO SITES TO THE SAME RULE, AND THE SCORE MOVED
+0.667 → 0.704.** `char_assign`'s `n = std::min(len_src, len_dst)` plus two
+loops became ONE loop bounded by `len_dst` with an `i <= len_src` predicate, and
+`std::max(WordInd, 0)` was deleted outright. Five survivors went with them —
+every one computed the right answer and differed only in memory the comparison
+cannot read. The rewrite is also the safer program: the loop cannot leave `dst`.
+
+**THREE TOOL DEFECTS, EACH FIXED WHERE IT LIVES (X2), and one of them had a
+FALSE REASON attached.**
+
+1. `vit check` scoped its Fortran-reading checks to the **file**, not the
+   procedure (vit `c4eb0ad`). `delimiter-set` reported `FindLine` — which
+   contains no `SCAN`, `INDEX` or `VERIFY` at all — as missing the backslash
+   from `GetPath`'s `INDEX( GivenFil, '\', BACK=.TRUE. )` 900 lines away.
+   Latent for eight units in that one file, because `GetPath` and `GetRoot`
+   happened to carry the same separators.
+2. **VIT's two generators disagreed about extent ORDER** (vit `d2de28c`).
+   `build_c_params` emits `char* X, int n_X, int len_X`; the test-validate
+   bridge emitted `len_X` then `n_X`. C linkage checks nothing, so a 4×3
+   CHARACTER array was read as 3×4 — a well-formed array of the wrong shape —
+   and **2311 of 2358 cases still agreed**. The reference's `LineNum` was
+   exactly `len_FileLines` in every one of the 47 that did not. The generator
+   now asks `build_c_params` and refuses when they differ.
+3. The loop's mapper refused the shape **with a reason that was false** (loop
+   `9eeaf3f`): "carries its extent in a descriptor `build_c_params` does not
+   emit", when it is emitted under the ordinary `n_` name. Two more in that
+   commit — `int32_t*` looked up as a view struct because `int32_t` ends in
+   `_t`, and `CHARACTER(MaxLineLength)`, this unit's principal output, reported
+   `UNOBSERVABLE` because its width is a module PARAMETER rather than a literal.
+   R12_narrowing_width had the same literal-only blind spot (loop `024982b`).
+
+**THE R12 WIDENING KILLED NOTHING ON ITS OWN** — 0.667 before and after, +12
+cases — and became three kills only once `char_assign` was rewritten. A rule
+that puts a boundary in the corpus and a translation with no site at which that
+boundary changes an answer are two halves of one measurement.
+
+**A RED TEST THAT CORROBORATES ANOTHER UNIT'S.** Disabling FindLine's name
+comparison moves **1,857,893 of 5,252,000 across 147 channels** — the same three
+figures as `gate/GetWords.redtest.json`. Not a coincidence: GetWords' red test
+blanks every word, so FindLine then compares a blank word against a non-blank
+name and matches nothing. Two perturbations of two units converging on one state
+is what a same-build control buys, taken here for free.
+
+**AND A CONTROL THAT TOOK TWO ATTEMPTS.** The two declared equivalences enlarge
+a fixed-width local by one byte; a canary in that byte reports 0 of 2370
+disturbed. The first control for that probe — `conv2uc_c(ParamNameUC,
+MaxParamLength + 1)` — was a **no-op**, because Conv2UC writes a byte only when
+it is a lowercase letter and the sentinel is `\x7f`. It reported 0 of 2370, the
+same number as the probe, and for one run a dead control was indistinguishable
+from a passing probe (P10). The control now writes the byte unconditionally:
+2370 of 2370.
+
+---
+
 **As of 2026-08-14: unit #31 `Debug` is `deferred` and NOT CLOSED** — the
 mutation score is an honest **0.6798** against a threshold of 1.000, and the
 survivors are eight named shapes rather than a scatter. Everything else this
@@ -1928,11 +2030,16 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-29 attempted / **27 integrated** / 0 integrated_unexercised / 0 out_of_scope /
-**1 deferred** (unit #29 `CheckInputs`) / **1 blocked** (unit #17
-`Read_OL_Input`).
+32 attempted / **28 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+**3 deferred** (unit #29 `CheckInputs`, unit #31 `Debug`, unit #32 `FindLine`) /
+**1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 40 remain. 27 + 1 + 1 + 40 = 69.
+69 units in `plan.json`; 37 remain. 28 + 3 + 1 + 37 = 69.
+
+RECOUNTED at unit #32 from `plan.json`, not incremented — the block was two
+units stale again (it still read `27 / 1 / 40` across units #30 and #31), which
+is the fourth time, and the fourth time the unit that fixed it was not the unit
+that broke it.
 
 **Unit #29 `CheckInputs` moved from the integrated count to `deferred`, and the
 count is one lower than it was.** Its translation ships and its green layers are
