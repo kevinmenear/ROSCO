@@ -7904,3 +7904,156 @@ load is refused before `Debug` is called and a second Init after `kill_discon`
 reloads the library. Both are now equivalence declarations resting on a
 measurement instead of survivors resting on an argument. **Ask what the CALLER
 guards before adding an input for a guard inside the callee.**
+
+## Unit #36 `PitchSaturation` — 2026-08-14
+
+### The differential harness failed 1292 of 1292, and the cause was the generator
+
+`expand_derived` prefers a REAL Fortran field as an allocatable array's extent
+(`_EXTENT_FIELD_PATTERNS`: `PS_BldPitchMin_N` for `PS_BldPitchMin`). VIT's view
+struct carries `n_PS_BldPitchMin` for every allocatable field regardless, and
+`emit.py`'s bridge-call emitter passes `&<inst>.n_PS_BldPitchMin`
+unconditionally. So for exactly those fields the two halves of the harness
+disagreed about which member holds the extent, and **nothing assigned the one
+the bridge passes**: the reference allocated zero elements, the translation read
+an extent of 0, and the C++ side interpolated over a table it believed was
+empty.
+
+Fixed in `translation-loop e54bef7`, one guarded line, which cannot fire where
+the two names already coincide — i.e. for almost every array in the campaign.
+The failing artifact is kept at
+`evidence/PitchSaturation/harness_generator_defect/`.
+
+**The exposure was measured, not assumed.** Five fields in this campaign's types
+have a companion count: `WE_CP`, `WE_FOPoles`, `PS_BldPitchMin`,
+`SU_LoadStages` (`ControlParameters`) and `ACC_INFILE` (`LocalVariables`). Two
+committed translations read one of their extents, and **`CheckInputs` is one**:
+its `n_SU_LoadStages` was 0 in every case, so `any_lt(SU_LoadStages, ...)` was
+unreachable in both its harness green and its mutation score. That is a closed
+unit whose evidence is weaker than it reads. **Not fixed here** — a re-take of
+`CheckInputs` is a dispatch, not a paragraph — and it is put to the Driver.
+
+### A pre-integration reference gates a deferred CHARACTER twice; the shipped build gates it once
+
+The last 16 of the 1292 are the 16 consecutive capacities in `[14, 29]`, and
+`len("PitchSaturation:")` is 16. That is not a coincidence to be explained away:
+`interp1d`'s prefix fits in a 14-byte buffer and this unit's does not, so the
+translation keeps the first write and refuses the second.
+
+The reference does something else, and the reason is the tree it runs on.
+`interp1d` is ALREADY INTEGRATED, so the Fortran `interp1d` the reference calls
+re-enters C++ through its own bridge, which populates a FRESH view over the
+module staging buffer `vit_defchar_errmsg_errorvariables` — a length that is
+VIT's and not the case's. The inner write is therefore ungated, both prefixes
+land in the (reallocating, unbounded) Fortran string, and the case's stated
+capacity is applied ONCE, at the harness bridge's export, where it refuses the
+whole thing and leaves the buffer at its input value.
+
+**This generalises beyond this unit**, and that is why it is here rather than
+only in the unit's evidence: *any* unit whose callee is already integrated and
+whose callee writes a deferred-length CHARACTER output will double-gate its
+reference under `R13_staging_capacity`. It is unit #29's finding — what the
+harness measures before integration is not the program it measures after —
+reached from a third direction.
+
+`R13` was ABLATED for this unit's scored corpus, with the cost stated: the
+refusal boundary of `assign_errmsg` is unreachable here, so the standing
+capacity-guard declaration (fifth unit) does not stand beside a rule that could
+have killed it. **Two candidate remedies, neither taken inside this unit:**
+
+  * teach the generated comparison to count a case INADMISSIBLE when the
+    reference's bridge REFUSED to export an output — it already prints a
+    diagnostic when it does. `inadmissible` exists in the artifact and in
+    `run.py`, and the GENERATED C++ never increments it. That is the principled
+    fix and it changes what every unit's `checked` means (X3).
+  * let `harness/ranges.toml` bound R13's ladder per unit. Cheaper, and it
+    hard-codes a number that belongs to the unit's own output length.
+
+### `--disable <rule>` renders an ablated rule as `N/A` with a FALSE reason (P6)
+
+Measured on the same run. With `R13_staging_capacity` ablated the artifact's
+`rule_coverage` reads
+
+```
+N/A  R13_staging_capacity  no deferred-length CHARACTER output -- no parameter
+                           whose LENGTH the callee chooses, so no staging buffer
+                           whose capacity could be swept
+```
+
+which is untrue: `ErrVar%ErrMsg` is exactly that, and the un-ablated run of the
+same unit reports `applied R13_staging_capacity 256 case(s)`. So an ablation is
+not merely invisible in the machine-readable file — it is recorded as an
+inapplicability, which is the one thing it is not. **An artifact must not be
+able to say a rule found nothing to do when it was told not to look.** Nothing
+in this campaign's evidence should cite `rule_coverage` as proof that a rule was
+applicable; this unit's narrowing is recorded in its own evidence and in
+`STATUS.md` instead. Proposed as a loop-level fix: a third state, `off`, with
+the flag that produced it.
+
+### VIT counts a build failure as a demonstrated kernel red test, and returns
+
+`vit/redtest.py:candidates` rewrites `return <expr>;` with `re.subn` over the
+WHOLE FILE rather than over the translated function's body. This unit's
+`errmsg_trim` helper returns a `std::string`, so the perturbed file contains
+`return (std::string(...)) * 1.00001;` and does not compile — and
+`cli.py:_run_red_test` takes the branch commented *"a perturbation that will not
+build is a red of the crudest kind, and an honest one"* and RETURNS, so the
+value-level perturbation is never attempted. `vit.yaml` then records
+`red_test: demonstrated` for a kernel no perturbed build ever ran against.
+
+It is unit #10's finding with the sign flipped — a stub that FAILED because
+`make` never built it — and it lands in the one field a later reader would trust
+for exactly this question. The same shape fires on any translation with a
+non-arithmetic `return` in a helper; in this tree that is at least
+`interp1d.cpp` and `sigma.cpp`, which carry the identical helper. **A
+`red_test: demonstrated` in `vit.yaml` is therefore not evidence, on its own,
+that any kernel can discriminate.**
+
+Not fixed inside this unit: X2 says do not work around a tool bug we control,
+X3 says do not change a verification default mid-run, and here they point in
+opposite directions — the fix would change what `red_test` means for the 35
+units already carrying one. Put to the Driver. What was done instead is the
+measurement VIT did not make: seven stubs through the committed kernel.
+
+### `*build*` in an inherited `.gitignore` silently drops evidence (K3)
+
+`.gitignore:65` is upstream ROSCO's and matches by FILENAME anywhere in the
+tree. Five evidence artifacts across four units were untracked by it, and every
+one of them is the artifact that records a FAILURE — including
+`evidence/PIIController/postintegration_transient_build_failure.txt`, whose
+story `STATUS.md` tells in prose while the file existed on one machine only.
+`git add -A` reports nothing; the commit looks complete. Closed by addition
+(P5): three negations under `evidence/`. The same shape was already noted three
+lines above in that file for `fixtures/bladed_stub/build.sh`, so this is the
+second time the pattern has caught something somebody needed — **an inherited
+ignore rule is a hazard to every artifact a campaign invents a name for.**
+
+### The two ErrMsg helpers are copied for the fourth time, and a shared header is now the cheaper thing
+
+`assign_errmsg` and `errmsg_trim` are byte-identical, modulo the unit name in
+two diagnostic strings, across `interp1d.cpp`, `sigma.cpp` and now
+`pitchsaturation.cpp`; `extcontroller.cpp`, `chkparsedata.cpp`,
+`updatezeromq.cpp` and `checkinputs.cpp` carry the same shape. They were copied
+here rather than shared, under P4 and with the copy stated in the file header,
+because a shared header changes how every translation in this campaign is built
+and compiled — X3's question, not a unit's.
+
+**What the duplication costs is now measurable rather than aesthetic.** Five of
+this unit's six declared equivalences are at sites in those two helpers, and
+four of the five repeat a declaration an earlier unit already made at the same
+site for the same reason. Every future unit that takes an `ErrVar` will pay the
+same five declarations. A shared, once-mutated, once-declared helper would make
+that one declaration instead of N. Proposed to the Driver as a phase-bracketed
+change (K4), not as a unit's edit.
+
+### A commutative intrinsic is a site `swap_call_args` can never kill
+
+`max(LocalVar%PS_Min_Pitch, LocalVar%PRC_Min_Pitch)` was written `std::max(a, b)`
+rather than as a hand-rolled `?:`, deliberately: a conditional would offer a
+`compare_op` mutant whose kill would prove only that the corpus contains a pair
+on the boundary, and would read as arithmetic the reference does not have. The
+price is that the operand ORDER gets no killable mutant — measured, not assumed:
+the exchange fails 0 of 1036 on a corpus that includes negative zero, where the
+two operands have different bits. This is a property of MAX and no input can
+change it, which makes it the one declaration in this unit that is a true
+equivalence rather than a blind spot.

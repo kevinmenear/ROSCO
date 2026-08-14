@@ -358,6 +358,82 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A RED TEST THAT WILL NOT COMPILE IS NOT A RED TEST, AND THE TOOL SAYS IT
+  IS.** Unit #36. `vit verify` printed `62/62 passed` and beside it *"Red test:
+  the kernel failed to build with the return value scaled by 1.00001"*, then
+  wrote `red_test: demonstrated` into `vit.yaml`.
+
+  ```
+  redtest.py rewrites EVERY `return <expr>;` in the FILE, not the function's
+  the unit's helper returns a std::string  ->  `return (std::string(...)) * 1.00001;`
+  _run_red_test: "a perturbation that will not build is a red ... and an honest
+  one" -- and RETURNS, so the value-level perturbation is never tried
+  ```
+
+  No perturbed kernel ever ran. It is unit #10's `make`-never-built-it with the
+  sign flipped, landing in the one field a later reader would trust for exactly
+  this question. **Read what a red test perturbed, not that it went red** --
+  and any translation carrying a non-arithmetic `return` in a helper is in this
+  state, which here is at least `interp1d.cpp` and `sigma.cpp` too.
+
+- **WHEN A DIFFERENTIAL HARNESS FAILS *EVERY* CASE, SUSPECT THE GENERATOR
+  BEFORE THE TRANSLATION -- AND READ THE GENERATED `_test.cpp`, NOT THE
+  ARTIFACT.** Unit #36, 1292 of 1292.
+
+  ```
+  CntrPar_a.PS_BldPitchMin_N = r.i();                 <- the buffer is sized from this
+  ...
+  &CntrPar_b.n_PS_BldPitchMin                         <- the bridge is passed this
+  grep -c n_PS_BldPitchMin <stem>_test.cpp     ->  1  <- and nothing ASSIGNS it
+  ```
+
+  `expand_derived` prefers a real Fortran field as an array's extent
+  (`_EXTENT_FIELD_PATTERNS`) while VIT's view struct always carries
+  `n_<field>`, and the two halves disagreed. The reference allocated ZERO
+  elements. **The grep is the diagnosis in one line**: a struct member that
+  appears exactly once, at a call site, is a member nobody filled.
+
+  Five fields in this campaign have a companion count -- `WE_CP`,
+  `WE_FOPoles`, `PS_BldPitchMin`, `SU_LoadStages`, `ACC_INFILE` -- and
+  `CheckInputs` is closed with its `n_SU_LoadStages` at 0 in every case.
+
+- **A CALLEE THAT IS ALREADY INTEGRATED GIVES THE PRE-INTEGRATION REFERENCE A
+  SECOND CAPACITY, AND R13 IS WHERE IT SHOWS.** Unit #36, 16 of 1292, and the
+  16 is `len("PitchSaturation:")`.
+
+  ```
+  capacity < 14      neither prefix fits          both sides agree
+  capacity 14..29    interp1d's fits, this unit's does not     <- the 16
+  capacity >= 30     both fit                     both sides agree
+  ```
+
+  The reference calls the Fortran `interp1d`, which re-enters C++ through its
+  own bridge over the MODULE staging buffer -- so the inner write is not gated
+  by the case's capacity, both prefixes land in the unbounded Fortran string,
+  and the stated capacity is applied once, at export, where it refuses
+  everything. The shipped build gates once. **Any unit whose already-integrated
+  callee writes a deferred-length CHARACTER output is in this state.**
+
+- **`--disable <rule>` IS RECORDED AS `N/A` WITH A REASON THAT IS FALSE.** Unit
+  #36. Ablating `R13_staging_capacity` makes the artifact say *"no
+  deferred-length CHARACTER output"* about a unit whose un-ablated run reports
+  `applied R13_staging_capacity 256 case(s)`. An ablation is not merely
+  invisible in the machine-readable file, it is recorded as the one thing it is
+  not. **Do not cite `rule_coverage` as evidence that a rule was applicable.**
+
+- **AN INHERITED `.gitignore` PATTERN IS A HAZARD TO EVERY ARTIFACT THE
+  CAMPAIGN INVENTS A NAME FOR.** Unit #36. `*build*` at `.gitignore:65` is
+  upstream ROSCO's and matches by FILENAME anywhere in the tree; five evidence
+  artifacts across four units were untracked by it, and every one records a
+  FAILURE. `git add -A` prints nothing and the commit reads as complete.
+
+  ```
+  git ls-files --others --ignored --exclude-standard evidence
+  ```
+
+  Run it before believing an evidence directory is committed. Closed by
+  addition, not by editing line 65.
+
 - **A DEMONSTRATED RED TEST IS NOT A DISCRIMINATING CORPUS, AND THE TWO
   SENTENCES ARE ONE WORD APART.** Unit #35. `vit verify` printed `20/20 passed`
   and, beside it, `the kernel reported a mismatch with input 'error' offset by

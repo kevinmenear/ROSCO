@@ -4,6 +4,119 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-14: unit #36 `PitchSaturation` is `integrated` and CLOSED** —
+all five layers exist, all five ran, all five are red-tested, and the mutation
+score is **1.000** on 9 behavioural mutants with **6 declared equivalent**. It
+is the campaign's most strongly gate-visible unit — a 0.05 rad offset on its
+return value moves **1,976,629 of 5,252,000** compared values, 38% of everything
+the gate compares — and its differential harness needed **three separate
+repairs, one of them to the generator itself**, before it could produce a number
+at all.
+
+Every count below is read from the committed artifact named in its row.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases (`evidence/PitchSaturation/kernel.verify_fields.csv`) | 62/62, 16,306 field rows `IDENTICAL` | seven stubs: only **4** of them can fail, and the 3 that fail all pass the same 21 cases |
+| differential harness (`harness/PitchSaturation.json`) | **1036 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **1036 of 1036** |
+| mutation (`mutation/PitchSaturation.json`) | **9 of 9 behavioural, 1.000**, 6 declared equivalent, 0 no-compile, 6 operators — **0.600 UNDECLARED**, `mutation/PitchSaturation.undeclared.json` | the score *is* the red test, 9 times |
+| post-integration (`harness/PitchSaturation.postintegration.json`) | 1036 checked, 0 failed | the wrapper's LocalVar copy-back deleted: **1036 of 1036** |
+| gate, 27 scenarios (`gate/PitchSaturation.json`) | 5,252,000 values / 351 channels, 0 mismatched | the return value +0.05 rad moves **1,976,629 of 5,252,000**, revert-verified |
+
+**THE DIFFERENTIAL HARNESS FAILED 1292 OF 1292 AND THE CAUSE WAS THE
+GENERATOR.** `expand_derived` prefers a real Fortran field as an allocatable
+array's extent — `PS_BldPitchMin_N` for `PS_BldPitchMin` — while VIT's view
+struct carries `n_PS_BldPitchMin` and the bridge-call emitter passes
+`&<inst>.n_PS_BldPitchMin` unconditionally. Nothing assigned it. The reference
+allocated **zero** elements and the translation read an extent of **0**, so the
+C++ side interpolated over a table it believed had no entries. Fixed in
+`translation-loop e54bef7`, one guarded line; the failing artifact is kept.
+
+```
+1292 of 1292   the view struct's extent member never assigned     <- generator
+ 136 of 1292   the two extents drawn independently                <- ranges.toml
+  16 of 1292   the R13 capacity ladder, and 16 == len("PitchSaturation:")
+   0 of 1036   the number
+```
+
+**EXPOSURE OF THAT DEFECT TO UNITS ALREADY CLOSED, STATED RATHER THAN
+ASSUMED.** Five fields in this campaign's types have a companion count —
+`WE_CP`, `WE_FOPoles`, `PS_BldPitchMin`, `SU_LoadStages` in `ControlParameters`
+and `ACC_INFILE` in `LocalVariables`. Two committed translations read one of
+their extents, and one of the two is **`CheckInputs`**: its `n_SU_LoadStages`
+was 0 in every case, so `any_lt(CntrPar->SU_LoadStages, ...)` was unreachable in
+both its harness green and its mutation score. Reported, not fixed here.
+
+**THE LAST 16 ARE AN ARITHMETIC IDENTITY, NOT A RESIDUE.** `len("PitchSaturation:")`
+is 16, and the failures are the 16 consecutive capacities in [14, 29] — where
+`interp1d`'s prefix fits and this unit's does not. The pre-integration reference
+gates `ErrMsg` **twice**, through two different buffers: `interp1d` is already
+integrated, so it re-enters C++ through its own bridge over the module staging
+buffer, and the case's stated capacity is applied only once, at export. The
+shipped build gates once — one `ErrVar_view` in the wrapper, one direct
+`interp1d_c` call in the `.cpp`, checked in the source rather than claimed.
+`R13_staging_capacity` is **ablated** for the scored corpus and the cost is
+named: the refusal boundary of `assign_errmsg` is unreachable here.
+
+**VIT'S OWN KERNEL RED TEST RECORDED `demonstrated` HAVING NEVER RUN A PERTURBED
+KERNEL.** `redtest.py` rewrites *every* `return <expr>;` in the file, this
+translation's `errmsg_trim` returns a `std::string`, the perturbed file does not
+compile, and `_run_red_test` counts a build failure as "a red of the crudest
+kind, and an honest one" — then returns before trying the value-level
+perturbation. Unit #10's finding mirrored, landing in a field named `red_test`.
+The two false lines are removed from `vit.yaml` with the reason written where
+they were, and the kernel's discriminating power was measured by hand instead.
+
+**THE SAME SEVEN STUBS THROUGH BOTH INSTRUMENTS, WHICH IS WHAT SEPARATES A
+BLINDNESS FROM AN EQUIVALENCE.**
+
+```
+                          kernel   harness
+                           of 62   of 1036
+noop                          41      1036
+wrong-constant                62      1036
+unfiltered-wind               40       249
+no-ps-min-pitch               40      1036
+no-max                         0       192   <- observable; the kernel cannot see it
+max-swapped                    0         0   <- EQUIVALENT, and now measured
+no-errmsg                      0      1004   <- observable; NO simulation instrument sees it
+```
+
+`PRC_Min_Pitch` is 0.0 in all 62 kernel cases and `aviFAIL` is 0 in all 62;
+`coverage/line_coverage.json` says the same of the whole simulation —
+`ControllerBlocks.f90:543`, **0 hits in 27 scenarios** against 391,977 on the
+three statements around it.
+
+**SIX OF NINE SURVIVORS DECLARED, AND WHERE THEY ARE IS THE ANSWER TO WHETHER
+SIX IS TOO MANY.** This unit is three statements carrying six mutants; **five
+are killed** and the sixth is the `max`'s argument order, commutative and
+measured at 0 of 1036 on a corpus that includes negative zero. The other five
+are at sites in the two helper functions **copied verbatim from
+`interp1d.cpp`**, and four of the five carry a standing declaration from an
+earlier unit at the same site for the same reason — the capacity guard for the
+**fifth** time. Each is measured by a counter probe run GREEN over all 1036
+cases: 1004 calls to `errmsg_trim`, `n_ErrMsg` 9..19, cap 4097..4106, longest
+message 35, and **zero** at `n == 1`, `n <= 0`, `s.size() == cap` or a trailing
+blank.
+
+**AND TWO OF THOSE ZEROS ARE STRUCTURAL, WHICH IS STRONGER THAN A COUNT.**
+`errmsg_trim` runs only under `IF (aviFAIL < 0)`; `aviFAIL` is negative there
+only because `interp1d_c` already ran; so interp1d's own tail has already left
+`"interp1d:" + TRIM(...)` in the field — at least nine characters, and with the
+trailing blanks removed. A one-character message and a trailing blank cannot
+reach this line **while the callee remains interp1d**. `interp1d` kills both of
+those mutants at the identical source line. The blindness belongs to the callee.
+
+**K3: FIVE EVIDENCE ARTIFACTS ACROSS FOUR UNITS WERE SILENTLY UNTRACKED.**
+`.gitignore:65`'s `*build*` is upstream ROSCO's and matches by filename anywhere
+in the tree, so an evidence file whose name contains "build" is dropped by
+`git add -A` with no output. All five that existed record a FAILURE — including
+the transient build failure this file tells the story of for #35, which until
+now existed on one machine only. Closed by addition: three negations under
+`evidence/`.
+
+---
+
 **As of 2026-08-14: unit #35 `PIIController` is `integrated` and CLOSED** — all
 five layers exist, all five ran, all five are red-tested, and the mutation score
 is **1.000** on 30 behavioural mutants with **nothing declared equivalent**, on
