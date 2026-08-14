@@ -1,0 +1,12 @@
+site01  line  76 col  18  piP->ITerm[i] = I0;
+site02  line  77 col  22  piP->ITermLast[i] = I0;
+site03  line  78 col  18  piP->ELast[i] = 0.0;
+site04  line  91 col  18  piP->ITerm[i] = piP->ITerm[i] + DT * ki * error;
+site05  line  91 col  34  piP->ITerm[i] = piP->ITerm[i] + DT * ki * error;
+site06  line 100 col  18  piP->ITerm[i] = saturate_c(piP->ITerm[i], minValue, maxValue);
+site07  line 100 col  45  piP->ITerm[i] = saturate_c(piP->ITerm[i], minValue, maxValue);
+site08  line 112 col  53  const double DTerm = kd * (EFilt - piP->ELast[i]) / DT;
+site09  line 121 col  60  PIDController_result = saturate_c(PTerm + piP->ITerm[i] + DTerm,
+site10  line 132 col  22  piP->ITermLast[i] = piP->ITerm[i];
+site11  line 132 col  38  piP->ITermLast[i] = piP->ITerm[i];
+site12  line 133 col  18  piP->ELast[i] = EFilt;
