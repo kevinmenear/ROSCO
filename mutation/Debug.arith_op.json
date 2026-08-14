@@ -1,0 +1,203 @@
+{
+  "baseline": {
+    "extra": [],
+    "files_compared": 4,
+    "missing": [],
+    "records_compared": 72017,
+    "records_mismatched": 0
+  },
+  "campaign_rev": "5ca70c5-dirty",
+  "capped_operators": [
+    "compare_op",
+    "const_tweak",
+    "index_offset"
+  ],
+  "compared_against": "fortran_reference_dbg_archive",
+  "equivalent_declared": 0,
+  "killed": 10,
+  "limit_per_operator": 40,
+  "loop_rev": "897d67c",
+  "mutants": 12,
+  "nocompile": 1,
+  "nocompile_ratio": 0.07692307692307693,
+  "nocompile_refused": false,
+  "operator_population": {
+    "arith_op": 13,
+    "compare_op": 40,
+    "const_tweak": 40,
+    "drop_call": 5,
+    "drop_factor": 1,
+    "index_offset": 40,
+    "negate_cond": 33,
+    "swap_call_args": 1,
+    "swap_callee": 1,
+    "swap_operands": 7
+  },
+  "operators": [
+    "arith_op"
+  ],
+  "operators_filter": [
+    "arith_op"
+  ],
+  "operators_filter_unmatched": [],
+  "oracle": "byte identity of *.RO.dbg against the committed `pre` archive, produced by a build whose Debug was Fortran",
+  "reference_archive": "preall",
+  "results": [
+    {
+      "after": "pos + buf.size",
+      "before": "pos - buf.size",
+      "killed": true,
+      "line": 103,
+      "mid": "d4c8068f",
+      "operator": "arith_op",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": "c - n",
+      "before": "c + n",
+      "killed": true,
+      "line": 132,
+      "mid": "7123476f",
+      "operator": "arith_op",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": "W + n",
+      "before": "W - n",
+      "killed": true,
+      "line": 132,
+      "mid": "3545793b",
+      "operator": "arith_op",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": "w + len",
+      "before": "w - len",
+      "killed": true,
+      "line": 141,
+      "mid": "0ef3b09f",
+      "operator": "arith_op",
+      "outcome": "ok",
+      "records_mismatched": 7
+    },
+    {
+      "after": "epos - 1",
+      "before": "epos + 1",
+      "killed": true,
+      "line": 213,
+      "mid": "fe0c1b74",
+      "operator": "arith_op",
+      "outcome": "ok",
+      "records_mismatched": 71996
+    },
+    {
+      "after": "epos - 2",
+      "before": "epos + 2",
+      "killed": true,
+      "line": 214,
+      "mid": "e0470b55",
+      "operator": "arith_op",
+      "outcome": "ok",
+      "records_mismatched": 71996
+    },
+    {
+      "after": "esign - edig",
+      "before": "esign + edig",
+      "killed": true,
+      "line": 222,
+      "mid": "404c7b6a",
+      "operator": "arith_op",
+      "outcome": "nocompile",
+      "records_mismatched": 0
+    },
+    {
+      "after": "i + 1",
+      "before": "i - 1",
+      "killed": true,
+      "line": 267,
+      "mid": "62399755",
+      "operator": "arith_op",
+      "outcome": "ok",
+      "records_mismatched": 16000
+    },
+    {
+      "after": "n + 1",
+      "before": "n - 1",
+      "killed": false,
+      "line": 276,
+      "mid": "33792ec2",
+      "operator": "arith_op",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "Ind + 1",
+      "before": "Ind - 1",
+      "killed": true,
+      "line": 645,
+      "mid": "f2473b35",
+      "operator": "arith_op",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": "Ind + 1",
+      "before": "Ind - 1",
+      "killed": true,
+      "line": 646,
+      "mid": "2c3e1fe1",
+      "operator": "arith_op",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": "Ind + 1",
+      "before": "Ind - 1",
+      "killed": true,
+      "line": 653,
+      "mid": "6ab4b919",
+      "operator": "arith_op",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": "LocalVar->GenSpeedF / RPS2RPM",
+      "before": "LocalVar->GenSpeedF * RPS2RPM",
+      "killed": false,
+      "line": 734,
+      "mid": "1efda206",
+      "operator": "arith_op",
+      "outcome": "ok",
+      "records_mismatched": 0
+    }
+  ],
+  "scenarios": [
+    27,
+    28
+  ],
+  "score": 0.8333333333333334,
+  "slice": null,
+  "survived": 2,
+  "survivors": [
+    {
+      "after": "n + 1",
+      "before": "n - 1",
+      "id": "33792ec2",
+      "line": 276,
+      "operator": "arith_op"
+    },
+    {
+      "after": "LocalVar->GenSpeedF / RPS2RPM",
+      "before": "LocalVar->GenSpeedF * RPS2RPM",
+      "id": "1efda206",
+      "line": 734,
+      "operator": "arith_op"
+    }
+  ],
+  "total": 13,
+  "unit": "Debug",
+  "vit_rev": "f4a711d"
+}

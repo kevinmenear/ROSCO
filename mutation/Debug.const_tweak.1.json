@@ -1,0 +1,287 @@
+{
+  "baseline": {
+    "extra": [],
+    "files_compared": 4,
+    "missing": [],
+    "records_compared": 72017,
+    "records_mismatched": 0
+  },
+  "campaign_rev": "5ca70c5-dirty",
+  "capped_operators": [
+    "compare_op",
+    "const_tweak",
+    "index_offset"
+  ],
+  "compared_against": "fortran_reference_dbg_archive",
+  "equivalent_declared": 0,
+  "killed": 16,
+  "limit_per_operator": 40,
+  "loop_rev": "897d67c",
+  "mutants": 20,
+  "nocompile": 0,
+  "nocompile_ratio": 0.0,
+  "nocompile_refused": false,
+  "operator_population": {
+    "arith_op": 13,
+    "compare_op": 40,
+    "const_tweak": 40,
+    "drop_call": 5,
+    "drop_factor": 1,
+    "index_offset": 40,
+    "negate_cond": 33,
+    "swap_call_args": 1,
+    "swap_callee": 1,
+    "swap_operands": 7
+  },
+  "operators": [
+    "const_tweak"
+  ],
+  "operators_filter": [
+    "const_tweak"
+  ],
+  "operators_filter_unmatched": [],
+  "oracle": "byte identity of *.RO.dbg against the committed `pre` archive, produced by a build whose Debug was Fortran",
+  "reference_archive": "preall",
+  "results": [
+    {
+      "after": "2",
+      "before": "1",
+      "killed": true,
+      "line": 110,
+      "mid": "e65fcae4",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 136086
+    },
+    {
+      "after": "513",
+      "before": "512",
+      "killed": false,
+      "line": 188,
+      "mid": "9d5eb39f",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "killed": true,
+      "line": 212,
+      "mid": "0e553301",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 71996
+    },
+    {
+      "after": "3",
+      "before": "2",
+      "killed": true,
+      "line": 214,
+      "mid": "72c6a83c",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 5101
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "killed": true,
+      "line": 215,
+      "mid": "8b49b1d9",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 657
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "killed": true,
+      "line": 215,
+      "mid": "589a1f4d",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 71996
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "killed": true,
+      "line": 221,
+      "mid": "d4987f5c",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 71996
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "killed": true,
+      "line": 253,
+      "mid": "ef4c4afc",
+      "operator": "const_tweak",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "killed": true,
+      "line": 262,
+      "mid": "a9dcf54e",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 16001
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "killed": true,
+      "line": 267,
+      "mid": "d8be5e68",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 16000
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "killed": false,
+      "line": 276,
+      "mid": "c05d2bfe",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "9",
+      "before": "8",
+      "killed": false,
+      "line": 287,
+      "mid": "49e29dfe",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "12",
+      "before": "11",
+      "killed": true,
+      "line": 293,
+      "mid": "7f272039",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 3
+    },
+    {
+      "after": "9",
+      "before": "8",
+      "killed": true,
+      "line": 295,
+      "mid": "a3951016",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 3
+    },
+    {
+      "after": "7",
+      "before": "6",
+      "killed": true,
+      "line": 297,
+      "mid": "f0c03606",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 3
+    },
+    {
+      "after": "58.295779513",
+      "before": "57.2957795130",
+      "killed": false,
+      "line": 304,
+      "mid": "574c2f3d",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "killed": true,
+      "line": 316,
+      "mid": "b89d4b0e",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 15688
+    },
+    {
+      "after": "3",
+      "before": "2",
+      "killed": true,
+      "line": 318,
+      "mid": "fa58712c",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 39998
+    },
+    {
+      "after": "5",
+      "before": "4",
+      "killed": true,
+      "line": 320,
+      "mid": "30c1db0b",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 39421
+    },
+    {
+      "after": "7",
+      "before": "6",
+      "killed": true,
+      "line": 322,
+      "mid": "f85eb899",
+      "operator": "const_tweak",
+      "outcome": "ok",
+      "records_mismatched": 39998
+    }
+  ],
+  "scenarios": [
+    27,
+    28
+  ],
+  "score": 0.8,
+  "slice": "1/2",
+  "survived": 4,
+  "survivors": [
+    {
+      "after": "513",
+      "before": "512",
+      "id": "9d5eb39f",
+      "line": 188,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "c05d2bfe",
+      "line": 276,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "9",
+      "before": "8",
+      "id": "49e29dfe",
+      "line": 287,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "58.295779513",
+      "before": "57.2957795130",
+      "id": "574c2f3d",
+      "line": 304,
+      "operator": "const_tweak"
+    }
+  ],
+  "total": 20,
+  "unit": "Debug",
+  "vit_rev": "f4a711d"
+}

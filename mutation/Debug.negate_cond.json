@@ -1,0 +1,403 @@
+{
+  "baseline": {
+    "extra": [],
+    "files_compared": 4,
+    "missing": [],
+    "records_compared": 72017,
+    "records_mismatched": 0
+  },
+  "campaign_rev": "5ca70c5-dirty",
+  "capped_operators": [
+    "compare_op",
+    "const_tweak",
+    "index_offset"
+  ],
+  "compared_against": "fortran_reference_dbg_archive",
+  "equivalent_declared": 0,
+  "killed": 29,
+  "limit_per_operator": 40,
+  "loop_rev": "897d67c",
+  "mutants": 31,
+  "nocompile": 2,
+  "nocompile_ratio": 0.06060606060606061,
+  "nocompile_refused": false,
+  "operator_population": {
+    "arith_op": 13,
+    "compare_op": 40,
+    "const_tweak": 40,
+    "drop_call": 5,
+    "drop_factor": 1,
+    "index_offset": 40,
+    "negate_cond": 33,
+    "swap_call_args": 1,
+    "swap_callee": 1,
+    "swap_operands": 7
+  },
+  "operators": [
+    "negate_cond"
+  ],
+  "operators_filter": [
+    "negate_cond"
+  ],
+  "operators_filter_unmatched": [],
+  "oracle": "byte identity of *.RO.dbg against the committed `pre` archive, produced by a build whose Debug was Fortran",
+  "reference_archive": "preall",
+  "results": [
+    {
+      "after": "if (!(pos > buf.size()) buf.append(pos - buf.size(), ' '))",
+      "before": "if (pos > buf.size()) buf.append(pos - buf.size(), ' ')",
+      "killed": true,
+      "line": 103,
+      "mid": "254fe3f4",
+      "operator": "negate_cond",
+      "outcome": "nocompile",
+      "records_mismatched": 0
+    },
+    {
+      "after": "if (!(n > static_cast<size_t>(W)))",
+      "before": "if (n > static_cast<size_t>(W))",
+      "killed": true,
+      "line": 130,
+      "mid": "ae2c8ef1",
+      "operator": "negate_cond",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": "if (!(len >= w))",
+      "before": "if (len >= w)",
+      "killed": true,
+      "line": 138,
+      "mid": "270ee218",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 7
+    },
+    {
+      "after": "if (!(static_cast<int>(text.size()) > w))",
+      "before": "if (static_cast<int>(text.size()) > w)",
+      "killed": true,
+      "line": 153,
+      "mid": "8fa0be97",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 71997
+    },
+    {
+      "after": "if (!(std::isnan(v)))",
+      "before": "if (std::isnan(v))",
+      "killed": true,
+      "line": 168,
+      "mid": "a8d57fdd",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 71996
+    },
+    {
+      "after": "if (!(std::isinf(v)))",
+      "before": "if (std::isinf(v))",
+      "killed": true,
+      "line": 169,
+      "mid": "fea98b67",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 71996
+    },
+    {
+      "after": "if (!(!nonfinite_text(v, w, text)))",
+      "before": "if (!nonfinite_text(v, w, text))",
+      "killed": true,
+      "line": 187,
+      "mid": "9f58308d",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 71996
+    },
+    {
+      "after": "if (!(!nonfinite_text(v, w, text)))",
+      "before": "if (!nonfinite_text(v, w, text))",
+      "killed": true,
+      "line": 206,
+      "mid": "cf5a6ca8",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 71996
+    },
+    {
+      "after": "if (!(static_cast<int>(edig.size()) > e))",
+      "before": "if (static_cast<int>(edig.size()) > e)",
+      "killed": true,
+      "line": 217,
+      "mid": "118d61d8",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 71996
+    },
+    {
+      "after": "if (!(!avrIndices_established))",
+      "before": "if (!avrIndices_established)",
+      "killed": true,
+      "line": 251,
+      "mid": "6f55cafd",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 16001
+    },
+    {
+      "after": "if (!((LocalVar->iStatus == 0) || (LocalVar->iStatus == -9)))",
+      "before": "if ((LocalVar->iStatus == 0) || (LocalVar->iStatus == -9))",
+      "killed": true,
+      "line": 563,
+      "mid": "67aefd74",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 72000
+    },
+    {
+      "after": "if (!(CntrPar->LoggingLevel > 0))",
+      "before": "if (CntrPar->LoggingLevel > 0)",
+      "killed": true,
+      "line": 564,
+      "mid": "f94f271f",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "if (!(UnDb))",
+      "before": "if (UnDb)",
+      "killed": true,
+      "line": 574,
+      "mid": "9f05544d",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 40006
+    },
+    {
+      "after": "if (!(CntrPar->LoggingLevel > 1))",
+      "before": "if (CntrPar->LoggingLevel > 1)",
+      "killed": true,
+      "line": 599,
+      "mid": "23a8e325",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "if (!(UnDb2))",
+      "before": "if (UnDb2)",
+      "killed": true,
+      "line": 601,
+      "mid": "9504ab6f",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 16003
+    },
+    {
+      "after": "if (!(CntrPar->LoggingLevel > 2))",
+      "before": "if (CntrPar->LoggingLevel > 2)",
+      "killed": true,
+      "line": 623,
+      "mid": "00006f0f",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "if (!(idx->base_addr != nullptr) CFI_deallocate(idx))",
+      "before": "if (idx->base_addr != nullptr) CFI_deallocate(idx)",
+      "killed": true,
+      "line": 632,
+      "mid": "f5006453",
+      "operator": "negate_cond",
+      "outcome": "nocompile",
+      "records_mismatched": 0
+    },
+    {
+      "after": "if (!(CntrPar->CC_Mode > 0))",
+      "before": "if (CntrPar->CC_Mode > 0)",
+      "killed": true,
+      "line": 643,
+      "mid": "f8829fd8",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 16001
+    },
+    {
+      "after": "if (!(CntrPar->StC_Mode > 0))",
+      "before": "if (CntrPar->StC_Mode > 0)",
+      "killed": true,
+      "line": 651,
+      "mid": "5d299d4a",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 16001
+    },
+    {
+      "after": "if (!(UnDb3))",
+      "before": "if (UnDb3)",
+      "killed": true,
+      "line": 680,
+      "mid": "464f5164",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 16008
+    },
+    {
+      "after": "if (!(std::fmod(LocalVar->Time, 10.0) == 0.0))",
+      "before": "if (std::fmod(LocalVar->Time, 10.0) == 0.0)",
+      "killed": false,
+      "line": 724,
+      "mid": "1b016802",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "if (!(std::fabs(DebugOutData[I]) < 1E-99))",
+      "before": "if (std::fabs(DebugOutData[I]) < 1E-99)",
+      "killed": true,
+      "line": 748,
+      "mid": "1b97598c",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 39998
+    },
+    {
+      "after": "if (!(std::fabs(DebugOutData[I]) > 1E+99))",
+      "before": "if (std::fabs(DebugOutData[I]) > 1E+99)",
+      "killed": true,
+      "line": 749,
+      "mid": "c2b1a9a8",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 39998
+    },
+    {
+      "after": "if (!(std::fabs(LocalVarOutData[I]) < 1E-99))",
+      "before": "if (std::fabs(LocalVarOutData[I]) < 1E-99)",
+      "killed": true,
+      "line": 752,
+      "mid": "857c561e",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 15999
+    },
+    {
+      "after": "if (!(std::fabs(LocalVarOutData[I]) > 1E+99))",
+      "before": "if (std::fabs(LocalVarOutData[I]) > 1E+99)",
+      "killed": true,
+      "line": 753,
+      "mid": "b5c1088e",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 15999
+    },
+    {
+      "after": "if (!(LocalVar->n_DT % CntrPar->n_DT_Out == 0))",
+      "before": "if (LocalVar->n_DT % CntrPar->n_DT_Out == 0)",
+      "killed": true,
+      "line": 758,
+      "mid": "e06d930e",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 72000
+    },
+    {
+      "after": "if (!((CntrPar->LoggingLevel > 0) && (LocalVar->iStatus >= 0) && UnDb))",
+      "before": "if ((CntrPar->LoggingLevel > 0) && (LocalVar->iStatus >= 0) && UnDb)",
+      "killed": true,
+      "line": 759,
+      "mid": "86ab3ff6",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 40000
+    },
+    {
+      "after": "if (!((CntrPar->LoggingLevel > 1) && (LocalVar->iStatus >= 0) && UnDb2))",
+      "before": "if ((CntrPar->LoggingLevel > 1) && (LocalVar->iStatus >= 0) && UnDb2)",
+      "killed": true,
+      "line": 770,
+      "mid": "e6f83a0b",
+      "operator": "negate_cond",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": "if (!((CntrPar->LoggingLevel > 2) && (LocalVar->iStatus >= 0) && UnDb3))",
+      "before": "if ((CntrPar->LoggingLevel > 2) && (LocalVar->iStatus >= 0) && UnDb3)",
+      "killed": true,
+      "line": 781,
+      "mid": "e4a24020",
+      "operator": "negate_cond",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": "if (!(LocalVar->iStatus < 0))",
+      "before": "if (LocalVar->iStatus < 0)",
+      "killed": true,
+      "line": 800,
+      "mid": "210a2606",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 71996
+    },
+    {
+      "after": "if (!(UnDb))",
+      "before": "if (UnDb)",
+      "killed": false,
+      "line": 803,
+      "mid": "867065d9",
+      "operator": "negate_cond",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "if (!(UnDb2))",
+      "before": "if (UnDb2)",
+      "killed": true,
+      "line": 804,
+      "mid": "d478d030",
+      "operator": "negate_cond",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": "if (!(UnDb3))",
+      "before": "if (UnDb3)",
+      "killed": true,
+      "line": 805,
+      "mid": "6359370e",
+      "operator": "negate_cond",
+      "outcome": "norun",
+      "records_mismatched": 0
+    }
+  ],
+  "scenarios": [
+    27,
+    28
+  ],
+  "score": 0.9354838709677419,
+  "slice": null,
+  "survived": 2,
+  "survivors": [
+    {
+      "after": "if (!(std::fmod(LocalVar->Time, 10.0) == 0.0))",
+      "before": "if (std::fmod(LocalVar->Time, 10.0) == 0.0)",
+      "id": "1b016802",
+      "line": 724,
+      "operator": "negate_cond"
+    },
+    {
+      "after": "if (!(UnDb))",
+      "before": "if (UnDb)",
+      "id": "867065d9",
+      "line": 803,
+      "operator": "negate_cond"
+    }
+  ],
+  "total": 33,
+  "unit": "Debug",
+  "vit_rev": "f4a711d"
+}

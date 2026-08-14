@@ -1,0 +1,315 @@
+{
+  "baseline": {
+    "extra": [],
+    "files_compared": 4,
+    "missing": [],
+    "records_compared": 72017,
+    "records_mismatched": 0
+  },
+  "campaign_rev": "5ca70c5-dirty",
+  "capped_operators": [
+    "compare_op",
+    "const_tweak",
+    "index_offset"
+  ],
+  "compared_against": "fortran_reference_dbg_archive",
+  "equivalent_declared": 0,
+  "killed": 12,
+  "limit_per_operator": 40,
+  "loop_rev": "897d67c",
+  "mutants": 20,
+  "nocompile": 0,
+  "nocompile_ratio": 0.0,
+  "nocompile_refused": false,
+  "operator_population": {
+    "arith_op": 13,
+    "compare_op": 40,
+    "const_tweak": 40,
+    "drop_call": 5,
+    "drop_factor": 1,
+    "index_offset": 40,
+    "negate_cond": 33,
+    "swap_call_args": 1,
+    "swap_callee": 1,
+    "swap_operands": 7
+  },
+  "operators": [
+    "compare_op"
+  ],
+  "operators_filter": [
+    "compare_op"
+  ],
+  "operators_filter_unmatched": [],
+  "oracle": "byte identity of *.RO.dbg against the committed `pre` archive, produced by a build whose Debug was Fortran",
+  "reference_archive": "preall",
+  "results": [
+    {
+      "after": ">=",
+      "before": ">",
+      "killed": false,
+      "line": 103,
+      "mid": "c0832dce",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": ">",
+      "before": ">=",
+      "killed": false,
+      "line": 138,
+      "mid": "25fca306",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": ">",
+      "before": ">=",
+      "killed": false,
+      "line": 172,
+      "mid": "9f1af25e",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "killed": true,
+      "line": 215,
+      "mid": "0be3081c",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 5101
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "killed": true,
+      "line": 262,
+      "mid": "96795d8d",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 16001
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "killed": true,
+      "line": 276,
+      "mid": "2edfd6fa",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "killed": true,
+      "line": 563,
+      "mid": "85635876",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 71997
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "killed": true,
+      "line": 581,
+      "mid": "d4632a42",
+      "operator": "compare_op",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "killed": true,
+      "line": 599,
+      "mid": "8d713771",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "killed": false,
+      "line": 623,
+      "mid": "0c94dcd7",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "<",
+      "before": "<=",
+      "killed": true,
+      "line": 637,
+      "mid": "0e5c1df5",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 1
+    },
+    {
+      "after": "<",
+      "before": "<=",
+      "killed": true,
+      "line": 644,
+      "mid": "2221cf02",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 16001
+    },
+    {
+      "after": "<",
+      "before": "<=",
+      "killed": true,
+      "line": 652,
+      "mid": "410e0a70",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 16001
+    },
+    {
+      "after": "<",
+      "before": "<=",
+      "killed": true,
+      "line": 690,
+      "mid": "e78f6b86",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 1
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "killed": false,
+      "line": 724,
+      "mid": "ad49d403",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "killed": false,
+      "line": 748,
+      "mid": "5b456058",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "killed": true,
+      "line": 751,
+      "mid": "d26e6280",
+      "operator": "compare_op",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "killed": false,
+      "line": 753,
+      "mid": "1e024411",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "killed": false,
+      "line": 759,
+      "mid": "c2927bd0",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "killed": true,
+      "line": 763,
+      "mid": "76ce9f50",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 39998
+    }
+  ],
+  "scenarios": [
+    27,
+    28
+  ],
+  "score": 0.6,
+  "slice": "0/2",
+  "survived": 8,
+  "survivors": [
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "c0832dce",
+      "line": 103,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">",
+      "before": ">=",
+      "id": "25fca306",
+      "line": 138,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">",
+      "before": ">=",
+      "id": "9f1af25e",
+      "line": 172,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "0c94dcd7",
+      "line": 623,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "ad49d403",
+      "line": 724,
+      "operator": "compare_op"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "id": "5b456058",
+      "line": 748,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "1e024411",
+      "line": 753,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "c2927bd0",
+      "line": 759,
+      "operator": "compare_op"
+    }
+  ],
+  "total": 20,
+  "unit": "Debug",
+  "vit_rev": "f4a711d"
+}

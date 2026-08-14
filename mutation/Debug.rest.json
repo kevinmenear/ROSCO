@@ -1,0 +1,287 @@
+{
+  "baseline": {
+    "extra": [],
+    "files_compared": 4,
+    "missing": [],
+    "records_compared": 72017,
+    "records_mismatched": 0
+  },
+  "campaign_rev": "5ca70c5-dirty",
+  "capped_operators": [
+    "compare_op",
+    "const_tweak",
+    "index_offset"
+  ],
+  "compared_against": "fortran_reference_dbg_archive",
+  "equivalent_declared": 0,
+  "killed": 5,
+  "limit_per_operator": 40,
+  "loop_rev": "897d67c",
+  "mutants": 15,
+  "nocompile": 0,
+  "nocompile_ratio": 0.0,
+  "nocompile_refused": false,
+  "operator_population": {
+    "arith_op": 13,
+    "compare_op": 40,
+    "const_tweak": 40,
+    "drop_call": 5,
+    "drop_factor": 1,
+    "index_offset": 40,
+    "negate_cond": 33,
+    "swap_call_args": 1,
+    "swap_callee": 1,
+    "swap_operands": 7
+  },
+  "operators": [
+    "drop_call",
+    "drop_factor",
+    "swap_call_args",
+    "swap_callee",
+    "swap_operands"
+  ],
+  "operators_filter": [
+    "drop_call",
+    "drop_factor",
+    "swap_call_args",
+    "swap_callee",
+    "swap_operands"
+  ],
+  "operators_filter_unmatched": [],
+  "oracle": "byte identity of *.RO.dbg against the committed `pre` archive, produced by a build whose Debug was Fortran",
+  "reference_archive": "preall",
+  "results": [
+    {
+      "after": "LocalVar->GenSpeedF",
+      "before": "LocalVar->GenSpeedF * RPS2RPM",
+      "killed": false,
+      "line": 734,
+      "mid": "c37a0105",
+      "operator": "drop_factor",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "n - W",
+      "before": "W - n",
+      "killed": true,
+      "line": 132,
+      "mid": "d81d46af",
+      "operator": "swap_operands",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": "len - w",
+      "before": "w - len",
+      "killed": true,
+      "line": 141,
+      "mid": "ce4afd9a",
+      "operator": "swap_operands",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": "1 - i",
+      "before": "i - 1",
+      "killed": true,
+      "line": 267,
+      "mid": "4eb797f0",
+      "operator": "swap_operands",
+      "outcome": "norun",
+      "records_mismatched": 0
+    },
+    {
+      "after": "1 - n",
+      "before": "n - 1",
+      "killed": false,
+      "line": 276,
+      "mid": "5754fcef",
+      "operator": "swap_operands",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "1 - Ind",
+      "before": "Ind - 1",
+      "killed": false,
+      "line": 645,
+      "mid": "2de0057a",
+      "operator": "swap_operands",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "1 - Ind",
+      "before": "Ind - 1",
+      "killed": false,
+      "line": 646,
+      "mid": "db5ea484",
+      "operator": "swap_operands",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "1 - Ind",
+      "before": "Ind - 1",
+      "killed": false,
+      "line": 653,
+      "mid": "fc602620",
+      "operator": "swap_operands",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "LocalVar->Time",
+      "before": "std::fmod(LocalVar->Time, 10.0)",
+      "killed": false,
+      "line": 724,
+      "mid": "23918fb3",
+      "operator": "drop_call",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "DebugOutData[I]",
+      "before": "std::fabs(DebugOutData[I])",
+      "killed": true,
+      "line": 748,
+      "mid": "a043a789",
+      "operator": "drop_call",
+      "outcome": "ok",
+      "records_mismatched": 27473
+    },
+    {
+      "after": "DebugOutData[I]",
+      "before": "std::fabs(DebugOutData[I])",
+      "killed": false,
+      "line": 749,
+      "mid": "c64442c8",
+      "operator": "drop_call",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "LocalVarOutData[I]",
+      "before": "std::fabs(LocalVarOutData[I])",
+      "killed": true,
+      "line": 752,
+      "mid": "fbcb2c5e",
+      "operator": "drop_call",
+      "outcome": "ok",
+      "records_mismatched": 15999
+    },
+    {
+      "after": "LocalVarOutData[I]",
+      "before": "std::fabs(LocalVarOutData[I])",
+      "killed": false,
+      "line": 753,
+      "mid": "940f4622",
+      "operator": "drop_call",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "10.0, LocalVar->Time",
+      "before": "LocalVar->Time, 10.0",
+      "killed": false,
+      "line": 724,
+      "mid": "8e3d32d0",
+      "operator": "swap_call_args",
+      "outcome": "ok",
+      "records_mismatched": 0
+    },
+    {
+      "after": "remainder",
+      "before": "fmod",
+      "killed": false,
+      "line": 724,
+      "mid": "0e7debd2",
+      "operator": "swap_callee",
+      "outcome": "ok",
+      "records_mismatched": 0
+    }
+  ],
+  "scenarios": [
+    27,
+    28
+  ],
+  "score": 0.3333333333333333,
+  "slice": null,
+  "survived": 10,
+  "survivors": [
+    {
+      "after": "LocalVar->GenSpeedF",
+      "before": "LocalVar->GenSpeedF * RPS2RPM",
+      "id": "c37a0105",
+      "line": 734,
+      "operator": "drop_factor"
+    },
+    {
+      "after": "1 - n",
+      "before": "n - 1",
+      "id": "5754fcef",
+      "line": 276,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "1 - Ind",
+      "before": "Ind - 1",
+      "id": "2de0057a",
+      "line": 645,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "1 - Ind",
+      "before": "Ind - 1",
+      "id": "db5ea484",
+      "line": 646,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "1 - Ind",
+      "before": "Ind - 1",
+      "id": "fc602620",
+      "line": 653,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "LocalVar->Time",
+      "before": "std::fmod(LocalVar->Time, 10.0)",
+      "id": "23918fb3",
+      "line": 724,
+      "operator": "drop_call"
+    },
+    {
+      "after": "DebugOutData[I]",
+      "before": "std::fabs(DebugOutData[I])",
+      "id": "c64442c8",
+      "line": 749,
+      "operator": "drop_call"
+    },
+    {
+      "after": "LocalVarOutData[I]",
+      "before": "std::fabs(LocalVarOutData[I])",
+      "id": "940f4622",
+      "line": 753,
+      "operator": "drop_call"
+    },
+    {
+      "after": "10.0, LocalVar->Time",
+      "before": "LocalVar->Time, 10.0",
+      "id": "8e3d32d0",
+      "line": 724,
+      "operator": "swap_call_args"
+    },
+    {
+      "after": "remainder",
+      "before": "fmod",
+      "id": "0e7debd2",
+      "line": 724,
+      "operator": "swap_callee"
+    }
+  ],
+  "total": 15,
+  "unit": "Debug",
+  "vit_rev": "f4a711d"
+}

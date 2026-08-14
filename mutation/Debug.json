@@ -1,0 +1,465 @@
+{
+  "campaign_rev": "5ca70c5-dirty",
+  "capped_operators": [
+    "compare_op",
+    "const_tweak",
+    "index_offset"
+  ],
+  "compared_against": "fortran_reference_dbg_archive",
+  "equivalent_declared": 0,
+  "killed": 121,
+  "limit_per_operator": 40,
+  "loop_rev": "897d67c",
+  "merged_from": [
+    "mutation/Debug.compare_op.0.json",
+    "mutation/Debug.compare_op.1.json",
+    "mutation/Debug.index_offset.0.json",
+    "mutation/Debug.index_offset.1.json",
+    "mutation/Debug.const_tweak.0.json",
+    "mutation/Debug.const_tweak.1.json",
+    "mutation/Debug.negate_cond.json",
+    "mutation/Debug.arith_op.json",
+    "mutation/Debug.rest.json"
+  ],
+  "mutants": 178,
+  "nocompile": 3,
+  "nocompile_ratio": 0.016574585635359115,
+  "nocompile_refused": false,
+  "operator_population": {
+    "arith_op": 13,
+    "compare_op": 40,
+    "const_tweak": 40,
+    "drop_call": 5,
+    "drop_factor": 1,
+    "index_offset": 40,
+    "negate_cond": 33,
+    "swap_call_args": 1,
+    "swap_callee": 1,
+    "swap_operands": 7
+  },
+  "operators": [
+    "arith_op",
+    "compare_op",
+    "const_tweak",
+    "drop_call",
+    "drop_factor",
+    "index_offset",
+    "negate_cond",
+    "swap_call_args",
+    "swap_callee",
+    "swap_operands"
+  ],
+  "oracle": "byte identity of *.RO.dbg against the committed `pre` archive, produced by a build whose Debug was Fortran",
+  "reference_archive": "preall",
+  "scenarios": [
+    27,
+    28
+  ],
+  "score": 0.6797752808988764,
+  "survived": 57,
+  "survivors": [
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "c0832dce",
+      "line": 103,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">",
+      "before": ">=",
+      "id": "25fca306",
+      "line": 138,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">",
+      "before": ">=",
+      "id": "9f1af25e",
+      "line": 172,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "0c94dcd7",
+      "line": 623,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "ad49d403",
+      "line": 724,
+      "operator": "compare_op"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "id": "5b456058",
+      "line": 748,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "1e024411",
+      "line": 753,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "c2927bd0",
+      "line": 759,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "de817d8b",
+      "line": 130,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "1757a711",
+      "line": 215,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "901840cc",
+      "line": 276,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "93110a39",
+      "line": 564,
+      "operator": "compare_op"
+    },
+    {
+      "after": "==",
+      "before": "!=",
+      "id": "ab104d1e",
+      "line": 632,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "86e93a74",
+      "line": 643,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "07a95109",
+      "line": 651,
+      "operator": "compare_op"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "id": "c3a5bb71",
+      "line": 747,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "dd717e22",
+      "line": 749,
+      "operator": "compare_op"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "id": "be38d628",
+      "line": 752,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "24b5bd14",
+      "line": 770,
+      "operator": "compare_op"
+    },
+    {
+      "after": "[W + 1]",
+      "before": "[W]",
+      "id": "b9391310",
+      "line": 127,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[512 + 1]",
+      "before": "[512]",
+      "id": "76ef5f5a",
+      "line": 207,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[11 + 1]",
+      "before": "[11]",
+      "id": "70248551",
+      "line": 286,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[12 + 1]",
+      "before": "[12]",
+      "id": "4126f3b7",
+      "line": 328,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[26 + 1]",
+      "before": "[26]",
+      "id": "e6f633ad",
+      "line": 344,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[512 + 1]",
+      "before": "[512]",
+      "id": "4a57ee4a",
+      "line": 188,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[8 + 1]",
+      "before": "[8]",
+      "id": "547d0efa",
+      "line": 287,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[11 + 1]",
+      "before": "[11]",
+      "id": "ba573ef3",
+      "line": 327,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[13 + 1]",
+      "before": "[13]",
+      "id": "c933177d",
+      "line": 329,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[21 + 1]",
+      "before": "[21]",
+      "id": "4b100ace",
+      "line": 337,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[26 + 1]",
+      "before": "[26]",
+      "id": "892b672e",
+      "line": 351,
+      "operator": "index_offset"
+    },
+    {
+      "after": "9",
+      "before": "8",
+      "id": "5d2c9fbc",
+      "line": 171,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "513",
+      "before": "512",
+      "id": "53abf222",
+      "line": 207,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "633daac2",
+      "line": 215,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "201b931c",
+      "line": 218,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "477db167",
+      "line": 247,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "3df68c54",
+      "line": 262,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "1d75738a",
+      "line": 276,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "12",
+      "before": "11",
+      "id": "e62c7325",
+      "line": 286,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "10.5492966",
+      "before": "9.5492966",
+      "id": "487049bb",
+      "line": 303,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "513",
+      "before": "512",
+      "id": "9d5eb39f",
+      "line": 188,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "c05d2bfe",
+      "line": 276,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "9",
+      "before": "8",
+      "id": "49e29dfe",
+      "line": 287,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "58.295779513",
+      "before": "57.2957795130",
+      "id": "574c2f3d",
+      "line": 304,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "if (!(std::fmod(LocalVar->Time, 10.0) == 0.0))",
+      "before": "if (std::fmod(LocalVar->Time, 10.0) == 0.0)",
+      "id": "1b016802",
+      "line": 724,
+      "operator": "negate_cond"
+    },
+    {
+      "after": "if (!(UnDb))",
+      "before": "if (UnDb)",
+      "id": "867065d9",
+      "line": 803,
+      "operator": "negate_cond"
+    },
+    {
+      "after": "n + 1",
+      "before": "n - 1",
+      "id": "33792ec2",
+      "line": 276,
+      "operator": "arith_op"
+    },
+    {
+      "after": "LocalVar->GenSpeedF / RPS2RPM",
+      "before": "LocalVar->GenSpeedF * RPS2RPM",
+      "id": "1efda206",
+      "line": 734,
+      "operator": "arith_op"
+    },
+    {
+      "after": "LocalVar->GenSpeedF",
+      "before": "LocalVar->GenSpeedF * RPS2RPM",
+      "id": "c37a0105",
+      "line": 734,
+      "operator": "drop_factor"
+    },
+    {
+      "after": "1 - n",
+      "before": "n - 1",
+      "id": "5754fcef",
+      "line": 276,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "1 - Ind",
+      "before": "Ind - 1",
+      "id": "2de0057a",
+      "line": 645,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "1 - Ind",
+      "before": "Ind - 1",
+      "id": "db5ea484",
+      "line": 646,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "1 - Ind",
+      "before": "Ind - 1",
+      "id": "fc602620",
+      "line": 653,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "LocalVar->Time",
+      "before": "std::fmod(LocalVar->Time, 10.0)",
+      "id": "23918fb3",
+      "line": 724,
+      "operator": "drop_call"
+    },
+    {
+      "after": "DebugOutData[I]",
+      "before": "std::fabs(DebugOutData[I])",
+      "id": "c64442c8",
+      "line": 749,
+      "operator": "drop_call"
+    },
+    {
+      "after": "LocalVarOutData[I]",
+      "before": "std::fabs(LocalVarOutData[I])",
+      "id": "940f4622",
+      "line": 753,
+      "operator": "drop_call"
+    },
+    {
+      "after": "10.0, LocalVar->Time",
+      "before": "LocalVar->Time, 10.0",
+      "id": "8e3d32d0",
+      "line": 724,
+      "operator": "swap_call_args"
+    },
+    {
+      "after": "remainder",
+      "before": "fmod",
+      "id": "0e7debd2",
+      "line": 724,
+      "operator": "swap_callee"
+    }
+  ],
+  "total": 181,
+  "unit": "Debug",
+  "vit_rev": "f4a711d",
+  "why_split": "a dispatch's foreground command may block for 600 seconds and a mutant here costs a rebuild plus two simulations (~11s), so 181 mutants cannot be one command; compare_op, index_offset and const_tweak are additionally split in two because each alone is 40 mutants"
+}

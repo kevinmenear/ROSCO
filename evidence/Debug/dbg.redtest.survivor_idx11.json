@@ -1,0 +1,298 @@
+{
+  "a": "pre",
+  "b": "survivor_idx11",
+  "bytes_compared": 273377424,
+  "campaign_rev": "5ca70c5-dirty",
+  "files_compared": 24,
+  "files_mismatched": 1,
+  "header_records_compared": 24,
+  "loop_rev": "897d67c",
+  "mismatches": [
+    {
+      "a": "35E-01              3.65938E-05         ",
+      "b": "35E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 5
+    },
+    {
+      "a": "13E-01              2.14335E-04         ",
+      "b": "13E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 6
+    },
+    {
+      "a": "05E-01              6.58977E-04         ",
+      "b": "05E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 7
+    },
+    {
+      "a": "33E-01              1.47653E-03         ",
+      "b": "33E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 8
+    },
+    {
+      "a": "67E-01              2.75446E-03         ",
+      "b": "67E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 9
+    },
+    {
+      "a": "81E-01              4.56288E-03         ",
+      "b": "81E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 10
+    },
+    {
+      "a": "31E-01              6.95579E-03         ",
+      "b": "31E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 11
+    },
+    {
+      "a": "24E-01              9.97229E-03         ",
+      "b": "24E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 12
+    },
+    {
+      "a": "96E-01              1.36378E-02         ",
+      "b": "96E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 13
+    },
+    {
+      "a": "94E-01              1.79651E-02         ",
+      "b": "94E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 14
+    },
+    {
+      "a": "64E-01              2.29559E-02         ",
+      "b": "64E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 15
+    },
+    {
+      "a": "27E-01              2.86013E-02         ",
+      "b": "27E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 16
+    },
+    {
+      "a": "78E-01              3.48835E-02         ",
+      "b": "78E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 17
+    },
+    {
+      "a": "70E-01              4.17764E-02         ",
+      "b": "70E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 18
+    },
+    {
+      "a": "05E-01              4.92468E-02         ",
+      "b": "05E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 19
+    },
+    {
+      "a": "30E-01              5.72554E-02         ",
+      "b": "30E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 20
+    },
+    {
+      "a": "28E-01              6.57574E-02         ",
+      "b": "28E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 21
+    },
+    {
+      "a": "15E-01              7.47037E-02         ",
+      "b": "15E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 22
+    },
+    {
+      "a": "32E-01              8.40413E-02         ",
+      "b": "32E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 23
+    },
+    {
+      "a": "44E-01              9.37144E-02         ",
+      "b": "44E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 24
+    },
+    {
+      "a": "36E-01              1.03665E-01         ",
+      "b": "36E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 25
+    },
+    {
+      "a": "09E-01              1.13833E-01         ",
+      "b": "09E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 26
+    },
+    {
+      "a": "78E-01              1.24158E-01         ",
+      "b": "78E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 27
+    },
+    {
+      "a": "73E-01              1.34578E-01         ",
+      "b": "73E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 28
+    },
+    {
+      "a": "30E-01              1.45032E-01         ",
+      "b": "30E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 29
+    },
+    {
+      "a": "99E-01              1.55458E-01         ",
+      "b": "99E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 30
+    },
+    {
+      "a": "33E-01              1.65798E-01         ",
+      "b": "33E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 31
+    },
+    {
+      "a": "95E-01              1.75991E-01         ",
+      "b": "95E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 32
+    },
+    {
+      "a": "52E-01              1.85980E-01         ",
+      "b": "52E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 33
+    },
+    {
+      "a": "76E-01              1.95709E-01         ",
+      "b": "76E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 34
+    },
+    {
+      "a": "42E-01              2.05125E-01         ",
+      "b": "42E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 35
+    },
+    {
+      "a": "31E-01              2.14176E-01         ",
+      "b": "31E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 36
+    },
+    {
+      "a": "25E-01              2.22814E-01         ",
+      "b": "25E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 37
+    },
+    {
+      "a": "09E-01              2.30991E-01         ",
+      "b": "09E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 38
+    },
+    {
+      "a": "70E-01              2.38664E-01         ",
+      "b": "70E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 39
+    },
+    {
+      "a": "98E-01              2.45793E-01         ",
+      "b": "98E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 40
+    },
+    {
+      "a": "83E-01              2.52340E-01         ",
+      "b": "83E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 41
+    },
+    {
+      "a": "17E-01              2.58270E-01         ",
+      "b": "17E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 42
+    },
+    {
+      "a": "93E-01              2.63553E-01         ",
+      "b": "93E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 43
+    },
+    {
+      "a": "06E-01              2.68158E-01         ",
+      "b": "06E-01              0.00000E+00         ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 309,
+      "record": 44
+    }
+  ],
+  "only_in_a": [],
+  "only_in_b": [],
+  "records_compared": 408072,
+  "records_mismatched": 23998,
+  "verdict": "MISMATCH",
+  "vit_rev": "f4a711d"
+}
