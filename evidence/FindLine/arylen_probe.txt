@@ -1,0 +1,90 @@
+run_if_time_remains: 13212s remain, 600s needed -- starting
+-2147483648  exit=139  AryLen= -2147483648
+Program received signal SIGSEGV: Segmentation fault - invalid memory reference.
+
+Backtrace for this error:
+#0  0xfa28e356d44b in ???
+#1  0xfa28e356c2df in ???
+#2  0xfa28e39d08f7 in ???
+#3  0xc2f92ec112f4 in __rosco_helpers_MOD_findline
+#4  0xc2f92ec0530b in MAIN__
+#5  0xc2f92ec054d3 in main
+-100         exit=134  AryLen=        -100malloc(): corrupted top size
+
+Program received signal SIGABRT: Process abort signal.
+
+Backtrace for this error:
+#0  0xf87c47c5d44b in ???
+#1  0xf87c47c5c2df in ???
+#2  0xf87c480c18f7 in ???
+#3  0xf87c47a17608 in ???
+#4  0xf87c479ccb3b in gsignal
+#5  0xf87c479b7dff in abort
+#6  0xf87c47a0abf3 in ???
+#7  0xf87c47a2210b in ???
+#8  0xf87c47a2594b in ???
+#9  0xf87c47a267db in malloc
+#10  0xf87c47c5c61b in ???
+#11  0xf87c47d58c7b in ???
+#12  0xf87c47d69623 in ???
+#13  0xaef6a148534b in MAIN__
+#14  0xaef6a14854d3 in main
+-2           exit=134  AryLen=          -2malloc(): corrupted top size
+
+Program received signal SIGABRT: Process abort signal.
+
+Backtrace for this error:
+#0  0xea180f25d44b in ???
+#1  0xea180f25c2df in ???
+#2  0xea180f6bd8f7 in ???
+#3  0xea180f017608 in ???
+#4  0xea180efccb3b in gsignal
+#5  0xea180efb7dff in abort
+#6  0xea180f00abf3 in ???
+#7  0xea180f02210b in ???
+#8  0xea180f02594b in ???
+#9  0xea180f0267db in malloc
+#10  0xea180f25c61b in ???
+#11  0xea180f358c7b in ???
+#12  0xea180f369623 in ???
+#13  0xb0f4e765534b in MAIN__
+#14  0xb0f4e76554d3 in main
+-1           exit=134  AryLen=          -1malloc(): corrupted top size
+
+Program received signal SIGABRT: Process abort signal.
+
+Backtrace for this error:
+#0  0xee2a9665d44b in ???
+#1  0xee2a9665c2df in ???
+#2  0xee2a96ab68f7 in ???
+#3  0xee2a96417608 in ???
+#4  0xee2a963ccb3b in gsignal
+#5  0xee2a963b7dff in abort
+#6  0xee2a9640abf3 in ???
+#7  0xee2a9642210b in ???
+#8  0xee2a9642594b in ???
+#9  0xee2a964267db in malloc
+#10  0xee2a9665c61b in ???
+#11  0xee2a96758c7b in ???
+#12  0xee2a96769623 in ???
+#13  0xb7e6076c534b in MAIN__
+#14  0xb7e6076c54d3 in main
+0            exit=0    AryLen=           0  RETURNED  FoundLine= F  LineNum=   0  Line=""
+1            exit=0    AryLen=           1  RETURNED  FoundLine= F  LineNum=   0  Line=""
+2            exit=0    AryLen=           2  RETURNED  FoundLine= F  LineNum=   0  Line=""
+3            exit=0    AryLen=           3  RETURNED  FoundLine= F  LineNum=   0  Line=""
+30           exit=0    AryLen=          30  RETURNED  FoundLine= F  LineNum=   0  Line=""
+100          exit=0    AryLen=         100  RETURNED  FoundLine= F  LineNum=   0  Line=""
+1000         exit=0    AryLen=        1000  RETURNED  FoundLine= F  LineNum=   0  Line=""
+100000       exit=0    AryLen=      100000  RETURNED  FoundLine= F  LineNum=   0  Line=""
+2147483647   exit=139  AryLen=  2147483647
+Program received signal SIGSEGV: Segmentation fault - invalid memory reference.
+
+Backtrace for this error:
+#0  0xea5b4a60d44b in ???
+#1  0xea5b4a60c2df in ???
+#2  0xea5b4aa698f7 in ???
+#3  0xb1924a0212f4 in __rosco_helpers_MOD_findline
+#4  0xb1924a01530b in MAIN__
+#5  0xb1924a0154d3 in main
+run_if_time_remains: exit 0 after 1s (estimated 600s; 13211s now remain)

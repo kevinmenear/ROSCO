@@ -253,3 +253,53 @@ n_yData = { same_as = "n_xData" }
 CntrPar_AWC_NumModes = { lo = -1, hi = 3 }
 CntrPar_CC_Group_N = { lo = 0, hi = 2 }
 CntrPar_StC_Group_N = { lo = 0, hi = 2 }
+
+# ---------------------------------------------------------------------------
+# FindLine
+#
+# ONE PIN, AND THE REFERENCE'S OWN EXIT STATUS IS ITS BASIS. `AryLen` is an
+# OPTIONAL INTEGER whose only use is
+#
+#     WordInd = AryLen + 1
+#     ALLOCATE(Words(WordInd))          ! TODO: check error   <- the reference's comment
+#
+# and `Words` is then written by `GetWords` and read at `Words(WordInd)`. A
+# WordInd of zero or less is a ZERO-SIZED Fortran array, so `Words(1)` is a
+# write past the allocation and `Words(WordInd)` a read below it. The reference
+# has no defined behaviour there, and it does not merely differ from a
+# translation -- it DIES:
+#
+#     AryLen         reference (evidence/FindLine/arylen_probe.txt)
+#     -2147483648    SIGSEGV  in __rosco_helpers_MOD_findline
+#     -100 / -2 / -1 SIGABRT, `malloc(): corrupted top size`
+#     0              returns -- FoundLine=F, LineNum=0
+#     1 .. 100000    returns
+#     2147483647     SIGSEGV -- AryLen + 1 overflows to -2147483648
+#
+# One value per process, thirteen processes, measured on the CLEAN tree against
+# the Fortran body (evidence/FindLine/arylen_probe.{f90,sh,txt}). The generated
+# corpus's first crash was case 0 of 2522, and R6's integer ladder puts both
+# 32-bit extremes in it, so without this every mutation run would score against
+# a program that segfaults before comparing anything.
+#
+# THE LOW BOUND IS THE BOUNDARY ITSELF, NOT A MARGIN. AryLen = 0 gives
+# WordInd = 1 -- a one-element array, the narrowest defined case -- and it is
+# REACHABLE in the shipped program: both call sites guard `IF (AryLen < 1)`
+# immediately AFTER this call, so the caller anticipates it rather than
+# excluding it.
+#
+# THE COST, STATED. Two things:
+#   1. `AryLen` leaves R6's ladder, because `bounds_source` becomes `stated:`
+#      and R6 applies to defaulted ranges. The decade boundaries and the two
+#      32-bit extremes are gone -- and every one of them is a value at which
+#      the reference aborts, so nothing observable is lost.
+#   2. The upper bound is 32, where the reference is defined to at least
+#      100000. Above the word count of the generated `FileLines` -- whose
+#      element width R5 varies at 3..5 characters, so at most three words --
+#      every value of WordInd selects the same thing: an element GetWords left
+#      blank. 32 is eight times that ceiling, and a translation that mishandled
+#      an AryLen of 100000 has nothing here to disagree with.
+
+[FindLine]
+
+AryLen = { lo = 0, hi = 32 }

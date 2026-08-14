@@ -1,0 +1,23 @@
+run_if_time_remains: 13810s remain, 300s needed -- starting
+=== 1. FindLine: the false positive must be GONE
+✓ FindLine: no known-shape defects — 15 check(s) ran
+exit 0
+
+=== 2. GetPath, shipped: the same check RUNS over its own procedure and passes
+✓ GetPath: no known-shape defects — 15 check(s) ran
+exit 0
+
+=== 3. GetPath, backslash literal replaced by '@': the check MUST fire
+82:    int I = index_back(GivenFil, len_GivenFil, '@');
+  ✗ delimiter-set: the Fortran matches against the character set '\\', which no literal in the translation contains; a delimiter set that differs changes which branch runs  ['\\']
+
+✗ GetPath: 1 finding(s) — 15 check(s) ran
+exit 1  (1 is the pass condition here)
+
+=== 4. a name absent from the file: falls back to the whole file and SAYS SO
+  ~ Fortran scope: WHOLE FILE — no SUBROUTINE/FUNCTION NoSuchProcedure found in rosco/controller/src/ROSCO_Helpers.f90; a finding may belong to a sibling procedure
+  ✗ delimiter-set: the Fortran matches against the character set '\\', which no literal in the translation contains; a delimiter set that differs changes which branch runs  ['\\']
+
+✗ NoSuchProcedure: 1 finding(s) — 15 check(s) ran
+exit 1
+run_if_time_remains: exit 0 after 1s (estimated 300s; 13809s now remain)

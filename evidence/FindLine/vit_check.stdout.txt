@@ -1,0 +1,5 @@
+run_if_time_remains: 13969s remain, 300s needed -- starting
+  ✗ delimiter-set: the Fortran matches against the character set '\\', which no literal in the translation contains; a delimiter set that differs changes which branch runs  ['\\']
+
+✗ FindLine: 1 finding(s) — 15 check(s) ran
+run_if_time_remains: exit 1 after 0s (estimated 300s; 13969s now remain)

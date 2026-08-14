@@ -1,0 +1,125 @@
+{
+ "unit": "FindLine",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutants": 39,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 39,
+ "killed": 26,
+ "survived": 13,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.6667,
+ "loop_rev": "9eeaf3f-nogit",
+ "gen_rev": "gen-cb96877be46b",
+ "vit_rev": "d2de28c-nogit",
+ "survivors": [
+  {
+   "id": "b668005d",
+   "operator": "index_offset",
+   "before": "[MaxParamLength]",
+   "after": "[MaxParamLength + 1]"
+  },
+  {
+   "id": "c387ed1c",
+   "operator": "index_offset",
+   "before": "[MaxParamLength]",
+   "after": "[MaxParamLength + 1]"
+  },
+  {
+   "id": "ca75abea",
+   "operator": "const_tweak",
+   "before": "2048",
+   "after": "2049"
+  },
+  {
+   "id": "6ca91bba",
+   "operator": "const_tweak",
+   "before": "200",
+   "after": "201"
+  },
+  {
+   "id": "d76903ed",
+   "operator": "const_tweak",
+   "before": "2",
+   "after": "3"
+  },
+  {
+   "id": "0d2f85e2",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "a688ab60",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "1e58ce69",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "d126d74e",
+   "operator": "negate_cond",
+   "before": "if (!has_AryLen)",
+   "after": "if (!(!has_AryLen))"
+  },
+  {
+   "id": "dc0aa363",
+   "operator": "drop_call",
+   "before": "std::min(len_src, len_dst)",
+   "after": "len_src"
+  },
+  {
+   "id": "5772dcee",
+   "operator": "drop_call",
+   "before": "std::max(WordInd, 0)",
+   "after": "WordInd"
+  },
+  {
+   "id": "5a7d4975",
+   "operator": "swap_call_args",
+   "before": "len_src, len_dst",
+   "after": "len_dst, len_src"
+  },
+  {
+   "id": "92f43891",
+   "operator": "swap_call_args",
+   "before": "WordInd, 0",
+   "after": "0, WordInd"
+  }
+ ]
+}
