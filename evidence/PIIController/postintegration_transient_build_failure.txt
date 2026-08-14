@@ -1,0 +1,50 @@
+# C12 -- the wrong artifact, recorded before the repair.
+#
+# WHAT HAPPENED. `wrapper_redtest.sh` perturbs the wrapper, rebuilds, runs the
+# post-integration harness red, then reverts and rebuilds. Its own revert check
+# passed both times. The GREEN re-run immediately afterwards did not build:
+#
+#   $ bash scripts/harness.sh PIIController Controllers piicontroller \
+#         rosco/controller/src/Controllers.f90 --post-integration \
+#         --out harness/PIIController.postintegration.json
+#   make: *** [Makefile:80: test] Error 1
+#   harness.sh: no parseable artifact at harness/PIIController.postintegration.json
+#              -- the build or the run died (rc=2)
+#
+# The identical command a minute later:
+#
+#   POST-INTEGRATION PASS: checked 4528  failed 0
+#
+# Nothing in the tree changed between the two. This is unit #23's and unit #30's
+# bind-mount hazard at the harness's own build step -- a file written on the Mac
+# and stat()ed from inside the container does not reliably present a consistent
+# mtime or a complete content to the `make` that runs a moment later. Unit #30's
+# instance was a mutation sweep scoring 0.000 with 31 of 31 mutants failing to
+# compile, and the identical command 90 seconds later compiling 31 of 31.
+#
+# TWO THINGS WENT WRONG DOWNSTREAM, AND BOTH ARE THE REPORTABLE PART.
+#
+# 1. THE FAILED RUN DELETED THE COMMITTED GREEN ARTIFACT. `harness.sh` writes
+#    its artifact by having the container program redirect into the path, so a
+#    build that dies leaves the path EMPTY -- and the file
+#    `harness/PIIController.postintegration.json`, committed green at 124438d,
+#    was gone.
+#
+# 2. `git add -A` THEN COMMITTED THAT DELETION UNDER A MESSAGE SAYING THE GREEN
+#    WAS REVERT-VERIFIED (b090ab2). The message was written from the red tests'
+#    own output, which was correct, and the green re-run's failure was one line
+#    above it and not read. A commit that says a green was re-taken while
+#    removing the artifact of that green is the exact shape this campaign exists
+#    to make impossible, and it is left in the history rather than amended away.
+#
+# THE REPAIR is the re-taken artifact plus this note.
+# `harness/PIIController.postintegration.recheck.json` is the second, passing
+# run kept beside it, so the transient is visible as two artifacts and not as a
+# sentence.
+#
+# NOT FIXED HERE, and stated rather than left to be found: `harness.sh` has no
+# retry and no write-to-temp-then-rename, so any transient at its build step
+# destroys whatever artifact was at `--out`. That is a defect in a campaign
+# script and a candidate for the Driver; repairing it mid-run would change what
+# every subsequent artifact is written by, which is X3's question rather than
+# this unit's.

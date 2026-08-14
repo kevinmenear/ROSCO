@@ -1,0 +1,14 @@
+In file included from pidcontroller_test.cpp:3:
+pidcontroller_callees.h:14:69: error: 'filterparameters_t' has not been declared
+   14 | double lpfilter_c(double InputSignal, double DT, double CornerFreq, filterparameters_t* FP, int iStatus, int32_t reset, int* inst, int has_InitialValue, double InitialValue);
+      |                                                                     ^~~~~~~~~~~~~~~~~~
+In file included from pidcontroller_test.cpp:7:
+pidcontroller.hpp: In function 'double PIDController(double, double, double, double, double, double, double, double, double, piparams_t*, int32_t, objectinstances_t*, localvariables_view_t*)':
+pidcontroller.hpp:35:52: error: cannot convert 'filterparameters_t*' to 'int*'
+   35 |     const double EFilt = lpfilter_c(error, DT, tf, &LocalVar->FP,
+      |                                                    ^~~~~~~~~~~~~
+      |                                                    |
+      |                                                    filterparameters_t*
+pidcontroller_callees.h:14:89: note:   initializing argument 4 of 'double lpfilter_c(double, double, double, int*, int, int32_t, int*, int, double)'
+   14 | double lpfilter_c(double InputSignal, double DT, double CornerFreq, filterparameters_t* FP, int iStatus, int32_t reset, int* inst, int has_InitialValue, double InitialValue);
+      |                                                                     ~~~~~~~~~~~~~~~~~~~~^~

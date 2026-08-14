@@ -1,0 +1,70 @@
+VIT'S OWN KERNEL RED TEST MEASURED NOTHING AND RECORDED `demonstrated`.
+Recorded here with the wrong artifact first, per C12, before anything was fixed.
+
+WHAT `vit verify` PRINTED, 2026-08-14, on the shipped translation:
+
+    ✓ VERIFICATION PASSED: 62/62 passed
+      Field log: kernel/PitchSaturation/verify_fields.csv (16306 entries)
+      Build succeeded on iteration 1
+
+      Red test: the kernel failed to build with the return value scaled by 1.00001
+
+WHAT IT WROTE INTO vit.yaml -- the machine-readable half, which is the part a
+later unit reads:
+
+    PitchSaturation:
+      status: verified
+      cases_passed: 62
+      cases_total: 62
+      cases_skipped: 0
+      cpp_file: translations/ControllerBlocks/pitchsaturation.cpp
+      kernel_dir: kernel/PitchSaturation
+      red_test: demonstrated
+      red_test_detail: the kernel failed to build with the return value scaled by 1.00001
+
+WHY THE VERDICT IS EMPTY.
+
+`vit/redtest.py:candidates` builds the return perturbation with
+
+    re.subn(r"\breturn\s+([^;]+);", lambda m: f"return ({m.group(1)}) {op};", cpp_text)
+
+over the WHOLE FILE, not over the translated function's body. This translation
+has two `return <expr>;` statements: the unit's own, which returns a `double`,
+and `errmsg_trim`'s, which returns a `std::string`. The rewrite produces
+
+    return (std::string(v.substr(0, v.find_last_not_of(' ') + 1))) * 1.00001;
+
+which does not compile. `cli.py:_run_red_test` then takes the first branch:
+
+    if result is None:
+        # A perturbation that will not build is a red of the crudest kind,
+        # and an honest one: the kernel noticed.
+        return {"verdict": "demonstrated", ...}
+
+and RETURNS, so the second perturbation (the additive one, which fails to build
+for the same reason) and any value-level red were never attempted. No perturbed
+kernel ever ran. The verdict is a statement about g++, not about the 62 captured
+cases.
+
+THIS IS THE CAMPAIGN'S OWN FAILURE SHAPE, ONE INSTRUMENT OVER. Unit #10
+(SecLPFilter) recorded "a zero stub that passed because make never built it";
+this is its mirror -- a stub that FAILED because make never built it -- and it
+lands in a field named `red_test`.
+
+WHO ELSE IT WOULD FIRE ON. Any translation with a non-arithmetic `return` in a
+helper. In this tree that is at least `translations/Functions/interp1d.cpp` and
+`translations/Functions/sigma.cpp`, which carry the same `errmsg_trim`, and
+`translations/ROSCO_Helpers/*` where the same shape recurs. A `red_test:
+demonstrated` in vit.yaml is therefore not, on its own, evidence that any
+particular kernel can discriminate.
+
+WHAT WAS DONE INSTEAD. The two lines were removed from vit.yaml with the reason
+written where they were, and this kernel's discriminating power was measured by
+hand against the committed kernel -- seven stubs, run through `vit verify`, in
+evidence/PitchSaturation/kernel.*.run.txt and summarised in STATUS.md. Three of
+the seven can fail; four pass 62/62.
+
+NOT FIXED IN VIT BY THIS UNIT. Changing what `red_test` means is a change to a
+verification default in the middle of a run (X2 says do not work around a tool
+bug you control; X3 says do not change a verification default mid-run, and the
+two point opposite ways here). It is raised in DECISIONS.md for the Driver.

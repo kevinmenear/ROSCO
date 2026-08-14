@@ -159,3 +159,23 @@ fixtures/bladed_stub/*.so
 # a pattern broad enough to catch a directory is broad enough to catch a file
 # somebody needs.
 !fixtures/bladed_stub/build.sh
+
+# ADDED by unit #36 (PitchSaturation), 2026-08-14. `*build*` above is upstream
+# ROSCO's, and it matches by FILENAME anywhere in the tree -- so an evidence
+# artifact called `<something>build<something>.txt` is silently untracked. Five
+# existed when this was found, across four units, and every one of them is the
+# artifact that records a FAILURE:
+#
+#   evidence/CheckInputs/mutation.integrated-build-INVALID.json
+#   evidence/NonDecreasing/loop_defects/build.error.txt
+#   evidence/PIDController/vit_defects/callees_h_missing_types.build.txt
+#   evidence/PIIController/postintegration_transient_build_failure.txt   <- STATUS.md tells its story in prose
+#   evidence/PitchSaturation/vit_redtest_build_failure.txt
+#
+# `git add -A` reports nothing and the commit looks complete, which is K3's
+# failure mode with no symptom. Narrow on purpose: object files and build logs
+# under evidence/*/…/out/ stay ignored, because those are outputs and not
+# records. Closing by addition rather than by editing line 65 (P5).
+!evidence/**/*build*.txt
+!evidence/**/*build*.json
+!evidence/**/*build*.md
