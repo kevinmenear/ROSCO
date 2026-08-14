@@ -1,8 +1,41 @@
-# `Debug` — the mutation score, and what the 57 survivors are
+# `Debug` — the mutation score, and what is left alive
 
-`mutation/Debug.json`: **121 of 178 behavioural killed, 0.6798**, 3 no-compile
-of 181, 0 declared equivalent, 10 operators. Below the campaign's 1.000
-threshold, so the unit closes `deferred`.
+`mutation/Debug.json`: **143 of 155 killed, 0.9226**, over 181 behavioural
+mutants (1 no-compile of 182), 26 declared equivalent, 10 operators, eight
+scenarios, four streams. Below the campaign's 1.000 threshold, so the unit
+closes `deferred` — with twelve survivors, each named and each classified.
+
+The first dispatch scored **121 of 178 = 0.6798** against two scenarios and
+three streams. Raw, before any equivalence declaration, this dispatch scores
+**143 of 181 = 0.7901**. The declarations move it to 0.9226; the *kills* moved
+it first, and they moved it because the inputs and the oracle changed, not
+because anything was argued away.
+
+## Where the 22 new kills came from
+
+| what closed it | kills | mutants |
+|---|---|---|
+| the **stdout** stream, added to the oracle | 9 | the whole `WRITE(*,100)` status line: its two conversion constants, its `fmod` guard negated, its call dropped, its arguments swapped |
+| **scenario 31** — both control modes off with their group arrays still declared, and a RootName carrying trailing blanks | 5 | `CC_Mode > 0`, `StC_Mode > 0`, and three `TRIM(RootName)` sites |
+| **scenario 32** — two cable and two structural control groups | 3 | `Ind - 1` → `1 - Ind`, three sites |
+| **scenario 33** — scenario 7's synthetic drive at `LoggingLevel = 3` | 2 | `DebugOutData[11]` and `[12]`, the two channels that are identically zero in 27 and 28 |
+| **scenario 30** — `LoggingLevel = 2` | 1 | the `> 2` guard, whose boundary 1 and 3 both miss |
+| the **cppmutate repair** (`3f8ed43`) | 2 | two conditions that previously had no `negate_cond` mutant at all |
+
+Two of the six new scenarios earned nothing, and both facts are worth more than
+the kills would have been:
+
+* **Scenario 29 (`LoggingLevel = 0`) cannot reach the unit.** It was added to
+  kill `LoggingLevel > 0` → `>= 0` on the open guard. `DISCON.F90:75` and
+  `:145` guard both call sites with `IF (CntrPar%LoggingLevel > 0)`, so at 0
+  the unit is never entered — the inner guard is dominated by the caller's.
+  The mutant survived and wrote no file, which is the measurement.
+* **Scenario 34 (two initialisations) cannot reach the deallocate arm.** A
+  second Init inside one library load is refused by `ReadAvrSWAP`
+  (`aviFAIL = -1`) and `DISCON.F90:145` then does not call `Debug` at all; a
+  second Init after `kill_discon` reloads the library, which resets every SAVE
+  datum. Scenario 34 performs two full Inits at `LoggingLevel = 3` and
+  `avrIndices` was unallocated at both.
 
 ## The instrument, because it is not `vit_mutate.py`
 
@@ -10,139 +43,169 @@ threshold, so the unit closes `deferred`.
 and comparing the unit's **mapped outputs**. `Debug` assigns nothing in its own
 signature, so every mutant would survive and the 0.000 would be a fact about the
 instrument. `scripts/dbgmutate.py` uses the oracle that verified the unit
-instead: each mutant is compiled into `libdiscon.so`, scenarios 27 and 28 are
-run, and the `.RO.dbg*` bytes are compared against `preall` — a committed
-archive written by a build containing no C++ `Debug` at all.
+instead: each mutant is compiled into `libdiscon.so`, the eight scenarios are
+run, and four streams are compared against `mutref` — a committed archive
+written by a build containing no C++ `Debug` at all.
 
 **The reference side cannot be the mutant**, which is the configuration question
-unit #29 got wrong. `preall` is bytes on disk, fixed before the sweep starts;
-nothing the sweep does can perturb it.
+unit #29 got wrong. `mutref` is bytes on disk, fixed before the sweep starts.
 
-The sweep is nine foreground parts (`--operator`, and `--slice` for the three
-operators that produce 40 each), merged by `scripts/dbgmutate_merge.py`, which
+**The fourth stream is new here and it found a real defect before it scored
+anything** (C12, `0dbf443`): `libgfortran` emits a preconnected unit's record
+whole, while a fully-buffered `stdout` split one status record mid-field and
+delivered eighteen more after the driver's own output. 46 of scenario 27's 110
+stdout records differed. Fixed in `106d170`; the fix's own guard is under
+measurement too — negating it (`7734fa25`) dies on 283 stdout records.
+
+The sweep is ten foreground parts merged by `scripts/dbgmutate_merge.py`, which
 asks `harness.cppmutate` for the operator population directly and refuses a
 union that does not exhaust it.
 
-**It refused once, correctly.** The first union named three different
-`loop_rev`s, because two mutator defects were fixed mid-sweep. Six parts were
-re-taken so that all nine name `897d67c`.
+## The 26 equivalence declarations, and the check on them
 
-## Three mutator defects were fixed before this number existed (X2)
+`mutation/Debug.equivalences.json`, one reason per id, applied at **merge** time
+rather than at sweep time — so a claim can be revised without re-running 25
+minutes of simulation, and so it can be **refuted**. The merge refuses a
+declaration for a mutant the corpus killed. Controlled on this tree by declaring
+`bcfcc5ae`, which died on 99,214 records; the merge exited 2 and named it.
 
-All three in `harness/cppmutate.py`, in the repo that owns it, each with its
-cost measured across all 31 translations rather than argued.
+Seven shapes, not 26 arguments:
 
-| defect | seen as | cost |
+| shape | n | why they agree |
 |---|---|---|
-| angle brackets of a **user-declared template** rewritten by `compare_op` (`template <=int W>`) | 12 of 40 compare_op mutants unbuildable — 30%, above the 25% at which a run refuses | 1 unit, 3 ids |
-| `arith_op` reading a **qualified pointer declaration**, a **dereference after a keyword**, and a **float exponent sign** as arithmetic (`std::FILE / f`, `return / p`, `1E + 99`) | 13 of 25 unbuildable — 52% | 2 units, 17 ids, 0 gained |
-| `_not_arithmetic` reading **`drop_factor`'s right operand as its operator**, so it fired for two rules of three; and `swap_operands` moving a call's name out of its parentheses (`buf.size - pos()`) | 7 of 22 unbuildable | 2 units, 11 ids, 0 gained |
+| a buffer or table one element longer than it is read | 11 | `char c[W+1]`, `tmp[513]`, `date[12]`, `time[9]`, `*_src[27]`; every write and every read is bounded by the original extent |
+| a comparison whose boundary case is a no-op | 3 | `pos >= size` appends 0 characters; `n >= W` assigns `W` to `n`, which holds `W`; `len == w` writes the same `w` bytes down either arm |
+| the format helpers' strip-then-pad | 2 | the leading-zero strip is undone by the re-pad to exactly `e` digits |
+| a width no call site passes | 2 | `w >= need` differs only at `w ∈ {8,9}`; the sites pass 5, 6, 7 and 20 |
+| a guard the CALLER already applies | 2 | `LoggingLevel > 0` — `DISCON.F90:145` |
+| a deallocate arm no Init reaches | 2 | measured by scenario 34, above |
+| `fmod` vs `remainder` | 1 | each is zero exactly when `x/10` is an integer — the same predicate for **every** real, not merely for a clock |
+| the asterisk-overflow length | 1 | `field()` returns `w` asterisks for any text longer than `w` |
+| an unused descriptor dim slot | 1 | `CFI_CDESC_T` sizes storage; `CFI_establish` sets the rank |
+| a null-guard downstream of its own allocate | 1 | every `avrIndices_size()` call is inside the arm that allocated it |
 
-The third was found by running the sweep, not by reading the diff — which is the
-argument for scoring every operator rather than the interesting ones.
+## The twelve that are still alive
 
-The `1E-99` case is the one that mattered beyond the ratio: it meant the two
-clamp constants of this unit had **no `arith_op` mutant at all**, so an operator
-that appeared to be measuring them was measuring nothing there.
+Classified as the three categories ask: **(a)** equivalent, **(b)** the
+harness cannot reach it — fix the inputs, **(c)** a blind spot no rule covers.
+None of these is (a); that is why none of them is declared.
 
-## The 57 survivors, by family
+### (b) — two channels that are zero in every scenario. 2 mutants.
 
-None is a scatter. Every one is a shape, and each shape names what would close
-it.
+    c933177d  DebugOutData[13] -> [14]   Fl_PitCom
+    4b100ace  DebugOutData[21] -> [22]   NacVaneOffset
 
-### 1 — 11 survivors: a buffer or array extent made LARGER
+Their siblings `[11]` and `[12]` died on 3,998 records the moment scenario 33
+drove the nacelle IMU. `Fl_PitCom` and `NacVaneOffset` stay 0 there anyway:
+scenario 33 sets `Fl_Mode` and `Y_ControlMode` and drives both the IMU and the
+vane, but it runs at 9 m/s, **below rated**, where the floating-feedback pitch
+contribution and the vane offset are not developed. **The next input is a
+scenario 33 variant above rated**, and it is cheap — one `ws0` and one new
+`sim_name`. It is NOT taken here because adding a scenario now would invalidate
+the ten parts already swept: `dbgmutate_merge.py` refuses parts that ran
+different scenarios, so the corpus is fixed once the first part is taken.
 
-`char c[W]` → `c[W + 1]`, `char tmp[512]` → `[513]`, `char date[11]` → `[12]`,
-`DebugOutStrings_src[26]` → `[27]`, `512` → `513`, `11` → `12`, `8` → `9`.
+### (b) — a trim that never runs to the start, and an open that never fails. 3 mutants.
 
-Over-allocation. No comparison of written bytes can see a buffer that is one
-element longer than it needs to be. Read_OL_Input's family (1) with the sign
-flipped — there the mutants read one byte PAST a buffer, which is undefined
-behaviour no value comparison can see; here they never read it at all.
+    901840cc  while (n > 0 ...)  ->  n >= 0
+    1d75738a  while (n > 0 ...)  ->  n > 1
+    867065d9  if (UnDb) { fclose } -> if (!(UnDb)) { fclose }
 
-### 2 — 7 survivors: the STDOUT status line
+The first two differ from the original only for a RootName whose non-blank
+characters have all been trimmed away — an **all-blank** name for `n >= 0`, and
+one whose only non-blank is the first character for `n > 1`. Scenario 31 made
+the loop body execute for the first time in this campaign (that is what killed
+`33792ec2`, `5754fcef` and `c05d2bfe`), but its name still has eight non-blank
+characters.
 
-`std::fmod(Time, 10.0) == 0.0` (compare_op, negate_cond, drop_call,
-swap_call_args, swap_callee → `remainder`), `GenSpeedF * RPS2RPM` (arith_op,
-drop_factor), and the `RPS2RPM` / `R2D` constants themselves.
+`867065d9` differs only when `UnDb` is null at the close, which requires
+`std::fopen` to have FAILED — every other path reaching the close has an open
+file, and skipping its `fclose` leaves the same bytes because stdio flushes it
+at process exit. An input with an unwritable output directory would separate
+them. Note the asymmetry that makes it worth doing: on that input the mutant
+calls `fclose(nullptr)`.
 
-`WRITE(*, 100)` writes to unit 6. The oracle reads FILES. This is the one
-blind spot with an obvious remedy — capture and compare each scenario's stdout —
-and it is not taken here.
+**`901840cc` is the one to be careful about.** An all-blank RootName would make
+the mutant read `RootName[-1]`, one byte before the buffer. What it does then is
+not a property of this program, so an input that "kills" it would be measuring
+the allocator. It is listed here as (b) because an input reaches it, and flagged
+as (c)-shaped because what the input exposes is undefined.
 
-### 3 — 7 survivors: the two clamps, at their boundary
+### (c) — a difference that needs a computed double on an exact constant. 6 mutants.
 
-`fabs(x) < 1E-99` → `<=`, `fabs(x) > 1E+99` → `>=`, and the `fabs` dropped from
-the upper test. The `<`/`<=` pair differs at exactly `|x| == 1E-99`; nothing the
-controller computes lands on it. The upper clamp is **dead outright** — measured
-separately at 0 of 408,072 records (`dbg_redtest.txt`), while its sibling one
-line up moves 21,792.
+    5b456058  fabs(DebugOutData[I]) < 1E-99   ->  <=
+    be38d628  fabs(LocalVarOutData[I]) < 1E-99 ->  <=
+    dd717e22  fabs(DebugOutData[I]) > 1E+99   ->  >=
+    1e024411  fabs(LocalVarOutData[I]) > 1E+99 ->  >=
+    c64442c8  fabs(DebugOutData[I]) > 1E+99   ->  DebugOutData[I] > 1E+99
+    940f4622  fabs(LocalVarOutData[I]) > 1E+99 ->  LocalVarOutData[I] > 1E+99
 
-### 4 — 5 survivors: guards whose operand is constant in every input
+The first four differ from the original on exactly one value each: `|x|` equal
+to the double nearest `1E-99` or `1E+99`. The last two differ when `x` is more
+negative than `-1E+99`.
 
-`LoggingLevel > 0` → `>= 0`, `> 1` → `>= 1`, `> 2` → `>= 2`, `CC_Mode > 0` →
-`>= 0`, `StC_Mode > 0` → `>= 0`. `LoggingLevel` is 1 in the 14 shipped inputs and
-3 in scenario 28; the pairs differ only at 0 and at 2. `CC_Mode` and `StC_Mode`
-are 0 or 1. Closed by an input at the missing value, nothing else.
+**This is a category, not four unlucky mutants, and it is the escalation this
+unit raises.** The oracle here is a whole simulation: inputs are wind speeds,
+mode flags and a time step, and what the mutants read are values *computed* from
+them through the estimator, the filters and the controllers. No admissible input
+selects a debug channel's value; nothing in the corpus, and nothing that could
+be added to it, places a double on a named constant. Two of the six are further
+out of reach: `LocalVarOutData` is fed from `avrSWAP`, which is `REAL(ReKi)` —
+a 4-byte float — so its smallest non-zero magnitude is about `1.4E-45` and
+`1E-99` is not representable in the source domain at all.
 
-### 5 — 3 survivors: an extent of ONE
+What WOULD reach them is a different instrument: a driver that calls `Debug`
+directly with a synthetic `DebugVariables`, comparing the Fortran reference's
+bytes against the C++ translation's for the same constructed state. That is the
+campaign's "custom Fortran test harness" shape and it is **not built here** —
+it needs the 159 `LocalVariables` fields set explicitly on both sides, which is
+more than this dispatch's remaining clock. Recorded as the unit's largest open
+gap, above the two-zero-channels one, because widening the scenario corpus
+cannot close it in principle rather than in practice.
 
-`CC_GroupIndex[Ind - 1]` → `[1 - Ind]`, twice, and the same for
-`StC_GroupIndex`. Scenario 28 sets `CC_Group_N = 1` and `StC_Group_N = 1`, so
-`Ind` is always 1 and `Ind - 1 == 1 - Ind == 0`. Equivalent AT EXTENT 1 and
-killed by any input with a group count of 2.
+### (c) — an out-of-bounds write that lands in padding. 1 mutant.
 
-### 6 — 8 survivors: arms of the format helpers this unit cannot reach
+    c3a5bb71  for (int I = 0; I < nDebugOuts; ++I)  ->  I <= nDebugOuts
 
-`len >= w` → `>` (a heading literal exactly as wide as its field: never — the
-widths are 15/4/5 against 20 and 14/3 against 21), `w >= need` (the `Infinity`
-spelling; no output is infinite after the clamp), `edig.size() > 1` (C's `%E`
-emits exactly two exponent digits, so the leading-zero strip runs at most once),
-`std::string(w + 1, '*')` (the asterisk overflow arm), `CFI_CDESC_T(1)` → `(2)`.
+`DebugOutData` is a `std::vector<double>` of 26 elements and the mutant's extra
+iteration reads and possibly writes element 26. The behaviour is undefined; in
+practice it touches allocator padding and no written byte moves. **No byte
+comparison of program output can see this**, and neither can a wider corpus:
+the difference is not in the program's values, it is in whether the program has
+defined behaviour at all. `Read_OL_Input` recorded the same shape with the sign
+flipped — there the mutants read one byte PAST a buffer.
 
-Two of these are genuinely **equivalent** rather than unreached and are NOT
-declared as such here, because declaring an equivalence is a claim this dispatch
-did not have time to prove: `pos > buf.size()` → `>=` (the extra call is
-`append(0, ' ')`, a no-op) and `if (UnDb)` → `if (!(UnDb))` on the close block
-(stdio flushes every open stream at process exit, so the bytes are identical).
-The score is reported with them counted against it.
+The instrument that answers it is a sanitiser build (`-fsanitize=address`) run
+over the same eight scenarios, which is a **method-level** addition rather than
+a corpus one: it would apply to all 31 translations and would turn every
+out-of-bounds mutant in the campaign from a survivor into a kill. Raised in
+`DECISIONS.md`.
 
-### 7 — 3 survivors: `TRIM(RootName)`
+## Why eight scenarios and not the 24 files
 
-`n > 0` → `>= 0`, `n - 1` → `n + 1` / `1 - n`, `0` → `1`. Every RootName the
-scenarios pass is already blank-free, so the trim loop body never executes.
+A mutant costs a rebuild plus every scenario in the corpus — about 25 seconds
+across the eight — so 182 mutants is 76 minutes and ten foreground commands.
+Scenario 28 is the only shipped-configuration input that reaches the
+`.RO.dbg2`/`.RO.dbg3` half of the unit, 27 adds a second set of dynamics, and
+29–34 were each chosen from a named survivor rather than for coverage.
 
-### 8 — 13 survivors: the index shifts, AND THE CORPUS IS WHY
+**The corpus is still the largest lever and this dispatch proved it twice:** the
+same six scenarios that cost about 1.5 seconds each bought 11 kills, and the
+one measurement the first dispatch left behind — `DebugOutData[11] → [12]`
+dying on 23,998 records of `vit_sim7.RO.dbg` — was closed by copying scenario
+7's drive into a 100-second scenario.
 
-`DebugOutData[11]`, `[12]`, `[13]`, `[21]` → `[+1]`, and the rest of the
-`index_offset` set.
+## The no-compile
 
-**This one was measured rather than reasoned about.** The `[11] → [12]` shift
-was run over the FULL 24-file corpus, through the same red-test path as every
-other perturbation:
+One of 182, `404c7b6a`: `arith_op` reading `esign + edig` — a `char` plus a
+`std::string` — as arithmetic and producing `esign - edig`. It is a genuine
+type error rather than a lost mutant, and it is reported rather than counted:
+`nocompile` is excluded from both sides of the ratio.
 
-    23,998 of 408,072 records, in 1 of 24 files -- vit_sim7.RO.dbg
-
-`DebugVar%NacIMU_FA_AccF` and `DebugVar%FA_AccF` are both zero in scenarios 27
-and 28 (1-DOF sims where the nacelle IMU never moves), so writing one into the
-other's slot changes nothing there. Scenario 7 drives them.
-
-**So the score is a statement about the corpus {27, 28}, and a wider one is
-known to raise it.** That is this unit's largest open gap and it is cheap to
-close: `--scenarios 7,27,28` costs about 50% more wall clock per mutant.
-Artifact: `evidence/Debug/dbg.redtest.survivor_idx11.json`.
-
-## Why {27, 28} and not the 24 files
-
-A mutant here costs a rebuild plus a full simulation. Scenario 28 is scenario
-3's configuration at `LoggingLevel = 3`, so it is the only input that reaches
-the `.RO.dbg2` / `.RO.dbg3` half of the unit at all — a third of the body — and
-it subsumes scenario 3. Scenario 27 adds a second set of dynamics. At ~11
-seconds per mutant, 181 mutants is 33 minutes, which is already six foreground
-commands.
-
-The ablation is committed beside the score:
-`mutation/Debug.compare_op.no28.{0,1}.json` is the same 40 compare_op mutants
-against scenarios 3, 7 and 27 — LoggingLevel = 1, like every shipped input —
-and kills **12 of 40** where {27, 28} kills **21 of 40**. Adding one input
-parameter nearly doubled that operator's kill count.
+Three mutator defects were fixed before the first dispatch's number existed and
+a fourth before this one's (`3f8ed43`, X2): `negate_cond` matched to the last
+`)` on the line rather than to the condition's own, so a brace-less `if` whose
+statement contains a call produced code that did not compile — and the
+CONDITION got no mutant at all. Nine conditions across four of the campaign's
+31 translations were in that state. Two of the three in this unit died
+immediately, one on 99,214 records.
