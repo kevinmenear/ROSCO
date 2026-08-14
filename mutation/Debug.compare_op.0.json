@@ -1,12 +1,16 @@
 {
   "baseline": {
     "extra": [],
-    "files_compared": 4,
+    "files_compared": 21,
     "missing": [],
-    "records_compared": 72017,
-    "records_mismatched": 0
+    "records_compared": 99293,
+    "records_mismatched": 0,
+    "stdout_missing": [],
+    "stdout_records_compared": 491,
+    "stdout_records_mismatched": 0,
+    "stdout_scenarios_compared": 8
   },
-  "campaign_rev": "5ca70c5-dirty",
+  "campaign_rev": "fb94374",
   "capped_operators": [
     "compare_op",
     "const_tweak",
@@ -14,9 +18,9 @@
   ],
   "compared_against": "fortran_reference_dbg_archive",
   "equivalent_declared": 0,
-  "killed": 12,
+  "killed": 11,
   "limit_per_operator": 40,
-  "loop_rev": "897d67c",
+  "loop_rev": "3f8ed43",
   "mutants": 20,
   "nocompile": 0,
   "nocompile_ratio": 0.0,
@@ -28,7 +32,7 @@
     "drop_call": 5,
     "drop_factor": 1,
     "index_offset": 40,
-    "negate_cond": 33,
+    "negate_cond": 34,
     "swap_call_args": 1,
     "swap_callee": 1,
     "swap_operands": 7
@@ -40,217 +44,289 @@
     "compare_op"
   ],
   "operators_filter_unmatched": [],
-  "oracle": "byte identity of *.RO.dbg against the committed `pre` archive, produced by a build whose Debug was Fortran",
-  "reference_archive": "preall",
+  "oracle": "byte identity of *.RO.dbg AND of the driver's stdout, per scenario, against a committed archive produced by a build whose Debug was Fortran",
+  "reference_archive": "mutref",
   "results": [
     {
       "after": ">=",
       "before": ">",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
       "line": 103,
       "mid": "c0832dce",
       "operator": "compare_op",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
-      "after": ">",
-      "before": ">=",
+      "after": ">=",
+      "before": ">",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 138,
-      "mid": "25fca306",
+      "line": 140,
+      "mid": "de817d8b",
       "operator": "compare_op",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
-      "after": ">",
-      "before": ">=",
+      "after": ">=",
+      "before": ">",
+      "files_extra": [],
+      "files_missing": [],
+      "killed": true,
+      "line": 163,
+      "mid": "96e7a48e",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 5,
+      "stdout_records_mismatched": 39
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 172,
-      "mid": "9f1af25e",
+      "line": 225,
+      "mid": "1757a711",
       "operator": "compare_op",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "files_extra": [],
+      "files_missing": [],
+      "killed": true,
+      "line": 227,
+      "mid": "c6d068fe",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 13463,
+      "stdout_records_mismatched": 0
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "files_extra": [],
+      "files_missing": [],
+      "killed": false,
+      "line": 286,
+      "mid": "901840cc",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "!=",
       "before": "==",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 215,
-      "mid": "0be3081c",
-      "operator": "compare_op",
-      "outcome": "ok",
-      "records_mismatched": 5101
-    },
-    {
-      "after": "!=",
-      "before": "==",
-      "killed": true,
-      "line": 262,
-      "mid": "96795d8d",
-      "operator": "compare_op",
-      "outcome": "ok",
-      "records_mismatched": 16001
-    },
-    {
-      "after": "!=",
-      "before": "==",
-      "killed": true,
-      "line": 276,
-      "mid": "2edfd6fa",
-      "operator": "compare_op",
-      "outcome": "ok",
-      "records_mismatched": 0
-    },
-    {
-      "after": "!=",
-      "before": "==",
-      "killed": true,
-      "line": 563,
+      "line": 573,
       "mid": "85635876",
       "operator": "compare_op",
+      "outcome": "norun",
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "files_extra": [],
+      "files_missing": [],
+      "killed": false,
+      "line": 574,
+      "mid": "93110a39",
+      "operator": "compare_op",
       "outcome": "ok",
-      "records_mismatched": 71997
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "<=",
       "before": "<",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 581,
-      "mid": "d4632a42",
+      "line": 601,
+      "mid": "46b16420",
       "operator": "compare_op",
       "outcome": "norun",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
-      "after": ">=",
-      "before": ">",
+      "after": "<=",
+      "before": "<",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 599,
-      "mid": "8d713771",
+      "line": 618,
+      "mid": "3cb9364b",
       "operator": "compare_op",
-      "outcome": "ok",
-      "records_mismatched": 0
+      "outcome": "norun",
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
-      "after": ">=",
-      "before": ">",
+      "after": "==",
+      "before": "!=",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 623,
-      "mid": "0c94dcd7",
+      "line": 642,
+      "mid": "ab104d1e",
       "operator": "compare_op",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "files_extra": [],
+      "files_missing": [],
+      "killed": true,
+      "line": 653,
+      "mid": "86e93a74",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 1601,
+      "stdout_records_mismatched": 0
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "files_extra": [],
+      "files_missing": [],
+      "killed": true,
+      "line": 661,
+      "mid": "07a95109",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 1601,
+      "stdout_records_mismatched": 0
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "files_extra": [],
+      "files_missing": [],
+      "killed": true,
+      "line": 695,
+      "mid": "d74cd7a1",
+      "operator": "compare_op",
+      "outcome": "ok",
+      "records_mismatched": 24018,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "<",
       "before": "<=",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 637,
-      "mid": "0e5c1df5",
+      "line": 718,
+      "mid": "8ede49b9",
       "operator": "compare_op",
       "outcome": "ok",
-      "records_mismatched": 1
+      "records_mismatched": 6,
+      "stdout_records_mismatched": 0
     },
     {
-      "after": "<",
-      "before": "<=",
-      "killed": true,
-      "line": 644,
-      "mid": "2221cf02",
+      "after": "<=",
+      "before": "<",
+      "files_extra": [],
+      "files_missing": [],
+      "killed": false,
+      "line": 757,
+      "mid": "c3a5bb71",
       "operator": "compare_op",
       "outcome": "ok",
-      "records_mismatched": 16001
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
-      "after": "<",
-      "before": "<=",
-      "killed": true,
-      "line": 652,
-      "mid": "410e0a70",
+      "after": ">=",
+      "before": ">",
+      "files_extra": [],
+      "files_missing": [],
+      "killed": false,
+      "line": 759,
+      "mid": "dd717e22",
       "operator": "compare_op",
       "outcome": "ok",
-      "records_mismatched": 16001
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
-      "after": "<",
-      "before": "<=",
-      "killed": true,
-      "line": 690,
-      "mid": "e78f6b86",
+      "after": "<=",
+      "before": "<",
+      "files_extra": [],
+      "files_missing": [],
+      "killed": false,
+      "line": 762,
+      "mid": "be38d628",
       "operator": "compare_op",
       "outcome": "ok",
-      "records_mismatched": 1
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "!=",
       "before": "==",
-      "killed": false,
-      "line": 724,
-      "mid": "ad49d403",
-      "operator": "compare_op",
-      "outcome": "ok",
-      "records_mismatched": 0
-    },
-    {
-      "after": "<=",
-      "before": "<",
-      "killed": false,
-      "line": 748,
-      "mid": "5b456058",
-      "operator": "compare_op",
-      "outcome": "ok",
-      "records_mismatched": 0
-    },
-    {
-      "after": "<=",
-      "before": "<",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 751,
-      "mid": "d26e6280",
-      "operator": "compare_op",
-      "outcome": "norun",
-      "records_mismatched": 0
-    },
-    {
-      "after": ">=",
-      "before": ">",
-      "killed": false,
-      "line": 753,
-      "mid": "1e024411",
+      "line": 768,
+      "mid": "26f8c870",
       "operator": "compare_op",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 99200,
+      "stdout_records_mismatched": 0
     },
     {
-      "after": ">=",
-      "before": ">",
-      "killed": false,
-      "line": 759,
-      "mid": "c2927bd0",
-      "operator": "compare_op",
-      "outcome": "ok",
-      "records_mismatched": 0
-    },
-    {
-      "after": "<=",
-      "before": "<",
+      "after": ">",
+      "before": ">=",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 763,
-      "mid": "76ce9f50",
+      "line": 769,
+      "mid": "af28d8c8",
       "operator": "compare_op",
       "outcome": "ok",
-      "records_mismatched": 39998
+      "records_mismatched": 49600,
+      "stdout_records_mismatched": 0
     }
   ],
   "scenarios": [
     27,
-    28
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34
   ],
-  "score": 0.6,
+  "score": 0.55,
   "slice": "0/2",
-  "survived": 8,
+  "streams_compared": [
+    "RO.dbg",
+    "RO.dbg2",
+    "RO.dbg3",
+    "stdout"
+  ],
+  "survived": 9,
   "survivors": [
     {
       "after": ">=",
@@ -260,52 +336,59 @@
       "operator": "compare_op"
     },
     {
-      "after": ">",
-      "before": ">=",
-      "id": "25fca306",
-      "line": 138,
-      "operator": "compare_op"
-    },
-    {
-      "after": ">",
-      "before": ">=",
-      "id": "9f1af25e",
-      "line": 172,
+      "after": ">=",
+      "before": ">",
+      "id": "de817d8b",
+      "line": 140,
       "operator": "compare_op"
     },
     {
       "after": ">=",
       "before": ">",
-      "id": "0c94dcd7",
-      "line": 623,
+      "id": "1757a711",
+      "line": 225,
       "operator": "compare_op"
     },
     {
-      "after": "!=",
-      "before": "==",
-      "id": "ad49d403",
-      "line": 724,
+      "after": ">=",
+      "before": ">",
+      "id": "901840cc",
+      "line": 286,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "93110a39",
+      "line": 574,
+      "operator": "compare_op"
+    },
+    {
+      "after": "==",
+      "before": "!=",
+      "id": "ab104d1e",
+      "line": 642,
       "operator": "compare_op"
     },
     {
       "after": "<=",
       "before": "<",
-      "id": "5b456058",
-      "line": 748,
+      "id": "c3a5bb71",
+      "line": 757,
       "operator": "compare_op"
     },
     {
       "after": ">=",
       "before": ">",
-      "id": "1e024411",
-      "line": 753,
-      "operator": "compare_op"
-    },
-    {
-      "after": ">=",
-      "before": ">",
-      "id": "c2927bd0",
+      "id": "dd717e22",
       "line": 759,
+      "operator": "compare_op"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "id": "be38d628",
+      "line": 762,
       "operator": "compare_op"
     }
   ],
