@@ -1,6 +1,6 @@
-# done_check.py PitchSaturation -- captured 2026-08-14T22:25:20Z by scripts/capture_done_check.sh
+# done_check.py PitchSaturation -- captured 2026-08-14T22:26:43Z by scripts/capture_done_check.sh
 
-Run against the committed state at 3df1c0a ("PitchSaturation: done_check captured -- COMPLETE, 14 of 14"), with a CLEAN tree, with stdout
+Run against the committed state at ad66217 ("PitchSaturation: the reset/restore pair round-trips bit-identically with the unit integrated"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
