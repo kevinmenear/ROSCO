@@ -1,3 +1,26 @@
+# VIT configuration for rosco-r2.
+#
+# DERIVED from ROSCO-replication's vit.yaml AT bf25e35 -- its SETUP commit, the
+# revision campaigns/rosco-r2.toml already pins as `src_rev`. Not from its HEAD.
+# That distinction is the whole point: at HEAD the file carries 54 integrated
+# translations, five `types` entries, a `shared_files` list and a widened kgen
+# invocation, all of which were LEARNED DURING the first run. Deriving from HEAD
+# would hand this campaign an answer key -- 54 of 69 units pre-declared done,
+# and the names of the files a translator is supposed to produce.
+#
+# Deriving from the setup commit takes only what the first replication knew
+# BEFORE it translated anything.
+#
+# The only substantive change from bf25e35 is mechanical:
+#   /workspace/ROSCO-replication -> /workspace/ROSCO-r2   (4 commands)
+# Everything else is byte-equal to the source; the added comments are why this
+# is declared `derive` rather than `copy`.
+#
+# NOT carried, because they postdate bf25e35:
+#   types.ErrorVariables, types.LocalVariables   (3 types at setup, 5 at HEAD)
+#   shared_files:                                (absent at setup entirely)
+#   invocation's second range 0:0:20000-20020    (setup had 0:0:1-20)
+
 project:
   name: ROSCO
   source_dir: rosco/controller/src
@@ -8,9 +31,32 @@ kgen:
   run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py
   clean_cmd: cd /workspace/ROSCO-r2/rosco/controller/build && make clean
   install_cmd: cp /workspace/ROSCO-r2/rosco/controller/build/libdiscon.so /workspace/ROSCO-r2/rosco/lib/libdiscon.so
+  # WIDENED 2026-08-10 during unit #2, and it took two tries. The setup value
+  # 0:0:1-20 is VACUOUS for ColemanTransform: the first 21 invocations at
+  # Controllers.f90:510 land at simulation start, where Azimuth and rootMOOPF
+  # are 0, so the function was handed zero and expected to return zero in every
+  # captured case. A translation reading none of its inputs and writing 0.0
+  # passed 21/21 with 4725/4725 IDENTICAL. That artifact is kept, deliberately,
+  # under evidence/ColemanTransform/.
+  #
+  # Widening alone did not fix it. Against scenario 6 -- which coverage shows
+  # executing the call site 3,999 times -- invocations 2000-2020 and 3900-3920
+  # are ALSO all-zero: scenario 6 is a 1-DOF sim that never drives azimuth or
+  # blade root moments, so the line ran 7,998 times on zeros. P9 in one
+  # measurement: coverage says a line executed, not that it executed on data
+  # that can tell two translations apart.
+  #
+  # Scenario 27 injects synthetic azimuth and per-blade rootMOOP and has the
+  # highest measured hit count at this call site, 23,999. The ranges span its
+  # start, middle and end. Chosen from coverage/line_coverage.json, not copied
+  # from the first replication.
   invocation: 0:0:1-20,0:0:12000-12020,0:0:23900-23920
+  # Interface truth about the Bladed-style array: DISCON receives it as an
+  # assumed-size dummy, so nothing in the source states its extent.
   assumed_size_arrays:
     avrSWAP: 3000
+  # DISCON holds SAVE state across calls in DLL memory that dlclose() does not
+  # reliably release. A replayed kernel must re-enter initialisation.
   dll_persistence:
     resets:
     - anchor: CALL ReadAvrSWAP
@@ -26,6 +72,14 @@ fortran:
     SiKi: REAL(4)
     IntKi: INTEGER(4)
   compiler: gfortran
+  # -ffp-contract=off is E1.2's method requirement, not a preference: without it
+  # the compiler may fuse a multiply-add and the two sides stop being
+  # bit-comparable. CLOSED 2026-08-10 -- rosco/controller/CMakeLists.txt now
+  # passes it to gfortran AND to g++, and scripts/assert_fp_contract.sh checks
+  # both the build line and the absence of FMA in the linked library. The gap
+  # this comment used to describe was not theoretical: it cost unit #2 a ~1 ULP
+  # disagreement on 105 of 200 inputs, and closing it meant regenerating 20 of
+  # 27 baselines.
   flags: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
 verification:
   tolerance: 1.0e-14
@@ -48,6 +102,14 @@ translations:
   Conv2UC:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/conv2uc.cpp
+  # `vit integrate` also wrote `verification: simulation` here. REMOVED, and the
+  # removal is the point: it is a claim about what verified this unit, made by a
+  # command that ran no simulation and read no result -- the same shape as the
+  # `// After verification: <name> kernel PASSED` comment `37f8bdf` deleted from
+  # every generated file. It is FALSE for this unit specifically: the gate runs
+  # 27 scenarios and is blind to ExtController, and gate/ExtController.redtest.json
+  # is the failed red test that says so. What verified it is the differential
+  # harness and the mutation score; that lives in plan.json's `evidence`.
   ExtController:
     status: integrated
     cpp_file: translations/ExtControl/extcontroller.cpp
@@ -66,6 +128,13 @@ translations:
   LPFilter:
     status: integrated
     cpp_file: translations/Filters/lpfilter.cpp
+  # ADDED BY HAND at unit #14, not by `vit integrate`. Unit #12 correctly
+  # reverted vit.yaml wholesale after a STUB `vit verify` wrote a false
+  # `cases_passed` record into it, and `NonDecreasing`'s own entry went with the
+  # revert -- so this file listed twelve translations against thirteen
+  # integrated units. Recorded by unit #13 as a candidate for the Driver;
+  # closed here, because a machine-readable file disagreeing with plan.json is
+  # the shape this campaign has been bitten by before.
   NonDecreasing:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/nondecreasing.cpp
@@ -78,64 +147,317 @@ translations:
   PathIsRelative:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/pathisrelative.cpp
+  # ADDED BY HAND at unit #16, for the reason unit #14 recorded: `vit verify`
+  # rewrites this file through a YAML round-trip that DELETES EVERY COMMENT in
+  # it, so the only way to keep both the entry and the file's own reasoning is
+  # to restore the commented file and re-add the entry. `vit integrate` also
+  # wrote `verification: simulation` here again; REMOVED again, and this unit is
+  # the case that shows why the rule is not pedantry. The gate DID run for
+  # ReadAvrSWAP and it DID pass -- and 23 of the unit's 43 output fields are
+  # invisible to it (see plan.json `observability`). "Verified by simulation" is
+  # a true sentence and a misleading one, written by a command that read no
+  # result.
   ReadAvrSWAP:
     status: integrated
     cpp_file: translations/ReadSetParameters/readavrswap.cpp
+  # Unit #17, and the FIRST `respecify` unit in this campaign. `status:
+  # integrated` here is a statement about the BUILD -- the wrapper ships, the
+  # library links and the gate compares 5,252,000 values with 0 mismatched --
+  # and NOT about verification. The disposition in plan.json is `blocked`: the
+  # differential harness refuses the signature, so there is no mutation score.
+  # `vit integrate` also wrote `verification: simulation` here again; removed
+  # again, for the reason recorded above ExtController.
   Read_OL_Input:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/read_ol_input.cpp
+  # ADDED BY HAND at unit #18, for the reason units #14 and #16 both recorded:
+  # `vit verify` rewrites this file through a YAML round-trip that DELETES EVERY
+  # COMMENT in it, so restoring the commented file is the only way to keep the
+  # file's own reasoning -- and then the entry has to be re-added.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
+  # For this unit the gate DID run and DID see it -- 1,349,326 of 5,252,000
+  # values moved under a 1.000001 perturbation -- so the line would even have
+  # been true, and it is still the wrong claim: it is written by a command that
+  # ran no simulation and read no result. What verified this unit is in
+  # plan.json's `evidence`.
   SecLPFilter:
     status: integrated
     cpp_file: translations/Filters/seclpfilter.cpp
   SecLPFilter_Vel:
     status: integrated
     cpp_file: translations/Filters/seclpfilter_vel.cpp
+  # ADDED BY HAND at unit #20, for the reason units #14, #16 and #18 all
+  # recorded: `vit verify` and `vit integrate` rewrite this file through a YAML
+  # round-trip that DELETES EVERY COMMENT in it, so restoring the commented
+  # file is the only way to keep the file's own reasoning -- and then the entry
+  # has to be re-added. Paid for twice here: the second `vit integrate` of this
+  # unit stripped the file again, and the `git checkout --` that repaired it
+  # took this entry with it.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
+  # The gate DID run for this unit and DID see it -- a whole-unit no-op moves
+  # 1,526,538 of 5,252,000 values -- and the line is still the wrong claim,
+  # written by a command that ran no simulation and read no result. What
+  # verified this unit is in plan.json's `evidence`.
   StateMachine:
     status: integrated
     cpp_file: translations/ControllerBlocks/statemachine.cpp
+  # ADDED BY HAND at unit #21, for the reason units #14, #16, #18 and #20 all
+  # recorded: `vit integrate` rewrites this file through a YAML round-trip that
+  # DELETES EVERY COMMENT in it, so restoring the commented file is the only way
+  # to keep the file's own reasoning -- and then the entry has to be re-added.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again,
+  # and for this unit the line is not merely unchecked, it is FALSE. The gate
+  # ran, compared 5,252,000 values and is BLIND to this unit: both call sites
+  # are guarded by `ZMQ_Mode > 0`, which is 0 in all 14 inputs, so a whole-unit
+  # no-op moves nothing (gate/UpdateZeroMQ.redtest.json, with a same-build
+  # control that moves 1,857,893). What verified this unit is the differential
+  # harness and the mutation score; that lives in plan.json's `evidence`.
   UpdateZeroMQ:
     status: integrated
     cpp_file: translations/ZeroMQInterface/updatezeromq.cpp
+  # ADDED BY HAND at unit #22, for the reason units #14, #16, #18 and #20 all
+  # recorded: `vit verify` and `vit integrate` rewrite this file through a YAML
+  # round-trip that DELETES EVERY COMMENT in it, so restoring the commented file
+  # is the only way to keep the file's own reasoning -- and then the entry has to
+  # be re-added. Paid for twice here as well: three STUB `vit verify` runs (the
+  # no-op, the constant and the wrong-constant of evidence/identity/) each wrote
+  # a `cases_passed` record for a run of something that is not the translation,
+  # which is unit #11's finding, so each was reverted wholesale.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
+  # For this unit the gate DID run and DID see it -- 1,462,798 of 5,252,000
+  # values moved across 115 channels and 22 scenarios -- so the line would even
+  # have been true, and it is still the wrong claim: it is written by a command
+  # that ran no simulation and read no result. What verified this unit is in
+  # plan.json's `evidence`.
   identity:
     status: integrated
     cpp_file: translations/Functions/identity.cpp
+  # ADDED BY HAND at unit #23, for the reason units #14, #16, #18, #20, #21 and
+  # #22 all recorded: `vit verify` and `vit integrate` rewrite this file through
+  # a YAML round-trip that DELETES EVERY COMMENT in it, so restoring the
+  # commented file is the only way to keep the file's own reasoning -- and then
+  # the entry has to be re-added. Paid for three times here: two `vit integrate`
+  # runs (the second added `--reverse-copy`, see below) and one `vit verify`.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
+  # For this unit the gate DID run and DID see it -- 1,341,803 of 5,252,000
+  # values moved under a x1.000001 perturbation -- so the line would even have
+  # been true, and it is still the wrong claim: it is written by a command that
+  # ran no simulation and read no result. What verified this unit is in
+  # plan.json's `evidence`, and one layer of it went RED first: the wrapper
+  # `vit integrate` generated WITHOUT `--reverse-copy` dropped every write this
+  # unit makes to `ErrVar%aviFAIL` and `ErrVar%ErrMsg`, and the kernel and the
+  # gate both passed it (evidence/interp1d/harness.postintegration.NO-REVERSE-COPY-FAILS-454-of-497.json).
   interp1d:
     status: integrated
     cpp_file: translations/Functions/interp1d.cpp
+  # ADDED BY HAND at unit #25, for the reason units #14, #16, #18, #20, #21,
+  # #22 and #23 all recorded: `vit verify` and `vit integrate` rewrite this file
+  # through a YAML round-trip that DELETES EVERY COMMENT in it -- 179 lines of
+  # this file's own reasoning, measured on the diff -- so restoring the
+  # commented file is the only way to keep it, and then the entry has to be
+  # re-added.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
+  # For this unit the gate DID run and DID see it -- the cubic ramp replaced by
+  # its own lower bound moves 229,165 of 5,252,000 values, revert verified -- so
+  # the line would even have been true, and it is still the wrong claim: it is
+  # written by a command that ran no simulation and read no result. And it would
+  # be the WEAKEST of this unit's five layers if it were: the gate's 27 scenarios
+  # hold `IPC_Vramp` at 9.12/11.4 in all 14 inputs, so the two CLAMPS are outside
+  # what any of them drives. What verified this unit is in plan.json's `evidence`.
   sigma:
     status: integrated
     cpp_file: translations/Functions/sigma.cpp
+  # ADDED BY HAND at unit #26, for the reason units #14, #16, #18, #20, #21,
+  # #22, #23 and #25 all recorded: `vit integrate` rewrites this file through a
+  # YAML round-trip that DELETES EVERY COMMENT in it -- 187 lines of this file's
+  # own reasoning, measured on this run's diff -- so restoring the commented file
+  # is the only way to keep it, and then the entry has to be re-added.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again,
+  # and for this unit the line is FALSE rather than merely unchecked -- the same
+  # standing UpdateZeroMQ's entry records. The gate ran and compared 5,252,000
+  # values while BLIND to this unit: `unwrap` has two call sites and both have
+  # ZERO hits in all 27 scenarios (Controllers.f90:339 and
+  # ReadSetParameters.f90:807), so no value the gate compared was produced here.
+  # gate/unwrap.redtest.json is the failed red test that says so, with a
+  # same-build control beside it. What verified this unit is the differential
+  # harness (403 cases), the mutation score and the post-integration harness;
+  # that lives in plan.json's `evidence`.
   unwrap:
     status: integrated
     cpp_file: translations/Functions/unwrap.cpp
+  # ADDED BY HAND at unit #27, for the reason units #14, #16, #18, #20, #21,
+  # #22, #23, #25 and #26 all recorded: `vit integrate` rewrites this file
+  # through a YAML round-trip that DELETES EVERY COMMENT in it -- 213 lines of
+  # this file's own reasoning, measured on this run's diff -- so restoring the
+  # commented file is the only way to keep it, and then the entry has to be
+  # re-added. Ten units in a row now; it is a defect in VIT, not a habit of
+  # this campaign, and it is in DECISIONS.md as a candidate.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
+  # For this unit the line is FALSE in a way that is worth being exact about,
+  # because the gate DID run and DID see the unit: a whole-unit no-op moves
+  # values, since all 675,987 calls in the 27 scenarios take the pass-through
+  # branch and a no-op changes what they return. What the gate CANNOT see is
+  # the two wrapping branches -- zero hits on both, in all 27 scenarios, at all
+  # six call sites (evidence/wrap_180/coverage_branch_deadness.txt) -- so a
+  # translation that dropped them both passes the gate and the kernel alike.
+  # What verified those is the differential harness and the mutation score;
+  # that lives in plan.json's `evidence`.
   wrap_180:
     status: integrated
     cpp_file: translations/Functions/wrap_180.cpp
+  # wrap_360: the same shape one screen down and the OPPOSITE comparison pair
+  # (`.lt.` low, `.ge.` high -> [0, 360)). Unlike wrap_180 its high branch is
+  # LIVE: 15,199 of 19,998 calls take it, all in scenario 22, and the kernel
+  # captured at Controllers.f90:845 sees 21 of its 41 cases wrapped. The LOW
+  # branch (x < 0) is dead at both call sites in all 27 scenarios.
   wrap_360:
     status: integrated
     cpp_file: translations/Functions/wrap_360.cpp
   ChkParseData:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/chkparsedata.cpp
+  # ADDED BY HAND at unit #31, for the reason units #14, #16, #18, #20, #21,
+  # #22, #23, #25, #26 and #27 all recorded: `vit integrate` rewrites this file
+  # through a YAML round-trip that DELETES EVERY COMMENT in it -- 240 lines of
+  # this file's own reasoning on this run's diff -- so restoring the commented
+  # file is the only way to keep it, and then the entry has to be re-added.
+  # Eleven units in a row; it is a defect in VIT and it is in DECISIONS.md.
+  #
+  # `status: integrated` here is a statement about the BUILD. For this unit the
+  # gate is blind BY CONSTRUCTION and not merely by corpus: `Debug` writes
+  # `<RootName>.RO.dbg` and assigns nothing in its own signature, while the gate
+  # compares `avrSWAP` arrays recorded by `Examples/vit_sim.py`, which never
+  # reads a `.dbg`. What compares this unit is `scripts/dbgcheck.py`; that lives
+  # in plan.json's `evidence`.
   Debug:
     status: integrated
     cpp_file: translations/ROSCO_IO/debug.cpp
+  # ADDED BY HAND at unit #32, for the reason units #14, #16, #18, #20, #21,
+  # #22, #23, #25, #26, #27 and #31 all recorded: `vit verify` and
+  # `vit integrate` rewrite this file through a YAML round-trip that DELETES
+  # EVERY COMMENT in it -- 245 lines of this file's own reasoning on this run's
+  # diff -- so restoring the commented file is the only way to keep it, and then
+  # the entry has to be re-added. Twelve units in a row; it is a defect in VIT
+  # and it is in DECISIONS.md.
+  #
+  # `vit verify` also wrote `status: non_discriminating`, `cases_passed: 20` and
+  # a `red_test: not_constructed` record here. REMOVED, and the removal is the
+  # point: VIT declined to build a red test for this unit (no by-value
+  # floating-point argument), so `cases_passed: 20` would be a machine-readable
+  # claim, in the config every later unit reads, resting on a run whose
+  # discriminating power that same command says is UNMEASURED. It was measured,
+  # by four stubs, and what they found is in plan.json's `observability` -- the
+  # kernel scores a FIRST-match-wins translation 20/20 IDENTICAL.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
+  # For this unit the gate DID run and DID see it: disabling the name match
+  # moves 1,857,893 of 5,252,000 values, revert-verified. What verified the
+  # unit is in plan.json's `evidence`.
   FindLine:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/findline.cpp
+  # ADDED BY HAND at unit #33, for the reason units #14, #16, #18, #20, #21,
+  # #22, #23, #25, #26, #27, #31 and #32 all recorded: `vit verify` and
+  # `vit integrate` rewrite this file through a YAML round-trip that DELETES
+  # EVERY COMMENT in it -- 267 lines of this file's own reasoning on this run's
+  # diff -- so restoring the commented file is the only way to keep it, and then
+  # the entry has to be re-added. Thirteen units in a row; it is a defect in VIT
+  # and it is in DECISIONS.md.
+  #
+  # `vit verify` also wrote `cases_passed: 62`, `red_test: demonstrated` and a
+  # `red_test_detail` here. REMOVED. The detail line was the useful half and it
+  # is not lost -- it said the two INPUT perturbations on `error` were ABSORBED,
+  # which is this unit's kernel blindness, and it is measured rather than quoted
+  # in plan.json's `observability`: the reference return value equals `minValue`
+  # in 62 of 62 captured cases, and a stub that ignores `error` entirely passes
+  # 45 of them.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
+  # For this unit the gate DID run -- see plan.json's `evidence` for what it
+  # could and could not see -- and the line would still be a claim about
+  # verification made by a command that ran no simulation and read no result.
   PIController:
     status: integrated
     cpp_file: translations/Controllers/picontroller.cpp
+  # ADDED BY HAND at unit #34, for the reason units #14, #16, #18 and #20 all
+  # recorded: `vit integrate` rewrites this file through a YAML round-trip that
+  # DELETES EVERY COMMENT in it, so restoring the commented file is the only way
+  # to keep the file's own reasoning -- and then the entry has to be re-added.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again,
+  # and this unit is the sharpest case for the rule so far. The gate DID run and
+  # it is BLIND: PIDController's one call site has 0 hits in all 27 scenarios
+  # (evidence/PIDController/coverage_deadness.txt), and gate/PIDController.redtest.json
+  # is the failed red test that says so. "Verified by simulation" would be a
+  # false sentence written by a command that ran no simulation and read no
+  # result. What verified this unit is the differential harness and the mutation
+  # score; that lives in plan.json's `evidence`.
   PIDController:
     status: integrated
     cpp_file: translations/Controllers/pidcontroller.cpp
+  # ADDED BY HAND at unit #35, for the reason units #14, #16, #18, #20, #21,
+  # #22, #23, #25, #26, #27, #31, #32, #33 and #34 all recorded: `vit verify`
+  # and `vit integrate` rewrite this file through a YAML round-trip that DELETES
+  # EVERY COMMENT in it -- 289 lines of this file's own reasoning on this run's
+  # diff -- so restoring the commented file is the only way to keep it, and then
+  # the entry has to be re-added. Fifteen units in a row; it is a defect in VIT
+  # and it is in DECISIONS.md.
+  #
+  # `vit verify` also wrote `status: verified`, `cases_passed: 20`,
+  # `cases_total: 20`, `red_test: demonstrated` and a `red_test_detail` here.
+  # REMOVED. The kernel DID pass 20 of 20 and VIT's own red test DID go red, and
+  # both facts belong in plan.json's `evidence` beside the count of cases the
+  # capture could hold -- the configured window is 20 + 21 + 21 = 62 and this
+  # unit's only live call site (Controllers.f90:684) is called 11,994 times, so
+  # the second and third ranges are past its last call and 20 is the WHOLE of
+  # what the kernel could ever have been. A `cases_passed: 20` in the config
+  # every later unit reads does not carry that.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
+  # For this unit the gate DID run and DID see it -- see plan.json's `evidence`
+  # -- and the line would still be a claim about verification made by a command
+  # that ran no simulation and read no result.
   PIIController:
     status: integrated
     cpp_file: translations/Controllers/piicontroller.cpp
+  # `vit verify` also wrote, here, `red_test: demonstrated` with the detail
+  # `the kernel failed to build with the return value scaled by 1.00001`. BOTH
+  # LINES ARE REMOVED and the removal is the point, for ExtController's reason
+  # one instrument over: it is a claim about this kernel's discriminating power
+  # made by a run that never got a perturbed kernel to execute.
+  #
+  # `vit/redtest.py` rewrites EVERY `return <expr>;` in the file, not only the
+  # translated function's, and this unit's `errmsg_trim` helper returns a
+  # `std::string` -- so `return (std::string(...)) * 1.00001;` does not compile.
+  # `cli.py:_run_red_test` treats a build failure as "a red of the crudest kind,
+  # and an honest one" and RETURNS ON THE FIRST perturbation, so the two
+  # value-level perturbations were never tried. The same shape would fire on
+  # `interp1d.cpp` and `sigma.cpp`, which carry the same helper.
+  #
+  # What this kernel can and cannot see was measured instead, by hand, against
+  # the committed kernel: evidence/PitchSaturation/. Seven stubs, of which THREE
+  # can fail.
+  #
+  # `vit integrate` then rewrote this entry to `status: integrated` and added
+  # `verification: simulation`. The status is kept; the verification line is
+  # REMOVED, for ExtController's reason applied to a case where the claim
+  # happens to be TRUE: the gate did run for this unit and did see it --
+  # gate/PitchSaturation.json, 5,252,000 values 0 mismatched, red-tested at
+  # 1,976,629 moved. But `vit integrate` wrote that word before the gate ran, so
+  # what it recorded was a prediction, and a prediction that comes true is still
+  # not a measurement. What verified this unit is named in plan.json's
+  # `evidence`, which points at artifacts.
   PitchSaturation:
     status: integrated
     cpp_file: translations/ControllerBlocks/pitchsaturation.cpp
-    verification: simulation
 types:
   ControlParameters:
     strategy: view
@@ -143,6 +465,32 @@ types:
     strategy: view
   ExtControlType:
     strategy: view
+  # ADDED BY `vit translate` at unit #5, not carried from the first replication.
+  # The header above says these two were deliberately NOT taken from that
+  # campaign's HEAD, because taking them would have been an answer key. These
+  # were derived by the tool from THIS tree's ROSCO_Types.f90 -- it detects the
+  # ALLOCATABLE fields and writes the entry itself -- so they are a measurement,
+  # not a copy, and they are kept for that reason.
+  #
+  # What they mean today, measured at unit #5 and true until VIT changes:
+  # LocalVariables crosses (167 fields, one CHARACTER array, five nested types;
+  # `strategy: view` handles all of it). ErrorVariables DOES NOT. Its four
+  # fields include `CHARACTER(:), ALLOCATABLE :: ErrMsg`, and `vit translate`
+  # refuses it -- "Deferred-length CHARACTER(:) is not C-compatible".
+  #
+  # So with this entry present `vit interface` emits a five-argument wrapper
+  # that USEs `vit_errorvariables_view`, a module nothing can generate: the
+  # wrapper will not compile. Without it, the same command silently emitted a
+  # three-argument bridge that compiled and could not see `LocalVar%iStatus`.
+  # The entry stays because failing to build beats failing silently, and
+  # because 37 of this campaign's 69 units take a TYPE(ErrorVariables) dummy --
+  # the gap has to be closed in VIT, not routed around here. See DECISIONS.md
+  # and plan.json's ExtController entry.
+  #
+  # `vit analyze-types --fix character` is the remedy VIT's error message
+  # suggests, and it is REFUSED here: it rewrites ROSCO's own type definition
+  # to a fixed length, which changes LEN(ErrVar%ErrMsg) and so changes the
+  # oracle's behaviour. P7.
   LocalVariables:
     strategy: view
   ErrorVariables:
