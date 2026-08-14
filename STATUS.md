@@ -95,6 +95,16 @@ blanks every word, so FindLine then compares a blank word against a non-blank
 name and matches nothing. Two perturbations of two units converging on one state
 is what a same-build control buys, taken here for free.
 
+**THE X3 CLAIM WAS MEASURED, AND IT FOUND SOMETHING ELSE.** All four generator
+changes argue from the source that no scored unit can move; the two units that
+could were re-taken (`evidence/FindLine/x3_check/`). `ChkParseData` is unchanged
+at 1552 cases. `GetWords` produces **1373** where `harness/GetWords.json`
+records **1370** — and at loop `12dbaa0`, the revision this dispatch opened on,
+it already produced 1373, so the drift is not this dispatch's and the X3 claim
+holds. What it is, is a **closed unit whose committed corpus no longer
+reproduces**, with a 1.000 mutation score scored against the older one. Left as
+a finding rather than repaired here; raised in DECISIONS.md for the Driver.
+
 **AND A CONTROL THAT TOOK TWO ATTEMPTS.** The two declared equivalences enlarge
 a fixed-width local by one byte; a canary in that byte reports 0 of 2370
 disturbed. The first control for that probe — `conv2uc_c(ParamNameUC,

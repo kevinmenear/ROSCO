@@ -79,6 +79,25 @@ a change to a SHARED generator, so its X3 cost has to be measured across every
 scored unit before it is taken — unit #30 spent a whole dispatch doing exactly
 that for R12 and R13, and this is the same size of job.
 
+**THE X3 ARGUMENT WAS CHECKED AND ONE HALF OF IT WAS ALREADY FALSE FOR ANOTHER
+UNIT.** All four generator changes here carry a source-level argument that no
+scored unit's corpus can move. Two units could plausibly move and both were
+re-taken (`evidence/FindLine/x3_check/`): `ChkParseData` is unchanged at 1552
+cases, and `GetWords` produces **1373** where its committed artifact records
+**1370**. One more run attributed it — at loop `12dbaa0`, the revision this
+dispatch opened on, GetWords already produced 1373 — so the drift is not this
+dispatch's and the X3 claim holds for every change made here.
+
+It is a finding about `GetWords` and it is left as one. `harness/GetWords.json`
+(1370 cases) and `mutation/GetWords.json` (57 of 58, 1.000, scored against that
+corpus) do not reproduce on today's loop. Repairing a closed unit's evidence
+inside another unit's dispatch would put a number in its artifact that no commit
+of its own explains. **Raised for the Driver: a closed unit's corpus can go
+stale under a later unit's generator work, and nothing currently notices.**
+`revcheck` asks whether one unit's artifacts agree with EACH OTHER; it does not
+ask whether they still agree with the instrument. A campaign-wide re-take is
+E5.6's business and this is an argument for scheduling it.
+
 **FOR THE DRIVER — a method-level observation, not a target one.** Three of this
 unit's five layers were unavailable or wrong until a tool was fixed, and in each
 case the tool *reported* rather than crashed: a false refusal reason, a silent
