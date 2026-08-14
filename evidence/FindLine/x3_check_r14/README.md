@@ -35,6 +35,23 @@ this campaign's 32 units have both:
   1624 checked / 0 failed**, so the translation already agrees with the
   reference on inputs it had never been given.
 
+**That "two of 32" is checked rather than recalled.** Every non-output CHARACTER
+ARRAY dummy in the clean sources, by procedure:
+
+```bash
+git show 54dd134:rosco/controller/src/ROSCO_Helpers.f90 | \
+    grep -nE 'CHARACTER.*INTENT *\( *IN' | grep -E '\(\s*[:0-9]|DIMENSION'
+```
+
+Among the 32 units with a translation, exactly `ChkParseData` and `FindLine`
+have one. (`Conv2UC`'s `Str` and `Debug`'s `RootName` are scalars whose comments
+contain parentheses, which is what a looser grep reports as hits.) Seven
+procedures NOT yet translated have the shape — `ParseDbAry_Opt`,
+`ParseInAry_Opt`, the three `ParseInput_*_Opt`, `ReadControlParameterFileSub`,
+`SetParameters` — and every one of them is a `FileLines(:)` or an `accINFILE`
+parser, i.e. exactly the family this rule was written for. They inherit it for
+free; that is a future benefit, not a future X3 cost.
+
 `GetWords` is the near miss worth naming: it has `Words(NumWords)`, but the
 array is `INTENT(OUT)`. There is no element for a scalar to be a word *of*, so
 the rule reports N/A rather than firing — which is P6, and is asserted by
