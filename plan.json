@@ -1634,8 +1634,7 @@
     "GetNewUnit"
    ],
    "depends_on": [
-    "AddToList",
-    "Int2LStr"
+    "AddToList"
    ],
    "permanent_bridges": [
     "CurDate",
@@ -1645,13 +1644,40 @@
     "DISCON"
    ],
    "dependency_depth": 1,
-   "verification": "generated harness + mutation score (P13); the gate cannot decide",
+   "verification": "REVISED AT THE UNIT (C1). plan.json proposed 'generated harness + mutation score (P13); the gate cannot decide'. The second clause is right and the first is not achievable: `vit test-validate` compares a unit's MAPPED OUTPUTS and this unit assigns nothing in its own signature, so a generated harness would compare the empty set. What replaced it is scripts/dbgcheck.py -- byte identity of the *.RO.dbg files the unit writes, between a build whose Debug is Fortran and one whose Debug is C++ with nothing else changed -- and scripts/dbgmutate.py, which scores mutants against that same oracle.",
    "why": "performs external I/O on UnDb, UnDb2, UnDb3 that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
    "bridge_feasible": {
-    "value": "unknown",
-    "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+    "value": "not asked",
+    "basis": "The matrix's five blocking features (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write) are about crossing this unit's I/O into C. The unit was RESPECIFIED instead, which is what its contract says to do: the C++ opens its own FILE* and the Fortran unit number never crosses. Two callees do cross -- AddToList through its _c bridge with a CFI descriptor this file owns, and CurDate/CurTime through rosco/controller/src/vit_debug_bridges.f90, which plan.json declares PERMANENT BRIDGES."
    },
-   "observability": null
+   "observability": "THE GATE IS BLIND BY CONSTRUCTION, WHICH IS A STRONGER STATEMENT THAN 'THE CORPUS DOES NOT REACH IT'. Examples/vit_sim.py builds baseline_arrays/*.npz from the avrSWAP channels the controller RETURNS; `Debug` writes <RootName>.RO.dbg, which nothing in the gate path opens, and assigns no argument of its own signature. The unit is called ~408,000 times across 23 of the 27 scenarios and does its job every time -- this is not unit #27's dead branches nor units #1/#21/#26's dead call sites, the gate simply reads a different output stream. Measured: the largest perturbation this unit can make to its own output (every DebugOutData value DOUBLED) moves 0 of 5,252,000, while GetWords perturbed on the SAME libdiscon moves 1,857,893 (gate/Debug.redtest.json, evidence/Debug/gate.control-getwords-perturbed-MOVES.json). THE KERNEL CANNOT EXIST for the same reason one layer down: KGen compares captured STATE and this unit's outputs are bytes in a file. WHAT DOES COMPARE IT is scripts/dbgcheck.py: 456,086 records and 383,540,428 bytes, 0 mismatched, across the 27 gate scenarios (LoggingLevel = 1) and scenario 28 (LoggingLevel = 3). Red-tested seven times, five red at 24 / 407,976 / 21,792 / 15,999 / 16,003 records and two blind at 0. A THIRD OF THIS UNIT WAS INVISIBLE UNTIL A NEW INPUT WAS ADDED. All 14 Examples/DISCON*.IN set LoggingLevel = 1, so the .RO.dbg2 and .RO.dbg3 arms were REACHED in 23 scenarios and FALSE in all of them -- 159 LocalVarOutData assignments, the 159-name heading table, the avrIndices construction with both AddToList loops, and the vector-subscripted avrSWAP(avrIndices) write. Examples/vit_sim.py::run_scenario_28 is scenario 3's configuration with that one parameter changed, outside `scenario_order` so no gate run and no committed baseline moves. It closed the gap: the same edit that moved 0 of 408,072 records at LoggingLevel = 1 moves 15,999 of 48,014 there. THE MUTATION SCORE IS 121 of 178, 0.6798, BELOW THE 1.000 THRESHOLD, and the 57 survivors are eight shapes rather than a scatter (evidence/Debug/mutation.md): 11 enlarge a buffer or array extent, which no byte comparison can see; 7 are the WRITE(*,100) status line, which goes to unit 6 and not to a file; 7 are the two clamps at a boundary no computed value lands on, one of whose arms is dead outright; 5 are guards whose operand is constant in every shipped input (LoggingLevel, CC_Mode, StC_Mode); 3 are `Ind - 1` -> `1 - Ind` where the group extent is 1; 8 are unreachable arms of the format helpers, two of them genuinely equivalent and deliberately NOT declared so the score carries them; 3 are the TRIM loop, whose body never runs on a blank-free RootName. THE LARGEST REMAINING GAP IS THE MUTATION CORPUS AND IT IS MEASURED, NOT GUESSED: the sweep runs scenarios 27 and 28 because a mutant costs a rebuild plus a simulation, and the `DebugOutData[11] -> [12]` shift re-run over the full 24-file corpus dies on 23,998 of 408,072 records in exactly one file, vit_sim7.RO.dbg (evidence/Debug/dbg.redtest.survivor_idx11.json). NacIMU_FA_AccF and FA_AccF are both zero in scenarios 27 and 28. A wider mutation corpus is KNOWN to raise this score. THREE MUTATOR DEFECTS were fixed in translation-loop before the number existed (X2), each with its cost measured over all 31 translations.",
+   "disposition": "deferred",
+   "source_file": "rosco/controller/src/ROSCO_IO.f90",
+   "translation": "translations/ROSCO_IO/debug.cpp",
+   "harness_required": true,
+   "evidence": [
+    "evidence/Debug/README.md",
+    "evidence/Debug/dbg.json",
+    "evidence/Debug/dbg28.json",
+    "evidence/Debug/dbg_redtest.txt",
+    "evidence/Debug/dbg.redtest.charwidth.json",
+    "evidence/Debug/dbg.redtest.esexp.json",
+    "evidence/Debug/dbg.redtest.clamplo.json",
+    "evidence/Debug/dbg.redtest.clamphi.json",
+    "evidence/Debug/dbg.redtest.dbg2blind.json",
+    "evidence/Debug/dbg.redtest.dbg2live.json",
+    "evidence/Debug/dbg.redtest.dbg3live.json",
+    "evidence/Debug/dbg.redtest.survivor_idx11.json",
+    "evidence/Debug/dbg28.INSTRUMENT-DEFECT-header-assumed-on-dbg3.json",
+    "evidence/Debug/fmt_probe.txt",
+    "evidence/Debug/fmt_probe.redtest.txt",
+    "evidence/Debug/mutation.md",
+    "evidence/Debug/gate.control-getwords-perturbed-MOVES.json",
+    "harness/Debug.postintegration.json",
+    "mutation/Debug.json",
+    "gate/Debug.json",
+    "gate/Debug.redtest.json"
+   ]
   },
   {
    "order": 32,

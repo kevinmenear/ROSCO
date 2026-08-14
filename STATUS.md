@@ -4,6 +4,122 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-14: unit #31 `Debug` is `deferred` and NOT CLOSED** — the
+mutation score is an honest **0.6798** against a threshold of 1.000, and the
+survivors are eight named shapes rather than a scatter. Everything else this
+unit has ran and is green. It is the campaign's second `respecify` unit after
+#17 `Read_OL_Input`, ~490 lines, and **the only one so far whose entire
+observable output is a file**.
+
+Every count below is read from the committed artifact named in its row.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay | **CANNOT EXIST** — KGen compares captured STATE; this unit's outputs are bytes in a file | — |
+| generated differential harness | **CANNOT BE BUILT** — the unit assigns nothing in its own signature, so the comparison set is empty | — |
+| file identity, 27 scenarios + scenario 28 (`harness/Debug.postintegration.json`) | **456,086 records / 383,540,428 bytes, 0 failed** — **this unit's primary evidence** | seven perturbations: 24 / 407,976 / 21,792 / 15,999 / 16,003 records red, two at 0 |
+| mutation score (`mutation/Debug.json`) | **121 of 178 behavioural, 0.6798**, 3 no-compile of 181, 0 declared equivalent, 10 operators | the score *is* the red test, 178 times |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched — **and it establishes nothing about this translation** | every DebugOutData value DOUBLED moves **0**; same-build control **1,857,893** |
+| format fidelity vs gfortran (`evidence/Debug/fmt_probe.txt`) | 54 records, 4598 bytes, IDENTICAL | 1 and 26 records |
+
+**THE GATE IS BLIND BY CONSTRUCTION, WHICH IS A STRONGER STATEMENT THAN ANY
+BLINDNESS THIS CAMPAIGN HAS RECORDED BEFORE.** `Examples/vit_sim.py` builds
+`baseline_arrays/*.npz` from the `avrSWAP` channels the controller RETURNS.
+`Debug` writes `<RootName>.RO.dbg`, which nothing in the gate path opens, and
+assigns no argument of its own signature — `ErrVar` only on `GetNewUnit`'s
+unit-number-exhaustion arm, `avrSWAP` never. The unit is **called ~408,000
+times across 23 of the 27 scenarios and does its job every time**: this is not
+unit #27's dead branches, nor units #1/#21/#26's dead call sites. The gate reads
+a different output stream. No input could change that.
+
+**WHAT COMPARES IT IS THE FILE**, and the two archives differ in one thing:
+`pre` was taken with `Debug` still Fortran and every other unit already
+integrated, `post` with `Debug` integrated and nothing else changed. Record 1
+carries `CurDate()`/`CurTime()` and is compared byte for byte first, falling
+back to a structural check only when it differs and both sides carry the
+`Generated on …` shape — **named rather than dropped**, because a line dropped
+from a comparison is a line the comparison cannot report on.
+
+**A THIRD OF THIS UNIT WAS INVISIBLE TO EVERY INSTRUMENT, AND ONE INPUT
+PARAMETER CLOSED IT.** All 14 `Examples/DISCON*.IN` set `LoggingLevel = 1`, so
+`IF (LoggingLevel > 1)` and `> 2` are REACHED in 23 scenarios and FALSE in all
+of them. `Examples/vit_sim.py::run_scenario_28` is scenario 3's configuration
+with that one parameter set to 3 — outside `scenario_order`, so no gate run and
+no committed baseline moves (X3, P5). Scenario 3 is the right base because it is
+the only one already setting `CC_Mode = 1` and `StC_Mode = 1`, which is what
+makes the two `AddToList` loops in the dbg3 path reachable at all.
+
+```
+ES20.5E2 -> E3 on the LocalVarOutData write, 27 scenarios        0 of 408,072
+the same edit, scenario 28                                  15,999 of  48,014
+```
+
+Same edit, same build, one parameter apart. And the half it opened is
+byte-identical: 48,014 records covering the 159 `LocalVarOutData` assignments,
+the 159-name heading table with its `CHARACTER(15)` truncations, the empty
+record `WRITE(UnDb2,'(160(a20,TR5:))')` writes with no data item, the six blank
+records `(/////)` writes, the `avrIndices` construction through both `AddToList`
+loops, the `AvrSWAP(NNNN)` heading built from a runtime format string, the `(-)`
+group that runs past its one data item, and the vector-subscripted
+`avrSWAP(avrIndices)` write.
+
+**THE MUTATION SCORE'S 57 SURVIVORS ARE EIGHT SHAPES**
+(`evidence/Debug/mutation.md`): 11 enlarge a buffer or array extent, which no
+byte comparison can see; **7 are the `WRITE(*,100)` status line, which goes to
+unit 6 and not to a file**; 7 are the two clamps at a boundary no computed value
+lands on; 5 are guards whose operand is constant in every shipped input; 3 are
+`Ind - 1` → `1 - Ind` where the group extent is 1; 8 are unreachable arms of the
+format helpers, **two of them genuinely equivalent and deliberately NOT declared
+so the score carries them**; 3 are the `TRIM` loop, whose body never runs on a
+blank-free RootName.
+
+**THE LARGEST REMAINING GAP IS THE MUTATION CORPUS, AND IT WAS MEASURED RATHER
+THAN GUESSED.** The sweep runs scenarios 27 and 28 because a mutant costs a
+rebuild plus a simulation. The `DebugOutData[11] → [12]` shift, re-run over the
+full 24-file corpus through the same red-test path, dies on **23,998 of 408,072
+records in exactly one file, `vit_sim7.RO.dbg`** —
+`DebugVar%NacIMU_FA_AccF` and `%FA_AccF` are both zero in scenarios 27 and 28.
+A wider mutation corpus is *known* to raise this score. The ablation is
+committed beside it: the same 40 `compare_op` mutants at LoggingLevel = 1 kill
+**12 of 40** where {27, 28} kills **21**.
+
+**THREE MUTATOR DEFECTS HAD TO BE FIXED BEFORE THE SCORE EXISTED** (X2, each in
+`translation-loop`, each with its cost measured over all 31 translations rather
+than argued): `compare_op` rewriting the angle brackets of a **user-declared
+template** (12 of 40 unbuildable, 30%, above the 25% at which a run refuses);
+`arith_op` reading `std::FILE* f`, `return *p` and **the exponent sign of
+`1E-99`** as arithmetic (13 of 25 — and that last one meant the unit's two clamp
+constants had *no* `arith_op` mutant at all); and `_not_arithmetic` reading
+`drop_factor`'s RIGHT OPERAND as its operator, so it fired for two rules of
+three. The third was found by running the sweep, not by reading the diff.
+
+**AND THE MERGE REFUSED, CORRECTLY.** The first union of the nine sweep parts
+named three different `loop_rev`s, because two of those fixes landed mid-sweep.
+Six parts were re-taken so that all nine name `897d67c`. Worth recording: for a
+punctuation operator `_mid` is `(unit, operator, '<', '<=', nth)`, so an id
+tracks the ORDINAL and not the SITE — twelve sites moved under the first fix and
+three ids changed. `scripts/dbgmutate.py` records line/before/after per result
+for that reason.
+
+**C12: `dbgcheck` REPORTED A MISMATCH `.RO.dbg3` CANNOT HAVE.** Its
+`compare_first_record` assumed record 1 is always the `Generated on …` line and
+failed anything else — and `.RO.dbg3` opens with `WRITE(UnDb3,'(/////)')`, so
+its record 1 is EMPTY and two empty records were called different. The
+assumption held for every file the instrument had seen and stopped holding the
+moment a third file appeared. The wrong artifact is committed at `327ca29`
+before the fix.
+
+Two respecifications are recorded rather than left to be found. **`GetNewUnit`
+is absorbed**, so this unit's only write to `ErrVar` — the unit-number
+exhaustion arm — does not exist in C++. **`Int2LStr` is not called**: its only
+job here is to render a format string's repeat count as decimal text so the
+Fortran format parser can read it back as an integer, and a loop never leaves
+the integer domain. No part of its body appears anywhere in the translation, so
+this is not the inlining X1 forbids; `plan.json`'s `depends_on` for this unit is
+`AddToList` alone after respecification.
+
+---
+
 **As of 2026-08-14: unit #30 `ChkParseData` is `integrated` and CLOSED** —
 `done_check.py` reports **14 of 14** (`evidence/ChkParseData/done_check.txt`).
 It closed at the second dispatch; the first left it `deferred` at an honest

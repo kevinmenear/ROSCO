@@ -6840,3 +6840,114 @@ the history exactly.
 banner prints `NOT CONFIGURED` and no unit is asked whether its done-condition
 was read — the state that let 14 units close without one. The machine was on
 BATTERY at the time of writing (4h13m), which is shorter than the run.
+
+## Unit #31 — Debug — 2026-08-14
+
+### The gate is not blind to this unit because of a corpus; it reads a different stream
+
+`plan.json` predicted `the gate cannot decide` and the reason turns out to be
+sharper than any of this campaign's earlier blind units. `Examples/vit_sim.py`
+builds `baseline_arrays/*.npz` from the `avrSWAP` channels the controller
+RETURNS. `Debug` writes `<RootName>.RO.dbg` and assigns no argument of its own
+signature. It is called ~408,000 times across 23 of the 27 scenarios and does
+its job every time — so the shape is neither #27's dead branches nor
+#1/#21/#26's dead call sites. **No input could make the gate read a file it does
+not open.**
+
+The general question this raises, and it is a method question rather than a
+target one: **for a unit whose effect is I/O, ask which STREAM the gate reads
+before asking which INPUTS reach it.** Coverage answers the second and says
+nothing about the first, and the two look identical in a red test that returns 0.
+
+### A unit that assigns nothing in its signature has no generated harness, and the answer is not to give up on P13
+
+`vit test-validate` compares a unit's mapped outputs. This unit has none, so the
+generated differential harness would compare the empty set, and `vit_mutate.py`
+would report every mutant surviving — a 0.000 that is a fact about the
+instrument. `plan.json`'s proposed verification (`generated harness + mutation
+score`) was therefore half unachievable as written, and it was re-specified at
+the unit (C1) rather than waived.
+
+What replaced it keeps the SHAPE of P11/P13 and changes only the oracle:
+`scripts/dbgcheck.py` compares the bytes the unit writes, and
+`scripts/dbgmutate.py` scores mutants against that same comparison by compiling
+each into `libdiscon.so` and re-running scenarios. **Candidate method amendment:
+P13's "the generated input domain IS the specification" should be read as "the
+generated *oracle*", so that a respecify unit whose contract is (data in) →
+(bytes out) is not disqualified from a mutation score by the shape of its
+signature.**
+
+### A mutation reference that CANNOT be the mutant, without needing a clean tree
+
+Unit #29's finding is that `vit_mutate` on an integrated tree routes both sides
+of its comparison through the harness's own copy of the mutant, and the remedy
+recorded there is to run the sweep on a clean tree. That remedy is expensive —
+reset, rebuild, regenerate — and it is not the only one.
+
+Here the reference is a **committed archive of bytes**, written by a build that
+contained no C++ `Debug` at all. It is fixed before the sweep starts and nothing
+the sweep does can perturb it, so the sweep runs on the INTEGRATED tree and is
+still a measurement. **Candidate: where an oracle can be frozen as data rather
+than as a build, the clean-tree requirement is about the reference and not about
+the tree.**
+
+### One input parameter was worth more than any corpus rule
+
+A third of this unit — 159 `LocalVarOutData` assignments, the 159-name heading
+table, the `avrIndices` construction with both `AddToList` loops, the
+vector-subscripted `avrSWAP(avrIndices)` write — was reached by nothing, because
+all 14 shipped `DISCON*.IN` set `LoggingLevel = 1` and the two guards are
+`> 1` and `> 2`. Adding `run_scenario_28` (scenario 3's configuration at
+`LoggingLevel = 3`, outside `scenario_order` so no baseline moves) took the same
+perturbation from 0 of 408,072 records to 15,999 of 48,014, and took
+`compare_op` from 12 of 40 killed to 21 of 40.
+
+**Ask of any unit gated on a configuration scalar: what values does that scalar
+take in the shipped inputs, and which arms does that leave unreachable?** It is
+one grep and it is not the same question as coverage — the guard LINE has hits
+in 23 scenarios.
+
+### Three mutator defects, and the third was found by running the sweep
+
+`compare_op` rewriting a user-declared template's angle brackets (unit #21's
+`static_cast` finding one shape out); `arith_op` reading `std::FILE* f`,
+`return *p` and **the exponent sign of `1E-99`** as arithmetic; and
+`_not_arithmetic` — the fix for the second — reading `drop_factor`'s RIGHT
+OPERAND as its operator, so it fired for two rules of three.
+
+The third is the one worth keeping. It was invisible in the diff and obvious in
+the sweep: 6 of 7 no-compiles in the operator it was supposed to have fixed.
+**A fix to a mutator is not verified by the operator that motivated it.**
+
+And the `1E-99` case is worse than a ratio: it meant the two clamp constants of
+the unit under test had **no `arith_op` mutant at all**, so an operator that
+appeared to be measuring them was measuring nothing there. A no-compile is not
+only noise in a denominator; it can be a hole in coverage wearing a denominator's
+clothes.
+
+### `_mid` tracks an ordinal, not a site
+
+For a punctuation operator `_mid` is `(unit, operator, '<', '<=', nth)`. Under
+the first mutator fix **twelve sites moved and three ids changed**. Unit #24
+established that an ADDITION cannot move an existing id because `_mid` is
+content-derived; the converse does not hold, and an artifact that reports only
+ids cannot say where its survivors are. `scripts/dbgmutate.py` records
+line/before/after per result. **Candidate: `vit_mutate.py`'s survivor records
+should carry the line and the surrounding text for the same reason.**
+
+### The merge refusing on `loop_rev` was worth its 30 minutes
+
+Two mutator fixes landed mid-sweep, so the first union of nine parts named three
+different instrument revisions and `dbgmutate_merge.py` refused. Six parts were
+re-taken. The alternative — exempting the check because "those operators were
+not affected" — is an argument, and the check exists because an argument is not
+a measurement. `_mutation_merge.py` has the same rule and it is right.
+
+### Two equivalent mutants were NOT declared, deliberately
+
+`pos > buf.size()` → `>=` (the extra call is `append(0, ' ')`, a no-op) and
+`if (UnDb)` → `if (!(UnDb))` on the close block (stdio flushes every open stream
+at process exit, so the bytes are identical). Both are almost certainly
+equivalent. Declaring an equivalence is a claim, and this dispatch did not have
+the budget to prove either to the standard units #23–#26 set. The score carries
+them: 0.6798 with them counted against it rather than 0.6910 with them excused.
