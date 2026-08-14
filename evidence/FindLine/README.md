@@ -235,8 +235,18 @@ allocator padding`, and `Read_OL_Input` before it. The instrument that would
 kill all of them is a sanitiser build (`-fsanitize=address,undefined`), which is
 already a **proposed method amendment** in `DECISIONS.md`; it changes what
 "killed" means for every unit in the campaign, so it is escalated rather than
-built inside one unit's dispatch. This unit is the third instance and the second
-with a same-site control, which is what the amendment now rests on.
+adopted inside one unit's dispatch.
+
+**It is, however, now demonstrated rather than argued** (`asan_demo/`). Under
+`-fsanitize=address` the shipped translation produces **0 bytes of diagnostic**
+and the mutant produces a `heap-buffer-overflow`, `WRITE of size 1`, `0 bytes
+after 2048-byte region`, naming `char_assign` and the `std::vector<char> Line_a`
+the harness allocates. That answers the two questions three units of argument
+could not: the instrument fires on the mutant, and it is silent on the correct
+program. What it does not answer is the one the amendment turns on — whether the
+other 31 translations are clean under it — and that is a sweep, not a probe. The
+score stays 0.960: changing the mutation instrument for one unit is the thing
+X3 forbids.
 
 `evidence/FindLine/gate.survivor-ca75abea.json`,
 `evidence/FindLine/gate.linewidth-control.json`,
@@ -343,4 +353,9 @@ harness.linewidth-control.json           60 of 2514   -- the harness CAN see thi
 gate.survivor-ca75abea.json              0 of 5,252,000  -- and cannot see 2049
 gate.linewidth-control.json              1,583,216 of 4,732,000 for 2048 -> 5,
                                          so neither zero is a dead probe
+findline.linewidth-mutant.cpp            ca75abea, written out for a non-vit_mutate
+                                         instrument to be pointed at
+run_asan_demo.sh, asan_demo/             the proposed amendment's instrument, run:
+                                         0 bytes on the correct program, a
+                                         heap-buffer-overflow on the mutant
 ```

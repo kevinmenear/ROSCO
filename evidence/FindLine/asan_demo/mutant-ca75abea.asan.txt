@@ -1,0 +1,58 @@
+=================================================================
+==816980==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x51d0000ac680 at pc 0xc1ae138ba9e0 bp 0xffffe5368070 sp 0xffffe5368060
+WRITE of size 1 at 0x51d0000ac680 thread T0
+    #0 0xc1ae138ba9dc in char_assign /workspace/ROSCO-r2/translations/ROSCO_Helpers/findline_test/findline.hpp:74
+    #1 0xc1ae138ba9dc in FindLine(char*, int, int, char*, int, int*, char*, int*, int, int) /workspace/ROSCO-r2/translations/ROSCO_Helpers/findline_test/findline.hpp:219
+    #2 0xc1ae138b700c in main /workspace/ROSCO-r2/translations/ROSCO_Helpers/findline_test/findline_test.cpp:116
+    #3 0xf5b17ce984c0  (/lib/aarch64-linux-gnu/libc.so.6+0x284c0) (BuildId: d5ef86dde36cbd3289566cf5098226035d76f2e1)
+    #4 0xf5b17ce98594 in __libc_start_main (/lib/aarch64-linux-gnu/libc.so.6+0x28594) (BuildId: d5ef86dde36cbd3289566cf5098226035d76f2e1)
+    #5 0xc1ae138b9aec in _start (/workspace/ROSCO-r2/translations/ROSCO_Helpers/findline_test/test+0x9aec) (BuildId: 5f55f268eb0f85cfe79b4ab8e018f343ec3601d5)
+
+0x51d0000ac680 is located 0 bytes after 2048-byte region [0x51d0000abe80,0x51d0000ac680)
+allocated by thread T0 here:
+    #0 0xf5b17d648324 in operator new(unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:95
+    #1 0xc1ae138b6bc4 in std::__new_allocator<unsigned char>::allocate(unsigned long, void const*) /usr/include/c++/13/bits/new_allocator.h:151
+    #2 0xc1ae138b6bc4 in std::allocator_traits<std::allocator<unsigned char> >::allocate(std::allocator<unsigned char>&, unsigned long) /usr/include/c++/13/bits/alloc_traits.h:482
+    #3 0xc1ae138b6bc4 in std::_Vector_base<unsigned char, std::allocator<unsigned char> >::_M_allocate(unsigned long) /usr/include/c++/13/bits/stl_vector.h:381
+    #4 0xc1ae138b6bc4 in std::_Vector_base<char, std::allocator<char> >::_M_allocate(unsigned long) /usr/include/c++/13/bits/stl_vector.h:378
+    #5 0xc1ae138b6bc4 in std::_Vector_base<char, std::allocator<char> >::_M_create_storage(unsigned long) /usr/include/c++/13/bits/stl_vector.h:398
+    #6 0xc1ae138b6bc4 in std::_Vector_base<char, std::allocator<char> >::_Vector_base(unsigned long, std::allocator<char> const&) /usr/include/c++/13/bits/stl_vector.h:335
+    #7 0xc1ae138b6bc4 in std::vector<char, std::allocator<char> >::vector(unsigned long, std::allocator<char> const&) /usr/include/c++/13/bits/stl_vector.h:557
+    #8 0xc1ae138b6bc4 in main /workspace/ROSCO-r2/translations/ROSCO_Helpers/findline_test/findline_test.cpp:106
+    #9 0xf5b17ce984c0  (/lib/aarch64-linux-gnu/libc.so.6+0x284c0) (BuildId: d5ef86dde36cbd3289566cf5098226035d76f2e1)
+    #10 0xf5b17ce98594 in __libc_start_main (/lib/aarch64-linux-gnu/libc.so.6+0x28594) (BuildId: d5ef86dde36cbd3289566cf5098226035d76f2e1)
+    #11 0xc1ae138b9aec in _start (/workspace/ROSCO-r2/translations/ROSCO_Helpers/findline_test/test+0x9aec) (BuildId: 5f55f268eb0f85cfe79b4ab8e018f343ec3601d5)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /workspace/ROSCO-r2/translations/ROSCO_Helpers/findline_test/findline.hpp:74 in char_assign
+Shadow bytes around the buggy address:
+  0x51d0000ac400: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x51d0000ac480: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x51d0000ac500: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x51d0000ac580: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x51d0000ac600: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x51d0000ac680:[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x51d0000ac700: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x51d0000ac780: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x51d0000ac800: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x51d0000ac880: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x51d0000ac900: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==816980==ABORTING

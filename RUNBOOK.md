@@ -358,6 +358,38 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A PROPOSED INSTRUMENT CAN BE DEMONSTRATED WITHOUT BEING ADOPTED, AND ONE RUN
+  ANSWERS MORE THAN THREE DISPATCHES OF ARGUMENT.** Unit #32, second dispatch.
+  The sanitiser amendment had been carried across three units on prose. Pointing
+  it at the one mutant it was proposed for costs about fifteen seconds:
+
+  ```
+  # the generated Makefile spells compile AND link with $(CXX), so one variable
+  # covers both; the campaign's Fortran objects need no instrumenting, because
+  # the buffer that overflows is the harness's own std::vector<char>
+  make CXX='g++ -fsanitize=address -g -fno-omit-frame-pointer' test
+  ASAN_OPTIONS=detect_leaks=0 ./test findline_cases.bin
+  ```
+
+  ```
+  the shipped translation   exit 0,    0 bytes on stderr
+  the mutant                exit 1, 4475 bytes: heap-buffer-overflow, WRITE of
+                            size 1, 0 bytes after 2048-byte region, char_assign
+  ```
+
+  **RUN THE CORRECT PROGRAM FIRST AND KEEP ITS EMPTY REPORT AS AN ARTIFACT.**
+  The question that decides whether an instrument is usable is not "does it fire
+  on the mutant" but "is it silent on the program that is right" -- one that
+  reports on both marks every mutant killed, which is a 1.000 that measured
+  nothing. `detect_leaks` must be off or libgfortran's I/O buffers answer that
+  question with a false yes.
+
+  ADOPTING it is a different act and was not done: the score stays 0.960,
+  because a mutation instrument changed for one unit is what X3 forbids. The
+  demonstration is filed as evidence for the Driver, and it still does not
+  answer the campaign-wide question -- whether the other 31 translations are
+  clean under it -- which is a sweep.
+
 - **A SURVIVOR LIST THAT ONE MEASUREMENT EXPLAINS IS ONE PIECE OF WORK, AND THE
   DISPATCH THAT MEASURES IT SHOULD WRITE THE RULE'S SPECIFICATION EVEN IF IT
   CANNOT BUILD IT.** Unit #32, second dispatch. The first dispatch measured the

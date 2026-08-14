@@ -81,6 +81,17 @@ FEW is a wrong answer; one byte too MANY is not an answer at all. Third instance
 in the campaign after `Read_OL_Input` and `Debug`'s `c3a5bb71`; the instrument
 is a sanitiser build and is already a **proposed method amendment**.
 
+**AND THAT AMENDMENT IS NOW DEMONSTRATED RATHER THAN ARGUED**
+(`evidence/FindLine/asan_demo/`). Under `-fsanitize=address` the shipped
+translation writes **0 bytes** of diagnostic and the mutant writes a
+`heap-buffer-overflow`, `WRITE of size 1`, `0 bytes after 2048-byte region`,
+naming `char_assign` and the buffer the harness allocates. Three units have
+carried this proposal on an argument; the two questions the argument could not
+answer — does it fire, and is it silent on the correct program — are answered.
+The one it still cannot answer is whether the other 31 translations are clean
+under it, which is a sweep and a dispatch of its own. **The score stays 0.960**:
+changing the mutation instrument for one unit is what X3 forbids.
+
 **THE TRANSLATION LOST TWO SITES TO THE SAME RULE, AND THE SCORE MOVED
 0.667 → 0.704.** `char_assign`'s `n = std::min(len_src, len_dst)` plus two
 loops became ONE loop bounded by `len_dst` with an `i <= len_src` predicate, and

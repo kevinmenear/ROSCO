@@ -89,8 +89,31 @@ any corpus reaches a difference that is not in any compared value.
 
 The instrument is unchanged from unit #31's proposal — `-fsanitize=address,
 undefined` over the same scenarios, a mutant killed when the sanitiser reports.
-What is new is the evidence that no cheaper instrument exists: the second oracle
-was tried, at the cost of two gate runs, and it reports the same zero.
+Two things are new. First, evidence that no cheaper instrument exists: the
+second oracle was tried, at the cost of two gate runs, and reports the same
+zero. Second, **the instrument itself was run** (`evidence/FindLine/asan_demo/`,
+`run_asan_demo.sh`), which three units of proposal had not done:
+
+```
+original          ./test exit 0,     0 byte(s) on stderr
+mutant-ca75abea   ./test exit 1,  4475 byte(s): heap-buffer-overflow,
+                  WRITE of size 1, 0 bytes after 2048-byte region,
+                  in char_assign, on the std::vector<char> the harness allocates
+```
+
+It fires on the mutant and it is **silent on the correct program**, which is the
+half that decides whether this is one CMake option or a project — a sanitiser
+that reported on the unmutated translation would mark every mutant killed and
+make the score meaningless. Leak detection has to be off; libgfortran's I/O
+buffers are reachable at exit and with `detect_leaks=1` the correct program
+reports too.
+
+What the demonstration does NOT do is answer the question the amendment turns
+on: whether the other 31 translations are clean under it. That is a sweep and a
+dispatch of its own, and it is the thing the Driver is being asked to schedule.
+`mutation/FindLine.json` is untouched at 0.960 — adopting a different mutation
+instrument for one unit is precisely what X3 forbids, and the demonstration is
+filed as evidence rather than as a score.
 
 ### A closed unit's corpus moved, and it is a finding rather than a repair
 
