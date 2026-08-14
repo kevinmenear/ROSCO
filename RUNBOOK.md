@@ -358,6 +358,37 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A RED TEST'S REVERT CAN BE A SILENT NO-OP, AND THEN THE GREEN IT CERTIFIES
+  REPORTS THE RED TEST'S OWN NUMBER.** Unit #30, second dispatch, and it is
+  unit #23's `cp`-across-a-bind-mount hazard at the one place nobody had put the
+  guard. `run_wrapper_redtest.sh` perturbs, builds, runs red, reverts, builds,
+  runs green:
+
+  ```
+  red test                     1552 checked   9 failed
+  revert-verified GREEN        1552 checked   9 failed   <- the same 9
+  grep '2 - vit_j_Words'       nothing        the source IS reverted
+  source  23:34:47.715
+  object  23:34:46.732                        a second OLDER than its source
+  ```
+
+  `make` stat'd the file while the container still showed the pre-revert
+  content, called the object up to date, and the mount caught up afterwards.
+  **It appears only when the cycle is FAST** -- three seconds here, where the
+  same script had passed twice earlier in the session at slower rebuilds -- so
+  it will bite harder as the campaign's builds warm up.
+
+  Two halves, and the second is what makes it deterministic:
+
+  ```
+  docker exec ... md5sum <the file>     # the content ARRIVED  (run_harness_stub.sh's rule)
+  docker exec ... touch  <the file>     # and the object cannot be older than it
+  ```
+
+  The IN direction needs it more than the OUT one: a perturbation the container
+  has not seen builds the ORIGINAL and reports a red test that stayed green,
+  which reads as "this layer is blind" rather than as "the edit did not arrive".
+
 - **A QUANTITY THE HARNESS SUPPLIES AND THE UNIT BRANCHES ON IS AN INPUT, AND A
   CONSTANT ONE NARROWS THE DOMAIN WITHOUT APPEARING IN ANY COVERAGE LINE.** Unit
   #30, second dispatch, and it is the widest of this campaign's corpus findings

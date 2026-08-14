@@ -82,6 +82,18 @@ measurement and the coincidence is not. The mechanism is still an indeterminate
 read; the buffer is still not zero-initialised, because that would define bytes
 the correct program never reads purely to move a number (unit #4, `Conv2UC`).
 
+**A RED TEST WHOSE REVERT IS A NO-OP CANNOT CERTIFY ANYTHING, AND IT REPORTS
+ITS OWN FAILURE COUNT AS THE GREEN.** `run_wrapper_redtest.sh`'s
+revert-verification came back at `1552 checked, 9 failed` -- the red test's own
+9 -- with the source provably reverted and the object stamped a second BEFORE
+the source it was built from. The bind mount had not propagated the revert when
+`make` stat'd the file. The wrong artifact is committed at `d3a8253` before the
+fix (C12), and the fix is the rule `run_harness_stub.sh` already applies one
+file over, plus a `touch` from inside the container: a hash says the content
+arrived and says nothing about the mtime `make` compares against. **The hazard
+grows as the build gets warmer** -- the same script passed twice earlier in the
+same session, when the cycle was slower than the mount.
+
 **AN ARTIFACT CAN NAME A COMMIT WHOSE CODE DID NOT PRODUCE IT, AND ONLY THE
 STAMP WILL SAY SO.** The sweep that first scored 1.000 ran with R13 in the
 working tree and stamped `3c19267` — the R12 commit. `revcheck` reported the
