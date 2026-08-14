@@ -1,0 +1,41 @@
+63,81c63
+< Generator speed:  341.3 RPM, Pitch angle:  90.0 deg, Power:   815.5 kW, Est. wind Speed:  11.9 m/s
+< Generator speed:  334.0 RPM, Pitch angle:  45.7 deg, Power:   803.4 kW, Est. wind Speed:  12.3 m/s
+< Generator speed:  331.7 RPM, Pitch angle:  90.0 deg, Power:   798.9 kW, Est. wind Speed:  11.8 m/s
+< Generator speed:  331.1 RPM, Pitch angle:  66.3 deg, Power:   797.6 kW, Est. wind Speed:  12.6 m/s
+< Generator speed:  330.9 RPM, Pitch angle:  90.0 deg, Power:   797.3 kW, Est. wind Speed:  12.1 m/s
+< Generator speed:  330.8 RPM, Pitch angle:  68.4 deg, Power:   797.2 kW, Est. wind Speed:  12.4 m/s
+< Generator speed:  330.8 RPM, Pitch angle:  90.0 deg, Power:   797.2 kW, Est. wind Speed:  12.6 m/s
+< Generator speed:  330.8 RPM, Pitch angle:  86.2 deg, Power:   797.2 kW, Est. wind Speed:  12.1 m/s
+< Generator speed:  330.8 RPM, Pitch angle:  82.0 deg, Power:   797.9 kW, Est. wind Speed:  12.8 m/s
+< Generator speed:  357.7 RPM, Pitch angle:  90.0 deg, Power:  1020.1 kW, Est. wind Speed:  12.5 m/s
+< Generator speed:  343.1 RPM, Pitch angle:  65.6 deg, Power:  1013.8 kW, Est. wind Speed:  12.8 m/s
+< Generator speed:  335.6 RPM, Pitch angle:  76.0 deg, Power:  1002.7 kW, Est. wind Speed:  13.2 m/s
+< Generator speed:  332.8 RPM, Pitch angle:  80.0 deg, Power:   999.9 kW, Est. wind Speed:  12.7 m/s
+< Generator speed:  331.4 RPM, Pitch angle:  85.0 deg, Power:   996.6 kW, Est. wind Speed:  13.6 m/s
+< Generator speed:  331.0 RPM, Pitch angle:  88.0 deg, Power:   996.0 kW, Est. wind Speed:  13.0 m/s
+< Generator speed:  330.9 RPM, Pitch angle:  85.4 deg, Power:   995.8 kW, Est. wind Speed:  13.3 m/s
+< Generator speed:  330.8 RPM, Pitch angle:  90.0 deg, Power:   995.7 kW, Est. wind Speed:  13.6 m/s
+< Generator speed:  330.8 RPM, Pitch angle:  69.6 deg, Power:   995.7 kW, Est. wind Speed:  13.0 m/s
+< Loading FAST model: NREL-5MW.fst 
+---
+> Generator speed:  341.3 RPM, Pitch anLoading FAST model: NREL-5MW.fst 
+109a92,109
+> gle:  90.0 deg, Power:   815.5 kW, Est. wind Speed:  11.9 m/s
+> Generator speed:  334.0 RPM, Pitch angle:  45.7 deg, Power:   803.4 kW, Est. wind Speed:  12.3 m/s
+> Generator speed:  331.7 RPM, Pitch angle:  90.0 deg, Power:   798.9 kW, Est. wind Speed:  11.8 m/s
+> Generator speed:  331.1 RPM, Pitch angle:  66.3 deg, Power:   797.6 kW, Est. wind Speed:  12.6 m/s
+> Generator speed:  330.9 RPM, Pitch angle:  90.0 deg, Power:   797.3 kW, Est. wind Speed:  12.1 m/s
+> Generator speed:  330.8 RPM, Pitch angle:  68.4 deg, Power:   797.2 kW, Est. wind Speed:  12.4 m/s
+> Generator speed:  330.8 RPM, Pitch angle:  90.0 deg, Power:   797.2 kW, Est. wind Speed:  12.6 m/s
+> Generator speed:  330.8 RPM, Pitch angle:  86.2 deg, Power:   797.2 kW, Est. wind Speed:  12.1 m/s
+> Generator speed:  330.8 RPM, Pitch angle:  82.0 deg, Power:   797.9 kW, Est. wind Speed:  12.8 m/s
+> Generator speed:  357.7 RPM, Pitch angle:  90.0 deg, Power:  1020.1 kW, Est. wind Speed:  12.5 m/s
+> Generator speed:  343.1 RPM, Pitch angle:  65.6 deg, Power:  1013.8 kW, Est. wind Speed:  12.8 m/s
+> Generator speed:  335.6 RPM, Pitch angle:  76.0 deg, Power:  1002.7 kW, Est. wind Speed:  13.2 m/s
+> Generator speed:  332.8 RPM, Pitch angle:  80.0 deg, Power:   999.9 kW, Est. wind Speed:  12.7 m/s
+> Generator speed:  331.4 RPM, Pitch angle:  85.0 deg, Power:   996.6 kW, Est. wind Speed:  13.6 m/s
+> Generator speed:  331.0 RPM, Pitch angle:  88.0 deg, Power:   996.0 kW, Est. wind Speed:  13.0 m/s
+> Generator speed:  330.9 RPM, Pitch angle:  85.4 deg, Power:   995.8 kW, Est. wind Speed:  13.3 m/s
+> Generator speed:  330.8 RPM, Pitch angle:  90.0 deg, Power:   995.7 kW, Est. wind Speed:  13.6 m/s
+> Generator speed:  330.8 RPM, Pitch angle:  69.6 deg, Power:   995.7 kW, Est. wind Speed:  13.0 m/s
