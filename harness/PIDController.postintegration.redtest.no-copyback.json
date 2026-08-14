@@ -1,13 +1,13 @@
 {
  "unit": "PIDController",
  "against": "integrated",
- "checked": 4610,
- "failed": 4610,
+ "checked": 9758,
+ "failed": 9758,
  "inadmissible": 0,
  "rule_coverage": [
   "  applied  R5_non_degenerate_shape    0 varied extent(s); 24 FIXED by the type at [2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 12, 12, 12, 12, 1024, 1024, 1024, 1024, 1024] -- not varied; 1 HELD -- they size arrays the reference does not read, 1 index(es) at 1/interior/n, array elements distinct",
-  "  applied  R2_flag_values             2 value(s) across 1 flag(s), each with 8 case(s) of the remaining inputs varied under it",
-  "  applied  R6_reference_literals      1413 value(s) from 25 literal(s) in the reference, each under every declared value of 1 flag(s); 41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 297 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 360 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 90 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 9 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits",
+  "  applied  R2_flag_values             5 value(s) across 2 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R6_reference_literals      1282 value(s) from 25 literal(s) in the reference, each under every declared value of 2 flag(s); 231 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 280 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 70 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 7 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits",
   "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
   "  applied  R3_no_dead_signal          12 real value(s), none zero in every case; 145 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output",
   "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
@@ -119,8 +119,8 @@
  "loop_rev": "e7d5583",
  "vit_rev": "3ce00e8",
  "red_test": {
-  "perturbation": "wrapper: the vit_copy_scalars_to_localvariables call DELETED -- the --reverse-copy step that carries LPFilter's six LocalVar%FP%lpf1_* writes back out of the view",
-  "result": "4610 of 4610 case(s) failed",
+  "perturbation": "wrapper: the vit_copy_scalars_to_localvariables call COMMENTED OUT -- the --reverse-copy step that carries LPFilter's six LocalVar%FP%lpf1_* writes back out of the view",
+  "result": "9758 of 9758 case(s) failed",
   "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
  }
 }
