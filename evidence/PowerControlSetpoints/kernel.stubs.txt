@@ -1,0 +1,60 @@
+WHAT THE 41-CASE KERNEL CAN SEE, MEASURED BY HAND
+=================================================
+
+`vit verify` printed `41/41 passed` and, beside it, `Red test: NOT CONSTRUCTED
+-- no by-value floating-point parameter and no floating-point result ... The
+kernel's discriminating power is therefore UNMEASURED for this function`, then
+recorded `status: non_discriminating`. FindLine (unit #32) has the same
+standing. So it was measured here, by running four stubs through the committed
+kernel: `bash evidence/PowerControlSetpoints/run_stub.sh <stub> <log>`.
+
+    stub                                 passed   of 41   log
+    ------------------------------------------------------------------------
+    noop -- assigns nothing                 40      41    kernel.noop-stub.run.txt
+    four-constants -- reads nothing         41      41    kernel.four-constants-stub.run.txt
+    no-interp1d -- callee deleted           41      41    kernel.no-interp1d-stub.run.txt
+    else-arm -- outer predicate inverted     0      41    kernel.else-arm-stub.run.txt
+
+THE KERNEL CAN GO RED. The `else-arm` stub fails all 41 cases on
+`localvar%prc_r_speed`, so 41/41 is not a verdict from an instrument that
+cannot fail. That is the sentence `vit verify` declined to write.
+
+AND IT SEES ALMOST NOTHING ELSE. All four of this unit's outputs are CONSTANT
+across all 41 captured cases -- read from kernel.verify_fields.csv, one distinct
+reference value each:
+
+    prc_r_speed     0.90000000000000002
+    prc_r_torque    1.0000000000000000
+    prc_r_pitch     1.0000000000000000
+    prc_min_pitch   0.0000000000000000
+
+Scenario 25 patches DISCON.IN with PRC_Mode=2, PRC_Comm=0, PRC_R_Speed=0.9,
+PRC_R_Torque=1.0, PRC_R_Pitch=1.0 and holds them there for the whole run, so
+the three assignments in the Constant arm copy the same three numbers 15,999
+times. `prc_min_pitch` is `interp1d(PRC_R_Table, PRC_Pitch_Table, 1.0)` on the
+shipped table, which is zero. A translation that reads no argument and assigns
+those four numbers passes 41 of 41 -- the `four-constants` stub, and it is the
+same shape as ColemanTransform's 21/21 on all-zero data at unit #2.
+
+THE CALLEE IS INVISIBLE. Deleting the `PRC_Min_Pitch = interp1d(...)` statement
+outright changes nothing the kernel compares: 41 of 41, 0 rows NOT IDENTICAL.
+The field's captured pre-call value is already 0.0 and the reference's answer is
+0.0, so removing the only statement that writes it is undetectable here.
+
+THE NO-OP FAILS EXACTLY ONE CASE, AND WHICH ONE IS THE REASON. It fails
+`PowerControlSetpoints.0.0.1` -- the first captured invocation, where the
+LocalVar fields still hold their pre-initialisation zeros -- and passes the
+other 40. From case 2 onward the four fields already hold the values the
+previous timestep's call left in them, and since those values never change, a
+call that writes nothing is indistinguishable from one that rewrites them. This
+unit's outputs are fields it also carries in from the caller, so it is
+self-aliasing through time in the sense unit #36's predecessor recorded, and 40
+of the kernel's 41 cases are re-comparisons of an answer the captured state
+already contained.
+
+WHAT FOLLOWS. The kernel is a structural smoke test here and nothing more: it
+proves the wiring -- the view marshalling, the five arguments, the branch
+scenario 25 takes -- and cannot price a single arithmetic or table-lookup
+choice. The instrument that can is the differential harness, which generates
+PRC_Comm, Ind_R_*, the OL_ tables and PRC_R_Pitch rather than reading them from
+one DISCON.IN.
