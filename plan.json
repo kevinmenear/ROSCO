@@ -2043,6 +2043,7 @@
       "harness_required": true,
       "disposition": "integrated",
       "evidence": [
+        "evidence/PitchSaturation/done_check.txt",
         "evidence/PitchSaturation/errmsg_extremes_probe.cpp",
         "evidence/PitchSaturation/errmsg_extremes_probe.txt",
         "evidence/PitchSaturation/harness_generator_defect/R13_double_gate.txt",
