@@ -303,3 +303,63 @@ CntrPar_StC_Group_N = { lo = 0, hi = 2 }
 [FindLine]
 
 AryLen = { lo = 0, hi = 32 }
+
+# ---------------------------------------------------------------------------
+# PIDController
+#
+# ONE PIN, AND THE PARAMETER NEXT TO IT IS WHY IT IS ONLY ONE. This unit has
+# TWO 1-based Fortran indices into DIMENSION(1024) arrays, and only one of them
+# needs a human judgement:
+#
+#   objInst%instPI   subscripts `piP%ITerm(...)` IN THIS UNIT'S OWN BODY, so the
+#                    harness reads the role off the reference AND off the
+#                    translation and R5 sweeps it at 1 / interior / n. Measured
+#                    in the generated corpus: 0 of 4692 cases outside 1..1024.
+#                    NOT PINNED -- an inferred role is stronger than a range.
+#   objInst%instLPF  is subscripted inside the CALLEE:
+#                        EFilt = LPFilter(..., objInst%instLPF)   Controllers.f90:1100
+#                        FP%lpf1_a1(inst) = 2 + CornerFreq*DT     Filters.f90, LPFilter
+#                    and the array it indexes is a field of `LocalVar%FP`, a
+#                    NESTED type the generator does not expand into parameters.
+#                    There is no compared out-parameter to attach the role to,
+#                    so it stays an ordinary defaulted integer and R6's ladder
+#                    puts both 32-bit extremes in the corpus: 4658 of 4692 cases
+#                    outside 1..1024, 4572 of them at 0.
+#
+# WHAT THE REFERENCE DOES THERE, one value per process, fourteen processes,
+# measured on the CLEAN tree (evidence/PIDController/instlpf_probe.{f90,sh,txt}):
+#
+#     instLPF                  reference
+#     -2147483648              SIGSEGV in __filters_MOD_lpfilter
+#     -100000                  SIGSEGV in __filters_MOD_lpfilter
+#     -1000 / -300 / -2 / -1   returns
+#     0                        returns
+#     1 .. 1024                returns
+#     1025 / 100000            returns
+#     2147483647               SIGSEGV in __filters_MOD_lpfilter
+#
+# THE RETURNING ROWS ARE NOT A DEFENCE OF THE DOMAIN, they are the reason the
+# bound is 1..1024 rather than "whatever does not crash". Every value outside
+# 1..1024 that returns does so having READ AND WRITTEN six doubles outside the
+# declared extent of `FP%lpf1_*`, and the two sides of this comparison do not
+# have that memory in the same place: the C++ receives one `localvariables_view_t`
+# struct, the Fortran bridge receives 167 decomposed scalars plus a pointer to
+# FP alone. Agreement out there would be an accident of layout and disagreement
+# would be a fact about layout. Neither says anything about the translation.
+#
+# 1..1024 is the whole DECLARED domain, not a margin: ROSCO_Types.f90:238-260
+# gives every array LPFilter subscripts `DIMENSION(1024)`, and the shipped
+# program sets `objInst%instLPF = 1` at the top of every timestep and increments
+# it once per filter call.
+#
+# THE COST, STATED. `instLPF` leaves R6's ladder, because `bounds_source`
+# becomes `stated:` and R6 applies to defaulted ranges. What that removes is the
+# decade boundaries and the two 32-bit extremes -- every one of them a value at
+# which the reference either dies or answers out of bounds. Nothing observable
+# is lost, and the pin buys the harness the ability to run at all: without it
+# the corpus segfaults before comparing anything, and 'harness produced no JSON'
+# is also what a printing reference produces.
+
+[PIDController]
+
+objInst_instLPF = { lo = 1, hi = 1024 }

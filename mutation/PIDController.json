@@ -1,0 +1,87 @@
+{
+ "unit": "PIDController",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutants": 29,
+ "equivalent_declared": 0,
+ "nocompile": 1,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0333,
+ "nocompile_refused": false,
+ "total": 30,
+ "killed": 22,
+ "survived": 7,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.7586,
+ "loop_rev": "e7d5583-nogit",
+ "gen_rev": "gen-118a2c5c81ea",
+ "vit_rev": "3ce00e8-nogit",
+ "survivors": [
+  {
+   "id": "256e2a39",
+   "operator": "drop_factor",
+   "before": "kp * error",
+   "after": "kp"
+  },
+  {
+   "id": "9d77e4a7",
+   "operator": "arith_op",
+   "before": "kp * error",
+   "after": "kp / error"
+  },
+  {
+   "id": "eed925e7",
+   "operator": "arith_op",
+   "before": "EFilt - piP->ELast",
+   "after": "EFilt + piP->ELast"
+  },
+  {
+   "id": "209fb372",
+   "operator": "arith_op",
+   "before": "PTerm + piP->ITerm",
+   "after": "PTerm - piP->ITerm"
+  },
+  {
+   "id": "185e83ed",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "a143f808",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "15c8567c",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  }
+ ]
+}

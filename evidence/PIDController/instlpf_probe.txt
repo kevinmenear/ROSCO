@@ -1,0 +1,46 @@
+run_if_time_remains: 13318s remain, 300s needed -- starting
+-2147483648  exit=139  instLPF= -2147483648
+Program received signal SIGSEGV: Segmentation fault - invalid memory reference.
+
+Backtrace for this error:
+#0  0xfb9f22a6d44b in ???
+#1  0xfb9f22a6c2df in ???
+#2  0xfb9f22ecb8f7 in ???
+#3  0xca7668f8c128 in __filters_MOD_lpfilter
+#4  0xca7668f876db in __controllers_MOD_pidcontroller
+#5  0xca7668f85187 in MAIN__
+#6  0xca7668f852a3 in main
+-100000      exit=139  instLPF=     -100000
+Program received signal SIGSEGV: Segmentation fault - invalid memory reference.
+
+Backtrace for this error:
+#0  0xf944a93fd44b in ???
+#1  0xf944a93fc2df in ???
+#2  0xf944a98558f7 in ???
+#3  0xaca46efdc128 in __filters_MOD_lpfilter
+#4  0xaca46efd76db in __controllers_MOD_pidcontroller
+#5  0xaca46efd5187 in MAIN__
+#6  0xaca46efd52a3 in main
+-1000        exit=0    instLPF=       -1000  RETURNED  result= 1.0000000000000000E+01  instLPF=        -999  instPI=           2
+-300         exit=0    instLPF=        -300  RETURNED  result= 1.0000000000000000E+01  instLPF=        -299  instPI=           2
+-2           exit=0    instLPF=          -2  RETURNED  result= 1.0000000000000000E+01  instLPF=          -1  instPI=           2
+-1           exit=0    instLPF=          -1  RETURNED  result= 1.0000000000000000E+01  instLPF=           0  instPI=           2
+0            exit=0    instLPF=           0  RETURNED  result= 1.0000000000000000E+01  instLPF=           1  instPI=           2
+1            exit=0    instLPF=           1  RETURNED  result= 1.0000000000000000E+01  instLPF=           2  instPI=           2
+2            exit=0    instLPF=           2  RETURNED  result= 1.0000000000000000E+01  instLPF=           3  instPI=           2
+512          exit=0    instLPF=         512  RETURNED  result= 1.0000000000000000E+01  instLPF=         513  instPI=           2
+1024         exit=0    instLPF=        1024  RETURNED  result= 1.0000000000000000E+01  instLPF=        1025  instPI=           2
+1025         exit=0    instLPF=        1025  RETURNED  result= 1.0000000000000000E+01  instLPF=        1026  instPI=           2
+100000       exit=0    instLPF=      100000  RETURNED  result= 1.0000000000000000E+01  instLPF=      100001  instPI=           2
+2147483647   exit=139  instLPF=  2147483647
+Program received signal SIGSEGV: Segmentation fault - invalid memory reference.
+
+Backtrace for this error:
+#0  0xe069cdfbd44b in ???
+#1  0xe069cdfbc2df in ???
+#2  0xe069ce4198f7 in ???
+#3  0xc0949c49c128 in __filters_MOD_lpfilter
+#4  0xc0949c4976db in __controllers_MOD_pidcontroller
+#5  0xc0949c495187 in MAIN__
+#6  0xc0949c4952a3 in main
+run_if_time_remains: exit 0 after 1s (estimated 300s; 13317s now remain)
