@@ -1,0 +1,326 @@
+{
+ "unit": "PowerControlSetpoints",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "index_offset",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutants": 76,
+ "equivalent_declared": 0,
+ "nocompile": 1,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.013,
+ "nocompile_refused": false,
+ "total": 77,
+ "killed": 29,
+ "survived": 47,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.3816,
+ "loop_rev": "e54bef7-nogit",
+ "gen_rev": "gen-46812e27300d",
+ "vit_rev": "3ce00e8-nogit",
+ "survivors": [
+  {
+   "id": "2f3b4728",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "05fd9c2f",
+   "operator": "compare_op",
+   "before": ">=",
+   "after": ">"
+  },
+  {
+   "id": "1bb3c4cb",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "cf4095fc",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "17f44b00",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "dc46366c",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "863c2bf0",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "3d275a2d",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "28b4d3af",
+   "operator": "arith_op",
+   "before": "epos + 1",
+   "after": "epos - 1"
+  },
+  {
+   "id": "a15ae6e3",
+   "operator": "arith_op",
+   "before": "16 - decexp",
+   "after": "16 + decexp"
+  },
+  {
+   "id": "80c4c831",
+   "operator": "arith_op",
+   "before": "epos + 1",
+   "after": "epos - 1"
+  },
+  {
+   "id": "d83fe8fc",
+   "operator": "arith_op",
+   "before": "epos + 2",
+   "after": "epos - 2"
+  },
+  {
+   "id": "370dad6d",
+   "operator": "arith_op",
+   "before": "3 - edig.size",
+   "after": "3 + edig.size"
+  },
+  {
+   "id": "09c9b60b",
+   "operator": "swap_operands",
+   "before": "16 - decexp",
+   "after": "decexp - 16"
+  },
+  {
+   "id": "028bf60f",
+   "operator": "index_offset",
+   "before": "[512]",
+   "after": "[512 + 1]"
+  },
+  {
+   "id": "206e12d9",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "1e491a38",
+   "operator": "const_tweak",
+   "before": "26",
+   "after": "27"
+  },
+  {
+   "id": "99b02724",
+   "operator": "const_tweak",
+   "before": "512",
+   "after": "513"
+  },
+  {
+   "id": "c53dca31",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "36fd85ca",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "6a566cb4",
+   "operator": "const_tweak",
+   "before": "16",
+   "after": "17"
+  },
+  {
+   "id": "8baee533",
+   "operator": "const_tweak",
+   "before": "16",
+   "after": "17"
+  },
+  {
+   "id": "f1bb0415",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "9d217786",
+   "operator": "const_tweak",
+   "before": "21",
+   "after": "22"
+  },
+  {
+   "id": "a166a64e",
+   "operator": "const_tweak",
+   "before": "5",
+   "after": "6"
+  },
+  {
+   "id": "c8c86949",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "d4fbbe6e",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "61007ae6",
+   "operator": "const_tweak",
+   "before": "2",
+   "after": "3"
+  },
+  {
+   "id": "10c1575e",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "b969b13d",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "95be44bf",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "fa99d1f2",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "1b6210f3",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "bca38698",
+   "operator": "const_tweak",
+   "before": "27",
+   "after": "28"
+  },
+  {
+   "id": "9b046c4a",
+   "operator": "const_tweak",
+   "before": "26",
+   "after": "27"
+  },
+  {
+   "id": "7eaeeb2b",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "5b38ea57",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "6d872319",
+   "operator": "const_tweak",
+   "before": "26",
+   "after": "27"
+  },
+  {
+   "id": "3ee9868b",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "7e4391ee",
+   "operator": "negate_cond",
+   "before": "if (static_cast<int>(text.size()) > w)",
+   "after": "if (!(static_cast<int>(text.size()) > w))"
+  },
+  {
+   "id": "2c6b4d2a",
+   "operator": "negate_cond",
+   "before": "if (std::isnan(v))",
+   "after": "if (!(std::isnan(v)))"
+  },
+  {
+   "id": "7402eca6",
+   "operator": "negate_cond",
+   "before": "if (std::isinf(v))",
+   "after": "if (!(std::isinf(v)))"
+  },
+  {
+   "id": "5ae5c30f",
+   "operator": "negate_cond",
+   "before": "if (nonfinite_text(v, text))",
+   "after": "if (!(nonfinite_text(v, text)))"
+  },
+  {
+   "id": "6b21b268",
+   "operator": "negate_cond",
+   "before": "if (decexp >= -1 && decexp <= 16)",
+   "after": "if (!(decexp >= -1 && decexp <= 16))"
+  },
+  {
+   "id": "e5ee9408",
+   "operator": "negate_cond",
+   "before": "if (d == 0)",
+   "after": "if (!(d == 0))"
+  },
+  {
+   "id": "39eb7357",
+   "operator": "negate_cond",
+   "before": "if (edig.size() > 3)",
+   "after": "if (!(edig.size() > 3))"
+  },
+  {
+   "id": "76ef7ba6",
+   "operator": "negate_cond",
+   "before": "if (unit401 == nullptr)",
+   "after": "if (!(unit401 == nullptr))"
+  }
+ ]
+}

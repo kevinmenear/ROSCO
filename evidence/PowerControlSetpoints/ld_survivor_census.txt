@@ -1,0 +1,17 @@
+form   body-width  field-width   count   body==field?
+E             23         26       7690      no
+E             24         26       6501      no
+F             18         21       3997      no
+F             19         21       4115      no
+F             20         21        222      no
+nonfinite      8         26          1      no
+
+records 22526
+records where body length EQUALS the field width: 0
+
+exponent digit-counts in the E-form (edig after the leading-zero strip):
+  1 digit(s): 3649
+  2 digit(s): 8863
+  3 digit(s): 1679
+  edig == "0" (all zeros): 0
+  edig longer than 3 digits: 0

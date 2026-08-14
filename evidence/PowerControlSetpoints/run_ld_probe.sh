@@ -94,7 +94,17 @@ int main() {
 }
 EOF
 
-# 3. Regenerate the reference corpus, build, run. Stdout is captured by the
+# 3. Regenerate the reference corpus, build, run.
+#
+# ERREXIT IS OFF FOR THIS BLOCK, and that is not tidiness. A RED probe exits 1;
+# under `set -e` the script died on the block itself and never reached its own
+# `cat "$OUT"`, so a caller reading stdout saw NO COUNTS AT ALL and could not
+# tell a kill from a build failure. Measured at unit #37: 37 of 45 formatter
+# mutants were first graded `nocompile` and every one of them was a kill. The
+# artifact was always written correctly -- only the echo was lost -- which is
+# the worst shape, because the file on disk disagreed with what the caller read.
+#
+# Stdout is captured by the
 #    heredoc's redirect INSIDE this script and not by the caller's `>`, for the
 #    reason capture_done_check.sh states: a redirect made by the caller
 #    truncates its target before the run and dirties the tree.
@@ -103,6 +113,7 @@ EOF
     echo "# sliced from translations/ControllerBlocks/powercontrolsetpoints.cpp"
     echo "# corpus regenerated from evidence/PowerControlSetpoints/list_directed_corpus.f90"
     echo "#"
+    set +e
     docker exec "$CONTAINER" bash -lc "
         set -e
         mkdir -p /tmp/ld_probe && cd /tmp/ld_probe
@@ -115,5 +126,6 @@ EOF
         ./probe" 2>&1
 } > "$OUT"
 rc=$?
+set -e
 cat "$OUT"
 exit $rc

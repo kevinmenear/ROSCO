@@ -1,0 +1,42 @@
+C12: A MUTATION SWEEP SCORED AGAINST A CORPUS NO GREEN WAS EVER TAKEN ON
+========================================================================
+
+Recorded with the wrong artifact BEFORE the repair, per C12.
+
+`mutation.WRONG-CORPUS-3596.json` is a complete, internally consistent mutation
+run: 77 mutants, 1 no-compile, 21 killed, 55 survived, score 0.2763. Nothing
+about it announces that it is wrong.
+
+WHAT IT SCORED. `vit_mutate.py` rebuilds and re-runs the differential harness
+per mutant, using WHATEVER CASE FILE IS ON DISK. The last thing to write that
+case file before this sweep was the P10 control run -- the OpenLoop stub with
+harness/baseline.PowerControlSetpoints.json moved aside -- which regenerates the
+corpus at **3596 cases, the one that enters the OpenLoop arm once and its
+indexed branches never**. The committed green is **3648**.
+
+HOW IT SHOWS IN THE RESULT, which is the only reason it was caught:
+
+    5a838915  compare_op  `CntrPar->Ind_R_Speed > 0`  ->  `>= 0`   SURVIVED
+    1cbdfe63  compare_op  `CntrPar->Ind_R_Torque > 0` ->  `>= 0`   SURVIVED
+    4b9e8600  compare_op  `CntrPar->Ind_R_Pitch > 0`  ->  `>= 0`   SURVIVED
+    a38b6159  const_tweak `CntrPar->Ind_R_Speed > 0`  ->  `> 1`    SURVIVED
+    33b13fda  const_tweak `CntrPar->Ind_R_Torque > 0` ->  `> 1`    SURVIVED
+    1595e33a  const_tweak `CntrPar->Ind_R_Pitch > 0`  ->  `> 1`    SURVIVED
+
+Those six are exactly the predicates the R11 baseline was ADDED to reach, and
+`probes/arm_census.txt` says the 3596-case corpus takes `Ind_R_Speed > 0` zero
+times. A survivor list that reproduces the census's zeros is a statement about
+the corpus, not about the translation -- and had this artifact been read as the
+unit's score, the campaign would have carried six declarations explaining why
+predicates it CAN reach were unreachable.
+
+THE RULE THIS IS THE COUNTERPART OF. Unit #26: a red result and the green it
+certifies must name the same case count. This is the same rule one instrument
+over -- **a mutation score and the green it is scored against must name the same
+case count** -- and nothing in the pipeline checks it: `mutation/<U>.json`
+records `compared_against: fortran_reference_on_a_clean_tree`, which was true,
+and no case count at all.
+
+THE REPAIR. Regenerate the corpus with the baseline in place (harness.sh, back
+to 3648 checked / 0 failed) and re-run the sweep. The re-take is
+`mutation/PowerControlSetpoints.json`; this file is what it replaced.

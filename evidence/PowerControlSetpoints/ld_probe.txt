@@ -2,5 +2,35 @@
 # sliced from translations/ControllerBlocks/powercontrolsetpoints.cpp
 # corpus regenerated from evidence/PowerControlSetpoints/list_directed_corpus.f90
 #
+MISMATCH 0  value 1.2346700489572751e-320
+  gfortran [   1.2346700489572751E-320]
+  C++      [**************************]
+MISMATCH 1  value -1.2346700489572751e-320
+  gfortran [  -1.2346700489572751E-320]
+  C++      [**************************]
+MISMATCH 2  value 9.9998886718268301e-320
+  gfortran [   9.9998886718268301E-320]
+  C++      [**************************]
+MISMATCH 3  value 9.9998886718268301e-321
+  gfortran [   9.9998886718268301E-321]
+  C++      [**************************]
+MISMATCH 48  value 1.2345678901234562e-308
+  gfortran [   1.2345678901234562E-308]
+  C++      [**************************]
+MISMATCH 49  value -1.2345678901234562e-308
+  gfortran [  -1.2345678901234562E-308]
+  C++      [**************************]
+MISMATCH 50  value 9.9999999999999932e-308
+  gfortran [   9.9999999999999932E-308]
+  C++      [**************************]
+MISMATCH 51  value 9.9999999999999942e-309
+  gfortran [   9.9999999999999942E-309]
+  C++      [**************************]
+MISMATCH 52  value 1.2345678901234562e-307
+  gfortran [   1.2345678901234562E-307]
+  C++      [**************************]
+MISMATCH 53  value -1.2345678901234562e-307
+  gfortran [  -1.2345678901234562E-307]
+  C++      [**************************]
 values compared 22526
-mismatched     0
+mismatched     14191

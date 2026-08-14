@@ -1,0 +1,55 @@
+68 OF 76 BEHAVIOURAL MUTANTS KILLED, ACROSS THREE ORACLES
+=========================================================
+
+This unit has three kinds of output and no single instrument sees more than
+one, so the mutation score is taken three times and the union is the number.
+
+    oracle                                              killed   scored
+    ---------------------------------------------------------------------
+    differential harness, 3648 cases                        29       76
+      harness/PowerControlSetpoints.json
+    list-directed format, 22,526 gfortran records           36       45
+      evidence/PowerControlSetpoints/ld_mutants.{txt,json}
+    unit-401 file, fort.401 vs fort.401.cpp                  3        3
+      evidence/PowerControlSetpoints/f401_mutants.json
+    ---------------------------------------------------------------------
+    killed by SOME instrument                               68       76
+    declared, unkilled by any                                8
+    did not compile (`esign - edig`, char minus string)      1   (of 77)
+
+ZERO OF THE EIGHT IS IN A STATEMENT TRANSCRIBED FROM THE FORTRAN. Every mutant
+in the unit's twenty reference statements -- the two predicates, the three
+PRC_Comm arms, the four interp1d calls, the seven `= 1.0` alternatives -- is
+killed by the 3648-case differential harness. The eight are all in the
+`WRITE(401,*)` formatter, and six of them are unreachable BY THE TYPE rather
+than by the corpus:
+
+    2f3b4728  `text.size() > w`  ->  `>=`     body length == field width:
+                                              0 of 22,526 records
+    17f44b00  `edig.size() > 1`  ->  `>=`     stripped exponent == "0": 0
+    1b6210f3  `edig.size() > 3`  ->  `> 4`    exponent longer than 3 digits: 0,
+    bca38698  27 -> 28  }  the two constants  and it CANNOT be: a finite double's
+    9b046c4a  26 -> 27  }  inside that arm    decimal exponent runs -324..308
+    10c1575e  `edig.size() > 1`  ->  `> 2`    EQUIVALENT: the strip and the
+                                              re-pad to three are inverse
+    028bf60f  `char tmp[512]`    ->  [513]    EQUIVALENT: the longest conversion
+    99b02724  512 -> 513                      is 24 characters and the bound is
+                                              `sizeof tmp`
+
+The counts are read from evidence/PowerControlSetpoints/ld_survivor_census.txt,
+taken over the same 22,526 records the oracle uses.
+
+THE FIELD `equivalent_declared: 47` OVERSTATES ITS OWN NAME, AND THAT IS SAID
+HERE RATHER THAN LEFT TO BE FOUND. `vit_mutate.py` has one bucket for "not
+killed by me". 39 of those 47 are KILLS by a named oracle with a named mismatch
+count -- every one of them written out in
+mutation/PowerControlSetpoints.equivalences.json -- and only 8 are the
+declarations above. mutation/PowerControlSetpoints.harness-only.json is the same
+sweep with nothing declared: 29 of 76, score 0.3816, which is what ONE
+instrument is worth on this unit and is the number to quote if that is the
+question. A `killed_by` field naming the instrument is a candidate for the
+Driver; scripts/dbgmutate.py solved the same problem at unit #31 by replacing
+the oracle wholesale, and this unit needs the union of three, which nothing in
+the pipeline expresses.
+
+`declared_but_killed` is empty: no declaration was contradicted by the sweep.

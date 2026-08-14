@@ -1,0 +1,37 @@
+{
+ "unit": "PowerControlSetpoints",
+ "loop_rev": "e54bef7-nogit",
+ "oracle": "the reference's fort.401 against the translation's fort.401.cpp, over the 3648-case differential corpus",
+ "unmutated": "byte identical, 459 bytes, md5 d6780bd7",
+ "scored": 3,
+ "killed": 3,
+ "mutants": [
+  {
+   "id": "3d275a2d",
+   "operator": "compare_op",
+   "line": 172,
+   "before": "==",
+   "after": "!=",
+   "verdict": "killed",
+   "observed": "DIFFER ref=459 cpp=432"
+  },
+  {
+   "id": "3ee9868b",
+   "operator": "const_tweak",
+   "line": 177,
+   "before": "1",
+   "after": "2",
+   "verdict": "killed",
+   "observed": "DIFFER ref=459 cpp=901"
+  },
+  {
+   "id": "76ef7ba6",
+   "operator": "negate_cond",
+   "line": 172,
+   "before": "if (unit401 == nullptr)",
+   "after": "if (!(unit401 == nullptr))",
+   "verdict": "killed",
+   "observed": "DIFFER ref=459 cpp=432"
+  }
+ ]
+}

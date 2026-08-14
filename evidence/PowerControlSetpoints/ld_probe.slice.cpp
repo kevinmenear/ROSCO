@@ -56,7 +56,7 @@ std::string list_directed_real(double v) {
     while (edig.size() > 1 && edig[0] == '0') {
         edig.erase(0, 1);
     }
-    if (edig.size() > 3) {
+    if (!(edig.size() > 3)) {
         return field(std::string(27, '*'), 26);
     }
     edig.insert(0, 3 - edig.size(), '0');

@@ -1,0 +1,77 @@
+MUTANTS OF THE UNIT-401 FORMATTER, SCORED AGAINST gfortran's OWN RECORDS
+========================================================================
+
+oracle      evidence/PowerControlSetpoints/run_ld_probe.sh
+corpus      22526 values regenerated from list_directed_corpus.f90
+baseline    0 mismatched -- green, so a red below is the mutant
+translation 9bc4c1fa245bd8642b4c7d4ee2a572a4534f2494 before and after (restore proved)
+
+    mutant  operator        line  verdict   mismatched
+  2f3b4728  compare_op        98  nocompile          0  probe printed no counts:
+  05fd9c2f  compare_op       138  killed           469
+  1bb3c4cb  compare_op       138  killed           488
+  cf4095fc  compare_op       143  killed          8334
+  17f44b00  compare_op       152  survived           0
+  dc46366c  compare_op       152  killed         10542
+  863c2bf0  compare_op       155  killed          1679
+  28b4d3af  arith_op         134  killed         22008
+  a15ae6e3  arith_op         140  killed          7807
+  80c4c831  arith_op         150  killed         14191
+  d83fe8fc  arith_op         151  killed         14191
+  370dad6d  arith_op         158  killed         14191
+  fc3229d0  arith_op         159  nocompile          0  probe printed no counts:
+  09c9b60b  swap_operands    140  killed          7367
+  028bf60f  index_offset     125  survived           0
+  206e12d9  index_offset     152  killed          1594
+  1e491a38  const_tweak      122  killed             1
+  99b02724  const_tweak      125  survived           0
+  c53dca31  const_tweak      134  killed          7336
+  36fd85ca  const_tweak      138  killed           436
+  6a566cb4  const_tweak      138  killed           446
+  8baee533  const_tweak      140  killed          8334
+  f1bb0415  const_tweak      143  killed           936
+  9d217786  const_tweak      146  killed          8334
+  a166a64e  const_tweak      146  killed          8334
+  c8c86949  const_tweak      149  killed         14191
+  d4fbbe6e  const_tweak      150  killed         14191
+  61007ae6  const_tweak      151  killed         10542
+  10c1575e  const_tweak      152  survived           0
+  b969b13d  const_tweak      152  killed          1594
+  95be44bf  const_tweak      153  killed          3649
+  fa99d1f2  const_tweak      153  killed          3649
+  1b6210f3  const_tweak      155  survived           0
+  bca38698  const_tweak      156  survived           0
+  9b046c4a  const_tweak      156  survived           0
+  7eaeeb2b  const_tweak      158  killed         12512
+  5b38ea57  const_tweak      158  killed         14191
+  6d872319  const_tweak      159  killed         14191
+  7e4391ee  negate_cond       98  killed         22526
+  2c6b4d2a  negate_cond      110  killed         22526
+  7402eca6  negate_cond      111  killed         22526
+  5ae5c30f  negate_cond      121  killed         22526
+  6b21b268  negate_cond      138  killed         22525
+  e5ee9408  negate_cond      143  killed          8334
+  39eb7357  negate_cond      155  killed         14191
+
+killed 36 of 45
+
+SURVIVED 17f44b00 (compare_op, line 152):
+  
+
+SURVIVED 028bf60f (index_offset, line 125):
+  
+
+SURVIVED 99b02724 (const_tweak, line 125):
+  
+
+SURVIVED 10c1575e (const_tweak, line 152):
+  
+
+SURVIVED 1b6210f3 (const_tweak, line 155):
+  
+
+SURVIVED bca38698 (const_tweak, line 156):
+  
+
+SURVIVED 9b046c4a (const_tweak, line 156):
+  
