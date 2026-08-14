@@ -99,6 +99,16 @@ struct Rec {
     void write_to(std::FILE* f) const {
         std::fwrite(buf.data(), 1, buf.size(), f);
         std::fputc('\n', f);
+        // A Fortran WRITE ends its record; libgfortran emits a preconnected
+        // unit's record whole, so nothing another writer to the same file
+        // descriptor puts out can land inside it. `stdout` is fully buffered
+        // when it is not a terminal, so without this the status record of
+        // `WRITE(*,100)` is split at a 4096-byte boundary and the rest arrives
+        // after the driver's own output -- 18 records late, measured on
+        // scenario 27 (evidence/Debug/stdout.DEFECT-unflushed-status-record.*).
+        // Only `stdout` has a second writer; flushing the .RO.dbg streams as
+        // well costs an fsync-free write per record and changes no bytes.
+        if (f == stdout) std::fflush(f);
     }
 };
 
