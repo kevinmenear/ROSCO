@@ -153,8 +153,22 @@ def capture(label: str, run: bool, scenarios: list[int]) -> int:
 
 
 def compare_first_record(a: bytes, b: bytes, rep: dict) -> bool:
-    """Record 1 structurally. Returns True when both sides are well-formed and
-    agree everywhere except the two wall-clock fields."""
+    """Record 1: BYTES first, the wall-clock exemption only if they differ.
+
+    The first version asserted the `Generated on ...` pattern on both sides and
+    failed anything else. That held for `.RO.dbg` and `.RO.dbg2` and broke the
+    first time a third file appeared: `.RO.dbg3` opens with
+    `WRITE(UnDb3,'(/////)')`, so its record 1 is EMPTY -- and two empty records
+    were reported as a mismatch (C12, the artifact is committed as
+    evidence/Debug/dbg28.INSTRUMENT-DEFECT-header-assumed-on-dbg3.json).
+
+    Ordering the two tests this way is not just the repair, it is stronger than
+    what it replaces: record 1 is now COMPARED, byte for byte, wherever it can
+    be, and the exemption is reached only by a record that actually differs and
+    that both sides render in the one shape whose two fields are a wall clock.
+    """
+    if a == b:
+        return True
     ma, mb = GENERATED_ON.match(a), GENERATED_ON.match(b)
     if not ma or not mb:
         rep["header_malformed"] = {"a": a.decode("latin-1"), "b": b.decode("latin-1")}

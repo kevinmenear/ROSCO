@@ -2,28 +2,16 @@
   "a": "pre28",
   "b": "post28",
   "bytes_compared": 110163004,
-  "campaign_rev": "675f7a0-dirty",
+  "campaign_rev": "327ca29-dirty",
   "files_compared": 3,
-  "files_mismatched": 1,
-  "header_malformed": {
-    "a": "",
-    "b": ""
-  },
+  "files_mismatched": 0,
   "header_records_compared": 3,
   "loop_rev": "00b7f03",
-  "mismatches": [
-    {
-      "a": "",
-      "b": "",
-      "file": "vit_sim28.RO.dbg3",
-      "reason": "header",
-      "record": 1
-    }
-  ],
+  "mismatches": [],
   "only_in_a": [],
   "only_in_b": [],
   "records_compared": 48014,
-  "records_mismatched": 1,
-  "verdict": "MISMATCH",
+  "records_mismatched": 0,
+  "verdict": "IDENTICAL",
   "vit_rev": "f4a711d"
 }

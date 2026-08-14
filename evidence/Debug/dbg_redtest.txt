@@ -51,3 +51,36 @@ SAME BUILD and the same sweep, since the three rows above moved 24, 407,976 and
   Both are configuration facts about the shipped inputs, not defects in the
   harness (unit #27's distinction). Neither is repairable without changing what
   the 27 scenarios feed the controller, which moves every baseline (X3).
+
+SCENARIO 28 (LoggingLevel = 3), ADDED AFTERWARDS, AND THE TWO ZEROS ABOVE THAT
+IT CLOSES.
+
+`dbg.json` above is 24 files at LoggingLevel = 1. `dbg28.json` is one file set
+at LoggingLevel = 3 -- scenario 3's configuration with that one parameter
+changed (Examples/vit_sim.py::run_scenario_28, outside `scenario_order`, so no
+gate run and no committed baseline moves).
+
+  pre28 -> post28   3 files   48,014 records   110,163,004 bytes   0 mismatched
+
+That covers .RO.dbg2 and .RO.dbg3: the 159 LocalVarOutData assignments and
+clamps, the 159-name heading table with its CHARACTER(15) truncations, the empty
+record `WRITE(UnDb2,'(160(a20,TR5:))')` writes with no data item, the six blank
+records `(/////)` writes, the avrIndices construction through both AddToList
+loops, the `AvrSWAP(NNNN)` heading built from a runtime format string, the `(-)`
+group that runs past its one data item, and the vector-subscripted
+`avrSWAP(avrIndices)` write.
+
+Red-tested there too, against the same 48,014 records:
+
+  perturbation                                    records moved   artifact
+  ---------------------------------------------   -------------   ----------------------
+  ES20.5E2 -> E3 on the LocalVarOutData write           15,999    dbg.redtest.dbg2live.json
+  the `(/////)` record count 6 -> 5                     16,003    dbg.redtest.dbg3live.json
+
+15,999 is exactly the .RO.dbg2 data records -- 16,000 timesteps, the first of
+which is `iStatus == 0`. The first perturbation is the SAME EDIT that moved 0 of
+408,072 records at LoggingLevel = 1, three rows up. The blindness was the
+corpus, and it was closed by one parameter.
+
+16,003 is a record SHIFT rather than a per-record difference: dropping one of
+the six leading blank records moves every later record of .RO.dbg3 up by one.

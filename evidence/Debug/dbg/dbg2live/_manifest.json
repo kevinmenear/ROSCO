@@ -1,0 +1,24 @@
+{
+  "campaign_rev": "327ca29-dirty",
+  "files": {
+    "vit_sim28.RO.dbg": {
+      "bytes": 10736728,
+      "md5": "ca61394f6d3ab8f70d8f01e9dc938d47"
+    },
+    "vit_sim28.RO.dbg2": {
+      "bytes": 63936058,
+      "md5": "615665885cc8d36c95100ddba16789c0"
+    },
+    "vit_sim28.RO.dbg3": {
+      "bytes": 35538229,
+      "md5": "d205fd713d8282653ca4c236de6888eb"
+    }
+  },
+  "label": "dbg2live",
+  "loop_rev": "00b7f03",
+  "ran_scenarios": [
+    28
+  ],
+  "scenarios_failed": [],
+  "vit_rev": "f4a711d"
+}

@@ -20,8 +20,10 @@
 # than a perturbed translation.
 set -euo pipefail
 
-LABEL="${1:?usage: dbg_redtest.sh <label> <sed-expression>}"
+LABEL="${1:?usage: dbg_redtest.sh <label> <sed-expression> [scenarios] [reference]}"
 EXPR="${2:?}"
+SCEN="${3:-}"          # empty = all 27, as the `pre` reference was taken
+REF="${4:-pre}"
 
 ROOT="$(git rev-parse --show-toplevel)"
 CONTAINER="${VIT_CONTAINER:-vit-dev}"
@@ -53,9 +55,13 @@ fi
 docker exec "$CONTAINER" bash -lc "md5sum $WORKDIR/rosco/controller/src/debug.cpp && touch $WORKDIR/rosco/controller/src/debug.cpp"
 build
 
-python3 "$ROOT/scripts/dbgcheck.py" capture --label "$LABEL" >/dev/null
+if [ -n "$SCEN" ]; then
+    python3 "$ROOT/scripts/dbgcheck.py" capture --label "$LABEL" --scenarios "$SCEN" >/dev/null
+else
+    python3 "$ROOT/scripts/dbgcheck.py" capture --label "$LABEL" >/dev/null
+fi
 set +e
-python3 "$ROOT/scripts/dbgcheck.py" compare --a pre --b "$LABEL" \
+python3 "$ROOT/scripts/dbgcheck.py" compare --a "$REF" --b "$LABEL" \
         --out "$ROOT/evidence/Debug/dbg.redtest.$LABEL.json" | tail -3
 RC=$?
 set -e
