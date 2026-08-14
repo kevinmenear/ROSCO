@@ -1,0 +1,126 @@
+{
+ "unit": "PIController",
+ "against": "integrated",
+ "checked": 3532,
+ "failed": 3112,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    0 varied extent(s); 5 FIXED by the type at [1024, 1024, 1024, 1024, 1024] -- not varied, 1 index(es) at 1/interior/n, array elements distinct",
+  "  applied  R2_flag_values             2 value(s) across 1 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R6_reference_literals      1099 value(s) from 25 literal(s) in the reference, each under every declared value of 1 flag(s); 231 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 280 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 70 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 7 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          9 real value(s), none zero in every case; 3 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output",
+  "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
+  "  N/A      R12_narrowing_width        no CHARACTER local is narrower than a dummy assigned into it -- the reference truncates nothing, so there is no boundary for this rule to reach",
+  "  N/A      R13_staging_capacity       no deferred-length CHARACTER output -- no parameter whose LENGTH the callee chooses, so no staging buffer whose capacity a case could state",
+  "  N/A      R14_planted_word           no CHARACTER ARRAY input -- there is no element for a scalar string to be a word OF, so no comparison of this shape exists to reach",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 6 out-parameter(s): piP_ITerm, piP_ITermLast, piP_ITerm2, piP_ITermLast2, piP_ELast, inst"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "0000000000c082c0"
+  },
+  {
+   "case": 0,
+   "output": "piP.ITerm",
+   "ref": "0000000000c072c0f4ba980d3e1f8fc03b8e343951108fc0c7e1b91a09018fc0...",
+   "got": "0000000000c082c0f4ba980d3e1f8fc03b8e343951108fc0c7e1b91a09018fc0..."
+  },
+  {
+   "case": 0,
+   "output": "piP.ITermLast",
+   "ref": "0000000000c072c0f23acf75c51e8fc09b1f8202c9108fc0feca4b0ff9ff8ec0...",
+   "got": "0000000000c082c0f23acf75c51e8fc09b1f8202c9108fc0feca4b0ff9ff8ec0..."
+  },
+  {
+   "case": 1,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "0000000000c082c0"
+  },
+  {
+   "case": 1,
+   "output": "piP.ITerm",
+   "ref": "0000000000c072c0b5cfd817141f8fc0b4a4eac5a70f8fc0113efb1195008fc0...",
+   "got": "0000000000c082c0b5cfd817141f8fc0b4a4eac5a70f8fc0113efb1195008fc0..."
+  },
+  {
+   "case": 1,
+   "output": "piP.ITermLast",
+   "ref": "0000000000c072c0310d5a3f971f8fc0cd35a3aa44108fc0b4e59f62ea008fc0...",
+   "got": "0000000000c082c0310d5a3f971f8fc0cd35a3aa44108fc0b4e59f62ea008fc0..."
+  },
+  {
+   "case": 2,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "7743b5d5ac08e9bf"
+  },
+  {
+   "case": 2,
+   "output": "piP.ITerm",
+   "ref": "071c43185f308fc075f7e708ff1f8fc017d978116e108fc093d7f4f780018fc0...",
+   "got": "071c43185f308fc075f7e708ff1f8fc017d978116e108fc093d7f4f780018fc0..."
+  },
+  {
+   "case": 2,
+   "output": "piP.ITermLast",
+   "ref": "8e2fc68b2e308fc020e996ea2d1f8fc0c58c541a16118fc0b0ecbc4afcff8ec0...",
+   "got": "8e2fc68b2e308fc020e996ea2d1f8fc0c58c541a16118fc0b0ecbc4afcff8ec0..."
+  },
+  {
+   "case": 3,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "0000000000c08240"
+  },
+  {
+   "case": 3,
+   "output": "piP.ITerm",
+   "ref": "66c109d6d62e8fc08cb80265861f8fc04898fd3c04108fc09f80b8978f008fc0...",
+   "got": "66c109d6d62e8fc08cb80265861f8fc04898fd3c04108fc09f80b8978f008fc0..."
+  },
+  {
+   "case": 3,
+   "output": "piP.ITermLast",
+   "ref": "480bff5540308fc0113a65fbb8208fc0ff10185f2a118fc0d6052c5e74008fc0...",
+   "got": "480bff5540308fc0113a65fbb8208fc0ff10185f2a118fc0d6052c5e74008fc0..."
+  },
+  {
+   "case": 4,
+   "output": "vit_result",
+   "ref": "0000000000c072c0",
+   "got": "0000000000c082c0"
+  },
+  {
+   "case": 4,
+   "output": "piP.ITerm",
+   "ref": "0000000000c072c02cfa9cf8ad208fc0d5644b401b108fc0da50320b91008fc0...",
+   "got": "0000000000c082c02cfa9cf8ad208fc0d5644b401b108fc0da50320b91008fc0..."
+  },
+  {
+   "case": 4,
+   "output": "piP.ITermLast",
+   "ref": "0000000000c072c01a9897cf8d1f8fc0da142a2bb4108fc021f0706d2c008fc0...",
+   "got": "0000000000c082c01a9897cf8d1f8fc0da142a2bb4108fc021f0706d2c008fc0..."
+  },
+  {
+   "case": 5,
+   "output": "vit_result",
+   "ref": "dc4d1c3e12b6e8bf",
+   "got": "6c3da5075d868140"
+  }
+ ],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "552edb1",
+ "vit_rev": "d2de28c",
+ "red_test": {
+  "perturbation": "wrapper: MERGE(1_C_INT, 0_C_INT, reset) inverted to MERGE(0_C_INT, 1_C_INT, reset) -- the LOGICAL(4) -> C_INT marshalling, which is the one shape in this wrapper no arithmetic red test reaches",
+  "result": "3112 of 3532 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

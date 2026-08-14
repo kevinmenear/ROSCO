@@ -21,6 +21,25 @@ MODULE Controllers
 
     IMPLICIT NONE
 
+
+    ! Auto-generated interface for C++ implementation of PIController
+    INTERFACE
+        FUNCTION picontroller_c(error, kp, ki, minValue, maxValue, DT, I0, piP, reset, inst) BIND(C, NAME='picontroller_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: error
+            REAL(C_DOUBLE), VALUE :: kp
+            REAL(C_DOUBLE), VALUE :: ki
+            REAL(C_DOUBLE), VALUE :: minValue
+            REAL(C_DOUBLE), VALUE :: maxValue
+            REAL(C_DOUBLE), VALUE :: DT
+            REAL(C_DOUBLE), VALUE :: I0
+            TYPE(C_PTR), VALUE :: piP
+            INTEGER(C_INT), VALUE :: reset
+            INTEGER(C_INT), INTENT(INOUT) :: inst
+            REAL(C_DOUBLE) :: picontroller_c
+        END FUNCTION picontroller_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE PitchControl(avrSWAP, CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -1028,43 +1047,22 @@ SUBROUTINE StructuralControl(avrSWAP, CntrPar, LocalVar, objInst, ErrVar)
 
     END SUBROUTINE StructuralControl
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION PIController(error, kp, ki, minValue, maxValue, DT, I0, piP, reset, inst)
+    FUNCTION PIController(error, kp, ki, minValue, maxValue, DT, I0, piP, reset, inst) RESULT(PIController_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : piParams
-
-    ! PI controller, with output saturation
-
         IMPLICIT NONE
-        ! Allocate Inputs
-        REAL(DbKi),    INTENT(IN)         :: error
-        REAL(DbKi),    INTENT(IN)         :: kp
-        REAL(DbKi),    INTENT(IN)         :: ki
-        REAL(DbKi),    INTENT(IN)         :: minValue
-        REAL(DbKi),    INTENT(IN)         :: maxValue
-        REAL(DbKi),    INTENT(IN)         :: DT
-        INTEGER(IntKi), INTENT(INOUT)      :: inst
-        REAL(DbKi),    INTENT(IN)         :: I0
-        TYPE(piParams), INTENT(INOUT)  :: piP
-        LOGICAL,    INTENT(IN)         :: reset     
-        ! Allocate local variables
-        INTEGER(IntKi)                      :: i                                            ! Counter for making arrays
-        REAL(DbKi)                         :: PTerm                                        ! Proportional term
-
-        ! Initialize persistent variables/arrays, and set inital condition for integrator term
-        IF (reset) THEN
-            piP%ITerm(inst) = I0
-            piP%ITermLast(inst) = I0
-            
-            PIController = I0
-        ELSE
-            PTerm = kp*error
-            piP%ITerm(inst) = piP%ITerm(inst) + DT*ki*error
-            piP%ITerm(inst) = saturate(piP%ITerm(inst), minValue, maxValue)
-            PIController = saturate(PTerm + piP%ITerm(inst), minValue, maxValue)
-        
-            piP%ITermLast(inst) = piP%ITerm(inst)
-        END IF
-        inst = inst + 1
-        
+        REAL(8), INTENT(IN) :: error
+        REAL(8), INTENT(IN) :: kp
+        REAL(8), INTENT(IN) :: ki
+        REAL(8), INTENT(IN) :: minValue
+        REAL(8), INTENT(IN) :: maxValue
+        REAL(8), INTENT(IN) :: DT
+        REAL(8), INTENT(IN) :: I0
+        TYPE(PIPARAMS), INTENT(INOUT), TARGET :: piP
+        LOGICAL, INTENT(IN) :: reset
+        INTEGER(4), INTENT(INOUT) :: inst
+        REAL(8) :: PIController_result
+        PIController_result = REAL(picontroller_c(error, kp, ki, minValue, maxValue, DT, I0, C_LOC(piP), MERGE(1_C_INT, 0_C_INT, reset), inst), 8)
     END FUNCTION PIController
 
 
