@@ -1,0 +1,80 @@
+{
+ "unit": "PitchSaturation",
+ "operators": [
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutants": 15,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 15,
+ "killed": 9,
+ "survived": 6,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.6,
+ "loop_rev": "e54bef7-nogit",
+ "gen_rev": "gen-46812e27300d",
+ "vit_rev": "3ce00e8-nogit",
+ "survivors": [
+  {
+   "id": "9fb5c514",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "adf5a7dd",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "e7942934",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "3de6b9e0",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "c320e69e",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "322173bb",
+   "operator": "swap_call_args",
+   "before": "LocalVar->PS_Min_Pitch, LocalVar->PRC_Min_Pitch",
+   "after": "LocalVar->PRC_Min_Pitch, LocalVar->PS_Min_Pitch"
+  }
+ ]
+}

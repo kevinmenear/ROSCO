@@ -1,0 +1,29 @@
+PROBE PitchSaturation over the harness corpus
+  calls to errmsg_trim                              1004
+  calls to assign_errmsg                            1004
+  n_ErrMsg seen by errmsg_trim, min .. max           9 .. 19
+  n_ErrMsg_cap seen by assign_errmsg, min .. max     4097 .. 4106
+  longest message offered to assign_errmsg          35
+  A  calls with s.size() == cap                     0
+  C  calls with n_ErrMsg == 1                       0
+  D  calls with n_ErrMsg <= 0                       0
+  E  views with a TRAILING BLANK inside n_ErrMsg    0
+
+
+Run 2026-08-14 over the 1036-case corpus that harness/PitchSaturation.json was
+taken on, through evidence/PitchSaturation/run_probe.sh. The run itself is
+GREEN -- HARNESS PASS: checked 1036 failed 0 -- which is the control: the
+counters changed no compared output, so this is a reading of the corpus and not
+a perturbation of it.
+
+WHY n_ErrMsg NEVER FALLS BELOW 9, and it is structural rather than lucky. This
+unit's `errmsg_trim` runs only inside `IF (aviFAIL < 0)`, and `aviFAIL` can only
+be negative at that point because `interp1d_c` -- called two statements earlier
+and reached in every case -- either found an error or was handed one. Either way
+`interp1d`'s OWN tail has already run and left
+
+    ErrMsg = "interp1d:" + TRIM(whatever it was)
+
+so the shortest message this unit can ever see is the nine characters of
+`interp1d:` on an empty remainder, and it can never carry a trailing blank
+because TRIM has just removed them. 9 .. 19 and 0 are that sentence, counted.
