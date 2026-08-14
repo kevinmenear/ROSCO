@@ -40,6 +40,28 @@ MODULE Controllers
         END FUNCTION picontroller_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of PIDController
+    INTERFACE
+        FUNCTION pidcontroller_c(error, kp, ki, kd, tf, minValue, maxValue, DT, I0, piP, reset, objInst, LocalVar) BIND(C, NAME='pidcontroller_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: error
+            REAL(C_DOUBLE), VALUE :: kp
+            REAL(C_DOUBLE), VALUE :: ki
+            REAL(C_DOUBLE), VALUE :: kd
+            REAL(C_DOUBLE), VALUE :: tf
+            REAL(C_DOUBLE), VALUE :: minValue
+            REAL(C_DOUBLE), VALUE :: maxValue
+            REAL(C_DOUBLE), VALUE :: DT
+            REAL(C_DOUBLE), VALUE :: I0
+            TYPE(C_PTR), VALUE :: piP
+            INTEGER(C_INT), VALUE :: reset
+            TYPE(C_PTR), VALUE :: objInst
+            TYPE(C_PTR), VALUE :: LocalVar
+            REAL(C_DOUBLE) :: pidcontroller_c
+        END FUNCTION pidcontroller_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE PitchControl(avrSWAP, CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -1067,62 +1089,40 @@ SUBROUTINE StructuralControl(avrSWAP, CntrPar, LocalVar, objInst, ErrVar)
 
 
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION PIDController(error, kp, ki, kd, tf, minValue, maxValue, DT, I0, piP, reset, objInst, LocalVar)
+    FUNCTION PIDController(error, kp, ki, kd, tf, minValue, maxValue, DT, I0, piP, reset, objInst, LocalVar) RESULT(PIDController_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : piParams, LocalVariables, ObjectInstances
-
-    ! PI controller, with output saturation
-
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
         IMPLICIT NONE
-        ! Allocate Inputs
-        REAL(DbKi),    INTENT(IN)         :: error
-        REAL(DbKi),    INTENT(IN)         :: kp
-        REAL(DbKi),    INTENT(IN)         :: ki
-        REAL(DbKi),    INTENT(IN)         :: kd
-        REAL(DbKi),    INTENT(IN)         :: tf
-        REAL(DbKi),    INTENT(IN)         :: minValue
-        REAL(DbKi),    INTENT(IN)         :: maxValue
-        REAL(DbKi),    INTENT(IN)         :: DT
-        TYPE(ObjectInstances),      INTENT(INOUT)   :: objInst  ! all object instances (PI, filters used here)
-        TYPE(LocalVariables),       INTENT(INOUT)   :: LocalVar
-
-        REAL(DbKi),    INTENT(IN)           :: I0
-        TYPE(piParams), INTENT(INOUT)       :: piP
-        LOGICAL,    INTENT(IN)              :: reset     
-        
-        ! Allocate local variables
-        INTEGER(IntKi)                      :: i                                            ! Counter for making arrays
-        REAL(DbKi)                          :: PTerm, DTerm                                 ! Proportional, deriv. terms
-        REAL(DbKi)                          :: EFilt                    ! Filtered error for derivative
-
-        ! Always filter error
-        EFilt = LPFilter(error, DT, tf, LocalVar%FP, LocalVar%iStatus, reset, objInst%instLPF)
-
-        ! Initialize persistent variables/arrays, and set inital condition for integrator term
-        IF (reset) THEN
-            piP%ITerm(objInst%instPI) = I0
-            piP%ITermLast(objInst%instPI) = I0
-            piP%ELast(objInst%instPI) = 0.0_DbKi
-            PIDController = I0
+        REAL(8), INTENT(IN) :: error
+        REAL(8), INTENT(IN) :: kp
+        REAL(8), INTENT(IN) :: ki
+        REAL(8), INTENT(IN) :: kd
+        REAL(8), INTENT(IN) :: tf
+        REAL(8), INTENT(IN) :: minValue
+        REAL(8), INTENT(IN) :: maxValue
+        REAL(8), INTENT(IN) :: DT
+        REAL(8), INTENT(IN) :: I0
+        TYPE(PIPARAMS), INTENT(INOUT), TARGET :: piP
+        LOGICAL, INTENT(IN) :: reset
+        TYPE(OBJECTINSTANCES), INTENT(INOUT), TARGET :: objInst
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        REAL(8) :: PIDController_result
+        TYPE(C_PTR) :: piP_cptr
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        ! Resolve aliasing: an argument that IS a component of a view-type
+        ! argument must be written through the VIEW, or the view copy-back
+        ! afterwards would discard those writes (see _aliased_component_args).
+        IF (C_ASSOCIATED(C_LOC(piP), C_LOC(LocalVar%piP))) THEN
+            piP_cptr = C_LOC(LocalVar_view%piP)
         ELSE
-            ! Proportional
-            PTerm = kp*error
-            
-            ! Integrate and saturate
-            piP%ITerm(objInst%instPI) = piP%ITerm(objInst%instPI) + DT*ki*error
-            piP%ITerm(objInst%instPI) = saturate(piP%ITerm(objInst%instPI), minValue, maxValue)
-
-            ! Derivative (filtered)
-            DTerm = kd * (EFilt - piP%ELast(objInst%instPI)) / DT
-            
-            ! Saturate all
-            PIDController = saturate(PTerm + piP%ITerm(objInst%instPI) + DTerm, minValue, maxValue)
-        
-            ! Save lasts
-            piP%ITermLast(objInst%instPI) = piP%ITerm(objInst%instPI)
-            piP%ELast(objInst%instPI) = EFilt
+            piP_cptr = C_LOC(piP)
         END IF
-        objInst%instPI = objInst%instPI + 1
-        
+        PIDController_result = REAL(pidcontroller_c(error, kp, ki, kd, tf, minValue, maxValue, DT, I0, piP_cptr, MERGE(1_C_INT, 0_C_INT, reset), C_LOC(objInst), C_LOC(LocalVar_view)), 8)
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
     END FUNCTION PIDController
 
 !-------------------------------------------------------------------------------------------------------------------------------

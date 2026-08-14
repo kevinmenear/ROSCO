@@ -387,6 +387,22 @@ translations:
   PIController:
     status: integrated
     cpp_file: translations/Controllers/picontroller.cpp
+  # ADDED BY HAND at unit #34, for the reason units #14, #16, #18 and #20 all
+  # recorded: `vit integrate` rewrites this file through a YAML round-trip that
+  # DELETES EVERY COMMENT in it, so restoring the commented file is the only way
+  # to keep the file's own reasoning -- and then the entry has to be re-added.
+  #
+  # `vit integrate` wrote `verification: simulation` here again; REMOVED again,
+  # and this unit is the sharpest case for the rule so far. The gate DID run and
+  # it is BLIND: PIDController's one call site has 0 hits in all 27 scenarios
+  # (evidence/PIDController/coverage_deadness.txt), and gate/PIDController.redtest.json
+  # is the failed red test that says so. "Verified by simulation" would be a
+  # false sentence written by a command that ran no simulation and read no
+  # result. What verified this unit is the differential harness and the mutation
+  # score; that lives in plan.json's `evidence`.
+  PIDController:
+    status: integrated
+    cpp_file: translations/Controllers/pidcontroller.cpp
 types:
   ControlParameters:
     strategy: view

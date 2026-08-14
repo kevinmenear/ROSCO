@@ -62,6 +62,7 @@ void chkparsedata_c(char* Words, int len_Words, char* ExpVarName, int len_ExpVar
 void debug_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, debugvariables_t* DebugVar, errorvariables_view_t* ErrVar, float* avrSWAP, char* RootName, int size_avcOUTNAME);
 void findline_c(char* FileLines, int n_FileLines, int len_FileLines, char* ParamName, int len_ParamName, int32_t* FoundLine, char* Line, int* LineNum, int has_AryLen, int AryLen);
 double picontroller_c(double error, double kp, double ki, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int32_t reset, int* inst);
+double pidcontroller_c(double error, double kp, double ki, double kd, double tf, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int32_t reset, objectinstances_t* objInst, localvariables_view_t* LocalVar);
 
 #ifdef __cplusplus
 }
