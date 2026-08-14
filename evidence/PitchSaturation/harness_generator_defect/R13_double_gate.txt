@@ -65,8 +65,28 @@ HOW IT IS HANDLED HERE, and what that costs.
     -- that no other ladder can reach. With R13 off, that mutant is
     UNREACHABLE in this unit and will show as a survivor or be declared. It is
     declared, not hidden: see mutation/PitchSaturation.json.
-  * THE DECISIVE TEST is the POST-INTEGRATION run, which has R13 ON. After
-    integration both sides take the single-gate path, so if the analysis above
-    is right that run passes all 1292 including the sixteen. It is
-    harness/PitchSaturation.postintegration.json and it is the reason this is
-    written as a diagnosis rather than as a suspicion.
+  * WHAT WAS CHECKED INSTEAD OF THE POST-INTEGRATION RUN, and this paragraph
+    is a CORRECTION of what an earlier draft of this file promised. It said the
+    post-integration harness with R13 ON would settle the diagnosis. It will
+    not, twice over: post mode REUSES the generating run's case file rather
+    than making its own, and post mode's reference is the wrapper -- which
+    populates a view over the module staging buffer and exports through the
+    case's capacity, so it carries the SAME two gates the pre-integration
+    reference does. Running it would have proved nothing about the claim and
+    would have read as if it had. harness/PitchSaturation.postintegration.json
+    is 1036 of 1036 on the ablated corpus and is not offered as evidence here.
+
+    The claim that the INTEGRATED PROGRAM has one gate is checked directly, in
+    the shipped source, which is where it lives:
+
+      rosco/controller/src/ControllerBlocks.f90:504-512   the wrapper declares
+          ONE `TYPE(errorvariables_view_t) :: ErrVar_view`, populates it once,
+          passes `C_LOC(ErrVar_view)` to `pitchsaturation_c`, and copies back
+          once.
+      rosco/controller/src/pitchsaturation.cpp            calls `interp1d_c`
+          directly -- one call, declared by `vit_translated.h:54` -- with that
+          same view pointer. It does not re-enter Fortran, so no second view
+          and no second capacity exists.
+
+    One buffer, one capacity, both writes gated together. The double gate is a
+    property of the PRE-integration reference chain and of nothing that ships.
