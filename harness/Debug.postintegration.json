@@ -1,0 +1,44 @@
+{
+  "against": "integrated",
+  "assembled_from": [
+    "evidence/Debug/dbg.json",
+    "evidence/Debug/dbg28.json"
+  ],
+  "bytes_compared": 383540428,
+  "campaign_rev": "327ca29-dirty",
+  "checked": 456086,
+  "failed": 0,
+  "generated_by": "scripts/dbgcheck.py (compare), summarised into this file",
+  "inadmissible": 0,
+  "instrument": "NOT the generated differential harness. `vit test-validate` compares a unit's MAPPED OUTPUTS and `Debug` assigns nothing in its own signature -- `ErrVar` only on GetNewUnit's unit-number-exhaustion arm, which does not exist once GetNewUnit is absorbed, and `avrSWAP` never. A generated harness for this unit would compare the empty set. What is checked here is the unit's actual contract: the BYTES of the .RO.dbg files it writes.",
+  "loop_rev": "00b7f03",
+  "measures": "CAN see: every value and every column the three log files carry, at the exact byte. CANNOT see: the WRITE(*,100) status line, which goes to unit 6 and not to a file; a buffer allocated larger than it needs to be; and any branch no input in this tree reaches. See evidence/Debug/mutation.md.",
+  "parts": {
+    "dbg.json": {
+      "bytes": 273377424,
+      "files": 24,
+      "mismatched": 0,
+      "records": 408072,
+      "scenarios": "the 27 gate scenarios, LoggingLevel = 1"
+    },
+    "dbg28.json": {
+      "bytes": 110163004,
+      "files": 3,
+      "mismatched": 0,
+      "records": 48014,
+      "scenarios": "scenario 28, LoggingLevel = 3"
+    }
+  },
+  "red_tested": {
+    "CHARACTER(15) -> (16) on the heading literals": 24,
+    "ES20.5E2 -> E3 on the DebugOutData write": 407976,
+    "ES20.5E2 -> E3 on the LocalVarOutData write (27 scenarios, LoggingLevel=1) -- BLIND": 0,
+    "ES20.5E2 -> E3 on the LocalVarOutData write (scenario 28)": 15999,
+    "the `(/////)` record count 6 -> 5 (scenario 28)": 16003,
+    "the `< 1E-99 -> 0` clamp deleted": 21792,
+    "the `> 1E+99` clamp deleted -- BLIND, the arm is dead": 0
+  },
+  "unit": "Debug",
+  "vit_rev": "f4a711d",
+  "what_is_compared": "Each record of every *.RO.dbg* file the scenarios write, byte for byte, against an archive produced by a build whose Debug was still FORTRAN. Record 1 is compared byte for byte too and falls back to a structural check only when it differs and both sides carry the 'Generated on ...' shape, whose two fields are a wall clock."
+}
