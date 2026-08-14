@@ -1,0 +1,29 @@
+E1.4 STILL HOLDS WITH THIS UNIT INTEGRATED, AND THE PAIR NEEDED NO EDIT.
+
+Run 2026-08-14 immediately after the unit closed, on a clean committed tree.
+
+    md5 rosco/lib/libdiscon.so                    eefe3c3896c3255c9bd603407e154e15
+    bash scripts/reset_to_clean.sh
+      9 wrapper-carrying source(s) restored to 54dd134
+      36 translated .cpp source(s) removed from CMakeLists (E1.2 flags kept)
+      rebuilt and installed; kgen symbols in rosco/lib/libdiscon.so: 0
+    grep -c 'pitchsaturation_c' ControllerBlocks.f90            0   <- reverted
+    bash scripts/restore_integrated.sh
+      65 file(s) restored from HEAD
+      rebuilt and installed. Gate now measures the INTEGRATED build.
+    grep -c 'pitchsaturation_c' ControllerBlocks.f90            4   <- back
+    md5 rosco/lib/libdiscon.so                    eefe3c3896c3255c9bd603407e154e15
+
+BIT-IDENTICAL ROUND TRIP, and `git status` is empty at both ends.
+
+THE PART WORTH KEEPING IS THAT NEITHER SCRIPT WAS TOUCHED. `reset_to_clean.sh`
+selects files by whether HEAD's version calls a `<name>_c(` bridge and strips
+translated `.cpp` sources by reading CMakeLists, so integrating a 36th unit
+moved its counts from 35 to 36 on its own. A per-unit list would have needed an
+edit here and would have been the thing nobody remembered; the rule maintains
+itself, and this run is the evidence that it did.
+
+WHY IT WAS RUN AT ALL. The pair was exercised EARLIER in this dispatch, around
+the extraction, but that was BEFORE this unit was integrated -- so it proved
+nothing about the state the next unit's extraction will start from. A round trip
+taken before the thing that could break it is not a round trip.

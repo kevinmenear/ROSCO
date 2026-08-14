@@ -2078,6 +2078,7 @@
         "evidence/PitchSaturation/probes/noop-redtest.json",
         "evidence/PitchSaturation/probes/unfiltered-wind.json",
         "evidence/PitchSaturation/probes/wrong-constant.json",
+        "evidence/PitchSaturation/reset_restore_roundtrip.txt",
         "evidence/PitchSaturation/run_probe.sh",
         "evidence/PitchSaturation/run_stub.sh",
         "evidence/PitchSaturation/stubs.both_instruments.txt",
