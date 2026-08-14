@@ -1,12 +1,16 @@
 {
   "baseline": {
     "extra": [],
-    "files_compared": 4,
+    "files_compared": 21,
     "missing": [],
-    "records_compared": 72017,
-    "records_mismatched": 0
+    "records_compared": 99293,
+    "records_mismatched": 0,
+    "stdout_missing": [],
+    "stdout_records_compared": 491,
+    "stdout_records_mismatched": 0,
+    "stdout_scenarios_compared": 8
   },
-  "campaign_rev": "5ca70c5-dirty",
+  "campaign_rev": "c9812bc",
   "capped_operators": [
     "compare_op",
     "const_tweak",
@@ -14,9 +18,9 @@
   ],
   "compared_against": "fortran_reference_dbg_archive",
   "equivalent_declared": 0,
-  "killed": 11,
+  "killed": 12,
   "limit_per_operator": 40,
-  "loop_rev": "897d67c",
+  "loop_rev": "3f8ed43",
   "mutants": 20,
   "nocompile": 0,
   "nocompile_ratio": 0.0,
@@ -28,7 +32,7 @@
     "drop_call": 5,
     "drop_factor": 1,
     "index_offset": 40,
-    "negate_cond": 33,
+    "negate_cond": 34,
     "swap_call_args": 1,
     "swap_callee": 1,
     "swap_operands": 7
@@ -40,279 +44,344 @@
     "const_tweak"
   ],
   "operators_filter_unmatched": [],
-  "oracle": "byte identity of *.RO.dbg against the committed `pre` archive, produced by a build whose Debug was Fortran",
-  "reference_archive": "preall",
+  "oracle": "byte identity of *.RO.dbg AND of the driver's stdout, per scenario, against a committed archive produced by a build whose Debug was Fortran",
+  "reference_archive": "mutref",
   "results": [
     {
       "after": "1",
       "before": "0",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
       "line": 98,
       "mid": "eef1f9a5",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 72006
+      "records_mismatched": 99229,
+      "stdout_records_mismatched": 124
     },
     {
       "after": "9",
       "before": "8",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 171,
+      "line": 181,
       "mid": "5d2c9fbc",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "513",
       "before": "512",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 207,
+      "line": 217,
       "mid": "53abf222",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "2",
       "before": "1",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 213,
+      "line": 223,
       "mid": "236b4aba",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 71996
+      "records_mismatched": 99179,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "2",
       "before": "1",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 215,
+      "line": 225,
       "mid": "633daac2",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "1",
       "before": "0",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 215,
+      "line": 225,
       "mid": "e6b72035",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 71996
+      "records_mismatched": 99179,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "2",
       "before": "1",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 218,
+      "line": 228,
       "mid": "201b931c",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "2",
       "before": "1",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 247,
+      "line": 257,
       "mid": "477db167",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "1",
       "before": "0",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 262,
+      "line": 272,
       "mid": "3df68c54",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "1",
       "before": "0",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 267,
+      "line": 277,
       "mid": "35c6e30c",
       "operator": "const_tweak",
       "outcome": "norun",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "1",
       "before": "0",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 276,
+      "line": 286,
       "mid": "1d75738a",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "12",
       "before": "11",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 286,
+      "line": 296,
       "mid": "e62c7325",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "15",
       "before": "14",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 292,
+      "line": 302,
       "mid": "c55c2091",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 3
+      "records_mismatched": 15,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "5",
       "before": "4",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 294,
+      "line": 304,
       "mid": "a07259dd",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 3
+      "records_mismatched": 15,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "14",
       "before": "13",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 296,
+      "line": 306,
       "mid": "4e3fbb77",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 3
+      "records_mismatched": 15,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "10.5492966",
       "before": "9.5492966",
-      "killed": false,
-      "line": 303,
+      "files_extra": [],
+      "files_missing": [],
+      "killed": true,
+      "line": 313,
       "mid": "487049bb",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 124
     },
     {
       "after": "27",
       "before": "26",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 314,
+      "line": 324,
       "mid": "1f8fd139",
       "operator": "const_tweak",
       "outcome": "norun",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "2",
       "before": "1",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 317,
+      "line": 327,
       "mid": "44488b91",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 34329
+      "records_mismatched": 34688,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "4",
       "before": "3",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 319,
+      "line": 329,
       "mid": "190cad57",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 39998
+      "records_mismatched": 49592,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "6",
       "before": "5",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 321,
+      "line": 331,
       "mid": "554830a9",
       "operator": "const_tweak",
       "outcome": "ok",
-      "records_mismatched": 39419
+      "records_mismatched": 46074,
+      "stdout_records_mismatched": 0
     }
   ],
   "scenarios": [
     27,
-    28
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34
   ],
-  "score": 0.55,
+  "score": 0.6,
   "slice": "0/2",
-  "survived": 9,
+  "streams_compared": [
+    "RO.dbg",
+    "RO.dbg2",
+    "RO.dbg3",
+    "stdout"
+  ],
+  "survived": 8,
   "survivors": [
     {
       "after": "9",
       "before": "8",
       "id": "5d2c9fbc",
-      "line": 171,
+      "line": 181,
       "operator": "const_tweak"
     },
     {
       "after": "513",
       "before": "512",
       "id": "53abf222",
-      "line": 207,
+      "line": 217,
       "operator": "const_tweak"
     },
     {
       "after": "2",
       "before": "1",
       "id": "633daac2",
-      "line": 215,
+      "line": 225,
       "operator": "const_tweak"
     },
     {
       "after": "2",
       "before": "1",
       "id": "201b931c",
-      "line": 218,
+      "line": 228,
       "operator": "const_tweak"
     },
     {
       "after": "2",
       "before": "1",
       "id": "477db167",
-      "line": 247,
+      "line": 257,
       "operator": "const_tweak"
     },
     {
       "after": "1",
       "before": "0",
       "id": "3df68c54",
-      "line": 262,
+      "line": 272,
       "operator": "const_tweak"
     },
     {
       "after": "1",
       "before": "0",
       "id": "1d75738a",
-      "line": 276,
+      "line": 286,
       "operator": "const_tweak"
     },
     {
       "after": "12",
       "before": "11",
       "id": "e62c7325",
-      "line": 286,
-      "operator": "const_tweak"
-    },
-    {
-      "after": "10.5492966",
-      "before": "9.5492966",
-      "id": "487049bb",
-      "line": 303,
+      "line": 296,
       "operator": "const_tweak"
     }
   ],
