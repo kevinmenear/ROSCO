@@ -1,6 +1,6 @@
-# done_check.py ChkParseData -- captured 2026-08-14T03:19:33Z by scripts/capture_done_check.sh
+# done_check.py ChkParseData -- captured 2026-08-14T03:28:43Z by scripts/capture_done_check.sh
 
-Run against the committed state at e3615cf ("ChkParseData: the post-integration layer and the gate re-taken at 1386430"), with a CLEAN tree, with stdout
+Run against the committed state at f5b28da ("ChkParseData: the record -- README, DECISIONS, STATUS, RUNBOOK, plan"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
