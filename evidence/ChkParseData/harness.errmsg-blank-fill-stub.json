@@ -114,7 +114,7 @@
    "got": "203e3e204120666174616c206572726f72206f63637572726564207768656e20..."
   }
  ],
- "loop_rev": "1386430-nogit",
+ "loop_rev": "f55b26f-nogit",
  "vit_rev": "f4a711d-nogit",
  "red_test": {
   "perturbation": "the ErrMsg staging tail blank-filled instead of cleared to NUL",

@@ -2,7 +2,7 @@
  "unit": "ChkParseData",
  "against": "integrated",
  "checked": 1552,
- "failed": 0,
+ "failed": 9,
  "inadmissible": 0,
  "rule_coverage": [
   "  applied  R5_non_degenerate_shape    4 varied extent(s) at [3, 4, 5, 6] and [3, 4, 5, 6]; 1 FIXED by the type at [2] -- not varied, NO index parameter identified, array elements distinct",
@@ -16,8 +16,105 @@
   "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
   "  applied  R4_compare_all_outputs     return value + 5 out-parameter(s): ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg"
  ],
- "mismatches": [],
+ "mismatches": [
+  {
+   "case": 360,
+   "output": "ErrVar.aviFAIL",
+   "ref": "ffffffff",
+   "got": "58020000"
+  },
+  {
+   "case": 360,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "7b000000",
+   "got": "06000000"
+  },
+  {
+   "case": 360,
+   "output": "ErrVar.ErrMsg",
+   "ref": "203e3e204120666174616c206572726f72206f63637572726564207768656e20...",
+   "got": "3a20202020200000000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 646,
+   "output": "ErrVar.aviFAIL",
+   "ref": "58020000",
+   "got": "ffffffff"
+  },
+  {
+   "case": 646,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "06000000",
+   "got": "7b000000"
+  },
+  {
+   "case": 646,
+   "output": "ErrVar.ErrMsg",
+   "ref": "393a404142590000000000000000000000000000000000000000000000000000...",
+   "got": "203e3e204120666174616c206572726f72206f63637572726564207768656e20..."
+  },
+  {
+   "case": 702,
+   "output": "ErrVar.aviFAIL",
+   "ref": "58020000",
+   "got": "ffffffff"
+  },
+  {
+   "case": 702,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "06000000",
+   "got": "7b000000"
+  },
+  {
+   "case": 702,
+   "output": "ErrVar.ErrMsg",
+   "ref": "303138393a400000000000000000000000000000000000000000000000000000...",
+   "got": "203e3e204120666174616c206572726f72206f63637572726564207768656e20..."
+  },
+  {
+   "case": 821,
+   "output": "ErrVar.aviFAIL",
+   "ref": "ffffffff",
+   "got": "58020000"
+  },
+  {
+   "case": 821,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "83000000",
+   "got": "06000000"
+  },
+  {
+   "case": 821,
+   "output": "ErrVar.ErrMsg",
+   "ref": "203e3e204120666174616c206572726f72206f63637572726564207768656e20...",
+   "got": "21303138393a0000000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 1010,
+   "output": "ErrVar.aviFAIL",
+   "ref": "58020000",
+   "got": "ffffffff"
+  },
+  {
+   "case": 1010,
+   "output": "ErrVar.n_ErrMsg",
+   "ref": "06000000",
+   "got": "7e000000"
+  },
+  {
+   "case": 1010,
+   "output": "ErrVar.ErrMsg",
+   "ref": "2121212121210000000000000000000000000000000000000000000000000000...",
+   "got": "203e3e204120666174616c206572726f72206f63637572726564207768656e20..."
+  },
+  {
+   "case": 1055,
+   "output": "ErrVar.aviFAIL",
+   "ref": "58020000",
+   "got": "ffffffff"
+  }
+ ],
  "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
- "loop_rev": "1386430",
+ "loop_rev": "f55b26f",
  "vit_rev": "f4a711d"
 }

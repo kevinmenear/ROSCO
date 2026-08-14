@@ -114,7 +114,7 @@
    "got": "01000000"
   }
  ],
- "loop_rev": "1386430-nogit",
+ "loop_rev": "f55b26f-nogit",
  "vit_rev": "f4a711d-nogit",
  "red_test": {
   "perturbation": "probe: ErrStat bumped where Words(2) IS the expected name",
