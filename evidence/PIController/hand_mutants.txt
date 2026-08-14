@@ -1,0 +1,22 @@
+# hand-run mutants of translations/Controllers/picontroller.cpp
+# the two saturate_c call sites, which cppmutate's callee TABLE excludes
+# instrument: this unit's own differential corpus
+#
+BASELINE (the shipped translation, unmutated)              killed on     0 of  3532 cases
+#
+# drop_call -- the call replaced by its first argument
+ITerm clamp dropped                                        killed on  1761 of  3532 cases
+output clamp dropped                                       killed on   383 of  3532 cases
+BOTH clamps dropped                                        killed on  1761 of  3532 cases
+#
+# swap_call_args -- the FIRST TWO arguments exchanged, which is the shape
+# cppmutate's operator produces
+ITerm clamp: value <-> minValue                            killed on     0 of  3532 cases
+output clamp: value <-> minValue                           killed on     0 of  3532 cases
+#
+# the two BOUNDS transposed -- not a shape cppmutate offers at all, and the
+# defect unit #24's own post-integration red test was built from
+ITerm clamp: bounds transposed                             killed on    63 of  3532 cases
+output clamp: bounds transposed                            killed on   135 of  3532 cases
+#
+# translation restored, byte-identical to the shipped file
