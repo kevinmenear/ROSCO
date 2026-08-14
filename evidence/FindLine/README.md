@@ -82,6 +82,28 @@ only where two independently drawn strings coincide. That is unit #30's rule
 seen from the other side: *a rule aimed at a predicate must supply BOTH sides of
 it*, and no rule here supplies both sides of `FileLineUC == ParamNameUC`.
 
+**AND ALL 47 ARE THE ALL-BLANK SHAPE — two empty strings comparing equal.** A
+second probe settles it (`findline.nonblank-key-probe.cpp`,
+`harness.nonblank-key-probe.json`): refusing the match unless the search key
+holds a non-blank character changes the answer in **47 of 2370** cases, i.e. in
+*every* case that matched. The key is one value per case, so a case whose key is
+non-blank would have been left alone and would not have failed; none was.
+
+That is the same thing unit #30 measured for `ChkParseData` — its arm 1 was
+reached 52 times in 1284 cases and every one was the all-blank shape — and it
+finishes the explanation of the survivors rather than merely bounding it:
+
+* a BLANK word is blank at **every index**, so no blank match can distinguish
+  `Words(2)` from `Words(AryLen + 1)`. That is `d76903ed`, `3bc7aeba`,
+  `d126d74e` and the `arylen-ignored` stub's zero, all at once.
+* `Conv2UC` on an all-blank key is a **no-op**, so deleting it cannot change an
+  answer. That is the `no-uppercase` stub's zero.
+* a blank key is 200 blanks whether the width is 200 or 201, so `6ca91bba`
+  cannot die either.
+
+So the rule the next dispatch needs is sharper than "supply both sides": it must
+supply a **non-blank** name that is the *k*-th word of a real file line.
+
 The two stubs that fail NOTHING say the same thing from two directions:
 
 ```
@@ -194,6 +216,7 @@ run_wrapper_redtest.sh                   plants a defect in the SHIPPED wrapper
 harness.{noop,first-match,arylen-ignored,no-line,no-uppercase,no-truncation}-stub.json
 findline.harness-*-stub.cpp
 harness.match-count-probe.json           47 of 2370 reach the match arm
+harness.nonblank-key-probe.json          47 of 2370 -- ALL of them are blank-vs-blank
 harness.canary-probe.json                0 of 2370   the extra byte is untouched
 harness.canary-control.json              2370 of 2370   and the probe can fire
 harness.postintegration.revert-verified.json
