@@ -1,6 +1,6 @@
-# done_check.py FindLine -- captured 2026-08-14T17:11:56Z by scripts/capture_done_check.sh
+# done_check.py FindLine -- captured 2026-08-14T17:12:22Z by scripts/capture_done_check.sh
 
-Run against the committed state at a2c07c9 ("FindLine: re-taken so all seven result artifacts name one instrument"), with a CLEAN tree, with stdout
+Run against the committed state at d9bc584 ("FindLine: the done-condition reading, 12 of 14"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -20,13 +20,13 @@ done_check exited 1 (0 only when COMPLETE).
 
 baseline (inferred): 4fc4cc6  -- the commit before 798b71d touched translations/ROSCO_Helpers/findline.cpp
 
-FindLine: Verdict.INCOMPLETE  (12/14 PASS)
+FindLine: Verdict.INCOMPLETE  (13/14 PASS)
 
 [  ok  ] P1   commits exist                      
 [  ok  ] P2   clean tree                         
 [  ok  ] P3   disposition recorded               
 [  ok  ] P4   evidence recorded                  
-[ FAIL ] P5   evidence resolves                  unresolved_evidence:evidence/FindLine/done_check.txt
+[  ok  ] P5   evidence resolves                  
 [  ok  ] P6   functional commit                  
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
