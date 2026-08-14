@@ -67,17 +67,38 @@ from an empty set must prove the set could have been non-empty; the corollary
 this adds is that **the control must be chosen against the program, not against
 the probe** — an unconditional write, not a call that might write.
 
-**PROPOSED, NOT TAKEN: a corpus rule that plants one input inside another.**
-This unit's remaining gap is that `FileLines` and `ParamName` are drawn
+**PROPOSED, NOT TAKEN: a corpus rule that plants one input inside another --
+and a second probe is what makes it specifiable rather than hopeful.** This
+unit's remaining gap is that `FileLines` and `ParamName` are drawn
 independently, so the predicate `FileLineUC == ParamNameUC` is true in 47 of
 2370 cases and everything downstream of it is unobservable in the other 2323.
+
+The second probe asked what those 47 ARE. Refusing the match unless the search
+key holds a non-blank character fails **47 of 2370** -- all of them -- so EVERY
+MATCH IN THIS CORPUS IS TWO EMPTY STRINGS COMPARING EQUAL, the same shape unit
+#30 measured for `ChkParseData`. That matters because a rule which merely made
+matches MORE FREQUENT would move none of the five survivors: a blank word is
+blank at every index, `Conv2UC` on a blank key is a no-op, and a blank key is
+200 blanks whether the width is 200 or 201. The rule must supply a NON-BLANK
+name, and it needs a near-miss sibling so the comparison is not satisfied by
+every candidate at once.
+
 The rule shape: for a unit comparing a CHARACTER quantity derived from an ARRAY
 input against a scalar CHARACTER input, generate cases in which the scalar IS
 the *k*-th word of a chosen element, for each *k* the signature admits, and in
 which the case letters differ so the `Conv2UC` on the key is load-bearing. It is
 a change to a SHARED generator, so its X3 cost has to be measured across every
-scored unit before it is taken — unit #30 spent a whole dispatch doing exactly
-that for R12 and R13, and this is the same size of job.
+scored unit before it is taken.
+
+**What this dispatch DID establish is that the measurement is cheap** --
+`evidence/FindLine/x3_check/` re-takes the two units that could move in about
+two minutes, and the same procedure would answer it for this rule. So the
+reason it is still not taken is narrower than "that is a dispatch of its own",
+and it is worth stating exactly: the rule would fire on `ChkParseData`, which
+is CLOSED at 1.000, so taking it inside another unit's dispatch risks
+converting a closed unit into a non-reproducing one -- which is precisely the
+condition this dispatch found `GetWords` already in, and creating one
+deliberately is not the same as finding one.
 
 **THE X3 ARGUMENT WAS CHECKED AND ONE HALF OF IT WAS ALREADY FALSE FOR ANOTHER
 UNIT.** All four generator changes here carry a source-level argument that no

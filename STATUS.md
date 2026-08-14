@@ -35,8 +35,17 @@ must supply both sides of it* — and no rule here supplies both sides of this
 one. Two stubs report it as a zero: pinning `WordInd` at 2 fails **0 of 2370**,
 and deleting `CALL Conv2UC(ParamNameUC)` fails **0 of 2370**.
 
+**AND ALL 47 ARE THE ALL-BLANK SHAPE**, which a second probe measures and which
+is what makes the remedy specifiable: refusing the match unless the search key
+holds a non-blank character fails **47 of 2370** — every case that matched. So
+every match here is two empty strings comparing equal, the same shape unit #30
+found in `ChkParseData`. A blank word is blank at *every* index, `Conv2UC` on a
+blank key is a no-op, and a blank key is 200 blanks whether the width is 200 or
+201 — that is all five survivors at once, and it means a rule which merely made
+matches more frequent would move none of them.
+
 **What would close it** is written down so the next dispatch need not rederive
-it: a corpus rule that plants one input inside another — for a unit comparing a
+it: a corpus rule that plants a NON-BLANK name from one input inside another — for a unit comparing a
 CHARACTER quantity derived from an array input against a scalar CHARACTER
 input, generate cases in which the scalar IS the *k*-th word of a chosen
 element, for each *k* the signature admits, and in which the case letters
