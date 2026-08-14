@@ -1,0 +1,37 @@
+# C12 -- the failing artifact, recorded before the fix.
+#
+# `scripts/harness.sh` in PRE mode with no optional arguments, on this
+# campaign's Mac shell (GNU bash 3.2.57(1)-release, arm64-apple-darwin25):
+
+$ bash scripts/harness.sh PIIController Controllers piicontroller \
+      rosco/controller/src/Controllers.f90
+
+harness.sh: VIT wrote the per-unit layout directly (translations/Controllers/piicontroller_test); no move needed
+harness.sh: added vit_integration_shim.o to LIBS -- piicontroller.cpp.o was dropped and the integrated wrapper calls piicontroller_c
+harness.sh: dropping the saturate_c bridge -- saturate.cpp.o already defines it, and the Fortran saturate is a wrapper around it
+harness.sh: 0 bridge(s) kept in .../translations/Controllers/piicontroller_callees.f90
+scripts/harness.sh: line 382: ARGS[*]: unbound variable
+                                                        <- exit 1, no corpus, no run
+
+# WHY IT WAS LATENT FOR THIRTY-FOUR UNITS. `ARGS` collects the pass-through
+# arguments, and `--out <path>` appends to it (line 75). Every previous pre-mode
+# invocation in this campaign passed `--out`, so the array was never empty. Under
+# `set -u`, bash 3.2 treats `${ARGS[*]}` on an EMPTY array as unbound -- bash 4.4
+# and later do not -- so the script's own documented usage line,
+#
+#     bash scripts/harness.sh ColemanTransform Functions colemantransform \
+#          rosco/controller/src/Functions.f90 [--against integrated]
+#
+# which shows no `--out`, has never been runnable on this machine.
+#
+# THE FAILURE IS IN THE SAFE DIRECTION and that is why it is worth writing down
+# rather than only fixing. It aborts before generating a corpus, so no number was
+# ever produced from it; the shape to fear is the mirror image, an unset variable
+# expanding to nothing and a command running with one argument missing. The three
+# steps before it had already reported success, which is the part that reads like
+# a working run.
+#
+# FIXED ADDITIVELY at the expansion site (X2, and the repo that owns it is this
+# one): `${ARGS[*]-}`. No already-measured corpus moves, because every artifact
+# this campaign holds was taken through a path where ARGS was non-empty and
+# `${ARGS[*]-}` and `${ARGS[*]}` are the same string there.

@@ -381,7 +381,7 @@ fi
 if [ "$MODE" = "pre" ]; then
     docker exec "$CONTAINER" bash -lc \
         "cd $WORKDIR && python3 $LOOP/scripts/vit_harness.py $UNIT --root $WORKDIR \
-            --file $FFILE --cpp $MOD_DIR/$STEM.cpp --module $MODULE ${ARGS[*]}" \
+            --file $FFILE --cpp $MOD_DIR/$STEM.cpp --module $MODULE ${ARGS[*]-}" \
         && rc=0 || rc=$?
     # `--red-test` used to be ACCEPTED AND DROPPED here: this path returned
     # before the stamping block at the end of the file, which only post mode
