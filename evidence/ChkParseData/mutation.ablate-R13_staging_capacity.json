@@ -1,0 +1,52 @@
+{
+ "unit": "ChkParseData",
+ "operators": [
+  "compare_op",
+  "const_tweak",
+  "drop_call"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "compare_op",
+  "const_tweak",
+  "drop_call"
+ ],
+ "operators_filter_unmatched": [],
+ "mutants": 16,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 16,
+ "killed": 15,
+ "survived": 1,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.9375,
+ "loop_rev": "1386430-nogit",
+ "vit_rev": "f4a711d-nogit",
+ "survivors": [
+  {
+   "id": "7891029b",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  }
+ ]
+}

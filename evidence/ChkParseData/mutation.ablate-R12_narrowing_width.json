@@ -1,0 +1,64 @@
+{
+ "unit": "ChkParseData",
+ "operators": [
+  "compare_op",
+  "const_tweak",
+  "drop_call"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "compare_op",
+  "const_tweak",
+  "drop_call"
+ ],
+ "operators_filter_unmatched": [],
+ "mutants": 16,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 16,
+ "killed": 13,
+ "survived": 3,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.8125,
+ "loop_rev": "1386430-nogit",
+ "vit_rev": "f4a711d-nogit",
+ "survivors": [
+  {
+   "id": "6b46c3dc",
+   "operator": "const_tweak",
+   "before": "20",
+   "after": "21"
+  },
+  {
+   "id": "9d9db83a",
+   "operator": "const_tweak",
+   "before": "11",
+   "after": "12"
+  },
+  {
+   "id": "d1fc8fa6",
+   "operator": "drop_call",
+   "before": "std::min(len_src, len_dst)",
+   "after": "len_src"
+  }
+ ]
+}
