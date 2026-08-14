@@ -1,6 +1,6 @@
-# done_check.py FindLine -- captured 2026-08-14T17:21:15Z by scripts/capture_done_check.sh
+# done_check.py FindLine -- captured 2026-08-14T18:05:04Z by scripts/capture_done_check.sh
 
-Run against the committed state at 9493946 ("FindLine: the proposed rule is a specification now, not a hope"), with a CLEAN tree, with stdout
+Run against the committed state at 0f857d2 ("FindLine: state current -- 0.960 on one survivor, classified and escalated"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -31,9 +31,9 @@ FindLine: Verdict.INCOMPLETE  (13/14 PASS)
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
 [  ok  ] P9   gate compared and matched          
-[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/FindLine.json 19/25 = 0.760 < 1.0 -- survivors: const_tweak[ca75abea], const_tweak[6ca91bba], const_tweak[d76903ed], const_tweak[3bc7aeba], const_tweak[b2c89b46], negate_cond[d126d74e]
-[  ok  ] P11  post-integration harness re-run    2370 check(s) against the integrated build
+[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/FindLine.json 24/25 = 0.960 < 1.0 -- survivors: const_tweak[ca75abea]
+[  ok  ] P11  post-integration harness re-run    2514 check(s) against the integrated build
 [  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
 [  ok  ] P10  evidence reproducible              
-[  ok  ] P14  artifact revisions agree           4 artifact(s) at 024982b
+[  ok  ] P14  artifact revisions agree           4 artifact(s) at 552edb1
 
