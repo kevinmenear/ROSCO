@@ -358,6 +358,164 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A REFUSAL'S STATED REASON IS A CLAIM AND CAN BE FALSE, AND A FALSE ONE COSTS
+  MORE THAN NO REASON WOULD -- ASK THE OTHER GENERATOR INSTEAD OF READING IT.**
+  Unit #32, three tool defects in one declaration (`CHARACTER(*) :: X(:)`), and
+  the first is the one to recognise:
+
+  ```
+  UNOBSERVABLE [character-array] FileLines
+    "carries its extent in a descriptor build_c_params does not emit"
+  vit interface FindLine   ->  CALL findline_c(FileLines_c, SIZE(FileLines),
+                                               LEN(FileLines), ...)
+  ```
+
+  It emits BOTH. The count was already in `extent_of` under the ordinary `n_`
+  name and already emitted as an extent Param; only the CHARACTER branch never
+  read `dims_of`. A refusal that names a MECHANISM reads as a fact about the
+  boundary, so it is believed for as long as no unit has the shape -- here, 31
+  units. `UNMEASURED here` and `impossible here` look alike in a report and only
+  one of them is worth a dispatch.
+
+  One command settles it, and it is the command unit #8's rule already names:
+
+  ```
+  vit interface <Unit> -f <the file>.f90 | sed -n '/Wrapper Function/,$p'
+  #   what the SHIPPED wrapper actually passes IS the ABI; a mapper that
+  #   disagrees with it is wrong about the mapper, not about the boundary
+  ```
+
+- **TWO GENERATORS SPELLING ONE CALL WILL DISAGREE EVENTUALLY, AND C LINKAGE
+  CHECKS NEITHER -- SO THE SECOND ONE MUST ASK THE FIRST RATHER THAN RESTATE
+  IT.** Unit #32, and the artifact it produced was a 98% PASS.
+
+  ```
+  build_c_params                char* X, int n_X, int len_X      count, width
+  generate_fortran_bridge       char* X, int len_X, int n_X      width, count
+  a 4x3 CHARACTER array read as 3x4    a well-formed array of the WRONG SHAPE
+  differential harness          2311 of 2358 cases AGREED
+  the 47 that did not           reference LineNum == len_FileLines, every one
+  ```
+
+  Nothing failed to build, nothing crashed, and the number looked like an
+  ordinary translation defect. What identified it was reading the FAILING cases'
+  inputs out of the case stream rather than the diff: `LineNum` equal to the
+  element WIDTH is `DO I = 1, SIZE(FileLines)` iterating over the wrong extent,
+  and no translation bug produces that.
+
+  ```
+  python3 - <<'EOF'   # decode the case stream; the layout is in <stem>_test.cpp's main()
+  ...  print(f"case {c}: len={lf} n={nf}", [fl[j*lf:(j+1)*lf] for j in range(nf)])
+  EOF
+  ```
+
+  The fix that matters is not the reorder. `generate_fortran_bridge` now calls
+  `build_c_params` and REFUSES when the two extent sequences differ, naming both
+  -- a restatement that cannot be checked is a defect waiting for the first
+  input shape that distinguishes it. vit `d2de28c`.
+
+- **A CHECK'S SCOPE IS PART OF ITS PRECISION: `vit check` READ THE WHOLE FILE.**
+  Unit #32. Ten of fifteen checks set `needs_fortran` and every one asks "the
+  reference does X, does the translation?" -- so a sibling procedure supplied
+  the Fortran half of a finding about a unit that has nothing to do with it.
+
+  ```
+  FindLine        contains no SCAN, INDEX or VERIFY at all
+  delimiter-set   fired on GetPath's INDEX( GivenFil, '\', BACK=.TRUE. )
+                  900 lines away in the same file
+  ```
+
+  Latent for EIGHT units in ROSCO_Helpers.f90, because `GetPath` and `GetRoot`
+  both carry `'\/'` themselves and were clean by luck. It is the expensive kind
+  of false positive: the finding names a real literal and a real absence, and
+  only reading the reference shows they belong to different procedures. Fixed in
+  vit `c4eb0ad`; when the name is not found the CLI falls back to the whole file
+  AND PRINTS THAT IT DID, because a slice that silently missed would turn ten
+  checks off without a word.
+
+- **MAKE "THE INTERESTING ARM RAN" AN OUTPUT BEFORE EXPLAINING A SURVIVOR LIST,
+  AND FIVE SURVIVORS MAY TURN OUT TO BE ONE NUMBER.** Unit #32, and it is unit
+  #30's counting-probe rule on its second use, paid for in one command.
+
+  ```
+  LineNum = -7 inside the match arm          47 of 2370 cases   <- the whole gap
+  WordInd pinned at 2                         0 of 2370
+  CALL Conv2UC(ParamNameUC) deleted           0 of 2370
+  ```
+
+  2323 of 2370 cases never find the name, so `FoundLine` is false, `LineNum` is
+  0 and `Line` is never written -- nothing downstream of the predicate is
+  distinguishable in 98% of the corpus. Five of six mutation survivors follow
+  from that one number, and none of them needed a separate explanation.
+
+  The cause is structural and worth naming in general: **the corpus draws the
+  two sides of a comparison INDEPENDENTLY, so the predicate is true only where
+  two independent draws coincide.** That is unit #30's "a rule aimed at a
+  predicate must supply BOTH sides of it" read from the other end, and the
+  remedy is a rule that plants one input INSIDE another rather than a wider
+  ladder for either.
+
+  And when an artifact names survivors by (operator, before, after) and several
+  sites match, **build each candidate and run it** rather than reasoning about
+  which one it is -- seven runs at six seconds each turned a guess into
+  `evidence/FindLine/const_tweak_probes/RESULTS.md`.
+
+- **A SITE WHOSE MUTANTS DIFFER ONLY IN MEMORY THE COMPARISON CANNOT READ IS A
+  RESTATEMENT: DELETE IT AND WRITE THE PROOF.** Unit #32, and the fifth time
+  this campaign has reached the same shape (Conv2UC 0.696 -> 1.000, GetPath,
+  GetRoot, GetWords).
+
+  ```
+  n = std::min(len_src, len_dst); two loops     min(a,b) -> a        SURVIVED
+                                                min(a,b) -> min(b,a) SURVIVED
+  one loop to len_dst, `i <= len_src` inside    the new predicate    47 of 2370
+  std::max(WordInd, 0)                          all three mutants    SURVIVED
+                                                deleted; AryLen >= 0 is STATED
+  0.667 -> 0.704, mutants 39 -> 27
+  ```
+
+  The `min` version's mutants write the SAME len_dst bytes and then continue
+  past the end, so what differs is undefined rather than wrong -- and unit #7
+  settled that such a mutant can be deleted with its site but not declared
+  equivalent. The rewrite is also the safer program: the loop cannot leave
+  `dst`.
+
+  **The distinction that decides it is whether the site can be removed at all.**
+  `'2048' -> '2049'` on this unit's `MaxLineLength` has exactly the same
+  character -- one byte past the CALLER's buffer, invisible to any value
+  comparison -- and it STAYS a survivor, because VIT emits no `len_Line` and the
+  width has to be stated in the C++ once.
+
+- **A CORPUS RULE AND A TRANSLATION SITE ARE TWO HALVES OF ONE MEASUREMENT; A
+  RULE THAT FIRES AND KILLS NOTHING IS NOT A RULE THAT IS WRONG.** Unit #32.
+
+  ```
+  R12 widened to resolve a NAMED width (module PARAMETER, not a literal)
+    +12 cases     score 0.667 before  ->  0.667 after
+  the same 12 cases, after char_assign lost its `std::min`
+                  three kills
+  ```
+
+  The boundary was in the corpus and the translation had no site at which it
+  changed an answer. Neither half is worth anything alone, and reverting the
+  rule on its own evidence would have been the wrong reading.
+
+- **A POSITIVE CONTROL MUST BE CHOSEN AGAINST THE PROGRAM, NOT AGAINST THE
+  PROBE.** Unit #32. Two declared equivalences rest on a canary in the byte a
+  mutant adds to a fixed-width local; the probe reports 0 of 2370 disturbed, and
+  a zero is worth nothing until the probe is shown able to be non-zero (P10).
+
+  ```
+  control 1   conv2uc_c(ParamNameUC, MaxParamLength + 1)      0 of 2370   DEAD
+              Conv2UC writes a byte only if it is a LOWERCASE LETTER, and the
+              sentinel is '\x7f'
+  control 2   ParamNameUC[MaxParamLength] = 'X';           2370 of 2370   alive
+  ```
+
+  For one run the dead control and the passing probe were the same number. A
+  control that routes through the program's own logic can be silenced by that
+  logic; write the disturbance unconditionally.
+
 - **A UNIT'S OBSERVABLE SET IS A LIST OF STREAMS, AND THE HARNESS COMPARES THE
   ONES SOMEBODY THOUGHT OF. ENUMERATE THEM BEFORE CHOOSING AN ORACLE.** Unit
   #31, second dispatch, and it is the entry below it -- "the gate reads a
