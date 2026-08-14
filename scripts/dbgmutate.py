@@ -59,8 +59,13 @@ import dbgcheck  # noqa: E402
 NOCOMPILE_LIMIT = 0.25
 
 
-def dexec(script: str, timeout: float | None = None) -> int:
+def dexec(script: str, timeout: float | None = None, out_path: Path | None = None) -> int:
     try:
+        if out_path is not None:
+            with open(out_path, "wb") as fh:
+                return subprocess.run(["docker", "exec", CONTAINER, "bash", "-lc", script],
+                                      stdout=fh, stderr=subprocess.DEVNULL,
+                                      timeout=timeout).returncode
         return subprocess.run(["docker", "exec", CONTAINER, "bash", "-lc", script],
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                               timeout=timeout).returncode
@@ -77,20 +82,48 @@ def build(cpp_rel: str) -> bool:
                  f"cp libdiscon.so {WORKDIR}/rosco/lib/libdiscon.so") == 0
 
 
-def run_and_compare(scenarios: list[int], ref: Path, timeout: float) -> tuple[str, dict]:
+def run_and_compare(scenarios: list[int], ref: Path, timeout: float,
+                    outdir: Path | None = None) -> tuple[str, dict]:
     """('ok'|'hang'|'norun', report). 'ok' means every scenario ran; the report
-    then says whether the bytes matched."""
+    then says whether the bytes matched.
+
+    Four streams, not three: `stdout.<N>.txt` in the reference archive is the
+    unit's own `WRITE(*,100)` status record as the driver's fd 1 saw it. It is
+    compared here for the same reason the files are -- nine of this unit's
+    mutants change that line and nothing else.
+    """
     for p in dbgcheck.DBGDIR.glob("*.RO.dbg*"):
         p.unlink()
     for s in scenarios:
-        rc = dexec(f"cd {WORKDIR}/Examples && python3 vit_sim.py --scenario {s}", timeout)
+        rc = dexec(f"cd {WORKDIR}/Examples && python3 vit_sim.py --scenario {s}", timeout,
+                   out_path=(outdir / f"stdout.{s}.txt") if outdir else None)
         if rc == 124:
             return "hang", {}
         if rc != 0:
             return "norun", {"scenario": s, "rc": rc}
 
     rep = {"records_compared": 0, "records_mismatched": 0, "files_compared": 0,
-           "missing": [], "extra": []}
+           "missing": [], "extra": [],
+           "stdout_scenarios_compared": 0, "stdout_records_compared": 0,
+           "stdout_records_mismatched": 0, "stdout_missing": []}
+    if outdir is not None:
+        for s in scenarios:
+            rp, cp = ref / f"stdout.{s}.txt", outdir / f"stdout.{s}.txt"
+            if not rp.is_file():
+                rep["stdout_missing"].append(rp.name)
+                continue
+            ra = rp.read_bytes().split(b"\n")
+            rb = cp.read_bytes().split(b"\n") if cp.is_file() else []
+            rep["stdout_scenarios_compared"] += 1
+            for i in range(max(len(ra), len(rb))):
+                la = ra[i] if i < len(ra) else None
+                lb = rb[i] if i < len(rb) else None
+                if la is None or lb is None:
+                    rep["stdout_records_mismatched"] += 1
+                    continue
+                rep["stdout_records_compared"] += 1
+                if la != lb:
+                    rep["stdout_records_mismatched"] += 1
     produced = {p.name: p for p in dbgcheck.DBGDIR.glob("*.RO.dbg*")}
     for rp in sorted(ref.glob("*.RO.dbg*")):
         cp = produced.pop(rp.name, None)
@@ -170,6 +203,7 @@ def main() -> int:
     # A subset reference: only the files the chosen scenarios write.
     import tempfile, shutil
     subset = Path(tempfile.mkdtemp(prefix="dbgmut_ref_"))
+    live = Path(tempfile.mkdtemp(prefix="dbgmut_out_"))
     try:
         # Establish the baseline FIRST, and take the reference file list from
         # what the unmutated build actually writes. A reference file the sweep
@@ -189,12 +223,27 @@ def main() -> int:
                 print(f"reference archive has no {n} -- refusing", file=sys.stderr)
                 return 2
             shutil.copy2(ref / n, subset / n)
-        outcome, base = run_and_compare(scenarios, subset, args.case_timeout)
-        if outcome != "ok" or base["records_mismatched"] != 0:
+        # The stdout stream, one file per scenario. A reference archive taken
+        # before that stream was recorded has none, and REFUSING is the point:
+        # a sweep that silently scored nine stdout-only mutants against nothing
+        # is the shape this instrument exists to prevent.
+        for s in scenarios:
+            sp = ref / f"stdout.{s}.txt"
+            if not sp.is_file():
+                print(f"reference archive has no stdout.{s}.txt -- refusing "
+                      f"(re-capture it with dbgcheck.py on a CLEAN tree)", file=sys.stderr)
+                return 2
+            shutil.copy2(sp, subset / sp.name)
+        outcome, base = run_and_compare(scenarios, subset, args.case_timeout, live)
+        if (outcome != "ok" or base["records_mismatched"] != 0
+                or base["stdout_records_mismatched"] != 0
+                or base["missing"] or base["extra"] or base["stdout_missing"]):
             print(f"BASELINE IS NOT GREEN ({outcome}, {base}) -- refusing", file=sys.stderr)
             return 2
         print(f"baseline green: {base['files_compared']} file(s), "
-              f"{base['records_compared']} records, 0 mismatched")
+              f"{base['records_compared']} records, 0 mismatched; "
+              f"stdout {base['stdout_scenarios_compared']} scenario(s), "
+              f"{base['stdout_records_compared']} records, 0 mismatched")
 
         results = []
         t0 = time.time()
@@ -203,26 +252,33 @@ def main() -> int:
             if not build(args.cpp):
                 outcome, rep, killed = "nocompile", {}, True
             else:
-                outcome, rep = run_and_compare(scenarios, subset, args.case_timeout)
+                outcome, rep = run_and_compare(scenarios, subset, args.case_timeout, live)
                 if outcome == "hang":
                     killed = True
                 elif outcome == "norun":
                     killed = True          # the mutant crashed the controller
                 else:
                     killed = (rep["records_mismatched"] > 0
+                              or rep["stdout_records_mismatched"] > 0
                               or bool(rep["missing"]) or bool(rep["extra"]))
             results.append({"mid": m.mid, "operator": m.operator, "line": m.line,
                             "before": m.before, "after": m.after,
                             "outcome": outcome, "killed": killed,
-                            "records_mismatched": rep.get("records_mismatched", 0)})
+                            "records_mismatched": rep.get("records_mismatched", 0),
+                            "stdout_records_mismatched": rep.get(
+                                "stdout_records_mismatched", 0),
+                            "files_missing": rep.get("missing", []),
+                            "files_extra": rep.get("extra", [])})
             print(f"  [{i}/{len(ms)}] {m.operator} {m.mid} "
                   f"{'KILLED' if killed else 'SURVIVED'} ({outcome}, "
-                  f"{rep.get('records_mismatched', 0)} records) "
+                  f"{rep.get('records_mismatched', 0)} records, "
+                  f"{rep.get('stdout_records_mismatched', 0)} stdout) "
                   f"{time.time() - t0:.0f}s", flush=True)
     finally:
         cpp.write_text(original)
         build(args.cpp)
         shutil.rmtree(subset, ignore_errors=True)
+        shutil.rmtree(live, ignore_errors=True)
 
     art = summarise(args, results, all_counts, base, equivalent, scenarios)
     out = ROOT / args.out
@@ -275,8 +331,10 @@ def summarise(args, results, all_counts, base, equivalent, scenarios) -> dict:
         "scenarios": scenarios,
         "reference_archive": args.reference,
         "compared_against": "fortran_reference_dbg_archive",
-        "oracle": ("byte identity of *.RO.dbg against the committed `pre` "
-                   "archive, produced by a build whose Debug was Fortran"),
+        "oracle": ("byte identity of *.RO.dbg AND of the driver's stdout, per "
+                   "scenario, against a committed archive produced by a build "
+                   "whose Debug was Fortran"),
+        "streams_compared": ["RO.dbg", "RO.dbg2", "RO.dbg3", "stdout"],
         "baseline": base,
         "survivors": survivors,
         "results": results,

@@ -1978,6 +1978,294 @@ def run_scenario_28(turbine, controller, cp_filename, output_dir=None):
 
 
 # ---------------------------------------------------------------------------
+# Scenarios 29-34: the mutation corpus for `Debug`.
+#
+# ADDED at unit #31's second dispatch, BY ADDITION and outside `scenario_order`
+# (X3, P5): `--scenario 0`, the gate's 27 scenarios and every committed baseline
+# behave exactly as before. Each writes its own RootName.
+#
+# WHY THESE SIX AND NOT MORE SCENARIOS OF THE SAME KIND. The first dispatch
+# scored 121 of 178 mutants against the corpus {27, 28} and named all 57
+# survivors. They are not a scatter: every one is a shape, and each shape names
+# the single input quantity that would expose it. These six supply exactly those
+# quantities, one per scenario, and nothing else:
+#
+#   29  LoggingLevel = 0       no .RO.dbg at all -- the OPEN guard and the CLOSE
+#                              guard have no other input that makes them false
+#   30  LoggingLevel = 2       the `> 2` guard's boundary; 1 and 3 both miss it
+#   31  CC_Mode = StC_Mode = 0 with the group arrays still declared, so
+#                              `CC_Mode > 0` differs from `>= 0`; and a RootName
+#                              carrying TRAILING BLANKS, which no other input in
+#                              this tree has, so TRIM's loop body executes
+#   32  CC_Group_N = StC_Group_N = 2   `Ind - 1` and `1 - Ind` agree at extent 1
+#   33  scenario 7's synthetic drive at LoggingLevel = 3 -- NacIMU_FA_AccF,
+#                              FA_AccF, Fl_PitCom and NacVaneOffset are all zero
+#                              in 27 and 28, which is why four index shifts into
+#                              their columns moved nothing
+#   34  two initialisations in one process at LoggingLevel = 3 -- avrIndices is
+#                              a SAVE allocatable and its deallocate arm is
+#                              reached only by a second Init
+#
+# They are deliberately SHORT. A mutant costs a rebuild plus every scenario in
+# the corpus, so a 400-second sim would price the corpus out; what each of these
+# has to do is reach an arm, not accumulate a long history.
+# ---------------------------------------------------------------------------
+
+# Scenario 3's patch set, which is the base for 29-32 and 34: it is the only one
+# that already sets CC_Mode and StC_Mode, without which the dbg3 path's two
+# AddToList loops are unreachable at any LoggingLevel.
+_DEBUG_BASE_PATCHES = {
+    'F_NumNotchFilts': 1,
+    'F_NotchFreqs': '1.0000',
+    'F_NotchBetaNum': '0.0000',
+    'F_NotchBetaDen': '0.2500',
+    'F_GenSpdNotch_N': 1,
+    'F_GenSpdNotch_Ind': '1',
+    'CC_Mode': 1,
+    'CC_Group_N': 1,
+    'CC_GroupIndex': '2601',
+    'TD_Mode': 1,
+    'Fl_Mode': 1,
+    'Y_ControlMode': 1,
+    'StC_Mode': 1,
+    'StC_Group_N': 1,
+    'StC_GroupIndex': '2801',
+    'Flp_Mode': 1,
+    'F_FlpCornerFreq': '1.0 0.7',
+    'F_FlCornerFreq': '1.0 0.7',
+}
+
+
+def _debug_scenario(turbine, controller, cp_filename, output_dir,
+                    number, discon_name, sim_name, patches, tlen=40.0):
+    """One short step-wind sim under a named DISCON patch set."""
+    param_filename = os.path.join(this_dir, discon_name)
+    merged = dict(_DEBUG_BASE_PATCHES)
+    merged.update(patches)
+    write_discon(turbine, controller, cp_filename, param_filename, patches=merged)
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name=sim_name
+    )
+    sim = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False,
+                      extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim), number, output_dir)
+
+
+def run_scenario_29(turbine, controller, cp_filename, output_dir=None):
+    """LoggingLevel = 0: the unit runs and writes no file at all."""
+    print("=" * 60)
+    print("Scenario 29: LoggingLevel=0 (Debug opens nothing)")
+    print("=" * 60)
+    _debug_scenario(turbine, controller, cp_filename, output_dir, 29,
+                    'DISCON_loglevel0.IN', 'vit_sim29', {'LoggingLevel': 0})
+    print("Scenario 29: PASSED (LoggingLevel=0)")
+
+
+def run_scenario_30(turbine, controller, cp_filename, output_dir=None):
+    """LoggingLevel = 2: .RO.dbg and .RO.dbg2, and NOT .RO.dbg3."""
+    print("=" * 60)
+    print("Scenario 30: LoggingLevel=2 (dbg + dbg2, no dbg3)")
+    print("=" * 60)
+    _debug_scenario(turbine, controller, cp_filename, output_dir, 30,
+                    'DISCON_loglevel2.IN', 'vit_sim30', {'LoggingLevel': 2})
+    print("Scenario 30: PASSED (LoggingLevel=2)")
+
+
+def run_scenario_31(turbine, controller, cp_filename, output_dir=None):
+    """LoggingLevel = 3 with both control modes OFF and their group arrays
+    still declared -- and a RootName that carries trailing blanks.
+
+    THE ROOT NAME IS THE POINT AS MUCH AS THE MODES. `avcOUTNAME` is a
+    CHARACTER(size_avcOUTNAME) buffer and the unit takes TRIM(RootName); every
+    other input in this tree passes a name with no trailing blank, so the trim
+    loop's body has never executed. Two trailing blanks make it execute twice
+    and the file name is unchanged, which is what makes it safe to add."""
+    print("=" * 60)
+    print("Scenario 31: CC_Mode=StC_Mode=0 at LoggingLevel=3, padded RootName")
+    print("=" * 60)
+    _debug_scenario(turbine, controller, cp_filename, output_dir, 31,
+                    'DISCON_ccoff.IN', 'vit_sim31  ',
+                    {'LoggingLevel': 3, 'CC_Mode': 0, 'StC_Mode': 0})
+    print("Scenario 31: PASSED (modes off, padded RootName)")
+
+
+def run_scenario_32(turbine, controller, cp_filename, output_dir=None):
+    """LoggingLevel = 3 with TWO cable and TWO structural control groups."""
+    print("=" * 60)
+    print("Scenario 32: CC_Group_N=StC_Group_N=2 at LoggingLevel=3")
+    print("=" * 60)
+    _debug_scenario(turbine, controller, cp_filename, output_dir, 32,
+                    'DISCON_group2.IN', 'vit_sim32',
+                    {'LoggingLevel': 3,
+                     'CC_Group_N': 2, 'CC_GroupIndex': '2601 2603',
+                     'StC_Group_N': 2, 'StC_GroupIndex': '2801 2802'})
+    print("Scenario 32: PASSED (two groups each)")
+
+
+def run_scenario_33(turbine, controller, cp_filename, output_dir=None):
+    """Scenario 7's synthetic drive at LoggingLevel = 3.
+
+    Scenario 7 injects an oscillating nacelle IMU acceleration, tower fore-aft
+    acceleration, vane angle and blade root moments, so NacIMU_FA_AccF, FA_AccF,
+    Fl_PitCom and NacVaneOffset are non-zero. In 27 and 28 they are all zero,
+    and a mutant that writes one debug channel into the next one's column
+    therefore moved nothing."""
+    print("=" * 60)
+    print("Scenario 33: synthetic drive at LoggingLevel=3")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_synth3.IN')
+    patches = dict(_DEBUG_BASE_PATCHES)
+    patches.update({'LoggingLevel': 3, 'IPC_ControlMode': 0, 'AWC_Mode': 0})
+    write_discon(turbine, controller, cp_filename, param_filename, patches=patches)
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim33'
+    )
+
+    dt = 0.025
+    tlen = 100
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i_ws in range(len(t)):
+        ws[i_ws] = ws[i_ws] + t[i_ws] // 100
+
+    deg2rad = np.pi / 180.0
+    R = turbine.rotor_radius
+    GBRatio = turbine.Ng
+    rpm2RadSec = 2.0 * np.pi / 60.0
+
+    bld_pitch = np.zeros_like(t)
+    rot_speed = np.ones_like(t) * 4.0 * rpm2RadSec
+    gen_speed = rot_speed * GBRatio
+    gen_torque = np.zeros_like(t)
+    gen_power = np.zeros_like(t)
+    nac_yaw = np.zeros_like(t)
+    nac_yawrate = np.zeros_like(t)
+    extra = {name: np.zeros_like(t) for name in EXTRA_AVRSWAP}
+
+    for i, ti in enumerate(t):
+        if i == 0:
+            continue
+
+        ws_i = ws[i]
+        tsr = rot_speed[i-1] * R / ws_i
+        cp = turbine.Cp.interp_surface(bld_pitch[i-1], tsr)
+        aero_torque = 0.5 * turbine.rho * (np.pi * R**3) * (cp / tsr) * ws_i**2
+        rot_speed[i] = rot_speed[i-1] + (dt / turbine.J) * (
+            aero_torque - GBRatio * gen_torque[i-1] / (turbine.GBoxEff / 100)
+        )
+        gen_speed[i] = rot_speed[i] * GBRatio
+
+        nac_vane_rad = 20.0 * np.sin(2 * np.pi * ti / 50.0) * deg2rad
+        nac_heading_rad = 350.0 * deg2rad
+        azimuth_rad = (rot_speed[i] * ti) % (2 * np.pi)
+        fa_acc_tt = 0.5 * np.sin(2 * np.pi * ti / 3.0)
+        nac_imu_fa_racc = 0.3 * np.sin(2 * np.pi * ti / 3.0)
+        if rot_speed[i] > 0.1:
+            t_rotor = 2 * np.pi / rot_speed[i]
+        else:
+            t_rotor = 100.0
+        rootMOOP = [
+            1000.0 * np.sin(2 * np.pi * ti / t_rotor + k * 2 * np.pi / 3)
+            for k in range(3)
+        ]
+
+        turbine_state = {}
+        turbine_state['iStatus'] = 1 if i < len(t) - 1 else -1
+        turbine_state['t'] = ti
+        turbine_state['dt'] = dt
+        turbine_state['ws'] = ws_i
+        turbine_state['bld_pitch'] = bld_pitch[i-1]
+        turbine_state['gen_torque'] = gen_torque[i-1]
+        turbine_state['gen_speed'] = gen_speed[i]
+        turbine_state['gen_eff'] = turbine.GenEff / 100
+        turbine_state['rot_speed'] = rot_speed[i]
+        turbine_state['Yaw_fromNorth'] = nac_yaw[i-1]
+        turbine_state['Y_MeasErr'] = nac_vane_rad
+        turbine_state['FA_Acc_TT'] = fa_acc_tt
+        turbine_state['NacIMU_FA_RAcc'] = nac_imu_fa_racc
+
+        controller_int.avrSWAP[23] = nac_vane_rad
+        controller_int.avrSWAP[36] = nac_heading_rad
+        controller_int.avrSWAP[59] = azimuth_rad
+        controller_int.avrSWAP[29] = rootMOOP[0]
+        controller_int.avrSWAP[30] = rootMOOP[1]
+        controller_int.avrSWAP[31] = rootMOOP[2]
+
+        gen_torque[i], bld_pitch[i], nac_yawrate[i] = controller_int.call_controller(turbine_state)
+        gen_power[i] = gen_speed[i] * gen_torque[i] * turbine.GenEff / 100
+        nac_yaw[i] = nac_yaw[i-1] + nac_yawrate[i] * dt
+        for name, idx in EXTRA_AVRSWAP.items():
+            extra[name][i] = controller_int.avrSWAP[idx]
+
+    controller_int.kill_discon()
+    result = {
+        'gen_torque': gen_torque, 'bld_pitch': bld_pitch,
+        'gen_speed': gen_speed, 'gen_power': gen_power,
+        'nac_yaw': nac_yaw,
+    }
+    result.update(extra)
+    save_and_print_results(result, 33, output_dir)
+    print("Scenario 33: PASSED (synthetic drive, LoggingLevel=3)")
+
+
+def run_scenario_34(turbine, controller, cp_filename, output_dir=None):
+    """TWO initialisations in one process, at LoggingLevel = 3.
+
+    `avrIndices` is a SAVE allocatable and its `IF (ALLOCATED(...)) DEALLOCATE`
+    arm needs an Init that finds it already allocated. Two things stand in the
+    way and this scenario is what MEASURES which one wins, rather than arguing
+    it:
+
+      * a second Init inside ONE library load is refused before Debug is
+        reached -- ReadAvrSWAP sets aviFAIL = -1 and 'This ROSCO dynamic
+        library has already been loaded'
+      * so the second interface is created only after the first has been shut
+        down, which is what scenario 1 does (it writes vit_sim1b.RO.dbg), and
+        `kill_discon` dlcloses the library
+
+    If the dlclose really unloads, every SAVE datum is reset and the deallocate
+    arm is unreachable in the shipped program; if it does not, this scenario
+    reaches it. Either answer is worth one short sim."""
+    print("=" * 60)
+    print("Scenario 34: two initialisations at LoggingLevel=3")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_twoinit.IN')
+    patches = dict(_DEBUG_BASE_PATCHES)
+    patches.update({'LoggingLevel': 3})
+    write_discon(turbine, controller, cp_filename, param_filename, patches=patches)
+
+    dt = 0.025
+    tlen = 10
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+
+    for tag in ('a', 'b'):
+        controller_int = ROSCO_ci.ControllerInterface(
+            lib_name, param_filename=param_filename, sim_name='vit_sim34' + tag
+        )
+        sim = ROSCO_sim.Sim(turbine, controller_int)
+        sim.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False,
+                          extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim), 34, output_dir)
+    print("Scenario 34: PASSED (two initialisations)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
@@ -2009,8 +2297,11 @@ def main():
         22: run_scenario_22, 23: run_scenario_23, 24: run_scenario_24,
         25: run_scenario_25, 26: run_scenario_26, 27: run_scenario_27,
         # NOT in scenario_order: reachable only as `--scenario 28`, so
-        # `--scenario 0` and every gate run behave exactly as before.
+        # `--scenario 0` and every gate run behave exactly as before. Same for
+        # 29-34, the mutation corpus added at unit #31's second dispatch.
         28: run_scenario_28,
+        29: run_scenario_29, 30: run_scenario_30, 31: run_scenario_31,
+        32: run_scenario_32, 33: run_scenario_33, 34: run_scenario_34,
     }
 
     if args.benchmark > 0:

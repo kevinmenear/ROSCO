@@ -67,7 +67,25 @@ GENERATED_ON = re.compile(
     rb" using ROSCO-\d+\.\d+\.\d+$")
 
 
-def dexec(script: str, quiet: bool = True) -> int:
+def dexec(script: str, quiet: bool = True, out_path: Path | None = None) -> int:
+    """Run in the container. With `out_path`, the run's STDOUT is written there.
+
+    THE UNIT WRITES TO FOUR STREAMS AND THIS ARCHIVED THREE. `WRITE(*,100)` --
+    the ten-second status line -- goes to unit 6, and nothing in this campaign
+    read it: the gate compares avrSWAP channels and this script compared
+    `*.RO.dbg*`. Seven of the unit's 57 mutation survivors sit on that line.
+
+    It is comparable, and the first comparison found a real difference (C12,
+    evidence/Debug/stdout.DEFECT-unflushed-status-record.*): libgfortran emits a
+    preconnected unit's record whole, while a fully-buffered `stdout` split one
+    record mid-field and delivered eighteen more after the driver's own output.
+    The stream is deterministic -- three runs byte-identical -- so it is
+    compared as bytes and not as a filtered projection.
+    """
+    if out_path is not None:
+        with open(out_path, "wb") as fh:
+            return subprocess.run(["docker", "exec", CONTAINER, "bash", "-lc", script],
+                                  stdout=fh, stderr=subprocess.DEVNULL).returncode
     kw = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL} if quiet else {}
     return subprocess.run(["docker", "exec", CONTAINER, "bash", "-lc", script], **kw).returncode
 
@@ -123,7 +141,8 @@ def capture(label: str, run: bool, scenarios: list[int]) -> int:
             p.unlink()
         for s in scenarios:
             t0 = time.time()
-            rc = dexec(f"cd {WORKDIR}/Examples && python3 vit_sim.py --scenario {s}")
+            rc = dexec(f"cd {WORKDIR}/Examples && python3 vit_sim.py --scenario {s}",
+                       out_path=dest / f"stdout.{s}.txt")
             print(f"  scenario {s}: rc={rc} {time.time() - t0:.0f}s", flush=True)
             if rc != 0:
                 failed.append(s)
@@ -132,6 +151,7 @@ def capture(label: str, run: bool, scenarios: list[int]) -> int:
     for p in files:
         shutil.copy2(p, dest / p.name)
 
+    outs = sorted(dest.glob("stdout.*.txt"))
     meta = {
         "label": label,
         "ran_scenarios": scenarios if run else [],
@@ -139,6 +159,12 @@ def capture(label: str, run: bool, scenarios: list[int]) -> int:
         "files": {p.name: {"bytes": p.stat().st_size,
                            "md5": hashlib.md5(p.read_bytes()).hexdigest()}
                   for p in files},
+        # ADDED, not substituted: an archive taken before the stdout stream was
+        # archived has no `stdout` key at all, and compare() then reports zero
+        # stdout records compared rather than silently passing.
+        "stdout": {p.name: {"bytes": p.stat().st_size,
+                            "md5": hashlib.md5(p.read_bytes()).hexdigest()}
+                   for p in outs},
         **instrument_revs(),
     }
     (dest / "_manifest.json").write_text(json.dumps(meta, indent=2, sort_keys=True))
@@ -238,9 +264,42 @@ def compare(a_label: str, b_label: str, out: Path | None) -> int:
         if bad:
             rep["files_mismatched"] += 1
 
+    # The fourth stream. Compared as whole bytes, per scenario, and only for
+    # the scenarios BOTH archives recorded -- an archive taken before this
+    # existed contributes 0 and says so in `stdout_scenarios_compared`.
+    outs_a = {p.name for p in A.glob("stdout.*.txt")}
+    outs_b = {p.name for p in B.glob("stdout.*.txt")}
+    rep["stdout_only_in_a"] = sorted(outs_a - outs_b)
+    rep["stdout_only_in_b"] = sorted(outs_b - outs_a)
+    rep["stdout_scenarios_compared"] = 0
+    rep["stdout_bytes_compared"] = 0
+    rep["stdout_records_compared"] = 0
+    rep["stdout_records_mismatched"] = 0
+    for name in sorted(outs_a & outs_b):
+        ra = (A / name).read_bytes().split(b"\n")
+        rb = (B / name).read_bytes().split(b"\n")
+        rep["stdout_scenarios_compared"] += 1
+        for i in range(max(len(ra), len(rb))):
+            la = ra[i] if i < len(ra) else None
+            lb = rb[i] if i < len(rb) else None
+            if la is None or lb is None:
+                rep["stdout_records_mismatched"] += 1
+                continue
+            rep["stdout_records_compared"] += 1
+            rep["stdout_bytes_compared"] += len(la)
+            if la != lb:
+                rep["stdout_records_mismatched"] += 1
+                if len(rep["mismatches"]) < 40:
+                    rep["mismatches"].append(
+                        {"file": name, "record": i + 1, "stream": "stdout",
+                         "a": la[:120].decode("latin-1"), "b": lb[:120].decode("latin-1")})
+
     rep["verdict"] = ("IDENTICAL" if (rep["records_mismatched"] == 0
                                       and not rep["only_in_a"] and not rep["only_in_b"]
-                                      and rep["records_compared"] > 0)
+                                      and rep["records_compared"] > 0
+                                      and rep["stdout_records_mismatched"] == 0
+                                      and not rep["stdout_only_in_a"]
+                                      and not rep["stdout_only_in_b"])
                       else "MISMATCH")
     text = json.dumps(rep, indent=2, sort_keys=True)
     if out:
@@ -251,6 +310,10 @@ def compare(a_label: str, b_label: str, out: Path | None) -> int:
     print(f"\n{rep['verdict']}: {rep['files_compared']} file(s), "
           f"{rep['records_compared']} records, {rep['bytes_compared']} bytes, "
           f"{rep['records_mismatched']} mismatched")
+    print(f"  stdout: {rep['stdout_scenarios_compared']} scenario(s), "
+          f"{rep['stdout_records_compared']} records, "
+          f"{rep['stdout_bytes_compared']} bytes, "
+          f"{rep['stdout_records_mismatched']} mismatched")
     if rep["records_compared"] == 0:
         print("compared NOTHING -- refusing", file=sys.stderr)
         return 2
