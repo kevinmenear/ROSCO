@@ -428,6 +428,30 @@ translations:
   PIIController:
     status: integrated
     cpp_file: translations/Controllers/piicontroller.cpp
+  # `vit verify` also wrote, here, `red_test: demonstrated` with the detail
+  # `the kernel failed to build with the return value scaled by 1.00001`. BOTH
+  # LINES ARE REMOVED and the removal is the point, for ExtController's reason
+  # one instrument over: it is a claim about this kernel's discriminating power
+  # made by a run that never got a perturbed kernel to execute.
+  #
+  # `vit/redtest.py` rewrites EVERY `return <expr>;` in the file, not only the
+  # translated function's, and this unit's `errmsg_trim` helper returns a
+  # `std::string` -- so `return (std::string(...)) * 1.00001;` does not compile.
+  # `cli.py:_run_red_test` treats a build failure as "a red of the crudest kind,
+  # and an honest one" and RETURNS ON THE FIRST perturbation, so the two
+  # value-level perturbations were never tried. The same shape would fire on
+  # `interp1d.cpp` and `sigma.cpp`, which carry the same helper.
+  #
+  # What this kernel can and cannot see was measured instead, by hand, against
+  # the committed kernel: evidence/PitchSaturation/. Seven stubs, of which THREE
+  # can fail.
+  PitchSaturation:
+    status: verified
+    cases_passed: 62
+    cases_total: 62
+    cases_skipped: 0
+    cpp_file: translations/ControllerBlocks/pitchsaturation.cpp
+    kernel_dir: kernel/PitchSaturation
 types:
   ControlParameters:
     strategy: view

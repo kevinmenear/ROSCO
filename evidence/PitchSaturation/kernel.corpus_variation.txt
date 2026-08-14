@@ -1,0 +1,32 @@
+PitchSaturation -- what the 62 captured cases actually contain.
+Read from evidence/PitchSaturation/kernel.verify_fields.csv, the field log
+`vit verify` wrote on the shipped translation.
+
+cases 62   field rows 16306   status {'IDENTICAL': 16306}
+distinct fields 250; 62 of them take
+more than one value across the 62 cases -- so 188 of the 250 fields are
+constant state the unit never touches, and a stub writing nothing matches them.
+
+THE FIVE QUANTITIES THIS UNIT READS OR WRITES, as the REFERENCE recorded them:
+
+  field             rows  distinct                      min                    max
+  we_vw_f             62        61        8.952249037320811       11.9246824373331
+  ps_min_pitch        62        41                        0    0.06543181916776382
+  prc_min_pitch       62         1                        0                      0
+  avifail             62         1                        0                      0
+  pc_minpit          124        42                        0    0.06543181916776382
+
+TWO OF THE FIVE ARE CONSTANT, and each is a thing the kernel cannot see:
+
+  prc_min_pitch is 0.0 in every case, so `max(PS_Min_Pitch, PRC_Min_Pitch)`
+  takes its FIRST operand in all 62 -- the max itself is invisible.
+
+  avifail is 0 in every case, so the `IF (ErrVar%aviFAIL < 0)` tail never
+  runs. coverage/line_coverage.json says the same about the simulation:
+  ControllerBlocks.f90:543 is 0 hits in all 27 scenarios against 391,977
+  on the three statements around it.
+
+WHAT IT CAN SEE: we_vw_f moves over 61 distinct values in [8.952, 11.925]
+m/s and ps_min_pitch answers with 41 distinct values in [0, 0.06543] -- so
+both the lower clamp of interp1d and its interior interpolation are
+exercised, and the returned pc_minpit takes 42 distinct values.
