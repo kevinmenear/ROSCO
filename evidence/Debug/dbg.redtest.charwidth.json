@@ -1,0 +1,186 @@
+{
+  "a": "pre",
+  "b": "charwidth",
+  "bytes_compared": 273377424,
+  "campaign_rev": "479b98c-dirty",
+  "files_compared": 24,
+  "files_mismatched": 24,
+  "header_records_compared": 24,
+  "loop_rev": "45a692b",
+  "mismatches": [
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim1.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim11.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim12.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim15.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim16.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim17.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim18.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim19.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim1b.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim2.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim20.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim21.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim22.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim23.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim25.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim26.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim27.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim3.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim4.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim5.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim6.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim7.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim8.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    },
+    {
+      "a": "       Time          WE_Cp              ",
+      "b": "       Time         WE_Cp               ",
+      "file": "vit_sim9.RO.dbg",
+      "first_diff_byte": 29,
+      "record": 2
+    }
+  ],
+  "only_in_a": [],
+  "only_in_b": [],
+  "records_compared": 408072,
+  "records_mismatched": 24,
+  "verdict": "MISMATCH",
+  "vit_rev": "f4a711d"
+}

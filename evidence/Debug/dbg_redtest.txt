@@ -1,0 +1,53 @@
+Red tests for scripts/dbgcheck.py on unit Debug (X4), run 2026-08-14.
+
+Every run perturbs the SHIPPED translation (rosco/controller/src/debug.cpp),
+rebuilds, installs, runs the SAME 27 scenarios the green ran, and compares the
+resulting archive against `pre` -- the reference taken with Debug still Fortran.
+So each red number is over the same 24 files / 408,072 records / 273,377,424
+bytes the green is, which is unit #26's requirement: a red test certifies a
+green only if the two name the same compared count.
+
+  perturbation                                    records moved   artifact
+  ---------------------------------------------   -------------   -------------------------
+  CHARACTER(15) -> (16) on the heading literals             24    dbg.redtest.charwidth.json
+  ES20.5E2 -> ES20.5E3 on the DebugOutData write       407,976    dbg.redtest.esexp.json
+  the `< 1E-99 -> 0` clamp deleted                      21,792    dbg.redtest.clamplo.json
+  the `> 1E+99 -> 1E+99` clamp deleted                       0    dbg.redtest.clamphi.json
+  ES20.5E2 -> E3 on the LocalVarOutData write                0    dbg.redtest.dbg2blind.json
+
+THE THREE NON-ZEROS PARTITION THE FILE EXACTLY, which is what makes them a
+measurement rather than three numbers that happen to be non-zero.
+
+  24        = one heading record per file, and the heading is the only record
+              carrying a truncated literal.
+  407,976   = 408,072 - 96, and 96 is 4 records per file that hold no
+              ES-formatted number: the 'Generated on' record, the two heading
+              records, and the empty trailing record every text file ends with.
+  21,792    = the records holding at least one DebugOutData value whose
+              magnitude is below 1E-99. That is 5.3% of the file and it is a
+              live arm.
+
+TWO ZEROS, AND THEY ARE BLINDNESS RATHER THAN BREAKAGE -- the control is on the
+SAME BUILD and the same sweep, since the three rows above moved 24, 407,976 and
+21,792 through the identical mechanism.
+
+  THE UPPER CLAMP IS DEAD. No DebugOutData value in any of the 27 scenarios
+  exceeds 1E+99, so `IF (ABS(x) > 1E+99) x = 1E+99` never fires. Its sibling one
+  line up fires on 21,792 records. This is the shape unit #28 recorded for
+  wrap_360: one live arm and one dead one, in a pair, where the per-unit number
+  reports only the live one.
+
+  THE ENTIRE .RO.dbg2 AND .RO.dbg3 PATHS ARE DEAD, and the cause is one line of
+  configuration rather than an unreached branch. All 14 Examples/DISCON*.IN set
+  `LoggingLevel = 1`, so `IF (CntrPar%LoggingLevel > 1)` and `> 2` are REACHED
+  in every scenario and FALSE in every scenario. Committed coverage says the
+  same thing from the other side: ROSCO_IO.f90:1108 and :1116 (the guards) have
+  hits in 23 scenarios; :1109, :1118, :1183 and :1187 (the bodies) have none.
+  What is invisible is a third of the unit -- the 159 LocalVarOutData
+  assignments and their clamps, the 159-name heading table, the avrIndices
+  construction with its two AddToList loops, and the vector-subscripted
+  avrSWAP(avrIndices) write.
+
+  Both are configuration facts about the shipped inputs, not defects in the
+  harness (unit #27's distinction). Neither is repairable without changing what
+  the 27 scenarios feed the controller, which moves every baseline (X3).
