@@ -19,7 +19,7 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "1386430",
+ "loop_rev": "f55b26f",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
