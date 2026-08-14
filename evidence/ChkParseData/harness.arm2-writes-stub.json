@@ -31,7 +31,7 @@
  "loop_rev": "a1d76b0-nogit",
  "vit_rev": "f4a711d-nogit",
  "red_test": {
-  "perturbation": "arm2-writes: the silent Words(2)-matches path made to write aviFAIL = -7",
+  "perturbation": "arm2-writes",
   "result": "2 of 1284 case(s) failed",
   "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
  }

@@ -4,8 +4,11 @@
   "arith_op",
   "compare_op",
   "const_tweak",
+  "drop_call",
   "index_offset",
   "negate_cond",
+  "swap_call_args",
+  "swap_callee",
   "swap_operands"
  ],
  "operators_offered": [
@@ -23,81 +26,27 @@
   "swap_operands"
  ],
  "compared_against": "fortran_reference_on_a_clean_tree",
- "mutants": 41,
- "equivalent_declared": 0,
- "nocompile": 2,
+ "mutants": 31,
+ "equivalent_declared": 4,
+ "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
- "nocompile_ratio": 0.0465,
+ "nocompile_ratio": 0.0,
  "nocompile_refused": false,
- "total": 43,
- "killed": 25,
- "survived": 16,
- "equivalent": 0,
+ "total": 31,
+ "killed": 23,
+ "survived": 4,
+ "equivalent": 4,
  "declared_but_killed": [],
- "score": 0.6098,
+ "score": 0.8519,
  "loop_rev": "a1d76b0-nogit",
  "vit_rev": "f4a711d-nogit",
  "survivors": [
-  {
-   "id": "e4b199bd",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
   {
    "id": "7891029b",
    "operator": "compare_op",
    "before": ">",
    "after": ">="
-  },
-  {
-   "id": "13476c20",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "30dc40fa",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "89c99ee2",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "c4d51ef5",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "21aa3a51",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "7b3ecc9f",
-   "operator": "index_offset",
-   "before": "[Int2LStrLen]",
-   "after": "[Int2LStrLen + 1]"
-  },
-  {
-   "id": "3452e325",
-   "operator": "index_offset",
-   "before": "[UCVarNameLen]",
-   "after": "[UCVarNameLen + 1]"
-  },
-  {
-   "id": "4dd65c7d",
-   "operator": "index_offset",
-   "before": "[UCVarNameLen]",
-   "after": "[UCVarNameLen + 1]"
   },
   {
    "id": "6b46c3dc",
@@ -112,28 +61,10 @@
    "after": "12"
   },
   {
-   "id": "4fea754a",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "2502e274",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "26d9b441",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "624c7a22",
-   "operator": "negate_cond",
-   "before": "if (ErrVar->n_ErrMsg_cap > static_cast<int32_t>(s.size()))",
-   "after": "if (!(ErrVar->n_ErrMsg_cap > static_cast<int32_t>(s.size())))"
+   "id": "d1fc8fa6",
+   "operator": "drop_call",
+   "before": "std::min(len_src, len_dst)",
+   "after": "len_src"
   }
  ]
 }

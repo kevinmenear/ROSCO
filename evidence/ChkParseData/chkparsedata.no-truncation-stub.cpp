@@ -11,6 +11,7 @@
 
 #include "vit_types.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -42,19 +43,35 @@ constexpr int Int2LStrLen = 11;
 // src is longer, the tail is dropped with no diagnostic. Both directions
 // happen here -- `FndUCVarName = Words(1)` truncates a 200-byte word into 20
 // bytes, and `ExpUCVarName = ExpVarName` blank-pads a short name out to 20.
+//
+// NO GUARD ON EITHER CALL, AND THE ABSENCE IS MEASURED RATHER THAN TIDY.
+// `n` is a minimum of two lengths, so `n >= 0` and `len_dst - n >= 0` hold by
+// construction and a zero-length `memcpy`/`memset` is well defined on valid
+// pointers -- `dst + len_dst` is a legal one-past-the-end address. A guard here
+// is a restatement of a quantity nothing downstream can read, and this campaign
+// has measured what that costs three times (units #1, #4, and the first sweep
+// of this unit): `if (n > 0)` and `if (len_dst > n)` contributed four surviving
+// mutants between them, not because they are equivalent but because no input
+// can make them change an output. `std::min` rather than a written-out
+// comparison for the same reason -- it has no mutable `<`.
 void char_assign(char* dst, int len_dst, const char* src, int len_src) {
-    const int n = (len_src < len_dst) ? len_src : len_dst;
-    if (n > 0) std::memcpy(dst, src, static_cast<std::size_t>(n));
-    if (len_dst > n) std::memset(dst + n, ' ', static_cast<std::size_t>(len_dst - n));
+    const int n = std::min(len_src, len_dst);
+    std::memcpy(dst, src, static_cast<std::size_t>(n));
+    std::memset(dst + n, ' ', static_cast<std::size_t>(len_dst - n));
 }
 
 // `TRIM(s)` -- drop TRAILING blanks, and blanks only. A NUL byte is not a
 // blank and Fortran does not strip it; `strlen` would stop at one, which is
 // why the length is carried explicitly everywhere below.
+// The same shape `checkinputs.cpp::errmsg_trim` ships (P4), not a hand-written
+// scan. The written-out loop `while (n > 0 && s[n-1] == ' ') --n;` has three
+// mutable sites where this has none, and the first sweep of this unit left two
+// of them alive -- `n >= 0`, which reads `s[-1]`, and `n > 1`. `find_last_not_of`
+// returns `npos` for an all-blank string and `npos + 1` is 0, so the empty case
+// needs no branch either.
 std::string_view ftrim(const char* s, int len) {
-    int n = len;
-    while (n > 0 && s[n - 1] == ' ') --n;
-    return std::string_view(s, static_cast<std::size_t>(n < 0 ? 0 : n));
+    const std::string_view v(s, static_cast<std::size_t>(len));
+    return v.substr(0, v.find_last_not_of(' ') + 1);
 }
 
 // `Words(IW)` -- the dummy is `CHARACTER(*), INTENT(IN) :: Words(2)`, so
@@ -95,10 +112,12 @@ void assign_errmsg(errorvariables_view_t* ErrVar, std::string_view s) {
         return;
     }
     std::memcpy(ErrVar->ErrMsg, s.data(), s.size());
-    if (ErrVar->n_ErrMsg_cap > static_cast<int32_t>(s.size())) {
-        std::memset(ErrVar->ErrMsg + s.size(), 0,
-                    static_cast<std::size_t>(ErrVar->n_ErrMsg_cap) - s.size());
-    }
+    // Unguarded, for the reason `char_assign` states: the refusal above has
+    // already established `s.size() <= n_ErrMsg_cap`, so the count is
+    // non-negative and a zero-length `memset` is well defined. The guard that
+    // used to be here survived mutation twice -- once as `>=` and once negated.
+    std::memset(ErrVar->ErrMsg + s.size(), 0,
+                static_cast<std::size_t>(ErrVar->n_ErrMsg_cap) - s.size());
     ErrVar->n_ErrMsg = static_cast<int32_t>(s.size());
 }
 
@@ -142,10 +161,10 @@ std::string parse_error_message(std::string_view name,
 // would record a property of the harness as a property of the mutant. Units #1
 // and #4 measured exactly that cost (Conv2UC: six such sites, score 0.696).
 void ChkParseData(char* Words, int len_Words, char* ExpVarName, int len_ExpVarName, char* FileName, int len_FileName, int FileLineNum, errorvariables_view_t* ErrVar) {
-    std::vector<char> FndUCVarNameV(len_Words > len_ExpVarName ? len_Words : len_ExpVarName);
-    std::vector<char> ExpUCVarNameV(len_ExpVarName);
-    char* FndUCVarName = FndUCVarNameV.data();
-    char* ExpUCVarName = ExpUCVarNameV.data();  // STUB: no CHARACTER(20)
+    std::vector<char> FndV(std::max(len_Words, len_ExpVarName));
+    std::vector<char> ExpV(len_ExpVarName);
+    char* FndUCVarName = FndV.data();
+    char* ExpUCVarName = ExpV.data();  // STUB: no CHARACTER(20)
 
     // FndUCVarName = Words(1)
     // ExpUCVarName = ExpVarName
@@ -166,7 +185,7 @@ void ChkParseData(char* Words, int len_Words, char* ExpVarName, int len_ExpVarNa
     // definition of TRIM, and the padding supplies a blank opposite it.
     // `operator==` on two string_views is exactly that: equal size and equal
     // bytes.
-    if (ftrim(FndUCVarName, len_Words) == ftrim(ExpUCVarName, len_ExpVarName)) {  // STUB
+    if (ftrim(FndUCVarName, len_Words) == ftrim(ExpUCVarName, len_ExpVarName)) {
         // The name was found in Words(1), which is the VALUE position -- so the
         // variable was not assigned a value. This arm is the error.
         ErrVar->aviFAIL = -1;
@@ -180,7 +199,7 @@ void ChkParseData(char* Words, int len_Words, char* ExpVarName, int len_ExpVarNa
         char_assign(FndUCVarName, len_Words, word(Words, len_Words, 2), len_Words);
         conv2uc_c(FndUCVarName, len_Words);
 
-        if (ftrim(FndUCVarName, len_Words) == ftrim(ExpUCVarName, len_ExpVarName)) {  // STUB
+        if (ftrim(FndUCVarName, len_Words) == ftrim(ExpUCVarName, len_ExpVarName)) {
             // NameIndx = 2 -- see the note above the function. Nothing is
             // written to ErrVar on this path, and that includes ErrMsg: the
             // reference leaves whatever the caller had there.

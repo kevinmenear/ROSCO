@@ -1,0 +1,35 @@
+{
+    "_why": "The mutants that SURVIVED and are NOT declared equivalent. They are the whole of the distance between this unit's score (0.852) and 1.000, and they are written down here so that the number has a cause attached rather than a shortfall. Every one of the four is a statement about the CORPUS or about a byte the reference never defines -- not about the mutant. Units #1 and #4 drew this line and it is the line applied: a survivor no input can distinguish is equivalent, a survivor THIS input set cannot distinguish is a blind spot, and calling the second the first is how a real defect gets excused.",
+
+    "_score": "23 killed of 27 behavioural scoreable, 4 declared equivalent, 0 failed to compile, 31 mutants over 8 operators. mutation/ChkParseData.json, taken on the CLEAN tree against the Fortran reference.",
+
+    "6b46c3dc": {
+        "mutation": "const_tweak '20' -> '21'",
+        "site": "UCVarNameLen, the declared width of the reference's own CHARACTER(20) locals",
+        "why_it_survives": "It widens the TRUNCATION as well as the buffer. `FndUCVarName = Words(1)` truncates a 200-byte word to 20 bytes, so two parameter names agreeing to character 20 compare EQUAL in the reference and this mutant moves that boundary to 21. Distinguishing it needs a case in which `Words(1)` or `ExpVarName` is longer than 20 characters AND agrees with the other to character 20. R6 generates strings at lengths [1, 2, 6, 11] -- every one shorter than the boundary -- so no case in this corpus reaches a 21st character at all.",
+        "measured": "The same gap from the other side: evidence/ChkParseData/harness.no-truncation-stub.json, in which the two locals are widened to the arguments' own lengths, fails 0 of 1284. It is the only one of this unit's eight red tests that stays green.",
+        "not_a_corpus_only_claim": "VIT's `narrowing-local` check names ChkParseData as its canonical instance of this defect and `F_VSRefSpdCornerFreq` as a live 20-character parameter name in this codebase. So the defect is caught STATICALLY by a second instrument and dynamically by none."
+    },
+
+    "d1fc8fa6": {
+        "mutation": "drop_call 'std::min(len_src, len_dst)' -> 'len_src'",
+        "site": "char_assign's transfer count",
+        "why_it_survives": "THE SAME GAP. `min(len_src, len_dst)` differs from `len_src` only when `len_src > len_dst`, i.e. only when the source is longer than the 20-byte destination -- which is the >20-character case above. Below it the two are the same number. With a longer source this mutant is not merely wrong, it overruns the destination and passes a negative count to memset.",
+        "measured": "It is killed by the same case the '20' -> '21' mutant needs, so the two share one cause and one fix."
+    },
+
+    "9d9db83a": {
+        "mutation": "const_tweak '11' -> '12'",
+        "site": "Int2LStrLen, the declared width of Int2LStr's CHARACTER(11) result",
+        "why_it_survives": "It moves the READ bound onto a byte nothing writes. The generated Fortran bridge writes exactly 11 bytes (`DO vit_ri_int2lstr = 1, 11`, compiled from the FUNCTION's own declaration and not from this constant), so under the mutant `ftrim(lineNumStr, 12)` reads one byte of uninitialised stack. Whether the message gains a character is then a property of the stack, not of the input -- so NO corpus can kill it deterministically, and it is not equivalent either, because the C++ is reading an object it never defined.",
+        "why_not_declared": "An out-of-bounds read that happens not to differ is the shape unit #4 refused to declare equivalent on Conv2UC (five such survivors), and the remedy there was to delete the restatement rather than to excuse the mutant. There is no restatement to delete here: `Int2LStrLen` already appears once as a bound and once as a width, and they are the same quantity. Zero-initialising the buffer would kill the mutant and is deliberately NOT done -- it would define bytes the correct program never reads, purely to move a number."
+    },
+
+    "7891029b": {
+        "mutation": "compare_op '>' -> '>=' at `if (static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap)`",
+        "site": "assign_errmsg's refusal to overrun the staging buffer",
+        "why_it_survives": "The two differ on exactly one input: a message whose length EQUALS the staging buffer's capacity, where the reference-shaped code writes it and the mutant refuses. `n_ErrMsg_cap` is a property of the view the harness stages, and no generated case lands a message of precisely that length.",
+        "why_not_declared": "It is a real behavioural difference on a reachable-in-principle input -- ErrMsg lengths here run to well over a hundred bytes and a cap could be set to any of them -- so it is a corpus gap and not an equivalence.",
+        "note": "The guard itself is not dead: negating it (`if (!(...))`) is KILLED at 1282 of 1284, so the corpus does reach and constrain the branch. Only its boundary is untested."
+    }
+}
