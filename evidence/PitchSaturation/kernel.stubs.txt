@@ -1,0 +1,51 @@
+PitchSaturation -- WHAT THE 62-CASE KERNEL CAN AND CANNOT SEE.
+
+Seven one-edit stubs generated from the SHIPPED translation by
+evidence/PitchSaturation/make_stubs.py, each run through the committed
+kernel by run_stub.sh, which hash-verifies the input from inside the
+container and rebuilds from scratch. The shipped translation is run
+through the SAME path first, as the control (P10): a probe number taken
+without one is not a number.
+
+  stub                    cases  cases  field   what it changes
+                           PASS   FAIL   rows
+  translation                62      0      0   the SHIPPED translation (P10 control)
+  noop-stub                  21     41     81   the whole unit as a no-op returning 0.0
+  wrong-constant-stub         0     62    102   the determinate wrong constant -7.25
+  unfiltered-wind-stub       22     40     82   interp1d reads WE_Vw where the reference reads WE_Vw_F
+  no-ps-min-pitch-stub       22     40     40   LocalVar%PS_Min_Pitch never written
+  no-max-stub                62      0      0   max() dropped, first operand returned
+  max-swapped-stub           62      0      0   max()'s two operands exchanged
+  no-errmsg-stub             62      0      0   the IF (aviFAIL < 0) tail deleted
+
+THREE OF THE SEVEN CAN FAIL. The other four pass 62 of 62, and each names
+something these captured cases cannot distinguish:
+
+  no-max         PRC_Min_Pitch is 0.0 in all 62 cases and PS_Min_Pitch is
+                 never negative, so max(a, b) == a throughout. The max is
+                 present in the reference and invisible to the kernel.
+  max-swapped    EQUIVALENT, not merely invisible: max is commutative on
+                 every pair of non-NaN doubles. Kept in the set because a
+                 pass here and a pass at no-max mean different things, and
+                 the difference is exactly what the corpus can be blamed for.
+  no-errmsg      aviFAIL is 0 in all 62 cases, so the tail never runs.
+                 coverage/line_coverage.json says the same of the whole
+                 simulation: ControllerBlocks.f90:543, 0 hits in 27 scenarios.
+
+AND ONE THAT WAS NOT OBVIOUS EITHER WAY. `no-ps-min-pitch` returns the
+right answer and only skips the write to LocalVar%PS_Min_Pitch; it fails
+40 of 62. So the field IS compared, and the 22 cases it does not fail are
+the ones whose incoming value already equals the computed one -- the
+interp1d lower clamp holding 0.0 across consecutive timesteps.
+
+THE THREE FAILING STUBS ALL PASS THE SAME 21 CASES, AND THAT IS ONE FACT.
+Exactly 21 of the 62 captured cases have ps_min_pitch == 0.0 -- WE_Vw_F below
+the table's first breakpoint, so interp1d returns its lower clamp and the unit
+returns 0.0. The no-op returns 0.0 and passes precisely those 21, checked case
+by case and not by count. `unfiltered-wind` passes those 21 AND case 1, where
+the filter has not yet diverged from its input so WE_Vw and WE_Vw_F are the
+same number.
+
+So a THIRD of this corpus is a case on which doing nothing is right. The 62 is
+not 62 independent chances to notice a wrong answer, and the differential
+harness rather than the kernel is this unit's primary evidence.
