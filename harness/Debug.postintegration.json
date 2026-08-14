@@ -5,13 +5,13 @@
     "evidence/Debug/dbg28.json"
   ],
   "bytes_compared": 383540428,
-  "campaign_rev": "327ca29-dirty",
+  "campaign_rev": "1ab77a7",
   "checked": 456086,
   "failed": 0,
   "generated_by": "scripts/dbgcheck.py (compare), summarised into this file",
   "inadmissible": 0,
   "instrument": "NOT the generated differential harness. `vit test-validate` compares a unit's MAPPED OUTPUTS and `Debug` assigns nothing in its own signature -- `ErrVar` only on GetNewUnit's unit-number-exhaustion arm, which does not exist once GetNewUnit is absorbed, and `avrSWAP` never. A generated harness for this unit would compare the empty set. What is checked here is the unit's actual contract: the BYTES of the .RO.dbg files it writes.",
-  "loop_rev": "00b7f03",
+  "loop_rev": "897d67c",
   "measures": "CAN see: every value and every column the three log files carry, at the exact byte. CANNOT see: the WRITE(*,100) status line, which goes to unit 6 and not to a file; a buffer allocated larger than it needs to be; and any branch no input in this tree reaches. See evidence/Debug/mutation.md.",
   "parts": {
     "dbg.json": {

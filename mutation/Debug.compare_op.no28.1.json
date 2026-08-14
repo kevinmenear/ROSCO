@@ -6,7 +6,7 @@
     "records_compared": 64009,
     "records_mismatched": 0
   },
-  "campaign_rev": "a97dee5-dirty",
+  "campaign_rev": "1ab77a7-dirty",
   "capped_operators": [
     "compare_op",
     "const_tweak",
@@ -16,22 +16,22 @@
   "equivalent_declared": 0,
   "killed": 5,
   "limit_per_operator": 40,
-  "loop_rev": "00b7f03",
+  "loop_rev": "897d67c",
   "mutants": 20,
   "nocompile": 0,
   "nocompile_ratio": 0.0,
   "nocompile_refused": false,
   "operator_population": {
-    "arith_op": 25,
+    "arith_op": 13,
     "compare_op": 40,
     "const_tweak": 40,
     "drop_call": 5,
-    "drop_factor": 7,
+    "drop_factor": 1,
     "index_offset": 40,
     "negate_cond": 33,
     "swap_call_args": 1,
     "swap_callee": 1,
-    "swap_operands": 10
+    "swap_operands": 7
   },
   "operators": [
     "compare_op"
