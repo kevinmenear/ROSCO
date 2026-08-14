@@ -363,3 +363,118 @@ AryLen = { lo = 0, hi = 32 }
 [PIDController]
 
 objInst_instLPF = { lo = 1, hi = 1024 }
+
+# THREE MORE PINS, ADDED AT THE RE-TAKE, AND THEY ARE THE OPPOSITE KIND OF
+# JUDGEMENT FROM EVERY OTHER ENTRY IN THIS FILE. The eight above narrow a domain
+# because the REFERENCE CRASHES or has no answer on the rest of it. These three
+# narrow a domain because the reference ANSWERS A CONSTANT on the rest of it,
+# and a constant answer is an absence wearing a value (P6).
+#
+# WHAT WAS MEASURED, on the corpus that scored 0.759 -- a census probe that
+# writes one CSV row per call and changes NO compared output, so the run that
+# produced it is GREEN and this is a reading of the corpus rather than a
+# perturbation of it (evidence/PIDController/clamp_census.before.csv, read by
+# census_report.py; 2307 ELSE-arm cases of 4610):
+#
+#     the return value == minValue or maxValue    2307 of 2307
+#     minValue < maxValue at all                   207 of 2307
+#     EFilt finite                                   1 of 2307
+#     the raw sum PTerm+ITerm+DTerm finite           1 of 2307
+#     the outer clamp INACTIVE                       0 of 2307
+#
+# The unit returns `saturate(PTerm + ITerm + DTerm, minValue, maxValue)`. On
+# that corpus it returns a BOUND in every case, so PTerm, DTerm and the order of
+# the sum reach no compared output at all -- which is exactly six mutation
+# survivors: `kp*error -> kp`, `kp*error -> kp/error`, `EFilt-ELast ->
+# EFilt+ELast`, `PTerm+ITerm -> PTerm-ITerm` and the two `[i] -> [i+1]` reads
+# that feed only that sum. They are not equivalent mutants. They are unreachable
+# ones, and the remedy is the inputs.
+#
+# TWO INDEPENDENT CAUSES, and fixing either alone leaves the number at zero.
+
+# CAUSE 1 -- THE CALLEE DIVIDES BY A COEFFICIENT THE HARNESS ALWAYS SUPPLIES AS
+# ZERO, so `EFilt` is NaN in 2306 of 2307 cases and the sum is NaN with it.
+#
+#     LPFilter = 1.0/FP%lpf1_a1(inst) * (-FP%lpf1_a0(inst)*... )   Filters.f90:65
+#
+# and `FP%lpf1_a1(inst)` is written ONLY inside
+#
+#     IF ((iStatus == 0) .OR. reset) THEN                          Filters.f90:53
+#
+# `LocalVar%FP` is a NESTED type: the generator zero-initialises it and does not
+# vary it (this unit's `observability` says so). So on any case with
+# `iStatus /= 0` and `reset` false the reference computes `1.0/0.0 * 0.0` = NaN,
+# both sides agree on NaN, and the case is green and blind. `iStatus` was an
+# ordinary defaulted integer on R6's decade ladder, which reaches 0 exactly
+# once in 2307 cases.
+#
+# THE PIN IS THE REFERENCE'S OWN ENUMERATION, not a subset chosen to make the
+# number move. Filters.f90:41 declares what the values mean:
+#
+#     ! A status flag set by the simulation as follows: 0 if this is the first
+#     ! call, 1 for all subsequent time steps, -1 if this is the final call
+#
+# 0 is FIRST so that it is `values[0]`, the value every one-at-a-time ladder
+# case runs at; R2 then runs each ladder value under all three. After: EFilt is
+# finite in 1507 of 4884.
+#
+# THE COST, STATED. `iStatus` leaves R6's integer ladder, so the decade
+# boundaries and the two 32-bit extremes are gone. Every one of them is a value
+# on which this unit's only reader of `iStatus` divides by zero -- the ladder was
+# buying NaN, which both sides produce identically and neither can be wrong
+# about. What is NOT bought back: with a zeroed `FP`, the `iStatus /= 0` arm of
+# LPFilter still answers NaN, so the RECURSIVE filter path remains unexercised
+# from here. Reaching it needs a non-zero `FP` -- a nested type the generator
+# does not vary -- and that is a gap in the generator, recorded in DECISIONS.md,
+# not something a range can state.
+LocalVar_iStatus = { values = [0, 1, -1] }
+
+# CAUSE 2 -- THE TWO BOUNDS ARE DRAWN INDEPENDENTLY FROM ONE DEFAULT, so the
+# pair that has to be an INTERVAL is an interval in 207 of 2307 cases, and never
+# a WIDE one.
+#
+# `saturate(x, lo, hi)` is `MIN(MAX(x,lo),hi)`, which returns `hi` for every x
+# once `lo >= hi`. On the +/-1e3 default both bounds take `_base(p, i)` -- one
+# fixed fraction of the same range per parameter index -- and came out at
+# minValue = 0, maxValue = -300 in 1512 of 2307 cases: an EMPTY interval. R6's
+# isolating stage then pins every OTHER defaulted real to one value (0.0 or
+# 1e300), which sets the two bounds EQUAL to each other, and an empty interval
+# again.
+#
+# THE RANGES ARE THE ONLY CALL SITE'S OWN SHAPE, widened. Controllers.f90:346 is
+# the single call in the whole program:
+#
+#     PIDController(LocalVar%AzError, ..., -LocalVar%VS_MaxTq*2, LocalVar%VS_MaxTq*2, ...)
+#
+# -- a bracket symmetric about zero whose half-width is twice a generator
+# torque, i.e. strictly negative below and strictly positive above, at machine
+# scale. These two entries state that and nothing narrower: minValue anywhere in
+# [-1e9, -1e-3], maxValue anywhere in [1e-3, 1e9], drawn independently, so the
+# bracket runs from 2e-3 wide to 2e9 wide and the ACTIVE arm keeps its coverage
+# (the clamp still fires in 3568 of 4884).
+#
+# THE MAGNITUDE IS THE SCALE OF THE CLAMPED EXPRESSION, which is the half of
+# this that fixed bounds get wrong: the terms are products of two +/-1e3 draws,
+# so a +/-1e3 bracket clamps them whatever their order. Measured on the finite
+# sums: |raw| has median 2994 and 90th percentile 1.86e6, and 1e9 is above both.
+#
+# AFTER, on the same census (evidence/PIDController/clamp_census.after.csv,
+# 4884 ELSE-arm cases of 9758):
+#
+#     minValue < maxValue at all                  4884 of 4884   was 207 of 2307
+#     the outer clamp INACTIVE                    1316 of 4884   was   0 of 2307
+#     the ITerm clamp INACTIVE                    4285 of 4884   was   8 of 2307
+#     both clamps inactive at once                1313 of 4884   was   0 of 2307
+#
+# THE COST, STATED. Both bounds leave R6's MAGNITUDE ladder and its isolating
+# stage, because those apply only to reals whose range is defaulted. What that
+# removes is the subnormal/overflow thresholds and 1e+/-300 for these two
+# parameters -- values at which the clamp returns a bound for every input, which
+# is the blindness this pin exists to remove. It also removes minValue >= 0 and
+# maxValue <= 0: an INVERTED bracket is no longer generated, and a defect that
+# only shows when `lo > hi` is invisible here. That defect would be in
+# `saturate`, which is unit #24 and is CALLED, not inlined -- both sides of this
+# comparison reach the same implementation of it, so this harness never
+# constrained it in the first place.
+minValue = { lo = -1e9, hi = -1e-3 }
+maxValue = { lo = 1e-3, hi = 1e9 }

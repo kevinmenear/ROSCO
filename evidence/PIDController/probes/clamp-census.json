@@ -20,5 +20,10 @@
  "mismatches": [],
  "loop_rev": "e7d5583-nogit",
  "gen_rev": "gen-118a2c5c81ea",
- "vit_rev": "3ce00e8-nogit"
+ "vit_rev": "3ce00e8-nogit",
+ "red_test": {
+  "perturbation": "census under the stated bracket and iStatus enumeration",
+  "result": "0 of 9758 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
 }

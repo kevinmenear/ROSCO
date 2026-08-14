@@ -1,0 +1,37 @@
+# Every mutant of translations/Controllers/pidcontroller.cpp with its ID and
+# its LINE, re-derived from harness.cppmutate over the shipped translation.
+# The committed mutation artifact names a mutant by (operator, before, after),
+# which matches TWELVE sites for index_offset and TWO for const_tweak '0.0';
+# this is where an id is turned into a place in the file.
+#   cd ~/Artifacts/vit_translation && python3.12 -c "...harness.cppmutate..."
+
+  1  abc40ada  line   58  compare_op     '!=' -> '=='
+  2  256e2a39  line   83  drop_factor    'kp * error' -> 'kp'
+  3  2b6d1a47  line   91  drop_factor    'DT * ki' -> 'DT'
+  4  09159b92  line   49  arith_op       'objInst->instPI - 1' -> 'objInst->instPI + 1'
+  5  9d77e4a7  line   83  arith_op       'kp * error' -> 'kp / error'
+  6  c48d48c5  line   91  arith_op       'DT * ki' -> 'DT / ki'
+  7  eed925e7  line  112  arith_op       'EFilt - piP->ELast' -> 'EFilt + piP->ELast'
+  8  209fb372  line  121  arith_op       'PTerm + piP->ITerm' -> 'PTerm - piP->ITerm'
+  9  b369fe59  line  142  arith_op       'objInst->instPI + 1' -> 'objInst->instPI - 1'
+ 10  90d9dd87  line   49  swap_operands  'objInst->instPI - 1' -> '1 - objInst->instPI'
+ 11  b5817673  line  112  swap_operands  'EFilt - piP->ELast' -> 'piP->ELast - EFilt'
+ 12  8ea55dfa  line   76  index_offset   '[i]' -> '[i + 1]'
+ 13  7c7c6cfa  line   77  index_offset   '[i]' -> '[i + 1]'
+ 14  0fc482a6  line   78  index_offset   '[i]' -> '[i + 1]'
+ 15  d6032353  line   91  index_offset   '[i]' -> '[i + 1]'
+ 16  aaf6aa5b  line   91  index_offset   '[i]' -> '[i + 1]'
+ 17  0154d655  line  100  index_offset   '[i]' -> '[i + 1]'
+ 18  be7a7aae  line  100  index_offset   '[i]' -> '[i + 1]'
+ 19  185e83ed  line  112  index_offset   '[i]' -> '[i + 1]'
+ 20  a143f808  line  121  index_offset   '[i]' -> '[i + 1]'
+ 21  57a448b7  line  132  index_offset   '[i]' -> '[i + 1]'
+ 22  157ea66a  line  132  index_offset   '[i]' -> '[i + 1]'
+ 23  0645e9e7  line  133  index_offset   '[i]' -> '[i + 1]'
+ 24  68137aa4  line   37  const_tweak    '0' -> '1'
+ 25  15c8567c  line   37  const_tweak    '0.0' -> '1.0'
+ 26  c70438dc  line   49  const_tweak    '1' -> '2'
+ 27  6f7ed70c  line   58  const_tweak    '0' -> '1'
+ 28  8a0f01f4  line   78  const_tweak    '0.0' -> '1.0'
+ 29  f592acaf  line  142  const_tweak    '1' -> '2'
+ 30  70ccab9c  line   58  negate_cond    'if (reset != 0)' -> 'if (!(reset != 0))'
