@@ -2112,30 +2112,25 @@ def run_scenario_32(turbine, controller, cp_filename, output_dir=None):
     print("Scenario 32: PASSED (two groups each)")
 
 
-def run_scenario_33(turbine, controller, cp_filename, output_dir=None):
-    """Scenario 7's synthetic drive at LoggingLevel = 3.
+def _synthetic_drive(turbine, controller, cp_filename, output_dir,
+                     number, discon_name, sim_name, ws0, extra_patches=None):
+    """Scenario 33's manual loop, parameterised by the mean wind speed.
 
-    Scenario 7 injects an oscillating nacelle IMU acceleration, tower fore-aft
-    acceleration, vane angle and blade root moments, so NacIMU_FA_AccF, FA_AccF,
-    Fl_PitCom and NacVaneOffset are non-zero. In 27 and 28 they are all zero,
-    and a mutant that writes one debug channel into the next one's column
-    therefore moved nothing."""
-    print("=" * 60)
-    print("Scenario 33: synthetic drive at LoggingLevel=3")
-    print("=" * 60)
-
-    param_filename = os.path.join(this_dir, 'DISCON_synth3.IN')
+    Scenario 35 is the same drive above rated. Factored rather than copied: two
+    copies of a 90-line loop would let the two scenarios drift apart, and the
+    whole point of 35 is that it differs from 33 in ONE quantity."""
+    param_filename = os.path.join(this_dir, discon_name)
     patches = dict(_DEBUG_BASE_PATCHES)
     patches.update({'LoggingLevel': 3, 'IPC_ControlMode': 0, 'AWC_Mode': 0})
+    patches.update(extra_patches or {})
     write_discon(turbine, controller, cp_filename, param_filename, patches=patches)
 
     controller_int = ROSCO_ci.ControllerInterface(
-        lib_name, param_filename=param_filename, sim_name='vit_sim33'
+        lib_name, param_filename=param_filename, sim_name=sim_name
     )
 
     dt = 0.025
     tlen = 100
-    ws0 = 9
     t = np.arange(0, tlen, dt)
     ws = np.ones_like(t) * ws0
     for i_ws in range(len(t)):
@@ -2217,8 +2212,54 @@ def run_scenario_33(turbine, controller, cp_filename, output_dir=None):
         'nac_yaw': nac_yaw,
     }
     result.update(extra)
-    save_and_print_results(result, 33, output_dir)
+    save_and_print_results(result, number, output_dir)
+
+
+def run_scenario_33(turbine, controller, cp_filename, output_dir=None):
+    """Scenario 7's synthetic drive at LoggingLevel = 3.
+
+    Scenario 7 injects an oscillating nacelle IMU acceleration, tower fore-aft
+    acceleration, vane angle and blade root moments, so NacIMU_FA_AccF, FA_AccF,
+    Fl_PitCom and NacVaneOffset are non-zero. In 27 and 28 they are all zero,
+    and a mutant that writes one debug channel into the next one's column
+    therefore moved nothing."""
+    print("=" * 60)
+    print("Scenario 33: synthetic drive at LoggingLevel=3")
+    print("=" * 60)
+    _synthetic_drive(turbine, controller, cp_filename, output_dir,
+                     number=33, discon_name='DISCON_synth3.IN',
+                     sim_name='vit_sim33', ws0=9)
     print("Scenario 33: PASSED (synthetic drive, LoggingLevel=3)")
+
+
+def run_scenario_35(turbine, controller, cp_filename, output_dir=None):
+    """Scenario 33's synthetic drive ABOVE RATED, at LoggingLevel = 3.
+
+    ADDED after the second dispatch's sweep, so it is NOT in that score's
+    corpus -- dbgmutate_merge.py refuses parts that ran different scenarios,
+    and the corpus is fixed once the first part is taken.
+
+    WHY. Two index_offset survivors write DebugVar%Fl_PitCom and
+    DebugVar%NacVaneOffset into the next channel's column, and both channels are
+    identically zero in every scenario the sweep ran -- including 33, which sets
+    Fl_Mode and Y_ControlMode and drives the nacelle IMU and the vane.
+
+    THE MODE FLAG WAS NOT THE QUANTITY. Raising the wind speed alone was tried
+    first and moved neither channel: FloatingFeedback is a proportional law and
+    every shipped input sets `Fl_Kp = 0.0000`, so it returns zero whatever the
+    IMU does; and `NacVaneOffset = CntrPar%Y_MErrSet`, which is `0.00000` in all
+    14 of them. The GAINS are the constant-valued inputs here, exactly as
+    LoggingLevel was for the dbg2/dbg3 half of the unit. This scenario sets
+    both, and keeps the higher wind speed because the pitch loop being active
+    is what makes a floating contribution meaningful."""
+    print("=" * 60)
+    print("Scenario 35: synthetic drive ABOVE RATED at LoggingLevel=3")
+    print("=" * 60)
+    _synthetic_drive(turbine, controller, cp_filename, output_dir,
+                     number=35, discon_name='DISCON_synth3hi.IN',
+                     sim_name='vit_sim35', ws0=15,
+                     extra_patches={'Fl_Kp': '-1.0000', 'Y_MErrSet': '5.00000'})
+    print("Scenario 35: PASSED (above rated, LoggingLevel=3)")
 
 
 def run_scenario_34(turbine, controller, cp_filename, output_dir=None):
@@ -2302,6 +2343,9 @@ def main():
         28: run_scenario_28,
         29: run_scenario_29, 30: run_scenario_30, 31: run_scenario_31,
         32: run_scenario_32, 33: run_scenario_33, 34: run_scenario_34,
+        # ADDED AFTER the second dispatch's sweep, so it is not in that
+        # score's corpus. See run_scenario_35's docstring.
+        35: run_scenario_35,
     }
 
     if args.benchmark > 0:
