@@ -1,6 +1,6 @@
-# done_check.py ChkParseData -- captured 2026-08-14T03:28:43Z by scripts/capture_done_check.sh
+# done_check.py ChkParseData -- captured 2026-08-14T03:44:38Z by scripts/capture_done_check.sh
 
-Run against the committed state at f5b28da ("ChkParseData: the record -- README, DECISIONS, STATUS, RUNBOOK, plan"), with a CLEAN tree, with stdout
+Run against the committed state at dd0bbcf ("ChkParseData: the gate re-taken at f55b26f -- revcheck clean, all six on one instrument"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -35,5 +35,5 @@ ChkParseData: Verdict.COMPLETE  (14/14 PASS)
 [  ok  ] P11  post-integration harness re-run    1552 check(s) against the integrated build
 [  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
 [  ok  ] P10  evidence reproducible              
-[  ok  ] P14  artifact revisions agree           4 artifact(s) at 1386430
+[  ok  ] P14  artifact revisions agree           4 artifact(s) at f55b26f
 

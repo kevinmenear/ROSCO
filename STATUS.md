@@ -10,7 +10,8 @@ It closed at the second dispatch; the first left it `deferred` at an honest
 **0.852** on P12, and what moved it to **1.000** was two rules added to the
 corpus generator, not one line of the translation and not one new equivalence
 declaration. `revcheck --unit ChkParseData` is **clean**: all six result
-artifacts name `1386430`.
+artifacts name `f55b26f`, and every one of them was re-taken to get there —
+twice, because the instrument moved twice.
 
 Everything that CAN run for this unit ran and is green. What cannot run is two
 of the five layers, and the reason is the same one: **the unit is dead in all 27
@@ -24,6 +25,19 @@ no corpus rule can change it.
 | post-integration harness | **1552** checked, 0 failed | the wrapper transposes the two words: **9 of 1552**, revert verified green |
 | gate, 27 scenarios | 5,252,000 values / 351 channels, **0 mismatched** | whole unit → a determinate error moves **0**; GetWords perturbed on the SAME BUILD moves **1,857,893** |
 | mutation score | **27 of 27 behavioural, 1.000**, 4 declared equivalent, 0 no-compile, 8 operators | the score *is* the red test, twenty-seven times |
+
+**AND THE RED TEST'S OWN REVERT WENT RED, WHICH IS A FINDING ABOUT THE
+INSTRUMENT AND NOT ABOUT THE UNIT.** `run_wrapper_redtest.sh` perturbs the
+shipped wrapper, proves the post-integration harness sees it, reverts, rebuilds
+and re-runs the green. On the third re-take that last green read **1552 checked,
+9 failed** — the red test's own count — with the source PROVABLY reverted and
+the object stamped a second OLDER than the source it was built from. `make`
+stat'd the file while the bind mount still showed the pre-revert content. It
+only surfaced because the cycle got fast: perturb-build-revert-build now runs in
+about three seconds. The wrong artifact is committed at `d3a8253` before the fix
+(C12); the repair is the rule `run_harness_stub.sh` already applied one file
+over — hash the file from inside the container — plus a `touch` there, because a
+hash says the content arrived and says nothing about the mtime `make` compares.
 
 **THE FIVE CALL SITES ARE DEAD FOR TWO DIFFERENT REASONS, AND ONLY ONE OF THEM
 IS "NOTHING CALLS IT".** Four sit in the unit-number forms of the `ParseInput`
