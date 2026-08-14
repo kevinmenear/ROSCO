@@ -2811,3 +2811,63 @@ sweep, taking the operator population from `harness.cppmutate` rather than from
 the parts. The reset window was opened twice and closed twice, with a commit
 before each opening and immediately after each closing; nothing was backgrounded
 and nothing polled.
+
+## Unit #31 `Debug`, second dispatch — 0.6798 → 0.9226, and one real defect
+
+`deferred` again, on P12, and the number is a different number:
+**143 of 155 killed, 0.9226**, 181 behavioural mutants, 26 declared equivalent,
+twelve alive and each classified. Raw, before any declaration, **143 of 181 =
+0.7901** against the first dispatch's 121 of 178 = 0.6798.
+
+**A REAL DEFECT WAS FOUND, AND ONLY THE NEW STREAM COULD SEE IT** (C12,
+`0dbf443` → `106d170`). The unit's `WRITE(*,100)` status line goes to unit 6,
+and nothing in this campaign had ever compared that stream. It is comparable and
+it was RED: `libgfortran` emits a preconnected unit's record whole, while a
+fully-buffered `stdout` split one record mid-field and delivered eighteen more
+after the driver's own output. 46 of scenario 27's 110 stdout records differed.
+The fix is one `std::fflush`; negating its guard now dies on 283 records, so the
+fix is under measurement rather than taken on trust.
+
+**What moved the score, in order of size.** Nothing was argued away first — the
+kills came first and the declarations after.
+
+    the stdout stream                    9 kills
+    scenario 31  modes off, padded name  5
+    scenario 32  two control groups      3
+    scenario 33  synthetic drive at LL=3 2
+    scenario 30  LoggingLevel = 2        1
+    the cppmutate repair                 2
+    26 equivalence declarations          0.7901 -> 0.9226
+
+**Six scenarios were added, and the two that earned NOTHING are the better
+findings.** Scenario 29 (`LoggingLevel = 0`) cannot reach the unit at all —
+`DISCON.F90:145` guards the call site with the same predicate the mutant
+attacks, so the inner guard is dominated by the caller's. Scenario 34 (two
+Inits) cannot reach `avrIndices`' deallocate arm — a second Init in one library
+load is refused before `Debug` is called, and a second after `kill_discon`
+reloads the library. Both survivors became equivalence declarations resting on a
+measurement.
+
+**The twelve survivors, classified.** None is (a).
+
+    (b) 2   Fl_PitCom and NacVaneOffset are zero in all eight scenarios; the
+            next input is scenario 33 above rated, and adding a scenario now
+            would invalidate the ten parts already swept
+    (b) 3   a trim that never runs to the start of the name, and a close guard
+            that differs only when the open FAILED
+    (c) 6   a difference needing a computed double exactly on 1E-99 / 1E+99 --
+            no admissible input selects a debug channel's value, and for
+            LocalVarOutData the source domain is a 4-byte float
+    (c) 1   an out-of-bounds write into allocator padding
+
+The two (c) classes name their instruments — a direct driver over a synthetic
+`DebugVariables`, and a sanitiser build — and neither is built here. Both are in
+`DECISIONS.md` as proposed amendments, because both change what "killed" means
+for every unit rather than for this one.
+
+**Procedure.** Ten foreground sweep parts, each under `mutate_guarded.sh` and
+each routed through the clock; nothing backgrounded by hand, nothing polled. The
+reset window was opened once and closed in the same command. Nine commits, one
+per expensive artifact. `revcheck --unit Debug` is clean at 14 artifacts, all
+naming `3f8ed43` — the gate, its red test and the post-integration harness were
+re-taken rather than left naming the superseded mutator.

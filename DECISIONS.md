@@ -6951,3 +6951,97 @@ at process exit, so the bytes are identical). Both are almost certainly
 equivalent. Declaring an equivalence is a claim, and this dispatch did not have
 the budget to prove either to the standard units #23–#26 set. The score carries
 them: 0.6798 with them counted against it rather than 0.6910 with them excused.
+
+## Unit #31 `Debug`, second dispatch
+
+### The equivalences the first dispatch declined are now declared, and one of them was wrong
+
+The entry above says `pos > buf.size()` → `>=` and `if (UnDb)` → `if (!(UnDb))`
+are "almost certainly equivalent" and were left counted against the score for
+want of budget to prove them. Proving them cost about ten minutes each and the
+second one **did not survive the proof**: `if (!(UnDb))` differs from the
+original exactly when `UnDb` is null at the close, which requires `std::fopen`
+to have failed — and on that input the mutant calls `fclose(nullptr)`. It is
+category (b), an input away, not (a). The first is declared, with 24 others.
+
+The lesson is not "declare more". It is that **an undeclared equivalence and a
+refuted one look identical in a score**, and the only thing that separates them
+is writing the reason down where it can be read.
+
+### An equivalence belongs to the merge, not to the sweep
+
+`dbgmutate.py` took `--equivalences` and baked `equivalent_declared` into each
+part, so revising a claim meant re-running the sweep that produced it. It is now
+a `dbgmutate_merge.py` argument, which also makes it **refutable**: a mutant
+declared equivalent that the corpus killed is a wrong declaration, and the merge
+exits 2 and names it rather than quietly shrinking the denominator. Controlled
+on this tree. **Candidate for the method: `_mutation_merge.py` should do the
+same, and `vit_mutate.py`'s `--equivalences` should move out of the sweep.**
+
+### PROPOSED AMENDMENT — ask what the unit WRITES, not only what it returns
+
+The gate reads `avrSWAP`; `dbgcheck.py` read `*.RO.dbg`. Neither read `stdout`,
+and nine of this unit's 57 survivors sat on a `WRITE(*,100)` line that goes to
+unit 6. Adding that stream cost about forty lines in two scripts and found a
+REAL DEFECT on its first comparison, before it scored a single mutant: 46 of
+scenario 27's 110 stdout records differed, because `libgfortran` emits a
+preconnected unit's record whole and a fully-buffered `stdout` does not.
+
+The general form, and why it belongs to the method rather than to this campaign:
+**a unit's observable set is a list of STREAMS, and the harness compares the
+ones somebody thought of.** Enumerate them before choosing an oracle — return
+values, arguments, files, `stdout`, `stderr`, sockets, the exit code. A stream
+nobody enumerated is not a gap in coverage, it is a gap in the definition of
+"green".
+
+### PROPOSED AMENDMENT — an out-of-bounds mutant is a survivor no value oracle can kill
+
+`c3a5bb71` turns `I < nDebugOuts` into `I <= nDebugOuts` and writes one element
+past a 26-element `std::vector`. `Read_OL_Input` recorded the same shape reading
+one byte past a buffer. Neither can be killed by comparing written bytes, at any
+corpus size: the difference is not in the program's values, it is in whether the
+program has defined behaviour at all.
+
+The instrument is a sanitiser build — `-fsanitize=address,undefined` over the
+same scenarios, with a mutant killed when the sanitiser reports. It is one
+CMake option and it would convert every out-of-bounds mutant in the campaign
+from a survivor into a kill. It is **method-level** because it changes what
+"killed" means for all 31 translations at once, which is why it is proposed here
+rather than done inside one unit's dispatch.
+
+### A whole-simulation oracle cannot place a value on a constant
+
+Six survivors need a computed double to equal exactly `1E-99` or `1E+99`, or to
+be more negative than `-1E+99`. The corpus's inputs are wind speeds, mode flags
+and a time step; what the mutants compare are values produced from them through
+an estimator, filters and controllers. **No admissible input selects a debug
+channel's value**, so this is not "the range is too narrow" — widening the
+corpus cannot reach it in principle. Two of the six are further out of reach
+still: `LocalVarOutData` is fed from `avrSWAP`, a 4-byte float, whose smallest
+non-zero magnitude is about `1.4E-45`.
+
+The answer is a direct driver over a synthetic `DebugVariables`, comparing the
+Fortran reference's bytes against the translation's for a constructed state. It
+is named and costed and NOT built here: it needs all 159 `LocalVariables` fields
+set explicitly on both sides.
+
+### `negate_cond` lost the condition, and a no-compile hid it (X2, `3f8ed43`)
+
+`if\s*\(([^;{}]+)\)` is greedy and a brace-less `if` whose statement contains a
+call runs past the condition's own closing paren. The artifact reports one
+no-compile; what it is, is a condition with NO mutant. Nine conditions across
+four of the campaign's 31 translations were in that state. Two of the three in
+this unit died immediately, one on 99,214 records. Fixed in the repo that owns
+it, cost measured over all 31 translations: 190 of 199 `negate_cond` mutants
+unchanged.
+
+### A scenario that earns nothing can be worth more than one that earns kills
+
+Scenario 29 was added to kill `LoggingLevel > 0` → `>= 0` and killed nothing,
+because `DISCON.F90:145` guards the call site with the same predicate — the
+unit's own guard is dominated by its caller's. Scenario 34 was added to reach
+`avrIndices`' deallocate arm and could not, because a second Init in one library
+load is refused before `Debug` is called and a second Init after `kill_discon`
+reloads the library. Both are now equivalence declarations resting on a
+measurement instead of survivors resting on an argument. **Ask what the CALLER
+guards before adding an input for a guard inside the callee.**
