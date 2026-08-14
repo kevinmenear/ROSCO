@@ -16,18 +16,25 @@ parameter name. Two callees, `Conv2UC` and `GetWords`, both reached through
 their bridges; nothing inlined.
 
 **Disposition: `deferred`.** Every layer that ran is green and every green is
-red-tested, and the mutation score is an honest **0.760** against a threshold of
-1.000. The six survivors are named below and five of them are one gap.
+red-tested, and the mutation score is an honest **0.960** against a threshold of
+1.000. Five of the six survivors this unit's first dispatch left alive were one
+measured corpus gap, and R14 (`translation-loop` `552edb1`) closed it. The one
+that is left is not a corpus gap and is not equivalent; it is named below and
+escalated.
 
 ## The layers
 
 | layer | result | red-tested |
 |---|---|---|
 | kernel replay, 20 cases (`kernel.verify_fields.csv`) | 20/20, all 60 fields `IDENTICAL` | four stubs: 0/20, 0/20, **20/20**, 5/20 |
-| differential harness (`harness/FindLine.json`) | **2370 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | six stubs: 2367 / 47 / 20 / 47 / 0 / 0 |
-| mutation (`mutation/FindLine.json`) | **19 of 25 behavioural, 0.760**, 2 declared equivalent, 0 no-compile | the score *is* the red test, 25 times |
+| differential harness (`harness/FindLine.json`) | **2514 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | seven stubs: 2511 / 47 / 62 / 89 / 30 / 42 / 60 |
+| mutation (`mutation/FindLine.json`) | **24 of 25 behavioural, 0.960**, 2 declared equivalent, 0 no-compile | the score *is* the red test, 25 times |
 | gate, 27 scenarios (`gate/FindLine.json`) | 5,252,000 values / 351 channels, 0 mismatched | the match disabled moves **1,857,893**, revert-verified 0 |
-| post-integration (`harness/FindLine.postintegration.json`) | 2370 checked, 0 failed | the wrapper's two extents transposed: **47 of 2370**, revert-verified 0 |
+| post-integration (`harness/FindLine.postintegration.json`) | 2514 checked, 0 failed | the wrapper's two extents transposed: **88 of 2514**, revert-verified 0 |
+
+The corpus was 2370 for this unit's first dispatch and the artifacts of that run
+are superseded, not deleted from the record: every number below that reads
+`of 2370` is the BEFORE half of R14's measurement and is labelled as such.
 
 ## What the kernel cannot see, measured rather than argued
 
@@ -68,7 +75,46 @@ is reachable in the shipped program, since both call sites guard
 `IF (AryLen < 1)` immediately *after* the call. The upper bound of 32 is a
 narrowing and is stated as one: the reference is defined to at least 100000.
 
-## THE ONE FACT THAT EXPLAINS FIVE OF THE SIX SURVIVORS
+## THE GAP, MEASURED — AND CLOSED
+
+The section below is the first dispatch's diagnosis, kept verbatim because it is
+what the repair was built against. **R14 closed it**, and the same two probes
+that measured the gap measure the repair:
+
+```
+                                        first dispatch      now
+cases reaching the match arm            47 of 2370          89 of 2514
+of those, matches on a BLANK key        47                  47
+so matches on a NON-BLANK key            0                  42
+```
+
+The 42 are the whole of it, and the two stubs that reported the blindness as a
+zero now report numbers:
+
+```
+AryLen ignored (WordInd pinned at 2)     0 of 2370   ->   30 of 2514
+Conv2UC on the search key deleted        0 of 2370   ->   42 of 2514
+```
+
+That second number is exactly the non-blank match count, which is what it has to
+be: every planted match is a case-INVERTED key against a mixed-case word, so
+dropping the fold on either side destroys all 42 and nothing else.
+
+Five mutants died with it, each on a different count — which is the evidence
+that they were five distinct behaviours rather than one seen five ways:
+
+| mutant | killed on |
+|---|---|
+| `'200' -> '201'` `MaxParamLength` | 14 of 2514 (the long-word plant, at R12's width) |
+| `'2' -> '3'` `WordInd` on the `.NOT. PRESENT` arm | 48 |
+| `'1' -> '2'` `WordInd = AryLen + 1` | 18 |
+| `'1' -> '2'` the search loop starting at line 2 | 21 |
+| `negate_cond` on `if (!has_AryLen)` | 72 |
+
+R14's own X3 cost is in `x3_check_r14/`, measured in corpus BYTES rather than in
+case counts.
+
+### The diagnosis, as it was written
 
 **Only 47 of 2370 cases reach the match arm.** Measured, not inferred:
 `findline.match-count-probe.cpp` writes `LineNum = -7` inside the arm, so the
@@ -120,20 +166,81 @@ differ. It is not taken here because a new rule shifts every already-scored
 unit's draws and that X3 cost has to be measured across the campaign, which is a
 dispatch of its own (unit #30 spent one exactly this way).
 
-## The six survivors
+> **That paragraph is what R14 is.** It was taken almost verbatim: the plant
+> position *k* sweeps 1..3, every free scalar integer is set to *k-1* and *k*
+> (because the generator cannot know which integer picks the word, only that one
+> usually does), the key is the word case-INVERTED, and the whole construction
+> is carried to R12's narrowing width as well. The X3 cost the paragraph was
+> waiting on turned out to be a byte-prefix identity on all three units that can
+> fire the rule, which is a stronger answer than the case-count comparison the
+> previous check settled for.
 
-| id | mutant | why it survives |
-|---|---|---|
-| `ca75abea` | `'2048' -> '2049'` (`MaxLineLength`) | **Undefined, not equivalent.** `char_assign(Line, 2049, …)` writes one byte past the caller's 2048-byte buffer. The bytes it writes past the end are not a wrong answer, so no value comparison can see it — and unit #7 settled that a mutant observable only through a write outside its buffer cannot honestly be declared equivalent. Unlike `char_assign`'s old `min`, this site cannot be deleted: VIT emits no `len_Line`, so the width has to be stated in the C++ exactly once, and it is. |
-| `6ca91bba` | `'200' -> '201'` (`MaxParamLength`) | Corpus. The constant scales every 200-site together — both locals, the `Words` stride, the width handed to `getwords_c`, and the comparison length — so the mutant is a consistent program that differs only where a *word* or the *key* reaches 200 characters. No case supplies one. |
-| `d76903ed` | `'2' -> '3'` (`WordInd = 2`, the `.NOT. PRESENT` arm) | The 47-case gap above. |
-| `3bc7aeba` / `b2c89b46` | two `'1' -> '2'` | Identified by building all seven candidate sites and running each (`const_tweak_probes/RESULTS.md`): `WordInd = AryLen + 1` -> `+ 2`, and the search loop starting at line 2. The first is the 47-case gap; the second changes an answer only when a case's *only* match is on line 1, and none of the 47 is. |
-| `d126d74e` | `negate_cond` on `if (!has_AryLen)` | The 47-case gap — it swaps `WordInd = 2` for `AryLen + 1`. |
+## The six survivors of the first dispatch, and the one that is left
+
+| id | mutant | first dispatch | now |
+|---|---|---|---|
+| `6ca91bba` | `'200' -> '201'` (`MaxParamLength`) | corpus gap — no case supplies a *word* or a *key* reaching 200 characters | **KILLED, 14 of 2514.** R14's long-word plant at R12's width |
+| `d76903ed` | `'2' -> '3'` (`WordInd = 2`, the `.NOT. PRESENT` arm) | the 47-case gap | **KILLED, 48** |
+| `3bc7aeba` | `'1' -> '2'` (`WordInd = AryLen + 1` → `+ 2`) | the 47-case gap | **KILLED, 18 or 21** |
+| `b2c89b46` | `'1' -> '2'` (the search loop starting at line 2) | changes an answer only where a case's *only* match is on line 1, and none of the 47 is | **KILLED, 21 or 18** |
+| `d126d74e` | `negate_cond` on `if (!has_AryLen)` | the 47-case gap — it exchanges `WordInd = 2` for `AryLen + 1` | **KILLED, 72** |
+| `ca75abea` | `'2048' -> '2049'` (`MaxLineLength`) | undefined, not equivalent | **STILL ALIVE.** See below |
+
+The two `'1' -> '2'` kill counts are 18 and 21 and the assignment between the
+two sites is deliberately not stated: the mutator records no line, the probe
+that used to distinguish them (`const_tweak_probes/`) was run on the 2370-case
+corpus, and neither is a survivor any more, so re-deriving the mapping would
+cost a run to settle a question with no consequence. Both are dead either way.
 
 Two more were declared equivalent (`mutation/FindLine.equivalences.json`), and
-the undeclared run is committed beside them at 0.7037
+the undeclared run is committed beside them at 0.8889 (24 of 27)
 (`mutation/FindLine.undeclared.json`) so what survived is on the record before
 any of it was excused.
+
+## `ca75abea`, the one that is left, and why it is (c) and not (a) or (b)
+
+`char_assign(Line, 2049, …)` writes one byte past the caller's 2048-byte buffer.
+It is **not equivalent** — the two programs do not agree on every admissible
+input, because one of them has no defined behaviour at all, which is the
+distinction unit #7 drew. It is **not a corpus gap** either, and that is now
+measured against two independent oracles rather than argued:
+
+```
+differential harness, 2514 cases          0 failed
+gate, 27 scenarios, 5,252,000 values      0 mismatched, 0 channels, 0 scenarios broken
+```
+
+**And both zeros have a positive control at the SAME SITE**, chosen against the
+program rather than against the probe — the campaign has already had one control
+that was a no-op and reported the probe's own number (P10, below). The control
+is the same constant moved one byte the OTHER way, so its effect lands INSIDE
+the buffer each oracle compares:
+
+```
+harness   2048 -> 2047   60 of 2514        findline.linewidth-control.cpp
+gate      2048 -> 5      1,583,216 of 4,732,000 across 131 channels, and
+                         scenarios 19 and 27 stopped running altogether
+```
+
+So the site is live, both oracles can see it move, and the mutant is invisible
+to both. **The asymmetry is the finding**: one byte too FEW is a wrong answer;
+one byte too MANY is not an answer at all, and no value comparison reads bytes
+outside the buffer it is comparing.
+
+The site cannot be deleted, unlike `char_assign`'s old `std::min` — VIT emits no
+`len_Line`, so the width has to be stated in the C++ exactly once, and it is.
+
+This is the same class unit #31 recorded as `(c) 1 an out-of-bounds write into
+allocator padding`, and `Read_OL_Input` before it. The instrument that would
+kill all of them is a sanitiser build (`-fsanitize=address,undefined`), which is
+already a **proposed method amendment** in `DECISIONS.md`; it changes what
+"killed" means for every unit in the campaign, so it is escalated rather than
+built inside one unit's dispatch. This unit is the third instance and the second
+with a same-site control, which is what the amendment now rests on.
+
+`evidence/FindLine/gate.survivor-ca75abea.json`,
+`evidence/FindLine/gate.linewidth-control.json`,
+`evidence/FindLine/harness.linewidth-control.json`.
 
 ## The canary probe, and the control that took two attempts
 
@@ -142,15 +249,19 @@ the extra byte is never read or written. It is provable by inspection — every
 index expression is bounded by `MaxParamLength` — and this campaign checks
 readings, so it was also measured: `findline.canary-probe.cpp` declares both
 arrays one longer, puts `\x7f` in the extra byte of each and sets `LineNum = -7`
-if either is disturbed. **0 of 2370.**
+if either is disturbed. **0 of 2514.**
 
 A zero from a probe is worth nothing until the probe is shown able to be
 non-zero (P10), and the first control **was a no-op**: `conv2uc_c(ParamNameUC,
 MaxParamLength + 1)` reads the extra byte and writes it only if it is a
-lowercase letter, and `\x7f` is not one. It reported 0 of 2370 — the same number
+lowercase letter, and `\x7f` is not one. It reported 0 of 2370 on the corpus of the day — the same number
 as the probe, and for one run it looked exactly like a pass. The control now
-writes the byte unconditionally and fails **2370 of 2370**
+writes the byte unconditionally and fails **2514 of 2514**
 (`harness.canary-control.json`).
+
+Both numbers were re-taken on the 2514-case corpus; both mutants are still
+survivors of the undeclared run, so the declaration is still a declaration and
+not a formality.
 
 ## Three tool defects, each fixed where it lives (X2)
 
@@ -215,12 +326,21 @@ run_harness_stub.sh                      one stub through the differential harne
 run_wrapper_redtest.sh                   plants a defect in the SHIPPED wrapper
 harness.{noop,first-match,arylen-ignored,no-line,no-uppercase,no-truncation}-stub.json
 findline.harness-*-stub.cpp
-harness.match-count-probe.json           47 of 2370 reach the match arm
-harness.nonblank-key-probe.json          47 of 2370 -- ALL of them are blank-vs-blank
-harness.canary-probe.json                0 of 2370   the extra byte is untouched
-harness.canary-control.json              2370 of 2370   and the probe can fire
+harness.match-count-probe.json           89 of 2514 reach the match arm
+harness.nonblank-key-probe.json          47 of 2514 -- so 42 are NOT blank-vs-blank
+harness.canary-probe.json                0 of 2514   the extra byte is untouched
+harness.canary-control.json              2514 of 2514   and the probe can fire
 harness.postintegration.revert-verified.json
 arylen_probe.{f90,sh,txt}                what the reference does per AryLen
-const_tweak_probes/                      which `'1' -> '2'` sites are visible
+const_tweak_probes/                      which `'1' -> '2'` sites were visible
+                                         BEFORE R14; annotated, not rewritten
 vit_check_scope_redtest.{sh,txt}         the `vit check` fix, both directions
+
+x3_check/                                the FIRST dispatch's X3 check, in case counts
+x3_check_r14/                            R14's, in corpus BYTES -- README + run.sh
+findline.linewidth-control.cpp           MaxLineLength 2048 -> 2047, the in-bounds twin
+harness.linewidth-control.json           60 of 2514   -- the harness CAN see this site
+gate.survivor-ca75abea.json              0 of 5,252,000  -- and cannot see 2049
+gate.linewidth-control.json              1,583,216 of 4,732,000 for 2048 -> 5,
+                                         so neither zero is a dead probe
 ```
