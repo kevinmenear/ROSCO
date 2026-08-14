@@ -6769,3 +6769,74 @@ point before order 45 is reached. When it lands, the preflight predicate rides
 along for free. The two should be considered together rather than the note
 quietly outliving its half-life — which is exactly what a note does if nobody
 writes down when it stops being adequate.
+
+## 2026-08-14 01:11 — the three queued loop changes landed, and a fourth defect found in the ledger
+
+The ChkParseData shakedown closed COMPLETE 14/14 and the campaign halted by
+design at 35 units, so the window with nothing in flight opened. All three
+changes queued for it landed in that window, which is the constraint written
+down at 13:40 and now exercised: `loop/driver.py` and `harness/` are in the loop
+repo, so each bump `loop_rev` for every artifact taken afterwards.
+
+    3587239  driver: a retried unit's row totals the unit, not its last dispatch
+    98a633d  driver: revcheck at unit close, as an escalation and never as a gate
+    ed623d9  harness: an artifact names the GENERATOR that produced it
+    45a692b  run_campaign: --revcheck, so the Driver-level call is reachable
+
+Suite 461/2, docs updated to 463 collected. Each was red-tested; two were caught
+by their own tests mid-writing, both surfacing as UNVERIFIABLE verdicts, which is
+the guarded boundary turning a programming error into a statement about the unit.
+
+### A sixth finding for the METHOD
+
+6. **A retried unit's ledger row recorded its LAST dispatch and called it
+   `exact`.** ChkParseData cost $30.61 then $29.65; its escalation read
+   `unit_overran:$60.26 across 2 dispatch(es)` and its row read `29.65`. Not a
+   missing row — a present one, wearing the word that means trust this number,
+   understating by 51%.
+
+   MEASURED: 8 of 35 rows carry `retried: true`. Rows sum to $672.76 against a
+   driver total of $752.55; of that $79.79 gap, $45.77 is directly attributable
+   ($15.16 ExtController, $30.61 ChkParseData) because those two also breached
+   the cap and so left an escalation naming the true figure. **The other six are
+   understated by an amount that appears nowhere at all**, because `unit_overran`
+   fires only on a breach: under the cap, the earlier dispatch's cost exists in
+   no file. This is very likely the same object as the $43.50 gap carried since
+   09:30, though the remaining $34.02 has not been independently confirmed.
+
+   The driver already computed the total, for the escalation, and discarded it.
+   Fixed by carrying the earlier `Usage` objects, so the row totals the unit AND
+   can be decomposed: a total nobody can take apart is the next unreadable
+   number. UNKNOWN stays contagious — one unpriced dispatch makes the total
+   `None`, never a partial sum wearing `exact`.
+
+### The fetch-not-push decision is superseded, and why
+
+14:20 recorded the durable copy as a FETCH, with canonical's `main` deliberately
+untouched at `891fde3`. Its two reasons were that pushing under the existing
+`campaign-work` name would MISDESCRIBE the history (that branch at `cf885e3` is
+not an ancestor of this work), and that a fetch sufficed for durability.
+
+The second stopped being true. Every copy of these 11 commits — the clone's
+working tree, canonical's object store, the backup bundles — was on ONE disk.
+`clone_drift` had also gone ACUTE and would have fired on all 40 units of the
+next run, which is noise that buries the firing that matters.
+
+So: canonical fast-forwarded to `45a692b` (verified an ancestor first — 11
+commits, no merge, nothing rewritten), suite re-run IN canonical before pushing
+because a drifted checkout that fails its own suite is the `instrument_regressed`
+hazard, then pushed to `github.nrel.gov`. The remote had been at `eead326`,
+behind canonical, and that sha was confirmed an ancestor so nothing was lost.
+The clone then fetched. Both drift conditions now verified clear by asking the
+question `_instrument_drift` asks: HEAD is reachable from `refs/remotes/origin/main`,
+and HEAD is attached.
+
+The naming objection never applied to a fast-forward of `main`, which describes
+the history exactly.
+
+### Before the 40-unit launch
+
+`--revcheck 'python3 scripts/revcheck.py --unit {name}'` must be passed, or the
+banner prints `NOT CONFIGURED` and no unit is asked whether its done-condition
+was read — the state that let 14 units close without one. The machine was on
+BATTERY at the time of writing (4h13m), which is shorter than the run.
