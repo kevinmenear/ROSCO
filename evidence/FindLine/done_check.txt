@@ -1,6 +1,6 @@
-# done_check.py FindLine -- captured 2026-08-14T17:18:04Z by scripts/capture_done_check.sh
+# done_check.py FindLine -- captured 2026-08-14T17:21:15Z by scripts/capture_done_check.sh
 
-Run against the committed state at 1f996ed ("FindLine: the X3 argument measured, and a closed unit that no longer reproduces"), with a CLEAN tree, with stdout
+Run against the committed state at 9493946 ("FindLine: the proposed rule is a specification now, not a hope"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
