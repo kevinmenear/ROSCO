@@ -1,0 +1,53 @@
+{
+  "c0832dce": "Rec::put, `pos > buf.size()` -> `>=`. The two predicates differ only at pos == buf.size(), where the extra call is buf.append(0, ' ') -- appending zero characters. Nothing is written and pos is unchanged. For pos < buf.size() neither takes the branch.",
+
+  "de817d8b": "FChar<W>, `n > W` -> `>=`. Differ only at n == W, where the extra statement is `n = W` and n already holds W. The memcpy and memset that follow read the same n.",
+
+  "25fca306": "put_a, `len >= w` -> `>`. Differ only at len == w. The then-arm writes put(s, w). The else-arm builds a pad of w - len == 0 characters, calls put(pad) -- which with n == 0 flushes any pending TR blanks and leaves pos == buf.size() -- and then calls put(s, len) with len == w, which appends the same w bytes with no further blank fill. Same bytes in the record and the same pos afterwards.",
+
+  "9f1af25e": "nonfinite_text, `w >= need` -> `>`. Differ only at w == need, and need is strlen(sign) + 8, i.e. 8 or 9. Every call site passes a literal width: put_es passes 20, put_f passes 20 for the Time column and 6, 5, 7, 5 for the status line. No admissible input changes a literal, so w is never 8 or 9 and the two predicates agree everywhere.",
+
+  "5d2c9fbc": "nonfinite_text, `+ 8` -> `+ 9`. The same partition as 9f1af25e seen from the other side: need becomes 9 or 10, and the call-site widths {5, 6, 7, 20} fall on the same side of both. 20 >= 8, 9, 10 all hold; 5, 6 and 7 fail all of them.",
+
+  "1757a711": "put_es, `edig.size() > 1` -> `>=`. The loop strips leading zeros and the statement after it re-pads to exactly `e` digits, so the composition is what is observable. The only string on which the mutant behaves differently is \"0\" -- reached from the \"00\" that C's %E emits for exponent 0 -- which the mutant erases to \"\" and the pad restores to \"00\", the same text the original produces from \"0\". For any other value the first character is not '0' and both stop at the same place.",
+
+  "633daac2": "put_es, `edig.size() > 1` -> `> 2`. C's %E emits at least two exponent digits and three only when |exponent| >= 100, where the leading digit is non-zero. So for a two-digit exponent the mutant strips nothing and the re-pad to e == 2 restores exactly what the original produced by stripping and re-padding; for a three-digit one neither strips. Same text in both cases.",
+
+  "201b931c": "put_es, the asterisk overflow arm, `w + 1` -> `w + 2`. The string is handed to field(text, w), which returns std::string(w, '*') for ANY text longer than w. Both w + 1 and w + 2 are longer than w.",
+
+  "477db167": "`CFI_CDESC_T(1)` -> `(2)`. The macro sizes the descriptor's trailing dim array. The RANK is set by CFI_establish(..., /*rank=*/1, ...) and everything that reads the descriptor reads dim[0]. The second dim slot is storage that is never written and never read.",
+
+  "3df68c54": "avrIndices_size, `base_addr == nullptr ? 0 :` -> `? 1 :`. Every one of the three call sites is inside the `LoggingLevel > 2` arm and downstream of the CFI_allocate in that same arm, so base_addr is not null at any call and the alternative is never evaluated.",
+
+  "93110a39": "`CntrPar->LoggingLevel > 0` -> `>= 0` on the OPEN guard. Both of this unit's call sites are themselves guarded by IF (CntrPar%LoggingLevel > 0) -- DISCON.F90:75 and :145 -- so no input on which the two predicates differ ever enters the unit. MEASURED, not only read: scenario 29 was added to this corpus for exactly this mutant, at LoggingLevel = 0, and the mutant wrote no file because Debug was never called.",
+
+  "c2927bd0": "`CntrPar->LoggingLevel > 0` -> `>= 0` on the .RO.dbg write guard. Same argument as 93110a39, and doubly so here: the conjunction also carries `&& UnDb`, and UnDb is non-null only if the open block ran, which requires LoggingLevel > 0.",
+
+  "ab104d1e": "`idx->base_addr != nullptr` -> `== nullptr` before CFI_deallocate. base_addr is null at every Init this unit ever performs, so the original always skips the deallocate and the mutant always calls CFI_deallocate on an unallocated descriptor -- which is defined to return CFI_ERROR_BASE_ADDR_NULL and change nothing. Two independent facts make the second Init unreachable, and scenario 34 was added to measure both: a second Init inside one library load is refused by ReadAvrSWAP (aviFAIL = -1), and DISCON.F90:145 does not call Debug when aviFAIL < 0; a second Init after kill_discon reloads the library, which resets every SAVE datum. Scenario 34 performs two full Inits at LoggingLevel = 3 and this mutant still moved no byte.",
+
+  "c185c70e": "negate_cond on the same condition as ab104d1e -- `if (!(idx->base_addr != nullptr))` is `if (base_addr == nullptr)`. Same declaration, same reason.",
+
+  "0e7debd2": "`std::fmod` -> `std::remainder` in `fmod(Time, 10.0) == 0.0`. The two functions differ in general but not in this predicate: fmod(x, 10) is x - 10*trunc(x/10) and remainder(x, 10) is x - 10*nearbyint(x/10), and each is zero exactly when x/10 is an integer. The predicate under test is therefore the same predicate for every x, not merely for the simulation clock's range.",
+
+  "b9391310": "FChar<W>, `char c[W]` -> `c[W + 1]`. One byte of extra storage. The constructor writes exactly W bytes (memcpy of n, memset of W - n) and put_a reads exactly W. The extra byte is never written and never read.",
+
+  "4a57ee4a": "put_f, `char tmp[512]` -> `[513]`. The snprintf that follows is bounded by `sizeof tmp`, which grows with the array, and the text it produces for an F20.5 field is at most a few dozen characters. Strictly more storage, none of it reached.",
+
+  "76ef5f5a": "put_es, `char tmp[512]` -> `[513]`. Same as 4a57ee4a for the ES conversion.",
+
+  "9d5eb39f": "put_f, the const_tweak twin of 4a57ee4a: the literal 512 in `char tmp[512]` -> 513.",
+
+  "53abf222": "put_es, the const_tweak twin of 76ef5f5a: the literal 512 in `char tmp[512]` -> 513.",
+
+  "70248551": "write_generated_on, `char date[11]` -> `[12]`. vit_curdate_c writes exactly 11 bytes (the Fortran CHARACTER(11) 'dd-mmm-yyyy') and r.put(date, 11) reads exactly 11.",
+
+  "e62c7325": "write_generated_on, the const_tweak twin of 70248551: the literal 11 in `char date[11]` -> 12.",
+
+  "547d0efa": "write_generated_on, `char time[8]` -> `[9]`. vit_curtime_c writes exactly 8 bytes ('hh:mm:ss') and r.put(time, 8) reads exactly 8.",
+
+  "49e29dfe": "write_generated_on, the const_tweak twin of 547d0efa: the literal 8 in `char time[8]` -> 9.",
+
+  "e6f633ad": "`DebugOutStrings_src[26]` -> `[27]`. A static array of pointers with 26 initialisers; the 27th is value-initialised to nullptr. Every read is `DebugOutStrings_src[i]` for i in [0, nDebugOuts) with nDebugOuts == 26, so the extra element is never dereferenced.",
+
+  "892b672e": "`DebugOutUnits_src[26]` -> `[27]`. Same as e6f633ad for the units table."
+}

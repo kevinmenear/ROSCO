@@ -1,15 +1,44 @@
 {
-  "campaign_rev": "5ca70c5-dirty",
+  "campaign_rev": "fb94374",
   "capped_operators": [
     "compare_op",
     "const_tweak",
     "index_offset"
   ],
   "compared_against": "fortran_reference_dbg_archive",
-  "equivalent_declared": 0,
-  "killed": 121,
+  "equivalences": {
+    "0e7debd2": "`std::fmod` -> `std::remainder` in `fmod(Time, 10.0) == 0.0`. The two functions differ in general but not in this predicate: fmod(x, 10) is x - 10*trunc(x/10) and remainder(x, 10) is x - 10*nearbyint(x/10), and each is zero exactly when x/10 is an integer. The predicate under test is therefore the same predicate for every x, not merely for the simulation clock's range.",
+    "1757a711": "put_es, `edig.size() > 1` -> `>=`. The loop strips leading zeros and the statement after it re-pads to exactly `e` digits, so the composition is what is observable. The only string on which the mutant behaves differently is \"0\" -- reached from the \"00\" that C's %E emits for exponent 0 -- which the mutant erases to \"\" and the pad restores to \"00\", the same text the original produces from \"0\". For any other value the first character is not '0' and both stop at the same place.",
+    "201b931c": "put_es, the asterisk overflow arm, `w + 1` -> `w + 2`. The string is handed to field(text, w), which returns std::string(w, '*') for ANY text longer than w. Both w + 1 and w + 2 are longer than w.",
+    "25fca306": "put_a, `len >= w` -> `>`. Differ only at len == w. The then-arm writes put(s, w). The else-arm builds a pad of w - len == 0 characters, calls put(pad) -- which with n == 0 flushes any pending TR blanks and leaves pos == buf.size() -- and then calls put(s, len) with len == w, which appends the same w bytes with no further blank fill. Same bytes in the record and the same pos afterwards.",
+    "3df68c54": "avrIndices_size, `base_addr == nullptr ? 0 :` -> `? 1 :`. Every one of the three call sites is inside the `LoggingLevel > 2` arm and downstream of the CFI_allocate in that same arm, so base_addr is not null at any call and the alternative is never evaluated.",
+    "477db167": "`CFI_CDESC_T(1)` -> `(2)`. The macro sizes the descriptor's trailing dim array. The RANK is set by CFI_establish(..., /*rank=*/1, ...) and everything that reads the descriptor reads dim[0]. The second dim slot is storage that is never written and never read.",
+    "49e29dfe": "write_generated_on, the const_tweak twin of 547d0efa: the literal 8 in `char time[8]` -> 9.",
+    "4a57ee4a": "put_f, `char tmp[512]` -> `[513]`. The snprintf that follows is bounded by `sizeof tmp`, which grows with the array, and the text it produces for an F20.5 field is at most a few dozen characters. Strictly more storage, none of it reached.",
+    "53abf222": "put_es, the const_tweak twin of 76ef5f5a: the literal 512 in `char tmp[512]` -> 513.",
+    "547d0efa": "write_generated_on, `char time[8]` -> `[9]`. vit_curtime_c writes exactly 8 bytes ('hh:mm:ss') and r.put(time, 8) reads exactly 8.",
+    "5d2c9fbc": "nonfinite_text, `+ 8` -> `+ 9`. The same partition as 9f1af25e seen from the other side: need becomes 9 or 10, and the call-site widths {5, 6, 7, 20} fall on the same side of both. 20 >= 8, 9, 10 all hold; 5, 6 and 7 fail all of them.",
+    "633daac2": "put_es, `edig.size() > 1` -> `> 2`. C's %E emits at least two exponent digits and three only when |exponent| >= 100, where the leading digit is non-zero. So for a two-digit exponent the mutant strips nothing and the re-pad to e == 2 restores exactly what the original produced by stripping and re-padding; for a three-digit one neither strips. Same text in both cases.",
+    "70248551": "write_generated_on, `char date[11]` -> `[12]`. vit_curdate_c writes exactly 11 bytes (the Fortran CHARACTER(11) 'dd-mmm-yyyy') and r.put(date, 11) reads exactly 11.",
+    "76ef5f5a": "put_es, `char tmp[512]` -> `[513]`. Same as 4a57ee4a for the ES conversion.",
+    "892b672e": "`DebugOutUnits_src[26]` -> `[27]`. Same as e6f633ad for the units table.",
+    "93110a39": "`CntrPar->LoggingLevel > 0` -> `>= 0` on the OPEN guard. Both of this unit's call sites are themselves guarded by IF (CntrPar%LoggingLevel > 0) -- DISCON.F90:75 and :145 -- so no input on which the two predicates differ ever enters the unit. MEASURED, not only read: scenario 29 was added to this corpus for exactly this mutant, at LoggingLevel = 0, and the mutant wrote no file because Debug was never called.",
+    "9d5eb39f": "put_f, the const_tweak twin of 4a57ee4a: the literal 512 in `char tmp[512]` -> 513.",
+    "9f1af25e": "nonfinite_text, `w >= need` -> `>`. Differ only at w == need, and need is strlen(sign) + 8, i.e. 8 or 9. Every call site passes a literal width: put_es passes 20, put_f passes 20 for the Time column and 6, 5, 7, 5 for the status line. No admissible input changes a literal, so w is never 8 or 9 and the two predicates agree everywhere.",
+    "ab104d1e": "`idx->base_addr != nullptr` -> `== nullptr` before CFI_deallocate. base_addr is null at every Init this unit ever performs, so the original always skips the deallocate and the mutant always calls CFI_deallocate on an unallocated descriptor -- which is defined to return CFI_ERROR_BASE_ADDR_NULL and change nothing. Two independent facts make the second Init unreachable, and scenario 34 was added to measure both: a second Init inside one library load is refused by ReadAvrSWAP (aviFAIL = -1), and DISCON.F90:145 does not call Debug when aviFAIL < 0; a second Init after kill_discon reloads the library, which resets every SAVE datum. Scenario 34 performs two full Inits at LoggingLevel = 3 and this mutant still moved no byte.",
+    "b9391310": "FChar<W>, `char c[W]` -> `c[W + 1]`. One byte of extra storage. The constructor writes exactly W bytes (memcpy of n, memset of W - n) and put_a reads exactly W. The extra byte is never written and never read.",
+    "c0832dce": "Rec::put, `pos > buf.size()` -> `>=`. The two predicates differ only at pos == buf.size(), where the extra call is buf.append(0, ' ') -- appending zero characters. Nothing is written and pos is unchanged. For pos < buf.size() neither takes the branch.",
+    "c185c70e": "negate_cond on the same condition as ab104d1e -- `if (!(idx->base_addr != nullptr))` is `if (base_addr == nullptr)`. Same declaration, same reason.",
+    "c2927bd0": "`CntrPar->LoggingLevel > 0` -> `>= 0` on the .RO.dbg write guard. Same argument as 93110a39, and doubly so here: the conjunction also carries `&& UnDb`, and UnDb is non-null only if the open block ran, which requires LoggingLevel > 0.",
+    "de817d8b": "FChar<W>, `n > W` -> `>=`. Differ only at n == W, where the extra statement is `n = W` and n already holds W. The memcpy and memset that follow read the same n.",
+    "e62c7325": "write_generated_on, the const_tweak twin of 70248551: the literal 11 in `char date[11]` -> 12.",
+    "e6f633ad": "`DebugOutStrings_src[26]` -> `[27]`. A static array of pointers with 26 initialisers; the 27th is value-initialised to nullptr. Every read is `DebugOutStrings_src[i]` for i in [0, nDebugOuts) with nDebugOuts == 26, so the extra element is never dereferenced."
+  },
+  "equivalences_file": "mutation/Debug.equivalences.json",
+  "equivalent_declared": 26,
+  "killed": 143,
   "limit_per_operator": 40,
-  "loop_rev": "897d67c",
+  "loop_rev": "3f8ed43",
   "merged_from": [
     "mutation/Debug.compare_op.0.json",
     "mutation/Debug.compare_op.1.json",
@@ -17,13 +46,14 @@
     "mutation/Debug.index_offset.1.json",
     "mutation/Debug.const_tweak.0.json",
     "mutation/Debug.const_tweak.1.json",
-    "mutation/Debug.negate_cond.json",
+    "mutation/Debug.negate_cond.0.json",
+    "mutation/Debug.negate_cond.1.json",
     "mutation/Debug.arith_op.json",
     "mutation/Debug.rest.json"
   ],
-  "mutants": 178,
-  "nocompile": 3,
-  "nocompile_ratio": 0.016574585635359115,
+  "mutants": 181,
+  "nocompile": 1,
+  "nocompile_ratio": 0.005494505494505495,
   "nocompile_refused": false,
   "operator_population": {
     "arith_op": 13,
@@ -32,7 +62,7 @@
     "drop_call": 5,
     "drop_factor": 1,
     "index_offset": 40,
-    "negate_cond": 33,
+    "negate_cond": 34,
     "swap_call_args": 1,
     "swap_callee": 1,
     "swap_operands": 7
@@ -49,14 +79,20 @@
     "swap_callee",
     "swap_operands"
   ],
-  "oracle": "byte identity of *.RO.dbg against the committed `pre` archive, produced by a build whose Debug was Fortran",
-  "reference_archive": "preall",
+  "oracle": "byte identity of *.RO.dbg AND of the driver's stdout, per scenario, against a committed archive produced by a build whose Debug was Fortran",
+  "reference_archive": "mutref",
   "scenarios": [
     27,
-    28
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34
   ],
-  "score": 0.6797752808988764,
-  "survived": 57,
+  "score": 0.9225806451612903,
+  "survived": 38,
   "survivors": [
     {
       "after": ">=",
@@ -66,400 +102,267 @@
       "operator": "compare_op"
     },
     {
-      "after": ">",
-      "before": ">=",
-      "id": "25fca306",
-      "line": 138,
-      "operator": "compare_op"
-    },
-    {
-      "after": ">",
-      "before": ">=",
-      "id": "9f1af25e",
-      "line": 172,
-      "operator": "compare_op"
-    },
-    {
-      "after": ">=",
-      "before": ">",
-      "id": "0c94dcd7",
-      "line": 623,
-      "operator": "compare_op"
-    },
-    {
-      "after": "!=",
-      "before": "==",
-      "id": "ad49d403",
-      "line": 724,
-      "operator": "compare_op"
-    },
-    {
-      "after": "<=",
-      "before": "<",
-      "id": "5b456058",
-      "line": 748,
-      "operator": "compare_op"
-    },
-    {
-      "after": ">=",
-      "before": ">",
-      "id": "1e024411",
-      "line": 753,
-      "operator": "compare_op"
-    },
-    {
-      "after": ">=",
-      "before": ">",
-      "id": "c2927bd0",
-      "line": 759,
-      "operator": "compare_op"
-    },
-    {
       "after": ">=",
       "before": ">",
       "id": "de817d8b",
-      "line": 130,
+      "line": 140,
       "operator": "compare_op"
     },
     {
       "after": ">=",
       "before": ">",
       "id": "1757a711",
-      "line": 215,
+      "line": 225,
       "operator": "compare_op"
     },
     {
       "after": ">=",
       "before": ">",
       "id": "901840cc",
-      "line": 276,
+      "line": 286,
       "operator": "compare_op"
     },
     {
       "after": ">=",
       "before": ">",
       "id": "93110a39",
-      "line": 564,
+      "line": 574,
       "operator": "compare_op"
     },
     {
       "after": "==",
       "before": "!=",
       "id": "ab104d1e",
-      "line": 632,
-      "operator": "compare_op"
-    },
-    {
-      "after": ">=",
-      "before": ">",
-      "id": "86e93a74",
-      "line": 643,
-      "operator": "compare_op"
-    },
-    {
-      "after": ">=",
-      "before": ">",
-      "id": "07a95109",
-      "line": 651,
+      "line": 642,
       "operator": "compare_op"
     },
     {
       "after": "<=",
       "before": "<",
       "id": "c3a5bb71",
-      "line": 747,
+      "line": 757,
       "operator": "compare_op"
     },
     {
       "after": ">=",
       "before": ">",
       "id": "dd717e22",
-      "line": 749,
+      "line": 759,
       "operator": "compare_op"
     },
     {
       "after": "<=",
       "before": "<",
       "id": "be38d628",
-      "line": 752,
+      "line": 762,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">",
+      "before": ">=",
+      "id": "25fca306",
+      "line": 148,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">",
+      "before": ">=",
+      "id": "9f1af25e",
+      "line": 182,
+      "operator": "compare_op"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "id": "5b456058",
+      "line": 758,
       "operator": "compare_op"
     },
     {
       "after": ">=",
       "before": ">",
-      "id": "24b5bd14",
-      "line": 770,
+      "id": "1e024411",
+      "line": 763,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "c2927bd0",
+      "line": 769,
       "operator": "compare_op"
     },
     {
       "after": "[W + 1]",
       "before": "[W]",
       "id": "b9391310",
-      "line": 127,
+      "line": 137,
       "operator": "index_offset"
     },
     {
       "after": "[512 + 1]",
       "before": "[512]",
       "id": "76ef5f5a",
-      "line": 207,
+      "line": 217,
       "operator": "index_offset"
     },
     {
       "after": "[11 + 1]",
       "before": "[11]",
       "id": "70248551",
-      "line": 286,
-      "operator": "index_offset"
-    },
-    {
-      "after": "[12 + 1]",
-      "before": "[12]",
-      "id": "4126f3b7",
-      "line": 328,
+      "line": 296,
       "operator": "index_offset"
     },
     {
       "after": "[26 + 1]",
       "before": "[26]",
       "id": "e6f633ad",
-      "line": 344,
+      "line": 354,
       "operator": "index_offset"
     },
     {
       "after": "[512 + 1]",
       "before": "[512]",
       "id": "4a57ee4a",
-      "line": 188,
+      "line": 198,
       "operator": "index_offset"
     },
     {
       "after": "[8 + 1]",
       "before": "[8]",
       "id": "547d0efa",
-      "line": 287,
-      "operator": "index_offset"
-    },
-    {
-      "after": "[11 + 1]",
-      "before": "[11]",
-      "id": "ba573ef3",
-      "line": 327,
+      "line": 297,
       "operator": "index_offset"
     },
     {
       "after": "[13 + 1]",
       "before": "[13]",
       "id": "c933177d",
-      "line": 329,
+      "line": 339,
       "operator": "index_offset"
     },
     {
       "after": "[21 + 1]",
       "before": "[21]",
       "id": "4b100ace",
-      "line": 337,
+      "line": 347,
       "operator": "index_offset"
     },
     {
       "after": "[26 + 1]",
       "before": "[26]",
       "id": "892b672e",
-      "line": 351,
+      "line": 361,
       "operator": "index_offset"
     },
     {
       "after": "9",
       "before": "8",
       "id": "5d2c9fbc",
-      "line": 171,
+      "line": 181,
       "operator": "const_tweak"
     },
     {
       "after": "513",
       "before": "512",
       "id": "53abf222",
-      "line": 207,
+      "line": 217,
       "operator": "const_tweak"
     },
     {
       "after": "2",
       "before": "1",
       "id": "633daac2",
-      "line": 215,
+      "line": 225,
       "operator": "const_tweak"
     },
     {
       "after": "2",
       "before": "1",
       "id": "201b931c",
-      "line": 218,
+      "line": 228,
       "operator": "const_tweak"
     },
     {
       "after": "2",
       "before": "1",
       "id": "477db167",
-      "line": 247,
+      "line": 257,
       "operator": "const_tweak"
     },
     {
       "after": "1",
       "before": "0",
       "id": "3df68c54",
-      "line": 262,
+      "line": 272,
       "operator": "const_tweak"
     },
     {
       "after": "1",
       "before": "0",
       "id": "1d75738a",
-      "line": 276,
+      "line": 286,
       "operator": "const_tweak"
     },
     {
       "after": "12",
       "before": "11",
       "id": "e62c7325",
-      "line": 286,
-      "operator": "const_tweak"
-    },
-    {
-      "after": "10.5492966",
-      "before": "9.5492966",
-      "id": "487049bb",
-      "line": 303,
+      "line": 296,
       "operator": "const_tweak"
     },
     {
       "after": "513",
       "before": "512",
       "id": "9d5eb39f",
-      "line": 188,
-      "operator": "const_tweak"
-    },
-    {
-      "after": "2",
-      "before": "1",
-      "id": "c05d2bfe",
-      "line": 276,
+      "line": 198,
       "operator": "const_tweak"
     },
     {
       "after": "9",
       "before": "8",
       "id": "49e29dfe",
-      "line": 287,
+      "line": 297,
       "operator": "const_tweak"
     },
     {
-      "after": "58.295779513",
-      "before": "57.2957795130",
-      "id": "574c2f3d",
-      "line": 304,
-      "operator": "const_tweak"
-    },
-    {
-      "after": "if (!(std::fmod(LocalVar->Time, 10.0) == 0.0))",
-      "before": "if (std::fmod(LocalVar->Time, 10.0) == 0.0)",
-      "id": "1b016802",
-      "line": 724,
+      "after": "if (!(idx->base_addr != nullptr))",
+      "before": "if (idx->base_addr != nullptr)",
+      "id": "c185c70e",
+      "line": 642,
       "operator": "negate_cond"
     },
     {
       "after": "if (!(UnDb))",
       "before": "if (UnDb)",
       "id": "867065d9",
-      "line": 803,
+      "line": 813,
       "operator": "negate_cond"
-    },
-    {
-      "after": "n + 1",
-      "before": "n - 1",
-      "id": "33792ec2",
-      "line": 276,
-      "operator": "arith_op"
-    },
-    {
-      "after": "LocalVar->GenSpeedF / RPS2RPM",
-      "before": "LocalVar->GenSpeedF * RPS2RPM",
-      "id": "1efda206",
-      "line": 734,
-      "operator": "arith_op"
-    },
-    {
-      "after": "LocalVar->GenSpeedF",
-      "before": "LocalVar->GenSpeedF * RPS2RPM",
-      "id": "c37a0105",
-      "line": 734,
-      "operator": "drop_factor"
-    },
-    {
-      "after": "1 - n",
-      "before": "n - 1",
-      "id": "5754fcef",
-      "line": 276,
-      "operator": "swap_operands"
-    },
-    {
-      "after": "1 - Ind",
-      "before": "Ind - 1",
-      "id": "2de0057a",
-      "line": 645,
-      "operator": "swap_operands"
-    },
-    {
-      "after": "1 - Ind",
-      "before": "Ind - 1",
-      "id": "db5ea484",
-      "line": 646,
-      "operator": "swap_operands"
-    },
-    {
-      "after": "1 - Ind",
-      "before": "Ind - 1",
-      "id": "fc602620",
-      "line": 653,
-      "operator": "swap_operands"
-    },
-    {
-      "after": "LocalVar->Time",
-      "before": "std::fmod(LocalVar->Time, 10.0)",
-      "id": "23918fb3",
-      "line": 724,
-      "operator": "drop_call"
     },
     {
       "after": "DebugOutData[I]",
       "before": "std::fabs(DebugOutData[I])",
       "id": "c64442c8",
-      "line": 749,
+      "line": 759,
       "operator": "drop_call"
     },
     {
       "after": "LocalVarOutData[I]",
       "before": "std::fabs(LocalVarOutData[I])",
       "id": "940f4622",
-      "line": 753,
+      "line": 763,
       "operator": "drop_call"
-    },
-    {
-      "after": "10.0, LocalVar->Time",
-      "before": "LocalVar->Time, 10.0",
-      "id": "8e3d32d0",
-      "line": 724,
-      "operator": "swap_call_args"
     },
     {
       "after": "remainder",
       "before": "fmod",
       "id": "0e7debd2",
-      "line": 724,
+      "line": 734,
       "operator": "swap_callee"
     }
   ],
-  "total": 181,
+  "total": 182,
   "unit": "Debug",
   "vit_rev": "f4a711d",
-  "why_split": "a dispatch's foreground command may block for 600 seconds and a mutant here costs a rebuild plus two simulations (~11s), so 181 mutants cannot be one command; compare_op, index_offset and const_tweak are additionally split in two because each alone is 40 mutants"
+  "why_split": "a dispatch's foreground command may block for 600 seconds and a mutant here costs a rebuild plus EIGHT simulations (~25s), so 182 mutants cannot be one command; compare_op, index_offset, const_tweak and negate_cond are additionally split in two"
 }

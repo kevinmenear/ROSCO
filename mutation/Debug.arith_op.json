@@ -1,12 +1,16 @@
 {
   "baseline": {
     "extra": [],
-    "files_compared": 4,
+    "files_compared": 21,
     "missing": [],
-    "records_compared": 72017,
-    "records_mismatched": 0
+    "records_compared": 99293,
+    "records_mismatched": 0,
+    "stdout_missing": [],
+    "stdout_records_compared": 491,
+    "stdout_records_mismatched": 0,
+    "stdout_scenarios_compared": 8
   },
-  "campaign_rev": "5ca70c5-dirty",
+  "campaign_rev": "3dc706a",
   "capped_operators": [
     "compare_op",
     "const_tweak",
@@ -14,9 +18,9 @@
   ],
   "compared_against": "fortran_reference_dbg_archive",
   "equivalent_declared": 0,
-  "killed": 10,
+  "killed": 12,
   "limit_per_operator": 40,
-  "loop_rev": "897d67c",
+  "loop_rev": "3f8ed43",
   "mutants": 12,
   "nocompile": 1,
   "nocompile_ratio": 0.07692307692307693,
@@ -28,7 +32,7 @@
     "drop_call": 5,
     "drop_factor": 1,
     "index_offset": 40,
-    "negate_cond": 33,
+    "negate_cond": 34,
     "swap_call_args": 1,
     "swap_callee": 1,
     "swap_operands": 7
@@ -40,163 +44,207 @@
     "arith_op"
   ],
   "operators_filter_unmatched": [],
-  "oracle": "byte identity of *.RO.dbg against the committed `pre` archive, produced by a build whose Debug was Fortran",
-  "reference_archive": "preall",
+  "oracle": "byte identity of *.RO.dbg AND of the driver's stdout, per scenario, against a committed archive produced by a build whose Debug was Fortran",
+  "reference_archive": "mutref",
   "results": [
     {
       "after": "pos + buf.size",
       "before": "pos - buf.size",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
       "line": 103,
       "mid": "d4c8068f",
       "operator": "arith_op",
       "outcome": "norun",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "c - n",
       "before": "c + n",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 132,
+      "line": 142,
       "mid": "7123476f",
       "operator": "arith_op",
       "outcome": "norun",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "W + n",
       "before": "W - n",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 132,
+      "line": 142,
       "mid": "3545793b",
       "operator": "arith_op",
       "outcome": "norun",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "w + len",
       "before": "w - len",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 141,
+      "line": 151,
       "mid": "0ef3b09f",
       "operator": "arith_op",
       "outcome": "ok",
-      "records_mismatched": 7
+      "records_mismatched": 35,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "epos - 1",
       "before": "epos + 1",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 213,
+      "line": 223,
       "mid": "fe0c1b74",
       "operator": "arith_op",
       "outcome": "ok",
-      "records_mismatched": 71996
+      "records_mismatched": 99179,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "epos - 2",
       "before": "epos + 2",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 214,
+      "line": 224,
       "mid": "e0470b55",
       "operator": "arith_op",
       "outcome": "ok",
-      "records_mismatched": 71996
+      "records_mismatched": 99179,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "esign - edig",
       "before": "esign + edig",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 222,
+      "line": 232,
       "mid": "404c7b6a",
       "operator": "arith_op",
       "outcome": "nocompile",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "i + 1",
       "before": "i - 1",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 267,
+      "line": 277,
       "mid": "62399755",
       "operator": "arith_op",
       "outcome": "ok",
-      "records_mismatched": 16000
+      "records_mismatched": 24000,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "n + 1",
       "before": "n - 1",
-      "killed": false,
-      "line": 276,
+      "files_extra": [
+        "vit_sim31  .RO.dbg",
+        "vit_sim31  .RO.dbg2",
+        "vit_sim31  .RO.dbg3"
+      ],
+      "files_missing": [
+        "vit_sim31.RO.dbg",
+        "vit_sim31.RO.dbg2",
+        "vit_sim31.RO.dbg3"
+      ],
+      "killed": true,
+      "line": 286,
       "mid": "33792ec2",
       "operator": "arith_op",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "Ind + 1",
       "before": "Ind - 1",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 645,
+      "line": 655,
       "mid": "f2473b35",
       "operator": "arith_op",
       "outcome": "norun",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "Ind + 1",
       "before": "Ind - 1",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 646,
+      "line": 656,
       "mid": "2c3e1fe1",
       "operator": "arith_op",
       "outcome": "norun",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "Ind + 1",
       "before": "Ind - 1",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 653,
+      "line": 663,
       "mid": "6ab4b919",
       "operator": "arith_op",
       "outcome": "norun",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "LocalVar->GenSpeedF / RPS2RPM",
       "before": "LocalVar->GenSpeedF * RPS2RPM",
-      "killed": false,
-      "line": 734,
+      "files_extra": [],
+      "files_missing": [],
+      "killed": true,
+      "line": 744,
       "mid": "1efda206",
       "operator": "arith_op",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 124
     }
   ],
   "scenarios": [
     27,
-    28
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34
   ],
-  "score": 0.8333333333333334,
+  "score": 1.0,
   "slice": null,
-  "survived": 2,
-  "survivors": [
-    {
-      "after": "n + 1",
-      "before": "n - 1",
-      "id": "33792ec2",
-      "line": 276,
-      "operator": "arith_op"
-    },
-    {
-      "after": "LocalVar->GenSpeedF / RPS2RPM",
-      "before": "LocalVar->GenSpeedF * RPS2RPM",
-      "id": "1efda206",
-      "line": 734,
-      "operator": "arith_op"
-    }
+  "streams_compared": [
+    "RO.dbg",
+    "RO.dbg2",
+    "RO.dbg3",
+    "stdout"
   ],
+  "survived": 0,
+  "survivors": [],
   "total": 13,
   "unit": "Debug",
   "vit_rev": "f4a711d"
