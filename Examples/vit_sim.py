@@ -1903,6 +1903,81 @@ def run_scenario_27(turbine, controller, cp_filename, output_dir=None):
 
 
 # ---------------------------------------------------------------------------
+# Scenario 28: LoggingLevel = 3 --- the ONLY input in this tree that writes
+# .RO.dbg2 and .RO.dbg3.
+#
+# ADDED at unit #31 (`Debug`), BY ADDITION and outside `scenario_order`, so the
+# gate's 27 scenarios and every committed baseline are untouched (X3, P5).
+#
+# WHY. All 14 Examples/DISCON*.IN set `LoggingLevel = 1`. `Debug`'s two guards
+# `IF (LoggingLevel > 1)` and `> 2` are therefore REACHED in 23 scenarios and
+# FALSE in every one of them, which leaves a THIRD of that unit -- 159
+# LocalVarOutData assignments and their clamps, the 159-name heading table, the
+# avrIndices construction with both AddToList loops, and the vector-subscripted
+# avrSWAP(avrIndices) write -- exercised by nothing this campaign can run.
+# Measured, not assumed: a perturbation inside that region moves 0 of 408,072
+# records (evidence/Debug/dbg_redtest.txt).
+#
+# This is scenario 3's configuration with one parameter changed. Scenario 3 is
+# the right base because it is the only one that already sets CC_Mode=1 and
+# StC_Mode=1, which is what makes the two AddToList loops in the dbg3 path
+# reachable at all.
+#
+# It writes its own RootName (vit_sim28), so it cannot disturb any other
+# scenario's files.
+# ---------------------------------------------------------------------------
+def run_scenario_28(turbine, controller, cp_filename, output_dir=None):
+    """Scenario 3's configuration at LoggingLevel = 3. Exercises Debug's
+    .RO.dbg2 and .RO.dbg3 paths, which no other input in this tree reaches."""
+    print("=" * 60)
+    print("Scenario 28: LoggingLevel=3 (Debug dbg2/dbg3 coverage)")
+    print("=" * 60)
+
+    param_filename = os.path.join(this_dir, 'DISCON_loglevel3.IN')
+    write_discon(turbine, controller, cp_filename, param_filename, patches={
+        # THE ONE PARAMETER THAT DIFFERS FROM SCENARIO 3.
+        'LoggingLevel': 3,
+
+        'F_NumNotchFilts': 1,
+        'F_NotchFreqs': '1.0000',
+        'F_NotchBetaNum': '0.0000',
+        'F_NotchBetaDen': '0.2500',
+        'F_GenSpdNotch_N': 1,
+        'F_GenSpdNotch_Ind': '1',
+        'CC_Mode': 1,
+        'CC_Group_N': 1,
+        'CC_GroupIndex': '2601',
+        'TD_Mode': 1,
+        'Fl_Mode': 1,
+        'Y_ControlMode': 1,
+        'StC_Mode': 1,
+        'StC_Group_N': 1,
+        'StC_GroupIndex': '2801',
+        'Flp_Mode': 1,
+        'F_FlpCornerFreq': '1.0 0.7',
+        'F_FlCornerFreq': '1.0 0.7',
+    })
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name='vit_sim28'
+    )
+
+    sim_28 = ROSCO_sim.Sim(turbine, controller_int)
+
+    dt = 0.025
+    tlen = 400
+    ws0 = 9
+    t = np.arange(0, tlen, dt)
+    ws = np.ones_like(t) * ws0
+    for i in range(len(t)):
+        ws[i] = ws[i] + t[i] // 100
+
+    sim_28.sim_ws_series(t, ws, rotor_rpm_init=4, make_plots=False, extra_avrswap=EXTRA_AVRSWAP)
+    save_and_print_results(build_save_dict(sim_28), 28, output_dir)
+    print("Scenario 28: PASSED (LoggingLevel=3)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
@@ -1933,6 +2008,9 @@ def main():
         19: run_scenario_19, 20: run_scenario_20, 21: run_scenario_21,
         22: run_scenario_22, 23: run_scenario_23, 24: run_scenario_24,
         25: run_scenario_25, 26: run_scenario_26, 27: run_scenario_27,
+        # NOT in scenario_order: reachable only as `--scenario 28`, so
+        # `--scenario 0` and every gate run behave exactly as before.
+        28: run_scenario_28,
     }
 
     if args.benchmark > 0:
@@ -1967,9 +2045,11 @@ def main():
     # Normal mode: run scenarios with output
     # Scenario 3 runs first so KGen's early invocations (1-20) capture all
     # mode-gated code paths.
-    for s in scenario_order:
-        if args.scenario == 0 or args.scenario == s:
-            scenario_functions[s](turbine, controller, cp_filename, od)
+    # `scenario_order` when running everything; the named one otherwise. The
+    # old form filtered scenario_order, so a scenario registered but not listed
+    # there could not be reached by name. Identical for 1..27.
+    for s in (scenario_order if args.scenario == 0 else [args.scenario]):
+        scenario_functions[s](turbine, controller, cp_filename, od)
 
     print("\n" + "=" * 60)
     print("All scenarios complete.")
