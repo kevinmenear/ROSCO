@@ -358,6 +358,65 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A QUANTITY THE HARNESS SUPPLIES AND THE UNIT BRANCHES ON IS AN INPUT, AND A
+  CONSTANT ONE NARROWS THE DOMAIN WITHOUT APPEARING IN ANY COVERAGE LINE.** Unit
+  #30, second dispatch, and it is the widest of this campaign's corpus findings
+  because it was true for every unit at once. A `CHARACTER(:), ALLOCATABLE`
+  output crosses as a POINTER and a CAPACITY; both sides branch on the capacity
+  and both refuse an assignment that does not fit -- the translation and the
+  generated Fortran bridge, each with its own diagnostic. `emit.ALLOC_HEADROOM`
+  added a constant 4096 to whatever the case supplied:
+
+  ```
+  cap = max(n_ErrMsg, 0) + 4096      the message is 127 bytes
+  the refusal arm                    unreachable, in every case of every corpus
+  '>' -> '>=' on the refusal         SURVIVED   <- differs only at cap == len
+  ```
+
+  It is not a range in `ranges.toml`, not a rule, and not in `rule_coverage`, so
+  nothing reports it as a narrowing. Once it travels in the case stream and a
+  rule sweeps it, the mutant dies at exactly one case. **Ask of any harness:
+  what does IT choose that the unit READS?** Then ask whether a rule owns that
+  choice.
+
+- **A RULE CAN FIRE, VISIBLY CHANGE THE PROGRAM'S BEHAVIOUR, AND STILL KILL
+  NOTHING -- BECAUSE IT VARIES THE RIGHT QUANTITY AGAINST A MOVING BASELINE.**
+  Unit #30, second dispatch, and it cost one whole sweep before it was seen.
+  R13's first version called the case builder once per rung, and the case
+  builder draws its strings from `rng`:
+
+  ```
+  256 capacities x 256 different messages   boundary met by luck   MISSED
+  the same block, one base case copied      boundary met exactly   killed by 1
+  ```
+
+  The block was ALIVE while it missed, and the proof was sitting in the other
+  mutants: negating the refusal went from a mismatch to a SEGFAULT -- a 136-byte
+  message written into a 6-byte buffer, which only a tight capacity can produce.
+  **A sweep must hold everything else fixed**, which is R11's one-at-a-time
+  principle applied to a quantity R11 does not reach. And the tell that a sweep
+  is aimed correctly is that its kill count is PREDICTABLE: one boundary, one
+  case.
+
+- **A CORPUS RULE MUST PUT THE BOUNDARY WHERE IT CHANGES AN ANSWER, NOT MERELY
+  WHERE IT EXISTS.** Unit #30, second dispatch, and it is why the first
+  dispatch's proposed rule -- "put the declared width in the length ladder" --
+  would have closed nothing on its own. The reference truncates `Words(1)` and
+  `ExpVarName` into `CHARACTER(20)` locals and then COMPARES them, so a long
+  string alone is invisible; what is visible is two strings that agree to
+  character 20 and differ at 21.
+
+  ```
+  lengths {20, 21, 25}, strings drawn independently   the arms never match
+  the same lengths, every string from ONE body        arm 1 reached, 9 cases
+  with a per-parameter mark at index 20              '20'->'21' killed by 6
+  ```
+
+  The general form: **a rule aimed at a predicate must supply BOTH sides of it.**
+  Two independently drawn strings are equal only by accident -- this unit's arm
+  1 was reached 52 times in 1284 cases and every one was the all-blank shape,
+  i.e. equality between two empty strings.
+
 - **A BRIDGE-VS-OBJECT RULE LEARNED ON AN INTEGRATED TREE IS SILENTLY WRONG ON A
   CLEAN ONE, AND THE FAILURE IS A GREEN NUMBER.** Unit #30, and it is unit #29's
   entry two bullets down read in the other tree state. That rule asks LIBS -- if

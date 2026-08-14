@@ -2,6 +2,109 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #30 — ChkParseData — second dispatch — 2026-08-14
+
+**THE FOUR SURVIVING MUTANTS WERE TWO STATEMENTS ABOUT THE CORPUS, AND BOTH ARE
+NOW RULES.** The first dispatch closed at 0.852 with four undeclared survivors
+and a proposed generator rule it deliberately did not implement, on the grounds
+that a change to a shared generator is a Driver decision and that the X3 cost
+had not been measured. This dispatch measured it and took it. The score is
+1.000, **no line of the translation changed, and no fifth equivalence was
+declared** — which is the only way a mutation score is worth reading.
+
+The four sorted into two causes, and the prompt's own taxonomy is what sorted
+them: none was (a) genuinely equivalent, all four were (b) the harness cannot
+reach it, and the instruction for (b) is to fix the inputs rather than the
+record.
+
+**R12 — THE TRUNCATION BOUNDARY OF THE REFERENCE'S OWN CHARACTER LOCAL.** Every
+length this generator can produce comes from `_extent_plan`: extents of 3 to 6,
+laddered by R6 to `{1, 2, n, n+5}`. The reference assigns `CHARACTER(*)` dummies
+into `CHARACTER(20)` locals and every real caller hands it `CHARACTER(200)`, so
+the truncation happens in every shipped call and in no generated case. The width
+is now mined from the reference's BODY — the same raw material R6 already mines
+for numbers and characters — with `vit/checks.py::_narrowing_local` transcribed
+rather than re-derived (P4).
+
+The half that is not obvious is the second one, and it is the half a length rung
+alone would have missed: **a truncation is observable only where it changes an
+ANSWER**, and the answer here is a comparison between two strings. Two
+independently drawn strings are equal only by accident — this corpus took its
+equality arm 52 times in 1284 cases and every one was the all-blank shape — so
+R12 sets every string parameter of the case from ONE body with one
+distinguishing mark per parameter at index W. They agree to character 20 and
+differ at 21; the reference truncates them to the same thing and a translation
+that does not, does not.
+
+**R13 — THE STAGING CAPACITY IS AN ARGUMENT OF THE CONTRACT, AND IT WAS A
+CONSTANT.** This is the more general finding and it was not in the first
+dispatch's proposal. A `CHARACTER(:), ALLOCATABLE` output has no C
+representation, so the view carries a POINTER and a CAPACITY and both
+implementations branch on it: the translation refuses an assignment that does
+not fit, and the generated Fortran bridge refuses the same one, each writing a
+diagnostic and leaving the field alone. `emit.ALLOC_HEADROOM` added a constant
+4096 to whatever the case supplied — **in every case of every corpus this
+generator has ever produced, for every unit** — so that arm was unreachable
+everywhere and its boundary could not be told from either side of it. The
+capacity now travels in the case stream, defaulting to `ALLOC_HEADROOM` where no
+case names it, and R13 sweeps it 0..255 above what the case supplies.
+
+**AND THE FIRST VERSION OF R13 WAS ALIVE AND BLIND, WHICH IS THIS CAMPAIGN'S OWN
+RECURRING SHAPE.** It called `_case` once per rung. `_case` draws its strings
+from `rng`, so 256 rungs meant 256 different inputs and therefore 256 different
+message lengths, and a sweep of the capacity past a moving target meets it only
+by luck. It missed — and the block was demonstrably live while it missed:
+negating the refusal went from a mismatch to a SEGFAULT, a 136-byte message
+written into a 6-byte buffer. **A rule that fires, changes the program's
+behaviour, and still kills nothing is not an inert rule; it is a rule aimed one
+degree of freedom off.** One base case copied 256 times fixed it, and the
+mutant it exists for is now killed by exactly 1 of 1552 — the number the design
+predicts, which is what makes the instrument readable rather than lucky.
+
+**THE KILL SETS WERE MEASURED, NOT ARGUED.** `harness/independence.py` states
+the standard — a rule's kill set is what dies with it and survives without it —
+and both new rules were run back out of the corpus one at a time:
+
+```
+R12 ablated   1540 cases   '20'->'21' SURVIVED   '11'->'12' SURVIVED
+                           min->len_src SURVIVED   '>'->'>=' killed (1)
+R13 ablated   1296 cases   '>'->'>=' SURVIVED      the other three killed
+```
+
+Disjoint, three and one, neither covering the other's. This also settled the one
+attribution that was otherwise an argument: `'11' -> '12'` moves a READ bound
+onto the byte past the 11 the `Int2LStr` bridge writes, and the first dispatch
+declined to call it equivalent precisely because whether that byte reads as a
+blank is a property of the stack rather than of the input. It is killed by 9,
+and 9 is also the number of R12 cases that reach the message-writing arm — but
+an equal count is not an equal set (unit #27), so the ablation is the
+measurement and the coincidence is not. The mechanism is still an indeterminate
+read; the buffer is still not zero-initialised, because that would define bytes
+the correct program never reads purely to move a number (unit #4, `Conv2UC`).
+
+**AN ARTIFACT CAN NAME A COMMIT WHOSE CODE DID NOT PRODUCE IT, AND ONLY THE
+STAMP WILL SAY SO.** The sweep that first scored 1.000 ran with R13 in the
+working tree and stamped `3c19267` — the R12 commit. `revcheck` reported the
+base-sha split it is for, and every artifact was re-taken at `1386430` with both
+rules committed. The counts reproduced exactly, which is also the check that
+neither new rule reads entropy.
+
+**METHOD, NOT TARGET — for the Driver.** Two of the things learned here are
+statements about the METHOD rather than about ROSCO, and neither is in the
+invariant layer:
+
+1. *A quantity the HARNESS chooses is an input like any other, and pinning it is
+   a narrowing of the domain that no rule reports.* `ALLOC_HEADROOM` was not a
+   rule, not a range in `ranges.toml`, and not in any coverage line; it was a
+   constant in the emitter, and it made a branch of the C contract unreachable
+   for every unit in the campaign. The generalisation: **anything the harness
+   supplies that the unit BRANCHES on belongs to a rule and belongs in the
+   coverage report.**
+2. *A rule can fire, be alive, and kill nothing because it varies the right
+   quantity against a moving baseline.* The remedy is to hold everything else
+   fixed across a sweep — which is R11's "one at a time" principle applied to a
+   quantity R11 does not reach.
+
 ## Unit #30 — ChkParseData — 2026-08-14
 
 **A UNIT WITH NO KERNEL AND A BLIND GATE CLOSES ON THE GENERATED CORPUS OR NOT

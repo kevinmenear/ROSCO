@@ -36,8 +36,8 @@ translated.
 | layer | result | red-tested |
 |---|---|---|
 | kernel replay | **NOT AVAILABLE — the unit is dead in all 27 scenarios** | — (§1) |
-| differential harness vs clean Fortran | **1284** checked, 0 failed, 0 inadmissible — **this unit's primary evidence** | seven stubs, §3 |
-| mutation score | **23 of 27 behavioural killed, 0.852**, 4 declared equivalent, 0 no-compile, 8 operators | the score *is* the red test, twenty-three times |
+| differential harness vs clean Fortran | **1552** checked, 0 failed, 0 inadmissible — **this unit's primary evidence** | nine stubs, §3 |
+| mutation score | **27 of 27 behavioural killed, 1.000**, 4 declared equivalent, 0 no-compile, 8 operators | the score *is* the red test, twenty-seven times |
 | post-integration harness (wrapper only) | see §6 | see §6 |
 | gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | see §5 — **the gate is blind to this unit** |
 
@@ -135,103 +135,120 @@ see §4.
 
 ## 3. C6 — the differential harness, and the three arms counted exactly
 
-**1284 cases against the clean Fortran, 0 failed, 0 inadmissible**
+**1552 cases against the clean Fortran, 0 failed, 0 inadmissible**
 (`harness/ChkParseData.json`). Both callees cross through generated bridges to
 the ORIGINAL Fortran `Conv2UC` and `Int2LStr`, so a mismatch is attributable to
 this unit alone — see §7 for what it took to make that true.
 
-Seven red tests, **all taken at the same 1284 cases as the green** (unit #26),
-each through `run_harness_stub.sh`, which hash-verifies the stub from inside the
-container before building:
+**The corpus was 1284 and is now 1552**, and the 268 cases between them are the
+whole of what the second dispatch of this unit did: **R12** put 12 cases at the
+truncation boundary of the reference's own `CHARACTER(20)` locals and **R13**
+put 256 at the staging capacity of `ErrVar%ErrMsg`. Both are rules in the
+generator, not cases written here; §4 is where they are argued and measured.
 
-| perturbation | failed of 1284 |
-|---|---|
-| the whole unit as a no-op (both error arms deleted) | **1282** |
-| the `Words(1)`-matches arm alone | **52** |
-| the neither-matches arm alone | **1230** |
-| arm 3 reporting `TRIM(Words(1))` where the reference reports `TRIM(ExpVarName)` | **1230** |
-| the `ErrMsg` staging tail blank-filled instead of cleared to NUL | **1282** |
-| the reference's SILENT arm made to write `aviFAIL = -7` | **2** |
-| *(probe)* `ErrStat` bumped where `Words(1) != Words(2)` | **990** |
-| *(probe)* `ErrStat` bumped where `Words(2)` IS the expected name | **50** |
-| **the `CHARACTER(20)` truncation removed** | **0** |
+Nine red tests and two probes, **all taken at the same 1552 cases as the green**
+(unit #26), each through `run_harness_stub.sh`, which hash-verifies the stub from
+inside the container before building:
 
-**The partition closes and every arm is counted.** `52 + 1230 = 1282`, which is
-exactly what the whole-unit no-op moves; and the arm-2 probe pins the remainder
-at 2 rather than leaving it as "at most 2", so
+| perturbation | failed of 1552 | was, of 1284 |
+|---|---|---|
+| the whole unit as a no-op (both error arms deleted) | **1547** | 1282 |
+| the `Words(1)`-matches arm alone | **61** | 52 |
+| the neither-matches arm alone | **1486** | 1230 |
+| arm 3 reporting `TRIM(Words(1))` where the reference reports `TRIM(ExpVarName)` | **1366** | 1230 |
+| the `ErrMsg` staging tail blank-filled instead of cleared to NUL | **1425** | 1282 |
+| the reference's SILENT arm made to write `aviFAIL = -7` | **5** | 2 |
+| **the `CHARACTER(20)` truncation removed** | **6** | **0** |
+| *(probe)* `ErrStat` bumped where `Words(1) != Words(2)` | **1249** | 990 |
+| *(probe)* `ErrStat` bumped where `Words(2)` IS the expected name | **62** | 50 |
+
+**The partition still closes and every arm is still counted.**
 
 ```
-arm 1   Words(1) is the expected name      52
-arm 2   Words(2) is the expected name       2      cases 360 and 821
-arm 3   neither                           1230
-                                          ----
-                                          1284
+arm 1   Words(1) is the expected name        61      52 + R12's 9
+arm 2   Words(2) is the expected name         5       2 + R12's 3
+arm 3   neither                             1486    1230 + R13's 256
+                                            ----
+                                            1552
 ```
 
-Arm 2 is the reference's only path that writes nothing at all, and it is two
-cases wide. A no-op stub is identical on it *by definition* — which is why the
-probe that makes it WRITE is the only way to measure it, and why "1284 − 1282 =
-2" would have been an inference rather than a count.
+`61 + 1486 = 1547`, which is exactly what the whole-unit no-op moves; the arm-2
+probe pins the silent arm at 5 rather than leaving it as "at most 5". Every one
+of R12's 12 cases lands in arm 1 or arm 2 — they are built to make the names
+MATCH — and every one of R13's 256 lands in arm 3, because they are one base
+case copied.
 
-The fourth row is this unit's own hazard. The two error messages the reference
-writes differ in exactly one substring, and nothing but the corpus distinguishes
-them; it does, 1230 times.
+**THE ZERO IS GONE, AND IT IS THE ONE ROW THAT MATTERS.** The truncation red
+test moved 0 of 1284 and moves **6 of 1552**. It was the only one of this unit's
+red tests that could not go red, and the reason was exact: distinguishing the
+truncation needs a case where `Words(1)` or `ExpVarName` exceeds 20 characters
+and agrees with the other to character 20, and R6's length ladder was
+**[1, 2, 6, 11]** — every rung below the boundary. R12's ladder is `{W, W+1,
+W+5}` at the width the reference itself declares, and its bodies agree to
+character W by construction. The same six cases kill the `'20' -> '21'` mutant
+(§4), so two instruments now name a set of the same size where both named zero.
 
-**The zero is the finding, and it is precise.** Distinguishing the truncation
-needs a case where `Words(1)` or `ExpVarName` exceeds 20 characters and agrees
-with the other to character 20. R6 generates strings at lengths **[1, 2, 6, 11]**
-— the artifact's own `rule_coverage` says so — every one of them shorter than
-the boundary, so no case in this corpus reaches a 21st character at all. Three
-of the four undeclared mutation survivors are the same gap seen from the other
-side (§4). The defect is caught **statically** by VIT's `narrowing-local` check
-and **dynamically by nothing**, which is a sharper statement than "untested".
+The truncation was, until this dispatch, caught **statically** by VIT's
+`narrowing-local` check and **dynamically by nothing**. Both instruments now
+answer.
 
-## 3b. C6 — the wrapper red test moves 6, and the number is arithmetic
+## 3b. C6 — the wrapper red test moves 9, and the number is arithmetic
 
 The post-integration red test transposes the two words in the SHIPPED wrapper
-(§6) and fails **6 of 1284**. I first explained that in a commit message
-(`57b2f37`) from an argument — "R6 tiles one string body across every element,
-so Words(1) == Words(2) in almost every case" — and **the argument is refuted**.
-A probe that increments the never-written `ErrVar%ErrStat` when the two elements
-differ fails **990 of 1284**: the corpus separates them in most cases. Unit #27's
-rule, walked into again: do not explain a count, compute it. The wrong claim is
-left standing in the git log beside this (C12).
+(§6) and fails **9 of 1552** — it failed **6 of 1284** before the corpus grew.
+I first explained the 6 in a commit message (`57b2f37`) from an argument — "R6
+tiles one string body across every element, so Words(1) == Words(2) in almost
+every case" — and **the argument is refuted**. A probe that increments the
+never-written `ErrVar%ErrStat` when the two elements differ fails **1249 of
+1552**: the corpus separates them in most cases. Unit #27's rule, walked into
+again: do not explain a count, compute it. The wrong claim is left standing in
+the git log beside this (C12).
 
 What is actually true takes one source-level fact and one more count:
 
 * **Arm 3 is invisible to a transposition by construction, not by corpus.** Its
   reached-ness (`neither word matches`) is symmetric in the two words, and its
   output names `TRIM(ExpVarName)`, `FileName` and `FileLineNum` — never `Words`.
-  So all **1230** arm-3 cases are identical under the swap whatever the corpus
-  does. The visible set is a subset of arm 1 ∪ arm 2, which is **54** cases.
-* **Of those 54, 6 move**, and the split comes from a second probe: `Words(2)`
-  is the expected name in **50** cases.
+  So all **1486** arm-3 cases are identical under the swap whatever the corpus
+  does, R13's 256 included. The visible set is a subset of arm 1 ∪ arm 2, which
+  is **66** cases.
+* **Of those 66, 9 move**, and the split comes from a second probe: `Words(2)`
+  is the expected name in **62** cases.
 
 ```
-  Words(2) matches                                      50
-  of which arm 2 (Words(1) missed, so arm 2 ran)         2   <- measured, §3
-  so arm-1 cases where Words(2) ALSO matches            48
-  arm 1 total                                           52   <- measured, §3
+  Words(2) matches                                      62
+  of which arm 2 (Words(1) missed, so arm 2 ran)         5   <- measured, §3
+  so arm-1 cases where Words(2) ALSO matches            57
+  arm 1 total                                           61   <- measured, §3
   so arm-1 cases where Words(2) does NOT match           4
-  transposition-visible = 4 (leave arm 1) + 2 (arm 2 -> arm 1) = 6
+  transposition-visible = 4 (leave arm 1) + 5 (arm 2 -> arm 1) = 9
 ```
 
-Six, exactly, from four independently measured counts and no argument about the
-generator. `harness.distinct-words-probe.json` and
-`harness.words2-matches-probe.json` are the two probes; both use `ErrVar%ErrStat`,
-which R4 compares and the reference never writes, so each probe's failure count
-IS the quantity it asks for.
+Nine, exactly, from four independently measured counts and no argument about the
+generator — and the same derivation gave six at 1284, from the same four counts
+taken there. The three added are R12's three `second_element` cases, the only
+new ones in which the two elements differ; its other nine put one body in both.
+`harness.distinct-words-probe.json` and `harness.words2-matches-probe.json` are
+the two probes; both use `ErrVar%ErrStat`, which R4 compares and the reference
+never writes, so each probe's failure count IS the quantity it asks for.
 
-## 4. C6 — the mutation score, and what the first sweep bought
+## 4. C6 — the mutation score: 0.610, 0.852, and 1.000
 
-**31 mutants over 8 operators, 23 killed, 4 declared equivalent, 4 undeclared
-survivors, 0 failed to compile. Score 0.852**, scored on the CLEAN tree against
+**31 mutants over 8 operators, 27 killed, 4 declared equivalent, 0 undeclared
+survivors, 0 failed to compile. Score 1.000**, scored on the CLEAN tree against
 the Fortran reference (`compared_against: fortran_reference_on_a_clean_tree`).
 
-The FIRST sweep scored **0.610** with 16 survivors, and seven of them were the
-shape units #1 and #4 named: a quantity restated where nothing downstream can
-read it. The remedy those units set is to delete the restatement and put the
-proof in the file. Four were deleted:
+Three sweeps, and what each one bought is worth keeping separate:
+
+| sweep | score | what moved it |
+|---|---|---|
+| first, 1284 cases | 0.610, 16 survivors | — |
+| second, 1284 cases | **0.852**, 8 survivors | four RESTATEMENTS deleted from the translation |
+| third, 1552 cases | **1.000**, 4 survivors, all declared | two RULES added to the generator |
+
+The second sweep's four deletions were the shape units #1 and #4 named: a
+quantity restated where nothing downstream can read it. The remedy those units
+set is to delete the restatement and put the proof in the file.
 
 | removed | why it was safe | survivors it took |
 |---|---|---|
@@ -242,30 +259,71 @@ proof in the file. Four were deleted:
 
 and `(len_src < len_dst) ? len_src : len_dst` became `std::min`, which has no
 mutable `<` — trading one *unobservable* mutant for one *truly equivalent* one.
-All eight red tests were re-taken against the new body and reproduce their
-counts exactly, so §3's table describes the shipped translation and not its
-predecessor.
 
 **Four declared equivalent** (`mutation/ChkParseData.equivalences.json`), each
 with a proof rather than a search: three are a buffer declared ONE BYTE LARGER
 whose every access is bounded by a separate constant the mutation did not touch,
-and the fourth is the symmetry of `std::min`.
+and the fourth is the symmetry of `std::min`. **The list did not grow to reach
+1.000** — nothing was re-argued into it.
 
-**Four NOT declared** (`mutation/ChkParseData.undeclared.json`) — they are the
-whole distance from 0.852 to 1.000, and three of them are one cause:
+### 4b. The four that were left, and the two rules that killed them
+
+The third sweep changed no line of the translation. It changed the CORPUS, twice,
+and each change is a rule any unit can now inherit:
 
 ```
-'20' -> '21'                                the CHARACTER(20) truncation boundary
-drop_call min(len_src,len_dst) -> len_src   the same boundary, from the other side
-'11' -> '12'                                reads a byte the Int2LStr bridge never writes
-'>' -> '>=' on the ErrMsg cap refusal       a message exactly n_ErrMsg_cap bytes long
+'20' -> '21'                                killed by 6     R12
+drop_call min(len_src,len_dst) -> len_src   killed (crash)  R12
+'11' -> '12'                                killed by 9     R12
+'>' -> '>=' on the ErrMsg cap refusal       killed by 1     R13
 ```
 
-The third is the Conv2UC shape: an out-of-bounds read whose answer is a property
-of the stack rather than of the input, so no corpus kills it deterministically
-and it is not equivalent either. Zero-initialising the buffer would kill it and
-is deliberately not done — that would define bytes the correct program never
-reads, purely to move a number.
+**R12 — the truncation boundary of the reference's own CHARACTER local.** Every
+length this generator produces comes from the extent plan: extents of 3 to 6,
+laddered to `{1, 2, n, n+5}`, so the longest string it could make was 11 while
+every real caller passes `CHARACTER(200)` and the reference truncates at 20. The
+width is now mined from the reference's BODY — `vit/checks.py::_narrowing_local`
+transcribed rather than re-derived (P4), which is the static check that already
+names this unit as its canonical instance — and the cases set every string
+parameter from ONE body with a distinguishing mark at index W, so they agree to
+character 20 and differ at 21. That second half is the rule: a truncation is
+observable only where it changes an ANSWER, and the answer here is a comparison.
+
+**R13 — the staging capacity, which was not an input at all.** A
+`CHARACTER(:), ALLOCATABLE` output crosses as a pointer and a capacity, and both
+implementations branch on the capacity: the translation refuses an assignment
+that does not fit and the generated Fortran bridge refuses the same one.
+`emit.ALLOC_HEADROOM` added a constant 4096 to whatever the case supplied — in
+every case of every corpus this generator has ever produced — so that arm was
+unreachable and its boundary could not be told from either side of it. The
+capacity now travels in the case stream and R13 sweeps it 0..255 above what the
+case supplies, with every other input held so the message has ONE length across
+the block. It is killed by **exactly 1 of 1552**, the case where the capacity
+equals the 127-byte message, which is the number the design predicts.
+
+**THE KILL SETS ARE MEASURED, NOT ASSERTED.** Each rule was run out of the
+corpus, one at a time (`mutation.ablate-R12_narrowing_width.json`,
+`mutation.ablate-R13_staging_capacity.json`):
+
+```
+R12 ablated   1540 cases   '20'->'21' SURVIVED   '11'->'12' SURVIVED
+                           min->len_src SURVIVED   '>'->'>=' killed (1)
+R13 ablated   1296 cases   '>'->'>=' SURVIVED      the other three killed
+```
+
+Disjoint kill sets, three mutants and one, neither covering the other's.
+
+**And it settles the one attribution that was an argument.** `'11' -> '12'` moves
+a READ bound onto the byte past the 11 the `Int2LStr` bridge writes — an
+indeterminate read, which the previous dispatch declined to call equivalent for
+exactly that reason and expected no corpus to kill. It is killed by 9, and 9 is
+also the number of R12 cases that reach the message-writing arm; but an equal
+count is not an equal set (unit #27), so what makes the attribution a
+measurement is the ablation, not the coincidence. The mechanism is still an
+indeterminate read: what changed is that the corpus now contains inputs under
+which that byte is not a blank. The buffer is still not zero-initialised —
+that would define bytes the correct program never reads, purely to move a
+number (unit #4's refusal on `Conv2UC`).
 
 ## 5. C7–C9 — integration, and a gate that cannot see this unit
 
@@ -294,22 +352,37 @@ layer that can see a defect in the generated bridge — and for this unit the
 bridge does something none of the earlier ones did: it stages a CHARACTER ARRAY
 column-major from `Words(2)`.
 
+Re-taken at 1552: **1552 checked, 0 failed**; the wrapper transposition moves
+**9** (§3b); reverted, rebuilt and re-run, **1552 checked, 0 failed**
+(`harness.postintegration.revert-verified.json`). Post mode reuses the
+generating run's case file, so this pair cannot drift from the green (unit
+#26).
+
 ## 7. What none of the layers can see
 
 * **Anything at all, in simulation.** All five call sites are dead in all 27
   scenarios (§1), so the gate's 5,252,000 compared values constrain nothing
-  about this unit. That is measured, not assumed: see §5.
-* **The `CHARACTER(20)` truncation.** §3's zero and three of §4's four
-  survivors. Closing it needs the generator to put a string LONGER than the
-  reference's own fixed-width CHARACTER locals into the corpus; R6 already mines
-  the reference's literals and named constants, and its length ladder is the one
-  input that is not derived from the reference. Recorded as a proposed rule in
-  `DECISIONS.md` rather than implemented here.
-* **A message exactly `n_ErrMsg_cap` bytes long.** The `>`/`>=` survivor. The
-  guard itself is not dead — negating it is killed at 1282 of 1284 — only its
-  boundary is untested.
+  about this unit. That is measured, not assumed: see §5. **Unchanged by this
+  dispatch** — no corpus rule can revive a dead call site.
 * **`NameIndx`.** Nothing observes it, in the reference either. It is not
   translated and no layer can tell.
+* **Whether the 9 cases that kill `'11' -> '12'` are the 9 R12 cases that write
+  a message.** The counts agree and the ablation attributes the kill to R12, but
+  a red-test and mutation artifact each record a COUNT and not a SET (unit #27),
+  so the two sets are not compared. What would settle it is an artifact carrying
+  failing case indices, which nothing in this campaign produces.
+* **A message longer than 255 bytes past what the case supplies.** R13's ladder
+  is bounded and the bound is stated in the rule. This unit's message is 127
+  bytes, so the boundary is inside the sweep; a unit whose output is longer
+  would show R13 as a rule that fired and killed nothing.
+
+**Two things this section used to list are no longer here**, and they are the
+work of this dispatch rather than a change of opinion:
+
+* ~~The `CHARACTER(20)` truncation.~~ Closed by R12. §3's zero is a 6 and three
+  mutants died.
+* ~~A message exactly `n_ErrMsg_cap` bytes long.~~ Closed by R13. Killed by
+  exactly one case.
 
 ## Files
 
@@ -329,8 +402,14 @@ chkparsedata.arm2-writes-stub.cpp      the silent arm made to write
 chkparsedata.no-truncation-stub.cpp    the CHARACTER(20) locals widened
 chkparsedata.distinct-words-probe.cpp  counts cases with Words(1) != Words(2)
 chkparsedata.words2-matches-probe.cpp  counts cases where Words(2) is the name
-harness.*-stub.json / *-probe.json     the seven red tests and the two probes
+harness.*-stub.json / *-probe.json     the seven red tests and the two probes, at 1552
 run_wrapper_redtest.sh                 perturb the wrapper, prove red, revert, prove green
 gate.control-getwords-perturbed-MOVES.json  the gate control, same build
+mutation.compare_op.json               the compare_op operator alone, at 1552
+mutation.const_tweak.json              const_tweak/drop_call/index_offset, per-mutant counts
+mutation.ablate-R12_narrowing_width.json   R12's kill set: three mutants come back
+mutation.ablate-R13_staging_capacity.json  R13's kill set: one mutant comes back
+harness.ablate-R12_narrowing_width.json    the green the R12 ablation was scored against, 1540
+harness.ablate-R13_staging_capacity.json   the green the R13 ablation was scored against, 1296
 coverage_deadness.py / .txt            the five call sites and the guard beside site 4
 ```

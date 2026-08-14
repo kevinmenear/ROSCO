@@ -1565,17 +1565,17 @@
     "DISCON"
    ],
    "dependency_depth": 1,
-   "verification": "kernel replay or direct-call harness; bit-identical",
+   "verification": "THE DIFFERENTIAL HARNESS IS THE WHOLE OF THE EVIDENCE, AND IT IS 1552 CASES WIDE. There is no kernel: all five call sites have zero hits in all 27 scenarios, so C3 has nowhere to put a pragma; and the gate is BLIND for the same reason, which is red-tested rather than asserted (the whole unit replaced by a determinate error moves 0 of 5,252,000, against a control on the SAME BUILD that moves 1,857,893).\n\n  differential harness      1552 checked, 0 failed, 0 inadmissible\n  seven stubs, two probes   1547 / 61 / 1486 / 1366 / 1425 / 5 / 6 / 1249 / 62\n  post-integration harness  1552 checked, 0 failed; the wrapper transposition moves 9, revert verified green\n  mutation                  27 of 27 behavioural killed, 1.000, 4 declared equivalent, 0 no-compile, 8 operators\n  gate                      5,252,000 values / 351 channels, 0 mismatched -- and constrains nothing about this unit\n\nThe score reached 1.000 at the second dispatch, by two rules added to the corpus generator: R12_narrowing_width (the truncation boundary of the reference's own CHARACTER(20) locals) and R13_staging_capacity (the capacity of the buffer ErrVar%ErrMsg crosses on, which every corpus had pinned at one value). No line of the translation changed and no equivalence was added. Each rule's kill set was measured by ablation and they are disjoint: three mutants and one.",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "unknown",
     "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
-   "observability": null,
+   "observability": "SEEN BY TWO LAYERS OF FIVE, AND THE THREE ABSENCES ARE MEASURED.\n\n  kernel replay             DOES NOT EXIST -- five call sites, zero hits in 27 scenarios. Four are in the unit-number forms of generic interfaces ROSCO never selects; the fifth is guarded by IF (CheckName_), REACHED 50 times and false 50 times because both callers pass .FALSE. as a literal.\n  gate                      BLIND, red-tested, with the control on the same build.\n  differential harness      THE PRIMARY EVIDENCE. 1552 cases, all three arms reached and counted, and the partition closes: 61 + 5 + 1486 = 1552.\n  post-integration harness  1552 cases; the only layer that can see the generated wrapper, which for this unit stages a CHARACTER ARRAY column-major.\n  mutation                  1.000.\n\nWHAT STILL NOTHING SEES: anything at all in simulation (dead call sites -- no corpus rule can revive one); NameIndx, which the reference itself never reads; whether the 9 cases that kill '11' -> '12' ARE the 9 R12 cases that write a message (the counts agree and the ablation attributes the kill, but an artifact records a COUNT and not a SET -- unit #27); and any output longer than R13's stated 255-byte sweep, which this unit's 127-byte message is well inside.",
    "source_file": "rosco/controller/src/ROSCO_Helpers.f90",
    "translation": "translations/ROSCO_Helpers/chkparsedata.cpp",
    "harness_required": true,
-   "disposition": "deferred",
+   "disposition": "integrated",
    "evidence": [
     "evidence/ChkParseData/README.md",
     "evidence/ChkParseData/done_check.txt",
@@ -1614,11 +1614,17 @@
     "mutation/ChkParseData.json",
     "mutation/ChkParseData.equivalences.json",
     "mutation/ChkParseData.undeclared.json",
+    "evidence/ChkParseData/harness.ablate-R13_staging_capacity.json",
+    "evidence/ChkParseData/harness.ablate-R12_narrowing_width.json",
+    "evidence/ChkParseData/mutation.ablate-R13_staging_capacity.json",
+    "evidence/ChkParseData/mutation.ablate-R12_narrowing_width.json",
+    "evidence/ChkParseData/mutation.const_tweak.json",
+    "evidence/ChkParseData/mutation.compare_op.json",
     "gate/ChkParseData.json",
     "gate/ChkParseData.redtest.json",
     "coverage/line_coverage.json"
    ],
-   "disposition_basis": "NOT CLOSED. The mutation score is 0.852 and the campaign's threshold is 1.000 (loop DoneConfig.min_mutation_score), so P12 fails and done_check reports INCOMPLETE. Everything else that CAN run for this unit ran and is green: 1284 differential cases pre-integration and 1284 post-integration, 0 failed, eight red tests and two counting probes, a gate at 5,252,000 values / 0 mismatched. The kernel layer DOES NOT EXIST for this unit -- all five call sites have zero hits in all 27 scenarios -- and the gate is BLIND for the same reason: the whole unit replaced by a determinate error moves 0 of 5,252,000, against a control on the same build that moves 1,857,893. Four mutants survive undeclared and three of them are ONE cause: R6 generates strings at lengths [1, 2, 6, 11] and the reference truncates into CHARACTER(20) locals, so no case in this corpus reaches a 21st character. See mutation/ChkParseData.undeclared.json and DECISIONS.md."
+   "disposition_basis": "CLOSED at the second dispatch. done_check.py reports 14 of 14 (evidence/ChkParseData/done_check.txt) and revcheck --unit ChkParseData is clean, all six result artifacts at loop rev 1386430. P12 was the single failure of the first dispatch, at an honest 0.852 with four undeclared survivors; all four were the SECOND kind of survivor -- reachable in principle, unreachable by this corpus -- so the remedy was two generator rules and not four declarations. The equivalence list is the same four it was, each with a proof rather than a search."
   },
   {
    "order": 31,

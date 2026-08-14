@@ -4,22 +4,26 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-14: unit #30 `ChkParseData` is `deferred` and NOT CLOSED** —
-`done_check.py` reports **13 of 14**, and the one failure is `P12` at an honest
-**0.852** against a threshold of 1.000 (`evidence/ChkParseData/done_check.txt`).
-`revcheck --unit ChkParseData` is **clean**: all six result artifacts name
-`a1d76b0`, none is missing a `loop_rev` and none was stamped at a dirty tree.
+**As of 2026-08-14: unit #30 `ChkParseData` is `integrated` and CLOSED** —
+`done_check.py` reports **14 of 14** (`evidence/ChkParseData/done_check.txt`).
+It closed at the second dispatch; the first left it `deferred` at an honest
+**0.852** on P12, and what moved it to **1.000** was two rules added to the
+corpus generator, not one line of the translation and not one new equivalence
+declaration. `revcheck --unit ChkParseData` is **clean**: all six result
+artifacts name `1386430`.
+
 Everything that CAN run for this unit ran and is green. What cannot run is two
 of the five layers, and the reason is the same one: **the unit is dead in all 27
-scenarios**, the fourth such unit after #1, #21 and #26.
+scenarios**, the fourth such unit after #1, #21 and #26. That is unchanged and
+no corpus rule can change it.
 
 | layer | result | red-tested |
 |---|---|---|
 | kernel replay | **DOES NOT EXIST** — no live call site to extract at | — |
-| differential harness (`harness/ChkParseData.json`) | **1284** checked, 0 failed, 0 inadmissible — **this unit's primary evidence** | seven stubs and two probes, below |
-| post-integration harness | **1284** checked, 0 failed | the wrapper transposes the two words: **6 of 1284**, revert verified green |
+| differential harness (`harness/ChkParseData.json`) | **1552** checked, 0 failed, 0 inadmissible — **this unit's primary evidence** | seven stubs and two probes, below |
+| post-integration harness | **1552** checked, 0 failed | the wrapper transposes the two words: **9 of 1552**, revert verified green |
 | gate, 27 scenarios | 5,252,000 values / 351 channels, **0 mismatched** | whole unit → a determinate error moves **0**; GetWords perturbed on the SAME BUILD moves **1,857,893** |
-| mutation score | **23 of 27 behavioural, 0.852**, 4 declared equivalent, 0 no-compile, 8 operators | the score *is* the red test, twenty-three times |
+| mutation score | **27 of 27 behavioural, 1.000**, 4 declared equivalent, 0 no-compile, 8 operators | the score *is* the red test, twenty-seven times |
 
 **THE FIVE CALL SITES ARE DEAD FOR TWO DIFFERENT REASONS, AND ONLY ONE OF THEM
 IS "NOTHING CALLS IT".** Four sit in the unit-number forms of the `ParseInput`
@@ -33,31 +37,41 @@ basic-block chain, which is what makes it a fact about the guard rather than
 about instrumentation — the P10 control did not have to be borrowed.
 
 **ALL THREE ARMS ARE REACHED AND COUNTED, AND THE PARTITION CLOSES.** The
-reference has one silent path and it is two cases wide:
+reference has one silent path, and the two rules below widened it from two cases
+to five:
 
 ```
-whole unit as a no-op (both error arms)   1282 of 1284
-the Words(1)-matches arm alone              52          52 + 1230 = 1282
-the neither-matches arm alone             1230
-the SILENT arm made to write                 2   <- cases 360 and 821
+whole unit as a no-op (both error arms)   1547 of 1552
+the Words(1)-matches arm alone              61          61 + 1486 = 1547
+the neither-matches arm alone             1486
+the SILENT arm made to write                 5
                                           ----
-arm 1 + arm 2 + arm 3 = 52 + 2 + 1230 =   1284
+arm 1 + arm 2 + arm 3 = 61 + 5 + 1486 =   1552
 ```
 
 The silent arm is invisible to a no-op *by definition*, so the probe that makes
-it WRITE is the only thing that can count it; `1284 − 1282 = 2` would have been
+it WRITE is the only thing that can count it; `1552 − 1547 = 5` would have been
 an inference.
 
-**THE ONE RED TEST THAT STAYS GREEN IS THE FINDING.** Removing the reference's
-`CHARACTER(20)` truncation fails **0 of 1284**. R6 generates strings at lengths
-`[1, 2, 6, 11]` — the harness artifact's own `rule_coverage` says so — and the
-truncation boundary is 20, so **no case in this corpus reaches a 21st
-character**. Three of the four undeclared mutation survivors are the same gap
-from the other side (`'20' → '21'`, `min(len_src,len_dst) → len_src`). VIT's
-`narrowing-local` check names **this unit** as its canonical instance and
-`F_VSRefSpdCornerFreq` as a live 20-character parameter name, so the defect is
-caught statically by that check and dynamically by nothing. Proposed generator
-rule in `DECISIONS.md`; not implemented here.
+**THE ONE RED TEST THAT STAYED GREEN IS NOW RED, AND THAT IS THE WHOLE OF THE
+SECOND DISPATCH.** Removing the reference's `CHARACTER(20)` truncation failed
+**0 of 1284** and fails **6 of 1552**. Two rules were added to the shared
+generator, each mined from something the reference itself declares, and each
+one's kill set was measured by running it back out of the corpus:
+
+| rule | what it puts in the corpus | kill set (by ablation) |
+|---|---|---|
+| **R12_narrowing_width** | 12 cases at the declared width of the reference's own fixed-length CHARACTER locals — every string set from ONE body with a mark at index W, so they agree to W and differ at W+1 | `'20'→'21'`, `'11'→'12'`, `min(len_src,len_dst)→len_src` |
+| **R13_staging_capacity** | 256 cases sweeping the staging CAPACITY of a deferred-length CHARACTER output, 0..255 above what the case supplies, every other input held | `'>'→'>='` on the `ErrMsg` cap refusal, killed by **exactly 1** case |
+
+Disjoint kill sets, three mutants and one, neither covering the other's. R12's
+raw material is `vit/checks.py::_narrowing_local` transcribed rather than
+re-derived (P4) — the static check that already named **this unit** as its
+canonical instance, so the two instruments now answer the same question instead
+of one answering it alone. R13's finding is the more general one: the staging
+capacity is an ARGUMENT of the C contract that **every corpus this generator has
+ever produced pinned at one value**, so the refusal arm both implementations
+carry was unreachable in every unit, not just this one.
 
 **THREE INSTRUMENT DEFECTS HAD TO BE FIXED BEFORE THE HARNESS EXISTED AT ALL**,
 each committed in the repo that owns it (X2): the loop refused
@@ -85,6 +99,11 @@ in **990 of 1284** cases. The real reason is a source-level fact plus arithmetic
 it is invisible by construction; of the 54 arm-1/arm-2 cases, `Words(2)` is also
 the expected name in 48, leaving 4 + 2 = **6**. Unit #27's rule, walked into
 twice now.
+
+The same derivation was re-run at 1552 from the same four counts re-taken there
+— 62 / 5 / 61 / 1486 — and gives **9**, which is what the wrapper red test
+moves. An arithmetic that survives a 268-case widening of the corpus it is
+computed over is a different kind of claim from one that fits once.
 
 **As of 2026-08-13: unit #29 `CheckInputs` is `deferred` and NOT CLOSED** —
 `done_check.py` fails `P12`, now at an honest number rather than an
