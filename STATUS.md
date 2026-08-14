@@ -4,6 +4,84 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-14: unit #34 `PIDController` is `deferred` and NOT CLOSED** — the
+mutation score is an honest **0.759** against a threshold of 1.000, on **seven**
+survivors, and **six of them are one measured zero**. Everything else this unit
+has ran and is green, and every green is red-tested. It is the campaign's
+**fourth dead unit** (#1 `AddToList`, #21 `UpdateZeroMQ`, #26 `unwrap`) and the
+first whose deadness the campaign's own scenario set *tried* to prevent.
+
+Every count below is read from the committed artifact named in its row.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay | **NOT AVAILABLE** — one call site, 0 hits in all 27 scenarios | `evidence/PIDController/coverage_deadness.txt`, exit 0, with a positive control at 12,339,878 hits |
+| differential harness (`harness/PIDController.json`) | **4610 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **4610 of 4610**, naming all seven outputs |
+| mutation (`mutation/PIDController.json`) | **22 of 29 behavioural, 0.759**, 0 declared equivalent, 1 no-compile, 7 operators | the score *is* the red test, 29 times |
+| post-integration (`harness/PIDController.postintegration.json`) | 4610 checked, 0 failed | the MERGE inverted **4610 of 4610**; the copy-back deleted **4610 of 4610** |
+| gate, 27 scenarios (`gate/PIDController.json`) | 5,252,000 values / 351 channels, 0 mismatched | the return value +1000.0 moves **0 of 5,252,000** — `RED_TEST_FAIL`, revert-verified |
+
+**THE SCENARIO BUILT FOR THIS UNIT IS ONE OF THE THREE A MISSING FILE STOPS.**
+`vit_sim.py`'s scenario 10 exists for exactly this function — its docstring is
+*"OL_Mode=2 azimuth tracking to exercise PIDController"* — and sets `OL_Mode=2`,
+`Ind_GenTq=5`, `Ind_Azimuth=6`, `RP_Gains = 1000 100 500 0.1`. It is also one of
+scenarios 10/14/24, which reach `ReadSetParameters.f90:778`, fail in
+`Read_OL_Input` on the absent `Examples/example_inputs/OL_Mode2_Input.dat`
+(unit #17), and are taken out by the `RETURN` two statements later. **Supplying
+that file would change what 3 of the gate's 27 scenarios compute, which is what
+X3 forbids mid-run**; it is the single highest-value thing the campaign could do
+for its own coverage, and it is a Driver decision, not a unit's.
+
+**SIX OF SEVEN SURVIVORS ARE ONE NUMBER, AND THE NUMBER IS ZERO.** Five counting
+probes, sentinel written into `piP%ITerm2` — a field this unit never touches,
+belonging to `PIIController` which shares the type, and compared by R4 as one of
+174 out-parameters, so no real answer can collide with it:
+
+```
+the ELSE arm runs                      2307 of 4610   <- the control (P10), alive
+minValue < maxValue AT ALL              207 of 4610
+the ITerm clamp is INACTIVE               8 of 4610
+the OUTER clamp is INACTIVE               0 of 4610
+```
+
+The return value is saturated in every case, so `PTerm`, `DTerm` and the order of
+the sum are invisible in it. The two surviving `index_offset` mutants were named
+by the artifact only as `('[i]', '[i + 1]')` — twelve sites match — so they were
+identified by BUILDING EACH CANDIDATE, and their counts reproduce the sweep's own
+per-mutant counts in order (`evidence/PIDController/index_sites/RESULTS.md`).
+Both are read sites feeding only that saturated return. The cause is structural:
+`minValue` and `maxValue` are drawn INDEPENDENTLY, and R6's isolating pin sets
+every other defaulted real to the SAME value — so the rule meant to isolate a
+parameter collapses exactly the pair that has to be an INTERVAL. The remedy is
+specified in `DECISIONS.md` as **`R15_bracketing_bounds`** and deliberately NOT
+built here (X3).
+
+**TWO INSTRUMENT DEFECTS HAD TO BE FIXED BEFORE ANY LAYER COULD RUN**, both
+recorded with their failing artifact first (C12), and both the same family — a
+helper whose notion of a name is a bare identifier:
+
+```
+vit  3ce00e8   the kernel callee header names a derived-type dummy and never
+               included vit_types.h; g++ recovers by reading it as `int`
+loop e7d5583   neither index inferrer could see an index that is ITSELF a
+               derived-type field. instPI outside 1..1024:
+                   4741 of 4771 cases BEFORE     0 of 4692 AFTER
+```
+
+The second's symptom was `harness produced no JSON` — which is also what a
+printing reference produces — because the REFERENCE was indexing a
+`DIMENSION(1024)` array with -300 and with 2147483647.
+
+**AND THE UNIT'S SECOND INDEX NEEDED THE OPPOSITE ANSWER.** `objInst%instLPF` is
+subscripted inside the CALLEE, against a field of a NESTED type the generator
+does not expand — no compared out-parameter exists to attach a role to, so no
+inference can ever reach it and it takes the campaign's only judgement mechanism,
+`harness/ranges.toml`, backed by the reference's own exit status
+(`evidence/PIDController/instlpf_probe.txt`: SIGSEGV in `__filters_MOD_lpfilter`
+at both 32-bit extremes and at -100000).
+
+---
+
 **As of 2026-08-14: unit #33 `PIController` is `integrated` and CLOSED** — all
 five layers ran, all five are red-tested, and the mutation score is **1.000** on
 21 behavioural mutants. It is the campaign's first unit with a TRANSLATED CALLEE

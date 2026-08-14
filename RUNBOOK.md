@@ -358,6 +358,107 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **AN INDEX CAN ITSELF BE A DERIVED-TYPE FIELD, AND WHEN THE HARNESS CANNOT SEE
+  THAT, THE PROGRAM THAT SEGFAULTS IS THE REFERENCE.** Unit #34. Both index
+  inferrers (`infer_indexes`, `infer_indexes_fortran`) split a subscript on
+  non-word characters and look for a PARAMETER NAME. `piP%ITerm(objInst%instPI)`
+  yields `objInst` and `instPI`; the parameter is `objInst_instPI`.
+
+  ```
+  instPI outside 1..1024     4741 of 4771 cases   before   (default -300)
+                                0 of 4692 cases   after
+  the symptom                harness produced no JSON, which is ALSO what a
+                             printing reference produces
+  ```
+
+  Unit #11 met the same failure with a bare dummy and fixed it by reading the
+  role off the reference as well as off the translation. This is one
+  qualification level in, and it is the `file_params_from` shape P10 already
+  records: a helper whose notion of a name is a bare identifier, meeting a
+  codebase where the reachable ones are array elements and derived-type fields.
+  Fixed additively in the loop (`e7d5583`), applied only where the
+  bare-identifier rule found nothing, so no already-measured corpus moves.
+
+  **AND THE SECOND INDEX OF THE SAME UNIT NEEDED THE OTHER ANSWER.**
+  `objInst%instLPF` is subscripted inside the CALLEE, against a field of a
+  NESTED type the generator does not expand into parameters -- so there is no
+  compared out-parameter for any inference to attach a role to, and it takes a
+  `harness/ranges.toml` pin instead. The question to ask of a fixed-extent
+  array's index is not "is it a dummy" but **"is the array it indexes a compared
+  out-parameter"**: if it is, infer; if it is not, no inference can ever reach
+  it and a pin is the only mechanism.
+
+- **A NO-OP RED TEST CHANGES THE GENERATED CALLEE SET, AND THEREFORE THE LINK --
+  SO NAME THE CALLEES IN A DEAD BRANCH.** Unit #34, and it cost one confusing
+  build failure naming a DIFFERENT unit's symbol.
+
+  ```
+  vit/cli.py   generate_callee_bridges(Path(args.cpp_file).read_text(), ...)
+               callee_bridge=bool(callee_src)   -> the Makefile's `test:` deps
+  the stub     no `_c(` call -> no bridges -> pidcontroller_callees.o unlinked
+  the error    picontroller.cpp.o: undefined reference to `saturate_c'
+  ```
+
+  `reset_to_clean.sh` leaves every earlier unit's `.cpp.o` in the build tree and
+  `vit test-validate` globs them into LIBS, so a stale object's callee becomes
+  the stub's problem. A bare no-op does not measure a WEAKER instrument, it
+  measures a DIFFERENT one, and unit #26's rule is that a red result and the
+  green it certifies must name the same instrument. The fix is two lines:
+
+  ```cpp
+  if (false) { (void)saturate_c(0,0,0); (void)lpfilter_c(...); }
+  ```
+
+- **WHEN THE INTERESTING ARM IS REACHED IN 0 OF N CASES, SIX SURVIVORS ARE ONE
+  NUMBER -- AND THE COUNTING CHANNEL SHOULD BE A FIELD THE UNIT NEVER TOUCHES.**
+  Unit #34, and it is unit #30's counting-probe rule with the collision question
+  answered instead of argued.
+
+  ```
+  the ELSE arm runs                      2307 of 4610   <- the control (P10)
+  minValue < maxValue AT ALL              207 of 4610
+  the ITerm clamp is INACTIVE               8 of 4610
+  the OUTER clamp is INACTIVE               0 of 4610
+  ```
+
+  Unit #32 had to argue that `LineNum = -7` could not collide with a real
+  answer. Here the sentinel goes into `piP%ITerm2` -- a field this unit never
+  writes, belonging to a sibling procedure that shares the type, and compared by
+  R4 as one of 174 out-parameters. The reference's value for it is the input's
+  UNCONDITIONALLY, so the failing count IS the number of cases reaching the arm
+  and no argument is needed. **Look for an unused field of an INOUT derived type
+  before inventing an impossible value.**
+
+  The cause is structural and general: `minValue` and `maxValue` are drawn
+  INDEPENDENTLY from the same default, and R6's isolating pin sets every OTHER
+  defaulted real to the SAME value -- so the rule meant to isolate a parameter
+  collapses exactly the pair that has to be an INTERVAL. See DECISIONS.md,
+  proposed rule `R15_bracketing_bounds`.
+
+- **`--reverse-copy` IS REQUIRED WHEN A VIEW HOLDS A NESTED TYPE BY VALUE, EVEN
+  THOUGH NOTHING THE UNIT WRITES IS A SCALAR.** Unit #34. The rule as inherited
+  is "use it when the function modifies SCALAR fields in view-type INOUT args",
+  and this unit modifies none: what it changes inside `LocalVar` is
+  `LocalVar%FP`, six arrays a CALLEE writes.
+
+  ```
+  vit_types.h                 filterparameters_t FP;    <- BY VALUE in the view
+  vit_populate_localvariables view%FP%lpf1_a1 = src%FP%lpf1_a1    (a copy)
+  the red test                the copy-back call deleted -> 4610 of 4610 fail
+  ```
+
+  An ALLOCATABLE field crosses as a pointer and needs no copy-back; an embedded
+  derived type is copied in and must be copied out. Read the VIEW STRUCT, not
+  the unit's write set.
+
+  **And VIT resolved an aliasing here that no earlier unit had.** At
+  `Controllers.f90:346` the `piP` argument IS `LocalVar%piP`, so the generated
+  wrapper tests `C_ASSOCIATED(C_LOC(piP), C_LOC(LocalVar%piP))` and routes the
+  pointer through `LocalVar_view%piP` when they are the same object -- otherwise
+  the view copy-back afterwards would overwrite the integrator state the unit
+  had just written through the other pointer. Read the wrapper for this whenever
+  an argument could be a component of another argument.
+
 - **WHEN A VERIFICATION TOOL DECLINES TO CERTIFY ITS OWN RED TEST, THE DECLINE
   NAMES AN INPUT -- PERTURB THAT INPUT AND COUNT.** Unit #33. `vit verify`
   printed `62/62 passed` and, beside it, that both of its red test's INPUT

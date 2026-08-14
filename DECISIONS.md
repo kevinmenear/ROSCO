@@ -2,6 +2,192 @@
 
 Append-only record of *why*. Never read end to end.
 
+
+## Unit #34 — PIDController — 2026-08-14
+
+**THE SCENARIO BUILT FOR THIS UNIT IS ONE OF THE THREE A MISSING FILE STOPS, AND
+THAT MAKES TWO OF THE FIVE LAYERS UNAVAILABLE BEFORE ANY WORK STARTS.**
+`vit_sim.py`'s scenario 10 exists for exactly this function — its docstring is
+"OL_Mode=2 azimuth tracking to exercise PIDController" — and it sets `OL_Mode=2`,
+`Ind_GenTq=5`, `Ind_Azimuth=6` and `RP_Gains = 1000 100 500 0.1`. It is also one
+of the three scenarios (10, 14, 24) that reach `ReadSetParameters.f90:778`, fail
+in `Read_OL_Input` on the absent `Examples/example_inputs/OL_Mode2_Input.dat`
+(unit #17), and are taken out by the `RETURN` two statements later before any
+controller code runs. So the one call site at `Controllers.f90:346` has **0 hits
+in all 27 scenarios**, there is no runtime state to capture and no kernel to
+build, and the gate compares 5,252,000 values while constraining none of them.
+`evidence/PIDController/coverage_deadness.{py,txt}`, exit 0, with the positive
+control P10 asks for: PIController's body, read out of the same dict by the same
+expression, 12 lines and 12,339,878 hits.
+
+This is unit #26's `unwrap` shape for the fourth time (#1 `AddToList`, #21
+`UpdateZeroMQ`, #26 `unwrap`) and the first time the dead unit is one the
+campaign's own scenario set *tried* to reach.
+
+**TWO INSTRUMENT DEFECTS, BOTH RECORDED WITH THEIR FAILING ARTIFACT BEFORE BEING
+FIXED (C12), AND BOTH IN THE SAME FAMILY: A HELPER WHOSE NOTION OF A NAME IS A
+BARE IDENTIFIER.**
+
+1. `vit 3ce00e8` — `generate_callee_declarations_header` enumerated *two* types
+   its declarations can name and does not define (`int32_t`, `CFI_cdesc_t`) and
+   there is a third: `build_c_params` renders a derived-type dummy as
+   `<typename>_t*`, and those structs are in `vit_types.h`, which sits beside
+   this header in both directories that consume it. `LPFilter` takes a
+   `TYPE(FilterParameters)`, so this is the first unit whose CALLEE has the
+   shape. `pidcontroller_callees.h:14: error: 'filterparameters_t' has not been
+   declared`, and g++ recovers by reading the unknown type as `int` — so the
+   diagnostic points at the CALLER's argument rather than at the header, and a C
+   consumer would take the implicit int and link.
+   `evidence/PIDController/vit_defects/`.
+
+2. `loop e7d5583` — **an index can itself be a derived-type field, and neither
+   inferrer could see one.** `piP%ITerm(objInst%instPI)`: the ARRAY being a field
+   was handled, the INDEX being one was not, because splitting `objInst%instPI`
+   on non-word characters yields `objInst` and `instPI`, neither of which is a
+   parameter name (the parameter is `objInst_instPI`). The index stayed
+   unresolved, the generator drew it from R6's decade ladder, and the REFERENCE
+   indexed a `DIMENSION(1024)` array with it:
+
+   ```
+   instPI outside 1..1024   4741 of 4771 cases   before
+                               0 of 4692 cases   after
+   ```
+
+   That is unit #11's failure exactly — a no-op red test segfaulting the
+   reference and the harness reporting "harness produced no JSON", which is also
+   what a printing reference produces — one qualification level in. Fixed
+   ADDITIVELY, applied only where the bare-identifier rule found nothing, under
+   the same discipline the Fortran inferrer was added with at unit #11: it can
+   promote an index that was `unresolved` and cannot change one already
+   resolved, so no already-measured unit's corpus moves.
+
+**ONE `ranges.toml` PIN, AND THE PARAMETER BESIDE IT IS WHY IT IS ONLY ONE.**
+This unit has two 1-based indices into `DIMENSION(1024)` arrays and they need
+different answers. `objInst%instPI` is subscripted in this unit's own body, so
+the fix above resolves it and R5 sweeps it at 1 / interior / n — an inferred
+role, which is stronger than a range. `objInst%instLPF` is subscripted inside
+the CALLEE, against a field of `LocalVar%FP`, a NESTED type the generator does
+not expand into parameters — there is no compared out-parameter to attach a role
+to, and no inference can reach it. So it gets the campaign's only judgement
+mechanism, backed by the reference's own exit status
+(`evidence/PIDController/instlpf_probe.{f90,sh,txt}`, fourteen values, one
+process each): SIGSEGV in `__filters_MOD_lpfilter` at both 32-bit extremes and
+at -100000. The returning rows are the reason the bound is `1..1024` rather than
+"whatever does not crash" — every returning value outside it reads and writes
+six doubles past the declared extent, and the two sides of this comparison do
+not have that memory in the same place.
+
+**A NO-OP RED TEST CHANGES THE GENERATED CALLEE SET, AND THEREFORE THE LINK.**
+`vit test-validate` derives the callee bridges from the TEXT OF THE C++
+TRANSLATION (`generate_callee_bridges(Path(args.cpp_file).read_text(), ...)`) and
+passes `callee_bridge=bool(callee_src)` to the Makefile generator. A stub with no
+`_c(` call produces a Makefile that does not link `pidcontroller_callees.o`, and
+the link then dies on a symbol belonging to a DIFFERENT unit —
+`picontroller.cpp.o: undefined reference to 'saturate_c'` — because
+`reset_to_clean.sh` leaves every earlier unit's `.cpp.o` in the build tree and
+`vit test-validate` globs them into LIBS. A bare no-op stub therefore does not
+measure a weaker instrument, it measures a DIFFERENT one, and unit #26's rule is
+that a red result and the green it certifies must name the same instrument. The
+stub names both callees inside `if (false)`, which keeps the bridge set, the
+Makefile and the link identical and cannot contribute to any output.
+`evidence/PIDController/pidcontroller.noop-stub.cpp`.
+
+**THE MUTATION SCORE IS 0.759 AND SIX OF THE SEVEN SURVIVORS ARE ONE NUMBER:
+ZERO.** Five counting probes, generated from the shipped translation by
+`evidence/PIDController/make_probes.py`, each writing a sentinel into
+`piP%ITerm2` — a field this unit never touches and R4 compares as one of 174
+out-parameters, so no real answer can collide with it and the failing count IS
+the number of cases reaching the arm:
+
+```
+the ELSE arm runs                      2307 of 4610   <- the control (P10), alive
+minValue < maxValue AT ALL              207 of 4610
+the ITerm clamp is INACTIVE               8 of 4610
+the OUTER clamp is INACTIVE               0 of 4610
+both inactive at once                     0 of 4610
+```
+
+**The return value is saturated in every case in the corpus.** `PTerm`, `DTerm`
+and the sum are therefore invisible in it, and six of the seven survivors follow
+from that one zero: `kp * error -> kp`, `kp * error -> kp / error`,
+`EFilt - ELast -> EFilt + ELast`, `PTerm + ITerm -> PTerm - ITerm`, and both
+`[i] -> [i + 1]`.
+
+The last two were named by the artifact only as `(index_offset, '[i]',
+'[i + 1]')`, which matches TWELVE sites, so they were identified BY BUILDING
+EACH CANDIDATE (unit #32's rule) rather than by reasoning about which they were
+— twelve variants, one per occurrence, same corpus
+(`evidence/PIDController/index_sites/RESULTS.md`). The counts reproduce the
+sweep's own per-mutant counts in order, which is what says the variants ARE
+those mutants and not merely the same shape:
+
+```
+site08  kd * (EFilt - piP->ELast[i]) / DT                     0 of 4610
+site09  saturate_c(PTerm + piP->ITerm[i] + DTerm, min, max)   0 of 4610
+site05  the ITerm read that feeds the integrator update       8 of 4610
+        ... and the ITerm clamp is INACTIVE in exactly        8 of 4610
+```
+
+Both survivors are READ sites whose only consumer is the saturated return, and
+site05's count agreeing with the clamp probe's TO THE CASE is what makes the
+explanation a measurement rather than a plausible story.
+
+It is unit #32's finding with a different predicate: **the corpus draws the two
+sides of a comparison independently, so the interesting arm is reached only
+where two independent draws happen to coincide.**
+
+**PROPOSED CORPUS RULE — R15_bracketing_bounds. A PAIR OF PARAMETERS THAT FORMS
+AN INTERVAL MUST SOMETIMES BRACKET THE VALUE CLAMPED INTO IT, AND R6's ISOLATING
+PIN IS WHAT CURRENTLY GUARANTEES IT DOES NOT.** Specification, with the details
+that are load-bearing — a simpler rule gets each of them wrong:
+
+```
+identify the pair          from the CALL, not from the names: the 2nd and 3rd
+                           arguments of a saturate(x, lo, hi)-shaped callee, and
+                           the same two in the reference's own MIN(MAX(x,lo),hi).
+                           `minValue`/`maxValue` is a ROSCO spelling, not a rule.
+lo < hi, always            207 of 2307 ELSE-arm cases have it today. R6's
+                           isolating pin sets every OTHER defaulted real to the
+                           SAME value (0.0 or 1e300), which collapses exactly the
+                           pair that has to be an interval. An isolating pin must
+                           skip a parameter it would make equal to its partner.
+lo and hi from the SCALE   a bracket must be wider than the value: draw
+of the clamped expression  M = 4 * max(|each term the expression multiplies|) and
+                           emit (lo, hi) = (-M, +M). Fixed bounds do not work --
+                           the terms here are products of two +/-1e3 draws, so a
+                           +/-1e3 bracket clamps them anyway. This is the half
+                           that turns 0 of 4610 into a non-zero count.
+BOTH sides of the boundary the point of a clamp is that it fires sometimes. Emit
+                           cases at (-M, +M), at (-M/2, +M/2) and at
+                           (raw - eps, raw + eps), so `<` vs `<=` at the bound
+                           has a case and the ACTIVE arm keeps the coverage it
+                           already has.
+per CLAMP SITE, not per    this unit clamps twice with the same two bounds and
+unit                       the sites saturate independently: the ITerm clamp is
+                           inactive in 8 cases and the outer in 0, so a rule that
+                           only brackets "the output" leaves the other site where
+                           it was.
+```
+
+Expected effect here: the four arithmetic survivors and both surviving
+`index_offset` mutants become reachable, taking 0.759 to at least 0.966 (the
+remaining survivor being the equivalence below). NOT IMPLEMENTED IN THIS
+DISPATCH: it is a change to a shared generator, which is what X3 forbids mid-run
+without the ablation unit #32 paid for, and this dispatch's remaining clock was
+committed to the cycle. Unit #32's own history is the precedent — its first
+dispatch measured the gap and wrote the specification at 0.760, its second built
+the paragraph almost verbatim and five of six survivors died in one sweep.
+
+**THE SEVENTH SURVIVOR IS AN EQUIVALENCE AND IS NOT DECLARED HERE.**
+`const_tweak '0.0' -> '1.0'` on the last argument of
+`lpfilter_c(..., 0, 0.0)`: the preceding `0` is `has_InitialValue`, and both the
+generated bridge and the shipped translation of `LPFilter` read `InitialValue`
+only under `IF (has_InitialValue /= 0)`. The mutant cannot differ on any input.
+It is left UNDECLARED so the undeclared score is on the record first (unit
+#26's discipline), and because declaring it moves 0.759 to 0.786 — which changes
+no disposition and would make the artifact harder to compare with the re-take
+that R15 is for.
+
 ## Unit #33 — PIController — 2026-08-14
 
 **A TOOL'S REFUSAL TO CLAIM IS A MEASUREMENT REQUEST, AND ANSWERING IT COST ONE
