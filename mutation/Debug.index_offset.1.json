@@ -1,12 +1,16 @@
 {
   "baseline": {
     "extra": [],
-    "files_compared": 4,
+    "files_compared": 21,
     "missing": [],
-    "records_compared": 72017,
-    "records_mismatched": 0
+    "records_compared": 99293,
+    "records_mismatched": 0,
+    "stdout_missing": [],
+    "stdout_records_compared": 491,
+    "stdout_records_mismatched": 0,
+    "stdout_scenarios_compared": 8
   },
-  "campaign_rev": "5ca70c5-dirty",
+  "campaign_rev": "430803d-dirty",
   "capped_operators": [
     "compare_op",
     "const_tweak",
@@ -14,9 +18,9 @@
   ],
   "compared_against": "fortran_reference_dbg_archive",
   "equivalent_declared": 0,
-  "killed": 14,
+  "killed": 15,
   "limit_per_operator": 40,
-  "loop_rev": "897d67c",
+  "loop_rev": "3f8ed43",
   "mutants": 20,
   "nocompile": 0,
   "nocompile_ratio": 0.0,
@@ -28,7 +32,7 @@
     "drop_call": 5,
     "drop_factor": 1,
     "index_offset": 40,
-    "negate_cond": 33,
+    "negate_cond": 34,
     "swap_call_args": 1,
     "swap_callee": 1,
     "swap_operands": 7
@@ -40,258 +44,323 @@
     "index_offset"
   ],
   "operators_filter_unmatched": [],
-  "oracle": "byte identity of *.RO.dbg against the committed `pre` archive, produced by a build whose Debug was Fortran",
-  "reference_archive": "preall",
+  "oracle": "byte identity of *.RO.dbg AND of the driver's stdout, per scenario, against a committed archive produced by a build whose Debug was Fortran",
+  "reference_archive": "mutref",
   "results": [
     {
       "after": "[512 + 1]",
       "before": "[512]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 188,
+      "line": 198,
       "mid": "4a57ee4a",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[0 + 1]",
       "before": "[0]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 215,
+      "line": 225,
       "mid": "f24b2e3a",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 657
+      "records_mismatched": 1762,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[0 + 1]",
       "before": "[0]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 267,
+      "line": 277,
       "mid": "951ed34c",
       "operator": "index_offset",
       "outcome": "norun",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[8 + 1]",
       "before": "[8]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 287,
+      "line": 297,
       "mid": "547d0efa",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[1 + 1]",
       "before": "[1]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 317,
+      "line": 327,
       "mid": "ac75fb9b",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 34329
+      "records_mismatched": 34688,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[3 + 1]",
       "before": "[3]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 319,
+      "line": 329,
       "mid": "4cb00ea3",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 39998
+      "records_mismatched": 49592,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[5 + 1]",
       "before": "[5]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 321,
+      "line": 331,
       "mid": "5a7f9e83",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 39419
+      "records_mismatched": 46074,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[7 + 1]",
       "before": "[7]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 323,
+      "line": 333,
       "mid": "98f65f8d",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 39421
+      "records_mismatched": 46080,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[9 + 1]",
       "before": "[9]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 325,
+      "line": 335,
       "mid": "978fcf65",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 39998
+      "records_mismatched": 49592,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[11 + 1]",
       "before": "[11]",
-      "killed": false,
-      "line": 327,
+      "files_extra": [],
+      "files_missing": [],
+      "killed": true,
+      "line": 337,
       "mid": "ba573ef3",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 3998,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[13 + 1]",
       "before": "[13]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 329,
+      "line": 339,
       "mid": "c933177d",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[15 + 1]",
       "before": "[15]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 331,
+      "line": 341,
       "mid": "75daa343",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 19528
+      "records_mismatched": 19528,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[17 + 1]",
       "before": "[17]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 333,
+      "line": 343,
       "mid": "291fe2ec",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 23998
+      "records_mismatched": 23998,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[19 + 1]",
       "before": "[19]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 335,
+      "line": 345,
       "mid": "3fb9c993",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 20476
+      "records_mismatched": 23852,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[21 + 1]",
       "before": "[21]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 337,
+      "line": 347,
       "mid": "4b100ace",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[23 + 1]",
       "before": "[23]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 339,
+      "line": 349,
       "mid": "592d5040",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 20500
+      "records_mismatched": 23880,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[25 + 1]",
       "before": "[25]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 341,
+      "line": 351,
       "mid": "d43eef85",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 39998
+      "records_mismatched": 49592,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[26 + 1]",
       "before": "[26]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": false,
-      "line": 351,
+      "line": 361,
       "mid": "892b672e",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 0
+      "records_mismatched": 0,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[1 + 1]",
       "before": "[1]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 363,
+      "line": 373,
       "mid": "a85bec96",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 15999
+      "records_mismatched": 25593,
+      "stdout_records_mismatched": 0
     },
     {
       "after": "[3 + 1]",
       "before": "[3]",
+      "files_extra": [],
+      "files_missing": [],
       "killed": true,
-      "line": 365,
+      "line": 375,
       "mid": "c3ac961b",
       "operator": "index_offset",
       "outcome": "ok",
-      "records_mismatched": 15998
+      "records_mismatched": 25586,
+      "stdout_records_mismatched": 0
     }
   ],
   "scenarios": [
     27,
-    28
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34
   ],
-  "score": 0.7,
+  "score": 0.75,
   "slice": "1/2",
-  "survived": 6,
+  "streams_compared": [
+    "RO.dbg",
+    "RO.dbg2",
+    "RO.dbg3",
+    "stdout"
+  ],
+  "survived": 5,
   "survivors": [
     {
       "after": "[512 + 1]",
       "before": "[512]",
       "id": "4a57ee4a",
-      "line": 188,
+      "line": 198,
       "operator": "index_offset"
     },
     {
       "after": "[8 + 1]",
       "before": "[8]",
       "id": "547d0efa",
-      "line": 287,
-      "operator": "index_offset"
-    },
-    {
-      "after": "[11 + 1]",
-      "before": "[11]",
-      "id": "ba573ef3",
-      "line": 327,
+      "line": 297,
       "operator": "index_offset"
     },
     {
       "after": "[13 + 1]",
       "before": "[13]",
       "id": "c933177d",
-      "line": 329,
+      "line": 339,
       "operator": "index_offset"
     },
     {
       "after": "[21 + 1]",
       "before": "[21]",
       "id": "4b100ace",
-      "line": 337,
+      "line": 347,
       "operator": "index_offset"
     },
     {
       "after": "[26 + 1]",
       "before": "[26]",
       "id": "892b672e",
-      "line": 351,
+      "line": 361,
       "operator": "index_offset"
     }
   ],
