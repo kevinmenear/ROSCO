@@ -4,6 +4,85 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-14: unit #30 `ChkParseData` is `deferred` and NOT CLOSED** —
+`done_check.py` fails `P12` at an honest **0.852** against a threshold of 1.000.
+Everything that CAN run for this unit ran and is green. What cannot run is two
+of the five layers, and the reason is the same one: **the unit is dead in all 27
+scenarios**, the fourth such unit after #1, #21 and #26.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay | **DOES NOT EXIST** — no live call site to extract at | — |
+| differential harness (`harness/ChkParseData.json`) | **1284** checked, 0 failed, 0 inadmissible — **this unit's primary evidence** | seven stubs and two probes, below |
+| post-integration harness | **1284** checked, 0 failed | the wrapper transposes the two words: **6 of 1284**, revert verified green |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, **0 mismatched** | whole unit → a determinate error moves **0**; GetWords perturbed on the SAME BUILD moves **1,857,893** |
+| mutation score | **23 of 27 behavioural, 0.852**, 4 declared equivalent, 0 no-compile, 8 operators | the score *is* the red test, twenty-three times |
+
+**THE FIVE CALL SITES ARE DEAD FOR TWO DIFFERENT REASONS, AND ONLY ONE OF THEM
+IS "NOTHING CALLS IT".** Four sit in the unit-number forms of the `ParseInput`
+and `ParseAry` generic interfaces, which ROSCO never selects — it reads its
+input file into an array and calls the `_Opt` variants. The fifth is in
+`ParseDbAry`, which IS entered 50 times across 24 scenarios; its guard
+`IF (CheckName_)` is REACHED 50 times and false 50 times, because
+`ReadSetParameters.f90:822` and `:824` both pass `CheckName = .FALSE.` as a
+literal. That zero sits between measured non-zeros at 567 and 572 in the same
+basic-block chain, which is what makes it a fact about the guard rather than
+about instrumentation — the P10 control did not have to be borrowed.
+
+**ALL THREE ARMS ARE REACHED AND COUNTED, AND THE PARTITION CLOSES.** The
+reference has one silent path and it is two cases wide:
+
+```
+whole unit as a no-op (both error arms)   1282 of 1284
+the Words(1)-matches arm alone              52          52 + 1230 = 1282
+the neither-matches arm alone             1230
+the SILENT arm made to write                 2   <- cases 360 and 821
+                                          ----
+arm 1 + arm 2 + arm 3 = 52 + 2 + 1230 =   1284
+```
+
+The silent arm is invisible to a no-op *by definition*, so the probe that makes
+it WRITE is the only thing that can count it; `1284 − 1282 = 2` would have been
+an inference.
+
+**THE ONE RED TEST THAT STAYS GREEN IS THE FINDING.** Removing the reference's
+`CHARACTER(20)` truncation fails **0 of 1284**. R6 generates strings at lengths
+`[1, 2, 6, 11]` — the harness artifact's own `rule_coverage` says so — and the
+truncation boundary is 20, so **no case in this corpus reaches a 21st
+character**. Three of the four undeclared mutation survivors are the same gap
+from the other side (`'20' → '21'`, `min(len_src,len_dst) → len_src`). VIT's
+`narrowing-local` check names **this unit** as its canonical instance and
+`F_VSRefSpdCornerFreq` as a live 20-character parameter name, so the defect is
+caught statically by that check and dynamically by nothing. Proposed generator
+rule in `DECISIONS.md`; not implemented here.
+
+**THREE INSTRUMENT DEFECTS HAD TO BE FIXED BEFORE THE HARNESS EXISTED AT ALL**,
+each committed in the repo that owns it (X2): the loop refused
+`CHARACTER(*) :: Words(2)` and died in `build_call` (loop `a1d76b0`); VIT's
+callee bridge refused `Int2LStr`'s `CHARACTER(11)` result, so the harness failed
+to COMPILE inside the translation's own body (vit `f4a711d`); and `harness.sh`'s
+bridge-vs-object rule, written for an integrated tree, is **silently wrong** on a
+clean one — it dropped the `conv2uc_c` bridge in favour of a stale
+`conv2uc.cpp.o`, which links cleanly, reports a number, and runs a DIFFERENT
+`Conv2UC` on each side of the comparison. The rule now asks the tree and runs in
+both modes.
+
+**A MUTATION SWEEP SCORED 0.000 WITH 31 OF 31 MUTANTS FAILING TO COMPILE**, run
+immediately after a `cp` of the translation across the bind mount; the identical
+command 90 seconds later compiled 31 of 31. `mutate_guarded.sh` refused to clear
+its marker, named the live mutant's hash, and the file was restored before
+anything was built. Unit #23's "a `cp` onto a bind-mounted file is read
+half-written", at sweep scale.
+
+**AND I EXPLAINED A COUNT INSTEAD OF COMPUTING IT, AGAIN.** Commit `57b2f37`
+attributed the wrapper red test's 6 of 1284 to R6 tiling one string body across
+every array element; a probe says the corpus separates `Words(1)` and `Words(2)`
+in **990 of 1284** cases. The real reason is a source-level fact plus arithmetic
+— arm 3 (1230 cases) reports `TRIM(ExpVarName)` and never mentions `Words`, so
+it is invisible by construction; of the 54 arm-1/arm-2 cases, `Words(2)` is also
+the expected name in 48, leaving 4 + 2 = **6**. Unit #27's rule, walked into
+twice now.
+
 **As of 2026-08-13: unit #29 `CheckInputs` is `deferred` and NOT CLOSED** —
 `done_check.py` fails `P12`, now at an honest number rather than an
 incommensurable one. It is the campaign's largest unit by an order of magnitude

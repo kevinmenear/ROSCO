@@ -2,6 +2,105 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #30 — ChkParseData — 2026-08-14
+
+**A UNIT WITH NO KERNEL AND A BLIND GATE CLOSES ON THE GENERATED CORPUS OR NOT
+AT ALL, AND THIS ONE DOES NOT — AT 0.852.** Five call sites, zero hits in 27
+scenarios, so C3 has nowhere to put a pragma and the gate's 5,252,000 compared
+values constrain nothing. The differential harness is the whole of the evidence,
+and its threshold is the campaign's, not this unit's: `min_mutation_score = 1.0`.
+Recorded `deferred`, like unit #29 and for a smaller reason.
+
+**THE FOUR SURVIVING MUTANTS ARE THREE STATEMENTS ABOUT ONE CORPUS RULE, AND
+THAT IS WHY THE NUMBER IS WORTH KEEPING RATHER THAN CHASING.** R6's string
+lengths are `sorted({1, 2, ex0, ex0 + 5})` — here `[1, 2, 6, 11]`. The reference
+assigns `CHARACTER(*)` dummies into `CHARACTER(20)` locals, so its truncation
+boundary is 20 and **no case in this corpus reaches a 21st character**. `'20' ->
+'21'` survives; so does `min(len_src, len_dst) -> len_src`, which differs only
+when the source is longer than the destination; and the red test that widens the
+locals to the arguments' own lengths fails **0 of 1284**, which is the same fact
+from the other side and is the only one of eight red tests that stays green.
+
+**PROPOSED GENERATOR RULE, NOT IMPLEMENTED HERE.** R6 already mines the
+reference for its own literals and named constants; its LENGTH ladder is the one
+input that is not derived from the reference at all. The rule that would close
+this gap is of exactly the same kind:
+
+> The declared width of every fixed-width CHARACTER LOCAL in the reference
+> belongs in the string-length ladder, and so does width + 1 — because an
+> assignment into it TRUNCATES at exactly that boundary, and a corpus that never
+> crosses the boundary cannot see the truncation.
+
+It is a change to a shared generator that widens the corpus of every unit with
+such a local, so it is a Driver decision and not a unit's. The X3 cost has not
+been measured; measuring it is the first step, not the second. Note that VIT's
+`narrowing-local` check already catches this defect STATICALLY and names this
+unit as its canonical instance — so the campaign is not blind to it, only its
+differential harness is, and the two instruments are complementary rather than
+redundant.
+
+**A RULE THAT IS CORRECT ON AN INTEGRATED TREE CAN BE SILENTLY WRONG ON A CLEAN
+ONE, AND THE FAILURE IS A NUMBER RATHER THAN AN ERROR.** Unit #29 settled
+`harness.sh`'s bridge-vs-object question by asking LIBS: if `<callee>.cpp.o` is
+in the link, drop the bridge, because there the Fortran callee IS a wrapper
+around that object and the two would call each other. On a clean tree the same
+condition holds for the opposite reason — the object is a stale artifact of an
+earlier integrated build that `vit test-validate` globs in, and the Fortran
+callee is the real body. Dropping the bridge there links cleanly, runs, and
+reports 1284 of 1284 while running **two different `Conv2UC` implementations**,
+one per side. VIT's stated one-implementation property, which is what makes a
+mismatch attributable to the unit under test, was simply gone.
+
+The repaired rule asks the TREE — does any Fortran source CALL `<callee>_c(` —
+which is `reset_to_clean.sh`'s own test and maintains itself as units are
+integrated. It then has to run in BOTH modes and compute the link set per mode,
+because post mode adds every `.o` in the build tree on its own `make` command
+line; the first post-integration run after the repair died on
+`multiple definition of int2lstr_c`. **A conditional written from one tree state
+is a conditional that has been tested in one tree state.** Ask which state a
+rule was learned in before reusing it in the other.
+
+**A `cp` ACROSS A BIND MOUNT CAN BREAK EVERY BUILD IN A SWEEP, AND THE ARTIFACT
+IT WRITES IS A SCORE.** 31 of 31 mutants reported `no compile`; the artifact
+recorded `score 0.000`; the identical command 90 seconds later compiled 31 of 31
+and scored 0.742. Unit #23 recorded this hazard for ONE file and guarded it with
+a hash check in `run_harness_stub.sh`; at sweep scale nothing was checking, and
+the only reason the tree did not carry a mutant into the integrate is that
+`mutate_guarded.sh` refused to clear its marker. **The guard the campaign built
+for a hard kill caught a race instead** — worth saying, because the argument for
+building it was about timeouts and this was not one.
+
+**AND THE COST OF EXPLAINING A COUNT, PAID TWICE IN ONE CAMPAIGN.** Unit #27
+wrote down "do not explain two equal counts — compute the two sets", and commit
+`57b2f37` of this unit explains a count from an argument about the generator:
+the wrapper red test moves 6 of 1284 because R6 tiles one string body across
+every element of a CHARACTER array, so `Words(1) == Words(2)` almost always. A
+one-line probe — bump `ErrVar%ErrStat`, which R4 compares and the reference
+never writes — says **990 of 1284** cases have distinct elements. The wrong
+claim is left standing in the git log beside the artifact that refutes it (C12).
+
+What is true costs one source-level fact and one more probe, and it closes
+exactly: arm 3 is invisible to a transposition BY CONSTRUCTION (its condition is
+symmetric in the two words and its message names `TRIM(ExpVarName)`), which
+removes 1230 of 1284 before the corpus is consulted; of the remaining 54,
+`Words(2)` is ALSO the expected name in 48, leaving `4 + 2 = 6`. Four measured
+counts, no argument. **A probe that writes to an output the reference never
+touches is the cheapest counting instrument this campaign has**, and it needed no
+new tooling — it is a stub through `run_harness_stub.sh` like any other.
+
+**`vit check`'s `array-section-row` FALSE POSITIVE HAS A DIFFERENT CAUSE FROM
+THE ONE ALREADY RECORDED.** Unit #28 recorded that `vit check -f <file>` scopes
+its cross-source checks to the FILE and not the function, and decided not to act
+(a VIT change, X3-adjacent for every unit that has run it). That decision stands
+and is followed here. What is new is the MECHANISM in this instance: the match
+is `Channels(:,:)`, a deferred-shape DECLARATION, not a row section in any
+function at all — the detector's `\b(\w+)\s*\(\s*[^,()]+\s*,\s*:\s*\)`
+accepts a bare `:` as the first subscript. So "re-attribute the finding to the
+unit's own line range", which unit #28's entry prescribes, would have worked
+here only by accident: the line is in a different unit. A unit-scoped run of this
+detector would still misfire on any procedure declaring a rank-2 assumed-shape
+array.
+
 ## Unit #29 — CheckInputs — 2026-08-13
 
 **THE CAMPAIGN'S LARGEST UNIT IS ALSO ITS FIRST TOOLING WALL, AND THE TWO ARE
