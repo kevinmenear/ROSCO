@@ -63,15 +63,22 @@ build_and_run() {                 # $1 = the .cpp to put in place, $2 = label
     done
     [ "$want" = "$got" ] || { echo "HASH MISMATCH on $LIVE"; return 1; }
     echo "=== $2   (md5 verified in-container: $got)"
+    # The report goes to an absolute path INSIDE the container. Written
+    # relative, it lands in the harness directory `cd` put us in -- which is
+    # where the first run of this script wrote nothing at all and reported
+    # `exit 1` for both the mutant and the correct program, i.e. a result that
+    # looked like the sanitiser firing on both.
     docker exec vit-dev bash -lc "
         cd /workspace/ROSCO-r2/$DIR &&
         rm -f findline_test.o findline.hpp test &&
-        make CXX='g++ -fsanitize=address -g -fno-omit-frame-pointer' test > /dev/null 2>&1 &&
-        ASAN_OPTIONS=detect_leaks=0 ./test findline_cases.bin > /dev/null 2>$OUT.stderr.tmp
+        make CXX='g++ -fsanitize=address -g -fno-omit-frame-pointer' test > /tmp/asan_build.log 2>&1 || {
+            echo 'BUILD FAILED -- the instrument does not link on this toolchain'
+            tail -5 /tmp/asan_build.log; exit 9; }
+        ASAN_OPTIONS=detect_leaks=0 ./test findline_cases.bin > /dev/null 2>/tmp/asan_run.txt
         rc=\$?
-        cp $OUT.stderr.tmp /workspace/ROSCO-r2/$OUT/$2.asan.txt
-        echo \"exit \$rc\"
-        head -3 /workspace/ROSCO-r2/$OUT/$2.asan.txt
+        cp /tmp/asan_run.txt /workspace/ROSCO-r2/$OUT/$2.asan.txt
+        echo \"./test exit \$rc, \$(wc -c < /tmp/asan_run.txt) byte(s) on stderr\"
+        head -3 /tmp/asan_run.txt
     " 2>&1
 }
 
