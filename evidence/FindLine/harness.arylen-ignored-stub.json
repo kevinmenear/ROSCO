@@ -1,8 +1,8 @@
 {
  "unit": "FindLine",
  "against": "translation",
- "checked": 2370,
- "failed": 0,
+ "checked": 2514,
+ "failed": 30,
  "inadmissible": 0,
  "rule_coverage": [
   "  applied  R5_non_degenerate_shape    3 varied extent(s) at [3, 4, 5] and [3, 4, 5]; 1 FIXED by the type at [2048] -- not varied, NO index parameter identified, array elements distinct",
@@ -13,16 +13,114 @@
   "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
   "  applied  R12_narrowing_width        12 case(s) at the declared width(s) [200] of the reference's own fixed-length CHARACTER local(s) -- each of the 3 string parameter(s) at length(s) [200, 201, 205] and carrying ONE body, so that they agree to character W and differ at W+1: the reference truncates them to the same W characters and a translation that does not, does not. Four shapes -- twin (the control: no difference at any width), diverge, diverge with a blank tail (a length difference rather than a character difference) and second_element (the first element of a CHARACTER ARRAY differs from character 1)",
   "  N/A      R13_staging_capacity       no deferred-length CHARACTER output -- no parameter whose LENGTH the callee chooses, so no staging buffer whose capacity a case could state",
+  "  applied  R14_planted_word           144 case(s) planting a free scalar CHARACTER input as word [1, 2, 3] of ONE element of a CHARACTER ARRAY input -- the element FIRST and LAST, so a search that skips the first is distinguishable; every free scalar integer at k-1 and at k, so whichever offset the reference uses to pick its word is hit; the key case-INVERTED against the word, so an uppercasing pass dropped on either side breaks the match; every other element and every other word a decoy that no key spells. Carried to the narrowing width(s) [200] as well: the k-th word W filler characters and a mark, the key the same W and a DIFFERENT mark (`twin` is the one-mark control). Reached ['1:diverge@200', '1:plant', '1:twin@200', '2:diverge@200', '2:plant', '2:twin@200', '3:diverge@200', '3:plant', '3:twin@200']",
   "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
   "  applied  R4_compare_all_outputs     return value + 3 out-parameter(s): FoundLine, Line, LineNum"
  ],
- "mismatches": [],
- "loop_rev": "024982b-nogit",
- "gen_rev": "gen-cb96877be46b",
+ "mismatches": [
+  {
+   "case": 2373,
+   "output": "FoundLine",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 2373,
+   "output": "Line",
+   "ref": "6141202020202020202020202020202020202020202020202020202020202020...",
+   "got": "42595a5b5e5f606162797a7b20212f303138393a404142595a5b5e5f60616279..."
+  },
+  {
+   "case": 2373,
+   "output": "LineNum",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 2381,
+   "output": "FoundLine",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 2381,
+   "output": "Line",
+   "ref": "6141202020202020202020202020202020202020202020202020202020202020...",
+   "got": "404142595a5b5e5f606162797a7b20212f303138393a404142595a5b5e5f6061..."
+  },
+  {
+   "case": 2381,
+   "output": "LineNum",
+   "ref": "03000000",
+   "got": "00000000"
+  },
+  {
+   "case": 2389,
+   "output": "FoundLine",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 2389,
+   "output": "Line",
+   "ref": "6161616161616161616161616161616161616161616161616161616161616161...",
+   "got": "4142595a5b5e5f606162797a7b20212f303138393a404142595a5b5e5f606162..."
+  },
+  {
+   "case": 2389,
+   "output": "LineNum",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 2397,
+   "output": "FoundLine",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 2397,
+   "output": "Line",
+   "ref": "6161616161616161616161616161616161616161616161616161616161616161...",
+   "got": "606162797a7b20212f303138393a404142595a5b5e5f606162797a7b20212f30..."
+  },
+  {
+   "case": 2397,
+   "output": "LineNum",
+   "ref": "03000000",
+   "got": "00000000"
+  },
+  {
+   "case": 2405,
+   "output": "FoundLine",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 2405,
+   "output": "Line",
+   "ref": "6161616161616161616161616161616161616161616161616161616161616161...",
+   "got": "5f606162797a7b20212f303138393a404142595a5b5e5f606162797a7b20212f..."
+  },
+  {
+   "case": 2405,
+   "output": "LineNum",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 2413,
+   "output": "FoundLine",
+   "ref": "01000000",
+   "got": "00000000"
+  }
+ ],
+ "loop_rev": "552edb1-nogit",
+ "gen_rev": "gen-37041e241554",
  "vit_rev": "d2de28c-nogit",
  "red_test": {
-  "perturbation": "WordInd pinned at 2 -- the .NOT. PRESENT(AryLen) answer -- so AryLen is read and discarded",
-  "result": "0 of 2370 case(s) failed",
+  "perturbation": "AryLen ignored: WordInd pinned at 2 on both arms",
+  "result": "30 of 2514 case(s) failed",
   "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
  }
 }
