@@ -358,6 +358,115 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **WHEN A VERIFICATION TOOL DECLINES TO CERTIFY ITS OWN RED TEST, THE DECLINE
+  NAMES AN INPUT -- PERTURB THAT INPUT AND COUNT.** Unit #33. `vit verify`
+  printed `62/62 passed` and, beside it, that both of its red test's INPUT
+  perturbations had been ABSORBED (`input 'error' scaled by 1.00001`, `offset by
+  1e-05`), "typically a saturated output". Quoting that is a hedge; one stub
+  turns it into a number:
+
+  ```
+  the reference return value == minValue        62 of 62 captured cases
+  a stub with `error` forced to 0.0             PASSES 45 of 62
+  the same edit made at the GATE            moves 2,133,598 of 5,252,000
+  ```
+
+  This is unit #32's "a refusal's stated reason is a claim" with the refusal
+  turning out to be RIGHT, which is the case where quoting feels safe and is
+  not. "The kernel may be weak here" and "the kernel cannot see this argument in
+  73% of its cases" go into `observability` as different sentences, and only the
+  second tells the next reader which oracle to trust.
+
+  And the gate figure is LARGER than the same unit's whole-unit no-op
+  (1,780,508). Not a paradox and worth expecting: a no-op stops advancing the
+  unit's state, while an argument-blind unit keeps running, so the controller
+  stays in its loop and the trajectories diverge further. **A no-op is not an
+  upper bound on what a perturbation can move.**
+
+- **A COVERAGE ZERO AT A CALL SITE'S OWN LINE IS NOT A DEAD CALL SITE: gcov
+  ATTRIBUTES A CONTINUED STATEMENT'S HITS TO ITS LAST CONTINUATION LINE.** Unit
+  #33, caught one sentence before it was written into `observability`.
+
+  ```
+  Controllers.f90:945   LocalVar%CC_ActuatedL(I_GROUP) = PIController( &      0 hits
+  Controllers.f90:947                     LocalVar%piP, ..., objInst%instPI)  127,994
+  ```
+
+  Four of this unit's 17 call sites read as dead at their own line and none of
+  them is. Unit #1 established that a call site with no hits is not a tool
+  failure; the converse needs saying too, because the report is the same zero.
+  The check is one range over the same dict:
+
+  ```python
+  best = max(sum(hits.get(str(l), {}).values()) for l in range(site, site + 5))
+  ```
+
+- **QUOTE `verify_fields.csv`'s STATUS COLUMN AND NOTHING ELSE -- ITS VALUE
+  COLUMNS ARE NOT ALWAYS THE COMPARED VALUES.** Unit #33, and it extends unit
+  #4's rule ("the bit-exact claim lives in the status column, not the verdict
+  line") one column further left.
+
+  ```
+  instpi   computed 3, reference 3, IDENTICAL   in all 62 rows
+  the stub that deletes `inst = inst + 1`       moves objinst%instpi in all 62 cases
+  the CSV carries 14,508 rows                   the kernel's own stdout carries 14,818
+  ```
+
+  A reader who quoted the values would report the increment as unconstrained
+  when it is the most constrained thing in the unit. The verdicts agree
+  everywhere, so this is not a wrong answer -- it is a column that reads like
+  evidence and is not. Keep the kernel's own stdout beside the CSV
+  (`run_stub.sh` writes it) and count `NOT IDENTICAL` lines from that.
+
+- **A MARSHALLING CONSTRUCT IN THE WRAPPER IS A MUTANT OF THE SAME PREDICATE
+  SEEN FROM THE OTHER SIDE OF THE BOUNDARY, AND IT COSTS ONE REBUILD.** Unit
+  #33. `vit integrate` writes `MERGE(1_C_INT, 0_C_INT, reset)` for a LOGICAL
+  dummy; inverting it is the Fortran-side spelling of the C++ `negate_cond`
+  mutant on `if (reset != 0)`.
+
+  ```
+  negate_cond, the C++ translation           3112 of 3532 harness cases
+  the MERGE inverted, the Fortran wrapper    3112 of 3532 harness cases
+  the predicate inverted, the whole program  2,128,633 of 5,252,000 gate values
+  ```
+
+  The first two agreeing TO THE CASE is what says the predicate is constrained
+  rather than merely covered -- two instruments, two languages, one number. Use
+  it when a post-integration red test needs a second perturbation: the obvious
+  one (transpose two INTENT(IN) arguments) moved only 145 of 3532 here, because
+  a swap is a no-op wherever the corpus draws the two equal.
+
+- **A MUTATION OPERATOR GATED ON A TABLE OF NAMES STOPS COVERING THE PROGRAM AS
+  THE CAMPAIGN INTEGRATES ITS OWN UNITS -- AND THE ARTIFACT SAYS SO IF YOU READ
+  BOTH LISTS.** Unit #33, the first unit whose body CALLS a translated callee.
+
+  ```
+  mutation/PIController.json   operators_offered  12    <- what was tried
+                               operators           7    <- what found a site
+  the two saturate_c calls     no mutant of any kind
+  ```
+
+  All three call operators are gated on `_VALUE_PRESERVING` / `_SIBLINGS`, whose
+  every entry is a C standard-library name. That restriction is MEASURED and
+  right -- letting `drop_call` fire everywhere made four units 38-73%
+  unbuildable -- and `saturate_c` still satisfies exactly the property it
+  guarantees. Amending it is a campaign-wide re-take (X3), so the measurement
+  goes by hand instead, which is what unit #24 did before the operators existed:
+
+  ```
+  drop_call    ITerm clamp / output clamp     1761 and 383 of 3532
+  swap_args    value <-> minValue, both sites    0 and   0   EQUIVALENT
+  transposed   bounds swapped, both sites        63 and 135   <- NO operator produces this
+  ```
+
+  Two things to carry. The `swap_call_args` zeros are equivalences already
+  proved at `evidence/saturate/minmax_probe.txt`, so the amendment's effect on
+  this unit is +2 kills, +2 equivalences and a score unchanged at 1.000 -- **an
+  amendment whose effect on its proposing unit is nil is the cheap case for the
+  Driver to decide.** And the last row is outside the amendment entirely:
+  `swap_call_args` exchanges arguments 1 and 2 only, so a three-argument
+  selection function's BOUNDS transposition has no operator at any unit.
+
 - **A PROPOSED INSTRUMENT CAN BE DEMONSTRATED WITHOUT BEING ADOPTED, AND ONE RUN
   ANSWERS MORE THAN THREE DISPATCHES OF ARGUMENT.** Unit #32, second dispatch.
   The sanitiser amendment had been carried across three units on prose. Pointing

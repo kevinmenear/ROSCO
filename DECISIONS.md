@@ -2,6 +2,110 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #33 — PIController — 2026-08-14
+
+**A TOOL'S REFUSAL TO CLAIM IS A MEASUREMENT REQUEST, AND ANSWERING IT COST ONE
+STUB.** `vit verify` printed `62/62 passed` and, in the same breath, that its
+own red test's two INPUT perturbations on `error` had been ABSORBED — "typically
+a saturated output". Unit #32's rule is that a refusal's stated *reason* is a
+claim and can be false; this is the other half of the same rule, where the
+refusal is *right* and quoting it would still have been wrong. Quoted, it is a
+hedge. Measured, it is a number: the reference return value equals `minValue` in
+**62 of 62** captured cases, and a stub that forces `error` to zero **passes 45
+of them**. The difference matters because "the kernel may be weak here" and "the
+kernel cannot see this argument in 73% of its cases" get written into
+`observability` as very different sentences, and only one of them tells the next
+reader which oracle to trust.
+
+The general form, and it is a candidate for the target layer rather than for the
+method: **when a verification tool declines to certify its own red test, the
+decline names a specific input — perturb THAT input to zero and count.** It is
+cheaper than the run that produced the hedge.
+
+**READ THE STATUS COLUMN, NOT THE VALUE COLUMNS — `verify_fields.csv` PRINTS
+NEITHER SIDE OF THE COMPARISON FOR SOME FIELDS.** `instpi` reads `3,3` in all 62
+rows of this unit's field log while the stub that deletes `inst = inst + 1`
+moves that exact field in all 62 cases. The CSV carries 14,508 rows where the
+kernel's own stdout carries 14,818 — five fields per case are dropped. The
+verdicts agree everywhere, so this is not a wrong answer; it is a column that
+reads like evidence and is not. Recorded rather than fixed, because fixing VIT's
+CSV writer mid-unit is not what this dispatch was for, and because the campaign
+already has the rule it needs (unit #4: quote the `status` column, never the
+verdict line) — this extends it one column to the left.
+
+**PROPOSED AMENDMENT — `cppmutate`'s CALL OPERATORS SHOULD REACH THIS
+CAMPAIGN'S OWN TRANSLATED CALLEES, AND THE COST IS MEASURED.**
+
+All three call operators (`drop_call`, `swap_call_args`, `swap_callee`) are
+gated on tables of callee NAMES, and every entry in `_VALUE_PRESERVING` and
+`_SIBLINGS` is a C standard-library name. `saturate_c` is not one, so the two
+calls in this unit's body have **no generated mutant at all** — 22 mutants, none
+of them at either call site. That is not a defect in the tables: their comment
+records that letting `drop_call` fire on every call made four of this campaign's
+units 38–73% unbuildable, and the restriction is what stops a 1.000 measured on
+the compiler.
+
+What it is, is a table that has stopped covering the program as the campaign
+integrates its own units. `saturate_c` satisfies exactly the property the table
+exists to guarantee — result type equals first argument's type, all parameters
+`double` — and so will every `mirror` unit whose signature is scalar-in,
+scalar-out. There are more of them ahead: `ratelimit`, `PIIController`,
+`PIDController`.
+
+NOT DONE HERE (X3): amending the mutation instrument mid-run makes this unit's
+score incommensurable with 32 others'. Instead the missing measurement was made
+by hand, as unit #24 made it before the call operators existed at all
+(`evidence/PIController/hand_mutants.{sh,txt}`, baseline 0 of 3532):
+
+```
+drop_call    ITerm clamp dropped                  1761 of 3532
+             output clamp dropped                  383 of 3532
+swap_args    ITerm clamp,  value <-> minValue         0 of 3532
+             output clamp, value <-> minValue         0 of 3532
+transposed   ITerm clamp,  bounds swapped           63 of 3532
+             output clamp, bounds swapped          135 of 3532
+```
+
+The two zeros are equivalences, not gaps — `fmax(a,b)` and `fmax(b,a)` agree at
+a signed zero and at a NaN on this toolchain, already proved at
+`evidence/saturate/minmax_probe.txt`. So the amendment's effect on THIS unit is
++2 kills, +2 equivalences, score unchanged at 1.000. **A proposed amendment
+whose effect on the unit that proposes it is nil is the cheap case to decide**,
+and the Driver has the number rather than an argument.
+
+The last row is the one the amendment does NOT cover and is worth naming
+separately: transposing the two BOUNDS (arguments 2 and 3) is a shape
+`swap_call_args` never produces — it swaps arguments 1 and 2 only — and it kills
+63 and 135. It is also the exact defect unit #24's own post-integration red test
+was built from. A three-argument selection function has a transposition the
+operator cannot reach.
+
+**ONE PREDICATE, THREE INSTRUMENTS, ONE NUMBER.** The reset branch was perturbed
+from the C++ (`negate_cond`, 3112 of 3532), from the Fortran wrapper
+(`MERGE(1_C_INT, 0_C_INT, reset)` inverted, 3112 of 3532) and from the whole
+program (the gate, 2,128,633 of 5,252,000). Two instruments agreeing to the case
+is what the campaign already treats as corroboration (unit #24's `drop_call`
+figures, unit #9's control). Recording it here because the second of the three
+is a shape worth reusing: **a wrapper-side perturbation of a marshalling
+construct is a mutant of the SAME predicate seen from the other side of the
+boundary**, and it costs one rebuild.
+
+**A COVERAGE ZERO THAT WAS NOT A DEAD CALL SITE.**
+`coverage/line_coverage.json` reports 0 hits at the line of this unit's
+CableControl call site — and at three of its other 17 sites. None is dead: gcov
+attributes a continued statement's hits to its LAST continuation line, and the
+line three below carries 127,994. This campaign has a standing rule that a call
+site with no hits is not a tool failure (unit #1, `AddToList`); the converse
+needed saying too, because the report is the same zero. **Check the continuation
+lines before recording a dead call site**, and the check is `range(l, l+5)` over
+the same dict.
+
+**`vit.yaml` STRIPPED OF ITS COMMENTS FOR THE THIRTEENTH UNIT IN A ROW**, by
+`vit verify` and again by `vit integrate` — 267 lines on this run's diff. The
+remedy is unchanged and is still manual: restore from HEAD, re-add the entry by
+hand. It remains a candidate for the Driver and nothing about this dispatch
+changes the argument.
+
 ## Unit #32 — FindLine — second dispatch — 2026-08-14
 
 **THE RULE THE LAST DISPATCH SPECIFIED WAS RIGHT, AND BUILDING IT COST LESS THAN

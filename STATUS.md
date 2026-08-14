@@ -4,6 +4,88 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-14: unit #33 `PIController` is `integrated` and CLOSED** — all
+five layers ran, all five are red-tested, and the mutation score is **1.000** on
+21 behavioural mutants. It is the campaign's first unit with a TRANSLATED CALLEE
+in its body (`saturate`, unit #24), and the first whose kernel blindness was
+predicted by VIT's own red test before a stub measured it.
+
+Every count below is read from the committed artifact named in its row.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases (`evidence/PIController/kernel.verify_fields.csv`) | 62/62, all 14,508 field rows `IDENTICAL` | six stubs: 62/62 · 61 · 61 · 62 · 39 · **17** |
+| differential harness (`harness/PIController.json`) | **3532 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **3532 of 3532**, naming all four outputs |
+| mutation (`mutation/PIController.json`) | **21 of 21 behavioural, 1.000**, 0 declared equivalent, 1 no-compile, 7 operators | the score *is* the red test, 21 times |
+| post-integration (`harness/PIController.postintegration.json`) | 3532 checked, 0 failed | bounds transposed **145 of 3532**; the MERGE inverted **3112 of 3532** |
+| gate, 27 scenarios (`gate/PIController.json`) | 5,252,000 values / 351 channels, 0 mismatched | whole-unit no-op **1,780,508**; `error` zeroed **2,133,598**; reset inverted **2,128,633** |
+
+**THE KERNEL IS 45-OF-62 BLIND TO `error`, AND VIT SAID SO FIRST.** `vit verify`
+printed `the input perturbations were absorbed (input \`error\` scaled by 1.00001,
+input \`error\` offset by 1e-05) ... typically a saturated output` beside its
+62/62. That is a refusal to claim, and this campaign's rule is that a refusal's
+stated reason is a claim of its own (unit #32) — so it was measured. The
+reference return value equals `minValue` in **62 of 62** captured cases: at
+Controllers.f90:68 the pitch loop is saturated at its lower bound throughout
+scenario 1's window, so the RETURN carries nothing about `error`, and a stub that
+forces `error` to zero **passes 45 of 62**. What the 17 failures see is the
+`piP%ITerm` state the clamp lets through.
+
+It is closed by two other oracles rather than left open: the harness varies
+`error` over 3532 cases, and the same edit made at the GATE moves **2,133,598 of
+5,252,000** values — *more* than a whole-unit no-op moves, because an error-blind
+unit keeps clamping and keeps advancing `inst`, so the controller stays in the
+loop and the trajectories diverge further.
+
+**READ THE STATUS COLUMN, NOT THE VALUE COLUMNS.**
+`evidence/PIController/kernel.verify_fields.csv` prints `instpi` as `3,3` in all
+62 rows while the stub that deletes `inst = inst + 1` moves that exact field in
+all 62 cases. The CSV also carries 14,508 rows where the kernel's own stdout
+carries 14,818. The verdicts agree; the value columns are not the compared
+values, and a reader who quoted them would report the increment as
+unconstrained.
+
+**THE MUTATOR'S 22 MUTANTS TOUCH NEITHER `saturate_c` CALL.** All three of
+`cppmutate`'s call operators are gated on TABLES of callee names
+(`_VALUE_PRESERVING`, `_SIBLINGS`) and every entry is a C standard-library name.
+The artifact records this itself — `operators_offered` lists twelve,
+`operators` lists seven — so the gap is legible without reading the mutator.
+Adding `saturate_c` is a plausible amendment and a campaign-wide re-take, which
+X3 forbids mid-run, so the measurement was made BY HAND exactly as unit #24 made
+it before the operator existed (`evidence/PIController/hand_mutants.txt`,
+baseline 0 of 3532):
+
+```
+drop_call    ITerm clamp dropped                  1761 of 3532
+             output clamp dropped                  383 of 3532
+swap_args    ITerm clamp,  value <-> minValue         0 of 3532
+             output clamp, value <-> minValue         0 of 3532
+transposed   ITerm clamp,  bounds swapped           63 of 3532
+             output clamp, bounds swapped          135 of 3532
+```
+
+The two zeros are not a corpus gap: `fmax(a,b)` and `fmax(b,a)` agree on every
+input including a signed zero and a NaN, already proved on this toolchain at
+`evidence/saturate/minmax_probe.txt`. Had the operator fired it would have added
+two kills and two equivalences and left the score at **1.000**.
+
+**ONE PREDICATE, THREE INSTRUMENTS, ONE NUMBER.** The reset branch was perturbed
+from the C++ side (`negate_cond`, 3112 of 3532), from the Fortran WRAPPER side
+(`MERGE(1_C_INT, 0_C_INT, reset)` inverted, 3112 of 3532) and from the whole
+program (the gate, 2,128,633 of 5,252,000). The first two agreeing to the case
+is what says the predicate is constrained rather than merely covered; the third
+is what says a branch taken once per PI instance per scenario, against ~1.44M
+ordinary calls, is not invisible to simulation output.
+
+**AND ONE FALSE FINDING WAS CAUGHT BEFORE IT WAS WRITTEN.** This unit has 17
+call sites and `coverage/line_coverage.json` reports **0 hits** at the line of
+the CableControl one. It is not dead: gcov attributes a continued statement's
+hits to its LAST continuation line, and line 947 carries 127,994. Four of the 17
+sites read as dead at their own line and none of them is. Check the continuation
+before recording a dead call site.
+
+---
+
 **As of 2026-08-14: unit #32 `FindLine` is `deferred` and NOT CLOSED** — the
 mutation score is an honest **0.960** against a threshold of 1.000, on **one**
 survivor. Its first dispatch closed at 0.760 with six, five of which were
@@ -2082,11 +2164,15 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-32 attempted / **28 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+33 attempted / **29 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 **3 deferred** (unit #29 `CheckInputs`, unit #31 `Debug`, unit #32 `FindLine`) /
 **1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 37 remain. 28 + 3 + 1 + 37 = 69.
+69 units in `plan.json`; 36 remain. 29 + 3 + 1 + 36 = 69.
+
+RECOUNTED at unit #33 from `plan.json` with the one command below, not
+incremented. It was one unit stale (`28 / 37`), which is the fifth time — and
+the fifth time it was corrected by a later unit than the one that broke it.
 
 RECOUNTED at unit #32 from `plan.json`, not incremented — the block was two
 units stale again (it still read `27 / 1 / 40` across units #30 and #31), which
@@ -2112,24 +2198,34 @@ units stale, and both times the unit that fixed it was not the unit that broke
 it.** The recount is one command and it is in this file's own instructions:
 `python3 -c "import json,collections; print(collections.Counter(u.get('disposition') for u in json.load(open('plan.json'))['units']))"`)
 
-**Seventeen of the 27 integrated units are gate-visible.** Recounted at unit
-#28 by READING every `gate/*.redtest.json` rather than by editing this list,
-which is what the recount instruction above means and which is how the
-`StateMachine` discrepancy below was found:
+**Nineteen of the 32 units with a gate red test are gate-visible.**
+RECOUNTED at unit #33 by READING every `gate/*.redtest*.json` and taking the
+largest `mismatched` of any that carries `went_red: true`, rather than by
+editing this list — which is what the recount instruction above means and which
+is how the `StateMachine` discrepancy below was found:
 
 ```
-saturate 2,255,249 · GetWords 1,857,893 · NonDecreasing 1,857,893 (shared —
-see below) · LPFilter 1,592,059 · ReadAvrSWAP 1,487,557 · identity 1,462,798 ·
+saturate 2,255,249 · PIController 2,133,598 · FindLine 1,857,893 ·
+GetWords 1,857,893 · NonDecreasing 1,857,893 (shared — see below) ·
+LPFilter 1,592,059 · ReadAvrSWAP 1,487,557 · identity 1,462,798 ·
 SecLPFilter 1,349,326 · interp1d 1,341,803 · NotchFilter 551,278 ·
 ColemanTransformInverse 389,644 · sigma 229,165 · wrap_180 206,976 ·
 NotchFilterSlopes 128,918 · ColemanTransform 124,353 · wrap_360 84,477 ·
 StateMachine 36,577 · SecLPFilter_Vel 14,140
 ```
 
-The ten that are gate-blind: `AddToList`, `Conv2UC`, `ExtController`, `GetPath`,
-`GetRoot`, `HPFilter`, `Int2LStr`, `PathIsRelative`, `Read_OL_Input`,
-`UpdateZeroMQ`, `unwrap` — eleven names for ten units, because `Read_OL_Input` is
-`blocked` and not counted among the 27.
+`PIController`'s figure is the LARGEST of its three red tests (`error` forced to
+zero), not its whole-unit no-op, which moves 1,780,508 — the recount takes the
+largest because the question this list answers is whether the gate can see the
+unit at all.
+
+The thirteen with a committed red test that stayed green: `AddToList`,
+`ChkParseData`, `Conv2UC`, `Debug`, `ExtController`, `GetPath`, `GetRoot`,
+`HPFilter`, `Int2LStr`, `PathIsRelative`, `Read_OL_Input`, `UpdateZeroMQ`,
+`unwrap`. Two of those are not "the gate could not see a perturbation": `Debug`
+writes only a file, which the gate never opens, and `Read_OL_Input` is
+`blocked`. `ChkParseData` joined this list after unit #30 and its red test —
+`aviFAIL = -7` and an error message on every call — moved 0 of 5,252,000.
 
 **`wrap_360` is the counterexample this list has been waiting for, and it is
 the same three statements one screen down.** Its whole-unit no-op moves 84,477
