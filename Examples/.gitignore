@@ -2,3 +2,7 @@
 examples_out/
 11_robust_tuning_out
 *.10
+# Simulation debug output written beside the runner. `vit_sim28.RO.dbg3` is
+# TRACKED on purpose -- it is a C12 artifact (327ca29) -- and a gitignore rule
+# does not untrack it.
+*.RO.dbg*

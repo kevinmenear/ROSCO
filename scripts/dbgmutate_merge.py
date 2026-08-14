@@ -58,6 +58,16 @@ def main() -> int:
     ap.add_argument("--part", action="append", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--why", required=True)
+    ap.add_argument("--equivalences", default=None,
+                    help="JSON {id: reason} of mutants declared EQUIVALENT. "
+                         "Applied here rather than inside dbgmutate.py, for two "
+                         "reasons. An equivalence is a claim about the PROGRAM "
+                         "and does not change what the sweep must run, so "
+                         "binding it to the run means re-running the sweep to "
+                         "change a claim. And here the claim can be REFUTED: a "
+                         "mutant declared equivalent that the sweep KILLED is a "
+                         "wrong declaration, and this refuses rather than "
+                         "quietly dropping it from the denominator.")
     a = ap.parse_args()
 
     parts = []
@@ -136,6 +146,30 @@ def main() -> int:
     killed = sum(d["killed"] for _, d in parts)
     survived = sum(d["survived"] for _, d in parts)
     eq = sum(d["equivalent_declared"] for _, d in parts)
+
+    declared: dict[str, str] = {}
+    if a.equivalences:
+        f = ROOT / a.equivalences
+        if not f.is_file():
+            return die(f"no such equivalences file: {a.equivalences}")
+        declared = json.loads(f.read_text())
+        if eq:
+            return die(f"the parts already declare {eq} equivalence(s); "
+                       f"--equivalences would double-count them")
+        by_id = {r["mid"]: r for _, d in parts for r in d["results"]}
+        unknown = sorted(set(declared) - set(by_id))
+        if unknown:
+            return die(f"declared equivalent but not in this sweep: {unknown}")
+        refuted = sorted(i for i in declared if by_id[i]["killed"])
+        if refuted:
+            return die(f"declared EQUIVALENT and yet KILLED by this corpus: "
+                       f"{refuted} -- the declaration is wrong, not the sweep")
+        nocomp = sorted(i for i in declared if by_id[i]["outcome"] == "nocompile")
+        if nocomp:
+            return die(f"declared equivalent but did not compile: {nocomp} -- a "
+                       f"mutant that is not in the behavioural set cannot be "
+                       f"removed from its denominator")
+        eq = len(declared)
     if beh + nocompile != total:
         return die(f"{beh} behavioural + {nocompile} nocompile != {total}")
     if killed + survived != beh:
@@ -168,6 +202,10 @@ def main() -> int:
         "compared_against": first["compared_against"],
         "oracle": first["oracle"],
         "survivors": survivors,
+        # Named, with the reason, IN the artifact: an equivalence that lives
+        # only in prose is a number nobody can check.
+        "equivalences": declared,
+        "equivalences_file": a.equivalences,
         "loop_rev": first.get("loop_rev"),
         "vit_rev": first.get("vit_rev"),
         "campaign_rev": first.get("campaign_rev"),

@@ -1,0 +1,109 @@
+                                                                               
+------------------------------------------------------------------------------
+Running ROSCO-2.10.1
+A wind turbine controller framework for public use in the scientific field    
+Developed in collaboration: National Renewable Energy Laboratory              
+                            Delft University of Technology, The Netherlands   
+------------------------------------------------------------------------------
+ ROSCO WARNING: Individual pitch control and active wake control are both enabled. Performance may be compromised.
+ 
+***************************************************************************************************************************************
+ROSCO Warning: The wind speed estimator is used, but an input (pitch, rotor speed, or torque) has left the bounds of normal operation.
+The filtered hub-height wind speed will be used instead. This warning will not persist even though the condition may.
+Check WE_Op in the ROSCO .dbg file to see if the WSE is enabled (1) or disabled (0).
+***************************************************************************************************************************************
+Generator speed:    9.5 RPM, Pitch angle:   0.0 deg, Power:     0.0 kW, Est. wind Speed:  10.0 m/s
+ 
+***************************************************************************************************************************************
+ROSCO Warning: The wind speed estimator is used, but an input (pitch, rotor speed, or torque) has left the bounds of normal operation.
+The filtered hub-height wind speed will be used instead. This warning will not persist even though the condition may.
+Check WE_Op in the ROSCO .dbg file to see if the WSE is enabled (1) or disabled (0).
+***************************************************************************************************************************************
+Generator speed:  427.7 RPM, Pitch angle:  28.0 deg, Power:   692.6 kW, Est. wind Speed:   7.7 m/s
+Generator speed:  296.3 RPM, Pitch angle:  90.0 deg, Power:   189.0 kW, Est. wind Speed:   8.0 m/s
+Generator speed:  311.1 RPM, Pitch angle:  90.0 deg, Power:   139.2 kW, Est. wind Speed:   8.3 m/s
+Generator speed:  321.1 RPM, Pitch angle:  90.0 deg, Power:   117.8 kW, Est. wind Speed:   8.0 m/s
+Generator speed:  326.0 RPM, Pitch angle:  69.7 deg, Power:   106.6 kW, Est. wind Speed:   8.6 m/s
+Generator speed:  328.4 RPM, Pitch angle:  90.0 deg, Power:   100.8 kW, Est. wind Speed:   8.3 m/s
+Generator speed:  329.6 RPM, Pitch angle:  69.7 deg, Power:    98.0 kW, Est. wind Speed:   8.5 m/s
+Generator speed:  330.2 RPM, Pitch angle:  90.0 deg, Power:    96.5 kW, Est. wind Speed:   8.7 m/s
+Generator speed:  330.5 RPM, Pitch angle:  86.8 deg, Power:    95.8 kW, Est. wind Speed:   8.3 m/s
+Generator speed:  330.7 RPM, Pitch angle:  82.6 deg, Power:    95.5 kW, Est. wind Speed:   8.8 m/s
+Generator speed:  350.5 RPM, Pitch angle:  38.5 deg, Power:   218.7 kW, Est. wind Speed:   8.7 m/s
+Generator speed:  341.6 RPM, Pitch angle:  90.0 deg, Power:   246.8 kW, Est. wind Speed:   9.0 m/s
+Generator speed:  336.4 RPM, Pitch angle:  43.2 deg, Power:   259.2 kW, Est. wind Speed:   9.3 m/s
+Generator speed:  333.7 RPM, Pitch angle:  90.0 deg, Power:   265.3 kW, Est. wind Speed:   9.0 m/s
+Generator speed:  332.3 RPM, Pitch angle:  44.8 deg, Power:   268.3 kW, Est. wind Speed:   9.6 m/s
+Generator speed:  331.6 RPM, Pitch angle:  90.0 deg, Power:   269.8 kW, Est. wind Speed:   9.2 m/s
+Generator speed:  331.2 RPM, Pitch angle:  66.4 deg, Power:   270.5 kW, Est. wind Speed:   9.4 m/s
+Generator speed:  331.0 RPM, Pitch angle:  90.0 deg, Power:   270.9 kW, Est. wind Speed:   9.7 m/s
+Generator speed:  330.9 RPM, Pitch angle:  78.3 deg, Power:   271.1 kW, Est. wind Speed:   9.3 m/s
+Generator speed:  330.9 RPM, Pitch angle:  89.2 deg, Power:   271.5 kW, Est. wind Speed:   9.8 m/s
+Generator speed:  352.8 RPM, Pitch angle:  52.2 deg, Power:   420.3 kW, Est. wind Speed:   9.6 m/s
+Generator speed:  342.9 RPM, Pitch angle:  90.0 deg, Power:   446.2 kW, Est. wind Speed:   9.9 m/s
+Generator speed:  337.0 RPM, Pitch angle:  82.0 deg, Power:   456.6 kW, Est. wind Speed:  10.3 m/s
+Generator speed:  334.4 RPM, Pitch angle:  70.5 deg, Power:   465.4 kW, Est. wind Speed:   9.9 m/s
+Generator speed:  332.1 RPM, Pitch angle:  90.0 deg, Power:   464.3 kW, Est. wind Speed:  10.6 m/s
+Generator speed:  331.4 RPM, Pitch angle:  70.5 deg, Power:   465.0 kW, Est. wind Speed:  10.2 m/s
+Generator speed:  331.1 RPM, Pitch angle:  90.0 deg, Power:   465.5 kW, Est. wind Speed:  10.4 m/s
+Generator speed:  331.0 RPM, Pitch angle:  90.0 deg, Power:   465.7 kW, Est. wind Speed:  10.7 m/s
+Generator speed:  330.9 RPM, Pitch angle:  72.6 deg, Power:   465.8 kW, Est. wind Speed:  10.2 m/s
+Generator speed:  330.9 RPM, Pitch angle:  90.0 deg, Power:   466.2 kW, Est. wind Speed:  10.8 m/s
+Generator speed:  355.1 RPM, Pitch angle:  90.0 deg, Power:   641.1 kW, Est. wind Speed:  10.6 m/s
+Generator speed:  341.3 RPM, Pitch angle:  72.9 deg, Power:   647.2 kW, Est. wind Speed:  10.9 m/s
+Generator speed:  333.2 RPM, Pitch angle:  90.0 deg, Power:   633.5 kW, Est. wind Speed:  11.3 m/s
+Generator speed:  331.1 RPM, Pitch angle:  81.2 deg, Power:   628.2 kW, Est. wind Speed:  10.8 m/s
+Generator speed:  330.8 RPM, Pitch angle:  90.0 deg, Power:   627.0 kW, Est. wind Speed:  11.6 m/s
+Generator speed:  330.8 RPM, Pitch angle:  77.9 deg, Power:   626.9 kW, Est. wind Speed:  11.1 m/s
+Generator speed:  330.8 RPM, Pitch angle:  90.0 deg, Power:   627.0 kW, Est. wind Speed:  11.4 m/s
+Generator speed:  330.8 RPM, Pitch angle:  64.5 deg, Power:   627.0 kW, Est. wind Speed:  11.7 m/s
+Generator speed:  330.8 RPM, Pitch angle:  90.0 deg, Power:   627.0 kW, Est. wind Speed:  11.1 m/s
+Generator speed:  330.8 RPM, Pitch angle:  70.3 deg, Power:   627.5 kW, Est. wind Speed:  11.8 m/s
+Generator speed:  355.9 RPM, Pitch angle:  90.0 deg, Power:   820.0 kW, Est. wind Speed:  11.5 m/s
+Generator speed:  341.3 RPM, Pitch angle:  90.0 deg, Power:   815.5 kW, Est. wind Speed:  11.9 m/s
+Generator speed:  334.0 RPM, Pitch angle:  45.7 deg, Power:   803.4 kW, Est. wind Speed:  12.3 m/s
+Generator speed:  331.7 RPM, Pitch angle:  90.0 deg, Power:   798.9 kW, Est. wind Speed:  11.8 m/s
+Generator speed:  331.1 RPM, Pitch angle:  66.3 deg, Power:   797.6 kW, Est. wind Speed:  12.6 m/s
+Generator speed:  330.9 RPM, Pitch angle:  90.0 deg, Power:   797.3 kW, Est. wind Speed:  12.1 m/s
+Generator speed:  330.8 RPM, Pitch angle:  68.4 deg, Power:   797.2 kW, Est. wind Speed:  12.4 m/s
+Generator speed:  330.8 RPM, Pitch angle:  90.0 deg, Power:   797.2 kW, Est. wind Speed:  12.6 m/s
+Generator speed:  330.8 RPM, Pitch angle:  86.2 deg, Power:   797.2 kW, Est. wind Speed:  12.1 m/s
+Generator speed:  330.8 RPM, Pitch angle:  82.0 deg, Power:   797.9 kW, Est. wind Speed:  12.8 m/s
+Generator speed:  357.7 RPM, Pitch angle:  90.0 deg, Power:  1020.1 kW, Est. wind Speed:  12.5 m/s
+Generator speed:  343.1 RPM, Pitch angle:  65.6 deg, Power:  1013.8 kW, Est. wind Speed:  12.8 m/s
+Generator speed:  335.6 RPM, Pitch angle:  76.0 deg, Power:  1002.7 kW, Est. wind Speed:  13.2 m/s
+Generator speed:  332.8 RPM, Pitch angle:  80.0 deg, Power:   999.9 kW, Est. wind Speed:  12.7 m/s
+Generator speed:  331.4 RPM, Pitch angle:  85.0 deg, Power:   996.6 kW, Est. wind Speed:  13.6 m/s
+Generator speed:  331.0 RPM, Pitch angle:  88.0 deg, Power:   996.0 kW, Est. wind Speed:  13.0 m/s
+Generator speed:  330.9 RPM, Pitch angle:  85.4 deg, Power:   995.8 kW, Est. wind Speed:  13.3 m/s
+Generator speed:  330.8 RPM, Pitch angle:  90.0 deg, Power:   995.7 kW, Est. wind Speed:  13.6 m/s
+Generator speed:  330.8 RPM, Pitch angle:  69.6 deg, Power:   995.7 kW, Est. wind Speed:  13.0 m/s
+Loading FAST model: NREL-5MW.fst 
+Loading rotor performace data from text file: /workspace/ROSCO-r2/Examples/Test_Cases/NREL-5MW/Cp_Ct_Cq.NREL5MW.txt
+Loading rotor performace data from text file: /workspace/ROSCO-r2/Examples/Tune_Cases/../Test_Cases/NREL-5MW/Cp_Ct_Cq.NREL5MW.txt
+-----------------------------------------------------------------------------
+   Tuning a reference wind turbine controller using NREL's ROSCO toolbox    
+-----------------------------------------------------------------------------
+============================================================
+Scenario 27: Maximum-coverage stress test (11 modes)
+============================================================
+Writing new controller parameter file parameter file: /workspace/ROSCO-r2/Examples/DISCON_stress27.IN.
+Shutting down /workspace/ROSCO-r2/rosco/lib/libdiscon.so
+  scenario_27 bld_pitch: md5=bfad20acd17a6ef03e6411f1ef99ffe8 n=24000
+  scenario_27 bld_pitch_2: md5=ad5311c18c215787ae9c29cea44ef305 n=24000
+  scenario_27 bld_pitch_3: md5=f7d9d6b9044e54af80e81f0e8b781dd4 n=24000
+  scenario_27 cc_actuated_dl: md5=c83a98393b9761570961cbd8def93d1b n=24000
+  scenario_27 cc_actuated_l: md5=528dcec4b797b551fb9865505176f245 n=24000
+  scenario_27 flp_angle_1: md5=fe384f668da282694c29a84ebd33481d n=24000
+  scenario_27 flp_angle_2: md5=fe384f668da282694c29a84ebd33481d n=24000
+  scenario_27 flp_angle_3: md5=fe384f668da282694c29a84ebd33481d n=24000
+  scenario_27 gen_power: md5=65397adfbcebc8d966af5e68ce2853c9 n=24000
+  scenario_27 gen_speed: md5=7fde70d96573dfe87f0c58938f9d618d n=24000
+  scenario_27 gen_torque: md5=bf9a6436e1075124a81541918f953414 n=24000
+  scenario_27 nac_yaw: md5=96bc5f04dd047b4defd283f76ef25edb n=24000
+  scenario_27 stc_input: md5=9b7959d521a3173ef65bc6524572583f n=24000
+Scenario 27: PASSED (11-mode stress test exercised)
+
+============================================================
+All scenarios complete.
+============================================================

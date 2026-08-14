@@ -1,0 +1,23 @@
+{
+  "a": "mutref",
+  "b": "mutpost",
+  "bytes_compared": 188803532,
+  "campaign_rev": "4f6fd9f-dirty",
+  "files_compared": 21,
+  "files_mismatched": 0,
+  "header_records_compared": 21,
+  "loop_rev": "897d67c",
+  "mismatches": [],
+  "only_in_a": [],
+  "only_in_b": [],
+  "records_compared": 99293,
+  "records_mismatched": 0,
+  "stdout_bytes_compared": 38441,
+  "stdout_only_in_a": [],
+  "stdout_only_in_b": [],
+  "stdout_records_compared": 491,
+  "stdout_records_mismatched": 0,
+  "stdout_scenarios_compared": 8,
+  "verdict": "IDENTICAL",
+  "vit_rev": "f4a711d"
+}
