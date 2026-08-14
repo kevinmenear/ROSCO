@@ -2850,9 +2850,10 @@ measurement.
 
 **The twelve survivors, classified.** None is (a).
 
-    (b) 2   Fl_PitCom and NacVaneOffset are zero in all eight scenarios; the
-            next input is scenario 33 above rated, and adding a scenario now
-            would invalidate the ten parts already swept
+    (b) 2   Fl_PitCom and NacVaneOffset are zero in all eight scenarios --
+            NOW MEASURED: scenario 35 kills both, on 3,998 and 3,999 records.
+            Not folded into the score because a corpus change invalidates
+            every part already taken; folding it in gives 145/155 = 0.9355
     (b) 3   a trim that never runs to the start of the name, and a close guard
             that differs only when the open FAILED
     (c) 6   a difference needing a computed double exactly on 1E-99 / 1E+99 --
@@ -2871,3 +2872,14 @@ reset window was opened once and closed in the same command. Nine commits, one
 per expensive artifact. `revcheck --unit Debug` is clean at 14 artifacts, all
 naming `3f8ed43` — the gate, its red test and the post-integration harness were
 re-taken rather than left naming the superseded mutator.
+
+**One gap was closed as a measurement after the sweep.** The two zero debug
+channels were predicted to need a scenario above rated. They did not: running
+scenario 33's drive at 15 m/s moved neither. `Fl_Kp` and `Y_MErrSet` are
+`0.0000` in all 14 shipped `DISCON*.IN`, so the floating feedback is a
+proportional law with no gain and the vane offset IS the parameter — the same
+shape as `LoggingLevel = 1` hiding a third of this unit, one layer down.
+`run_scenario_35` sets both and both mutants die
+(`mutation/Debug.ablation-s35.index_offset.1.json`). It is kept OUT of
+`mutation/Debug.json` because the merge refuses parts that ran different
+scenarios; the next dispatch folds it in and re-sweeps for 145/155 = 0.9355.

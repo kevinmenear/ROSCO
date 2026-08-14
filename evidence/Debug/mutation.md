@@ -96,14 +96,31 @@ None of these is (a); that is why none of them is declared.
     4b100ace  DebugOutData[21] -> [22]   NacVaneOffset
 
 Their siblings `[11]` and `[12]` died on 3,998 records the moment scenario 33
-drove the nacelle IMU. `Fl_PitCom` and `NacVaneOffset` stay 0 there anyway:
-scenario 33 sets `Fl_Mode` and `Y_ControlMode` and drives both the IMU and the
-vane, but it runs at 9 m/s, **below rated**, where the floating-feedback pitch
-contribution and the vane offset are not developed. **The next input is a
-scenario 33 variant above rated**, and it is cheap — one `ws0` and one new
-`sim_name`. It is NOT taken here because adding a scenario now would invalidate
-the ten parts already swept: `dbgmutate_merge.py` refuses parts that ran
-different scenarios, so the corpus is fixed once the first part is taken.
+drove the nacelle IMU. `Fl_PitCom` and `NacVaneOffset` stay 0 there anyway.
+
+**THIS ONE IS NOW MEASURED RATHER THAN PREDICTED, AND THE FIRST GUESS WAS
+WRONG.** The guess was that scenario 33 runs below rated at 9 m/s. Running the
+same drive at 15 m/s moved neither channel. The constant-valued inputs are the
+**gains**, not the wind speed:
+
+    Fl_Kp      0.0000   in all 14 shipped DISCON*.IN -- FloatingFeedback is a
+                        proportional law, so it returns 0 whatever the IMU does
+    Y_MErrSet  0.00000  in all 14 -- NacVaneOffset IS Y_MErrSet
+
+which is `LoggingLevel = 1` one layer down: a scalar every shipped input holds
+at one value, with coverage reporting the line as executed. `run_scenario_35`
+sets both and keeps the higher wind speed; `Fl_PitCom` then moves on 3,998 of
+3,999 records and `NacVaneOffset` is a constant 5.0 against a varying
+`Yaw_Err`. Against that corpus **both mutants die** — 3,998 and 3,999 records —
+and the slice goes from 15 of 20 to 17 of 20
+(`mutation/Debug.ablation-s35.index_offset.1.json`).
+
+It is **not folded into the score**, and the reason is a refusal rather than a
+choice: `dbgmutate_merge.py` rejects parts that ran different scenarios, so the
+corpus is fixed the moment the first part is taken, and re-sweeping all 182
+mutants at nine scenarios is about 100 minutes. Folding scenario 35 in takes
+this unit from 143/155 = 0.9226 to **145/155 = 0.9355**, and the next dispatch
+inherits a proven input rather than a hypothesis.
 
 ### (b) — a trim that never runs to the start, and an open that never fails. 3 mutants.
 
