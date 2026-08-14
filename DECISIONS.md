@@ -6503,3 +6503,55 @@ copied every object. No branch was created, canonical's `main` is untouched at
 `891fde3`, and the name `campaign-work` was deliberately NOT reused — the clone
 already has a `campaign-work` at `cf885e3` which is NOT an ancestor of this work,
 so pushing this history under that name would have misdescribed it.
+
+## 2026-08-13 15:10 — the restart configuration: 14400s, and what it actually costs
+
+**`--timeout-s 14400`, and the number is only safe because something now reads
+it.** A four-hour deadline with nothing consulting it is not generosity, it is a
+later wall: a session starts a nine-minute sweep with four minutes left and dies
+mid-mutant, which is what 7200 did to unit #29 and what 14400 alone would have
+reproduced at 10:59 instead of 06:59. A four-hour deadline that
+`run_if_time_remains.sh` can see is a session that declines the last piece and
+closes clean. The generous number and the guard are one change and they land
+together; neither is correct without the other.
+
+That is also why the guard REFUSES on a missing deadline rather than shrugging.
+A guard that passed when it did not know would be worse than no guard, because
+it would occupy the slot where one is expected.
+
+### What four hours can cost, stated correctly
+
+An earlier estimate of ~$28 was for a unit whose extra time is mostly spent
+BLOCKED on a foreground command — the legitimate case, and probably the common
+one, since blocked wall-clock is nearly free. It is not the ceiling.
+
+Cost tracks TURNS at a stable rate: $0.0749–$0.1927 per turn across 32 recorded
+dispatches, a 2.6x spread. CheckInputs' first dispatch reached **$176.77 at
+$0.1945/turn** — a perfectly ordinary rate sustained over 909 turns against a
+mean of 144. It was a long session, not an expensive one. Four hours spent
+actively working is therefore ~$50–200, and
+
+**the per-unit ceiling is TWO dispatches, not one.** `--max-retries` defaults to
+1, and `loop/driver.py:278` already names the consequence: *"At $25 with one
+retry a unit can reach $50 unremarked, 66 more times."* So a pathological unit's
+worst case is roughly double again — a few hundred dollars, not $28.
+
+Against ~$3,130 remaining and a $19 mean across 40 units, the headroom absorbs
+several such outliers comfortably. The answer is unchanged; the estimate is not,
+and a reassuring number that is wrong is worth less than an uncomfortable one
+that is right.
+
+### The R11 note has a half-life, and something is already queued to end it
+
+`ac17746` pinned the R11 question to `interp2d` (order 45) and
+`ReadControlParameterFileSub` (order 64) as a plan.json `note`, and recorded
+that it is a note and not a gate — nothing enforces reading it. The enforcing
+version is a preflight predicate, rejected today because it lives in the loop
+and a loop commit costs a `loop_rev` bump for no present benefit.
+
+**That objection expires on its own.** The Driver-level `revcheck` call is
+already queued and is itself a loop change, so it will bump `loop_rev` at some
+point before order 45 is reached. When it lands, the preflight predicate rides
+along for free. The two should be considered together rather than the note
+quietly outliving its half-life — which is exactly what a note does if nobody
+writes down when it stops being adequate.
