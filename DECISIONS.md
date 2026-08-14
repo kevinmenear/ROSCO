@@ -2,6 +2,111 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #32 — FindLine — second dispatch — 2026-08-14
+
+**THE RULE THE LAST DISPATCH SPECIFIED WAS RIGHT, AND BUILDING IT COST LESS THAN
+THE DIAGNOSIS DID.** The first dispatch measured the gap (47 of 2370 cases
+reach the name comparison; a second probe says all 47 are two blank strings),
+named the remedy in a paragraph, and declined to build it because the X3 cost
+was unmeasured. R14_planted_word (`translation-loop` `552edb1`) is that
+paragraph almost verbatim, and five of six survivors died: 0.760 → 0.960.
+
+Worth recording that the *specification* was the expensive half and it
+transferred intact. The paragraph named four things a simpler version gets
+wrong, and all four turned out to be load-bearing:
+
+* the key is the word **case-inverted** (`aA` in the line, `Aa` as the key), so
+  both sides fold to the same string and differ before the fold. One shape kills
+  a dropped uppercasing on *either* side; a same-case plant leaves whichever
+  fold is redundant untested, which is exactly the `no-uppercase` stub's old 0.
+* the plant position *k* sweeps 1..3 **and every free scalar integer is set to
+  *k-1* and to *k***. The generator cannot identify which integer picks the
+  word — only that one usually does, under the `+1` or the `+0` convention.
+* the element is FIRST and LAST **and nothing else**, so a search that skips the
+  first line and one that stops at the first are both distinguishable.
+* it is carried to R12's **narrowing width**, because the width of the local a
+  *word* is read into is invisible for the same reason the word index is. That
+  is the one that killed `'200' -> '201'`, on 14 cases.
+
+Five kills on five different counts — 14, 48, 18, 21, 72 — which is the evidence
+that they were five behaviours and not one seen five ways.
+
+**AN X3 CLAIM ABOUT A CORPUS SHOULD BE MEASURED IN BYTES, NOT IN CASE COUNTS.**
+The previous x3 check compared case counts. Two corpora of 1552 cases can differ
+in every one of them, so a matching count is compatible with the thing the check
+exists to exclude. `evidence/FindLine/x3_check_r14/` compares the case files:
+for all three units R14 can fire on, the corpus WITH the rule is a byte-prefix
+extension of the corpus WITHOUT it, and the R14-off column reproduces the
+committed counts exactly. That is the whole claim, checkable, in one table.
+
+**FOR THE DRIVER — a method-level observation. "APPENDED AFTER EVERY OTHER RULE"
+IS A PROPERTY OF ONE RULE AT A TIME, AND ADDING A RULE AFTER IT SILENTLY VOIDS
+THE CLAIM.** R12's own test asserted that turning R12 on moves no existing case
+index. R14 fires on the same signature shape and is appended after R12, so with
+R14 live, turning R12 on inserts twelve cases *in front of* R14's and the prefix
+moves. Nothing was wrong with R12; what changed is that it stopped being last.
+
+The test was not made to pass — it now ablates R14 on both sides and says why,
+and the property that actually protects an already-scored corpus moved to
+`test_R14_is_a_strict_extension_of_the_corpus_without_it`. But the general shape
+belongs to the method rather than to this campaign: **in any generator whose
+rules append, the strict-extension guarantee is held by exactly one rule, and
+the guarantee each earlier rule's test asserts is conditional on every later
+rule being ablated.** A campaign that adds rules over time will keep rediscovering
+this one test at a time. Raising it as a candidate; no runbook edit made.
+
+**FOR THE DRIVER — a second method-level observation, sharpening P10. A POSITIVE
+CONTROL MUST SHARE THE SURVIVOR'S SITE, NOT MERELY ITS INSTRUMENT.** Unit #31
+established that a control must be chosen against the program rather than
+against the probe. This unit found the next step in. The surviving mutant
+`'2048' -> '2049'` reports 0 against the differential harness *and* 0 against
+the gate, and the gate already had a red test at 1,857,893 — in the same file,
+under the same instrument, on the same unit. That red test proves the gate sees
+`FindLine`; it says nothing about whether the gate can see the constant the
+survivor moves. The controls that do are the same constant at the same site
+moved one byte the OTHER way:
+
+```
+                                  the mutant                the control, same site
+differential harness, 2514 cases  0 failed                  2048 -> 2047:  60 failed
+gate, 5,252,000 values            0 moved, 0 channels,      2048 -> 5:     1,583,216 moved
+                                  0 scenarios broken        across 131 channels
+```
+
+**And the asymmetry is the finding rather than the bookkeeping**: one byte too
+FEW is a wrong answer, one byte too MANY is not an answer at all. No value
+oracle of any kind reads bytes outside the buffer it compares.
+
+### PROPOSED AMENDMENT, RESTATED WITH A THIRD INSTANCE — the sanitiser build
+
+`ca75abea` is the third out-of-bounds survivor this campaign has met, after
+`Read_OL_Input`'s one-byte read and `Debug`'s `c3a5bb71`. It is the first with a
+same-site positive control on **two independent oracles**, which is what makes
+the classification a measurement instead of a reading: it is not (a), because
+the two programs do not agree on every admissible input — one of them has no
+defined behaviour at all (unit #7); and it is not (b), because no widening of
+any corpus reaches a difference that is not in any compared value.
+
+The instrument is unchanged from unit #31's proposal — `-fsanitize=address,
+undefined` over the same scenarios, a mutant killed when the sanitiser reports.
+What is new is the evidence that no cheaper instrument exists: the second oracle
+was tried, at the cost of two gate runs, and it reports the same zero.
+
+### A closed unit's corpus moved, and it is a finding rather than a repair
+
+R14 adds 72 cases to `ChkParseData` (1552 → 1624). **All 72 pass**, so this is
+not a defect in that translation; what it is, is 72 inputs its committed 1.000
+mutation score was never taken over. `GetWords`' older 1370-vs-1373 drift is
+still open beside it. Neither is repaired here, for the reason unit #32's first
+dispatch already gave: re-taking a closed unit's evidence inside another unit's
+dispatch puts a number in its artifact that no commit of its own explains.
+
+The general form is worth naming because it will recur every time a corpus rule
+is added: **a shared generator improvement makes every already-scored unit's
+score a statement about a corpus that no longer exists**, and the campaign needs
+one deliberate re-scoring pass rather than 32 opportunistic ones. That is E5.6's
+business, and this is the second dispatch to say so.
+
 ## Unit #32 — FindLine — 2026-08-14
 
 **A REFUSAL'S STATED REASON CAN BE FALSE, AND IT COSTS MORE THAN A REFUSAL WITH

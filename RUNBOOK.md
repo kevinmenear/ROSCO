@@ -358,6 +358,83 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A SURVIVOR LIST THAT ONE MEASUREMENT EXPLAINS IS ONE PIECE OF WORK, AND THE
+  DISPATCH THAT MEASURES IT SHOULD WRITE THE RULE'S SPECIFICATION EVEN IF IT
+  CANNOT BUILD IT.** Unit #32, second dispatch. The first dispatch measured the
+  gap and wrote a paragraph naming the remedy; this one implemented the
+  paragraph almost verbatim and five of six survivors died in one sweep.
+
+  ```
+  cases reaching the match arm      47 of 2370   ->   89 of 2514
+  of those, on a BLANK key          47                47
+  so on a NON-BLANK key              0                42
+  mutation                          0.760        ->   0.960
+  ```
+
+  Four details in that specification were load-bearing and a simpler rule gets
+  each of them wrong. Copy them into the next rule of this kind:
+
+  ```
+  key = the word CASE-INVERTED       'aA' in the line, 'Aa' as the key: both
+                                     fold to 'AA', so a fold dropped on EITHER
+                                     side breaks the match. A same-case plant
+                                     leaves one of the two folds untested
+  k sweeps 1..3 AND every free       the generator cannot know WHICH integer
+    scalar int is set to k-1, k      picks the word, only that one usually does
+  the element FIRST and LAST         a search that skips line 1 and one that
+    and nowhere else                 stops at line 1 are different mutants
+  carried to R12's narrow WIDTH      `'200' -> '201'` dies on 14 cases and on
+                                     nothing else in the corpus
+  ```
+
+  And the kills came in on five DIFFERENT counts -- 14, 48, 18, 21, 72 -- which
+  is what says they were five behaviours rather than one seen five ways. A rule
+  whose kills all land on the same number has added one case, not a rule.
+
+- **MEASURE A CORPUS RULE'S X3 COST IN BYTES. TWO CORPORA OF 1552 CASES CAN
+  DIFFER IN ALL 1552.** Unit #32, second dispatch, and it supersedes the
+  case-count comparison the first dispatch settled for.
+
+  ```
+  bash scripts/reset_to_clean.sh          # R12's widths come from the CLEAN
+  bash evidence/FindLine/x3_check_r14/run.sh    # Fortran; a wrapper has none
+  bash scripts/restore_integrated.sh
+  ```
+
+  ```
+                 R14 off        R14 on        first N bytes identical
+  ChkParseData   102,577 B      110,533 B     yes    1552 -> 1624
+  GetWords        56,701 B       56,701 B     yes    N/A: its array is OUTPUT
+  FindLine     4,990,604 B    5,370,716 B     yes    2370 -> 2514
+  ```
+
+  The R14-off column reproducing the committed counts EXACTLY is the half that
+  makes the ablation trustworthy; without it the table is two runs of an unknown
+  generator. And ChkParseData's +72 cases all PASS, which is a real finding
+  about a closed unit and is left as one.
+
+- **A POSITIVE CONTROL MUST SHARE THE SURVIVOR'S SITE, NOT MERELY ITS
+  INSTRUMENT -- AND WHEN THE HARNESS CANNOT SEE A MUTANT, PUT IT IN FRONT OF THE
+  GATE BEFORE CLASSIFYING IT.** Unit #32, second dispatch, and it is unit #31's
+  "chosen against the program, not against the probe" one step further in.
+
+  ```
+  gate/FindLine.redtest.json          1,857,893 of 5,252,000   the NAME MATCH
+    -- same file, same instrument, same unit, and it says NOTHING about
+       whether the gate can see the constant the survivor moves
+  gate.survivor-ca75abea.json         0 of 5,252,000           '2048' -> '2049'
+  gate.linewidth-control.json         1,583,216 of 4,732,000   '2048' -> '5'
+  harness.linewidth-control.json      60 of 2514               '2048' -> '2047'
+  ```
+
+  `scripts/gate.py --perturb-file/--perturb-from/--perturb-to` IS a
+  mutant-scoring instrument for a second oracle and costs one gate run (~3 min).
+  Using it converted a survivor from "unmeasured" to "measured against two
+  oracles, each with a control at its own site", which is what decides (a) from
+  (b) from (c). The asymmetry it exposed is the general fact: **one byte too FEW
+  is a wrong answer, one byte too MANY is not an answer at all**, and no value
+  oracle of any kind reads bytes outside the buffer it compares.
+
 - **A REFUSAL'S STATED REASON IS A CLAIM AND CAN BE FALSE, AND A FALSE ONE COSTS
   MORE THAN NO REASON WOULD -- ASK THE OTHER GENERATOR INSTEAD OF READING IT.**
   Unit #32, three tool defects in one declaration (`CHARACTER(*) :: X(:)`), and

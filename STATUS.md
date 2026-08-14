@@ -5,61 +5,81 @@
 stand*. One copy of every count — do not duplicate them anywhere else.
 
 **As of 2026-08-14: unit #32 `FindLine` is `deferred` and NOT CLOSED** — the
-mutation score is an honest **0.760** against a threshold of 1.000, and the six
-survivors are five instances of ONE measured corpus gap plus one piece of
-undefined behaviour. Everything else this unit has ran and is green, and every
-green is red-tested. It is the campaign's first unit taking an **assumed-shape
-CHARACTER array**, and that one declaration broke three tool defects loose.
+mutation score is an honest **0.960** against a threshold of 1.000, on **one**
+survivor. Its first dispatch closed at 0.760 with six, five of which were
+instances of ONE measured corpus gap; this dispatch built the rule that gap
+specified and all five died. The one that is left is undefined behaviour, is
+classified `(c)`, and is escalated. Everything else this unit has ran and is
+green, and every green is red-tested. It is the campaign's first unit taking an
+**assumed-shape CHARACTER array**, and that one declaration broke three tool
+defects loose.
 
 Every count below is read from the committed artifact named in its row.
 
 | layer | result | red-tested |
 |---|---|---|
 | kernel replay, 20 cases (`evidence/FindLine/kernel.verify_fields.csv`) | 20/20, all 60 fields `IDENTICAL` | four stubs: 0/20 · 0/20 · **20/20** · 5/20 |
-| differential harness (`harness/FindLine.json`) | **2370 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | six stubs: 2367 · 47 · 20 · 47 · **0** · **0** |
-| mutation (`mutation/FindLine.json`) | **19 of 25 behavioural, 0.760**, 2 declared equivalent, 0 no-compile, 9 operators | the score *is* the red test, 25 times |
-| post-integration (`harness/FindLine.postintegration.json`) | 2370 checked, 0 failed | the wrapper's two extents transposed: **47 of 2370**, revert-verified 0 |
+| differential harness (`harness/FindLine.json`) | **2514 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | seven stubs: 2511 · 47 · 62 · 89 · **30** · **42** · 60 |
+| mutation (`mutation/FindLine.json`) | **24 of 25 behavioural, 0.960**, 2 declared equivalent, 0 no-compile, 9 operators | the score *is* the red test, 25 times |
+| post-integration (`harness/FindLine.postintegration.json`) | 2514 checked, 0 failed | the wrapper's two extents transposed: **88 of 2514**, revert-verified 0 |
 | gate, 27 scenarios (`gate/FindLine.json`) | 5,252,000 values / 351 channels, 0 mismatched | the name match disabled moves **1,857,893**, revert-verified 0 |
 
-**ONE MEASUREMENT EXPLAINS FIVE OF THE SIX SURVIVORS, AND IT IS 47 OF 2370.**
+**THE GAP WAS 47 OF 2370 AND IT IS NOW 89 OF 2514, OF WHICH 42 ARE NOT BLANK.**
 `evidence/FindLine/findline.match-count-probe.cpp` writes `LineNum = -7` inside
 the match arm — `LineNum` is compared by R4 and the reference writes only 0 or
-`I`, so `-7` cannot collide with a real answer — and the harness fails exactly
-47 of 2370. So **2323 cases never find the name at all**: `FoundLine` is false,
-`LineNum` is 0, `Line` is never written, and nothing downstream of
-`FileLineUC == ParamNameUC` is distinguishable in 98% of the corpus. The cause
-is structural rather than unlucky: `FileLines` and `ParamName` are drawn
-independently, so a match happens only where two independent draws coincide.
-That is unit #30's rule seen from the other side — *a rule aimed at a predicate
-must supply both sides of it* — and no rule here supplies both sides of this
-one. Two stubs report it as a zero: pinning `WordInd` at 2 fails **0 of 2370**,
-and deleting `CALL Conv2UC(ParamNameUC)` fails **0 of 2370**.
+`I`, so `-7` cannot collide with a real answer — and its failing count *is* the
+number of cases that find the name. `findline.nonblank-key-probe.cpp` refuses
+the match unless the key holds a non-blank character and fails 47, so the
+blank-vs-blank matches are still there and **42 new ones are not**. Before this
+dispatch the second number was **0**: every match in the whole corpus was two
+empty strings comparing equal, which cannot tell one word index from another,
+cannot see an uppercasing pass, and cannot tell a width of 200 from 201.
 
-**AND ALL 47 ARE THE ALL-BLANK SHAPE**, which a second probe measures and which
-is what makes the remedy specifiable: refusing the match unless the search key
-holds a non-blank character fails **47 of 2370** — every case that matched. So
-every match here is two empty strings comparing equal, the same shape unit #30
-found in `ChkParseData`. A blank word is blank at *every* index, `Conv2UC` on a
-blank key is a no-op, and a blank key is 200 blanks whether the width is 200 or
-201 — that is all five survivors at once, and it means a rule which merely made
-matches more frequent would move none of them.
+**THE RULE IS R14_planted_word (`translation-loop` `552edb1`)**, and it is
+almost verbatim the rule the first dispatch wrote down and declined to build. It
+plants a free scalar CHARACTER input as the *k*-th blank-delimited WORD of one
+element of a CHARACTER ARRAY input, for *k* in 1..3, with every free scalar
+integer set to *k-1* and to *k* (the generator cannot know which integer picks
+the word, only that one usually does), with the key **case-inverted** against
+the word so a fold dropped on either side breaks the match, with the element
+FIRST and LAST and nothing else, and with the whole construction carried to
+R12's narrowing width. Five survivors died on five different counts — 14, 48,
+18, 21 and 72 — which is the evidence that they were five behaviours and not one
+seen five ways. The two stubs that used to report the blindness as a zero now
+report **30 of 2514** and **42 of 2514**, and that 42 is exactly the non-blank
+match count, which is what it has to be.
 
-**What would close it** is written down so the next dispatch need not rederive
-it: a corpus rule that plants a NON-BLANK name from one input inside another — for a unit comparing a
-CHARACTER quantity derived from an array input against a scalar CHARACTER
-input, generate cases in which the scalar IS the *k*-th word of a chosen
-element, for each *k* the signature admits, and in which the case letters
-differ. Not taken here because a new rule shifts every already-scored unit's
-draws and that X3 cost has to be measured across the campaign; unit #30 spent a
-whole dispatch on exactly that.
+**ITS X3 COST IS A BYTE-PREFIX IDENTITY, NOT A CASE COUNT.** R14 is appended
+after every other rule, so the claim is that an already-scored corpus is
+strictly extended, and `evidence/FindLine/x3_check_r14/` proves it on all three
+units that can fire it: `ChkParseData` 102,577 → 110,533 bytes with the first
+102,577 identical, `GetWords` unchanged (its array is `INTENT(OUT)`, so the rule
+reports N/A), `FindLine` 4,990,604 → 5,370,716 with the first 4,990,604
+identical. The R14-off column reproduces the committed case counts exactly, so
+the ablation is a real one. **That property cost R12 the same claim** and the
+loop's test says so rather than being made to pass: only one rule can be last.
 
-**THE SIXTH SURVIVOR IS NOT A CORPUS GAP.** `'2048' -> '2049'` on
-`MaxLineLength` makes `char_assign` write one byte past the *caller's*
-2048-byte buffer. Bytes past the end are not a wrong answer, so no value
-comparison can see it, and unit #7 settled that a mutant observable only through
-a write outside its buffer cannot honestly be declared equivalent. Unlike the
-`std::min` this unit deleted for the same reason, the site cannot be removed:
-VIT emits no `len_Line`, so the width must be stated in the C++ exactly once.
+**THE ONE SURVIVOR IS `(c)`, AND BOTH OF ITS ZEROS HAVE A CONTROL AT THEIR OWN
+SITE.** `'2048' -> '2049'` on `MaxLineLength` makes `char_assign` write one byte
+past the *caller's* 2048-byte buffer.
+
+```
+                                  the mutant                the control, same site
+differential harness, 2514 cases  0 failed                  2048 -> 2047:  60 failed
+gate, 5,252,000 values            0 moved, 0 channels,      2048 -> 5:     1,583,216 moved,
+                                  0 scenarios broken        131 channels, and scenarios
+                                                            19 and 27 stopped running
+```
+
+It is **not (a)**: the two programs do not agree on every admissible input,
+because one of them has no defined behaviour at all (unit #7). It is **not
+(b)**: no widening of any corpus reaches it, because the difference is not in
+any compared value — now measured against a second, whole-program oracle rather
+than inferred from the first. The site cannot be removed either: VIT emits no
+`len_Line`, so the width must be stated in the C++ exactly once. One byte too
+FEW is a wrong answer; one byte too MANY is not an answer at all. Third instance
+in the campaign after `Read_OL_Input` and `Debug`'s `c3a5bb71`; the instrument
+is a sanitiser build and is already a **proposed method amendment**.
 
 **THE TRANSLATION LOST TWO SITES TO THE SAME RULE, AND THE SCORE MOVED
 0.667 → 0.704.** `char_assign`'s `n = std::min(len_src, len_dst)` plus two
@@ -93,9 +113,10 @@ FALSE REASON attached.**
    R12_narrowing_width had the same literal-only blind spot (loop `024982b`).
 
 **THE R12 WIDENING KILLED NOTHING ON ITS OWN** — 0.667 before and after, +12
-cases — and became three kills only once `char_assign` was rewritten. A rule
-that puts a boundary in the corpus and a translation with no site at which that
-boundary changes an answer are two halves of one measurement.
+cases — and became three kills only once `char_assign` was rewritten, and a
+fourth (`'200' -> '201'`) only once R14 put a 200-character WORD at that width.
+A rule that puts a boundary in the corpus and a translation with no site at
+which that boundary changes an answer are two halves of one measurement.
 
 **A RED TEST THAT CORROBORATES ANOTHER UNIT'S.** Disabling FindLine's name
 comparison moves **1,857,893 of 5,252,000 across 147 channels** — the same three
@@ -104,24 +125,25 @@ blanks every word, so FindLine then compares a blank word against a non-blank
 name and matches nothing. Two perturbations of two units converging on one state
 is what a same-build control buys, taken here for free.
 
-**THE X3 CLAIM WAS MEASURED, AND IT FOUND SOMETHING ELSE.** All four generator
-changes argue from the source that no scored unit can move; the two units that
-could were re-taken (`evidence/FindLine/x3_check/`). `ChkParseData` is unchanged
-at 1552 cases. `GetWords` produces **1373** where `harness/GetWords.json`
-records **1370** — and at loop `12dbaa0`, the revision this dispatch opened on,
-it already produced 1373, so the drift is not this dispatch's and the X3 claim
-holds. What it is, is a **closed unit whose committed corpus no longer
-reproduces**, with a 1.000 mutation score scored against the older one. Left as
-a finding rather than repaired here; raised in DECISIONS.md for the Driver.
+**TWO CLOSED UNITS NO LONGER REPRODUCE, AND BOTH ARE LEFT AS FINDINGS.**
+`GetWords` produces **1373** cases where `harness/GetWords.json` records
+**1370**, and that drift predates this unit entirely (it is already 1373 at loop
+`12dbaa0`). `ChkParseData` now produces **1624** where its artifact records
+**1552** — 72 cases R14 added, all of which its translation PASSES and none of
+which its committed 1.000 mutation score was taken over. Neither is repaired
+inside this unit's dispatch, because re-taking a closed unit's evidence would
+put a number in its artifact that no commit of its own explains. Both are in
+DECISIONS.md for the Driver.
 
 **AND A CONTROL THAT TOOK TWO ATTEMPTS.** The two declared equivalences enlarge
-a fixed-width local by one byte; a canary in that byte reports 0 of 2370
-disturbed. The first control for that probe — `conv2uc_c(ParamNameUC,
-MaxParamLength + 1)` — was a **no-op**, because Conv2UC writes a byte only when
-it is a lowercase letter and the sentinel is `\x7f`. It reported 0 of 2370, the
-same number as the probe, and for one run a dead control was indistinguishable
-from a passing probe (P10). The control now writes the byte unconditionally:
-2370 of 2370.
+a fixed-width local by one byte; a canary in that byte reports 0 of 2514
+disturbed against a control that reports 2514 of 2514. The first control for
+that probe — `conv2uc_c(ParamNameUC, MaxParamLength + 1)` — was a **no-op**,
+because Conv2UC writes a byte only when it is a lowercase letter and the
+sentinel is `\x7f`. It reported 0, the same number as the probe, and for one run
+a dead control was indistinguishable from a passing probe (P10). The control now
+writes the byte unconditionally. That lesson is why the surviving mutant's two
+zeros were not accepted until they had controls of their own.
 
 ---
 
