@@ -1,0 +1,126 @@
+{
+ "unit": "PIDController",
+ "against": "translation",
+ "checked": 4610,
+ "failed": 2303,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    0 varied extent(s); 24 FIXED by the type at [2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 12, 12, 12, 12, 1024, 1024, 1024, 1024, 1024] -- not varied; 1 HELD -- they size arrays the reference does not read, 1 index(es) at 1/interior/n, array elements distinct",
+  "  applied  R2_flag_values             2 value(s) across 1 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R6_reference_literals      1413 value(s) from 25 literal(s) in the reference, each under every declared value of 1 flag(s); 41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 297 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 360 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 90 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 9 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          12 real value(s), none zero in every case; 145 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output",
+  "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
+  "  N/A      R12_narrowing_width        no CHARACTER local is narrower than a dummy assigned into it -- the reference truncates nothing, so there is no boundary for this rule to reach",
+  "  N/A      R13_staging_capacity       no deferred-length CHARACTER output -- no parameter whose LENGTH the callee chooses, so no staging buffer whose capacity a case could state",
+  "  N/A      R14_planted_word           no CHARACTER ARRAY input -- there is no element for a scalar string to be a word OF, so no comparison of this shape exists to reach",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 174 out-parameter(s): piP_ITerm, piP_ITermLast, piP_ITerm2, piP_ITermLast2, piP_ELast, objInst_instLPF, objInst_instSecLPF, objInst_instSecLPFV, objInst_instHPF, objInst_instNotchSlopes, objInst_instNotch, objInst_instPI, objInst_instRes, objInst_instRL, LocalVar_iStatus, LocalVar_AlreadyInitialized, LocalVar_RestartWSE, LocalVar_Time, LocalVar_DT, LocalVar_WriteThisStep, LocalVar_n_DT, LocalVar_Time_Last, LocalVar_VS_GenPwr, LocalVar_GenSpeed, LocalVar_RotSpeed, LocalVar_NacHeading, LocalVar_NacVane, LocalVar_NacVaneF, LocalVar_WindDir, LocalVar_HorWindV, LocalVar_HorWindV_F, LocalVar_rootMOOP, LocalVar_rootMOOPF, LocalVar_BlPitch, LocalVar_BlPitchCMeas, LocalVar_Azimuth, LocalVar_OL_Azimuth, LocalVar_AzUnwrapped, LocalVar_AzError, LocalVar_GenTqAz, LocalVar_AzBuffer, LocalVar_NumBl, LocalVar_FA_Acc_TT, LocalVar_SS_Acc_TT, LocalVar_FA_Acc_Nac, LocalVar_NacIMU_FA_RAcc, LocalVar_FA_AccHPF, LocalVar_FA_AccHPFI, LocalVar_FA_PitCom, LocalVar_VS_RefSpd, LocalVar_VS_RefSpd_TSR, LocalVar_VS_RefSpd_TRA, LocalVar_VS_RefSpd_RL, LocalVar_PC_RefSpd, LocalVar_PC_RefSpd_SS, LocalVar_PC_RefSpd_PRC, LocalVar_RotSpeedF, LocalVar_GenSpeedF, LocalVar_GenTq, LocalVar_GenTqMeas, LocalVar_GenArTq, LocalVar_GenBrTq, LocalVar_VS_KOmega2_GenTq, LocalVar_VS_ConstPwr_GenTq, LocalVar_IPC_PitComF, LocalVar_PC_KP, LocalVar_PC_KI, LocalVar_PC_KD, LocalVar_PC_TF, LocalVar_PC_MaxPit, LocalVar_PC_MinPit, LocalVar_PC_PitComT, LocalVar_PC_PitComT_Last, LocalVar_BlPitchCMeasF, LocalVar_PC_PitComT_IPC, LocalVar_PC_PwrErr, LocalVar_PC_SpdErr, LocalVar_IPC_AxisTilt_1P, LocalVar_IPC_AxisYaw_1P, LocalVar_IPC_AxisTilt_2P, LocalVar_IPC_AxisYaw_2P, LocalVar_axisTilt_1P, LocalVar_axisYaw_1P, LocalVar_axisYawF_1P, LocalVar_axisTilt_2P, LocalVar_axisYaw_2P, LocalVar_axisYawF_2P, LocalVar_IPC_KI, LocalVar_IPC_KP, LocalVar_IPC_IntSat, LocalVar_PC_State, LocalVar_PitCom, LocalVar_PitCom_SD, LocalVar_PitComAct, LocalVar_SS_DelOmegaF, LocalVar_TestType, LocalVar_Kp_Float, LocalVar_VS_MaxTq, LocalVar_VS_LastGenTrq, LocalVar_VS_LastGenPwr, LocalVar_VS_MechGenPwr, LocalVar_VS_SpdErrAr, LocalVar_VS_SpdErrBr, LocalVar_VS_SpdErr, LocalVar_VS_State, LocalVar_VS_Rgn3Pitch, LocalVar_WE_Vw, LocalVar_WE_Vw_F, LocalVar_WE_VwI, LocalVar_WE_VwIdot, LocalVar_WE_Op, LocalVar_WE_Op_Last, LocalVar_VS_LastGenTrqF, LocalVar_PRC_WSE_F, LocalVar_PRC_R_Speed, LocalVar_PRC_R_Torque, LocalVar_PRC_R_Pitch, LocalVar_PRC_R_Total, LocalVar_PRC_Min_Pitch, LocalVar_PS_Min_Pitch, LocalVar_OL_Index, LocalVar_SU_Stage, LocalVar_SU_LoadStageStartTime, LocalVar_SU_RotSpeedF, LocalVar_SD_Trigger, LocalVar_SD_BlPitchF, LocalVar_SD_NacVaneF, LocalVar_SD_GenSpeedF, LocalVar_SD_Stage, LocalVar_SD_StageStartTime, LocalVar_SD_MaxPitchRate, LocalVar_SD_MaxTorqueRate, LocalVar_GenTq_SD, LocalVar_Fl_PitCom, LocalVar_NACIMU_FA_AccF, LocalVar_FA_AccF, LocalVar_FA_Hist, LocalVar_TRA_LastRefSpd, LocalVar_VS_RefSpeed, LocalVar_PtfmTDX, LocalVar_PtfmTDY, LocalVar_PtfmTDZ, LocalVar_PtfmRDX, LocalVar_PtfmRDY, LocalVar_PtfmRDZ, LocalVar_PtfmTVX, LocalVar_PtfmTVY, LocalVar_PtfmTVZ, LocalVar_PtfmRVX, LocalVar_PtfmRVY, LocalVar_PtfmRVZ, LocalVar_PtfmTAX, LocalVar_PtfmTAY, LocalVar_PtfmTAZ, LocalVar_PtfmRAX, LocalVar_PtfmRAY, LocalVar_PtfmRAZ, LocalVar_CC_DesiredL, LocalVar_CC_ActuatedL, LocalVar_CC_ActuatedDL, LocalVar_StC_Input, LocalVar_Flp_Angle, LocalVar_RootMyb_Last, LocalVar_ACC_INFILE_SIZE, LocalVar_restart, LocalVar_TiltMean, LocalVar_YawMean, LocalVar_ZMQ_ID, LocalVar_ZMQ_YawOffset, LocalVar_ZMQ_TorqueOffset, LocalVar_ZMQ_PitOffset, LocalVar_ZMQ_R_Speed, LocalVar_ZMQ_R_Torque, LocalVar_ZMQ_R_Pitch"
+ ],
+ "mismatches": [
+  {
+   "case": 13,
+   "output": "piP.ITerm",
+   "ref": "0000000000c082c09858e5cee51f8fc0bc9d73d112108fc0cd046056b9008fc0...",
+   "got": "2a1da885d22f8fc00000000000c082c0bc9d73d112108fc0cd046056b9008fc0..."
+  },
+  {
+   "case": 14,
+   "output": "piP.ITerm",
+   "ref": "199bb99135108fc03275a8e170ff8ec0bcd14c8390f18ec097681770e8e18ec0...",
+   "got": "199bb99135108fc03275a8e170ff8ec0bcd14c8390f18ec097681770e8e18ec0..."
+  },
+  {
+   "case": 15,
+   "output": "piP.ITerm",
+   "ref": "faf886b7ab878cc030f698edb1798cc0911314c1606b8cc023e3344f705c8cc0...",
+   "got": "faf886b7ab878cc030f698edb1798cc0911314c1606b8cc023e3344f705c8cc0..."
+  },
+  {
+   "case": 16,
+   "output": "piP.ITerm",
+   "ref": "06a367304b0e8bc0cadcd65680028bc004da4b85a0f78ac07a1a9b0976eb8ac0...",
+   "got": "06a367304b0e8bc0cadcd65680028bc004da4b85a0f78ac07a1a9b0976eb8ac0..."
+  },
+  {
+   "case": 17,
+   "output": "piP.ITerm",
+   "ref": "053c057ea04f85c0901d688b224a85c0b772aef06d4585c05ecc589eee3f85c0...",
+   "got": "053c057ea04f85c0901d688b224a85c0b772aef06d4585c05ecc589eee3f85c0..."
+  },
+  {
+   "case": 18,
+   "output": "piP.ITerm",
+   "ref": "204e7b73fe9288c0f506f151d28d88c08460a796438988c0d653f083e58388c0...",
+   "got": "204e7b73fe9288c0f506f151d28d88c08460a796438988c0d653f083e58388c0..."
+  },
+  {
+   "case": 19,
+   "output": "piP.ITerm",
+   "ref": "e6822e771b8253c0ec24c1f4433d53c03cf2301652f552c05091f2e0bcb952c0...",
+   "got": "e6822e771b8253c0ec24c1f4433d53c03cf2301652f552c05091f2e0bcb952c0..."
+  },
+  {
+   "case": 20,
+   "output": "piP.ITerm",
+   "ref": "6daa286a952e8fc012d64a97dc208fc0c896f4dc5b148fc0c859ac017e088fc0...",
+   "got": "6daa286a952e8fc012d64a97dc208fc0c896f4dc5b148fc0c859ac017e088fc0..."
+  },
+  {
+   "case": 21,
+   "output": "piP.ITerm",
+   "ref": "a40cc856e6f588c09ce503cbddeb88c0ebeb533f64e188c08fa721ad44d788c0...",
+   "got": "a40cc856e6f588c09ce503cbddeb88c0ebeb533f64e188c08fa721ad44d788c0..."
+  },
+  {
+   "case": 23,
+   "output": "piP.ITerm",
+   "ref": "0000000000c082c00c52d7573f208fc0d9cd8616fd108fc0ef12dfdaf5ff8ec0...",
+   "got": "c78d7e7bab2f8fc00000000000c082c0d9cd8616fd108fc0ef12dfdaf5ff8ec0..."
+  },
+  {
+   "case": 25,
+   "output": "piP.ITerm",
+   "ref": "0000000000c082c0e2730c77c01f8fc0db3e3c045f108fc0da2aec34dcff8ec0...",
+   "got": "66063ae3592f8fc00000000000c082c0db3e3c045f108fc0da2aec34dcff8ec0..."
+  },
+  {
+   "case": 27,
+   "output": "piP.ITerm",
+   "ref": "0000000000c082c0a5761aa225208fc02bbd8779790f8fc0b1b2133e46008fc0...",
+   "got": "a6cc925b1f308fc00000000000c082c02bbd8779790f8fc0b1b2133e46008fc0..."
+  },
+  {
+   "case": 29,
+   "output": "piP.ITerm",
+   "ref": "0000000000c082c039b4488e091f8fc05f6b9f31ba0f8fc0f91b7411d2ff8ec0...",
+   "got": "7d11970cf62f8fc00000000000c082c05f6b9f31ba0f8fc0f91b7411d2ff8ec0..."
+  },
+  {
+   "case": 31,
+   "output": "piP.ITerm",
+   "ref": "0000000000c082c083188b14951f8fc0a3bc467b9d108fc09c145ebaf7008fc0...",
+   "got": "39ae134f1b308fc00000000000c082c0a3bc467b9d108fc09c145ebaf7008fc0..."
+  },
+  {
+   "case": 33,
+   "output": "piP.ITerm",
+   "ref": "0000000000c082c07d7c36cc58208fc0d7dc7e1cb50f8fc0b3578348a8ff8ec0...",
+   "got": "9fcfa23032308fc00000000000c082c0d7dc7e1cb50f8fc0b3578348a8ff8ec0..."
+  },
+  {
+   "case": 35,
+   "output": "piP.ITerm",
+   "ref": "0000000000c082c0b1445344991f8fc0eeb46db6300f8fc01804aa6533018fc0...",
+   "got": "8ab24a9aa32f8fc00000000000c082c0eeb46db6300f8fc01804aa6533018fc0..."
+  }
+ ],
+ "loop_rev": "e7d5583-nogit",
+ "gen_rev": "gen-118a2c5c81ea",
+ "vit_rev": "3ce00e8-nogit",
+ "red_test": {
+  "perturbation": "index_offset at site : [i] -> [i + 1]",
+  "result": "2303 of 4610 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}
