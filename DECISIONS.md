@@ -3,6 +3,157 @@
 Append-only record of *why*. Never read end to end.
 
 
+## Unit #34 — PIDController, SECOND DISPATCH — 2026-08-14
+
+The first dispatch closed `deferred` at **0.759** with seven survivors and
+declared none of them. This one takes it to **1.000**. Six of the seven died
+because the INPUTS changed; the seventh is declared, and it is the only one that
+was ever a candidate.
+
+**A SURVIVING MUTANT ASKS WHICH OF THREE THINGS IT IS, AND THE ANSWER HERE WAS
+THE SAME FOR SIX OF THEM: THE HARNESS COULD NOT REACH IT.** Not equivalence —
+declaring them would have moved 0.759 to 1.000 in one edit and verified nothing.
+
+**A CENSUS BEATS A COUNTING PROBE WHEN THE QUESTION IS NOT A BIT, AND IT COSTS
+ONE RUN INSTEAD OF ONE PER QUESTION.** The first dispatch answered five
+questions with five probes, each writing a sentinel into `piP%ITerm2` and each
+costing a harness run to learn one number. The question the REMEDY needs is not
+a bit: it is *what does the corpus actually put in the two bounds and the three
+terms, case by case*, and a remedy chosen without seeing that distribution is a
+guess. So `evidence/PIDController/probes/clamp-census.cpp` — generated from the
+shipped translation by `make_census.py`, the same anti-drift rule the counting
+probes use — appends one CSV row per call and **changes no compared output**.
+
+The run that produces it is therefore GREEN, and that is the check that the
+census did not perturb what it measures: `0 of 4610 failed`. Read by
+`census_report.py`, over the 2307 ELSE-arm cases:
+
+```
+the return value == minValue or maxValue    2307 of 2307
+minValue < maxValue at all                   207 of 2307
+EFilt finite                                   1 of 2307
+the raw sum PTerm+ITerm+DTerm finite           1 of 2307
+the outer clamp INACTIVE                       0 of 2307
+```
+
+The middle two rows are the ones no counting probe had asked for, and they are
+the bigger half of the answer.
+
+**A GREEN WHOSE COMPARISON IS NaN AGAINST NaN IS AN ABSENCE RENDERED AS
+AGREEMENT.** `LPFilter` ends in
+
+```fortran
+LPFilter = 1.0/FP%lpf1_a1(inst) * (-FP%lpf1_a0(inst)*... )     Filters.f90:65
+```
+
+and `FP%lpf1_a1(inst)` is written ONLY inside `IF ((iStatus == 0) .OR. reset)`.
+The harness supplies `LocalVar%FP` **zeroed** on every case — it is a NESTED
+type the generator does not vary — so on every case with `iStatus /= 0` and
+`reset` false the reference computes `1.0/0.0 * 0.0` = NaN, the translation
+computes the same NaN, the comparison passes, and the case constrains nothing.
+`iStatus` was an ordinary defaulted integer on R6's decade ladder, which reaches
+0 exactly **once in 2307 cases**. This is P6 from the other side: the apparatus
+already refuses to let an absence render as a value, and here an absence
+rendered as *agreement*.
+
+**AND THE SECOND CAUSE IS R15's, MEASURED AGAIN AND WORSE THAN STATED.**
+`minValue` and `maxValue` are drawn independently from one default and came out
+`(0, -300)` in **1512 of 2307** cases — `saturate(x, lo, hi)` is
+`MIN(MAX(x,lo),hi)`, which returns `hi` for every x once `lo >= hi`. R6's
+isolating stage then pins every OTHER defaulted real to one value, which sets
+the two bounds EQUAL: the same empty interval by another route.
+
+**THE REMEDY IS THREE ENTRIES IN `harness/ranges.toml`, WHICH IS A PER-UNIT
+STATEMENT AND NOT A GENERATOR CHANGE.** `R15_bracketing_bounds`, specified in
+this file at the first dispatch, remains NOT BUILT: it is a change to a shared
+generator, X3 forbids that mid-run without an ablation, and it would move every
+already-scored unit's corpus. What this dispatch establishes is that the
+campaign's existing judgement mechanism can state the same thing for ONE unit,
+with no revision to any instrument — `loop_rev` is unchanged at `e7d5583` across
+all nine of this unit's result artifacts, and `revcheck --unit PIDController` is
+clean.
+
+```
+LocalVar_iStatus = { values = [0, 1, -1] }     the reference's OWN documented
+                                               enumeration (Filters.f90:41),
+                                               0 first so it is values[0]
+minValue = { lo = -1e9, hi = -1e-3 }           the ONLY call site's own shape,
+maxValue = { lo = 1e-3, hi = 1e9 }             widened: Controllers.f90:346
+                                               passes -VS_MaxTq*2, +VS_MaxTq*2
+```
+
+The magnitude is taken from the clamped expression rather than picked — |raw|
+over the finite cases has median 2994 and p90 1.86e6, and 1e9 is above both.
+That is R15's own "lo and hi from the SCALE" clause, satisfied by a constant
+because a per-unit range cannot compute one per case; it is enough here and it
+is not the general rule.
+
+```
+                                     BEFORE            AFTER
+the outer clamp INACTIVE        0 of 2307        1316 of 4884
+the ITerm clamp INACTIVE        8 of 2307        4285 of 4884
+minValue < maxValue           207 of 2307        4884 of 4884
+EFilt finite                    1 of 2307        1507 of 4884
+```
+
+and the six survivors die at ordinary counts: `kp*error -> kp` 1288 of 9758,
+`-> kp/error` 1349, `EFilt-ELast -> EFilt+ELast` 1367, `PTerm+ITerm ->
+PTerm-ITerm` 1325, and the two `[i] -> [i+1]` reads the first dispatch
+identified by building twelve variants — lines 112 and 121 — at 1274 and 1323.
+**28 of 29, 0.966, WITH NOTHING DECLARED** (`mutation/PIDController.undeclared.json`).
+
+**THEN, AND ONLY THEN, ONE DECLARATION.** `const_tweak '0.0' -> '1.0'` on the
+last argument of `lpfilter_c(..., 0, 0.0)`. The preceding literal `0` is
+`has_InitialValue`; the generated bridge does not pass the argument at all in
+that arm (`pidcontroller_callees.f90:40-44`) and the shipped C++ `LPFilter`
+reads it only under `if (has_InitialValue)`. **The flag's own mutant, one
+position left on the same line, is killed in 1145 of 9758** — so the corpus
+distinguishes the gate and fails to distinguish only the value the gate makes
+unreadable. That pairing is what makes the declaration checkable rather than
+convenient, and it is the shape to look for before declaring anything:
+*is the thing that would make this argument live itself observable?*
+`mutation/PIDController.equivalences.md`.
+
+**AN ID IS NOT A PLACE, AND THE ARTIFACT ONLY CARRIES A SHAPE.** `'0.0' ->
+'1.0'` matches two sites. `harness.cppmutate.mutants()` carries a LINE, so
+re-running it over the shipped translation turns every id into a place
+(`evidence/PIDController/mutant_sites.txt`) — and independently, the OTHER
+`'0.0'` mutant is killed in exactly **4874 of 9758**, which is exactly the
+reset-arm case count the census reports. Both identifications agree. The first
+dispatch built twelve variants to answer the same question for `index_offset`;
+this is the cheaper instrument for it, and it was in the repository the whole
+time.
+
+**WHAT IS STILL NOT SEEN, AND IT IS A GENERATOR GAP RATHER THAN A RANGE.**
+`LocalVar%FP` is a nested type: zero-initialised, never varied. So `LPFilter`'s
+RECURSIVE arm is unreachable from this harness — 3377 of 4884 else-arm cases
+still answer NaN — and what the corpus exercises is the INIT arm plus NaN
+propagation. No entry in `ranges.toml` can state a non-zero filter state; that
+needs the generator to vary a nested type's fields, which is the same
+frontier `observability` has been naming since unit #11 and is not this unit's
+to cross. The pins also remove the INVERTED bracket (`lo > hi`) from the domain,
+and the defect that would need it lives in `saturate` — unit #24, CALLED not
+inlined, so both sides of this comparison always reached one implementation of
+it and this harness never constrained it.
+
+**FOR THE METHOD, NOT FOR THIS CAMPAIGN — two candidates, stated here rather
+than edited into the invariant layer.**
+
+1. **A census probe belongs beside the counting probe in the method.** The
+   counting probe answers "how many cases reach this arm" and needs one run per
+   question; the census answers "what is in every case" in one run, and it is
+   admissible for the same reason — it changes no compared output, so its own
+   run is a green that certifies it did not perturb what it measured. The rule
+   is the discipline, not the file: *a probe that changes a compared output is
+   a red test; a probe that changes none is an instrument, and it must be run
+   green before its numbers are quoted.*
+2. **P6 has a second face: an absence must not render as AGREEMENT.** A
+   comparison of NaN against NaN, of a bound against the same bound, or of a
+   held parameter against itself is a case that passes and constrains nothing.
+   The apparatus counts `checked` and `failed`; nothing counts *cases whose
+   comparison could not have failed*. On this unit that number was 2307 of 2307
+   and the artifact said `4610 checked, 0 failed`.
+
 ## Unit #34 — PIDController — 2026-08-14
 
 **THE SCENARIO BUILT FOR THIS UNIT IS ONE OF THE THREE A MISSING FILE STOPS, AND

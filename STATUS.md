@@ -4,21 +4,27 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-14: unit #34 `PIDController` is `deferred` and NOT CLOSED** — the
-mutation score is an honest **0.759** against a threshold of 1.000, on **seven**
-survivors, and **six of them are one measured zero**. Everything else this unit
-has ran and is green, and every green is red-tested. It is the campaign's
-**fourth dead unit** (#1 `AddToList`, #21 `UpdateZeroMQ`, #26 `unwrap`) and the
-first whose deadness the campaign's own scenario set *tried* to prevent.
+**As of 2026-08-14: unit #34 `PIDController` is `integrated` and CLOSED** — all
+five layers that exist for it ran, every green is red-tested, and the mutation
+score is **1.000** on 29 behavioural mutants with **one** declared equivalence.
+It is the campaign's **fourth dead unit** (#1 `AddToList`, #21 `UpdateZeroMQ`,
+#26 `unwrap`) and the first whose deadness the campaign's own scenario set
+*tried* to prevent.
+
+**THE SIX SURVIVORS OF THE FIRST DISPATCH WERE UNREACHABLE, NOT EQUIVALENT, AND
+NOT ONE OF THEM WAS DECLARED.** The score moved 0.759 → 0.966 by changing the
+INPUTS, and only then 0.966 → 1.000 by declaring the seventh, which is an
+absence rather than a weakness. Declaring all seven would have reached 1.000 in
+one edit and verified nothing.
 
 Every count below is read from the committed artifact named in its row.
 
 | layer | result | red-tested |
 |---|---|---|
 | kernel replay | **NOT AVAILABLE** — one call site, 0 hits in all 27 scenarios | `evidence/PIDController/coverage_deadness.txt`, exit 0, with a positive control at 12,339,878 hits |
-| differential harness (`harness/PIDController.json`) | **4610 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **4610 of 4610**, naming all seven outputs |
-| mutation (`mutation/PIDController.json`) | **22 of 29 behavioural, 0.759**, 0 declared equivalent, 1 no-compile, 7 operators | the score *is* the red test, 29 times |
-| post-integration (`harness/PIDController.postintegration.json`) | 4610 checked, 0 failed | the MERGE inverted **4610 of 4610**; the copy-back deleted **4610 of 4610** |
+| differential harness (`harness/PIDController.json`) | **9758 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **9758 of 9758** |
+| mutation (`mutation/PIDController.json`) | **28 of 28 behavioural, 1.000**, 1 declared equivalent, 1 no-compile, 7 operators — and **0.966 UNDECLARED**, `mutation/PIDController.undeclared.json` | the score *is* the red test, 29 times |
+| post-integration (`harness/PIDController.postintegration.json`) | 9758 checked, 0 failed | the MERGE inverted **9758 of 9758**; the copy-back removed **9758 of 9758** |
 | gate, 27 scenarios (`gate/PIDController.json`) | 5,252,000 values / 351 channels, 0 mismatched | the return value +1000.0 moves **0 of 5,252,000** — `RED_TEST_FAIL`, revert-verified |
 
 **THE SCENARIO BUILT FOR THIS UNIT IS ONE OF THE THREE A MISSING FILE STOPS.**
@@ -32,29 +38,55 @@ that file would change what 3 of the gate's 27 scenarios compute, which is what
 X3 forbids mid-run**; it is the single highest-value thing the campaign could do
 for its own coverage, and it is a Driver decision, not a unit's.
 
-**SIX OF SEVEN SURVIVORS ARE ONE NUMBER, AND THE NUMBER IS ZERO.** Five counting
-probes, sentinel written into `piP%ITerm2` — a field this unit never touches,
-belonging to `PIIController` which shares the type, and compared by R4 as one of
-174 out-parameters, so no real answer can collide with it:
+**WHAT THE CORPUS COULD NOT SEE, AND WHAT MADE IT SEE.** A census probe writes
+one CSV row per call and changes **no compared output**, so the run that
+produces it is itself GREEN — a reading of the corpus rather than a perturbation
+of it. One run replaces one bit-per-case counting probe per question
+(`evidence/PIDController/make_census.py`, `census_report.py`,
+`clamp_census.{before,after}.csv`). Counts are over the ELSE arm:
 
 ```
-the ELSE arm runs                      2307 of 4610   <- the control (P10), alive
-minValue < maxValue AT ALL              207 of 4610
-the ITerm clamp is INACTIVE               8 of 4610
-the OUTER clamp is INACTIVE               0 of 4610
+                                          BEFORE            AFTER
+the return value == a bound          2307 of 2307      3568 of 4884
+minValue < maxValue AT ALL            207 of 2307      4884 of 4884
+EFilt finite                            1 of 2307      1507 of 4884
+the OUTER clamp is INACTIVE             0 of 2307      1316 of 4884
+the ITerm clamp is INACTIVE             8 of 2307      4285 of 4884
 ```
 
-The return value is saturated in every case, so `PTerm`, `DTerm` and the order of
-the sum are invisible in it. The two surviving `index_offset` mutants were named
-by the artifact only as `('[i]', '[i + 1]')` — twelve sites match — so they were
-identified by BUILDING EACH CANDIDATE, and their counts reproduce the sweep's own
-per-mutant counts in order (`evidence/PIDController/index_sites/RESULTS.md`).
-Both are read sites feeding only that saturated return. The cause is structural:
-`minValue` and `maxValue` are drawn INDEPENDENTLY, and R6's isolating pin sets
-every other defaulted real to the SAME value — so the rule meant to isolate a
-parameter collapses exactly the pair that has to be an INTERVAL. The remedy is
-specified in `DECISIONS.md` as **`R15_bracketing_bounds`** and deliberately NOT
-built here (X3).
+**TWO INDEPENDENT CAUSES, AND FIXING EITHER ALONE LEAVES THE ZERO AT ZERO.**
+`LPFilter` divides by `FP%lpf1_a1(inst)` (`Filters.f90:65`), which is written
+only inside `IF ((iStatus == 0) .OR. reset)` — and the harness supplies
+`LocalVar%FP` **zeroed** on every case, so `EFilt` is `1.0/0.0 * 0.0` = NaN
+wherever `iStatus /= 0`, and NaN swamps the sum. Separately, `minValue` and
+`maxValue` are drawn INDEPENDENTLY from one default and came out `(0, -300)` in
+**1512 of 2307** cases; R6's isolating stage sets every *other* defaulted real
+EQUAL, which is the same empty interval by another route. `saturate(x, lo, hi)`
+is `MIN(MAX(x,lo),hi)` and returns `hi` for every x once `lo >= hi`.
+
+**THE REMEDY IS THREE ENTRIES IN `harness/ranges.toml` AND NOT A GENERATOR
+CHANGE** — `R15_bracketing_bounds` in `DECISIONS.md` still specifies that, and
+X3 still forbids it mid-run. `LocalVar_iStatus` takes the reference's own
+documented enumeration `[0, 1, -1]` with 0 first; `minValue` takes
+`[-1e9, -1e-3]` and `maxValue` `[1e-3, 1e9]`, which is the only call site's own
+shape (`Controllers.f90:346` passes `-LocalVar%VS_MaxTq*2` and
+`+LocalVar%VS_MaxTq*2`) widened, with the magnitude taken from the clamped sum
+itself (|raw| median 2994, p90 1.86e6). Ranges are read per unit, so **no other
+unit's corpus moves**, and `loop_rev` is unchanged at `e7d5583` across all nine
+result artifacts (`revcheck --unit PIDController`: clean).
+
+The six then die at ordinary counts — `kp*error -> kp` 1288, `-> kp/error` 1349,
+`EFilt-ELast -> EFilt+ELast` 1367, `PTerm+ITerm -> PTerm-ITerm` 1325, and the
+two `[i] -> [i+1]` reads at lines 112 and 121 at 1274 and 1323.
+
+**THE ONE DECLARED EQUIVALENCE IS AN ABSENCE, AND THE MUTANT BESIDE IT IS THE
+PROOF.** `const_tweak '0.0' -> '1.0'` on the last argument of
+`lpfilter_c(..., 0, 0.0)`: the preceding literal `0` is `has_InitialValue`, the
+generated bridge does not pass the argument at all in that arm, and the shipped
+C++ `LPFilter` reads it only under `if (has_InitialValue)`. The **flag's own**
+mutant, one position left on the same line, is **killed in 1145 of 9758** — so
+the corpus distinguishes the gate and fails to distinguish only the value the
+gate makes unreadable. `mutation/PIDController.equivalences.md`.
 
 **TWO INSTRUMENT DEFECTS HAD TO BE FIXED BEFORE ANY LAYER COULD RUN**, both
 recorded with their failing artifact first (C12), and both the same family — a
@@ -79,6 +111,15 @@ inference can ever reach it and it takes the campaign's only judgement mechanism
 `harness/ranges.toml`, backed by the reference's own exit status
 (`evidence/PIDController/instlpf_probe.txt`: SIGSEGV in `__filters_MOD_lpfilter`
 at both 32-bit extremes and at -100000).
+
+**WHAT IS STILL NOT SEEN.** `LocalVar%FP` is a NESTED type the generator
+zero-initialises and never varies, so `LPFilter`'s RECURSIVE arm is unreachable
+from here — 3377 of 4884 else-arm cases still answer NaN, and what the corpus
+exercises is the INIT arm plus NaN propagation. That is a generator gap, not
+something a range can state; it is in `DECISIONS.md`. An INVERTED bracket
+(`lo > hi`) is also no longer generated, and the defect that would need it lives
+in `saturate` — unit #24, CALLED not inlined, so both sides of this comparison
+always reached one implementation of it and this harness never constrained it.
 
 ---
 
@@ -2242,11 +2283,16 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-33 attempted / **29 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+34 attempted / **30 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 **3 deferred** (unit #29 `CheckInputs`, unit #31 `Debug`, unit #32 `FindLine`) /
 **1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 36 remain. 29 + 3 + 1 + 36 = 69.
+69 units in `plan.json`; 35 remain. 30 + 3 + 1 + 35 = 69.
+
+RECOUNTED at unit #34's second dispatch from `plan.json` with the one command
+below, not incremented. `PIDController` moved OUT of `deferred` and into the
+integrated count: its score is 1.000 and `done_check` says so, where at the
+first dispatch it was 0.759 and `done_check` said that.
 
 RECOUNTED at unit #33 from `plan.json` with the one command below, not
 incremented. It was one unit stale (`28 / 37`), which is the fifth time — and
