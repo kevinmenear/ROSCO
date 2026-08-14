@@ -1,0 +1,72 @@
+THE PRE-INTEGRATION HARNESS FAILS EXACTLY 16 OF 1292, AND THE 16 ARE THE WIDTH
+OF THIS UNIT'S OWN PREFIX. Not an estimate -- an identity.
+
+    len("PitchSaturation:") == 16
+
+WHAT THE 16 ARE. All of them are in R13's staging-capacity ladder, which copies
+ONE base case 256 times and sweeps the capacity of the `ErrVar%ErrMsg` buffer
+from the supplied length upward. The failures are a CONTIGUOUS run beginning at
+case 1045; the artifact's record cap shows 1045..1052 and the count is 16.
+
+    ref  ErrVar.ErrMsg = "[^_`a"                    n = 5
+    got  ErrVar.ErrMsg = "interp1d:[^_`a"           n = 14
+
+WHY. The base case arrives with `aviFAIL < 0`, so both `interp1d`'s tail and
+this unit's tail want to prefix the message. Two writes, one buffer:
+
+    supplied                       "[^_`a"                         5 bytes
+    after interp1d's prefix        "interp1d:[^_`a"               14 bytes
+    after this unit's prefix       "PitchSaturation:interp1d:..." 30 bytes
+
+    capacity < 14      neither write fits          both sides: 5 bytes   AGREE
+    capacity 14..29    the first fits, not the second                    DIFFER
+    capacity >= 30     both fit                                          AGREE
+
+Sixteen capacities lie in [14, 29]. Sixteen cases fail.
+
+THE TWO SIDES GATE AT DIFFERENT PLACES, AND THAT IS AN APPARATUS FACT.
+
+  C++          one view, one buffer, one capacity. `interp1d_c`'s write fits at
+               cap 14 and lands; this unit's 30-byte write does not and is
+               refused, so the buffer keeps "interp1d:[^_`a".
+
+  reference    Fortran `PitchSaturation` calls Fortran `interp1d`, which is
+               ALREADY INTEGRATED -- so it re-enters C++ through its own bridge,
+               which populates a FRESH view over the module-level staging buffer
+               `vit_defchar_errmsg_errorvariables`, whose length is VIT's and
+               not the case's. That inner write is therefore never gated by the
+               case's capacity. Both prefixes land in the Fortran string (a
+               reallocating assignment, unbounded), and the case's capacity is
+               applied ONCE, at the harness bridge's export: 30 > cap, refused,
+               and the C buffer is left at what it was handed -- 5 bytes.
+
+  So the reference applies the stated capacity ONCE and the translation applies
+  it TWICE, and neither is a claim about the arithmetic this unit performs.
+
+WHAT THE INTEGRATED BUILD DOES, which is the thing that matters. After
+integration `PitchSaturation`'s Fortran body is a bridge: it populates ONE view
+and calls `PitchSaturation_c`, which calls `interp1d_c` with that SAME view
+pointer. One buffer, one capacity, both writes gated together -- the C++ column
+above. The double gate exists only in the PRE-integration reference, and only
+because this unit's callee was integrated before it.
+
+  This is unit #29's finding reached from a third direction: what the harness
+  measures before integration is not the same program it measures after.
+
+HOW IT IS HANDLED HERE, and what that costs.
+
+  * This artifact is kept: harness.PitchSaturation.R13.RED.json, 16 of 1292.
+  * The corpus the mutation score is taken over has R13 ABLATED
+    (`--disable R13_staging_capacity`), which the artifact's own
+    `rule_coverage` records as `off` -- so the narrowing is in the machine-
+    readable file and not only in this note.
+  * THE COST, STATED: R13 exists because unit #30 measured a mutation survivor
+    at the refusal boundary -- `'>' -> '>='` on `assign_errmsg`'s capacity test
+    -- that no other ladder can reach. With R13 off, that mutant is
+    UNREACHABLE in this unit and will show as a survivor or be declared. It is
+    declared, not hidden: see mutation/PitchSaturation.json.
+  * THE DECISIVE TEST is the POST-INTEGRATION run, which has R13 ON. After
+    integration both sides take the single-gate path, so if the analysis above
+    is right that run passes all 1292 including the sixteen. It is
+    harness/PitchSaturation.postintegration.json and it is the reason this is
+    written as a diagnosis rather than as a suspicion.

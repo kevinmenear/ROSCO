@@ -1,0 +1,36 @@
+THE SAME SEVEN STUBS THROUGH BOTH INSTRUMENTS.
+
+One file per row, run unchanged through the 62-case kernel and through the
+1036-case differential harness. The kernel column is
+evidence/PitchSaturation/kernel.<stub>.run.txt; the harness column is
+evidence/PitchSaturation/probes/<stub>.json, each written by
+`harness.sh --red-test`, which records the perturbation into the artifact.
+
+  stub                      kernel      harness   what it changes
+                             of 62      of 1036
+  noop                          41         1036   the whole unit as a no-op returning 0.0
+  wrong-constant                62         1036   the determinate wrong constant -7.25
+  unfiltered-wind               40          249   interp1d reads WE_Vw, not WE_Vw_F
+  no-ps-min-pitch               40         1036   LocalVar%PS_Min_Pitch never written
+  no-max                         0          192   max() dropped, first operand returned
+  max-swapped                    0            0   max()'s two operands exchanged
+  no-errmsg                      0         1004   the IF (aviFAIL < 0) tail deleted
+
+THE THREE ROWS THE KERNEL SCORES 0 ARE THREE DIFFERENT FACTS, and only the
+harness separates them:
+
+  no-max        0 of 62 and 192 of 1036. The max IS observable; the kernel's
+                62 cases all have PRC_Min_Pitch == 0.0 and so cannot see it.
+  no-errmsg     0 of 62 and 1004 of 1036. The error tail IS observable; the
+                kernel's 62 cases all have aviFAIL == 0, and
+                coverage/line_coverage.json says the simulation never reaches
+                it either -- 0 hits in 27 scenarios. Two instruments blind,
+                one not.
+  max-swapped   0 of 62 AND 0 of 1036. EQUIVALENT, and now measured rather
+                than argued: 1036 cases in which PRC_Min_Pitch is drawn
+                independently, and exchanging the operands of a commutative
+                intrinsic moves nothing.
+
+So the claim in kernel.stubs.txt -- that a pass at `no-max` and a pass at
+`max-swapped` mean different things -- is not a reading of the code. It is a
+192 beside a 0.

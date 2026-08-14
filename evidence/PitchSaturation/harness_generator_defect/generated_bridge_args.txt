@@ -1,0 +1,8 @@
+ CntrPar_b.PS_Mode
+ CntrPar_b.PS_BldPitchMin_N
+ CntrPar_b.PS_WindSpeeds
+ &CntrPar_b.n_PS_WindSpeeds
+ (int)CntrPar_PS_WindSpeeds_b.size()
+ CntrPar_b.PS_BldPitchMin
+ &CntrPar_b.n_PS_BldPitchMin
+ (int)CntrPar_PS_BldPitchMin_b.size()

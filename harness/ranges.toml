@@ -478,3 +478,43 @@ LocalVar_iStatus = { values = [0, 1, -1] }
 # constrained it in the first place.
 minValue = { lo = -1e9, hi = -1e-3 }
 maxValue = { lo = 1e-3, hi = 1e9 }
+
+# ---------------------------------------------------------------------------
+# PitchSaturation (unit #36)
+#
+# ONE PIN, and it is interp1d's pin re-stated at the caller. `PitchSaturation`
+# passes `CntrPar%PS_WindSpeeds` and `CntrPar%PS_BldPitchMin` to `interp1d` as
+# xData and yData, and the generator draws their two extents independently. On
+# a case where they differ, `interp1d`'s upper-clamp arm returns
+# `yData(SIZE(xData))` -- past the end of the shorter allocation -- so BOTH
+# implementations read out of bounds and neither has an answer.
+#
+# MEASURED, with the failing artifact kept at
+# evidence/PitchSaturation/harness_generator_defect/. 136 of 1292 cases failed,
+# and every mismatch has the same signature: the C++ side reads the harness's
+# zero-filled slack and returns 0.0, the Fortran side reads past a `ALLOCATE(n)`
+# and returns a denormal whose bit pattern is a small integer --
+# 1.63e-322 (0x21), 1.665e-321 (0x151), 1.033e-321 (0xd1). Those are integers
+# living next to the allocation, not answers.
+#
+# THE SOURCE LINE THAT FORCES IT, and there is exactly one place these arrays
+# are filled -- ReadSetParameters.f90:477-479:
+#
+#     CALL ParseInput(..., 'PS_BldPitchMin_N', CntrPar%PS_BldPitchMin_N, ...)
+#     CALL ParseAry(  ..., 'PS_WindSpeeds',    CntrPar%PS_WindSpeeds,    CntrPar%PS_BldPitchMin_N, ...)
+#     CALL ParseAry(  ..., 'PS_BldPitchMin',   CntrPar%PS_BldPitchMin,   CntrPar%PS_BldPitchMin_N, ...)
+#
+# Both arrays are allocated from the SAME count. A case where they differ is not
+# a program state ROSCO can reach.
+#
+# THE COST, STATED: with the two extents tied, nothing in this harness can
+# distinguish a translation that passes `n_PS_WindSpeeds` as interp1d's xData
+# extent from one that passes `n_PS_BldPitchMin`, or either of those from
+# `PS_BldPitchMin_N`. Three names for one number across the whole corpus. The
+# kernel cannot separate them either (its arrays come from one DISCON.IN), so
+# this is a gap and not a trade -- recorded in STATUS.md, not closed here.
+#
+# The tie runs from the SYNTHESISED extent to the REAL field, mirroring the
+# source: `PS_BldPitchMin_N` is what ROSCO parses and the two extents follow it.
+[PitchSaturation]
+CntrPar_PS_WindSpeeds_n = { same_as = "CntrPar_PS_BldPitchMin_N" }

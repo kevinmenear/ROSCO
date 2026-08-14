@@ -1,0 +1,13 @@
+        CntrPar_a.Y_IPC_KP = r.d();
+        CntrPar_a.Y_IPC_KI = r.d();
+        CntrPar_a.PS_Mode = r.i();
+        CntrPar_a.PS_BldPitchMin_N = r.i();
+        CntrPar_a.n_PS_WindSpeeds = r.i();
+        std::vector<double> CntrPar_PS_WindSpeeds_a((size_t)((CntrPar_a.n_PS_WindSpeeds > 0 ? (int)CntrPar_a.n_PS_WindSpeeds : 0) + 4096), 0);
+        if ((CntrPar_a.n_PS_WindSpeeds > 0 ? (int)CntrPar_a.n_PS_WindSpeeds : 0) > 0) r.ds(CntrPar_PS_WindSpeeds_a.data(), (CntrPar_a.n_PS_WindSpeeds > 0 ? (int)CntrPar_a.n_PS_WindSpeeds : 0));
+        CntrPar_a.PS_WindSpeeds = CntrPar_PS_WindSpeeds_a.empty() ? nullptr : CntrPar_PS_WindSpeeds_a.data();
+        std::vector<double> CntrPar_PS_BldPitchMin_a((size_t)((CntrPar_a.PS_BldPitchMin_N > 0 ? (int)CntrPar_a.PS_BldPitchMin_N : 0) + 4096), 0);
+        if ((CntrPar_a.PS_BldPitchMin_N > 0 ? (int)CntrPar_a.PS_BldPitchMin_N : 0) > 0) r.ds(CntrPar_PS_BldPitchMin_a.data(), (CntrPar_a.PS_BldPitchMin_N > 0 ? (int)CntrPar_a.PS_BldPitchMin_N : 0));
+        CntrPar_a.PS_BldPitchMin = CntrPar_PS_BldPitchMin_a.empty() ? nullptr : CntrPar_PS_BldPitchMin_a.data();
+        CntrPar_a.SU_Mode = r.i();
+        CntrPar_a.SU_StartTime = r.d();
