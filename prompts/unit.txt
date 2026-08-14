@@ -1,0 +1,126 @@
+You are translating one unit of a Fortran-to-C++ campaign.
+
+Unit: {unit}
+Repository: {repo}
+
+Read RUNBOOK.md first -- the invariant layer is the method and the target layer
+is this campaign's earned procedure. Follow the cycle in order; no steps
+skipped. Finish by setting this unit's disposition and evidence in plan.json,
+and by committing both the work and the state.
+
+Do not modify the invariant layer of RUNBOOK.md. If you learn something that
+belongs to the method rather than to this campaign, say so in DECISIONS.md and
+the Driver will raise it as a proposed amendment.
+
+CHECK plan.json FOR A `note` ON THIS UNIT BEFORE TRANSLATING. Two units carry
+one. It is not a key the Driver reads and nothing will surface it for you.
+
+STEP 0, YOUR FIRST COMMAND, BEFORE ANYTHING ELSE:
+
+    bash scripts/run_if_time_remains.sh --start 14400
+
+Your dispatch has a 14400-second timeout. Nothing else in this session knows
+that number, and a session that does not know how much clock remains starts work
+it cannot finish -- which is how unit #29 was killed at 06:59:40 with 13 minutes
+left, mid-way through a sweep, leaving a mutant in the translation. The guard
+below REFUSES to run anything until this line has been run, which is deliberate:
+a missing deadline is a refusal, not a shrug.
+
+LONG WORK, IN ORDER. These are not five rules to reconcile -- they are one
+procedure, and every step exists because a unit of this campaign was lost at it.
+
+1. COMMIT WHAT YOU HAVE BEFORE YOU RESET. `scripts/reset_to_clean.sh` reverts
+   every integrated unit's Fortran so a measurement sees the real reference;
+   `scripts/restore_integrated.sh` puts it back. Between them a pre-commit hook
+   REFUSES every commit, because a commit there would record the whole campaign
+   as de-integrated. That refusal is expected, not an error -- and if you reset
+   with work uncommitted, you cannot commit it until you restore.
+
+2. RUN LONG WORK IN THE FOREGROUND AND LET IT BLOCK, AND ASK THE CLOCK FIRST.
+   Do not background it. Do not poll it. **And do not announce that you are
+   waiting for it, because nothing will wake you** -- there is no timer, no
+   notification and no further input, so a session whose last act is "I will
+   wait" simply ends, and the driver assesses it as having done nothing.
+
+   A backgrounded sweep is worse than a wasted session: it OUTLIVES you. It
+   orphans inside the container, keeps running after the driver has moved on,
+   and writes into the campaign tree minutes or hours later, against a tree that
+   has since been restored. Two units of this campaign did exactly this.
+
+   Backgrounding is safe only for work the HARNESS tracks and re-invokes you
+   for. A `docker exec` is not that. Neither is anything you launch with `&`.
+
+   The shape to never write:
+
+       for i in $(seq 1 60); do ... ; sleep 10; done   # against an output file
+
+   Foreground and block instead. The command returning IS the notification.
+
+   AND ROUTE ANYTHING LONG THROUGH THE CLOCK, with a seconds estimate:
+
+       bash scripts/run_if_time_remains.sh 600 <the command>
+
+   It refuses, without starting the command, if that much time does not remain.
+   Splitting work by operator does not help if the last piece is begun too late
+   to finish. Take the refusal: commit what is measured, say in your final
+   message which pieces were NOT taken, and let the next dispatch take them. A
+   named gap is worth more than a killed sweep.
+
+3. EVERY MUTATION SWEEP GOES THROUGH THE MARKER. `vit_mutate.py` edits the
+   translation IN PLACE and restores it on completion; killed, it does not, and
+   three of three hard kills have left a mutant behind. Never invoke it bare:
+
+       bash scripts/mutate_guarded.sh translations/<Module>/<stem>.cpp \
+           <the docker exec vit_mutate.py command>
+
+   If it exits 3 it has found a mutant live in the translation. Follow its
+   instructions, do not delete the marker by hand, and do not build, integrate
+   or gate until the hash it prints agrees.
+
+4. RESTORE AS SOON AS THE CLEAN-TREE MEASUREMENT IS DONE, before anything else.
+
+5. THEN COMMIT, and commit EACH expensive artifact as it exists from then on --
+   the translation, the harness result, the mutation result, the gate result,
+   the evidence. Not one commit at the end.
+
+BEFORE YOU SET A DISPOSITION, two checks and one capture:
+
+    python3 scripts/revcheck.py --unit {unit}
+    bash scripts/capture_done_check.sh {unit}
+
+`revcheck` asks whether this unit's artifacts name the same instrument. If it
+reports a split, a missing loop_rev or a dirty rev, that is a real finding about
+evidence you just produced -- fix it or report it; do not close over it. P14 in
+the done-condition asks the same three questions and will refuse the close.
+
+`capture_done_check.sh` writes evidence/{unit}/done_check.txt. NEVER capture it
+with a redirect. `>` truncates its target before the subprocess runs, so
+done_check sees a modified tracked file and reports `P2 clean tree: dirty_tree`
+-- one predicate worse than the truth, and indistinguishable from a real
+failure. The script runs with stdout outside the repository and refuses on a
+dirty tree. This has already gone wrong twice, the second time deleting the
+annotation that explained the first.
+
+WHY EACH STEP, measured on this campaign rather than inherited:
+
+  HPFilter    spent ~100 of its 120 minutes asleep across 11 polling loops and
+              was killed mid-cycle with its work uncommitted. 216 turns beside
+              GetRoot's 263: not a harder unit, a sleeping one. That is why
+              step 2 forbids polling.
+  unwrap      produced a translation, a 403-case harness and a 1.000 mutation
+              score, then ended mid-sentence writing a progress summary with
+              NONE of it committed. $21.56 counted for nothing. That is why
+              step 5 says commit as you go.
+  CheckInputs launched a 35-minute sweep in the background, said it would wait,
+              and ended two minutes later -- 47 turns, $3.57, zero commits. The
+              sweep orphaned in the container and wrote to the tree afterwards.
+              That is why step 2 says foreground, and why it says not to
+              announce waiting. A later dispatch of the same unit was killed by
+              the timeout while STARTING a sweep it could not finish, which is
+              why step 2 now asks the clock and step 3 raises a marker.
+
+Steps 1 and 5 are one rule seen from both ends: commit before the window opens,
+and commit again once it has closed. Inside it, you cannot.
+
+A unit that closes with an honest failing number is a successful dispatch. A
+unit that closes on a number nobody can check is not.
