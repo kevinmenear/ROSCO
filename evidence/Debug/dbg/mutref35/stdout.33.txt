@@ -1,0 +1,52 @@
+                                                                               
+------------------------------------------------------------------------------
+Running ROSCO-2.10.1
+A wind turbine controller framework for public use in the scientific field    
+Developed in collaboration: National Renewable Energy Laboratory              
+                            Delft University of Technology, The Netherlands   
+------------------------------------------------------------------------------
+ 
+***************************************************************************************************************************************
+ROSCO Warning: The wind speed estimator is used, but an input (pitch, rotor speed, or torque) has left the bounds of normal operation.
+The filtered hub-height wind speed will be used instead. This warning will not persist even though the condition may.
+Check WE_Op in the ROSCO .dbg file to see if the WSE is enabled (1) or disabled (0).
+***************************************************************************************************************************************
+Generator speed:    9.5 RPM, Pitch angle:   0.0 deg, Power:     0.0 kW, Est. wind Speed:  10.0 m/s
+Generator speed:  842.4 RPM, Pitch angle:   0.0 deg, Power:     0.0 kW, Est. wind Speed:   9.0 m/s
+Generator speed: 1134.8 RPM, Pitch angle:   0.0 deg, Power:  2324.2 kW, Est. wind Speed:   9.0 m/s
+Generator speed: 1061.5 RPM, Pitch angle:   0.0 deg, Power:  2956.1 kW, Est. wind Speed:   9.0 m/s
+Generator speed:  993.1 RPM, Pitch angle:   0.0 deg, Power:  2595.9 kW, Est. wind Speed:   9.0 m/s
+Generator speed:  982.7 RPM, Pitch angle:   0.0 deg, Power:  2428.9 kW, Est. wind Speed:   9.0 m/s
+Generator speed:  988.5 RPM, Pitch angle:   0.0 deg, Power:  2423.8 kW, Est. wind Speed:   9.0 m/s
+Generator speed:  991.5 RPM, Pitch angle:   0.0 deg, Power:  2443.8 kW, Est. wind Speed:   9.0 m/s
+Generator speed:  991.6 RPM, Pitch angle:   0.0 deg, Power:  2449.8 kW, Est. wind Speed:   9.0 m/s
+Generator speed:  991.4 RPM, Pitch angle:   0.0 deg, Power:  2449.2 kW, Est. wind Speed:   9.0 m/s
+Loading FAST model: NREL-5MW.fst 
+Loading rotor performace data from text file: /workspace/ROSCO-r2/Examples/Test_Cases/NREL-5MW/Cp_Ct_Cq.NREL5MW.txt
+Loading rotor performace data from text file: /workspace/ROSCO-r2/Examples/Tune_Cases/../Test_Cases/NREL-5MW/Cp_Ct_Cq.NREL5MW.txt
+-----------------------------------------------------------------------------
+   Tuning a reference wind turbine controller using NREL's ROSCO toolbox    
+-----------------------------------------------------------------------------
+============================================================
+Scenario 33: synthetic drive at LoggingLevel=3
+============================================================
+Writing new controller parameter file parameter file: /workspace/ROSCO-r2/Examples/DISCON_synth3.IN.
+Shutting down /workspace/ROSCO-r2/rosco/lib/libdiscon.so
+  scenario_33 bld_pitch: md5=8aef307f1f3a05a1cb3f08173a936420 n=4000
+  scenario_33 bld_pitch_2: md5=8aef307f1f3a05a1cb3f08173a936420 n=4000
+  scenario_33 bld_pitch_3: md5=8aef307f1f3a05a1cb3f08173a936420 n=4000
+  scenario_33 cc_actuated_dl: md5=22054b0f4ee3aba7e05490fd09d5799d n=4000
+  scenario_33 cc_actuated_l: md5=22054b0f4ee3aba7e05490fd09d5799d n=4000
+  scenario_33 flp_angle_1: md5=22054b0f4ee3aba7e05490fd09d5799d n=4000
+  scenario_33 flp_angle_2: md5=22054b0f4ee3aba7e05490fd09d5799d n=4000
+  scenario_33 flp_angle_3: md5=22054b0f4ee3aba7e05490fd09d5799d n=4000
+  scenario_33 gen_power: md5=0455664b8cd61693c650df26cb60580f n=4000
+  scenario_33 gen_speed: md5=11082f788f15ae5b70425ffc469a3ee7 n=4000
+  scenario_33 gen_torque: md5=b600ce7de8fa2269ded2f8f790d6b109 n=4000
+  scenario_33 nac_yaw: md5=2b6403773ae4047b0b1f68b2ea47fb80 n=4000
+  scenario_33 stc_input: md5=22054b0f4ee3aba7e05490fd09d5799d n=4000
+Scenario 33: PASSED (synthetic drive, LoggingLevel=3)
+
+============================================================
+All scenarios complete.
+============================================================

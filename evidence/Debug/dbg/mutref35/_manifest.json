@@ -1,0 +1,154 @@
+{
+  "campaign_rev": "59f5531-dirty",
+  "files": {
+    "vit_sim27.RO.dbg": {
+      "bytes": 16104728,
+      "md5": "e802854ba372a63f20faf52ad78035c3"
+    },
+    "vit_sim28.RO.dbg": {
+      "bytes": 10736728,
+      "md5": "a0676776e39c3d8046ab6b3500d392a8"
+    },
+    "vit_sim28.RO.dbg2": {
+      "bytes": 63936058,
+      "md5": "d975893a53f51bf55c9fd159af1ed0a6"
+    },
+    "vit_sim28.RO.dbg3": {
+      "bytes": 35538229,
+      "md5": "d205fd713d8282653ca4c236de6888eb"
+    },
+    "vit_sim30.RO.dbg": {
+      "bytes": 1074328,
+      "md5": "2bfe5050ab9b3a472720d79ccbde10b2"
+    },
+    "vit_sim30.RO.dbg2": {
+      "bytes": 6393658,
+      "md5": "c5d555cd7ea3db1063f21a1eb904b8ab"
+    },
+    "vit_sim31.RO.dbg": {
+      "bytes": 1074328,
+      "md5": "d1f4b9895cffe0905a21938c234f23c4"
+    },
+    "vit_sim31.RO.dbg2": {
+      "bytes": 6393658,
+      "md5": "8421ea2fbde52e8c5aa0d13ca1ef9ca4"
+    },
+    "vit_sim31.RO.dbg3": {
+      "bytes": 3435754,
+      "md5": "f083e588f4606708725887b9978d438d"
+    },
+    "vit_sim32.RO.dbg": {
+      "bytes": 1074328,
+      "md5": "29fb73e01ea4288ce748f258ca746c18"
+    },
+    "vit_sim32.RO.dbg2": {
+      "bytes": 6393658,
+      "md5": "2d2babaa0a4167974b25245792aa5055"
+    },
+    "vit_sim32.RO.dbg3": {
+      "bytes": 3675904,
+      "md5": "674f4fb174b950ca2a2cd9dea90eaf88"
+    },
+    "vit_sim33.RO.dbg": {
+      "bytes": 2684728,
+      "md5": "74a0a4a1e60b35e21bff57f86c0ede95"
+    },
+    "vit_sim33.RO.dbg2": {
+      "bytes": 15984058,
+      "md5": "8a81211032c24436cfa3626e4d21af42"
+    },
+    "vit_sim33.RO.dbg3": {
+      "bytes": 8886229,
+      "md5": "bff82ac8fe1c101924296eb6ea984df4"
+    },
+    "vit_sim34a.RO.dbg": {
+      "bytes": 269128,
+      "md5": "9d1833185f2f761a1c1ca585d32981df"
+    },
+    "vit_sim34a.RO.dbg2": {
+      "bytes": 1598458,
+      "md5": "8c058fb0022926087a00cc1f37da40a2"
+    },
+    "vit_sim34a.RO.dbg3": {
+      "bytes": 890629,
+      "md5": "3b3d5acbf3201c3ed843a59dd94db180"
+    },
+    "vit_sim34b.RO.dbg": {
+      "bytes": 269128,
+      "md5": "9d1833185f2f761a1c1ca585d32981df"
+    },
+    "vit_sim34b.RO.dbg2": {
+      "bytes": 1598458,
+      "md5": "8c058fb0022926087a00cc1f37da40a2"
+    },
+    "vit_sim34b.RO.dbg3": {
+      "bytes": 890629,
+      "md5": "3b3d5acbf3201c3ed843a59dd94db180"
+    },
+    "vit_sim35.RO.dbg": {
+      "bytes": 2684728,
+      "md5": "ade0bf96f18adf73b45d7b09383bf863"
+    },
+    "vit_sim35.RO.dbg2": {
+      "bytes": 15984058,
+      "md5": "67cad925af2cd140bd8a535e386abb01"
+    },
+    "vit_sim35.RO.dbg3": {
+      "bytes": 8886229,
+      "md5": "2f26d14f234097678d137e428f7ad94f"
+    }
+  },
+  "label": "mutref35",
+  "loop_rev": "3f8ed43",
+  "ran_scenarios": [
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35
+  ],
+  "scenarios_failed": [],
+  "stdout": {
+    "stdout.27.txt": {
+      "bytes": 9750,
+      "md5": "2972f3445f21b555f7f802af478869bf"
+    },
+    "stdout.28.txt": {
+      "bytes": 7031,
+      "md5": "e2139b3dfd2b71ad8559327b20e6449f"
+    },
+    "stdout.29.txt": {
+      "bytes": 3053,
+      "md5": "dfdf5bd555846e14fe59d6ca1d9bf5c4"
+    },
+    "stdout.30.txt": {
+      "bytes": 3449,
+      "md5": "ea760bd5ebb06e1e8571547e1ebaf6d6"
+    },
+    "stdout.31.txt": {
+      "bytes": 3474,
+      "md5": "46bb5e708862e01be029434acb4b8115"
+    },
+    "stdout.32.txt": {
+      "bytes": 3706,
+      "md5": "6ebe12ae7651e34c9480d52b8a4f4b59"
+    },
+    "stdout.33.txt": {
+      "bytes": 4054,
+      "md5": "42b815b39d78423aa241fa3fa2ef1ca2"
+    },
+    "stdout.34.txt": {
+      "bytes": 4407,
+      "md5": "ccb654260ccf7199b081b483891d4386"
+    },
+    "stdout.35.txt": {
+      "bytes": 4064,
+      "md5": "543e87a42b54619f8c2174205373ea8a"
+    }
+  },
+  "vit_rev": "f4a711d"
+}
