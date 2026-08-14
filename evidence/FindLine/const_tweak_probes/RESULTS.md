@@ -1,5 +1,21 @@
 # Which `const_tweak '1' -> '2'` sites this corpus can see
 
+> **TAKEN ON THE 2370-CASE CORPUS, AND THE QUESTION IT ANSWERED IS NOW CLOSED.**
+> Every number below is `of 2370`, before R14 (`translation-loop` `552edb1`)
+> planted the search key as a WORD of a file line. On the 2514-case corpus
+> `mutation/FindLine.json` reports **no `const_tweak '1' -> '2'` survivor at
+> all** — the seven sites are killed on 18, 21, 74, 89, 89, 89 and 104 cases —
+> so there is no longer a survivor to attribute, which is what this file
+> existed to do.
+>
+> The two smallest counts, 18 and 21, are the two sites that were the survivors
+> here (`L125_wordind` and `L177_loop_start`); which is which is NOT stated,
+> because it was not re-measured and a plausible assignment is the kind of
+> claim this file was written to replace. The table is kept unchanged as the
+> record of what the corpus could see BEFORE the rule, which is the before-half
+> of R14's measurement.
+
+
 `mutation/FindLine.json` names its survivors by operator, before and after, and
 seven sites in findline.cpp match `'1' -> '2'`. Two of them survived and the
 artifact does not say WHICH -- the id is content-derived and the mutator records
