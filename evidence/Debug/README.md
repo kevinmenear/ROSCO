@@ -12,8 +12,9 @@ routine that writes ROSCO's `.RO.dbg` log files. `plan.json` classifies it
 | kernel replay | **DOES NOT EXIST** — see "the kernel cannot exist" below | — |
 | generated differential harness | **CANNOT BE BUILT** — the unit assigns nothing in its own signature, so the comparison set is empty | — |
 | **file identity, 27 scenarios** (`dbg.json`) | **24 files, 408,072 records, 273,377,424 bytes, 0 mismatched** — **this unit's primary evidence** | five perturbations: 24 / 407,976 / 21,792 records, and two blind at 0 |
-| post-integration total (`harness/Debug.postintegration.json`) | **456,086 records, 383,540,428 bytes, 0 failed** | seven perturbations, five red |
-| mutation score (`mutation/Debug.json`) | **121 of 178, 0.6798** — below the 1.000 threshold; see `mutation.md` | the score *is* the red test, 178 times |
+| **stdout identity, 8 scenarios** (`dbg.mutcorpus.json`) | **491 records, 38,441 bytes, 0 mismatched** — added at the second dispatch and **RED on its first comparison** | 46 of 110 records, before the fix (C12) |
+| post-integration total (`harness/Debug.postintegration.json`) | **483,853 records, 446,165,930 bytes, 0 failed**, four streams | nine perturbations, seven red |
+| mutation score (`mutation/Debug.json`) | **143 of 155, 0.9226** (143 of 181 = 0.7901 before any equivalence) — below the 1.000 threshold; see `mutation.md` | the score *is* the red test, 181 times |
 | gate, 27 scenarios (`gate/Debug.json`) | 5,252,000 values / 351 channels, 0 mismatched — **and it establishes nothing about this translation** | every DebugOutData value DOUBLED moves **0**; same-build control **1,857,893** |
 | scenario 28, LoggingLevel=3 (`dbg28.json`) | **3 files, 48,014 records, 110,163,004 bytes, 0 mismatched** | 15,999 and 16,003 records |
 | format fidelity vs gfortran (`fmt_probe.txt`) | 54 records, 4598 bytes, IDENTICAL | 1 and 26 records |
@@ -180,13 +181,30 @@ move 24 records rather than nothing.
 ## Disposition
 
 **`deferred`**, on the mutation score and nothing else. `done_check.py` fails
-P12 at 0.6798 against a threshold of 1.000; every other layer this unit can have
+P12 at 0.9226 against a threshold of 1.000. Every other layer this unit can have
 ran and is green, and the two it cannot have are absent for reasons measured
 rather than asserted.
 
-The route to closing it is named and costed in `mutation.md`: widen the mutation
-corpus past scenarios {27, 28}. That is measured, not hoped for — the
-`DebugOutData[11] → [12]` shift dies on 23,998 records of `vit_sim7.RO.dbg` and
-survives the sweep's own corpus. Beyond that, the eight survivor families each
-say what would close them, and two of them (a buffer made larger, a status line
-written to unit 6) would need a different instrument rather than a wider corpus.
+The second dispatch took the route the first one named — widen the corpus, and
+find an instrument for the status line — and both paid:
+
+    121 of 178  0.6798   two scenarios, three streams
+    143 of 181  0.7901   eight scenarios, four streams, nothing declared
+    143 of 155  0.9226   with 26 equivalences declared, one reason each
+
+**The stream mattered more than the corpus, and it found a defect rather than a
+survivor.** Nothing here had ever compared the `WRITE(*,100)` status line;
+comparing it showed the translation's records arriving up to eighteen late and
+one of them split mid-field, because `libgfortran` emits a preconnected unit's
+record whole and a fully-buffered `stdout` does not. Recorded before the fix
+(`0dbf443`), fixed (`106d170`), and the fix's own guard is now a mutant that
+dies on 283 records.
+
+**Twelve survivors remain and none of them is equivalent.** Two need a scenario
+above rated; three need a RootName trimmed to nothing or an `fopen` that fails;
+six need a computed double to land exactly on `1E-99` or `1E+99`; one is an
+out-of-bounds write into allocator padding. The last two classes cannot be
+closed by any corpus, and the instruments that would close them — a direct
+driver over a synthetic `DebugVariables`, and a sanitiser build — are named,
+costed, and raised in `DECISIONS.md` as method-level rather than built inside
+one unit's dispatch. `mutation.md` has the full account.
