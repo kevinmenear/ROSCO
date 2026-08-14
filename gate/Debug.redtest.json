@@ -6,14 +6,15 @@
  "comparison_verdict": "PASS",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "897d67c",
+ "loop_rev": "3f8ed43",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
   "EVERY DebugOutData value doubled in the .RO.dbg write -- the largest perturbation this unit can make to its own output. It moves 21,792+ records of the dbg file (scripts/dbgcheck.py sees it) and 0 of 5,252,000 gate values, because Examples/vit_sim.py builds the gate arrays from avrSWAP channels the controller RETURNS and never opens a .dbg.",
-  "A gate red test that comes back GREEN is not a finding without a control on the SAME BUILD (unit #9). See evidence/Debug/gate.control-getwords-perturbed-MOVES.json."
+  "A gate red test that comes back GREEN is not a finding without a control on the SAME BUILD (unit #9). See evidence/Debug/gate.control-getwords-perturbed-MOVES.json.",
+  "RE-TAKEN at the second dispatch so that every result artifact of this unit names one generator revision (revcheck, P14). The perturbation, the counts and the verdict are unchanged from the first dispatch; what changed is the instrument revision stamped on them."
  ],
  "perturbation": {
   "file": "rosco/controller/src/debug.cpp",

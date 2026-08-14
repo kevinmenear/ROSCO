@@ -2,17 +2,18 @@
   "against": "integrated",
   "assembled_from": [
     "evidence/Debug/dbg.json",
-    "evidence/Debug/dbg28.json"
+    "evidence/Debug/dbg28.json",
+    "evidence/Debug/dbg.mutcorpus.json"
   ],
-  "bytes_compared": 383540428,
-  "campaign_rev": "1ab77a7",
-  "checked": 456086,
+  "bytes_compared": 446165930,
+  "campaign_rev": "7963f5b",
+  "checked": 483853,
   "failed": 0,
   "generated_by": "scripts/dbgcheck.py (compare), summarised into this file",
   "inadmissible": 0,
-  "instrument": "NOT the generated differential harness. `vit test-validate` compares a unit's MAPPED OUTPUTS and `Debug` assigns nothing in its own signature -- `ErrVar` only on GetNewUnit's unit-number-exhaustion arm, which does not exist once GetNewUnit is absorbed, and `avrSWAP` never. A generated harness for this unit would compare the empty set. What is checked here is the unit's actual contract: the BYTES of the .RO.dbg files it writes.",
-  "loop_rev": "897d67c",
-  "measures": "CAN see: every value and every column the three log files carry, at the exact byte. CANNOT see: the WRITE(*,100) status line, which goes to unit 6 and not to a file; a buffer allocated larger than it needs to be; and any branch no input in this tree reaches. See evidence/Debug/mutation.md.",
+  "instrument": "NOT the generated differential harness. `vit test-validate` compares a unit's MAPPED OUTPUTS and `Debug` assigns nothing in its own signature -- `ErrVar` only on GetNewUnit's unit-number-exhaustion arm, which does not exist once GetNewUnit is absorbed, and `avrSWAP` never. A generated harness for this unit would compare the empty set. What is checked here is the unit's actual contract: the BYTES of everything it writes.",
+  "loop_rev": "3f8ed43",
+  "measures": "FOUR STREAMS, not three. CAN see: every value and every column of the three .RO.dbg files at the exact byte, AND the WRITE(*,100) status line as the driver's fd 1 receives it. The fourth stream was added at the second dispatch and was RED on its first comparison (C12, evidence/Debug/stdout.DEFECT-unflushed-status-record.*): libgfortran emits a preconnected unit's record whole, while a fully-buffered stdout split one record mid-field and delivered eighteen more after the driver's own output. CANNOT see: storage allocated larger than it is read; an out-of-bounds access that lands in padding; a difference that needs a computed double to fall exactly on a constant boundary (1E-99, 1E+99); and any branch no input in this tree reaches. Each is named against the mutant that measures it in evidence/Debug/mutation.md.",
   "parts": {
     "dbg.json": {
       "bytes": 273377424,
@@ -20,6 +21,21 @@
       "mismatched": 0,
       "records": 408072,
       "scenarios": "the 27 gate scenarios, LoggingLevel = 1"
+    },
+    "dbg.mutcorpus.json (files, scenarios 30-34 only)": {
+      "bytes": 62587061,
+      "files": 17,
+      "mismatched": 0,
+      "note": "The full comparison is 21 files / 99,293 records / 188,803,532 bytes over scenarios 27-34; 27 and 28 are already counted in the two parts above and are EXCLUDED here so this total does not count them twice. Scenario 29 contributes no file, and that is the finding rather than an omission: DISCON.F90:145 guards the call site with LoggingLevel > 0, so at 0 the unit is never entered.",
+      "records": 27276,
+      "scenarios": "30, 31, 32, 33, 34a, 34b -- the mutation corpus added at the second dispatch"
+    },
+    "dbg.mutcorpus.json (stdout, all 8 scenarios)": {
+      "bytes": 38441,
+      "files": 8,
+      "mismatched": 0,
+      "records": 491,
+      "scenarios": "27, 28, 29, 30, 31, 32, 33, 34"
     },
     "dbg28.json": {
       "bytes": 110163004,
@@ -34,11 +50,12 @@
     "ES20.5E2 -> E3 on the DebugOutData write": 407976,
     "ES20.5E2 -> E3 on the LocalVarOutData write (27 scenarios, LoggingLevel=1) -- BLIND": 0,
     "ES20.5E2 -> E3 on the LocalVarOutData write (scenario 28)": 15999,
+    "the 143 mutants this instrument killed at the second dispatch": 143,
     "the `(/////)` record count 6 -> 5 (scenario 28)": 16003,
     "the `< 1E-99 -> 0` clamp deleted": 21792,
-    "the `> 1E+99` clamp deleted -- BLIND, the arm is dead": 0
+    "the `> 1E+99 -> 1E+99` clamp deleted -- BLIND, the arm is dead": 0,
+    "the status record left unflushed (stdout, scenario 27, of 110 records)": 46
   },
-  "unit": "Debug",
-  "vit_rev": "f4a711d",
-  "what_is_compared": "Each record of every *.RO.dbg* file the scenarios write, byte for byte, against an archive produced by a build whose Debug was still FORTRAN. Record 1 is compared byte for byte too and falls back to a structural check only when it differs and both sides carry the 'Generated on ...' shape, whose two fields are a wall clock."
+  "red_tested_note": "The last row is the C12 defect measured BEFORE its fix and is the reason the stdout stream is in this artifact at all: 46 of scenario 27's 110 stdout records differed. The row above it is the mutation sweep read as a red test -- 143 distinct wrong versions of this unit, each rebuilt into libdiscon.so and re-run over the eight-scenario corpus, each moving at least one compared byte. mutation/Debug.json.",
+  "vit_rev": "f4a711d"
 }
