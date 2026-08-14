@@ -32,6 +32,20 @@ IMPLICIT NONE
         END SUBROUTINE statemachine_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of PitchSaturation
+    INTERFACE
+        FUNCTION pitchsaturation_c(LocalVar, CntrPar, objInst, DebugVar, ErrVar) BIND(C, NAME='pitchsaturation_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: objInst
+            TYPE(C_PTR), VALUE :: DebugVar
+            TYPE(C_PTR), VALUE :: ErrVar
+            REAL(C_DOUBLE) :: pitchsaturation_c
+        END FUNCTION pitchsaturation_c
+    END INTERFACE
+
 CONTAINS
 
     SUBROUTINE PowerControlSetpoints(CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -472,33 +486,30 @@ CONTAINS
 
     END SUBROUTINE SetpointSmoother
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION PitchSaturation(LocalVar, CntrPar, objInst, DebugVar, ErrVar) 
-    ! PitchSaturation defines a minimum blade pitch angle based on a lookup table provided by DISCON.IN
-    ! Minimum pitch for power control also happens here
-
-
+    FUNCTION PitchSaturation(LocalVar, CntrPar, objInst, DebugVar, ErrVar) RESULT(PitchSaturation_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, ObjectInstances, DebugVariables, ErrorVariables
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
         IMPLICIT NONE
-        ! Inputs
-        TYPE(ControlParameters),    INTENT(IN   )       :: CntrPar
-        TYPE(LocalVariables),       INTENT(INOUT)       :: LocalVar 
-        TYPE(ObjectInstances),      INTENT(INOUT)       :: objInst
-        TYPE(DebugVariables),       INTENT(INOUT)       :: DebugVar
-        TYPE(ErrorVariables),       INTENT(INOUT)       :: ErrVar
-
-        CHARACTER(*),               PARAMETER           :: RoutineName = 'PitchSaturation'
-
-        ! Define minimum blade pitch angle for peak shaving as a function of estimated wind speed
-        LocalVar%PS_Min_Pitch = interp1d(CntrPar%PS_WindSpeeds, CntrPar%PS_BldPitchMin, LocalVar%WE_Vw_F, ErrVar)
-
-        ! Total min pitch limit is greater of peak shaving and power control pitch
-        PitchSaturation = max(LocalVar%PS_Min_Pitch, LocalVar%PRC_Min_Pitch)
-
-        ! Add RoutineName to error message
-        IF (ErrVar%aviFAIL < 0) THEN
-            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
-        ENDIF
-
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(CONTROLPARAMETERS), INTENT(IN), TARGET :: CntrPar
+        TYPE(OBJECTINSTANCES), INTENT(INOUT), TARGET :: objInst
+        TYPE(DEBUGVARIABLES), INTENT(INOUT), TARGET :: DebugVar
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        REAL(8) :: PitchSaturation_result
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        PitchSaturation_result = REAL(pitchsaturation_c(C_LOC(LocalVar_view), C_LOC(CntrPar_view), C_LOC(objInst), C_LOC(DebugVar), C_LOC(ErrVar_view)), 8)
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
     END FUNCTION PitchSaturation
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE Startup(LocalVar, CntrPar, objInst,ErrVar) 
