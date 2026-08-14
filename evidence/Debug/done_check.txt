@@ -1,6 +1,6 @@
-# done_check.py Debug -- captured 2026-08-14T08:36:33Z by scripts/capture_done_check.sh
+# done_check.py Debug -- captured 2026-08-14T08:38:05Z by scripts/capture_done_check.sh
 
-Run against the committed state at 9b88350 ("revcheck: the base-sha split closed -- all 15 artifacts now name 897d67c"), with a CLEAN tree, with stdout
+Run against the committed state at 6e9758f ("RUNBOOK target layer: five entries from unit #31, and the done-check reading"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
