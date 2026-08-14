@@ -1887,6 +1887,7 @@
   {
    "order": 45,
    "name": "interp2d",
+   "note": "R11 COUNTERPART -- READ DECISIONS.md \"the kill counts went down by REPLACEMENT\" BEFORE TRANSLATING. This unit uses Fortran array intrinsics (ANY/ALL/MAXVAL/MINVAL), which VIT renders as the any_lt/any_gt/all_lt/maxval/minval helpers. On CheckInputs the 2e2295f R11 change cost 8 net mutant kills concentrated in exactly those helpers (11 of 17 regressions) while gaining 2 elsewhere, and whether that generalises is UNRESOLVED. Measure before assuming the corpus is adequate here.",
    "contract": "mirror",
    "absorbs": [],
    "depends_on": [
@@ -2330,6 +2331,7 @@
   {
    "order": 64,
    "name": "ReadControlParameterFileSub",
+   "note": "R11 COUNTERPART -- READ DECISIONS.md \"the kill counts went down by REPLACEMENT\" BEFORE TRANSLATING. This unit uses Fortran array intrinsics (ANY/ALL/MAXVAL/MINVAL), which VIT renders as the any_lt/any_gt/all_lt/maxval/minval helpers. On CheckInputs the 2e2295f R11 change cost 8 net mutant kills concentrated in exactly those helpers (11 of 17 regressions) while gaining 2 elsewhere, and whether that generalises is UNRESOLVED. Measure before assuming the corpus is adequate here.",
    "contract": "respecify",
    "absorbs": [
     "ParseDbAry",
