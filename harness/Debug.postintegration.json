@@ -56,6 +56,6 @@
     "the `> 1E+99 -> 1E+99` clamp deleted -- BLIND, the arm is dead": 0,
     "the status record left unflushed (stdout, scenario 27, of 110 records)": 46
   },
-  "red_tested_note": "The last row is the C12 defect measured BEFORE its fix and is the reason the stdout stream is in this artifact at all: 46 of scenario 27's 110 stdout records differed. The row above it is the mutation sweep read as a red test -- 143 distinct wrong versions of this unit, each rebuilt into libdiscon.so and re-run over the eight-scenario corpus, each moving at least one compared byte. mutation/Debug.json.",
+  "red_tested_note": "The `status record left unflushed` row is the C12 defect measured BEFORE its fix and is the reason the stdout stream is in this artifact at all: 46 of scenario 27's 110 stdout records differed. The `143 mutants` row is the mutation sweep read as a red test -- 143 distinct wrong versions of this unit, each rebuilt into libdiscon.so and re-run over the eight-scenario corpus, each moving at least one compared byte. mutation/Debug.json. The two BLIND rows are perturbations this instrument could not see and are kept as rows rather than dropped, because a red test omitted from a table reads as one that was never taken.",
   "vit_rev": "f4a711d"
 }
