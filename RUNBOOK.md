@@ -358,6 +358,85 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A UNIT'S OBSERVABLE SET IS A LIST OF STREAMS, AND THE HARNESS COMPARES THE
+  ONES SOMEBODY THOUGHT OF. ENUMERATE THEM BEFORE CHOOSING AN ORACLE.** Unit
+  #31, second dispatch, and it is the entry below it -- "the gate reads a
+  stream" -- turned on the instrument that replaced the gate. `dbgcheck.py` was
+  built to read `*.RO.dbg` because the gate read `avrSWAP`. Neither read the
+  third thing this unit writes:
+
+  ```
+  WRITE(*,100)                      unit 6, ~124 records a scenario
+  9 of 57 mutation survivors        every one of them on that single line
+  46 of 110 stdout records          DIFFERED on the first comparison ever made
+  ```
+
+  The 46 is the point. Adding the stream did not merely score nine mutants, it
+  found a **real defect** (C12, `0dbf443` -> `106d170`): libgfortran emits a
+  preconnected unit's record whole, while a fully-buffered `stdout` split one
+  record mid-field and delivered eighteen more after the driver's own output.
+  Deterministic across three runs, so it is comparable as BYTES rather than as
+  a filtered projection.
+
+  ```
+  grep -nE 'WRITE *\( *\*|WRITE *\( *6|print \*|std::cout|printf|fputs' <the unit>
+  docker exec ... python3 vit_sim.py --scenario N > /tmp/a.out   # twice: is it stable?
+  ```
+
+  Return values, arguments, files, `stdout`, `stderr`, sockets, the exit code.
+  A stream nobody enumerated is not a gap in coverage, it is a gap in the
+  definition of "green".
+
+- **ASK WHAT THE CALLER GUARDS BEFORE ADDING AN INPUT FOR A GUARD INSIDE THE
+  CALLEE -- AND A SCENARIO THAT EARNS NOTHING CAN BE WORTH MORE THAN ONE THAT
+  EARNS KILLS.** Unit #31, second dispatch. Two of six new scenarios killed
+  nothing, and both turned a survivor into a declared equivalence resting on a
+  measurement:
+
+  ```
+  scenario 29  LoggingLevel = 0   wrote NO FILE AT ALL
+    DISCON.F90:75 and :145        IF (CntrPar%LoggingLevel > 0) CALL Debug(...)
+    -> `LoggingLevel > 0` -> `>= 0` INSIDE the unit cannot differ on any input
+       that reaches it. The inner guard is dominated by the caller's.
+  scenario 34  two Init calls     avrIndices unallocated at BOTH
+    a second Init in ONE library load -> ReadAvrSWAP sets aviFAIL = -1, and
+      DISCON.F90:145 does not call Debug when aviFAIL < 0
+    a second Init after kill_discon -> the library is RELOADED, so every SAVE
+      datum resets
+  ```
+
+  The general form: **an unreachable arm inside a unit is often unreachable
+  because of its call site**, and the call site is one grep away. The same
+  grep that finds it also produces the argument the declaration needs.
+
+  ```
+  grep -nE "CALL *<Unit> *\(" -B 4 <the caller>.f90     # what wraps the call?
+  ```
+
+- **THE MUTATION CORPUS IS FIXED THE MOMENT THE FIRST PART IS TAKEN, SO CHOOSE
+  IT FROM THE SURVIVOR LIST BEFORE STARTING -- AND PUT THE EQUIVALENCES IN THE
+  MERGE, NOT IN THE SWEEP.** Unit #31, second dispatch.
+
+  `dbgmutate_merge.py` refuses parts that ran different scenarios, which is
+  right and which means a scenario thought of at part 7 of 10 costs the six
+  already taken. Two survivors were left alive for exactly that reason
+  (`Fl_PitCom` and `NacVaneOffset` need a scenario ABOVE RATED; 33 runs at
+  9 m/s).
+
+  The equivalence declaration has the opposite property and used to be bound
+  the same way. Moved to `--equivalences` on the MERGE:
+
+  ```
+  in the sweep    revising a claim  -> re-run 25 minutes of simulation
+  in the merge    revising a claim  -> re-run the merge, and it can REFUSE
+  control         declare a mutant that died on 99,214 records -> exit 2
+  ```
+
+  A mutant declared equivalent that the corpus KILLED is a wrong declaration,
+  not a smaller denominator. And split the survivor list: P12 quotes the first
+  six of `survivors`, and five of those six were settled questions until
+  `survivors_declared_equivalent` was separated out.
+
 - **THE GATE DOES NOT READ A UNIT, IT READS A STREAM -- AND FOR A UNIT WHOSE
   EFFECT IS I/O THAT IS THE FIRST QUESTION, NOT THE COVERAGE ONE.** Unit #31,
   and it is a blindness sharper than any this campaign had recorded. `Debug` is
