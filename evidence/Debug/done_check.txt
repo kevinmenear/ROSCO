@@ -1,6 +1,6 @@
-# done_check.py Debug -- captured 2026-08-14T08:38:05Z by scripts/capture_done_check.sh
+# done_check.py Debug -- captured 2026-08-14T10:44:16Z by scripts/capture_done_check.sh
 
-Run against the committed state at 6e9758f ("RUNBOOK target layer: five entries from unit #31, and the done-check reading"), with a CLEAN tree, with stdout
+Run against the committed state at 0d32fb9 ("Debug: split the survivor list so the failing predicate names what is open"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -31,9 +31,9 @@ Debug: Verdict.INCOMPLETE  (12/14 PASS)
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
 [  ok  ] P9   gate compared and matched          
-[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/Debug.json 121/178 = 0.680 < 1.0 -- survivors: compare_op[c0832dce], compare_op[25fca306], compare_op[9f1af25e], compare_op[0c94dcd7], compare_op[ad49d403], compare_op[5b456058]
-[  ok  ] P11  post-integration harness re-run    456086 check(s) against the integrated build
-[ FAIL ] P13  evidence matches the contract      respecify_unscored:mutation_below_threshold:mutation/Debug.json 121/178 = 0.680 < 1.0 -- survivors: compare_op[c0832dce], compare_op[25fca306], compare_op[9f1af25e], compare_op[0c94dcd7], compare_op[ad49d403], compare_op[5b456058] -- a reimplementation closes on a mutation score, not on the gate
+[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/Debug.json 143/155 = 0.923 < 1.0 -- survivors: compare_op[901840cc], compare_op[c3a5bb71], compare_op[dd717e22], compare_op[be38d628], compare_op[5b456058], compare_op[1e024411]
+[  ok  ] P11  post-integration harness re-run    483853 check(s) against the integrated build
+[ FAIL ] P13  evidence matches the contract      respecify_unscored:mutation_below_threshold:mutation/Debug.json 143/155 = 0.923 < 1.0 -- survivors: compare_op[901840cc], compare_op[c3a5bb71], compare_op[dd717e22], compare_op[be38d628], compare_op[5b456058], compare_op[1e024411] -- a reimplementation closes on a mutation score, not on the gate
 [  ok  ] P10  evidence reproducible              
-[  ok  ] P14  artifact revisions agree           4 artifact(s) at 897d67c
+[  ok  ] P14  artifact revisions agree           4 artifact(s) at 3f8ed43
 
