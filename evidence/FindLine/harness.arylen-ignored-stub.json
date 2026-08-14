@@ -1,7 +1,7 @@
 {
  "unit": "FindLine",
  "against": "translation",
- "checked": 2358,
+ "checked": 2370,
  "failed": 0,
  "inadmissible": 0,
  "rule_coverage": [
@@ -11,7 +11,7 @@
   "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
   "  N/A      R3_no_dead_signal          no real parameter",
   "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
-  "  N/A      R12_narrowing_width        no CHARACTER local is narrower than a dummy assigned into it -- the reference truncates nothing, so there is no boundary for this rule to reach",
+  "  applied  R12_narrowing_width        12 case(s) at the declared width(s) [200] of the reference's own fixed-length CHARACTER local(s) -- each of the 3 string parameter(s) at length(s) [200, 201, 205] and carrying ONE body, so that they agree to character W and differ at W+1: the reference truncates them to the same W characters and a translation that does not, does not. Four shapes -- twin (the control: no difference at any width), diverge, diverge with a blank tail (a length difference rather than a character difference) and second_element (the first element of a CHARACTER ARRAY differs from character 1)",
   "  N/A      R13_staging_capacity       no deferred-length CHARACTER output -- no parameter whose LENGTH the callee chooses, so no staging buffer whose capacity a case could state",
   "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
   "  applied  R4_compare_all_outputs     return value + 3 out-parameter(s): FoundLine, Line, LineNum"
@@ -22,7 +22,7 @@
  "vit_rev": "d2de28c-nogit",
  "red_test": {
   "perturbation": "WordInd pinned at 2 -- the .NOT. PRESENT(AryLen) answer -- so AryLen is read and discarded",
-  "result": "0 of 2358 case(s) failed",
+  "result": "0 of 2370 case(s) failed",
   "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
  }
 }

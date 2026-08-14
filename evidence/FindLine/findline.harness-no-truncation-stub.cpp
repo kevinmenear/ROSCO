@@ -65,7 +65,7 @@ constexpr int MaxParamLength = 200;
 // bound; this one's is the loop's own.
 void char_assign(char* dst, int len_dst, const char* src, int len_src) {
     for (int i = 1; i <= len_dst; ++i) {
-        dst[i - 1] = (i <= len_src) ? src[i - 1] : ' ';
+        dst[i - 1] = src[i - 1];   // NO-TRUNCATION STUB: reads past a short source
     }
 }
 

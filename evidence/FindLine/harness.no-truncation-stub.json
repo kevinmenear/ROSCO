@@ -2,7 +2,7 @@
  "unit": "FindLine",
  "against": "translation",
  "checked": 2370,
- "failed": 2367,
+ "failed": 47,
  "inadmissible": 0,
  "rule_coverage": [
   "  applied  R5_non_degenerate_shape    3 varied extent(s) at [3, 4, 5] and [3, 4, 5]; 1 FIXED by the type at [2048] -- not varied, NO index parameter identified, array elements distinct",
@@ -18,108 +18,108 @@
  ],
  "mismatches": [
   {
-   "case": 0,
-   "output": "LineNum",
-   "ref": "00000000",
-   "got": "a8fdffff"
-  },
-  {
-   "case": 1,
-   "output": "LineNum",
-   "ref": "00000000",
-   "got": "a8fdffff"
-  },
-  {
-   "case": 2,
-   "output": "LineNum",
-   "ref": "00000000",
-   "got": "a8fdffff"
-  },
-  {
-   "case": 3,
-   "output": "LineNum",
-   "ref": "00000000",
-   "got": "c2000000"
-  },
-  {
-   "case": 4,
-   "output": "LineNum",
-   "ref": "00000000",
-   "got": "0a010000"
-  },
-  {
-   "case": 5,
-   "output": "LineNum",
-   "ref": "00000000",
-   "got": "deffffff"
-  },
-  {
-   "case": 6,
-   "output": "LineNum",
-   "ref": "00000000",
-   "got": "d3030000"
-  },
-  {
-   "case": 7,
-   "output": "LineNum",
-   "ref": "00000000",
-   "got": "d7fcffff"
-  },
-  {
-   "case": 8,
-   "output": "LineNum",
-   "ref": "00000000",
-   "got": "ef010000"
-  },
-  {
-   "case": 9,
-   "output": "LineNum",
-   "ref": "00000000",
-   "got": "85020000"
-  },
-  {
-   "case": 10,
-   "output": "LineNum",
-   "ref": "00000000",
-   "got": "f7fcffff"
-  },
-  {
-   "case": 11,
+   "case": 132,
    "output": "FoundLine",
-   "ref": "00000000",
-   "got": "01000000"
+   "ref": "01000000",
+   "got": "00000000"
   },
   {
-   "case": 11,
+   "case": 132,
    "output": "LineNum",
-   "ref": "00000000",
-   "got": "a8fdffff"
+   "ref": "03000000",
+   "got": "00000000"
   },
   {
-   "case": 12,
+   "case": 133,
    "output": "FoundLine",
-   "ref": "00000000",
-   "got": "01000000"
+   "ref": "01000000",
+   "got": "00000000"
   },
   {
-   "case": 12,
+   "case": 133,
    "output": "LineNum",
-   "ref": "00000000",
-   "got": "a7ffffff"
+   "ref": "03000000",
+   "got": "00000000"
   },
   {
-   "case": 13,
+   "case": 134,
    "output": "FoundLine",
-   "ref": "00000000",
-   "got": "01000000"
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 134,
+   "output": "LineNum",
+   "ref": "03000000",
+   "got": "00000000"
+  },
+  {
+   "case": 232,
+   "output": "FoundLine",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 232,
+   "output": "LineNum",
+   "ref": "03000000",
+   "got": "00000000"
+  },
+  {
+   "case": 233,
+   "output": "FoundLine",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 233,
+   "output": "LineNum",
+   "ref": "03000000",
+   "got": "00000000"
+  },
+  {
+   "case": 234,
+   "output": "FoundLine",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 234,
+   "output": "LineNum",
+   "ref": "03000000",
+   "got": "00000000"
+  },
+  {
+   "case": 508,
+   "output": "FoundLine",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 508,
+   "output": "LineNum",
+   "ref": "03000000",
+   "got": "00000000"
+  },
+  {
+   "case": 509,
+   "output": "FoundLine",
+   "ref": "01000000",
+   "got": "00000000"
+  },
+  {
+   "case": 509,
+   "output": "LineNum",
+   "ref": "03000000",
+   "got": "00000000"
   }
  ],
  "loop_rev": "9eeaf3f-nogit",
  "gen_rev": "gen-cb96877be46b",
  "vit_rev": "d2de28c-nogit",
  "red_test": {
-  "perturbation": "the whole unit removed: an immediate return before WordInd is chosen",
-  "result": "2367 of 2370 case(s) failed",
+  "perturbation": "char_assign's `i <= len_src` guard removed: a short source is read past instead of blank-filled",
+  "result": "47 of 2370 case(s) failed",
   "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
  }
 }

@@ -40,13 +40,32 @@ constexpr int MaxParamLength = 200;
 // its 1-based loops intact: written 0-based, both boundary mutants survive
 // there, because `<` -> `<=` writes a byte that is either overwritten at once or
 // one past the buffer, and neither is a wrong ANSWER.
+//
+// ONE LOOP BOUNDED BY THE DESTINATION, NOT TWO LOOPS AROUND A `min`, and the
+// difference was measured on this unit rather than preferred. GetWords' version
+// computes `n = std::min(len_src, len_dst)` and then runs a copy loop to `n` and
+// a blank-fill loop from `n + 1`. Three of that expression's mutants are
+// UNKILLABLE by any value comparison:
+//
+//     std::min(len_src, len_dst) -> len_src      SURVIVED
+//     min(len_src, len_dst)      -> min(len_dst, len_src)   SURVIVED
+//     '200' -> '201' at the width               SURVIVED
+//
+// because when `len_src > len_dst` the mutant writes the SAME len_dst bytes the
+// original does and then continues past the end of the buffer. The extra bytes
+// are not a wrong answer; they are undefined behaviour, and unit #7 settled
+// what to do with a mutant that is only observable through a read or write
+// outside its buffer -- it cannot honestly be declared equivalent, it can only
+// be DELETED ALONG WITH THE SITE THAT ADMITS IT. That is what this is: the loop
+// cannot leave `dst`, so there is no out-of-bounds mutant of it to declare, and
+// the surviving `i <= len_src` predicate changes an ANSWER at exactly the
+// truncation boundary R12 puts in the corpus.
+//
+// It is also the safer program. The `min` version's protection is a computed
+// bound; this one's is the loop's own.
 void char_assign(char* dst, int len_dst, const char* src, int len_src) {
-    const int n = std::min(len_src, len_dst);
-    for (int i = 1; i <= n; ++i) {
-        dst[i - 1] = src[i - 1];
-    }
-    for (int i = n + 1; i <= len_dst; ++i) {
-        dst[i - 1] = ' ';
+    for (int i = 1; i <= len_dst; ++i) {
+        dst[i - 1] = (i <= len_src) ? src[i - 1] : ' ';
     }
 }
 
@@ -113,8 +132,20 @@ void FindLine(char* FileLines, int n_FileLines, int len_FileLines, char* ParamNa
     // Fortran side declares `CHARACTER(*) :: Words(NumWords)` -- writes them.
     // The reference's own comment marks the unchecked STAT; there is nothing to
     // mirror, since a failed ALLOCATE would abort both sides alike.
+    //
+    // NO `std::max(WordInd, 0)` GUARD, and its removal is the same measurement
+    // as `char_assign`'s one loop above. WordInd is 2 on the `.NOT. PRESENT`
+    // arm and `AryLen + 1` on the other, and `AryLen >= 0` is a STATED part of
+    // this unit's admissible domain -- harness/ranges.toml, resting on
+    // evidence/FindLine/arylen_probe.txt, where the reference itself aborts
+    // below it. So WordInd >= 1 in every case there is, `max(WordInd, 0)` is
+    // `WordInd`, and the guard's three mutants -- dropping the call, swapping
+    // its arguments and `'0' -> '1'` -- all computed the same number and all
+    // SURVIVED. A guard no input can make fire is a restatement, and this
+    // campaign's answer to a restatement is to delete it and write the proof
+    // (Conv2UC's LEN_TRIM, 0.696 -> 1.000).
     std::vector<char> Words(static_cast<std::size_t>(MaxParamLength) *
-                            static_cast<std::size_t>(std::max(WordInd, 0)));
+                            static_cast<std::size_t>(WordInd));
 
     // ParamNameUC = ParamName
     // CALL Conv2UC(ParamNameUC)
