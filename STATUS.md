@@ -4,6 +4,127 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-14: unit #35 `PIIController` is `integrated` and CLOSED** — all
+five layers exist, all five ran, all five are red-tested, and the mutation score
+is **1.000** on 30 behavioural mutants with **nothing declared equivalent**, on
+the first dispatch. It is the campaign's third `piParams` sibling after #33 and
+#34, and the first whose KERNEL is alive, green and blind.
+
+Every count below is read from the committed artifact named in its row.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 20 cases (`evidence/PIIController/kernel.verify_fields.csv`) | 20/20, 4780 field rows `IDENTICAL` — **and the 20 cases are all-zero data** | nine stubs and one probe: only **3** of them can fail |
+| differential harness (`harness/PIIController.json`) | **4528 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **4528 of 4528**, naming five outputs |
+| mutation (`mutation/PIIController.json`) | **30 of 30 behavioural, 1.000**, 0 declared equivalent, 1 no-compile, 7 operators | the score *is* the red test, 30 times |
+| post-integration (`harness/PIIController.postintegration.json`) | 4528 checked, 0 failed | the MERGE inverted **4528 of 4528**; the two errors transposed **164 of 4528** |
+| gate, 27 scenarios (`gate/PIIController.json`) | 5,252,000 values / 351 channels, 0 mismatched | the raw sum +1000.0 moves **11,997 of 5,252,000** in 3 channels, revert-verified |
+
+**THE KERNEL PASSES 20 OF 20 AND CANNOT SEE NINE OF THE TEN THINGS THE UNIT
+DOES.** Nine one-edit stubs generated from the shipped translation, plus one
+probe, run through the committed kernel:
+
+```
+the whole unit as a no-op returning 0.0     fails objInst%instPI ONLY
+the determinate wrong constant -7.25        fails Flp_Angle AND instPI
+`inst = inst + 1` deleted                   fails instPI
+the ITerm / ITerm2 / output clamp deleted   PASSES 20/20, each
+piP%ITermLast(inst) = ... deleted           PASSES 20/20
+`error` forced to 0.0                       PASSES 20/20
+`error2` forced to 0.0                      PASSES 20/20
+a wrong answer if EITHER input is non-zero  PASSES 20/20   <- the one that closes it
+```
+
+Both error inputs are identically zero in every captured case, so the reference
+returns 0.0 twenty times out of twenty. Unit #2's ColemanTransform shape at a
+different call site. **The capture size was predicted before extracting** by
+unit #25's arithmetic — the window is 62 slots, the site is called 11,994 times,
+so ranges two and three are past its last call and 20 is the whole of what the
+kernel could hold. It came back 20.
+
+**AND VIT'S OWN RED TEST WENT RED ON THE INPUT THE STUB SHOWS IS DEAD.** `vit
+verify` reported *"a mismatch with input `error` offset by 1e-05"*, which is
+true — offsetting a zero makes it non-zero — and is a claim about the
+INSTRUMENT, where the stub is a claim about the CORPUS. Unit #33 measured a
+refusal's stated reason because a refusal can be wrong; this is the mirror, a
+demonstration whose stated reason is right and is not the claim a reader would
+take from it.
+
+**A GATE RED TEST WHOSE COUNT IS THE COVERAGE'S CALL COUNT, TO THE BLADE.** The
+raw sum offset by +1000.0 moves 11,997 values across `scenario_4:flp_angle_1`,
+`_2` and `_3`, each 3999 of 4000. `coverage/line_coverage.json` independently
+records 11,997 calls, all in scenario 4, decomposing as 1 + 3998 per blade.
+gcov's statement counter and a bit-exact comparison of simulation output agree
+on the total and on the decomposition. The perturbation is contained to those
+three channels because the output is clamped to ±`Flp_MaxPit` and fed straight
+back as the next call's `error2`; `perturbation_broke_scenarios` is empty, so
+these are values moved and not values lost.
+
+**P10 CAUGHT A COLLAPSED COMPARISON BEFORE IT PRINTED A NUMBER.** Three counting
+probes were generated; before running any of them the no-op was re-run through
+the same path as a control, and on the integrated tree it fails **0 of 4607**.
+Two things had moved: `harness.sh` links `vit_integration_shim.o`, so after
+integration the wrapper IS the reference and both sides run the harness's own
+copy (unit #29's finding, reproduced) — and the corpus changed size, because the
+generator mines the reference's literals and a marshalling wrapper has none. The
+probes were re-run on the third tree state, this unit reverted and every other
+integrated, reached by `git checkout` on three paths with an EXIT trap.
+
+```
+P10 CONTROL, the no-op on that tree        4528 of 4528
+the ELSE arm reached                       2261 of 4528
+the RESET arm reached                      2267 of 4528
+                                           ----
+                                           4528
+```
+
+**THE UPSTREAM ASYMMETRY IS OBSERVABLE, WHICH IS WHY TRANSCRIBING IT IS A
+DECISION.** The reference writes `piP%ITermLast(inst)` in the ELSE arm and does
+not write `piP%ITermLast2(inst)` there, although the reset arm initialises both.
+The no-op does not name `ITermLast2` among the five outputs it moves, and that
+absence alone is indistinguishable from an unreachable channel. Adding the
+mirror write is rejected on **2261 of 4528** — every ELSE-arm case.
+
+**THE THREE `saturate_c` SITES STILL GET NO MUTANT, AND ONE HAND-RUN SHAPE
+EXISTS AT NO UNIT.** `evidence/PIIController/hand_mutants.txt`, baseline 0 of
+4528:
+
+```
+drop_call    ITerm / ITerm2 / output clamp     2250 / 2254 / 2013
+             both integrator clamps            2255
+swap_args    value <-> minValue, all three        0 /    0 /    0   EQUIVALENT
+transposed   bounds swapped, all three          117 /  290 /  199
+swap_callee  the two integrator clamps exchanged             14
+```
+
+The first two rows say the corpus does **not** separate the two integrator
+channels through their clamps — three counts within five of one another. The
+last row is what does separate them, and `swap_call_args` cannot produce it
+because it exchanges arguments *within* a call. The three zeros are equivalences
+already proved at `evidence/saturate/minmax_probe.txt`, so the standing
+amendment's effect here is +3 kills, +3 equivalences and a score unchanged at
+1.000 — free for the third consecutive unit.
+
+**NO ENTRY WAS ADDED TO `harness/ranges.toml`, AND THE ABSENCE IS A DECISION.**
+This unit has PIDController's structural gap — `minValue` and `maxValue` drawn
+independently from one default — and it cost nothing measurable here. A pin
+narrows a domain and every entry in that file carries the measurement that
+forces it; there is none to carry. `R15_bracketing_bounds` remains the
+generator-level remedy and remains unbuilt.
+
+**TWO INSTRUMENT FAULTS, EACH RECORDED WITH ITS FAILING ARTIFACT FIRST (C12).**
+`scripts/harness.sh` could not run its own documented usage line — `${ARGS[*]}`
+on an empty array is unbound under `set -u` in bash 3.2, latent for thirty-four
+units because every previous pre-mode invocation passed `--out`. And a transient
+build failure at the harness's own build step **deleted the committed
+post-integration green**, after which `git add -A` committed that deletion under
+a message saying the green had been re-taken (`b090ab2`, left unamended).
+`harness.sh` redirects into `--out`, so a died build destroys what was there;
+making it write-then-rename changes how every artifact in this campaign is
+written, which is X3's question and not this unit's.
+
+---
+
 **As of 2026-08-14: unit #34 `PIDController` is `integrated` and CLOSED** — all
 five layers that exist for it ran, every green is red-tested, and the mutation
 score is **1.000** on 29 behavioural mutants with **one** declared equivalence.

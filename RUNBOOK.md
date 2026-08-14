@@ -358,6 +358,121 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A DEMONSTRATED RED TEST IS NOT A DISCRIMINATING CORPUS, AND THE TWO
+  SENTENCES ARE ONE WORD APART.** Unit #35. `vit verify` printed `20/20 passed`
+  and, beside it, `the kernel reported a mismatch with input 'error' offset by
+  1e-05`. Every earlier unit would have read that as the 20/20 being certified.
+
+  ```
+  `error` forced to 0.0                        PASSES 20/20
+  a wrong answer if EITHER input is non-zero   PASSES 20/20
+  the whole unit as a no-op returning 0.0      fails ONE field of 234
+  ```
+
+  Both sentences are true at once: offsetting a zero makes it non-zero, so the
+  kernel CAN go red on `error`, and the corpus it was given never does. **"The
+  instrument is sensitive to X" and "the cases vary X" are different claims**,
+  and only the second decides what a pass means. Unit #33 had to measure a
+  refusal's stated reason because a refusal can be false; this is the mirror,
+  and the mirror is the more dangerous one because nothing looks wrong.
+
+- **THE TREE A PROBE NEEDS IS THE TREE ITS GREEN WAS TAKEN ON, AND THAT CAN BE
+  NEITHER STATE THE RESET/RESTORE PAIR OFFERS.** Unit #35, caught by a P10
+  control that cost one run.
+
+  ```
+  the no-op, this unit's Fortran body intact     4528 of 4528
+  the no-op, this unit INTEGRATED                   0 of 4607
+  ```
+
+  Two independent things move on integration and either alone invalidates a
+  probe number. `harness.sh` links `vit_integration_shim.o` so the wrapper's
+  `<unit>_c` resolves -- and after integration that wrapper IS the reference, so
+  both sides run the harness's own copy (unit #29). And the corpus changes SIZE,
+  because the generator mines the reference's own literals and a marshalling
+  wrapper has none (unit #32's note about R12's widths, one instrument over).
+
+  ```
+  fully integrated     the reference is a wrapper:  4607 cases, no-op scores 0
+  this unit reverted   the reference is the body:   4528 cases     <- the one
+  fully clean          every OTHER unit's body is restored too, so the C++
+                       side's callees are different objects again
+  ```
+
+  `git checkout <the pre-integration commit> --` on the three
+  integration-carrying paths, under an EXIT trap that restores from HEAD, lands
+  on the middle state exactly and does not trip the reset marker. **Ask which
+  tree the number has to be commensurable with, not which tree is cleanest** --
+  and run the no-op FIRST, because a probe number from a one-sided comparison is
+  not a number.
+
+- **WHEN A RED TEST'S OUTPUT LIST IS MISSING A FIELD THE TYPE DECLARES, ASK
+  WHETHER A PROBE CAN MAKE THAT FIELD AN OUTPUT BEFORE RECORDING THE ABSENCE.**
+  Unit #35, and it is unit #30's "a path that writes NOTHING is invisible to a
+  no-op by definition" reached from the other direction.
+
+  ```
+  the no-op names   vit_result, piP.ITerm, piP.ITermLast, piP.ITerm2, inst
+  R4 compares       those five AND piP.ITermLast2 AND piP.ELast
+  ```
+
+  `ITermLast2` is absent because the REFERENCE does not write it in the ELSE arm
+  either -- an upstream asymmetry, transcribed under P7. But absence-because-the
+  -reference-agrees and absence-because-the-corpus-cannot-reach-it read
+  identically in the artifact. The probe that separates them is the shipped file
+  with the asymmetry REPAIRED: it is rejected on 2261 of 4528, every ELSE-arm
+  case.
+
+- **A PERTURBATION CONFINED TO ONE CHANNEL FAMILY IS NOT A WEAK RED TEST --
+  CHECK ITS COUNT AGAINST THE COVERAGE FIRST.** Unit #35.
+
+  ```
+  gate/PIIController.redtest.json   11,997 of 5,252,000, 3 channels
+                                    scenario_4:flp_angle_{1,2,3}, each 3999/4000
+  coverage/line_coverage.json       11,997 calls, all in scenario 4,
+                                    = 1 reset-arm + 3998 else-arm, per blade
+  ```
+
+  gcov's statement counter and a bit-exact comparison of simulation output have
+  nothing in common and agree on the total AND on the decomposition. The
+  containment is the shape of the loop -- the output is clamped and fed straight
+  back as the next call's error input, so once it saturates every value of the
+  channel moves and nothing outside it does. Two instruments, one number, is the
+  same corroboration unit #33 got from a C++ mutant and a Fortran MERGE.
+
+- **`scripts/harness.sh` COULD NOT RUN ITS OWN DOCUMENTED USAGE LINE FOR
+  THIRTY-FOUR UNITS.** Unit #35, C12.
+
+  ```
+  scripts/harness.sh: line 382: ARGS[*]: unbound variable
+  ```
+
+  PRE mode with no optional arguments. `${ARGS[*]}` on an EMPTY array is unbound
+  under `set -u` in bash 3.2 -- this machine's shell -- and bash 4.4 and later
+  do not agree. Latent because every previous pre-mode invocation passed
+  `--out`, which appends to that array. The failure is in the SAFE direction and
+  that is why it is worth recording rather than only fixing: the shape to fear
+  is the mirror, an unset variable expanding to nothing and a command running
+  with one argument missing. Fixed additively: `${ARGS[*]-}`.
+
+- **`harness.sh` REDIRECTS INTO `--out`, SO A DIED BUILD DESTROYS THE ARTIFACT
+  THAT WAS ALREADY THERE -- AND `git add -A` WILL COMMIT THE DELETION.** Unit
+  #35, C12, and the commit that did it (`b090ab2`) is left unamended.
+
+  ```
+  make: *** [Makefile:80: test] Error 1        <- nothing in the tree had changed
+  the identical command a minute later:  POST-INTEGRATION PASS: 4528, 0 failed
+  ```
+
+  Unit #23's and unit #30's bind-mount transient at a new site; what is new is
+  the blast radius. The commit message was written from the red tests' output
+  one line above the failure and said the green had been re-taken while removing
+  the file that green lives in. **Read the LAST line of a run before writing a
+  commit message about it, and prefer `git add <paths>` to `git add -A` when the
+  previous command may have deleted an artifact.** Making the script write to a
+  temporary and rename is the repair NOT made here: it changes how every
+  artifact in this campaign is written (X3).
+
 - **AN INDEX CAN ITSELF BE A DERIVED-TYPE FIELD, AND WHEN THE HARNESS CANNOT SEE
   THAT, THE PROGRAM THAT SEGFAULTS IS THE REFERENCE.** Unit #34. Both index
   inferrers (`infer_indexes`, `infer_indexes_fortran`) split a subscript on

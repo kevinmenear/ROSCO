@@ -2,6 +2,168 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #35 — PIIController — 2026-08-14
+
+Closed `integrated` on the first dispatch. All five layers exist, all five ran,
+all five are red-tested, and the mutation score is **1.000** on 30 behavioural
+mutants with **nothing declared equivalent**. The interesting result is not the
+score — it is that the layer this campaign normally trusts most on a live unit,
+the kernel, is here a **20-of-20 pass on all-zero data**, and it took nine stubs
+and one probe to say so with a number.
+
+**A KERNEL THAT PASSES 20 OF 20 AND CANNOT SEE NINE OF THE TEN THINGS THE UNIT
+DOES.** The stubs are one edit each, generated from the shipped translation by
+`make_stubs.py` so they cannot drift:
+
+```
+the whole unit as a no-op returning 0.0     fails objInst%instPI ONLY
+the ITerm / ITerm2 / output clamp deleted   PASSES 20/20, each
+piP%ITermLast(inst) = ... deleted           PASSES 20/20
+`error` forced to 0.0                       PASSES 20/20
+`error2` forced to 0.0                      PASSES 20/20
+a wrong answer if EITHER input is non-zero  PASSES 20/20   <- the one that closes it
+```
+
+Both error inputs are identically zero in every captured case. So `PTerm` is
+zero, both accumulations are zero, all three clamps are no-ops on zero, and the
+reference returns 0.0 twenty times out of twenty. Unit #2's ColemanTransform
+finding at a different call site, and P9 stated once more: coverage says a line
+executed, not that it executed on data that can tell two translations apart.
+
+**AND VIT'S OWN RED TEST WENT RED ON THE INPUT THE STUB SHOWS IS DEAD, WHICH IS
+NOT A CONTRADICTION AND IS WORTH THE SENTENCE.** `vit verify` printed *"the
+kernel reported a mismatch with input `error` offset by 1e-05"*. That is true:
+offsetting a zero makes it non-zero, so the kernel CAN go red on `error`. It is
+a claim about the INSTRUMENT's sensitivity, and the stub is a claim about the
+CORPUS. Unit #33 had to measure a refusal's stated reason because a refusal can
+be wrong; this is the mirror — **a demonstration's stated reason can be right
+and still not be the claim a reader will take from it.** The two sentences to
+keep apart are "the kernel can see `error`" and "the kernel's cases vary
+`error`", and only the second decides whether the 20/20 means anything.
+
+**THE ARITHMETIC THAT SAYS THE WINDOW CANNOT BE WIDENED INTO A FIX WAS DONE
+BEFORE EXTRACTING, WHICH IS THE ONLY REASON IT COST NOTHING.** Unit #25's rule:
+the window is `0:0:1-20,0:0:12000-12020,0:0:23900-23920` and the site is called
+11,994 times, so ranges two and three are past its last call and the capture is
+invocations 1..20 — the first ~7 timesteps, before `rootMOOPF` and `Flp_Angle`
+have moved off zero. It came back exactly 20. The other call site is worse: 4
+hits, and it is the reset arm.
+
+**A GATE RED TEST WHOSE COUNT IS THE COVERAGE'S CALL COUNT, TO THE BLADE.**
+Offsetting the raw sum by +1000.0 moves **11,997 of 5,252,000** across three
+channels — `scenario_4:flp_angle_1/_2/_3`, each 3999 of 4000. `coverage/
+line_coverage.json` independently records 11,997 calls, all in scenario 4,
+decomposing as 1 reset-arm call + 3998 else-arm calls per blade. gcov's
+statement counter and a bit-exact comparison of simulation output have nothing
+in common and agree on the total *and* on the decomposition. **When a
+perturbation is confined to one channel family, check its count against the
+coverage before calling the red test weak** — containment here is the shape of
+the loop (the output is clamped to ±`Flp_MaxPit` and fed back as the next
+call's `error2`), not a small footprint.
+
+**P10 CAUGHT A COLLAPSED COMPARISON BEFORE IT PRINTED A NUMBER, AND THE COST OF
+THE CONTROL WAS ONE RUN.** Three counting probes were generated and then, before
+any of them was run, the no-op was re-run through the same path as a positive
+control. On the INTEGRATED tree it fails **0 of 4607**:
+
+```
+the no-op, this unit's Fortran body intact     4528 of 4528
+the no-op, this unit INTEGRATED                   0 of 4607
+```
+
+Two independent things moved. `harness.sh` links `vit_integration_shim.o` so the
+integrated wrapper's `piicontroller_c` resolves — and after integration that
+wrapper IS the reference, so both sides run the harness's own copy of the probe
+and every difference cancels. That is unit #29's finding reproduced at a unit
+whose corpus is otherwise healthy, and **the tell is far cheaper here: a no-op
+scoring zero, rather than 169 survivors on a passing corpus.** Separately the
+corpus changed SIZE, 4528 → 4607, because the generator mines the reference's
+own literals and a marshalling wrapper has none — unit #32 already recorded that
+about R12's widths. Either alone invalidates a probe number.
+
+**THE TREE A PROBE NEEDS IS NOT ALWAYS THE CLEAN ONE, AND THE THIRD STATE IS
+THREE FILES WIDE.** The corpus a committed green was taken over is reproducible
+only on the tree it was taken on, and here that is neither of the two states the
+reset/restore pair offers:
+
+```
+fully integrated     the reference is a wrapper: 4607 cases, no-op scores 0
+this unit reverted   the reference is the 45-line body: 4528 cases    <- the one
+fully clean          every OTHER unit's body is restored too, so the C++ side's
+                     callees are different objects again
+```
+
+`git checkout <the pre-integration commit> --` on the three integration-carrying
+paths, with an EXIT trap restoring from HEAD, lands on the middle state exactly
+and does not trip the reset marker. **Ask which tree the number has to be
+commensurable with, not which tree is cleanest.**
+
+**THE PARTITION CLOSES, WHICH IS WHAT MAKES THE TWO COUNTS READABLE.** ELSE arm
+2261, RESET arm 2267, corpus 4528, and 2261 + 2267 = 4528. It also explains the
+mutation sweep's own numbers without a further run: the `index_offset` mutants
+killing 2261 or 2267 are the reads in one arm or the other.
+
+**AN UPSTREAM ASYMMETRY WAS TRANSCRIBED, AND THE PROBE THAT PROVES IT COULD
+HAVE BEEN CAUGHT IS WHAT MAKES THAT A DECISION RATHER THAN AN OVERSIGHT.** The
+reference writes `piP%ITermLast(inst)` in the ELSE arm and does **not** write
+`piP%ITermLast2(inst)` there, although the RESET arm initialises both. P7 says
+transcribe it. The no-op red test does not name `ITermLast2` among the five
+outputs it moves — and that absence, on its own, is indistinguishable from a
+channel the corpus cannot reach. `probes/itermlast2-repaired.cpp` adds the
+mirror write and is rejected on **2261 of 4528**, every ELSE-arm case. **When a
+red test's output list is missing a field the unit's type declares, ask whether
+a probe can make that field an output before recording the absence.**
+
+**THE THREE `saturate_c` SITES STILL GET NO MUTANT, AND ONE OF THE HAND-RUN
+SHAPES DOES NOT EXIST AT ANY UNIT.** Unit #33 measured this gap at two sites;
+this unit has three, and the two integrator clamps are the campaign's first
+SIBLING PAIR. `drop_call` on either alone kills 2250 and 2254, on both 2255 —
+three counts within five of one another, so **the corpus does not separate the
+two channels through their clamps.** What separates them is exchanging the two
+clamps' destinations, which moves **14**, and `swap_call_args` cannot produce
+that shape because it exchanges arguments *within* one call. The three
+`swap_call_args` zeros are the equivalences already proved at
+`evidence/saturate/minmax_probe.txt`, so the standing amendment's effect on this
+unit is +3 kills, +3 equivalences and a score unchanged at 1.000 — the third
+consecutive unit for which the amendment is free, which is the cheap case for
+the Driver.
+
+**NO ENTRY WAS ADDED TO `harness/ranges.toml`, AND THE ABSENCE IS A DECISION.**
+This unit has PIDController's structural gap — `minValue` and `maxValue` drawn
+independently from one default, so the pair that must be an INTERVAL often is
+not — and it cost nothing measurable: 1.000 with no pins, `kp*error -> kp`
+killed on 167 and `DT*ki -> DT` on 15, so the clamps are inactive often enough.
+A pin narrows a domain and every entry in that file carries the measurement that
+forces it; there is none to carry here. `R15_bracketing_bounds` remains the
+generator-level remedy and remains unbuilt.
+
+### C12 — two instrument faults, each recorded with its failing artifact first
+
+**`scripts/harness.sh` COULD NOT RUN ITS OWN DOCUMENTED USAGE LINE.** In PRE
+mode with no optional arguments, `${ARGS[*]}` on an empty array is an unbound
+variable under `set -u` in bash 3.2 — this machine's shell. Latent for
+thirty-four units because every previous pre-mode invocation passed `--out`,
+which appends to that array. The failure is in the SAFE direction (it aborts
+before generating a corpus, so no number was ever produced from it), and that is
+why it is worth writing down rather than only fixing: the shape to fear is the
+mirror image, an unset variable expanding to nothing and a command running with
+one argument missing. `evidence/PIIController/harness_sh_unbound_args.txt`,
+fixed additively as `${ARGS[*]-}`.
+
+**A TRANSIENT BUILD FAILURE DELETED A COMMITTED GREEN, AND THE NEXT COMMIT
+RECORDED THE DELETION UNDER A MESSAGE SAYING THE GREEN HAD BEEN RE-TAKEN.**
+`harness.sh` writes its artifact by redirecting into `--out`, so a build that
+dies does not merely fail to write — it destroys what was already there. The
+identical command a minute later passed. That is unit #23's and unit #30's
+bind-mount hazard at a new site; what is new is the blast radius. `git add -A`
+then staged the deletion and the message was written from the red tests' output
+one line above it. **`b090ab2` is left in the history unamended**, with
+`evidence/PIIController/postintegration_transient_build_failure.txt` beside it.
+Making `harness.sh` write to a temporary and rename is the obvious repair and is
+NOT made here: it changes how every artifact in this campaign is written, which
+is X3's question and not a unit's. Candidate for the Driver.
+
+
 
 ## Unit #34 — PIDController, SECOND DISPATCH — 2026-08-14
 
