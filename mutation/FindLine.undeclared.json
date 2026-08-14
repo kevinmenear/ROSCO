@@ -24,7 +24,7 @@
  ],
  "compared_against": "fortran_reference_on_a_clean_tree",
  "mutants": 27,
- "equivalent_declared": 2,
+ "equivalent_declared": 0,
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
@@ -32,14 +32,26 @@
  "nocompile_refused": false,
  "total": 27,
  "killed": 19,
- "survived": 6,
- "equivalent": 2,
+ "survived": 8,
+ "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.76,
- "loop_rev": "024982b-nogit",
+ "score": 0.7037,
+ "loop_rev": "9eeaf3f-nogit",
  "gen_rev": "gen-cb96877be46b",
  "vit_rev": "d2de28c-nogit",
  "survivors": [
+  {
+   "id": "b668005d",
+   "operator": "index_offset",
+   "before": "[MaxParamLength]",
+   "after": "[MaxParamLength + 1]"
+  },
+  {
+   "id": "c387ed1c",
+   "operator": "index_offset",
+   "before": "[MaxParamLength]",
+   "after": "[MaxParamLength + 1]"
+  },
   {
    "id": "ca75abea",
    "operator": "const_tweak",
