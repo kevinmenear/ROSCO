@@ -6392,3 +6392,52 @@ a tree its own uncommitted output had dirtied — the same self-reference as the
 The apparatus is not a substitute for attention. It is the thing that holds a
 fact between the moment someone measures it and the moment anyone needs it
 again, and today it was more reliable than either party to the conversation.
+
+## 2026-08-13 13:40 — P14 landed in the loop; the Driver-level call has NOT, and carries a constraint
+
+`loop/done.py` gained P14 at `08f8166`: the artifacts a unit's verdict rests on
+must name the same instrument. Three assertions — absent `loop_rev`
+(NOT_EVALUABLE), a `-dirty` suffix (FAIL), disagreeing base SHAs (FAIL). Suite
+442/2 before, 447/2 after, including five tests that assert P14 discriminates
+rather than merely passes.
+
+**Three, not five, and the reason is sharper than "circular".** Whether a unit's
+done-condition was ever read, and whether that reading was contemporaneous, are
+audit-time questions about already-closed units. Asked at close they would not
+fail uniformly — they would fail ASYMMETRICALLY. A first close has no capture
+and would fail; a re-dispatch would find the previous attempt's file and pass.
+The predicate would reward exactly the units that had trouble, and do it
+silently. Those two stay in `scripts/revcheck.py`, where they are advisory on
+closed units and cannot be cleared by generating files.
+
+### The constraint on the Driver-level call, written down before it is needed
+
+A Driver-level `revcheck` at unit close is the thing that makes assertions 4 and
+5 non-opt-in. It is deferred, and it **inherits today's sequencing constraint
+exactly**: `loop/driver.py` is in the loop repo, so landing it bumps `loop_rev`
+for every artifact taken afterwards. It must therefore land BETWEEN UNITS, WITH
+NOTHING IN FLIGHT — never mid-dispatch, or it manufactures the split it exists
+to report. That constraint existed only in conversation until this paragraph,
+and "we'll do it later" without it is precisely how the trap gets sprung during
+a 40-unit run.
+
+### A consequence for CheckInputs, now true
+
+`loop_rev` is now `08f8166`. CheckInputs' nine artifacts are all at `2e2295f`,
+so P14 passes — it compares artifacts to EACH OTHER, not to the current
+generator. But the unit is one generation behind, and **re-taking any single one
+of its artifacts would split it.** Whoever next works CheckInputs re-takes all of
+them or none. That is the cost of the bump, it was accepted deliberately, and it
+is cheapest now because the unit is closed as `deferred` and `next_unit` skips
+it, so a restart begins at `ChkParseData` and cannot walk into this by accident.
+
+### The bug in the predicate, which was the shape the predicate exists to catch
+
+`except Exception` around the artifact parse swallowed a `NameError` from a
+missing `import json` — this module imports json inside each reader — and P14
+reported *"no configured artifact was readable at this commit"*. That sentence
+reads as a fact about the campaign; it was a fact about the code. Nothing about
+it looked wrong. What exposed it was three fixtures whose artifacts plainly
+existed on disk: the sixth time today a contradiction, not care, did the work.
+The except is now `ValueError`, narrow enough that a defect cannot pose as an
+absence.
