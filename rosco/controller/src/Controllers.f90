@@ -62,6 +62,27 @@ MODULE Controllers
         END FUNCTION pidcontroller_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of PIIController
+    INTERFACE
+        FUNCTION piicontroller_c(error, error2, kp, ki, ki2, minValue, maxValue, DT, I0, piP, reset, inst) BIND(C, NAME='piicontroller_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: error
+            REAL(C_DOUBLE), VALUE :: error2
+            REAL(C_DOUBLE), VALUE :: kp
+            REAL(C_DOUBLE), VALUE :: ki
+            REAL(C_DOUBLE), VALUE :: ki2
+            REAL(C_DOUBLE), VALUE :: minValue
+            REAL(C_DOUBLE), VALUE :: maxValue
+            REAL(C_DOUBLE), VALUE :: DT
+            REAL(C_DOUBLE), VALUE :: I0
+            TYPE(C_PTR), VALUE :: piP
+            INTEGER(C_INT), VALUE :: reset
+            INTEGER(C_INT), INTENT(INOUT) :: inst
+            REAL(C_DOUBLE) :: piicontroller_c
+        END FUNCTION piicontroller_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE PitchControl(avrSWAP, CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -1126,50 +1147,24 @@ SUBROUTINE StructuralControl(avrSWAP, CntrPar, LocalVar, objInst, ErrVar)
     END FUNCTION PIDController
 
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION PIIController(error, error2, kp, ki, ki2, minValue, maxValue, DT, I0, piP, reset, inst)
-    ! PI controller, with output saturation. 
-    ! Added error2 term for additional integral control input
+    FUNCTION PIIController(error, error2, kp, ki, ki2, minValue, maxValue, DT, I0, piP, reset, inst) RESULT(PIIController_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : piParams
-        
         IMPLICIT NONE
-        ! Allocate Inputs
-        REAL(DbKi), INTENT(IN)         :: error
-        REAL(DbKi), INTENT(IN)         :: error2
-        REAL(DbKi), INTENT(IN)         :: kp
-        REAL(DbKi), INTENT(IN)         :: ki2
-        REAL(DbKi), INTENT(IN)         :: ki
-        REAL(DbKi), INTENT(IN)         :: minValue
-        REAL(DbKi), INTENT(IN)         :: maxValue
-        REAL(DbKi), INTENT(IN)         :: DT
-        INTEGER(IntKi), INTENT(INOUT)   :: inst
-        REAL(DbKi), INTENT(IN)         :: I0
-        TYPE(piParams), INTENT(INOUT) :: piP
-        LOGICAL, INTENT(IN)         :: reset     
-        ! Allocate local variables
-        INTEGER(IntKi)                      :: i                                            ! Counter for making arrays
-        REAL(DbKi)                         :: PTerm                                        ! Proportional term
-
-        ! Initialize persistent variables/arrays, and set inital condition for integrator term
-        IF (reset) THEN
-            piP%ITerm(inst) = I0
-            piP%ITermLast(inst) = I0
-            piP%ITerm2(inst) = I0
-            piP%ITermLast2(inst) = I0
-            
-            PIIController = I0
-        ELSE
-            PTerm = kp*error
-            piP%ITerm(inst) = piP%ITerm(inst) + DT*ki*error
-            piP%ITerm2(inst) = piP%ITerm2(inst) + DT*ki2*error2
-            piP%ITerm(inst) = saturate(piP%ITerm(inst), minValue, maxValue)
-            piP%ITerm2(inst) = saturate(piP%ITerm2(inst), minValue, maxValue)
-            PIIController = PTerm + piP%ITerm(inst) + piP%ITerm2(inst)
-            PIIController = saturate(PIIController, minValue, maxValue)
-        
-            piP%ITermLast(inst) = piP%ITerm(inst)
-        END IF
-        inst = inst + 1
-        
+        REAL(8), INTENT(IN) :: error
+        REAL(8), INTENT(IN) :: error2
+        REAL(8), INTENT(IN) :: kp
+        REAL(8), INTENT(IN) :: ki
+        REAL(8), INTENT(IN) :: ki2
+        REAL(8), INTENT(IN) :: minValue
+        REAL(8), INTENT(IN) :: maxValue
+        REAL(8), INTENT(IN) :: DT
+        REAL(8), INTENT(IN) :: I0
+        TYPE(PIPARAMS), INTENT(INOUT), TARGET :: piP
+        LOGICAL, INTENT(IN) :: reset
+        INTEGER(4), INTENT(INOUT) :: inst
+        REAL(8) :: PIIController_result
+        PIIController_result = REAL(piicontroller_c(error, error2, kp, ki, ki2, minValue, maxValue, DT, I0, C_LOC(piP), MERGE(1_C_INT, 0_C_INT, reset), inst), 8)
     END FUNCTION PIIController
 
         !-------------------------------------------------------------------------------------------------------------------------------

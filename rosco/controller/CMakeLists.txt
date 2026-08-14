@@ -118,6 +118,7 @@ set(SOURCES
     src/findline.cpp
     src/picontroller.cpp
     src/pidcontroller.cpp
+    src/piicontroller.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
