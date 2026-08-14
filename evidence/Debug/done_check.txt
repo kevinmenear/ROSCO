@@ -1,6 +1,6 @@
-# done_check.py Debug -- captured 2026-08-14T10:45:18Z by scripts/capture_done_check.sh
+# done_check.py Debug -- captured 2026-08-14T11:01:26Z by scripts/capture_done_check.sh
 
-Run against the committed state at a2f0489 ("RUNBOOK target layer: three entries from unit #31's second dispatch"), with a CLEAN tree, with stdout
+Run against the committed state at 81ca125 ("Debug: evidence, state and disposition record the ablation"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
