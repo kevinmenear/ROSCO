@@ -38,13 +38,57 @@ cd "$ROOT"
 
 F=rosco/controller/src/ROSCO_Helpers.f90
 KEEP=$(mktemp); cp "$F" "$KEEP"
+
+# THE EDIT MUST BE VISIBLE INSIDE THE CONTAINER BEFORE ANYTHING IS BUILT, and
+# this is not a precaution -- it is a repair. On 2026-08-14 this script's own
+# revert-verification read `1552 checked, 9 failed` with the source PROVABLY
+# reverted (`grep '2 - vit_j_Words'` empty) and the object a second OLDER than
+# the source it was supposed to be built from:
+#
+#   rosco/controller/src/ROSCO_Helpers.f90        23:34:47.715
+#   build/.../ROSCO_Helpers.f90.o                 23:34:46.732
+#
+# `make` stat'd the file while the bind mount still showed the pre-revert
+# content, called it up to date, and the mount caught up afterwards. So the
+# green that certifies the red test measured the PERTURBED build and reported
+# the red test's own failure count -- a red test whose revert is silently a
+# no-op cannot certify anything.
+#
+# It surfaced only once the cycle got fast: the whole perturb-build-revert-build
+# now runs in about three seconds, which is inside the window the race needs.
+# The countermeasure is the one `run_harness_stub.sh` already uses for the same
+# hazard one file over (unit #23) -- hash the file FROM INSIDE THE CONTAINER and
+# do not build until it agrees.
+verify_seen() {           # $1 = the content that must be visible in-container
+    local want got
+    want=$(md5 -q "$1")
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+        got=$(docker exec vit-dev bash -lc "md5sum /workspace/ROSCO-r2/$F | cut -d' ' -f1")
+        # TOUCHED FROM INSIDE THE CONTAINER once the content agrees, and the
+        # touch is the half that makes the rebuild DETERMINISTIC rather than
+        # merely likely. The hash says the content arrived; it says nothing
+        # about the mtime `make` compared against, and the failure this guard
+        # was written for was an object stamped a second BEFORE the source it
+        # was supposed to be built from. A source that is unambiguously newer
+        # than its object cannot be skipped.
+        [ "$want" = "$got" ] && {
+            docker exec vit-dev bash -lc "touch /workspace/ROSCO-r2/$F"
+            echo "  container sees $got (and the source is now newer than its object)"
+            return 0; }
+        sleep 1
+    done
+    echo "run_wrapper_redtest: the container still sees $got, not $want" >&2
+    return 1
+}
 rebuild() {
     docker exec vit-dev bash -lc \
         "cd /workspace/ROSCO-r2/rosco/controller/build && cmake --build . -j8 > /dev/null \
          && cp libdiscon.so /workspace/ROSCO-r2/rosco/lib/libdiscon.so"
 }
 restore() {
-    cp "$KEEP" "$F"; rm -f "$KEEP"
+    cp "$KEEP" "$F"
+    verify_seen "$KEEP"
+    rm -f "$KEEP"
     rebuild
     echo "reverted and rebuilt"
 }
@@ -82,6 +126,11 @@ print(f"  untouched occurrences elsewhere: {after}  (expected {total - 1})")
 assert after == total - 1
 PY
 
+# The same check on the way IN, and this direction is the more dangerous one: a
+# perturbation the container has not seen yet builds the ORIGINAL and reports a
+# red test that stayed green -- which reads as "the layer is blind" rather than
+# as "the edit did not arrive".
+verify_seen "$F"
 rebuild
 echo "--- perturbed build in place; running the post-integration harness"
 bash scripts/harness.sh ChkParseData ROSCO_Helpers chkparsedata "$F" --post-integration \
