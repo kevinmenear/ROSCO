@@ -1,0 +1,122 @@
+{
+ "unit": "ChkParseData",
+ "against": "translation",
+ "checked": 1284,
+ "failed": 50,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    4 varied extent(s) at [3, 4, 5, 6] and [3, 4, 5, 6]; 1 FIXED by the type at [2] -- not varied, NO index parameter identified, array elements distinct",
+  "  N/A      R2_flag_values             no enumerated-value parameter -- no branch this rule can reach",
+  "  applied  R6_reference_literals      82 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 384 character value(s) from a corpus of 24 (the reference's own character literals and their collating neighbours) across 4 string(s), each at length(s) [1, 2, 6, 11] and in the mixed / padded / all-blank / leading-blank shapes, plus 600 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  N/A      R3_no_dead_signal          no real parameter",
+  "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 5 out-parameter(s): ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg"
+ ],
+ "mismatches": [
+  {
+   "case": 32,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 33,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 34,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 68,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 69,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 70,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 154,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 155,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 156,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 240,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 241,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 242,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 326,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 327,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 328,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  },
+  {
+   "case": 360,
+   "output": "ErrVar.ErrStat",
+   "ref": "00000000",
+   "got": "01000000"
+  }
+ ],
+ "loop_rev": "a1d76b0-nogit",
+ "vit_rev": "f4a711d-nogit",
+ "red_test": {
+  "perturbation": "PROBE: ErrStat incremented iff Words(2) is the expected name; the failure count is that number",
+  "result": "50 of 1284 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}

@@ -152,6 +152,8 @@ container before building:
 | arm 3 reporting `TRIM(Words(1))` where the reference reports `TRIM(ExpVarName)` | **1230** |
 | the `ErrMsg` staging tail blank-filled instead of cleared to NUL | **1282** |
 | the reference's SILENT arm made to write `aviFAIL = -7` | **2** |
+| *(probe)* `ErrStat` bumped where `Words(1) != Words(2)` | **990** |
+| *(probe)* `ErrStat` bumped where `Words(2)` IS the expected name | **50** |
 | **the `CHARACTER(20)` truncation removed** | **0** |
 
 **The partition closes and every arm is counted.** `52 + 1230 = 1282`, which is
@@ -183,6 +185,42 @@ the boundary, so no case in this corpus reaches a 21st character at all. Three
 of the four undeclared mutation survivors are the same gap seen from the other
 side (§4). The defect is caught **statically** by VIT's `narrowing-local` check
 and **dynamically by nothing**, which is a sharper statement than "untested".
+
+## 3b. C6 — the wrapper red test moves 6, and the number is arithmetic
+
+The post-integration red test transposes the two words in the SHIPPED wrapper
+(§6) and fails **6 of 1284**. I first explained that in a commit message
+(`57b2f37`) from an argument — "R6 tiles one string body across every element,
+so Words(1) == Words(2) in almost every case" — and **the argument is refuted**.
+A probe that increments the never-written `ErrVar%ErrStat` when the two elements
+differ fails **990 of 1284**: the corpus separates them in most cases. Unit #27's
+rule, walked into again: do not explain a count, compute it. The wrong claim is
+left standing in the git log beside this (C12).
+
+What is actually true takes one source-level fact and one more count:
+
+* **Arm 3 is invisible to a transposition by construction, not by corpus.** Its
+  reached-ness (`neither word matches`) is symmetric in the two words, and its
+  output names `TRIM(ExpVarName)`, `FileName` and `FileLineNum` — never `Words`.
+  So all **1230** arm-3 cases are identical under the swap whatever the corpus
+  does. The visible set is a subset of arm 1 ∪ arm 2, which is **54** cases.
+* **Of those 54, 6 move**, and the split comes from a second probe: `Words(2)`
+  is the expected name in **50** cases.
+
+```
+  Words(2) matches                                      50
+  of which arm 2 (Words(1) missed, so arm 2 ran)         2   <- measured, §3
+  so arm-1 cases where Words(2) ALSO matches            48
+  arm 1 total                                           52   <- measured, §3
+  so arm-1 cases where Words(2) does NOT match           4
+  transposition-visible = 4 (leave arm 1) + 2 (arm 2 -> arm 1) = 6
+```
+
+Six, exactly, from four independently measured counts and no argument about the
+generator. `harness.distinct-words-probe.json` and
+`harness.words2-matches-probe.json` are the two probes; both use `ErrVar%ErrStat`,
+which R4 compares and the reference never writes, so each probe's failure count
+IS the quantity it asks for.
 
 ## 4. C6 — the mutation score, and what the first sweep bought
 
@@ -289,6 +327,10 @@ chkparsedata.sibling-message-stub.cpp  arm 3 reports Words(1), not ExpVarName
 chkparsedata.errmsg-blank-fill-stub.cpp the ErrMsg tail blank-filled, not NUL
 chkparsedata.arm2-writes-stub.cpp      the silent arm made to write
 chkparsedata.no-truncation-stub.cpp    the CHARACTER(20) locals widened
-harness.*-stub.json                    the seven red-test artifacts
+chkparsedata.distinct-words-probe.cpp  counts cases with Words(1) != Words(2)
+chkparsedata.words2-matches-probe.cpp  counts cases where Words(2) is the name
+harness.*-stub.json / *-probe.json     the seven red tests and the two probes
+run_wrapper_redtest.sh                 perturb the wrapper, prove red, revert, prove green
+gate.control-getwords-perturbed-MOVES.json  the gate control, same build
 coverage_deadness.py / .txt            the five call sites and the guard beside site 4
 ```
