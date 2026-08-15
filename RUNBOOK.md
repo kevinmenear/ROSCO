@@ -358,6 +358,93 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A GENERATED ARTIFACT WHOSE COMMENT STATES A PRECONDITION IS AN ARTIFACT
+  NOTHING CHECKS THAT PRECONDITION FOR.** Unit #45, and it cost the dispatch
+  about forty minutes before it was even a hypothesis.
+
+  ```
+  ! Kernel stash: pointer to original Fortran type, set by wrapper before calling C++.
+  TYPE(ErrorVariables), POINTER, SAVE :: vit_original_errorvariables => NULL()
+  ```
+
+  The differential harness calls the translation DIRECTLY -- there is no
+  wrapper, so nothing sets it, and the generated `interp1d_c` bridge
+  dereferences NULL on case 0. The failure gives you NOTHING: the harness prints
+  its JSON after the loop, so a SIGSEGV produces an empty stdout and
+  `harness produced no JSON` -- which reads as a build or emitter problem.
+
+  ```
+  ./test interp2d_cases.bin              Segmentation fault (core dumped)  rc 139
+  "CASE %d A" before each call           the C++ side, case 0
+  "P3b gathered 3: ..." in the unit      past the row gather
+  (nothing after)                        inside interp1d_c
+  WRITE(0,*) ASSOCIATED(<the stash>)     F
+  ```
+
+  Three instrumented rebuilds to narrow it and one `WRITE` to settle it, and the
+  last one is the only one that named a cause. **Ask the generated bridge what
+  it assumes before bisecting the call chain** -- `grep -n 'POINTER, SAVE'` on
+  the view module is five seconds. And note the half-fix: pointing the stash at
+  a local made the run COMPLETE and left `123 of 1117` cases disagreeing, all on
+  the deferred-length CHARACTER field, because both converters move it through a
+  module staging buffer only a wrapper fills. A run that completes is not a run
+  that is right.
+
+- **A STUB CAN CHANGE THE HARNESS'S OWN LINK, BECAUSE THE CALLEE BRIDGE IS
+  DECIDED BY SCANNING THE TRANSLATION'S TEXT.** Unit #45.
+  `vit/test_validate.generate_callee_bridges` finds callees with
+  `_CALLEE_CALL.finditer(cpp_text)` -- a regex over the .cpp -- and the Makefile
+  compiles and links `<stem>_callees.o` only `if callee_bridge`. A no-op stub
+  calls nothing, so the bridge is not generated, and the link then dies on
+  symbols OTHER integrated units need:
+
+  ```
+  pitchsaturation.cpp:(.text+0x48): undefined reference to `interp1d_c'
+  powercontrolsetpoints.cpp:(.text+0xbf0): undefined reference to `interp1d_c'
+  ```
+
+  because `harness.sh` has just dropped `interp1d.cpp.o` from LIBS in favour of
+  the bridge that no longer exists. **A red test that fails to BUILD is not a
+  red test** (unit #42, one shape over). The repair is to keep a `<callee>_c(`
+  in the stub behind a guard no case satisfies, and to say in the stub WHY it is
+  there -- otherwise the next reader deletes it as dead code.
+
+- **`vit translate` OVERWRITES THE TRANSLATION, AND IT IS ALSO THE ONLY WAY TO
+  REGENERATE A VIEW POPULATOR.** Unit #45. `vit/cli.py` writes
+  `vit_<type>_view.f90` only `if populator_path.exists(): continue` -- so
+  regenerating one means DELETING it and re-running `vit translate`, which
+  rewrites `translations/<Module>/<stem>.cpp` from the scaffold in the same
+  command. Copy the .cpp out first and put it back, every time:
+
+  ```
+  cp translations/<M>/<u>.cpp /tmp/keep.cpp
+  rm rosco/controller/src/vit_<type>_view.f90
+  ... vit translate <Unit> ...
+  cp /tmp/keep.cpp translations/<M>/<u>.cpp
+  ```
+
+  And it regenerates ONLY the types the named unit uses: deleting all four view
+  modules and translating one unit leaves the other three DELETED. `git checkout`
+  them back and diff -- the restored ones must be byte-identical, which is also
+  the positive control that the generator change was additive.
+
+  **`restore_integrated.sh` restores these files from HEAD**, so a regenerated
+  view populator that is not committed is silently reverted by the next restore.
+
+- **RUN THE GATE IN THE BACKGROUND, NOT IN A FOREGROUND CALL WITH THE DEFAULT
+  TIMEOUT.** Unit #45. The full 27-scenario gate took **141 seconds** and the
+  red test **281**, but the first attempt was made with the Bash tool's DEFAULT
+  120-second timeout and was killed at 2 minutes -- SIGTERM, exit 143, with
+  `Examples/DISCON_*.IN` left modified because gate.py's own restore never ran.
+  Nothing was orphaned and `git checkout -- Examples/` put it right, but the run
+  was wasted.
+
+  Two numbers, not one: `run_if_time_remains.sh` guards the DISPATCH deadline
+  and the Bash tool's `timeout` guards the CALL. Set both. And a single-scenario
+  probe MISLEADS -- scenario 1 alone took 19 s, which extrapolates to 540 for 27
+  and is nearly four times the truth, because process startup dominates one
+  scenario and not twenty-seven.
+
 - **BEFORE ATTRIBUTING A RED RESULT TO THE TRANSLATION, PUT THE REFERENCE'S OWN
   BODY THROUGH THE SAME INSTRUMENT.** Unit #44, and it cost 71 seconds.
 
