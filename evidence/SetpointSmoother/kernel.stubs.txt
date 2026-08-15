@@ -1,0 +1,119 @@
+Kernel hand red tests -- SetpointSmoother (unit #40)
+kernel/SetpointSmoother, 62 cases, scenario 25, invocations 1-20 / 8000-8020 / 15900-15920
+The shipped translation passes 62/62 with all 14,508 field rows IDENTICAL.
+
+THIS FILE IS TRUNCATED AT STUB 3 AND THE RUN LEFT A MUTANT IN THE TRANSLATION.
+The dispatch that produced it was killed by its timeout partway through stub 3,
+between `run_stub`'s edit of the .cpp and the `cp "$SHIPPED" "$CPP"` that ends
+the function. So stub 3's RESULT line is empty -- not a pass, not a fail, the
+sweep never got its verdict -- and `R_Total = 1.0;` was still sitting in
+translations/ControllerBlocks/setpointsmoother.cpp when the next dispatch opened
+the tree. It was found by `git diff`, not by anything that was watching for it.
+Stubs 4 and 5 never ran.
+
+`run_kernel_stubs.sh` has the same defect `mutate_guarded.sh` exists to cover:
+it edits the shipped translation in place and restores it only on completion.
+A killed run does not restore. What is recorded below is therefore stubs 1 and
+2 ONLY, and they are real -- stub 3's absence is the record of the kill.
+
+==================================================================
+STUB      no-op
+ASKS      can this kernel see the unit at all?
+EXPECT    FAIL -- SS_DelOmegaF is written on every one of the 62 cases
+DIFF from the shipped translation:
+    @@ -32,40 +32,5 @@
+     #include "vit_types.h"
+     
+     void SetpointSmoother(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst) {
+    -    // REAL(DbKi) :: DelOmega   ! Reference generator speed shift, rad/s.
+    -    // REAL(DbKi) :: R_Total    ! Total power rating command
+    -    double DelOmega;
+    -    double R_Total;
+    -
+    -    // ! ------ Setpoint Smoothing ------
+    -    // IF ( CntrPar%SS_Mode == 1) THEN
+    -    if (CntrPar->SS_Mode == 1) {
+    -        // ! Find setpoint shift amount
+    -        // R_Total = LocalVar%PRC_R_Speed * LocalVar%PRC_R_Torque * LocalVar%PRC_R_Pitch
+    -        R_Total = LocalVar->PRC_R_Speed * LocalVar->PRC_R_Torque * LocalVar->PRC_R_Pitch;
+    -
+    -        // DelOmega = ((LocalVar%BlPitchCMeas - LocalVar%PC_MinPit)/0.524) * CntrPar%SS_VSGain
+    -        //          - ((CntrPar%VS_RtPwr * R_Total - LocalVar%VS_LastGenPwr))/CntrPar%VS_RtPwr
+    -        //            * CntrPar%SS_PCGain   ! Normalize to 30 degrees for now
+    -        DelOmega = ((LocalVar->BlPitchCMeas - LocalVar->PC_MinPit) / 0.524) * CntrPar->SS_VSGain
+    -                   - ((CntrPar->VS_RtPwr * R_Total - LocalVar->VS_LastGenPwr) / CntrPar->VS_RtPwr)
+    -                         * CntrPar->SS_PCGain;
+    -
+    -        // DelOmega = DelOmega * CntrPar%PC_RefSpd
+    -        DelOmega = DelOmega * CntrPar->PC_RefSpd;
+    -
+    -        // ! Filter
+    -        // LocalVar%SS_DelOmegaF = LPFilter(DelOmega, LocalVar%DT, CntrPar%F_SSCornerFreq,
+    -        //                                  LocalVar%FP, LocalVar%iStatus, LocalVar%restart,
+    -        //                                  objInst%instLPF)
+    -        //
+    -        // `InitialValue` is OPTIONAL in the reference and is NOT passed here,
+    -        // so the bridge's presence flag is 0 and its value is unread.
+    -        LocalVar->SS_DelOmegaF =
+    -            lpfilter_c(DelOmega, LocalVar->DT, CntrPar->F_SSCornerFreq, &LocalVar->FP,
+    -                       LocalVar->iStatus, LocalVar->restart ? 1 : 0, &objInst->instLPF, 0, 0.0);
+    -    } else {
+    -        // LocalVar%SS_DelOmegaF = 0 ! No setpoint smoothing
+    -        LocalVar->SS_DelOmegaF = 0;
+    -    }
+    +    (void)LocalVar; (void)CntrPar; (void)objInst;
+     }
+RESULT:
+    ✗ VERIFICATION FAILED: 0/62 passed
+      FAILED: Verification FAILED withSetpointSmoother.0.0.1
+      FAILED: Verification FAILED withSetpointSmoother.0.0.2
+      FAILED: Verification FAILED withSetpointSmoother.0.0.3
+      FAILED: Verification FAILED withSetpointSmoother.0.0.4
+      FAILED: Verification FAILED withSetpointSmoother.0.0.5
+      FAILED: Verification FAILED withSetpointSmoother.0.0.6
+      FAILED: Verification FAILED withSetpointSmoother.0.0.7
+      FAILED: Verification FAILED withSetpointSmoother.0.0.8
+      FAILED: Verification FAILED withSetpointSmoother.0.0.9
+      FAILED: Verification FAILED withSetpointSmoother.0.0.10
+      FAILED: Verification FAILED withSetpointSmoother.0.0.11
+      FAILED: Verification FAILED withSetpointSmoother.0.0.12
+      FAILED: Verification FAILED withSetpointSmoother.0.0.13
+      FAILED: Verification FAILED withSetpointSmoother.0.0.14
+      FAILED: Verification FAILED withSetpointSmoother.0.0.15
+      FAILED: Verification FAILED withSetpointSmoother.0.0.16
+      FAILED: Verification FAILED withSetpointSmoother.0.0.17
+      FAILED: Verification FAILED withSetpointSmoother.0.0.18
+      FAILED: Verification FAILED withSetpointSmoother.0.0.19
+
+==================================================================
+STUB      else-arm 0 -> 12345.0
+ASKS      does any captured case take the SS_Mode /= 1 arm?
+EXPECT    PASS -- coverage says line :514 has hits in scenario 23 ALONE, and this kernel is scenario 25
+DIFF from the shipped translation:
+    @@ -66,6 +66,6 @@
+                            LocalVar->iStatus, LocalVar->restart ? 1 : 0, &objInst->instLPF, 0, 0.0);
+         } else {
+             // LocalVar%SS_DelOmegaF = 0 ! No setpoint smoothing
+    -        LocalVar->SS_DelOmegaF = 0;
+    +        LocalVar->SS_DelOmegaF = 12345.0;
+         }
+     }
+RESULT:
+    ✓ VERIFICATION PASSED: 62/62 passed
+    ✗ SetpointSmoother: NON_DISCRIMINATING — 62 case(s) compared IDENTICAL, and the kernel did not report a mismatch when the translation was deliberately changed. The pass is not evidence.
+
+==================================================================
+STUB      R_Total -> 1.0
+ASKS      was scenario 25 the right choice? PRC_R_Speed is 0.9 there and 1.0 in every other scenario
+EXPECT    FAIL -- and on any other scenario this stub would have passed
+DIFF from the shipped translation:
+    @@ -42,7 +42,7 @@
+         if (CntrPar->SS_Mode == 1) {
+             // ! Find setpoint shift amount
+             // R_Total = LocalVar%PRC_R_Speed * LocalVar%PRC_R_Torque * LocalVar%PRC_R_Pitch
+    -        R_Total = LocalVar->PRC_R_Speed * LocalVar->PRC_R_Torque * LocalVar->PRC_R_Pitch;
+    +        R_Total = 1.0;
+     
+             // DelOmega = ((LocalVar%BlPitchCMeas - LocalVar%PC_MinPit)/0.524) * CntrPar%SS_VSGain
+             //          - ((CntrPar%VS_RtPwr * R_Total - LocalVar%VS_LastGenPwr))/CntrPar%VS_RtPwr
+RESULT:
