@@ -1,0 +1,70 @@
+# Kernel replay: the C++ against the reference's own body, on the same 104 cases
+#
+# Produced by evidence/YawRateControl/run_fortran_control_kernel.sh, which is
+# committed beside this file. Read that script's header for why the control
+# exists; this file is its result.
+#
+# WHAT THIS SAYS, in one line: the kernel reports 102 of 104 for the C++ AND
+# 102 of 104 for the original Fortran, failing THE SAME TWO CASES with THE SAME
+# NUMBERS, and the two runs' full 97,568-line verbose outputs are BYTE-IDENTICAL.
+# The reference cannot pass its own kernel here. The two failures are the
+# instrument's and not the translation's.
+#
+# WHY THE KERNEL CANNOT REPLAY THIS UNIT. `kernel_driver.f90` runs each case
+# THREE times -- evalstage, warmupstage, mainstage -- re-reading the captured
+# in-state before each, and verifies the THIRD. The in-state carries avrSWAP and
+# the five derived types. It does NOT carry
+#
+#     INTEGER, SAVE :: YawState
+#
+# which is a subroutine local, so nothing resets it between the three calls. On
+# 102 of the 104 cases that costs nothing, because this unit is idempotent
+# there: inside a persist arm the second and third calls recompute the same
+# `+/-Y_Rate`, and at a STOP edge the re-entry lands in the `YawState == 0` arm
+# with an error too small to re-trigger, so the answer is 0.0 either way.
+#
+# The two cases where it is NOT idempotent are exactly the two START edges:
+#
+#   case  188   YawState 0 -> 1, and YawRateCom is still 0.0 on that call
+#   case 1189   YawState 0 -> -1, and YawRateCom is still 0.0 on that call
+#
+# The first call makes the transition; the second and third then find the state
+# machine already yawing and command +/-Y_Rate. The captured reference is 0.0,
+# from a program in which the invocation happened once.
+#
+# So the two most valuable cases in a corpus aimed at four state-machine edges
+# are the two the kernel cannot score. THE OTHER TWO EDGES IT DOES SCORE -- the
+# stops at case 1045 and case 2045 pass, and they pass for a reason (idempotence
+# by accident) rather than because the kernel restored anything.
+#
+# `vit verify` PRINTED A GREEN OVER THIS. Its verdict line was
+# `VERIFICATION PASSED: 104/104 passed` against a kernel whose own last words
+# were `FAILED verification` and `Number of verification-passed cases : 102`.
+# That is recorded as a defect in DECISIONS.md with this artifact as the wrong
+# one (C12), and it was recorded before anything was done about it.
+#
+# The run is reproduced below verbatim.
+
+gfortran -O2 -ffree-form -ffree-line-length-none -fvect-cost-model=unlimited -fdefault-real-8 -fdefault-double-8 -ffp-contract=off -o kernel.exe vit_bridge_wrap_180.o vit_bridge_lpfilter.o vit_bridge_interp1d.o vit_errorvariables_view.o vit_localvariables_view.o vit_controlparameters_view.o yawratecontrol.o DISCON.o Functions.o Constants.o ExtControl.o SysIFL.o ROSCO_Types.o Controllers.o ControllerBlocks.o Filters.o kernel_driver.o kgen_utils.o tprof_mod.o -lstdc++ -lmvec -lm
+--- the C++ kernel VIT built ---
+30048: Verification FAILED withYawRateControl.0.0.188
+69488: Verification FAILED withYawRateControl.0.0.1189
+    Total number of verification cases  :   104
+    Number of verification-passed cases :   102
+    kernel: YawRateControl: FAILED verification
+
+--- the same kernel with the ORIGINAL FORTRAN BODY ---
+30048: Verification FAILED withYawRateControl.0.0.188
+69488: Verification FAILED withYawRateControl.0.0.1189
+    Total number of verification cases  :   104
+    Number of verification-passed cases :   102
+    kernel: YawRateControl: FAILED verification
+
+--- the two mismatching field rows, reference body ---
+ [VIT_FIELD] yawratecom | OUT_TOL |   0.49847328176309996       |    0.0000000000000000       |   0.49847328176309996     
+ [VIT_FIELD] yawratecom | OUT_TOL |  -0.49847328176309996       |    0.0000000000000000       |   0.49847328176309996     
+
+--- full verbose output, C++ against reference body ---
+    (timing lines dropped: they are wall clock, not a result)
+    lines compared : 97568
+    lines differing: 0

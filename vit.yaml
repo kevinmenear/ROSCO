@@ -911,6 +911,22 @@ translations:
       \ compute. The kernel's discriminating power is therefore UNMEASURED for this\
       \ function"
     verification: simulation
+  # RE-MERGED BY HAND, and it has to be. `vit verify` rewrites this file with
+  # `yaml.dump`, which drops every comment in it -- 735 of 747 lines on this
+  # run. The block below is the ONLY thing that run added; it was taken from
+  # the rewritten file and pasted into the committed one, rather than the
+  # rewritten file being committed. Same shape as the entries above it.
+  YawRateControl:
+    status: non_discriminating
+    cases_passed: 104
+    cpp_file: translations/Controllers/yawratecontrol.cpp
+    kernel_dir: kernel/YawRateControl
+    red_test: not_constructed
+    red_test_detail: "NOT CONSTRUCTED — no by-value floating-point parameter\
+      \ and no floating-point result: every input arrives behind a pointer or inside\
+      \ a derived type, and perturbing one of those could change what BOTH implementations\
+      \ compute. The kernel's discriminating power is therefore UNMEASURED for this\
+      \ function"
 types:
   ControlParameters:
     strategy: view
