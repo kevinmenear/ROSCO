@@ -1,0 +1,14 @@
+# evidence/interp2d/equivalence_probe.txt -- built and run in vit-dev with
+#   g++ -O2 -ffp-contract=off -o eqprobe equivalence_probe.cpp
+# exit 0 iff no consumer difference. Captured 2026-08-15.
+
+7986e5f9 / 1235716b / b9162232 / acb38635  reduction `<`/`>` against `<=`/`>=`
+  tuples swept (lengths 0..4 over 16 values): 69905
+  tuples whose stored min/max BITS differ:    1666
+  (tuple, query) pairs swept:                 1118480
+  (tuple, query) pairs whose ARM differs:     0
+
+  the arm is the whole consumer: xData_min, xData_max, yData_min
+  and yData_max are each read at exactly one site in
+  translations/Functions/interp2d.cpp, and all four sites are in
+  the two if/else-if chains this probe reproduces.

@@ -1206,8 +1206,59 @@ CntrPar_OL_StructControl_cols = { same_as = "CntrPar_OL_Breakpoints_n" }
 #
 # Neither loss is a property of this generator: both are consequences of a
 # reference that reports a malformed table and then subscripts with it.
+#
+# ================== SECOND DISPATCH, 2026-08-15 ==========================
+#
+# EVERYTHING ABOVE IS KEPT AND THE LAST TWO BULLETS ARE WRONG, AND THE SWEEP IS
+# WHAT SAYS SO. `ordered_only` was one shape too wide. It excluded every body
+# that is not strictly ascending; what this reference cannot survive is an
+# INVERSION, and the ADJACENT EQUAL PAIR and the CONSTANT ARRAY are not
+# inversions.
+#
+# THE ARGUMENT, and it is about the reference's own guard rather than about the
+# bodies. The corner search runs only in the ELSE arm of
+#
+#     IF (xq <= MINVAL(xData) .OR. ieee_is_nan(xq)) ... ELSEIF (xq >= MAXVAL(xData)) ... ELSE
+#
+# so it runs only when `xq > MINVAL(xData)`. On a NON-DECREASING body
+# `MINVAL(xData)` IS `xData(1)`, so the first iteration tests `xq == xData(1)`
+# (false) and `xq < xData(1)` (false), falls through, and `jj` is never 1 --
+# therefore `j = jj - 1` is never 0 and `zData(i, 0)` cannot arise. An INVERTED
+# body is exactly the case that breaks the identity: its minimum is not its
+# first element, and a query between the two subscripts one column early. The
+# 6 out-of-bounds reads the census measured are all of that shape.
+#
+# So the two entries become `nondecreasing_only`, which is the same exclusion
+# with the line drawn where the reference draws it. WHAT COMES BACK:
+#
+#   * the ADJACENT EQUAL PAIR at the FIRST, an INTERIOR and the LAST position,
+#     and the CONSTANT array, at every step scale -- the bullet above says this
+#     is "the only input on which `<= 0` and `< 0` give different answers", and
+#     it is now in the corpus.
+#   * R10 pins `xq` to `MINVAL(xData)`/`MAXVAL(xData)` over those same bodies
+#     rather than over the reverse, which is what reaches an extremum that is
+#     NOT UNIQUE: `xq == MINVAL` on a CONSTANT table separates `xq <= MINVAL`
+#     from `xq < MINVAL` (the first returns column 1, the second falls to the
+#     `>= MAXVAL` arm and returns column SIZE(xData)), and `xq == MAXVAL` on a
+#     table whose maximum REPEATS separates `xq >= MAXVAL` from `xq > MAXVAL`
+#     (the first returns the LAST column, the second searches and stops at the
+#     FIRST column holding it).
+#
+# WHAT IS STILL GIVEN UP, unchanged and now the whole of the cost:
+#
+#   * the reversed body and the three pair-inverted bodies. So `MINVAL(xData)`
+#     written as `xData(1)` still has no dynamic witness -- on every body this
+#     corpus now contains, the two are the same number. `vit check`'s
+#     `minval-endpoints` remains the static witness.
+#   * and with them, any case in which `xData(1)` is not the minimum. That is
+#     the input which separates the corner search's `DO j = 1, SIZE(xData)`
+#     from a search starting at 2, and it is why two of this unit's survivors
+#     have no case: see evidence/interp2d/mutation.census.txt, group 5.
+#
+# Neither loss is a property of this generator: both are consequences of a
+# reference that reports a malformed table and then subscripts with it.
 [interp2d]
 n_zData_cols = { same_as = "n_xData" }
 n_zData_rows = { same_as = "n_yData" }
-xData = { ordered_only = "the reference reads zData(i, 0) on a reversed table -- see above" }
-yData = { ordered_only = "the reference reads zData(0, j) on a reversed table -- see above" }
+xData = { nondecreasing_only = "the reference reads zData(i, 0) on an INVERTED table and cannot on a tied one, because its search runs only where xq > MINVAL(xData) and a non-decreasing body has MINVAL(xData) == xData(1) -- see above" }
+yData = { nondecreasing_only = "the reference reads zData(0, j) on an INVERTED table and cannot on a tied one, for the same reason one dimension over -- see above" }

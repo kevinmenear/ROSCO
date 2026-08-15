@@ -1,0 +1,297 @@
+{
+ "unit": "interp2d",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "index_offset",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "operator_population": {
+  "compare_op": 27,
+  "arith_op": 40,
+  "swap_operands": 40,
+  "index_offset": 2,
+  "const_tweak": 40,
+  "negate_cond": 19
+ },
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutants": 166,
+ "equivalent_declared": 0,
+ "nocompile": 2,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0119,
+ "nocompile_refused": false,
+ "total": 168,
+ "killed": 134,
+ "survived": 32,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.8072,
+ "loop_rev": "a523b00-nogit",
+ "vit_rev": "0ee71a7-nogit",
+ "merged_from": [
+  {
+   "part": "mutation/interp2d.clean.arith.json",
+   "operators_filter": [
+    "arith_op"
+   ],
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 40,
+   "survived": 0,
+   "score": 1.0
+  },
+  {
+   "part": "mutation/interp2d.clean.swap.json",
+   "operators_filter": [
+    "swap_operands"
+   ],
+   "total": 40,
+   "mutants": 38,
+   "nocompile": 2,
+   "killed": 36,
+   "survived": 2,
+   "score": 0.9474
+  },
+  {
+   "part": "mutation/interp2d.clean.const.json",
+   "operators_filter": [
+    "const_tweak"
+   ],
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 26,
+   "survived": 14,
+   "score": 0.65
+  },
+  {
+   "part": "mutation/interp2d.clean.cond.json",
+   "operators_filter": [
+    "compare_op",
+    "index_offset",
+    "negate_cond"
+   ],
+   "total": 48,
+   "mutants": 48,
+   "nocompile": 0,
+   "killed": 32,
+   "survived": 16,
+   "score": 0.6667
+  }
+ ],
+ "merged_why": "split by operator so each part blocks inside the 600s foreground ceiling; four parts, one corpus, one revision",
+ "merged_by": "scripts/_mutation_merge.py",
+ "survivors": [
+  {
+   "id": "8a36fcb9",
+   "operator": "swap_operands",
+   "before": "n_xData - 1",
+   "after": "1 - n_xData"
+  },
+  {
+   "id": "6ed39951",
+   "operator": "swap_operands",
+   "before": "n_yData - 1",
+   "after": "1 - n_yData"
+  },
+  {
+   "id": "c2c4e0b7",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "922581aa",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "39350cd3",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "bd0aa005",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "34ae41de",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "bc897a8f",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "03a9c7fb",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "2d05fc4d",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "e53b5ccd",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "a198c531",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "24ee3be4",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "181dc6e2",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "5c2746a0",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "a155c90c",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "98926651",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "f0949202",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "267b4c09",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "209cc231",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "31525826",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "3cdf7de6",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "7986e5f9",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "1235716b",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "b9162232",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "acb38635",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "52e827a0",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "a2f7bf52",
+   "operator": "compare_op",
+   "before": ">=",
+   "after": ">"
+  },
+  {
+   "id": "98531180",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "67b108b6",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "4884fa6a",
+   "operator": "compare_op",
+   "before": ">=",
+   "after": ">"
+  },
+  {
+   "id": "143857a4",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  }
+ ]
+}
