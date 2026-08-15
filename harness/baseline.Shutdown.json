@@ -81,12 +81,16 @@
   "for. Each state below states the equality and leaves everything else",
   "admissible.",
   "",
-  "WHAT IS STILL NOT REACHED, so that a 1.000 does not read as more than it is:",
-  "`SD_BlPitchF > SD_MaxPit` and `SD_GenSpeedF > SD_MaxGenSpd` compare a value",
-  "this unit COMPUTES against one it is given. The computed side is an LPFilter",
-  "output, so no input names it and no state here can put the pair at equality --",
-  "the same shape the generator reports as a REDUCTION CROSSING for a reduction.",
-  "The two thresholds are reachable on either side, and only the boundary is not."
+  "TWO OF THE THRESHOLD BOUNDARIES ARE REACHED AFTER ALL, AND THE ROUTE IS WORTH",
+  "KEEPING. `SD_GenSpeedF > SD_MaxGenSpd` and `ABS(SD_NacVaneF) > SD_MaxYawError`",
+  "compare a value this unit COMPUTES against one it is given, so no ladder over",
+  "an input name can put them at equality -- R6's relational-pair rule needs both",
+  "sides to be inputs. But LPFilter's INITIALISATION arm returns its input",
+  "bit-exactly when CornerFreq is 0 (the coefficients become 2, -2, 0, 0 and the",
+  "expression is (1/2)*(2x), both exact), so setting the corner frequency to zero",
+  "with iStatus = 0 turns the computed side back into an input. The last two",
+  "states use that. `SD_BlPitchF > SD_MaxPit` is left where it is: the same route",
+  "applies and the mutant at that site is already killed."
  ],
  "states": [
   {
@@ -754,6 +758,132 @@
     "CntrPar_SD_PitchCornerFreq": 1.0,
     "CntrPar_SD_GenSpdCornerFreq": 0.5,
     "CntrPar_SD_YawErrorCornerFreq": 0.17952,
+    "CntrPar_PC_MaxRat": 0.1745,
+    "CntrPar_VS_MaxRat": 15000.0,
+    "CntrPar_SD_MaxPitchRate": {
+     "ramp": [
+      0.05,
+      0.011
+     ]
+    },
+    "CntrPar_SD_MaxTorqueRate": {
+     "ramp": [
+      1000.0,
+      130.0
+     ]
+    },
+    "CntrPar_SD_StagePitch": {
+     "ramp": [
+      0.1,
+      0.09
+     ]
+    },
+    "CntrPar_SD_StageTime": {
+     "ramp": [
+      200.0,
+      50.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "genspeed_threshold_at_equality",
+   "why": "SD_GenSpeedF == SD_MaxGenSpd TO THE BIT, which needs a trick because the left side is COMPUTED. With iStatus = 0 LPFilter takes its initialisation arm and returns 1/(2+c) * ( -(c-2)x + cx + cx ) with x the input and c = CornerFreq*DT; that is x in real arithmetic for any c and is x BIT-EXACTLY at c = 0, where the coefficients are 2, -2, 0, 0 and the expression collapses to (1/2)*(2x) -- both operations exact powers of two. So SD_GenSpdCornerFreq = 0 makes SD_GenSpeedF equal GenSpeed exactly, and SD_MaxGenSpd = GenSpeed puts `SD_GenSpeedF > SD_MaxGenSpd` on its boundary.",
+   "values": {
+    "ErrVar_aviFAIL": 0,
+    "LocalVar_iStatus": 0,
+    "LocalVar_restart": 0,
+    "LocalVar_Time": 400.0,
+    "LocalVar_DT": 0.0125,
+    "objInst_instLPF": 1,
+    "LocalVar_GenSpeed": 121.68,
+    "LocalVar_NacVane": 7.5,
+    "LocalVar_BlPitchCMeas": 0.35,
+    "LocalVar_SD_Trigger": 0,
+    "LocalVar_SD_Stage": 0,
+    "LocalVar_SD_StageStartTime": 100.0,
+    "LocalVar_SD_BlPitchF": 0.0,
+    "LocalVar_SD_GenSpeedF": 0.0,
+    "LocalVar_SD_NacVaneF": 0.0,
+    "LocalVar_SD_MaxPitchRate": 0.0,
+    "LocalVar_SD_MaxTorqueRate": 0.0,
+    "CntrPar_SD_Method": 1,
+    "CntrPar_SD_Stage_N": 2,
+    "CntrPar_SD_TimeActivate": 300.0,
+    "CntrPar_SD_Time": 350.0,
+    "CntrPar_SD_EnablePitch": 0,
+    "CntrPar_SD_EnableYawError": 0,
+    "CntrPar_SD_EnableGenSpeed": 1,
+    "CntrPar_SD_EnableTime": 0,
+    "CntrPar_SD_MaxPit": 0.3,
+    "CntrPar_SD_MaxYawError": 5.0,
+    "CntrPar_SD_MaxGenSpd": 121.68,
+    "CntrPar_SD_PitchCornerFreq": 1.0,
+    "CntrPar_SD_GenSpdCornerFreq": 0.0,
+    "CntrPar_SD_YawErrorCornerFreq": 0.17952,
+    "CntrPar_PC_MaxRat": 0.1745,
+    "CntrPar_VS_MaxRat": 15000.0,
+    "CntrPar_SD_MaxPitchRate": {
+     "ramp": [
+      0.05,
+      0.011
+     ]
+    },
+    "CntrPar_SD_MaxTorqueRate": {
+     "ramp": [
+      1000.0,
+      130.0
+     ]
+    },
+    "CntrPar_SD_StagePitch": {
+     "ramp": [
+      0.1,
+      0.09
+     ]
+    },
+    "CntrPar_SD_StageTime": {
+     "ramp": [
+      200.0,
+      50.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "yaw_threshold_at_equality",
+   "why": "ABS(SD_NacVaneF) == SD_MaxYawError to the bit, by the same route: SD_YawErrorCornerFreq = 0 with iStatus = 0 makes both vane filters return their inputs exactly, so with NacVane = 0 the components are cos(0) = 1 and sin(0) = 0, atan2(0, 1) is +0.0, and wrap_180(+0.0 * R2D) is +0.0. SD_MaxYawError = 0.0 then puts the predicate on its boundary: ABS(0) > 0 is FALSE and >= is TRUE.",
+   "values": {
+    "ErrVar_aviFAIL": 0,
+    "LocalVar_iStatus": 0,
+    "LocalVar_restart": 0,
+    "LocalVar_Time": 400.0,
+    "LocalVar_DT": 0.0125,
+    "objInst_instLPF": 1,
+    "LocalVar_GenSpeed": 121.68,
+    "LocalVar_NacVane": 0.0,
+    "LocalVar_BlPitchCMeas": 0.35,
+    "LocalVar_SD_Trigger": 0,
+    "LocalVar_SD_Stage": 0,
+    "LocalVar_SD_StageStartTime": 100.0,
+    "LocalVar_SD_BlPitchF": 0.0,
+    "LocalVar_SD_GenSpeedF": 0.0,
+    "LocalVar_SD_NacVaneF": 0.0,
+    "LocalVar_SD_MaxPitchRate": 0.0,
+    "LocalVar_SD_MaxTorqueRate": 0.0,
+    "CntrPar_SD_Method": 1,
+    "CntrPar_SD_Stage_N": 2,
+    "CntrPar_SD_TimeActivate": 300.0,
+    "CntrPar_SD_Time": 350.0,
+    "CntrPar_SD_EnablePitch": 0,
+    "CntrPar_SD_EnableYawError": 1,
+    "CntrPar_SD_EnableGenSpeed": 0,
+    "CntrPar_SD_EnableTime": 0,
+    "CntrPar_SD_MaxPit": 0.3,
+    "CntrPar_SD_MaxYawError": 0.0,
+    "CntrPar_SD_MaxGenSpd": 100.0,
+    "CntrPar_SD_PitchCornerFreq": 1.0,
+    "CntrPar_SD_GenSpdCornerFreq": 0.5,
+    "CntrPar_SD_YawErrorCornerFreq": 0.0,
     "CntrPar_PC_MaxRat": 0.1745,
     "CntrPar_VS_MaxRat": 15000.0,
     "CntrPar_SD_MaxPitchRate": {
