@@ -1,6 +1,6 @@
-# done_check.py ResController -- captured 2026-08-15T03:15:25Z by scripts/capture_done_check.sh
+# done_check.py ResController -- captured 2026-08-15T03:16:43Z by scripts/capture_done_check.sh
 
-Run against the committed state at 17703ed1 ("state: ResController integrated at 1.000 -- plan.json, STATUS.md, DECISIONS.md, RUNBOOK target layer"), with a CLEAN tree, with stdout
+Run against the committed state at 3dd74b9c ("ResController: the reset/restore pair round-trips bit-identically with the unit integrated"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
