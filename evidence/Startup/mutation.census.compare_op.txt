@@ -1,0 +1,33 @@
+run_if_time_remains: 13194s remain, 420s needed -- starting
+NOTE: operator filter ['compare_op'] -- scoring 20 of 106 mutants. The other 86 are NOT re-run here and this artifact says nothing about them; the unit's own mutation/<U>.json is where they were scored.
+20 mutant(s) from startup.cpp
+
+baseline: 7103 case(s), 0 failed, 7.8s; per-mutant watchdog 155s
+
+  [  1/20] compare_op       '==' -> '!='  killed (6547/7103 cases)
+  [  2/20] compare_op       '==' -> '!='  killed (430/7103 cases)
+  [  3/20] compare_op       '>' -> '>='  killed (1006/7103 cases)
+  [  4/20] compare_op       '==' -> '!='  killed (232/7103 cases)
+  [  5/20] compare_op       '<' -> '<='  SURVIVED
+  [  6/20] compare_op       '==' -> '!='  killed (604/7103 cases)
+  [  7/20] compare_op       '>=' -> '>'  killed (4/7103 cases)
+  [  8/20] compare_op       '>=' -> '>'  killed (314/7103 cases)
+  [  9/20] compare_op       '>=' -> '>'  killed (58/7103 cases)
+  [ 10/20] compare_op       '<=' -> '<'  killed (183/7103 cases)
+  [ 11/20] compare_op       '==' -> '!='  killed (6721/7103 cases)
+  [ 12/20] compare_op       '==' -> '!='  killed (6437/7103 cases)
+  [ 13/20] compare_op       '>=' -> '>'  SURVIVED
+  [ 14/20] compare_op       '<=' -> '<'  killed (16/7103 cases)
+  [ 15/20] compare_op       '==' -> '!='  killed (6064/7103 cases)
+  [ 16/20] compare_op       '==' -> '!='  killed (1220/7103 cases)
+  [ 17/20] compare_op       '==' -> '!='  killed (6253/7103 cases)
+  [ 18/20] compare_op       '>=' -> '>'  killed (2/7103 cases)
+  [ 19/20] compare_op       '<=' -> '<'  killed (17/7103 cases)
+  [ 20/20] compare_op       '<' -> '<='  killed (58/7103 cases)
+
+killed 18 of 20 BEHAVIOURAL scoreable (0 declared equivalent, 0 did not compile and are excluded)   score 0.900
+  SURVIVOR 9a7e8859 compare_op: '<' -> '<='
+  SURVIVOR 5e16ca42 compare_op: '>=' -> '>'
+artifact: mutation/Startup.clean.compare_op.json
+mutate_guarded: translations/ControllerBlocks/startup.cpp restored to 765963a1eea12d2dcae60b73a2fe2d7e2fb2800c; marker cleared; sweep exit 0
+run_if_time_remains: exit 0 after 170s (estimated 420s; 13024s now remain)

@@ -1,0 +1,34 @@
+run_if_time_remains: 12474s remain, 300s needed -- starting
+NOTE: operator filter ['negate_cond', 'swap_operands'] -- scoring 22 of 106 mutants. The other 84 are NOT re-run here and this artifact says nothing about them; the unit's own mutation/<U>.json is where they were scored.
+22 mutant(s) from startup.cpp
+
+baseline: 7103 case(s), 0 failed, 7.7s; per-mutant watchdog 155s
+
+  [  1/22] swap_operands    'LocalVar->SU_Stage - 1' -> '1 - LocalVar->SU_Stage'  killed (6/7103 cases)
+  [  2/22] swap_operands    'LocalVar->SU_Stage - 1' -> '1 - LocalVar->SU_Stage'  killed (39/7103 cases)
+  [  3/22] swap_operands    'CntrPar->WE_GearboxRatio / CntrPar->PC_RefSpd' -> 'CntrPar->PC_RefSpd / CntrPar->WE_GearboxRatio'  killed (598/7103 cases)
+  [  4/22] swap_operands    'LocalVar->SU_Stage - 1' -> '1 - LocalVar->SU_Stage'  SURVIVED
+  [  5/22] swap_operands    'CntrPar->WE_GearboxRatio / CntrPar->PC_RefSpd' -> 'CntrPar->PC_RefSpd / CntrPar->WE_GearboxRatio'  killed (2/7103 cases)
+  [  6/22] swap_operands    'LocalVar->SU_Stage - 2' -> '2 - LocalVar->SU_Stage'  killed (58/7103 cases)
+  [  7/22] swap_operands    'LocalVar->SU_Stage - 1' -> '1 - LocalVar->SU_Stage'  killed (11/7103 cases)
+  [  8/22] swap_operands    'LocalVar->SU_Stage - 1' -> '1 - LocalVar->SU_Stage'  killed (11/7103 cases)
+  [  9/22] swap_operands    'LocalVar->SU_Stage - 1' -> '1 - LocalVar->SU_Stage'  killed (6/7103 cases)
+  [ 10/22] swap_operands    'LocalVar->SU_Stage - 1' -> '1 - LocalVar->SU_Stage'  killed (134/7103 cases)
+  [ 11/22] negate_cond      'if (LocalVar->iStatus == 0)' -> 'if (!(LocalVar->iStatus == 0))'  killed (6547/7103 cases)
+  [ 12/22] negate_cond      'if ((LocalVar->SU_Stage == -1) && (LocalVar->Time > CntrPar->SU_StartTime))' -> 'if (!((LocalVar->SU_Stage == -1) && (LocalVar->Time > CntrPar->SU_StartTime)))'  killed (6796/7103 cases)
+  [ 13/22] negate_cond      'if ((LocalVar->SU_Stage == 1) &&\n        (LocalVar->SU_RotSpeedF < 0.95 * CntrPar->SU_RotorSpeedThresh))' -> 'if (!((LocalVar->SU_Stage == 1) &&\n        (LocalVar->SU_RotSpeedF < 0.95 * CntrPar->SU_RotorSpeedThresh)))'  killed (5618/7103 cases)
+  [ 14/22] negate_cond      'if ((LocalVar->SU_Stage == 1) &&\n        (LocalVar->Time >= (CntrPar->SU_FW_MinDuration + LocalVar->SU_LoadStageStartTime)))' -> 'if (!((LocalVar->SU_Stage == 1) &&\n        (LocalVar->Time >= (CntrPar->SU_FW_MinDuration + LocalVar->SU_LoadStageStartTime))))'  killed (6699/7103 cases)
+  [ 15/22] negate_cond      'if ((LocalVar->SU_Stage >= 2) &&\n        (LocalVar->Time >= LocalVar->SU_LoadStageStartTime +\n                               CntrPar->SU_LoadRampDuration[LocalVar->SU_Stage - 1 - 1] +\n                               CntrPar->SU_LoadHoldDuration[LocalVar->SU_Stage - 1 - 1]) &&\n        (LocalVar->SU_Stage <= CntrPar->SU_LoadStages_N + 1))' -> 'if (!((LocalVar->SU_Stage >= 2) &&\n        (LocalVar->Time >= LocalVar->SU_LoadStageStartTime +\n                               CntrPar->SU_LoadRampDuration[LocalVar->SU_Stage - 1 - 1] +\n                               CntrPar->SU_LoadHoldDuration[LocalVar->SU_Stage - 1 - 1]) &&\n        (LocalVar->SU_Stage <= CntrPar->SU_LoadStages_N + 1)))'  killed (7103/7103 cases)
+  [ 16/22] negate_cond      'if (LocalVar->SU_Stage == 1)' -> 'if (!(LocalVar->SU_Stage == 1))'  killed (6721/7103 cases)
+  [ 17/22] negate_cond      'if (LocalVar->SU_Stage == 2)' -> 'if (!(LocalVar->SU_Stage == 2))'  killed (6437/7103 cases)
+  [ 18/22] negate_cond      'if ((LocalVar->SU_Stage >= 2) && (LocalVar->SU_Stage <= CntrPar->SU_LoadStages_N + 1))' -> 'if (!((LocalVar->SU_Stage >= 2) && (LocalVar->SU_Stage <= CntrPar->SU_LoadStages_N + 1)))'  killed (241/7103 cases)
+  [ 19/22] negate_cond      'if (LocalVar->SU_Stage == CntrPar->SU_LoadStages_N + 2)' -> 'if (!(LocalVar->SU_Stage == CntrPar->SU_LoadStages_N + 2))'  killed (6064/7103 cases)
+  [ 20/22] negate_cond      'if ((LocalVar->SU_Stage == 1) || (LocalVar->SU_Stage == -1))' -> 'if (!((LocalVar->SU_Stage == 1) || (LocalVar->SU_Stage == -1)))'  killed (6877/7103 cases)
+  [ 21/22] negate_cond      'if ((LocalVar->SU_Stage >= 2) && (LocalVar->SU_Stage <= CntrPar->SU_LoadStages_N + 1))' -> 'if (!((LocalVar->SU_Stage >= 2) && (LocalVar->SU_Stage <= CntrPar->SU_LoadStages_N + 1)))'  killed (598/7103 cases)
+  [ 22/22] negate_cond      'if (LocalVar->Time < LocalVar->SU_LoadStageStartTime +\n                                 CntrPar->SU_LoadRampDuration[LocalVar->SU_Stage - 1 - 1])' -> 'if (!(LocalVar->Time < LocalVar->SU_LoadStageStartTime +\n                                 CntrPar->SU_LoadRampDuration[LocalVar->SU_Stage - 1 - 1]))'  killed (123/7103 cases)
+
+killed 21 of 22 BEHAVIOURAL scoreable (0 declared equivalent, 0 did not compile and are excluded)   score 0.955
+  SURVIVOR 31394a18 swap_operands: 'LocalVar->SU_Stage - 1' -> '1 - LocalVar->SU_Stage'
+artifact: mutation/Startup.clean.cond_swap.json
+mutate_guarded: translations/ControllerBlocks/startup.cpp restored to 765963a1eea12d2dcae60b73a2fe2d7e2fb2800c; marker cleared; sweep exit 0
+run_if_time_remains: exit 0 after 186s (estimated 300s; 12288s now remain)
