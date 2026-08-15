@@ -4,6 +4,121 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-14: unit #38 `PreFilterMeasuredSignals` is `integrated` and
+CLOSED** — all five layers exist, all five ran, and the mutation score is
+**1.000** on 114 behavioural mutants with 12 declared equivalent. It is the
+campaign's first unit whose body is almost entirely CALLS — twenty of its
+twenty-six executable statements are a filter call, and all six callees are
+already integrated — and it took **two tool defects, eight range pins and a
+corpus repair** before any instrument produced a number.
+
+Every count below is read from the committed artifact named in its row.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases (`evidence/PreFilterMeasuredSignals/kernel.verify_fields.csv`) | 62/62, 28,582 field rows `IDENTICAL` | five stubs: the no-op **0 of 62**, no-DebugVar **0**, no-notch-loop **0**, Moving-dropped **1** — and `reset` forced false passes **62 of 62** |
+| differential harness (`harness/PreFilterMeasuredSignals.json`) | **9033 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **293 of 9033** |
+| mutation (`mutation/PreFilterMeasuredSignals.json`) | **114 of 114 behavioural, 1.000**, 12 declared equivalent, 0 no-compile, 9 operators | the score *is* the red test, 114 times |
+| post-integration (`harness/PreFilterMeasuredSignals.postintegration.json`) | 9033 checked, 0 failed | TWO: the LocalVar copy-back deleted **293 of 9033**; DebugVar/objInst transposed **293 of 9033** |
+| gate, 27 scenarios (`gate/PreFilterMeasuredSignals.json`) | 5,252,000 values / 351 channels, 0 mismatched | TWO, and **one of them FAILED** — see below |
+
+**THE GATE'S SECOND RED TEST MOVED 0 OF 5,252,000, AND THAT IS THE FINDING.**
+
+```
+the whole unit a no-op   IF (aviFAIL < 0) forced true   1,751,360 of 5,252,000
+                                                        140 channels, revert 0
+the Flp_Mode == 2 arm    disabled                                0 of 5,252,000
+                                                        RED_TEST_FAIL, revert 0
+```
+
+Scenario 4 is the only one of the 27 that reaches that arm — 12,000 hits in
+`coverage/line_coverage.json` — and it is a 1-DOF sim whose own docstring says
+*"blade root moments are near-zero"*. Unit #35 measured the same thing from the
+other end: its `PIIController` kernel found `-LocalVar%rootMOOPF(K)` identically
+zero in every captured case. So that arm has a coverage number, a translation
+and harness kill counts, and **no simulation evidence at all** — and it is where
+this campaign's own fix to an upstream ROSCO indexing bug lives.
+
+**THE NO-OP MOVES ONLY 293 OF 9033 HARNESS CASES, SAID HERE RATHER THAN LEFT TO
+BE FOUND.** A case the no-op passes is a case that never got past
+`IF (ErrVar%aviFAIL < 0) RETURN`; **8740 of the 9033 are that**. R6's all-pairs
+fallback again — the cross product of the ten quantities this unit's predicates
+test is **552,960**, past `_KNOB_CASE_LIMIT` of 4096, so every knob not being
+crossed sits at the first value of its ladder and `aviFAIL`'s first value is
+**-1**. Closed *in part* by addition, and the addition is measured:
+
+```
+without harness/baseline.PreFilterMeasuredSignals.json   217 of 8955
+with it                                                  293 of 9033
+```
+
+R11's 78 cases contributed 76 of the 293. The other 8740 did not move and the
+number stands as it is.
+
+**THE FIRST MUTATION SWEEP SCORED 0.8254 AND THE CAUSE WAS THIS UNIT'S OWN
+BASELINE FILE.** Ten of its twenty-two survivors were `'ind - 1' -> '1 - ind'`
+and `'n - 1' -> 'n + 1'` inside the two notch loops that only R11 reaches — and
+the first baseline wrote `{"ramp": [1, 0]}` for both index arrays and 1 for both
+notch counts, so `ind - 1` and `1 - ind` are **the same number** and a shifted
+loop index reads an equal element. R11's own implementation comment records this
+from unit #29 (49 of that unit's 89 survivors) and the file reproduced it. Two
+counts and two ramps changed, the corpus stayed at 9033 cases, and the failing
+artifact is kept at
+`evidence/PreFilterMeasuredSignals/mutation.CONSTANT-INDEX-RAMP-9033.json`.
+
+**C12 — `_mutation_merge.py` REFUSED THE MERGE, AND IT WAS RIGHT TO AND WRONG
+ABOUT WHY.** `114 killed + 0 survived != 126 behavioural`: its identity check
+did not know that `mutants` counts the declared equivalences while `killed` and
+`survived` do not — although `denom = behavioural - eq` five lines below already
+read it that way. Two statements of one identity, disagreeing, and the one that
+ran first refused every merge with an equivalence in it. This unit is the
+campaign's first SPLIT sweep declaring any equivalence, so the gap could not
+have surfaced earlier: #36 declares six and ran in one part.
+
+**THREE ARMS ARE OUTSIDE EVERY BIT-EXACT INSTRUMENT** (clean-source lines):
+`F_LPFType == 2` has **0 hits in all 27 scenarios**; the tower-top notch `DO`
+line carries **exactly the call count** in every scenario, so its body iterates
+zero times; the `Flp_Mode == 2` arm is scenario 4 only. The kernel's 62 cases
+confirm all three at the value level (`f_lpftype` 1, `f_twrtopnotch_n` 0,
+`flp_mode` 0 in 62 of 62). The differential harness reaches them, and that is
+why its R11 baseline states **two** configurations.
+
+**THE STUB THAT PASSES 62 OF 62 IS AN EQUIVALENCE IN THE WHOLE PROGRAM, PROVED
+BY TWO GREPS RATHER THAN A CASE COUNT.** All five filters guard initialisation
+with `IF ((iStatus == 0) .OR. reset)`, and `ReadSetParameters.f90:123-126` is
+the **only** assignment to `LocalVar%restart` in the controller —
+`restart = (iStatus == 0)`. So `reset` is redundant at all nineteen of this
+unit's call sites, forcing it false changes nothing at any window in any
+scenario, and it predicts the gate is blind to that argument too. What is not
+blind is the differential harness, which draws the two independently.
+
+**THREE THINGS STOOD BETWEEN THIS UNIT AND ANY NUMBER**, each fixed where it
+lives (X2) and each with its failing message recorded:
+
+```
+loop 3ac5b4a   an INDEX CAN BE AN ARRAY. F_GenSpdNotch_Ind carries role="index"
+               AND dims, and all THREE sites that materialised an index wrote a
+               scalar:  TypeError: 'int' object is not iterable
+vit  fe22383   an unrestricted `USE M` puts M's names in scope, not every name:
+               Error: Derived type 'filterparameters' ... used before defined
+ranges.toml    SIGSEGV at case 17 of 9447, zero-byte artifact, `harness produced
+               no JSON` -- five objInst counters subscripting DIMENSION(1024)
+               inside the callees, and NumBl bounding a loop over DIMENSION(3)
+```
+
+The third is unit #34's `objInst%instLPF` judgement, needed a second time and
+five times wider. The bisect is the measurement: those six pins alone take the
+run from `exit 139, core dumped` to `checked 8955 failed 0`.
+
+**A WRAPPER RED TEST'S REVERT WAS A SILENT NO-OP AND THE RE-TAKEN GREEN CAUGHT
+IT.** The rebuild inside the restore did not recompile `Filters.f90` — the
+bind-mount mtime hazard this RUNBOOK already records — so the post-integration
+green came back `FAIL 9033/293` on a source `git diff` reported clean. `touch`,
+rebuild, `PASS 9033/0`. Re-taking the green rather than trusting the restore is
+the only reason this is a sentence and not a false artifact.
+
+---
+
 **As of 2026-08-14: unit #37 `PowerControlSetpoints` is `integrated` and CLOSED**
 — all five layers exist, all five ran, all five are red-tested, and the mutation
 score is **1.000**. But 1.000 is not the number that describes this unit. The

@@ -8206,3 +8206,105 @@ the exchange fails 0 of 1036 on a corpus that includes negative zero, where the
 two operands have different bits. This is a property of MAX and no input can
 change it, which makes it the one declaration in this unit that is a true
 equivalence rather than a blind spot.
+
+## Unit #38 — PreFilterMeasuredSignals
+
+### An index can be an ARRAY, and all three sites that materialised one wrote a scalar
+
+`CntrPar%F_GenSpdNotch_Ind` is an ALLOCATABLE INTEGER array every one of whose
+ELEMENTS subscripts `F_NotchFreqs`, so `harness/signature.py` gives it
+`role="index"` **and** `dims`. `generate.py::_case_impl` tests `p.role ==
+"index"` BEFORE the `p.dims` branch and wrote `c[name] = 1` — one value where
+the case stream expects `n` — and the failure surfaced four rules downstream as
+`TypeError: 'int' object is not iterable`. `_random_over` and R5's
+1/interior/`n` index sweep had the same shape. Fixed at all three sites
+(`translation-loop 3ac5b4a`).
+
+The `p.dims` branch one line below already carries the comment *"Branch on shape
+before kind: an INTEGER allocatable array (`Ind_CableControl`) has kind 'int'
+AND dims, and filling it as a scalar wrote one value where the stream expects
+`n`"* — the identical defect, found once and fixed at one of the sites that
+share the shape. **A fix applied at one of two sites that share a code shape is
+a fix the other site escapes**, and here there were three.
+
+The same commit makes `emit.py::write_cases` NAME the parameter instead of
+raising a bare `TypeError`. That is this campaign's own measured rule (unit #29:
+an error naming its parameter costs one diagnostic pass, one that does not costs
+three) applied to the tool rather than quoted at it. It cost one.
+
+### An unrestricted `USE M` puts M's names in scope, not every name
+
+VIT's `_nested_type_use_statements` returned `[]` the moment any copied USE
+statement lacked an `ONLY` list, on the stated reasoning that *"an unrestricted
+USE is present; every name is in scope"*. That is false for the ordinary shape.
+`PreFilterMeasuredSignals` sits in a module that carries `USE Constants` and
+`USE Functions` — both unrestricted, neither re-exporting a derived type —
+beside a procedure-level `USE ROSCO_Types, ONLY : ControlParameters,
+LocalVariables, DebugVariables, ObjectInstances, ErrorVariables`. The generated
+bridge then declares POINTERs to the five NESTED types that ONLY list does not
+name, and gfortran refuses: `Derived type 'filterparameters' at (1) is being
+used before it is defined`. Fixed in `vit fe22383`, and the property the
+original reasoning protected — no bridge that compiled before gains a line — is
+kept explicitly: an unrestricted USE **of the types module itself** still
+suppresses the addition.
+
+### `objInst%instLPF` needed the same judgement a second time, five times wider
+
+`harness/ranges.toml` carries unit #34's pin `objInst_instLPF = { lo = 1, hi =
+1024 }` with the reference's own SIGSEGV behind it. This unit calls five
+different filters and passes five different counters, every one of them a free
+scalar integer on R6's ladder and every one of them a subscript into an
+`FP` array of `DIMENSION(1024)` **inside the callee** — where no compared
+out-parameter exists for an inference to attach a role to. It also loops
+`DO K = 1,LocalVar%NumBl` over `rootMOOP`, which is `DIMENSION(3)`.
+
+Six pins, and the bound is arithmetic rather than a round number: this unit
+advances `instNotch` up to eighteen times in ONE call, so 1000 rather than 1024.
+The relation the pins stand in for is one the generator cannot see — it lives in
+`ReadSetParameters.f90`, not in this procedure — and that is the same shape as
+`F_GenSpdNotch_N == SIZE(F_GenSpdNotch_Ind)`, pinned here for the same reason.
+
+**A standing candidate for the Driver:** a counter that is passed INOUT to a
+callee which subscripts a fixed-size array with it is now the second and third
+instance of one class. Neither `ranges.toml` nor any rule can state the relation
+"this integer indexes an array the signature does not mention"; a `role="index"`
+that the SIGNATURE could carry across a call boundary would.
+
+### The corpus rule and its own arrays: R11's baseline reproduced unit #29's defect
+
+The first `harness/baseline.PreFilterMeasuredSignals.json` wrote
+`{"ramp": [1, 0]}` for both notch index arrays and `1` for both notch counts.
+With every element equal to 1, `ind - 1` and `1 - ind` are the same number and a
+shifted loop index reads an equal element — so ten of the first sweep's
+twenty-two survivors were index shifts that no number of such cases could kill,
+and the score was 0.8254. R11's own implementation comment records exactly this
+from unit #29 (49 of 89 survivors) and the file reproduced it anyway.
+`{"ramp": [1, 1]}` with the counts at 2 is what distinguishes them; the corpus
+stayed at 9033 cases and the failing artifact is kept.
+
+**The rule that generalises:** a baseline state is a corpus rule's own data, and
+the constraint R5 puts on the generator — *array elements distinct* — applies to
+it. Nothing checks that.
+
+### `_mutation_merge.py` stated one identity twice and the two disagreed (C12)
+
+`if killed + survived != behavioural: die(...)` refused every split sweep with a
+declared equivalence in it, while `denom = behavioural - eq` five lines below
+already read `mutants` as counting them. rosco-r2 unit #38 is the campaign's
+first SPLIT sweep declaring any equivalence — #36 declares six and ran in one
+part — so the gap could not have surfaced earlier. Fixed with the failing
+message recorded at the site.
+
+### The gate's failed red test on the `Flp_Mode == 2` arm is corroborated, not inferred
+
+Disabling that arm moves **0 of 5,252,000** compared values, revert-verified.
+The arm is reached by scenario 4 alone (12,000 hits) and scenario 4's own
+docstring in `Examples/vit_sim.py` says *"blade root moments are near-zero"*.
+Unit #35 measured the same fact from the other end: its `PIIController` kernel
+found `-LocalVar%rootMOOPF(K)` identically zero in all 20 captured cases. Two
+units, two instruments, one conclusion — the arm is executed and unobserved.
+
+Widening scenario 4 to drive blade root moments would change what one of the
+gate's 27 scenarios computes, which is what X3 forbids mid-run. It is the
+highest-value thing the campaign could do for this arm and it is a Driver
+decision.
