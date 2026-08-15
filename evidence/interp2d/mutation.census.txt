@@ -1,109 +1,148 @@
-# THE 32 SURVIVORS OF unit #45 `interp2d`, PARTITIONED BY CAUSE.
+# THE SURVIVORS OF unit #45 `interp2d`, PARTITIONED BY CAUSE.
 #
-#   mutation/interp2d.json   168 mutants   2 nocompile   166 behavioural
-#                            134 killed    32 survived   score 0.8072
-#                            0 declared equivalent
+#   SECOND DISPATCH, 2026-08-15, loop_rev eb5028e, corpus 1147 cases
+#     mutation/interp2d.json   168 mutants   2 nocompile   166 behavioural
+#                              152 killed    4 survived    10 declared
+#                              score 0.9744
 #
-# NOTHING IS DECLARED EQUIVALENT HERE. Ten of the thirty-two have a one-line
-# argument for equivalence and no measurement, and this campaign's rule is that
-# a declaration rests on a measurement (unit #23 swept 4,294,967,296 values for
-# one of them). They are named below with the argument, as candidates, and they
-# are counted as SURVIVORS in the score.
+#   FIRST DISPATCH,  2026-08-14, loop_rev a523b00, corpus 1005 cases
+#     evidence/interp2d/mutation.first-run-nothing-declared.json
+#                              168 mutants   2 nocompile   166 behavioural
+#                              134 killed    32 survived   0 declared
+#                              score 0.8072
+#
+# WHAT MOVED, AND IT WAS NOT THE DECLARATIONS. Of the 32, seventeen are KILLED
+# and ten are DECLARED and four still stand and one -- 39350cd3, the trim's
+# `find_last_not_of(' ') + 1` -> `+ 2` -- was killed by the same corpus change
+# that killed the seventeen, without anyone having predicted it. The seventeen
+# died to ONE line in harness/ranges.toml: the two breakpoint arrays moved from
+# `ordered_only` to `nondecreasing_only`, which is the same exclusion with the
+# line drawn where the reference draws it rather than one shape wider.
 #
 # `vit_mutate.py` computes ids from the LOWERCASED unit name (unit #42), so the
 # mapping below is `cppmutate.mutants('interp2d', src)`.
 
-98926651    75  compare_op     >                            -> >=             | if (static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap) {
-c2c4e0b7    95  const_tweak    0                            -> 1              | const std::string_view v(ErrVar->ErrMsg, n > 0 ? static_cast<size_t>(n) : 0);
-922581aa    95  const_tweak    0                            -> 1              | const std::string_view v(ErrVar->ErrMsg, n > 0 ? static_cast<size_t>(n) : 0);
-f0949202    95  compare_op     >                            -> >=             | const std::string_view v(ErrVar->ErrMsg, n > 0 ? static_cast<size_t>(n) : 0);
-39350cd3    96  const_tweak    1                            -> 2              | return std::string(v.substr(0, v.find_last_not_of(' ') + 1));
-bd0aa005   114  const_tweak    1                            -> 2              | ErrVar->aviFAIL = -1;
-34ae41de   121  const_tweak    1                            -> 2              | ErrVar->aviFAIL = -1;
-bc897a8f   135  const_tweak    1                            -> 2              | ErrVar->aviFAIL = -1;
-8a36fcb9   144  swap_operands  n_xData - 1                  -> 1 - n_xData    | for (int I_DIFF = 1; I_DIFF <= n_xData - 1; ++I_DIFF) {
-03a9c7fb   144  const_tweak    1                            -> 2              | for (int I_DIFF = 1; I_DIFF <= n_xData - 1; ++I_DIFF) {
-2d05fc4d   144  const_tweak    1                            -> 2              | for (int I_DIFF = 1; I_DIFF <= n_xData - 1; ++I_DIFF) {
-267b4c09   144  compare_op     <=                           -> <              | for (int I_DIFF = 1; I_DIFF <= n_xData - 1; ++I_DIFF) {
-e53b5ccd   145  const_tweak    0                            -> 1              | if (xData[I_DIFF] - xData[I_DIFF - 1] <= 0) {
-209cc231   145  compare_op     <=                           -> <              | if (xData[I_DIFF] - xData[I_DIFF - 1] <= 0) {
-6ed39951   152  swap_operands  n_yData - 1                  -> 1 - n_yData    | for (int I_DIFF = 1; I_DIFF <= n_yData - 1; ++I_DIFF) {
-a198c531   152  const_tweak    1                            -> 2              | for (int I_DIFF = 1; I_DIFF <= n_yData - 1; ++I_DIFF) {
-24ee3be4   152  const_tweak    1                            -> 2              | for (int I_DIFF = 1; I_DIFF <= n_yData - 1; ++I_DIFF) {
-31525826   152  compare_op     <=                           -> <              | for (int I_DIFF = 1; I_DIFF <= n_yData - 1; ++I_DIFF) {
-181dc6e2   153  const_tweak    0                            -> 1              | if (yData[I_DIFF] - yData[I_DIFF - 1] <= 0) {
-3cdf7de6   153  compare_op     <=                           -> <              | if (yData[I_DIFF] - yData[I_DIFF - 1] <= 0) {
-7986e5f9   167  compare_op     <                            -> <=             | if (x < xData_min) xData_min = x;
-1235716b   168  compare_op     >                            -> >=             | if (x > xData_max) xData_max = x;
-b9162232   174  compare_op     <                            -> <=             | if (y < yData_min) yData_min = y;
-acb38635   175  compare_op     >                            -> >=             | if (y > yData_max) yData_max = y;
-52e827a0   230  compare_op     <=                           -> <              | if (xq <= xData_min || std::isnan(xq)) {
-a2f7bf52   234  compare_op     >=                           -> >              | } else if (xq >= xData_max) {
-5c2746a0   239  const_tweak    1                            -> 2              | for (j = 1; j <= n_xData; ++j) {
-98531180   243  compare_op     <                            -> <=             | } else if (xq < xData[j - 1]) {
-67b108b6   253  compare_op     <=                           -> <              | if (yq <= yData_min) {
-4884fa6a   259  compare_op     >=                           -> >              | } else if (yq >= yData_max) {
-a155c90c   266  const_tweak    1                            -> 2              | for (i = 1; i <= n_yData; ++i) {
-143857a4   272  compare_op     <                            -> <=             | } else if (yq < yData[i - 1]) {
-run_if_time_remains: exit 0 after 0s (estimated 120s; 11488s now remain)
+## ======================================================================
+## KILLED BY THE CORPUS, NOT BY AN ARGUMENT -- 17 of the first run's 32
+## ======================================================================
+##
+## GROUP 1, 13 mutants, in the two strictly-increasing checks and the `fail`
+## lambda they alone call (lines 114, 144, 145, 152, 153 of the first run's
+## numbering).  bd0aa005 8a36fcb9 03a9c7fb 2d05fc4d 267b4c09 e53b5ccd 209cc231
+##              6ed39951 a198c531 24ee3be4 31525826 181dc6e2 3cdf7de6
+##
+## `_order_shapes` puts an adjacent EQUAL pair at the first, an interior and
+## the last position, and a CONSTANT array, at every step scale. That is what
+## each of the thirteen needed and none of them had:
+##
+##   aviFAIL = -1 -> -2 in `fail`          any firing of either check
+##   n_xData - 1 -> 1 - n_xData            the loop must run at all
+##   I_DIFF = 1 -> 2                       the violating pair at the FIRST position
+##   n_xData - 1 -> n_xData - 2, <= -> <   the violating pair at the LAST position
+##   xData[i] - xData[i-1] <= 0 -> <= 1    a strictly increasing table with a step <= 1
+##                                         (the unit-step run `[1.0, 2.0, ... L]`)
+##   <= 0 -> < 0                           a step of exactly ZERO -- the equal pair,
+##                                         and nothing else in this generator draws it
+##
+## GROUP 4a, 4 mutants, the reduction boundaries.  52e827a0 a2f7bf52 67b108b6 4884fa6a
+##
+##   `xq <= MINVAL` -> `<`   separated ONLY by a CONSTANT table with xq on it:
+##                           the original returns column 1, the mutant falls
+##                           through to the `>= MAXVAL` arm and returns column
+##                           SIZE(xData). On any ascending table the mutant's
+##                           search finds the same column and the two agree.
+##   `xq >= MAXVAL` -> `>`   separated ONLY by a table whose MAXIMUM REPEATS
+##                           with xq on it: the original returns the LAST such
+##                           column, the mutant searches and stops at the FIRST.
+##
+## R10 pins the scalar to the reduction of the body drawn in the same case; it
+## now does so over the non-decreasing shapes instead of over the reverse, which
+## is what puts a query on an extremum that is not unique. Both, and their two
+## y-direction twins, died on the first sweep after the change.
 
-## GROUP 1 -- 14 survivors in code THE CORPUS NEVER EXECUTES
-## lines 114, 144, 145, 152, 153  (and the `fail` lambda they alone call)
+## ======================================================================
+## DECLARED -- 10, and mutation/interp2d.equivalences.json carries the reason
+## ======================================================================
 ##
-## `harness/generate._fill_array` draws STRICTLY INCREASING bodies -- "a table
-## of breakpoints must stay ordered for the reference's own search to be
-## meaningful" -- and `harness/ranges.toml`'s two `ordered_only` entries removed
-## the only two rules that departed from that (R6's ordering sweep, R10's
-## reversed body). So NO CASE IN THE CORPUS HAS A NON-INCREASING TABLE, and the
-## two strictly-increasing checks never fire.
+## SIX EQUIVALENCES, proved rather than argued:
+##   98531180 143857a4   `xq < xData[j-1]` -> `<=` and its y twin. The arm above
+##                       is `if (xq == xData[j-1]) return ...`, so equality
+##                       cannot reach the test the mutant changes.
+##   7986e5f9 1235716b   the four MINVAL/MAXVAL reduction comparisons.
+##   b9162232 acb38635   evidence/interp2d/equivalence_probe.cpp: 69,905 tuples,
+##                       1,666 whose stored bits DIFFER, 1,118,480 (tuple, query)
+##                       pairs, 0 whose ARM differs.
+##   f0949202            `n > 0 ? (size_t)n : 0` -> `n >= 0 ? ...`. The two
+##                       conditions differ only at n == 0, where both yield 0.
+##                       Equivalent on every value of the type.
 ##
-## THE MEASUREMENT IS IN THE SURVIVOR LIST ITSELF, and it is why this group is
-## stated as dead code rather than as under-coverage: `ErrVar->aviFAIL = -1`
-## inside `fail` (line 114) mutated to `-2` SURVIVED, and `ErrVar.aviFAIL` is
-## compared on every one of the 1005 cases. A single execution of that line
-## would have killed it.
-##
-## This is the `ordered_only` cost, and it is LARGER than harness/ranges.toml
-## first stated it: that entry said the ordinary draws would still reach the
-## checks. They do not. Corrected there.
+## FOUR UNREACHABLE-WITH-A-MEASUREMENT, which is a weaker claim and is labelled
+## as one:
+##   98926651            `s.size() > cap` -> `>=`. errmsg_extremes_probe over the
+##                       same 1147 cases: 149 assignments, 15..42 bytes against a
+##                       4099..4103 capacity, 0 at equality. Fifth unit at this
+##                       site with this reason.
+##   34ae41de bc897a8f   aviFAIL = -1 -> -2 inside the two size-mismatch
+##                       branches. The extents are TIED because the reference
+##                       has no answer when they differ: its WRITE formats 59
+##                       characters into a record the corpus never makes longer
+##                       than 12, and the process ends
+##                       (reference.size-mismatch-aborts.txt). No differential
+##                       instrument can grade a mutant inside a branch whose
+##                       oracle aborts.
 
-## GROUP 2 -- 2 survivors in the SIZE-MISMATCH branches
-## lines 121, 135   (`ErrVar->aviFAIL = -1` -> `-2`, twice)
+## ======================================================================
+## STILL STANDING -- 4, NOT DECLARED, and each one names the input that would
+## kill it and the rule that does not exist to draw it
+## ======================================================================
 ##
-## The two extent ties. `n_zData_cols` follows `n_xData` and `n_zData_rows`
-## follows `n_yData`, so neither branch can be entered, and the reference has no
-## answer there anyway -- it formats 59 characters into a LEN-0 record and the
-## process ends (evidence/interp2d/reference.size-mismatch-aborts.txt).
-
-## GROUP 3 -- 4 EQUIVALENCE CANDIDATES in the reductions
-## lines 167, 168, 174, 175   (`<` -> `<=`, `>` -> `>=`)
+## THESE ARE WHY THE SCORE IS 0.9744 AND NOT 1.000. Every one of them has an
+## input in the reference's own well-defined domain at which the mutated
+## program gives a different answer. That is what makes them survivors rather
+## than equivalences, and declaring them would have cost one edit and bought
+## nothing.
 ##
-##     if (x < xData_min) xData_min = x;      vs   if (x <= xData_min) ...
+## 5c2746a0   const_tweak `for (j = 1; j <= n_xData; ++j)` -> `j = 2`
+## a155c90c   const_tweak `for (i = 1; i <= n_yData; ++i)` -> `i = 2`
 ##
-## Both compute the same extremum for ANY sequence: the assignment on an equal
-## element stores the value already there. Unit #23 declared the same two
-## mutants on interp1d and paid for it with a 69,905-tuple sweep
-## (evidence/interp1d/equivalence_probe.txt). Not declared here: no probe was
-## run in this dispatch.
-
-## GROUP 4 -- 6 EQUIVALENCE CANDIDATES where an ASCENDING table makes two
-## branches coincide
-## lines 230, 234, 253, 259 (`<=` -> `<`, `>=` -> `>`) and 243, 272 (`<` -> `<=`)
+##   THE KILLING INPUT: a table whose FIRST element is not its minimum, with the
+##   query exactly ON that first element. e.g. xData = [3, 1, 2, 4], xq = 3,
+##   MINVAL 1 < 3 < 4 MAXVAL. The reference enters the search, tests
+##   `xq == xData(1)` at the first iteration and returns interp1d over column 1;
+##   the mutant starts at 2, never sees it, and interpolates between columns 3
+##   and 4. Both are fully defined -- no out-of-bounds read, no division by
+##   zero -- and they disagree.
 ##
-## On an ascending table `MINVAL(xData) == xData(1)`, so at `xq == MINVAL` the
-## reference's lower-bound branch and the ELSE loop's on-axis branch return the
-## same `interp1d(yData, zData(:,1), yq)`. R10 puts `xq` exactly on the
-## extremum -- 48 such cases -- and the two paths agree there.
-## 243 and 272 are stronger than that: `xq == xData(j)` is tested on the line
-## ABOVE, so `xq < xData(j)` and `xq <= xData(j)` cannot differ at all.
-
-## GROUP 5 -- 6 survivors in the ErrMsg staging helper
-## lines 75, 95 (x3), 96, and 239/266 (`for (j = 1; ...)` -> `2`)
+##   WHY NO RULE DRAWS IT. `nondecreasing_only` excludes every body whose first
+##   element is not its minimum, because a query BETWEEN the minimum and that
+##   first element makes the reference read `zData(i, 0)`. Admissibility here is
+##   a JOINT property of the body and the query -- safe iff `xq >= xData(1)` --
+##   and every judgement harness/ranges.toml can state is a property of ONE
+##   parameter. The rule that would reach it is R10's shape with the scalar
+##   pinned to `body[0]` instead of to `MINVAL(body)`, over all order shapes;
+##   pinning xq to xData(1) is safe on EVERY ordering, which is what makes it a
+##   rule rather than a special case. NOT TAKEN in this dispatch: it is a new
+##   generator block and the clock went on the seventeen above.
+##   Escalated in DECISIONS.md.
 ##
-## 75 `s.size() > cap` -> `>=` differs only when a message is EXACTLY the
-## capacity; R13 sweeps the capacity 0..255 above what the case supplies, and no
-## case lands on equality for the one message length this unit produces.
-## 95/96 are the trim helper's `n > 0 ? n : 0` and `find_last_not_of(' ') + 1`,
-## reached only when `aviFAIL < 0` on entry AND the bilinear path completes.
-## 239/266 move the DO variable's initial value, which the loop's own first
-## comparison then corrects on an ascending table.
+## c2c4e0b7   const_tweak `n > 0 ? (size_t)n : 0` -> `n > 1 ? ...`
+## 922581aa   const_tweak `n > 0 ? (size_t)n : 0` -> `... : 1`
+##
+##   THE KILLING INPUT: `errmsg_trim` reached with `n_ErrMsg == 1` (c2c4e0b7:
+##   the view length becomes 0 instead of 1) or with `n_ErrMsg <= 0` (922581aa:
+##   1 instead of 0). `errmsg_trim` runs only when `aviFAIL < 0` holds at the
+##   END of the bilinear path, so the input is a CONJUNCTION: a short ErrMsg,
+##   AND a negative aviFAIL on entry, AND a query interior in both directions.
+##
+##   WHY NO RULE DRAWS IT. Each half is in the corpus and the two never meet.
+##   MEASURED, not inferred -- evidence/interp2d/errmsg_extremes_probe.cpp over
+##   all 1147 cases: `errmsg_trim calls 27`, `n_ErrMsg on entry, min .. max
+##   7 .. 33`, none at or below 1. The character ladder draws lengths
+##   [1, 2, 7, 12] with every other input at its BASE draw, and aviFAIL is a
+##   predicate KNOB whose four values are crossed with every other input at ITS
+##   base draw. Neither block crosses the other. This is generate.py's own
+##   `ZMQ_Mode` finding ("a sample of a corpus is not a sample of its
+##   conjunctions") in a place no rule crosses. Escalated in DECISIONS.md.
+##   interp1d recorded the same gap at the same helper (55e42d36) and declined
+##   the same fix for the same reason; this is the second unit to reach it, and
+##   this dispatch does NOT declare it.
