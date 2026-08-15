@@ -1,0 +1,126 @@
+{
+ "unit": "ratelimit",
+ "against": "integrated",
+ "checked": 2904,
+ "failed": 604,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    0 varied extent(s); 1 FIXED by the type at [1024] -- not varied, 1 index(es) at 1/interior/n, array elements distinct",
+  "  applied  R2_flag_values             4 value(s) across 2 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R6_reference_literals      250 value(s) from 9 literal(s) in the reference, each under every declared value of 2 flag(s); 165 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 200 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 50 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 5 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          6 real value(s), none zero in every case",
+  "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
+  "  N/A      R12_narrowing_width        no CHARACTER local is narrower than a dummy assigned into it -- the reference truncates nothing, so there is no boundary for this rule to reach",
+  "  N/A      R13_staging_capacity       no deferred-length CHARACTER output -- no parameter whose LENGTH the callee chooses, so no staging buffer whose capacity a case could state",
+  "  N/A      R14_planted_word           no CHARACTER ARRAY input -- there is no element for a scalar string to be a word OF, so no comparison of this shape exists to reach",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 2 out-parameter(s): rlP_LastSignal, inst"
+ ],
+ "mismatches": [
+  {
+   "case": 15,
+   "output": "vit_result",
+   "ref": "0000000000408f40",
+   "got": "a669f2ddce7ae73f"
+  },
+  {
+   "case": 15,
+   "output": "rlP.LastSignal",
+   "ref": "415757f1d4fb7fc049e38267d2f27fc06d682a8443e97fc06d87fadc82e07fc0...",
+   "got": "415757f1d4fb7fc049e38267d2f27fc06d682a8443e97fc06d87fadc82e07fc0..."
+  },
+  {
+   "case": 16,
+   "output": "vit_result",
+   "ref": "e14d336766a48140",
+   "got": "0000000000408f40"
+  },
+  {
+   "case": 16,
+   "output": "rlP.LastSignal",
+   "ref": "28ddbb32f60a70c02802446a4cf06fc0107689e61fd16fc0c0e1333466ad6fc0...",
+   "got": "28ddbb32f60a70c02802446a4cf06fc0107689e61fd16fc0c0e1333466ad6fc0..."
+  },
+  {
+   "case": 17,
+   "output": "vit_result",
+   "ref": "bc860e6629aed53f",
+   "got": "0000000000408f40"
+  },
+  {
+   "case": 17,
+   "output": "rlP.LastSignal",
+   "ref": "e20e44c252528cc08f5dc3dd05458cc01ecb9816ad378cc000574b0b17288cc0...",
+   "got": "e20e44c252528cc08f5dc3dd05458cc01ecb9816ad378cc000574b0b17288cc0..."
+  },
+  {
+   "case": 18,
+   "output": "vit_result",
+   "ref": "5728b566fce37740",
+   "got": "29b50d8923796740"
+  },
+  {
+   "case": 18,
+   "output": "rlP.LastSignal",
+   "ref": "b02f47957a8f8ec0c39af58238878ec0582abf90147e8ec0c7cd7e206d758ec0...",
+   "got": "b02f47957a8f8ec0c39af58238878ec0582abf90147e8ec0c7cd7e206d758ec0..."
+  },
+  {
+   "case": 19,
+   "output": "vit_result",
+   "ref": "0000000000408f40",
+   "got": "b423536690d1d5bf"
+  },
+  {
+   "case": 19,
+   "output": "rlP.LastSignal",
+   "ref": "c3fa70d683f68bc0db00b071b7ea8bc07a506f0597de8bc06ae1dac071d38bc0...",
+   "got": "c3fa70d683f68bc0db00b071b7ea8bc07a506f0597de8bc06ae1dac071d38bc0..."
+  },
+  {
+   "case": 21,
+   "output": "vit_result",
+   "ref": "a99f4c26a3d247c0",
+   "got": "f3b92d2762b58ec0"
+  },
+  {
+   "case": 21,
+   "output": "rlP.LastSignal",
+   "ref": "ba5b923067ae8cc0e906496805a18cc0bcf82c5393938cc06a451ce6ef838cc0...",
+   "got": "ba5b923067ae8cc0e906496805a18cc0bcf82c5393938cc06a451ce6ef838cc0..."
+  },
+  {
+   "case": 32,
+   "output": "vit_result",
+   "ref": "4d8e523fffaf3840",
+   "got": "00ebaf167db4813f"
+  },
+  {
+   "case": 32,
+   "output": "rlP.LastSignal",
+   "ref": "5cc8f334be4d6d40ed87e13495616d4042a6f7f432766d409e23d5825c8b6d40...",
+   "got": "5cc8f334be4d6d40ed87e13495616d4042a6f7f432766d409e23d5825c8b6d40..."
+  },
+  {
+   "case": 33,
+   "output": "vit_result",
+   "ref": "0c3b37c83796db3f",
+   "got": "9a9097d58001e9bf"
+  },
+  {
+   "case": 33,
+   "output": "rlP.LastSignal",
+   "ref": "1f983bbc75df8ac0fa3cab2366d38ac0b558351ec9c78ac0d821f76d10bb8ac0...",
+   "got": "1f983bbc75df8ac0fa3cab2366d38ac0b558351ec9c78ac0d821f76d10bb8ac0..."
+  }
+ ],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "eb5028e",
+ "vit_rev": "a16a7ab",
+ "red_test": {
+  "perturbation": "wrapper: has_ResetValue_flag left at 0 inside the IF (PRESENT(ResetValue)) block, so the C++ side is told the OPTIONAL is absent on every call",
+  "result": "604 of 2904 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}
