@@ -1,0 +1,28 @@
+==================================================================
+STUB      the whole unit as a no-op
+ASKS      does the kernel see anything at all? 83/83 IDENTICAL is unmeasured until a deliberate change breaks it
+EXPECT    fails every case in which the reference writes any compared output
+RESULT:
+    ✗ VERIFICATION FAILED: 0/83 passed
+      FAILED: Verification FAILED withStartup.0.0.1
+      FAILED: Verification FAILED withStartup.0.0.2
+      FAILED: Verification FAILED withStartup.0.0.3
+      FAILED: Verification FAILED withStartup.0.0.4
+      FAILED: Verification FAILED withStartup.0.0.5
+
+==================================================================
+STUB      the freewheel low-speed write deleted
+ASKS      can 83 cases from the only scenario that calls this unit see the one statement coverage puts at 0 hits in all 27?
+EXPECT    PASSES 83 of 83 -- a blind spot the gate and the coverage data already name, measured a third way
+RESULT:
+    ✓ VERIFICATION PASSED: 83/83 passed
+    ✗ Startup: NON_DISCRIMINATING — 83 case(s) compared IDENTICAL, and the kernel did not report a mismatch when the translation was deliberately changed. The pass is not evidence.
+
+==================================================================
+STUB      the startup-complete reset deleted
+ASKS      does the capture window actually straddle the state transition, or did it merely run 83 times?
+EXPECT    FAILS EXACTLY ONE case, Startup.0.0.1801 -- the only invocation of 11,999 that executes it
+RESULT:
+    ✗ VERIFICATION FAILED: 82/83 passed
+      FAILED: Verification FAILED withStartup.0.0.1801
+

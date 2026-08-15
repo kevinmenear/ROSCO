@@ -1,0 +1,336 @@
+// KERNEL RED-TEST STUB, not a translation. THE STARTUP-COMPLETE ARM DELETED.
+//
+// The shipped translation with ONE statement removed: `LocalVar%SU_Stage = 0`
+// on the `SU_Stage == SU_LoadStages_N + 2` arm, which is the only place the
+// unit ends startup.
+//
+// THIS STUB IS EXPECTED TO FAIL EXACTLY ONE OF 83 CASES, and the case is
+// `Startup.0.0.1801`. Coverage puts that statement at 1 hit in 11,999 calls,
+// and the capture window was aimed at invocation 1801 precisely because that is
+// where it happens -- case 1800 leaves SU_Stage at 3 and case 1801 at 0. Every
+// other captured case is on an arm this deletion does not touch.
+//
+// A stub that fails ONE case is the sharpest thing this kernel can say: it
+// distinguishes a window aimed at the state transition from a window that
+// merely ran 83 times.
+
+// VIT Translation Scaffold
+// Function: Startup
+// Source: ControllerBlocks.f90
+// Module: ControllerBlocks
+// Fortran: SUBROUTINE Startup(LocalVar, CntrPar, objInst, ErrVar)
+// Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+// Source MD5: de0022ac9e16
+// VIT: 0.1.0
+// Status: unverified
+// Generated: 2026-08-15T08:16:44Z
+//
+// CONTRACT: mirror (plan.json). Every input and every output crosses the
+// signature; the body is transcribed statement for statement.
+//
+// WHAT THE SIMULATION CAN SEE OF THIS UNIT, read from
+// coverage/line_coverage.json against the coverage-era source (Startup at
+// ControllerBlocks.f90:548-636 at baseline 54dd134) and stated here BEFORE any
+// green is taken, so that a reader knows which arms a kernel or gate result is
+// about:
+//
+//     :575 IF (iStatus == 0)              11,999 calls / arm taken ONCE
+//     :581 SU_Stage = 1 (past SU_StartTime)     1
+//     :585 the freewheel low-speed test   11,999 / :587 the write   0  <- NEVER
+//     :594 SU_Stage = 2 (freewheel exit)        1
+//     :602 SU_Stage = SU_Stage + 1              2  <- 2->3 and 3->4
+//     :608 Stage==1   PRC_R_Speed const       199
+//     :610 / :614 Stage==2  PRC_R_Speed sigma  800
+//     :616 Stage in [2, N+1]  SU_PrevLoad      800
+//     :619 SU_Stage = 0 (startup complete)       1
+//     :624 Stage 1 or -1  PRC_R_Torque = 0     200
+//     :626 the torque ramp test             1,600 / :629 sigma 800 / :631 800
+//
+// And scenario 9 is the only one of the 27 that reaches ANY of it: the call
+// site DISCON.F90:112 sits behind `IF (CntrPar%SU_Mode > 0)` and carries hits
+// under scenario 9 alone -- 11,999 invocations, 0 in the other 26.
+//
+// ONE STATEMENT IS OUTSIDE EVERY SIMULATION THE CAMPAIGN RUNS: :587,
+// `SU_LoadStageStartTime = LocalVar%Time` on a freewheeling rotor still below
+// 0.95 * SU_RotorSpeedThresh. Scenario 9 starts the rotor at 4 rpm =
+// 0.419 rad/s against a threshold of 0.95 * 0.3 = 0.285, so the test is false
+// on all 11,999 of its calls. The differential harness draws the filter's
+// inputs and `SU_RotorSpeedThresh` freely and is the only instrument that
+// reaches it. Where each arm is actually measured is recorded in
+// evidence/Startup/, not asserted here.
+
+#include "vit_types.h"
+
+namespace {
+
+// CHARACTER(*), PARAMETER :: RoutineName = 'Startup'
+//
+// DECLARED AND UNUSED IN THE REFERENCE. Unlike `Shutdown`, this unit has no
+// `IF (ErrVar%aviFAIL < 0)` block, so nothing ever reads the name -- it takes
+// `ErrVar` only to hand it to `sigma`. Recorded here as the absence it is (P6)
+// rather than carried as a live constant that would read as a suppressed
+// feature.
+//
+// constexpr std::string_view RoutineName = "Startup";
+
+}  // namespace
+
+void Startup(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar,
+             objectinstances_t* objInst, errorvariables_view_t* ErrVar) {
+    // Real(DbKi) :: SU_PrevLoad   ! PRC_R_Toruqe value at the previous stage
+    //
+    // UNINITIALISED IN THE REFERENCE AND UNINITIALISED HERE, deliberately. The
+    // reference gives it no initialiser and no SAVE, so it is a fresh
+    // indeterminate slot on every call, and writing `= 0.0` here would be a
+    // second program: it would agree with the reference on every input that
+    // assigns before reading and silently disagree on any input that does not.
+    //
+    // IT CANNOT BE READ UNASSIGNED, and that is arithmetic over the two ELSEIF
+    // chains rather than an assumption. The only read is at :629, under
+    // `SU_Stage >= 2 .AND. SU_Stage <= SU_LoadStages_N + 1`. The chain above
+    // assigns it under `SU_Stage == 2` (:610) and under
+    // `SU_Stage >= 2 .AND. SU_Stage <= SU_LoadStages_N + 1` (:616), and the
+    // union of those two conditions contains the read's condition exactly. So
+    // every path that reaches :629 has run :610 or :616 first, on the same
+    // call.
+    //
+    // What that argument does NOT survive is a mutant that negates one of
+    // those two conditions: the read then happens on an indeterminate value,
+    // which is undefined behaviour rather than a wrong answer. Stated here
+    // because a mutation score is a count of kills and a kill by UB is not a
+    // kill by disagreement.
+    double SU_PrevLoad;
+
+    // !Filterd rotor speed
+    // LocalVar%SU_RotSpeedF = LPFilter(LocalVar%RotSpeed, LocalVar%DT,
+    //     CntrPar%SU_RotorSpeedCornerFreq, LocalVar%FP, LocalVar%iStatus,
+    //     LocalVar%restart, objInst%instLPF)
+    //
+    // ONE LPFilter CALL, not four as in `Shutdown`. `objInst%instLPF` is INOUT
+    // and LPFilter post-increments it, so this call occupies one slot in the
+    // filter's DIMENSION(1024) state arrays; the bound that keeps a generated
+    // case inside that extent is pinned in harness/ranges.toml, not guarded
+    // here.
+    //
+    // The reference's optional `InitialValue` is absent, so `has_InitialValue`
+    // is 0 and the value slot is unread. `LocalVar%restart` is LOGICAL in the
+    // reference and `int8_t` in the view; `? 1 : 0` is the spelling every other
+    // unit in this campaign uses for it.
+    LocalVar->SU_RotSpeedF =
+        lpfilter_c(LocalVar->RotSpeed, LocalVar->DT, CntrPar->SU_RotorSpeedCornerFreq, &LocalVar->FP,
+                   LocalVar->iStatus, LocalVar->restart ? 1 : 0, &objInst->instLPF, 0, 0.0);
+
+    // !Initialize startup stage (SU_Stage)
+    // IF (LocalVar%iStatus == 0) THEN
+    //     ! Initilize startup stage variable to 1 to denote FreeWheeling
+    //     LocalVar%SU_Stage = -1
+    // ENDIF
+    //
+    // The comment says 1 and the code says -1. The code is the oracle (P7);
+    // -1 is the documented "pre startup waiting for transients" stage in the
+    // block comment at the top of the reference.
+    if (LocalVar->iStatus == 0) {
+        LocalVar->SU_Stage = -1;
+    }
+
+    // IF ((LocalVar%SU_Stage == -1) .AND. (LocalVar%Time > CntrPar%SU_StartTime)) THEN
+    //     LocalVar%SU_Stage = 1
+    // ENDIF
+    //
+    // STRICT `>`. On the very first call of scenario 9 `Time` is 0 and
+    // `SU_StartTime` is 0, so this is false and the -1 stage lasts exactly one
+    // invocation; a `>=` would have made it last none. That single call is the
+    // difference this comparison decides, and the corpus reaches the equality.
+    if ((LocalVar->SU_Stage == -1) && (LocalVar->Time > CntrPar->SU_StartTime)) {
+        LocalVar->SU_Stage = 1;
+    }
+
+    // ! Determine last time at which rotor speed was below 0.95*threshold speed
+    // ! during freewheeling
+    // IF ((LocalVar%SU_Stage == 1) .AND. &
+    // (LocalVar%SU_RotSpeedF < 0.95_DbKi * CntrPar%SU_RotorSpeedThresh)) THEN
+    //     LocalVar%SU_LoadStageStartTime = LocalVar%Time
+    // ENDIF
+    //
+    // `0.95 * thresh`, in that order and as one product -- not `thresh * 0.95`
+    // and not a pre-scaled constant. Multiplication is commutative in IEEE-754
+    // for finite operands, so the order is not what is being preserved; the
+    // SHAPE is, because it is what a reader diffs against the reference.
+    //
+    // THIS IS THE STATEMENT NO SIMULATION EXECUTES (0 hits in all 27
+    // scenarios). It is reachable only through the differential harness.
+    if ((LocalVar->SU_Stage == 1) &&
+        (LocalVar->SU_RotSpeedF < 0.95 * CntrPar->SU_RotorSpeedThresh)) {
+        LocalVar->SU_LoadStageStartTime = LocalVar->Time;
+    }
+
+    // !If free-wheeling exit criteria are met, swtich to load stages
+    // IF ((LocalVar%SU_Stage == 1) .AND. &
+    // (LocalVar%Time>=(CntrPar%SU_FW_MinDuration+LocalVar%SU_LoadStageStartTime))) THEN
+    //     LocalVar%SU_LoadStageStartTime = LocalVar%Time
+    //     LocalVar%SU_Stage = 2
+    // ENDIF
+    //
+    // The sum is parenthesised in the reference and is parenthesised here, with
+    // the duration on the LEFT. Rewriting it as `Time - StartTime >= MinDuration`
+    // is the same in real arithmetic and a different rounding.
+    if ((LocalVar->SU_Stage == 1) &&
+        (LocalVar->Time >= (CntrPar->SU_FW_MinDuration + LocalVar->SU_LoadStageStartTime))) {
+        LocalVar->SU_LoadStageStartTime = LocalVar->Time;
+        LocalVar->SU_Stage = 2;
+    }
+
+    // ! Switch to next load stage when criteria are met
+    // IF ((LocalVar%SU_Stage .ge. 2) .AND. &
+    // (LocalVar%Time >= LocalVar%SU_LoadStageStartTime
+    //      + CntrPar%SU_LoadRampDuration(LocalVar%SU_Stage-1)
+    //      + CntrPar%SU_LoadHoldDuration(LocalVar%SU_Stage-1)) .AND. &
+    // (LocalVar%SU_Stage .le. CntrPar%SU_LoadStages_N+1)) THEN
+    //     LocalVar%SU_Stage = LocalVar%SU_Stage + 1
+    //     LocalVar%SU_LoadStageStartTime = LocalVar%Time
+    // ENDIF
+    //
+    // THE BOUND CHECK IS THE THIRD CONJUNCT AND THE SUBSCRIPTS ARE IN THE
+    // SECOND. `SU_Stage .le. SU_LoadStages_N+1` is what keeps `SU_Stage-1`
+    // inside the two allocatables' extents, and it is tested AFTER the two
+    // reads that need it. Fortran does not require left-to-right evaluation of
+    // `.AND.`, so the reference's behaviour on an out-of-range `SU_Stage` is
+    // whatever gfortran chose; C++ `&&` DOES sequence left to right, so this
+    // transcription reads out of bounds exactly where the reference's own
+    // ordering does. That is the reference's shape, not a translation choice --
+    // and it is why `LocalVar_SU_Stage` is pinned in harness/ranges.toml rather
+    // than guarded here. A guard would be a second program.
+    //
+    // The sum is left-associated as the reference writes it: ((start + ramp) +
+    // hold). Re-grouping it rounds differently.
+    if ((LocalVar->SU_Stage >= 2) &&
+        (LocalVar->Time >= LocalVar->SU_LoadStageStartTime +
+                               CntrPar->SU_LoadRampDuration[LocalVar->SU_Stage - 1 - 1] +
+                               CntrPar->SU_LoadHoldDuration[LocalVar->SU_Stage - 1 - 1]) &&
+        (LocalVar->SU_Stage <= CntrPar->SU_LoadStages_N + 1)) {
+        LocalVar->SU_Stage = LocalVar->SU_Stage + 1;
+        LocalVar->SU_LoadStageStartTime = LocalVar->Time;
+    }
+
+    // ! Set PRC_R_Speed, SU_PrevLoad based on SU_Stage
+    // IF (LocalVar%SU_Stage == 1) THEN
+    //     LocalVar%PRC_R_Speed = CntrPar%SU_RotorSpeedThresh
+    //                            * CntrPar%WE_GearboxRatio / CntrPar%PC_RefSpd
+    //
+    // `*` and `/` have equal precedence and associate left to right in both
+    // languages, so this is (thresh * ratio) / refspd on both sides. Written
+    // without added parentheses so the shape still diffs against the reference.
+    //
+    // NOTE THE ORDER OF THE FOUR ARMS. This chain runs AFTER the stage
+    // increment above, so `SU_Stage` here is the NEW stage; and the last arm
+    // (`== SU_LoadStages_N + 2`) is what ends startup, which means the stage
+    // that the increment produced is retired one call later, not on the call
+    // that produced it -- except at the top of the ladder, where the increment
+    // to N+2 and the reset to 0 happen on the SAME call. Scenario 9 does
+    // exactly that at invocation 1801.
+    if (LocalVar->SU_Stage == 1) {
+        LocalVar->PRC_R_Speed =
+            CntrPar->SU_RotorSpeedThresh * CntrPar->WE_GearboxRatio / CntrPar->PC_RefSpd;
+
+        // ELSEIF (LocalVar%SU_Stage == 2) THEN
+        //     SU_PrevLoad = 0.0_DbKi
+        //     ! Ramp up PRC_R_Speed to 1.0 in duration = SU_LoadRampDuration(1)
+        //     LocalVar%PRC_R_Speed = sigma(LocalVar%Time, LocalVar%SU_LoadStageStartTime,
+        //         LocalVar%SU_LoadStageStartTime + CntrPar%SU_LoadRampDuration(LocalVar%SU_Stage - 1),
+        //         CntrPar%SU_RotorSpeedThresh * CntrPar%WE_GearboxRatio / CntrPar%PC_RefSpd,
+        //         1.0_DbKi, ErrVar)
+        //
+        // `sigma` is integrated, and is CALLED rather than inlined (X1). It
+        // takes `ErrVar` but never SETS `aviFAIL`: its only write is to append
+        // its own name to `ErrMsg` when the caller arrives with `aviFAIL`
+        // already negative. So the one way this unit touches `ErrVar` at all is
+        // through a callee, on an error some other unit raised.
+        //
+        // ON THIS ARM `SU_Stage` IS 2, so the subscript is `SU_LoadRampDuration(1)`
+        // -- the reference writes `SU_Stage - 1` rather than the literal 1 that
+        // its own comment names, and the two agree only because the arm's guard
+        // is an equality. Transcribed as the expression it is.
+    } else if (LocalVar->SU_Stage == 2) {
+        SU_PrevLoad = 0.0;
+        LocalVar->PRC_R_Speed = sigma_c(
+            LocalVar->Time, LocalVar->SU_LoadStageStartTime,
+            LocalVar->SU_LoadStageStartTime + CntrPar->SU_LoadRampDuration[LocalVar->SU_Stage - 1 - 1],
+            CntrPar->SU_RotorSpeedThresh * CntrPar->WE_GearboxRatio / CntrPar->PC_RefSpd, 1.0, ErrVar);
+
+        // ELSEIF ((LocalVar%SU_Stage .ge. 2) .AND.
+        //         (LocalVar%SU_Stage .le. CntrPar%SU_LoadStages_N + 1)) THEN
+        //     SU_PrevLoad = CntrPar%SU_LoadStages(LocalVar%SU_Stage-2)
+        //
+        // THIS ARM SETS NO `PRC_R_Speed`. From load stage 3 upward the speed
+        // reference is left at whatever the stage-2 ramp last wrote -- it is
+        // not re-ramped and not held to 1.0 explicitly. That absence is part of
+        // the contract and is transcribed as an absence (P6).
+        //
+        // `SU_Stage - 2` cannot be below 1 here: the `== 2` arm above catches
+        // the only stage that would make it 0, so this arm is entered with
+        // `SU_Stage >= 3`.
+    } else if ((LocalVar->SU_Stage >= 2) && (LocalVar->SU_Stage <= CntrPar->SU_LoadStages_N + 1)) {
+        SU_PrevLoad = CntrPar->SU_LoadStages[LocalVar->SU_Stage - 2 - 1];
+
+        // ELSEIF (LocalVar%SU_Stage == CntrPar%SU_LoadStages_N + 2) THEN
+        //     ! Set SU_Stage = 0 when startup is over.
+        //     LocalVar%SU_Stage = 0
+        //
+        // NO FINAL `ELSE`. With `SU_Stage` at -1, 0, or anywhere above N+2 the
+        // unit leaves `PRC_R_Speed` and `SU_PrevLoad` exactly as it found them.
+    } else if (LocalVar->SU_Stage == CntrPar->SU_LoadStages_N + 2) {
+        // RED TEST: the startup-complete reset deleted
+    }
+
+    // ! Set PRC_R_Torque based on SU_Stage
+    // IF ((LocalVar%SU_Stage == 1) .OR. (LocalVar%SU_Stage == -1)) THEN
+    //     LocalVar%PRC_R_Torque = 0.0_DbKi
+    //
+    // THIS CHAIN READS THE STAGE THE CHAIN ABOVE MAY HAVE JUST CHANGED. On the
+    // call where startup completes, the arm above has already set `SU_Stage` to
+    // 0, so neither arm here fires and `PRC_R_Torque` keeps its last value --
+    // it is not zeroed on completion. Scenario 9 does this once, at invocation
+    // 1801.
+    if ((LocalVar->SU_Stage == 1) || (LocalVar->SU_Stage == -1)) {
+        LocalVar->PRC_R_Torque = 0.0;
+
+        // ELSEIF ((LocalVar%SU_Stage .ge. 2) .AND.
+        //         (LocalVar%SU_Stage .le. CntrPar%SU_LoadStages_N + 1)) THEN
+        //     IF (LocalVar%Time < LocalVar%SU_LoadStageStartTime
+        //                         + CntrPar%SU_LoadRampDuration(LocalVar%SU_Stage-1)) THEN
+        //         LocalVar%PRC_R_Torque = sigma(LocalVar%Time, LocalVar%SU_LoadStageStartTime,
+        //             LocalVar%SU_LoadStageStartTime + CntrPar%SU_LoadRampDuration(LocalVar%SU_Stage - 1),
+        //             SU_PrevLoad, CntrPar%SU_LoadStages(LocalVar%SU_Stage - 1), ErrVar)
+        //     ELSE
+        //         LocalVar%PRC_R_Torque = CntrPar%SU_LoadStages(LocalVar%SU_Stage - 1)
+        //     ENDIF
+        //
+        // The ramp end is recomputed here rather than reused from the arm
+        // above: the reference forms `SU_LoadStageStartTime + ramp` twice, once
+        // in the test and once as `sigma`'s `x1`. Both are transcribed. Hoisting
+        // it into a local would be the same value and a different diff.
+        //
+        // STRICT `<` on the ramp test, so at `Time` exactly on the ramp end the
+        // ELSE runs and the torque is the stage's load outright.
+        //
+        // THE TWO ARMS DO NOT AGREE ON THAT BOUNDARY, which is what makes the
+        // `<` -> `<=` mutant killable and is worth stating because the opposite
+        // is the intuitive reading. `sigma` at `x == x1` does not take its
+        // `x > x1` early return; it evaluates the cubic, whose bracket is 1 in
+        // exact arithmetic and is not bit-exactly 1 in IEEE-754. So the ramp arm
+        // returns `(≈1)*(y1-y0) + y0` and the ELSE arm returns `y1` -- the same
+        // number to about a ULP and not the same bits. A case with `Time`
+        // exactly on the ramp end separates them.
+    } else if ((LocalVar->SU_Stage >= 2) && (LocalVar->SU_Stage <= CntrPar->SU_LoadStages_N + 1)) {
+        if (LocalVar->Time < LocalVar->SU_LoadStageStartTime +
+                                 CntrPar->SU_LoadRampDuration[LocalVar->SU_Stage - 1 - 1]) {
+            LocalVar->PRC_R_Torque = sigma_c(
+                LocalVar->Time, LocalVar->SU_LoadStageStartTime,
+                LocalVar->SU_LoadStageStartTime +
+                    CntrPar->SU_LoadRampDuration[LocalVar->SU_Stage - 1 - 1],
+                SU_PrevLoad, CntrPar->SU_LoadStages[LocalVar->SU_Stage - 1 - 1], ErrVar);
+        } else {
+            LocalVar->PRC_R_Torque = CntrPar->SU_LoadStages[LocalVar->SU_Stage - 1 - 1];
+        }
+    }
+}
