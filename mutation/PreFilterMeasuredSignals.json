@@ -1,0 +1,235 @@
+{
+ "unit": "PreFilterMeasuredSignals",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_operands"
+ ],
+ "operator_population": {
+  "compare_op": 13,
+  "drop_factor": 3,
+  "arith_op": 28,
+  "swap_operands": 25,
+  "index_offset": 6,
+  "const_tweak": 40,
+  "negate_cond": 7,
+  "drop_call": 3,
+  "swap_call_args": 1
+ },
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutants": 126,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 126,
+ "killed": 104,
+ "survived": 22,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.8254,
+ "loop_rev": "3ac5b4a-nogit",
+ "vit_rev": "fe22383-nogit",
+ "merged_from": [
+  {
+   "part": "mutation/PreFilterMeasuredSignals.clean.const_tweak.json",
+   "operators_filter": [
+    "const_tweak"
+   ],
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 28,
+   "survived": 12,
+   "score": 0.7
+  },
+  {
+   "part": "mutation/PreFilterMeasuredSignals.clean.arith_swap.json",
+   "operators_filter": [
+    "arith_op",
+    "swap_operands"
+   ],
+   "total": 53,
+   "mutants": 53,
+   "nocompile": 0,
+   "killed": 43,
+   "survived": 10,
+   "score": 0.8113
+  },
+  {
+   "part": "mutation/PreFilterMeasuredSignals.clean.rest.json",
+   "operators_filter": [
+    "compare_op",
+    "drop_call",
+    "drop_factor",
+    "index_offset",
+    "negate_cond",
+    "swap_call_args"
+   ],
+   "total": 33,
+   "mutants": 33,
+   "nocompile": 0,
+   "killed": 33,
+   "survived": 0,
+   "score": 1.0
+  }
+ ],
+ "merged_why": "126 mutants at ~10s each is 21 minutes against a 600-second foreground command; split by operator into 40 + 53 + 33, never backgrounded",
+ "merged_by": "scripts/_mutation_merge.py",
+ "survivors": [
+  {
+   "id": "de182d5d",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "7b4a77d6",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "5af79593",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "d1176b2a",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "8ee1a8eb",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "c7b595be",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "da77cec9",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "4da49b0b",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "5dc60b4b",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "30c3ea03",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "c0a14321",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "76ccb45c",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "f4b55a2b",
+   "operator": "arith_op",
+   "before": "n - 1",
+   "after": "n + 1"
+  },
+  {
+   "id": "8fcf9db0",
+   "operator": "swap_operands",
+   "before": "ind - 1",
+   "after": "1 - ind"
+  },
+  {
+   "id": "6c4caf8b",
+   "operator": "swap_operands",
+   "before": "ind - 1",
+   "after": "1 - ind"
+  },
+  {
+   "id": "2bf62c37",
+   "operator": "swap_operands",
+   "before": "ind - 1",
+   "after": "1 - ind"
+  },
+  {
+   "id": "2d82282a",
+   "operator": "swap_operands",
+   "before": "ind - 1",
+   "after": "1 - ind"
+  },
+  {
+   "id": "5eabc5a4",
+   "operator": "swap_operands",
+   "before": "ind - 1",
+   "after": "1 - ind"
+  },
+  {
+   "id": "cb503d99",
+   "operator": "swap_operands",
+   "before": "ind - 1",
+   "after": "1 - ind"
+  },
+  {
+   "id": "438e3db5",
+   "operator": "swap_operands",
+   "before": "ind - 1",
+   "after": "1 - ind"
+  },
+  {
+   "id": "6b45da8b",
+   "operator": "swap_operands",
+   "before": "ind - 1",
+   "after": "1 - ind"
+  },
+  {
+   "id": "daf988db",
+   "operator": "swap_operands",
+   "before": "ind - 1",
+   "after": "1 - ind"
+  }
+ ]
+}
