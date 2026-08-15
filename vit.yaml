@@ -234,7 +234,40 @@ kgen:
   # calls fall through before the main block. The differential harness draws
   # `ZMQ_Mode`, `Y_uSwitch`, `OL_Mode`, `Ind_YawRate` and the two OL arrays
   # freely and is the instrument that reaches all three.
-  run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py --scenario 7
+  #
+  # SCENARIO 8 for unit #46 `ratelimit`, and the choice is made on WHETHER THE
+  # CLAMP FIRES rather than on hit count -- unit #24's rule ("the kernel is
+  # alive" and "the kernel can see what this unit is FOR" are two claims, and
+  # only the second decides a call site").
+  #
+  # This unit's whole purpose is `rate = saturate(rate, minRate, maxRate)`, and
+  # at the three PitchControl call sites the bounds are `CntrPar%PC_MinRat` /
+  # `PC_MaxRat`, which is 0.1745 rad/s in all 14 shipped `Examples/DISCON*.IN`.
+  # The LAST of those three sites writes `LocalVar%PitComAct(K)`, which reaches
+  # `avrSWAP(42..44)` unchanged whenever `PF_Mode == 0` -- so `bld_pitch` in the
+  # COMMITTED baseline arrays IS this unit's own output, per invocation, and
+  # `|diff(bld_pitch)| == PC_MaxRat*dt` is the clamp firing. Same instrument as
+  # unit #44's `sign(diff(nac_yaw)/dt)`: read off an artifact the campaign
+  # already owns, not computed from a patch dict.
+  #
+  # The census over all 27 committed baselines (dt = 0.025, so the clamp value
+  # is 0.1745*0.025 = 0.004362501):
+  #
+  #   scenario  8   4,611 upper + 4,557 lower of 15,999   <- BOTH clamps, ~57%
+  #   scenario 22   2,142 upper + 2,085 lower             AWC_Mode=5
+  #   scenario 27   1,065 upper + 1,131 lower
+  #   scenario  9      43 upper +    36 lower
+  #   scenario 20     121 upper +      0 lower            <- one-sided
+  #   scenarios 1,3,5,7,11,15,16,18,21,25   1 to 8 upper, ZERO lower
+  #
+  # THE DEFAULT SCENARIO WOULD HAVE BEEN NEARLY BLIND. Scenario 1 runs the site
+  # 79,998 times and clamps on 4 of them, all in the same direction -- a kernel
+  # built there would pass a translation with no lower clamp at all, which is
+  # exactly unit #24's `ControllerBlocks.f90:332` failure one function up.
+  # Scenario 8 clamps in both directions on more than half its invocations
+  # because IPC_ControlMode=1 with non-zero gains puts a 1P oscillation on each
+  # blade's command.
+  run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py --scenario 8
   clean_cmd: cd /workspace/ROSCO-r2/rosco/controller/build && make clean
   install_cmd: cp /workspace/ROSCO-r2/rosco/controller/build/libdiscon.so /workspace/ROSCO-r2/rosco/lib/libdiscon.so
   # WIDENED 2026-08-10 during unit #2, and it took two tries. The setup value
@@ -374,7 +407,39 @@ kgen:
   # 2034-2054 (the -1 -> 0 stop, straddling 2044). The two stops are separate
   # ranges because they are separate ARMS -- :436/:437 and :447/:448 -- and one
   # `NacHeadingError` cannot be in both.
-  invocation: 0:0:1-20,0:0:177-197,0:0:1034-1054,0:0:1178-1198,0:0:2034-2054
+  #
+  # RE-AIMED for unit #46 `ratelimit` at the clean call site
+  # `Controllers.f90:181` -- `LocalVar%PitComAct(K) = ratelimit(...)`, inside
+  # `DO K = 1,LocalVar%NumBl`, so the site runs THREE times per DISCON call and
+  # the invocation index is 3x the timestep. Total 3 x 15,999 = 47,997 in
+  # scenario 8.
+  #
+  # THE RESET ARM IS ONE INVOCATION WIDE PER CALL SITE, IN EVERY SCENARIO.
+  # `LocalVar%restart` is `(iStatus == 0)` and nothing else (readavrswap.cpp,
+  # unit #16), so the THEN arm of this unit runs exactly once per call site per
+  # run. Coverage agrees exactly: clean `Functions.f90:75` records 8 hits in
+  # every scenario, which is 1 (Controllers:103) + 3 (Controllers:121) +
+  # 3 (Controllers:181) + 1 (Controllers:319) -- the eight ratelimit calls of
+  # the FIRST DISCON call and no others. Scenario 9 records 9 because
+  # `ControllerBlocks.f90:813` (TRA) is a ninth site it alone reaches.
+  #
+  # So the first range MUST start at 1 or the reset arm -- and with it the
+  # `PRESENT(ResetValue)` branch, which is only observable there -- is outside
+  # the kernel entirely.
+  #
+  #   invocations   1-3     iStatus == 0, restart TRUE, K = 1,2,3   the THEN arm
+  #   invocations   4-20    the ELSE arm at timesteps 1..5
+  #   invocations 23990-24010  timestep ~8000, dense clamping both directions
+  #   invocations 47900-47920  timestep ~15970, ditto, short of the run's end
+  #
+  # `inst` is `objInst%instRL`, reset to 1 in `ReadAvrSWAP`
+  # (ReadSetParameters.f90:121) at the top of every DISCON call and incremented
+  # by this unit itself. DISCON.F90 calls VariableSpeedControl (:319, inst 1)
+  # before PitchControl (:103 -> 2, :121 K=1,2,3 -> 3,4,5, :181 K=1,2,3 ->
+  # 6,7,8), so at THIS site `inst` takes 6, 7, 8 -- three distinct subscripts
+  # rather than PIController's single 3 (unit #33's stated blind spot #2,
+  # avoided here by the choice of site rather than by a rule).
+  invocation: 0:0:1-20,0:0:23990-24010,0:0:47900-47920
   # Interface truth about the Bladed-style array: DISCON receives it as an
   # assumed-size dummy, so nothing in the source states its extent.
   assumed_size_arrays:
