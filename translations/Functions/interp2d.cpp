@@ -204,11 +204,23 @@ double interp2d(double* xData, int n_xData, double* yData, int n_yData,
     // leaves them one past the bound.
     //
     // `i`, `ii`, `j` and `jj` are left UNINITIALISED, as the reference leaves
-    // them. `ii` is READ WITHOUT HAVING BEEN WRITTEN on exactly one input --
-    // `yq` NaN with `xq` interior -- because the y-direction has no
-    // `ieee_is_nan` guard where the x-direction does. That asymmetry is
-    // upstream ROSCO's, and on that input the reference has no answer to
-    // compare against, the same standing as interp1d's `yData(I-2)`.
+    // them.
+    //
+    // THIS COMMENT PREVIOUSLY SAID THAT THE Y-DIRECTION HAS NO `ieee_is_nan`
+    // GUARD WHERE THE X-DIRECTION DOES, AND THAT WAS A STATEMENT ABOUT THIS
+    // FILE MISREAD AS A STATEMENT ABOUT THE REFERENCE. `Functions.f90` at the
+    // clean baseline guards BOTH searches -- lines 231 and 257, `grep -c
+    // ieee_is_nan` is 2 -- and the omission was here, at the `yq <= yData_min`
+    // test below. On `yq` NaN with `xq` interior the reference returns
+    // `interp1d(xData, zData(1,:), xq)` and this translation ran the y-loop to
+    // completion and read `ii` without having written it. Fixed; recorded
+    // first, with the wrong artifact quoted, in
+    // evidence/interp2d/yq-nan-guard.MISTRANSLATION.md (C12).
+    //
+    // With both guards in place, neither `i` nor `ii` nor `j` nor `jj` is ever
+    // read unwritten: a NaN query returns at the first test in its own
+    // direction, and a non-NaN query strictly inside the extrema always
+    // reaches an EXIT because some element exceeds it.
     //
     // SIX OF THE REFERENCE'S TEN INDEX ASSIGNMENTS ARE DEAD and are not
     // transcribed: every `jj = ...` and `ii = ...` that stands immediately
@@ -250,7 +262,7 @@ double interp2d(double* xData, int n_xData, double* yData, int n_yData,
     }
     j = j - 1;  // Move j back one
     // y-direction
-    if (yq <= yData_min) {
+    if (yq <= yData_min || std::isnan(yq)) {
         // On lower y-bound, just need to find zData(xq)
         i = 1;
         std::vector<double> zRow = row(i);
