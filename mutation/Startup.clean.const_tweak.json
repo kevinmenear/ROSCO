@@ -23,75 +23,20 @@
  ],
  "operators_filter_unmatched": [],
  "mutants": 40,
- "equivalent_declared": 0,
+ "equivalent_declared": 3,
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 40,
- "killed": 31,
- "survived": 9,
- "equivalent": 0,
+ "killed": 37,
+ "survived": 0,
+ "equivalent": 3,
  "declared_but_killed": [],
- "score": 0.775,
+ "score": 1.0,
  "loop_rev": "f92fb9f-nogit",
  "gen_rev": "gen-91594e268ae0",
  "vit_rev": "fe22383-nogit",
- "survivors": [
-  {
-   "id": "70fb0b49",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "987e58c9",
-   "operator": "const_tweak",
-   "before": "0.0",
-   "after": "1.0"
-  },
-  {
-   "id": "a1fb8088",
-   "operator": "const_tweak",
-   "before": "0.95",
-   "after": "1.95"
-  },
-  {
-   "id": "fc93f4a8",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "2c8172b8",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "adda4b6f",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "01ab0858",
-   "operator": "const_tweak",
-   "before": "1.0",
-   "after": "2.0"
-  },
-  {
-   "id": "ff2b5130",
-   "operator": "const_tweak",
-   "before": "2",
-   "after": "3"
-  },
-  {
-   "id": "119425f3",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  }
- ]
+ "survivors": []
 }

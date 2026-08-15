@@ -1,37 +1,36 @@
-run_if_time_remains: 12680s remain, 320s needed -- starting
+run_if_time_remains: 11417s remain, 320s needed -- starting
 NOTE: operator filter ['arith_op', 'drop_factor'] -- scoring 24 of 106 mutants. The other 82 are NOT re-run here and this artifact says nothing about them; the unit's own mutation/<U>.json is where they were scored.
 24 mutant(s) from startup.cpp
 
-baseline: 7103 case(s), 0 failed, 7.7s; per-mutant watchdog 154s
+baseline: 7151 case(s), 0 failed, 7.7s; per-mutant watchdog 155s
 
-  [  1/24] drop_factor      '0.95 * CntrPar->SU_RotorSpeedThresh' -> '0.95'  killed (368/7103 cases)
-  [  2/24] drop_factor      'CntrPar->SU_RotorSpeedThresh * CntrPar->WE_GearboxRatio' -> 'CntrPar->SU_RotorSpeedThresh'  killed (624/7103 cases)
-  [  3/24] drop_factor      'CntrPar->SU_RotorSpeedThresh * CntrPar->WE_GearboxRatio' -> 'CntrPar->SU_RotorSpeedThresh'  killed (2/7103 cases)
-  [  4/24] arith_op         '0.95 * CntrPar->SU_RotorSpeedThresh' -> '0.95 / CntrPar->SU_RotorSpeedThresh'  killed (1/7103 cases)
-  [  5/24] arith_op         'CntrPar->SU_FW_MinDuration + LocalVar->SU_LoadStageStartTime' -> 'CntrPar->SU_FW_MinDuration - LocalVar->SU_LoadStageStartTime'  killed (31/7103 cases)
-  [  6/24] arith_op         'LocalVar->SU_LoadStageStartTime +\n                               CntrPar->SU_LoadRampDuration' -> 'LocalVar->SU_LoadStageStartTime - CntrPar->SU_LoadRampDuration'  killed (47/7103 cases)
-  [  7/24] arith_op         'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'  killed (47/7103 cases)
-  [  8/24] arith_op         'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'  killed (41/7103 cases)
-  [  9/24] arith_op         'CntrPar->SU_LoadStages_N + 1' -> 'CntrPar->SU_LoadStages_N - 1'  killed (192/7103 cases)
-  [ 10/24] arith_op         'LocalVar->SU_Stage + 1' -> 'LocalVar->SU_Stage - 1'  killed (326/7103 cases)
-  [ 11/24] arith_op         'CntrPar->SU_RotorSpeedThresh * CntrPar->WE_GearboxRatio' -> 'CntrPar->SU_RotorSpeedThresh / CntrPar->WE_GearboxRatio'  killed (624/7103 cases)
-  [ 12/24] arith_op         'LocalVar->SU_LoadStageStartTime + CntrPar->SU_LoadRampDuration' -> 'LocalVar->SU_LoadStageStartTime - CntrPar->SU_LoadRampDuration'  SURVIVED
-  [ 13/24] arith_op         'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'  SURVIVED
-  [ 14/24] arith_op         'CntrPar->SU_RotorSpeedThresh * CntrPar->WE_GearboxRatio' -> 'CntrPar->SU_RotorSpeedThresh / CntrPar->WE_GearboxRatio'  killed (2/7103 cases)
-  [ 15/24] arith_op         'CntrPar->SU_LoadStages_N + 1' -> 'CntrPar->SU_LoadStages_N - 1'  killed (58/7103 cases)
-  [ 16/24] arith_op         'LocalVar->SU_Stage - 2' -> 'LocalVar->SU_Stage + 2'  killed (58/7103 cases)
-  [ 17/24] arith_op         'CntrPar->SU_LoadStages_N + 2' -> 'CntrPar->SU_LoadStages_N - 2'  killed (333/7103 cases)
-  [ 18/24] arith_op         'CntrPar->SU_LoadStages_N + 1' -> 'CntrPar->SU_LoadStages_N - 1'  killed (192/7103 cases)
-  [ 19/24] arith_op         'LocalVar->SU_LoadStageStartTime +\n                                 CntrPar->SU_LoadRampDuration' -> 'LocalVar->SU_LoadStageStartTime - CntrPar->SU_LoadRampDuration'  killed (16/7103 cases)
-  [ 20/24] arith_op         'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'  killed (14/7103 cases)
-  [ 21/24] arith_op         'LocalVar->SU_LoadStageStartTime +\n                    CntrPar->SU_LoadRampDuration' -> 'LocalVar->SU_LoadStageStartTime - CntrPar->SU_LoadRampDuration'  killed (11/7103 cases)
-  [ 22/24] arith_op         'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'  killed (11/7103 cases)
-  [ 23/24] arith_op         'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'  killed (6/7103 cases)
-  [ 24/24] arith_op         'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'  killed (134/7103 cases)
+  [  1/24] drop_factor      '0.95 * CntrPar->SU_RotorSpeedThresh' -> '0.95'  killed (370/7151 cases)
+  [  2/24] drop_factor      'CntrPar->SU_RotorSpeedThresh * CntrPar->WE_GearboxRatio' -> 'CntrPar->SU_RotorSpeedThresh'  killed (624/7151 cases)
+  [  3/24] drop_factor      'CntrPar->SU_RotorSpeedThresh * CntrPar->WE_GearboxRatio' -> 'CntrPar->SU_RotorSpeedThresh'  killed (32/7151 cases)
+  [  4/24] arith_op         '0.95 * CntrPar->SU_RotorSpeedThresh' -> '0.95 / CntrPar->SU_RotorSpeedThresh'  killed (3/7151 cases)
+  [  5/24] arith_op         'CntrPar->SU_FW_MinDuration + LocalVar->SU_LoadStageStartTime' -> 'CntrPar->SU_FW_MinDuration - LocalVar->SU_LoadStageStartTime'  killed (31/7151 cases)
+  [  6/24] arith_op         'LocalVar->SU_LoadStageStartTime +\n                               CntrPar->SU_LoadRampDuration' -> 'LocalVar->SU_LoadStageStartTime - CntrPar->SU_LoadRampDuration'  killed (47/7151 cases)
+  [  7/24] arith_op         'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'  killed (47/7151 cases)
+  [  8/24] arith_op         'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'  killed (41/7151 cases)
+  [  9/24] arith_op         'CntrPar->SU_LoadStages_N + 1' -> 'CntrPar->SU_LoadStages_N - 1'  killed (192/7151 cases)
+  [ 10/24] arith_op         'LocalVar->SU_Stage + 1' -> 'LocalVar->SU_Stage - 1'  killed (326/7151 cases)
+  [ 11/24] arith_op         'CntrPar->SU_RotorSpeedThresh * CntrPar->WE_GearboxRatio' -> 'CntrPar->SU_RotorSpeedThresh / CntrPar->WE_GearboxRatio'  killed (624/7151 cases)
+  [ 12/24] arith_op         'LocalVar->SU_LoadStageStartTime + CntrPar->SU_LoadRampDuration' -> 'LocalVar->SU_LoadStageStartTime - CntrPar->SU_LoadRampDuration'  killed (30/7151 cases)
+  [ 13/24] arith_op         'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'  killed (11/7151 cases)
+  [ 14/24] arith_op         'CntrPar->SU_RotorSpeedThresh * CntrPar->WE_GearboxRatio' -> 'CntrPar->SU_RotorSpeedThresh / CntrPar->WE_GearboxRatio'  killed (32/7151 cases)
+  [ 15/24] arith_op         'CntrPar->SU_LoadStages_N + 1' -> 'CntrPar->SU_LoadStages_N - 1'  killed (58/7151 cases)
+  [ 16/24] arith_op         'LocalVar->SU_Stage - 2' -> 'LocalVar->SU_Stage + 2'  killed (58/7151 cases)
+  [ 17/24] arith_op         'CntrPar->SU_LoadStages_N + 2' -> 'CntrPar->SU_LoadStages_N - 2'  killed (333/7151 cases)
+  [ 18/24] arith_op         'CntrPar->SU_LoadStages_N + 1' -> 'CntrPar->SU_LoadStages_N - 1'  killed (205/7151 cases)
+  [ 19/24] arith_op         'LocalVar->SU_LoadStageStartTime +\n                                 CntrPar->SU_LoadRampDuration' -> 'LocalVar->SU_LoadStageStartTime - CntrPar->SU_LoadRampDuration'  killed (29/7151 cases)
+  [ 20/24] arith_op         'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'  killed (14/7151 cases)
+  [ 21/24] arith_op         'LocalVar->SU_LoadStageStartTime +\n                    CntrPar->SU_LoadRampDuration' -> 'LocalVar->SU_LoadStageStartTime - CntrPar->SU_LoadRampDuration'  killed (24/7151 cases)
+  [ 22/24] arith_op         'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'  killed (11/7151 cases)
+  [ 23/24] arith_op         'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'  killed (6/7151 cases)
+  [ 24/24] arith_op         'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'  killed (134/7151 cases)
 
-killed 22 of 24 BEHAVIOURAL scoreable (0 declared equivalent, 0 did not compile and are excluded)   score 0.917
-  SURVIVOR dd18aade arith_op: 'LocalVar->SU_LoadStageStartTime + CntrPar->SU_LoadRampDuration' -> 'LocalVar->SU_LoadStageStartTime - CntrPar->SU_LoadRampDuration'
-  SURVIVOR 29aef248 arith_op: 'LocalVar->SU_Stage - 1' -> 'LocalVar->SU_Stage + 1'
+killed 24 of 24 BEHAVIOURAL scoreable (0 declared equivalent, 0 did not compile and are excluded)   score 1.000
+  no surviving mutant among those tried -- which is not the same as no blind spot
 artifact: mutation/Startup.clean.arith.json
 mutate_guarded: translations/ControllerBlocks/startup.cpp restored to 765963a1eea12d2dcae60b73a2fe2d7e2fb2800c; marker cleared; sweep exit 0
-run_if_time_remains: exit 0 after 200s (estimated 320s; 12480s now remain)
+run_if_time_remains: exit 0 after 202s (estimated 320s; 11215s now remain)

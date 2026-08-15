@@ -1,60 +1,52 @@
-run_if_time_remains: 13011s remain, 480s needed -- starting
+run_if_time_remains: 11749s remain, 480s needed -- starting
 NOTE: operator filter ['const_tweak'] -- scoring 40 of 106 mutants. The other 66 are NOT re-run here and this artifact says nothing about them; the unit's own mutation/<U>.json is where they were scored.
 40 mutant(s) from startup.cpp
 
-baseline: 7103 case(s), 0 failed, 7.7s; per-mutant watchdog 154s
+baseline: 7151 case(s), 0 failed, 7.7s; per-mutant watchdog 155s
 
   [  1/40] const_tweak      '1' -> '2'  SURVIVED
-  [  2/40] const_tweak      '0' -> '1'  killed (696/7103 cases)
-  [  3/40] const_tweak      '0' -> '1'  killed (808/7103 cases)
+  [  2/40] const_tweak      '0' -> '1'  killed (729/7151 cases)
+  [  3/40] const_tweak      '0' -> '1'  killed (823/7151 cases)
   [  4/40] const_tweak      '0.0' -> '1.0'  SURVIVED
-  [  5/40] const_tweak      '0' -> '1'  killed (6033/7103 cases)
-  [  6/40] const_tweak      '1' -> '2'  killed (6257/7103 cases)
-  [  7/40] const_tweak      '1' -> '2'  killed (412/7103 cases)
-  [  8/40] const_tweak      '1' -> '2'  killed (324/7103 cases)
-  [  9/40] const_tweak      '1' -> '2'  killed (1/7103 cases)
-  [ 10/40] const_tweak      '0.95' -> '1.95'  SURVIVED
-  [ 11/40] const_tweak      '1' -> '2'  killed (90/7103 cases)
-  [ 12/40] const_tweak      '2' -> '3'  killed (89/7103 cases)
-  [ 13/40] const_tweak      '2' -> '3'  killed (314/7103 cases)
-  [ 14/40] const_tweak      '1' -> '2'  killed (42/7103 cases)
-  [ 15/40] const_tweak      '1' -> '2'  killed (42/7103 cases)
-  [ 16/40] const_tweak      '1' -> '2'  killed (74/7103 cases)
-  [ 17/40] const_tweak      '1' -> '2'  killed (74/7103 cases)
-  [ 18/40] const_tweak      '1' -> '2'  SURVIVED
-  [ 19/40] const_tweak      '1' -> '2'  killed (326/7103 cases)
-  [ 20/40] const_tweak      '1' -> '2'  killed (616/7103 cases)
-  [ 21/40] const_tweak      '2' -> '3'  killed (357/7103 cases)
-  [ 22/40] const_tweak      '0.0' -> '1.0'  killed (2/7103 cases)
-  [ 23/40] const_tweak      '1' -> '2'  SURVIVED
-  [ 24/40] const_tweak      '1' -> '2'  SURVIVED
-  [ 25/40] const_tweak      '1.0' -> '2.0'  SURVIVED
+  [  5/40] const_tweak      '0' -> '1'  killed (6069/7151 cases)
+  [  6/40] const_tweak      '1' -> '2'  killed (6272/7151 cases)
+  [  7/40] const_tweak      '1' -> '2'  killed (429/7151 cases)
+  [  8/40] const_tweak      '1' -> '2'  killed (341/7151 cases)
+  [  9/40] const_tweak      '1' -> '2'  killed (1/7151 cases)
+  [ 10/40] const_tweak      '0.95' -> '1.95'  killed (13/7151 cases)
+  [ 11/40] const_tweak      '1' -> '2'  killed (131/7151 cases)
+  [ 12/40] const_tweak      '2' -> '3'  killed (108/7151 cases)
+  [ 13/40] const_tweak      '2' -> '3'  killed (314/7151 cases)
+  [ 14/40] const_tweak      '1' -> '2'  killed (42/7151 cases)
+  [ 15/40] const_tweak      '1' -> '2'  killed (42/7151 cases)
+  [ 16/40] const_tweak      '1' -> '2'  killed (74/7151 cases)
+  [ 17/40] const_tweak      '1' -> '2'  killed (74/7151 cases)
+  [ 18/40] const_tweak      '1' -> '2'  killed (11/7151 cases)
+  [ 19/40] const_tweak      '1' -> '2'  killed (326/7151 cases)
+  [ 20/40] const_tweak      '1' -> '2'  killed (638/7151 cases)
+  [ 21/40] const_tweak      '2' -> '3'  killed (400/7151 cases)
+  [ 22/40] const_tweak      '0.0' -> '1.0'  killed (15/7151 cases)
+  [ 23/40] const_tweak      '1' -> '2'  killed (30/7151 cases)
+  [ 24/40] const_tweak      '1' -> '2'  killed (30/7151 cases)
+  [ 25/40] const_tweak      '1.0' -> '2.0'  killed (22/7151 cases)
   [ 26/40] const_tweak      '2' -> '3'  SURVIVED
-  [ 27/40] const_tweak      '1' -> '2'  killed (183/7103 cases)
-  [ 28/40] const_tweak      '2' -> '3'  killed (58/7103 cases)
-  [ 29/40] const_tweak      '1' -> '2'  killed (58/7103 cases)
-  [ 30/40] const_tweak      '2' -> '3'  killed (183/7103 cases)
-  [ 31/40] const_tweak      '0' -> '1'  killed (183/7103 cases)
-  [ 32/40] const_tweak      '1' -> '2'  killed (624/7103 cases)
-  [ 33/40] const_tweak      '1' -> '2'  killed (5657/7103 cases)
-  [ 34/40] const_tweak      '0.0' -> '1.0'  killed (6505/7103 cases)
-  [ 35/40] const_tweak      '2' -> '3'  killed (2/7103 cases)
-  [ 36/40] const_tweak      '1' -> '2'  SURVIVED
-  [ 37/40] const_tweak      '1' -> '2'  killed (5/7103 cases)
-  [ 38/40] const_tweak      '1' -> '2'  killed (5/7103 cases)
-  [ 39/40] const_tweak      '1' -> '2'  killed (7/7103 cases)
-  [ 40/40] const_tweak      '1' -> '2'  killed (7/7103 cases)
+  [ 27/40] const_tweak      '1' -> '2'  killed (183/7151 cases)
+  [ 28/40] const_tweak      '2' -> '3'  killed (58/7151 cases)
+  [ 29/40] const_tweak      '1' -> '2'  killed (58/7151 cases)
+  [ 30/40] const_tweak      '2' -> '3'  killed (185/7151 cases)
+  [ 31/40] const_tweak      '0' -> '1'  killed (183/7151 cases)
+  [ 32/40] const_tweak      '1' -> '2'  killed (652/7151 cases)
+  [ 33/40] const_tweak      '1' -> '2'  killed (5657/7151 cases)
+  [ 34/40] const_tweak      '0.0' -> '1.0'  killed (6505/7151 cases)
+  [ 35/40] const_tweak      '2' -> '3'  killed (15/7151 cases)
+  [ 36/40] const_tweak      '1' -> '2'  killed (28/7151 cases)
+  [ 37/40] const_tweak      '1' -> '2'  killed (18/7151 cases)
+  [ 38/40] const_tweak      '1' -> '2'  killed (18/7151 cases)
+  [ 39/40] const_tweak      '1' -> '2'  killed (20/7151 cases)
+  [ 40/40] const_tweak      '1' -> '2'  killed (20/7151 cases)
 
-killed 31 of 40 BEHAVIOURAL scoreable (0 declared equivalent, 0 did not compile and are excluded)   score 0.775
-  SURVIVOR 70fb0b49 const_tweak: '1' -> '2'
-  SURVIVOR 987e58c9 const_tweak: '0.0' -> '1.0'
-  SURVIVOR a1fb8088 const_tweak: '0.95' -> '1.95'
-  SURVIVOR fc93f4a8 const_tweak: '1' -> '2'
-  SURVIVOR 2c8172b8 const_tweak: '1' -> '2'
-  SURVIVOR adda4b6f const_tweak: '1' -> '2'
-  SURVIVOR 01ab0858 const_tweak: '1.0' -> '2.0'
-  SURVIVOR ff2b5130 const_tweak: '2' -> '3'
-  SURVIVOR 119425f3 const_tweak: '1' -> '2'
+killed 37 of 37 BEHAVIOURAL scoreable (3 declared equivalent, 0 did not compile and are excluded)   score 1.000
+  no surviving mutant among those tried -- which is not the same as no blind spot
 artifact: mutation/Startup.clean.const_tweak.json
 mutate_guarded: translations/ControllerBlocks/startup.cpp restored to 765963a1eea12d2dcae60b73a2fe2d7e2fb2800c; marker cleared; sweep exit 0
-run_if_time_remains: exit 0 after 325s (estimated 480s; 12686s now remain)
+run_if_time_remains: exit 0 after 326s (estimated 480s; 11423s now remain)

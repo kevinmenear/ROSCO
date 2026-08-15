@@ -32,20 +32,13 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 22,
- "killed": 21,
- "survived": 1,
+ "killed": 22,
+ "survived": 0,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.9545,
+ "score": 1.0,
  "loop_rev": "f92fb9f-nogit",
  "gen_rev": "gen-91594e268ae0",
  "vit_rev": "fe22383-nogit",
- "survivors": [
-  {
-   "id": "31394a18",
-   "operator": "swap_operands",
-   "before": "LocalVar->SU_Stage - 1",
-   "after": "1 - LocalVar->SU_Stage"
-  }
- ]
+ "survivors": []
 }

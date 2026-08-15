@@ -32,26 +32,13 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 24,
- "killed": 22,
- "survived": 2,
+ "killed": 24,
+ "survived": 0,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.9167,
+ "score": 1.0,
  "loop_rev": "f92fb9f-nogit",
  "gen_rev": "gen-91594e268ae0",
  "vit_rev": "fe22383-nogit",
- "survivors": [
-  {
-   "id": "dd18aade",
-   "operator": "arith_op",
-   "before": "LocalVar->SU_LoadStageStartTime + CntrPar->SU_LoadRampDuration",
-   "after": "LocalVar->SU_LoadStageStartTime - CntrPar->SU_LoadRampDuration"
-  },
-  {
-   "id": "29aef248",
-   "operator": "arith_op",
-   "before": "LocalVar->SU_Stage - 1",
-   "after": "LocalVar->SU_Stage + 1"
-  }
- ]
+ "survivors": []
 }
