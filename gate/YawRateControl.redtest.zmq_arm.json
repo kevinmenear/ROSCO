@@ -21,14 +21,13 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "f92fb9f",
+ "loop_rev": "18dfc47",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "THE ZMQ_Mode == 1 ARM, EXPECTED TO MOVE ZERO, AND THE EXPECTATION IS WRITTEN HERE BESIDE THE NUMBER. Clean-source Controllers.f90:410 carries 0 hits in all 27 scenarios: no scenario in Examples/vit_sim.py sets ZMQ_Mode to 1, and no shipped Examples/DISCON*.IN does either, so every call takes the ELSE arm and reads Y_MErrSet.",
-  "THIS IS NOT THE SAME SHAPE AS UNIT #43s DEAD ARM. There, scenario 24 DID configure the arm and never reached the controller; here no scenario configures it at all, so widening the scenario set could reach this one. What reaches it today is the differential harness: evidence/YawRateControl/arm_census.txt records the ZMQ arm taken 323 times in 8093 cases, and the const and negate mutants at that site are both KILLED."
+  "the ZMQ_Mode == 1 offset arm -- 0 hits in all 27 scenarios, so this is a MEASUREMENT and not a failure"
  ],
  "perturbation": {
   "file": "rosco/controller/src/yawratecontrol.cpp",

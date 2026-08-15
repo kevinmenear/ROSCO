@@ -21,7 +21,7 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "f92fb9f",
+ "loop_rev": "18dfc47",
  "mismatched": 47624,
  "mismatched_channels": [
   "scenario_7:nac_yaw 23812/24000",
@@ -30,7 +30,7 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "The PERSIST-RIGHT assignment zeroed. Scenario 7 executes it 10,261 times of 23,999 (coverage/line_coverage.json, clean-source Controllers.f90:440), so this is the arm the gate sees most of, and the yaw rate it writes integrates into nac_yaw -- a channel the baselines carry."
+  "the persist-right assignment zeroed -- scenario 7's most-executed arm, 10,261 of 23,999"
  ],
  "perturbation": {
   "file": "rosco/controller/src/yawratecontrol.cpp",
