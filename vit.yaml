@@ -183,6 +183,57 @@ kgen:
   # and no shipped `Examples/DISCON*.IN` sets it to 2. The differential harness
   # draws `StC_Mode`, `StC_Group_N`, `Ind_StructControl` and the two OL arrays
   # freely and is the instrument that reaches them.
+  #
+  # SCENARIO 7 AGAIN for unit #44 `YawRateControl`, and this time the scenario is
+  # named by its own docstring: "NacVane/NacHeading: oscillating yaw error for
+  # YawRateControl". `coverage/line_coverage.json` carries hits for
+  # `DISCON.F90:123` (the unconditional call site) under four scenarios:
+  #
+  #   scenario  2    3,999 invocations   Y_ControlMode /= 1 -- the body never runs
+  #   scenario  3   15,999 invocations   Y_ControlMode = 1, but see below
+  #   scenario  7   23,999 invocations   Y_ControlMode = 1, synthetic NacVane
+  #   scenario 27   23,999 invocations   Y_ControlMode = 1, synthetic NacVane
+  #
+  # SCENARIO 3 IS DISQUALIFIED BY WHAT IT LEAVES DEAD. This unit is a three-state
+  # machine (`YawState` in {-1, 0, 1}) and scenario 3 stays in state 0 for all
+  # 15,999 calls: clean-source lines :434-:452 -- both persist arms, both stop
+  # arms and the two guards that reach them -- carry ZERO hits under 3 and 10,273
+  # / 10,226 under 7. Scenario 3 executes only :456/:460/:464, the arm that
+  # writes `YawRateCom = 0.0` and leaves. Its 15,999 calls cannot tell a correct
+  # translation from one that has no state machine at all.
+  #
+  # 7 over 27 because the two are the same run for this unit -- both patch
+  # Y_ControlMode = 1, both step dt = 0.025 to tlen = 600, both record 23,999 --
+  # and 7's docstring names this unit as the reason its NacVane is synthetic.
+  #
+  # What scenario 7 REACHES, read against the CLEAN source
+  # (`YawRateControl` at Controllers.f90:367-485 at baseline 54dd134):
+  #
+  #   :404/:405 the iStatus == 0 init            1  <- YawState = 0, Tidx = 1
+  #   :412 NacVaneOffset = Y_MErrSet        23,999
+  #   :417/:418 the two LPFilter calls      23,999 each
+  #   :433 IF (YawState == 1)               23,999 tested / :434 10,273 taken
+  #   :440/:441 persist right               10,261
+  #   :436/:437 stop from right                 12
+  #   :445 IF (NacHeadingError >= 0)        10,226 / :451/:452 persist left 10,215
+  #   :447/:448 stop from left                  11
+  #   :457 start right / :461 start left        12 each
+  #   :468 avrSWAP(48) = YawRateCom * D2R   23,999
+  #
+  # THREE ARMS ARE OUTSIDE THIS KERNEL AND OUTSIDE EVERY SIMULATION THE CAMPAIGN
+  # RUNS -- all three carry 0 hits in all 27 scenarios:
+  #
+  #   :410 the ZMQ_Mode == 1 offset            no scenario sets ZMQ_Mode = 1
+  #   :427 deadband = Y_ErrThresh(1)           the WE_Vw_F <= Y_uSwitch low arm
+  #   :473-:475 the OL_Mode yaw override       this unit's only interp1d call
+  #
+  # The third is dead for the reason units #23, #26 and #43 already measured and
+  # STATUS.md has carried since phase 3: scenario 24 is the one scenario that
+  # sets `OL_Mode`, and `Read_OL_Input` returns on the absent
+  # `Examples/example_inputs/OL_Mode2_Input.dat`, so all 8,000 of its DISCON
+  # calls fall through before the main block. The differential harness draws
+  # `ZMQ_Mode`, `Y_uSwitch`, `OL_Mode`, `Ind_YawRate` and the two OL arrays
+  # freely and is the instrument that reaches all three.
   run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py --scenario 7
   clean_cmd: cd /workspace/ROSCO-r2/rosco/controller/build && make clean
   install_cmd: cp /workspace/ROSCO-r2/rosco/controller/build/libdiscon.so /workspace/ROSCO-r2/rosco/lib/libdiscon.so
@@ -283,7 +334,47 @@ kgen:
   # Three ranges, 62 cases: 1-20 (initialisation and the un-taken arm),
   # 19995-20015 (the step, straddling 20,002) and 23975-23995 (steady state
   # deep in the taken arm, short of the iStatus == -1 final call).
-  invocation: 0:0:1-20,0:0:19995-20015,0:0:23975-23995
+  #
+  # RE-AIMED for unit #44 `YawRateControl` at FIVE ranges, aimed at the four
+  # state-machine edges plus initialisation. Same shape as unit #42's four --
+  # a start/middle/end window would spend every range inside a persist arm,
+  # which is 20,476 of scenario 7's 23,999 calls and is where the unit copies a
+  # constant it was already handed.
+  #
+  # THE EDGES ARE MEASURED, NOT ESTIMATED, and the instrument is a committed
+  # artifact this campaign already owns. `Examples/vit_sim.py::run_scenario_7`
+  # integrates the commanded yaw rate itself -- `nac_yaw[i] = nac_yaw[i-1] +
+  # nac_yawrate[i]*dt` -- and `nac_yaw` is one of the 13 channels in
+  # `baseline_arrays/scenario_7.npz`. So `sign(diff(nac_yaw)/dt)` IS `YawState`
+  # as written, per invocation, read off the reference run:
+  #
+  #   invocation    1   iStatus == 0     YawState = 0, Tidx = 1        :404/:405
+  #   invocation  187   error > deadband  YawState 0 -> 1 (rate still 0)   :457
+  #   invocation  188   the first call commanding +Y_Rate                :440
+  #   invocation 1044   error <= 0        YawState 1 -> 0, rate to 0  :436/:437
+  #   invocation 1188   error < -deadband YawState 0 -> -1 (rate still 0) :461
+  #   invocation 1189   the first call commanding -Y_Rate                :451
+  #   invocation 2044   error >= 0        YawState -1 -> 0, rate to 0 :447/:448
+  #
+  # and it repeats every 2,000 invocations (NacVane is 20 deg at a 50 s period,
+  # 50 / 0.025 = 2000). CROSS-CHECKED against coverage rather than trusted: the
+  # census of that same sign array is 10,261 / 10,215 / 3,522, and clean-source
+  # :440-:441 carry 10,261 hits and :451-:452 carry 10,215 -- exact, both.
+  #
+  # THE COST OF THE PERSIST ARMS, STATED BEFORE THE KERNEL IS BUILT. `avrSWAP` is
+  # INOUT and persists across calls in the driver, and inside a persist arm
+  # `YawRateCom` is the same `+/-Y_Rate` on every call, so `avrSWAP(48)` does not
+  # change value. From invocation 189 to 1043 a translation that writes nothing
+  # to avrSWAP(48) reproduces the reference. What it cannot reproduce is an edge,
+  # and each of the four is one invocation wide in the entire 600 s run.
+  #
+  # Five ranges, 105 cases: 1-20 (initialisation and the YawState == 0 arm before
+  # any edge), 177-197 (the 0 -> 1 start, straddling 187), 1034-1054 (the 1 -> 0
+  # stop, straddling 1044), 1178-1198 (the 0 -> -1 start, straddling 1188) and
+  # 2034-2054 (the -1 -> 0 stop, straddling 2044). The two stops are separate
+  # ranges because they are separate ARMS -- :436/:437 and :447/:448 -- and one
+  # `NacHeadingError` cannot be in both.
+  invocation: 0:0:1-20,0:0:177-197,0:0:1034-1054,0:0:1178-1198,0:0:2034-2054
   # Interface truth about the Bladed-style array: DISCON receives it as an
   # assumed-size dummy, so nothing in the source states its extent.
   assumed_size_arrays:
