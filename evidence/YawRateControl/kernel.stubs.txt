@@ -1,0 +1,63 @@
+# KERNEL HAND RED TESTS -- unit #44 `YawRateControl`
+#
+# Written by evidence/YawRateControl/run_one_kernel_stub.sh, one stub per
+# invocation, appended in the order they were run. Read that script's header for
+# why they exist and why `-f` points at a gitignored pre-integration copy.
+#
+# THE EXPECT LINE IS WRITTEN BEFORE THE RUN, EVERY TIME. A prediction recorded
+# after the number it predicts is not a prediction, and the whole point of these
+# three is to say what the kernel CAN and CANNOT see rather than to collect
+# another green.
+#
+# THE BASELINE THESE ARE RED TESTS FOR IS NOT 104 of 104. The kernel scores 102
+# of 104 for the shipped translation AND 102 of 104 for the reference's own
+# Fortran body, failing the same two cases -- 188 and 1189 -- with the same
+# numbers, and the two runs' full 97,568-line verbose outputs are byte-identical
+# (evidence/YawRateControl/kernel.save_state_control.txt). Those two cases are
+# the KGen driver calling a SAVE-carrying procedure three times per case while
+# restoring only the state file's variables. So "102" is this kernel's green and
+# a stub that also reports 102 has moved nothing.
+==================================================================
+STUB      the whole unit as a no-op
+ASKS      how much of what this unit writes can the 104-case kernel see at all?
+EXPECT    ALL 104 cases FAIL. Scenario 7 sets Y_ControlMode = 1 so the body runs on every captured invocation, and LocalVar%WindDir, objInst%instLPF and the five DebugVar stores all change on every one of them. Against this kernel's own green of 102 of 104, that means 0 of 104 passed.
+RESULT:
+    ✗ VERIFICATION FAILED: 0/104 passed
+      FAILED: Verification FAILED withYawRateControl.0.0.1
+      FAILED: Verification FAILED withYawRateControl.0.0.2
+      FAILED: Verification FAILED withYawRateControl.0.0.3
+      FAILED: Verification FAILED withYawRateControl.0.0.4
+      FAILED: Verification FAILED withYawRateControl.0.0.5
+    kernel.exe: Total number of verification cases  :   104
+    kernel.exe: Number of verification-passed cases :     0
+    (The first invocation of run_one_kernel_stub.sh grepped 'Verification FAILED'
+     and headed 8, which truncated the summary before it printed; the two lines
+     above were recovered by re-running the SAME kernel.exe the stub run built,
+     with the stub still in kernel/YawRateControl/yawratecontrol.hpp and the
+     binary untouched. The script has since been changed to record the summary
+     counts, which is what the two later stubs below show.)
+
+==================================================================
+STUB      both writes to avrSWAP(48) deleted -- this unit's principal output
+ASKS      can this kernel see the commanded yaw rate, the one value this procedure exists to produce?
+EXPECT    NO. 102 of 104 PASS -- the kernel's own green, unmoved. 'avrswap' is not among the ~433 compared field names in kernel.verify_fields.csv: VIT's own comment in the generated DISCON.F90 says 'skipped avrSWAP verification (assumed-size incompatible with KGen comparator)'. The same blindness unit #43 measured on its own avrSWAP copy loop.
+RESULT:
+    ✓ VERIFICATION PASSED: 104/104 passed
+    ✗ YawRateControl: NON_DISCRIMINATING — 104 case(s) compared IDENTICAL, and the kernel did not report a mismatch when the translation was deliberately changed. The pass is not evidence.
+    kernel.exe: Total number of verification cases  :   104
+    kernel.exe: Number of verification-passed cases :   102
+
+==================================================================
+STUB      YawState = 0 deleted from the RIGHT stop arm -- one statement
+ASKS      does this kernel's corpus EXECUTE the stop arms the differential harness cannot reach?
+EXPECT    YES, and 51 of 104 pass. The right stop fires at exactly one captured invocation, case 1045 (python i=1044, read off baseline_arrays/scenario_7.npz), so 1045 is the first case to fail; from there the stub's YawState never returns to 0, so it diverges for the rest of the corpus in ascending replay order. Predicted failing set: 1045-1054, 1178-1198, 2034-2054 -- 52 cases -- of which 1189 already fails on the kernel's own baseline, plus 188 which also already fails. Predicted passing: 1-20, 177-187, 189-197, 1034-1044 = 51.
+RESULT:
+    ✗ VERIFICATION FAILED: 51/104 passed
+      FAILED: Verification FAILED withYawRateControl.0.0.188
+      FAILED: Verification FAILED withYawRateControl.0.0.1045
+      FAILED: Verification FAILED withYawRateControl.0.0.1046
+      FAILED: Verification FAILED withYawRateControl.0.0.1047
+      FAILED: Verification FAILED withYawRateControl.0.0.1048
+    kernel.exe: Total number of verification cases  :   104
+    kernel.exe: Number of verification-passed cases :    51
+
