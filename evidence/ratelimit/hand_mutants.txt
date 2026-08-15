@@ -1,0 +1,19 @@
+# hand-run mutants of translations/Functions/ratelimit.cpp
+# instrument: this unit's own 2904-case differential corpus, CLEAN tree
+#
+BASELINE (the shipped translation, unmutated)            killed on     0 of  2904 cases
+#
+# GAP 1 -- the two swap_operands sites, in the shape that COMPILES
+index expression swapped: 1 - *inst   (UB: reads [-5..]) killed on    58 of  2904 cases
+rate numerator swapped: last - in                        killed on   911 of  2904 cases
+#
+# GAP 2 -- the saturate_c call, which cppmutate's callee TABLE excludes
+# drop_call -- the call replaced by its first argument
+the rate clamp dropped                                   killed on   741 of  2904 cases
+# swap_call_args -- the FIRST TWO arguments exchanged
+clamp: value <-> minRate                                 killed on     0 of  2904 cases
+# the two BOUNDS transposed -- a shape cppmutate offers at no unit
+clamp: bounds transposed                                 killed on   885 of  2904 cases
+#
+# translation restored, byte-identical to the shipped file
+mutate_guarded: translations/Functions/ratelimit.cpp restored to 684e41193a6eecc3e0f3d9578ad7bc09265a4fa2; marker cleared; sweep exit 0
