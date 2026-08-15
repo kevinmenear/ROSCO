@@ -2209,6 +2209,7 @@
    "harness_required": true,
    "disposition": "integrated",
    "evidence": [
+    "evidence/PreFilterMeasuredSignals/done_check.txt",
     "evidence/PreFilterMeasuredSignals/harness.case17_probe.txt",
     "evidence/PreFilterMeasuredSignals/kernel.moving-absent-stub.run.txt",
     "evidence/PreFilterMeasuredSignals/kernel.no-debugvar-stub.run.txt",

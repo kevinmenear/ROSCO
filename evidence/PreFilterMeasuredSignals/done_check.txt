@@ -1,0 +1,39 @@
+# done_check.py PreFilterMeasuredSignals -- captured 2026-08-15T01:59:39Z by scripts/capture_done_check.sh
+
+Run against the committed state at 507421ec ("RUNBOOK target layer: nine entries from unit #38 -- an array-valued index, a scoped USE, six subscript pins, a baseline that reproduced #29, and a gate red test that failed"), with a CLEAN tree, with stdout
+going to a file outside the repository. The run is reproduced below verbatim.
+
+ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
+target before the subprocess runs, so
+
+    python3 scripts/done_check.py PreFilterMeasuredSignals > evidence/PreFilterMeasuredSignals/done_check.txt
+
+always sees a modified tracked file and reports `P2 clean tree: dirty_tree`,
+one predicate worse than the truth. That is why this file is captured out of
+tree and moved in, and why it is written by a script rather than by hand: the
+header was added once at 48b9ae3 and a plain re-capture at 73d3521 removed it.
+Reproduce the reading below with no redirection:
+
+    python3 scripts/done_check.py PreFilterMeasuredSignals
+
+done_check exited 0 (0 only when COMPLETE).
+
+baseline (inferred): f78005a  -- the commit before 13443ad touched translations/Filters/prefiltermeasuredsignals.cpp
+
+PreFilterMeasuredSignals: Verdict.COMPLETE  (14/14 PASS)
+
+[  ok  ] P1   commits exist                      
+[  ok  ] P2   clean tree                         
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[  ok  ] P5   evidence resolves                  
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[  ok  ] P9   gate compared and matched          
+[  ok  ] P12  mutation score for this unit       114/114 mutant(s) killed, 12 declared equivalent
+[  ok  ] P11  post-integration harness re-run    9033 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible              
+[  ok  ] P14  artifact revisions agree           4 artifact(s) at 3ac5b4a
+
