@@ -2313,7 +2313,8 @@
     "gate/ResController.json",
     "gate/ResController.redtest.json",
     "gate/ResController.redtest.reset-arm.json",
-    "coverage/line_coverage.json"
+    "coverage/line_coverage.json",
+    "evidence/ResController/reset_restore_roundtrip.txt"
    ]
   },
   {

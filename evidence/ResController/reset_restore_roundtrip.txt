@@ -1,0 +1,44 @@
+E1.4 STILL HOLDS WITH THIS UNIT INTEGRATED, AND THE PAIR NEEDED NO EDIT.
+
+Run 2026-08-15 immediately after the unit closed, on a clean committed tree.
+
+    md5 rosco/lib/libdiscon.so                    eedb7950c2b5ef7aa240d0c07f7d1b21
+    grep -c 'rescontroller_c' Controllers.f90     4   <- integrated
+    bash scripts/reset_to_clean.sh
+      9 wrapper-carrying source(s) restored to 54dd134
+      0 file(s) reverted whose only change was line endings
+      extraction leftovers removed
+      39 translated .cpp source(s) removed from CMakeLists (E1.2 flags kept)
+      0 instrumented object(s) removed from the build tree
+      rebuilt and installed; kgen symbols in rosco/lib/libdiscon.so: 0
+    grep -c 'rescontroller_c' Controllers.f90     0   <- reverted
+    bash scripts/restore_integrated.sh
+      67 file(s) restored from HEAD (vit_types.h untouched)
+      rebuilt and installed. Gate now measures the INTEGRATED build.
+    grep -c 'rescontroller_c' Controllers.f90     4   <- back
+    md5 rosco/lib/libdiscon.so                    eedb7950c2b5ef7aa240d0c07f7d1b21
+
+BIT-IDENTICAL ROUND TRIP, and `git status` is empty at both ends.
+
+NEITHER SCRIPT WAS TOUCHED. `reset_to_clean.sh` selects files by whether HEAD's
+version calls a `<name>_c(` bridge and strips translated `.cpp` sources by
+reading CMakeLists, so the count moved from 38 to 39 on its own -- unit #36's
+finding holding for a 39th time.
+
+THE grep COUNT IS 4, WHICH IS A FUNCTION'S SHAPE, not a defect: the interface
+block, the declaration, the result assignment and -- for this unit -- nothing
+else. `PowerControlSetpoints` is a SUBROUTINE and reported 3 for the same
+reason in reverse.
+
+`0 instrumented object(s) removed from the build tree` where unit #37's run
+reported 1. This dispatch DID run `vit extract`, which installs an instrumented
+library, but it also ran `reset_to_clean.sh` three more times afterwards (around
+the harness and the mutation sweep), and the first of those had already removed
+the object. The assertion after it -- `kgen symbols in rosco/lib/libdiscon.so:
+0` -- is what makes that checkable rather than assumed.
+
+WHY IT WAS RUN AT ALL. The pair was exercised four times EARLIER in this
+dispatch, but every one of those was before this unit's `vit integrate` -- so
+none of them proved anything about the state the next unit's extraction will
+start from. A round trip taken before the thing that could break it is not a
+round trip.
