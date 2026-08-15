@@ -1,0 +1,76 @@
+{
+ "unit": "ResController",
+ "operators": [
+  "arith_op",
+  "assoc_reorder",
+  "compare_op",
+  "const_tweak",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutants": 69,
+ "equivalent_declared": 0,
+ "nocompile": 5,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0676,
+ "nocompile_refused": false,
+ "total": 74,
+ "killed": 64,
+ "survived": 5,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.9275,
+ "loop_rev": "04975cf-nogit",
+ "gen_rev": "gen-91594e268ae0",
+ "vit_rev": "fe22383-nogit",
+ "survivors": [
+  {
+   "id": "6c656cc3",
+   "operator": "assoc_reorder",
+   "before": "2.0 * (omega * omega)",
+   "after": "(2.0 * omega) * omega"
+  },
+  {
+   "id": "732bc20e",
+   "operator": "drop_factor",
+   "before": "b0 * kp",
+   "after": "b0"
+  },
+  {
+   "id": "e7e2fc28",
+   "operator": "arith_op",
+   "before": "b0 * kp",
+   "after": "b0 / kp"
+  },
+  {
+   "id": "c06837a3",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "7d6e997a",
+   "operator": "const_tweak",
+   "before": "2.0",
+   "after": "3.0"
+  }
+ ]
+}

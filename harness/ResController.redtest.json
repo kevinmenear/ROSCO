@@ -1,16 +1,16 @@
 {
  "unit": "ResController",
  "against": "integrated",
- "checked": 3532,
- "failed": 3532,
+ "checked": 2925,
+ "failed": 2925,
  "inadmissible": 0,
  "rule_coverage": [
   "  applied  R5_non_degenerate_shape    0 varied extent(s); 4 FIXED by the type at [1024, 1024, 1024, 1024] -- not varied, 1 index(es) at 1/interior/n, array elements distinct",
   "  applied  R2_flag_values             2 value(s) across 1 flag(s), each with 8 case(s) of the remaining inputs varied under it",
-  "  applied  R6_reference_literals      1099 value(s) from 25 literal(s) in the reference, each under every declared value of 1 flag(s); 231 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 280 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 70 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 7 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits",
+  "  applied  R6_reference_literals      968 value(s) from 25 literal(s) in the reference, each under every declared value of 1 flag(s); 165 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 200 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 50 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 5 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits",
   "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
   "  applied  R3_no_dead_signal          11 real value(s), none zero in every case",
-  "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
+  "  applied  R11_one_at_a_time          1 case(s) over 1 admissible state(s) (subnormal_omega_squared_with_saturating_DT): each state itself, then ONE of the 0 quantit(y/ies) the reference's own predicates test moved to each of its knob values with every other parameter left admissible. Several states because a reference that refuses two modes TOGETHER cannot have both reachable from one. Not crossed with the flags and not crossed with each other -- a second quantity away from baseline in the same case re-masks the first. Appended after R3's scan and the random fill, so every case index the other rules produced is unchanged and the corpus is a strict extension of the one before it",
   "  N/A      R12_narrowing_width        no CHARACTER local is narrower than a dummy assigned into it -- the reference truncates nothing, so there is no boundary for this rule to reach",
   "  N/A      R13_staging_capacity       no deferred-length CHARACTER output -- no parameter whose LENGTH the callee chooses, so no staging buffer whose capacity a case could state",
   "  N/A      R14_planted_word           no CHARACTER ARRAY input -- there is no element for a scalar string to be a word OF, so no comparison of this shape exists to reach",
@@ -21,7 +21,7 @@
   {
    "case": 0,
    "output": "resP.res_OutputSignalLast1",
-   "ref": "0000000000000000f4ba980d3e1f8fc03b8e343951108fc0c7e1b91a09018fc0...",
+   "ref": "b07e64cff07f2b41f4ba980d3e1f8fc03b8e343951108fc0c7e1b91a09018fc0...",
    "got": "9f58413bad2e8fc0f4ba980d3e1f8fc03b8e343951108fc0c7e1b91a09018fc0..."
   },
   {
@@ -51,7 +51,7 @@
   {
    "case": 1,
    "output": "resP.res_OutputSignalLast1",
-   "ref": "000000000000000075f7e708ff1f8fc017d978116e108fc093d7f4f780018fc0...",
+   "ref": "0c9cb7f5f87f2b4175f7e708ff1f8fc017d978116e108fc093d7f4f780018fc0...",
    "got": "071c43185f308fc075f7e708ff1f8fc017d978116e108fc093d7f4f780018fc0..."
   },
   {
@@ -123,7 +123,7 @@
  "vit_rev": "fe22383-nogit",
  "red_test": {
   "perturbation": "the unit as a no-op: reads nothing, writes nothing, does not advance inst; one saturate_c(0,min,max) kept so the callee bridge is still generated and the build links",
-  "result": "3532 of 3532 case(s) failed",
+  "result": "2925 of 2925 case(s) failed",
   "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
  }
 }

@@ -745,3 +745,62 @@ LocalVar_NumBl = { lo = 0, hi = 3 }
 # instruments do compare that: the kernel replays 62 cases through the CALLER,
 # where the result lands in `AWC_TiltYaw`, and the gate runs the whole program.
 vit_result = { no_oracle = "assigned in the ELSE arm only; on `reset` the reference returns an undefined slot (Controllers.f90:1209-1224)" }
+
+# TWO MORE, AND THEY ARE `[PIDController]`'s CAUSE 2 MET A SECOND TIME. The
+# entry above excludes an ANSWER; these two widen an INPUT domain, because on
+# the +/-1e3 default the clamp is active in almost every case and the whole
+# Tustin recursion is unobservable behind it.
+#
+# MEASURED BY THE MUTATION SWEEP RATHER THAN BY A CENSUS PROBE -- the kill
+# counts ARE the census, and they are bimodal
+# (evidence/ResController/mutation.CLAMPED-CORPUS-3532.txt, 69 behavioural
+# mutants on the unpinned corpus):
+#
+#     killed on     1 of 3532 cases     2 mutants
+#     killed on    12 of 3532 cases    21 mutants   <- the ELSE arm's arithmetic
+#     killed on    13 of 3532 cases     6
+#     killed on    15 of 3532 cases     8
+#     killed on    22/23 of 3532        3
+#     killed on    75/77/81 of 3532     3
+#     killed on  1763 of 3532 cases     8 mutants   <- the reset arm's writes
+#     killed on  1769 of 3532 cases     6
+#     killed on  3532 of 3532 cases     7 mutants   <- structural
+#
+# 1766 of the 3532 cases run the ELSE arm and about TWELVE of them let its
+# arithmetic reach a compared output. Everything else returns a bound. Score
+# 0.9275, and three of the five survivors are that blindness --
+# `b0*kp -> b0`, `b0*kp -> b0/kp` and a `2.0 -> 3.0` in a coefficient.
+#
+# `saturate(x, lo, hi)` is `MIN(MAX(x,lo),hi)`, and R6 draws both bounds from
+# one +/-1e3 default with `_base(p, i)`, then its isolating stage pins every
+# other defaulted real to 0.0 or 1e300 -- which sets the two bounds EQUAL. An
+# empty or inverted interval returns `hi` for every input.
+#
+# THE RANGES ARE THE ONLY CALL SITE'S OWN SHAPE, widened. Controllers.f90:815 is
+# the single call in the whole program:
+#
+#     ResController(Error(Imode), ..., CntrPar%PC_MinPit, CntrPar%PC_MaxPit, ...)
+#
+# and all 14 `Examples/DISCON*.IN` carry `PC_MinPit = 0.000`,
+# `PC_MaxPit = 1.570` -- physical pitch limits, a non-empty bracket with the
+# lower bound at zero. `hi = 0` on minValue KEEPS that real value in the domain
+# rather than excluding it, which is where this differs from
+# `[PIDController]`'s `hi = -1e-3`: that unit's own call site passes a strictly
+# negative lower bound and this one does not.
+#
+# THE MAGNITUDE IS THE SCALE OF THE CLAMPED EXPRESSION. `1/b0*(...)` divides by
+# `b0 = 4 + omega**2*DT**2`, so with omega and DT at the top of the +/-1e3 draw
+# the quotient lands around 1e6; 1e9 is above that and 1e-3 is below the small
+# end, so the bracket runs from 1e-3 wide to 2e9 wide and the ACTIVE arm keeps
+# its coverage.
+#
+# THE COST, STATED. Both bounds leave R6's MAGNITUDE ladder and its isolating
+# stage, so the subnormal/overflow thresholds and 1e+/-300 are gone for these
+# two -- values at which the clamp returns a bound for every input, which is the
+# blindness this pin exists to remove. An INVERTED bracket (`lo > hi`) is no
+# longer generated either: a defect that only shows there would be in
+# `saturate`, which is unit #24 and is CALLED rather than inlined, so both sides
+# of this comparison reach one implementation of it and this harness never
+# constrained it.
+minValue = { lo = -1e9, hi = 0 }
+maxValue = { lo = 1e-3, hi = 1e9 }

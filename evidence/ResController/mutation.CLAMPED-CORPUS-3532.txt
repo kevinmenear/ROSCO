@@ -1,0 +1,89 @@
+run_if_time_remains: 12125s remain, 300s needed -- starting
+74 mutant(s) from rescontroller.cpp
+
+baseline: 3532 case(s), 0 failed, 0.6s; per-mutant watchdog 60s
+
+  [  1/74] assoc_reorder    '2.0 * (omega * omega)' -> '(2.0 * omega) * omega'  SURVIVED
+  [  2/74] compare_op       '!=' -> '=='  killed (3532/3532 cases)
+  [  3/74] drop_factor      '2.0 * PI' -> '2.0'  killed (12/3532 cases)
+  [  4/74] drop_factor      'omega * omega' -> 'omega'  killed (77/3532 cases)
+  [  5/74] drop_factor      'DT * DT' -> 'DT'  killed (81/3532 cases)
+  [  6/74] drop_factor      'omega * omega' -> 'omega'  killed (13/3532 cases)
+  [  7/74] drop_factor      'DT * DT' -> 'DT'  killed (13/3532 cases)
+  [  8/74] drop_factor      'omega * omega' -> 'omega'  killed (15/3532 cases)
+  [  9/74] drop_factor      'DT * DT' -> 'DT'  killed (15/3532 cases)
+  [ 10/74] drop_factor      'b0 * kp' -> 'b0'  SURVIVED
+  [ 11/74] drop_factor      '2.0 * DT' -> '2.0'  killed (1/3532 cases)
+  [ 12/74] drop_factor      'b1 * kp' -> 'b1'  killed (23/3532 cases)
+  [ 13/74] drop_factor      'b2 * kp' -> 'b2'  killed (15/3532 cases)
+  [ 14/74] drop_factor      '2.0 * DT' -> '2.0'  killed (12/3532 cases)
+  [ 15/74] drop_factor      'b1 * resP->res_OutputSignalLast1' -> 'b1'  excluded (no compile)
+  [ 16/74] drop_factor      'b2 * resP->res_OutputSignalLast2' -> 'b2'  excluded (no compile)
+  [ 17/74] drop_factor      'a0 * error' -> 'a0'  killed (12/3532 cases)
+  [ 18/74] drop_factor      'a1 * resP->res_InputSignalLast1' -> 'a1'  excluded (no compile)
+  [ 19/74] drop_factor      'a2 * resP->res_InputSignalLast2' -> 'a2'  excluded (no compile)
+  [ 20/74] arith_op         'inst - 1' -> 'inst + 1'  killed (3532/3532 cases)
+  [ 21/74] arith_op         '2.0 * PI' -> '2.0 / PI'  killed (12/3532 cases)
+  [ 22/74] arith_op         'omega * omega' -> 'omega / omega'  killed (12/3532 cases)
+  [ 23/74] arith_op         'DT * DT' -> 'DT / DT'  killed (12/3532 cases)
+  [ 24/74] arith_op         'omega * omega' -> 'omega / omega'  killed (13/3532 cases)
+  [ 25/74] arith_op         'DT * DT' -> 'DT / DT'  killed (13/3532 cases)
+  [ 26/74] arith_op         'omega * omega' -> 'omega / omega'  killed (15/3532 cases)
+  [ 27/74] arith_op         'DT * DT' -> 'DT / DT'  killed (15/3532 cases)
+  [ 28/74] arith_op         'b0 * kp' -> 'b0 / kp'  SURVIVED
+  [ 29/74] arith_op         '2.0 * DT' -> '2.0 / DT'  killed (1/3532 cases)
+  [ 30/74] arith_op         'b1 * kp' -> 'b1 / kp'  killed (23/3532 cases)
+  [ 31/74] arith_op         'b2 * kp' -> 'b2 / kp'  killed (15/3532 cases)
+  [ 32/74] arith_op         '2.0 * DT' -> '2.0 / DT'  killed (12/3532 cases)
+  [ 33/74] arith_op         '1.0 / b0' -> '1.0 * b0'  killed (12/3532 cases)
+  [ 34/74] arith_op         'b1 * resP->res_OutputSignalLast1' -> 'b1 / resP->res_OutputSignalLast1'  killed (22/3532 cases)
+  [ 35/74] arith_op         'b2 * resP->res_OutputSignalLast2' -> 'b2 / resP->res_OutputSignalLast2'  killed (12/3532 cases)
+  [ 36/74] arith_op         'a0 * error' -> 'a0 / error'  killed (75/3532 cases)
+  [ 37/74] arith_op         'a1 * resP->res_InputSignalLast1' -> 'a1 / resP->res_InputSignalLast1'  killed (13/3532 cases)
+  [ 38/74] arith_op         'a2 * resP->res_InputSignalLast2' -> 'a2 / resP->res_InputSignalLast2'  killed (15/3532 cases)
+  [ 39/74] arith_op         'inst + 1' -> 'inst - 1'  killed (3532/3532 cases)
+  [ 40/74] swap_operands    'inst - 1' -> '1 - inst'  excluded (no compile)
+  [ 41/74] swap_operands    'kp - 2.0' -> '2.0 - kp'  killed (15/3532 cases)
+  [ 42/74] swap_operands    '1.0 / b0' -> 'b0 / 1.0'  killed (12/3532 cases)
+  [ 43/74] index_offset     '[i]' -> '[i + 1]'  killed (1763/3532 cases)
+  [ 44/74] index_offset     '[i]' -> '[i + 1]'  killed (1763/3532 cases)
+  [ 45/74] index_offset     '[i]' -> '[i + 1]'  killed (1763/3532 cases)
+  [ 46/74] index_offset     '[i]' -> '[i + 1]'  killed (1763/3532 cases)
+  [ 47/74] index_offset     '[i]' -> '[i + 1]'  killed (12/3532 cases)
+  [ 48/74] index_offset     '[i]' -> '[i + 1]'  killed (12/3532 cases)
+  [ 49/74] index_offset     '[i]' -> '[i + 1]'  killed (12/3532 cases)
+  [ 50/74] index_offset     '[i]' -> '[i + 1]'  killed (12/3532 cases)
+  [ 51/74] index_offset     '[i]' -> '[i + 1]'  killed (1769/3532 cases)
+  [ 52/74] index_offset     '[i]' -> '[i + 1]'  killed (1769/3532 cases)
+  [ 53/74] index_offset     '[i]' -> '[i + 1]'  killed (1769/3532 cases)
+  [ 54/74] index_offset     '[i]' -> '[i + 1]'  killed (1769/3532 cases)
+  [ 55/74] index_offset     '[i]' -> '[i + 1]'  killed (1769/3532 cases)
+  [ 56/74] index_offset     '[i]' -> '[i + 1]'  killed (1769/3532 cases)
+  [ 57/74] const_tweak      '3.14159265359' -> '4.14159265359'  killed (12/3532 cases)
+  [ 58/74] const_tweak      '1' -> '2'  killed (3532/3532 cases)
+  [ 59/74] const_tweak      '0.0' -> '1.0'  SURVIVED
+  [ 60/74] const_tweak      '2.0' -> '3.0'  killed (12/3532 cases)
+  [ 61/74] const_tweak      '4.0' -> '5.0'  killed (12/3532 cases)
+  [ 62/74] const_tweak      '8.0' -> '9.0'  killed (12/3532 cases)
+  [ 63/74] const_tweak      '2.0' -> '3.0'  killed (13/3532 cases)
+  [ 64/74] const_tweak      '4.0' -> '5.0'  killed (12/3532 cases)
+  [ 65/74] const_tweak      '2.0' -> '3.0'  SURVIVED
+  [ 66/74] const_tweak      '2.0' -> '3.0'  killed (12/3532 cases)
+  [ 67/74] const_tweak      '0' -> '1'  killed (3532/3532 cases)
+  [ 68/74] const_tweak      '0.0' -> '1.0'  killed (1763/3532 cases)
+  [ 69/74] const_tweak      '0.0' -> '1.0'  killed (1763/3532 cases)
+  [ 70/74] const_tweak      '0.0' -> '1.0'  killed (1763/3532 cases)
+  [ 71/74] const_tweak      '0.0' -> '1.0'  killed (1763/3532 cases)
+  [ 72/74] const_tweak      '1.0' -> '2.0'  killed (12/3532 cases)
+  [ 73/74] const_tweak      '1' -> '2'  killed (3532/3532 cases)
+  [ 74/74] negate_cond      'if (reset != 0)' -> 'if (!(reset != 0))'  killed (3532/3532 cases)
+
+killed 64 of 69 BEHAVIOURAL scoreable (0 declared equivalent, 5 did not compile and are excluded)   score 0.928
+  SURVIVOR 6c656cc3 assoc_reorder: '2.0 * (omega * omega)' -> '(2.0 * omega) * omega'
+  SURVIVOR 732bc20e drop_factor: 'b0 * kp' -> 'b0'
+  SURVIVOR e7e2fc28 arith_op: 'b0 * kp' -> 'b0 / kp'
+  SURVIVOR c06837a3 const_tweak: '0.0' -> '1.0'
+  SURVIVOR 7d6e997a const_tweak: '2.0' -> '3.0'
+artifact: mutation/ResController.json
+mutate_guarded: translations/Controllers/rescontroller.cpp restored to 0ff727fb5fb16a30881958fbaaddf54699101287; marker cleared; sweep exit 0
+run_if_time_remains: exit 0 after 32s (estimated 300s; 12093s now remain)
