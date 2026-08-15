@@ -1,0 +1,81 @@
+Kernel hand red tests -- Shutdown (unit #41)
+
+kernel/Shutdown, 62 cases, scenario 9, invocations 1-20 / 9995-10015 / 11970-11990.
+The shipped translation passes 62/62 with all 14,694 field rows IDENTICAL.
+
+`vit verify` DECLINED to construct a red test and printed NON_DISCRIMINATING:
+  "no by-value floating-point parameter and no floating-point result: every
+   input arrives behind a pointer or inside a derived type"
+so every line below is a hand stub. Each is kept in evidence/Shutdown/.
+
+Field census over the shipped run's 62 cases, which is what the EXPECT lines
+below are reasoned from:
+    sd_trigger        0 in 27 cases, 4 in 35    <- 1, 2 and 3 never occur
+    sd_stage          0 in 27,       1 in 35    <- never reaches 2
+    sd_maxpitchrate   0.0 in 28,     0.05 in 34
+    sd_maxtorquerate  0.0 in 28,     1000.0 in 34
+    sd_nacvanef       0.0 in ALL 62               <- constant
+    sd_stagestarttime 0.0 in 27, 250.02499389648438 in 35
+
+==================================================================
+STUB      1. the whole unit as a no-op (P10 control)
+ASKS      does this kernel compare anything the unit computes?
+EXPECT    FAIL on 62 of 62 -- every SD_ output is written by this unit
+RESULT:
+    ✗ VERIFICATION FAILED: 0/61 passed (1 skipped: NaN reference data)
+      FAILED: Verification FAILED withShutdown.0.0.2
+      FAILED: Verification FAILED withShutdown.0.0.3
+      FAILED: Verification FAILED withShutdown.0.0.4
+      FAILED: Verification FAILED withShutdown.0.0.5
+      FAILED: Verification FAILED withShutdown.0.0.6
+
+==================================================================
+STUB      2. the vane arithmetic -> the constant 0.0, both LPFilter calls kept
+ASKS      is atan2/R2D/wrap_180 visible to this kernel at all? sd_nacvanef is 0.0 in all 62 cases
+EXPECT    PASS 62/62 -- a named blindness, not a defect in the stub
+RESULT:
+    ✓ VERIFICATION PASSED: 62/62 passed
+    ✗ Shutdown: NON_DISCRIMINATING — 62 case(s) compared IDENTICAL, and the kernel did not report a mismatch when the translation was deliberately changed. The pass is not evidence.
+
+==================================================================
+STUB      3. the SD_EnableTime trigger arm deleted
+ASKS      is the ONE trigger that fires in scenario 9 computed here, or carried in from the captured state?
+EXPECT    FAIL -- sd_trigger is 4 in 35 of 62 and :683 is the only assignment that runs
+RESULT:
+    ✗ VERIFICATION FAILED: 61/62 passed
+      FAILED: Verification FAILED withShutdown.0.0.10002
+
+==================================================================
+WHAT THE THREE STUBS MEASURED
+
+  1. the no-op                       0 of 61 passed (1 case skipped:
+                                     NaN reference data)
+  2. the vane arithmetic constant    62 of 62 PASSED  <- a blindness
+  3. the SD_EnableTime trigger arm   61 of 62 passed, and the ONE failure
+                                     is case Shutdown.0.0.10002
+
+STUB 3 IS THE SHARPEST NUMBER THIS KERNEL PRODUCED, AND IT IS AN ARGUMENT FOR
+THE INVOCATION WINDOW RATHER THAN FOR THE TRANSLATION. `sd_trigger` reads 4 in
+35 of the 62 cases, but deleting the only statement that can assign it moves
+exactly ONE. The kernel replays CAPTURED state, so on the other 34 the 4 arrives
+already in `LocalVar` and is copied through -- the arm is not computed there, it
+is inherited. The single case that moves is invocation 10002, which is the call
+where the trigger actually fires, and it is in the corpus only because
+`vit.yaml`'s middle range was aimed at 9995-10015 from the coverage split
+(10,002 calls on the `SD_Stage == 0` arm against 1,997 on the stage arm) instead
+of at the run's midpoint. A midpoint window would have captured 62 cases in
+which this arm is dead and reported the same 62/62 green.
+
+STUB 2 IS A BLINDNESS, STATED AS ONE. Deleting `wrap_180(atan2(sin, cos) * R2D)`
+and writing the constant 0.0 in its place changes nothing the kernel compares,
+because `sd_nacvanef` is 0.0 in all 62 cases -- scenario 9 never drives the
+nacelle vane. Both LPFilter calls are kept in the stub, so this is a statement
+about the vane ARITHMETIC alone and not about the two filter slots it consumes.
+The differential harness draws `LocalVar%NacVane` and is the instrument that
+reaches it.
+
+STUB 1'S SKIPPED CASE. `vit verify` reports "1 skipped: NaN reference data" on
+the no-op and no skip on the shipped translation. The skip is the harness
+declining to compare a case whose REFERENCE field is NaN; it is a property of
+the captured state, not of the stub, and it means the no-op's verdict is over 61
+cases rather than 62.
