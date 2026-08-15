@@ -143,7 +143,47 @@ kgen:
   # the whole freewheel stage. The differential harness draws `SU_RotSpeedF`'s
   # inputs and `SU_RotorSpeedThresh` freely and is the instrument that reaches
   # it.
-  run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py --scenario 9
+  #
+  # SCENARIO 7 for unit #43 `StructuralControl`, and it is a choice between two
+  # scenarios that are IDENTICAL for this unit rather than a choice between many.
+  # `coverage/line_coverage.json` carries hits for `DISCON.F90:137` (the
+  # `IF (CntrPar%StC_Mode > 0)` call site) under scenarios 3, 7 and 27 only:
+  #
+  #   scenario  3   15,999 invocations   tlen = 400   StC_Mode 1, StC_Group_N 1
+  #   scenario  7   23,999 invocations   tlen = 600   StC_Mode 1, StC_Group_N 1
+  #   scenario 27   23,999 invocations   tlen = 600   StC_Mode 1, StC_Group_N 1
+  #
+  # SCENARIO 3 IS DISQUALIFIED BY ARITHMETIC, not by hit count. The unit's only
+  # arm that writes anything is guarded by `LocalVar%Time > 500`, and scenario 3
+  # runs to t = 400. Coverage agrees from the other end: Controllers.f90:996-998
+  # (clean source) carry 3,998 hits under 7 and 27 and ZERO under 3. A window
+  # into scenario 3 would capture 15,999 invocations of a procedure that copies
+  # its own unchanged state to `avrSWAP` and writes nothing else.
+  #
+  # 7 over 27 because scenario 7's own docstring names this unit as the reason
+  # it runs to 600 s ("tlen=600s: exceeds Time>500 threshold for
+  # StructuralControl/CableControl"), and because for THIS unit the two are the
+  # same run: both patch StC_Mode 1, StC_Group_N 1, StC_GroupIndex 2801, both
+  # step dt = 0.025 to tlen = 600, and both record 23,999 / 3,998.
+  #
+  # What scenario 7 REACHES, read against the CLEAN source
+  # (`StructuralControl` at Controllers.f90:967-1029 at baseline 54dd134):
+  #
+  #   :991 IF (StC_Mode == 1)              23,999  <- taken on EVERY call
+  #   :994 IF (Time > 500)                 23,999 tested / :996-:998  3,998 taken
+  #   :1003 the whole StC_Mode == 2 arm         0  <- and 0 in all 27 scenarios
+  #   :1020/:1021 the avrSWAP copy loop    47,998  = 2 x 23,999, StC_Group_N = 1
+  #   :1025 IF (aviFAIL < 0)               23,999 tested, the body 0
+  #
+  # TWO ARMS ARE OUTSIDE THIS KERNEL AND OUTSIDE EVERY SIMULATION THE CAMPAIGN
+  # RUNS: the `StC_Mode == 2` open-loop arm -- which is the ONLY caller of
+  # `interp1d` in this unit and the only reader of `Ind_StructControl`,
+  # `OL_Breakpoints` and `OL_StructControl` -- and the `aviFAIL < 0` error
+  # message prefix. `StC_Mode` is 1 in all three scenarios that set it at all,
+  # and no shipped `Examples/DISCON*.IN` sets it to 2. The differential harness
+  # draws `StC_Mode`, `StC_Group_N`, `Ind_StructControl` and the two OL arrays
+  # freely and is the instrument that reaches them.
+  run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py --scenario 7
   clean_cmd: cd /workspace/ROSCO-r2/rosco/controller/build && make clean
   install_cmd: cp /workspace/ROSCO-r2/rosco/controller/build/libdiscon.so /workspace/ROSCO-r2/rosco/lib/libdiscon.so
   # WIDENED 2026-08-10 during unit #2, and it took two tries. The setup value
@@ -208,7 +248,42 @@ kgen:
   #
   # 83 cases rather than #41's 62. The cost is stated because it is paid on
   # every `vit verify`: the kernel replay is roughly linear in case count.
-  invocation: 0:0:1-20,0:0:195-215,0:0:995-1015,0:0:1795-1815
+  #
+  # RE-AIMED for unit #43 `StructuralControl` at scenario 7's 23,999 invocations
+  # of DISCON.F90:137, and this unit has exactly ONE edge in the whole run --
+  # `LocalVar%Time > 500` -- so the middle range is aimed at it and nothing else.
+  #
+  # The edge is arithmetic against scenario 7's own loop
+  # (`Examples/vit_sim.py::run_scenario_7`: dt = 0.025, tlen = 600,
+  # `t = np.arange(0, 600, 0.025)`, the controller called at i = 1..23999 with
+  # `Time = t[i]`), and it is CONFIRMED by a coverage count rather than trusted:
+  # `Controllers.f90:996-998` carry 3,998 hits, and 23,999 - 3,998 + 1 = 20,002,
+  # so the first invocation that takes the arm is 20,002. `Time` reaches the
+  # comparison through `avrSWAP(2)`, which is REAL(ReKi) = REAL(4), so the
+  # rounding of `t[i]` to float32 is part of where the edge lands -- which is
+  # the reason the range STRADDLES 20,002 rather than starting at it.
+  #
+  #   invocation      1  t = 0.000   iStatus == 0, StC_Input all 0
+  #   invocations 1-20            Time <= 500, the guarded arm NOT taken
+  #   invocation  20001  t = 500.02  the last call before the step   (predicted)
+  #   invocation  20002  t = 500.05  the FIRST call that writes the three
+  #                                  constants -- and the only invocation in the
+  #                                  run where avrSWAP(2801) CHANGES value
+  #   invocations 20002-23999     3,998 calls, all writing the same constants
+  #
+  # THE COST OF THAT LAST LINE, STATED BEFORE THE KERNEL IS BUILT. `avrSWAP` is
+  # INOUT and persists across calls in the driver, so from invocation 20,003
+  # onwards the value this unit writes into `avrSWAP(2801)` is already there on
+  # entry. A translation that does nothing at all therefore reproduces every
+  # steady-state case, and the kernel's whole discriminating power against a
+  # no-op sits on the ONE case at the edge. That is what the middle range is
+  # for, and `evidence/StructuralControl/kernel.stubs.txt` is where the claim is
+  # measured rather than asserted.
+  #
+  # Three ranges, 62 cases: 1-20 (initialisation and the un-taken arm),
+  # 19995-20015 (the step, straddling 20,002) and 23975-23995 (steady state
+  # deep in the taken arm, short of the iStatus == -1 final call).
+  invocation: 0:0:1-20,0:0:19995-20015,0:0:23975-23995
   # Interface truth about the Bladed-style array: DISCON receives it as an
   # assumed-size dummy, so nothing in the source states its extent.
   assumed_size_arrays:
