@@ -81,6 +81,27 @@ unreachable. Same standing as `unwrap` at 0.960 and `YawRateControl` at 0.8961.
   + R10's reversed body excluded     1005   134 of 166       0.8072
 ```
 
+**NAMED NEXT STEPS, none of them taken here.**
+
+1. **`tests/conformance/matrix.toml` is stale in the cell this unit corrected**
+   and cannot be regenerated cleanly: `--update` writes
+   `why = "TODO: integrate: ..."` onto three cells whose every column passes.
+   Fix the writer first. Until then no dispatch can run `--update` to
+   completion. DECISIONS.md 11:35.
+2. **The 14 dead-code survivors are reachable and this dispatch did not reach
+   them.** The `ordered_only` exclusion is broader than the reference's actual
+   undefined domain: a DESCENDING table with the query OUTSIDE `[MINVAL, MAXVAL]`
+   fires both strictly-increasing checks and returns through a bound branch
+   without ever subscripting out of range. An R11 admissible baseline state
+   (`harness/baseline.interp2d.json`) aimed at exactly that would cover them.
+   Not attempted here because R11 walks one predicate at a time and would move
+   the query back inside the range, which re-opens the out-of-bounds read and
+   turns the harness red — and a red harness is unscoreable. It needs the
+   walk to be bounded, which is a corpus decision.
+3. **Ten survivors are equivalence candidates with an argument and no probe.**
+   Declaring them moves 0.8072 to about 0.859 and still fails P12; the probes
+   are unit #23's pattern (`evidence/interp1d/equivalence_probe.cpp`).
+
 ---
 
 **As of 2026-08-15: unit #44 `YawRateControl` is `integrated` and CLOSED at
