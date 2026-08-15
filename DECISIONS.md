@@ -2,6 +2,140 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #42 — Startup — 2026-08-15
+
+### The corpus put every stage-2 case on the wrong side of its own `sigma` call, and six survivors were ONE fact
+
+The first mutation sweep scored 92 of 106 and the fourteen survivors looked like
+fourteen problems. Six of them were one:
+
+    sigma(x, x0, x1, y0, y1)   returns y0 outright when x < x0
+
+and in every stage-2 case the generator produced, `LocalVar%Time` was below
+`LocalVar%SU_LoadStageStartTime`. So the call returned `y0` and nothing past it
+reached an answer — not the ramp end `LSST + SU_LoadRampDuration(SU_Stage-1)`,
+not its subscript, not `y1`. Every mutation of those was invisible, and the
+survivor list reads as five independent index/arithmetic blind spots plus one
+constant:
+
+    arith_op       'LSST + SU_LoadRampDuration' -> 'LSST - ...'    x1
+    arith_op       'SU_Stage - 1' -> 'SU_Stage + 1'                x1
+    swap_operands  'SU_Stage - 1' -> '1 - SU_Stage'                x1
+    const_tweak    the two `- 1`s of `SU_Stage - 1 - 1`            x2
+    const_tweak    '1.0' -> '2.0'  (sigma's y1)                    x1
+
+**The confirmation was already in the same sweep, from the other side.**
+`drop_factor` on `y0` — `SU_RotorSpeedThresh * WE_GearboxRatio` — was KILLED on
+624 cases. A corpus that kills the argument a function returns and misses every
+argument it does not is not a corpus with six holes in it; it is a corpus that
+reaches exactly one arm of one callee. Reading the survivor list as a set of
+sites would have produced five separate baseline states and one of them would
+still have been wrong.
+
+Two states, not one, because `x < x0` and `x > x1` are two different arms of
+`sigma` and a single `Time` cannot be in both.
+
+### A threshold whose left side the unit COMPUTES, reached the same way unit #41 reached its two
+
+`LocalVar%SU_RotSpeedF < 0.95 * CntrPar%SU_RotorSpeedThresh` compares a value
+this unit computes against one it is given. R6's relational-pair rule sets one
+side FROM the other and needs BOTH to be inputs, so it cannot put this predicate
+at equality, and `'<' -> '<='` and `'0.95' -> '1.95'` both survived 7103 cases.
+
+`LPFilter`'s initialisation arm returns its input BIT-EXACTLY at
+`CornerFreq = 0`: the coefficients become a1 = 2, a0 = -2, b1 = b0 = 0 and the
+expression collapses to `(1/2)*(2x)`, both operations exact. Setting
+`SU_RotorSpeedCornerFreq = 0` with `iStatus = 0` turns the computed side back
+into an input.
+
+**The part that had to be checked rather than assumed is that `iStatus = 0` does
+not cost the `SU_Stage == 1` conjunct.** It forces `SU_Stage = -1` two
+statements earlier — which looks like it kills the arm — and the statement
+between them promotes -1 to 1 whenever `Time > SU_StartTime`. So the state
+arrives at the freewheel test in stage 1 by the reference's own route, and this
+is a case where the ARM and the ANSWER are reached by the same setting rather
+than traded off against each other. Unit #39's rule read from the other end.
+
+### A capture window computed from the scenario's patch dict, confirmed to the case index
+
+`Startup` is a state machine whose whole life is over by invocation 1,801 of
+11,999. A start/middle/end window — the shape every earlier unit in this
+campaign used — would have spent two of its three ranges on `SU_Stage == 0`,
+where the body writes nothing.
+
+The three transitions were computed BEFORE the extraction, from
+`Examples/vit_sim.py::run_scenario_9`'s own patch dict (dt = 0.025,
+SU_StartTime = 0, SU_FW_MinDuration = 5, SU_LoadRampDuration = 10 10,
+SU_LoadHoldDuration = 10 10), and each was cross-checked against a coverage hit
+count before the window was written:
+
+    invocation  201  t = 5    stage 1 -> 2     :594 has 1 hit; :608 has 199
+    invocation 1001  t = 25   stage 2 -> 3     :602 has 2 hits; :610 has 800
+    invocation 1801  t = 45   stage 3 -> 4 -> 0    :619 has 1 hit
+
+Four ranges rather than three. The capture agrees to the invocation: case 200
+leaves `SU_Stage` at 1 and case 201 at 2, case 1000 at 2 and 1001 at 3, case
+1800 at 3 and 1801 at 0.
+
+**And the hand stub is what turns that from a description into a measurement.**
+Deleting the `SU_Stage = 0` reset fails EXACTLY ONE of 83 cases, and the case is
+`Startup.0.0.1801`. A midpoint window would have reported the same 83/83 green
+over a corpus in which that arm is dead — which is the failure mode unit #2's
+all-zero ColemanTransform kernel is kept in this repository to illustrate.
+
+### Three instruments agree that one statement is outside every simulation this campaign runs
+
+`ControllerBlocks.f90:587` — `SU_LoadStageStartTime = Time` under
+`(SU_Stage == 1 .AND. SU_RotSpeedF < 0.95 * SU_RotorSpeedThresh)` — is measured
+three ways and they agree:
+
+    coverage/line_coverage.json          0 hits in all 27 scenarios
+    gate/Startup.redtest.freewheel_arm   0 of 5,252,000 values moved, revert-verified
+    kernel stub, the write deleted       83 of 83 cases PASS
+
+and the differential harness is the one instrument that is not blind: it kills
+`negate_cond` on that condition on 5618 of 7151 cases. The reason is arithmetic
+rather than incidental — scenario 9 starts the rotor at 4 rpm = 0.419 rad/s
+against a threshold of 0.95 * 0.3 = 0.285 — so no window into scenario 9 could
+have reached it and no other scenario calls this unit at all.
+
+This is the second unit running whose gate red test correctly FAILED, and the
+distinction unit #38 drew still holds: a red test that moves nothing is a
+measurement of the instrument, not a defect in the translation, and it is only
+worth anything when a second instrument reaches what the first cannot.
+
+### Four equivalences, all four argued from source rather than from case counts
+
+Two are decided by `translations/Filters/lpfilter.cpp`'s own two lines — the
+callee tests `(reset != 0)`, so `restart ? 1 : 0` and `restart ? 2 : 0` are the
+same predicate; and it reads `InitialValue` only under
+`if (has_InitialValue)`, which is 0 at this call site. Two are unreachable
+through the PRC_R_Speed ELSEIF chain, whose second arm is `SU_Stage == 2` and
+whose third therefore cannot be entered with 2 — which is exactly the value at
+which `>= 2` differs from `> 2` and from `>= 3`.
+
+**The positive control for the first pair is in the same sweep.** The companion
+mutant on `has_InitialValue` itself (`'0' -> '1'`) is NOT declared and was killed
+on 6033 of 7103 cases: the flag is observable and the value it guards is not.
+And the same `>= 2` text at the OTHER site — line 308, the torque chain, whose
+preceding arm is `== 1 .OR. == -1` and therefore does not exclude 2 — is not
+declared and was killed. A declaration that would also cover a killable twin is
+a declaration that is too wide.
+
+### `\&\&` inside single quotes reaches the compiler as backslashes, and gate.py told the difference
+
+The second gate red test failed to BUILD on its first attempt, and
+`scripts/gate.py` printed `PERTURBED BUILD FAILED -- no red test was performed`
+rather than a red test that moved nothing. Those two outcomes have almost the
+same shape — both end with the tree reverted and no movement recorded — and this
+unit's second red test is one where **moving nothing is the expected result**.
+Had the tool reported the build failure as a zero, the artifact would have read
+as a corroboration of the coverage data and would have been a fabrication.
+
+Worth keeping as a property of the instrument rather than as a shell lesson: a
+perturbation that does not compile and a perturbation the gate cannot see are
+distinguishable only if the tool distinguishes them.
+
 ## Unit #41 — Shutdown — 2026-08-15
 
 ### A STATED RANGE DID NOT NARROW A PREDICATE KNOB, and the corpus put the reference one element before the start of an array (proposed method amendment)

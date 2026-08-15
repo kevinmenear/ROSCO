@@ -358,6 +358,78 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A STATE MACHINE'S CAPTURE WINDOW IS ARITHMETIC OVER THE SCENARIO'S PATCH
+  DICT, AND THE CHEAPEST CONFIRMATION IS A STUB THAT FAILS ONE NAMED CASE.**
+  Unit #42. `Startup` runs 11,999 times in scenario 9 and is finished by
+  invocation 1,801; a start/middle/end window would spend two ranges on
+  `SU_Stage == 0`, where the body writes nothing.
+
+  ```
+  Examples/vit_sim.py::run_scenario_9   dt 0.025, SU_FW_MinDuration 5,
+                                        SU_LoadRampDuration 10 10,
+                                        SU_LoadHoldDuration 10 10
+  invocation  201  t = 5    stage 1 -> 2   coverage :594  1 hit  / :608  199
+  invocation 1001  t = 25   stage 2 -> 3   coverage :602  2 hits / :610  800
+  invocation 1801  t = 45   stage 3 -> 0   coverage :619  1 hit
+  invocation: 0:0:1-20,0:0:195-215,0:0:995-1015,0:0:1795-1815      83 cases
+  ```
+
+  Compute the transitions from the scenario's OWN patch dict and cross-check
+  each against a coverage hit count BEFORE writing the window. Then delete the
+  arm that fires once and confirm the kernel fails exactly the case index the
+  arithmetic named -- here `Startup.0.0.1801`, 82 of 83 passing. A midpoint
+  window reports the same green over a corpus in which that arm is dead.
+
+- **A SURVIVOR LIST IS NOT A LIST OF SITES. ASK WHICH ARM OF WHICH CALLEE THE
+  CORPUS REACHED.** Unit #42, and it is the difference between one baseline
+  state and five.
+
+  ```
+  first sweep   92 of 106, and six survivors at ONE call:
+     arith 'LSST + SU_LoadRampDuration' -> '-'      swap 'S-1' -> '1-S'
+     arith 'S - 1' -> 'S + 1'                       const the two -1s
+     const '1.0' -> '2.0'   (sigma's y1)
+  same sweep    drop_factor on sigma's y0   KILLED on 624 cases
+  ```
+
+  `sigma(x, x0, x1, y0, y1)` returns `y0` outright when `x < x0`, and every
+  stage-2 case had `Time < SU_LoadStageStartTime`. Killing the argument a
+  function RETURNS while missing every argument it does not is the signature of
+  a corpus that reached one arm, not of six independent holes. Two states, not
+  one: `x < x0` and `x > x1` are different arms and one `Time` cannot be in both.
+
+- **`\&\&` INSIDE SINGLE QUOTES REACHES THE COMPILER AS BACKSLASHES, AND ON A
+  RED TEST WHOSE EXPECTED RESULT IS ZERO THAT IS INDISTINGUISHABLE FROM THE
+  ANSWER.** Unit #42.
+
+  ```
+  --perturb-to '(false \&\& LocalVar->SU_RotSpeedF < ...)'
+  PERTURBED BUILD FAILED -- no red test was performed          exit 2
+  --perturb-to '(false && LocalVar->SU_RotSpeedF < ...)'
+  RED TEST FAIL: perturbation moved 0 of 5252000               exit 1
+  ```
+
+  Both end with the tree reverted and nothing moved. `scripts/gate.py`
+  distinguishes them and prints which; a tool that reported the build failure as
+  a zero would have manufactured a corroboration of the coverage data. Read the
+  verdict line, not the count -- and note gate.py reverts unconditionally, so
+  the failed attempt costs one second and no cleanup.
+
+- **`vit_mutate.py`'s SURVIVOR IDS ARE COMPUTED FROM THE LOWERCASED UNIT NAME,
+  SO `cppmutate.mutants('Startup', src)` MATCHES NONE OF THEM.** Unit #42, and
+  it is 0-of-14 rather than a partial match, which is what made it obvious.
+  `vit_mutate.py:296` calls `mutants(args.unit.lower(), original)` and `_mid`
+  hashes the unit name in. To locate a survivor in the source:
+
+  ```
+  ms = cppmutate.mutants('startup', open(cpp).read())     # lower-cased
+  {m.mid: (m.line, m.operator) for m in ms}
+  ```
+
+  The artifact records `id`, `operator`, `before` and `after` and NOT the line,
+  so this is the only way to turn a survivor into a source position -- and the
+  positions are what partition the list.
+
 - **`harness/ranges.toml` NARROWED EVERY LADDER EXCEPT THE ONE READ OUT OF THE
   REFERENCE, AND THE COST WAS 31 CASES OF UNDEFINED BEHAVIOUR SCORED AS
   FAILURES.** Unit #41, `translation-loop f92fb9f`. `predicate_knobs_from`

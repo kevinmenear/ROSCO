@@ -4,6 +4,78 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-15: unit #42 `Startup` is `integrated` and CLOSED** — all five
+layers exist, all five ran, all five are red-tested, and the mutation score is
+**1.000** on 102 behavioural mutants with 4 declared. It is the campaign's first
+unit whose EXTRACTION WINDOW WAS FOUR RANGES AIMED AT STATE-MACHINE EDGES rather
+than start/middle/end, and the first whose kernel red test names a single case
+index predicted in advance.
+
+Every count below is read from the committed artifact named in its row.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 83 cases (`evidence/Startup/kernel.verify_fields.csv`) | 83/83, all 19,671 field rows `IDENTICAL` | **`vit verify` DECLINED to build one** and printed `NON_DISCRIMINATING`, third unit running. Three hand stubs instead: no-op **0 of 83 pass**; the freewheel low-speed write deleted **83 of 83 PASS**; the startup-complete reset deleted **fails EXACTLY ONE case, `Startup.0.0.1801`** |
+| differential harness (`harness/Startup.json`) | **7151 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **7103 of 7103**, on the corpus before the baseline states were added — the same count that green certified |
+| mutation (`mutation/Startup.json`) | **102 of 102 behavioural, 1.000**, 4 declared, 0 no-compile, 6 operators of 12 offered | the score *is* the red test, 102 times |
+| post-integration (`harness/Startup.postintegration.json`) | 7151 checked, 0 failed | the wrapper's scalar copy-back deleted: **7151 of 7151** |
+| gate, 27 scenarios (`gate/Startup.json`) | 5,252,000 values / 351 channels, 0 mismatched | TWO: `PRC_R_Torque = 0.0 -> 1.0` moves **34,086**; the freewheel low-speed arm moves **0** |
+
+**THE WINDOW WAS ARITHMETIC AND THE STUB CONFIRMED IT TO THE CASE INDEX.**
+`DISCON.F90:112` sits behind `IF (CntrPar%SU_Mode > 0)` and carries hits under
+scenario 9 alone — 11,999 invocations, 0 in the other 26, the same shape as unit
+#41. But this unit's whole life is over by invocation **1,801**: the three stage
+transitions are at 201, 1001 and 1801, computed from scenario 9's own patch dict
+(dt = 0.025, `SU_FW_MinDuration` = 5, `SU_LoadRampDuration` = 10 10,
+`SU_LoadHoldDuration` = 10 10) and each cross-checked against a coverage hit
+count before the window was written. A start/middle/end window would have put two
+of three ranges in `SU_Stage == 0`, where the body writes nothing. Four ranges,
+83 cases, and the capture agrees to the invocation: case 200 leaves `SU_Stage` at
+1 and 201 at 2, 1000 at 2 and 1001 at 3, 1800 at 3 and 1801 at 0. Deleting the
+`SU_Stage = 0` reset then fails exactly `Startup.0.0.1801` and nothing else.
+
+**SIX OF THE FIRST SWEEP'S FOURTEEN SURVIVORS WERE ONE FACT ABOUT `sigma`.**
+Every stage-2 case the generator produced had `Time < SU_LoadStageStartTime`, so
+the call took its `y0` early return and neither the ramp-end expression, nor its
+subscript, nor `y1` could reach an answer. The same sweep killed `drop_factor` on
+`y0` on 624 cases, which is what says the corpus reached exactly one arm of one
+callee rather than having six independent holes.
+
+```
+                                    cases   mutants killed / 106
+  no baseline                        7103   92          0.868
+  + 3 states (threshold, cubic,      7151   102         1.000 with 4 declared
+    past-ramp)
+```
+
+**A THRESHOLD WHOSE LEFT SIDE THIS UNIT COMPUTES, REACHED BY UNIT #41's ROUTE.**
+`SU_RotSpeedF < 0.95 * SU_RotorSpeedThresh` compares a computed value against a
+given one, so R6's relational-pair rule — which needs both sides to be inputs —
+cannot put it at equality. `LPFilter`'s initialisation arm returns its input
+BIT-EXACTLY at `CornerFreq = 0`, which turns the computed side back into an
+input. What had to be checked rather than assumed: `iStatus = 0` forces
+`SU_Stage = -1` two statements earlier and the statement between them promotes
+-1 to 1 whenever `Time > SU_StartTime`, so the arm survives the setting that
+reaches the answer.
+
+**ONE STATEMENT IS OUTSIDE EVERY SIMULATION THIS CAMPAIGN RUNS, AND THREE
+INSTRUMENTS SAY SO.** `ControllerBlocks.f90:587` carries 0 hits in all 27
+scenarios; the gate red test on that arm moves **0 of 5,252,000**,
+revert-verified; and the kernel stub with the write deleted passes **83 of 83**.
+Scenario 9 starts the rotor at 4 rpm = 0.419 rad/s against a threshold of
+0.95 * 0.3 = 0.285, so no window into scenario 9 could have reached it. The
+differential harness is the one instrument that is not blind — `negate_cond` on
+that condition is killed on 5618 of 7151 cases.
+
+**A PERTURBATION THAT DOES NOT COMPILE IS NOT A PERTURBATION THE GATE CANNOT
+SEE.** The second gate red test failed to build on its first attempt (`\&\&`
+inside single quotes reaches the compiler as backslashes) and `scripts/gate.py`
+printed `PERTURBED BUILD FAILED -- no red test was performed` rather than a zero.
+On a red test whose EXPECTED result is zero movement, those two outcomes are
+indistinguishable from the number alone, and the tool is what distinguishes them.
+
+---
+
 **As of 2026-08-15: unit #41 `Shutdown` is `integrated` and CLOSED** — all five
 layers exist, all five ran, all five are red-tested, and the mutation score is
 **1.000** on 97 behavioural mutants with 12 declared. It is the campaign's first
