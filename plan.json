@@ -2654,6 +2654,8 @@
     "evidence/interp2d/reference.size-mismatch-aborts.txt",
     "evidence/interp2d/harness.out-of-bounds-corner-census.txt",
     "evidence/interp2d/generator.shadowed-lengths.txt",
+    "evidence/interp2d/control.interp1d-corpus.json",
+    "evidence/interp2d/control.generator-change-is-additive.txt",
     "harness/interp2d.json",
     "harness/ranges.toml",
     "harness/interp2d.noop.json",
