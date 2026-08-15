@@ -123,6 +123,7 @@ set(SOURCES
     src/powercontrolsetpoints.cpp
     src/prefiltermeasuredsignals.cpp
     src/rescontroller.cpp
+    src/setpointsmoother.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

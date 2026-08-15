@@ -68,6 +68,7 @@ double pitchsaturation_c(localvariables_view_t* LocalVar, controlparameters_view
 void powercontrolsetpoints_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_view_t* ErrVar);
 void prefiltermeasuredsignals_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, debugvariables_t* DebugVar, objectinstances_t* objInst, errorvariables_view_t* ErrVar);
 double rescontroller_c(double error, double kp, double ki, double freq, double minValue, double maxValue, double DT, resparams_t* resP, int32_t reset, int* inst);
+void setpointsmoother_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst);
 
 #ifdef __cplusplus
 }

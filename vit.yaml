@@ -56,11 +56,31 @@ kgen:
   #
   #     R_Total = LocalVar%PRC_R_Speed * LocalVar%PRC_R_Torque * LocalVar%PRC_R_Pitch
   #
-  # and those three multipliers are 1.0 in every scenario except 25, which
-  # patches `PRC_R_Speed = 0.9` (PRC_Mode=2, PRC_Comm=0). On any other scenario
-  # a translation that DROPPED R_Total entirely would replay bit-identically.
-  # Hit counts do not decide this one: scenario 1 executes the call site 79,998
-  # times against scenario 25's 15,999 and is blind to the same three inputs.
+  # and scenario 25 patches `PRC_R_Speed = 0.9` (PRC_Mode=2, PRC_Comm=0), so the
+  # product is not 1.0 there. Hit counts do not decide this one: scenario 1
+  # executes the call site 79,998 times against scenario 25's 15,999 and is
+  # blind to the same three inputs.
+  #
+  # CORRECTED AFTER THE FACT, AND THE CORRECTION IS THE POINT. This comment and
+  # commit 05ef7cae both said 25 was "the ONLY scenario whose PRC_R_* product is
+  # not 1.0". IT IS NOT. Measured by gate/SetpointSmoother.redtest.r_total.json,
+  # which drops `R_Total` to the constant 1.0 and moves 56,128 values across TWO
+  # scenarios:
+  #
+  #     scenario_9   33,686 values, 6 channels     <- and it moves MORE than 25
+  #     scenario_25  22,442 values, 6 channels
+  #
+  # The claim read `CntrPar%PRC_R_Speed`, the control PARAMETER. The unit
+  # multiplies `LocalVar%PRC_R_Speed`, a runtime variable of the same name, and
+  # ControllerBlocks.f90:555-581 (`StartupControl`) drives both it and
+  # `PRC_R_Torque` off 1.0 for the whole startup ramp whenever `SU_Mode` is on.
+  # Scenario 9 sets SU_Mode=1. A scenario census that greps the patch dicts for
+  # `PRC_` cannot see that, and this one did not.
+  #
+  # The CHOICE stands: 25 does discriminate, and the kernel built on it is the
+  # committed one. What was wrong was the stated basis, and it took a red test
+  # rather than a re-reading to find -- which is the whole argument for running
+  # one perturbation per claim instead of per unit.
   #
   # The ELSE arm (`SS_Mode /= 1`) is outside this kernel and outside 26 of the
   # 27 scenarios: coverage/line_coverage.json line :514 carries hits for
@@ -579,6 +599,14 @@ translations:
   # verdict on the kernel, kept verbatim rather than argued away; the hand stubs
   # that measure what the kernel can and cannot see are in
   # evidence/SetpointSmoother/kernel.stubs.txt, and one of them PASSES.
+  # INTEGRATED, and `status` still says what the KERNEL found. `vit integrate`
+  # rewrote this block to `status: integrated` / `verification: simulation`,
+  # deleting `cases_passed`, `kernel_dir`, `red_test` and the detail above --
+  # having run no simulation and read no result, which is the RUNBOOK's recorded
+  # complaint about that generator met a second time. Reverted and re-entered by
+  # hand: `integrated` is true and is recorded once, in plan.json's
+  # `disposition`, where the loop reads it; what belongs here is the kernel's
+  # own verdict, which is `non_discriminating` and has not changed.
   SetpointSmoother:
     status: non_discriminating
     cases_passed: 62

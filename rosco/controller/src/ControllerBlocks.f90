@@ -59,6 +59,17 @@ IMPLICIT NONE
         END SUBROUTINE powercontrolsetpoints_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of SetpointSmoother
+    INTERFACE
+        SUBROUTINE setpointsmoother_c(LocalVar, CntrPar, objInst) BIND(C, NAME='setpointsmoother_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: objInst
+        END SUBROUTINE setpointsmoother_c
+    END INTERFACE
+
 CONTAINS
 
     SUBROUTINE PowerControlSetpoints(CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -439,32 +450,22 @@ CONTAINS
     END SUBROUTINE WindSpeedEstimator
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE SetpointSmoother(LocalVar, CntrPar, objInst)
-    ! Setpoint smoother modifies controller reference in order to separate generator torque and blade pitch control actions
-    !       SS_Mode = 0, No setpoint smoothing
-    !       SS_Mode = 1, Implement setpoint smoothing
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, ObjectInstances
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
         IMPLICIT NONE
-    
-        ! Inputs
-        TYPE(ControlParameters),    INTENT(IN   )       :: CntrPar
-        TYPE(LocalVariables),       INTENT(INOUT)       :: LocalVar 
-        TYPE(ObjectInstances),      INTENT(INOUT)       :: objInst
-        ! Allocate Variables
-        REAL(DbKi)                      :: DelOmega                            ! Reference generator speed shift, rad/s.
-        REAL(DbKi)                      :: R_Total                            ! Total power rating command
-        
-        ! ------ Setpoint Smoothing ------
-        IF ( CntrPar%SS_Mode == 1) THEN
-            ! Find setpoint shift amount
-            R_Total = LocalVar%PRC_R_Speed * LocalVar%PRC_R_Torque * LocalVar%PRC_R_Pitch
-            DelOmega = ((LocalVar%BlPitchCMeas - LocalVar%PC_MinPit)/0.524) * CntrPar%SS_VSGain - ((CntrPar%VS_RtPwr * R_Total - LocalVar%VS_LastGenPwr))/CntrPar%VS_RtPwr * CntrPar%SS_PCGain ! Normalize to 30 degrees for now
-            DelOmega = DelOmega * CntrPar%PC_RefSpd
-            ! Filter
-            LocalVar%SS_DelOmegaF = LPFilter(DelOmega, LocalVar%DT, CntrPar%F_SSCornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF) 
-        ELSE
-            LocalVar%SS_DelOmegaF = 0 ! No setpoint smoothing
-        ENDIF
-
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(CONTROLPARAMETERS), INTENT(IN), TARGET :: CntrPar
+        TYPE(OBJECTINSTANCES), INTENT(INOUT), TARGET :: objInst
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL setpointsmoother_c(C_LOC(LocalVar_view), C_LOC(CntrPar_view), C_LOC(objInst))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
     END SUBROUTINE SetpointSmoother
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION PitchSaturation(LocalVar, CntrPar, objInst, DebugVar, ErrVar) RESULT(PitchSaturation_result)
