@@ -6,7 +6,7 @@
 // Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
 // Source MD5: 9ebb1ecfc720
 // VIT: 0.1.0
-// Status: unverified
+// Status: PROBE ONLY -- the shipped translation plus counters. Not a translation.
 // Generated: 2026-08-15T11:11:22Z
 //
 // CONTRACT: mirror (plan.json). Every input and every output crosses the
@@ -66,8 +66,36 @@
 #include "vit_types.h"
 
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 
 namespace {
+
+// PROBE COUNTERS. Not part of the translation.
+struct Census {
+    long calls=0, mode1=0, init=0, zmq=0, low_wind=0;
+    long entry_right=0, entry_left=0, entry_zero=0;
+    long stop_right=0, persist_right=0, stop_left=0, persist_left=0;
+    long start_right=0, start_left=0, both_start=0, no_start=0;
+    long ol_arm=0, ol_interp=0;
+    ~Census() {
+        std::fprintf(stderr,
+"\n[ARM CENSUS] calls %ld | Y_ControlMode==1 %ld | iStatus==0 init %ld\n"
+"  ZMQ_Mode==1 %ld  (0 hits in all 27 scenarios)\n"
+"  WE_Vw_F <= Y_uSwitch, deadband=Y_ErrThresh(1) %ld  (0 hits in all 27 scenarios)\n"
+"  ENTRY YawState:  1 -> %ld   -1 -> %ld   0 -> %ld\n"
+"    from  1: stop %ld  persist %ld\n"
+"    from -1: stop %ld  persist %ld\n"
+"    from  0: start-right-only %ld  start-left-only %ld  BOTH ifs fired %ld  neither %ld\n"
+"  OL_Mode>0 && Ind_YawRate>0 %ld | of those, Time >= OL_Breakpoints(1) %ld\n"
+"  (both 0 hits in all 27 scenarios)\n",
+calls, mode1, init, zmq, low_wind, entry_right, entry_left, entry_zero,
+stop_right, persist_right, stop_left, persist_left,
+start_right, start_left, both_start, no_start, ol_arm, ol_interp);
+    }
+};
+Census g;
+
 
 // The Fortran reads `R2D`/`D2R` from the Constants module by name. Restated
 // here rather than recomputed, and the distinction is load-bearing:
@@ -118,7 +146,9 @@ void YawRateControl(float* avrSWAP, controlparameters_view_t* CntrPar,
     // `Y_ControlMode` -- 0 being what every scenario that does not enable yaw
     // control holds it at -- this procedure writes nothing at all, not even
     // `avrSWAP(48)`, and the five DebugVar fields keep whatever they held.
+    ++g.calls;
     if (CntrPar->Y_ControlMode == 1) {
+        ++g.mode1;
 
         // ! Compass wind directions in degrees
         // LocalVar%WindDir = wrap_180(LocalVar%NacHeading + LocalVar%NacVane)
@@ -137,6 +167,7 @@ void YawRateControl(float* avrSWAP, controlparameters_view_t* CntrPar,
         // below so that the store is not elided into a warning, and so that the
         // day something reads it the void goes away with the read.
         if (LocalVar->iStatus == 0) {
+            ++g.init;
             YawState = 0;
             Tidx = 1;
         }
@@ -149,6 +180,7 @@ void YawRateControl(float* avrSWAP, controlparameters_view_t* CntrPar,
         //     NacVaneOffset = CntrPar%Y_MErrSet ! (deg) # Offset from setpoint
         // ENDIF
         if (CntrPar->ZMQ_Mode == 1) {
+            ++g.zmq;
             NacVaneOffset = LocalVar->ZMQ_YawOffset;
         } else {
             NacVaneOffset = CntrPar->Y_MErrSet;
@@ -223,6 +255,7 @@ void YawRateControl(float* avrSWAP, controlparameters_view_t* CntrPar,
         // observable at all. Same behaviour, same reference, fewer sites at
         // which the score cannot go red.
         if (LocalVar->WE_Vw_F <= CntrPar->Y_uSwitch) {
+            ++g.low_wind;
             deadband = CntrPar->Y_ErrThresh[0];  // Y_ErrThresh(1)
         } else {
             deadband = CntrPar->Y_ErrThresh[1];  // Y_ErrThresh(2)
@@ -273,27 +306,33 @@ void YawRateControl(float* avrSWAP, controlparameters_view_t* CntrPar,
         // inside the `YawState == -1` arm are both self-assignments -- the
         // reference writes them for symmetry and they change nothing. Kept, for
         // the same reason `Tidx` is kept.
-        if (YawState == 1) {
-            if (NacHeadingError <= 0.0) {
+        if (YawState == 1) { ++g.entry_right;
+            if (NacHeadingError <= 0.0) { ++g.stop_right;
                 // ! stop yawing
                 YawRateCom = 0.0;
                 YawState = 0;
             } else {
                 // ! persist
+                ++g.persist_right;
                 YawRateCom = CntrPar->Y_Rate;
                 YawState = 1;
             }
-        } else if (YawState == -1) {
-            if (NacHeadingError >= 0.0) {
+        } else if (YawState == -1) { ++g.entry_left;
+            if (NacHeadingError >= 0.0) { ++g.stop_left;
                 // ! stop yawing
                 YawRateCom = 0.0;
                 YawState = 0;
             } else {
                 // ! persist
+                ++g.persist_left;
                 YawRateCom = -CntrPar->Y_Rate;
                 YawState = -1;
             }
-        } else {
+        } else { ++g.entry_zero;
+            const bool r = (NacHeadingError > deadband);
+            const bool l = (NacHeadingError < -deadband);
+            if (r && l) ++g.both_start; else if (r) ++g.start_right;
+            else if (l) ++g.start_left; else ++g.no_start;
             if (NacHeadingError > deadband) {
                 YawState = 1;  // yaw right
             }
@@ -340,8 +379,8 @@ void YawRateControl(float* avrSWAP, controlparameters_view_t* CntrPar,
         // `OL_Breakpoints(1)` is unguarded, and unguarded by the reference: the
         // arm is entered on `OL_Mode > 0` alone, which does not imply the array
         // was ever allocated.
-        if ((CntrPar->OL_Mode > 0) && (CntrPar->Ind_YawRate > 0)) {
-            if (LocalVar->Time >= CntrPar->OL_Breakpoints[1 - 1]) {
+        if ((CntrPar->OL_Mode > 0) && (CntrPar->Ind_YawRate > 0)) { ++g.ol_arm;
+            if (LocalVar->Time >= CntrPar->OL_Breakpoints[1 - 1]) { ++g.ol_interp;
                 avrSWAP[48 - 1] = static_cast<float>(
                     interp1d_c(CntrPar->OL_Breakpoints, CntrPar->n_OL_Breakpoints,
                                CntrPar->OL_YawRate, CntrPar->n_OL_YawRate, LocalVar->OL_Index,
