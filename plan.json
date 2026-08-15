@@ -2497,7 +2497,9 @@
     "gate/Startup.redtest.torque_zero.json",
     "gate/Startup.redtest.freewheel_arm.json",
     "evidence/Startup/done_check.txt"
-   ]
+   ],
+   "translation": "translations/ControllerBlocks/startup.cpp",
+   "harness_required": true
   },
   {
    "order": 43,
