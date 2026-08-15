@@ -1,0 +1,50 @@
+Differential harness, FIRST GENERATION -- the reference dies at case 21.
+
+    In file 'shutdown_bridge.f90', around line 1704:
+    Error allocating 11703869192 bytes: Cannot allocate memory
+    harness produced no JSON
+
+11.7 GB is 1,462,983,649 REAL(8) elements, and `harness produced no JSON` is
+also what a PRINTING reference produces -- so the message names neither the case
+nor the input. Two `fprintf(stderr)` lines in the generated test .cpp and one
+`WRITE(0,*)` at the top of the generated bridge, exactly the instrument unit #38
+recorded, named both in one 9-second run:
+
+    VITTEST  case 20  n_PF_TimeStuck=3           n_PF_Offsets=3
+     VITBRIDGE        n_PF_TimeStuck=3           n_PF_Offsets=3
+    VITTEST  case 21  n_PF_TimeStuck=3           n_PF_Offsets=3
+     VITBRIDGE        n_PF_TimeStuck=1462983649  n_PF_Offsets=-1746481605
+    In file 'shutdown_bridge.f90', around line 1711: Error allocating ...
+
+THE TWO SIDES DISAGREE ABOUT A VALUE NEITHER OF THEM ASSIGNED, and that is the
+whole diagnosis. The C++ reads 3 out of the case file; the Fortran bridge, whose
+argument is `&CntrPar_b.n_PF_TimeStuck`, is handed 1462983649. Between the read
+and the call the generated test does exactly one thing: it runs the C++
+translation.
+
+    line 1312    Shutdown(&LocalVar_a, &CntrPar_a, &objInst_a, &ErrVar_a);
+    line 1313    shutdown_f90(&LocalVar_b.iStatus, ... );
+
+So the C++ side scribbled over a neighbouring stack object. It is not this
+translation's arithmetic: the write happens INSIDE `LPFilter`, which indexes
+`FP%lpf1_a1(inst)` and four more `DIMENSION(1024)` arrays with
+`objInst%instLPF`. `FP` is a NESTED STRUCT inside `localvariables_view_t`, so an
+`instLPF` outside 1..1024 writes past `LocalVar_a` and into whatever the
+compiler laid down next -- here `CntrPar_b`, two of whose fields are the extents
+the bridge then ALLOCATEs with.
+
+This is the third instance of one class in this campaign (`[PIDController]`,
+`[PreFilterMeasuredSignals]`), and `harness/ranges.toml` remains the only place
+it can be said: the counter is subscripted inside a CALLEE, against a field of a
+nested type the generator does not expand, so no compared out-parameter exists
+for an inference to attach a role to.
+
+    objInst_instLPF = { lo = 1, hi = 1000 }
+
+is the same pin those two units carry, and this unit advances the counter FOUR
+times per call, so 1000 leaves 20 slots above the worst case.
+
+WHY IT SURFACED AS AN ALLOCATE AND NOT A SEGFAULT is worth keeping: the
+corrupted bytes happened to land on two INTEGER extents rather than on a
+pointer, so the reference asked for 11.7 GB instead of dereferencing garbage.
+The same defect one field over is `exit 139, 0 bytes of stdout`.
