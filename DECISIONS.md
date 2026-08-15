@@ -2,6 +2,177 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #41 — Shutdown — 2026-08-15
+
+### A STATED RANGE DID NOT NARROW A PREDICATE KNOB, and the corpus put the reference one element before the start of an array (proposed method amendment)
+
+`harness/ranges.toml` is described in its own header as *the only judgement in
+the pipeline*. It narrowed R6's ladders, the random fill and the all-pairs draw,
+and it did not narrow the PREDICATE KNOB — because `predicate_knobs_from` reads
+its values out of the REFERENCE's own predicates and never consults the
+signature. So a range could be stated, recorded, reviewed, and have no effect on
+the one generator stage that most directly decides which arms run.
+
+Measured here. `LocalVar_SD_Stage = { lo = 0, hi = 3 }` was stated because the
+reference subscripts three allocatables with `SD_Stage` under a guard that reads
+
+    ELSEIF (LocalVar%SD_Stage .LE. CntrPar%SD_Stage_N) THEN
+
+and NOT `1 .LE. SD_Stage .AND. ...`. The reference's own comment on the arm
+below it says *"Stage > 0"*; the condition does not say so. The knob supplied
+-1 anyway, in 31 of 14,621 cases, and the harness reported:
+
+    HARNESS FAIL: checked 14621  failed 31  inadmissible 0
+      case 9475 LocalVar.SD_MaxPitchRate: ref 176b14841ba98540 != got 0000000000000000
+      case 9476 LocalVar.SD_MaxPitchRate: ref 3000000000000000 != got 0000000000000000
+
+An instrumented run named the inputs in one 10-second pass —
+`SD_Method=2 SD_Stage=-1 SD_Stage_N=0` — and the two "references" are
+uninitialised memory: the Fortran read one element before its allocation while
+the C++ read its own zero padding. **A red result that is really an undefined
+reference is worse than no result**: it cannot be told from a translation
+defect, and `vit_mutate.py` refuses to score against a red baseline, so the unit
+could not have closed either way.
+
+Fixed where it lives (`translation-loop f92fb9f`), not routed around: knob
+values are now filtered through the parameter's stated bounds, and **only a
+`stated:` bounds_source narrows** — filtering on the +/-1e3 default would
+silently delete knob values for every unit already scored, which is the positive
+control in the new test. A knob narrowed to NOTHING keeps its values and says
+so, because deleting a predicate silently is the failure the change exists to
+stop. Four tests; 159 pass in the loop's suite.
+
+**The method question this raises** is not about knobs: it is that a file whose
+entire purpose is to record a human judgement had no check that the judgement
+reached every stage that could act on it. `unconstrained()` reports parameters
+with NO stated range. Nothing reported a stated range that was ignored.
+
+### THE FIRST CORPUS KILLED THE REFERENCE, AND THE C++ SIDE HAD CORRUPTED IT BEFORE THE REFERENCE RAN
+
+    In file 'shutdown_bridge.f90', around line 1704:
+    Error allocating 11703869192 bytes: Cannot allocate memory
+    harness produced no JSON
+
+11.7 GB is 1,462,983,649 REAL(8) elements, and `harness produced no JSON` is
+also what a PRINTING reference produces, so the message named neither the case
+nor the input. Two `fprintf(stderr)` lines in the generated test and one
+`WRITE(0,*)` at the top of the generated bridge — unit #38's instrument — named
+both in one 9-second run:
+
+    VITTEST  case 21  n_PF_TimeStuck=3           n_PF_Offsets=3
+     VITBRIDGE        n_PF_TimeStuck=1462983649  n_PF_Offsets=-1746481605
+
+The two sides disagree about a value neither of them assigned. Between the read
+and the call the generated test does exactly one thing: it runs the C++
+translation. `LPFilter` indexes six `DIMENSION(1024)` fields of `FP` with
+`objInst%instLPF`, `FP` is a NESTED STRUCT inside `localvariables_view_t`, and an
+`instLPF` outside 1..1024 writes past `LocalVar_a` into whatever the compiler
+laid down next — here two extents the bridge then ALLOCATEs with.
+
+Fifth instance of one class (`[PIDController]`, `[PreFilterMeasuredSignals]`,
+`[ResController]`, `[SetpointSmoother]`), same pin, and one detail worth keeping:
+**it surfaced as an ALLOCATE and not a SEGFAULT only because the corrupted bytes
+landed on two INTEGER extents rather than on a pointer.** The same defect one
+field over is `exit 139, 0 bytes of stdout`.
+
+### R6's ALL-PAIRS FALLBACK NEEDED THIRTEEN BASELINE STATES HERE, and the last two are a technique rather than a state
+
+Unit #37's finding met a second time. Every statement that writes this unit's two
+principal outputs needs a TRIPLE, and all-pairs holds every uncrossed knob at its
+ladder's first value — `SD_Method`'s is 0, neither method. The cost was measured
+before it was closed: 29 of 109 mutants survived and every non-equivalent
+survivor was a subscript of one of the four SD_ allocatables.
+
+Two of the states are worth carrying forward as a technique.
+`SD_GenSpeedF > SD_MaxGenSpd` and `ABS(SD_NacVaneF) > SD_MaxYawError` compare a
+value the unit COMPUTES against one it is given, so R6's relational-pair rule —
+which sets one side FROM the other and needs both to be inputs — cannot reach
+their boundary. **A CALLEE'S IDENTITY CASE TURNS A COMPUTED SIDE BACK INTO AN
+INPUT.** `LPFilter`'s initialisation arm computes
+
+    1/(2+c) * ( -(c-2)x + cx + cx )         c = CornerFreq*DT
+
+which is `x` in real arithmetic for every `c` and is `x` BIT-EXACTLY at `c = 0`,
+where the coefficients are 2, -2, 0, 0 and the expression collapses to
+`(1/2)*(2x)` — both operations exact powers of two. Setting the corner frequency
+to zero with `iStatus = 0` makes the filter the identity, and both mutants are
+KILLED rather than declared. This generalises to every unit that thresholds a
+filtered signal, which in ROSCO is most of them.
+
+### A MUTATION SWEEP WAS KILLED BY THE 600-SECOND TOOL CEILING, LEFT A MUTANT LIVE, AND ORPHANED IN THE CONTAINER (proposed method amendment)
+
+`scripts/run_if_time_remains.sh` was asked for 450 seconds, 8,400 remained, and
+it started a 69-mutant part that needed ~800. **It guards the DISPATCH deadline
+and knows nothing about the per-command ceiling**, which is a different number
+with the same consequence — and the consequence here was the exact failure the
+guard exists to prevent:
+
+    mutate_guarded: REFUSING TO CLEAR THE MARKER.
+      is       eff8060a8d49496e6e92876df53712f28f9108d8
+      intended 07c2967fde7fa8318b3bebd7f1ea2eb361402e7c
+
+plus a `vit_mutate.py` still running in the container after the tool had
+returned, which had to be `pkill`ed. `mutate_guarded.sh` did its whole job: the
+mutant was named, commits stayed refused, and nothing was built or gated against
+it. What no tool did was refuse to START.
+
+The remedy taken here is arithmetic and a split — four parts, the longest 460
+seconds — and it is a habit rather than a mechanism. **The mechanism would be for
+`run_if_time_remains.sh` to take the smaller of the dispatch deadline and a
+stated per-command ceiling**, which is a change to the method's own guard and so
+is raised here rather than made.
+
+### THE POST-INTEGRATION RE-TAKE FAILED TO LINK, AND ONE COMMIT MESSAGE ASSERTS A RUN THAT DID NOT HAPPEN
+
+Recorded under C12, with the wrong artifact named rather than quietly fixed.
+Commit `3c65dbc7` says *"post-integration harness 14708/0, re-taken after the
+wrapper red test"*. The re-take had FAILED to link; `harness.sh` deletes its
+output before running, so that commit records the DELETION of the artifact from
+the run that did pass. `09ef82b4` restores the green and
+`evidence/Shutdown/postintegration_shim_race.txt` is the diagnosis. The message
+is left as written: rewriting it would remove the only trace that a commit
+message in this campaign has asserted a number nobody took.
+
+The cause is worth keeping. The link failed with
+`undefined reference to shutdown_c`, which reads exactly like a broken
+integration, and the shim that defines it was on the link line with a plausible
+952-byte object:
+
+    $ nm vit_integration_shim.o        # .bss .comment .data .text and NO shutdown_c
+    $ wc -c vit_integration_shim.cpp   # 451
+    $ g++ ... -c vit_integration_shim.cpp -o (the same .o); nm ... | grep shutdown
+    0000000000000000 T shutdown_c      # from the same bytes
+
+`harness.sh` writes that file by redirecting a `docker exec`'s stdout to a HOST
+path and compiles it in a SECOND `docker exec`. The two are ordered and the bind
+mount still did not make the host's write visible to the container process that
+followed. This tree's RUNBOOK records the same hazard twice in other forms — a
+`git checkout` whose mtime make would not believe, and a host unlink racing a
+container create — and this is the third: **a host WRITE racing a container
+READ.** `nm` on the object settles it in seconds, because only the object was
+wrong.
+
+### Twelve declared equivalences, and none of them is at a statement this unit's Fortran contains
+
+Stated because declaring twelve is the thing to be suspicious of. Eight are
+ARGUMENTS of the four `LPFilter` calls and are decided by the callee's own
+source, not by the corpus: `reset` is tested as `(reset != 0)` so `1` and `2` are
+one program, and `InitialValue` is read only `if (has_InitialValue)` which is the
+literal `0` at all four sites. The `has_InitialValue` flag itself is NOT declared
+— its four `0 -> 1` mutants are killed. The other four are inside the two ErrMsg
+helpers copied verbatim from `pitchsaturation.cpp`, and they carry a measurement
+rather than an argument: a green counter probe over all 14,708 cases reports
+3,565 calls, `n_ErrMsg` equal to 7 in every one, `n_ErrMsg_cap` 4103 in every
+one, and zero occurrences of each of the three boundaries.
+
+**That census also names a gap in the instrument.** `R13_staging_capacity` exists
+precisely to sweep the ErrMsg capacity to its boundary, and it IS applied to this
+unit — 256 cases from 0 to 255 — and it still cannot reach the refusal guard,
+because every one of those cases takes its other inputs at the BASE DRAW, where
+`ErrVar%aviFAIL` is not negative and the guard is never entered. The rule and the
+arm it aims at are disjoint. Sixth unit to declare that site; first to be able to
+say why R13 did not close it.
+
 ## Unit #40 — SetpointSmoother — 2026-08-15
 
 ### The generator PRINTED a predicate knob and put four cases of 5599 on the branch it named (proposed method amendment)

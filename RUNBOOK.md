@@ -358,6 +358,94 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **`harness/ranges.toml` NARROWED EVERY LADDER EXCEPT THE ONE READ OUT OF THE
+  REFERENCE, AND THE COST WAS 31 CASES OF UNDEFINED BEHAVIOUR SCORED AS
+  FAILURES.** Unit #41, `translation-loop f92fb9f`. `predicate_knobs_from`
+  derives a knob's values from the reference's own predicates and never consults
+  the signature, so a stated range was recorded, reviewed and ignored.
+
+  ```
+  LocalVar_SD_Stage = { lo = 0, hi = 3 }     stated
+  PREDICATE KNOB: LocalVar_SD_Stage at [-1.0, 0.0, 1.0, 2.0]     generated
+  HARNESS FAIL: checked 14621  failed 31
+    case 9475 LocalVar.SD_MaxPitchRate: ref 176b14841ba98540 != got 0000000000000000
+  ```
+
+  The "reference" values are uninitialised memory: at `SD_Stage = -1` the Fortran
+  reads one element before its allocation. **A red result that is really an
+  undefined reference cannot be told from a translation defect**, and
+  `vit_mutate.py` refuses to score against a red baseline, so nothing downstream
+  could have closed either. Only a `stated:` bounds_source narrows — filtering on
+  the +/-1e3 default would delete knob values for every unit already scored, and
+  that is the positive control in the new test.
+
+- **A CALLEE'S IDENTITY CASE TURNS A COMPUTED SIDE BACK INTO AN INPUT, AND THAT
+  IS HOW A THRESHOLD BOUNDARY THAT NO LADDER CAN REACH GETS REACHED.** Unit #41,
+  and it generalises to every unit in ROSCO that thresholds a filtered signal.
+
+  ```
+  IF (LocalVar%SD_GenSpeedF > CntrPar%SD_MaxGenSpd)   <- left side is COMPUTED
+  R6's relational-pair rule sets one side FROM the other and needs BOTH to be
+  inputs, so the equality is unreachable and `>` -> `>=` survives.
+
+  LPFilter's init arm:  1/(2+c) * ( -(c-2)x + cx + cx ),  c = CornerFreq*DT
+      = x in real arithmetic for every c
+      = x BIT-EXACTLY at c = 0, where the coefficients are 2, -2, 0, 0
+        and the expression is (1/2)*(2x) -- both operations exact
+  ```
+
+  `SD_GenSpdCornerFreq = 0` with `iStatus = 0` makes the filter the identity, and
+  the mutant is KILLED rather than declared. Two of this unit's thirteen baseline
+  states are that, and they are the difference between a declaration and a
+  measurement.
+
+- **`run_if_time_remains.sh` GUARDS THE DISPATCH DEADLINE AND KNOWS NOTHING ABOUT
+  THE 600-SECOND TOOL CEILING, WHICH IS A DIFFERENT NUMBER WITH THE SAME
+  CONSEQUENCE.** Unit #41. Asked for 450 seconds with 8,400 remaining, it started
+  a 69-mutant sweep that needed ~800.
+
+  ```
+  Command timed out after 10m 0s
+  mutate_guarded: REFUSING TO CLEAR THE MARKER.
+    is       eff8060a8d49496e6e92876df53712f28f9108d8
+    intended 07c2967fde7fa8318b3bebd7f1ea2eb361402e7c
+  docker exec vit-dev pgrep -af vit_mutate.py     <- still running, after the
+                                                     tool had returned
+  ```
+
+  **Estimate against 600, not against the deadline**, and split until every part
+  fits: this unit's four parts are 460, 408, 273 and 185 seconds. `pkill` the
+  orphan BEFORE restoring the file, or the sweep writes the mutant back.
+
+- **A HOST WRITE CAN RACE A CONTAINER READ ACROSS THE BIND MOUNT, AND THE
+  EVIDENCE IS AN OBJECT FILE THAT IS THE RIGHT SIZE AND HAS NO SYMBOLS.** Unit
+  #41, and it is this file's mtime hazard met in a third form.
+
+  ```
+  /usr/bin/ld: ControllerBlocks.f90.o: undefined reference to `shutdown_c'
+  nm vit_integration_shim.o    ->  .bss .comment .data .text and NO shutdown_c
+  wc -c vit_integration_shim.cpp   ->  451
+  recompile from the SAME bytes    ->  0000000000000000 T shutdown_c
+  ```
+
+  `harness.sh` writes that .cpp by redirecting one `docker exec`'s stdout to a
+  HOST path and compiles it in a SECOND `docker exec`; the two are ordered and
+  the write was still not visible. The failure names the unit under test, so it
+  reads like a broken integration. **`nm` the object, not the source** -- only
+  the object was wrong, and it takes seconds.
+
+- **A PERTURBATION MUST BE SCOPED TO THE WRAPPER IT NAMES, BECAUSE THE GENERATED
+  LINE IS IDENTICAL IN ALL OF THEM.** Unit #41.
+  `CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)` stands FIVE
+  times in `ControllerBlocks.f90` -- once per integrated unit whose view argument
+  carries scalar outputs. A whole-file replace perturbs five wrappers, and the
+  first attempt asserted on the count and edited nothing, after which the harness
+  printed `POST-INTEGRATION RED TEST FAILED (stayed green)` against an
+  UNPERTURBED tree. That verdict was correct about what it measured and would
+  have been read as a defect in the wrapper. Scope the edit to the unit's own
+  `SUBROUTINE ... END SUBROUTINE` block and exit non-zero if the line is not
+  there exactly once.
+
 - **A REFERENCE CAN HAVE NO ANSWER FOR ITS OWN RETURN VALUE, AND THE PIN THAT
   LOOKS OBVIOUS THROWS AWAY THE ARM INSTEAD OF THE ANSWER.** Unit #39,
   `translation-loop 04975cf`. `ResController` assigns its result in the ELSE arm

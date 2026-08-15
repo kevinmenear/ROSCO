@@ -4,6 +4,93 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-15: unit #41 `Shutdown` is `integrated` and CLOSED** — all five
+layers exist, all five ran, all five are red-tested, and the mutation score is
+**1.000** on 97 behavioural mutants with 12 declared. It is the campaign's first
+unit whose DIFFERENTIAL CORPUS NEEDED THIRTEEN BASELINE STATES, and the first
+whose extraction scenario was not a choice: only 1 of the 27 scenarios calls it
+at all.
+
+Every count below is read from the committed artifact named in its row.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases (`evidence/Shutdown/kernel.verify_fields.csv`) | 62/62, all 14,694 field rows `IDENTICAL` | **`vit verify` DECLINED to build one** and printed `NON_DISCRIMINATING`. Three hand stubs instead: no-op **0 of 61**; the vane arithmetic constant **62 of 62 PASS**; the SD_EnableTime arm deleted **moves exactly ONE case** |
+| differential harness (`harness/Shutdown.json`) | **14708 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **14708 of 14708**, the same count the green certifies |
+| mutation (`mutation/Shutdown.json`) | **97 of 97 behavioural, 1.000**, 12 declared, 0 no-compile, 8 operators of 12 offered | the score *is* the red test, 97 times |
+| post-integration (`harness/Shutdown.postintegration.json`) | 14708 checked, 0 failed | the wrapper's scalar copy-back deleted: **14708 of 14708** |
+| gate, 27 scenarios (`gate/Shutdown.json`) | 5,252,000 values / 351 channels, 0 mismatched | TWO: `SD_Trigger = 4 -> 0` moves **11,990**; the whole `SD_Method == 2` arm moves **0** |
+
+**THE EXTRACTION SCENARIO WAS NOT A CHOICE, AND THE WINDOW WAS ARITHMETIC.**
+`DISCON.F90:107` sits behind `IF (CntrPar%SD_Mode > 0)` and carries hits under
+scenario 9 alone — 11,999 invocations, 0 in the other 26. Inside those, coverage
+splits the call site 10,002 / 1,997 between the `SD_Stage == 0` arm and the stage
+arm, so the state transition is at invocation 10,002 and the middle capture
+window was aimed at 9995-10015 rather than at the midpoint. That is what the
+kernel's sharpest number rests on: deleting the only trigger arm scenario 9 fires
+moves **exactly one of 62 cases**, invocation 10002. On the other 34 cases where
+`sd_trigger` reads 4, the 4 arrives already in the captured state and is copied
+through — the arm is not computed there, it is inherited. A midpoint window would
+have reported the same 62/62 green over a corpus in which that arm is dead.
+
+**R6's ALL-PAIRS FALLBACK PUT ZERO CASES ON EVERY ARM THAT WRITES THIS UNIT'S TWO
+PRINCIPAL OUTPUTS.** Unit #37's finding, met a second time and measured the same
+way. Reaching `SD_MaxPitchRate(SD_Stage)` needs a TRIPLE — `SD_Method` in {1,2}
+AND `SD_Stage /= 0` AND `SD_Stage <= SD_Stage_N` — and the coverage line reads
+`283 combination(s) ... ALL PAIRS ONLY -- the full cross product is 186624, past
+the 4096 bound`, which holds every uncrossed knob at its ladder's first value.
+`SD_Method`'s first value is 0: neither method.
+
+```
+                                  cases   mutants killed / 109
+  no baseline                     14253   80          0.734
+  + 2 states (the two methods)    14323   91
+  + 3 states (one per trigger)    14428   ...
+  + 6 states (five on equalities) 14708   95
+  + 2 states (threshold equality) 14708   97          1.000 with 12 declared
+```
+
+**TWO THRESHOLD BOUNDARIES LOOKED UNREACHABLE AND ARE NOT, AND THE ROUTE IS
+WORTH KEEPING.** `SD_GenSpeedF > SD_MaxGenSpd` and `ABS(SD_NacVaneF) >
+SD_MaxYawError` compare a value this unit COMPUTES against one it is given, so
+R6's relational-pair rule — which needs both sides to be inputs — cannot put them
+at equality. But `LPFilter`'s initialisation arm returns its input BIT-EXACTLY at
+`CornerFreq = 0`: the coefficients become 2, -2, 0, 0 and the expression
+collapses to `(1/2)*(2x)`, both operations exact. Setting the corner frequency to
+zero with `iStatus = 0` turns the computed side back into an input, and both
+mutants are killed rather than declared.
+
+**A STATED RANGE DID NOT NARROW A PREDICATE KNOB, AND 31 CASES OF THE REFERENCE
+READ BEFORE THE START OF AN ARRAY BECAUSE OF IT.** `LocalVar_SD_Stage = { lo = 0,
+hi = 3 }` was stated because the reference's guard reads `SD_Stage .LE.
+SD_Stage_N` and not `1 .LE. SD_Stage`. `predicate_knobs_from` derives its ladder
+from the reference's predicates and never consults the signature, so the knob
+supplied -1 anyway. The harness reported 31 failures naming `SD_MaxPitchRate` —
+indistinguishable from a translation defect, and `vit_mutate.py` refuses to score
+against a red baseline. Fixed where it lives (`translation-loop f92fb9f`, four
+tests including the positive control that an UNSTATED bound must not narrow).
+
+**THE FIRST CORPUS KILLED THE REFERENCE AT CASE 21, AND THE C++ SIDE HAD ALREADY
+CORRUPTED IT BEFORE THE REFERENCE RAN.** `Error allocating 11703869192 bytes`
+from the generated bridge, with `harness produced no JSON` — which is also what a
+printing reference produces. Two `fprintf`s and one `WRITE(0,*)` named it in one
+9-second run: the C++ read `n_PF_TimeStuck = 3` out of the case file and the
+Fortran bridge was handed 1462983649, because between the two the only thing that
+ran was the C++ translation, and `LPFilter` had written past `FP`'s six
+`DIMENSION(1024)` arrays and out of `LocalVar_a` into the neighbouring stack
+object. Fifth instance of one class; `objInst_instLPF = { lo = 1, hi = 1000 }`.
+`evidence/Shutdown/harness.case21_probe.txt`.
+
+**A MUTATION SWEEP WAS KILLED BY THE 600-SECOND TOOL CEILING AND LEFT A MUTANT
+LIVE IN THE TRANSLATION.** `scripts/run_if_time_remains.sh` guards the DISPATCH
+deadline and knows nothing about the per-command ceiling; a 69-mutant part needed
+~800s and the clock said 8,400s remained, so it started. `mutate_guarded.sh`
+caught it — refused to clear its marker, printed the intended hash — and the
+`docker exec` had ORPHANED in the container and was still running. Killed,
+restored, re-split into four parts of under 460s each.
+
+---
+
 **As of 2026-08-15: unit #40 `SetpointSmoother` is `integrated` and CLOSED** —
 all five layers exist, all five ran, all five are red-tested, and the mutation
 score is **1.000** on 16 behavioural mutants with 2 declared equivalent. It is
