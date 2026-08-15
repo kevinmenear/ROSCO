@@ -2380,7 +2380,8 @@
     "gate/SetpointSmoother.json",
     "gate/SetpointSmoother.redtest.json",
     "gate/SetpointSmoother.redtest.r_total.json",
-    "coverage/line_coverage.json"
+    "coverage/line_coverage.json",
+    "evidence/SetpointSmoother/done_check.txt"
    ]
   },
   {
