@@ -102,6 +102,19 @@ MODULE Controllers
         END FUNCTION rescontroller_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of StructuralControl
+    INTERFACE
+        SUBROUTINE structuralcontrol_c(avrSWAP, CntrPar, LocalVar, objInst, ErrVar) BIND(C, NAME='structuralcontrol_c')
+            USE ISO_C_BINDING
+            REAL(C_FLOAT), INTENT(INOUT) :: avrSWAP(*)
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: objInst
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE structuralcontrol_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE PitchControl(avrSWAP, CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -1045,68 +1058,30 @@ CONTAINS
     END SUBROUTINE CableControl
 
 !-------------------------------------------------------------------------------------------------------------------------------
-SUBROUTINE StructuralControl(avrSWAP, CntrPar, LocalVar, objInst, ErrVar)
-        ! Cable controller
-        !       StC_Mode = 0, No cable control, this code not executed
-        !       StC_Mode = 1, User-defined cable control
-        !       StC_Mode = 2, Ballast-like control, not yet implemented
-        !
-        ! Note that LocalVar%StC_Input() has a fixed max size of 12, which can be increased in rosco_types.yaml
-        !
+    SUBROUTINE StructuralControl(avrSWAP, CntrPar, LocalVar, objInst, ErrVar)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : ControlParameters, LocalVariables, ObjectInstances, ErrorVariables
-    
-        REAL(ReKi), INTENT(INOUT) :: avrSWAP(*) ! The swap array, used to pass data to, and receive data from, the DLL controller.
-    
-        TYPE(ControlParameters), INTENT(INOUT)    :: CntrPar
-        TYPE(LocalVariables), INTENT(INOUT)       :: LocalVar
-        TYPE(ObjectInstances), INTENT(INOUT)      :: objInst
-        TYPE(ErrorVariables), INTENT(INOUT)      :: ErrVar
-
-        
-        ! Internal Variables
-        Integer(IntKi)                            :: I_GROUP
-        CHARACTER(*),               PARAMETER           :: RoutineName = 'StructuralControl'
-
-
-
-        IF (CntrPar%StC_Mode == 1) THEN
-            ! User defined control, step example
-
-            IF (LocalVar%Time > 500) THEN
-                ! Step change in input of -4500 N
-                LocalVar%StC_Input(1) = -1.234e+06
-                LocalVar%StC_Input(2) = 2.053e+06
-                LocalVar%StC_Input(3) = -7.795e+05
-
-            END IF
-
-
-        ELSEIF (CntrPar%StC_Mode == 2) THEN
-
-
-            DO I_GROUP = 1,CntrPar%StC_Group_N
-                IF (CntrPar%Ind_StructControl(I_GROUP) > 0) THEN
-                    LocalVar%StC_Input(I_GROUP) =  interp1d(CntrPar%OL_Breakpoints, &
-                                                            CntrPar%OL_StructControl(I_GROUP,:), &
-                                                            LocalVar%Time,ErrVar)
-                ENDIF
-            ENDDO
-
-
-
-        END IF
-
-
-        ! Assign to avrSWAP
-        DO I_GROUP = 1, CntrPar%StC_Group_N
-            avrSWAP(CntrPar%StC_GroupIndex(I_GROUP)) = LocalVar%StC_Input(I_GROUP)
-        END DO
-
-        ! Add RoutineName to error message
-        IF (ErrVar%aviFAIL < 0) THEN
-            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
-        ENDIF
-
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
+        IMPLICIT NONE
+        REAL(4), INTENT(INOUT) :: avrSWAP(*)
+        TYPE(CONTROLPARAMETERS), INTENT(INOUT), TARGET :: CntrPar
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(OBJECTINSTANCES), INTENT(INOUT), TARGET :: objInst
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        CALL structuralcontrol_c(avrSWAP, C_LOC(CntrPar_view), C_LOC(LocalVar_view), C_LOC(objInst), C_LOC(ErrVar_view))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_controlparameters(CntrPar_view, CntrPar)
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
     END SUBROUTINE StructuralControl
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION PIController(error, kp, ki, minValue, maxValue, DT, I0, piP, reset, inst) RESULT(PIController_result)
