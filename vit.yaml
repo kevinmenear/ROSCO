@@ -112,6 +112,37 @@ kgen:
   # trigger conditions, and is blind to method 2 entirely. The differential
   # harness draws `CntrPar%SD_Method`, the four `SD_Enable*` flags and
   # `SD_Stage` freely, and is the instrument that covers the rest.
+  #
+  # SCENARIO 9 AGAIN for unit #42 `Startup`, and for the same reason as #41 --
+  # it is not a choice. `coverage/line_coverage.json` carries hits for
+  # `DISCON.F90:112` (the `IF (CntrPar%SU_Mode > 0)` call site) under scenario 9
+  # alone: 11,999 invocations, 0 in the other 26. Every line of `Startup` in
+  # `ControllerBlocks.f90` likewise reads `scen=['9']`.
+  #
+  # What scenario 9 REACHES, read from the same file against the CLEAN source
+  # (`Startup` at ControllerBlocks.f90:548-636 at baseline 54dd134), so the
+  # kernel's blind spots are stated before it is built rather than after:
+  #
+  #   :575 IF (iStatus == 0)                 11,999 calls, the arm taken ONCE
+  #   :581 SU_Stage = 1  (past SU_StartTime)      1
+  #   :585 the freewheel low-speed test      11,999 / :587 the WRITE  0  <- never
+  #   :594 SU_Stage = 2  (freewheel exit)         1
+  #   :602 SU_Stage = SU_Stage + 1                2  <- 2->3 and 3->4
+  #   :608 Stage==1  PRC_R_Speed const          199
+  #   :610/:614 Stage==2  PRC_R_Speed sigma      800
+  #   :616 Stage in [2, N+1]  SU_PrevLoad        800
+  #   :619 SU_Stage = 0  (startup complete)        1
+  #   :624 Stage 1 or -1  PRC_R_Torque = 0       200
+  #   :626 the torque ramp test                1,600 / :629 sigma 800 / :631 800
+  #
+  # ONE ARM IS OUTSIDE SCENARIO 9 AND THEREFORE OUTSIDE THIS KERNEL: :587,
+  # `SU_LoadStageStartTime = LocalVar%Time` on a freewheeling rotor still below
+  # 0.95*SU_RotorSpeedThresh. Scenario 9 starts the rotor at 4 rpm = 0.419 rad/s
+  # against a threshold of 0.95*0.3 = 0.285, so the test is false on every one of
+  # its 11,999 calls and `SU_LoadStageStartTime` keeps its initial value through
+  # the whole freewheel stage. The differential harness draws `SU_RotSpeedF`'s
+  # inputs and `SU_RotorSpeedThresh` freely and is the instrument that reaches
+  # it.
   run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py --scenario 9
   clean_cmd: cd /workspace/ROSCO-r2/rosco/controller/build && make clean
   install_cmd: cp /workspace/ROSCO-r2/rosco/controller/build/libdiscon.so /workspace/ROSCO-r2/rosco/lib/libdiscon.so
@@ -147,7 +178,37 @@ kgen:
   # invocation 10,002 and a midpoint window (6000) would land 4,000 calls
   # before anything moves. 9995-10015 straddles it, which is the only place in
   # the run where `SD_Trigger` and `SD_Stage` both change.
-  invocation: 0:0:1-20,0:0:9995-10015,0:0:11970-11990
+  #
+  # RE-AIMED AGAIN for unit #42 `Startup`, and this time there are FOUR ranges
+  # rather than three, because this unit is a STATE MACHINE whose whole life is
+  # over by invocation 1,801 of 11,999. A start/middle/end window would spend
+  # two of its three ranges on `SU_Stage == 0`, where the body writes nothing.
+  #
+  # The transitions are arithmetic against scenario 9's own patch dict
+  # (`Examples/vit_sim.py::run_scenario_9`: dt = 0.025, SU_StartTime = 0,
+  # SU_FW_MinDuration = 5, SU_LoadStages_N = 2, SU_LoadRampDuration = 10 10,
+  # SU_LoadHoldDuration = 10 10) and each one is CONFIRMED by a coverage count:
+  #
+  #   invocation     1  t = 0.000  iStatus == 0, SU_Stage = -1     :577  1 hit
+  #   invocation     2  t = 0.025  Time > SU_StartTime -> Stage 1  :581  1 hit
+  #   invocations 2-200            Stage 1, 199 calls              :608  199
+  #   invocation   201  t = 5.000  Time >= 5 + 0     -> Stage 2    :594  1 hit
+  #   invocations 201-1000         Stage 2, 800 calls              :610  800
+  #   invocation  1001  t = 25.00  Time >= 5 + 10+10 -> Stage 3    :602  2 hits
+  #   invocations 1001-1800        Stage 3, 800 calls              :616  800
+  #   invocation  1801  t = 45.00  Time >= 25 + 10+10 -> Stage 4,
+  #                                then Stage == N+2 -> Stage 0    :619  1 hit
+  #
+  # So the four ranges are 1-20 (initialisation, freewheel, the -1 -> 1 edge),
+  # 195-215 (the 1 -> 2 edge, and the torque HOLD arm on its low side against
+  # the RAMP arm on its high side), 995-1015 (the 2 -> 3 edge, and the only
+  # place `SU_PrevLoad = SU_LoadStages(SU_Stage-2)` is reachable beside a stage
+  # change) and 1795-1815 (the 3 -> 4 -> 0 edge, which is the ONLY invocation in
+  # the entire run that executes :619).
+  #
+  # 83 cases rather than #41's 62. The cost is stated because it is paid on
+  # every `vit verify`: the kernel replay is roughly linear in case count.
+  invocation: 0:0:1-20,0:0:195-215,0:0:995-1015,0:0:1795-1815
   # Interface truth about the Bladed-style array: DISCON receives it as an
   # assumed-size dummy, so nothing in the source states its extent.
   assumed_size_arrays:
