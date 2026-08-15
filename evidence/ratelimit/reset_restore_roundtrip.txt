@@ -1,0 +1,42 @@
+E1.4 STILL HOLDS WITH THIS UNIT INTEGRATED, AND THE PAIR NEEDED NO EDIT.
+
+Run 2026-08-15 immediately after unit #46 closed at 14 of 14, on a clean
+committed tree. A round trip taken BEFORE the thing that could break it is
+not a round trip -- the four earlier reset/restore cycles this dispatch ran
+(the extraction, the harness window, the mutation window, the hand mutants)
+all predate or sit inside this unit's cycle; this one is after it.
+
+    md5 rosco/lib/libdiscon.so                    6aaa51e2a7caca1788af5211803f0e0f
+    grep -c ratelimit_c Functions.f90             4   <- integrated
+    bash scripts/reset_to_clean.sh
+      reset_to_clean: 9 wrapper-carrying source(s) restored to 54dd134
+        left at HEAD (no wrappers): Constants.f90 DISCON.F90 ROSCO_Types.f90 SysFlangLinux.f90 SysGnuLinux.f90 SysGnuWin.f90 SysIFL.f90 SysIVF.f90 SysLLVMLinux.f90 SysLLVMWin.f90
+        0 file(s) reverted whose only change was line endings
+        extraction leftovers removed (kernel/ state/ model/ elapsedtime/ logs, .kgen_org)
+        46 translated .cpp source(s) removed from CMakeLists (E1.2 flags kept)
+        0 instrumented object(s) removed from the build tree
+        rebuilt and installed; kgen symbols in rosco/lib/libdiscon.so: 0
+    grep -c ratelimit_c Functions.f90             0   <- reverted
+    bash scripts/restore_integrated.sh
+      restore_integrated: WARNING -- 9 tracked file(s) under src/ are modified
+        and will be overwritten from HEAD. If a unit is integrated but not yet
+        committed, its wrapper is about to be lost. Commit first, or re-run
+        `vit integrate ... --apply` afterwards and discard any gate result
+        taken since.
+      restore_integrated: 75 file(s) restored from HEAD (vit_types.h untouched)
+        CMakeLists.txt restored: the translated .cpp sources are back in the build
+        rebuilt and installed. Gate now measures the INTEGRATED build.
+    grep -c ratelimit_c Functions.f90             4   <- back
+    md5 rosco/lib/libdiscon.so                    6aaa51e2a7caca1788af5211803f0e0f
+
+    git status --porcelain                        0 line(s)
+
+THE grep COUNT IS 4, WHICH IS A FUNCTION'S SHAPE and not a defect: the
+interface block, its END FUNCTION, the declaration and the result
+assignment. ResController reported 4 for the same reason and the SUBROUTINE
+PowerControlSetpoints reported 3.
+
+NEITHER SCRIPT WAS TOUCHED. reset_to_clean.sh selects files by whether
+HEAD's version calls a <name>_c( bridge and strips translated .cpp sources
+by reading CMakeLists, so the counts moved on their own as this unit was
+added -- unit #36's finding holding again.
