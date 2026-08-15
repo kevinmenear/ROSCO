@@ -1,6 +1,6 @@
-# done_check.py interp2d -- captured 2026-08-15T16:00:56Z by scripts/capture_done_check.sh
+# done_check.py interp2d -- captured 2026-08-15T16:01:43Z by scripts/capture_done_check.sh
 
-Run against the committed state at a524b75f ("interp2d: evidence README carries the second dispatch's numbers above the first dispatch's record"), with a CLEAN tree, with stdout
+Run against the committed state at 80a426a7 ("interp2d: reset/restore round trip appended for this dispatch's two clean-tree windows"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
