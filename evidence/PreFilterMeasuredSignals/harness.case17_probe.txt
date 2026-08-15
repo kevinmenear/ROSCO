@@ -1,0 +1,59 @@
+THE DIFFERENTIAL HARNESS SEGFAULTED AT CASE 17 OF 9447, AND THE REFERENCE IS
+WHAT DIED
+===========================================================================
+
+`./test` exits 139, SIGSEGV, core dumped, having written NO json and no
+diagnostic. stdout is block-buffered to a file and the signal discards the
+buffer, so the first three attempts saw a zero-byte artifact and the harness
+reported only `harness produced no JSON` -- which is also what a PRINTING
+reference produces, so the message does not distinguish the two.
+
+The instrumentation is two `fprintf(stderr)` calls added to the GENERATED
+`prefiltermeasuredsignals_test.cpp`: the case index at the top of the loop, and
+the inputs the reference subscripts, both flushed. The last three cases:
+
+CASE 15
+  GenSpdN=3 TwrTopN=3 nInd=3 nTwrInd=4 nFreq=5 nBNum=6 nBDen=7 nFl=8 nFlp=9 NumBl=195 iStat=880 LPFType=-782 IPC=-675 Flp=208 TD=-653 aviFAIL=643 Ind0=1
+CASE 16
+  GenSpdN=3 TwrTopN=3 nInd=3 nTwrInd=4 nFreq=5 nBNum=6 nBDen=7 nFl=8 nFlp=9 NumBl=-706 iStat=-920 LPFType=450 IPC=788 Flp=-68 TD=-171 aviFAIL=-982 Ind0=2
+CASE 17
+  GenSpdN=2 TwrTopN=1 nInd=3 nTwrInd=4 nFreq=5 nBNum=6 nBDen=7 nFl=8 nFlp=9 NumBl=-916 iStat=736 LPFType=-590 IPC=-46 Flp=-596 TD=240 aviFAIL=679 Ind0=1
+
+THIS DOES NOT IDENTIFY THE OFFENDING INPUT ON ITS OWN, AND SAYING SO IS THE
+POINT. Case 15 also has `aviFAIL >= 0` -- so it also ran the body -- and it
+also has an out-of-range `NumBl` (195, against `LocalVar%rootMOOP`, which is
+`DIMENSION(3)` in ROSCO_Types.f90). It SURVIVED. An out-of-bounds Fortran
+subscript is undefined behaviour, not a signal: it reads or writes whatever is
+adjacent and the process continues until one of those addresses is unmapped.
+So the case that crashes is the case whose wild address happened to be fatal,
+and the reference had been reading and writing outside its arrays for some
+cases before it.
+
+WHAT THE PRINTED FIELDS DO SETTLE. `GenSpdN=2` against `nInd=3` and
+`TwrTopN=1` against `nTwrInd=4` are both inside their arrays here, so the notch
+loops are NOT what fails on case 17. `NumBl=-916` runs the blade loop zero
+times. The two counters that are NOT printed -- because they reach the
+reference through `objInst`, which this probe reads from the C struct rather
+than from the case stream -- are the ones the pins address.
+
+THE ATTRIBUTION, AND ITS BASIS. `harness/ranges.toml` already carries this
+judgement once, at `[PIDController]`: `objInst%instLPF` subscripts `FP`'s
+`DIMENSION(1024)` arrays INSIDE the callee, no compared out-parameter exists to
+attach a role to, and unit #34 measured the reference at SIGSEGV in
+`__filters_MOD_lpfilter` at both 32-bit extremes and at -100000
+(`evidence/PIDController/instlpf_probe.txt`). This unit calls five such filters
+and passes five such counters, every one of them a free scalar integer on R6's
+ladder.
+
+THE MEASUREMENT THAT CLOSES IT IS THE BISECT, NOT THE ARGUMENT. Pinning the
+five counters to 1..1000 and `NumBl` to 0..3 -- and nothing else -- takes the
+run from `exit 139, core dumped, 0 bytes of output` to
+
+    HARNESS PASS: checked 8955  failed 0  inadmissible 0
+
+on the same translation, the same reference and the same generator. Two earlier
+pins (`F_GenSpdNotch_N`, `F_TwrTopNotch_N`, both 0..3) were added first and did
+NOT stop the crash: the run before these six still died at case 17. That
+ordering is what says which pins are load-bearing here, and it is why both sets
+are recorded with their own reasons in `harness/ranges.toml` rather than as one
+undifferentiated block.

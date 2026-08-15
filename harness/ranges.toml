@@ -583,3 +583,108 @@ CntrPar_PRC_Pitch_Table_n = { same_as = "CntrPar_PRC_R_Table_n" }
 CntrPar_OL_R_Speed_n = { same_as = "CntrPar_OL_Breakpoints_n" }
 CntrPar_OL_R_Torque_n = { same_as = "CntrPar_OL_Breakpoints_n" }
 CntrPar_OL_R_Pitch_n = { same_as = "CntrPar_OL_Breakpoints_n" }
+
+# ---------------------------------------------------------------------------
+# PreFilterMeasuredSignals
+#
+# TWO PINS, AND BOTH ARE A COUNT THE REFERENCE TIES TO AN EXTENT AND THE
+# GENERATOR DRAWS INDEPENDENTLY. The unit's two notch loops are
+#
+#     DO n = 1,CntrPar%F_GenSpdNotch_N
+#         ... CntrPar%F_NotchFreqs(CntrPar%F_GenSpdNotch_Ind(n)) ...
+#     DO n = 1,CntrPar%F_TwrTopNotch_N
+#         ... CntrPar%F_NotchFreqs(CntrPar%F_TwrTopNotch_Ind(n)) ...
+#
+# and NOTHING in the unit relates the bound to the array. The relation is
+# established by the reference's own reader, `ReadControlParameterFileSub`:
+#
+#     ReadSetParameters.f90:427-428
+#         IF (CntrPar%F_GenSpdNotch_N > 0) THEN
+#             CALL ParseAry(..., CntrPar%F_GenSpdNotch_Ind, CntrPar%F_GenSpdNotch_N, ...)
+#     ReadSetParameters.f90:430-431   the same two lines for F_TwrTopNotch
+#
+# so `SIZE(F_GenSpdNotch_Ind) == F_GenSpdNotch_N` by construction, always. The
+# generator has no way to know that: R5 draws the extent freely at 3..9 and R6
+# gives the count "the decade boundaries and the representable extremes of a
+# 32-bit INTEGER, signed". With `F_GenSpdNotch_N = 2147483647` and a
+# three-element `F_GenSpdNotch_Ind`, the REFERENCE reads past the array, uses
+# whatever it finds as a subscript into `F_NotchFreqs`, and the process dies:
+#
+#     ./test                                exit 139, SIGSEGV, core dumped
+#     the reference's own bridge printed    'VIT bridge: LocalVar%ACC_INFILE
+#                                            came back with 34602058 element(s)'
+#
+# -- a Fortran ALLOCATABLE in the SAME local whose descriptor the out-of-bounds
+# writes had already corrupted, which is the tell that the damage is the
+# reference's and not the comparison's.
+#
+# THE UPPER BOUND IS 3 BECAUSE 3 IS THE SMALLEST EXTENT R5 GENERATES. Inside
+# 0..3 the loop cannot leave `F_GenSpdNotch_Ind` at any shape the generator
+# draws, which is the widest interval that is admissible for every case rather
+# than for most of them.
+#
+# THE COST, STATED. Both counts leave R6's integer ladder, so the decade
+# boundaries and the two 32-bit extremes are gone from them -- and every one of
+# those values is a value at which the reference has no defined behaviour, so
+# nothing observable is lost. What remains is 0 (the loop skipped, which is what
+# all 27 scenarios do for TwrTop and what the shipped inputs do when
+# `F_NumNotchFilts = 0`), 1 (what six of the 27 scenarios do for GenSpd) and
+# 2..3, which no scenario reaches at all.
+
+[PreFilterMeasuredSignals]
+
+CntrPar_F_GenSpdNotch_N = { lo = 0, hi = 3 }
+CntrPar_F_TwrTopNotch_N = { lo = 0, hi = 3 }
+
+# SIX MORE PINS, AND EVERY ONE OF THEM IS A SUBSCRIPT. `harness/ranges.toml`
+# already carries this exact judgement once, at `[PIDController]` above:
+# `objInst%instLPF` is subscripted INSIDE THE CALLEE, against a field of a
+# NESTED type the generator does not expand, so no compared out-parameter
+# exists to attach a role to and no inference can ever reach it. Unit #34
+# measured the reference at SIGSEGV in `__filters_MOD_lpfilter` at both 32-bit
+# extremes and at -100000, and pinned it.
+#
+# MEASURED AGAIN HERE, and the first crash was case 17 of 9447 -- the FIRST case
+# whose `ErrVar%aviFAIL` is non-negative, i.e. the first case that runs the body
+# at all (cases 0..16 all take the `IF (ErrVar%aviFAIL < 0) RETURN` at the top).
+# `evidence/PreFilterMeasuredSignals/harness.case17_probe.txt` is the
+# instrumented run: `./test` exits 139, SIGSEGV, core dumped, having printed
+# `CASE 17` and nothing after it.
+#
+# `Filters.f90`'s five filters all index `FP%<name>(inst)` where every `FP`
+# array is `DIMENSION(1024)`, and all five end with `inst = inst + 1`. So the
+# admissible domain of each counter is 1..1024 MINUS the number of times THIS
+# unit advances it before returning, which is not one call but up to eighteen:
+#
+#     instNotch        F_GenSpdNotch_N + 2*F_TwrTopNotch_N + NumBl*F_GenSpdNotch_N
+#                      <= 3 + 6 + 9 = 18
+#     instSecLPF       2 + 2 + NumBl + 2                    <= 9
+#     instHPF          2 + 1 + NumBl                        <= 6
+#     instLPF          2 + 1 + 2                            =  5
+#     instNotchSlopes  NumBl                                <= 3
+#
+# 1000 leaves 24 slots above the worst of them, so no case can reach 1024 by
+# advancing a counter, and the pin is one number rather than five.
+#
+# `LocalVar_NumBl` is the sixth and its bound is the TYPE's, not a measurement:
+# `LocalVar%rootMOOP` and `%rootMOOPF` are `DIMENSION(3)` in ROSCO_Types.f90,
+# and `DO K = 1,LocalVar%NumBl` subscripts both. A NumBl above 3 is a read and a
+# write past a fixed-size array in the reference itself. The generator drew
+# -916 and -706 in the first twenty cases, which are harmless (the loop runs
+# zero times) and say what the untethered draw would do at the other sign.
+#
+# THE COST, STATED. All six leave R6's integer ladder -- the decade boundaries
+# and the two 32-bit extremes -- and every one of those values is a value at
+# which the REFERENCE has no defined behaviour. Nothing observable is lost.
+# What is NOT covered, and is worth naming: the corpus can no longer put a
+# counter at 1024 itself, so a translation that read `FP%lpf1_a1[inst]` instead
+# of `[inst-1]` at the very last slot has nothing here to disagree with. That
+# defect class is unreachable for a different reason too -- this unit does not
+# index `FP` at all; its callees do, and they are units #9/#11/#13/#14/#18.
+
+objInst_instLPF = { lo = 1, hi = 1000 }
+objInst_instSecLPF = { lo = 1, hi = 1000 }
+objInst_instHPF = { lo = 1, hi = 1000 }
+objInst_instNotch = { lo = 1, hi = 1000 }
+objInst_instNotchSlopes = { lo = 1, hi = 1000 }
+LocalVar_NumBl = { lo = 0, hi = 3 }

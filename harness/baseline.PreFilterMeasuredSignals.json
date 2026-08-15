@@ -1,0 +1,233 @@
+{
+ "unit": "PreFilterMeasuredSignals",
+ "why": [
+  "THE CORPUS WITHOUT THIS FILE RUNS THIS UNIT'S BODY IN 217 CASES OF 8955.",
+  "Measured, not feared: harness/PreFilterMeasuredSignals.redtest.json is the",
+  "shipped translation with the whole body replaced by `return`, and it fails",
+  "217 of 8955. A case a no-op passes is a case that never got past",
+  "",
+  "    IF (ErrVar%aviFAIL < 0) THEN",
+  "        RETURN",
+  "",
+  "so 8738 of the 8955 cases compare the guard and nothing else, and a mutation",
+  "score on that corpus would be scored almost entirely on cases that return.",
+  "",
+  "WHY, EXACTLY, AND IT IS THE SAME ARITHMETIC AS UNIT #37. R6 crosses the",
+  "quantities the reference's own predicates test. This unit has TEN, and its",
+  "own rule_coverage line says the cross product is 552,960 -- past",
+  "generate.py's _KNOB_CASE_LIMIT of 4096 -- so the block falls back to ALL",
+  "PAIRS, and in the fallback every knob not being crossed sits at the FIRST",
+  "value of its ladder. `ErrVar_aviFAIL`'s ladder is [-1, 0, 1, 2] and its",
+  "first value is -1: the arm that returns.",
+  "",
+  "WHAT THIS FILE DOES ABOUT IT. R11 takes an admissible STATE and sweeps every",
+  "knob through every value with the rest of the state held admissible, so a",
+  "case in which aviFAIL is non-negative AND the rest of the configuration is",
+  "meaningful is expressible. That is ADDITION: the 8955 cases are still",
+  "generated and still compared, ranges.toml is untouched, and the generator",
+  "refused nothing -- it was never given a state to sweep from.",
+  "",
+  "ADMISSIBILITY, PER FIELD, AGAINST THE REFERENCE RATHER THAN AGAINST TASTE.",
+  "Every unnamed varied parameter is inert-filled to 0 or 0.0, and for this",
+  "unit that is not merely uninformative, it is OUT OF BOUNDS: the five",
+  "objInst%inst* counters are subscripts into FP's DIMENSION(1024) arrays",
+  "inside the callees, and 0 is not a Fortran index. The same is true of",
+  "F_GenSpdNotch_Ind and F_TwrTopNotch_Ind, whose ELEMENTS subscript",
+  "F_NotchFreqs. All seven are named here for that reason and not for coverage.",
+  "",
+  "iStatus IS 0 IN BOTH STATES, AND THAT IS THE ONLY WAY THE FILTERS ANSWER A",
+  "NUMBER. LocalVar%FP is a nested type the generator zero-initialises and does",
+  "not vary (the run reports it UNOBSERVABLE), so with iStatus /= 0 and",
+  "reset = .FALSE. every filter computes 1.0/FP%lpf1_a1(inst) * 0.0 on a zeroed",
+  "coefficient set -- NaN, identically on both sides. Unit #34 recorded the same",
+  "shape for LPFilter and left it open. iStatus = 0 takes the INITIALISATION arm,",
+  "which writes the coefficients from CornerFreq and DT before filtering, so the",
+  "compared outputs are finite. Time is 1.0 rather than 0.0 so that the",
+  "`iStatus == 0 .AND. Time == 0` zeroing branch is OFF at the baseline and R11's",
+  "own sweep of Time is what turns it on -- which is what makes the .AND.",
+  "observable rather than the two conditions being confounded.",
+  "",
+  "THE TWO STATES ARE THE TWO CONFIGURATIONS THE 27 SCENARIOS DO NOT BOTH",
+  "REACH. State 1 is the shipped one: F_LPFType = 1, IPC_ControlMode > 0. State",
+  "2 is F_LPFType = 2 -- ZERO hits in all 27 scenarios -- together with",
+  "Flp_Mode = 2, whose blade-root SecLPFilter/HPFilter/notch arm only scenario 4",
+  "reaches and which the kernel's 62 captured cases never enter.",
+  "",
+  "The frequencies and the signal magnitudes are the shipped NREL 5MW values",
+  "from Examples/DISCON.IN and the ranges a running simulation puts on those",
+  "channels; they are chosen to be admissible and to be distinct from each",
+  "other, not to reproduce any particular timestep."
+ ],
+ "states": [
+  {
+   "name": "lpf1_ipc_all_arms",
+   "why": "F_LPFType=1, IPC_ControlMode=1, Flp_Mode=0, TD_Mode=1, one gen-speed notch and one tower-top notch. Every call in the unit executes: both speed LPFilters, the gen-speed notch loop, both SecLPFilters, both HPFilters, the tower-top notch loop (which iterates 0 times in all 27 scenarios), the TD_Mode HPFilter, the WSE LPFilter, NotchFilterSlopes on all three blades, both command SecLPFilters, both NacVane LPFilters and wrap_180.",
+   "values": {
+    "ErrVar_aviFAIL": 0,
+    "LocalVar_iStatus": 0,
+    "LocalVar_Time": 1.0,
+    "LocalVar_restart": 0,
+    "LocalVar_DT": 0.0125,
+    "LocalVar_NumBl": 3,
+    "objInst_instLPF": 1,
+    "objInst_instSecLPF": 1,
+    "objInst_instHPF": 1,
+    "objInst_instNotch": 1,
+    "objInst_instNotchSlopes": 1,
+    "CntrPar_F_LPFCornerFreq": 1.0,
+    "CntrPar_F_LPFDamping": 0.7,
+    "CntrPar_F_WECornerFreq": 0.20944,
+    "CntrPar_F_FlHighPassFreq": 0.01,
+    "CntrPar_FA_HPFCornerFreq": 0.10471,
+    "CntrPar_F_YawErr": 0.17952,
+    "CntrPar_F_FlCornerFreq": {
+     "ramp": [
+      0.209,
+      0.491
+     ]
+    },
+    "CntrPar_F_FlpCornerFreq": {
+     "ramp": [
+      3.392,
+      -2.685
+     ]
+    },
+    "CntrPar_F_GenSpdNotch_N": 1,
+    "CntrPar_F_TwrTopNotch_N": 1,
+    "CntrPar_F_GenSpdNotch_Ind": {
+     "ramp": [
+      1,
+      0
+     ]
+    },
+    "CntrPar_F_TwrTopNotch_Ind": {
+     "ramp": [
+      1,
+      0
+     ]
+    },
+    "CntrPar_F_NotchFreqs": {
+     "ramp": [
+      3.355,
+      0.5
+     ]
+    },
+    "CntrPar_F_NotchBetaNum": {
+     "ramp": [
+      0.0,
+      0.02
+     ]
+    },
+    "CntrPar_F_NotchBetaDen": {
+     "ramp": [
+      0.25,
+      0.05
+     ]
+    },
+    "CntrPar_TD_Mode": 1,
+    "LocalVar_GenSpeed": 121.68,
+    "LocalVar_RotSpeed": 0.7913,
+    "LocalVar_NacIMU_FA_RAcc": 0.3125,
+    "LocalVar_FA_Acc_Nac": 0.251,
+    "LocalVar_WE_Vw": 11.4,
+    "LocalVar_VS_LastGenTrq": 19624.0,
+    "LocalVar_BlPitchCMeas": 0.0524,
+    "LocalVar_NacVane": 7.5,
+    "LocalVar_rootMOOP": {
+     "ramp": [
+      1000.0,
+      250.0
+     ]
+    },
+    "CntrPar_F_LPFType": 1,
+    "CntrPar_IPC_ControlMode": 1,
+    "CntrPar_Flp_Mode": 0
+   }
+  },
+  {
+   "name": "lpf2_flap_mode_2",
+   "why": "F_LPFType=2 and Flp_Mode=2 with IPC_ControlMode=0 -- the two arms no instrument in this campaign reaches. F_LPFType==2 has ZERO coverage hits in all 27 scenarios; the Flp_Mode==2 blade-root arm is scenario 4 only and is where this campaign's own fix to an upstream ROSCO indexing bug lives.",
+   "values": {
+    "ErrVar_aviFAIL": 0,
+    "LocalVar_iStatus": 0,
+    "LocalVar_Time": 1.0,
+    "LocalVar_restart": 0,
+    "LocalVar_DT": 0.0125,
+    "LocalVar_NumBl": 3,
+    "objInst_instLPF": 1,
+    "objInst_instSecLPF": 1,
+    "objInst_instHPF": 1,
+    "objInst_instNotch": 1,
+    "objInst_instNotchSlopes": 1,
+    "CntrPar_F_LPFCornerFreq": 1.0,
+    "CntrPar_F_LPFDamping": 0.7,
+    "CntrPar_F_WECornerFreq": 0.20944,
+    "CntrPar_F_FlHighPassFreq": 0.01,
+    "CntrPar_FA_HPFCornerFreq": 0.10471,
+    "CntrPar_F_YawErr": 0.17952,
+    "CntrPar_F_FlCornerFreq": {
+     "ramp": [
+      0.209,
+      0.491
+     ]
+    },
+    "CntrPar_F_FlpCornerFreq": {
+     "ramp": [
+      3.392,
+      -2.685
+     ]
+    },
+    "CntrPar_F_GenSpdNotch_N": 1,
+    "CntrPar_F_TwrTopNotch_N": 1,
+    "CntrPar_F_GenSpdNotch_Ind": {
+     "ramp": [
+      1,
+      0
+     ]
+    },
+    "CntrPar_F_TwrTopNotch_Ind": {
+     "ramp": [
+      1,
+      0
+     ]
+    },
+    "CntrPar_F_NotchFreqs": {
+     "ramp": [
+      3.355,
+      0.5
+     ]
+    },
+    "CntrPar_F_NotchBetaNum": {
+     "ramp": [
+      0.0,
+      0.02
+     ]
+    },
+    "CntrPar_F_NotchBetaDen": {
+     "ramp": [
+      0.25,
+      0.05
+     ]
+    },
+    "CntrPar_TD_Mode": 1,
+    "LocalVar_GenSpeed": 121.68,
+    "LocalVar_RotSpeed": 0.7913,
+    "LocalVar_NacIMU_FA_RAcc": 0.3125,
+    "LocalVar_FA_Acc_Nac": 0.251,
+    "LocalVar_WE_Vw": 11.4,
+    "LocalVar_VS_LastGenTrq": 19624.0,
+    "LocalVar_BlPitchCMeas": 0.0524,
+    "LocalVar_NacVane": 7.5,
+    "LocalVar_rootMOOP": {
+     "ramp": [
+      1000.0,
+      250.0
+     ]
+    },
+    "CntrPar_F_LPFType": 2,
+    "CntrPar_IPC_ControlMode": 0,
+    "CntrPar_Flp_Mode": 2
+   }
+  }
+ ]
+}
