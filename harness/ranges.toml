@@ -1018,3 +1018,95 @@ LocalVar_SU_Stage = { lo = -1, hi = 4 }
 # extents beside it, which is a state `ReadControlParameterFileSub` cannot build:
 # it allocates all three arrays from this one count.
 CntrPar_SU_LoadStages_N = { lo = 0, hi = 3 }
+
+# ---------------------------------------------------------------------------
+[StructuralControl]
+
+# THREE PINS. TWO ARE SUBSCRIPTS THE REFERENCE DOES NOT GUARD, AND THE THIRD IS
+# THE `interp1d` SIZE TIE THIS FILE ALREADY CARRIES TWICE.
+#
+# `StC_Group_N` bounds BOTH of this unit's loops and bounds nothing else:
+#
+#     Controllers.f90:1006  DO I_GROUP = 1,CntrPar%StC_Group_N
+#                               ... CntrPar%Ind_StructControl(I_GROUP) ...
+#                               ... CntrPar%OL_StructControl(I_GROUP,:) ...
+#                               ... LocalVar%StC_Input(I_GROUP) ...
+#     Controllers.f90:1020  DO I_GROUP = 1, CntrPar%StC_Group_N
+#                               avrSWAP(CntrPar%StC_GroupIndex(I_GROUP)) = ...
+#
+# and NOTHING in this procedure relates the bound to any of the four arrays it
+# subscribes. The relation is established by the reference's own reader, and it
+# is the same shape as PreFilterMeasuredSignals' above:
+#
+#     ReadSetParameters.f90:583  ParseInput(..., 'StC_Group_N', CntrPar%StC_Group_N, ...)
+#     ReadSetParameters.f90:584  ParseAry(..., CntrPar%StC_GroupIndex,    CntrPar%StC_Group_N, ...)
+#     ReadSetParameters.f90:589  ParseAry(..., CntrPar%Ind_StructControl, CntrPar%StC_Group_N, ...)
+#
+# so `SIZE(StC_GroupIndex) == SIZE(Ind_StructControl) == StC_Group_N` by
+# construction, always. `LocalVar%StC_Input` is separately fixed at 12 by the
+# type, and the reference's own comment at Controllers.f90:1053 states the
+# relation the reader enforces: *"LocalVar%StC_Input() has a fixed max size of
+# 12, which can be increased in rosco_types.yaml"*.
+#
+# THE UPPER BOUND IS 3 BECAUSE 3 IS THE SMALLEST EXTENT R5 GENERATES --
+# `_extent_plan` builds `[3 + bump + i]` and the extent-1 shape exists only when
+# R5 is ABLATED. Inside 0..3 neither loop can leave any of the four arrays at
+# any shape the generator draws. Identical reasoning, and identical number, to
+# `CntrPar_F_GenSpdNotch_N` above.
+#
+# THE COST, STATED. `StC_Group_N` leaves R6's integer ladder, so the decade
+# boundaries and the two 32-bit extremes are gone from it -- and every one of
+# those is a value at which the REFERENCE reads and writes past four arrays, so
+# nothing observable is lost. What remains is 0 (both loops skipped, which is
+# what every scenario that leaves StC_Mode at 0 does), 1 (what all three
+# scenarios that enable this unit do) and 2..3, which no scenario reaches.
+CntrPar_StC_Group_N = { lo = 0, hi = 3 }
+
+# `StC_GroupIndex(I_GROUP)` IS ITSELF AN `avrSWAP` SUBSCRIPT, and it is the only
+# place in this unit where a drawn VALUE -- not a count -- lands in a subscript:
+#
+#     avrSWAP(CntrPar%StC_GroupIndex(I_GROUP)) = LocalVar%StC_Input(I_GROUP)
+#
+# `avrSWAP` is an assumed-size dummy, `REAL(ReKi) :: avrSWAP(*)`, so the
+# reference has no extent to check against even in principle and gfortran cannot
+# bounds-check it. This campaign's stated extent is 3000 (`vit.yaml`
+# `assumed_size_arrays`), which is also what the harness allocates, so any drawn
+# index outside 1..3000 is a WRITE past a 3000-element buffer -- past the
+# comparison's own copy of it -- rather than a wrong answer.
+#
+# The bound is the campaign's declared extent, not a round number. The shipped
+# inputs sit far inside it: `StC_GroupIndex` is 2801 in all three scenarios that
+# set it (`Examples/vit_sim.py` scenarios 3, 7 and 27), and ROSCO's Bladed-style
+# record numbering puts the structural-control block at 2801 onward.
+#
+# THE COST, STATED. The corpus can no longer place a group index at 0, at a
+# negative value or past the end of `avrSWAP` -- so a translation that wrote
+# `avrSWAP[idx]` instead of `avrSWAP[idx - 1]` still disagrees everywhere inside
+# the range and there is nothing lost there, but an off-by-one AT the last slot
+# (index 3000 writing element 3001) has no case to be caught on. That defect is
+# undefined behaviour in the reference too, so no oracle exists for it.
+CntrPar_StC_GroupIndex = { lo = 1, hi = 3000 }
+
+# THE `interp1d` SIZE TIE, FOR THE THIRD TIME IN THIS FILE -- see `[interp1d]`'s
+# `n_yData` and `[PowerControlSetpoints]`'s three OL_ entries. The call is
+#
+#     interp1d(CntrPar%OL_Breakpoints, CntrPar%OL_StructControl(I_GROUP,:), ...)
+#
+# and the second argument is a ROW of a 2-D array, so the length that has to
+# match `SIZE(OL_Breakpoints)` is the COLUMN count. `_extent_plan` makes extents
+# pairwise distinct on purpose, which here means every `StC_Mode == 2` case with
+# a positive `Ind_StructControl` would reach `interp1d`'s
+# `SIZE(xData) .NE. SIZE(yData)` arm, whose internal WRITE formats 53 characters
+# into the 38-character record the statement above it allocated and kills the
+# process.
+#
+# The relation is the reader's, as with the other two: `Read_OL_Input` allocates
+# `OL_StructControl(N_OL_StCs, SIZE(CntrPar%OL_Channels, DIM=1))` and fills each
+# row from `OL_Channels(:, ...)`, whose first dimension is the breakpoint count.
+#
+# ROWS ARE NOT TIED, deliberately: rows stays distinct from cols, so a
+# translation that strode this column-major array by the column count instead of
+# the row count still disagrees. That is the property `_extent_plan`'s pairwise
+# distinctness exists to protect, and only the one pair that the reference
+# cannot survive gives it up.
+CntrPar_OL_StructControl_cols = { same_as = "CntrPar_OL_Breakpoints_n" }
