@@ -1,6 +1,6 @@
-# done_check.py Startup -- captured 2026-08-15T09:37:52Z by scripts/capture_done_check.sh
+# done_check.py Startup -- captured 2026-08-15T09:39:08Z by scripts/capture_done_check.sh
 
-Run against the committed state at e2259ee1 ("Startup: done_check captured -- 13 of 14, the one FAIL being this file's own absence"), with a CLEAN tree, with stdout
+Run against the committed state at 480b837f ("Startup: two findings marked as proposed method amendments"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
