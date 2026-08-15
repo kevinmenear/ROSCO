@@ -4,10 +4,17 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-15: unit #44 `YawRateControl` is `integrated` and CLOSED** —
-all five layers exist, all five ran, all five are red-tested, and the mutation
-score is an honest **0.8961** against a threshold of 1.000 on 77 behavioural
-mutants with 3 declared. It is the campaign's first unit whose **REFERENCE
+**As of 2026-08-15: unit #44 `YawRateControl` is `integrated` and CLOSED at
+13 of 14** — all five layers exist, all five ran, all five are red-tested, and
+the mutation score is an honest **0.8961** against a threshold of 1.000 on 77
+behavioural mutants with 3 declared. **P12 is the one failing predicate and it
+is left failing on purpose**: the 8 undeclared survivors are all inside the two
+stop arms, which this harness cannot enter because it zero-initialises
+`LocalVar%FP` and LPFilter then returns NaN. Closing P12 would mean changing how
+the generator supplies a nested derived type, which shifts the corpus of every
+unit already scored — X3's question, not this unit's. The layer that covers
+those 8 is the kernel, and a stub measures it at 51 of 104 rather than asserting
+it. Same standing as `unwrap` at 0.960. It is the campaign's first unit whose **REFERENCE
 CANNOT PASS ITS OWN KERNEL**, measured by a positive control rather than
 inferred; the first whose **SAVE LOCALS CROSS INTO C++ AS `static`**; and the
 first where the kernel and the differential harness are blind in **opposite**

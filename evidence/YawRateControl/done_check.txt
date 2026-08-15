@@ -1,6 +1,6 @@
-# done_check.py YawRateControl -- captured 2026-08-15T12:53:21Z by scripts/capture_done_check.sh
+# done_check.py YawRateControl -- captured 2026-08-15T12:54:45Z by scripts/capture_done_check.sh
 
-Run against the committed state at 83016bc5 ("YawRateControl: done_check captured -- 12 of 14, the FAILs being this file's own absence and the mutation score against a 1.000 threshold"), with a CLEAN tree, with stdout
+Run against the committed state at 733ea647 ("YawRateControl: the reset/restore pair round-trips bit-identically with the unit integrated -- E1.4 holds at a 40th integration"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
