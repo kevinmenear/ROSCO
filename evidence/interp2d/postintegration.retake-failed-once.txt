@@ -1,0 +1,59 @@
+# A FAILED RE-TAKE DELETED THE ARTIFACT IT WAS RE-TAKING, AND THE COMMIT
+# MESSAGE BESIDE IT CLAIMED THE GREEN. rosco-r2 unit #45, 2026-08-15.
+#
+# Recorded because it is the exact shape this campaign keeps finding one
+# directory over, and because the wrong commit is in the history and should be
+# readable as wrong rather than quietly amended.
+
+WHAT HAPPENED, in order.
+
+  1. `run_wrapper_redtest.sh` ran: 161 of 1147 failed, and its EXIT trap
+     restored Functions.f90, touched it and rebuilt libdiscon.so.
+  2. Its own header says "Re-take the green; do not infer it." So the
+     post-integration harness was re-run.
+  3. It DIED:
+
+         make: *** [Makefile:88: test] Error 1
+         harness.sh: no parseable artifact at harness/interp2d.postintegration.json
+             -- the build or the run died (rc=2)
+         run_if_time_remains: exit 2
+
+  4. `harness.sh` had already removed the destination file before the build,
+     so the failure left NO artifact where a passing one had stood minutes
+     earlier.
+  5. `git add -A && git commit` ran in the same command line, joined by `&&`
+     to a step that had exited 2 -- but the `&&` chain was written after the
+     *pipeline*, whose exit status is `tail`'s, which is 0. So the commit ran,
+     and it committed a DELETION under the message
+
+         "interp2d: post-integration harness re-taken ... 1147 checked, 0 failed"
+
+     git's own stat line is the refutation, in the same commit:
+
+         harness/interp2d.postintegration.json | 24 ----------------------
+
+THE CAUSE OF THE BUILD FAILURE was transient and the tree was already right:
+run directly one minute later, `make test` in
+translations/Functions/interp2d_test reported `'test' is up to date`, and the
+re-run of the whole step reported `POST-INTEGRATION PASS: checked 1147
+failed 0`. The most likely trigger is the one this repo has already written
+down -- the bind-mount mtime hazard the red-test runner's own `touch` exists
+for (RUNBOOK, unit #38): the trap's `git checkout` + `touch` + rebuild of
+libdiscon.so races the harness link that follows it.
+
+THE TWO LESSONS, and the second is the one that matters.
+
+  * A `--out` path is TRUNCATED OR REMOVED BEFORE the run that fills it. A
+    failed measurement therefore destroys the previous measurement. That is
+    the same shape as the `>` redirect that makes done_check report
+    `dirty_tree`, one tool over.
+  * `cmd 2>&1 | tail -6 && git commit` DOES NOT GUARD THE COMMIT. The exit
+    status of a pipeline is its LAST element's, so `tail` succeeding is what
+    the `&&` reads. Every "run it and commit it" line in this campaign written
+    that way commits unconditionally. Use `set -o pipefail`, or split the
+    commit into its own command after reading the verdict -- which is what the
+    RUNBOOK means by reading the verdict line rather than the count.
+
+The green now committed was taken AFTER the restore and AFTER this failure,
+and it is the third run of that step in this dispatch, not an inference from
+the first.
