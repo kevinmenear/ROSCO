@@ -358,6 +358,64 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **AN ARM THAT IS IN THE WINDOW CAN STILL BE INVISIBLE, AND THE CHEAPEST TEST
+  IS A ONE-SECOND STUB.** Unit #46, and it is the one shape units #41-#44's
+  window rule does not cover.
+
+  ```
+  coverage Functions.f90:75   8 hits in EVERY scenario  <- the reset arm
+  window 0:0:1-20             invocations 1,2,3 ARE the reset arm
+  the reset arm unreachable   62 of 62 PASS
+  ResetValue ignored          62 of 62 PASS
+  census, invocations 1-3     in=+0 last=+0 rv=+0 out=+0
+  ```
+
+  The arm is in the corpus, three cases of 62, and the two arms **compute the
+  same answer** there: `ResetValue_ = 0` returns 0 and stores 0, and
+  `(0-0)/DT = 0` returns `0 + saturate(0)*DT = 0`. An initialisation arm runs at
+  exactly the invocation where every input is still at its initial value, so it
+  is the arm a window is LEAST able to discriminate — and no re-aiming reaches
+  it, because there is only one such invocation per call site per run.
+
+  **Aiming a window at an edge answers "is the arm in the corpus". It does not
+  answer "can the corpus tell this arm from the other one."** Only a stub does.
+  Two of this unit's eight cost one second each. Raised in DECISIONS.md as a
+  proposed method amendment: it is P9's sharper form — presence in a capture
+  window is not visibility either.
+
+- **A BASELINE ARRAY CAN BE A UNIT'S OWN OUTPUT, WHICH MAKES SCENARIO SELECTION
+  FREE.** Unit #46, second instance after unit #44's `nac_yaw`.
+
+  ```
+  PitComAct(K) -> avrSWAP(42..44) unchanged when PF_Mode == 0
+  |diff(bld_pitch)| == PC_MaxRat*dt   IS the clamp firing, per invocation
+  scenario  8   4,611 upper + 4,557 lower of 15,999   <- chosen
+  scenario  1       4 upper +     0 lower of 79,998   <- the DEFAULT
+  ```
+
+  Hit count would have chosen scenario 1 and built a kernel that cannot see the
+  lower clamp at all — unit #24's `ControllerBlocks.f90:332` failure one
+  function up. **Before reaching for a hit count, ask whether a gate channel IS
+  the unit's output**; `baseline_arrays/scenario_<n>.npz` is already in the tree
+  and the census is four lines of numpy.
+
+- **`harness.sh --no-generate` SKIPPED STEP 2e, WHICH IS THE STEP IT EXISTS
+  FOR.** Unit #46, fixed at `da95a3e7`.
+
+  ```
+  ld: saturate.cpp.o: multiple definition of `saturate_c';
+      ratelimit_callees.o: first defined here
+  vit_mutate.py:  baseline is not green (nocompile); refusing to score
+  ```
+
+  The flag means "rebuild for the CURRENT tree, keep the corpus", and it
+  returned before the one step that reads the tree: 2e decides whether
+  `<callee>_c` comes from the generated bridge or from an integrated
+  `<callee>.cpp.o`. Step 1 has just restored every bridge, so the early return
+  left a fresh bridge set against stale LIBS. **Loud only because
+  `vit_mutate.py` refuses a non-green baseline** — a link that had succeeded
+  would have scored the C++ callee against itself.
+
 - **A GENERATED ARTIFACT WHOSE COMMENT STATES A PRECONDITION IS AN ARTIFACT
   NOTHING CHECKS THAT PRECONDITION FOR.** Unit #45, and it cost the dispatch
   about forty minutes before it was even a hypothesis.

@@ -4,6 +4,77 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-15: unit #46 `ratelimit` is `integrated`.** Five layers, all
+five alive, all five red-tested, and the mutation score is **1.000** on 17
+behavioural mutants with **nothing declared equivalent**.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases (`evidence/ratelimit/kernel.translation.verify_fields.csv`) | 62/62, all 14,818 field rows `IDENTICAL` | VIT's own: `inputSignal` × 1.00001. Eight stubs: zero **0 of 62**, passthrough **25**, lower clamp deleted **44**, upper clamp deleted **43**, increment deleted **0**, ELSE-arm state write deleted **3** — and **the reset arm unreachable passes 62 of 62**, as does **ResetValue ignored** |
+| differential harness (`harness/ratelimit.json`) | **2904 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran | the unit as a no-op: **2904 of 2904**, the same count the green certifies |
+| mutation (`mutation/ratelimit.json`) | **17 of 17 behavioural, 1.000**, **0 declared**, 2 no-compile, 7 operators | the score *is* the red test, 17 times; plus six hand mutants with the unmutated baseline at 0 of 2904 |
+| post-integration (`harness/ratelimit.postintegration.json`) | 2904 checked, 0 failed | the wrapper's `has_ResetValue_flag` forced to 0: **604 of 2904**; reverted, rebuilt, green re-taken at 0 |
+| gate, 27 scenarios (`gate/ratelimit.json`) | 5,252,000 values / 351 channels, 0 mismatched | TWO: the rate limit deleted moves **861,012**; the OPTIONAL ignored moves **370,796**. Both revert-verified |
+
+**THE KERNEL IS BLIND TO ONE ARM, AND THE REASON IS ARITHMETIC RATHER THAN
+INSTRUMENTATION.** `LocalVar%restart` is `(iStatus == 0)` and nothing else, so
+this unit's THEN arm runs at **exactly one invocation per call site per run** —
+coverage records 8 hits on clean `Functions.f90:75` in every one of the 27
+scenarios, which is 1 + 3 + 3 + 1, the eight `ratelimit` calls of the first
+DISCON call. At that invocation, at this call site, **every input is exactly
+zero**:
+
+    THEN:  ResetValue_ = rv = 0        -> returns 0, stores 0
+    ELSE:  raw = (0 - 0)/DT = 0        -> returns 0 + saturate(0)*DT = 0
+
+so the two arms agree by arithmetic and both the reset-arm stub and the
+ignores-ResetValue stub pass 62 of 62. That is a property of what a rate limiter
+is handed at *t* = 0, not of KGen and not of the window, and **no re-aiming
+reaches it**. It is closed by two other layers on numbers — the gate at 370,796
+and the post-integration harness at 604 — rather than left open with an
+argument. The cause is a census taken under a run that is green at 62 of 62
+(`evidence/ratelimit/kernel.census.txt`), not a reading of the source.
+
+**THE CALL SITE WAS CHOSEN ON WHETHER THE CLAMP FIRES, AND THE DEFAULT SCENARIO
+WOULD HAVE BEEN NEARLY BLIND.** `LocalVar%PitComAct(K)` reaches
+`avrSWAP(42..44)` unchanged when `PF_Mode == 0`, so `bld_pitch` in the committed
+baseline arrays IS this unit's own output and `|diff(bld_pitch)| == PC_MaxRat*dt`
+is the clamp firing — the same free instrument unit #44 used on `nac_yaw`.
+Scenario 8 clamps **4,611 up and 4,557 down of 15,999**; scenario 1, the
+default, clamps **4 times, all one-sided**, and a kernel built there would pass a
+translation with no lower clamp at all.
+
+**FIRST UNIT WITH AN OPTIONAL DUMMY, AND IT CROSSES.** `ResetValue` crosses as
+VIT's `has_ResetValue` flag plus the value, with absence staged through an
+**unallocated ALLOCATABLE local** so `PRESENT()` is reachable as `.FALSE.`
+through the reference. `plan.json` recorded `bridge_feasible: unknown`; it is
+`yes`, measured on the generator that ships.
+
+**ONE TOOL DEFECT, FIXED RATHER THAN ROUTED AROUND (X2).**
+`scripts/harness.sh --no-generate` returned three steps early, before step 2e —
+the step that decides per tree whether `<callee>_c` comes from the generated
+bridge or from an integrated `<callee>.cpp.o`. On the clean tree that left
+`ld: multiple definition of saturate_c` and `vit_mutate.py: baseline is not
+green (nocompile); refusing to score`. **Loud only because `vit_mutate.py`
+refuses a non-green baseline**: a sweep that had linked would have scored the
+C++ `saturate` against itself. Fixed by moving the return below 2e.
+
+**Two gaps in the mutation instrument, both measured rather than noted.** The
+two `swap_operands` mutants did not compile because cppmutate swaps the operands
+of the *text* it matched and the text stops one token short of `*inst` and
+`rlP->LastSignal[i]`; and the `saturate_c` call has no generated mutant at all,
+because all three call operators are gated on tables of C standard-library
+names (unit #33's finding, one function over). Hand-run on the same corpus with
+the unmutated baseline at 0 of 2904: rate numerator swapped **911**, clamp
+dropped **741**, bounds transposed **885**, `1 - *inst` **58** — and
+`saturate_c(minRate, rate, maxRate)` at **0**, which is an **equivalence with an
+existing proof** (unit #24 proved `fmax` commutative on a signed zero and a NaN,
+both orders of both, as bits) rather than a survivor. The 58 is a number about
+an allocator, not about a corpus: that mutant subscripts `LastSignal` at −5..−7
+and both the read and the write are undefined behaviour.
+
+---
+
 **As of 2026-08-15 (second dispatch): unit #45 `interp2d` is `integrated`,
 re-measured at loop_rev `eb5028e`, and still open at 13 of 14 on P12** — four
 layers exist, all four RE-RAN at the new revision, all four are red-tested, and

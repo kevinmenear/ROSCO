@@ -9705,3 +9705,151 @@ R6 addition beside it, it is not gated on the judgement being used. Gating it
 moves `loop_rev`, and this unit's twelve artifacts are all at `eb5028e` — the fix
 would have meant re-taking all twelve, including a 282-second gate red test,
 inside the dispatch's last half hour.
+
+## 2026-08-15 13:00 — ratelimit: an initialisation arm can be *arithmetically* invisible, and no window reaches it (a proposed method amendment)
+
+`ratelimit`'s kernel is blind to its reset arm, and the interesting part is that
+this is **not** a windowing failure of the kind units #41, #42, #43 and #44 all
+recorded and repaired.
+
+Those four are the same rule seen four times: aim the window at the transition,
+because the steady state is where a no-op reproduces the reference. Each was
+repaired by arithmetic over the scenario's own patch dict, cross-checked against
+a coverage count. This unit's window *was* aimed that way — the first range
+starts at invocation 1 precisely because coverage places the reset arm there
+(clean `Functions.f90:75` records 8 hits in every one of the 27 scenarios, which
+is 1 + 3 + 3 + 1, the eight `ratelimit` calls of the first DISCON call). The arm
+is **in** the corpus, three cases of 62, and it is still invisible:
+
+```
+the reset arm made unreachable    62 of 62 PASS
+ResetValue ignored               62 of 62 PASS
+```
+
+The census says why, and it is arithmetic rather than instrumentation:
+
+```
+invocation 1  inst=6 reset=1 in=+0 last=+0 rv=+0 out=+0
+invocation 2  inst=7 reset=1 in=+0 last=+0 rv=+0 out=+0
+invocation 3  inst=8 reset=1 in=+0 last=+0 rv=+0 out=+0
+
+THEN:  ResetValue_ = rv = 0        -> returns 0, stores 0
+ELSE:  raw = (0 - 0)/DT = 0        -> returns 0 + saturate(0)*DT = 0
+```
+
+**The two arms compute the same answer.** Not "the difference is below
+tolerance" and not "the case is unlucky" — the reset arm of a stateful unit runs
+at exactly the invocation where every input is still at its initial value, and
+for a unit whose two arms agree at zero that makes the arm indistinguishable
+from its complement *by construction*.
+
+The generalisation, offered as a method amendment because it is not about ROSCO:
+
+> **An initialisation arm is the arm whose inputs are least varied, so it is the
+> arm a capture window is least able to discriminate — and hitting it is not the
+> same as seeing it.** Aiming a window at an edge answers "is the arm in the
+> corpus". It does not answer "can the corpus tell this arm from the other one".
+> Only a stub does, and the stub is cheap: two of this unit's eight cost one
+> second each and both came back 62 of 62.
+
+It belongs beside P9 (*coverage is not visibility*), of which it is the sharper
+form: **presence in a capture window is not visibility either**, and the
+instrument that distinguishes them is the same one P9 already implies.
+
+What made it a finding rather than a hole is that the blind spot was then
+**closed on numbers by two other layers** — the gate moves 370,796 of 5,252,000
+when the same branch is perturbed, and the post-integration harness 604 of 2904
+— and the two reach it for different reasons: the gate because 26 other
+scenarios and 4 other call sites carry a non-zero `BlPitch` at *t* = 0, the
+harness because it draws `has_ResetValue` freely as a flag.
+
+## 2026-08-15 13:00 — ratelimit: `harness.sh --no-generate` skipped the one step it exists for (X2, fixed here)
+
+`--no-generate` is documented as *"REBUILD THE HARNESS FOR THE CURRENT TREE,
+KEEP THE CORPUS"*, and it returned three steps early — before step 2e, which is
+the step that decides **per tree** whether `<callee>_c` comes from the generated
+bridge or from an integrated `<callee>.cpp.o`. Step 1 has just rewritten
+`<stem>_callees.f90` with every bridge restored, so the early return left a
+freshly generated bridge set against whatever LIBS happened to be on disk.
+
+Measured here, on the clean tree, with `saturate` integrated:
+
+```
+ld: saturate.cpp.o: in function `saturate_c': multiple definition of
+    `saturate_c'; ratelimit_callees.o: first defined here
+vit_mutate.py:  baseline is not green (nocompile); refusing to score
+```
+
+2e's `unlinked` branch is exactly the repair — keep the bridge, drop the stale
+`saturate.cpp.o` from LIBS — and it never ran. Fixed by moving the return below
+2e (`da95a3e7`), which is X2 rather than a workaround: this script is ours.
+
+**It failed loudly only because `vit_mutate.py` refuses a non-green baseline.**
+Had the link succeeded with the object instead of the bridge, both sides of the
+comparison would have reached the same C++ `saturate` and the sweep would have
+reported a score for a run in which the callee was not a control — the exact
+shape 2e's own comment calls *"silently wrong rather than loudly wrong"*. The
+refusal is the only thing between that comment and a wrong number, which is an
+argument for the refusal and not for the fix.
+
+## 2026-08-15 13:00 — ratelimit: two mutation gaps, and only one of them is unit #33's
+
+`mutation/ratelimit.json` reports `score 1.000` on 17 behavioural mutants with
+**0 declared equivalent**, and 2 excluded as no-compile. Both gaps were measured
+by hand on the same 2904-case corpus, with the unmutated baseline at 0 of 2904
+as the control (`evidence/ratelimit/hand_mutants.txt`).
+
+**Gap 1 is new and is a defect in `cppmutate`, not a restriction.**
+`swap_operands` swaps the two operands of the **text it matched**, and here the
+matched text stops one token short of the expression:
+
+```
+const int i = *inst - 1;                     'inst - 1' -> '1 - inst'   =>  *1 - inst
+(inputSignal - rlP->LastSignal[i]) / DT      'inputSignal - rlP->LastSignal'
+                                             -> 'rlP->LastSignal - inputSignal'
+                                                                       =>  inputSignal[i]
+```
+
+Neither compiles, so both are excluded from numerator and denominator — and
+"excluded" is a statement about the mutant's text, not about the site. In the
+shape the operator was reaching for, one dies on **911** cases and the other on
+**58**. Not repaired here: changing an operator's matching changes the mutant set
+of every unit already scored (X3, unit #22's rule), and the same reasoning that
+held for unit #24's added operators applies in reverse. Recorded for the Driver
+with the two shapes and their kill counts, which is what a re-take would need.
+
+**The 58 is a number about an allocator, not about a corpus**, and it is worth
+separating: `1 - *inst` subscripts `LastSignal` at −5..−7, so both the read and
+the write are undefined behaviour and what the harness compares afterwards
+depends on what lies before the array. The site is reachable — 58 cases say so —
+but the count is not evidence about corpus adequacy in the way the other five
+are.
+
+**Gap 2 is unit #33's, unchanged.** All three call operators are gated on tables
+of C standard-library callee names, so the one `saturate_c` call this unit makes
+has no generated mutant. Hand-measured: the clamp dropped kills **741**, the
+bounds transposed **885**, and `saturate_c(minRate, rate, maxRate)` kills **0** —
+which is an **equivalence with a proof this campaign already owns** rather than a
+survivor, since `saturate` is `fmin(fmax(v, lo), hi)` and unit #24 proved `fmax`
+commutative on this toolchain for the only two inputs at which it could fail, a
+signed zero and a NaN, both orders of both, compared as bits
+(`evidence/saturate/minmax_probe.txt`). It is therefore **not** declared in
+`mutation/ratelimit.json`: nothing was excused there, and this one is outside the
+denominator because the operator never fired, not because it was argued away.
+
+## 2026-08-15 13:00 — ratelimit: P9's `Status here` is owed and was deliberately not written
+
+The invariant layer asks that a rule's `Status here` move from `inherited,
+unexercised` to `exercised at unit #N` the first time it bears on the work, and
+this unit is the clearest exercise of **P9 — coverage is not visibility** the
+campaign has recorded: coverage placed the reset arm at 8 hits in every one of
+27 scenarios, the window captured it three times, and two stubs still passed
+62 of 62.
+
+The line was **not** edited, because this dispatch's instruction was not to
+modify the invariant layer of `RUNBOOK.md` — and editing it moves
+`invariant_hash`, which the Driver reads as a proposed method amendment. So the
+debt is recorded here rather than paid silently: **P9 is exercised at unit #46**,
+and the same edit would also carry the proposed amendment above (*presence in a
+capture window is not visibility either*), which is what makes it an amendment
+rather than a bookkeeping change.
