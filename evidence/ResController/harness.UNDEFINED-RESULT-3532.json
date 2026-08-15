@@ -1,0 +1,121 @@
+{
+ "unit": "ResController",
+ "against": "integrated",
+ "checked": 3532,
+ "failed": 1763,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    0 varied extent(s); 4 FIXED by the type at [1024, 1024, 1024, 1024] -- not varied, 1 index(es) at 1/interior/n, array elements distinct",
+  "  applied  R2_flag_values             2 value(s) across 1 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R6_reference_literals      1099 value(s) from 25 literal(s) in the reference, each under every declared value of 1 flag(s); 231 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 280 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 70 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 7 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          11 real value(s), none zero in every case",
+  "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
+  "  N/A      R12_narrowing_width        no CHARACTER local is narrower than a dummy assigned into it -- the reference truncates nothing, so there is no boundary for this rule to reach",
+  "  N/A      R13_staging_capacity       no deferred-length CHARACTER output -- no parameter whose LENGTH the callee chooses, so no staging buffer whose capacity a case could state",
+  "  N/A      R14_planted_word           no CHARACTER ARRAY input -- there is no element for a scalar string to be a word OF, so no comparison of this shape exists to reach",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 5 out-parameter(s): resP_res_OutputSignalLast1, resP_res_OutputSignalLast2, resP_res_InputSignalLast1, resP_res_InputSignalLast2, inst"
+ ],
+ "mismatches": [
+  {
+   "case": 13,
+   "output": "vit_result",
+   "ref": "f2c28ae964943041",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 14,
+   "output": "vit_result",
+   "ref": "9867c5be1fb72f00",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 15,
+   "output": "vit_result",
+   "ref": "c8cb0af41fb70000",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 16,
+   "output": "vit_result",
+   "ref": "00cd0af41fb70000",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 17,
+   "output": "vit_result",
+   "ref": "777cb0d2ffff0000",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 18,
+   "output": "vit_result",
+   "ref": "10cf0af41fb70000",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 19,
+   "output": "vit_result",
+   "ref": "777cb0d2ffff0000",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 20,
+   "output": "vit_result",
+   "ref": "777cb0d2ffff0000",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 21,
+   "output": "vit_result",
+   "ref": "777cb0d2ffff0000",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 23,
+   "output": "vit_result",
+   "ref": "630cae2821802b41",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 25,
+   "output": "vit_result",
+   "ref": "e6fe743f0e7e2b41",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 27,
+   "output": "vit_result",
+   "ref": "42e4030b71822b41",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 29,
+   "output": "vit_result",
+   "ref": "f2885b0a1a7f2b41",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 31,
+   "output": "vit_result",
+   "ref": "6bbd2698f6802b41",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 33,
+   "output": "vit_result",
+   "ref": "e83e502edf7f2b41",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 35,
+   "output": "vit_result",
+   "ref": "426fa8c093533241",
+   "got": "0000000000000000"
+  }
+ ],
+ "loop_rev": "3ac5b4a-nogit",
+ "gen_rev": "gen-1757d99a815a",
+ "vit_rev": "fe22383-nogit"
+}

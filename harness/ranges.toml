@@ -688,3 +688,60 @@ objInst_instHPF = { lo = 1, hi = 1000 }
 objInst_instNotch = { lo = 1, hi = 1000 }
 objInst_instNotchSlopes = { lo = 1, hi = 1000 }
 LocalVar_NumBl = { lo = 0, hi = 3 }
+
+# ---------------------------------------------------------------------------
+[ResController]
+
+# ONE ENTRY, AND IT IS THE FIRST IN THIS FILE THAT NAMES THE FUNCTION RESULT.
+#
+# `ResController` assigns its own result in the ELSE arm only:
+#
+#     IF (reset) THEN
+#         resP%res_OutputSignalLast1(inst) = 0        ! and three more
+#     ELSE
+#         ResController = 1/b0*( ... )                ! the ONLY assignment
+#         ResController = saturate(ResController, minValue, maxValue)
+#         ...
+#     END IF
+#     inst = inst + 1                                 Controllers.f90:1209-1224
+#
+# so on `reset` the function returns whatever the result slot happens to hold.
+# The caller at Controllers.f90:815 assigns that to `AWC_TiltYaw(Imode)`, which
+# feeds the inverse Coleman transform and every blade's pitch command. That is
+# upstream ROSCO's defect -- the fifth this campaign has recorded -- and it is
+# not something a translation can mirror: an undefined value is not a value.
+#
+# MEASURED BY THIS HARNESS BEFORE THE KEY EXISTED, and the failing artifact is
+# kept at evidence/ResController/harness.UNDEFINED-RESULT-3532.json:
+#
+#     HARNESS FAIL: checked 3532  failed 1763  inadmissible 0
+#       case 13 vit_result: ref f2c28ae964943041 != got 0000000000000000
+#       case 17 vit_result: ref 777cb0d2ffff0000 != got 0000000000000000
+#       case 18 vit_result: ref 10cf0af41fb70000 != got 0000000000000000
+#
+# All sixteen mismatch records the run keeps name `vit_result` and nothing else,
+# and the reference's bytes CHANGE FROM CASE TO CASE -- the 777cb0d2ffff0000
+# pattern is a leftover pointer, the same shape `UpdateZeroMQ` produced above.
+# That the OTHER 1747 are also `vit_result` is not read off that list, which is
+# truncated at sixteen: it is proved by this entry, whose only effect is to stop
+# comparing that one output and which takes the same 3532-case corpus from
+# `failed 1763` to `failed 0`.
+#
+# THE COST, STATED, AND IT IS SMALLER HERE THAN THE ALTERNATIVE'S. The obvious
+# remedy is `reset = { values = [0] }`, and it is the wrong one: it would throw
+# away the whole reset ARM -- four writes that the harness is the ONLY
+# instrument able to reach, since those four lines have ZERO hits in all 27
+# scenarios and `localvar%restart` is F in all 62 captured kernel cases. This
+# excludes the ANSWER instead of the arm, and keeps all 3532 cases.
+#
+# What is lost is a translation that returns something other than what it
+# stores. On the ELSE path the two are the same value by construction --
+#
+#     resP%res_OutputSignalLast1(inst) = ResController        :1223
+#
+# -- and `resP_res_OutputSignalLast1` IS compared, on every case, so the
+# arithmetic itself is not excluded by this at all. What is no longer compared
+# is only the copy of it that leaves through the return, and two other
+# instruments do compare that: the kernel replays 62 cases through the CALLER,
+# where the result lands in `AWC_TiltYaw`, and the gate runs the whole program.
+vit_result = { no_oracle = "assigned in the ELSE arm only; on `reset` the reference returns an undefined slot (Controllers.f90:1209-1224)" }
