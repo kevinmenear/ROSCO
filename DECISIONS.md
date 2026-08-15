@@ -2,6 +2,164 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #43 — StructuralControl — 2026-08-15
+
+### The kernel is blind to one of this unit's two writing statements, and a stub says so
+
+`StructuralControl` writes in exactly two places: the three-constant step into
+`LocalVar%StC_Input` under `StC_Mode == 1 .AND. Time > 500`, and the loop that
+copies `StC_Input` into `avrSWAP`. The extracted kernel compares ~250 field
+names and `avrswap` is not one of them, so the second statement is invisible to
+it. Deleting the whole loop **passes 62 of 62**.
+
+That was read off `verify_fields.csv` and then MEASURED, which is the order that
+matters: the field list is a claim about what the kernel compares, and a stub is
+the only thing that turns it into a claim about what the kernel can catch. The
+gate is not blind — `gate/StructuralControl.redtest.step_constant.json` moves
+7,998 values through that loop — so this is a statement about one instrument and
+not about the unit.
+
+### A no-op passes 61 of 62 because the state it writes is state it was handed
+
+Both `avrSWAP` and `LocalVar%StC_Input` are INOUT and persist across calls in
+the driver. From invocation 20,003 onward the values this unit writes are
+already present on entry, so a unit that does nothing reproduces them exactly.
+The whole discriminating power of the kernel against the emptiest possible
+defect is **one case**, invocation 20,002 — the single call in a 23,999-call run
+at which `StC_Input` changes value.
+
+That case is in the corpus because the middle window was aimed at
+`23,999 - 3,998 + 1 = 20,002`, arithmetic over a coverage count, and written
+into `vit.yaml` with the cost stated BEFORE the extraction ran. A start/middle/
+end window would have reported the same 62/62 green over a corpus a no-op passes
+completely. This is unit #41's and #42's finding met a third time, and the shape
+is now stable enough to state generally: **when a unit's outputs are INOUT state
+that persists between calls, the kernel's power lives entirely at the
+transitions, and a window not aimed at one measures nothing a no-op fails.**
+
+### A dead arm whose scenario exists: reading the guard would have said the wrong thing
+
+The `StC_Mode == 2` open-loop arm is at 0 hits in all 27 scenarios and the gate
+red test on it moves 0 of 5,252,000. The obvious sentence — "no scenario
+configures StC_Mode = 2" — is **false**. `Examples/vit_sim.py` scenario 24 sets
+`StC_Mode = 2`, `StC_Group_N = 1`, `StC_GroupIndex 2801`, `Ind_StructControl 8`
+and `OL_Mode = 1`; it is the one scenario in this campaign built for this arm.
+
+Coverage puts 0 hits on `DISCON.F90:136` under scenario 24 while `DISCON.F90:141`
+carries 8,000, so all 8,000 of its calls fall through the main block. Units #23
+and #26 had already measured the cause — `Read_OL_Input` takes its `RETURN` on
+the absent `Examples/example_inputs/OL_Mode2_Input.dat` — and STATUS.md has
+carried scenario 24 executing no controller code as an E3.3 failure since phase
+3. The difference matters because it decides whether widening the scenarios
+could ever help: here it could, and the blocker is one missing file rather than
+a configuration nobody wrote.
+
+Both statements are recorded INTO `gate/StructuralControl.redtest.openloop_arm.json`
+as `notes`, not into prose elsewhere, because a reader who opens that file finds
+a zero and needs the expectation beside it.
+
+### A defensive guard the reference does not have is a site no input can kill (proposed method amendment)
+
+The first sweep scored 0.810 with eleven survivors. Four of them were at one
+site I wrote:
+
+```cpp
+std::vector<double> row(cols > 0 ? static_cast<size_t>(cols) : 0);
+for (int32_t j = 0; j < cols; ++j) row[j] = OL_StructControl[j * rows + (I_GROUP - 1)];
+... interp1d_c(..., row.data(), cols, ...)
+```
+
+`cols` is `n_OL_StructControl_cols`, which R5 never draws below 3 and the view
+populator never makes negative. So `cols > 0`, `cols >= 0`, `cols > 1` and
+`: 0` versus `: 1` all spell the same number, and **no input can distinguish
+them** — three mutants that are equivalent for a reason that is not about the
+reference at all. The fourth is worse: passing `cols` rather than the buffer's
+own length as `SIZE(yData)` means a loop bound widened to `j <= cols` writes
+past the vector and the extra element is never read, so the mutant corrupts the
+heap in silence and scores as a survivor.
+
+Rewriting the site removed all four: no guard (`cols` is a size), `push_back`
+(so a wrong bound changes the buffer), and `row.size()` as the length (which is
+what the reference's `SIZE(yData)` actually denotes). **The rule this
+generalises is unit #37's, seen from the other side.** #37 recorded that
+`std::max(a, b)` is a site `swap_call_args` can never kill and declared it. The
+same question asked before writing the line is cheaper: *does this spelling
+offer a mutant no input can kill?* A defensive test on a quantity that cannot
+take the value it guards against always does, and it is not transcription — the
+reference has no such test.
+
+**Proposed as a method amendment.** The existing prohibition is about inlining
+and about working around tool bugs; this is a third thing — a translation may
+not add a guard the reference does not have, and the mutation score is what
+detects it. It belongs beside X1/X2 rather than in this campaign's target layer,
+because it is about how a translation is written and not about ROSCO.
+
+### R11 reaches an arm R6 crosses but cannot enter
+
+R6 crossed this unit's four predicate quantities at the full cross product, so
+`StC_Mode = 2` with `StC_Group_N = 1` IS in the corpus. What those cases lack is
+`Ind_StructControl(1) > 0` — and that is not a knob quantity, because its
+subscript is the loop counter. The generator says so itself:
+
+```
+note: CntrPar_Ind_StructControl[I_GROUP - 1]: subscript not traceable to a
+      parameter -- its index is NOT exercised by R5
+```
+
+So the arm is *crossed into and not entered*, which no widening of R6 can fix.
+`harness/baseline.StructuralControl.json`'s first state ramps
+`Ind_StructControl` from exactly **1** — the value at which the surviving
+`> 0` -> `> 1` mutant changes an answer — and kills all three of the remaining
+open-loop survivors at once.
+
+### R13 and the arm it exists to reach are disjoint, on a corpus 10x smaller
+
+Unit #41 found that `R13_staging_capacity`'s 256 cases all take their other
+inputs at the BASE DRAW, where `aviFAIL` is not negative and the ErrMsg refusal
+guard is never entered. This unit reproduces it exactly: 120 of 1263 cases reach
+the helpers, and `n_ErrMsg_cap` is **4104 in every one of them** — the base
+headroom — against a longest message of 35. Two units, two corpora an order of
+magnitude apart, one number. That is what makes it a property of the RULE rather
+than of either unit, and it is the third of this unit's four declarations.
+
+`evidence/StructuralControl/errmsg_census.txt` is the measurement; the probe run
+is GREEN (1263/0), so it is a reading of the corpus and not a perturbation of it.
+
+### A cleanup that restores from version control discards uncommitted work of the same kind (proposed method amendment)
+
+`evidence/<Unit>/run_harness_redtest.sh` — the shape every unit in this campaign
+copies — ends with `trap 'git checkout -- "$CPP"' EXIT`. That restores the
+**committed** translation, so an uncommitted edit to it is silently gone when
+the red test finishes. The gather rewrite above had to be made twice, and the
+first version's disappearance was invisible: the red test itself reported
+correctly, and only `grep` on the file afterwards showed the old code back.
+
+This is `restore_integrated.sh`'s stated warning one directory over, and the two
+have the same fix: **commit before running anything whose cleanup is a
+checkout.**
+
+**Why this is a method amendment rather than a target-layer note.** The general
+form is not about these two scripts. Any tool that guarantees "the tree is put
+back" by restoring from version control puts back the COMMITTED state, so it
+silently discards uncommitted work of the same kind — and the discard is
+invisible precisely because the tool reports success and its own measurement is
+correct. The campaign already has the rule for the *reset* window (commit before
+you reset) and for *artifacts* (commit each as it exists); what is missing is
+the general one: **a working file that any cleanup path will `checkout` must be
+committed before that path can run, and the file under test is such a file.**
+Three of this campaign's stub runners, `restore_integrated.sh` and
+`mutate_guarded.sh` all have this shape; only the last one detects it, by
+recording a hash first.
+
+### Standing, unchanged: the two ErrMsg helpers are copied into every unit that takes an ErrVar
+
+This is the seventh unit to declare `'>' -> '>='` on the staging-capacity refusal
+and the seventh to carry a character-for-character copy of `assign_errmsg` and
+`errmsg_trim`. Four of this unit's four declarations are at those two helpers.
+A shared, once-mutated, once-declared helper would make one declaration instead
+of N. Unit #37 proposed it to the Driver as a phase-bracketed change (K4); it is
+still open, and every future unit that takes an `ErrVar` will pay the same four.
+
 ## Unit #42 — Startup — 2026-08-15
 
 ### A survivor list is not a list of sites: six of fourteen were one fact about `sigma` (proposed method amendment)

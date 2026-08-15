@@ -4,6 +4,69 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-15: unit #43 `StructuralControl` is `integrated` and CLOSED** —
+all five layers exist, all five ran, all five are red-tested, and the mutation
+score is **1.000** on 51 behavioural mutants with 4 declared. It is the
+campaign's first unit whose KERNEL IS BLIND TO ONE OF ITS TWO WRITING
+STATEMENTS, measured by a stub rather than inferred, and the first whose gate
+red test on a dead arm is dead because a scenario that DOES configure it never
+reaches the controller at all.
+
+Every count below is read from the committed artifact named in its row.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases (`evidence/StructuralControl/kernel.verify_fields.csv`) | 62/62, all 26,969 field rows `IDENTICAL` | **`vit verify` DECLINED to build one** and printed `NON_DISCRIMINATING`, fourth unit running. Three hand stubs, every EXPECT written before its RESULT: the no-op fails **EXACTLY ONE case, `StructuralControl.0.0.20002`**; the avrSWAP copy loop deleted **PASSES 62 of 62**; the first step constant moved fails **EXACTLY 35** |
+| differential harness (`harness/StructuralControl.json`) | **1263 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **1190 of 1263**, the same count the green certifies |
+| mutation (`mutation/StructuralControl.json`) | **51 of 51 behavioural, 1.000**, 4 declared, 0 no-compile, 6 operators | the score *is* the red test, 51 times |
+| post-integration (`harness/StructuralControl.postintegration.json`) | 1263 checked, 0 failed | the wrapper's scalar copy-back deleted, scoped to this unit's wrapper: **49 of 1263** |
+| gate, 27 scenarios (`gate/StructuralControl.json`) | 5,252,000 values / 351 channels, 0 mismatched | TWO: the first step constant moves **7,998**; the whole `StC_Mode == 2` arm moves **0** |
+
+**THE KERNEL CANNOT SEE HALF OF WHAT THIS UNIT WRITES, AND A STUB SAYS SO
+RATHER THAN AN ARGUMENT.** `StructuralControl` has exactly two statements that
+write anything: the three-constant step into `LocalVar%StC_Input`, and the loop
+that copies `StC_Input` into `avrSWAP`. `avrswap` is **not among the ~250
+compared field names** in the kernel's own `verify_fields.csv`, so deleting the
+second statement entirely passes **62 of 62**. A translation that computed
+`StC_Input` perfectly and never wrote it out would carry a clean kernel green.
+The gate is the layer that is not blind — the step-constant red test moves 7,998
+values through exactly that loop.
+
+**AND THE ONE STATEMENT IT CAN SEE, IT SEES ON ONE CASE AGAINST A NO-OP.** Both
+`avrSWAP` and `LocalVar%StC_Input` persist across calls in the driver, so from
+invocation 20,003 onward the values this unit writes are already present on
+entry and a unit that does nothing reproduces them. The whole discriminating
+power of a 62-case kernel against the emptiest possible defect rests on
+invocation **20,002** — and that case is in the corpus only because vit.yaml's
+middle window was aimed at `23,999 - 3,998 + 1`, computed from a coverage count
+BEFORE the extraction, rather than at the run's midpoint.
+
+**THE DEAD ARM IS DEAD FOR A REASON THAT IS NOT "NO SCENARIO CONFIGURES IT".**
+`Controllers.f90:1003-1012` — the whole `StC_Mode == 2` open-loop arm, this
+unit's only call to `interp1d` — carries 0 hits in all 27 scenarios, and the
+gate red test on it moves 0 of 5,252,000, revert-verified. But scenario 24 sets
+`StC_Mode = 2` with the open-loop columns wired: it is the one scenario built
+for this arm. Coverage puts 0 hits on `DISCON.F90:136` under it against 8,000 at
+`:141`, so all 8,000 of its calls fall through the main block. Units #23 and #26
+measured the cause and this file has carried it since phase 3 as an E3.3
+failure: `Read_OL_Input` returns on the absent `OL_Mode2_Input.dat`.
+
+**FOUR OF ELEVEN FIRST-SWEEP SURVIVORS WERE A GUARD THE TRANSLATION HAD AND THE
+REFERENCE DID NOT.** `std::vector<double> row(cols > 0 ? (size_t)cols : 0)`
+tests a quantity R5 never draws below 3, so all three mutants of the test spell
+`cols`; and passing `cols` rather than the buffer's own length as `SIZE(yData)`
+hid a fourth, `j <= cols`, which writes past the vector in silence. Removed
+rather than declared. Three more were unreached and are killed by an R11 state
+that ramps `Ind_StructControl` from exactly 1.
+
+```
+                                    cases   mutants killed / 58 or 55
+  no baseline, guard present         1227   47 of 58      0.810
+  guard removed, + 2 states          1263   51 of 51      1.000 with 4 declared
+```
+
+---
+
 **As of 2026-08-15: unit #42 `Startup` is `integrated` and CLOSED** — all five
 layers exist, all five ran, all five are red-tested, and the mutation score is
 **1.000** on 102 behavioural mutants with 4 declared. It is the campaign's first

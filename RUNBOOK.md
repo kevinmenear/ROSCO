@@ -358,6 +358,96 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A GUARD THE REFERENCE DOES NOT HAVE IS A SITE NO INPUT CAN KILL, AND THE
+  MUTATION SCORE IS WHAT FINDS IT.** Unit #43. Four of the first sweep's eleven
+  survivors were at one line I wrote defensively:
+
+  ```
+  std::vector<double> row(cols > 0 ? (size_t)cols : 0);   cols >= 0 / > 1 / : 1
+  for (int32_t j = 0; j < cols; ++j) row[j] = ...;        j <= cols
+  interp1d_c(..., row.data(), cols, ...)                  <- hides the fourth
+  ```
+
+  `cols` is an extent: R5 never draws it below 3 and the view populator never
+  makes it negative, so all three mutants of the guard spell the same number and
+  no input can distinguish them. The fourth is worse than equivalent -- passing
+  `cols` rather than the buffer's own length as `SIZE(yData)` means a widened
+  loop bound writes past the vector and the extra element is never read.
+
+  ASK BEFORE WRITING THE LINE, not after the sweep: *does this spelling offer a
+  mutant no input can kill?* Here the repair was no guard, `push_back`, and
+  `row.size()` as the length -- which is also what the reference's `SIZE(yData)`
+  denotes. Unit #37's `std::max` standing is the same rule seen from the other
+  side. Raised in DECISIONS.md as a proposed method amendment: it belongs beside
+  X1/X2, being about how a translation is written rather than about ROSCO.
+
+- **A DEAD ARM WHOSE SCENARIO EXISTS. READ THE SCENARIO, NOT THE GUARD.** Unit
+  #43, and it changes what the zero means.
+
+  ```
+  Controllers.f90:1003-1012  StC_Mode == 2 arm      0 hits, all 27 scenarios
+  gate red test on that arm  0 of 5,252,000         revert-verified
+  vit_sim.py scenario 24     StC_Mode = 2, StC_Group_N = 1, Ind_StructControl 8
+  DISCON.F90:136 under 24    0 hits   |  DISCON.F90:141 under 24   8,000
+  ```
+
+  "No scenario configures it" is FALSE: one does, and it never reaches DISCON's
+  main block. Units #23 and #26 had already measured why -- `Read_OL_Input`
+  returns on the absent `Examples/example_inputs/OL_Mode2_Input.dat` -- and
+  STATUS.md has carried scenario 24 executing no controller code as an E3.3
+  failure since phase 3. The difference decides whether widening the scenarios
+  could help. Put BOTH sentences in the artifact with `--note`; a reader who
+  opens a red test recording 0 needs the expectation beside the number.
+
+- **WHEN A UNIT'S OUTPUTS ARE INOUT STATE THAT PERSISTS BETWEEN CALLS, A NO-OP
+  PASSES EVERY STEADY-STATE CASE AND THE KERNEL'S POWER IS THE TRANSITIONS.**
+  Unit #43, third instance of the window rule after #41 and #42, and the
+  sharpest.
+
+  ```
+  the unit as a no-op            fails 1 of 62   StructuralControl.0.0.20002
+  the avrSWAP copy loop deleted  passes 62 of 62      <- 'avrswap' is NOT a
+  the first step constant moved  fails 35 of 62          compared field
+  ```
+
+  `avrSWAP` and `LocalVar%StC_Input` both persist in the driver, so from
+  invocation 20,003 onward the values the unit writes are already there on entry.
+  The single case that fails is the transition, and it is in the corpus because
+  the window was aimed at `23,999 - 3,998 + 1` -- arithmetic over a coverage
+  count, written into `vit.yaml` with the cost stated BEFORE the extraction ran.
+
+  AND CHECK WHICH OUTPUTS THE KERNEL ACTUALLY COMPARES BEFORE TRUSTING ITS
+  GREEN. Read the field-name column of `verify_fields.csv`; a name absent from
+  it is a statement the kernel cannot fail on. Then MEASURE it with a stub --
+  the field list is a claim about the comparison, and only a stub turns it into
+  a claim about what can be caught.
+
+- **AN ARM R6 CROSSES INTO IS NOT AN ARM R6 ENTERS, AND THE GENERATOR SAYS WHICH
+  IS WHICH.** Unit #43. `StC_Mode = 2` with `StC_Group_N = 1` is in the corpus at
+  the full cross product; what those cases lack is `Ind_StructControl(1) > 0`,
+  and the generator prints the reason itself:
+
+  ```
+  note: CntrPar_Ind_StructControl[I_GROUP - 1]: subscript not traceable to a
+        parameter -- its index is NOT exercised by R5
+  ```
+
+  A quantity whose subscript is the loop counter is not a knob, so no widening
+  of R6 reaches it. That is an R11 baseline state's job. Read those `note:`
+  lines in the generation output before explaining a survivor list -- they name
+  the quantities no ladder will move.
+
+- **A STUB RUNNER'S `git checkout` RESTORES THE COMMITTED TRANSLATION, SO AN
+  UNCOMMITTED EDIT TO IT IS DESTROYED SILENTLY.** Unit #43.
+  `evidence/<Unit>/run_harness_redtest.sh` -- the shape every unit copies --
+  ends with `trap 'git checkout -- "$CPP"' EXIT`. A translation edit made and
+  not committed before the red test runs is gone when it finishes, and nothing
+  reports it: the red test's own number is correct, and only `grep` on the file
+  afterwards shows the old code back. Same shape as `restore_integrated.sh`'s
+  stated warning, one directory over. COMMIT BEFORE RUNNING ANYTHING WHOSE
+  CLEANUP IS A CHECKOUT -- a translation edit is an artifact too, not a
+  work-in-progress waiting for its measurement.
+
 - **A STATE MACHINE'S CAPTURE WINDOW IS ARITHMETIC OVER THE SCENARIO'S PATCH
   DICT, AND THE CHEAPEST CONFIRMATION IS A STUB THAT FAILS ONE NAMED CASE.**
   Unit #42. `Startup` runs 11,999 times in scenario 9 and is finished by
