@@ -1,6 +1,6 @@
-# done_check.py interp2d -- captured 2026-08-15T15:18:22Z by scripts/capture_done_check.sh
+# done_check.py interp2d -- captured 2026-08-15T16:00:56Z by scripts/capture_done_check.sh
 
-Run against the committed state at 63fee318 ("interp2d: the gate re-run against the library as it now ships -- identical in every field but vit_rev, after three reset/restore round trips and a perturb-and-rebuild"), with a CLEAN tree, with stdout
+Run against the committed state at a524b75f ("interp2d: evidence README carries the second dispatch's numbers above the first dispatch's record"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -31,9 +31,9 @@ interp2d: Verdict.INCOMPLETE  (13/14 PASS)
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
 [  ok  ] P9   gate compared and matched          
-[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/interp2d.json 134/166 = 0.807 < 1.0 -- survivors: swap_operands[8a36fcb9], swap_operands[6ed39951], const_tweak[c2c4e0b7], const_tweak[922581aa], const_tweak[39350cd3], const_tweak[bd0aa005]
-[  ok  ] P11  post-integration harness re-run    1005 check(s) against the integrated build
+[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/interp2d.json 152/156 = 0.974 < 1.0 -- survivors: const_tweak[c2c4e0b7], const_tweak[922581aa], const_tweak[5c2746a0], const_tweak[a155c90c]
+[  ok  ] P11  post-integration harness re-run    1147 check(s) against the integrated build
 [  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
 [  ok  ] P10  evidence reproducible              
-[  ok  ] P14  artifact revisions agree           4 artifact(s) at a523b00
+[  ok  ] P14  artifact revisions agree           4 artifact(s) at eb5028e
 

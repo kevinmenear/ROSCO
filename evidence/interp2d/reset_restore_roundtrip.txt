@@ -62,3 +62,36 @@ and the last two are deliberately left in place, because the same script strips
 every `src/*.cpp` line out of CMakeLists so nothing compiles them. The count of 2
 after the reset is Functions.f90 having dropped out of the set, which is exactly
 what the reset is for.
+
+=====================================================================
+SECOND DISPATCH, 2026-08-15, appended rather than replaced
+=====================================================================
+
+The round trip was performed TWICE MORE in this dispatch, both times as the
+clean-tree window for a measurement rather than as a test of itself:
+
+  window 1  reset -> differential harness (1147/0), the corpus regenerated
+            across the generator rename, the no-op red test (1147/1147), the
+            ErrMsg census probe, five mutation parts -> restore
+  window 2  reset -> the five mutation parts re-run with the full ten-entry
+            equivalences file -> restore
+
+Both windows were entered with the tree fully committed and left by
+restore_integrated.sh, and `git status` was clean immediately after each
+restore -- which IS the round-trip assertion, since restore_integrated.sh
+restores every wrapper-carrying source from HEAD and any drift would show as
+a modification.
+
+THE HASH BELOW DIFFERS FROM THE FIRST DISPATCH'S, AND THAT IS NOT A ROUND-TRIP
+FAILURE. `rosco/controller/src/interp2d.cpp` gained `|| std::isnan(yq)` at
+7639168f, so the directory's contents are legitimately different between the two
+captures. The round trip's claim is that the tree after a restore equals the
+tree at HEAD -- which `git status` answers -- and not that it equals a hash
+taken before a committed change.
+
+--- hashes of rosco/controller/src after the second dispatch's last restore ---
+0d949d4d6e2b70e8bd7a5b2cf51b45f4fc009deff6bbfc3b2d131a81f4dbba89  (cat of every *.f90 *.F90 *.cpp in name order)
+
+--- git status at capture ---
+   M evidence/interp2d/done_check.txt
+
