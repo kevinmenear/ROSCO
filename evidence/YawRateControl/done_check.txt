@@ -1,0 +1,39 @@
+# done_check.py YawRateControl -- captured 2026-08-15T12:53:14Z by scripts/capture_done_check.sh
+
+Run against the committed state at f82b023c ("YawRateControl: state current -- disposition integrated, 33 evidence entries, and one finding marked as a proposed method amendment"), with a CLEAN tree, with stdout
+going to a file outside the repository. The run is reproduced below verbatim.
+
+ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
+target before the subprocess runs, so
+
+    python3 scripts/done_check.py YawRateControl > evidence/YawRateControl/done_check.txt
+
+always sees a modified tracked file and reports `P2 clean tree: dirty_tree`,
+one predicate worse than the truth. That is why this file is captured out of
+tree and moved in, and why it is written by a script rather than by hand: the
+header was added once at 48b9ae3 and a plain re-capture at 73d3521 removed it.
+Reproduce the reading below with no redirection:
+
+    python3 scripts/done_check.py YawRateControl
+
+done_check exited 1 (0 only when COMPLETE).
+
+baseline (inferred): 519d347  -- the commit before ba7325b touched translations/Controllers/yawratecontrol.cpp
+
+YawRateControl: Verdict.INCOMPLETE  (12/14 PASS)
+
+[  ok  ] P1   commits exist                      
+[  ok  ] P2   clean tree                         
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[ FAIL ] P5   evidence resolves                  unresolved_evidence:evidence/YawRateControl/done_check.txt
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[  ok  ] P9   gate compared and matched          
+[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/YawRateControl.json 69/77 = 0.896 < 1.0 -- survivors: compare_op[d9338bb6], compare_op[e5c63627], const_tweak[f1cebe98], const_tweak[6c5cd47c], const_tweak[4324b252], const_tweak[bb3ef615]
+[  ok  ] P11  post-integration harness re-run    8093 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible              
+[  ok  ] P14  artifact revisions agree           3 artifact(s) at f92fb9f
+
