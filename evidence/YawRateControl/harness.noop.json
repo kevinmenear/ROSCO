@@ -1,8 +1,8 @@
 {
  "unit": "YawRateControl",
  "against": "translation",
- "checked": 8036,
- "failed": 961,
+ "checked": 8093,
+ "failed": 1012,
  "inadmissible": 0,
  "rule_coverage": [
   "  applied  R5_non_degenerate_shape    4 varied extent(s) at [3, 4, 5, 6] and [3, 4, 5, 6]; 26 FIXED by the type at [2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 12, 12, 12, 12, 256, 1024, 1024, 1024, 1024, 1024, 3000] -- not varied; 69 HELD -- they size arrays the reference does not read, NO index parameter identified, array elements distinct",
@@ -10,7 +10,7 @@
   "  applied  R6_reference_literals      2669 value(s) from 22 literal(s) in the reference, each under every declared value of 0 flag(s); 369 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 561 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 680 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 170 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 17 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits; 576 combination(s) of the 5 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead; 2308 case(s) across 2 predicate(s) the reference writes between TWO VARIED QUANTITIES, each with one side set FROM the other -- at equality, where an ordering predicate changes its answer, under every knob combination, plus the two neighbouring representable values once for strictness; a ladder on either side alone cannot reach these, because whichever base value is larger is larger in every case; 88 character value(s) from a corpus of 22 (the reference's own character literals and their collating neighbours) across 1 string(s), each at length(s) [1, 2, 6, 11] and in the mixed / padded / all-blank / leading-blank shapes, plus 132 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
   "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
   "  applied  R3_no_dead_signal          21 real value(s), none zero in every case; 6 HELD string(s) are all-blank in every case by construction -- nothing a defect on those could move; 283 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output",
-  "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
+  "  applied  R11_one_at_a_time          57 case(s) over 3 admissible state(s) (start_right_at_a_small_positive_error, start_right_above_the_second_threshold, error_exactly_at_a_zero_deadband): each state itself, then ONE of the 5 quantit(y/ies) the reference's own predicates test moved to each of its knob values with every other parameter left admissible. Several states because a reference that refuses two modes TOGETHER cannot have both reachable from one. Not crossed with the flags and not crossed with each other -- a second quantity away from baseline in the same case re-masks the first. Appended after R3's scan and the random fill, so every case index the other rules produced is unchanged and the corpus is a strict extension of the one before it",
   "  N/A      R12_narrowing_width        no CHARACTER local is narrower than a dummy assigned into it -- the reference truncates nothing, so there is no boundary for this rule to reach",
   "  applied  R13_staging_capacity       256 case(s) sweeping the stated staging capacity of every deferred-length CHARACTER output from 0 to 255 bytes above what the case supplies, every other input at its base draw -- so the output has one length across the block and exactly one case sizes the buffer TO it, one a byte short and one a byte long. A capacity a case does not state is `emit.ALLOC_HEADROOM`, which is what every case outside this block still carries",
   "  N/A      R14_planted_word           no CHARACTER ARRAY input -- there is no element for a scalar string to be a word OF, so no comparison of this shape exists to reach",
@@ -120,7 +120,7 @@
  "vit_rev": "fe22383-nogit",
  "red_test": {
   "perturbation": "the whole unit as a no-op",
-  "result": "961 of 8036 case(s) failed",
+  "result": "1012 of 8093 case(s) failed",
   "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
  }
 }
