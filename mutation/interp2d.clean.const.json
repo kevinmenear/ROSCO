@@ -23,7 +23,7 @@
  ],
  "operators_filter_unmatched": [],
  "mutants": 40,
- "equivalent_declared": 0,
+ "equivalent_declared": 2,
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
@@ -31,10 +31,10 @@
  "nocompile_refused": false,
  "total": 40,
  "killed": 34,
- "survived": 6,
- "equivalent": 0,
+ "survived": 4,
+ "equivalent": 2,
  "declared_but_killed": [],
- "score": 0.85,
+ "score": 0.8947,
  "loop_rev": "eb5028e-nogit",
  "gen_rev": "gen-e0c1b3703480",
  "vit_rev": "a16a7ab-nogit",
@@ -50,18 +50,6 @@
    "operator": "const_tweak",
    "before": "0",
    "after": "1"
-  },
-  {
-   "id": "34ae41de",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "bc897a8f",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
   },
   {
    "id": "5c2746a0",
