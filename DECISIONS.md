@@ -9466,3 +9466,68 @@ the mutation score is the instrument that tests it.** Units #43 and #44 each
 found the same thing from the other direction — a survivor list explained by
 what the corpus could not reach. Proposed as a method note: a `ranges.toml`
 exclusion should be re-read against the survivor list before the unit closes.
+
+## 2026-08-15 11:35 — interp2d: the conformance matrix was RUN, and NOT committed
+
+The `c_assumed_shape_2d` cell reads `compiles = "no"` while the tool now
+compiles it, so the obvious close was `python3 tests/test_conformance.py
+--update`. It was run four times and the file was reverted each time. What it
+showed, in order, is worth more than the file would have been.
+
+**Run 1 moved four cells, and three of them were a regression I had just
+introduced.**
+
+```
+c_assumed_shape_2d   compiles     no -> yes    <- intended
+c_alloc_field        integrates  yes -> no     Cannot open module file vit_alloctype_view.mod
+c_char_field         integrates  yes -> no     Cannot open module file vit_charfieldtype_view.mod
+c_nested_field       integrates  yes -> no     Cannot open module file vit_nestedtype_view.mod
+```
+
+**The isolation is the whole point, and it took one command.** Checking out
+`vit/view_populator.py` and `vit/interface_gen.py` from the PARENT of the
+direct-caller commit and re-running `--update` left exactly one diff — the
+intended one. So the three flips were mine, and the missing `.mod` was three
+cells away from the line that caused it:
+
+    ERROR STOP 'VIT: vit_view_out_alloctype: v, m is an ALLOCATABLE, POINTER ...
+    Error: Line truncated at (1) [-Werror=line-truncation]
+    Error: Unterminated character constant beginning at (1)
+
+Free-form Fortran truncates a source line at 132 characters. My `ERROR STOP`
+carried the FIELD LIST, so it did not compile for any type with more than two or
+three unhandled fields. Unit #5's 132-column bridge-generator finding, one
+generator over, and **it would not have been found by this campaign at all**:
+ROSCO's `ErrorVariables` has no unhandled field, so the branch never fires here.
+VIT's own conformance fixture is what caught it. Fixed (`a16a7ab`): the field
+names go in wrapped comments, the literal names only the subroutine.
+
+**Run 4, after the fix, still leaves the file uncommittable.** All six columns of
+the three cells are back to `yes`, and the writer nonetheless emits
+
+    why = "TODO: integrate: Fatal Error: Cannot open module file ..."
+
+on cells whose every column passed — a `why` carried from an earlier stage's
+`detail` and attached to a measurement that succeeded. And the cell this
+dispatch actually corrected keeps its old `why`, which now describes a defect
+that is gone while `compiles` reads `yes`.
+
+**So the matrix is NOT committed, and that is the choice rather than an
+omission.** Committing it would put three unexplained `TODO`s into the file
+`plan.json` derives every unit's `bridge_feasible` from, and this dispatch
+measured neither the writer's `why` rule nor those three cells' semantics. What
+the campaign gets instead is this entry and a named next step:
+
+  1. `tests/test_conformance.py`'s writer attaches a stage's `detail` to a cell
+     whose measurement passed. Fix that first; until then `--update` cannot be
+     run to completion by anyone.
+  2. Then re-run it and correct `c_assumed_shape_2d`'s `why`, which is currently
+     a true statement about a defect that no longer exists.
+
+**AND THE METHOD POINT, which is X4 with a specific shape.** The direct-caller
+change shipped with a positive control — ROSCO's `vit_errorvariables_view.f90`
+byte-identical up to the additions — and that control was *necessary and not
+sufficient* in exactly the way P10 describes. It exercised the one type this
+campaign has, and the defect lived in the branch that type does not reach. **A
+generator's positive control must cover the branch the change ADDED, not the
+input the campaign happens to own.**
