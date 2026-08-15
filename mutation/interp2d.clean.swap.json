@@ -35,9 +35,9 @@
  "equivalent": 0,
  "declared_but_killed": [],
  "score": 0.9474,
- "loop_rev": "d17a68d-nogit",
+ "loop_rev": "a523b00-nogit",
  "gen_rev": "gen-f614231a8c9e",
- "vit_rev": "f0971d8-nogit",
+ "vit_rev": "0ee71a7-nogit",
  "survivors": [
   {
    "id": "8a36fcb9",

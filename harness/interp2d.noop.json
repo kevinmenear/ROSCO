@@ -123,9 +123,9 @@
   "xData": "the reference reads zData(i, 0) on a reversed table -- see above",
   "yData": "the reference reads zData(0, j) on a reversed table -- see above"
  },
- "loop_rev": "d17a68d-nogit",
+ "loop_rev": "a523b00-nogit",
  "gen_rev": "gen-f614231a8c9e",
- "vit_rev": "f0971d8-nogit",
+ "vit_rev": "0ee71a7-nogit",
  "red_test": {
   "perturbation": "the unit as a NO-OP: returns 0.0, writes no view field; the only interp1d_c call is behind a guard no case satisfies, and exists so the callee bridge stays in the link",
   "result": "1005 of 1005 case(s) failed",
