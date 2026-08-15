@@ -1,0 +1,95 @@
+WHAT THE 62-CASE KERNEL CAN SEE, MEASURED BY HAND
+=================================================
+
+`vit verify` printed `✓ VERIFICATION PASSED: 62/62 passed` over 28,582 field
+rows, every one `IDENTICAL`, and then REFUSED to certify itself:
+
+    Red test: NOT CONSTRUCTED — no by-value floating-point parameter and no
+    floating-point result: every input arrives behind a pointer or inside a
+    derived type, and perturbing one of those could change what BOTH
+    implementations compute. The kernel's discriminating power is therefore
+    UNMEASURED for this function
+
+    ✗ PreFilterMeasuredSignals: NON_DISCRIMINATING
+
+That refusal is TRUE of this signature — five derived-type INOUT arguments and
+no result — and it is also a claim about the instrument rather than about the
+corpus (units #32, #33, #35). So it was measured, by running five one-edit
+stubs of the SHIPPED translation through the committed kernel:
+
+    bash evidence/PreFilterMeasuredSignals/run_stub.sh <stub> <log>
+
+    stub                                    passed  of 62   rows moved   log
+    ---------------------------------------------------------------------------
+    noop -- the whole body a no-op              0     62       2107   kernel.noop-stub.run.txt
+    no-debugvar -- the four DebugVar writes     0     62        124   kernel.no-debugvar-stub.run.txt
+    no-genspd-notch -- the notch loop gone      0     62        497   kernel.no-genspd-notch-stub.run.txt
+    moving-absent -- NotchFilterSlopes'         1     62        488   kernel.moving-absent-stub.run.txt
+      optional Moving=.TRUE. dropped
+    restart-false -- every `reset` forced 0    62     62          0   kernel.restart-false-stub.run.txt
+
+(The stub runs report 28,892 field rows where `verify_fields.csv` carries
+28,582. The CSV and the kernel's own stdout disagree on row counts throughout
+this campaign — unit #33 recorded the same at 14,508 against 14,818 — and the
+VERDICTS agree, which is what is quoted. Read the status column, never the
+value columns.)
+
+THE KERNEL CAN GO RED, AND FOUR OF THE FIVE STUBS PROVE IT. The no-op fails all
+62 cases and moves 2107 rows; that is the sentence `vit verify` declined to
+write, and it is what separates `62/62 IDENTICAL` from `62/62 on an instrument
+that cannot fail`.
+
+THE ONE THAT PASSES IS NOT A CORPUS GAP -- IT IS AN EQUIVALENCE IN THE WHOLE
+PROGRAM, AND THE PROOF IS TWO GREPS RATHER THAN A CASE COUNT.
+
+    Filters.f90 (clean, 54dd134), all five filters:
+        :53  :96  :147  :198  :248  :301   IF ((iStatus == 0) .OR. reset)
+        :255  NotchFilterSlopes ALSO       IF ((iStatus == 0) .OR. reset .OR. Moving_)
+
+    ReadSetParameters.f90:123-126 is the ONLY assignment to LocalVar%restart in
+    the whole controller:
+        IF (LocalVar%iStatus == 0) THEN
+            LocalVar%restart = .True.
+        ELSE
+            LocalVar%restart = .False.
+
+So `reset` is TRUE only where `iStatus == 0` already is, and the `.OR.` makes
+the second term redundant at all nineteen of this unit's call sites. In the
+captured window that is visible directly — `restart` is `T` in 1 of 62 cases
+and `istatus` is `0` in exactly that one:
+
+    61 cases   istatus 1   restart F
+     1 case    istatus 0   restart T
+
+The stub therefore passes 62 of 62 with ZERO rows moved, and it would pass at
+ANY window and in any of the 27 scenarios. It predicts that the gate is blind
+to this argument too. What is NOT blind to it is the differential harness,
+which draws `iStatus` and `restart` independently and so reaches the
+(iStatus /= 0, reset = .TRUE.) corner the program never builds.
+
+WHAT THE 62 CASES HOLD CONSTANT, read from kernel.verify_fields.csv rather than
+argued — these are the arms the kernel cannot reach at all:
+
+    f_lpftype        1 in 62 of 62    -> the F_LPFType == 2 SecLPFilter arm is dead
+    f_twrtopnotch_n  0 in 62 of 62    -> the tower-top notch loop iterates 0 times
+    flp_mode         0 in 62 of 62    -> the Flp_Mode == 2 blade-root arm is dead
+    ipc_controlmode  1 in 62 of 62    -> every blade takes NotchFilterSlopes;
+                                         the `RootMOOPF(K) = rootMOOP(K)` ELSE
+                                         arm is never taken
+    f_genspdnotch_n  1 in 62 of 62    -> the gen-speed notch loop runs exactly once
+    td_mode          1 in 62 of 62    -> the FA_AccHPF arm is always taken
+    numbl            3 in 62 of 62
+
+coverage/line_coverage.json says the same of the whole simulation for the first
+three: `F_LPFType == 2` has ZERO hits in all 27 scenarios, the tower-top DO line
+carries exactly the call count in every scenario (so its body never iterates),
+and the `Flp_Mode == 2` arm is reached only by scenario 4. Those three arms are
+outside every bit-exact instrument this campaign has, and the differential
+harness is the whole of their evidence.
+
+THE KERNEL'S CALLEES ARE THE ORIGINAL FORTRAN. kernel/PreFilterMeasuredSignals
+carries vit_bridge_{lpfilter,seclpfilter,hpfilter,notchfilter,notchfilterslopes,
+wrap_180}.f90, each `BIND(C, NAME='<name>_c')` onto `USE Filters, ONLY: <Name>`.
+So every row a stub moves is this unit's own doing — call order, arguments,
+instance counters — and none of it is a callee's arithmetic. That is the right
+shape for a unit whose body is twenty calls.
