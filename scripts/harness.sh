@@ -275,9 +275,28 @@ if [ "$MODE" = "pre" ]; then
         # The .o is from the previous link and may have been compiled against a
         # different bridge; make's timestamp rule cannot see that, so it goes.
         rm -f "$ROOT/$UNIT_DIR/${STEM}_test.o" "$ROOT/$UNIT_DIR/test"
-        echo "harness.sh --no-generate: build files rebuilt for the current tree;"
-        echo "  ${STEM}_cases.bin and ${STEM}_test.cpp kept from the generating run."
-        exit 0
+        # AND FALL THROUGH TO 2e RATHER THAN RETURNING HERE. This block used to
+        # `exit 0` on this line, which skipped the one step whose entire job is
+        # the thing `--no-generate` advertises -- "REBUILD THE HARNESS FOR THE
+        # CURRENT TREE". 2e is what decides, per tree, whether `<callee>_c`
+        # comes from the generated bridge or from an integrated `<callee>.cpp.o`;
+        # step 1 has just rewritten `<stem>_callees.f90` with every bridge
+        # restored, so returning here leaves the bridge set of a FRESHLY
+        # GENERATED run against the LIBS of whatever tree is on disk.
+        #
+        # MEASURED at unit #46 `ratelimit`, whose callee is the integrated
+        # `saturate`. On the clean tree, with the corpus kept:
+        #
+        #   ld: saturate.cpp.o: in function `saturate_c': multiple definition
+        #       of `saturate_c'; ratelimit_callees.o: first defined here
+        #   vit_mutate.py:  baseline is not green (nocompile); refusing to score
+        #
+        # 2e's `unlinked` branch is exactly the repair -- keep the bridge, drop
+        # the stale `saturate.cpp.o` from LIBS -- and it never ran. The failure
+        # is loud, which is why it cost minutes rather than a wrong score, but
+        # `vit_mutate.py` refusing is the only reason: a sweep that had linked
+        # would have scored the C++ saturate against itself.
+        NOGEN_EXIT=1
     fi
 else
     for f in Makefile "${STEM}_bridge.f90" "${STEM}_cases.bin" "${STEM}_test.cpp"; do
@@ -375,6 +394,14 @@ if dropped or unlinked:
     open(cal, "w").write(head + "".join(MARK + b for b in kept))
 print(f"harness.sh: {len(kept)} bridge(s) kept in {cal}")
 PYEOF
+fi
+
+# The `--no-generate` return, moved down from inside step 2b's block so that 2e
+# above has run. See the comment there for what it cost when it did not.
+if [ "${NOGEN_EXIT:-0}" = "1" ]; then
+    echo "harness.sh --no-generate: build files rebuilt for the current tree;"
+    echo "  ${STEM}_cases.bin and ${STEM}_test.cpp kept from the generating run."
+    exit 0
 fi
 
 # 3. Generate the cases, build, run, and write the artifact.
