@@ -572,6 +572,24 @@ translations:
     kernel_dir: kernel/ResController
     red_test: demonstrated
     red_test_detail: the kernel reported a mismatch with input `error` scaled by 1.00001
+  # Unit #40. `vit verify` ran on the SHIPPED translation -- 62/62, 14,508 field
+  # rows all IDENTICAL -- and DECLINED to construct its own red test, for the
+  # reason PreFilterMeasuredSignals got above: every argument arrives behind a
+  # pointer or inside a derived type. `status: non_discriminating` is VIT's own
+  # verdict on the kernel, kept verbatim rather than argued away; the hand stubs
+  # that measure what the kernel can and cannot see are in
+  # evidence/SetpointSmoother/kernel.stubs.txt, and one of them PASSES.
+  SetpointSmoother:
+    status: non_discriminating
+    cases_passed: 62
+    cpp_file: translations/ControllerBlocks/setpointsmoother.cpp
+    kernel_dir: kernel/SetpointSmoother
+    red_test: not_constructed
+    red_test_detail: "NOT CONSTRUCTED — no by-value floating-point parameter\
+      \ and no floating-point result: every input arrives behind a pointer or inside\
+      \ a derived type, and perturbing one of those could change what BOTH implementations\
+      \ compute. The kernel's discriminating power is therefore UNMEASURED for this\
+      \ function"
 types:
   ControlParameters:
     strategy: view
