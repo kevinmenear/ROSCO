@@ -32,74 +32,13 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 53,
- "killed": 43,
- "survived": 10,
+ "killed": 53,
+ "survived": 0,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.8113,
+ "score": 1.0,
  "loop_rev": "3ac5b4a-nogit",
  "gen_rev": "gen-1757d99a815a",
  "vit_rev": "fe22383-nogit",
- "survivors": [
-  {
-   "id": "f4b55a2b",
-   "operator": "arith_op",
-   "before": "n - 1",
-   "after": "n + 1"
-  },
-  {
-   "id": "8fcf9db0",
-   "operator": "swap_operands",
-   "before": "ind - 1",
-   "after": "1 - ind"
-  },
-  {
-   "id": "6c4caf8b",
-   "operator": "swap_operands",
-   "before": "ind - 1",
-   "after": "1 - ind"
-  },
-  {
-   "id": "2bf62c37",
-   "operator": "swap_operands",
-   "before": "ind - 1",
-   "after": "1 - ind"
-  },
-  {
-   "id": "2d82282a",
-   "operator": "swap_operands",
-   "before": "ind - 1",
-   "after": "1 - ind"
-  },
-  {
-   "id": "5eabc5a4",
-   "operator": "swap_operands",
-   "before": "ind - 1",
-   "after": "1 - ind"
-  },
-  {
-   "id": "cb503d99",
-   "operator": "swap_operands",
-   "before": "ind - 1",
-   "after": "1 - ind"
-  },
-  {
-   "id": "438e3db5",
-   "operator": "swap_operands",
-   "before": "ind - 1",
-   "after": "1 - ind"
-  },
-  {
-   "id": "6b45da8b",
-   "operator": "swap_operands",
-   "before": "ind - 1",
-   "after": "1 - ind"
-  },
-  {
-   "id": "daf988db",
-   "operator": "swap_operands",
-   "before": "ind - 1",
-   "after": "1 - ind"
-  }
- ]
+ "survivors": []
 }

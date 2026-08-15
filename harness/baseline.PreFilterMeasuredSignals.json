@@ -56,7 +56,30 @@
   "The frequencies and the signal magnitudes are the shipped NREL 5MW values",
   "from Examples/DISCON.IN and the ranges a running simulation puts on those",
   "channels; they are chosen to be admissible and to be distinct from each",
-  "other, not to reproduce any particular timestep."
+  "other, not to reproduce any particular timestep.",
+  "",
+  "THE INDEX ARRAYS RAMP 1,2,3 AND THE TWO NOTCH COUNTS ARE 2, AND BOTH NUMBERS",
+  "WERE CHOSEN BY A MUTATION SCORE RATHER THAN IN ADVANCE. The first version of",
+  "this file said {\"ramp\": [1, 0]} -- every element 1 -- and F_*Notch_N = 1, and",
+  "the sweep it produced scored 104 of 126 with TEN of the twenty-two survivors",
+  "an index shift inside a notch loop:",
+  "",
+  "    'ind - 1' -> '1 - ind'   nine, at lines 202/203/207/208 and 277/278",
+  "    'n - 1'   -> 'n + 1'     one, at line 200",
+  "",
+  "With ind == 1 those two expressions are the SAME NUMBER, and with N == 1 the",
+  "shifted loop index reads an element equal to the one it should have read. The",
+  "R11 implementation's own comment records this from rosco-r2 unit #29 -- 49 of",
+  "that unit's 89 survivors were a rule's own arrays not being distinct -- and",
+  "this file reproduced it. The failing artifact is kept at",
+  "evidence/PreFilterMeasuredSignals/mutation.CONSTANT-INDEX-RAMP-9033.json.",
+  "",
+  "N = 2 rather than 3 because 2 is the smallest count at which `ind` takes two",
+  "values, and the elements are 1, 2, 3, ... which are legal subscripts of",
+  "F_NotchFreqs/BetaNum/BetaDen for every shape R5 draws (its smallest extent is",
+  "3). The MUTANT then reads F_NotchFreqs[-1] at ind = 2, which is undefined",
+  "behaviour in the MUTANT and not in the reference -- that is a kill, and it is",
+  "the same asymmetry unit #32 recorded from the other side."
  ],
  "states": [
   {
@@ -92,18 +115,18 @@
       -2.685
      ]
     },
-    "CntrPar_F_GenSpdNotch_N": 1,
-    "CntrPar_F_TwrTopNotch_N": 1,
+    "CntrPar_F_GenSpdNotch_N": 2,
+    "CntrPar_F_TwrTopNotch_N": 2,
     "CntrPar_F_GenSpdNotch_Ind": {
      "ramp": [
       1,
-      0
+      1
      ]
     },
     "CntrPar_F_TwrTopNotch_Ind": {
      "ramp": [
       1,
-      0
+      1
      ]
     },
     "CntrPar_F_NotchFreqs": {
@@ -177,18 +200,18 @@
       -2.685
      ]
     },
-    "CntrPar_F_GenSpdNotch_N": 1,
-    "CntrPar_F_TwrTopNotch_N": 1,
+    "CntrPar_F_GenSpdNotch_N": 2,
+    "CntrPar_F_TwrTopNotch_N": 2,
     "CntrPar_F_GenSpdNotch_Ind": {
      "ramp": [
       1,
-      0
+      1
      ]
     },
     "CntrPar_F_TwrTopNotch_Ind": {
      "ramp": [
       1,
-      0
+      1
      ]
     },
     "CntrPar_F_NotchFreqs": {

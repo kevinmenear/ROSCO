@@ -176,9 +176,22 @@ def main() -> int:
     if behavioural + nocompile != total:
         return die(f"{behavioural} behavioural + {nocompile} nocompile != "
                    f"{total} total")
-    if killed + survived != behavioural:
-        return die(f"{killed} killed + {survived} survived != {behavioural} "
-                   f"behavioural")
+    # `mutants` COUNTS THE DECLARED EQUIVALENCES and `killed`/`survived` do not,
+    # which this check did not know. `vit_mutate.py` writes mutants=40,
+    # killed=28, survived=0, equivalent_declared=12 for one filtered run, and
+    # `denom = behavioural - eq` five lines down already reads it that way -- so
+    # the tool's own two statements of the identity disagreed, and the one that
+    # ran first refused every merge with an equivalence in it:
+    #
+    #     _mutation_merge: REFUSING -- 114 killed + 0 survived != 126 behavioural
+    #
+    # C12: recorded with its failing artifact before the fix. rosco-r2 unit #38
+    # is the campaign's first SPLIT sweep that declares any equivalence, so the
+    # gap could not have surfaced earlier; PitchSaturation (#36) declares six and
+    # ran in one part, and every earlier split part declared none.
+    if killed + survived + eq != behavioural:
+        return die(f"{killed} killed + {survived} survived + {eq} declared "
+                   f"equivalent != {behavioural} behavioural")
     if len(survivors) != survived:
         return die(f"{len(survivors)} survivor record(s) but survived={survived}")
 
