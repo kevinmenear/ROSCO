@@ -1,0 +1,143 @@
+{
+ "unit": "interp2d",
+ "operators": [
+  "compare_op",
+  "index_offset",
+  "negate_cond"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "compare_op",
+  "index_offset",
+  "negate_cond"
+ ],
+ "operators_filter_unmatched": [],
+ "mutants": 48,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 48,
+ "killed": 32,
+ "survived": 16,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.6667,
+ "loop_rev": "d17a68d-nogit",
+ "gen_rev": "gen-f614231a8c9e",
+ "vit_rev": "f0971d8-nogit",
+ "survivors": [
+  {
+   "id": "98926651",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "f0949202",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "267b4c09",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "209cc231",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "31525826",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "3cdf7de6",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "7986e5f9",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "1235716b",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "b9162232",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "acb38635",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "52e827a0",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "a2f7bf52",
+   "operator": "compare_op",
+   "before": ">=",
+   "after": ">"
+  },
+  {
+   "id": "98531180",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "67b108b6",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "4884fa6a",
+   "operator": "compare_op",
+   "before": ">=",
+   "after": ">"
+  },
+  {
+   "id": "143857a4",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  }
+ ]
+}

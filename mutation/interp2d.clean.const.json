@@ -1,0 +1,127 @@
+{
+ "unit": "interp2d",
+ "operators": [
+  "const_tweak"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "const_tweak"
+ ],
+ "operators_filter_unmatched": [],
+ "mutants": 40,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 40,
+ "killed": 26,
+ "survived": 14,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.65,
+ "loop_rev": "d17a68d-nogit",
+ "gen_rev": "gen-f614231a8c9e",
+ "vit_rev": "f0971d8-nogit",
+ "survivors": [
+  {
+   "id": "c2c4e0b7",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "922581aa",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "39350cd3",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "bd0aa005",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "34ae41de",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "bc897a8f",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "03a9c7fb",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "2d05fc4d",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "e53b5ccd",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "a198c531",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "24ee3be4",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "181dc6e2",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "5c2746a0",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "a155c90c",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  }
+ ]
+}

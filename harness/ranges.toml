@@ -1147,6 +1147,56 @@ CntrPar_OL_StructControl_cols = { same_as = "CntrPar_OL_Breakpoints_n" }
 # `vit check`'s `column-major-stride` exists for, and the one this unit's row
 # gather could most easily commit -- still disagrees on every case. Tying both
 # extents to one number would have made the array square and deleted that.
+#
+# AND TWO `ordered_only` ENTRIES, WHICH ARE THE FOURTH JUDGEMENT THIS FILE
+# CARRIES and are new at this unit. `interp2d` CHECKS that both breakpoint
+# vectors are strictly increasing, REPORTS that they are not, and then
+# interpolates anyway. On a reversed table every interior query leaves the
+# corner search at `j = 0` (or `i = 0`), and
+#
+#     fQ(1,1) = zData(i,j)
+#
+# reads one column BEFORE the array. The reference reads what precedes ITS
+# buffer and the translation reads what precedes ITS OWN, so the two disagree on
+# a value neither of them defines. MEASURED, not argued: with the ladder in,
+# 1117 cases produce 6 out-of-bounds corner reads and 5 of the 6 disagree
+# (evidence/interp2d/harness.out-of-bounds-corner-census.txt), every mismatch on
+# `vit_result` and none on any other output.
+#
+# That is unit #41's rule exactly -- a red result that is really an undefined
+# reference cannot be told from a translation defect, and `vit_mutate.py`
+# refuses to score against a red baseline, so nothing downstream could close
+# either.
+#
+# THE COST, STATED, and it is the sharpest cost in this file. Two rules stop
+# leaving the ascending domain for these two arrays:
+#
+#   * R6's ordering sweep -- reversed, one adjacent pair inverted at the first /
+#     an interior / the last position, the ADJACENT EQUAL PAIR and the constant
+#     array, at three step scales.  88 cases.
+#   * R10's REVERSED body, which exists so that a reduction's extremum is once
+#     the first element and once the last.
+#
+#   * The two strictly-increasing CHECKS are NOT lost. Every array body outside
+#     the ladder is an ordinary random draw, and three distinct doubles are in
+#     increasing order one time in six, so both checks fire, set `aviFAIL` and
+#     write their message across the ordinary corpus -- and `ErrVar.aviFAIL`,
+#     `ErrVar.ErrMsg` and `ErrVar.n_ErrMsg` are compared on every case.
+#   * What IS lost is the EQUAL adjacent pair, and it is the only input on which
+#     `xData(I+1) - xData(I) <= 0` and `< 0` give different answers. A mutant
+#     that weakens either check to `<` has nothing here to kill it: `_fill_array`
+#     draws strictly increasing bodies and random doubles never repeat, so no
+#     other rule reaches it.
+#   * And R10's reverse is given up, which is the DYNAMIC witness for
+#     `MINVAL(xData)` written as `xData(1)`. On an ascending body the two are
+#     the same number. `vit check`'s `minval-endpoints` is the static witness
+#     for that same defect and it RAN on this translation (15 checks, 0
+#     findings); what is lost is a case that could have failed, not the check.
+#
+# Neither loss is a property of this generator: both are consequences of a
+# reference that reports a malformed table and then subscripts with it.
 [interp2d]
 n_zData_cols = { same_as = "n_xData" }
 n_zData_rows = { same_as = "n_yData" }
+xData = { ordered_only = "the reference reads zData(i, 0) on a reversed table -- see above" }
+yData = { ordered_only = "the reference reads zData(0, j) on a reversed table -- see above" }

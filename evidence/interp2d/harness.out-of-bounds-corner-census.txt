@@ -1,0 +1,46 @@
+# THE REFERENCE READS OUT OF BOUNDS ON A TABLE IT HAS JUST REPORTED AS
+# MALFORMED, and this is the census that says how often and where.
+#
+# INPUT: the shipped translation with one `fprintf` added before the four
+# corner reads, run over the corpus AS IT STOOD BEFORE `harness/ranges.toml`
+# gained the two `ordered_only` entries (1117 cases, order ladder and R10's
+# reversed body both in):
+#
+#     if (j < 1 || j > n_zData_cols || jj < 1 || jj > n_zData_cols ||
+#         i < 1 || i > n_zData_rows || ii < 1 || ii > n_zData_rows) { ... }
+#     const double fQ_1_1 = zData[(j - 1) * n_zData_rows + (i - 1)];
+#
+# `interp2d` CHECKS that xData and yData are strictly increasing, sets
+# `aviFAIL = -1`, writes a message -- and then interpolates anyway. On a
+# DESCENDING table every interior query satisfies `xq < xData(1)` at the first
+# iteration, so the corner search exits with `jj = 1`, `j = j - 1 = 0`, and
+# `zData(i, 0)` is one column before the array.
+
+## the census, 1117 cases
+
+      2 OUT-OF-BOUNDS CORNER i=1 ii=2 j=0 jj=1 rows=5 cols=4
+      2 OUT-OF-BOUNDS CORNER i=0 ii=1 j=3 jj=4 rows=5 cols=4
+      2 OUT-OF-BOUNDS CORNER i=0 ii=1 j=2 jj=3 rows=4 cols=3
+
+6 case(s) of 1117, and 5 of the 6 DISAGREED -- every mismatch on `vit_result`,
+none on any other output. The reference reads what precedes ITS buffer and the
+translation reads what precedes ITS OWN; the sixth agreed by luck of the heap.
+
+## what the numbers mean
+
+Unit #41's rule: a red result that is really an undefined reference cannot be
+told from a translation defect, and `vit_mutate.py` refuses to score against a
+red baseline, so nothing downstream could close either.
+
+Two rules produce the descending bodies, and it took two measurements to find
+the second:
+
+    order ladder excluded only     1117 -> 1029 cases, 5 failures -> 4
+    R10's reversed body as well    1029 -> 1005 cases, 4 failures -> 0
+
+So R6's ordering sweep accounted for ONE of the five and R10's reduction
+crossing -- `xq` set to `nextafter(MINVAL(xData), +inf)` over the body and its
+REVERSE -- for the other four. `_fill_array` already draws strictly ascending
+bodies, so those two rules are the only things in the generator that leave the
+reference's own domain. `harness/ranges.toml`'s `[interp2d]` states both
+exclusions and what each costs.

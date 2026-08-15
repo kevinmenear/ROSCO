@@ -9,10 +9,18 @@ MODULE vit_errorvariables_view
     IMPLICIT NONE
     PRIVATE
     PUBLIC :: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables, vit_original_errorvariables
+    PUBLIC :: vit_direct_errorvariables, vit_view_in_errorvariables, vit_view_out_errorvariables
 
     ! Kernel stash: pointer to original Fortran type, set by wrapper before calling C++.
     ! Callee bridges USE this to pass the original type to Fortran callees.
     TYPE(ErrorVariables), POINTER, SAVE :: vit_original_errorvariables => NULL()
+
+    ! DIRECT-CALLER ORIGINAL. The stash above is set by an integration or
+    ! kernel WRAPPER before it calls the C++. A C++ caller with NO wrapper --
+    ! the differential harness calls the translation directly -- leaves it
+    ! NULL, and a callee bridge that passes it dereferences a null pointer.
+    ! This is the object the bridge points it at in that case.
+    TYPE(ErrorVariables), TARGET, SAVE :: vit_direct_errorvariables
 
     ! Staging buffers for deferred-length CHARACTER fields. The view's
     ! pointer aims here, not at the Fortran field, so the C++ has room to
@@ -94,5 +102,58 @@ CONTAINS
         END IF
 
     END SUBROUTINE vit_copy_scalars_to_errorvariables
+
+    SUBROUTINE vit_view_in_errorvariables(view, dest)
+        ! view -> Fortran TYPE, reading the CALLER'S buffers.
+        TYPE(errorvariables_view_t), INTENT(IN) :: view
+        TYPE(ErrorVariables), INTENT(INOUT) :: dest
+        CHARACTER(KIND=C_CHAR), POINTER :: vit_buf(:)
+        INTEGER :: vit_k
+
+        dest%size_avcMSG = INT(view%size_avcMSG, C_INT)
+        dest%aviFAIL = INT(view%aviFAIL, C_INT)
+        dest%ErrStat = INT(view%ErrStat, C_INT)
+        IF (ALLOCATED(dest%ErrMsg)) DEALLOCATE(dest%ErrMsg)
+        IF (C_ASSOCIATED(view%ErrMsg) .AND. view%n_ErrMsg >= 0) THEN
+            CALL C_F_POINTER(view%ErrMsg, vit_buf, [INT(view%n_ErrMsg_cap)])
+            ALLOCATE(CHARACTER(LEN=view%n_ErrMsg) :: dest%ErrMsg)
+            DO vit_k = 1, view%n_ErrMsg
+                dest%ErrMsg(vit_k:vit_k) = vit_buf(vit_k)
+            END DO
+        END IF
+
+    END SUBROUTINE vit_view_in_errorvariables
+
+    SUBROUTINE vit_view_out_errorvariables(src, view)
+        ! Fortran TYPE -> view, writing INTO the caller's buffer and
+        ! leaving its pointer and capacity exactly as it supplied them.
+        TYPE(ErrorVariables), INTENT(IN) :: src
+        TYPE(errorvariables_view_t), INTENT(INOUT) :: view
+        CHARACTER(KIND=C_CHAR), POINTER :: vit_buf(:)
+        INTEGER :: vit_k
+
+        view%size_avcMSG = INT(src%size_avcMSG, C_INT)
+        view%aviFAIL = INT(src%aviFAIL, C_INT)
+        view%ErrStat = INT(src%ErrStat, C_INT)
+        IF (C_ASSOCIATED(view%ErrMsg)) THEN
+            IF (ALLOCATED(src%ErrMsg)) THEN
+                IF (LEN(src%ErrMsg) <= view%n_ErrMsg_cap) THEN
+                    CALL C_F_POINTER(view%ErrMsg, vit_buf, [INT(view%n_ErrMsg_cap)])
+                    DO vit_k = 1, LEN(src%ErrMsg)
+                        vit_buf(vit_k) = src%ErrMsg(vit_k:vit_k)
+                    END DO
+                    view%n_ErrMsg = INT(LEN(src%ErrMsg), C_INT32_T)
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ErrorVariables%ErrMsg of ', LEN(src%ErrMsg), &
+                        ' bytes exceeds the ', view%n_ErrMsg_cap, &
+                        '-byte buffer the caller supplied; left unchanged'
+                END IF
+            ELSE
+                view%n_ErrMsg = -1_C_INT32_T   ! NOT ALLOCATED
+            END IF
+        END IF
+
+    END SUBROUTINE vit_view_out_errorvariables
 
 END MODULE vit_errorvariables_view
