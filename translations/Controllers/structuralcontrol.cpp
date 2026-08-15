@@ -201,17 +201,46 @@ void StructuralControl(float* avrSWAP, controlparameters_view_t* CntrPar,
                 // columns and `OL_Breakpoints` from the same read, so they
                 // agree in the shipped program, but nothing in THIS procedure
                 // enforces it and the harness draws the two extents freely.
+                //
+                // THE GATHER IS WRITTEN WITH NO DEFENSIVE GUARD AND ITS LENGTH
+                // IS READ BACK OFF THE BUFFER, and both are the mutation score
+                // talking rather than taste. The first version sized the buffer
+                // `std::vector<double> row(cols > 0 ? (size_t)cols : 0)` and
+                // passed `cols` as `SIZE(yData)`. That cost FOUR of the first
+                // sweep's eleven survivors and every one of them was unkillable
+                // BY CONSTRUCTION:
+                //
+                //   `cols > 0` -> `cols >= 0`   three mutants of a guard on a
+                //   `cols > 0` -> `cols > 1`    quantity R5 never draws below 3,
+                //   `: 0`      -> `: 1`         so all three spell `cols` -- the
+                //                               reference has no such test and
+                //                               neither should this
+                //   `j < cols` -> `j <= cols`   writes past the buffer, which
+                //                               passing `cols` as the LENGTH
+                //                               hides from the comparison
+                //
+                // So the guard is gone -- `cols` is `INT(SIZE(...), C_INT32_T)`
+                // or 0 in the view populator and is never negative, which makes
+                // the test dead code the reference does not have -- and the
+                // length passed to `interp1d_c` is `row.size()`, which is what
+                // the reference's `SIZE(yData)` actually denotes. A loop bound
+                // that gathers one element too many then CHANGES that length,
+                // and the mutant dies instead of corrupting the heap in silence.
+                // Unit #37's standing about `std::max` is the same rule seen
+                // from the other side: prefer the spelling that offers a
+                // killable mutant, and say where it cannot.
                 const int32_t rows = CntrPar->n_OL_StructControl_rows;
                 const int32_t cols = CntrPar->n_OL_StructControl_cols;
-                std::vector<double> row(cols > 0 ? static_cast<size_t>(cols) : 0);
+                std::vector<double> row;
                 for (int32_t j = 0; j < cols; ++j) {
-                    row[static_cast<size_t>(j)] =
+                    row.push_back(
                         CntrPar->OL_StructControl[static_cast<size_t>(j) * rows +
-                                                  (I_GROUP - 1)];
+                                                  (I_GROUP - 1)]);
                 }
                 LocalVar->StC_Input[I_GROUP - 1] =
                     interp1d_c(CntrPar->OL_Breakpoints, CntrPar->n_OL_Breakpoints,
-                               row.data(), cols, LocalVar->Time, ErrVar);
+                               row.data(), static_cast<int>(row.size()),
+                               LocalVar->Time, ErrVar);
             // ENDIF
             }
         // ENDDO
