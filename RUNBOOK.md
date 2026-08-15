@@ -358,6 +358,124 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **R6's ALL-PAIRS FALLBACK HOLDS EVERY OTHER KNOB AT ITS LADDER'S FIRST VALUE,
+  SO A BRANCH THAT NEEDS A TRIPLE IS UNREACHABLE — AND THE UNIT'S OWN COVERAGE
+  LINE SAYS WHICH MODE RAN.** Unit #37, and it is the first artifact in this
+  campaign whose coverage line does NOT read `the full cross product`.
+
+  ```
+  6 knobs   Ind_R_Pitch/Speed/Torque 4 each, PRC_Comm 5, PRC_Mode 4, aviFAIL 4
+  product   4*4*4*5*4*4 = 5120        _KNOB_CASE_LIMIT = 4096
+  fallback  every knob not being crossed sits at v[0]  ->  PRC_Mode = 0
+  needed    PRC_Mode==2 AND PRC_Comm==1 AND Ind_R_Speed>0   <- a TRIPLE
+  ```
+
+  1024 combinations over the bound cost the unit eleven of its twenty
+  statements: the OpenLoop arm's three `interp1d` calls and its `WRITE(401,*)`
+  ran **0 times in 3596 cases**. **Grep the artifact's `R6_reference_literals`
+  line for `ALL PAIRS ONLY` before reading any green from it.**
+
+  The fix is ADDITION, not a wider bound: `harness/baseline.<Unit>.json` states
+  an admissible state and R11 walks each knob off it one at a time, which is
+  exactly the shape a triple needs. 52 cases, the other 3596 untouched.
+
+- **A GREEN IS A STATEMENT ABOUT THE ARMS ITS CASES RAN, AND A COUNTER PROBE
+  THAT FAILS 0 IS THE CHEAPEST WAY TO ASK WHICH.** Unit #37. The probe is the
+  shipped translation with one `++counter` per arm and an `atexit` that writes
+  them; because it changes no behaviour it runs GREEN, so it is a READING of the
+  corpus and not a perturbation of it.
+
+  ```
+  bash evidence/<Unit>/run_probe.sh probes/arm_census.cpp <out>.json "arm census"
+  ```
+
+  It cost one 14-second run and it is what caught both of this unit's corpus
+  defects. Unit #33's rule was "make the interesting arm an output before
+  explaining a survivor list"; this is the same instrument used BEFORE there is
+  a survivor list to explain, which is cheaper still.
+
+- **A MUTATION SCORE AND THE GREEN IT IS SCORED AGAINST MUST NAME THE SAME CASE
+  COUNT, AND NOTHING IN THE PIPELINE CHECKS IT.** Unit #37, C12.
+
+  ```
+  vit_mutate.py  rebuilds and re-runs the harness against WHATEVER CASE FILE IS
+                 ON DISK -- it does not regenerate one
+  the last writer was the P10 control run: the baseline moved aside, 3596 cases
+  the committed green is 3648
+  mutation/<U>.json records `compared_against` and NO CASE COUNT AT ALL
+  ```
+
+  The wrong sweep was complete and internally consistent — 77 mutants, score
+  0.2763 — and announced nothing. **Re-run the harness immediately before the
+  sweep, and check the sweep's survivor list against the arm census**: it was
+  caught because six survivors reproduced the census's zeros exactly. Unit #26's
+  rule one instrument over.
+
+- **A PROBE THAT GOES RED MUST SURVIVE ITS OWN `set -e`, OR ITS FILE AND ITS
+  CALLER DISAGREE AND THE FILE IS THE ONE NOBODY READS.** Unit #37.
+
+  ```
+  { ...measure... } > "$OUT"     # a RED probe exits 1
+  rc=$?                          # never reached under `set -e`
+  cat "$OUT"                     # never reached
+  ```
+
+  **37 of 45 mutants were graded `nocompile` and every one was a kill.** The
+  artifact was correct throughout. A caller reading stdout cannot tell a kill
+  from a build failure, and "no output" defaults to the wrong one.
+
+- **A UNIT CAN HAVE MORE KINDS OF OUTPUT THAN THE PIPELINE HAS ORACLES, AND THE
+  HONEST SCORE IS THE UNION — WHICH `vit_mutate.py` CANNOT EXPRESS.** Unit #37,
+  68 of 76 across three.
+
+  ```
+  differential harness, 3648 cases                29 of 76
+  the formatter vs 22,526 gfortran records        36 of 45
+  fort.401 vs fort.401.cpp                         3 of 3
+  ```
+
+  `--equivalences` is the only place a "not killed by me" can be recorded, so
+  writing the 39 kills there makes `equivalent_declared` OVERSTATE its own name.
+  Keep the undeclared run beside it (`mutation/<U>.harness-only.json`) and say
+  the split in the artifact. A `killed_by` field naming the instrument is the
+  fix and it is not in the tool.
+
+- **REPRODUCE A FORTRAN WRITE BY MEASURING IT, AND SLICE THE TESTED CODE OUT OF
+  THE SHIPPED TRANSLATION SO THE ORACLE CANNOT GO STALE.** Unit #37, 22,526
+  values, 0 mismatched.
+
+  ```
+  every record        exactly 26 characters
+  0.1 <= |v| < 1e17   F-form, 17 significant digits, right-justified in 21,
+  or v == 0           then FIVE trailing blanks
+  otherwise           E-form, 1 digit + 16 decimals + E<sign><3 digits>, in 26
+  non-finite          "NaN" / "Infinity" / "-Infinity", right-justified in 26
+  ```
+
+  `%.0f` DROPS the decimal point and Fortran's `F21.0` keeps it — 488 of the
+  22,526 records, and the whole difference between a model that mismatched and
+  one that does not. The exponent is read off `%.16E` rather than from `log10`:
+  17 significant digits identify a double uniquely, so there is no boundary
+  where a rounding and a logarithm disagree.
+
+  **And when the reference and the translation both write ONE file in ONE
+  process, they are not being compared — they are overwriting each other.**
+  Split the path (`fort.401` vs `fort.401.cpp`) and diff.
+
+- **TWO LIVE ARMS WITH DISJOINT SCENARIO SETS NEED TWO GATE RED TESTS, AND THE
+  FIRST ONE PROVES IT.** Unit #37.
+
+  ```
+  ELSE arm    +0.01 on PRC_Min_Pitch   1,781,601 / 5,252,000, 21 scenarios,
+                                       and NOT scenario 25
+  PRC_Mode==2 x1.000001 on PRC_R_Speed     22,660 / 5,252,000, ALL scenario 25
+  ```
+
+  Scenario 25 is the only one of 27 with `PRC_Mode=2`. Either red alone reads as
+  "the gate sees this unit" while being blind to half of it. Unit #14's rule
+  says to read the red test's per-scenario channel list; this is what to DO when
+  that list turns out to be a partition.
+
 - **A RED TEST THAT WILL NOT COMPILE IS NOT A RED TEST, AND THE TOOL SAYS IT
   IS.** Unit #36. `vit verify` printed `62/62 passed` and beside it *"Red test:
   the kernel failed to build with the return value scaled by 1.00001"*, then

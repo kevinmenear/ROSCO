@@ -2,6 +2,155 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #37 — PowerControlSetpoints — 2026-08-14
+
+### The differential harness ran eleven of twenty statements zero times, and the green did not say so
+
+`probes/arm_census.cpp` is the shipped translation with one counter per arm and
+an `atexit` that writes them out. It changes no behaviour — it fails 0 of the
+corpus — and it answers the one question a green cannot: which statements did
+the cases actually reach.
+
+```
+                                BEFORE   AFTER
+calls                             3596    3648
+PRC_Mode == 2                       17      63
+  PRC_Comm == Constant               1      21
+  PRC_Comm == OpenLoop               1      21
+    Ind_R_Speed  > 0                 0      17
+    WRITE(401,*) executed            0      17
+  PRC_Comm == ZMQ                    1       3
+  PRC_Comm matched NOTHING          14      18
+the ELSE arm                      3579    3585
+```
+
+**The cause is arithmetic, not luck.** R6 crosses the quantities the reference's
+own predicates test. Six knobs here — `Ind_R_Pitch`, `Ind_R_Speed`,
+`Ind_R_Torque` (4 values each), `PRC_Comm` (5), `PRC_Mode` (4), `aviFAIL` (4) —
+and 4·4·4·5·4·4 = **5120**, past `generate.py::_KNOB_CASE_LIMIT` of **4096**. Past
+the bound the block covers all PAIRS, and in the pair fallback every knob not
+being crossed sits at the FIRST value of its ladder — for `PRC_Mode` that is 0,
+the ELSE arm. Reaching the `WRITE` needs `PRC_Mode==2` **and** `PRC_Comm==1`
+**and** `Ind_R_Speed>0` in one case: a TRIPLE, which all-pairs cannot express by
+construction. **1024 combinations over the bound cost this unit its entire
+OpenLoop arm.**
+
+This is the first unit in the campaign to reach that fallback. Every earlier
+artifact's coverage line reads `the full cross product`, which is why the
+fallback's cost had never been paid.
+
+**Closed by addition (P5).** `harness/baseline.PowerControlSetpoints.json` states
+two admissible states and R11 walks each knob off them one quantity at a time —
+which is exactly the shape a triple needs. 52 cases added, the other 3596
+unchanged, so the corpus is a strict extension and the green before it is the
+green inside it. The baseline is measured to be load-bearing rather than argued:
+the OpenLoop-no-interp1d stub fails **19 of 3648** with it and **0 of 3596**
+without it.
+
+### A mutation score and the green it is scored against must name the same case count
+
+C12, recorded with the wrong artifact before the repair:
+`evidence/PowerControlSetpoints/mutation.WRONG-CORPUS-3596.json`.
+
+`vit_mutate.py` rebuilds and re-runs the differential harness per mutant against
+**whatever case file is on disk**. The last thing to write that file before the
+first sweep was the P10 control — the OpenLoop stub with the R11 baseline moved
+aside — which regenerates the corpus at 3596. So a complete, internally
+consistent, entirely wrong sweep was produced: 77 mutants, 21 killed, score
+0.2763, and nothing in it announcing which corpus it read.
+
+**It was caught because the survivor list reproduced the census's zeros.** The
+six survivors on `Ind_R_Speed > 0`, `Ind_R_Torque > 0` and `Ind_R_Pitch > 0` are
+exactly the predicates the R11 baseline was added to reach.
+
+This is unit #26's rule one instrument over — a red result and the green it
+certifies must name the same case count — and **nothing in the pipeline checks
+it**: `mutation/<U>.json` records `compared_against` but no case count at all.
+Candidate for the Driver: `vit_mutate.py` should stamp the case count it scored
+against, and `done.py` P12 should compare it with P11's.
+
+### Three oracles, because the unit has three kinds of output and one instrument sees one kind
+
+`WRITE(401,*) LocalVar%PRC_R_Speed` is an output nothing in this campaign
+compares. The kernel cannot — the arm is dead in all 27 scenarios. The gate
+cannot — it compares `avrSWAP` channels. The differential harness cannot — it
+compares the mapped signature, and no signature carries a file. plan.json said
+so in advance: *"writes to unit 401 without opening it — an UNCOMPARED output,
+not a missing input"*.
+
+It is reproduced anyway, because the mirror contract is about the reference's
+behaviour and not about the part of it some instrument happens to watch. What
+makes that affordable is that the format was **measured** rather than read off a
+standard: `list_directed_corpus.f90` writes 22,526 doubles twice, once as
+list-directed records and once as raw bits, and the model reproduces all 22,526
+byte for byte.
+
+```
+every record        exactly 26 characters
+non-finite          "NaN" / "Infinity" / "-Infinity", right-justified in 26
+0.1 <= |v| < 1e17   F-form, 17 significant digits, right-justified in 21,
+or v == 0           then FIVE trailing blanks
+otherwise           E-form, 1 digit + 16 decimals + E<sign><3 digits>, in the 26
+```
+
+The one place C and Fortran disagree is `d == 0`: `%.0f` drops the decimal point
+and `F21.0` keeps it — **488 of the 22,526 records**, and the whole difference
+between a model that mismatched and one that does not.
+
+### Three oracles, 68 of 76 mutants killed, and one field that now overstates what it means
+
+The unit has three kinds of output and each instrument sees one kind, so the
+mutation score had to be taken three times:
+
+```
+                                                     killed   of
+differential harness, 3648 cases                         29   76
+list-directed format oracle, 22,526 gfortran records     36   45 formatter mutants
+unit-401 file oracle, fort.401 vs fort.401.cpp            3    3 write_401 mutants
+                                                     -------
+killed by SOME instrument                                68   76
+declared, unkilled by any                                 8
+```
+
+**None of the eight is in a statement transcribed from the Fortran.** Every
+mutant in the unit's twenty reference statements is killed by the harness: 0
+body survivors. The eight are all in the `WRITE(401,*)` formatter, six of them
+unreachable *by the type* rather than by the corpus — a double's decimal
+exponent is at most three digits, so the `Ee` overflow arm and everything in it
+is dead for any input C admits.
+
+**`vit_mutate.py` has one bucket for "not killed by me" and this unit needs
+two.** Writing "killed by another named oracle" into `--equivalences` is the
+only way to record it, and it makes `equivalent_declared: 47` an overstatement
+of its own field name: 39 of those 47 are kills, with mismatch counts, in
+`mutation/PowerControlSetpoints.equivalences.json`. `mutation/
+PowerControlSetpoints.harness-only.json` is the same sweep with nothing
+declared — 29/76 = **0.3816**, the harness's number alone.
+
+Candidate for the Driver: a `killed_by` field naming the instrument, so a union
+across oracles is expressible. `scripts/dbgmutate.py` solved the same problem
+for unit #31 by replacing the oracle wholesale; this unit needs the union of
+three, which nothing in the pipeline expresses.
+
+### A probe that goes red must survive its own `set -e`
+
+`run_ld_probe.sh` measured correctly and *reported* nothing. A red probe exits
+1; under `set -e` the script died on the measuring block and never reached its
+own `cat "$OUT"`. The artifact on disk was always right; only the echo was lost.
+So a caller reading stdout saw no counts at all and could not tell a kill from a
+build failure — **37 of 45 formatter mutants were first graded `nocompile`, and
+every one of them was a kill.**
+
+Worse than a wrong answer: the file and the caller disagreed, and the file was
+the one nobody read.
+
+Beside it, the same script found the bind mount again: two mutants came back
+`nocompile` on the first pass and both compiled on the second, one to 3,649
+mismatches. Units #23 and #30 already paid for that; the retry is now in the
+scorer, and a `nocompile` is counted as neither a kill nor a survivor there —
+`vit_mutate.py` is right to count one, because there the compiler rejected the
+mutant; here a non-building slice is far more likely to be the mount.
+
 ## Unit #35 — PIIController — 2026-08-14
 
 Closed `integrated` on the first dispatch. All five layers exist, all five ran,

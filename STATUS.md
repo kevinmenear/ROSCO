@@ -4,6 +4,95 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-14: unit #37 `PowerControlSetpoints` is `integrated` and CLOSED**
+— all five layers exist, all five ran, all five are red-tested, and the mutation
+score is **1.000**. But 1.000 is not the number that describes this unit. The
+number is **68 of 76 mutants killed across THREE oracles**, because the unit has
+three kinds of output and no single instrument sees more than one — and its
+differential corpus had to be EXTENDED before it could see eleven of the unit's
+twenty statements at all.
+
+Every count below is read from the committed artifact named in its row.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 41 cases (`evidence/PowerControlSetpoints/kernel.verify_fields.csv`) | 41/41, 18,860 field rows `IDENTICAL` | four stubs: the outer predicate inverted fails **41 of 41**; a translation reading NO input and writing four constants passes **41 of 41** |
+| differential harness (`harness/PowerControlSetpoints.json`) | **3648 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **3648 of 3648**; OpenLoop's three `interp1d` calls replaced by `1.0`: **19 of 3648**, and **0 of 3596** without the R11 baseline |
+| unit 401, the FORMAT (`evidence/PowerControlSetpoints/ld_probe.txt`) | **22,526 gfortran records, 0 mismatched**, against the formatter sliced out of the shipped translation | three perturbations: **488 / 8334 / 12512** |
+| unit 401, the CONNECTION (`evidence/PowerControlSetpoints/f401_mutants.json`) | the reference's `fort.401` beside the translation's `fort.401.cpp`, **byte identical**, 459 bytes, md5 `d6780bd7` | three `write_401` mutants, **3 of 3 killed** |
+| mutation (`mutation/PowerControlSetpoints.json`) | **68 of 76 killed across three oracles**, 8 declared, 1 no-compile, 6 operators — the harness ALONE is **0.3816**, `mutation/PowerControlSetpoints.harness-only.json` | the score *is* the red test, 68 times |
+| post-integration (`harness/PowerControlSetpoints.postintegration.json`) | 3648 checked, 0 failed | the wrapper's LocalVar copy-back deleted: **3648 of 3648** |
+| gate, 27 scenarios (`gate/PowerControlSetpoints.json`) | 5,252,000 values / 351 channels, 0 mismatched | TWO red tests, and their scenario sets are DISJOINT — see below |
+
+**ELEVEN OF TWENTY STATEMENTS RAN ZERO TIMES AND THE GREEN DID NOT SAY SO.**
+`probes/arm_census.cpp` is the translation with one counter per arm; it fails 0
+of the corpus, so it is a reading and not a perturbation. On the first corpus:
+`PRC_Mode==2` 17 of 3596, `Ind_R_Speed>0` **0**, `WRITE(401,*)` **0**, the ELSE
+arm 3579. The cause is arithmetic: six predicate knobs,
+4·4·4·5·4·4 = **5120**, past `generate.py::_KNOB_CASE_LIMIT` of **4096**, so R6
+falls back to ALL PAIRS — and in the fallback every knob not being crossed sits
+at the first value of its ladder, `PRC_Mode = 0`. Reaching the WRITE needs
+`PRC_Mode=2` **and** `PRC_Comm=1` **and** `Ind_R_Speed>0` in ONE case: a TRIPLE,
+which all-pairs cannot express. **1024 combinations over the bound cost this
+unit its whole OpenLoop arm**, and this is the first unit in the campaign to
+reach that fallback — every earlier artifact says `the full cross product`.
+
+Closed by ADDITION: `harness/baseline.PowerControlSetpoints.json` states two
+admissible states and R11 walks each knob off them. 52 cases added, 3596
+unchanged. Load-bearing by measurement, not by argument: the same stub fails
+**19 of 3648** with the baseline and **0 of 3596** without it.
+
+**68 OF 76, AND THE SPLIT IS THE POINT.** 29 killed by the differential harness,
+36 by the list-directed format oracle, 3 by the unit-401 file oracle. **Zero of
+the eight declared survivors is in a statement transcribed from the Fortran** —
+every mutant in the unit's twenty reference statements is killed by the harness.
+Six of the eight are unreachable *by the type*: a finite double's decimal
+exponent runs −324..308, so the `Ee` overflow arm and everything in it is dead
+for any input C admits (`ld_survivor_census.txt`: body length equals field width
+in **0 of 22,526** records; the stripped exponent is never `"0"` and never
+longer than 3 digits).
+
+**`equivalent_declared: 47` OVERSTATES ITS OWN FIELD NAME, SAID HERE RATHER THAN
+LEFT TO BE FOUND.** `vit_mutate.py` has one bucket for "not killed by me"; 39 of
+those 47 are KILLS by a named oracle with a named mismatch count, each written
+out in `mutation/PowerControlSetpoints.equivalences.json`. A `killed_by` field
+is a candidate for the Driver.
+
+**C12 — A MUTATION SCORE AND THE GREEN IT IS SCORED AGAINST MUST NAME THE SAME
+CASE COUNT.** The first sweep was complete, internally consistent and entirely
+wrong: `vit_mutate.py` re-runs the harness against whatever case file is on
+disk, and the last thing to write it was the P10 control that runs WITHOUT the
+R11 baseline — 3596 cases, the corpus that never enters the OpenLoop arm. Score
+0.2763, and nothing in it naming which corpus it read. It was caught because its
+survivor list reproduced the arm census's zeros exactly. Kept at
+`evidence/PowerControlSetpoints/mutation.WRONG-CORPUS-3596.json`. Nothing in the
+pipeline checks this: `mutation/<U>.json` records `compared_against` and no case
+count at all.
+
+**THE GATE NEEDED TWO RED TESTS BECAUSE THE UNIT'S TWO LIVE ARMS ARE DRIVEN BY
+DISJOINT SCENARIO SETS.**
+
+```
+ELSE arm,      PRC_Min_Pitch = PC_FinePit + 0.01   1,781,601 of 5,252,000
+                                                    129 channels, 21 scenarios,
+                                                    NOT scenario 25
+PRC_Mode==2,   PRC_R_Speed * 1.000001                  22,660 of 5,252,000
+                                                    6 channels, ALL scenario 25
+```
+
+Both revert-verified at 0 of 5,252,000. Scenario 25 is the only one of the 27
+with `PRC_Mode=2`, so either red test ALONE would have read as "the gate sees
+this unit" while being blind to half of it.
+
+**A PROBE THAT GOES RED MUST SURVIVE ITS OWN `set -e`.** `run_ld_probe.sh`
+measured correctly and echoed nothing: a red probe exits 1, `set -e` killed the
+script one line before its own `cat "$OUT"`, and **37 of 45 formatter mutants
+were first graded `nocompile` when every one was a kill**. The artifact on disk
+was right the whole time; only the echo was lost, which is the worse shape — the
+file and its reader disagreed and the file was the one nobody read.
+
+---
+
 **As of 2026-08-14: unit #36 `PitchSaturation` is `integrated` and CLOSED** —
 all five layers exist, all five ran, all five are red-tested, and the mutation
 score is **1.000** on 9 behavioural mutants with **6 declared equivalent**. It
