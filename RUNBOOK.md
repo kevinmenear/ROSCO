@@ -358,6 +358,83 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **BEFORE ATTRIBUTING A RED RESULT TO THE TRANSLATION, PUT THE REFERENCE'S OWN
+  BODY THROUGH THE SAME INSTRUMENT.** Unit #44, and it cost 71 seconds.
+
+  ```
+  vit verify           VERIFICATION PASSED: 104/104 passed
+  kernel.exe           Number of verification-passed cases : 102   <- the same run
+  verify_fields.csv    2 rows OUT_TOL, both debugvar%yawratecom,
+                       both at a state-machine EDGE -- where a wrong
+                       translation would show first
+  cp Controllers.f90.kgen Controllers.f90 ; make ; ./kernel.exe
+                       102 of 104, THE SAME TWO CASES, the same numbers
+  diff the two verbose logs   97,568 lines compared, 0 differing
+  ```
+
+  Two readings of those two rows were available and they call for opposite
+  actions. Only the control chooses. `Controllers.f90.kgen` is KGen's output
+  BEFORE VIT substituted the C++ bridge, so restoring that one file and leaving
+  the driver, the state files and the Makefile alone changes only which language
+  computes the body. Do NOT restore `kernel_driver.f90.kgen` as well -- KGen
+  emits `USE discon` for a subroutine callsite and it does not compile, so that
+  swap replaces the question with a build failure. Raised in DECISIONS.md as a
+  proposed method amendment: it is X4's mirror and belongs beside it.
+
+- **A KGEN KERNEL CANNOT REPLAY A PROCEDURE WITH `SAVE` STATE, AND THE PLACE IT
+  FAILS IS THE PLACE THE WINDOW WAS AIMED AT.** Unit #44.
+  `kernel_driver.f90` calls the subroutine THREE TIMES per case -- evalstage,
+  warmupstage, mainstage -- re-reading the captured in-state before each and
+  verifying the THIRD. The in-state carries the dummy arguments. It does not
+  carry a subroutine local, so a `SAVE` variable is whatever the previous call
+  left. On an idempotent invocation that costs nothing; on a transition it is
+  the difference between the reference's answer and the state machine's next
+  one, and a capture window aimed at edges is aimed at exactly those.
+
+  Two of 104 here, and both are START edges: `YawState` goes 0 -> +/-1 while
+  `YawRateCom` is still 0, so calls two and three find the machine already
+  yawing. The two STOP edges happen to be idempotent and pass. Check
+  `grep -c SAVE` on the unit before reading a kernel red.
+
+- **THE HARNESS ZERO-INITIALISES NESTED DERIVED-TYPE ARGUMENTS PER CASE, WHICH
+  CAN MAKE A CALLEE RETURN NaN AND KILL WHOLE ARMS OF THE UNIT UNDER TEST.**
+  Unit #44, and it is where 8 of that unit's 11 surviving mutants live.
+
+  ```
+  UNOBSERVABLE LocalVar.FP: nested type, zero-initialised (not varied)
+  LPFilter, steady-state arm:  1.0/a1 * (-(a0*last) + b1*x + b0*lastIn)
+                            =  1.0/0  * (0 + 0 + 0)  =  inf * 0  =  NaN
+  arm census, 8093 cases:   from 1: stop 0    from -1: stop 0
+  ```
+
+  Every comparison against NaN is false, so a threshold arm downstream of such a
+  callee is not merely under-covered -- it is UNREACHABLE, on every case, for
+  every ladder. READ THE `UNOBSERVABLE` LINES THE GENERATOR PRINTS before
+  explaining a survivor list; they name the arguments no state can move. And
+  say which OTHER layer covers it: here the kernel's `FP` comes from a running
+  simulation, and a stub deleting one statement in that arm moved 51 of 104.
+
+- **A CAPTURE WINDOW CAN SOMETIMES BE READ OFF A COMMITTED BASELINE INSTEAD OF
+  COMPUTED, AND THEN CROSS-CHECKED AGAINST COVERAGE.** Unit #44. The scenario
+  integrates the unit's own output, and the integral is a gate channel:
+
+  ```
+  vit_sim.py::run_scenario_7   nac_yaw[i] = nac_yaw[i-1] + nac_yawrate[i]*dt
+  sign(diff(nac_yaw)/dt)   IS  YawState as written, per invocation
+  edges at 187, 1044, 1188, 2044, repeating every 2,000
+  census 10,261 / 10,215 / 3,522   vs  coverage :440-:441 10,261, :451-:452 10,215
+  ```
+
+  Exact on both counts, and it is free -- `baseline_arrays/scenario_<n>.npz` is
+  already in the tree. Look for a channel that is a function of the unit's own
+  output before reaching for arithmetic over a patch dict.
+
+  **AND KGen's CASE INDEX IS ONE HIGHER THAN THE PYTHON LOOP INDEX.** `ROSCO_ci`'s
+  constructor calls the controller once with `iStatus = 0`, which the loop never
+  does; coverage confirms it with exactly 1 hit on every `iStatus == 0` arm in
+  the campaign. Off by one here would have made a SAVE-state finding read as a
+  translation defect.
+
 - **A GUARD THE REFERENCE DOES NOT HAVE IS A SITE NO INPUT CAN KILL, AND THE
   MUTATION SCORE IS WHAT FINDS IT.** Unit #43. Four of the first sweep's eleven
   survivors were at one line I wrote defensively:

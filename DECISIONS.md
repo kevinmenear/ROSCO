@@ -2,6 +2,190 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #44 — YawRateControl — 2026-08-15
+
+### The reference cannot pass its own kernel, and only a positive control could say so (C12, and a proposed method amendment)
+
+`vit verify` printed
+
+```
+✓ VERIFICATION PASSED: 104/104 passed
+  Field log: kernel/YawRateControl/verify_fields.csv (47944 entries)
+```
+
+and the field log carried **two `OUT_TOL` rows**, both `debugvar%yawratecom`,
+both at a state-machine edge:
+
+```
+YawRateControl.0.0.188   computed  0.49847328176309996  reference 0.0
+YawRateControl.0.0.1189  computed -0.49847328176309996  reference 0.0
+```
+
+Running `kernel.exe` directly ends with `Number of verification-passed cases :
+102` and `kernel: YawRateControl: FAILED verification`. So VIT reported a green
+over a red kernel. **That is recorded here first, with the wrong artifact, and
+before anything was done about it** — `evidence/YawRateControl/kernel.verify_fields.csv`
+is committed with the two OUT_TOL rows in it.
+
+Two readings of those two rows were possible and they call for opposite actions:
+a translation defect at exactly the two invocations where the state machine
+changes state — which is where a wrong translation *would* show first — or an
+instrument that cannot replay this unit at all. **A positive control
+distinguishes them and nothing else does.** `Controllers.f90.kgen` is KGen's own
+output before VIT substituted the C++ bridge into it, so it holds the original
+`YawRateControl` body, the four `SAVE` declarations included; swapping that ONE
+file back and rebuilding the same kernel gives
+
+```
+the C++ kernel VIT built              102 of 104, failing 188 and 1189
+the same kernel, reference body       102 of 104, failing 188 and 1189
+full verbose output, line for line    97,568 lines compared, 0 differing
+```
+
+The cause is in `kernel_driver.f90`: it calls the procedure **three times per
+case** — evalstage, warmupstage, mainstage — re-reading the captured in-state
+before each and verifying the THIRD. The in-state carries `avrSWAP` and the five
+derived types. It does not carry `INTEGER, SAVE :: YawState`, which is a
+subroutine local. On 102 of 104 cases that costs nothing because the unit is
+idempotent there; the two exceptions are the two START edges, where the first
+call makes the transition and the second and third then find the machine already
+yawing.
+
+`evidence/YawRateControl/run_fortran_control_kernel.sh` is the control, and it
+is a committed script rather than steps somebody remembers to repeat.
+
+**PROPOSED METHOD AMENDMENT.** X4 says never take a green at face value on first
+use. This is its mirror and it is not stated anywhere: *before attributing a RED
+result to the translation, put the reference's own body through the same
+instrument.* It costs one rebuild here — 71 seconds — and it is the difference
+between "the translation is wrong at the two most interesting invocations" and
+"this instrument cannot replay a procedure with SAVE state". Both readings were
+available from the same two rows, and only the control chooses between them.
+
+### The kernel is blind to this unit's only real output, and the harness is blind to both its stop arms
+
+Unit #43 measured that `avrswap` is not a compared field. This unit is where
+that costs the most: `avrSWAP(48)` is the commanded yaw rate in rad/s, the one
+value the calling program reads from this procedure, and everything else it
+writes is a debug store or an intermediate. Deleting **both** writes to it —
+the main one and the open-loop override — leaves the kernel at **102 of 104**,
+its own green, unmoved. VIT's own comment in the generated `DISCON.F90` says
+why: `skipped avrSWAP verification (assumed-size incompatible with KGen
+comparator)`.
+
+The differential harness is not blind there — but it is blind somewhere the
+kernel is not, and the two blind spots do not overlap:
+
+```
+                                        kernel 104 cases    harness 8093 cases
+  avrSWAP(48), both writes deleted      102 of 104 PASS     (compared)
+  the two STOP arms                     51 of 104 (stub 3)  0 entries, ALL 8
+                                                            undeclared survivors
+```
+
+Entering a state arm at all needs `iStatus /= 0` — `iStatus == 0` resets
+`YawState` two statements earlier — and at `iStatus /= 0` LPFilter takes its
+steady-state arm against a `LocalVar%FP` the harness zero-initialises on every
+case and does not vary:
+
+```
+1.0 / FP->lpf1_a1[i] * (-(a0*last) + b1*x + b0*lastIn)
+     = 1.0/0 * (0 + 0 + 0)  =  inf * 0  =  NaN
+```
+
+Every comparison against NaN is false, so `error <= 0` and `error >= 0` are
+false on all 725 entries. `evidence/YawRateControl/arm_census.txt` measures it:
+`from 1: stop 0 persist 6`, `from -1: stop 0 persist 719`.
+
+**The eight survivors there are NOT declared equivalent.** A defect in either
+stop arm is a real defect; what is missing is a corpus that reaches it, and the
+kernel has one. `yawratecontrol.kstub-no-right-stop.cpp` deletes the single
+statement `YawState = 0` from the right stop and the kernel goes **51 of 104**,
+with the first failing case **1045** — the invocation the extraction window was
+aimed at, computed before any of this was known.
+
+### The capture window was read off a committed baseline rather than estimated
+
+`Examples/vit_sim.py::run_scenario_7` integrates the commanded yaw rate itself,
+`nac_yaw[i] = nac_yaw[i-1] + nac_yawrate[i]*dt`, and `nac_yaw` is one of the 13
+channels in `baseline_arrays/scenario_7.npz`. So
+
+```python
+sign(diff(nac_yaw)/dt)   # IS YawState as written, per invocation
+```
+
+read off the reference run this campaign already owns. The four edges fall at
+invocations 187, 1044, 1188 and 2044 and repeat every 2,000 (NacVane is 20 deg
+at a 50 s period, 50/0.025 = 2000). CROSS-CHECKED rather than trusted: the
+census of that same sign array is 10,261 / 10,215 / 3,522, and clean-source
+coverage carries 10,261 hits at `:440-:441` and 10,215 at `:451-:452` — exact,
+both. Five ranges, 104 cases.
+
+**AND KGen's CASE INDEX IS ONE HIGHER THAN THE PYTHON LOOP INDEX.** `ROSCO_ci`'s
+constructor calls the controller once with `iStatus = 0`, which the loop
+(`for i, ti in enumerate(t): if i == 0: continue`, `iStatus = 1` thereafter)
+never does — and coverage agrees, recording exactly **1** hit on the
+`iStatus == 0` arm. That off-by-one is what makes case 188 the WRITE invocation
+whose reference `YawRateCom` is 0.0 rather than the first persist invocation
+whose reference is `Y_Rate`. Getting it wrong would have made the SAVE-state
+finding unreadable.
+
+### Three baseline states, and the mechanism is inter-case state chaining
+
+The first sweep scored **0.6988** and the arm census said why in one line:
+`ENTRY YawState: 1 -> 0` in 8036 cases. The third arm's two `IF`s are
+independent, so a NEGATIVE `deadband` fires both and the second write wins:
+
+```
+  from 0: start-right-only 0   start-left-only 48   BOTH ifs fired 192
+```
+
+R6 draws `Y_ErrThresh` on the +/-1e3 default, so `deadband` was negative in 192
+of the 242 third-arm cases. Nothing left the arm at +1, so the entire
+`YawState == 1` block was dead.
+
+No case can set `YawState`: it is ambient state, not a parameter. What reaches
+it is that **the harness advances the state by calling the unit**, and an R11
+block runs consecutive cases from one baseline. A state that makes
+`deadband` small and non-negative and the error positive leaves `YawState = 1`,
+and the next case in the block — one where R11 has moved `iStatus` off 0, so
+there is no reset — enters the arm. Measured: `ENTRY YawState: 1 -> 6`.
+
+Reaching a *controlled* `NacHeadingError` at all is unit #41's route met for the
+third time: `LPFilter`'s initialisation arm returns its input BIT-EXACTLY at
+`CornerFreq = 0`, so `F_YawErr = 0` with `iStatus = 0` turns the two filtered
+components back into `cos` and `sin` of the input and `atan2` inverts them.
+State C takes every wind-direction term to 0, where the whole chain is exact and
+`NacHeadingError` is exactly `0.0` against a `Y_ErrThresh(1)` of exactly `0.0` —
+which is what kills `>` -> `>=` and `<` -> `<=`, two strictness mutants no
+ladder over a computed quantity can reach.
+
+### Two subscripts re-spelled before the second sweep, not after it
+
+Unit #43's rule — *ask before writing the line whether the spelling offers a
+mutant no input can kill* — applied prospectively for the first time.
+`CntrPar->Y_ErrThresh[2 - 1]` keeps the reference's `(2)` visible and offers
+
+```
+swap_operands  '2 - 1' -> '1 - 2'    index -1, a read BEFORE the array
+arith_op       '2 - 1' -> '2 + 1'    index 3, in bounds only at extent >= 4
+const_tweak    '1 - 1' -> '1 - 2'    index -1 again
+```
+
+`[0]` and `[1]` offer one `const_tweak` and one `index_offset` each, all four
+landing on a real element of an array R5 never draws shorter than three. Both
+`index_offset` mutants were killed on the second sweep, 17 and 351 cases. The
+cost is a fifth mutation part: re-spelling gave `index_offset` a site the unit
+did not have before, and `_mutation_merge.py` refused the union until it was
+covered — correctly, and that refusal is the check doing its job.
+
+### Standing, unchanged: `vit verify` and `vit integrate` rewrite vit.yaml with `yaml.dump`
+
+735 of 747 lines of comment lost per run. The unit's own block was re-merged by
+hand into the committed file both times, which is what every unit since #2 has
+had to do. Recorded again only because the count is now large enough that a
+reader might mistake the rewrite for a deliberate simplification.
+
 ## Unit #43 — StructuralControl — 2026-08-15
 
 ### The kernel is blind to one of this unit's two writing statements, and a stub says so

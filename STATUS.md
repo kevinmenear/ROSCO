@@ -4,6 +4,72 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-15: unit #44 `YawRateControl` is `integrated` and CLOSED** —
+all five layers exist, all five ran, all five are red-tested, and the mutation
+score is an honest **0.8961** against a threshold of 1.000 on 77 behavioural
+mutants with 3 declared. It is the campaign's first unit whose **REFERENCE
+CANNOT PASS ITS OWN KERNEL**, measured by a positive control rather than
+inferred; the first whose **SAVE LOCALS CROSS INTO C++ AS `static`**; and the
+first where the kernel and the differential harness are blind in **opposite**
+places, so that each covers exactly what the other cannot.
+
+Every count below is read from the committed artifact named in its row.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 104 cases (`evidence/YawRateControl/kernel.verify_fields.csv`) | **102 of 104**, and the reference's own Fortran body scores **102 of 104 too**, failing the SAME two cases with the SAME numbers — the two runs' full 97,568-line logs are **byte-identical** (`kernel.save_state_control.txt`) | **`vit verify` DECLINED to build one** and printed `NON_DISCRIMINATING`, fifth unit running. Three hand stubs, every EXPECT written before its RESULT: the no-op fails **all 104**; **both writes to `avrSWAP(48)` deleted PASSES 102 of 104**, the kernel's own green unmoved; deleting one statement from the right stop arm gives **51 of 104**, first failing case **1045**, predicted to the index |
+| differential harness (`harness/YawRateControl.json`) | **8093 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **1012 of 8093**, the same count the green certifies |
+| mutation (`mutation/YawRateControl.json`) | **69 of 77 behavioural, 0.8961**, 3 declared, 0 no-compile, 9 operators | the score *is* the red test, 69 times |
+| post-integration (`harness/YawRateControl.postintegration.json`) | 8093 checked, 0 failed | the wrapper's scalar copy-back deleted, scoped to this unit's wrapper: **1012 of 8093** |
+| gate, 27 scenarios (`gate/YawRateControl.json`) | 5,252,000 values / 351 channels, 0 mismatched | TWO: zeroing the persist-right assignment moves **47,624**; the whole `ZMQ_Mode == 1` arm moves **0** |
+
+**THE REFERENCE CANNOT PASS ITS OWN KERNEL, AND A POSITIVE CONTROL IS THE ONLY
+THING THAT COULD HAVE SAID SO.** Two field rows in `verify_fields.csv` are
+`OUT_TOL`, both `debugvar%yawratecom`, both at a state-machine edge — exactly
+where a wrong translation would show first. Rebuilding the same kernel with
+`Controllers.f90.kgen` (KGen's output *before* VIT substituted the C++ bridge)
+fails cases **188 and 1189** with the same values, and diffing the two runs'
+verbose output line for line gives **0 differing of 97,568**. The cause is in
+the driver: it calls the procedure **three times per case** — evalstage,
+warmupstage, mainstage — and verifies the third, while `INTEGER, SAVE ::
+YawState` is a subroutine local no state file carries. The two failing cases are
+the only two invocations at which this unit is not idempotent.
+
+**`vit verify` PRINTED `VERIFICATION PASSED: 104/104` OVER THAT.** The kernel it
+had just run ended with `FAILED verification` and `Number of verification-passed
+cases : 102`. Recorded in `DECISIONS.md` with the wrong artifact before anything
+was done about it (C12).
+
+**THE KERNEL IS BLIND TO THIS UNIT'S ONLY REAL OUTPUT, AND THE HARNESS IS BLIND
+TO BOTH ITS STOP ARMS.** `avrswap` is not among the ~433 compared field names,
+so deleting both writes to `avrSWAP(48)` — the commanded yaw rate, the one value
+the calling program reads — leaves the score unmoved at 102 of 104. Meanwhile
+the differential harness zero-initialises `LocalVar%FP` per case, so at
+`iStatus /= 0` LPFilter evaluates `1.0/0 * (0+0+0)` = `inf*0` = **NaN**, every
+comparison against it is false, and **neither stop arm is ever entered** in 8093
+cases (`arm_census.txt`: `from 1: stop 0`, `from -1: stop 0` on all 725
+entries). All 8 undeclared mutation survivors live in those two arms. They are
+**not** declared equivalent: the kernel covers them, and stub 3 proves it by
+moving 51 of 104.
+
+**THE CAPTURE WINDOW WAS READ OFF A COMMITTED BASELINE.** Scenario 7 integrates
+the commanded yaw rate itself, so `sign(diff(nac_yaw)/dt)` from
+`baseline_arrays/scenario_7.npz` **is** `YawState` as written, per invocation.
+The four edges are at 187, 1044, 1188 and 2044, repeating every 2,000; the
+census of that sign array is 10,261 / 10,215 / 3,522 against clean-source
+coverage of 10,261 and 10,215 — exact, both. Five ranges, 104 cases. KGen's case
+index runs one HIGHER than the Python loop index, because `ROSCO_ci`'s
+constructor makes an initialisation call the loop does not.
+
+```
+                                    cases   mutants killed / 80 or 77
+  no baseline                        8036   58 of 83      0.6988
+  + 3 states, subscripts re-spelled  8093   69 of 77      0.8961 with 3 declared
+                                                          and 8 NOT excused
+```
+
+---
+
 **As of 2026-08-15: unit #43 `StructuralControl` is `integrated` and CLOSED** —
 all five layers exist, all five ran, all five are red-tested, and the mutation
 score is **1.000** on 51 behavioural mutants with 4 declared. It is the
