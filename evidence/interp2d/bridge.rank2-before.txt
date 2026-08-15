@@ -1,0 +1,35 @@
+# The conformance matrix's `c_assumed_shape_2d` prediction, MEASURED on this unit.
+#
+# plan.json carried, for interp2d:
+#   bridge_feasible.value = "no"
+#   basis = 'zdata: c_assumed_shape_2d does not cross (UNSUPPORTED: a rank-2
+#            assumed-shape dummy is passed as m(1:n_m), a ran)'
+#
+# `vit test-validate interp2d translations/Functions/interp2d.cpp
+#      -f rosco/controller/src/Functions.f90 -m Functions --force`
+# at vit fe22383 wrote translations/Functions/interp2d_test/interp2d_bridge.f90
+# carrying:
+#
+#     REAL(C_DOUBLE), INTENT(IN) :: zData(*)
+#     INTEGER(C_INT), VALUE, INTENT(IN) :: n_zData
+#     ...
+#     vit_result = interp2d(xData(1:n_xData), yData(1:n_yData), zData(1:n_zData), xq, yq, vit_local_ErrVar)
+#
+# Two defects, not one. The rank is the one the matrix names; the PARAMETER LIST
+# is the one it does not. `vit/interface_gen.build_c_params` has always emitted
+# `n_zData_rows` and `n_zData_cols` for this argument -- the C++ scaffold VIT
+# generated for this same unit, minutes earlier, has both -- so the harness's
+# C++ side passes two extents into a bridge that declares one. The rank error
+# below is what stops it; had the ranks agreed, the argument-list skew would
+# have been a silent misread of the call frame.
+
+$ gfortran -c -fdefault-real-8 -fdefault-double-8 -ffp-contract=off \
+      -I.../build/ftnmods -I.../build interp2d_bridge.f90
+
+interp2d_bridge.f90:42:66:
+
+   42 |         vit_result = interp2d(xData(1:n_xData), yData(1:n_yData), zData(1:n_zData), xq, yq, vit_local_ErrVar)
+      |                                                                  1
+Error: Rank mismatch in argument 'zdata' at (1) (rank-2 and rank-1)
+
+# CONFIRMED. The prediction is right about the tool as it stood.

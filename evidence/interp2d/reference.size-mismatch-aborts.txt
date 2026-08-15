@@ -1,0 +1,24 @@
+# interp2d's two size-mismatch branches, run in isolation.
+# INPUT: evidence/interp2d/size_mismatch_probe.f90
+# The reference DIES on this input -- it does not report and continue.
+# Same class as interp1d's (unit #23) and reached one step earlier: there the
+# branch's literal assignment first reallocates ErrMsg to 38 and the WRITE
+# overruns THAT record; here nothing is assigned, so the WRITE formats 59
+# characters into the LEN-0 string DISCON.F90:159 leaves in the field.
+
+ LEN(ErrMsg) as DISCON.F90:159 leaves it =           0
+ characters the WRITE formats =          59
+At line 33 of file size_mismatch_probe.f90
+Fortran runtime error: End of record
+
+Error termination. Backtrace:
+#0  0xed030d82d44b in ???
+#1  0xed030d82e277 in ???
+#2  0xed030d935653 in ???
+#3  0xed030d942013 in ???
+#4  0xed030d938bfb in ???
+#5  0xed030d938f6b in ???
+#6  0xab4b61b10c67 in MAIN__
+#7  0xab4b61b10d5b in main
+exit 2
+run_if_time_remains: exit 0 after 0s (estimated 120s; 13448s now remain)

@@ -1,0 +1,23 @@
+# The same bridge after vit/test_validate.py grew a rank-2 branch (X2: the tool
+# is ours, so the defect is fixed rather than routed around). The RESHAPE
+# spelling is COPIED from vit/interface_gen._build_bridge_call_args, which has
+# emitted exactly it for the kernel bridge since before this matrix cell was
+# measured -- two generators disagreeing about one calling convention is the
+# defect being closed, and a second spelling would be a second chance at it.
+
+## the generated bridge, the three lines that changed
+4:    SUBROUTINE interp2d_f90(xData, n_xData, yData, n_yData, zData, n_zData_rows, n_zData_cols, xq, &
+20:        INTEGER(C_INT), VALUE, INTENT(IN) :: n_zData_rows
+21:        INTEGER(C_INT), VALUE, INTENT(IN) :: n_zData_cols
+43:        vit_result = interp2d(xData(1:n_xData), yData(1:n_yData), RESHAPE(zData(1:n_zData_rows*n_zData_cols), &
+44:            (/ n_zData_rows, n_zData_cols /)), xq, yq, vit_local_ErrVar)
+63:    END SUBROUTINE interp2d_f90
+
+## the compile
+exit 0 -- BRIDGE COMPILES
+
+## POSITIVE CONTROL -- the rank-1 path is untouched
+# interp1d's bridge regenerated on this same tree, once with the change and
+# once with it stashed. A rank-2 branch that also moved rank-1 would change
+# the instrument under every unit already scored (X3).
+diff: no output -- BYTE-IDENTICAL

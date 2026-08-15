@@ -1110,3 +1110,43 @@ CntrPar_StC_GroupIndex = { lo = 1, hi = 3000 }
 # distinctness exists to protect, and only the one pair that the reference
 # cannot survive gives it up.
 CntrPar_OL_StructControl_cols = { same_as = "CntrPar_OL_Breakpoints_n" }
+
+# ---------------------------------------------------------------------------
+# interp2d
+#
+# TWO TIES, AND BOTH ARE THE `interp1d` TIE ONE DIMENSION UP. Unit #45.
+#
+# The reference's first two statements are
+#
+#     IF (SIZE(xData) .NE. SIZE(zData,2)) THEN
+#         ErrVar%aviFAIL = -1
+#         WRITE(ErrVar%ErrMsg,"(A,I4,A,I4,A)") " SIZE(xData) =", SIZE(xData), &
+#         ' and SIZE(zData,1) =', SIZE(zData,2),' are not the same'
+#
+# and the same again for `SIZE(yData) .NE. SIZE(zData,1)`. Unlike interp1d's
+# version there is NO literal assignment in front of the WRITE, so it formats 59
+# characters into `ErrVar%ErrMsg` AT WHATEVER LEN IT ALREADY HAS -- and
+# `DISCON.F90:159` sets `ErrVar%ErrMsg = ''` on every controller call. MEASURED:
+#   evidence/interp2d/reference.size-mismatch-aborts.txt
+#       LEN(ErrMsg) = 0, characters the WRITE formats = 59,
+#       "Fortran runtime error: End of record", exit 2.
+#
+# `_extent_plan` makes extents PAIRWISE DISTINCT on purpose, so without these
+# two lines the very first generated case kills the oracle and the run produces
+# no JSON at all -- which is exactly what interp1d's untied first run did
+# (evidence/interp1d/harness.untied-extents-KILLS-the-reference.txt).
+#
+# THE COST, STATED: the two size-mismatch branches and the four sites inside
+# them are unreachable by this harness, and so is any defect that needs an
+# extent to disagree with the matrix dimension it must equal.
+#
+# WHAT IS NOT GIVEN UP, and it is the property that matters most for a
+# column-major 2-D argument: `n_zData_rows` and `n_zData_cols` are tied to
+# DIFFERENT partners, so they stay distinct from each other. A translation that
+# strode `zData` by the column count instead of the row count -- the defect
+# `vit check`'s `column-major-stride` exists for, and the one this unit's row
+# gather could most easily commit -- still disagrees on every case. Tying both
+# extents to one number would have made the array square and deleted that.
+[interp2d]
+n_zData_cols = { same_as = "n_xData" }
+n_zData_rows = { same_as = "n_yData" }
