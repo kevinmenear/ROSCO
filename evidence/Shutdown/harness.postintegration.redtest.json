@@ -1,0 +1,126 @@
+{
+ "unit": "Shutdown",
+ "against": "integrated",
+ "checked": 14708,
+ "failed": 14708,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    5 varied extent(s) at [3, 4, 5, 6, 7] and [3, 4, 5, 6, 7]; 25 FIXED by the type at [2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 12, 12, 12, 12, 256, 1024, 1024, 1024, 1024, 1024] -- not varied; 68 HELD -- they size arrays the reference does not read, 1 index(es) at 1/interior/n, array elements distinct",
+  "  applied  R2_flag_values             2 value(s) across 1 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R6_reference_literals      2184 value(s) from 17 literal(s) in the reference, each under every declared value of 1 flag(s); 328 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 693 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 840 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 210 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 21 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits; 283 combination(s) of the 10 quantit(y/ies) the reference's own predicates test, ALL PAIRS ONLY -- the full cross product is 186624 combination(s), past the 4096 bound, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead; 3976 case(s) across 7 predicate(s) the reference writes between TWO VARIED QUANTITIES, each with one side set FROM the other -- at equality, where an ordering predicate changes its answer, under every knob combination, plus the two neighbouring representable values once for strictness; a ladder on either side alone cannot reach these, because whichever base value is larger is larger in every case; 92 character value(s) from a corpus of 23 (the reference's own character literals and their collating neighbours) across 1 string(s), each at length(s) [1, 2, 7, 12] and in the mixed / padded / all-blank / leading-blank shapes, plus 144 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          25 real value(s), none zero in every case; 6 HELD string(s) are all-blank in every case by construction -- nothing a defect on those could move; 252 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output",
+  "  applied  R11_one_at_a_time          455 case(s) over 13 admissible state(s) (method1_inside_the_stage_arm, method2_inside_the_pitch_search, only_the_pitch_trigger, only_the_yaw_trigger, only_the_genspeed_trigger, yaw_trigger_on_the_negative_side, trigger_window_at_equality, stage_clock_at_equality, pitch_search_at_equality, time_trigger_at_equality, method2_with_no_trigger_at_all, genspeed_threshold_at_equality, yaw_threshold_at_equality): each state itself, then ONE of the 10 quantit(y/ies) the reference's own predicates test moved to each of its knob values with every other parameter left admissible. Several states because a reference that refuses two modes TOGETHER cannot have both reachable from one. Not crossed with the flags and not crossed with each other -- a second quantity away from baseline in the same case re-masks the first. Appended after R3's scan and the random fill, so every case index the other rules produced is unchanged and the corpus is a strict extension of the one before it",
+  "  N/A      R12_narrowing_width        no CHARACTER local is narrower than a dummy assigned into it -- the reference truncates nothing, so there is no boundary for this rule to reach",
+  "  applied  R13_staging_capacity       256 case(s) sweeping the stated staging capacity of every deferred-length CHARACTER output from 0 to 255 bytes above what the case supplies, every other input at its base draw -- so the output has one length across the block and exactly one case sizes the buffer TO it, one a byte short and one a byte long. A capacity a case does not state is `emit.ALLOC_HEADROOM`, which is what every case outside this block still carries",
+  "  N/A      R14_planted_word           no CHARACTER ARRAY input -- there is no element for a scalar string to be a word OF, so no comparison of this shape exists to reach",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value + 174 out-parameter(s): LocalVar_iStatus, LocalVar_AlreadyInitialized, LocalVar_RestartWSE, LocalVar_Time, LocalVar_DT, LocalVar_WriteThisStep, LocalVar_n_DT, LocalVar_Time_Last, LocalVar_VS_GenPwr, LocalVar_GenSpeed, LocalVar_RotSpeed, LocalVar_NacHeading, LocalVar_NacVane, LocalVar_NacVaneF, LocalVar_WindDir, LocalVar_HorWindV, LocalVar_HorWindV_F, LocalVar_rootMOOP, LocalVar_rootMOOPF, LocalVar_BlPitch, LocalVar_BlPitchCMeas, LocalVar_Azimuth, LocalVar_OL_Azimuth, LocalVar_AzUnwrapped, LocalVar_AzError, LocalVar_GenTqAz, LocalVar_AzBuffer, LocalVar_NumBl, LocalVar_FA_Acc_TT, LocalVar_SS_Acc_TT, LocalVar_FA_Acc_Nac, LocalVar_NacIMU_FA_RAcc, LocalVar_FA_AccHPF, LocalVar_FA_AccHPFI, LocalVar_FA_PitCom, LocalVar_VS_RefSpd, LocalVar_VS_RefSpd_TSR, LocalVar_VS_RefSpd_TRA, LocalVar_VS_RefSpd_RL, LocalVar_PC_RefSpd, LocalVar_PC_RefSpd_SS, LocalVar_PC_RefSpd_PRC, LocalVar_RotSpeedF, LocalVar_GenSpeedF, LocalVar_GenTq, LocalVar_GenTqMeas, LocalVar_GenArTq, LocalVar_GenBrTq, LocalVar_VS_KOmega2_GenTq, LocalVar_VS_ConstPwr_GenTq, LocalVar_IPC_PitComF, LocalVar_PC_KP, LocalVar_PC_KI, LocalVar_PC_KD, LocalVar_PC_TF, LocalVar_PC_MaxPit, LocalVar_PC_MinPit, LocalVar_PC_PitComT, LocalVar_PC_PitComT_Last, LocalVar_BlPitchCMeasF, LocalVar_PC_PitComT_IPC, LocalVar_PC_PwrErr, LocalVar_PC_SpdErr, LocalVar_IPC_AxisTilt_1P, LocalVar_IPC_AxisYaw_1P, LocalVar_IPC_AxisTilt_2P, LocalVar_IPC_AxisYaw_2P, LocalVar_axisTilt_1P, LocalVar_axisYaw_1P, LocalVar_axisYawF_1P, LocalVar_axisTilt_2P, LocalVar_axisYaw_2P, LocalVar_axisYawF_2P, LocalVar_IPC_KI, LocalVar_IPC_KP, LocalVar_IPC_IntSat, LocalVar_PC_State, LocalVar_PitCom, LocalVar_PitCom_SD, LocalVar_PitComAct, LocalVar_SS_DelOmegaF, LocalVar_TestType, LocalVar_Kp_Float, LocalVar_VS_MaxTq, LocalVar_VS_LastGenTrq, LocalVar_VS_LastGenPwr, LocalVar_VS_MechGenPwr, LocalVar_VS_SpdErrAr, LocalVar_VS_SpdErrBr, LocalVar_VS_SpdErr, LocalVar_VS_State, LocalVar_VS_Rgn3Pitch, LocalVar_WE_Vw, LocalVar_WE_Vw_F, LocalVar_WE_VwI, LocalVar_WE_VwIdot, LocalVar_WE_Op, LocalVar_WE_Op_Last, LocalVar_VS_LastGenTrqF, LocalVar_PRC_WSE_F, LocalVar_PRC_R_Speed, LocalVar_PRC_R_Torque, LocalVar_PRC_R_Pitch, LocalVar_PRC_R_Total, LocalVar_PRC_Min_Pitch, LocalVar_PS_Min_Pitch, LocalVar_OL_Index, LocalVar_SU_Stage, LocalVar_SU_LoadStageStartTime, LocalVar_SU_RotSpeedF, LocalVar_SD_Trigger, LocalVar_SD_BlPitchF, LocalVar_SD_NacVaneF, LocalVar_SD_GenSpeedF, LocalVar_SD_Stage, LocalVar_SD_StageStartTime, LocalVar_SD_MaxPitchRate, LocalVar_SD_MaxTorqueRate, LocalVar_GenTq_SD, LocalVar_Fl_PitCom, LocalVar_NACIMU_FA_AccF, LocalVar_FA_AccF, LocalVar_FA_Hist, LocalVar_TRA_LastRefSpd, LocalVar_VS_RefSpeed, LocalVar_PtfmTDX, LocalVar_PtfmTDY, LocalVar_PtfmTDZ, LocalVar_PtfmRDX, LocalVar_PtfmRDY, LocalVar_PtfmRDZ, LocalVar_PtfmTVX, LocalVar_PtfmTVY, LocalVar_PtfmTVZ, LocalVar_PtfmRVX, LocalVar_PtfmRVY, LocalVar_PtfmRVZ, LocalVar_PtfmTAX, LocalVar_PtfmTAY, LocalVar_PtfmTAZ, LocalVar_PtfmRAX, LocalVar_PtfmRAY, LocalVar_PtfmRAZ, LocalVar_CC_DesiredL, LocalVar_CC_ActuatedL, LocalVar_CC_ActuatedDL, LocalVar_StC_Input, LocalVar_Flp_Angle, LocalVar_RootMyb_Last, LocalVar_ACC_INFILE_SIZE, LocalVar_restart, LocalVar_TiltMean, LocalVar_YawMean, LocalVar_ZMQ_ID, LocalVar_ZMQ_YawOffset, LocalVar_ZMQ_TorqueOffset, LocalVar_ZMQ_PitOffset, LocalVar_ZMQ_R_Speed, LocalVar_ZMQ_R_Torque, LocalVar_ZMQ_R_Pitch, objInst_instLPF, objInst_instSecLPF, objInst_instSecLPFV, objInst_instHPF, objInst_instNotchSlopes, objInst_instNotch, objInst_instPI, objInst_instRes, objInst_instRL, ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "LocalVar.SD_Trigger",
+   "ref": "2c010000",
+   "got": "00000000"
+  },
+  {
+   "case": 0,
+   "output": "LocalVar.SD_NacVaneF",
+   "ref": "0000000000c08240",
+   "got": "d8d86e0100004ec0"
+  },
+  {
+   "case": 0,
+   "output": "LocalVar.SD_GenSpeedF",
+   "ref": "0000000000000000",
+   "got": "0000000000c08240"
+  },
+  {
+   "case": 0,
+   "output": "LocalVar.FP",
+   "ref": "0000000000000000000000000000000000000000000000000000000000000000...",
+   "got": "0000000000000000000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 1,
+   "output": "LocalVar.SD_Trigger",
+   "ref": "2c010000",
+   "got": "00000000"
+  },
+  {
+   "case": 1,
+   "output": "LocalVar.SD_NacVaneF",
+   "ref": "0000000000c08240",
+   "got": "d8d86e0100004ec0"
+  },
+  {
+   "case": 1,
+   "output": "LocalVar.SD_GenSpeedF",
+   "ref": "0000000000000000",
+   "got": "0000000000c08240"
+  },
+  {
+   "case": 1,
+   "output": "LocalVar.FP",
+   "ref": "0000000000000000000000000000000000000000000000000000000000000000...",
+   "got": "0000000000000000000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 2,
+   "output": "LocalVar.SD_Trigger",
+   "ref": "2c010000",
+   "got": "00000000"
+  },
+  {
+   "case": 2,
+   "output": "LocalVar.SD_NacVaneF",
+   "ref": "0000000000c08240",
+   "got": "d8d86e0100004ec0"
+  },
+  {
+   "case": 2,
+   "output": "LocalVar.SD_GenSpeedF",
+   "ref": "0000000000000000",
+   "got": "0000000000c08240"
+  },
+  {
+   "case": 2,
+   "output": "LocalVar.FP",
+   "ref": "0000000000000000000000000000000000000000000000000000000000000000...",
+   "got": "0000000000000000000000000000000000000000000000000000000000000000..."
+  },
+  {
+   "case": 3,
+   "output": "LocalVar.SD_Trigger",
+   "ref": "2c010000",
+   "got": "00000000"
+  },
+  {
+   "case": 3,
+   "output": "LocalVar.SD_NacVaneF",
+   "ref": "0000000000c08240",
+   "got": "d8d86e0100004ec0"
+  },
+  {
+   "case": 3,
+   "output": "LocalVar.SD_GenSpeedF",
+   "ref": "0000000000000000",
+   "got": "0000000000c08240"
+  },
+  {
+   "case": 3,
+   "output": "LocalVar.FP",
+   "ref": "0000000000000000000000000000000000000000000000000000000000000000...",
+   "got": "0000000000000000000000000000000000000000000000000000000000000000..."
+  }
+ ],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "f92fb9f",
+ "vit_rev": "fe22383",
+ "red_test": {
+  "perturbation": "Shutdown's wrapper: CALL vit_copy_scalars_to_localvariables deleted -- the eight SD_ scalar outputs never leave the view",
+  "result": "14708 of 14708 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}
