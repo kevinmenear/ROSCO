@@ -4,7 +4,7 @@ Append-only record of *why*. Never read end to end.
 
 ## Unit #42 — Startup — 2026-08-15
 
-### The corpus put every stage-2 case on the wrong side of its own `sigma` call, and six survivors were ONE fact
+### A survivor list is not a list of sites: six of fourteen were one fact about `sigma` (proposed method amendment)
 
 The first mutation sweep scored 92 of 106 and the fourteen survivors looked like
 fourteen problems. Six of them were one:
@@ -34,6 +34,17 @@ still have been wrong.
 
 Two states, not one, because `x < x0` and `x > x1` are two different arms of
 `sigma` and a single `Time` cannot be in both.
+
+**Why this is a method amendment rather than a target-layer note.** The
+generator, the mutator and the score are all method machinery; the step between
+*here are N survivors* and *here is what to add* is not, and it is where this
+campaign has spent the most time. The rule that worked here: partition the
+survivors by SOURCE POSITION, then ask what single fact about control or data
+flow puts a whole partition out of reach -- and look for a KILLED mutant at the
+same call to say which arm the corpus did reach. Reading the list site by site
+produces one baseline state per site, and here that would have been five states
+where two were correct.
+
 
 ### A threshold whose left side the unit COMPUTES, reached the same way unit #41 reached its two
 
@@ -122,11 +133,12 @@ preceding arm is `== 1 .OR. == -1` and therefore does not exclude 2 — is not
 declared and was killed. A declaration that would also cover a killable twin is
 a declaration that is too wide.
 
-### `\&\&` inside single quotes reaches the compiler as backslashes, and gate.py told the difference
+### A perturbation that does not COMPILE is not a perturbation the gate cannot SEE (proposed method amendment)
 
-The second gate red test failed to BUILD on its first attempt, and
-`scripts/gate.py` printed `PERTURBED BUILD FAILED -- no red test was performed`
-rather than a red test that moved nothing. Those two outcomes have almost the
+The second gate red test failed to BUILD on its first attempt -- `\&\&` inside
+single quotes reaches the compiler as backslashes -- and `scripts/gate.py`
+printed `PERTURBED BUILD FAILED -- no red test was performed` rather than a red
+test that moved nothing. Those two outcomes have almost the
 same shape — both end with the tree reverted and no movement recorded — and this
 unit's second red test is one where **moving nothing is the expected result**.
 Had the tool reported the build failure as a zero, the artifact would have read
@@ -135,6 +147,15 @@ as a corroboration of the coverage data and would have been a fabrication.
 Worth keeping as a property of the instrument rather than as a shell lesson: a
 perturbation that does not compile and a perturbation the gate cannot see are
 distinguishable only if the tool distinguishes them.
+
+**Why this is a method amendment rather than a target-layer note.** It is not
+about `&&` and not about this campaign's gate. Any red test whose expected
+result is *the instrument does not see this* reports the same number as a red
+test that never ran, and P3 -- *a green result must be able to name what it
+compared, and be able to go red* -- says nothing about the case where RED is the
+expected answer. A red test that cannot silently fail to RUN is a second,
+unstated requirement on every instrument the method asks for.
+
 
 ## Unit #41 — Shutdown — 2026-08-15
 

@@ -9,7 +9,9 @@ layers exist, all five ran, all five are red-tested, and the mutation score is
 **1.000** on 102 behavioural mutants with 4 declared. It is the campaign's first
 unit whose EXTRACTION WINDOW WAS FOUR RANGES AIMED AT STATE-MACHINE EDGES rather
 than start/middle/end, and the first whose kernel red test names a single case
-index predicted in advance.
+index predicted in advance. **Two proposed method amendments** are marked in
+`DECISIONS.md`: how to read a survivor list, and that a perturbation which fails
+to COMPILE must be distinguishable from one the instrument cannot SEE.
 
 Every count below is read from the committed artifact named in its row.
 
