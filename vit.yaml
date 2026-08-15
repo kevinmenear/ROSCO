@@ -28,13 +28,22 @@ project:
 kgen:
   path: /workspace/KGen/bin/kgen
   build_cmd: cd /workspace/ROSCO-r2/rosco/controller/build && cmake --build .
-  # SCENARIO 25 for unit #37, and it is the ONLY scenario that can capture this
-  # unit's `PRC_Mode == 2` arm. coverage/line_coverage.json puts 15,999 hits on
-  # ControllerBlocks.f90:39-42 and :73 in scenario 25 and ZERO in the other 26;
-  # every other scenario takes the ELSE arm at :76-79. Run all 27 and the
-  # capture is whichever scenario reaches the window first, which is not a
-  # choice. Restored to the default after the extraction.
-  run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py --scenario 25
+  # SCENARIO 27 for unit #38 `PreFilterMeasuredSignals`, chosen because it is
+  # the scenario that reaches the MOST of the unit's arms at once, read from
+  # coverage/line_coverage.json (whose line numbers are the CLEAN source's, one
+  # less than the integrated file's in this region):
+  #
+  #   :355  DO n = 1,F_GenSpdNotch_N       48,000 vs 24,000 calls -> the body RUNS
+  #   :395  TD_Mode > 0, FA_AccHPF         24,000 -- only 3, 7 and 27 reach it
+  #   :405  NotchFilterSlopes, all blades  72,000 = 3 x 24,000
+  #
+  # No scenario reaches everything. Three arms are outside scenario 27 and the
+  # kernel therefore cannot see them: the `Flp_Mode == 2` blade-root arm
+  # (:406-:417, scenario 4 ONLY), the `F_LPFType == 2` SecLPFilter arm
+  # (:349-:351, ZERO hits in all 27) and the tower-top notch loop (:379, whose
+  # DO line carries exactly the call count, so the body iterates 0 times in
+  # every scenario). Restored to the default after the extraction.
+  run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py --scenario 27
   clean_cmd: cd /workspace/ROSCO-r2/rosco/controller/build && make clean
   install_cmd: cp /workspace/ROSCO-r2/rosco/controller/build/libdiscon.so /workspace/ROSCO-r2/rosco/lib/libdiscon.so
   # WIDENED 2026-08-10 during unit #2, and it took two tries. The setup value
