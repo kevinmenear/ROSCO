@@ -1,0 +1,52 @@
+ResController -- the kernel red test, by hand
+=============================================
+
+`vit verify` made its own red test and it went red: it reported a mismatch
+with input `error` scaled by 1.00001. That is one perturbation. These six are
+the arms, run through the SAME committed kernel by
+`evidence/ResController/run_stub.sh`, each one a whole `.cpp` kept beside its
+run log so the input to the measurement is on disk rather than described.
+
+Kernel: 62 cases captured at Controllers.f90:815 (clean-source line) under
+scenario 27, window 0:0:1-20,0:0:12000-12020,0:0:23900-23920.
+The shipped translation: 62/62 passed, 14,570 field rows all IDENTICAL
+(evidence/ResController/kernel.verify_fields.csv).
+
+  stub                        cases failed   log
+  -------------------------   ------------   -----------------------------------
+  the whole unit a no-op          62 of 62   kernel.noop-stub.run.txt
+  `inst = inst + 1` deleted       62 of 62   kernel.no-increment-stub.run.txt
+  the four save writes deleted    62 of 62   kernel.no-state-update-stub.run.txt
+  the saturate() call deleted     26 of 62   kernel.no-saturate-stub.run.txt
+  the reset arm emptied            0 of 62   kernel.reset-arm-stub.run.txt
+  b2 read off b0, not recomputed   0 of 62   kernel.b2-aliased-stub.run.txt
+
+FOUR OF SIX CAN FAIL. The two that cannot are two different things and only
+one of them is a blindness.
+
+THE RESET ARM IS INVISIBLE TO THIS KERNEL, AND THE CSV SAYS WHY BEFORE THE STUB
+DOES. `localvar%restart` is `F` in 62 of 62 captured cases, so the four writes
+in `IF (reset)` are never executed and deleting them changes nothing. That is
+not a property of the sample: `coverage/line_coverage.json` gives the arm's four
+lines (Controllers.f90:1210-1213, clean) ZERO hits in all 27 scenarios, so the
+gate cannot see it either. The differential harness is the only instrument that
+reaches it -- and the reference has no defined answer there. See STATUS.md.
+
+`instres` IS 2 IN ALL 62 CASES, so the input `inst` was 1 in all 62 and the only
+subscript this kernel ever exercises is element 1 of each 1024-long array. The
+increment stub still fails all 62, because `inst` is a compared output.
+
+`b2 = b0` IS AN EQUIVALENCE IN THE WHOLE PROGRAM, NOT A CORPUS GAP. Both are
+written `4+omega**2*DT**2` in Controllers.f90:1202 and :1204 -- the same
+expression, same operands, same order -- so they are bit-equal for every input,
+including NaN and the subnormals. Deleting one of the two computations cannot be
+detected by any instrument at any input. It is recorded here so that a mutant
+which edits only one of the two sites is read as what it is.
+
+THE SATURATE CALL IS ACTIVE IN 26 OF 62 CASES. The other 36 return the raw
+resonator output, so the Tustin arithmetic reaches the return value in most of
+the corpus. That is the opposite of unit #33's `PIController`, whose kernel
+returned `minValue` in 62 of 62 and was 45-of-62 blind to `error`, and of unit
+#31's `PIDController`, whose harness corpus returned a bound in 2307 of 2307.
+This unit's `minValue` is `CntrPar%PC_MinPit` = 0.0 and its `maxValue` is
+`PC_MaxPit` = 1.57, and the AWC error signal drives the output across zero.

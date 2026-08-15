@@ -37,6 +37,13 @@ kgen:
   #   :395  TD_Mode > 0, FA_AccHPF         24,000 -- only 3, 7 and 27 reach it
   #   :405  NotchFilterSlopes, all blades  72,000 = 3 x 24,000
   #
+  # UNIT #39 `ResController` REUSED THIS UNCHANGED. Its call site is
+  # Controllers.f90:815 (clean), inside the AWC_Mode==4 arm, and scenario 27
+  # is one of only three that reach it (5, 8, 27) and the only one that also
+  # patches AWC_amp to a non-default 2.0 deg -- scenario 8 sets it to 0.0.
+  # 23,998 hits, the highest of the three, and the window's third range
+  # (23900-23920) lands inside it.
+  #
   # No scenario reaches everything. Three arms are outside scenario 27 and the
   # kernel therefore cannot see them: the `Flp_Mode == 2` blade-root arm
   # (:406-:417, scenario 4 ONLY), the `F_LPFType == 2` SecLPFilter arm
@@ -529,6 +536,19 @@ translations:
       \ a derived type, and perturbing one of those could change what BOTH implementations\
       \ compute. The kernel's discriminating power is therefore UNMEASURED for this\
       \ function"
+  # Unit #39. `vit verify` ran on the SHIPPED translation, and its own red test
+  # went red -- `error` scaled by 1.00001 produced a mismatch. The six hand
+  # stubs are in evidence/ResController/kernel.stubs.txt; two of the six cannot
+  # fail, and only one of those is a blindness.
+  ResController:
+    status: verified
+    cases_passed: 62
+    cases_total: 62
+    cases_skipped: 0
+    cpp_file: translations/Controllers/rescontroller.cpp
+    kernel_dir: kernel/ResController
+    red_test: demonstrated
+    red_test_detail: the kernel reported a mismatch with input `error` scaled by 1.00001
 types:
   ControlParameters:
     strategy: view
