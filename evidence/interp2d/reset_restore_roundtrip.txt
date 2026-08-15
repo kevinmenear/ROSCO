@@ -1,0 +1,64 @@
+E1.4 re-verified with interp2d integrated -- reset/restore round-trip
+captured 2026-08-15T15:01:32Z at fad0d014 (interp2d: the wrapper red test -- the scoped copy-back deletion fails 46 of 1005, and the green re-taken after the restore rather than inferred)
+
+The pair is the one window in this campaign where a commit is refused, so
+it is run as ONE foreground command with the tree already fully committed:
+a kill inside the window then loses nothing, because restore_integrated.sh
+restores from HEAD.
+
+--- hashes BEFORE ---
+07ed3ca2bb4b42d7b9f67fa4c593c2c6f9be306c2a446061a4dd32e461e32bbe  -
+
+--- reset_to_clean.sh ---
+reset_to_clean: 9 wrapper-carrying source(s) restored to 54dd134
+  left at HEAD (no wrappers): Constants.f90 DISCON.F90 ROSCO_Types.f90 SysFlangLinux.f90 SysGnuLinux.f90 SysGnuWin.f90 SysIFL.f90 SysIVF.f90 SysLLVMLinux.f90 SysLLVMWin.f90
+  0 file(s) reverted whose only change was line endings
+  extraction leftovers removed (kernel/ state/ model/ elapsedtime/ logs, .kgen_org)
+  45 translated .cpp source(s) removed from CMakeLists (E1.2 flags kept)
+  0 instrumented object(s) removed from the build tree
+  rebuilt and installed; kgen symbols in rosco/lib/libdiscon.so: 0
+exit 0
+
+--- with the tree de-integrated: does anything still call interp2d_c? ---
+interp2d_c call sites in rosco/controller/src: 2
+
+--- restore_integrated.sh ---
+restore_integrated: WARNING -- 9 tracked file(s) under src/ are modified
+  and will be overwritten from HEAD. If a unit is integrated but not yet
+  committed, its wrapper is about to be lost. Commit first, or re-run
+  `vit integrate ... --apply` afterwards and discard any gate result
+  taken since.
+restore_integrated: 74 file(s) restored from HEAD (vit_types.h untouched)
+  CMakeLists.txt restored: the translated .cpp sources are back in the build
+  rebuilt and installed. Gate now measures the INTEGRATED build.
+exit 0
+
+--- hashes AFTER ---
+07ed3ca2bb4b42d7b9f67fa4c593c2c6f9be306c2a446061a4dd32e461e32bbe  -
+
+--- git status (this file is untracked until the commit below) ---
+?? evidence/interp2d/reset_restore_roundtrip.txt
+
+--- the installed library ---
+interp2d_c in libdiscon.so: 1
+kgen symbols in libdiscon.so: 0
+0
+
+VERDICT: the two index hashes are IDENTICAL
+(07ed3ca2bb4b42d7b9f67fa4c593c2c6f9be306c2a446061a4dd32e461e32bbe), git status
+carries only this file, and the installed library is back to 1 interp2d_c and 0
+kgen symbols. E1.4 holds with a 41st unit integrated.
+
+THE `2` ABOVE IS NOT A FAILED RESET, and it is the same line units #43 and #44
+each flagged. With the tree DE-INTEGRATED the probe still counts two files
+containing `interp2d_c(`. `reset_to_clean.sh` reverts `.f90`/`.f` sources only;
+the three files that mention the bridge are
+
+    rosco/controller/src/Functions.f90       the WRAPPER      <- reverted
+    rosco/controller/src/interp2d.cpp        the DEFINITION
+    rosco/controller/src/vit_translated.h    the DECLARATION
+
+and the last two are deliberately left in place, because the same script strips
+every `src/*.cpp` line out of CMakeLists so nothing compiles them. The count of 2
+after the reset is Functions.f90 having dropped out of the set, which is exactly
+what the reset is for.
