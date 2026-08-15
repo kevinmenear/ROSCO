@@ -1,19 +1,47 @@
 # evidence/interp2d — unit #45
 
-Four layers, **all four alive**, and the dispatch spent most of its clock on two
-tool defects that stood between the unit and its primary instrument. Everything
-below is a file in this directory or in `harness/`, `mutation/`, `gate/`.
+**SECOND DISPATCH, 2026-08-15, loop_rev `eb5028e`.** All four layers re-taken.
+Everything below the horizontal rule is the first dispatch's record and is kept
+unchanged; the numbers in the table are the current ones.
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness vs clean Fortran, `interp1d_c` bridge kept | **1005** checked, 0 failed, 0 inadmissible | the unit as a no-op fails **1005 of 1005** |
-| mutation score | **134 of 166 behavioural killed, 0.8072**, 0 declared equivalent, 2 no-compile | the score *is* the red test, 134 times |
-| post-integration harness (wrapper only) | **1005 checked, 0 failed** | the scoped copy-back deletion fails **46 of 1005** |
+| differential harness vs clean Fortran, `interp1d_c` bridge kept | **1147** checked, 0 failed, 0 inadmissible | the unit as a no-op fails **1147 of 1147** |
+| mutation score | **152 of 166 behavioural killed, 0.9744**, 10 declared, 2 no-compile, **4 standing** | the score *is* the red test, 152 times |
+| post-integration harness (wrapper only) | **1147** checked, 0 failed | the scoped copy-back deletion fails **161 of 1147** |
 | gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched | the bilinear result × 1.000001 moves **922,411 of 5,252,000**; revert verified |
 
-**No kernel.** `plan.json` allowed "kernel replay **or** direct-call harness"
-and the clock went on the two defects below. That is a stated gap, not a
-silent one.
+**No kernel.** `plan.json` allowed "kernel replay **or** direct-call harness".
+That is a stated gap, not a silent one.
+
+## What the second dispatch found
+
+1. **A mistranslation all four instruments had passed.** The reference guards
+   *both* corner searches against a NaN query; this translation guarded one. See
+   `yq-nan-guard.MISTRANSLATION.md` — written before the fix, with the wrong
+   artifact quoted, including the paragraph in `plan.json` that had recorded the
+   omission as a property of upstream ROSCO.
+2. **`ordered_only` was one shape too wide, and 17 of the 32 survivors died to
+   correcting it.** What the reference cannot survive is an *inversion*, not a
+   tie. `mutation.census.txt` partitions all 32 by cause; `equivalence_probe.cpp`
+   and `errmsg_extremes_probe.cpp` are the two measurements behind the ten
+   declarations.
+3. **Four survivors are left standing, deliberately.** Each has an input in the
+   reference's well-defined domain at which the mutant answers differently.
+   `mutation.census.txt` names the input and the rule that does not exist to
+   draw it, and `DECISIONS.md` escalates both classes.
+4. **Two instrument defects, recorded before their fixes.**
+   `generator.shadowed-lengths.txt` (a coverage sentence reporting another
+   block's numbers) and `postintegration.retake-failed-once.txt` (a failed
+   re-take deleting the artifact it was re-taking, and a commit claiming the
+   green anyway).
+
+---
+
+# The first dispatch's record, unchanged
+
+Four layers, **all four alive**, and the dispatch spent most of its clock on two
+tool defects that stood between the unit and its primary instrument.
 
 ## The plan predicted this signature could not cross. It crosses — and the prediction was still right about something
 
