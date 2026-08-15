@@ -1,0 +1,39 @@
+Kernel hand red tests, part 2 -- SetpointSmoother (unit #40)
+kernel/SetpointSmoother, 62 cases, scenario 25, invocations 1-20 / 8000-8020 / 15900-15920
+The shipped translation passes 62/62 with all 14,508 field rows IDENTICAL.
+
+TAKEN AFTER INTEGRATION, which is why run 0 is here: the kernel is a
+standalone fixture replaying CAPTURED state, so integrating the unit
+cannot make it compare a mutant against itself the way unit #29 found
+the differential harness does -- but that is an argument, and run 0 is
+the measurement. It reproduces the pre-integration no-op exactly.
+
+==================================================================
+STUB      0. the no-op, RE-TAKEN post-integration (P10 control)
+ASKS      does this kernel still discriminate now that the unit is integrated?
+EXPECT    FAIL 62/62, reproducing the pre-integration run in kernel.stubs.txt
+RESULT:
+    ✗ VERIFICATION FAILED: 0/62 passed
+
+==================================================================
+STUB      3. R_Total -> 1.0
+ASKS      was scenario 25 the right choice? this is the stub the killed dispatch never got a verdict for
+EXPECT    FAIL -- and on a scenario with all three PRC_R_* at 1.0 it would have passed
+RESULT:
+    ✗ VERIFICATION FAILED: 0/62 passed
+
+==================================================================
+STUB      4. the (BlPitchCMeas - PC_MinPit)/0.524 factor -> 0.0
+ASKS      BlPitchCMeas and PC_MinPit may be equal in many captured cases -- is the term visible in the rest?
+EXPECT    FAIL on fewer than 62 if the two are ever equal, on 62 if never
+RESULT:
+    ✗ VERIFICATION FAILED: 23/62 passed
+
+==================================================================
+STUB      5. (num/VS_RtPwr)*SS_PCGain -> num*SS_PCGain/VS_RtPwr
+ASKS      is the kernel sensitive to the ASSOCIATION rather than the algebra? the two agree exactly in real arithmetic
+EXPECT    FAIL if the rounding differs on any of the 62 -- this is the defect shape vit check's guidance names
+RESULT:
+    ✓ VERIFICATION PASSED: 62/62 passed
+    ✗ SetpointSmoother: NON_DISCRIMINATING — 62 case(s) compared IDENTICAL, and the kernel did not report a mismatch when the translation was deliberately changed. The pass is not evidence.
+
