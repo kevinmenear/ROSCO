@@ -1,0 +1,14 @@
+ErrMsg census -- Shutdown (unit #41), all 14708 harness cases
+
+evidence/Shutdown/shutdown.errmsg_census_probe.cpp is the shipped translation
+with counters and an atexit dump added and NOTHING ELSE changed, so the run is
+GREEN (harness/Shutdown.json's own 14708/0 was reproduced by it) and is a
+READING of the corpus rather than a perturbation of it.
+
+VITCENSUS errmsg_trim calls 3565 | assign_errmsg calls 3565
+VITCENSUS n_ErrMsg min 7 max 7 | n_ErrMsg_cap min 4103 max 4103
+VITCENSUS n_ErrMsg == 1: 0 | n_ErrMsg <= 0: 0
+VITCENSUS s.size() == n_ErrMsg_cap: 0 | longest message 16
+VITCENSUS trailing blank inside n_ErrMsg: 159
+
+What each line settles is in mutation/Shutdown.equivalences.json.
