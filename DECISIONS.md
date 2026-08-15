@@ -2,6 +2,125 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #39 — ResController — 2026-08-14
+
+### A reference can have no answer for its own RETURN VALUE, and `no_oracle` could only name a field
+
+`ResController` assigns `ResController` in the ELSE arm only. On `IF (reset)` it
+writes four `resP` elements and returns whatever the result slot holds, and
+Controllers.f90:815 assigns that to `AWC_TiltYaw(Imode)` — the inverse Coleman
+transform and every blade's pitch command. Upstream ROSCO's fifth recorded
+defect, after the two `Flp_Mode==2` indexing bugs, `ExtController`'s unchecked
+`ErrStat` and `UpdateZeroMQ`'s 256-into-256 record.
+
+The harness measured it before anyone read the source that way: `failed 1763 of
+3532`, every kept mismatch naming `vit_result` and nothing else, the reference's
+bytes changing from case to case.
+
+**The remedy that was available was the wrong one.** `reset = { values = [0] }`
+pins the input that reaches the arm, and the arm is four writes that **no other
+instrument in this campaign can reach** — the kernel has `restart` F in 62 of 62
+captured cases and the gate moves 0 of 5,252,000 when the arm is perturbed, both
+measured. Pinning would have bought a green by deleting the only coverage of the
+only thing the harness uniquely sees.
+
+So `no_oracle` was extended to name the function result (`translation-loop
+04975cf`), which excludes the ANSWER rather than the ARM. Three properties were
+kept from the existing key rather than reinvented: the exclusion is reported in
+`Emitted.notes` and in the artifact's `no_oracle_outputs`, a stated name that
+matches nothing is an ERROR, and `result_ctype is None` (a SUBROUTINE) is
+refused with its own message rather than silently accepted. One thing was added:
+R4's coverage line stops saying `return value + N out-parameter(s)` when the
+return is not compared, because a true statement and a false one in one artifact
+is the shape this campaign exists to remove.
+
+**The cost is stated and it is small, and the smallness is a fact about THIS
+unit rather than about the key.** The ELSE arm stores the returned value into
+`res_OutputSignalLast1(inst)`, which is compared on every case, so the
+arithmetic is not excluded — only the copy of it that leaves through the return.
+A unit whose result is NOT mirrored into a compared out-parameter would pay far
+more for the same key, and the entry in `harness/ranges.toml` says so rather
+than leaving the next reader to assume the cost is always this cheap.
+
+**FOR THE DRIVER — a possible method amendment, not taken here.** SPEC's P6 says
+absence must not render as a value. This unit is the case where the ABSENCE is
+in the reference and the instrument had no vocabulary for it at one of its two
+output kinds. The general statement — *every compared output must be nameable as
+having no oracle, not only those the tool happens to reach through a struct* —
+looks like it belongs to the method rather than to rosco-r2, and it is written
+here rather than in the invariant layer for the Driver to raise.
+
+### The kill counts are the census, and they cost nothing to read
+
+The first sweep scored 0.9275. Its per-mutant kill counts are bimodal:
+
+```
+killed on    12 of 3532 cases   21 mutants   <- the ELSE arm's arithmetic
+killed on  1763 of 3532 cases    8 mutants   <- the reset arm's four writes
+killed on  3532 of 3532 cases    7 mutants   <- structural
+```
+
+1766 cases run the ELSE arm and about twelve of them let its arithmetic reach a
+compared output. Unit #34 needed a purpose-built census probe
+(`clamp_census.csv`) to learn the same thing about `PIDController`; here the
+sweep's own stdout said it, and the only reason it nearly went unread is that
+the first run's output was not captured to a file. **Redirect the sweep's stdout
+even on a run you expect to discard** — it is the cheapest census this campaign
+has, and it is already being produced.
+
+The cause is `[PIDController]`'s cause 2 exactly: `saturate(x, lo, hi)` returns
+`hi` whenever `lo >= hi`, R6 draws both bounds from one ±1e3 default, and its
+isolating stage pins every other real to 0.0 or 1e300 — which sets the bounds
+equal. The pins are the call site's own shape widened, and they differ from
+`PIDController`'s in one place: `minValue = { lo = -1e9, hi = 0 }` rather than
+`hi = -1e-3`, because all 14 `Examples/DISCON*.IN` carry `PC_MinPit = 0.000` and
+a pin that excludes the value the whole program uses is a narrowing nobody
+needed.
+
+### A mutant can be non-equivalent, unreachable by every ladder, and killable by one case
+
+`2.0*(omega*omega)` → `(2.0*omega)*omega` survived two corpora. It is NOT an
+equivalence: multiplying by two is exact, so in the normal range `2·RN(u)` and
+`RN(2u)` agree for every input, and in the SUBNORMAL range — where the quantum
+is absolute rather than relative — they do not. `u = 0.4 D` gives `0.0` and `D`.
+
+What made it look equivalent is that reaching a compared output from that corner
+needs a SECOND quantity at its own extreme, and every ladder in the generator
+moves ONE. The one-quantum difference has to survive `-8 +`, so `DT*DT` must be
+within a factor of two of DBL_MAX before it clears half an ulp of 8.
+
+Closed by addition (P5), one state in `harness/baseline.ResController.json`, and
+the state is arithmetic rather than a guess: `freq = 1.77e-163` puts
+`omega*omega` at 0.4 D, `DT = 1e154` puts `DT*DT` at 1e308, `ki = 0` keeps
+`2*DT*ki` out of a0 and a2 where it would swamp the b1 term, and every other
+term is zero so the sum is the b1 term alone — 2.0 against 1.9999999999999998.
+0.986, and the last survivor is the declared one.
+
+**The rule this is an instance of:** *before declaring a floating-point
+reassociation equivalent, ask where the rounding grid stops being relative.*
+Powers of two are exact and the two forms agree everywhere the result is normal;
+subnormals and overflow are the whole of the difference, and both are reachable
+inputs rather than theoretical ones.
+
+### The no-op red test needs the callee bridge the no-op has no reason to call
+
+`harness.sh` decides which callee bridges to generate by reading the translation
+for calls, and drops the callee's own `.cpp.o` from LIBS when it keeps one. A
+no-op stub calls nothing, so no bridge is kept — and every OTHER integrated unit
+in the build tree that calls `saturate_c` fails to link:
+
+```
+rescontroller_test.cpp:(.text+0x388): undefined reference to `saturate_c'
+picontroller.cpp:(.text+0x74):        undefined reference to `saturate_c'
+collect2: error: ld returned 1 exit status
+```
+
+The red-test stub keeps one `(void)saturate_c(0.0, minValue, maxValue);` whose
+result is discarded and whose arguments are constants, so it cannot make the
+stub agree with the reference on any output. Recorded because the failure looks
+like a broken harness and is a property of the STUB: the first unit whose no-op
+red test needed a call in it, and there will be more as the callee graph fills.
+
 ## Unit #37 — PowerControlSetpoints — 2026-08-14
 
 ### The differential harness ran eleven of twenty statements zero times, and the green did not say so

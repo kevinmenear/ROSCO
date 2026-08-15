@@ -358,6 +358,86 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A REFERENCE CAN HAVE NO ANSWER FOR ITS OWN RETURN VALUE, AND THE PIN THAT
+  LOOKS OBVIOUS THROWS AWAY THE ARM INSTEAD OF THE ANSWER.** Unit #39,
+  `translation-loop 04975cf`. `ResController` assigns its result in the ELSE arm
+  only; on `IF (reset)` it returns whatever the slot holds.
+
+  ```
+  HARNESS FAIL: checked 3532  failed 1763  inadmissible 0
+    case 17 vit_result: ref 777cb0d2ffff0000 != got 0000000000000000   <- a pointer
+    case 18 vit_result: ref 10cf0af41fb70000 != got 0000000000000000
+  ```
+
+  `reset = { values = [0] }` makes that green and deletes four writes the
+  harness is the ONLY instrument that reaches -- zero hits in all 27 scenarios,
+  `restart` F in all 62 kernel cases, and the gate red test on the arm moves 0
+  of 5,252,000. **Exclude the ANSWER, not the ARM**: `no_oracle` now names
+  `vit_result`. The same corpus goes `failed 1763` -> `failed 0`, which is also
+  the proof that all 1763 were that one output, since the mismatch list is
+  truncated at sixteen.
+
+  State the cost against THIS unit rather than in general: here the ELSE arm
+  stores the returned value into a compared out-parameter, so the arithmetic is
+  not excluded. A unit whose result is not mirrored anywhere pays much more.
+
+- **THE MUTATION SWEEP'S OWN STDOUT IS A CENSUS AND IT IS FREE. REDIRECT IT EVEN
+  ON A RUN YOU EXPECT TO DISCARD.** Unit #39. The first sweep scored 0.9275 and
+  its per-mutant kill counts are bimodal:
+
+  ```
+  killed on    12 of 3532 cases   21 mutants   <- the ELSE arm's arithmetic
+  killed on  1763 of 3532 cases    8 mutants   <- the reset arm's four writes
+  killed on  3532 of 3532 cases    7 mutants   <- structural
+  ```
+
+  1766 cases run the ELSE arm and twelve of them let its arithmetic reach a
+  compared output. Unit #34 built `clamp_census.csv` to learn that about
+  `PIDController`; this run printed it and the first one was not captured to a
+  file, so it had to be re-run to be quoted.
+
+  The cause is `[PIDController]`'s cause 2 met a second time, and the pin
+  differs in one place worth copying: `minValue = { lo = -1e9, hi = 0 }`, not
+  `hi = -1e-3`, because all 14 `Examples/DISCON*.IN` carry `PC_MinPit = 0.000`
+  and a pin that excludes the value the whole program uses is a narrowing
+  nobody needed.
+
+- **BEFORE CALLING A FLOATING-POINT REASSOCIATION EQUIVALENT, ASK WHERE THE
+  ROUNDING GRID STOPS BEING RELATIVE.** Unit #39.
+  `2.0*(omega*omega)` -> `(2.0*omega)*omega` survived two corpora and is not
+  equivalent: multiplying by two is exact, so the two agree for every input
+  whose result is NORMAL, and part company in the SUBNORMAL range where the
+  quantum is absolute.
+
+  ```
+  u = omega*omega = 0.4 D        2.0*RN(u) = 0.0
+     D = 4.94e-324               RN(2u)    = RN(0.8 D) = D
+  ```
+
+  It looks unreachable because reaching a compared output needs a SECOND
+  quantity at its own extreme and every ladder moves ONE: the quantum must
+  survive `-8 +`, so `DT*DT` has to be within a factor of two of DBL_MAX.
+  Closed by addition, one baseline state, arithmetic rather than a guess --
+  `freq = 1.77e-163`, `DT = 1e154`, `ki = 0` so `2*DT*ki` cannot swamp the term,
+  every other input zero or one. 2.0 against 1.9999999999999998, one case, one
+  kill.
+
+- **A NO-OP RED-TEST STUB STILL NEEDS THE CALLEE BRIDGE, AND THE LINK ERROR
+  NAMES OTHER UNITS.** Unit #39. `harness.sh` generates callee bridges by
+  reading the translation for calls and drops the callee's own `.cpp.o` from
+  LIBS when it keeps one, so a stub that calls nothing keeps nothing:
+
+  ```
+  rescontroller_test.cpp:(.text+0x388): undefined reference to `saturate_c'
+  picontroller.cpp:(.text+0x74):        undefined reference to `saturate_c'
+  ```
+
+  Keep one call whose result is discarded and whose arguments are constants --
+  `(void)saturate_c(0.0, minValue, maxValue);`. It cannot make the stub agree
+  with the reference on any output, and it is the difference between a red test
+  and a build failure that reads like a broken harness. First met here; it will
+  recur on every unit with a translated callee.
+
 - **THE ARM CENSUS IS THE CHEAPEST WAY TO TURN "THE HARNESS REACHES IT" FROM A
   CLAIM INTO A COUNT, AND IT COSTS ONE 19-SECOND RUN.** Unit #38, and it is unit
   #37's instrument used where there is no survivor list at all -- the score was

@@ -4,6 +4,134 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-14: unit #39 `ResController` is `integrated` and CLOSED** — all
+five layers exist, all five ran, all five are red-tested, and the mutation score
+is **1.000** on 68 behavioural mutants with 1 declared equivalent. It is the
+campaign's first unit whose REFERENCE HAS NO ANSWER FOR ITS OWN RETURN VALUE,
+and the instrument had to learn to say so before any number could be taken.
+
+Every count below is read from the committed artifact named in its row.
+
+| layer | result | red-tested |
+|---|---|---|
+| kernel replay, 62 cases (`evidence/ResController/kernel.verify_fields.csv`) | 62/62, all 14,570 field rows `IDENTICAL` | six stubs: **62 · 62 · 62 · 26 · 0 · 0**, and VIT's own (`error` scaled by 1.00001) |
+| differential harness (`harness/ResController.json`) | **2925 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **2925 of 2925**, naming all five compared outputs |
+| mutation (`mutation/ResController.json`) | **68 of 68 behavioural, 1.000**, 1 declared equivalent, 5 no-compile, 8 operators of 12 offered | the score *is* the red test, 68 times |
+| post-integration (`harness/ResController.postintegration.json`) | 2925 checked, 0 failed | TWO: the `reset` MERGE inverted **2925 of 2925**; the bounds transposed **1235 of 2925** |
+| gate, 27 scenarios (`gate/ResController.json`) | 5,252,000 values / 351 channels, 0 mismatched | TWO, and **one of them FAILED** — see below |
+
+**THE FORTRAN LEAVES ITS OWN RESULT UNASSIGNED, AND THE HARNESS FOUND IT BEFORE
+ANY READER DID.** `ResController` assigns `ResController` in the ELSE arm only;
+on `IF (reset)` it returns whatever the result slot holds, and
+Controllers.f90:815 assigns that to `AWC_TiltYaw(Imode)` — the inverse Coleman
+transform and every blade's pitch command. Upstream ROSCO's **fifth** recorded
+defect. The first run of the corpus said so from the other side:
+
+```
+HARNESS FAIL: checked 3532  failed 1763  inadmissible 0
+  case 13 vit_result: ref f2c28ae964943041 != got 0000000000000000
+  case 17 vit_result: ref 777cb0d2ffff0000 != got 0000000000000000
+  case 18 vit_result: ref 10cf0af41fb70000 != got 0000000000000000
+```
+
+Every kept mismatch names `vit_result` and nothing else, and the reference's
+bytes change from case to case — `777cb0d2ffff0000` is a leftover pointer.
+
+**`harness/ranges.toml` COULD NAME A STRUCT FIELD WITH NO ORACLE AND NOT A
+FUNCTION RESULT, SO THE ONLY REMEDY AVAILABLE WAS THE WRONG ONE.**
+`reset = { values = [0] }` would have thrown away the reset ARM — four writes
+**no other instrument in this campaign can reach**. Fixed where it lives
+(`translation-loop 04975cf`): `no_oracle` now names `vit_result` too, R4's own
+coverage line stops claiming the return is compared, and the same 3532-case
+corpus goes from `failed 1763` to `failed 0`. That transition is also the proof
+that all 1763 were that one output; the mismatch list is truncated at sixteen.
+
+The cost is small and it is measured rather than argued: the ELSE arm stores the
+returned value into `res_OutputSignalLast1(inst)`, which is compared on every
+case, so the arithmetic is not excluded — only the copy of it that leaves
+through the return.
+
+**THE SECOND GATE RED TEST MOVED 0 OF 5,252,000, AND THAT IS THE FINDING —
+AGAIN.** Unit #38 recorded the same shape one unit ago.
+
+```
+the unit produces no output   saturate(...) -> 0.0        280,312 of 5,252,000
+                                                          revert-verified 0
+the reset arm                 one write 0.0 -> 12345.0          0 of 5,252,000
+                                                          RED_TEST_FAIL, revert 0
+```
+
+`LocalVar%restart = (iStatus == 0)` is the only assignment to it in the
+controller, and the AWC block sits behind `IF (LocalVar%Time .GT. StartTime)`,
+false at `iStatus == 0`. So the arm is not merely unsampled by these 27
+scenarios — nothing in them can enter it. The kernel says the same from the
+value side (`restart` F in 62 of 62; the emptied-arm stub passes 62 of 62). The
+differential harness reaches it in **1464 of 2925** cases and is the only thing
+that does.
+
+**THE FIRST MUTATION SWEEP SCORED 0.9275 AND THE KILL COUNTS ARE THE CENSUS.**
+Bimodal, on the unpinned 3532-case corpus:
+
+```
+killed on    12 of 3532 cases   21 mutants   <- the ELSE arm's arithmetic
+killed on    13/15/22/23        17
+killed on  1763 of 3532 cases    8 mutants   <- the reset arm's four writes
+killed on  1769 of 3532          6
+killed on  3532 of 3532 cases    7 mutants   <- structural
+```
+
+1766 cases run the ELSE arm and about **twelve** of them let its arithmetic
+reach a compared output. `saturate(x, lo, hi)` returns `hi` whenever
+`lo >= hi`, R6 draws both bounds from one ±1e3 default, and its isolating stage
+then pins every other real to 0.0 or 1e300 — which sets the two bounds EQUAL.
+This is `[PIDController]`'s cause 2 met a second time, and the pins are the same
+shape: the call site's own `PC_MinPit`/`PC_MaxPit`, widened. Three of the five
+survivors died with them.
+
+**ONE SURVIVOR WAS NOT AN EQUIVALENCE AND WAS CLOSED BY ADDITION (P5), AND IT
+COST EXACTLY ONE CASE.** `2.0*(omega*omega)` → `(2.0*omega)*omega` is bit-equal
+for every input in the NORMAL range — multiplying by two is exact, so
+`2·RN(u)` and `RN(2u)` sit on grids one power of two apart. They part company
+only where the grid stops being relative:
+
+```
+u = omega*omega = 0.4 D          2.0*RN(u) = 2.0*0.0 = 0.0
+   (D = 4.94e-324)               RN(2u)    = RN(0.8 D) = D      <- one quantum
+```
+
+Reaching a compared output from there needs a SECOND quantity at its own
+extreme, which is why no one-parameter ladder finds it: the quantum has to
+survive `-8 +`, and `D * DT*DT` only clears half an ulp of 8 once `DT*DT` is
+within a factor of two of DBL_MAX. One baseline state — `freq = 1.77e-163`,
+`DT = 1e154`, every other term zero or one — makes `b1` come back **one ulp
+apart** and the mutant dies on that single case. 0.971 → 0.986.
+
+**THE LAST SURVIVOR IS DECLARED, AND ITS REASON IS THE SAME FACT AS THE
+`no_oracle` ENTRY.** `double ResController_result = 0.0` → `= 1.0` is the
+declaration's initialiser, read only on the reset path, where the reference has
+no defined value at all. The initialiser exists so that the C++ is not undefined
+BEHAVIOUR as well as an undefined VALUE; which constant it holds is arbitrary by
+construction. Applied by hand to the shipped translation it passes **2925 of
+2925** (`evidence/ResController/harness.eq-probe-c06837a3.json`), and it is the
+only one of this file's five `0.0` literals that survives — the four reset-arm
+writes are killed on 1464 of 2925 each.
+
+**`b2 = b0` IS AN EQUIVALENCE IN THE WHOLE PROGRAM AND IT IS RECORDED, NOT
+DECLARED.** Controllers.f90:1202 and :1204 both read `4+omega**2*DT**2` — same
+expression, same operands, same order — so a stub reading `b2` off `b0` passes
+62 of 62 and no instrument at any input could disagree. No mutant edited only
+one of the two sites, so nothing needed declaring; it is written down so that
+one which does is read as what it is.
+
+**THE KERNEL IS NOT SATURATION-BLIND, WHICH IS WHAT SEPARATES THIS UNIT FROM
+#33 AND #31.** The no-saturate stub fails **26 of 62**, so 36 captured cases
+return the raw resonator output. `PIController`'s kernel returned `minValue` in
+62 of 62 and was 45-of-62 blind to `error`; `PIDController`'s harness corpus
+returned a bound in 2307 of 2307. Here `PC_MinPit` is 0.0 and `PC_MaxPit` is
+1.57 and the AWC error signal drives the output across zero.
+
+---
+
 **As of 2026-08-14: unit #38 `PreFilterMeasuredSignals` is `integrated` and
 CLOSED** — all five layers exist, all five ran, and the mutation score is
 **1.000** on 114 behavioural mutants with 12 declared equivalent. It is the
