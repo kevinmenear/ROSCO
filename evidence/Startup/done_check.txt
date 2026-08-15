@@ -1,6 +1,6 @@
-# done_check.py Startup -- captured 2026-08-15T09:37:18Z by scripts/capture_done_check.sh
+# done_check.py Startup -- captured 2026-08-15T09:37:52Z by scripts/capture_done_check.sh
 
-Run against the committed state at e4137aac ("Startup: plan.json gains translation and harness_required, which done_check reads and the Driver's schema does not require"), with a CLEAN tree, with stdout
+Run against the committed state at e2259ee1 ("Startup: done_check captured -- 13 of 14, the one FAIL being this file's own absence"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -16,17 +16,17 @@ Reproduce the reading below with no redirection:
 
     python3 scripts/done_check.py Startup
 
-done_check exited 1 (0 only when COMPLETE).
+done_check exited 0 (0 only when COMPLETE).
 
 baseline (inferred): 54d0ab9  -- the commit before cb369f5 touched translations/ControllerBlocks/startup.cpp
 
-Startup: Verdict.INCOMPLETE  (13/14 PASS)
+Startup: Verdict.COMPLETE  (14/14 PASS)
 
 [  ok  ] P1   commits exist                      
 [  ok  ] P2   clean tree                         
 [  ok  ] P3   disposition recorded               
 [  ok  ] P4   evidence recorded                  
-[ FAIL ] P5   evidence resolves                  unresolved_evidence:evidence/Startup/done_check.txt
+[  ok  ] P5   evidence resolves                  
 [  ok  ] P6   functional commit                  
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
