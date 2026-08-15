@@ -1,0 +1,43 @@
+E1.4 STILL HOLDS WITH THIS UNIT INTEGRATED, AND THE PAIR NEEDED NO EDIT.
+
+Run 2026-08-15 immediately after the unit closed, on a clean committed tree.
+
+    md5 rosco/lib/libdiscon.so                    0902c9d7b814bfa787edf0759e403410
+    bash scripts/reset_to_clean.sh
+      9 wrapper-carrying source(s) restored to 54dd134
+      37 translated .cpp source(s) removed from CMakeLists (E1.2 flags kept)
+      1 instrumented object(s) removed from the build tree
+      rebuilt and installed; kgen symbols in rosco/lib/libdiscon.so: 0
+    grep -c 'powercontrolsetpoints_c' ControllerBlocks.f90      0   <- reverted
+    bash scripts/restore_integrated.sh
+      66 file(s) restored from HEAD
+      rebuilt and installed. Gate now measures the INTEGRATED build.
+    grep -c 'powercontrolsetpoints_c' ControllerBlocks.f90      3   <- back
+    md5 rosco/lib/libdiscon.so                    0902c9d7b814bfa787edf0759e403410
+
+BIT-IDENTICAL ROUND TRIP, and `git status` is empty at both ends.
+
+NEITHER SCRIPT WAS TOUCHED, which is unit #36's finding holding for a 37th time:
+`reset_to_clean.sh` selects files by whether HEAD's version calls a `<name>_c(`
+bridge and strips translated `.cpp` sources by reading CMakeLists, so the counts
+moved from 36 to 37 and from 65 to 66 on their own.
+
+TWO COUNTS MOVED THAT DID NOT MOVE LAST TIME, AND BOTH ARE THIS UNIT'S:
+
+  `1 instrumented object(s) removed from the build tree` -- unit #36's run
+  reported 0. This dispatch ran `vit extract`, which installs an INSTRUMENTED
+  library and leaves a kgen-carrying object behind; unit #36's round trip was
+  taken after a dispatch whose extraction had already been cleaned up by the
+  reset it ran at the time. The removal is the script doing exactly what its
+  own header says it exists for, and the assertion after it -- `kgen symbols in
+  rosco/lib/libdiscon.so: 0` -- is what makes it checkable rather than claimed.
+
+  `grep -c powercontrolsetpoints_c` is 3, where PitchSaturation's was 4: this
+  unit is a SUBROUTINE, so its wrapper carries the interface block, the
+  declaration and one CALL, against a FUNCTION's extra occurrence in the result
+  assignment. The count is a shape fact, not a defect.
+
+WHY IT WAS RUN AT ALL. The pair was exercised EARLIER in this dispatch, around
+the extraction, but that was BEFORE this unit was integrated -- so it proved
+nothing about the state the next unit's extraction will start from. A round trip
+taken before the thing that could break it is not a round trip.
