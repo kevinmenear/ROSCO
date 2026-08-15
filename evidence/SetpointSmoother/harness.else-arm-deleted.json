@@ -1,13 +1,13 @@
 {
  "unit": "SetpointSmoother",
  "against": "translation",
- "checked": 5599,
- "failed": 5351,
+ "checked": 13550,
+ "failed": 8628,
  "inadmissible": 0,
  "rule_coverage": [
   "  N/A      R5_non_degenerate_shape    0 varied extent(s); 25 FIXED by the type at [2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 12, 12, 12, 12, 256, 1024, 1024, 1024, 1024, 1024] -- not varied; 72 HELD -- they size arrays the reference does not read, NO index parameter identified, array elements distinct",
-  "  applied  R2_flag_values             2 value(s) across 1 flag(s), each with 8 case(s) of the remaining inputs varied under it",
-  "  applied  R6_reference_literals      1456 value(s) from 18 literal(s) in the reference, each under every declared value of 1 flag(s); 123 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 429 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 520 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 130 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 13 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits; 3 combination(s) of the 1 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead",
+  "  applied  R2_flag_values             5 value(s) across 2 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R6_reference_literals      1456 value(s) from 18 literal(s) in the reference, each under every declared value of 2 flag(s); 41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 429 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 520 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 130 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 13 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits; 3 combination(s) of the 1 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead",
   "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
   "  applied  R3_no_dead_signal          13 real value(s), none zero in every case; 6 HELD string(s) are all-blank in every case by construction -- nothing a defect on those could move; 264 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output",
   "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
@@ -37,12 +37,6 @@
    "got": "a43179c7cc3c8d40"
   },
   {
-   "case": 3,
-   "output": "LocalVar.SS_DelOmegaF",
-   "ref": "0000000000000000",
-   "got": "0000000000408f40"
-  },
-  {
    "case": 4,
    "output": "LocalVar.SS_DelOmegaF",
    "ref": "0000000000000000",
@@ -59,12 +53,6 @@
    "output": "LocalVar.SS_DelOmegaF",
    "ref": "0000000000000000",
    "got": "a8230187994aeebf"
-  },
-  {
-   "case": 7,
-   "output": "LocalVar.SS_DelOmegaF",
-   "ref": "0000000000000000",
-   "got": "00a657de4dca7d3f"
   },
   {
    "case": 8,
@@ -97,12 +85,6 @@
    "got": "b845901e400e88c0"
   },
   {
-   "case": 13,
-   "output": "LocalVar.SS_DelOmegaF",
-   "ref": "0000000000000000",
-   "got": "7bd47645fb4f7b40"
-  },
-  {
    "case": 14,
    "output": "LocalVar.SS_DelOmegaF",
    "ref": "0000000000000000",
@@ -113,6 +95,24 @@
    "output": "LocalVar.SS_DelOmegaF",
    "ref": "0000000000000000",
    "got": "19cdc856974e6540"
+  },
+  {
+   "case": 17,
+   "output": "LocalVar.SS_DelOmegaF",
+   "ref": "0000000000000000",
+   "got": "62489ff9e8f756c0"
+  },
+  {
+   "case": 18,
+   "output": "LocalVar.SS_DelOmegaF",
+   "ref": "0000000000000000",
+   "got": "8da46742da905140"
+  },
+  {
+   "case": 19,
+   "output": "LocalVar.SS_DelOmegaF",
+   "ref": "0000000000000000",
+   "got": "0000000000c07240"
   }
  ],
  "loop_rev": "7ed1348-nogit",
@@ -120,7 +120,7 @@
  "vit_rev": "fe22383-nogit",
  "red_test": {
   "perturbation": "arm census: the ELSE arm's SS_DelOmegaF = 0 deleted, the SS_Mode == 1 arm intact",
-  "result": "5351 of 5599 case(s) failed",
+  "result": "8628 of 13550 case(s) failed",
   "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
  }
 }

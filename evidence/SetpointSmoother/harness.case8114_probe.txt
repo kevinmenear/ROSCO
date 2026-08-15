@@ -1,0 +1,45 @@
+Why the widened corpus killed the reference -- unit #40.
+
+Adding `CntrPar_SS_Mode = { values = [0, 1, 2] }` to harness/ranges.toml took
+the corpus from 5599 cases to 13755 and moved roughly a third of them onto the
+`SS_Mode == 1` arm -- the arm that CALLS LPFilter. The run then died:
+
+    ./test setpointsmoother_cases.bin        Segmentation fault (core dumped)
+    exit 139
+
+`vit_harness.py` reports that as "harness produced no JSON", which is what a
+broken harness looks like rather than what a dead reference looks like, so it
+was localised rather than guessed at. Two instrumented runs of the ALREADY-BUILT
+test binary, each reverted afterwards:
+
+1. `fprintf(stderr, "CASE %d\n", c)` after `r.marker(c)`:
+
+       CASE 8112
+       CASE 8113
+       CASE 8114          <- last line; 8115 lines total, 13755 cases
+
+2. the same, printing the two parameters that decide the call:
+
+       CASE 8110 SS_Mode=2 instLPF=999
+       CASE 8111 SS_Mode=0 instLPF=-999
+       CASE 8112 SS_Mode=0 instLPF=-999
+       CASE 8113 SS_Mode=0 instLPF=-999
+       CASE 8114 SS_Mode=1 instLPF=-999      <- crashes here
+
+Case 8110 has instLPF = 999 and survives because SS_Mode = 2 takes the ELSE arm
+and never calls the filter. 8111..8113 have instLPF = -999 and survive for the
+same reason. 8114 is the first case with BOTH, and it is the crash.
+
+`LPFilter` indexes `FP%lpf1_a1(inst)`, `FP%lpf1_a0(inst)`, `FP%lpf1_b1(inst)`,
+`FP%lpf1_b0(inst)`, `FP%lpf1_InputSignalLast(inst)` and
+`FP%lpf1_OutputSignalLast(inst)`, every one of them `DIMENSION(1024)` in
+ROSCO_Types.f90:239-243, and then writes `inst = inst + 1`. At inst = -999 the
+REFERENCE reads and writes 999 elements before the start of each array. This is
+upstream ROSCO's undefined domain, not a defect in the translation and not one
+in the harness -- the translation indexes the same arrays at the same place.
+
+This is the same measurement three earlier units made, and it is why
+harness/ranges.toml already carries `objInst_instLPF = { lo = 1, hi = 1000 }`
+under [PIDController], [PreFilterMeasuredSignals] and [ResController]. Unit #40
+is the first to reach it through SetpointSmoother, because until SS_Mode was
+declared, four cases of 5599 took the arm that calls the filter at all.

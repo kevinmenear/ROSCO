@@ -804,3 +804,79 @@ vit_result = { no_oracle = "assigned in the ELSE arm only; on `reset` the refere
 # constrained it.
 minValue = { lo = -1e9, hi = 0 }
 maxValue = { lo = 1e-3, hi = 1e9 }
+
+# ---------------------------------------------------------------------------
+# SetpointSmoother
+#
+# ONE ENTRY, AND IT IS THE FIRST IN THIS FILE THAT WIDENS RATHER THAN NARROWS.
+#
+# The unit is two arms. Every statement it computes -- `R_Total`, both DelOmega
+# terms, the `PC_RefSpd` scaling and the LPFilter call -- is on the `SS_Mode ==
+# 1` arm; the other arm writes the constant 0. The generated corpus put FOUR
+# cases of 5599 on the arm with the arithmetic. That is measured, not inferred:
+# two probes deleting one arm each, over the same corpus, fail 4 and 5351, and
+# 4 + 5351 = 5355 is exactly what the no-op fails, so the partition closes.
+# `objInst%instLPF` is what makes the 4 exact -- LPFilter increments it on every
+# call, so an IF-arm case cannot fail to differ when the arm is deleted.
+#
+#   evidence/SetpointSmoother/harness.if-arm-deleted.5599.json    failed    4
+#   evidence/SetpointSmoother/harness.else-arm-deleted.5599.json  failed 5351
+#   the no-op, at that corpus (91e3d80f)                          failed 5355
+#
+# WHY FOUR. `SS_Mode` is an INTEGER with no declared values, so `generate.py`'s
+# `flags` list -- `p.values and p.kind != "char[]"` -- does not contain it, and
+# `flag_variants` therefore never re-runs R6's 1456 ladder values under it. It
+# is reached only by R6's own integer ladder (the decade boundaries and the
+# 32-bit extremes, of which 1 is one) and by the knob's 3 combinations. The
+# generator PRINTS `PREDICATE KNOB: CntrPar_SS_Mode at [0.0, 1.0, 2.0]` while
+# putting four cases on the branch that knob names -- coverage that is announced
+# and not delivered, which is P9 at the level of the instrument rather than the
+# scenario.
+#
+# WHAT `values` CHANGES. Declaring them makes `SS_Mode` a flag, and a flag is
+# what `flag_variants` crosses EVERY later stage against. The corpus stops being
+# a lottery on one integer rung.
+#
+# WHY THIS ONE IS NOT A NARROWING IN ANY WAY THAT COSTS COVERAGE. The reference
+# tests `SS_Mode == 1` and nothing else, so every value other than 1 takes the
+# same arm and executes the same single statement. 0 is what the shipped
+# `Examples/DISCON*.IN` carry, 1 is the branch under test, and 2 stands for the
+# whole of "some other value" -- it is not a mode ROSCO defines. What leaves
+# R6's integer ladder is the decade boundaries and the 32-bit extremes ON THIS
+# PARAMETER ONLY, and every one of them is behaviourally identical to 2 here.
+#
+# THE COST, STATED: a defect that reads `SS_Mode` as something other than a
+# 3-valued flag -- an overflow on `SS_Mode == 2147483647`, say -- is no longer
+# generated. The reference has one integer comparison and no arithmetic on this
+# parameter, so there is nothing at those values for such a defect to be.
+[SetpointSmoother]
+CntrPar_SS_Mode = { values = [0, 1, 2] }
+
+# THE SECOND ENTRY IS FORCED BY THE FIRST, AND IT IS THIS FILE'S OLDEST
+# JUDGEMENT MET A FOURTH TIME. Declaring `SS_Mode` moved about a third of the
+# corpus onto the arm that CALLS LPFilter, and the reference then died:
+#
+#     ./test setpointsmoother_cases.bin    Segmentation fault (core dumped), 139
+#     CASE 8114 SS_Mode=1 instLPF=-999     <- the first case with both
+#
+# `LPFilter` subscripts six `DIMENSION(1024)` fields of `FP` with `inst` and
+# then advances it. At -999 the REFERENCE reads and writes 999 elements before
+# the start of each array. `evidence/SetpointSmoother/harness.case8114_probe.txt`
+# is the localisation -- two instrumented runs of the already-built binary, not
+# an inference from the missing JSON, which `vit_harness.py` reports as "harness
+# produced no JSON" and which reads like a broken harness instead.
+#
+# 1..1000 is [PIDController]'s, [PreFilterMeasuredSignals]'s and
+# [ResController]'s bound unchanged, and this unit is the easiest of the four to
+# justify it for: it advances `instLPF` exactly once, so 1000 leaves 23 slots of
+# margin below the 1024 the type gives.
+#
+# THE COST, STATED: `instLPF` leaves R6's integer ladder, so the decade
+# boundaries and the 32-bit extremes are gone from it. Every one of those is a
+# value at which the REFERENCE has no defined behaviour. What is not covered is
+# the last slot -- the corpus can no longer put the counter at 1024 -- and a
+# translation that read `FP%lpf1_a1[inst]` instead of `[inst-1]` there would
+# have nothing here to disagree with. That defect would be in LPFilter, which is
+# unit #14 and is CALLED rather than inlined, so both sides of this comparison
+# reach one implementation of it and this harness never constrained it.
+objInst_instLPF = { lo = 1, hi = 1000 }
