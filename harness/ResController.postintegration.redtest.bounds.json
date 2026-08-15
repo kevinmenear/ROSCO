@@ -1,0 +1,126 @@
+{
+ "unit": "ResController",
+ "against": "integrated",
+ "checked": 2925,
+ "failed": 1235,
+ "inadmissible": 0,
+ "rule_coverage": [
+  "  applied  R5_non_degenerate_shape    0 varied extent(s); 4 FIXED by the type at [1024, 1024, 1024, 1024] -- not varied, 1 index(es) at 1/interior/n, array elements distinct",
+  "  applied  R2_flag_values             2 value(s) across 1 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R6_reference_literals      968 value(s) from 25 literal(s) in the reference, each under every declared value of 1 flag(s); 165 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 200 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 50 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 5 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits",
+  "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+  "  applied  R3_no_dead_signal          11 real value(s), none zero in every case",
+  "  applied  R11_one_at_a_time          1 case(s) over 1 admissible state(s) (subnormal_omega_squared_with_saturating_DT): each state itself, then ONE of the 0 quantit(y/ies) the reference's own predicates test moved to each of its knob values with every other parameter left admissible. Several states because a reference that refuses two modes TOGETHER cannot have both reachable from one. Not crossed with the flags and not crossed with each other -- a second quantity away from baseline in the same case re-masks the first. Appended after R3's scan and the random fill, so every case index the other rules produced is unchanged and the corpus is a strict extension of the one before it",
+  "  N/A      R12_narrowing_width        no CHARACTER local is narrower than a dummy assigned into it -- the reference truncates nothing, so there is no boundary for this rule to reach",
+  "  N/A      R13_staging_capacity       no deferred-length CHARACTER output -- no parameter whose LENGTH the callee chooses, so no staging buffer whose capacity a case could state",
+  "  N/A      R14_planted_word           no CHARACTER ARRAY input -- there is no element for a scalar string to be a word OF, so no comparison of this shape exists to reach",
+  "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+  "  applied  R4_compare_all_outputs     return value NOT compared (no_oracle) + 5 out-parameter(s): resP_res_OutputSignalLast1, resP_res_OutputSignalLast2, resP_res_InputSignalLast1, resP_res_InputSignalLast2, inst"
+ ],
+ "mismatches": [
+  {
+   "case": 0,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "0000000084d7a7c1f4ba980d3e1f8fc03b8e343951108fc0c7e1b91a09018fc0...",
+   "got": "b07e64cff07f2b41f4ba980d3e1f8fc03b8e343951108fc0c7e1b91a09018fc0..."
+  },
+  {
+   "case": 1,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "0000000084d7a7c175f7e708ff1f8fc017d978116e108fc093d7f4f780018fc0...",
+   "got": "0c9cb7f5f87f2b4175f7e708ff1f8fc017d978116e108fc093d7f4f780018fc0..."
+  },
+  {
+   "case": 2,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "3a80316e322f8fc02cfa9cf8ad208fc0d5644b401b108fc0da50320b91008fc0...",
+   "got": "3a80316e322f8fc02cfa9cf8ad208fc0d5644b401b108fc0da50320b91008fc0..."
+  },
+  {
+   "case": 3,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "1c42b7b83c2f8fc0365d9441241f8fc00a6ca3f617108fc09ca6988441008fc0...",
+   "got": "1c42b7b83c2f8fc0365d9441241f8fc00a6ca3f617108fc09ca6988441008fc0..."
+  },
+  {
+   "case": 4,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "0000000084d7a7c15fac2a80e41e8fc07828e4df790f8fc06ee5264357008fc0...",
+   "got": "1373773409802b415fac2a80e41e8fc07828e4df790f8fc06ee5264357008fc0..."
+  },
+  {
+   "case": 5,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "06dc7f328d258fc0efe4dcff8d158fc0c0489c0122078fc008179a967df78ec0...",
+   "got": "06dc7f328d258fc0efe4dcff8d158fc0c0489c0122078fc008179a967df78ec0..."
+  },
+  {
+   "case": 6,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "edcfdd7d060e65c0266c4809e9f464c09a5719e8cbd864c0b7e0386f9cbf64c0...",
+   "got": "edcfdd7d060e65c0266c4809e9f464c09a5719e8cbd864c0b7e0386f9cbf64c0..."
+  },
+  {
+   "case": 8,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "3754ac77109187c0644332ece78987c0c3a9de8ad68287c00942a4c72b7b87c0...",
+   "got": "3754ac77109187c0644332ece78987c0c3a9de8ad68287c00942a4c72b7b87c0..."
+  },
+  {
+   "case": 10,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "901a7210d8fa83c0d665cbe64fef83c0ab9b207318e483c06aa17eeac4d783c0...",
+   "got": "901a7210d8fa83c0d665cbe64fef83c0ab9b207318e483c06aa17eeac4d783c0..."
+  },
+  {
+   "case": 11,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "285711292fe481c00ec9d8c720d781c062ab62ab9dcb81c0022d028180bf81c0...",
+   "got": "285711292fe481c00ec9d8c720d781c062ab62ab9dcb81c0022d028180bf81c0..."
+  },
+  {
+   "case": 12,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "f45b7990995f85c0a21f04c3645785c0d7f39f2bb34d85c0cc9f909f8e4485c0...",
+   "got": "f45b7990995f85c0a21f04c3645785c0d7f39f2bb34d85c0cc9f909f8e4485c0..."
+  },
+  {
+   "case": 22,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "0000000084d7a7c18e406b365e1f8fc0614708f845108fc0bd02238a77008fc0...",
+   "got": "630cae2821802b418e406b365e1f8fc0614708f845108fc0bd02238a77008fc0..."
+  },
+  {
+   "case": 24,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "0000000084d7a7c123cac46be41e8fc07d1d7513fe108fc06da37d9ac8008fc0...",
+   "got": "e6fe743f0e7e2b4123cac46be41e8fc07d1d7513fe108fc06da37d9ac8008fc0..."
+  },
+  {
+   "case": 26,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "0000000084d7a7c15fbcd0a6ac208fc08c4ba36761108fc05bc0e8c134018fc0...",
+   "got": "42e4030b71822b415fbcd0a6ac208fc08c4ba36761108fc05bc0e8c134018fc0..."
+  },
+  {
+   "case": 28,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "0000000084d7a7c1e864a535051f8fc0c2d4a477e40f8fc05dc19cea80018fc0...",
+   "got": "f2885b0a1a7f2b41e864a535051f8fc0c2d4a477e40f8fc05dc19cea80018fc0..."
+  },
+  {
+   "case": 30,
+   "output": "resP.res_OutputSignalLast1",
+   "ref": "0000000084d7a7c103844ccc28208fc0ba89effcc8108fc0d717a02a1b008fc0...",
+   "got": "6bbd2698f6802b4103844ccc28208fc0ba89effcc8108fc0d717a02a1b008fc0..."
+  }
+ ],
+ "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
+ "loop_rev": "04975cf",
+ "vit_rev": "fe22383",
+ "red_test": {
+  "perturbation": "wrapper: minValue and maxValue TRANSPOSED in the call to rescontroller_c",
+  "result": "1235 of 2925 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ }
+}
