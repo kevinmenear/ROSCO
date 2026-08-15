@@ -1,6 +1,6 @@
-# done_check.py interp2d -- captured 2026-08-15T15:07:41Z by scripts/capture_done_check.sh
+# done_check.py interp2d -- captured 2026-08-15T15:07:50Z by scripts/capture_done_check.sh
 
-Run against the committed state at 58b5f676 ("interp2d: the evidence README -- four layers, the two tool defects, and the 32 survivors partitioned by cause"), with a CLEAN tree, with stdout
+Run against the committed state at c80008f1 ("interp2d: done_check captured -- 12 of 14, the FAILs being this file's own absence and the 0.8072 mutation score against a 1.000 threshold"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -20,13 +20,13 @@ done_check exited 1 (0 only when COMPLETE).
 
 baseline (inferred): b947efe  -- the commit before 568294e touched translations/Functions/interp2d.cpp
 
-interp2d: Verdict.INCOMPLETE  (12/14 PASS)
+interp2d: Verdict.INCOMPLETE  (13/14 PASS)
 
 [  ok  ] P1   commits exist                      
 [  ok  ] P2   clean tree                         
 [  ok  ] P3   disposition recorded               
 [  ok  ] P4   evidence recorded                  
-[ FAIL ] P5   evidence resolves                  unresolved_evidence:evidence/interp2d/done_check.txt
+[  ok  ] P5   evidence resolves                  
 [  ok  ] P6   functional commit                  
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                

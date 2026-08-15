@@ -4,8 +4,7 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-15: unit #45 `interp2d` is `integrated`; the done-condition
-number is filled in from `evidence/interp2d/done_check.txt` below** —
+**As of 2026-08-15: unit #45 `interp2d` is `integrated` and CLOSED at 13 of 14** —
 four layers exist, all four ran, all four are red-tested, and the mutation score
 is an honest **0.8072** against a threshold of 1.000 on 166 behavioural mutants
 with **none declared equivalent**. It is the campaign's first unit whose
@@ -70,7 +69,10 @@ non-increasing table at all — proved by the survivor list, not by re-reading:
 dead code**, 2 more in the size-mismatch branches the extent ties exclude, 10
 are equivalence candidates with an argument and no probe, 6 in the ErrMsg
 helper. Nothing is declared: this campaign's rule is that a declaration rests on
-a measurement.
+a measurement. **P12 is the one failing predicate and it is left failing on
+purpose**: closing it would mean declaring ten equivalences on arguments rather
+than probes, and excusing sixteen more with the domain statements that made them
+unreachable. Same standing as `unwrap` at 0.960 and `YawRateControl` at 0.8961.
 
 ```
                                     cases   mutants killed / 166
