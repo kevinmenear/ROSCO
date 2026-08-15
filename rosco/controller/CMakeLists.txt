@@ -129,6 +129,7 @@ set(SOURCES
     src/structuralcontrol.cpp
     src/yawratecontrol.cpp
     src/interp2d.cpp
+    src/ratelimit.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

@@ -163,6 +163,24 @@ IMPLICIT NONE
         END FUNCTION interp2d_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of ratelimit
+    INTERFACE
+        FUNCTION ratelimit_c(inputSignal, minRate, maxRate, DT, reset, rlP, inst, has_ResetValue, ResetValue) BIND(C, NAME='ratelimit_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: inputSignal
+            REAL(C_DOUBLE), VALUE :: minRate
+            REAL(C_DOUBLE), VALUE :: maxRate
+            REAL(C_DOUBLE), VALUE :: DT
+            INTEGER(C_INT), VALUE :: reset
+            TYPE(C_PTR), VALUE :: rlP
+            INTEGER(C_INT), INTENT(INOUT) :: inst
+            INTEGER(C_INT), VALUE :: has_ResetValue
+            REAL(C_DOUBLE), VALUE :: ResetValue
+            REAL(C_DOUBLE) :: ratelimit_c
+        END FUNCTION ratelimit_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION saturate(inputValue, minValue, maxValue) RESULT(saturate_result)
@@ -176,46 +194,31 @@ CONTAINS
     END FUNCTION saturate
     
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION ratelimit(inputSignal, minRate, maxRate, DT, reset, rlP, inst, ResetValue)
-    ! Saturates inputValue. Makes sure it is not smaller than minValue and not larger than maxValue
+    FUNCTION ratelimit(inputSignal, minRate, maxRate, DT, reset, rlP, inst, ResetValue) RESULT(ratelimit_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : rlParams
-
-        
         IMPLICIT NONE
+        REAL(8), INTENT(IN) :: inputSignal
+        REAL(8), INTENT(IN) :: minRate
+        REAL(8), INTENT(IN) :: maxRate
+        REAL(8), INTENT(IN) :: DT
+        LOGICAL, INTENT(IN) :: reset
+        TYPE(RLPARAMS), INTENT(INOUT), TARGET :: rlP
+        INTEGER(4), INTENT(INOUT) :: inst
+        REAL(8), INTENT(IN), OPTIONAL :: ResetValue
+        REAL(8) :: ratelimit_result
 
-        REAL(DbKi), INTENT(IN)          :: inputSignal
-        REAL(DbKi), INTENT(IN)          :: minRate
-        REAL(DbKi), INTENT(IN)          :: maxRate
-        REAL(DbKi), INTENT(IN)          :: DT
-        LOGICAL,    INTENT(IN)         :: reset  
-        TYPE(rlParams), INTENT(INOUT)   :: rlP
-        INTEGER(IntKi), INTENT(INOUT)   :: inst
-        REAL(DbKi), OPTIONAL,  INTENT(IN)          :: ResetValue           ! Value to base rate limit off if restarting
+        ! Local variables for OPTIONAL args
+        INTEGER(C_INT) :: has_ResetValue_flag
+        REAL(C_DOUBLE) :: ResetValue_val
 
-        ! Local variables
-        REAL(DbKi)                 :: rate
-        REAL(DbKi)                 :: ResetValue_
-
-        ResetValue_ = inputSignal
-        IF (PRESENT(ResetValue)) ResetValue_ = ResetValue   
-
-        IF (reset) THEN
-            rlP%LastSignal(inst) = ResetValue_
-            ratelimit = ResetValue_
-            
-        ELSE
-            rate = (inputSignal - rlP%LastSignal(inst))/DT                       ! Signal rate (unsaturated)
-            rate = saturate(rate, minRate, maxRate)                 ! Saturate the signal rate
-
-            ratelimit = rlP%LastSignal(inst) + rate*DT  
-
-            rlP%LastSignal(inst) = ratelimit
-
-        ENDIF
-
-        ! Increment instance
-        inst = inst + 1                     ! Saturate the overall command using the rate limit
-
+        has_ResetValue_flag = 0
+        ResetValue_val = 0.0D0
+        IF (PRESENT(ResetValue)) THEN
+            has_ResetValue_flag = 1
+            ResetValue_val = REAL(ResetValue, C_DOUBLE)
+        END IF
+        ratelimit_result = REAL(ratelimit_c(inputSignal, minRate, maxRate, DT, MERGE(1_C_INT, 0_C_INT, reset), C_LOC(rlP), inst, has_ResetValue_flag, ResetValue_val), 8)
     END FUNCTION ratelimit
 
 
