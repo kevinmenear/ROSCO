@@ -2614,6 +2614,7 @@
     "gate/YawRateControl.json",
     "gate/YawRateControl.redtest.persist_right.json",
     "gate/YawRateControl.redtest.zmq_arm.json",
+    "evidence/YawRateControl/reset_restore_roundtrip.txt",
     "evidence/YawRateControl/done_check.txt"
    ]
   },

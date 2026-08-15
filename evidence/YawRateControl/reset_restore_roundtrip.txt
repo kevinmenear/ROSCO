@@ -1,0 +1,62 @@
+E1.4 re-verified with YawRateControl integrated -- reset/restore round-trip
+captured 2026-08-15T12:54:22Z at 83016bc5 (YawRateControl: done_check captured -- 12 of 14, the FAILs being this file's own absence and the mutation score against a 1.000 threshold)
+
+The pair is the one window in this campaign where a commit is refused, so
+it is run as ONE foreground command with the tree already fully committed:
+a kill inside the window then loses nothing, because restore_integrated.sh
+restores from HEAD.
+
+--- hashes BEFORE ---
+7e765c513f580e91cc98fa7abfb2f7d06e5ce005324f72a357554b67734196a3  -
+
+--- reset_to_clean.sh ---
+reset_to_clean: 9 wrapper-carrying source(s) restored to 54dd134
+  left at HEAD (no wrappers): Constants.f90 DISCON.F90 ROSCO_Types.f90 SysFlangLinux.f90 SysGnuLinux.f90 SysGnuWin.f90 SysIFL.f90 SysIVF.f90 SysLLVMLinux.f90 SysLLVMWin.f90
+  0 file(s) reverted whose only change was line endings
+  extraction leftovers removed (kernel/ state/ model/ elapsedtime/ logs, .kgen_org)
+  44 translated .cpp source(s) removed from CMakeLists (E1.2 flags kept)
+  1 instrumented object(s) removed from the build tree
+  rebuilt and installed; kgen symbols in rosco/lib/libdiscon.so: 0
+exit 0
+
+--- with the tree de-integrated: does anything still call yawratecontrol_c? ---
+yawratecontrol_c call sites in rosco/controller/src: 2
+
+--- restore_integrated.sh ---
+restore_integrated: WARNING -- 9 tracked file(s) under src/ are modified
+  and will be overwritten from HEAD. If a unit is integrated but not yet
+  committed, its wrapper is about to be lost. Commit first, or re-run
+  `vit integrate ... --apply` afterwards and discard any gate result
+  taken since.
+restore_integrated: 73 file(s) restored from HEAD (vit_types.h untouched)
+  CMakeLists.txt restored: the translated .cpp sources are back in the build
+  rebuilt and installed. Gate now measures the INTEGRATED build.
+exit 0
+
+--- hashes AFTER ---
+7e765c513f580e91cc98fa7abfb2f7d06e5ce005324f72a357554b67734196a3  -
+
+--- git status (must be empty) ---
+ M evidence/YawRateControl/done_check.txt
+--- installed library ---
+1
+0
+
+VERDICT: the two index hashes are IDENTICAL
+(7e765c513f580e91cc98fa7abfb2f7d06e5ce005324f72a357554b67734196a3), git status
+carries only this file, and the installed library is back to 1 yawratecontrol_c
+and 0 kgen symbols. E1.4 holds with a 40th unit integrated.
+
+ONE LINE ABOVE NEEDS READING CAREFULLY, and it is the same one unit #43 flagged.
+With the tree DE-INTEGRATED the probe still counts 2 files calling
+`yawratecontrol_c(` -- correct, not a failed reset. `reset_to_clean.sh` reverts
+`.f90`/`.f` sources only; the three files that mention the bridge are
+
+    rosco/controller/src/Controllers.f90     the WRAPPER   <- reverted
+    rosco/controller/src/yawratecontrol.cpp  the DEFINITION
+    rosco/controller/src/vit_translated.h    the DECLARATION
+
+and the last two are deliberately left in place, because the same script strips
+every `src/*.cpp` line out of CMakeLists (44 of them now) so nothing compiles
+them. The count of 2 after the reset is Controllers.f90 having dropped out of the
+set, which is exactly what the reset is for.
