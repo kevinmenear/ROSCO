@@ -73,6 +73,7 @@ void shutdown_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrP
 void startup_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_view_t* ErrVar);
 void structuralcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst, errorvariables_view_t* ErrVar);
 void yawratecontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_view_t* ErrVar);
+double interp2d_c(double* xData, int n_xData, double* yData, int n_yData, double* zData, int n_zData_rows, int n_zData_cols, double xq, double yq, errorvariables_view_t* ErrVar);
 
 #ifdef __cplusplus
 }

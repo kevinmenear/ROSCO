@@ -144,6 +144,25 @@ IMPLICIT NONE
         END FUNCTION wrap_360_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of interp2d
+    INTERFACE
+        FUNCTION interp2d_c(xData, n_xData, yData, n_yData, zData, n_zData_rows, n_zData_cols, xq, yq, ErrVar) BIND(C, NAME='interp2d_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), INTENT(IN) :: xData(*)
+            INTEGER(C_INT), VALUE :: n_xData
+            REAL(C_DOUBLE), INTENT(IN) :: yData(*)
+            INTEGER(C_INT), VALUE :: n_yData
+            REAL(C_DOUBLE), INTENT(IN) :: zData(*)
+            INTEGER(C_INT), VALUE :: n_zData_rows
+            INTEGER(C_INT), VALUE :: n_zData_cols
+            REAL(C_DOUBLE), VALUE :: xq
+            REAL(C_DOUBLE), VALUE :: yq
+            TYPE(C_PTR), VALUE :: ErrVar
+            REAL(C_DOUBLE) :: interp2d_c
+        END FUNCTION interp2d_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION saturate(inputValue, minValue, maxValue) RESULT(saturate_result)
@@ -219,152 +238,24 @@ CONTAINS
     END FUNCTION interp1d
 
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION interp2d(xData, yData, zData, xq, yq, ErrVar)
-    ! interp2d 2-D interpolation (table lookup). Query done using bilinear interpolation. 
-    ! Note that the interpolated matrix with associated query vectors may be different than "standard", - zData should be formatted accordingly
-    ! - xData follows the matrix from left to right
-    ! - yData follows the matrix from top to bottom
-    ! A simple case: xData = [1 2 3], yData = [4 5 6]
-    !        | 1    2   3
-    !       -------------
-    !       4| a    b   c
-    !       5| d    e   f
-    !       6| g    H   i
-
+    FUNCTION interp2d(xData, yData, zData, xq, yq, ErrVar) RESULT(interp2d_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : ErrorVariables
-        USE ieee_arithmetic
-        
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
         IMPLICIT NONE
-    
-        ! Inputs
-        REAL(DbKi), DIMENSION(:),   INTENT(IN)     :: xData        ! Provided x data (vector), to find query point (should be strictly increasing)
-        REAL(DbKi), DIMENSION(:),   INTENT(IN)     :: yData        ! Provided y data (vector), to find query point (should be strictly increasing)
-        REAL(DbKi), DIMENSION(:,:), INTENT(IN)     :: zData        ! Provided z data (vector), to be interpolated
-        REAL(DbKi),                 INTENT(IN)     :: xq           ! x-value for which the z value has to be interpolated
-        REAL(DbKi),                 INTENT(IN)     :: yq           ! y-value for which the z value has to be interpolated
-
-        ! Allocate variables
-        INTEGER(IntKi)                              :: i            ! Iteration index & query index, x-direction
-        INTEGER(IntKi)                              :: ii           ! Iteration index & second que .  ry index, x-direction
-        INTEGER(IntKi)                              :: j            ! Iteration index & query index, y-direction
-        INTEGER(IntKi)                              :: jj           ! Iteration index & second query index, y-direction
-        REAL(DbKi), DIMENSION(2,2)                 :: fQ           ! zData value at query points for bilinear interpolation            
-        REAL(DbKi), DIMENSION(1)                   :: fxy           ! Interpolated z-data point to be returned
-        REAL(DbKi)                                 :: fxy1          ! zData value at query point for bilinear interpolation
-        REAL(DbKi)                                 :: fxy2          ! zData value at query point for bilinear interpolation       
-        LOGICAL                                 :: edge     
-
-        ! Error Catching
-        TYPE(ErrorVariables), INTENT(INOUT)     :: ErrVar
-        INTEGER(IntKi)                              :: I_DIFF
-
-        CHARACTER(*), PARAMETER                 :: RoutineName = 'interp2d'
-        
-        ! Error catching
-        ! Are xData and zData(:,1) the same size?
-        IF (SIZE(xData) .NE. SIZE(zData,2)) THEN
-            ErrVar%aviFAIL = -1
-            WRITE(ErrVar%ErrMsg,"(A,I4,A,I4,A)") " SIZE(xData) =", SIZE(xData), & 
-            ' and SIZE(zData,1) =', SIZE(zData,2),' are not the same'
-        END IF
-
-        ! Are yData and zData(1,:) the same size?
-        IF (SIZE(yData) .NE. SIZE(zData,1)) THEN
-            ErrVar%aviFAIL = -1
-            WRITE(ErrVar%ErrMsg,"(A,I4,A,I4,A)") " SIZE(yData) =", SIZE(yData), & 
-            ' and SIZE(zData,2) =', SIZE(zData,1),' are not the same'
-        END IF
-
-        ! Is xData non decreasing
-        DO I_DIFF = 1, size(xData) - 1
-            IF (xData(I_DIFF + 1) - xData(I_DIFF) <= 0) THEN
-                ErrVar%aviFAIL = -1
-                ErrVar%ErrMsg  = ' xData is not strictly increasing'
-                EXIT 
-            END IF
-        END DO
-
-        ! Is yData non decreasing
-        DO I_DIFF = 1, size(yData) - 1
-            IF (yData(I_DIFF + 1) - yData(I_DIFF) <= 0) THEN
-                ErrVar%aviFAIL = -1
-                ErrVar%ErrMsg  = ' yData is not strictly increasing'
-                EXIT 
-            END IF
-        END DO
-
-        ! ---- Find corner indices surrounding desired interpolation point -----
-            ! x-direction
-        IF (xq <= MINVAL(xData) .OR. (ieee_is_nan(xq))) THEN       ! On lower x-bound, just need to find zData(yq)
-            j = 1
-            jj = 1
-            interp2d = interp1d(yData,zData(:,j),yq,ErrVar)     
-            RETURN
-        ELSEIF (xq >= MAXVAL(xData)) THEN   ! On upper x-bound, just need to find zData(yq)
-            j = size(xData)
-            jj = size(xData)
-            interp2d = interp1d(yData,zData(:,j),yq,ErrVar)
-            RETURN
-        ELSE
-            DO j = 1,size(xData)            
-                IF (xq == xData(j)) THEN ! On axis, just need 1d interpolation
-                    jj = j
-                    interp2d = interp1d(yData,zData(:,j),yq,ErrVar)  
-                    RETURN
-                ELSEIF (xq < xData(j)) THEN
-                    jj = j
-                    EXIT
-                ELSE
-                    CONTINUE
-                END IF
-            END DO
-        ENDIF
-        j = j-1 ! Move j back one
-            ! y-direction
-        IF (yq <= MINVAL(yData) .OR. (ieee_is_nan(yq))) THEN       ! On lower y-bound, just need to find zData(xq)
-            i = 1
-            ii = 1
-            interp2d = interp1d(xData,zData(i,:),xq,ErrVar)     
-            RETURN
-        ELSEIF (yq >= MAXVAL(yData)) THEN   ! On upper y-bound, just need to find zData(xq)
-            i = size(yData)
-            ii = size(yData)
-            interp2d = interp1d(xData,zData(i,:),xq,ErrVar)      
-            RETURN
-        ELSE
-            DO i = 1,size(yData)
-                IF (yq == yData(i)) THEN    ! On axis, just need 1d interpolation
-                    ii = i
-                    interp2d = interp1d(xData,zData(i,:),xq,ErrVar)        
-                    RETURN
-                ELSEIF (yq < yData(i)) THEN
-                    ii = i
-                    EXIT
-                ELSE
-                    CONTINUE
-                END IF
-            END DO
-        ENDIF
-        i = i-1 ! move i back one
-        
-        ! ---- Do bilinear interpolation ----
-        ! Find values at corners 
-        fQ(1,1) = zData(i,j)
-        fQ(2,1) = zData(ii,j)
-        fQ(1,2) = zData(i,jj)
-        fQ(2,2) = zData(ii,jj)
-        ! Interpolate
-        fxy1 = (xData(jj) - xq)/(xData(jj) - xData(j))*fQ(1,1) + (xq - xData(j))/(xData(jj) - xData(j))*fQ(1,2)
-        fxy2 = (xData(jj) - xq)/(xData(jj) - xData(j))*fQ(2,1) + (xq - xData(j))/(xData(jj) - xData(j))*fQ(2,2)
-        fxy = (yData(ii) - yq)/(yData(ii) - yData(i))*fxy1 + (yq - yData(i))/(yData(ii) - yData(i))*fxy2
-
-        interp2d = fxy(1)
-
-        ! Add RoutineName to error message
-        IF (ErrVar%aviFAIL < 0) THEN
-            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
-        ENDIF
-
+        REAL(8), INTENT(IN) :: xData(:)
+        REAL(8), INTENT(IN) :: yData(:)
+        REAL(8), INTENT(IN) :: zData(:,:)
+        REAL(8), INTENT(IN) :: xq
+        REAL(8), INTENT(IN) :: yq
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        REAL(8) :: interp2d_result
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        interp2d_result = REAL(interp2d_c(xData, SIZE(xData), yData, SIZE(yData), zData, SIZE(zData, 1), SIZE(zData, 2), xq, yq, C_LOC(ErrVar_view)), 8)
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
     END FUNCTION interp2d
 
 !-------------------------------------------------------------------------------------------------------------------------------
