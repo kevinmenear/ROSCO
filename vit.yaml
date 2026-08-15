@@ -541,7 +541,7 @@ translations:
   # stubs are in evidence/ResController/kernel.stubs.txt; two of the six cannot
   # fail, and only one of those is a blindness.
   ResController:
-    status: verified
+    status: integrated
     cases_passed: 62
     cases_total: 62
     cases_skipped: 0

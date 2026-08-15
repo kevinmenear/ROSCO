@@ -83,6 +83,25 @@ MODULE Controllers
         END FUNCTION piicontroller_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of ResController
+    INTERFACE
+        FUNCTION rescontroller_c(error, kp, ki, freq, minValue, maxValue, DT, resP, reset, inst) BIND(C, NAME='rescontroller_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: error
+            REAL(C_DOUBLE), VALUE :: kp
+            REAL(C_DOUBLE), VALUE :: ki
+            REAL(C_DOUBLE), VALUE :: freq
+            REAL(C_DOUBLE), VALUE :: minValue
+            REAL(C_DOUBLE), VALUE :: maxValue
+            REAL(C_DOUBLE), VALUE :: DT
+            TYPE(C_PTR), VALUE :: resP
+            INTEGER(C_INT), VALUE :: reset
+            INTEGER(C_INT), INTENT(INOUT) :: inst
+            REAL(C_DOUBLE) :: rescontroller_c
+        END FUNCTION rescontroller_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE PitchControl(avrSWAP, CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -1168,55 +1187,22 @@ SUBROUTINE StructuralControl(avrSWAP, CntrPar, LocalVar, objInst, ErrVar)
     END FUNCTION PIIController
 
         !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION ResController(error, kp, ki, freq, minValue, maxValue, DT, resP, reset, inst)
+    FUNCTION ResController(error, kp, ki, freq, minValue, maxValue, DT, resP, reset, inst) RESULT(ResController_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : resParams
-
-    ! PI controller, with output saturation
-
         IMPLICIT NONE
-        ! Allocate Inputs
-        REAL(DbKi),    INTENT(IN)         :: error
-        REAL(DbKi),    INTENT(IN)         :: kp
-        REAL(DbKi),    INTENT(IN)         :: ki
-        REAL(DbKi),    INTENT(IN)         :: freq
-        REAL(DbKi),    INTENT(IN)         :: minValue
-        REAL(DbKi),    INTENT(IN)         :: maxValue
-        REAL(DbKi),    INTENT(IN)         :: DT
-        INTEGER(IntKi), INTENT(INOUT)     :: inst
-        TYPE(resParams), INTENT(INOUT)    :: resP
-        LOGICAL,    INTENT(IN)            :: reset
-        ! Allocate local variables
-        REAL(DbKi)                        :: omega                                        ! Frequency
-        REAL(DbKi)                        :: a0, a1, a2, b0, b1, b2
-
-        omega = 2*PI*freq
-
-        !! Tustin RC
-        b0 = 4+omega**2*DT**2
-        b1 = -8+2*omega**2*DT**2
-        b2 = 4+omega**2*DT**2
-        a0 = b0*kp + 2*DT*ki
-        a1 = b1*kp 
-        a2 = b2*kp - 2*DT*ki
-        ! Initialize persistent variables/arrays, and set initial condition for integrator term
-        IF (reset) THEN
-            resP%res_OutputSignalLast1(inst)  = 0
-            resP%res_OutputSignalLast2(inst)  = 0
-            resP%res_InputSignalLast1(inst)   = 0
-            resP%res_InputSignalLast2(inst)   = 0
-        ELSE
-            ResController = 1/b0*( -b1*resP%res_OutputSignalLast1(inst) - b2*resP%res_OutputSignalLast2(inst) &
-                                    + a0*error + a1*resP%res_InputSignalLast1(inst) + a2*resP%res_InputSignalLast2(inst))
-            ResController = saturate(ResController, minValue, maxValue)
-        
-            ! Save signals for next time step
-            resP%res_InputSignalLast2(inst)   = resP%res_InputSignalLast1(inst)
-            resP%res_InputSignalLast1(inst)   = error
-            resP%res_OutputSignalLast2(inst)  = resP%res_OutputSignalLast1(inst)
-            resP%res_OutputSignalLast1(inst)  = ResController
-        END IF
-        inst = inst + 1
-        
+        REAL(8), INTENT(IN) :: error
+        REAL(8), INTENT(IN) :: kp
+        REAL(8), INTENT(IN) :: ki
+        REAL(8), INTENT(IN) :: freq
+        REAL(8), INTENT(IN) :: minValue
+        REAL(8), INTENT(IN) :: maxValue
+        REAL(8), INTENT(IN) :: DT
+        TYPE(RESPARAMS), INTENT(INOUT), TARGET :: resP
+        LOGICAL, INTENT(IN) :: reset
+        INTEGER(4), INTENT(INOUT) :: inst
+        REAL(8) :: ResController_result
+        ResController_result = REAL(rescontroller_c(error, kp, ki, freq, minValue, maxValue, DT, C_LOC(resP), MERGE(1_C_INT, 0_C_INT, reset), inst), 8)
     END FUNCTION ResController
 
 !-------------------------------------------------------------------------------------------------------------------------------
