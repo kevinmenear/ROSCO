@@ -50,7 +50,25 @@ kgen:
   # (:349-:351, ZERO hits in all 27) and the tower-top notch loop (:379, whose
   # DO line carries exactly the call count, so the body iterates 0 times in
   # every scenario). Restored to the default after the extraction.
-  run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py --scenario 27
+  #
+  # SCENARIO 25 for unit #40 `SetpointSmoother`, and the reason is a PRODUCT
+  # that is 1.0 everywhere else. The unit's first statement is
+  #
+  #     R_Total = LocalVar%PRC_R_Speed * LocalVar%PRC_R_Torque * LocalVar%PRC_R_Pitch
+  #
+  # and those three multipliers are 1.0 in every scenario except 25, which
+  # patches `PRC_R_Speed = 0.9` (PRC_Mode=2, PRC_Comm=0). On any other scenario
+  # a translation that DROPPED R_Total entirely would replay bit-identically.
+  # Hit counts do not decide this one: scenario 1 executes the call site 79,998
+  # times against scenario 25's 15,999 and is blind to the same three inputs.
+  #
+  # The ELSE arm (`SS_Mode /= 1`) is outside this kernel and outside 26 of the
+  # 27 scenarios: coverage/line_coverage.json line :514 carries hits for
+  # SCENARIO 23 ALONE (15,999), which is the `PS_Mode=0 and SS_Mode=0` disabled-
+  # paths sim, and scenario 23 in turn never reaches :508-:512. No scenario
+  # reaches both arms, so no kernel can. The differential harness draws
+  # `CntrPar%SS_Mode` freely and is the instrument that covers both.
+  run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py --scenario 25
   clean_cmd: cd /workspace/ROSCO-r2/rosco/controller/build && make clean
   install_cmd: cp /workspace/ROSCO-r2/rosco/controller/build/libdiscon.so /workspace/ROSCO-r2/rosco/lib/libdiscon.so
   # WIDENED 2026-08-10 during unit #2, and it took two tries. The setup value
@@ -72,7 +90,12 @@ kgen:
   # highest measured hit count at this call site, 23,999. The ranges span its
   # start, middle and end. Chosen from coverage/line_coverage.json, not copied
   # from the first replication.
-  invocation: 0:0:1-20,0:0:12000-12020,0:0:23900-23920
+  #
+  # NARROWED for unit #40 to fit scenario 25, which calls DISCON 15,999 times
+  # rather than scenario 27's 23,999: the third range 23900-23920 would land
+  # past the end of the run and capture nothing. Same three-point shape --
+  # start, middle, end -- arithmetic against the scenario's own call count.
+  invocation: 0:0:1-20,0:0:8000-8020,0:0:15900-15920
   # Interface truth about the Bladed-style array: DISCON receives it as an
   # assumed-size dummy, so nothing in the source states its extent.
   assumed_size_arrays:
