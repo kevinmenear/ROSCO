@@ -20,7 +20,7 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "a523b00",
+ "loop_rev": "eb5028e",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
@@ -61,5 +61,5 @@
  "unit": "interp2d",
  "unit_of_count": "values",
  "verdict": "PASS",
- "vit_rev": "0ee71a7"
+ "vit_rev": "a16a7ab"
 }

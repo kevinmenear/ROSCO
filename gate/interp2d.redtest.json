@@ -21,7 +21,7 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "a523b00",
+ "loop_rev": "eb5028e",
  "mismatched": 922411,
  "mismatched_channels": [
   "scenario_3:bld_pitch 10249/16000",
@@ -111,7 +111,8 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "the bilinear result scaled by 1.000001 -- the site the clean-source coverage puts at 391,882 of this unit 676,656 calls, and the only one of its six result assignments that is not an interp1d call"
+  "the bilinear result scaled by 1.000001 -- the site the clean-source coverage puts at 391,882 of this unit's 676,656 calls, and the only one of its six result assignments that is not an interp1d call",
+  "re-taken at loop_rev eb5028e, the revision at which this unit's corpus went to 1147 cases and its y-direction NaN guard was restored; the previous run of this red test is the same number at a523b00"
  ],
  "perturbation": {
   "file": "rosco/controller/src/interp2d.cpp",
@@ -162,6 +163,6 @@
  "unit": "interp2d",
  "unit_of_count": "values",
  "verdict": "RED_TEST_PASS",
- "vit_rev": "0ee71a7",
+ "vit_rev": "a16a7ab",
  "went_red": true
 }
