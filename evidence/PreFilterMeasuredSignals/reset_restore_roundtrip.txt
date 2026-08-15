@@ -1,0 +1,51 @@
+E1.4 STILL HOLDS WITH THIS UNIT INTEGRATED, AND THE PAIR NEEDED NO EDIT.
+
+Run 2026-08-14 immediately after the unit closed, on a clean committed tree.
+
+    md5 rosco/lib/libdiscon.so                    ae70ae8722c1e9e46ad7aec51d1b365e
+    bash scripts/reset_to_clean.sh
+      reset_to_clean: 9 wrapper-carrying source(s) restored to 54dd134
+        left at HEAD (no wrappers): Constants.f90 DISCON.F90 ROSCO_Types.f90 SysFlangLinux.f90 SysGnuLinux.f90 SysGnuWin.f90 SysIFL.f90 SysIVF.f90 SysLLVMLinux.f90 SysLLVMWin.f90
+        0 file(s) reverted whose only change was line endings
+        extraction leftovers removed (kernel/ state/ model/ elapsedtime/ logs, .kgen_org)
+        38 translated .cpp source(s) removed from CMakeLists (E1.2 flags kept)
+        0 instrumented object(s) removed from the build tree
+        rebuilt and installed; kgen symbols in rosco/lib/libdiscon.so: 0
+    grep -c 'prefiltermeasuredsignals_c' Filters.f90            0   <- reverted
+    bash scripts/restore_integrated.sh
+      restore_integrated: WARNING -- 9 tracked file(s) under src/ are modified
+        and will be overwritten from HEAD. If a unit is integrated but not yet
+        committed, its wrapper is about to be lost. Commit first, or re-run
+        `vit integrate ... --apply` afterwards and discard any gate result
+        taken since.
+      restore_integrated: 67 file(s) restored from HEAD (vit_types.h untouched)
+        CMakeLists.txt restored: the translated .cpp sources are back in the build
+        rebuilt and installed. Gate now measures the INTEGRATED build.
+    grep -c 'prefiltermeasuredsignals_c' Filters.f90            3   <- back
+    md5 rosco/lib/libdiscon.so                    ae70ae8722c1e9e46ad7aec51d1b365e
+
+    git status --porcelain | wc -l                 0
+
+BIT-IDENTICAL ROUND TRIP, and `git status` is empty at both ends.
+
+NEITHER SCRIPT WAS TOUCHED, which is unit #36's finding holding for a 38th time:
+`reset_to_clean.sh` selects files by whether HEAD's version calls a `<name>_c(`
+bridge and strips translated `.cpp` sources by reading CMakeLists, so the counts
+moved from 37 to 38 and from 66 to 67 on their own.
+
+`0 instrumented object(s) removed` where unit #37's run reported 1: this
+dispatch ran `vit extract` early and then reset TWICE more before this point, so
+the kgen-carrying object had already been removed by the reset that opened the
+harness window. The assertion after it -- `kgen symbols in
+rosco/lib/libdiscon.so: 0` -- is what makes that checkable rather than assumed.
+
+`grep -c prefiltermeasuredsignals_c` is 3, the same as PowerControlSetpoints and
+for the same reason: this unit is a SUBROUTINE, so its wrapper carries the
+interface block, the declaration and one CALL, against a FUNCTION's extra
+occurrence in the result assignment.
+
+WHY IT WAS RUN AT ALL. The pair was exercised four times DURING this dispatch --
+once around the extraction and three times around the harness and mutation
+windows -- but never with this unit's wrapper in HEAD, because it was not
+integrated yet. This is the first round trip that has to carry it, and the md5
+is what says it does.

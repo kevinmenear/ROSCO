@@ -2240,7 +2240,8 @@
     "mutation/PreFilterMeasuredSignals.clean.rest.json",
     "gate/PreFilterMeasuredSignals.json",
     "gate/PreFilterMeasuredSignals.redtest.noop.json",
-    "gate/PreFilterMeasuredSignals.redtest.flpmode2.json"
+    "gate/PreFilterMeasuredSignals.redtest.flpmode2.json",
+    "evidence/PreFilterMeasuredSignals/reset_restore_roundtrip.txt"
    ]
   },
   {
