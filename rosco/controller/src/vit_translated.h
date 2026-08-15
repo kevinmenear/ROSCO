@@ -69,6 +69,7 @@ void powercontrolsetpoints_c(controlparameters_view_t* CntrPar, localvariables_v
 void prefiltermeasuredsignals_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, debugvariables_t* DebugVar, objectinstances_t* objInst, errorvariables_view_t* ErrVar);
 double rescontroller_c(double error, double kp, double ki, double freq, double minValue, double maxValue, double DT, resparams_t* resP, int32_t reset, int* inst);
 void setpointsmoother_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst);
+void shutdown_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_view_t* ErrVar);
 
 #ifdef __cplusplus
 }

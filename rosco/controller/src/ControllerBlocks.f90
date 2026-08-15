@@ -70,6 +70,18 @@ IMPLICIT NONE
         END SUBROUTINE setpointsmoother_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of Shutdown
+    INTERFACE
+        SUBROUTINE shutdown_c(LocalVar, CntrPar, objInst, ErrVar) BIND(C, NAME='shutdown_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: objInst
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE shutdown_c
+    END INTERFACE
+
 CONTAINS
 
     SUBROUTINE PowerControlSetpoints(CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -584,128 +596,28 @@ CONTAINS
 
     END SUBROUTINE Startup
 !-------------------------------------------------------------------------------------------------------------------------------
-    SUBROUTINE Shutdown(LocalVar, CntrPar, objInst,ErrVar) 
-    ! Check for shutdown
+    SUBROUTINE Shutdown(LocalVar, CntrPar, objInst, ErrVar)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, ObjectInstances
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
         IMPLICIT NONE
-        ! Inputs
-        TYPE(ControlParameters),    INTENT(IN   )       :: CntrPar
-        TYPE(LocalVariables),       INTENT(INOUT)       :: LocalVar 
-        TYPE(ObjectInstances),      INTENT(INOUT)       :: objInst
-        TYPE(ErrorVariables),       INTENT(INOUT)       :: ErrVar
-        
-        ! Local Variables 
-        CHARACTER(*),               PARAMETER           :: RoutineName = 'Shutdown'
-        REAL(DbKi)       :: SD_NacVaneCosF                 ! Time-filtered x-component of NacVane (deg)
-        REAL(DbKi)       :: SD_NacVaneSinF                 ! Time-filtered y-component of NacVane (deg)
-        INTEGER(IntKi)   :: I_Stage                         ! Loop variable for shutdown stages
-
-        !Initialize shutdown trigger variable
-        IF (LocalVar%iStatus == 0) THEN
-            LocalVar%SD_Trigger = 0
-        ENDIF
-        
-
-        ! Filter pitch signal
-        LocalVar%SD_BlPitchF = LPFilter(LocalVar%BlPitchCMeas, LocalVar%DT, CntrPar%SD_PitchCornerFreq, LocalVar%FP,LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
-        ! Filter generator speed
-        LocalVar%SD_GenSpeedF = LPFilter(LocalVar%Genspeed, LocalVar%DT, CntrPar%SD_GenSpdCornerFreq, LocalVar%FP,LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
-
-        ! Filter yaw error signal (NacVane)
-        SD_NacVaneCosF = LPFilter(cos(LocalVar%NacVane*D2R), LocalVar%DT, CntrPar%SD_YawErrorCornerFreq, LocalVar%FP,LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
-        SD_NacVaneSinF = LPFilter(sin(LocalVar%NacVane*D2R), LocalVar%DT, CntrPar%SD_YawErrorCornerFreq, LocalVar%FP,LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
-        LocalVar%SD_NacVaneF = wrap_180(atan2(SD_NacVaneSinF, SD_NacVaneCosF) * R2D) ! (in deg)
-        
-        ! See if we should shutdown
-        IF ((LocalVar%SD_Trigger == 0) .AND. (LocalVar%Time>=CntrPar%SD_TimeActivate)) THEN
-            IF (CntrPar%SD_EnablePitch==1 .AND. LocalVar%SD_BlPitchF > CntrPar%SD_MaxPit) THEN
-                ! Shutdown if above pitch exceeds shutdown threshold
-                LocalVar%SD_Trigger  = 1
-            ENDIF
-            IF (CntrPar%SD_EnableYawError==1 .AND. ABS(LocalVar%SD_NacVaneF) > CntrPar%SD_MaxYawError) THEN
-                LocalVar%SD_Trigger = 2
-            ENDIF
-            IF (CntrPar%SD_EnableGenSpeed==1 .AND. LocalVar%SD_GenSpeedF > CntrPar%SD_MaxGenSpd) THEN
-                LocalVar%SD_Trigger = 3
-            ENDIF 
-            IF (CntrPar%SD_EnableTime==1 .AND. LocalVar%Time > CntrPar%SD_Time) THEN
-                LocalVar%SD_Trigger = 4
-            ENDIF 
-        ENDIF
-
-        ! Method 1: stage depends on time
-        IF (CntrPar%SD_Method == 1) THEN
-            ! State machine for shutdown stages
-            
-            IF (LocalVar%SD_Stage == 0) THEN
-                ! Normal operation, check for shutdown trigger
-                IF (LocalVar%SD_Trigger > 0) THEN
-                    LocalVar%SD_Stage = 1 ! First shutdown stage
-                    LocalVar%SD_StageStartTime = LocalVar%Time
-                ENDIF
-                
-                ! Set maximum pitch and torque rates (for completeness)
-                LocalVar%SD_MaxPitchRate    = 0 
-                LocalVar%SD_MaxTorqueRate   = 0 
-
-            ELSEIF (LocalVar%SD_Stage .LE. CntrPar%SD_Stage_N) THEN
-                LocalVar%SD_MaxPitchRate    = CntrPar%SD_MaxPitchRate(LocalVar%SD_Stage)
-                LocalVar%SD_MaxTorqueRate   = CntrPar%SD_MaxTorqueRate(LocalVar%SD_Stage)
-                
-                ! Shutdown stage
-                IF (LocalVar%Time >= LocalVar%SD_StageStartTime + CntrPar%SD_StageTime(LocalVar%SD_Stage)) THEN
-                    LocalVar%SD_Stage = LocalVar%SD_Stage + 1 ! Next shutdown stage
-                    LocalVar%SD_StageStartTime = LocalVar%Time
-                ENDIF                
-
-            ELSE  ! Stage > CntrPar%SD_Stage_N
-                LocalVar%SD_MaxPitchRate    = CntrPar%PC_MaxRat
-                LocalVar%SD_MaxTorqueRate   = CntrPar%VS_MaxRat
-            ENDIF
-       
-        ! Shutdown method 2: stage depends on blade pitch (LocalVar%BlPitchCMeas)
-        ELSEIF (CntrPar%SD_Method == 2) THEN
-            ! State machine for shutdown stages
-            
-            IF (LocalVar%SD_Stage == 0) THEN
-                ! Normal operation, check for shutdown trigger
-                IF (LocalVar%SD_Trigger > 0) THEN
-                    LocalVar%SD_Stage = 1 ! First shutdown stage
-                ENDIF
-                
-                ! Set maximum pitch and torque rates (for completeness)
-                LocalVar%SD_MaxPitchRate    = 0 
-                LocalVar%SD_MaxTorqueRate   = 0 
-
-            ELSE ! Stage > 0
-                
-                ! Figure out what stage we are in
-                DO I_Stage = 1, CntrPar%SD_Stage_N
-                    IF (LocalVar%BlPitchCMeas >= CntrPar%SD_StagePitch(I_Stage)) THEN
-                        LocalVar%SD_Stage = I_Stage + 1
-                    ENDIF
-                ENDDO
-                
-                ! Set maximum pitch and torque rates
-                IF (LocalVar%SD_Stage > CntrPar%SD_Stage_N) THEN
-                    LocalVar%SD_MaxPitchRate    = CntrPar%PC_MaxRat
-                    LocalVar%SD_MaxTorqueRate   = CntrPar%VS_MaxRat
-                ELSE
-                    LocalVar%SD_MaxPitchRate    = CntrPar%SD_MaxPitchRate(LocalVar%SD_Stage)
-                    LocalVar%SD_MaxTorqueRate   = CntrPar%SD_MaxTorqueRate(LocalVar%SD_Stage)
-                ENDIF 
-
-            ENDIF
-        ENDIF
-
-
-
-        
-        ! Add RoutineName to error message
-        IF (ErrVar%aviFAIL < 0) THEN
-            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
-        ENDIF
-
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(CONTROLPARAMETERS), INTENT(IN), TARGET :: CntrPar
+        TYPE(OBJECTINSTANCES), INTENT(INOUT), TARGET :: objInst
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        CALL shutdown_c(C_LOC(LocalVar_view), C_LOC(CntrPar_view), C_LOC(objInst), C_LOC(ErrVar_view))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
     END SUBROUTINE Shutdown
 !-------------------------------------------------------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------------------------------------------------------
