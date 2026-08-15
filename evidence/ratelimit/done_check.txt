@@ -1,6 +1,6 @@
-# done_check.py ratelimit -- captured 2026-08-15T17:02:42Z by scripts/capture_done_check.sh
+# done_check.py ratelimit -- captured 2026-08-15T17:03:41Z by scripts/capture_done_check.sh
 
-Run against the committed state at 2651b2f9 ("ratelimit: done_check captured -- 13 of 14, P5 unresolved on the file being written"), with a CLEAN tree, with stdout
+Run against the committed state at e832935e ("ratelimit: the reset/restore round trip, taken after the unit closed"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
