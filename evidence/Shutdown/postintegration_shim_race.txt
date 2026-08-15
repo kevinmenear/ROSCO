@@ -1,0 +1,57 @@
+THE POST-INTEGRATION RE-TAKE FAILED TO LINK, AND THE CAUSE WAS AN EMPTY OBJECT
+COMPILED FROM A FILE THAT WAS NOT EMPTY.
+
+Sequence, all on 2026-08-15:
+
+  1. post-integration harness            PASS  14708 checked, 0 failed
+  2. wrapper red test                    RED   14708 of 14708   (as intended)
+  3. re-take the green (RUNBOOK, #38)    /usr/bin/ld: ControllerBlocks.f90.o:
+                                         undefined reference to `shutdown_c'
+                                         make: *** [Makefile:86: test] Error 1
+
+Step 3 ran twice more and failed identically. `harness.sh --post-integration`
+begins by deleting its output, so the FIRST failure removed the artifact step 1
+had written -- and that deletion was committed, under a message asserting a
+14708/0 re-take that had not happened. Both are corrected here and the commit is
+named in DECISIONS.md rather than rewritten.
+
+WHAT WAS ACTUALLY WRONG. The shim that defines `shutdown_c` was on the link line
+and its object was 952 bytes, so nothing looked missing:
+
+    $ nm vit_integration_shim.o
+    0000000000000000 b .bss
+    0000000000000000 n .comment
+    0000000000000000 d .data
+    0000000000000000 n .note.GNU-stack
+    0000000000000000 t .text
+    0000000000000000 a vit_integration_shim.cpp     <- and NO shutdown_c
+
+    $ wc -c vit_integration_shim.cpp
+    451                                             <- the source is fine
+
+    $ g++ -O2 -fPIC -ffp-contract=off -c vit_integration_shim.cpp -o (the same .o)
+    $ nm vit_integration_shim.o | grep shutdown
+    0000000000000000 T shutdown_c                   <- from the same bytes
+
+So the object was compiled from a source the compiler saw as empty while the
+host saw 451 bytes. `harness.sh` writes that file by redirecting a `docker exec`
+stdout to a HOST path and then compiles it in a SECOND `docker exec`; the two
+commands are ordered, but the bind mount does not make the host's write visible
+to the container process that follows. This tree's RUNBOOK already records the
+same hazard twice in other forms -- a `git checkout` whose mtime make would not
+believe (unit #38) and a host unlink racing a container create (unit #2) -- and
+this is the third: a host WRITE racing a container READ.
+
+WHY IT MATTERS BEYOND THIS UNIT: the failure mode is an UNDEFINED REFERENCE
+naming the unit under test, which reads exactly like a broken integration. A
+reader who trusted it would go looking at the wrapper. What settles it in
+seconds is `nm` on the shim, and that is the check worth having -- it is a
+statement about the OBJECT rather than about the source, and only the object was
+wrong.
+
+RESOLUTION: the shim was recompiled by hand and the harness re-run.
+
+    POST-INTEGRATION PASS: checked 14708  failed 0
+
+is the re-taken green, and it is the number `harness/Shutdown.postintegration.json`
+carries.
