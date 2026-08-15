@@ -358,6 +358,24 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **THE ARM CENSUS IS THE CHEAPEST WAY TO TURN "THE HARNESS REACHES IT" FROM A
+  CLAIM INTO A COUNT, AND IT COSTS ONE 19-SECOND RUN.** Unit #38, and it is unit
+  #37's instrument used where there is no survivor list at all -- the score was
+  already 1.000 and the question was what the 9033 cases run.
+
+  ```
+  calls 9033 | RETURNed on aviFAIL < 0 8740 | ran the body 293
+  F_LPFType==1 42 | ==2 42 | NEITHER 209        <- ==2 has 0 hits in all 27 scenarios
+  tower-top notch iterations 275                <- 0 iterations in all 27 scenarios
+  Flp_Mode==2 90, its inner notch loop 171      <- scenario 4 only
+  42+42+209 = 293      113+90+89 = 292 blade iterations
+  ```
+
+  The probe fails **0 of 9033**, so the run is a READING. The arithmetic closing
+  is what says the counters are on the arms they name; the 8740 agreeing with
+  the no-op red test's 293 from the other side is what says the two instruments
+  measure one corpus.
+
 - **AN INDEX CAN BE AN ARRAY, AND ALL THREE SITES THAT MATERIALISED ONE WROTE A
   SCALAR.** Unit #38, `translation-loop 3ac5b4a`. `F_GenSpdNotch_Ind` is an
   ALLOCATABLE INTEGER array every ELEMENT of which subscripts `F_NotchFreqs`, so
