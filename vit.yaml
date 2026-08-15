@@ -88,7 +88,31 @@ kgen:
   # paths sim, and scenario 23 in turn never reaches :508-:512. No scenario
   # reaches both arms, so no kernel can. The differential harness draws
   # `CntrPar%SS_Mode` freely and is the instrument that covers both.
-  run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py --scenario 25
+  #
+  # SCENARIO 9 for unit #41 `Shutdown`, and it is not a choice between
+  # scenarios -- it is the ONLY one. `coverage/line_coverage.json` carries hits
+  # for `DISCON.F90:107` (the `IF (CntrPar%SD_Mode > 0)` call site) under
+  # scenario 9 alone: 11,999 invocations, and 0 in the other 26. Every line of
+  # `Shutdown` in that file likewise reads `scen=['9']`.
+  #
+  # What scenario 9 REACHES, from the same file, so the kernel's blind spots
+  # are stated before it is built rather than after:
+  #
+  #   :655 IF (iStatus == 0)              11,999 calls, the arm taken ONCE
+  #   :671 the trigger window             11,999 / :672,:676,:679,:682 10,002
+  #   :683 SD_Trigger = 4 (SD_EnableTime)      1   <- the ONLY trigger that fires
+  #   :674/:677/:680 Trigger = 1 / 2 / 3       0   <- pitch, yaw, genspeed: never
+  #   :688 SD_Method == 1                 11,999  <- always
+  #   :691 SD_Stage == 0                  10,002  |  :702 the stage arm 1,997
+  #   :708 SD_Stage = SD_Stage + 1             0   <- the stage never advances
+  #   :711 the ELSE (Stage > SD_Stage_N)       0
+  #   :713-:748 the whole SD_Method == 2 arm   0
+  #
+  # So a kernel built here can see the two live stage arms and ONE of the four
+  # trigger conditions, and is blind to method 2 entirely. The differential
+  # harness draws `CntrPar%SD_Method`, the four `SD_Enable*` flags and
+  # `SD_Stage` freely, and is the instrument that covers the rest.
+  run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py --scenario 9
   clean_cmd: cd /workspace/ROSCO-r2/rosco/controller/build && make clean
   install_cmd: cp /workspace/ROSCO-r2/rosco/controller/build/libdiscon.so /workspace/ROSCO-r2/rosco/lib/libdiscon.so
   # WIDENED 2026-08-10 during unit #2, and it took two tries. The setup value
@@ -115,7 +139,15 @@ kgen:
   # rather than scenario 27's 23,999: the third range 23900-23920 would land
   # past the end of the run and capture nothing. Same three-point shape --
   # start, middle, end -- arithmetic against the scenario's own call count.
-  invocation: 0:0:1-20,0:0:8000-8020,0:0:15900-15920
+  #
+  # RE-AIMED for unit #41 at scenario 9's 11,999 invocations of DISCON.F90:107.
+  # The middle range is NOT the midpoint this time, and the arithmetic is the
+  # reason: coverage splits the call site 10,002 / 1,997 between the
+  # `SD_Stage == 0` arm and the stage arm, so the state transition happens at
+  # invocation 10,002 and a midpoint window (6000) would land 4,000 calls
+  # before anything moves. 9995-10015 straddles it, which is the only place in
+  # the run where `SD_Trigger` and `SD_Stage` both change.
+  invocation: 0:0:1-20,0:0:9995-10015,0:0:11970-11990
   # Interface truth about the Bladed-style array: DISCON receives it as an
   # assumed-size dummy, so nothing in the source states its extent.
   assumed_size_arrays:
