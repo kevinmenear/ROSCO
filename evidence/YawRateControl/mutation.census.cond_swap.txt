@@ -1,0 +1,30 @@
+run_if_time_remains: 12175s remain, 400s needed -- starting
+NOTE: operator filter ['negate_cond', 'swap_operands'] -- scoring 16 of 83 mutants. The other 67 are NOT re-run here and this artifact says nothing about them; the unit's own mutation/<U>.json is where they were scored.
+16 mutant(s) from yawratecontrol.cpp
+
+baseline: 8036 case(s), 0 failed, 9.4s; per-mutant watchdog 188s
+
+  [  1/16] swap_operands    'NacHeadingTarget - LocalVar->NacHeading' -> 'LocalVar->NacHeading - NacHeadingTarget'  killed (526/8036 cases)
+  [  2/16] swap_operands    '2 - 1' -> '1 - 2'  SURVIVED
+  [  3/16] swap_operands    '48 - 1' -> '1 - 48'  killed (769/8036 cases)
+  [  4/16] swap_operands    '48 - 1' -> '1 - 48'  killed (192/8036 cases)
+  [  5/16] negate_cond      'if (CntrPar->Y_ControlMode == 1)' -> 'if (!(CntrPar->Y_ControlMode == 1))'  killed (crash)
+  [  6/16] negate_cond      'if (LocalVar->iStatus == 0)' -> 'if (!(LocalVar->iStatus == 0))'  killed (815/8036 cases)
+  [  7/16] negate_cond      'if (CntrPar->ZMQ_Mode == 1)' -> 'if (!(CntrPar->ZMQ_Mode == 1))'  killed (961/8036 cases)
+  [  8/16] negate_cond      'if (LocalVar->WE_Vw_F <= CntrPar->Y_uSwitch)' -> 'if (!(LocalVar->WE_Vw_F <= CntrPar->Y_uSwitch))'  SURVIVED
+  [  9/16] negate_cond      'if (YawState == 1)' -> 'if (!(YawState == 1))'  killed (961/8036 cases)
+  [ 10/16] negate_cond      'if (NacHeadingError <= 0.0)' -> 'if (!(NacHeadingError <= 0.0))'  SURVIVED
+  [ 11/16] negate_cond      'if (YawState == -1)' -> 'if (!(YawState == -1))'  killed (961/8036 cases)
+  [ 12/16] negate_cond      'if (NacHeadingError >= 0.0)' -> 'if (!(NacHeadingError >= 0.0))'  killed (719/8036 cases)
+  [ 13/16] negate_cond      'if (NacHeadingError > deadband)' -> 'if (!(NacHeadingError > deadband))'  killed (2/8036 cases)
+  [ 14/16] negate_cond      'if (NacHeadingError < -deadband)' -> 'if (!(NacHeadingError < -deadband))'  killed (723/8036 cases)
+  [ 15/16] negate_cond      'if ((CntrPar->OL_Mode > 0) && (CntrPar->Ind_YawRate > 0))' -> 'if (!((CntrPar->OL_Mode > 0) && (CntrPar->Ind_YawRate > 0)))'  killed (769/8036 cases)
+  [ 16/16] negate_cond      'if (LocalVar->Time >= CntrPar->OL_Breakpoints[1 - 1])' -> 'if (!(LocalVar->Time >= CntrPar->OL_Breakpoints[1 - 1]))'  killed (240/8036 cases)
+
+killed 13 of 16 BEHAVIOURAL scoreable (0 declared equivalent, 0 did not compile and are excluded)   score 0.812
+  SURVIVOR 2b0267a7 swap_operands: '2 - 1' -> '1 - 2'
+  SURVIVOR cba3c24e negate_cond: 'if (LocalVar->WE_Vw_F <= CntrPar->Y_uSwitch)' -> 'if (!(LocalVar->WE_Vw_F <= CntrPar->Y_uSwitch))'
+  SURVIVOR e2a6f97d negate_cond: 'if (NacHeadingError <= 0.0)' -> 'if (!(NacHeadingError <= 0.0))'
+artifact: mutation/YawRateControl.clean.cond_swap.json
+mutate_guarded: translations/Controllers/yawratecontrol.cpp restored to c5eb67a11e5c0b69f35fb4139c02e51462867d0c; marker cleared; sweep exit 0
+run_if_time_remains: exit 0 after 174s (estimated 400s; 12001s now remain)
