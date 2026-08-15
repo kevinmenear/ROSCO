@@ -1,0 +1,110 @@
+{
+ "unit": "Shutdown",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "negate_cond",
+  "swap_call_args",
+  "swap_operands"
+ ],
+ "operator_population": {
+  "compare_op": 26,
+  "drop_factor": 2,
+  "arith_op": 11,
+  "swap_operands": 6,
+  "const_tweak": 40,
+  "negate_cond": 19,
+  "drop_call": 4,
+  "swap_call_args": 1
+ },
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutants": 109,
+ "equivalent_declared": 12,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 109,
+ "killed": 97,
+ "survived": 0,
+ "equivalent": 12,
+ "declared_but_killed": [],
+ "score": 1.0,
+ "loop_rev": "f92fb9f-nogit",
+ "vit_rev": "fe22383-nogit",
+ "merged_from": [
+  {
+   "part": "mutation/Shutdown.clean.const_tweak.json",
+   "operators_filter": [
+    "const_tweak"
+   ],
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 30,
+   "survived": 0,
+   "score": 1.0
+  },
+  {
+   "part": "mutation/Shutdown.clean.compare_op.json",
+   "operators_filter": [
+    "compare_op"
+   ],
+   "total": 26,
+   "mutants": 26,
+   "nocompile": 0,
+   "killed": 24,
+   "survived": 0,
+   "score": 1.0
+  },
+  {
+   "part": "mutation/Shutdown.clean.cond_call.json",
+   "operators_filter": [
+    "drop_call",
+    "drop_factor",
+    "negate_cond",
+    "swap_call_args"
+   ],
+   "total": 26,
+   "mutants": 26,
+   "nocompile": 0,
+   "killed": 26,
+   "survived": 0,
+   "score": 1.0
+  },
+  {
+   "part": "mutation/Shutdown.clean.index.json",
+   "operators_filter": [
+    "arith_op",
+    "swap_operands"
+   ],
+   "total": 17,
+   "mutants": 17,
+   "nocompile": 0,
+   "killed": 17,
+   "survived": 0,
+   "score": 1.0
+  }
+ ],
+ "merged_why": "109 mutants at ~10.2s each is ~18 minutes in one process, past the 600-second ceiling a foreground command may block for; the sweep was split by operator into four foreground runs. The FIRST attempt at a three-part split was killed by that ceiling mid-run and left a MUTANT live in the translation -- scripts/mutate_guarded.sh caught it, refused to clear its marker, and the orphaned docker exec had to be pkill'd; see DECISIONS.md.",
+ "merged_by": "scripts/_mutation_merge.py",
+ "survivors": []
+}
