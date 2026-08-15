@@ -46,65 +46,46 @@ IMPLICIT NONE
         END FUNCTION pitchsaturation_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of PowerControlSetpoints
+    INTERFACE
+        SUBROUTINE powercontrolsetpoints_c(CntrPar, LocalVar, objInst, DebugVar, ErrVar) BIND(C, NAME='powercontrolsetpoints_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: objInst
+            TYPE(C_PTR), VALUE :: DebugVar
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE powercontrolsetpoints_c
+    END INTERFACE
+
 CONTAINS
 
     SUBROUTINE PowerControlSetpoints(CntrPar, LocalVar, objInst, DebugVar, ErrVar)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : ControlParameters, LocalVariables, ObjectInstances, DebugVariables, ErrorVariables
-        USE Constants
-        ! Allocate variables
-        TYPE(ControlParameters),    INTENT(INOUT)       :: CntrPar
-        TYPE(LocalVariables),       INTENT(INOUT)       :: LocalVar
-        TYPE(ObjectInstances),      INTENT(INOUT)       :: objInst
-        TYPE(DebugVariables),       INTENT(INOUT)       :: DebugVar
-        TYPE(ErrorVariables),       INTENT(INOUT)       :: ErrVar
-
-        ! Set up power control
-        IF (CntrPar%PRC_Mode == 2) THEN  ! Using power reference control
-            IF (CntrPar%PRC_Comm == PRC_Comm_Constant) THEN  ! Constant, from DISCON
-                LocalVar%PRC_R_Speed = CntrPar%PRC_R_Speed
-                LocalVar%PRC_R_Torque = CntrPar%PRC_R_Torque
-                LocalVar%PRC_R_Pitch = CntrPar%PRC_R_Pitch
-
-            ELSEIF (CntrPar%PRC_Comm == PRC_Comm_OpenLoop) THEN  ! Open loop
-
-                IF (CntrPar%Ind_R_Speed > 0) THEN
-                    LocalVar%PRC_R_Speed = interp1d(CntrPar%OL_Breakpoints,CntrPar%OL_R_Speed,LocalVar%OL_Index,ErrVar)
-                    WRITE(401,*) LocalVar%PRC_R_Speed
-                ELSE
-                    LocalVar%PRC_R_Speed = 1.0_DbKi
-                ENDIF
-
-                IF (CntrPar%Ind_R_Torque > 0) THEN
-                    LocalVar%PRC_R_Torque = interp1d(CntrPar%OL_Breakpoints,CntrPar%OL_R_Torque,LocalVar%OL_Index,ErrVar)
-                ELSE
-                    LocalVar%PRC_R_Torque = 1.0_DbKi
-                ENDIF
-
-                IF (CntrPar%Ind_R_Pitch > 0) THEN
-                    LocalVar%PRC_R_Pitch = interp1d(CntrPar%OL_Breakpoints,CntrPar%OL_R_Pitch,LocalVar%OL_Index,ErrVar)
-                ELSE
-                    LocalVar%PRC_R_Pitch = 1.0_DbKi
-                ENDIF
-
-            ELSEIF (CntrPar%PRC_Comm == PRC_Comm_ZMQ) THEN  ! ZeroMQ
-                LocalVar%PRC_R_Speed    = LocalVar%ZMQ_R_Speed
-                LocalVar%PRC_R_Torque   = LocalVar%ZMQ_R_Torque
-                LocalVar%PRC_R_Pitch    = LocalVar%ZMQ_R_Pitch
-
-            ENDIF
-
-            ! Set min pitch for power control, will be combined with peak shaving min pitch
-            LocalVar%PRC_Min_Pitch = interp1d(CntrPar%PRC_R_Table,CntrPar%PRC_Pitch_Table,LocalVar%PRC_R_Pitch, ErrVar)
-
-        ELSE
-            LocalVar%PRC_R_Speed = 1.0_DbKi
-            LocalVar%PRC_R_Torque = 1.0_DbKi
-            LocalVar%PRC_R_Pitch = 1.0_DbKi
-            LocalVar%PRC_Min_Pitch = CntrPar%PC_FinePit
-        ENDIF
-
-
-    END SUBROUTINE
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
+        IMPLICIT NONE
+        TYPE(CONTROLPARAMETERS), INTENT(INOUT), TARGET :: CntrPar
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(OBJECTINSTANCES), INTENT(INOUT), TARGET :: objInst
+        TYPE(DEBUGVARIABLES), INTENT(INOUT), TARGET :: DebugVar
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        CALL powercontrolsetpoints_c(C_LOC(CntrPar_view), C_LOC(LocalVar_view), C_LOC(objInst), C_LOC(DebugVar), C_LOC(ErrVar_view))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_controlparameters(CntrPar_view, CntrPar)
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
+    END SUBROUTINE PowerControlSetpoints
 
 ! -----------------------------------------------------------------------------------
     ! Calculate setpoints for primary control actions    

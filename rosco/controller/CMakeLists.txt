@@ -120,6 +120,7 @@ set(SOURCES
     src/pidcontroller.cpp
     src/piicontroller.cpp
     src/pitchsaturation.cpp
+    src/powercontrolsetpoints.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
