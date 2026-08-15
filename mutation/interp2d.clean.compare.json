@@ -1,8 +1,7 @@
 {
  "unit": "interp2d",
  "operators": [
-  "index_offset",
-  "negate_cond"
+  "compare_op"
  ],
  "operators_offered": [
   "arith_op",
@@ -20,25 +19,37 @@
  ],
  "compared_against": "fortran_reference_on_a_clean_tree",
  "operators_filter": [
-  "index_offset",
-  "negate_cond"
+  "compare_op"
  ],
  "operators_filter_unmatched": [],
- "mutants": 21,
- "equivalent_declared": 0,
+ "mutants": 27,
+ "equivalent_declared": 6,
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
- "total": 21,
- "killed": 21,
- "survived": 0,
- "equivalent": 0,
+ "total": 27,
+ "killed": 19,
+ "survived": 2,
+ "equivalent": 6,
  "declared_but_killed": [],
- "score": 1.0,
+ "score": 0.9048,
  "loop_rev": "eb5028e-nogit",
  "gen_rev": "gen-e0c1b3703480",
  "vit_rev": "a16a7ab-nogit",
- "survivors": []
+ "survivors": [
+  {
+   "id": "98926651",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "f0949202",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  }
+ ]
 }

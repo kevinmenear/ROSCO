@@ -30,26 +30,13 @@
  "nocompile_ratio": 0.05,
  "nocompile_refused": false,
  "total": 40,
- "killed": 36,
- "survived": 2,
+ "killed": 38,
+ "survived": 0,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.9474,
- "loop_rev": "a523b00-nogit",
- "gen_rev": "gen-f614231a8c9e",
- "vit_rev": "0ee71a7-nogit",
- "survivors": [
-  {
-   "id": "8a36fcb9",
-   "operator": "swap_operands",
-   "before": "n_xData - 1",
-   "after": "1 - n_xData"
-  },
-  {
-   "id": "6ed39951",
-   "operator": "swap_operands",
-   "before": "n_yData - 1",
-   "after": "1 - n_yData"
-  }
- ]
+ "score": 1.0,
+ "loop_rev": "eb5028e-nogit",
+ "gen_rev": "gen-e0c1b3703480",
+ "vit_rev": "a16a7ab-nogit",
+ "survivors": []
 }

@@ -1,0 +1,59 @@
+# A RULE'S REPORT NAMED ANOTHER RULE'S NUMBERS, AND ONLY TURNING ON THE SECOND
+# RULE MADE IT VISIBLE. rosco-r2 unit #45, second dispatch, 2026-08-15.
+#
+# Recorded before the fix (C12), with the wrong artifact quoted.
+
+WHAT CHANGED, and it is the thing that should NOT have changed. `interp2d`'s
+corpus was regenerated with the two breakpoint arrays moved from
+`ordered_only` to `nondecreasing_only`, which turns the R6 ORDER ladder ON for
+them and touches nothing about CHARACTER inputs. The character line of
+R6_reference_literals moved anyway:
+
+  before (harness/interp2d.json at 10eacedf, order ladder OFF)
+    88 character value(s) from a corpus of 22 ... across 1 string(s),
+    each at length(s) [1, 2, 7, 12] and in the mixed / padded / all-blank /
+    leading-blank shapes, plus 132 planted ...
+
+  after (order ladder ON)
+    88 character value(s) from a corpus of 22 ... across 1 string(s),
+    each at length(s) [1, 2, 4] and in the mixed / padded / all-blank /
+    leading-blank shapes, plus 132 planted ...
+
+Every OTHER number on that line is identical -- 88 values, a corpus of 22, 1
+string, 132 planted. A block that had really drawn different lengths would have
+drawn a different number of values.
+
+THE CAUSE. `harness/generate.py` binds `lengths` twice in one function scope:
+
+  1591    n_chr, n_plant, lengths = 0, 0, []          # the CHARACTER block
+  1604    lengths = (...)                             #   its own lengths
+  ...
+  1739    lengths = ([ex0[d]] if fixed is not None    # the R6 ORDER block
+                     else sorted({1, 2, ex0[d]}))    #   REBINDS the same name
+  ...
+  2459    f"each at length(s) {lengths} and in the mixed / padded ..."   # CHARACTER report
+
+The order block runs after the character block and the report is assembled
+after both, so `{lengths}` in the CHARACTER sentence renders the ORDER block's
+value -- `sorted({1, 2, ex0[d]})`, the three array extents the ordering sweep
+shortens to, which for this signature is [1, 2, 4].
+
+WHY IT WAS INVISIBLE UNTIL NOW. The two blocks had never both fired in one run
+on this campaign: every unit whose order ladder fires has no CHARACTER input,
+and every unit with a CHARACTER input had `order_arrays` empty -- `interp2d`
+had it emptied by `ordered_only`. This dispatch is the first run in which both
+are non-empty, and the wrong number appeared in the same edit that turned the
+second block on, which is the shape most likely to be read as a corpus change
+rather than as a reporting defect.
+
+WHAT IT COST, and what it did not. Nothing in the corpus: `lengths` is read at
+line 1615 (`for L in lengths:`) BEFORE the order block rebinds it, so the
+character cases are drawn from the right list. The defect is confined to the
+sentence, and the sentence is the artifact -- a coverage report that names
+lengths the block did not use is a green describing a corpus that was not
+generated.
+
+THE FIX. The order block's local is renamed `order_lengths`; the character
+block keeps `lengths`. No case moves and no random draw moves -- confirmed by
+regenerating this unit's corpus before and after the rename and comparing the
+case count and every other field of the coverage report.
