@@ -69,7 +69,24 @@
   "reproduced that from the other side: `const_tweak '2' -> '3'` survived 14,253",
   "cases. Each state below enables exactly one trigger and puts its threshold",
   "beyond reach on the true side, so the constant that arm writes is the value",
-  "the call returns."
+  "the call returns.",
+  "",
+  "SIX MORE STATES, AND FIVE OF THEM SIT ON AN EQUALITY. The first sweep on the",
+  "five-state corpus left six `compare_op` survivors, all of them `>` <-> `>=`,",
+  "which is the one mutation that needs a case ON the boundary rather than either",
+  "side of it. R6 reaches an equality between two VARIED quantities by setting one",
+  "side from the other, and it does so for all seven pairs this reference writes --",
+  "but every one of those predicates sits inside a conjunction whose other half",
+  "needs a second quantity away from its default, which is the triple R11 exists",
+  "for. Each state below states the equality and leaves everything else",
+  "admissible.",
+  "",
+  "WHAT IS STILL NOT REACHED, so that a 1.000 does not read as more than it is:",
+  "`SD_BlPitchF > SD_MaxPit` and `SD_GenSpeedF > SD_MaxGenSpd` compare a value",
+  "this unit COMPUTES against one it is given. The computed side is an LPFilter",
+  "output, so no input names it and no state here can put the pair at equality --",
+  "the same shape the generator reports as a REDUCTION CROSSING for a reduction.",
+  "The two thresholds are reachable on either side, and only the boundary is not."
  ],
  "states": [
   {
@@ -356,6 +373,384 @@
     "CntrPar_SD_MaxPit": 0.3,
     "CntrPar_SD_MaxYawError": 5.0,
     "CntrPar_SD_MaxGenSpd": -1000000.0,
+    "CntrPar_SD_PitchCornerFreq": 1.0,
+    "CntrPar_SD_GenSpdCornerFreq": 0.5,
+    "CntrPar_SD_YawErrorCornerFreq": 0.17952,
+    "CntrPar_PC_MaxRat": 0.1745,
+    "CntrPar_VS_MaxRat": 15000.0,
+    "CntrPar_SD_MaxPitchRate": {
+     "ramp": [
+      0.05,
+      0.011
+     ]
+    },
+    "CntrPar_SD_MaxTorqueRate": {
+     "ramp": [
+      1000.0,
+      130.0
+     ]
+    },
+    "CntrPar_SD_StagePitch": {
+     "ramp": [
+      0.1,
+      0.09
+     ]
+    },
+    "CntrPar_SD_StageTime": {
+     "ramp": [
+      200.0,
+      50.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "yaw_trigger_on_the_negative_side",
+   "why": "NacVane = -7.5 with SD_MaxYawError = 5.0, only the yaw trigger enabled. ABS(SD_NacVaneF) > 5 is TRUE and SD_NacVaneF > 5 is FALSE, which is the only shape that can see the ABS at all: every other state in this file has a positive vane angle, where dropping ABS changes nothing. The first sweep measured exactly that -- `drop_call std::fabs(...) -> ...` survived 14,428 cases.",
+   "values": {
+    "ErrVar_aviFAIL": 0,
+    "LocalVar_iStatus": 0,
+    "LocalVar_restart": 0,
+    "LocalVar_Time": 400.0,
+    "LocalVar_DT": 0.0125,
+    "objInst_instLPF": 1,
+    "LocalVar_GenSpeed": 121.68,
+    "LocalVar_NacVane": -7.5,
+    "LocalVar_BlPitchCMeas": 0.35,
+    "LocalVar_SD_Trigger": 0,
+    "LocalVar_SD_Stage": 0,
+    "LocalVar_SD_StageStartTime": 100.0,
+    "LocalVar_SD_BlPitchF": 0.0,
+    "LocalVar_SD_GenSpeedF": 0.0,
+    "LocalVar_SD_NacVaneF": 0.0,
+    "LocalVar_SD_MaxPitchRate": 0.0,
+    "LocalVar_SD_MaxTorqueRate": 0.0,
+    "CntrPar_SD_Method": 1,
+    "CntrPar_SD_Stage_N": 2,
+    "CntrPar_SD_TimeActivate": 300.0,
+    "CntrPar_SD_Time": 350.0,
+    "CntrPar_SD_EnablePitch": 0,
+    "CntrPar_SD_EnableYawError": 1,
+    "CntrPar_SD_EnableGenSpeed": 0,
+    "CntrPar_SD_EnableTime": 0,
+    "CntrPar_SD_MaxPit": 0.3,
+    "CntrPar_SD_MaxYawError": 5.0,
+    "CntrPar_SD_MaxGenSpd": 100.0,
+    "CntrPar_SD_PitchCornerFreq": 1.0,
+    "CntrPar_SD_GenSpdCornerFreq": 0.5,
+    "CntrPar_SD_YawErrorCornerFreq": 0.17952,
+    "CntrPar_PC_MaxRat": 0.1745,
+    "CntrPar_VS_MaxRat": 15000.0,
+    "CntrPar_SD_MaxPitchRate": {
+     "ramp": [
+      0.05,
+      0.011
+     ]
+    },
+    "CntrPar_SD_MaxTorqueRate": {
+     "ramp": [
+      1000.0,
+      130.0
+     ]
+    },
+    "CntrPar_SD_StagePitch": {
+     "ramp": [
+      0.1,
+      0.09
+     ]
+    },
+    "CntrPar_SD_StageTime": {
+     "ramp": [
+      200.0,
+      50.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "trigger_window_at_equality",
+   "why": "Time == SD_TimeActivate to the bit (both 300.0). `Time >= SD_TimeActivate` is TRUE and `>` is FALSE, so the whole trigger block runs or does not, and SD_Trigger ends at 4 or at 0. No ladder over either name reaches this: R6's relational-pair rule sets one side FROM the other, and it does so for this pair, but the enclosing conjunction also needs SD_Trigger == 0 in the same case.",
+   "values": {
+    "ErrVar_aviFAIL": 0,
+    "LocalVar_iStatus": 1,
+    "LocalVar_restart": 0,
+    "LocalVar_Time": 300.0,
+    "LocalVar_DT": 0.0125,
+    "objInst_instLPF": 1,
+    "LocalVar_GenSpeed": 121.68,
+    "LocalVar_NacVane": 7.5,
+    "LocalVar_BlPitchCMeas": 0.35,
+    "LocalVar_SD_Trigger": 0,
+    "LocalVar_SD_Stage": 0,
+    "LocalVar_SD_StageStartTime": 100.0,
+    "LocalVar_SD_BlPitchF": 0.0,
+    "LocalVar_SD_GenSpeedF": 0.0,
+    "LocalVar_SD_NacVaneF": 0.0,
+    "LocalVar_SD_MaxPitchRate": 0.0,
+    "LocalVar_SD_MaxTorqueRate": 0.0,
+    "CntrPar_SD_Method": 1,
+    "CntrPar_SD_Stage_N": 2,
+    "CntrPar_SD_TimeActivate": 300.0,
+    "CntrPar_SD_Time": 250.0,
+    "CntrPar_SD_EnablePitch": 1,
+    "CntrPar_SD_EnableYawError": 1,
+    "CntrPar_SD_EnableGenSpeed": 1,
+    "CntrPar_SD_EnableTime": 1,
+    "CntrPar_SD_MaxPit": 0.3,
+    "CntrPar_SD_MaxYawError": 5.0,
+    "CntrPar_SD_MaxGenSpd": 100.0,
+    "CntrPar_SD_PitchCornerFreq": 1.0,
+    "CntrPar_SD_GenSpdCornerFreq": 0.5,
+    "CntrPar_SD_YawErrorCornerFreq": 0.17952,
+    "CntrPar_PC_MaxRat": 0.1745,
+    "CntrPar_VS_MaxRat": 15000.0,
+    "CntrPar_SD_MaxPitchRate": {
+     "ramp": [
+      0.05,
+      0.011
+     ]
+    },
+    "CntrPar_SD_MaxTorqueRate": {
+     "ramp": [
+      1000.0,
+      130.0
+     ]
+    },
+    "CntrPar_SD_StagePitch": {
+     "ramp": [
+      0.1,
+      0.09
+     ]
+    },
+    "CntrPar_SD_StageTime": {
+     "ramp": [
+      200.0,
+      50.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "stage_clock_at_equality",
+   "why": "Time == SD_StageStartTime + SD_StageTime(SD_Stage) to the bit: 350 == 100 + 250, with SD_Stage = 2 and the SD_StageTime ramp [200, 250, 300]. The stage advances or does not, so `>=` and `>` give different SD_Stage and different SD_StageStartTime. It is also the one state in this file where SD_StageTime(SD_Stage) is LOAD-BEARING, which is what makes the subscript's own mutants (`SD_Stage - 1` -> `1 - SD_Stage`) observable there.",
+   "values": {
+    "ErrVar_aviFAIL": 0,
+    "LocalVar_iStatus": 1,
+    "LocalVar_restart": 0,
+    "LocalVar_Time": 350.0,
+    "LocalVar_DT": 0.0125,
+    "objInst_instLPF": 1,
+    "LocalVar_GenSpeed": 121.68,
+    "LocalVar_NacVane": 7.5,
+    "LocalVar_BlPitchCMeas": 0.35,
+    "LocalVar_SD_Trigger": 1,
+    "LocalVar_SD_Stage": 2,
+    "LocalVar_SD_StageStartTime": 100.0,
+    "LocalVar_SD_BlPitchF": 0.0,
+    "LocalVar_SD_GenSpeedF": 0.0,
+    "LocalVar_SD_NacVaneF": 0.0,
+    "LocalVar_SD_MaxPitchRate": 0.0,
+    "LocalVar_SD_MaxTorqueRate": 0.0,
+    "CntrPar_SD_Method": 1,
+    "CntrPar_SD_Stage_N": 2,
+    "CntrPar_SD_TimeActivate": 300.0,
+    "CntrPar_SD_Time": 350.0,
+    "CntrPar_SD_EnablePitch": 0,
+    "CntrPar_SD_EnableYawError": 0,
+    "CntrPar_SD_EnableGenSpeed": 0,
+    "CntrPar_SD_EnableTime": 0,
+    "CntrPar_SD_MaxPit": 0.3,
+    "CntrPar_SD_MaxYawError": 5.0,
+    "CntrPar_SD_MaxGenSpd": 100.0,
+    "CntrPar_SD_PitchCornerFreq": 1.0,
+    "CntrPar_SD_GenSpdCornerFreq": 0.5,
+    "CntrPar_SD_YawErrorCornerFreq": 0.17952,
+    "CntrPar_PC_MaxRat": 0.1745,
+    "CntrPar_VS_MaxRat": 15000.0,
+    "CntrPar_SD_MaxPitchRate": {
+     "ramp": [
+      0.05,
+      0.011
+     ]
+    },
+    "CntrPar_SD_MaxTorqueRate": {
+     "ramp": [
+      1000.0,
+      130.0
+     ]
+    },
+    "CntrPar_SD_StagePitch": {
+     "ramp": [
+      0.1,
+      0.09
+     ]
+    },
+    "CntrPar_SD_StageTime": {
+     "ramp": [
+      200.0,
+      50.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "pitch_search_at_equality",
+   "why": "SD_Method = 2 with BlPitchCMeas == SD_StagePitch(2) to the bit (both 0.19). The DO loop's `>=` is TRUE at I_Stage = 2 and `>` is FALSE, so the final SD_Stage is 3 or 2 and the rate arrays are subscripted at different elements -- or not at all, because 3 > SD_Stage_N takes the PC_MaxRat arm.",
+   "values": {
+    "ErrVar_aviFAIL": 0,
+    "LocalVar_iStatus": 1,
+    "LocalVar_restart": 0,
+    "LocalVar_Time": 400.0,
+    "LocalVar_DT": 0.0125,
+    "objInst_instLPF": 1,
+    "LocalVar_GenSpeed": 121.68,
+    "LocalVar_NacVane": 7.5,
+    "LocalVar_BlPitchCMeas": 0.19,
+    "LocalVar_SD_Trigger": 1,
+    "LocalVar_SD_Stage": 2,
+    "LocalVar_SD_StageStartTime": 100.0,
+    "LocalVar_SD_BlPitchF": 0.0,
+    "LocalVar_SD_GenSpeedF": 0.0,
+    "LocalVar_SD_NacVaneF": 0.0,
+    "LocalVar_SD_MaxPitchRate": 0.0,
+    "LocalVar_SD_MaxTorqueRate": 0.0,
+    "CntrPar_SD_Method": 2,
+    "CntrPar_SD_Stage_N": 2,
+    "CntrPar_SD_TimeActivate": 300.0,
+    "CntrPar_SD_Time": 350.0,
+    "CntrPar_SD_EnablePitch": 0,
+    "CntrPar_SD_EnableYawError": 0,
+    "CntrPar_SD_EnableGenSpeed": 0,
+    "CntrPar_SD_EnableTime": 0,
+    "CntrPar_SD_MaxPit": 0.3,
+    "CntrPar_SD_MaxYawError": 5.0,
+    "CntrPar_SD_MaxGenSpd": 100.0,
+    "CntrPar_SD_PitchCornerFreq": 1.0,
+    "CntrPar_SD_GenSpdCornerFreq": 0.5,
+    "CntrPar_SD_YawErrorCornerFreq": 0.17952,
+    "CntrPar_PC_MaxRat": 0.1745,
+    "CntrPar_VS_MaxRat": 15000.0,
+    "CntrPar_SD_MaxPitchRate": {
+     "ramp": [
+      0.05,
+      0.011
+     ]
+    },
+    "CntrPar_SD_MaxTorqueRate": {
+     "ramp": [
+      1000.0,
+      130.0
+     ]
+    },
+    "CntrPar_SD_StagePitch": {
+     "ramp": [
+      0.1,
+      0.09
+     ]
+    },
+    "CntrPar_SD_StageTime": {
+     "ramp": [
+      200.0,
+      50.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "time_trigger_at_equality",
+   "why": "Time == SD_Time to the bit (both 400.0), only SD_EnableTime on. `Time > SD_Time` is FALSE and `>=` is TRUE, so SD_Trigger ends at 0 or at 4 -- and with SD_Stage = 0 that decides whether the stage machine starts at all.",
+   "values": {
+    "ErrVar_aviFAIL": 0,
+    "LocalVar_iStatus": 1,
+    "LocalVar_restart": 0,
+    "LocalVar_Time": 400.0,
+    "LocalVar_DT": 0.0125,
+    "objInst_instLPF": 1,
+    "LocalVar_GenSpeed": 121.68,
+    "LocalVar_NacVane": 7.5,
+    "LocalVar_BlPitchCMeas": 0.35,
+    "LocalVar_SD_Trigger": 0,
+    "LocalVar_SD_Stage": 0,
+    "LocalVar_SD_StageStartTime": 100.0,
+    "LocalVar_SD_BlPitchF": 0.0,
+    "LocalVar_SD_GenSpeedF": 0.0,
+    "LocalVar_SD_NacVaneF": 0.0,
+    "LocalVar_SD_MaxPitchRate": 0.0,
+    "LocalVar_SD_MaxTorqueRate": 0.0,
+    "CntrPar_SD_Method": 1,
+    "CntrPar_SD_Stage_N": 2,
+    "CntrPar_SD_TimeActivate": 300.0,
+    "CntrPar_SD_Time": 400.0,
+    "CntrPar_SD_EnablePitch": 0,
+    "CntrPar_SD_EnableYawError": 0,
+    "CntrPar_SD_EnableGenSpeed": 0,
+    "CntrPar_SD_EnableTime": 1,
+    "CntrPar_SD_MaxPit": 0.3,
+    "CntrPar_SD_MaxYawError": 5.0,
+    "CntrPar_SD_MaxGenSpd": 100.0,
+    "CntrPar_SD_PitchCornerFreq": 1.0,
+    "CntrPar_SD_GenSpdCornerFreq": 0.5,
+    "CntrPar_SD_YawErrorCornerFreq": 0.17952,
+    "CntrPar_PC_MaxRat": 0.1745,
+    "CntrPar_VS_MaxRat": 15000.0,
+    "CntrPar_SD_MaxPitchRate": {
+     "ramp": [
+      0.05,
+      0.011
+     ]
+    },
+    "CntrPar_SD_MaxTorqueRate": {
+     "ramp": [
+      1000.0,
+      130.0
+     ]
+    },
+    "CntrPar_SD_StagePitch": {
+     "ramp": [
+      0.1,
+      0.09
+     ]
+    },
+    "CntrPar_SD_StageTime": {
+     "ramp": [
+      200.0,
+      50.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "method2_with_no_trigger_at_all",
+   "why": "SD_Method = 2, SD_Stage = 0, SD_Trigger = 0 and all four enables off, so `SD_Trigger > 0` is FALSE on the arm that only method 2 has. `>= 0` starts the shutdown where the reference does not. Method 1's copy of the same predicate is reached by R11 walking SD_EnablePitch off `only_the_pitch_trigger`; this state is here because R11 moves ONE knob at a time and SD_Method is the second one.",
+   "values": {
+    "ErrVar_aviFAIL": 0,
+    "LocalVar_iStatus": 1,
+    "LocalVar_restart": 0,
+    "LocalVar_Time": 400.0,
+    "LocalVar_DT": 0.0125,
+    "objInst_instLPF": 1,
+    "LocalVar_GenSpeed": 121.68,
+    "LocalVar_NacVane": 7.5,
+    "LocalVar_BlPitchCMeas": 0.35,
+    "LocalVar_SD_Trigger": 0,
+    "LocalVar_SD_Stage": 0,
+    "LocalVar_SD_StageStartTime": 100.0,
+    "LocalVar_SD_BlPitchF": 0.0,
+    "LocalVar_SD_GenSpeedF": 0.0,
+    "LocalVar_SD_NacVaneF": 0.0,
+    "LocalVar_SD_MaxPitchRate": 0.0,
+    "LocalVar_SD_MaxTorqueRate": 0.0,
+    "CntrPar_SD_Method": 2,
+    "CntrPar_SD_Stage_N": 2,
+    "CntrPar_SD_TimeActivate": 300.0,
+    "CntrPar_SD_Time": 350.0,
+    "CntrPar_SD_EnablePitch": 0,
+    "CntrPar_SD_EnableYawError": 0,
+    "CntrPar_SD_EnableGenSpeed": 0,
+    "CntrPar_SD_EnableTime": 0,
+    "CntrPar_SD_MaxPit": 0.3,
+    "CntrPar_SD_MaxYawError": 5.0,
+    "CntrPar_SD_MaxGenSpd": 100.0,
     "CntrPar_SD_PitchCornerFreq": 1.0,
     "CntrPar_SD_GenSpdCornerFreq": 0.5,
     "CntrPar_SD_YawErrorCornerFreq": 0.17952,
