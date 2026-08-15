@@ -125,6 +125,7 @@ set(SOURCES
     src/rescontroller.cpp
     src/setpointsmoother.cpp
     src/shutdown.cpp
+    src/startup.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

@@ -82,6 +82,18 @@ IMPLICIT NONE
         END SUBROUTINE shutdown_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of Startup
+    INTERFACE
+        SUBROUTINE startup_c(LocalVar, CntrPar, objInst, ErrVar) BIND(C, NAME='startup_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: objInst
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE startup_c
+    END INTERFACE
+
 CONTAINS
 
     SUBROUTINE PowerControlSetpoints(CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -506,94 +518,28 @@ CONTAINS
         CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
     END FUNCTION PitchSaturation
 !-------------------------------------------------------------------------------------------------------------------------------
-    SUBROUTINE Startup(LocalVar, CntrPar, objInst,ErrVar) 
-    ! Start up procedure of turbine
+    SUBROUTINE Startup(LocalVar, CntrPar, objInst, ErrVar)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, ObjectInstances
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
         IMPLICIT NONE
-        ! Inputs
-        TYPE(ControlParameters),    INTENT(IN   )       :: CntrPar
-        TYPE(LocalVariables),       INTENT(INOUT)       :: LocalVar 
-        TYPE(ObjectInstances),      INTENT(INOUT)       :: objInst
-        TYPE(ErrorVariables),       INTENT(INOUT)       :: ErrVar
-        
-        ! Local Variables 
-        CHARACTER(*),PARAMETER           :: RoutineName = 'Startup'
-        Real(DbKi)              :: SU_PrevLoad             ! PRC_R_Toruqe value at the previous stage
-
-        
-        ! SU_Stage = -1  (pre startup waiting for transients)
-        ! SU_Stage = 1  (freewheeling)
-        ! SU_Stage = 2  (load stage 1)
-        ! SU_Stage = 3  (load stage 2)
-        ! SU_Stage = 4  (load stage 3)
-        ! ...
-        ! SU_Stage = 0  (startup complete, normal operation)
-        
-        !Filterd rotor speed
-        LocalVar%SU_RotSpeedF = LPFilter(LocalVar%RotSpeed, LocalVar%DT, CntrPar%SU_RotorSpeedCornerFreq, LocalVar%FP,LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
-
-        !Initialize startup stage (SU_Stage)
-        IF (LocalVar%iStatus == 0) THEN
-            ! Initilize startup stage variable to 1 to denote FreeWheeling
-            LocalVar%SU_Stage = -1
-        ENDIF
-
-        IF ((LocalVar%SU_Stage == -1) .AND. (LocalVar%Time > CntrPar%SU_StartTime)) THEN
-            LocalVar%SU_Stage = 1
-        ENDIF
-        
-        ! Determine last time at which rotor speed was below 0.95*threshold speed during freewheeling
-        IF ((LocalVar%SU_Stage == 1) .AND. &
-        (LocalVar%SU_RotSpeedF < 0.95_DbKi * CntrPar%SU_RotorSpeedThresh)) THEN
-            LocalVar%SU_LoadStageStartTime = LocalVar%Time
-        ENDIF
-        
-        !If free-wheeling exit criteria are met, swtich to load stages
-        IF ((LocalVar%SU_Stage == 1) .AND. &
-        (LocalVar%Time>=(CntrPar%SU_FW_MinDuration+LocalVar%SU_LoadStageStartTime))) THEN
-            LocalVar%SU_LoadStageStartTime = LocalVar%Time
-            LocalVar%SU_Stage = 2
-        ENDIF
-
-        ! Switch to next load stage when criteria are met
-        IF ((LocalVar%SU_Stage .ge. 2) .AND. &
-        (LocalVar%Time >= LocalVar%SU_LoadStageStartTime + CntrPar%SU_LoadRampDuration(LocalVar%SU_Stage-1) + &
-        CntrPar%SU_LoadHoldDuration(LocalVar%SU_Stage-1)) .AND. &
-        (LocalVar%SU_Stage .le. CntrPar%SU_LoadStages_N+1)) THEN
-            LocalVar%SU_Stage = LocalVar%SU_Stage + 1
-            LocalVar%SU_LoadStageStartTime = LocalVar%Time
-        ENDIF
-
-        ! Set PRC_R_Speed, SU_PrevLoad based on SU_Stage
-        IF (LocalVar%SU_Stage == 1) THEN
-            LocalVar%PRC_R_Speed = CntrPar%SU_RotorSpeedThresh * CntrPar%WE_GearboxRatio / CntrPar%PC_RefSpd
-        ELSEIF (LocalVar%SU_Stage == 2) THEN
-            SU_PrevLoad = 0.0_DbKi
-            ! Ramp up PRC_R_Speed to 1.0 in duration = SU_LoadRampDuration(1)
-            LocalVar%PRC_R_Speed = sigma(LocalVar%Time,LocalVar%SU_LoadStageStartTime,    &
-                LocalVar%SU_LoadStageStartTime + CntrPar%SU_LoadRampDuration(LocalVar%SU_Stage - 1),    &
-                CntrPar%SU_RotorSpeedThresh * CntrPar%WE_GearboxRatio / CntrPar%PC_RefSpd ,1.0_DbKi,ErrVar)
-        ELSEIF ((LocalVar%SU_Stage .ge. 2) .AND. (LocalVar%SU_Stage .le. CntrPar%SU_LoadStages_N + 1)) THEN
-            SU_PrevLoad = CntrPar%SU_LoadStages(LocalVar%SU_Stage-2)
-        ELSEIF (LocalVar%SU_Stage == CntrPar%SU_LoadStages_N + 2) THEN
-            ! Set SU_Stage = 0 when startup is over.
-            LocalVar%SU_Stage = 0
-        ENDIF
-
-        ! Set PRC_R_Torque based on SU_Stage
-        IF ((LocalVar%SU_Stage == 1) .OR. (LocalVar%SU_Stage == -1)) THEN
-            LocalVar%PRC_R_Torque = 0.0_DbKi
-        ELSEIF ((LocalVar%SU_Stage .ge. 2) .AND. (LocalVar%SU_Stage .le. CntrPar%SU_LoadStages_N + 1)) THEN
-            IF (LocalVar%Time < LocalVar%SU_LoadStageStartTime + CntrPar%SU_LoadRampDuration(LocalVar%SU_Stage-1)) THEN
-                LocalVar%PRC_R_Torque = sigma(LocalVar%Time,LocalVar%SU_LoadStageStartTime,    &
-                LocalVar%SU_LoadStageStartTime + CntrPar%SU_LoadRampDuration(LocalVar%SU_Stage - 1),    &
-                SU_PrevLoad,CntrPar%SU_LoadStages(LocalVar%SU_Stage - 1),ErrVar)
-            ELSE
-                LocalVar%PRC_R_Torque = CntrPar%SU_LoadStages(LocalVar%SU_Stage - 1)
-            ENDIF
-        ENDIF
-
-
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(CONTROLPARAMETERS), INTENT(IN), TARGET :: CntrPar
+        TYPE(OBJECTINSTANCES), INTENT(INOUT), TARGET :: objInst
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        CALL startup_c(C_LOC(LocalVar_view), C_LOC(CntrPar_view), C_LOC(objInst), C_LOC(ErrVar_view))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
     END SUBROUTINE Startup
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE Shutdown(LocalVar, CntrPar, objInst, ErrVar)
