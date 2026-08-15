@@ -9669,3 +9669,39 @@ loops. It calls none of those helpers, so there is no site for that regression
 to land on. The corpus adequacy question the note really asks was answered the
 other way, by measurement: this corpus was **not** adequate, 32 survivors said
 so, and 17 of them died to one judgement.
+
+### The generator control found the shadowing had been shipping for two units
+
+`nondecreasing_only` and the `lengths` rename were claimed additive. The control
+holds everything but the change constant — `interp1d`'s corpus generated on one
+clean tree at `a523b00` and at `eb5028e` — and it is **795 cases, 0 failed, at
+both**, every field identical but two sentences of `rule_coverage`.
+
+One of those two sentences is the fix working on a unit that is not `interp2d`:
+`[1, 2, 3]` → `[1, 2, 5, 10]`. And that is the finding, because
+`evidence/interp2d/generator.shadowed-lengths.txt` and the generator's own
+commit message both asserted that the two blocks had **never both fired before**.
+A grep of the committed artifacts refutes it: **eight**, across `interp1d` and
+`unwrap`, report the ordering sweep's extents in the character block's sentence.
+No case moved in either — the same argument the control proves for `interp1d` —
+so no green and no score is affected, and they are **not** re-taken here:
+re-taking them would move them to a `loop_rev` their sibling artifacts are not
+at, which is the `BASE-SHA SPLIT` `revcheck` exists to catch. Owed: a sweep of
+the campaign's coverage reports for that one sentence, at the next occasion when
+those units are re-measured for another reason.
+
+**The mechanism is this dispatch's recurring one and is worth naming twice.**
+The wrong paragraph was written from *reading the two code blocks* rather than
+from *grepping the artifacts*, exactly as the `yq`-NaN paragraph was written
+from reading the translation rather than the reference. Both were self-consistent
+and both were checkable in one command. **A claim about what the corpus, the
+reference or the artifacts contain is a measurement, and it needs a command
+behind it, not a reading.**
+
+A second, smaller inconsistency is stated rather than fixed: `eb5028e` appends a
+`nondecreasing_only` clause to R10's coverage sentence **ungated**, so it renders
+for every unit. It is phrased conditionally and is therefore true, but unlike the
+R6 addition beside it, it is not gated on the judgement being used. Gating it
+moves `loop_rev`, and this unit's twelve artifacts are all at `eb5028e` — the fix
+would have meant re-taking all twelve, including a 282-second gate red test,
+inside the dispatch's last half hour.

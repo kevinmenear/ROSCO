@@ -38,13 +38,22 @@ after both, so `{lengths}` in the CHARACTER sentence renders the ORDER block's
 value -- `sorted({1, 2, ex0[d]})`, the three array extents the ordering sweep
 shortens to, which for this signature is [1, 2, 4].
 
-WHY IT WAS INVISIBLE UNTIL NOW. The two blocks had never both fired in one run
-on this campaign: every unit whose order ladder fires has no CHARACTER input,
-and every unit with a CHARACTER input had `order_arrays` empty -- `interp2d`
-had it emptied by `ordered_only`. This dispatch is the first run in which both
-are non-empty, and the wrong number appeared in the same edit that turned the
-second block on, which is the shape most likely to be read as a corpus change
-rather than as a reporting defect.
+WHY IT WAS INVISIBLE UNTIL NOW -- AND THIS PARAGRAPH IS WRONG, WHICH THE
+CONTROL FOUND AN HOUR LATER. It said: "The two blocks had never both fired in
+one run on this campaign: every unit whose order ladder fires has no CHARACTER
+input, and every unit with a CHARACTER input had `order_arrays` empty." That was
+read out of the two code blocks and never checked against the artifacts.
+GREPPING THE ARTIFACTS refutes it: EIGHT committed harness results, across
+`interp1d` (4) and `unwrap` (4), carry both clauses and report `[1, 2, 3]` --
+the ordering sweep's extents -- in the character block's sentence, and have done
+since those units were scored. The census and what is owed are in
+evidence/interp2d/control.generator-change-is-additive.txt.
+
+What IS true is that the wrong number appeared HERE in the same edit that turned
+the second block on, which is the shape most likely to be read as a corpus
+change rather than as a reporting defect. And the mechanism of the wrong
+paragraph is this dispatch's own recurring one: a claim about the corpus written
+from the code instead of from the record.
 
 WHAT IT COST, and what it did not. Nothing in the corpus: `lengths` is read at
 line 1615 (`for L in lengths:`) BEFORE the order block rebinds it, so the

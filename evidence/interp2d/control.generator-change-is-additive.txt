@@ -1,0 +1,91 @@
+# POSITIVE CONTROL FOR THE GENERATOR CHANGE, and the finding it turned up.
+# rosco-r2 unit #45, second dispatch, 2026-08-15.
+#
+# THE CLAIM UNDER TEST: `nondecreasing_only` (translation-loop c7869e8) and the
+# `lengths` rename (eb5028e) are ADDITIVE -- a unit that does not name an array
+# `nondecreasing_only` draws the same corpus before and after.
+#
+# THE CONTROL: `interp1d`, the unit this one hands its slices to. Its corpus is
+# generated ON THE SAME CLEAN TREE at a523b00 (the commit before both changes)
+# and at eb5028e (both changes in), and the two artifacts compared field by
+# field.
+#
+#   git -C translation-loop checkout a523b00 ; harness.sh interp1d ... --out A
+#   git -C translation-loop checkout main    ; harness.sh interp1d ... --out B
+#
+# A FIRST ATTEMPT AT THIS CONTROL WAS WORTHLESS AND IS RECORDED SO. Comparing
+# the new run against the COMMITTED harness/interp1d.json gave 795 against 497 --
+# and said nothing, because that artifact is at loop_rev 20b0dbb, many generator
+# revisions back. A control has to hold everything but the change constant.
+
+--- result -----------------------------------------------------------------
+
+  a523b00   checked 795   failed 0   gen_rev gen-f614231a8c9e
+  eb5028e   checked 795   failed 0   gen_rev gen-e0c1b3703480
+
+  every field identical but `loop_rev`, `gen_rev` and TWO SENTENCES of
+  `rule_coverage`. No case moved; no random draw moved.
+
+--- sentence 1: the fix, working, on a unit that is not this one -------------
+
+  a523b00   ... across 1 string(s), each at length(s) [1, 2, 3] and in the
+            mixed / padded / all-blank / leading-blank shapes ...
+  eb5028e   ... across 1 string(s), each at length(s) [1, 2, 5, 10] and in the
+            mixed / padded / all-blank / leading-blank shapes ...
+
+  [1, 2, 3] is `sorted({1, 2, ex0[d]})` -- the ORDER ladder's array extents,
+  rendered into the CHARACTER block's sentence by the rebinding of `lengths`.
+  [1, 2, 5, 10] is what the character block actually drew.
+
+--- AND THE FINDING: the claim that this had never been wrong before is FALSE
+
+  `evidence/interp2d/generator.shadowed-lengths.txt` and translation-loop's own
+  commit message eb5028e both say "every unit until now had at most one of the
+  two blocks live, so the sentence had never been wrong before." THAT IS WRONG,
+  and this control is what refutes it. A census of every committed artifact
+  under harness/ that carries BOTH an `array ordering(s)` clause and an
+  `each at length(s)` clause:
+
+    harness/interp1d.json                          [1, 2, 3]     20b0dbb-nogit
+    harness/interp1d.postintegration.json          [1, 2, 3]     20b0dbb-dirty
+    harness/interp1d.postintegration.redtest.json  [1, 2, 3]     20b0dbb-dirty
+    harness/interp1d.redtest.json                  [1, 2, 3]     20b0dbb-nogit
+    harness/unwrap.json                            [1, 2, 3]     a1d364c-nogit
+    harness/unwrap.postintegration.json            [1, 2, 3]     a1d364c
+    harness/unwrap.postintegration.redtest.json    [1, 2, 3]     a1d364c
+    harness/unwrap.redtest.json                    [1, 2, 3]     a1d364c-nogit
+    harness/interp2d.json                          [1, 2, 7, 12] eb5028e-nogit   <- correct
+    harness/interp2d.noop.json                     [1, 2, 7, 12] eb5028e-nogit   <- correct
+    harness/interp2d.postintegration.json          [1, 2, 7, 12] eb5028e         <- correct
+
+  EIGHT COMMITTED ARTIFACTS, across TWO earlier units, have been carrying the
+  ordering sweep's extents in the character block's sentence since those units
+  were scored. Both are units this campaign has already closed. The defect is
+  confined to the sentence -- no case moved in either, by the same argument the
+  control proves for interp1d -- so no green and no score is affected, and the
+  eight are NOT re-taken here: re-taking them would move them to a loop_rev
+  their sibling artifacts are not at, which is a worse defect than the one being
+  fixed (revcheck's BASE-SHA SPLIT).
+
+  WHAT IS OWED: a sweep of the campaign's committed coverage reports for this
+  one sentence, at the next occasion when those units are re-measured for another
+  reason. Escalated in DECISIONS.md. The mechanism -- I asserted "it had never
+  fired together before" from reading the two blocks rather than from grepping
+  the artifacts -- is the same one that produced this dispatch's mistranslation:
+  a claim about the corpus written from the code instead of from the record.
+
+--- sentence 2: a clause that is true and is not gated ----------------------
+
+  eb5028e adds to R10's coverage sentence:
+
+    ... so the extremum is once first and once last -- or, for an array stated
+    `nondecreasing_only`, over the NON-DECREASING shapes ...
+
+  This clause renders for EVERY unit, including units with no such array. It is
+  phrased conditionally and is therefore true, but it describes an alternative
+  that did not apply -- unlike the R6 order sentence's addition, which IS gated
+  on `if nondecreasing_only`. STATED RATHER THAN FIXED: gating it is a one-line
+  change that moves loop_rev, and this unit's twelve artifacts are all at
+  eb5028e. Fixing it here would have meant re-taking all twelve, including a
+  282-second gate red test, inside the dispatch's last half hour. The
+  inconsistency is recorded so the next reader does not have to rediscover it.
