@@ -66,6 +66,7 @@ double pidcontroller_c(double error, double kp, double ki, double kd, double tf,
 double piicontroller_c(double error, double error2, double kp, double ki, double ki2, double minValue, double maxValue, double DT, double I0, piparams_t* piP, int32_t reset, int* inst);
 double pitchsaturation_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_view_t* ErrVar);
 void powercontrolsetpoints_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_view_t* ErrVar);
+void prefiltermeasuredsignals_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, debugvariables_t* DebugVar, objectinstances_t* objInst, errorvariables_view_t* ErrVar);
 
 #ifdef __cplusplus
 }

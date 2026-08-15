@@ -502,7 +502,15 @@ translations:
   PowerControlSetpoints:
     status: integrated
     cpp_file: translations/ControllerBlocks/powercontrolsetpoints.cpp
-  # Unit #38. `vit verify` reported 62/62 IDENTICAL over 28,582 field rows and
+  # Unit #38, and `status: integrated` here is `vit integrate`'s word, written
+  # over the `non_discriminating` this file carried before it. `vit integrate`
+  # also wrote `verification: simulation`; REMOVED again, for the reason
+  # recorded above ExtController -- and it is false twice over for this unit,
+  # because the gate's SECOND red test FAILED (`gate/PreFilterMeasuredSignals.
+  # redtest.flpmode2.json`, 0 of 5,252,000): the simulation does not see the
+  # Flp_Mode == 2 arm at all.
+  #
+  # `vit verify` reported 62/62 IDENTICAL over 28,582 field rows and
   # then REFUSED to certify its own red test -- "no by-value floating-point
   # parameter and no floating-point result: every input arrives behind a
   # pointer or inside a derived type" -- so it wrote `non_discriminating`
@@ -511,7 +519,7 @@ translations:
   # stated reason is a claim of its own: it is measured by hand in
   # evidence/PreFilterMeasuredSignals/kernel.stubs.txt, not quoted.
   PreFilterMeasuredSignals:
-    status: non_discriminating
+    status: integrated
     cases_passed: 62
     cpp_file: translations/Filters/prefiltermeasuredsignals.cpp
     kernel_dir: kernel/PreFilterMeasuredSignals

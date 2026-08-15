@@ -121,6 +121,7 @@ set(SOURCES
     src/piicontroller.cpp
     src/pitchsaturation.cpp
     src/powercontrolsetpoints.cpp
+    src/prefiltermeasuredsignals.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

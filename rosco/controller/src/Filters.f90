@@ -141,6 +141,19 @@ MODULE Filters
         END FUNCTION seclpfilter_vel_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of PreFilterMeasuredSignals
+    INTERFACE
+        SUBROUTINE prefiltermeasuredsignals_c(CntrPar, LocalVar, DebugVar, objInst, ErrVar) BIND(C, NAME='prefiltermeasuredsignals_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: DebugVar
+            TYPE(C_PTR), VALUE :: objInst
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE prefiltermeasuredsignals_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION LPFilter(InputSignal, DT, CornerFreq, FP, iStatus, reset, inst, InitialValue) RESULT(LPFilter_result)
@@ -322,118 +335,28 @@ CONTAINS
     END FUNCTION NotchFilter
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE PreFilterMeasuredSignals(CntrPar, LocalVar, DebugVar, objInst, ErrVar)
-    ! Prefilter shared measured wind turbine signals
-
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : ControlParameters, LocalVariables, DebugVariables, ObjectInstances, ErrorVariables
-        
-        TYPE(ControlParameters), INTENT(INOUT)      :: CntrPar
-        TYPE(LocalVariables),    INTENT(INOUT)      :: LocalVar
-        TYPE(DebugVariables),    INTENT(INOUT)      :: DebugVar
-        TYPE(ObjectInstances),   INTENT(INOUT)      :: objInst
-        TYPE(ErrorVariables),   INTENT(INOUT)       :: ErrVar
-        INTEGER(IntKi) :: K  ! Integer used to loop through turbine blades
-        INTEGER(IntKi) :: n  ! Integer used to loop through notch filters
-        REAL(DbKi)       :: NacVaneCosF                 ! Time-filtered x-component of NacVane (deg)
-        REAL(DbKi)       :: NacVaneSinF                 ! Time-filtered y-component of NacVane (deg)
-
-        ! If there's an error, don't even try to run
-        IF (ErrVar%aviFAIL < 0) THEN
-            RETURN
-        ENDIF
-        ! Filter the HSS (generator) and LSS (rotor) speed measurement:
-        ! Apply Low-Pass Filter (choice between first- and second-order low-pass filter)
-        IF (CntrPar%F_LPFType == 1) THEN
-            LocalVar%GenSpeedF = LPFilter(LocalVar%GenSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
-            LocalVar%RotSpeedF = LPFilter(LocalVar%RotSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
-        ELSEIF (CntrPar%F_LPFType == 2) THEN   
-            LocalVar%GenSpeedF = SecLPFilter(LocalVar%GenSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, CntrPar%F_LPFDamping, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF) ! Second-order low-pass filter on generator speed
-            LocalVar%RotSpeedF = SecLPFilter(LocalVar%RotSpeed, LocalVar%DT, CntrPar%F_LPFCornerFreq, CntrPar%F_LPFDamping, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF) ! Second-order low-pass filter on generator speed
-        ENDIF
-        
-        ! Apply Notch Fitler to Gen Speed 
-        DO n = 1,CntrPar%F_GenSpdNotch_N
-            LocalVar%GenSpeedF = NotchFilter(LocalVar%GenSpeedF, LocalVar%DT, &
-                                            CntrPar%F_NotchFreqs(CntrPar%F_GenSpdNotch_Ind(n)), &
-                                            CntrPar%F_NotchBetaNum(CntrPar%F_GenSpdNotch_Ind(n)), &
-                                            CntrPar%F_NotchBetaDen(CntrPar%F_GenSpdNotch_Ind(n)), &
-                                            LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotch)
-        END DO
-
-        ! Filtering the tower fore-aft acceleration signal 
-        ! Force to start at 0
-        IF (LocalVar%iStatus == 0 .AND. LocalVar%Time == 0) THEN
-            LocalVar%NacIMU_FA_RAcc = 0
-            LocalVar%FA_Acc_Nac = 0
-        ENDIF 
-
-        ! Low pass
-        LocalVar%NacIMU_FA_AccF = SecLPFilter(LocalVar%NacIMU_FA_RAcc, LocalVar%DT, CntrPar%F_FlCornerFreq(1), CntrPar%F_FlCornerFreq(2), LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF) ! Fixed Damping
-        LocalVar%FA_AccF = SecLPFilter(LocalVar%FA_Acc_Nac, LocalVar%DT, CntrPar%F_FlCornerFreq(1), CntrPar%F_FlCornerFreq(2), LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF) ! Fixed Damping
-        
-        ! High pass
-        LocalVar%NacIMU_FA_AccF = HPFilter(LocalVar%NacIMU_FA_AccF, LocalVar%DT, CntrPar%F_FlHighPassFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instHPF) 
-        LocalVar%FA_AccF = HPFilter(LocalVar%FA_AccF, LocalVar%DT, CntrPar%F_FlHighPassFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instHPF) 
-        
-        ! Notch filters
-        DO n = 1,CntrPar%F_TwrTopNotch_N
-            LocalVar%NACIMU_FA_AccF = NotchFilter(LocalVar%NacIMU_FA_AccF, LocalVar%DT, &
-                                                  CntrPar%F_NotchFreqs(CntrPar%F_TwrTopNotch_Ind(n)), &
-                                                  CntrPar%F_NotchBetaNum(CntrPar%F_TwrTopNotch_Ind(n)), &
-                                                  CntrPar%F_NotchBetaDen(CntrPar%F_TwrTopNotch_Ind(n)), &
-                                                  LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotch)
-            
-            LocalVar%FA_AccF = NotchFilter(LocalVar%FA_AccF, LocalVar%DT, &
-                                           CntrPar%F_NotchFreqs(CntrPar%F_TwrTopNotch_Ind(n)), &
-                                           CntrPar%F_NotchBetaNum(CntrPar%F_TwrTopNotch_Ind(n)), &
-                                           CntrPar%F_NotchBetaDen(CntrPar%F_TwrTopNotch_Ind(n)), &
-                                           LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotch)
-        END DO
-        
-        ! FA acc for ForeAft damping, condition matches whether it's used in Controllers.f90
-        IF (CntrPar%TD_Mode > 0) THEN
-            LocalVar%FA_AccHPF = HPFilter(LocalVar%FA_Acc_Nac, LocalVar%DT, CntrPar%FA_HPFCornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instHPF)
-        ENDIF
-        
-        ! Filter Wind Speed Estimator Signal
-        LocalVar%We_Vw_F = LPFilter(LocalVar%WE_Vw, LocalVar%DT,CntrPar%F_WECornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF) 
-
-        ! Blade root bending moment for IPC
-        DO K = 1,LocalVar%NumBl
-            IF ((CntrPar%IPC_ControlMode > 0) .OR. (CntrPar%Flp_Mode == 3)) THEN
-                ! Moving inverted notch at rotor speed to isolate 1P
-                LocalVar%RootMOOPF(K) = NotchFilterSlopes(LocalVar%rootMOOP(K), LocalVar%DT, LocalVar%RotSpeedF, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotchSlopes, .TRUE.)
-            ELSEIF ( CntrPar%Flp_Mode == 2 ) THEN
-                ! Filter Blade root bending moments
-                LocalVar%RootMOOPF(K) = SecLPFilter(LocalVar%rootMOOP(K),LocalVar%DT, CntrPar%F_FlpCornerFreq(1), CntrPar%F_FlpCornerFreq(2), LocalVar%FP, LocalVar%iStatus, LocalVar%restart,objInst%instSecLPF)
-                LocalVar%RootMOOPF(K) = HPFilter(LocalVar%rootMOOPF(K),LocalVar%DT, 0.1_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart,objInst%instHPF)
-                
-                ! Apply gen speed notch filters to blade root signal (same as gen speed path)
-                DO n = 1,CntrPar%F_GenSpdNotch_N  ! upstream bug: n was uninitialized here
-                    LocalVar%RootMOOPF(K) = NotchFilter(LocalVar%RootMOOPF(K), LocalVar%DT, &
-                                                        CntrPar%F_NotchFreqs(CntrPar%F_GenSpdNotch_Ind(n)), &
-                                                        CntrPar%F_NotchBetaNum(CntrPar%F_GenSpdNotch_Ind(n)), &
-                                                        CntrPar%F_NotchBetaDen(CntrPar%F_GenSpdNotch_Ind(n)), &
-                                                        LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instNotch)
-                END DO
-            ELSE
-                LocalVar%RootMOOPF(K) = LocalVar%rootMOOP(K)
-            ENDIF     
-        END DO
-
-
-        ! Control commands (used by WSE, mostly)
-        LocalVar%VS_LastGenTrqF = SecLPFilter(LocalVar%VS_LastGenTrq, LocalVar%DT, CntrPar%F_LPFCornerFreq, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF)
-        LocalVar%BlPitchCMeasF    = SecLPFilter(LocalVar%BlPitchCMeas, LocalVar%DT, CntrPar%F_LPFCornerFreq*0.25, 0.7_DbKi, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF)
-
-        ! Wind vane signal
-        NacVaneCosF = LPFilter(cos(LocalVar%NacVane*D2R), LocalVar%DT, CntrPar%F_YawErr, LocalVar%FP, LocalVar%iStatus, .FALSE., objInst%instLPF) ! (-)
-        NacVaneSinF = LPFilter(sin(LocalVar%NacVane*D2R), LocalVar%DT, CntrPar%F_YawErr, LocalVar%FP, LocalVar%iStatus, .FALSE., objInst%instLPF) ! (-)
-        LocalVar%NacVaneF = wrap_180(atan2(NacVaneSinF, NacVaneCosF) * R2D) ! (deg)
-
-        ! Debug Variables
-        DebugVar%GenSpeedF = LocalVar%GenSpeedF
-        DebugVar%RotSpeedF = LocalVar%RotSpeedF
-        DebugVar%NacIMU_FA_AccF = LocalVar%NacIMU_FA_AccF
-        DebugVar%FA_AccF = LocalVar%FA_AccF
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
+        IMPLICIT NONE
+        TYPE(CONTROLPARAMETERS), INTENT(INOUT), TARGET :: CntrPar
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(DEBUGVARIABLES), INTENT(INOUT), TARGET :: DebugVar
+        TYPE(OBJECTINSTANCES), INTENT(INOUT), TARGET :: objInst
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        CALL prefiltermeasuredsignals_c(C_LOC(CntrPar_view), C_LOC(LocalVar_view), C_LOC(DebugVar), C_LOC(objInst), C_LOC(ErrVar_view))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_controlparameters(CntrPar_view, CntrPar)
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
     END SUBROUTINE PreFilterMeasuredSignals
     END MODULE Filters
