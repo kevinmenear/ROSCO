@@ -9531,3 +9531,141 @@ sufficient* in exactly the way P10 describes. It exercised the one type this
 campaign has, and the defect lived in the branch that type does not reach. **A
 generator's positive control must cover the branch the change ADDED, not the
 input the campaign happens to own.**
+
+---
+
+## Unit #45 `interp2d`, second dispatch — 2026-08-15
+
+### A mistranslation that four instruments passed, found by reading the reference
+
+`interp2d` guards **both** corner searches against a NaN query. The translation
+guarded one.
+
+```
+Functions.f90:231   IF (xq <= MINVAL(xData) .OR. (ieee_is_nan(xq))) THEN
+Functions.f90:257   IF (yq <= MINVAL(yData) .OR. (ieee_is_nan(yq))) THEN
+interp2d.cpp:230        if (xq <= xData_min || std::isnan(xq)) {
+interp2d.cpp:253        if (yq <= yData_min) {                        <- the defect
+```
+
+`grep -c ieee_is_nan` on the reference is 2; `grep -c isnan` on the translation
+was 1. On `yq` NaN with `xq` interior the reference returns
+`interp1d(xData, zData(1,:), xq)` and the translation ran the y-loop to
+completion, leaving `i = n_yData` and **`ii` read without having been written**.
+
+**The four instruments and why each was blind.** The differential harness draws
+no NaN query. The mutation sweep grades the corpus against *this translation* —
+a missing statement is not a mutant of it. The post-integration harness runs the
+same corpus with both sides in C++. The gate's 27 scenarios interpolate Cp/Ct/Cq
+at `BldPitch*R2D` and `Lambda`, and a NaN there would already be an upstream
+fault.
+
+**The part that is a method finding rather than a ROSCO one.** The first
+dispatch wrote the omission down as a property of the reference, in three
+places — the translation header, `plan.json`'s `observability`, and STATUS.md —
+and then *correctly derived* the translation's behaviour from it and closed the
+question as oracle-less. By the time the sweep ran, three artifacts asserted the
+same wrong thing and **not one of them was a reading of `Functions.f90`**. P7
+says the oracle is the original source; nothing in the loop asks whether a
+paragraph claiming to describe the reference was ever checked against it.
+
+**Proposed method amendment, beside P7 and X4.** *A statement about the
+reference, written in an artifact, is a claim that needs the same standing as a
+green: it must name the file and the lines it was read from.* A cheap
+enforcement exists for the specific shape that bit here — a check pairing every
+guard in the reference's translated region with a guard in the translation, by
+count of the intrinsics VIT already knows how to map (`ieee_is_nan`,
+`ALLOCATED`, `PRESENT`). Recorded in `PUSHED_TO_MUTATION`/`TOOL_GAPS` terms:
+this one HAS a precise detector, so it belongs in `vit/checks.py`, not in prose.
+
+### `ordered_only` was one shape too wide, and the sweep is what said so
+
+The first dispatch excluded every non-ascending body for both breakpoint arrays,
+citing the reference's out-of-bounds `zData(i, 0)` on a reversed table. That
+exclusion also removed the **adjacent equal pair** and the **constant array**,
+which cannot produce that subscript at all: the corner search runs only in the
+arm where `xq > MINVAL(xData)`, and on a non-decreasing body `MINVAL(xData)`
+**is** `xData(1)`, so the first iteration always falls through.
+
+The cost was measured, not argued: **13 of the unit's 32 surviving mutants** sat
+in code no case executed, and `ErrVar->aviFAIL = -1 -> -2` inside the `fail`
+lambda survived a 1005-case green in which `aviFAIL` is compared on every case.
+
+`nondecreasing_only` (translation-loop `c7869e8`) is `ordered_only` with the
+line drawn where the reference draws it. Corpus 1005 → 1147, 0 failed, and it
+killed **17** of the 32 — the 13 above plus the four reduction-boundary
+comparisons that only a **constant** table (for `xq <= MINVAL` against `<`) and a
+**repeated maximum** (for `xq >= MAXVAL` against `>`) can separate.
+
+**The general shape, offered as an amendment.** *An admissibility exclusion
+should be stated at the predicate the reference actually fails, not at the
+nearest coarser property.* The first spelling of this one cost 13 mutants and a
+paragraph of self-consistent reasoning about why they were unreachable. The
+second is one function, `_nondecreasing`, and it is checkable.
+
+### Two survivors that no per-parameter judgement can reach — escalated
+
+`5c2746a0` and `a155c90c` (`for (j = 1; ...)` → `j = 2`, and its y twin) are
+killed by `xData = [3,1,2,4]`, `xq = 3`: the reference returns column 1 on the
+search's first iteration, the mutant starts at 2 and interpolates between
+columns 3 and 4. Both are fully defined.
+
+No rule draws it because **admissibility here is joint**: an inverted body is
+safe exactly when `xq >= xData(1)`, and every judgement `harness/ranges.toml`
+can state is a property of one parameter. The rule that would reach it is R10's
+shape with the scalar pinned to `body[0]` rather than to `MINVAL(body)`, over
+*all* order shapes — pinning `xq` to `xData(1)` is safe on **every** ordering,
+which is what makes it a rule rather than a special case. **Not taken here:** it
+is a new generator block and this dispatch's clock went on the seventeen above.
+
+### Two more at a conjunction no rule crosses — the second unit to reach it
+
+`c2c4e0b7` and `922581aa` need `errmsg_trim` reached with `n_ErrMsg <= 1`. Each
+half is in the corpus and the two never meet: the character ladder draws lengths
+`[1, 2, 7, 12]` with every other input at its base draw, and `aviFAIL` is a
+predicate knob whose four values are crossed with every other input at *its*
+base draw. Measured over all 1147 cases
+(`evidence/interp2d/errmsg_extremes_probe.cpp`): 27 trims, `n` 7..33, none at or
+below 1.
+
+This is `generate.py`'s own `ZMQ_Mode` finding — *a sample of a corpus is not a
+sample of its conjunctions* — in a place where no rule makes the conjunction at
+all. `interp1d` recorded the same gap at the same helper (`55e42d36`) and
+declined the same fix for the same reason. **This dispatch does not declare
+them.** Two units is a pattern; a rule crossing the character ladder with the
+predicate knobs is the fix, and it is a generator block, not a `ranges.toml`
+entry.
+
+### A generator defect the change exposed, and a harness defect the red test did
+
+`generate.py` bound `lengths` in two blocks of one function scope — the
+CHARACTER block and the R6 order ladder — and assembled the coverage report
+after both, so turning the order ladder on made the character sentence report
+the ordering sweep's array extents. No case moved; the artifact was wrong and
+only the artifact. Every unit until now had at most one of the two blocks live.
+Recorded before the fix (`evidence/interp2d/generator.shadowed-lengths.txt`),
+fixed at `eb5028e`, positive control: the corpus regenerated across the rename
+is 1147 cases with every other field identical.
+
+Separately, the post-integration re-take after the wrapper red test died on a
+transient build failure, and because `harness.sh` removes its `--out` path
+*before* the run and the `&& git commit` beside it was guarded by a pipeline
+ending in `tail`, **the deletion of a passing artifact was committed under a
+message claiming the green** (`e5be0140`). Kept in the history and recorded at
+`evidence/interp2d/postintegration.retake-failed-once.txt` rather than amended
+away. **Two campaign-wide consequences:** a `--out` path is destroyed by a run
+that fails, so a failed measurement destroys the previous one; and
+`cmd | tail && git commit` does not guard the commit, because a pipeline's exit
+status is its last element's.
+
+### The unit's `note` answered: the R11 replacement question does not arise here
+
+`plan.json`'s note asked whether the `2e2295f` R11 change's cost on
+`CheckInputs` — 8 net kills lost, 11 of 17 regressions concentrated in the
+`any_lt`/`any_gt`/`all_lt`/`maxval`/`minval` helpers — generalises to this unit.
+**It does not arise:** `interp2d`'s reference uses `MINVAL`/`MAXVAL` and two
+`DO` loops, and the translation writes the reductions and both scans as explicit
+loops. It calls none of those helpers, so there is no site for that regression
+to land on. The corpus adequacy question the note really asks was answered the
+other way, by measurement: this corpus was **not** adequate, 32 survivors said
+so, and 17 of them died to one judgement.

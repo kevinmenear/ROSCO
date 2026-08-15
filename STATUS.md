@@ -4,10 +4,39 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-15: unit #45 `interp2d` is `integrated` and CLOSED at 13 of 14** —
-four layers exist, all four ran, all four are red-tested, and the mutation score
-is an honest **0.8072** against a threshold of 1.000 on 166 behavioural mutants
-with **none declared equivalent**. It is the campaign's first unit whose
+**As of 2026-08-15 (second dispatch): unit #45 `interp2d` is `integrated`,
+re-measured at loop_rev `eb5028e`, and still open at 13 of 14 on P12** — four
+layers exist, all four RE-RAN at the new revision, all four are red-tested, and
+the mutation score is an honest **0.9744** against a threshold of 1.000: 152 of
+166 behavioural killed, **10 declared**, **4 survivors left standing** with the
+input that would kill each named in `evidence/interp2d/mutation.census.txt`.
+
+**THE SECOND DISPATCH FOUND A MISTRANSLATION THAT ALL FOUR INSTRUMENTS HAD
+PASSED.** The reference guards **both** corner searches against a NaN query
+(`Functions.f90:231` and `:257`; `grep -c ieee_is_nan` is 2) and this
+translation guarded only the x-direction. On `yq` NaN with `xq` interior the
+reference returns `interp1d(xData, zData(1,:), xq)`; the translation ran the
+y-loop to completion and read `ii` **without having written it**. The first
+dispatch's `plan.json`, this file and the translation header all recorded the
+asymmetry as *upstream ROSCO's* — three artifacts citing each other for a claim
+about the reference that one `git show` refutes (**P7**). Recorded before the
+fix with the wrong artifact quoted
+(`evidence/interp2d/yq-nan-guard.MISTRANSLATION.md`), fixed at `7639168f`. No
+baseline moves: the gate red test moves the identical **922,411 of 5,252,000**
+at both revisions.
+
+**AND 17 OF THE 32 SURVIVORS WERE KILLED BY ONE LINE IN `harness/ranges.toml`,
+NOT BY SEVENTEEN DECLARATIONS.** `ordered_only` was one shape too wide. What
+this reference cannot survive is an **inversion**, not a tie: its search runs
+only where `xq > MINVAL(xData)`, and on a **non-decreasing** body
+`MINVAL(xData)` *is* `xData(1)`, so the zero subscript that exclusion exists to
+prevent cannot arise. A fifth judgement kind — `nondecreasing_only`
+(translation-loop `c7869e8`) — keeps the order ladder and drops only the
+reversed and pair-inverted shapes. Corpus 1005 → **1147**, 0 failed, and the 13
+survivors in the two strictly-increasing checks plus the 4 reduction-boundary
+comparisons died on the first sweep after it.
+
+It is also the campaign's first unit whose
 **SIGNATURE THE PLAN PREDICTED COULD NOT CROSS THE BRIDGE** — confirmed for one
 generator and refuted for the other, which were never distinguished; the first
 whose **DIFFERENTIAL HARNESS BRIDGE WOULD NOT COMPILE**; and the first whose
@@ -21,10 +50,21 @@ Every count below is read from the committed artifact named in its row.
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness (`harness/interp2d.json`) | **1005 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, `interp1d_c` bridge kept so both sides run one interp1d — this unit's primary evidence | the unit as a no-op: **1005 of 1005**, the same count the green certifies |
-| mutation (`mutation/interp2d.json`) | **134 of 166 behavioural, 0.8072**, 0 declared, 2 no-compile, 6 operators | the score *is* the red test, 134 times |
-| post-integration (`harness/interp2d.postintegration.json`) | 1005 checked, 0 failed | the ErrorVariables copy-back deleted, scoped to this unit's wrapper: **46 of 1005** |
+| differential harness (`harness/interp2d.json`) | **1147 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, `interp1d_c` bridge kept so both sides run one interp1d — this unit's primary evidence | the unit as a no-op: **1147 of 1147**, the same count the green certifies |
+| mutation (`mutation/interp2d.json`) | **152 of 166 behavioural, 0.9744**, 10 declared, 2 no-compile, 6 operators, **4 survivors standing** | the score *is* the red test, 152 times |
+| post-integration (`harness/interp2d.postintegration.json`) | 1147 checked, 0 failed | the ErrorVariables copy-back deleted, scoped to this unit's wrapper: **161 of 1147** |
 | gate, 27 scenarios (`gate/interp2d.json`) | 5,252,000 values / 351 channels, 0 mismatched | the bilinear result × 1.000001 moves **922,411 of 5,252,000**; revert verified |
+
+**The four survivors, and why declaring them would have bought nothing.** Each
+has an input in the reference's own well-defined domain at which the mutated
+program answers differently.
+
+| id | site | the input that kills it | why no rule draws it |
+|---|---|---|---|
+| `5c2746a0` | `for (j = 1; j <= n_xData; ++j)` → `j = 2` | a table whose **first element is not its minimum** with the query exactly on it: `xData = [3,1,2,4]`, `xq = 3` | admissibility is a **joint** property of body and query (safe iff `xq >= xData(1)`) and every judgement `ranges.toml` can state is about one parameter |
+| `a155c90c` | the y-direction twin | as above, one dimension over | as above |
+| `c2c4e0b7` | `n > 0 ? (size_t)n : 0` → `n > 1` | `errmsg_trim` reached with `n_ErrMsg == 1` | a **conjunction** of the character ladder and the `aviFAIL` knob that no rule crosses — measured at 27 trims, `n` 7..33 |
+| `922581aa` | `… : 0` → `… : 1` | `errmsg_trim` reached with `n_ErrMsg <= 0` | as above |
 
 **THE PLAN SAID THE SIGNATURE COULD NOT CROSS. IT CROSSES, AND THE PREDICTION
 WAS STILL RIGHT ABOUT SOMETHING.** `bridge_feasible: no` rested on the
