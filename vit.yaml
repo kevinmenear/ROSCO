@@ -722,6 +722,17 @@ translations:
       \ a derived type, and perturbing one of those could change what BOTH implementations\
       \ compute. The kernel's discriminating power is therefore UNMEASURED for this\
       \ function"
+  Startup:
+    status: non_discriminating
+    cases_passed: 83
+    cpp_file: translations/ControllerBlocks/startup.cpp
+    kernel_dir: kernel/Startup
+    red_test: not_constructed
+    red_test_detail: "NOT CONSTRUCTED \u2014 no by-value floating-point parameter\
+      \ and no floating-point result: every input arrives behind a pointer or inside\
+      \ a derived type, and perturbing one of those could change what BOTH implementations\
+      \ compute. The kernel's discriminating power is therefore UNMEASURED for this\
+      \ function"
 types:
   ControlParameters:
     strategy: view
