@@ -1,0 +1,76 @@
+58 mutant(s) from structuralcontrol.cpp
+
+baseline: 1227 case(s), 0 failed, 7.0s; per-mutant watchdog 140s
+
+  [  1/58] compare_op       '==' -> '!='  killed (104/1227 cases)
+  [  2/58] compare_op       '>' -> '>='  SURVIVED
+  [  3/58] compare_op       '>' -> '>='  SURVIVED
+  [  4/58] compare_op       '==' -> '!='  killed (87/1227 cases)
+  [  5/58] compare_op       '>' -> '>='  killed (12/1227 cases)
+  [  6/58] compare_op       '==' -> '!='  killed (80/1227 cases)
+  [  7/58] compare_op       '<=' -> '<'  killed (22/1227 cases)
+  [  8/58] compare_op       '>' -> '>='  killed (2/1227 cases)
+  [  9/58] compare_op       '>' -> '>='  SURVIVED
+  [ 10/58] compare_op       '<' -> '<='  SURVIVED
+  [ 11/58] compare_op       '<=' -> '<'  killed (1126/1227 cases)
+  [ 12/58] compare_op       '<' -> '<='  killed (73/1227 cases)
+  [ 13/58] arith_op         'I_GROUP - 1' -> 'I_GROUP + 1'  killed (48/1227 cases)
+  [ 14/58] arith_op         'I_GROUP - 1' -> 'I_GROUP + 1'  killed (22/1227 cases)
+  [ 15/58] arith_op         'I_GROUP - 1' -> 'I_GROUP + 1'  killed (22/1227 cases)
+  [ 16/58] arith_op         'I_GROUP - 1' -> 'I_GROUP + 1'  killed (1126/1227 cases)
+  [ 17/58] arith_op         'I_GROUP - 1' -> 'I_GROUP + 1'  killed (1126/1227 cases)
+  [ 18/58] swap_operands    'I_GROUP - 1' -> '1 - I_GROUP'  killed (22/1227 cases)
+  [ 19/58] swap_operands    'I_GROUP - 1' -> '1 - I_GROUP'  killed (22/1227 cases)
+  [ 20/58] swap_operands    'I_GROUP - 1' -> '1 - I_GROUP'  killed (22/1227 cases)
+  [ 21/58] swap_operands    'I_GROUP - 1' -> '1 - I_GROUP'  killed (crash)
+  [ 22/58] swap_operands    'I_GROUP - 1' -> '1 - I_GROUP'  killed (109/1227 cases)
+  [ 23/58] index_offset     '[0]' -> '[0 + 1]'  killed (12/1227 cases)
+  [ 24/58] index_offset     '[1]' -> '[1 + 1]'  killed (12/1227 cases)
+  [ 25/58] index_offset     '[2]' -> '[2 + 1]'  killed (12/1227 cases)
+  [ 26/58] const_tweak      '0' -> '1'  SURVIVED
+  [ 27/58] const_tweak      '0' -> '1'  SURVIVED
+  [ 28/58] const_tweak      '0' -> '1'  killed (104/1227 cases)
+  [ 29/58] const_tweak      '1' -> '2'  killed (3/1227 cases)
+  [ 30/58] const_tweak      '1' -> '2'  killed (42/1227 cases)
+  [ 31/58] const_tweak      '500.0' -> '501.0'  killed (12/1227 cases)
+  [ 32/58] const_tweak      '0' -> '1'  killed (12/1227 cases)
+  [ 33/58] const_tweak      '06' -> '7'  killed (12/1227 cases)
+  [ 34/58] const_tweak      '1' -> '2'  killed (12/1227 cases)
+  [ 35/58] const_tweak      '06' -> '7'  killed (12/1227 cases)
+  [ 36/58] const_tweak      '2' -> '3'  killed (12/1227 cases)
+  [ 37/58] const_tweak      '05' -> '6'  killed (12/1227 cases)
+  [ 38/58] const_tweak      '2' -> '3'  killed (46/1227 cases)
+  [ 39/58] const_tweak      '1' -> '2'  SURVIVED
+  [ 40/58] const_tweak      '1' -> '2'  killed (22/1227 cases)
+  [ 41/58] const_tweak      '0' -> '1'  SURVIVED
+  [ 42/58] const_tweak      '0' -> '1'  SURVIVED
+  [ 43/58] const_tweak      '0' -> '1'  SURVIVED
+  [ 44/58] const_tweak      '0' -> '1'  SURVIVED
+  [ 45/58] const_tweak      '1' -> '2'  killed (22/1227 cases)
+  [ 46/58] const_tweak      '1' -> '2'  killed (22/1227 cases)
+  [ 47/58] const_tweak      '1' -> '2'  killed (1126/1227 cases)
+  [ 48/58] const_tweak      '1' -> '2'  killed (crash)
+  [ 49/58] const_tweak      '1' -> '2'  killed (1126/1227 cases)
+  [ 50/58] const_tweak      '1' -> '2'  killed (1126/1227 cases)
+  [ 51/58] const_tweak      '0' -> '1'  killed (73/1227 cases)
+  [ 52/58] negate_cond      'if (ErrVar->ErrMsg == nullptr)' -> 'if (!(ErrVar->ErrMsg == nullptr))'  killed (104/1227 cases)
+  [ 53/58] negate_cond      'if (static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap)' -> 'if (!(static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap))'  killed (104/1227 cases)
+  [ 54/58] negate_cond      'if (CntrPar->StC_Mode == 1)' -> 'if (!(CntrPar->StC_Mode == 1))'  killed (87/1227 cases)
+  [ 55/58] negate_cond      'if (LocalVar->Time > 500.0)' -> 'if (!(LocalVar->Time > 500.0))'  killed (73/1227 cases)
+  [ 56/58] negate_cond      'if (CntrPar->StC_Mode == 2)' -> 'if (!(CntrPar->StC_Mode == 2))'  killed (80/1227 cases)
+  [ 57/58] negate_cond      'if (CntrPar->Ind_StructControl[I_GROUP - 1] > 0)' -> 'if (!(CntrPar->Ind_StructControl[I_GROUP - 1] > 0))'  killed (48/1227 cases)
+  [ 58/58] negate_cond      'if (ErrVar->aviFAIL < 0)' -> 'if (!(ErrVar->aviFAIL < 0))'  killed (1209/1227 cases)
+
+killed 47 of 58 BEHAVIOURAL scoreable (0 declared equivalent, 0 did not compile and are excluded)   score 0.810
+  SURVIVOR 429b77c2 compare_op: '>' -> '>='
+  SURVIVOR 2b2ea093 compare_op: '>' -> '>='
+  SURVIVOR 31764a8b compare_op: '>' -> '>='
+  SURVIVOR 57d9b758 compare_op: '<' -> '<='
+  SURVIVOR 3b32180d const_tweak: '0' -> '1'
+  SURVIVOR 6f654e4a const_tweak: '0' -> '1'
+  SURVIVOR 80034e2c const_tweak: '1' -> '2'
+  SURVIVOR 43bb8c28 const_tweak: '0' -> '1'
+  SURVIVOR 4a987145 const_tweak: '0' -> '1'
+  SURVIVOR 67cbb817 const_tweak: '0' -> '1'
+  SURVIVOR d1637033 const_tweak: '0' -> '1'
+artifact: mutation/StructuralControl.json
