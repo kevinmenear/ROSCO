@@ -1,64 +1,53 @@
-run_if_time_remains: 12561s remain, 560s needed -- starting
-NOTE: operator filter ['const_tweak'] -- scoring 38 of 83 mutants. The other 45 are NOT re-run here and this artifact says nothing about them; the unit's own mutation/<U>.json is where they were scored.
-38 mutant(s) from yawratecontrol.cpp
+run_if_time_remains: 10121s remain, 560s needed -- starting
+NOTE: operator filter ['const_tweak'] -- scoring 36 of 80 mutants. The other 44 are NOT re-run here and this artifact says nothing about them; the unit's own mutation/<U>.json is where they were scored.
+36 mutant(s) from yawratecontrol.cpp
 
-baseline: 8036 case(s), 0 failed, 9.5s; per-mutant watchdog 191s
+baseline: 8093 case(s), 0 failed, 9.3s; per-mutant watchdog 185s
 
-  [  1/38] const_tweak      '57.2957795130' -> '58.295779513'  killed (240/8036 cases)
-  [  2/38] const_tweak      '0.01745329251' -> '1.01745329251'  killed (961/8036 cases)
-  [  3/38] const_tweak      '1' -> '2'  killed (1921/8036 cases)
-  [  4/38] const_tweak      '0' -> '1'  killed (815/8036 cases)
-  [  5/38] const_tweak      '0' -> '1'  killed (959/8036 cases)
-  [  6/38] const_tweak      '1' -> '2'  SURVIVED
-  [  7/38] const_tweak      '1' -> '2'  killed (640/8036 cases)
-  [  8/38] const_tweak      '0' -> '1'  killed (721/8036 cases)
-  [  9/38] const_tweak      '0' -> '1'  killed (240/8036 cases)
-  [ 10/38] const_tweak      '0.0' -> '1.0'  SURVIVED
-  [ 11/38] const_tweak      '0' -> '1'  killed (721/8036 cases)
-  [ 12/38] const_tweak      '0' -> '1'  killed (252/8036 cases)
-  [ 13/38] const_tweak      '0.0' -> '1.0'  SURVIVED
-  [ 14/38] const_tweak      '1' -> '2'  SURVIVED
-  [ 15/38] const_tweak      '1' -> '2'  SURVIVED
-  [ 16/38] const_tweak      '2' -> '3'  killed (334/8036 cases)
-  [ 17/38] const_tweak      '1' -> '2'  SURVIVED
-  [ 18/38] const_tweak      '1' -> '2'  SURVIVED
-  [ 19/38] const_tweak      '0.0' -> '1.0'  SURVIVED
-  [ 20/38] const_tweak      '0.0' -> '1.0'  SURVIVED
-  [ 21/38] const_tweak      '0' -> '1'  SURVIVED
-  [ 22/38] const_tweak      '1' -> '2'  SURVIVED
-  [ 23/38] const_tweak      '1' -> '2'  killed (719/8036 cases)
-  [ 24/38] const_tweak      '0.0' -> '1.0'  SURVIVED
-  [ 25/38] const_tweak      '0.0' -> '1.0'  SURVIVED
-  [ 26/38] const_tweak      '0' -> '1'  SURVIVED
-  [ 27/38] const_tweak      '1' -> '2'  killed (719/8036 cases)
-  [ 28/38] const_tweak      '1' -> '2'  SURVIVED
-  [ 29/38] const_tweak      '1' -> '2'  killed (959/8036 cases)
-  [ 30/38] const_tweak      '0.0' -> '1.0'  killed (242/8036 cases)
-  [ 31/38] const_tweak      '48' -> '49'  killed (961/8036 cases)
-  [ 32/38] const_tweak      '1' -> '2'  killed (961/8036 cases)
-  [ 33/38] const_tweak      '0' -> '1'  killed (96/8036 cases)
-  [ 34/38] const_tweak      '0' -> '1'  killed (96/8036 cases)
-  [ 35/38] const_tweak      '1' -> '2'  killed (96/8036 cases)
-  [ 36/38] const_tweak      '1' -> '2'  killed (48/8036 cases)
-  [ 37/38] const_tweak      '48' -> '49'  killed (192/8036 cases)
-  [ 38/38] const_tweak      '1' -> '2'  killed (192/8036 cases)
+  [  1/36] const_tweak      '57.2957795130' -> '58.295779513'  killed (268/8093 cases)
+  [  2/36] const_tweak      '0.01745329251' -> '1.01745329251'  killed (995/8093 cases)
+  [  3/36] const_tweak      '1' -> '2'  killed (1975/8093 cases)
+  [  4/36] const_tweak      '0' -> '1'  killed (845/8093 cases)
+  [  5/36] const_tweak      '0' -> '1'  killed (987/8093 cases)
+  [  6/36] const_tweak      '1' -> '2'  SURVIVED
+  [  7/36] const_tweak      '1' -> '2'  killed (640/8093 cases)
+  [  8/36] const_tweak      '0' -> '1'  killed (730/8093 cases)
+  [  9/36] const_tweak      '0' -> '1'  killed (282/8093 cases)
+  [ 10/36] const_tweak      '0.0' -> '1.0'  SURVIVED
+  [ 11/36] const_tweak      '0' -> '1'  killed (730/8093 cases)
+  [ 12/36] const_tweak      '0' -> '1'  killed (286/8093 cases)
+  [ 13/36] const_tweak      '0.0' -> '1.0'  SURVIVED
+  [ 14/36] const_tweak      '0' -> '1'  killed (17/8093 cases)
+  [ 15/36] const_tweak      '1' -> '2'  killed (351/8093 cases)
+  [ 16/36] const_tweak      '1' -> '2'  killed (6/8093 cases)
+  [ 17/36] const_tweak      '0.0' -> '1.0'  SURVIVED
+  [ 18/36] const_tweak      '0.0' -> '1.0'  SURVIVED
+  [ 19/36] const_tweak      '0' -> '1'  SURVIVED
+  [ 20/36] const_tweak      '1' -> '2'  killed (6/8093 cases)
+  [ 21/36] const_tweak      '1' -> '2'  killed (719/8093 cases)
+  [ 22/36] const_tweak      '0.0' -> '1.0'  SURVIVED
+  [ 23/36] const_tweak      '0.0' -> '1.0'  SURVIVED
+  [ 24/36] const_tweak      '0' -> '1'  SURVIVED
+  [ 25/36] const_tweak      '1' -> '2'  killed (719/8093 cases)
+  [ 26/36] const_tweak      '1' -> '2'  killed (34/8093 cases)
+  [ 27/36] const_tweak      '1' -> '2'  killed (959/8093 cases)
+  [ 28/36] const_tweak      '0.0' -> '1.0'  killed (287/8093 cases)
+  [ 29/36] const_tweak      '48' -> '49'  killed (967/8093 cases)
+  [ 30/36] const_tweak      '1' -> '2'  killed (967/8093 cases)
+  [ 31/36] const_tweak      '0' -> '1'  killed (99/8093 cases)
+  [ 32/36] const_tweak      '0' -> '1'  killed (102/8093 cases)
+  [ 33/36] const_tweak      '1' -> '2'  killed (96/8093 cases)
+  [ 34/36] const_tweak      '1' -> '2'  killed (48/8093 cases)
+  [ 35/36] const_tweak      '48' -> '49'  killed (198/8093 cases)
+  [ 36/36] const_tweak      '1' -> '2'  killed (198/8093 cases)
 
-killed 23 of 38 BEHAVIOURAL scoreable (0 declared equivalent, 0 did not compile and are excluded)   score 0.605
-  SURVIVOR 49bc3976 const_tweak: '1' -> '2'
-  SURVIVOR 38ca7ff2 const_tweak: '0.0' -> '1.0'
-  SURVIVOR c3176f96 const_tweak: '0.0' -> '1.0'
-  SURVIVOR 5673b901 const_tweak: '1' -> '2'
-  SURVIVOR ab698b7d const_tweak: '1' -> '2'
-  SURVIVOR d6e7c5fc const_tweak: '1' -> '2'
-  SURVIVOR 31455191 const_tweak: '1' -> '2'
+killed 27 of 33 BEHAVIOURAL scoreable (3 declared equivalent, 0 did not compile and are excluded)   score 0.818
   SURVIVOR f1cebe98 const_tweak: '0.0' -> '1.0'
   SURVIVOR 6c5cd47c const_tweak: '0.0' -> '1.0'
-  SURVIVOR abad9604 const_tweak: '0' -> '1'
-  SURVIVOR 579814fe const_tweak: '1' -> '2'
+  SURVIVOR 4324b252 const_tweak: '0' -> '1'
   SURVIVOR bb3ef615 const_tweak: '0.0' -> '1.0'
   SURVIVOR 0037da35 const_tweak: '0.0' -> '1.0'
-  SURVIVOR 4324b252 const_tweak: '0' -> '1'
-  SURVIVOR 4a6780b9 const_tweak: '1' -> '2'
+  SURVIVOR 2fe5e086 const_tweak: '0' -> '1'
 artifact: mutation/YawRateControl.clean.const_tweak.json
-mutate_guarded: translations/Controllers/yawratecontrol.cpp restored to c5eb67a11e5c0b69f35fb4139c02e51462867d0c; marker cleared; sweep exit 0
-run_if_time_remains: exit 0 after 381s (estimated 560s; 12180s now remain)
+mutate_guarded: translations/Controllers/yawratecontrol.cpp restored to 42ad612069643eec82a541cb09205a8704d4cd0b; marker cleared; sweep exit 0
+run_if_time_remains: exit 0 after 358s (estimated 560s; 9763s now remain)

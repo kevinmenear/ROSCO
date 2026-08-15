@@ -1,0 +1,14 @@
+run_if_time_remains: 10290s remain, 200s needed -- starting
+NOTE: operator filter ['index_offset'] -- scoring 2 of 80 mutants. The other 78 are NOT re-run here and this artifact says nothing about them; the unit's own mutation/<U>.json is where they were scored.
+2 mutant(s) from yawratecontrol.cpp
+
+baseline: 8093 case(s), 0 failed, 9.4s; per-mutant watchdog 187s
+
+  [  1/2] index_offset     '[0]' -> '[0 + 1]'  killed (17/8093 cases)
+  [  2/2] index_offset     '[1]' -> '[1 + 1]'  killed (351/8093 cases)
+
+killed 2 of 2 BEHAVIOURAL scoreable (0 declared equivalent, 0 did not compile and are excluded)   score 1.000
+  no surviving mutant among those tried -- which is not the same as no blind spot
+artifact: mutation/YawRateControl.clean.index_offset.json
+mutate_guarded: translations/Controllers/yawratecontrol.cpp restored to 42ad612069643eec82a541cb09205a8704d4cd0b; marker cleared; sweep exit 0
+run_if_time_remains: exit 0 after 38s (estimated 200s; 10252s now remain)

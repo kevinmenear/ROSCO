@@ -1,29 +1,26 @@
-run_if_time_remains: 11995s remain, 400s needed -- starting
-NOTE: operator filter ['arith_op', 'drop_call', 'drop_factor', 'swap_call_args'] -- scoring 16 of 83 mutants. The other 67 are NOT re-run here and this artifact says nothing about them; the unit's own mutation/<U>.json is where they were scored.
-16 mutant(s) from yawratecontrol.cpp
+run_if_time_remains: 10465s remain, 300s needed -- starting
+NOTE: operator filter ['arith_op', 'drop_call', 'drop_factor', 'swap_call_args'] -- scoring 14 of 80 mutants. The other 66 are NOT re-run here and this artifact says nothing about them; the unit's own mutation/<U>.json is where they were scored.
+14 mutant(s) from yawratecontrol.cpp
 
-baseline: 8036 case(s), 0 failed, 9.6s; per-mutant watchdog 191s
+baseline: 8093 case(s), 0 failed, 9.4s; per-mutant watchdog 187s
 
-  [  1/16] drop_factor      'WindDirPlusOffset * D2R' -> 'WindDirPlusOffset'  killed (961/8036 cases)
-  [  2/16] drop_factor      'WindDirPlusOffset * D2R' -> 'WindDirPlusOffset'  killed (961/8036 cases)
-  [  3/16] drop_factor      'YawRateCom * D2R' -> 'YawRateCom'  killed (575/8036 cases)
-  [  4/16] arith_op         'LocalVar->NacHeading + LocalVar->NacVane' -> 'LocalVar->NacHeading - LocalVar->NacVane'  SURVIVED
-  [  5/16] arith_op         'LocalVar->WindDir + NacVaneOffset' -> 'LocalVar->WindDir - NacVaneOffset'  killed (641/8036 cases)
-  [  6/16] arith_op         'WindDirPlusOffset * D2R' -> 'WindDirPlusOffset / D2R'  killed (961/8036 cases)
-  [  7/16] arith_op         'WindDirPlusOffset * D2R' -> 'WindDirPlusOffset / D2R'  killed (961/8036 cases)
-  [  8/16] arith_op         'NacHeadingTarget - LocalVar->NacHeading' -> 'NacHeadingTarget + LocalVar->NacHeading'  killed (526/8036 cases)
-  [  9/16] arith_op         '1 - 1' -> '1 + 1'  killed (625/8036 cases)
-  [ 10/16] arith_op         '2 - 1' -> '2 + 1'  SURVIVED
-  [ 11/16] arith_op         '48 - 1' -> '48 + 1'  killed (961/8036 cases)
-  [ 12/16] arith_op         'YawRateCom * D2R' -> 'YawRateCom / D2R'  killed (575/8036 cases)
-  [ 13/16] arith_op         '1 - 1' -> '1 + 1'  killed (192/8036 cases)
-  [ 14/16] arith_op         '48 - 1' -> '48 + 1'  killed (192/8036 cases)
-  [ 15/16] drop_call        'std::atan2(WindDirPlusOffsetSinF, WindDirPlusOffsetCosF)' -> 'WindDirPlusOffsetSinF'  killed (240/8036 cases)
-  [ 16/16] swap_call_args   'WindDirPlusOffsetSinF, WindDirPlusOffsetCosF' -> 'WindDirPlusOffsetCosF, WindDirPlusOffsetSinF'  killed (240/8036 cases)
+  [  1/14] drop_factor      'WindDirPlusOffset * D2R' -> 'WindDirPlusOffset'  killed (995/8093 cases)
+  [  2/14] drop_factor      'WindDirPlusOffset * D2R' -> 'WindDirPlusOffset'  killed (995/8093 cases)
+  [  3/14] drop_factor      'YawRateCom * D2R' -> 'YawRateCom'  killed (581/8093 cases)
+  [  4/14] arith_op         'LocalVar->NacHeading + LocalVar->NacVane' -> 'LocalVar->NacHeading - LocalVar->NacVane'  killed (34/8093 cases)
+  [  5/14] arith_op         'LocalVar->WindDir + NacVaneOffset' -> 'LocalVar->WindDir - NacVaneOffset'  killed (641/8093 cases)
+  [  6/14] arith_op         'WindDirPlusOffset * D2R' -> 'WindDirPlusOffset / D2R'  killed (995/8093 cases)
+  [  7/14] arith_op         'WindDirPlusOffset * D2R' -> 'WindDirPlusOffset / D2R'  killed (995/8093 cases)
+  [  8/14] arith_op         'NacHeadingTarget - LocalVar->NacHeading' -> 'NacHeadingTarget + LocalVar->NacHeading'  killed (526/8093 cases)
+  [  9/14] arith_op         '48 - 1' -> '48 + 1'  killed (967/8093 cases)
+  [ 10/14] arith_op         'YawRateCom * D2R' -> 'YawRateCom / D2R'  killed (581/8093 cases)
+  [ 11/14] arith_op         '1 - 1' -> '1 + 1'  killed (198/8093 cases)
+  [ 12/14] arith_op         '48 - 1' -> '48 + 1'  killed (198/8093 cases)
+  [ 13/14] drop_call        'std::atan2(WindDirPlusOffsetSinF, WindDirPlusOffsetCosF)' -> 'WindDirPlusOffsetSinF'  killed (268/8093 cases)
+  [ 14/14] swap_call_args   'WindDirPlusOffsetSinF, WindDirPlusOffsetCosF' -> 'WindDirPlusOffsetCosF, WindDirPlusOffsetSinF'  killed (285/8093 cases)
 
-killed 14 of 16 BEHAVIOURAL scoreable (0 declared equivalent, 0 did not compile and are excluded)   score 0.875
-  SURVIVOR 2b934217 arith_op: 'LocalVar->NacHeading + LocalVar->NacVane' -> 'LocalVar->NacHeading - LocalVar->NacVane'
-  SURVIVOR cf69232b arith_op: '2 - 1' -> '2 + 1'
+killed 14 of 14 BEHAVIOURAL scoreable (0 declared equivalent, 0 did not compile and are excluded)   score 1.000
+  no surviving mutant among those tried -- which is not the same as no blind spot
 artifact: mutation/YawRateControl.clean.arith.json
-mutate_guarded: translations/Controllers/yawratecontrol.cpp restored to c5eb67a11e5c0b69f35fb4139c02e51462867d0c; marker cleared; sweep exit 0
-run_if_time_remains: exit 0 after 171s (estimated 400s; 11824s now remain)
+mutate_guarded: translations/Controllers/yawratecontrol.cpp restored to 42ad612069643eec82a541cb09205a8704d4cd0b; marker cleared; sweep exit 0
+run_if_time_remains: exit 0 after 150s (estimated 300s; 10315s now remain)

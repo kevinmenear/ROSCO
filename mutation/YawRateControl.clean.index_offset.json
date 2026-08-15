@@ -1,8 +1,7 @@
 {
  "unit": "YawRateControl",
  "operators": [
-  "negate_cond",
-  "swap_operands"
+  "index_offset"
  ],
  "operators_offered": [
   "arith_op",
@@ -20,19 +19,18 @@
  ],
  "compared_against": "fortran_reference_on_a_clean_tree",
  "operators_filter": [
-  "negate_cond",
-  "swap_operands"
+  "index_offset"
  ],
  "operators_filter_unmatched": [],
- "mutants": 15,
+ "mutants": 2,
  "equivalent_declared": 0,
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
- "total": 15,
- "killed": 15,
+ "total": 2,
+ "killed": 2,
  "survived": 0,
  "equivalent": 0,
  "declared_but_killed": [],

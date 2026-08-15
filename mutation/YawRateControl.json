@@ -6,6 +6,7 @@
   "const_tweak",
   "drop_call",
   "drop_factor",
+  "index_offset",
   "negate_cond",
   "swap_call_args",
   "swap_operands"
@@ -13,9 +14,10 @@
  "operator_population": {
   "compare_op": 13,
   "drop_factor": 3,
-  "arith_op": 11,
-  "swap_operands": 4,
-  "const_tweak": 38,
+  "arith_op": 9,
+  "swap_operands": 3,
+  "index_offset": 2,
+  "const_tweak": 36,
   "negate_cond": 12,
   "drop_call": 1,
   "swap_call_args": 1
@@ -35,19 +37,19 @@
   "swap_operands"
  ],
  "compared_against": "fortran_reference_on_a_clean_tree",
- "mutants": 83,
- "equivalent_declared": 0,
+ "mutants": 80,
+ "equivalent_declared": 3,
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
- "total": 83,
- "killed": 58,
- "survived": 25,
- "equivalent": 0,
+ "total": 80,
+ "killed": 69,
+ "survived": 8,
+ "equivalent": 3,
  "declared_but_killed": [],
- "score": 0.6988,
+ "score": 0.8961,
  "loop_rev": "f92fb9f-nogit",
  "vit_rev": "fe22383-nogit",
  "merged_from": [
@@ -59,21 +61,21 @@
    "total": 13,
    "mutants": 13,
    "nocompile": 0,
-   "killed": 8,
-   "survived": 5,
-   "score": 0.6154
+   "killed": 11,
+   "survived": 2,
+   "score": 0.8462
   },
   {
    "part": "mutation/YawRateControl.clean.const_tweak.json",
    "operators_filter": [
     "const_tweak"
    ],
-   "total": 38,
-   "mutants": 38,
+   "total": 36,
+   "mutants": 36,
    "nocompile": 0,
-   "killed": 23,
-   "survived": 15,
-   "score": 0.6053
+   "killed": 27,
+   "survived": 6,
+   "score": 0.8182
   },
   {
    "part": "mutation/YawRateControl.clean.cond_swap.json",
@@ -81,12 +83,12 @@
     "negate_cond",
     "swap_operands"
    ],
-   "total": 16,
-   "mutants": 16,
+   "total": 15,
+   "mutants": 15,
    "nocompile": 0,
-   "killed": 13,
-   "survived": 3,
-   "score": 0.8125
+   "killed": 15,
+   "survived": 0,
+   "score": 1.0
   },
   {
    "part": "mutation/YawRateControl.clean.arith.json",
@@ -96,23 +98,29 @@
     "drop_factor",
     "swap_call_args"
    ],
-   "total": 16,
-   "mutants": 16,
+   "total": 14,
+   "mutants": 14,
    "nocompile": 0,
    "killed": 14,
-   "survived": 2,
-   "score": 0.875
+   "survived": 0,
+   "score": 1.0
+  },
+  {
+   "part": "mutation/YawRateControl.clean.index_offset.json",
+   "operators_filter": [
+    "index_offset"
+   ],
+   "total": 2,
+   "mutants": 2,
+   "nocompile": 0,
+   "killed": 2,
+   "survived": 0,
+   "score": 1.0
   }
  ],
- "merged_why": "Split by operator because the 600-second tool ceiling is a different number from the dispatch deadline and unit #41 lost a 69-mutant part to it; each part ran in 144-381s, every one through scripts/mutate_guarded.sh and every one cleared its marker at c5eb67a11e5c0b69f35fb4139c02e51462867d0c.",
+ "merged_why": "Split by operator because the 600-second tool ceiling is a different number from the dispatch deadline and unit #41 lost a 69-mutant part to it; each part ran in 38-360s, every one through scripts/mutate_guarded.sh and every one cleared its marker at 42ad612069643eec82a541cb09205a8704d4cd0b. index_offset is a FIFTH part because re-spelling the two Y_ErrThresh subscripts as [0] and [1] gave that operator a site it did not have on the first sweep; the three declared equivalences are all const_tweak, so only that part was re-run with --equivalences.",
  "merged_by": "scripts/_mutation_merge.py",
  "survivors": [
-  {
-   "id": "b9e5fca3",
-   "operator": "compare_op",
-   "before": "<=",
-   "after": "<"
-  },
   {
    "id": "d9338bb6",
    "operator": "compare_op",
@@ -124,60 +132,6 @@
    "operator": "compare_op",
    "before": ">=",
    "after": ">"
-  },
-  {
-   "id": "2ef68749",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "9347439c",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "49bc3976",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "38ca7ff2",
-   "operator": "const_tweak",
-   "before": "0.0",
-   "after": "1.0"
-  },
-  {
-   "id": "c3176f96",
-   "operator": "const_tweak",
-   "before": "0.0",
-   "after": "1.0"
-  },
-  {
-   "id": "5673b901",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "ab698b7d",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "d6e7c5fc",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "31455191",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
   },
   {
    "id": "f1cebe98",
@@ -192,16 +146,10 @@
    "after": "1.0"
   },
   {
-   "id": "abad9604",
+   "id": "4324b252",
    "operator": "const_tweak",
    "before": "0",
    "after": "1"
-  },
-  {
-   "id": "579814fe",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
   },
   {
    "id": "bb3ef615",
@@ -216,46 +164,10 @@
    "after": "1.0"
   },
   {
-   "id": "4324b252",
+   "id": "2fe5e086",
    "operator": "const_tweak",
    "before": "0",
    "after": "1"
-  },
-  {
-   "id": "4a6780b9",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "2b0267a7",
-   "operator": "swap_operands",
-   "before": "2 - 1",
-   "after": "1 - 2"
-  },
-  {
-   "id": "cba3c24e",
-   "operator": "negate_cond",
-   "before": "if (LocalVar->WE_Vw_F <= CntrPar->Y_uSwitch)",
-   "after": "if (!(LocalVar->WE_Vw_F <= CntrPar->Y_uSwitch))"
-  },
-  {
-   "id": "e2a6f97d",
-   "operator": "negate_cond",
-   "before": "if (NacHeadingError <= 0.0)",
-   "after": "if (!(NacHeadingError <= 0.0))"
-  },
-  {
-   "id": "2b934217",
-   "operator": "arith_op",
-   "before": "LocalVar->NacHeading + LocalVar->NacVane",
-   "after": "LocalVar->NacHeading - LocalVar->NacVane"
-  },
-  {
-   "id": "cf69232b",
-   "operator": "arith_op",
-   "before": "2 - 1",
-   "after": "2 + 1"
   }
  ]
 }

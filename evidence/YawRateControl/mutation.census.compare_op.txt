@@ -1,29 +1,26 @@
-run_if_time_remains: 11817s remain, 300s needed -- starting
-NOTE: operator filter ['compare_op'] -- scoring 13 of 83 mutants. The other 70 are NOT re-run here and this artifact says nothing about them; the unit's own mutation/<U>.json is where they were scored.
+run_if_time_remains: 10786s remain, 300s needed -- starting
+NOTE: operator filter ['compare_op'] -- scoring 13 of 80 mutants. The other 67 are NOT re-run here and this artifact says nothing about them; the unit's own mutation/<U>.json is where they were scored.
 13 mutant(s) from yawratecontrol.cpp
 
-baseline: 8036 case(s), 0 failed, 9.5s; per-mutant watchdog 189s
+baseline: 8093 case(s), 0 failed, 9.3s; per-mutant watchdog 187s
 
   [  1/13] compare_op       '==' -> '!='  killed (crash)
-  [  2/13] compare_op       '==' -> '!='  killed (815/8036 cases)
-  [  3/13] compare_op       '==' -> '!='  killed (961/8036 cases)
-  [  4/13] compare_op       '<=' -> '<'  SURVIVED
-  [  5/13] compare_op       '==' -> '!='  killed (961/8036 cases)
+  [  2/13] compare_op       '==' -> '!='  killed (845/8093 cases)
+  [  3/13] compare_op       '==' -> '!='  killed (961/8093 cases)
+  [  4/13] compare_op       '<=' -> '<'  killed (17/8093 cases)
+  [  5/13] compare_op       '==' -> '!='  killed (998/8093 cases)
   [  6/13] compare_op       '<=' -> '<'  SURVIVED
-  [  7/13] compare_op       '==' -> '!='  killed (961/8036 cases)
+  [  7/13] compare_op       '==' -> '!='  killed (998/8093 cases)
   [  8/13] compare_op       '>=' -> '>'  SURVIVED
-  [  9/13] compare_op       '>' -> '>='  SURVIVED
-  [ 10/13] compare_op       '<' -> '<='  SURVIVED
-  [ 11/13] compare_op       '>' -> '>='  killed (97/8036 cases)
-  [ 12/13] compare_op       '>' -> '>='  killed (96/8036 cases)
-  [ 13/13] compare_op       '>=' -> '>'  killed (96/8036 cases)
+  [  9/13] compare_op       '>' -> '>='  killed (17/8093 cases)
+  [ 10/13] compare_op       '<' -> '<='  killed (17/8093 cases)
+  [ 11/13] compare_op       '>' -> '>='  killed (133/8093 cases)
+  [ 12/13] compare_op       '>' -> '>='  killed (96/8093 cases)
+  [ 13/13] compare_op       '>=' -> '>'  killed (96/8093 cases)
 
-killed 8 of 13 BEHAVIOURAL scoreable (0 declared equivalent, 0 did not compile and are excluded)   score 0.615
-  SURVIVOR b9e5fca3 compare_op: '<=' -> '<'
+killed 11 of 13 BEHAVIOURAL scoreable (0 declared equivalent, 0 did not compile and are excluded)   score 0.846
   SURVIVOR d9338bb6 compare_op: '<=' -> '<'
   SURVIVOR e5c63627 compare_op: '>=' -> '>'
-  SURVIVOR 2ef68749 compare_op: '>' -> '>='
-  SURVIVOR 9347439c compare_op: '<' -> '<='
 artifact: mutation/YawRateControl.clean.compare_op.json
-mutate_guarded: translations/Controllers/yawratecontrol.cpp restored to c5eb67a11e5c0b69f35fb4139c02e51462867d0c; marker cleared; sweep exit 0
-run_if_time_remains: exit 0 after 144s (estimated 300s; 11673s now remain)
+mutate_guarded: translations/Controllers/yawratecontrol.cpp restored to 42ad612069643eec82a541cb09205a8704d4cd0b; marker cleared; sweep exit 0
+run_if_time_remains: exit 0 after 144s (estimated 300s; 10642s now remain)

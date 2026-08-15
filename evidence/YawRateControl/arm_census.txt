@@ -1,0 +1,41 @@
+# Arm census over all 8093 differential-harness cases
+#
+# The shipped translation with counters and an atexit dump added and NOTHING
+# else changed -- evidence/YawRateControl/yawratecontrol.arm_census_probe.cpp,
+# built and run by scripts/harness.sh against the same corpus. The run is GREEN
+# (`HARNESS PASS: checked 8093 failed 0 inadmissible 0`), so this is a READING
+# of the corpus and not a perturbation of it. Unit #38's instrument.
+#
+# WHAT IT SETTLES, and it is what mutation/YawRateControl.equivalences.json's
+# `_not_declared` rests on:
+#
+#   * only 1012 of 8093 cases run the body at all -- the other 7081 have
+#     `Y_ControlMode /= 1` and the procedure writes nothing. That is the same
+#     1012 the no-op red test fails (evidence/YawRateControl/harness.noop.json).
+#   * NEITHER STOP ARM IS EVER ENTERED. 725 cases enter the two persist arms and
+#     `stop` is 0 on both. Entering a state arm at all needs `iStatus /= 0`
+#     (`iStatus == 0` resets YawState two statements earlier), and at
+#     `iStatus /= 0` LPFilter takes its steady-state arm against a `LocalVar%FP`
+#     the harness zero-initialises per case: 1.0/0 * (0+0+0) = inf*0 = NaN. Every
+#     comparison against NaN is false, so `error <= 0` and `error >= 0` are false
+#     on all 725.
+#   * the three arms with ZERO hits in all 27 simulation scenarios are all
+#     reached here: the ZMQ offset 323 times, the low-wind deadband 803, the
+#     open-loop override 198. The differential harness is the only layer that
+#     sees them.
+#
+# Before the three baseline states in harness/baseline.YawRateControl.json the
+# same probe read `ENTRY YawState: 1 -> 0`, `start-right-only 0`, `BOTH ifs
+# fired 192` on 8036 cases: the deadband was negative in 192 of the 242 third-arm
+# cases, both independent `IF`s fired, and the second write won every time, so
+# the whole `YawState == 1` block was dead.
+
+[ARM CENSUS] calls 8093 | Y_ControlMode==1 1012 | iStatus==0 init 282
+  ZMQ_Mode==1 323  (0 hits in all 27 scenarios)
+  WE_Vw_F <= Y_uSwitch, deadband=Y_ErrThresh(1) 803  (0 hits in all 27 scenarios)
+  ENTRY YawState:  1 -> 6   -1 -> 719   0 -> 287
+    from  1: stop 0  persist 6
+    from -1: stop 0  persist 719
+    from  0: start-right-only 28  start-left-only 48  BOTH ifs fired 192  neither 19
+  OL_Mode>0 && Ind_YawRate>0 246 | of those, Time >= OL_Breakpoints(1) 198
+  (both 0 hits in all 27 scenarios)
