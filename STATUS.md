@@ -39,6 +39,33 @@ zero in every captured case. So that arm has a coverage number, a translation
 and harness kill counts, and **no simulation evidence at all** — and it is where
 this campaign's own fix to an upstream ROSCO indexing bug lives.
 
+**EVERY ARM IS REACHED, AND THE COUNTS ARE A READING RATHER THAN A CLAIM.**
+`probes/arm_census.cpp` is the shipped translation with one counter per arm; it
+changes no compared output, so its run **fails 0 of 9033** and is a reading of
+the corpus, not a perturbation of it.
+
+```
+calls                                  9033
+  RETURNed on aviFAIL < 0              8740
+  ran the body                          293
+F_LPFType == 1                           42
+F_LPFType == 2                           42   <- 0 hits in all 27 scenarios
+F_LPFType matched NEITHER                209
+gen-speed notch loop, iterations         232
+iStatus == 0 .AND. Time == 0               2
+tower-top notch loop, iterations         275   <- 0 iterations, all 27 scenarios
+TD_Mode > 0                               93
+blade loop, iterations                   292
+  IPC_ControlMode>0 .OR. Flp_Mode==3     113
+  Flp_Mode == 2                           90   <- scenario 4 only
+    its inner notch loop, iterations     171
+  the ELSE arm                            89
+```
+
+The three arms no bit-exact instrument sees are reached **42, 275 and 90**
+times. 42 + 42 + 209 = 293 and 113 + 90 + 89 = 292 (one body-running case has
+`NumBl <= 0`), so the partition closes.
+
 **THE NO-OP MOVES ONLY 293 OF 9033 HARNESS CASES, SAID HERE RATHER THAN LEFT TO
 BE FOUND.** A case the no-op passes is a case that never got past
 `IF (ErrVar%aviFAIL < 0) RETURN`; **8740 of the 9033 are that**. R6's all-pairs

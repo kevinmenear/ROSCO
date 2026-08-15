@@ -1,0 +1,15 @@
+calls                                  9033
+  RETURNed on aviFAIL < 0              8740
+  ran the body                         293
+F_LPFType == 1  (LPFilter)             42
+F_LPFType == 2  (SecLPFilter)          42
+F_LPFType matched NEITHER              209
+gen-speed notch loop, iterations       232
+iStatus == 0 .AND. Time == 0           2
+tower-top notch loop, iterations       275
+TD_Mode > 0                            93
+blade loop, iterations                 292
+  IPC_ControlMode>0 .OR. Flp_Mode==3   113
+  Flp_Mode == 2                        90
+    its inner notch loop, iterations   171
+  the ELSE arm                         89
