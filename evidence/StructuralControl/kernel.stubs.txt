@@ -1,0 +1,74 @@
+KERNEL HAND RED TESTS -- StructuralControl (unit #43), 62 cases
+
+`vit verify` printed NON_DISCRIMINATING and did not construct a red test, so
+every line below was run by hand through
+evidence/StructuralControl/run_one_kernel_stub.sh against the PRE-INTEGRATION
+Controllers.f90 (.vit/Controllers.preint.f90, taken from 57308e02^).
+
+EVERY `EXPECT` LINE WAS WRITTEN BEFORE ITS `RESULT`. The first is the arithmetic
+vit.yaml recorded before the extraction; the second is read off the field list in
+evidence/StructuralControl/kernel.verify_fields.csv; the third is the window's
+own case count.
+
+==================================================================
+STUB      the whole unit as a NO-OP
+ASKS      does the kernel see this unit at all, and on how many of its 62 cases
+EXPECT    fails EXACTLY ONE case, StructuralControl.0.0.20002 -- the single invocation in the 23,999-call run at which StC_Input changes value; avrSWAP and StC_Input both persist across calls, so every steady-state case is reproduced by doing nothing
+RESULT:
+    ✗ VERIFICATION FAILED: 61/62 passed
+      FAILED: Verification FAILED withStructuralControl.0.0.20002
+
+==================================================================
+STUB      the whole avrSWAP copy loop deleted
+ASKS      can the kernel see the only statement in this unit that writes outside LocalVar
+EXPECT    PASSES 62 of 62 -- 'avrswap' is not among the ~250 compared field names in kernel.verify_fields.csv, so the kernel is blind to this loop. The gate is not: the step-constant red test moves 7,998 values through it.
+RESULT:
+    ✓ VERIFICATION PASSED: 62/62 passed
+    ✗ StructuralControl: NON_DISCRIMINATING — 62 case(s) compared IDENTICAL, and the kernel did not report a mismatch when the translation was deliberately changed. The pass is not evidence.
+
+==================================================================
+STUB      the first step constant -1.234e+06 -> -1.235e+06
+ASKS      how many of the 62 cases reach the one arm this scenario runs
+EXPECT    fails EXACTLY 35 -- the 14 in 20,002..20,015 plus the 21 in 23,975..23,995, which are the invocations with Time > 500; the other 27 are below the step
+RESULT:
+    ✗ VERIFICATION FAILED: 27/62 passed
+      FAILED: Verification FAILED withStructuralControl.0.0.20002
+      FAILED: Verification FAILED withStructuralControl.0.0.20003
+      FAILED: Verification FAILED withStructuralControl.0.0.20004
+      FAILED: Verification FAILED withStructuralControl.0.0.20005
+      FAILED: Verification FAILED withStructuralControl.0.0.20006
+
+==================================================================
+SUMMARY -- THREE PREDICTIONS, THREE HITS
+
+  the unit as a no-op            fails EXACTLY 1 of 62, and it is the case the
+                                 arithmetic named:  StructuralControl.0.0.20002
+  the avrSWAP copy loop deleted  PASSES 62 of 62 -- a named blindness
+  the first step constant moved  fails EXACTLY 35 of 62, from 20,002 upward
+
+WHAT THIS SAYS ABOUT THE KERNEL, and it is not flattering to it.
+
+The kernel compares `LocalVar%StC_Input` and does NOT compare `avrSWAP`. This
+unit has exactly two statements that write anything: the three-constant step and
+the copy loop. The kernel can see the first and is blind to the second, so a
+translation that computed `StC_Input` perfectly and never wrote it to `avrSWAP`
+would pass 62/62.
+
+AND THE ONE THING IT CAN SEE, IT SEES ON ONE CASE AGAINST A NO-OP. Both
+`avrSWAP` and `LocalVar%StC_Input` persist across calls in the driver, so from
+invocation 20,003 onward the values this unit writes are already present on
+entry; a unit that does nothing reproduces them. The whole discriminating power
+of a 62-case kernel against the emptiest possible defect rests on invocation
+20,002, and that case is in the corpus only because vit.yaml's middle window was
+aimed at `23,999 - 3,998 + 1` -- computed from a coverage count -- rather than at
+the run's midpoint. A start/middle/end window would have put all three ranges on
+one side or the other of the step and reported the same 62/62 green over a corpus
+a no-op passes completely.
+
+The third stub is what says the corpus is not merely present but reached: 35 of
+62 cases run the arm, which is the same 3,999-per-scenario tail the gate's live
+red test moves.
+
+THIS UNIT'S PRIMARY EVIDENCE IS THEREFORE THE DIFFERENTIAL HARNESS, not the
+kernel: 1263 cases, 0 failed, a no-op that fails 1190 of them, and a mutation
+score of 1.000 over 51 behavioural mutants.
