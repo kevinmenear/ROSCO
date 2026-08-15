@@ -358,6 +358,136 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **AN INDEX CAN BE AN ARRAY, AND ALL THREE SITES THAT MATERIALISED ONE WROTE A
+  SCALAR.** Unit #38, `translation-loop 3ac5b4a`. `F_GenSpdNotch_Ind` is an
+  ALLOCATABLE INTEGER array every ELEMENT of which subscripts `F_NotchFreqs`, so
+  it carries `role="index"` AND `dims` -- and `_case_impl` tests the role branch
+  BEFORE the dims branch.
+
+  ```
+  TypeError: 'int' object is not iterable          <- four rules downstream
+  PreFilterMeasuredSignals: CntrPar_F_GenSpdNotch_Ind is ALLOCATABLE and its
+  case value is a scalar int (1), not a sequence   <- one pass, after the fix
+  ```
+
+  The `p.dims` branch ONE LINE BELOW already carries the same lesson for
+  `Ind_CableControl` and kind-vs-dims. **A fix applied at one of two sites that
+  share a code shape is a fix the other site escapes** -- here there were three
+  (`_case_impl`, `_random_over`, R5's 1/interior/n sweep). Grep for the shape,
+  not for the symptom.
+
+- **AN UNRESTRICTED `USE M` PUTS *M's* NAMES IN SCOPE, NOT EVERY NAME.** Unit
+  #38, `vit fe22383`. VIT's bridge generator gave up on adding a nested type's
+  `USE` line the moment any copied statement lacked an `ONLY` list.
+
+  ```
+  the module carries   USE Constants / USE Functions        <- neither re-exports a type
+  the procedure adds   USE ROSCO_Types, ONLY : <5 dummies>  <- not the 5 NESTED types
+  gfortran             Derived type 'filterparameters' at (1) is being
+                       used before it is defined
+  ```
+
+  Fortran use-association is transitive only through a module that USEs
+  something unrestricted ITSELF. Reason about which module supplies the name,
+  not about whether some USE is unrestricted.
+
+- **A COUNTER PASSED INOUT TO A CALLEE THAT SUBSCRIBES A FIXED-SIZE ARRAY WITH
+  IT IS THE SECOND AND THIRD INSTANCE OF ONE CLASS, AND `ranges.toml` IS STILL
+  THE ONLY PLACE IT CAN BE SAID.** Unit #38, after unit #34.
+
+  ```
+  ./test                        exit 139, SIGSEGV, core dumped, 0 bytes of stdout
+  the harness said              harness produced no JSON     <- also what a
+                                                                PRINTING reference says
+  after six pins, unchanged     HARNESS PASS: checked 8955 failed 0
+  ```
+
+  Five `objInst%inst*` counters index `FP`'s `DIMENSION(1024)` arrays INSIDE the
+  filters; `LocalVar%NumBl` bounds a loop over `rootMOOP`, which is
+  `DIMENSION(3)`. No compared out-parameter exists for an inference to attach a
+  role to. **The bound is arithmetic, not a round number**: this unit advances
+  `instNotch` up to eighteen times in ONE call, so 1000 and not 1024.
+
+  And a stdout-buffered SIGSEGV is invisible: the process dies with its buffer
+  unflushed, so the artifact is zero bytes and the message is the one a printing
+  reference produces. Two `fprintf(stderr)` lines in the GENERATED test .cpp --
+  the case index and the inputs the reference subscripts -- cost one rebuild and
+  name the case.
+
+- **AN OUT-OF-BOUNDS SUBSCRIPT IS NOT A SIGNAL, SO THE CASE THAT CRASHES IS NOT
+  THE CASE THAT IS WRONG.** Unit #38. Case 15 ran the body with `NumBl = 195`
+  against a `DIMENSION(3)` array and SURVIVED; case 17 died. The instrumented
+  run names the case and does NOT identify the input -- what identifies it is
+  the bisect over pins, and both are recorded
+  (`evidence/PreFilterMeasuredSignals/harness.case17_probe.txt`).
+
+- **A BASELINE STATE IS A CORPUS RULE'S OWN DATA, AND R5's "ARRAY ELEMENTS
+  DISTINCT" APPLIES TO IT. NOTHING CHECKS THAT.** Unit #38.
+
+  ```
+  {"ramp": [1, 0]}, both notch counts 1     score 0.8254, 22 survivors
+  of which                                  'ind - 1' -> '1 - ind'   x9
+                                            'n - 1'   -> 'n + 1'     x1
+  {"ramp": [1, 1]}, both notch counts 2     score 1.000, 0 survivors
+  ```
+
+  With every element 1, `ind - 1` and `1 - ind` are THE SAME NUMBER. R11's own
+  implementation comment records this from unit #29 -- 49 of that unit's 89
+  survivors -- and the baseline file reproduced it. The corpus stayed at 9033
+  cases: two counts and two ramps moved, nothing else.
+
+- **`_mutation_merge.py` STATED ONE IDENTITY TWICE AND THE TWO DISAGREED.** Unit
+  #38, C12. `killed + survived != behavioural` refuses every SPLIT sweep with a
+  declared equivalence in it, while `denom = behavioural - eq` five lines below
+  already reads `mutants` as counting them.
+
+  ```
+  _mutation_merge: REFUSING -- 114 killed + 0 survived != 126 behavioural
+  ```
+
+  It refused rather than writing a wrong number, which is the right failure --
+  and the campaign's first split sweep with an equivalence in it is what found
+  it, thirty-eight units in.
+
+- **A WRAPPER RED TEST'S REVERT REBUILT NOTHING, AND `git diff` SAID THE SOURCE
+  WAS CLEAN.** Unit #38, and it is the bind-mount mtime hazard this file already
+  records, met at the revert rather than at the edit.
+
+  ```
+  restore, rebuild, re-run the green     POST-INTEGRATION FAIL: 9033 / 293
+  touch the source, rebuild, re-run      POST-INTEGRATION PASS: 9033 / 0
+  ```
+
+  **Re-take the green after a red test; do not infer it from the restore.** The
+  293 is the red test's own count, so a reader who trusted the restore would
+  have had a failing artifact that looks exactly like a translation defect.
+
+- **A GATE RED TEST THAT FAILS IS A MEASUREMENT, AND A SECOND UNIT'S KERNEL CAN
+  CORROBORATE IT.** Unit #38. Disabling the `Flp_Mode == 2` blade-root arm moves
+  **0 of 5,252,000**, revert-verified; the whole unit as a no-op moves
+  **1,751,360**. The arm is reached by scenario 4 alone -- 12,000 hits -- and
+  scenario 4's docstring in `vit_sim.py` says *"blade root moments are
+  near-zero"*. Unit #35 measured the same quantity from the other end: its
+  `PIIController` kernel found `-LocalVar%rootMOOPF(K)` identically zero in all
+  20 captured cases. **An arm can have a coverage number, a translation and a
+  mutation kill count, and no simulation evidence at all.**
+
+- **A STUB THAT PASSES EVERY CASE CAN BE AN EQUIVALENCE IN THE WHOLE PROGRAM,
+  AND TWO GREPS SETTLE IT FASTER THAN ANY CASE COUNT.** Unit #38.
+
+  ```
+  Filters.f90, all five filters   IF ((iStatus == 0) .OR. reset)
+  ReadSetParameters.f90:123-126   the ONLY assignment to LocalVar%restart:
+                                  restart = (iStatus == 0)
+  ```
+
+  So `reset` is TRUE only where `iStatus == 0` already is, the `.OR.` makes it
+  redundant at all nineteen call sites, and a stub forcing every `reset` to
+  false passes 62 of 62 with ZERO rows moved -- at any window, in any scenario.
+  That is a different claim from "the corpus does not vary it", and only the
+  second one a wider corpus could fix. The differential harness draws `iStatus`
+  and `restart` INDEPENDENTLY and is the one instrument that is not blind.
+
 - **R6's ALL-PAIRS FALLBACK HOLDS EVERY OTHER KNOB AT ITS LADDER'S FIRST VALUE,
   SO A BRANCH THAT NEEDS A TRIPLE IS UNREACHABLE — AND THE UNIT'S OWN COVERAGE
   LINE SAYS WHICH MODE RAN.** Unit #37, and it is the first artifact in this
