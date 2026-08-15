@@ -1,0 +1,40 @@
+ErrMsg census -- StructuralControl (unit #43), all 1263 harness cases
+
+evidence/StructuralControl/structuralcontrol.errmsg_census_probe.cpp is the
+shipped translation with counters and an atexit dump added and NOTHING ELSE
+changed, so the run is GREEN (harness/StructuralControl.json's own 1263/0 was
+reproduced by it, artifact evidence/StructuralControl/harness.errmsg_census.json)
+and is a READING of the corpus rather than a perturbation of it.
+
+VITCENSUS errmsg_trim calls 120 | assign_errmsg calls 120
+VITCENSUS n_ErrMsg min 8 max 17 | n_ErrMsg_cap min 4104 max 4104
+VITCENSUS n_ErrMsg == 1: 0 | n_ErrMsg <= 0: 0
+VITCENSUS s.size() == n_ErrMsg_cap: 0 | longest message 35
+VITCENSUS trailing blank inside n_ErrMsg: 3
+
+READING THE NUMBERS.
+
+  120 of 1263 cases have ErrVar%aviFAIL < 0 and therefore reach either helper.
+  Both counters are 120 because the message branch is the ONLY caller of both.
+
+  n_ErrMsg spans 8..17 -- 8 is R5's extent for this signature's ErrMsg, and the
+  larger values are R6's character ladder. NEITHER END REACHES 1 OR 0, which is
+  what the two const_tweak declarations rest on.
+
+  n_ErrMsg_cap is 4104 in every one of the 120 calls: `emit.ALLOC_HEADROOM`
+  (4096) plus the 8 the case supplies. R13_staging_capacity DID run on this
+  corpus -- 256 cases sweeping the headroom from 0 to 255 -- and not one of them
+  is among these 120, because every R13 case takes its other inputs at the BASE
+  DRAW, where aviFAIL is not negative and the guard is never reached. The rule
+  that exists to sweep this capacity and the arm that reads it are disjoint.
+  Unit #41 measured exactly this and the numbers here reproduce it.
+
+  The longest message is 35 = 18 + 17: `StructuralControl:` is 18 characters and
+  the longest trimmed ErrMsg handed in is 17. 35 against a capacity of 4104 is
+  what makes the refusal guard's boundary unreachable here.
+
+  The trailing blank appears inside n_ErrMsg 3 times, which is why the
+  `find_last_not_of(' ') + 1` mutant at the same line is KILLED rather than
+  declared: the corpus does contain strings TRIM shortens.
+
+What each line settles is in mutation/StructuralControl.equivalences.json.
