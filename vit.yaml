@@ -502,6 +502,25 @@ translations:
   PowerControlSetpoints:
     status: integrated
     cpp_file: translations/ControllerBlocks/powercontrolsetpoints.cpp
+  # Unit #38. `vit verify` reported 62/62 IDENTICAL over 28,582 field rows and
+  # then REFUSED to certify its own red test -- "no by-value floating-point
+  # parameter and no floating-point result: every input arrives behind a
+  # pointer or inside a derived type" -- so it wrote `non_discriminating`
+  # rather than a pass. That refusal is kept here verbatim because it is TRUE
+  # and because the campaign's rule (units #32, #33, #35) is that a refusal's
+  # stated reason is a claim of its own: it is measured by hand in
+  # evidence/PreFilterMeasuredSignals/kernel.stubs.txt, not quoted.
+  PreFilterMeasuredSignals:
+    status: non_discriminating
+    cases_passed: 62
+    cpp_file: translations/Filters/prefiltermeasuredsignals.cpp
+    kernel_dir: kernel/PreFilterMeasuredSignals
+    red_test: not_constructed
+    red_test_detail: "NOT CONSTRUCTED \u2014 no by-value floating-point parameter\
+      \ and no floating-point result: every input arrives behind a pointer or inside\
+      \ a derived type, and perturbing one of those could change what BOTH implementations\
+      \ compute. The kernel's discriminating power is therefore UNMEASURED for this\
+      \ function"
 types:
   ControlParameters:
     strategy: view
