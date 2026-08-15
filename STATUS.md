@@ -4,6 +4,83 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-15: unit #45 `interp2d` is `integrated`; the done-condition
+number is filled in from `evidence/interp2d/done_check.txt` below** —
+four layers exist, all four ran, all four are red-tested, and the mutation score
+is an honest **0.8072** against a threshold of 1.000 on 166 behavioural mutants
+with **none declared equivalent**. It is the campaign's first unit whose
+**SIGNATURE THE PLAN PREDICTED COULD NOT CROSS THE BRIDGE** — confirmed for one
+generator and refuted for the other, which were never distinguished; the first
+whose **DIFFERENTIAL HARNESS BRIDGE WOULD NOT COMPILE**; and the first whose
+**CALLEE TAKES A VIEW TYPE**, where the generated bridge segfaulted on case 0
+dereferencing a module pointer only a wrapper ever sets. Two tool defects, both
+fixed in VIT rather than routed around (X2). No kernel: the plan allowed "kernel
+replay **or** direct-call harness", and this dispatch's clock went on the two
+defects.
+
+Every count below is read from the committed artifact named in its row.
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (`harness/interp2d.json`) | **1005 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, `interp1d_c` bridge kept so both sides run one interp1d — this unit's primary evidence | the unit as a no-op: **1005 of 1005**, the same count the green certifies |
+| mutation (`mutation/interp2d.json`) | **134 of 166 behavioural, 0.8072**, 0 declared, 2 no-compile, 6 operators | the score *is* the red test, 134 times |
+| post-integration (`harness/interp2d.postintegration.json`) | 1005 checked, 0 failed | the ErrorVariables copy-back deleted, scoped to this unit's wrapper: **46 of 1005** |
+| gate, 27 scenarios (`gate/interp2d.json`) | 5,252,000 values / 351 channels, 0 mismatched | the bilinear result × 1.000001 moves **922,411 of 5,252,000**; revert verified |
+
+**THE PLAN SAID THE SIGNATURE COULD NOT CROSS. IT CROSSES, AND THE PREDICTION
+WAS STILL RIGHT ABOUT SOMETHING.** `bridge_feasible: no` rested on the
+conformance matrix's `c_assumed_shape_2d` cell. That cell is measured on
+`vit/test_validate.generate_fortran_bridge`, which emitted `zData(1:n_zData)`
+for a `zData(:,:)` dummy — `Rank mismatch in argument 'zdata' (rank-2 and
+rank-1)`, exactly as written — **plus a parameter-list skew the cell does not
+mention**: `build_c_params` has always emitted `n_zData_rows` and
+`n_zData_cols`, so the C++ side passed two extents into a bridge declaring one.
+`vit integrate --apply --reverse-copy` is a different generator and it crosses:
+the interface declares `zData(*)` with both extents and the wrapper passes its
+own assumed-shape array by sequence association. It compiles, links, installs,
+and the gate is bit-identical over 5,252,000 values. **A conformance cell should
+say which generator it measured**; this is the second time one cell has stood
+for two that disagree (`c_alloc_inout`'s own history is the first).
+
+**A GENERATED BRIDGE CARRIED A PRECONDITION NOTHING TESTED.**
+`vit_original_errorvariables` is documented "set by wrapper before calling C++".
+The differential harness calls the translation DIRECTLY — no wrapper — so the
+bridge dereferenced NULL on case 0, with no stdout at all because the harness
+prints its JSON after the loop. Repairing only the pointer left **123 of 1117**
+cases disagreeing on `ErrVar.ErrMsg` and `ErrVar.n_ErrMsg`, because both
+converters move a deferred-length CHARACTER through a module staging buffer only
+a wrapper fills. VIT now also emits `vit_view_in_<t>` / `vit_view_out_<t>`,
+which work against the caller's own buffer; the direct path runs only under
+`.NOT. ASSOCIATED(stash)`, so nothing moves for a unit already scored.
+
+**THE REFERENCE READS OUT OF BOUNDS ON A TABLE IT HAS JUST REPORTED AS
+MALFORMED.** It checks that both breakpoint vectors are strictly increasing,
+reports that they are not, and interpolates anyway: on a descending table
+`j = 0` and `zData(i, 0)` is one column before the array. Six cases of 1117
+reached it and five disagreed. `harness/ranges.toml` gained a fourth judgement
+kind, **`ordered_only`**, taking an array out of both rules that leave the
+ascending domain — R6's ordering sweep and R10's reversed body.
+
+**AND THAT EXCLUSION'S COST WAS STATED WRONG, AND THE SWEEP REFUTED IT.** The
+entry claimed ordinary draws would still reach the two checks. `_fill_array`
+draws strictly increasing bodies by construction, so no case in the corpus has a
+non-increasing table at all — proved by the survivor list, not by re-reading:
+`aviFAIL = -1` → `-2` inside the lambda those checks alone call SURVIVED, while
+`aviFAIL` is compared on all 1005 cases. **14 of the 32 survivors are in that
+dead code**, 2 more in the size-mismatch branches the extent ties exclude, 10
+are equivalence candidates with an argument and no probe, 6 in the ErrMsg
+helper. Nothing is declared: this campaign's rule is that a declaration rests on
+a measurement.
+
+```
+                                    cases   mutants killed / 166
+  order ladder and R10 reverse in    1117   HARNESS RED, 5 failed -- unscoreable
+  order ladder excluded              1029   HARNESS RED, 4 failed -- unscoreable
+  + R10's reversed body excluded     1005   134 of 166       0.8072
+```
+
+---
+
 **As of 2026-08-15: unit #44 `YawRateControl` is `integrated` and CLOSED at
 13 of 14** — all five layers exist, all five ran, all five are red-tested, and
 the mutation score is an honest **0.8961** against a threshold of 1.000 on 77
