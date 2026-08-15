@@ -4,21 +4,65 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-14: unit #39 `ResController` is `integrated` and CLOSED** — all
-five layers exist, all five ran, all five are red-tested, and the mutation score
-is **1.000** on 68 behavioural mutants with 1 declared equivalent. It is the
-campaign's first unit whose REFERENCE HAS NO ANSWER FOR ITS OWN RETURN VALUE,
-and the instrument had to learn to say so before any number could be taken.
+**As of 2026-08-15: unit #40 `SetpointSmoother` is `integrated` and CLOSED** —
+all five layers exist, all five ran, all five are red-tested, and the mutation
+score is **1.000** on 16 behavioural mutants with 2 declared equivalent. It is
+the campaign's first unit whose GENERATED CORPUS ANNOUNCED COVERAGE IT DID NOT
+DELIVER, and the instrument had to be widened before any mutation number meant
+anything.
 
 Every count below is read from the committed artifact named in its row.
 
 | layer | result | red-tested |
 |---|---|---|
-| kernel replay, 62 cases (`evidence/ResController/kernel.verify_fields.csv`) | 62/62, all 14,570 field rows `IDENTICAL` | six stubs: **62 · 62 · 62 · 26 · 0 · 0**, and VIT's own (`error` scaled by 1.00001) |
-| differential harness (`harness/ResController.json`) | **2925 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **2925 of 2925**, naming all five compared outputs |
-| mutation (`mutation/ResController.json`) | **68 of 68 behavioural, 1.000**, 1 declared equivalent, 5 no-compile, 8 operators of 12 offered | the score *is* the red test, 68 times |
-| post-integration (`harness/ResController.postintegration.json`) | 2925 checked, 0 failed | TWO: the `reset` MERGE inverted **2925 of 2925**; the bounds transposed **1235 of 2925** |
-| gate, 27 scenarios (`gate/ResController.json`) | 5,252,000 values / 351 channels, 0 mismatched | TWO, and **one of them FAILED** — see below |
+| kernel replay, 62 cases (`evidence/SetpointSmoother/kernel.verify_fields.csv`) | 62/62, all 14,508 field rows `IDENTICAL` | **`vit verify` DECLINED to build one** and printed `NON_DISCRIMINATING`. Six hand stubs instead: **0 · 62 · 0 · 23 · 62 · 0** |
+| differential harness (`harness/SetpointSmoother.json`) | **13550 checked, 0 failed, 0 inadmissible** — this unit's primary evidence | the unit as a no-op: **13144 of 13550**, naming `LocalVar.SS_DelOmegaF` |
+| mutation (`mutation/SetpointSmoother.json`) | **16 of 16 behavioural, 1.000**, 2 declared equivalent, 0 no-compile, 6 operators of 12 offered | the score *is* the red test, 16 times |
+| post-integration (`harness/SetpointSmoother.postintegration.json`) | 13550 checked, 0 failed | the `--reverse-copy` line deleted and rebuilt: **13144 of 13550** — the no-op's count to the value |
+| gate, 27 scenarios (`gate/SetpointSmoother.json`) | 5,252,000 values / 351 channels, 0 mismatched | TWO: the `PC_RefSpd` scaling offset by 1e-6 moves **617,546**; `R_Total` dropped to 1.0 moves **56,128** |
+
+**THE GENERATOR PRINTED `PREDICATE KNOB: CntrPar_SS_Mode at [0.0, 1.0, 2.0]` AND
+PUT FOUR CASES OF 5599 ON THE BRANCH THAT KNOB NAMES.** Every statement this
+unit computes lives on the `SS_Mode == 1` arm. `SS_Mode` is an INTEGER with no
+declared values, so it never entered `generate.py`'s `flags` list and
+`flag_variants` never re-ran R6's 1456 ladder values under it. This is P9 at the
+level of the *instrument* rather than the scenario: coverage announced, not
+delivered.
+
+An arm census made it a count rather than a suspicion, and the partition closes
+to the value on both corpora:
+
+```
+                        5599 cases      13550 cases
+    IF arm deleted           4             4516
+    ELSE arm deleted      5351             8628
+                        ------           ------
+    the no-op             5355            13144
+```
+
+Closed by ADDITION — `CntrPar_SS_Mode = { values = [0, 1, 2] }`, this file's
+first `ranges.toml` entry that *widens*. It then killed the reference at case
+8114 (`SS_Mode=1`, `instLPF=-999`, six `DIMENSION(1024)` arrays indexed 999
+elements before their start), which forced a second entry —
+`objInst_instLPF = { lo = 1, hi = 1000 }`, the bound three earlier units already
+carry. **The 16 mutation kills are against 4516 IF-arm cases, not against 4.**
+
+**ONE DEFECT SHAPE IS SEEN BY EXACTLY ONE OF THE FOUR INSTRUMENTS.** Rewriting
+`(num/VS_RtPwr)*SS_PCGain` as `num*SS_PCGain/VS_RtPwr` — equal in real
+arithmetic, differently rounded in IEEE, and the shape this campaign's own
+guidance names — **passes the kernel 62 of 62**, and the mutation sweep is
+*silent* on it: `assoc_reorder` is in this unit's `operators_offered` and
+produced no mutant. The differential harness fails it on **35 of 13550**, at one
+to two ULP, with the shipped translation as a control in the same window at
+13550/0.
+
+**A KILLED DISPATCH LEFT A MUTANT LIVE IN THE TRANSLATION, AND `git diff` WAS
+THE ONLY THING THAT FOUND IT.** `run_kernel_stubs.sh` edits the shipped file in
+place and restores on completion; it was killed inside its stub 3, leaving
+`R_Total = 1.0;` in `translations/ControllerBlocks/setpointsmoother.cpp` across
+the dispatch boundary. Every stub runner written since restores from
+`git checkout` on an EXIT trap. Stub 3's verdict was finally taken this dispatch:
+**0 of 62**.
 
 **THE FORTRAN LEAVES ITS OWN RESULT UNASSIGNED, AND THE HARNESS FOUND IT BEFORE
 ANY READER DID.** `ResController` assigns `ResController` in the ELSE arm only;
@@ -2876,11 +2920,16 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-34 attempted / **30 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+40 attempted / **36 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 **3 deferred** (unit #29 `CheckInputs`, unit #31 `Debug`, unit #32 `FindLine`) /
 **1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 35 remain. 30 + 3 + 1 + 35 = 69.
+69 units in `plan.json`; 29 remain. 36 + 3 + 1 + 29 = 69.
+
+RECOUNTED at unit #40 from `plan.json` with the one command below, not
+incremented. It was **six units stale** (`30 / 35 remain`, last recounted at
+unit #34) — the longest this block has ever been wrong, and the sixth time the
+unit that fixed it was not the unit that broke it.
 
 RECOUNTED at unit #34's second dispatch from `plan.json` with the one command
 below, not incremented. `PIDController` moved OUT of `deferred` and into the
@@ -2915,7 +2964,7 @@ units stale, and both times the unit that fixed it was not the unit that broke
 it.** The recount is one command and it is in this file's own instructions:
 `python3 -c "import json,collections; print(collections.Counter(u.get('disposition') for u in json.load(open('plan.json'))['units']))"`)
 
-**Nineteen of the 32 units with a gate red test are gate-visible.**
+**Twenty of the 33 units with a gate red test are gate-visible.**
 RECOUNTED at unit #33 by READING every `gate/*.redtest*.json` and taking the
 largest `mismatched` of any that carries `went_red: true`, rather than by
 editing this list — which is what the recount instruction above means and which
@@ -2925,11 +2974,13 @@ is how the `StateMachine` discrepancy below was found:
 saturate 2,255,249 · PIController 2,133,598 · FindLine 1,857,893 ·
 GetWords 1,857,893 · NonDecreasing 1,857,893 (shared — see below) ·
 LPFilter 1,592,059 · ReadAvrSWAP 1,487,557 · identity 1,462,798 ·
-SecLPFilter 1,349,326 · interp1d 1,341,803 · NotchFilter 551,278 ·
+SecLPFilter 1,349,326 · interp1d 1,341,803 · SetpointSmoother 617,546 · NotchFilter 551,278 ·
 ColemanTransformInverse 389,644 · sigma 229,165 · wrap_180 206,976 ·
 NotchFilterSlopes 128,918 · ColemanTransform 124,353 · wrap_360 84,477 ·
 StateMachine 36,577 · SecLPFilter_Vel 14,140
 ```
+
+`SetpointSmoother` is inserted by VALUE and not appended: **617,546** places it eleventh, between `interp1d` (1,341,803) and `NotchFilter` (551,278). Its figure is the LARGER of its two red tests, the `PC_RefSpd` scaling offset by 1e-6; the other, `R_Total` dropped to 1.0, moves 56,128 — and *that* one moved two scenarios where this campaign's own recorded reasoning predicted one. See `DECISIONS.md`.
 
 `PIController`'s figure is the LARGEST of its three red tests (`error` forced to
 zero), not its whole-unit no-op, which moves 1,780,508 — the recount takes the

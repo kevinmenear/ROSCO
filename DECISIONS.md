@@ -2,6 +2,178 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #40 — SetpointSmoother — 2026-08-15
+
+### The generator PRINTED a predicate knob and put four cases of 5599 on the branch it named (proposed method amendment)
+
+Every statement this unit computes is on the `SS_Mode == 1` arm; the other arm
+writes a constant. `vit_harness.py` printed
+
+    PREDICATE KNOB: CntrPar_SS_Mode at [0.0, 1.0, 2.0]
+
+and the corpus it then generated reached that branch **four times in 5599**.
+The two are not connected: `generate.py`'s `flags` list is
+`p.values and p.kind != "char[]"`, which is the RANGES-FILE enumeration, not the
+knob. `flag_variants` crosses every later stage against `flags`, so R6's 1456
+ladder values were all drawn at whatever `SS_Mode` happened to be. The knob
+reached the branch only through R6's own integer ladder and its own 3
+combinations.
+
+**This is P9 one level up.** P9 says coverage is not visibility — a line can
+execute on data that cannot tell two translations apart. Here the *instrument*
+made the same error about itself: it named a branch as a knob and reported
+nothing about how often it turned it. Neither `rule_coverage` nor the artifact
+disagrees; `R2_flag_values` correctly says "2 value(s) across 1 flag(s)" and
+that flag is `restart`.
+
+Measured, not suspected. Two probes deleting one arm each, one corpus, and the
+partition closes to the value on both:
+
+```
+                        5599 cases      13550 cases
+    IF arm deleted           4             4516
+    ELSE arm deleted      5351             8628
+                        ------           ------
+    the no-op             5355            13144
+```
+
+`objInst%instLPF` is what makes the 4 exact: LPFilter increments it on every
+call, so an IF-arm case cannot fail to differ when the arm is deleted.
+
+Closed by ADDITION (P5): `CntrPar_SS_Mode = { values = [0, 1, 2] }`, and it is
+`harness/ranges.toml`'s first entry that WIDENS — every previous one narrows an
+inadmissible domain. The cost is stated in the file: `SS_Mode` leaves R6's
+integer ladder, and since the reference has exactly one comparison and no
+arithmetic on that parameter, every value it loses is behaviourally identical
+to the 2 it keeps.
+
+**PROPOSED METHOD AMENDMENT.** A generator that can NAME a branch should not be
+able to report a corpus that barely enters it. Two forms, cheapest first:
+(a) any parameter `predicate_knobs_from` identifies joins `flags`, so
+`flag_variants` crosses every later stage against it — which is what this unit's
+ranges entry does by hand, for one unit; or (b) the emitted `rule_coverage`
+carries, per knob, the number of generated cases at each of its values, so a
+four-of-5599 is visible in the artifact without an arm census. (b) is the
+smaller change and it makes the failure *reportable* rather than only fixable.
+Neither is a unit's decision: both change what every unit's corpus is.
+
+### Widening the corpus killed the REFERENCE, and "no JSON" is what that looks like
+
+Moving a third of the cases onto the arm that calls LPFilter reached case 8114 —
+`SS_Mode=1` with `instLPF=-999` — and LPFilter subscripts six `DIMENSION(1024)`
+fields of `FP` with `inst`. The reference read and wrote 999 elements before the
+start of each array: SIGSEGV, exit 139.
+
+`vit_harness.py` reports that as **"harness produced no JSON"**, which is
+indistinguishable from a broken harness. It was localised rather than guessed:
+the ALREADY-BUILT binary was instrumented twice (`CASE %d`, then the two
+parameters that decide the call) and reverted, giving
+`CASE 8114 SS_Mode=1 instLPF=-999` and its three surviving neighbours.
+`objInst_instLPF = { lo = 1, hi = 1000 }` is [PIDController]'s,
+[PreFilterMeasuredSignals]'s and [ResController]'s bound unchanged; this is the
+fourth unit to meet it, and the first to meet it through this callee.
+
+### One defect shape is seen by exactly ONE of the four instruments
+
+Rewriting `(num/VS_RtPwr)*SS_PCGain` as `num*SS_PCGain/VS_RtPwr` is equal in
+real arithmetic and a different rounding in IEEE. It is the shape this
+campaign's own guidance names.
+
+```
+kernel replay, 62 cases          62 of 62 PASS   -- blind
+mutation sweep, 18 mutants       silent          -- assoc_reorder is in
+                                                    operators_offered and
+                                                    produced no mutant here
+differential harness, 13550      35 failed       -- 1 to 2 ULP
+```
+
+The harness had to be asked on a tree where the reference is real Fortran: in
+PRE mode after integration both sides run the harness's own copy (unit #29), so
+this unit's body alone was restored by `git checkout` rather than by the
+reset/restore pair, WITH the shipped translation as a control in the same window
+at 13550/0. A window that reports a stub green is indistinguishable from a
+window that reports everything green.
+
+**What this says about the operator set:** a unit can have no `assoc_reorder`
+mutant and still have the defect the operator exists for. The score does not
+know that, and 1.000 reads as though it did.
+
+### The stated basis for the extraction scenario conflated a PARAMETER with a local of the same name (C12)
+
+Commit `05ef7cae` and `vit.yaml` both said scenario 25 was "the only one whose
+PRC_R_* product is not 1.0". The `R_Total` gate red test moved **two**
+scenarios:
+
+```
+scenario_9   33,686 values, 6 channels     <- and it moves MORE than 25
+scenario_25  22,442 values, 6 channels
+```
+
+The claim read `CntrPar%PRC_R_Speed`. The unit multiplies
+`LocalVar%PRC_R_Speed`, and `ControllerBlocks.f90:555-581` (`StartupControl`)
+drives it and `PRC_R_Torque` off 1.0 for the whole startup ramp whenever
+`SU_Mode` is on. A scenario census that greps the patch dicts for `PRC_` cannot
+see that. The CHOICE stands — stub 3 finally has its verdict, `R_Total -> 1.0`
+fails 0 of 62 — but the basis recorded for it was wrong, and a red test found it
+where a re-reading had not.
+
+### A killed in-place editor left a mutant across a dispatch boundary, and the marker does not cover it (proposed method amendment)
+
+`mutate_guarded.sh` exists because `vit_mutate.py` edits the translation in
+place and restores only on completion. **`evidence/*/run_*stubs*.sh` do exactly
+the same thing and no marker covers them.** The previous dispatch of this unit
+was killed inside stub 3 of `run_kernel_stubs.sh`, between the edit and the
+restore, and `R_Total = 1.0;` was still in
+`translations/ControllerBlocks/setpointsmoother.cpp` when the next dispatch
+opened the tree. `git diff` found it. Nothing was watching.
+
+Every stub runner written this dispatch restores from `git checkout` on an EXIT
+trap, and that held: the four-stub sweep was killed at the 600-second tool
+ceiling and the file hashed back to the shipped translation. **The trap is not
+sufficient on its own** — the killed sweep also ORPHANED a `vit verify` inside
+the container, which had to be `pkill`ed, and which would have gone on writing
+into a tree that had already been restored. The one-stub-per-command runner that
+replaced it kills stragglers in its own trap.
+
+**PROPOSED METHOD AMENDMENT:** the marker should belong to the ACT of editing a
+tracked artifact in place, not to one tool that does it. `mutate_guarded.sh`
+generalised to `guarded_edit.sh <file> <command...>` would cover both, and the
+hash check it already performs is the whole mechanism.
+
+### A trap that restores with `git checkout -- <path>` restores from the INDEX, which the probe had just poisoned
+
+`git checkout <commit> -- <path>` writes the index as well as the working tree.
+The association probe staged the pre-integration `ControllerBlocks.f90` that
+way, and its EXIT trap said `git checkout -- "$F"` — restoring the working tree
+FROM THAT STAGED COPY. It printed `restored`, and
+`grep -c setpointsmoother_c ControllerBlocks.f90` returned **0**: the integrated
+wrapper gone, staged, one rebuild away from a `libdiscon.so` with no C++ in it
+and a gate that would have passed anyway, because clean and integrated are
+bit-identical by design.
+
+The only thing that said so was the `M ` in the first column of
+`git status --short` — the staged-not-modified marker, which reads almost
+exactly like the ` M` that a normal edit produces. Every restore trap in this
+unit now names `HEAD` explicitly. This is `restore_integrated.sh`'s documented
+hazard reached from a direction its warning does not cover: that script checks
+for MODIFIED files under `src/`, and this file was STAGED and clean.
+
+### Two smaller ones, recorded because both read as something worse than they are
+
+**The post-integration harness failed once with an undefined `setpointsmoother_c`
+and passed on an immediate re-run with nothing changed.** `vit_integration_shim.o`
+on disk defined no symbols at all — `nm` returned zero from a 952-byte object —
+though its `.cpp` was correct and recompiling by hand produced
+`T setpointsmoother_c` at once. `harness.sh` writes that `.cpp` from the HOST (a
+stdout redirect) and compiles it INSIDE the container one command later.
+Host-to-container write propagation is the only moving part between them.
+
+**A commit message passed as a shell argument had its backticks EXECUTED.** Four
+phrases were deleted from the recorded message and `vit: command not found`
+appeared on stdout. This campaign's messages quote artefact names in backticks
+constantly. Messages are now written to a file and passed with `-F`.
+
+
 ## Unit #39 — ResController — 2026-08-14
 
 ### A reference can have no answer for its own RETURN VALUE, and `no_oracle` could only name a field
