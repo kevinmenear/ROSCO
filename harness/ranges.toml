@@ -880,3 +880,73 @@ CntrPar_SS_Mode = { values = [0, 1, 2] }
 # unit #14 and is CALLED rather than inlined, so both sides of this comparison
 # reach one implementation of it and this harness never constrained it.
 objInst_instLPF = { lo = 1, hi = 1000 }
+
+# ---------------------------------------------------------------------------
+[Shutdown]
+
+# THREE PINS. THE FIRST IS THIS FILE'S OLDEST JUDGEMENT MET A FIFTH TIME, and it
+# is the one that had to be found rather than anticipated: the first generated
+# corpus killed the REFERENCE at case 21 with
+#
+#     In file 'shutdown_bridge.f90': Error allocating 11703869192 bytes
+#
+# and the localisation is `evidence/Shutdown/harness.case21_probe.txt` -- an
+# instrumented run, not an inference from "harness produced no JSON". What it
+# shows is worth carrying: the C++ side read `n_PF_TimeStuck = 3` out of the
+# case file and the FORTRAN bridge was handed 1462983649, because between the
+# read and the call the only thing that ran was the C++ translation, and
+# `LPFilter` had written past `FP`'s six `DIMENSION(1024)` arrays and out of
+# `LocalVar_a` entirely into the neighbouring stack object.
+#
+# This unit calls LPFilter FOUR times per call -- pitch, generator speed and the
+# two vane components -- so the bound is 1024 - 4, and 1000 is the number the
+# other four units already carry.
+#
+# THE COST, STATED: `instLPF` leaves R6's integer ladder, so the decade
+# boundaries and the two 32-bit extremes are gone from it. Every one of those is
+# a value at which the REFERENCE has no defined behaviour. The corpus can no
+# longer put the counter at 1024, so a defect at the last slot has nothing here
+# to disagree with -- and that defect would be in LPFilter, which is unit #11,
+# is CALLED rather than inlined, and is therefore the same implementation on
+# both sides of this comparison in any case.
+objInst_instLPF = { lo = 1, hi = 1000 }
+
+# THE OTHER TWO ARE SUBSCRIPTS THIS UNIT WRITES ITSELF, which makes them a
+# different argument from the one above and worth stating separately.
+#
+# `LocalVar%SD_Stage` indexes three of the four SD_ allocatables:
+#
+#     SD_Method == 1, second arm    SD_MaxPitchRate(SD_Stage)
+#                                   SD_MaxTorqueRate(SD_Stage)
+#                                   SD_StageTime(SD_Stage)
+#     SD_Method == 2, ELSE arm      SD_MaxPitchRate(SD_Stage)
+#                                   SD_MaxTorqueRate(SD_Stage)
+#
+# and the guard on the first is `SD_Stage .LE. SD_Stage_N`, NOT `1 .LE. SD_Stage
+# .AND. SD_Stage .LE. SD_Stage_N`. The reference's own comment on the arm below
+# it says "Stage > 0" and the condition does not say so, so every negative
+# `SD_Stage` subscripts before the array's start -- in the REFERENCE as much as
+# in the translation. 0..3 keeps all three arms live: 0 takes the first,
+# 1..SD_Stage_N the second, and anything above SD_Stage_N the third.
+LocalVar_SD_Stage = { lo = 0, hi = 3 }
+
+# `CntrPar%SD_Stage_N` bounds the method-2 search loop
+#
+#     DO I_Stage = 1, CntrPar%SD_Stage_N
+#         IF (LocalVar%BlPitchCMeas >= CntrPar%SD_StagePitch(I_Stage)) ...
+#
+# which subscripts `SD_StagePitch` with the loop counter and therefore has to
+# stay inside its extent. R5 varies the four SD_ extents over [3, 4, 5, 6, 7],
+# so the smallest allocation any case can present is 3 and the bound is 3. That
+# is arithmetic against R5's own ladder, not a round number: raising it to 4
+# would put the loop one element past an extent-3 case.
+#
+# THE COST, STATED: `SD_Stage_N` also leaves R6's integer ladder. What that
+# removes is the `SD_Stage > SD_Stage_N` boundary at large magnitudes -- but the
+# boundary itself is still reached, because `SD_Stage` runs to 3 and
+# `SD_Stage_N` down to 0, so the ELSE arm and the `.LE.` arm both have cases on
+# either side of the equality. What is genuinely gone is a corpus in which
+# `SD_Stage_N` disagrees with the extents beside it, which is a state
+# `ReadControlParameterFileSub` cannot construct: it allocates all four arrays
+# from this one count.
+CntrPar_SD_Stage_N = { lo = 0, hi = 3 }
