@@ -1177,11 +1177,22 @@ CntrPar_OL_StructControl_cols = { same_as = "CntrPar_OL_Breakpoints_n" }
 #   * R10's REVERSED body, which exists so that a reduction's extremum is once
 #     the first element and once the last.
 #
-#   * The two strictly-increasing CHECKS are NOT lost. Every array body outside
-#     the ladder is an ordinary random draw, and three distinct doubles are in
-#     increasing order one time in six, so both checks fire, set `aviFAIL` and
-#     write their message across the ordinary corpus -- and `ErrVar.aviFAIL`,
-#     `ErrVar.ErrMsg` and `ErrVar.n_ErrMsg` are compared on every case.
+#   * THE TWO STRICTLY-INCREASING CHECKS GO DEAD, and this line first said the
+#     opposite. It said the ordinary random draws would still reach them "one
+#     time in six". They do not: `harness/generate._fill_array` draws STRICTLY
+#     INCREASING bodies by construction -- "a table of breakpoints must stay
+#     ordered for the reference's own search to be meaningful" -- so once these
+#     two entries remove the ordering sweep and R10's reverse, NO CASE IN THE
+#     CORPUS HAS A NON-INCREASING TABLE.
+#
+#     The correction is a measurement, not a re-reading: `ErrVar->aviFAIL = -1`
+#     inside the `fail` lambda those two checks alone call, mutated to `-2`,
+#     SURVIVED the sweep -- and `ErrVar.aviFAIL` is compared on all 1005 cases,
+#     so one execution would have killed it. 14 of the unit's 32 survivors are
+#     in that dead code (evidence/interp2d/mutation.census.txt, group 1).
+#
+#     The original sentence is kept above rather than deleted: it was the belief
+#     the exclusion was written under, and the sweep is what refuted it.
 #   * What IS lost is the EQUAL adjacent pair, and it is the only input on which
 #     `xData(I+1) - xData(I) <= 0` and `< 0` give different answers. A mutant
 #     that weakens either check to `<` has nothing here to kill it: `_fill_array`

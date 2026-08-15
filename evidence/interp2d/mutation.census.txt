@@ -1,0 +1,109 @@
+# THE 32 SURVIVORS OF unit #45 `interp2d`, PARTITIONED BY CAUSE.
+#
+#   mutation/interp2d.json   168 mutants   2 nocompile   166 behavioural
+#                            134 killed    32 survived   score 0.8072
+#                            0 declared equivalent
+#
+# NOTHING IS DECLARED EQUIVALENT HERE. Ten of the thirty-two have a one-line
+# argument for equivalence and no measurement, and this campaign's rule is that
+# a declaration rests on a measurement (unit #23 swept 4,294,967,296 values for
+# one of them). They are named below with the argument, as candidates, and they
+# are counted as SURVIVORS in the score.
+#
+# `vit_mutate.py` computes ids from the LOWERCASED unit name (unit #42), so the
+# mapping below is `cppmutate.mutants('interp2d', src)`.
+
+98926651    75  compare_op     >                            -> >=             | if (static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap) {
+c2c4e0b7    95  const_tweak    0                            -> 1              | const std::string_view v(ErrVar->ErrMsg, n > 0 ? static_cast<size_t>(n) : 0);
+922581aa    95  const_tweak    0                            -> 1              | const std::string_view v(ErrVar->ErrMsg, n > 0 ? static_cast<size_t>(n) : 0);
+f0949202    95  compare_op     >                            -> >=             | const std::string_view v(ErrVar->ErrMsg, n > 0 ? static_cast<size_t>(n) : 0);
+39350cd3    96  const_tweak    1                            -> 2              | return std::string(v.substr(0, v.find_last_not_of(' ') + 1));
+bd0aa005   114  const_tweak    1                            -> 2              | ErrVar->aviFAIL = -1;
+34ae41de   121  const_tweak    1                            -> 2              | ErrVar->aviFAIL = -1;
+bc897a8f   135  const_tweak    1                            -> 2              | ErrVar->aviFAIL = -1;
+8a36fcb9   144  swap_operands  n_xData - 1                  -> 1 - n_xData    | for (int I_DIFF = 1; I_DIFF <= n_xData - 1; ++I_DIFF) {
+03a9c7fb   144  const_tweak    1                            -> 2              | for (int I_DIFF = 1; I_DIFF <= n_xData - 1; ++I_DIFF) {
+2d05fc4d   144  const_tweak    1                            -> 2              | for (int I_DIFF = 1; I_DIFF <= n_xData - 1; ++I_DIFF) {
+267b4c09   144  compare_op     <=                           -> <              | for (int I_DIFF = 1; I_DIFF <= n_xData - 1; ++I_DIFF) {
+e53b5ccd   145  const_tweak    0                            -> 1              | if (xData[I_DIFF] - xData[I_DIFF - 1] <= 0) {
+209cc231   145  compare_op     <=                           -> <              | if (xData[I_DIFF] - xData[I_DIFF - 1] <= 0) {
+6ed39951   152  swap_operands  n_yData - 1                  -> 1 - n_yData    | for (int I_DIFF = 1; I_DIFF <= n_yData - 1; ++I_DIFF) {
+a198c531   152  const_tweak    1                            -> 2              | for (int I_DIFF = 1; I_DIFF <= n_yData - 1; ++I_DIFF) {
+24ee3be4   152  const_tweak    1                            -> 2              | for (int I_DIFF = 1; I_DIFF <= n_yData - 1; ++I_DIFF) {
+31525826   152  compare_op     <=                           -> <              | for (int I_DIFF = 1; I_DIFF <= n_yData - 1; ++I_DIFF) {
+181dc6e2   153  const_tweak    0                            -> 1              | if (yData[I_DIFF] - yData[I_DIFF - 1] <= 0) {
+3cdf7de6   153  compare_op     <=                           -> <              | if (yData[I_DIFF] - yData[I_DIFF - 1] <= 0) {
+7986e5f9   167  compare_op     <                            -> <=             | if (x < xData_min) xData_min = x;
+1235716b   168  compare_op     >                            -> >=             | if (x > xData_max) xData_max = x;
+b9162232   174  compare_op     <                            -> <=             | if (y < yData_min) yData_min = y;
+acb38635   175  compare_op     >                            -> >=             | if (y > yData_max) yData_max = y;
+52e827a0   230  compare_op     <=                           -> <              | if (xq <= xData_min || std::isnan(xq)) {
+a2f7bf52   234  compare_op     >=                           -> >              | } else if (xq >= xData_max) {
+5c2746a0   239  const_tweak    1                            -> 2              | for (j = 1; j <= n_xData; ++j) {
+98531180   243  compare_op     <                            -> <=             | } else if (xq < xData[j - 1]) {
+67b108b6   253  compare_op     <=                           -> <              | if (yq <= yData_min) {
+4884fa6a   259  compare_op     >=                           -> >              | } else if (yq >= yData_max) {
+a155c90c   266  const_tweak    1                            -> 2              | for (i = 1; i <= n_yData; ++i) {
+143857a4   272  compare_op     <                            -> <=             | } else if (yq < yData[i - 1]) {
+run_if_time_remains: exit 0 after 0s (estimated 120s; 11488s now remain)
+
+## GROUP 1 -- 14 survivors in code THE CORPUS NEVER EXECUTES
+## lines 114, 144, 145, 152, 153  (and the `fail` lambda they alone call)
+##
+## `harness/generate._fill_array` draws STRICTLY INCREASING bodies -- "a table
+## of breakpoints must stay ordered for the reference's own search to be
+## meaningful" -- and `harness/ranges.toml`'s two `ordered_only` entries removed
+## the only two rules that departed from that (R6's ordering sweep, R10's
+## reversed body). So NO CASE IN THE CORPUS HAS A NON-INCREASING TABLE, and the
+## two strictly-increasing checks never fire.
+##
+## THE MEASUREMENT IS IN THE SURVIVOR LIST ITSELF, and it is why this group is
+## stated as dead code rather than as under-coverage: `ErrVar->aviFAIL = -1`
+## inside `fail` (line 114) mutated to `-2` SURVIVED, and `ErrVar.aviFAIL` is
+## compared on every one of the 1005 cases. A single execution of that line
+## would have killed it.
+##
+## This is the `ordered_only` cost, and it is LARGER than harness/ranges.toml
+## first stated it: that entry said the ordinary draws would still reach the
+## checks. They do not. Corrected there.
+
+## GROUP 2 -- 2 survivors in the SIZE-MISMATCH branches
+## lines 121, 135   (`ErrVar->aviFAIL = -1` -> `-2`, twice)
+##
+## The two extent ties. `n_zData_cols` follows `n_xData` and `n_zData_rows`
+## follows `n_yData`, so neither branch can be entered, and the reference has no
+## answer there anyway -- it formats 59 characters into a LEN-0 record and the
+## process ends (evidence/interp2d/reference.size-mismatch-aborts.txt).
+
+## GROUP 3 -- 4 EQUIVALENCE CANDIDATES in the reductions
+## lines 167, 168, 174, 175   (`<` -> `<=`, `>` -> `>=`)
+##
+##     if (x < xData_min) xData_min = x;      vs   if (x <= xData_min) ...
+##
+## Both compute the same extremum for ANY sequence: the assignment on an equal
+## element stores the value already there. Unit #23 declared the same two
+## mutants on interp1d and paid for it with a 69,905-tuple sweep
+## (evidence/interp1d/equivalence_probe.txt). Not declared here: no probe was
+## run in this dispatch.
+
+## GROUP 4 -- 6 EQUIVALENCE CANDIDATES where an ASCENDING table makes two
+## branches coincide
+## lines 230, 234, 253, 259 (`<=` -> `<`, `>=` -> `>`) and 243, 272 (`<` -> `<=`)
+##
+## On an ascending table `MINVAL(xData) == xData(1)`, so at `xq == MINVAL` the
+## reference's lower-bound branch and the ELSE loop's on-axis branch return the
+## same `interp1d(yData, zData(:,1), yq)`. R10 puts `xq` exactly on the
+## extremum -- 48 such cases -- and the two paths agree there.
+## 243 and 272 are stronger than that: `xq == xData(j)` is tested on the line
+## ABOVE, so `xq < xData(j)` and `xq <= xData(j)` cannot differ at all.
+
+## GROUP 5 -- 6 survivors in the ErrMsg staging helper
+## lines 75, 95 (x3), 96, and 239/266 (`for (j = 1; ...)` -> `2`)
+##
+## 75 `s.size() > cap` -> `>=` differs only when a message is EXACTLY the
+## capacity; R13 sweeps the capacity 0..255 above what the case supplies, and no
+## case lands on equality for the one message length this unit produces.
+## 95/96 are the trim helper's `n > 0 ? n : 0` and `find_last_not_of(' ') + 1`,
+## reached only when `aviFAIL < 0` on entry AND the bilinear path completes.
+## 239/266 move the DO variable's initial value, which the loop's own first
+## comparison then corrects on an ascending table.
