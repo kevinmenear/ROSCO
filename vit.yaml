@@ -917,7 +917,7 @@ translations:
   # the rewritten file and pasted into the committed one, rather than the
   # rewritten file being committed. Same shape as the entries above it.
   YawRateControl:
-    status: non_discriminating
+    status: integrated
     cases_passed: 104
     cpp_file: translations/Controllers/yawratecontrol.cpp
     kernel_dir: kernel/YawRateControl
@@ -927,6 +927,7 @@ translations:
       \ a derived type, and perturbing one of those could change what BOTH implementations\
       \ compute. The kernel's discriminating power is therefore UNMEASURED for this\
       \ function"
+    verification: simulation
 types:
   ControlParameters:
     strategy: view
