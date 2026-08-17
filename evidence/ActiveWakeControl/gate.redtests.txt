@@ -1,0 +1,36 @@
+TWO GATE RED TESTS, BECAUSE THE FIVE ARMS HAVE DISJOINT SCENARIO SETS.
+
+This unit's body is one IF/ELSEIF chain over CntrPar%AWC_Mode and each arm is
+reached by a different scenario:
+
+    mode 1  scenario 11        mode 3  scenario 21
+    mode 2  scenario 15        mode 4  scenarios 5, 8, 27
+                               mode 5  scenario 22
+
+so a single perturbation that moves one arm proves nothing about the other four
+(unit #40's rule, met with five arms instead of two). Rather than five
+perturbations, two CONSTANTS were chosen whose reach between them is the whole
+chain, and the artifacts' per-scenario channel lists are what say which arm each
+one reached -- read out of the file, not predicted.
+
+  gate/ActiveWakeControl.redtest.pi.json
+      PI 3.14159265359 -> 3.141592653591  (13th digit)
+      moved  97,118 of 5,252,000
+      scenarios 5, 11, 15, 21   = modes 4, 1, 2, 3
+      revert verified at 0 of 5,252,000
+
+  gate/ActiveWakeControl.redtest.d2r.json
+      D2R 0.01745329251 -> 0.017453292511  (11th digit)
+      moved  50,605 of 5,252,000
+      scenarios 15, 22          = modes 2, 5
+      revert verified at 0 of 5,252,000
+
+  union of the two: scenarios 5, 11, 15, 21, 22 -- one per arm, all five arms.
+
+TWO SCENARIOS THAT CALL THIS UNIT MOVED UNDER NEITHER, AND THAT IS NOT A GAP IN
+THE ARM. Scenarios 8 and 27 are both AWC_Mode 4, the same arm scenario 5 moves
+under PI. vit.yaml already records that scenario 8 sets AWC_amp to 0.0, which
+annihilates every term either constant enters; scenario 27's amplitude is 2.0
+deg but its clockangle and phaseoffset are zero, which is the same reason D2R
+moves nothing in modes 3 and 4 at all -- D2R multiplies AWC_clockangle and
+AWC_phaseoffset there and nothing else.
