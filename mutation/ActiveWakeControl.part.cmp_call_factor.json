@@ -1,0 +1,83 @@
+{
+ "unit": "ActiveWakeControl",
+ "operators": [
+  "compare_op",
+  "drop_call",
+  "drop_factor"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "compare_op",
+  "drop_call",
+  "drop_factor"
+ ],
+ "operators_filter_unmatched": [],
+ "mutants": 45,
+ "equivalent_declared": 0,
+ "nocompile": 9,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.1667,
+ "nocompile_refused": false,
+ "total": 54,
+ "killed": 39,
+ "survived": 6,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.8667,
+ "loop_rev": "eb5028e-nogit",
+ "gen_rev": "gen-e0c1b3703480",
+ "vit_rev": "a16a7ab-nogit",
+ "survivors": [
+  {
+   "id": "2d7ffe20",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "e39a85d5",
+   "operator": "drop_factor",
+   "before": "3.0 * PI",
+   "after": "3.0"
+  },
+  {
+   "id": "d97775d4",
+   "operator": "drop_factor",
+   "before": "omega * LocalVar->Time",
+   "after": "omega"
+  },
+  {
+   "id": "d30024a6",
+   "operator": "drop_factor",
+   "before": "CntrPar->AWC_phaseoffset * D2R",
+   "after": "CntrPar->AWC_phaseoffset"
+  },
+  {
+   "id": "7a23f68a",
+   "operator": "drop_factor",
+   "before": "CntrPar->AWC_phaseoffset * D2R",
+   "after": "CntrPar->AWC_phaseoffset"
+  },
+  {
+   "id": "2642cda3",
+   "operator": "drop_factor",
+   "before": "CntrPar->AWC_phaseoffset * D2R",
+   "after": "CntrPar->AWC_phaseoffset"
+  }
+ ]
+}
