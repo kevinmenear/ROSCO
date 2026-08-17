@@ -10461,3 +10461,146 @@ there produced a tree that was `eb5028e` + this dispatch's edits with
 `b875e83`'s change silently absent. Caught by grepping for a string that commit
 introduced before committing anything. A stash pop onto the wrong base is a
 merge that succeeds.
+
+## Unit #49 — CableControl — 2026-08-17
+
+### A red test's revert can delete the thing under test, and nothing fails (C12, and a proposed method amendment)
+
+`evidence/CableControl/run_postintegration_redtest.sh` ends the way every
+post-integration red-test runner in this campaign ends:
+
+```bash
+trap 'git checkout -- "$F"; build; echo "reverted and rebuilt $F"' EXIT
+```
+
+It ran before the integration was committed. `git checkout --` restores to HEAD,
+and HEAD's `Controllers.f90` did not carry this unit's wrapper — so the revert
+deleted the **wrapper** rather than the perturbation, and the "revert-verified"
+green that followed compared the C++ against the ORIGINAL Fortran body with every
+callee integrated:
+
+```
+POST-INTEGRATION PASS: checked 3354  failed 0
+$ grep -c cablecontrol_c rosco/controller/src/Controllers.f90
+0
+```
+
+A real green, about a tree nobody meant to measure. Nothing failed, nothing
+warned, and the artifact is indistinguishable from the one it was supposed to be.
+What caught it was `git diff --stat` reporting `Controllers.f90` unmodified when
+an integration had just been applied to it. Recorded before the fix as
+`evidence/CableControl/harness.postintegration.WRONG-TREE.json`, with the
+explanation written into its own `notes` field rather than only here.
+
+**THE RULE ALREADY EXISTS ONE ARTIFACT OVER AND IS ABOUT THE WRONG FILE.**
+`run_harness_redtest.sh`'s header says, in every unit that has one:
+
+> The EXIT trap restores the translation from git. COMMIT THE TRANSLATION FIRST:
+> unit #43 measured that an uncommitted edit to it is destroyed silently here.
+
+That is the same sentence about the `.cpp`. Nobody wrote it about the `.f90`, and
+the wrapper is the more dangerous of the two: an uncommitted translation is
+destroyed loudly the moment the next build differs, while a deleted wrapper still
+builds, still runs 27 scenarios and still prints PASS.
+
+**PROPOSED AMENDMENT.** A red-test runner that reverts a file with `git checkout
+--` should assert that the file's committed version carries what the test is
+perturbing — one `git show HEAD:$F | grep -q '<unit>_c'` before the trap is armed
+— and refuse otherwise. Cheap, mechanical, and it turns a silent wrong-tree green
+into a refusal. Stated as an amendment rather than applied here because it
+changes every unit's runner, which is X3's question.
+
+### The three survivors are (b) and the cause is the BASE DRAW, not the ladders — third unit at this wall
+
+Three mutants stand in `mutation/CableControl.json`, all three in the two copied
+CHARACTER helpers:
+
+```
+8d2724ea  `s.size() > cap` -> `>=`     needs cap == 18 + LEN(TRIM(ErrMsg))
+97aefd80  `n > 0 ? n : 0` -> `n > 1`   needs n_ErrMsg == 1 with aviFAIL < 0
+1a26a963  `n > 0 ? n : 0` -> `: 1`     needs n_ErrMsg <= 0
+```
+
+`evidence/CableControl/errmsg_census.txt` reads the scored corpus's own triples
+and reports 0, 0 and 0 — and, decisively, 58 cases DO carry `n_ErrMsg == 1` and
+not one of them carries `aviFAIL < 0`. The cause is one fact:
+
+```
+case 0:   aviFAIL = 300     CC_Mode = -300
+```
+
+Both are midpoints of the ±1e3 default range. R13's coverage line states its own
+convention — 256 capacity cases "with every other input at its base draw" — and
+R6's character-length rungs are taken the same way, so **every rung that could
+supply one of the three inputs sits where `IF (ErrVar%aviFAIL < 0)` is false and
+neither helper is entered at all.** The capacity ladder and the arm that reads
+the capacity are disjoint. This is unit #47's "`_base` puts a mode selector at
+the midpoint of its range and a midpoint is not a mode", met a second time and
+for a second reason: there the midpoint emptied an `IF`/`ELSEIF` chain, here it
+empties two ladders.
+
+Unit #43 recorded the same three sites as unreached and attributed it to
+`_baseline_state` skipping every `char[]` parameter. That is true and it is not
+the whole reason: two of the three need only that `aviFAIL` be negative WHERE the
+existing ladders already run, which no baseline state and no character rule has
+to change.
+
+**TWO LEVERS EXIST AND NEITHER WAS PULLED, WITH THE COST STATED.**
+
+1. `ErrVar_aviFAIL = { lo = …, hi = … }` and `CntrPar_CC_Mode = { lo = 0, hi = 3 }`
+   in `harness/ranges.toml` move the base draw onto a live arm. Cheap — the
+   corpus does not grow — and it deepens one arm, which is exactly what these
+   three need.
+2. `values = [-1, 0, 1, 2]` makes `aviFAIL` an R2 FLAG whose `values[0]` is the
+   base and re-runs every ladder rung under every value. Unit #47's fix, and it
+   multiplied that unit's corpus 6.6×.
+
+Either is a change to the generated corpus, so `harness/CableControl.json`, the
+no-op red test and all three mutation parts would have to be re-taken over it —
+about 13 minutes of foreground sweeps plus the reset/restore window. This
+dispatch stopped at the measurement rather than starting a re-take it might not
+finish, which is RUNBOOK step 2's instruction, and the gap is named rather than
+absorbed.
+
+**PROPOSED AMENDMENT, and it is about the generator rather than this unit.**
+R13 and R6's character ladder both take "every other input at its base draw", and
+the base draw is computed with no knowledge of whether it reaches the code the
+ladder exists to exercise. A rule that swept its own quantity **crossed with the
+unit's predicate knobs** — rather than at one arbitrary point of them — would
+close all three of these and unit #43's three, at a cost proportional to the knob
+count. Three units have now paid for it: #43, #48 and this one.
+
+### A zero-initialised nested type can put a NaN in front of every coefficient a callee has
+
+Not an amendment — a reading rule, and it cost this unit a whole sweep to find.
+`PIController`'s `kp` and `ki` both survived the first sweep while the saturation
+bounds beside them were killed on 1703 and 1 cases, which reads as "the
+integrating arm is reached and clamped, so a gain inside the clamp changes
+nothing" — an ordinary corpus gap with an ordinary fix. It is wrong. The kill
+counts are about `saturate`, and what they cannot show is that the value being
+saturated is NaN:
+
+```
+Filters.f90, SecLPFilter_Vel
+  IF ((iStatus == 0) .OR. reset) THEN
+      ... the six lpfV_ coefficients are computed HERE and only here ...
+  ENDIF
+  SecLPFilter_Vel = 1.0/FP%lpfV_a2(inst) * ( ... )
+```
+
+`LocalVar%FP` is a nested type the generator zero-initialises and does not vary —
+it says so in its own coverage output — so on every case with `iStatus /= 0` and
+`restart` false the divisor is 0.0 and the filter returns `Inf * 0.0`.
+
+**AND THE SECOND HALF IS WHY NO SINGLE KNOB FIXES IT.** The corpus's only route
+to an initialised filter is `restart`, which is the SAME value this unit hands
+`PIController` as its `reset` — and that arm assigns `I0` and reads neither gain.
+So the one configuration in which either gain can reach an answer is `iStatus ==
+0` **with** `restart` false: two names, one of which must be on and one off, and
+no ladder crosses them. A baseline state can state both at once and that is what
+`harness/baseline.CableControl.json` does.
+
+The general form: **when a survivor sits at a coefficient, check what the value
+it multiplies actually IS on the cases that reach it, not only whether those
+cases exist.** A NaN, an exact zero and a saturated constant all make a
+coefficient unobservable, and only the third leaves a trace in the kill counts.

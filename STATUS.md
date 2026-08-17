@@ -4,6 +4,114 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-17: unit #49 `CableControl` is `integrated`, and it closes at 13
+of 14 with P12 failing at 0.9647 — three survivors standing, all three in the two
+CHARACTER helpers, not one in the arithmetic.** Four layers, all four
+red-tested. **Two mutation sweeps, and the first is committed**: 77 of 89 with
+TWELVE survivors, then three R11 baseline states killed five and four were
+declared equivalent with proofs read off the generated bridge.
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (`harness/CableControl.json`) | **3354 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, all three callee bridges kept so both sides run one `interp1d`, one `SecLPFilter_Vel` and one `PIController` — this unit's primary evidence | the unit as a no-op: **3207 of 3354**, same corpus count, case file byte-identical either side |
+| mutation (`mutation/CableControl.json`) | **82 of 85 scoreable, 0.9647**, 4 declared, 0 no-compile, 7 operators, **3 survivors standing** | the score *is* the red test, 82 times |
+| post-integration (`harness/CableControl.postintegration.json`) | 3354 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **3157 of 3354**; reverted, rebuilt, green re-taken at 0 |
+| gate, 27 scenarios (`gate/CableControl.json`) | 5,252,000 values / 351 channels, 0 mismatched | **THREE**: the first step constant moves **14,572** (scenarios 7 and 27, 3,999 of each 24,000); PI in its 12th digit moves **2**; the whole `CC_Mode == 2` arm moves **0**. All revert-verified |
+
+**FIVE OF THE FIRST SWEEP'S TWELVE SURVIVORS WERE ONE FACT ABOUT A NaN, AND THE
+KILL COUNTS POINTED THE OTHER WAY.** `PIController`'s `kp` and `ki` both
+survived while `-1000.0 → -1001.0` was killed on 1703 cases — which reads as an
+integrating arm that is reached and clamped, i.e. an ordinary corpus gap. It is
+not. `SecLPFilter_Vel` computes its six filter coefficients **only** inside
+`IF ((iStatus == 0) .OR. reset)`, and `LocalVar%FP` is a nested type the
+generator zero-initialises and does not vary — the harness prints it itself,
+`UNOBSERVABLE LocalVar.FP: nested type, zero-initialised (not varied)`. So every
+case with `iStatus /= 0` and `restart` false divides by `a2 = 0.0`, returns
+`Inf * 0.0`, and the NaN reaches `CC_ActuatedDL`, `CC_ActuatedL` and `avrSWAP`;
+`kp*error` is NaN whether `kp` is 0.0 or 1.0. And where the corpus **did**
+initialise the filter it did so through `restart`, which is the same value this
+unit hands `PIController` as its `reset` — and that arm assigns `I0` and reads
+neither gain. **The one live configuration is `iStatus == 0` WITH `restart`
+false**, and no rung of any ladder crosses those two names. Three baseline
+states carry it, plus two index ramps at the open-loop arm.
+
+```
+              cases   mutants    score
+first take     3300   77 of 89   0.865   12 survivors, 0 declared
+second take    3354   82 of 85   0.9647   3 survivors, 4 declared
+```
+
+**THE THREE THAT STAND ARE (b), AND THE CAUSE IS THE BASE DRAW RATHER THAN THE
+LADDERS.** `evidence/CableControl/errmsg_census.txt` reads the scored corpus's
+own `(aviFAIL, n_ErrMsg, n_ErrMsg_cap)` triples: `s.size() > cap → >=` needs
+`cap == 18 + LEN(TRIM)` and 0 cases have it; `n > 0 → n > 1` needs `n == 1` with
+`aviFAIL < 0` and 0 of the 58 cases with `n == 1` have it; `: 0 → : 1` needs
+`n <= 0` and no case anywhere has it. **Case 0 is `aviFAIL = 300`,
+`CC_Mode = -300`** — both midpoints of the ±1e3 default — so R13's whole 256-case
+capacity block and R6's character-length rungs, all taken "with every other
+input at its base draw", sit where `IF (ErrVar%aviFAIL < 0)` is false and neither
+helper is entered at all. Unit #47's "a midpoint is not a mode", met a second
+time. All three are (b) and not (c): the harness is green at 3354 of 3354, so no
+separating input lies inside a window where the reference already disagrees.
+**Third unit at this wall** after #43 and #48; the two levers that exist — a
+`lo`/`hi` pin moving the base draw, and unit #47's `values = [...]` spelling —
+are named in `DECISIONS.md` and were not pulled, because either is a corpus
+change every artifact of the unit would have to be re-taken over.
+
+**A RED TEST'S REVERT DELETED THE THING UNDER TEST, AND NOTHING FAILED (C12).**
+`evidence/CableControl/harness.postintegration.WRONG-TREE.json` printed
+`POST-INTEGRATION PASS: checked 3354 failed 0` and was not taken against the
+integrated build: the runner's trap is `git checkout -- Controllers.f90`, and at
+the moment it fired HEAD did not yet carry this unit's wrapper, so the revert
+removed the **wrapper** rather than the perturbation. `git diff --stat` showing
+Controllers.f90 unmodified is what caught it. Kept with that in its own `notes`.
+The rule already exists one artifact over — the *harness* red-test runner's
+header says "COMMIT THE TRANSLATION FIRST" — and nobody had written the same
+sentence about the wrapper.
+
+**A CALL SITE WITH SIXTEEN THOUSAND HITS THAT NO PERTURBATION REACHES, THIRD
+UNIT IN THREE — AND THE FIRST WHERE THE ZERO IS NOT A GAIN.** Scenario 3 calls
+this unit 15,999 times and moved under neither real red test.
+`gate.scenario3-probe.json` forces the value written to `avrSWAP` 1.0e5 away and
+moves **15,999 of scenario 3's 16,000** samples: the site is fully observable.
+Scenario 3 runs to t = 400 and every writer of `CC_DesiredL` is behind
+`IF (Time > 500)`, so the filter's input is exactly 0.0 all run and
+`1/a2 * (b2*0 + …)` is 0.0 for every value of the six coefficients. After unit
+#47's `AWC_amp` and unit #48's `WE_Gamma`, both configured gains; here it is a
+state the scenario's own run length never lets the unit write.
+
+**THE GATE'S RESOLUTION ON THIS UNIT IS SINGLE PRECISION.** Everything it sends
+to a channel goes through `avrSWAP`, `REAL(ReKi)` = REAL(4). PI in its twelfth
+significant digit is a relative 3e-12, five orders below binary32's 1.2e-7
+spacing, and moves **2 of 5,252,000** — red, revert-verified, and the wrong
+instrument to certify with. The step constant, one part in 1,451, is the artifact
+committed as `gate/CableControl.redtest.json`. Units #47 and #48 reached REAL(8)
+channels and never had to know this.
+
+**`CC_GroupIndex` IS PINNED TO 1..2999 AND NOT TO UNIT #43's 1..3000, AND THE
+MISSING 1 IS THE SECOND STATEMENT.** This unit writes `avrSWAP(CC_GroupIndex(I))`
+**and** `avrSWAP(CC_GroupIndex(I)+1)`, so #43's bound would put the second write
+one past the 3000-element buffer the harness allocates on every case that drew
+the top of the range. The baseline's group-index ramp has a step of **two** for
+the same reason: with a step of one, group I's second slot is group I+1's first
+and the last writer wins.
+
+**`RoutineName` IS THE STRING `'StructuralControl'` AND IT IS TRANSCRIBED AS
+WRITTEN.** An upstream copy-paste in ROSCO (`Controllers.f90:903` at `54dd134`).
+Correcting it would make this translation disagree with the program it replaces
+on every input that reaches the prefix, and the gate reaches that statement in
+none of the 27 scenarios (P7).
+
+**Procedure.** ONE reset window, opened only after the translation, the range
+pins and the red-test stub were committed, and closed the moment the clean-tree
+measurements were done. Every long command routed through
+`scripts/run_if_time_remains.sh` with a seconds estimate, every mutation sweep
+through `scripts/mutate_guarded.sh`; nothing backgrounded, nothing polled.
+Commits one per expensive artifact. `revcheck --unit CableControl` is clean at
+`832fa2a`, every artifact.
+
+---
+
 **As of 2026-08-17: unit #48 `AeroDynTorque` is `integrated`, and it closes at 13
 of 14 with P12 failing — honestly, and now with a proof that it cannot do
 otherwise.** Four layers, all four red-tested, and the mutation score is
