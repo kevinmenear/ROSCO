@@ -1,0 +1,196 @@
+// VIT Translation Scaffold
+// Function: FloatingFeedback
+// Source: Controllers.f90
+// Module: Controllers
+// Fortran: FUNCTION FloatingFeedback(LocalVar, CntrPar, objInst, ErrVar)
+// Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+// Source MD5: d69a94b5fdb2
+// VIT: 0.1.0
+// Status: unverified
+// Generated: 2026-08-17T23:53:32Z
+//
+// CONTRACT: mirror (plan.json). Every input and every output crosses the
+// signature, and the body is transcribed statement for statement.
+//
+// SEVEN STATEMENTS, THREE OF WHICH ARE CALLS, AND THE WHOLE UNIT IS ONE
+// EXPRESSION SELECTED BY A MODE. Clean `Controllers.f90:608-637` at `54dd134`:
+// one `interp1d` for the gain schedule, two `PIController` calls for the two
+// velocity signals, and a two-arm `IF`/`ELSEIF` that multiplies one of them by
+// the scheduled gain. There is no ELSE.
+//
+// WHAT THE 27 SCENARIOS SEE, read from coverage/line_coverage.json against the
+// clean source. FOUR scenarios reach this unit and the other 23 never call it,
+// because DISCON's call site at :95 is itself behind `IF (CntrPar%Fl_Mode > 0)`:
+//
+//   :608  the procedure entry        3: 15,999   7: 23,999   19: 15,999   27: 23,999
+//   :625  interp1d, the schedule     the same four counts
+//   :628  PIController, FA_vel       the same four counts
+//   :629  PIController, NacIMU       the same four counts
+//   :631  IF (Fl_Mode == 1)          the same four counts
+//   :632  the Fl_Mode == 1 arm       3 and 7 only          39,998
+//   :633  ELSEIF (Fl_Mode == 2)      19 and 27 only        39,998
+//   :634  the Fl_Mode == 2 arm       19 and 27 only        39,998
+//
+// So the gate reaches BOTH arms and each on two scenarios, and the split is
+// exactly even. What NO scenario reaches is the fall-through -- see the result
+// variable below, which is where that matters.
+
+#include "vit_types.h"
+
+double FloatingFeedback(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_view_t* ErrVar) {
+    // The result variable.
+    //
+    // *** THE REFERENCE ASSIGNS IT ON TWO ARMS OF A THREE-WAY SPLIT. ***
+    //
+    // `FloatingFeedback` is written at :632 and at :634 and nowhere else, and
+    // the `IF (Fl_Mode == 1) ... ELSEIF (Fl_Mode == 2) ... END IF` has no ELSE.
+    // On any other `Fl_Mode` the function returns whatever the result slot
+    // holds. In Fortran that is an undefined value; it is the same shape unit
+    // #39 (`ResController`) met on its `reset` path.
+    //
+    // IT IS LEFT UNINITIALISED HERE, AND THAT IS THE OPPOSITE OF WHAT UNIT #39
+    // DID. `rescontroller.cpp:48` defines its result at 0.0 and says why: that
+    // unit's unassigned path is the `reset` path, which the shipped program
+    // takes on the first call of every simulation and whose return value the
+    // caller stores into `AWC_TiltYaw`. Returning an indeterminate double there
+    // would be undefined BEHAVIOUR executed in production, not merely an
+    // undefined VALUE.
+    //
+    // This unit's unassigned path is not reachable by the shipped program at
+    // all, and that is an invariant of two statements rather than luck:
+    //
+    //     Controllers.f90:95     IF (CntrPar%Fl_Mode > 0) THEN
+    //                                LocalVar%Fl_PitCom = FloatingFeedback(...)
+    //     checkinputs.cpp:297    if ((Fl_Mode < 0) || (Fl_Mode > 2)) {
+    //                                aviFAIL = -1;  "Fl_Mode must be 0, 1, or 2."
+    //
+    // (the second is unit #29's translation of the same test in the clean
+    // `ReadSetParameters.f90`, and `aviFAIL = -1` aborts the simulation before
+    // the first controller call). The call site admits `Fl_Mode >= 1`; the
+    // input reader admits `Fl_Mode <= 2`; the two arms cover {1, 2} exactly.
+    // So there is no `Fl_Mode` for which ROSCO both calls this procedure and
+    // falls through it, which is why all four gate scenarios take one of the
+    // two arms on every one of their 79,996 calls.
+    //
+    // Defining it at 0.0 would therefore not be defending a reachable path --
+    // it would be this translation answering a question the reference does not
+    // answer (P7), on inputs the program cannot present. The corpus is bounded
+    // to the same domain, stated and costed in harness/ranges.toml, so nothing
+    // in this campaign reads this slot unset.
+    double FloatingFeedback_result;
+
+    // REAL(DbKi) :: FA_vel           ! Tower fore-aft velocity [m/s]
+    // REAL(DbKi) :: NacIMU_FA_vel    ! Tower fore-aft pitching velocity [rad/s]
+    double FA_vel, NacIMU_FA_vel;
+
+    // ! Gain scheduling
+    // LocalVar%Kp_Float = interp1d(CntrPar%Fl_U, CntrPar%Fl_Kp, LocalVar%WE_Vw_F, ErrVar)
+    //
+    // xData IS `Fl_U` AND yData IS `Fl_Kp`, IN THAT ORDER -- the schedule is
+    // "gain as a function of wind speed", so the wind-speed breakpoints are the
+    // independent variable and the gains are interpolated. Swapping them would
+    // still compile and still return a double.
+    //
+    // BOTH ARE `REAL(DbKi), DIMENSION(:)` ALLOCATABLE fields, so each crosses
+    // the view struct as a pointer plus a synthesised extent, and both are
+    // contiguous -- no gather, unlike unit #49's strided matrix row.
+    //
+    // THE TWO EXTENTS ARE ONE NUMBER IN ROSCO AND TWO IN THE HARNESS, which is
+    // unit #36's finding met a fourth time. `ReadSetParameters.f90:514-517`
+    // allocates both from `CntrPar%Fl_n`, and `interp1d`'s upper-clamp arm
+    // returns `yData(SIZE(xData))` -- past the end of the shorter allocation
+    // whenever they differ, on BOTH sides of the comparison. The tie is stated
+    // in harness/ranges.toml rather than guarded here: a guard would be a test
+    // the reference does not have.
+    //
+    // `LocalVar%WE_Vw_F` is the filtered wind-speed estimate -- the `xq`. It is
+    // an INPUT here; the wind-speed estimator writes it elsewhere.
+    //
+    // THE ASSIGNMENT TARGET IS `LocalVar%Kp_Float`, A FIELD AND NOT A LOCAL,
+    // so it is one of this unit's three outputs (with `piP` and `instPI`) and
+    // both arms below read it back out of the view struct rather than out of a
+    // register. The reference does the same -- it reads `LocalVar%Kp_Float` at
+    // :632 and :634, not a local copy.
+    LocalVar->Kp_Float = interp1d_c(CntrPar->Fl_U, CntrPar->n_Fl_U,
+                                    CntrPar->Fl_Kp, CntrPar->n_Fl_Kp,
+                                    LocalVar->WE_Vw_F, ErrVar);
+
+    // ! Calculate floating contribution to pitch command
+    // FA_vel = PIController(LocalVar%FA_AccF, 0.0_DbKi, 1.0_DbKi, -100.0_DbKi, &
+    //     100.0_DbKi, LocalVar%DT, 0.0_DbKi, LocalVar%piP, LocalVar%restart, &
+    //     objInst%instPI)
+    // NacIMU_FA_vel = PIController(LocalVar%NacIMU_FA_AccF, ... same ...)
+    //
+    // *** BOTH CALLS RUN ON EVERY INVOCATION, BEFORE THE MODE TEST, AND THE
+    // ORDER IS LOAD-BEARING. *** Only one of the two results is ever used --
+    // mode 1 reads `FA_vel`, mode 2 reads `NacIMU_FA_vel` -- so the obvious
+    // shape is to compute each inside its own arm. That is a different program.
+    // `PIController` is INTENT(INOUT) in both `piP` and `inst`: it writes
+    // `piP%ITerm(inst)` and `piP%ITermLast(inst)` and then post-increments
+    // `inst`. So the reference advances `objInst%instPI` by exactly TWO per
+    // call whatever the mode, and writes two consecutive `piP` slots -- the
+    // fore-aft signal into instance n and the nacelle-IMU signal into n+1.
+    // Moving either call into an arm, or swapping them, would put each signal's
+    // integrator state in the other's slot and would leave the counter one
+    // short for every later PI user in the same DISCON call.
+    //
+    // `kp = 0.0` AND `ki = 1.0` MAKE THIS A PURE INTEGRATOR, which is what
+    // turns an acceleration into a velocity -- the reference's variable names
+    // say so. It is not a degenerate call to be simplified away: `PIController`
+    // still saturates, still resets, and still consumes an instance.
+    //
+    // THE LIMITS ARE +/-100 AND THE REFERENCE SAYS THEY DO NOT BIND ("NJA:
+    // should never reach saturation limits...."). That is a comment about the
+    // simulations ROSCO ships, not a property of the procedure, and the corpus
+    // here is not bounded by it.
+    //
+    // `LocalVar%restart` is LOGICAL and crosses as `int8_t`; `? 1 : 0` matches
+    // the `MERGE(1_C_INT, 0_C_INT, reset)` the generated wrapper writes.
+    //
+    // NOTE THE FIELD'S SPELLING. `ROSCO_Types.f90:427` declares
+    // `NACIMU_FA_AccF` in all-capitals in `LocalVariables` while the reference
+    // writes `LocalVar%NacIMU_FA_vel`-style mixed case at the use site --
+    // Fortran is case-insensitive and the view struct is generated from the
+    // DECLARATION, so C++ must spell it `NACIMU_FA_AccF`. `DebugVariables`
+    // carries a separate `NacIMU_FA_AccF` in mixed case (`:508`); they are two
+    // different fields of two different types and only the LocalVariables one
+    // is read here.
+    FA_vel = picontroller_c(LocalVar->FA_AccF, 0.0, 1.0, -100.0, 100.0,
+                            LocalVar->DT, 0.0, &LocalVar->piP,
+                            LocalVar->restart ? 1 : 0, &objInst->instPI);
+    NacIMU_FA_vel = picontroller_c(LocalVar->NACIMU_FA_AccF, 0.0, 1.0, -100.0,
+                                   100.0, LocalVar->DT, 0.0, &LocalVar->piP,
+                                   LocalVar->restart ? 1 : 0,
+                                   &objInst->instPI);
+
+    // if (CntrPar%Fl_Mode == 1) THEN
+    //     FloatingFeedback = (0.0_DbKi - FA_vel) * LocalVar%Kp_Float
+    // ELSEIF (CntrPar%Fl_Mode == 2) THEN
+    //     FloatingFeedback = (0.0_DbKi - NacIMU_FA_vel) * LocalVar%Kp_Float
+    // END IF
+    //
+    // `0.0_DbKi - x` AND NOT `-x`, AND THE DIFFERENCE IS A SIGNED ZERO. The two
+    // agree on every finite non-zero x; at `x == +0.0` the subtraction yields
+    // `+0.0` and the negation `-0.0`, and the two have different bit patterns.
+    // This campaign's harness compares bit patterns, and `FA_vel` is EXACTLY
+    // 0.0 on every reset -- `PIController` returns `I0`, which this call site
+    // passes as `0.0_DbKi` -- so the case is not exotic here, it is the whole
+    // `restart` half of the corpus. Unit #50 found a `-0.0` in the gate from
+    // the same distinction. Transcribed as written, on both arms.
+    //
+    // THE PARENTHESES ARE THE REFERENCE'S OWN and are load-bearing for a second
+    // reason: `(0.0 - v) * k` and `0.0 - (v * k)` are the same number in exact
+    // arithmetic and not always the same double. Written as the reference
+    // groups them.
+    //
+    // NO ELSE ARM, AND NOT ADDING ONE IS THE POINT. See the result variable's
+    // declaration: on a `Fl_Mode` outside {1, 2} the reference writes nothing
+    // and returns the slot, and this transcription does the same.
+    if (CntrPar->Fl_Mode == 1) {
+        FloatingFeedback_result = (0.0 - FA_vel) * LocalVar->Kp_Float;
+    } else if (CntrPar->Fl_Mode == 2) {
+        FloatingFeedback_result = (0.0 - NacIMU_FA_vel) * LocalVar->Kp_Float;
+    }
+
+    return FloatingFeedback_result;
+}
