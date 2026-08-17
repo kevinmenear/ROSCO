@@ -30,21 +30,15 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 40,
- "killed": 33,
- "survived": 7,
+ "killed": 38,
+ "survived": 2,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.825,
+ "score": 0.95,
  "loop_rev": "eb5028e-nogit",
  "gen_rev": "gen-e0c1b3703480",
  "vit_rev": "a16a7ab-nogit",
  "survivors": [
-  {
-   "id": "90644531",
-   "operator": "arith_op",
-   "before": "4.0 / 3.0",
-   "after": "4.0 * 3.0"
-  },
   {
    "id": "97b678b5",
    "operator": "arith_op",
@@ -52,34 +46,10 @@
    "after": "LocalVar->Azimuth - phi1"
   },
   {
-   "id": "823554cc",
-   "operator": "arith_op",
-   "before": "omega * LocalVar->Time",
-   "after": "omega / LocalVar->Time"
-  },
-  {
-   "id": "e087f4e0",
-   "operator": "arith_op",
-   "before": "Imode - 1",
-   "after": "Imode + 1"
-  },
-  {
-   "id": "7997dd17",
-   "operator": "arith_op",
-   "before": "LocalVar->Azimuth + phi3",
-   "after": "LocalVar->Azimuth - phi3"
-  },
-  {
    "id": "221fb7c7",
    "operator": "arith_op",
    "before": "K - 1",
    "after": "K + 1"
-  },
-  {
-   "id": "14442d6b",
-   "operator": "arith_op",
-   "before": "CntrPar->AWC_phaseoffset * D2R",
-   "after": "CntrPar->AWC_phaseoffset / D2R"
   }
  ]
 }

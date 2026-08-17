@@ -23,58 +23,22 @@
  ],
  "operators_filter_unmatched": [],
  "mutants": 40,
- "equivalent_declared": 0,
+ "equivalent_declared": 5,
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 40,
- "killed": 24,
- "survived": 16,
- "equivalent": 0,
+ "killed": 28,
+ "survived": 7,
+ "equivalent": 5,
  "declared_but_killed": [],
- "score": 0.6,
+ "score": 0.8,
  "loop_rev": "eb5028e-nogit",
  "gen_rev": "gen-e0c1b3703480",
  "vit_rev": "a16a7ab-nogit",
  "survivors": [
-  {
-   "id": "b2eb03aa",
-   "operator": "index_offset",
-   "before": "[3]",
-   "after": "[3 + 1]"
-  },
-  {
-   "id": "4353c022",
-   "operator": "index_offset",
-   "before": "[2]",
-   "after": "[2 + 1]"
-  },
-  {
-   "id": "87d2ec58",
-   "operator": "index_offset",
-   "before": "[2]",
-   "after": "[2 + 1]"
-  },
-  {
-   "id": "7dd59c0c",
-   "operator": "index_offset",
-   "before": "[2]",
-   "after": "[2 + 1]"
-  },
-  {
-   "id": "50dd458b",
-   "operator": "index_offset",
-   "before": "[i]",
-   "after": "[i + 1]"
-  },
-  {
-   "id": "df13f212",
-   "operator": "index_offset",
-   "before": "[0]",
-   "after": "[0 + 1]"
-  },
   {
    "id": "e9d4580d",
    "operator": "index_offset",
@@ -100,25 +64,7 @@
    "after": "[0 + 1]"
   },
   {
-   "id": "893badc4",
-   "operator": "index_offset",
-   "before": "[0]",
-   "after": "[0 + 1]"
-  },
-  {
    "id": "b796d413",
-   "operator": "index_offset",
-   "before": "[1]",
-   "after": "[1 + 1]"
-  },
-  {
-   "id": "46d44447",
-   "operator": "index_offset",
-   "before": "[0]",
-   "after": "[0 + 1]"
-  },
-  {
-   "id": "3daf5a09",
    "operator": "index_offset",
    "before": "[1]",
    "after": "[1 + 1]"

@@ -1,13 +1,13 @@
 {
  "unit": "ActiveWakeControl",
  "against": "translation",
- "checked": 3231,
- "failed": 86,
+ "checked": 21236,
+ "failed": 17645,
  "inadmissible": 0,
  "rule_coverage": [
   "  applied  R5_non_degenerate_shape    6 varied extent(s) at [3, 4, 5, 6, 7, 8] and [3, 4, 5, 6, 7, 8]; 25 FIXED by the type at [2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 12, 12, 12, 12, 256, 1024, 1024, 1024, 1024, 1024] -- not varied; 66 HELD -- they size arrays the reference does not read, NO index parameter identified, array elements distinct",
-  "  applied  R2_flag_values             1 value(s) across 1 flag(s), each with 8 case(s) of the remaining inputs varied under it",
-  "  applied  R6_reference_literals      1884 value(s) from 25 literal(s) in the reference, each under every declared value of 1 flag(s); 82 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 396 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 480 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 120 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 12 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits; 126 combination(s) of the 4 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead",
+  "  applied  R2_flag_values             7 value(s) across 2 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R6_reference_literals      1836 value(s) from 25 literal(s) in the reference, each under every declared value of 2 flag(s); 41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 363 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 440 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 110 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 11 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits; 126 combination(s) of the 4 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead",
   "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
   "  applied  R3_no_dead_signal          19 real value(s), none zero in every case; 6 HELD string(s) are all-blank in every case by construction -- nothing a defect on those could move; 284 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output",
   "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
@@ -19,108 +19,108 @@
  ],
  "mismatches": [
   {
-   "case": 1992,
+   "case": 0,
    "output": "LocalVar.PitCom",
-   "ref": "7f52eb1d0de07dc0f6c58580bbda48401d9d52c8b82d8040",
-   "got": "389f6c8af1ca7dc0f6c58580bbda48401d9d52c8b82d8040"
+   "ref": "56647237c2ed614030f5be383a04b33ff9d2e815a9a08040",
+   "got": "27b746e41e897cc030f5be383a04b33ff9d2e815a9a08040"
   },
   {
-   "case": 2221,
-   "output": "LocalVar.resP",
+   "case": 0,
+   "output": "DebugVar.axisTilt_1P",
+   "ref": "0000000000c08240",
+   "got": "0000000000000000"
+  },
+  {
+   "case": 0,
+   "output": "DebugVar.axisYaw_1P",
+   "ref": "4505d050eed47d40",
+   "got": "0000000000c072c0"
+  },
+  {
+   "case": 0,
+   "output": "DebugVar.axisTilt_2P",
+   "ref": "6cc6c85a38407ec0",
+   "got": "0000000000c07240"
+  },
+  {
+   "case": 0,
+   "output": "DebugVar.axisYaw_2P",
+   "ref": "d865cc55930a8ec0",
+   "got": "0000000000c082c0"
+  },
+  {
+   "case": 0,
+   "output": "objInst.instPI",
+   "ref": "8b020000",
+   "got": "8a020000"
+  },
+  {
+   "case": 1,
+   "output": "DebugVar.axisYaw_1P",
+   "ref": "dc81c405279c8040",
+   "got": "0000000000c072c0"
+  },
+  {
+   "case": 1,
+   "output": "DebugVar.axisTilt_2P",
+   "ref": "06e6df3829798640",
+   "got": "0000000000c07240"
+  },
+  {
+   "case": 1,
+   "output": "DebugVar.axisYaw_2P",
+   "ref": "a8906dcc08746740",
+   "got": "0000000000c082c0"
+  },
+  {
+   "case": 1,
+   "output": "objInst.instPI",
+   "ref": "8b020000",
+   "got": "8a020000"
+  },
+  {
+   "case": 2,
+   "output": "DebugVar.axisYaw_1P",
+   "ref": "802ec33e5e794bc0",
+   "got": "0000000000c072c0"
+  },
+  {
+   "case": 2,
+   "output": "DebugVar.axisTilt_2P",
+   "ref": "19fb909bf51b43c0",
+   "got": "0000000000c07240"
+  },
+  {
+   "case": 2,
+   "output": "DebugVar.axisYaw_2P",
+   "ref": "ce666446d1ba3040",
+   "got": "0000000000c082c0"
+  },
+  {
+   "case": 2,
+   "output": "objInst.instPI",
+   "ref": "8b020000",
+   "got": "8a020000"
+  },
+  {
+   "case": 3,
+   "output": "LocalVar.PitCom",
+   "ref": "adc3bc6a0e1662406c6993eb7cab634018999a2913ef8140",
+   "got": "ef5cfc1d4d286ec06c6993eb7cab634018999a2913ef8140"
+  },
+  {
+   "case": 3,
+   "output": "LocalVar.piP",
    "ref": "0000000000000000000000000000000000000000000000000000000000000000...",
    "got": "0000000000000000000000000000000000000000000000000000000000000000..."
-  },
-  {
-   "case": 2221,
-   "output": "DebugVar.axisTilt_1P",
-   "ref": "0000000000000000",
-   "got": "826dfa39a03d61c0"
-  },
-  {
-   "case": 2221,
-   "output": "objInst.instPI",
-   "ref": "8a020000",
-   "got": "8b020000"
-  },
-  {
-   "case": 2221,
-   "output": "objInst.instRes",
-   "ref": "c8000000",
-   "got": "c9000000"
-  },
-  {
-   "case": 3102,
-   "output": "LocalVar.PitCom",
-   "ref": "20d666362f427ec0cfeec01de90741400cf11dff3c398140",
-   "got": "7a301c4543f37ec0cfeec01de90741400cf11dff3c398140"
-  },
-  {
-   "case": 3103,
-   "output": "LocalVar.PitCom",
-   "ref": "b2693364cb957dc042b77c0cf4803740749979ddc02d8040",
-   "got": "6edc804ac6e97cc042b77c0cf4803740749979ddc02d8040"
-  },
-  {
-   "case": 3104,
-   "output": "LocalVar.PitCom",
-   "ref": "e4efe0e84bea7bc0257dabbba114334043772339cec28040",
-   "got": "cfab4452a7957bc0257dabbba114334043772339cec28040"
-  },
-  {
-   "case": 3105,
-   "output": "LocalVar.PitCom",
-   "ref": "d2eda0a0b0bf7bc0529988078725244091c3d62d98578040",
-   "got": "ca11c05a6a3d7bc03c7b688b9b3b2b4091c3d62d98578040"
-  },
-  {
-   "case": 3106,
-   "output": "LocalVar.PitCom",
-   "ref": "643c4de5c9e27dc036af0392879e40405ea2f2262d258040",
-   "got": "69d4320c135a7ec0491f0a206f663c405ea2f2262d258040"
-  },
-  {
-   "case": 3107,
-   "output": "LocalVar.PitCom",
-   "ref": "75c52377df8e7dc0930c283eed4f43407f21b93485188040",
-   "got": "87ebada533da7cc03a377babe87642407f21b93485188040"
-  },
-  {
-   "case": 3111,
-   "output": "LocalVar.PitCom",
-   "ref": "e383d24ebc657ec0f0ba53369d784d403f3d13e1dfa48140",
-   "got": "0eb56bb75c9a7ec0f0ba53369d784d403f3d13e1dfa48140"
-  },
-  {
-   "case": 3112,
-   "output": "LocalVar.PitCom",
-   "ref": "231e4989d9347cc0c2f16c64cc95174092ca0336f6178140",
-   "got": "6248953a874f7cc0c2f16c64cc95174092ca0336f6178140"
-  },
-  {
-   "case": 3113,
-   "output": "LocalVar.PitCom",
-   "ref": "a79256682bc57ec0667c6fb9aa2d4440f99eeff25a068140",
-   "got": "71c46aafd4b97dc0667c6fb9aa2d4440f99eeff25a068140"
-  },
-  {
-   "case": 3114,
-   "output": "LocalVar.PitCom",
-   "ref": "73187a4a98f87cc0daf6634a25b04440b33f7d682b467f40",
-   "got": "663867ecf38c7cc0869e1bf32aad3c40b33f7d682b467f40"
-  },
-  {
-   "case": 3115,
-   "output": "LocalVar.PitCom",
-   "ref": "c1a5eac0a3607cc0b838de9ab055f93f0b0cb5eaca4b8140",
-   "got": "053f575038047cc0c82c0c1a72be26400b0cb5eaca4b8140"
   }
  ],
  "loop_rev": "eb5028e-nogit",
  "gen_rev": "gen-e0c1b3703480",
  "vit_rev": "a16a7ab-nogit",
  "red_test": {
-  "perturbation": "the unit as a no-op: reads no argument, writes no output",
-  "result": "86 of 3231 case(s) failed",
+  "perturbation": "the unit as a no-op: the whole body deleted",
+  "result": "17645 of 21236 case(s) failed",
   "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
  }
 }

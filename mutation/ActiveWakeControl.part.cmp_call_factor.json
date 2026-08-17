@@ -34,11 +34,11 @@
  "nocompile_ratio": 0.1667,
  "nocompile_refused": false,
  "total": 54,
- "killed": 39,
- "survived": 6,
+ "killed": 44,
+ "survived": 1,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.8667,
+ "score": 0.9778,
  "loop_rev": "eb5028e-nogit",
  "gen_rev": "gen-e0c1b3703480",
  "vit_rev": "a16a7ab-nogit",
@@ -48,36 +48,6 @@
    "operator": "compare_op",
    "before": ">",
    "after": ">="
-  },
-  {
-   "id": "e39a85d5",
-   "operator": "drop_factor",
-   "before": "3.0 * PI",
-   "after": "3.0"
-  },
-  {
-   "id": "d97775d4",
-   "operator": "drop_factor",
-   "before": "omega * LocalVar->Time",
-   "after": "omega"
-  },
-  {
-   "id": "d30024a6",
-   "operator": "drop_factor",
-   "before": "CntrPar->AWC_phaseoffset * D2R",
-   "after": "CntrPar->AWC_phaseoffset"
-  },
-  {
-   "id": "7a23f68a",
-   "operator": "drop_factor",
-   "before": "CntrPar->AWC_phaseoffset * D2R",
-   "after": "CntrPar->AWC_phaseoffset"
-  },
-  {
-   "id": "2642cda3",
-   "operator": "drop_factor",
-   "before": "CntrPar->AWC_phaseoffset * D2R",
-   "after": "CntrPar->AWC_phaseoffset"
   }
  ]
 }
