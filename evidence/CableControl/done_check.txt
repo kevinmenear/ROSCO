@@ -1,6 +1,6 @@
-# done_check.py CableControl -- captured 2026-08-17T21:15:24Z by scripts/capture_done_check.sh
+# done_check.py CableControl -- captured 2026-08-17T21:20:05Z by scripts/capture_done_check.sh
 
-Run against the committed state at 462f77d4 ("CableControl: done_check captured -- 12 of 14, P5 open only because the capture is the file P5 asks for"), with a CLEAN tree, with stdout
+Run against the committed state at 6a8ee79e ("CableControl: the green-kill probe -- all three survivors are (b), executed rather than argued"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
