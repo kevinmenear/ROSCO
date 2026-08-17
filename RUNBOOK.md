@@ -6277,6 +6277,112 @@ is `/workspace/ROSCO-r2`.
   direction, but a verification that misreports is not a verification. `|| true`
   belongs inside the container command.
 
+- **A MODE SELECTOR MUST BE WRITTEN AS `values`, NOT AS `lo`/`hi`, AND THE TWO
+  SPELLINGS ARE DIFFERENT MECHANISMS RATHER THAN TWO WAYS OF SAYING ONE THING.**
+  Unit #47, second dispatch. `CntrPar%AWC_Mode` had no stated range, so `_base`
+  put it at the midpoint of +/-1e3 -- **-600, in 3032 of 3231 cases** -- on a body
+  that is one `IF`/`ELSEIF` chain over it with **no `ELSE`**. 91 cases of 3231
+  reached an arm at all, and the unit's own no-op red test moved 86 of them:
+  **2.7%**. Every ladder rung, every R6 magnitude, every negative zero and every
+  random draw was spent on the empty path, and 32 of the 45 mutation survivors
+  were there.
+
+  ```
+  CntrPar_AWC_Mode = { lo = 0, hi = 5 }             # deepens ONE arm
+  CntrPar_AWC_Mode = { values = [3, 4, 5, 1, 2, 0] } # deepens ALL of them
+  ```
+
+  | | `lo`/`hi` | `values` |
+  |---|---|---|
+  | what `_base` gives every non-flag case | `int(lo + (hi-lo)*frac)`, ONE mode | `values[0]`, chosen |
+  | R2 `flag_values` | does not apply | applies: every value appears |
+  | R6 ladders and magnitudes | run under ONE mode | **re-run under EVERY mode** |
+  | corpus size | unchanged | x (sum of the flag arities) |
+
+  Measured: 3231 -> 21236 cases, 91 -> 17697 reaching an arm (83%), no-op red
+  test 86 -> 17645, mutation 0.7857 -> 0.9200. The cost is TIME -- the sweep went
+  from ~35 to ~50 minutes -- and it is the only cost: `values` does not narrow
+  anything a range would have kept.
+
+  **THE ORDER IS PART OF THE JUDGEMENT.** `values[0]` is the base that every case
+  NOT reached by a flag variant carries, which is the first cases in the stream,
+  and that is the only lever `ranges.toml` has on case ORDER. Put first the arm
+  that READS the unit's `SAVE` locals without necessarily writing them.
+
+- **A STRATUM THAT ALREADY VARIES A QUANTITY BECOMES REACHABLE *IN A BRANCH* THE
+  MOMENT THE BRANCH SELECTOR IS A FLAG. ASK THAT BEFORE COSTING A KNOB CHANGE.**
+  Unit #47. Its first dispatch recorded "11 survivors would die from one knob
+  value" -- `LocalVar%NumBl == 3` never co-occurring with a live `AWC_Mode` --
+  and costed it as a generator change with an X3 price paid by every later unit.
+  **It did not need one.** `NumBl == 3` arrives only through the random-fill
+  stratum, and R2 gives that stratum `n_stratum` cases under *every declared flag
+  value*: with `AWC_Mode` declared, five live cases carry `NumBl == 3` in Mode 1
+  and all eleven survivors died.
+
+  The knob and the flag are different mechanisms. A knob's values are read out of
+  the reference's predicates and a stated range does not add to them; a flag's
+  values ARE the stated ones. When a survivor needs *value V of parameter A in
+  branch B*, check whether B's selector can be a flag before proposing a change
+  to `predicate_knobs_from`.
+
+- **A `SAVE` LOCAL'S DECLARED INITIALISER IS AN ORDERING PROPERTY, AND NO RULE IN
+  THIS GENERATOR ORDERS CASES.** Unit #47, second dispatch, and unit #16's
+  `ExtController` records the same wall from the other side (*"ordering the case
+  set instead -- one `iStatus == 0` case first, the rest not -- is not something
+  this generator can express"*). An initialiser is observable only where a READ
+  of the slot precedes EVERY write of it **across the whole run**, not within one
+  case. So changing the corpus can move such a mutant in either direction, and
+  unit #47 moved one each way: `537e3fe0` went from alive to killed and
+  `ced1c24e` from killed to alive, on the same change.
+
+  **Expect a corpus repair to trade one of these, and report the trade.** The
+  first dispatch's `Error(1)` kill came from a Mode 3 case at
+  `Time <= StartTime`; the repaired corpus's case 0 is a Mode 3 case at
+  `Time = 600`, so the loop writes the slot before anything reads it -- 740 of
+  its 7083 Mode 3/4 cases DO have `Time <= 0` and every one comes after case 0.
+
+- **"COMPILE BOTH AND DIFF THE ASSEMBLY" IS A CONFIRMATION INSTRUMENT, NOT A
+  DECISION INSTRUMENT. SAY WHICH ANSWER WOULD SETTLE THE QUESTION BEFORE
+  PROPOSING ONE.** Unit #47. Its first census left eight extent-enlarging mutants
+  undeclared and named the missing measurement as *"a diff of the generated
+  assembly, which was not taken"*. The second dispatch took it, and it answers
+  nothing: growing a stack array by eight bytes moves the frame size and
+  reshuffles the register allocator across the whole function, so all eight diffs
+  are non-empty (6 to 448 lines) and two change the instruction mix. An EMPTY
+  diff would have confirmed equivalence; a non-empty one is silent.
+
+  What decided it instead was a COMPLETE ENUMERATION -- every subscript on the
+  four arrays, from a regex over the translation, against the bounds
+  `harness/ranges.toml` states. A complete enumeration is a measurement; a sample
+  of one compiler's output is not.
+
+- **AN OUT-OF-BOUNDS STORE IS NOT AN EQUIVALENT PROGRAM, EVEN WHEN NO CASE CAN
+  TELL.** Unit #47, correcting its own first census, which had grouped
+  `AWC_TiltYaw[1] = 0.0` -> `[2] = 0.0` with a mutant that stores to a VALID
+  element the loop below overwrites and called both "changes nothing". That is
+  right about the observable values and wrong about the program. The valid-element
+  one is declared equivalent; the out-of-bounds one stays an honest survivor, in
+  the category unit #4 recorded for `GetRoot` -- a memory error no value
+  comparison can see, whose instrument is `-fsanitize=address` on the harness
+  build, not an input.
+
+- **A "not varied" LINE IN THE HARNESS'S OWN REPORT BECOMES A MEASUREMENT THE
+  MOMENT A SURVIVOR LANDS ON IT -- GO READ THE CALLEE.** Unit #47. The harness
+  had been printing `UNOBSERVABLE LocalVar.resP: nested type, zero-initialised
+  (not varied)` for every run of this unit. With all four `resP` history arrays
+  at zero, `ResController` collapses from a Tustin biquad to
+
+  ```
+  kp*error + 2*DT*ki*error / (4 + (2*PI*freq*DT)**2)
+  ```
+
+  -- four of its five terms multiply zero -- so `freq` enters the answer ONLY
+  through that denominator, which at the corpus's magnitudes is of order 1e13 and
+  annihilates the `ki` term. Two survivors, one on `ki`'s index and one on
+  `freq`'s, and they are ONE fact rather than two. The sibling mutants on the
+  `PIController` call at the same site are all killed, because `PIController`
+  adds `DT*ki*error` with no denominator.
+
 ### Two upstream ROSCO bugs must be fixed before the gate can run
 
 Scenario 4 (`Flp_Mode=2`) segfaulted on the pristine build -- exit 139, core
