@@ -1,0 +1,112 @@
+MUTATION CENSUS -- unit #49 `CableControl`
+==========================================
+
+  mutation/CableControl.json   82 killed of 85 SCOREABLE, score 0.9647
+                               89 mutants, 0 no-compile, 4 declared equivalent,
+                               3 survivors STANDING, 7 operators of 12 offered
+
+Threshold is 1.000. This closes BELOW it, on purpose, with every survivor named
+and each one carrying a DISPOSITION rather than a count -- which is unit #48's
+rule, applied here to a smaller and cleaner set.
+
+TWO SWEEPS, AND THE FIRST ONE IS COMMITTED
+------------------------------------------
+
+  first take   3300 cases, no baseline states, equivalent_declared: 0
+               77 killed of 89, TWELVE survivors
+               evidence/CableControl/mutation.first_take.*.json
+  second take  3354 cases, three baseline states, four declared
+               82 killed of 85, THREE survivors
+               mutation/CableControl.clean.*.json, merged into
+               mutation/CableControl.json
+
+The first take is kept so that what survived is on the record before any of it
+was excused.
+
+WHERE THE TWELVE WENT
+---------------------
+
+  id        operator     site                                    disposition
+  --------  -----------  --------------------------------------  --------------------
+  e7b48523  const_tweak  `I_GROUP = 1` in the CC_Mode==2 loop     KILLED by state 1
+  0ea3cad0  const_tweak  `Ind_CableControl(I) > 0` -> `> 1`       KILLED by state 1
+  3d887f01  compare_op   `Ind_CableControl(I) > 0` -> `>= 0`      KILLED by state 2
+  4d8daadd  const_tweak  PIController's kp, 0.0 -> 1.0            KILLED by iStatus=0 + restart=0
+  75f65cff  const_tweak  PIController's ki, 1.0 -> 2.0            KILLED by iStatus=0 + restart=0
+  c478b82f  compare_op   `n > 0 ? n : 0` -> `n >= 0 ? n : 0`      DECLARED equivalent
+  3e8f1ad8  const_tweak  `restart ? 1 : 0` -> `? 2 : 0` (filter)  DECLARED equivalent
+  049cd9a7  const_tweak  `restart ? 1 : 0` -> `? 2 : 0` (PI)      DECLARED equivalent
+  d54225a5  const_tweak  the unread OPTIONAL InitialValue         DECLARED equivalent
+  8d2724ea  compare_op   `s.size() > cap` -> `>=`                 STANDING, (b)
+  97aefd80  const_tweak  `n > 0 ? n : 0` -> `n > 1 ? n : 0`       STANDING, (b)
+  1a26a963  const_tweak  `n > 0 ? n : 0` -> `n > 0 ? n : 1`       STANDING, (b)
+
+FIVE OF THE TWELVE WERE ONE FACT ABOUT `SecLPFilter_Vel`, AND IT WAS NOT THE FACT
+THE FIRST READING SUGGESTED
+--------------------------------------------------------------------------------
+
+The two PIController gains looked like a saturation story: `-1000.0 -> -1001.0`
+was killed on 1703 cases and `1000.0 -> 1001.0` on 1, so the integrating arm was
+plainly being reached and clamped, and a gain that changes nothing inside a clamp
+is an ordinary corpus gap. That reading is WRONG, and the thing that decides it is
+the reference's own control flow rather than the kill counts:
+
+    Filters.f90, SecLPFilter_Vel
+      IF ((iStatus == 0) .OR. reset) THEN
+          ... the six lpfV_ coefficients are computed HERE and only here ...
+      ENDIF
+      SecLPFilter_Vel = 1.0/FP%lpfV_a2(inst) * ( ... )
+
+`LocalVar%FP` is a nested type the generator ZERO-INITIALISES and does not vary --
+the harness prints it as `UNOBSERVABLE LocalVar.FP: nested type, zero-initialised
+(not varied) and compared bytewise after the call`. So on every case with
+`iStatus /= 0` and `restart` false the divisor is 0.0, the filter returns
+`Inf * 0.0` = NaN, and the NaN propagates through `PIController` into
+`CC_ActuatedDL`, `CC_ActuatedL` and `avrSWAP`. `kp*error` is NaN whether kp is 0.0
+or 1.0. Confirmed in the first take's own red-test output, which prints the
+reference's `CC_ActuatedDL(1)` for case 0 as `000000000000f87f` -- a quiet NaN.
+
+And where the corpus DID initialise the filter it did so through `restart`, which
+is the SAME value this unit hands `PIController` as its `reset` -- and that arm
+assigns `I0` and reads neither gain. So the one configuration in which either gain
+can reach an answer is `iStatus == 0` with `restart` FALSE, and no rung of any
+ladder crosses those two names. All three baseline states carry it.
+
+THE THREE STANDING SURVIVORS ARE ALL (b), AND THE MEASUREMENT IS SEPARATE
+-------------------------------------------------------------------------
+
+All three are in the two copied ErrMsg helpers; not one is in the arithmetic.
+`evidence/CableControl/errmsg_census.txt` gives, over the SCORED corpus, the
+input each one needs, the count of cases that hold it (0, 0 and 0), and the
+argument that a GREEN case could hold it -- which is what separates (b) from unit
+#48's (c). The cause is a single fact: this unit's base draw is
+`aviFAIL = 300` and `CC_Mode = -300`, the midpoints of the +/-1e3 default, so
+R13's whole 256-case capacity block and R6's character-length rungs sit where
+`IF (ErrVar%aviFAIL < 0)` is false and neither helper is entered at all.
+
+THIRD UNIT AT THIS WALL. Unit #43 recorded it as "the ErrMsg helpers' three
+remaining boundaries ... all three are properties of ErrVar%ErrMsg's LENGTH, and
+`_baseline_state` deliberately leaves every CHARACTER parameter to R6's own
+ladder, so no state in this file can move them". Unit #48 met the same three
+sites from the other side. What is new here is the MEASURED cause -- the base
+draw, not the ladders -- and it names two levers that exist and were not pulled:
+a `lo`/`hi` pin moving `aviFAIL`'s and `CC_Mode`'s base onto a live arm, and
+unit #47's `values = [...]` spelling, which makes them R2 flags and re-runs every
+ladder rung under every value at the cost of multiplying the corpus. Either is a
+change to the generated corpus that the harness green, the no-op red test and all
+three mutation parts would have to be re-taken over; this dispatch stopped at the
+measurement rather than starting a re-take it could not finish. Raised in
+DECISIONS.md.
+
+WHAT THE SWEEP CANNOT SEE AT ALL, STATED SO IT IS NOT MISTAKEN FOR COVERED
+--------------------------------------------------------------------------
+
+Five of the twelve operators `harness.cppmutate` offers produce no mutant on this
+translation and the artifact records both lists: `assoc_reorder`,
+`collapse_stride`, `drop_call`, `swap_call_args` and `swap_callee`. The first two
+have no site (this unit reassociates nothing and its one strided gather is
+written with the row count in a named local); the last three are call-shape
+operators that did not fire on the three callee calls. A translation defect that
+swapped two arguments of `picontroller_c` -- which has ten, six of them
+`double` -- would not be graded by this sweep, and the differential harness is
+the layer that would catch it.
