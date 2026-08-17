@@ -1264,7 +1264,7 @@ xData = { nondecreasing_only = "the reference reads zData(i, 0) on an INVERTED t
 yData = { nondecreasing_only = "the reference reads zData(0, j) on an INVERTED table and cannot on a tied one, for the same reason one dimension over -- see above" }
 
 # ---------------------------------------------------------------------------
-# ActiveWakeControl
+[ActiveWakeControl]
 #
 # FOUR PINS. Three are subscripts the reference computes from a count it is also
 # handed, and the fourth is the counter shape five other units already carry.
