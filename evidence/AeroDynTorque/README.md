@@ -2,13 +2,20 @@
 
 `rosco/controller/src/Functions.f90:411-450` (clean, at `54dd134`).
 Disposition **integrated**. Four layers, all four red-tested, and one honest
-failing number: the mutation score is **0.8750** against a threshold of 1.000.
+failing number: the mutation score is **0.9062** against a threshold of 1.000.
+
+**SECOND DISPATCH (2026-08-17).** Every number below that names 1131 cases or
+0.8750 is the FIRST dispatch's and is left as measured; the sections it wrote are
+marked where they are superseded rather than rewritten. What changed: each
+survivor was put to the question *could a GREEN case kill this at all*, one was
+`(b)` and was killed by fixing the inputs, and two are `(c)` — unkillable by this
+harness on any input, which is why P12 cannot reach 1.000 here.
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness (`harness/AeroDynTorque.json`) | **1131 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, the `interp2d_c` bridge KEPT so both sides run one interp2d — this unit's primary evidence | the unit as a no-op: **1127 of 1131**, same corpus count |
-| mutation (`mutation/AeroDynTorque.json`) | **28 of 32 scoreable, 0.8750**, 3 declared, 0 no-compile, 10 operators, **4 survivors standing** | the score *is* the red test, 28 times |
-| post-integration (`harness/AeroDynTorque.postintegration.json`) | 1131 checked, 0 failed | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **1097 of 1131**; reverted, rebuilt, green re-taken at 0 |
+| differential harness (`harness/AeroDynTorque.json`) | **1373 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, the `interp2d_c` bridge KEPT so both sides run one interp2d — this unit's primary evidence | the unit as a no-op: **1369 of 1373**, same corpus count |
+| mutation (`mutation/AeroDynTorque.json`) | **29 of 32 scoreable, 0.9062**, 3 declared, 0 no-compile, 10 operators, **3 survivors standing** | the score *is* the red test, 29 times |
+| post-integration (`harness/AeroDynTorque.postintegration.json`) | 1373 checked, 0 failed | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **1330 of 1373**; reverted, rebuilt, green re-taken at 0 |
 | gate, 27 scenarios (`gate/AeroDynTorque.json`) | 5,252,000 values / 351 channels, 0 mismatched | `PI` in the 13th digit moves **145,146**, 21 of 351 channels, scenarios 1, 7, 8, 12, 16, 25; revert verified at 0 |
 
 **No kernel.** The plan allowed "kernel replay **or** direct-call harness". The
@@ -49,8 +56,9 @@ Full arithmetic, both probes and the general statement:
 `harness.staging_composition.txt`. Raised in `DECISIONS.md` as a proposed method
 amendment, with the shape of the fix.
 
-**Resolved with `--disable R13_staging_capacity`, and the price is measured for
-all four survivors rather than argued** (`mutation.survivors_on_full_corpus.txt`):
+**Resolved by the first dispatch with `--disable R13_staging_capacity`, and the
+price measured for all four survivors rather than argued**
+(`mutation.survivors_on_full_corpus.txt`):
 
 ```
 BASELINE   14 failed   cases 1140..1153
@@ -110,13 +118,15 @@ annihilated by a gain of exactly zero.** The hit count says nothing about it.
 | `harness.first_take.staging_composition.json` | that first take, kept: 1387 checked, 14 failed |
 | `harness.first_take.all_14_cases.json` | the same run with the test's 16-diff cap raised, so all 14 indices are recorded |
 | `run_harness_redtest.sh`, `aerodyntorque.noop-harness-stub.cpp` | the no-op red test and its runner (the stub keeps a guarded `interp2d_c(` so the callee bridge is still emitted — unit #45's rule) |
-| `mutation.census.txt` | all four survivors, the three declarations, the measurements |
+| `mutation.census.txt` | all four survivors, the three declarations, the measurements — with the second dispatch's dispositions at the top and two readings marked SUPERSEDED at their own headings |
+| `aerodyntorque.green-kill-probe.cpp`, `mutation.green_kill_probe.txt` | **the decisive probe**: for each survivor, does ANY input exist with `ORIGINAL == REFERENCE` and `MUTANT != REFERENCE`. 203,700 configurations, both chains executed, negative control 0. 88466711 → 2100, 11c1e326 → 18, 06f7d2c8 → 0, 26021804 → 0 |
+| `aerodyntorque.trim-composition-probe.cpp` | the probe's FIRST model, which was wrong and is kept: it tied the callee's message length to the entry's, and interp2d/interp1d REPLACE ErrMsg rather than only prefixing it |
 | `mutant.<id>.cpp` | each survivor as `CppMutant.source`, so what was measured is the mutant that was scored |
 | `run_mutation_part.sh` | one guarded, operator-filtered part |
 | `run_r13_price.sh`, `harness.r13-boundary-mutant.FULL-corpus.json` | the first price measurement, for one survivor |
 | `run_survivors_on_full_corpus.sh`, `mutation.survivors_on_full_corpus.txt` | the price measured for **all four**, by failing case SET rather than by count |
 | `aerodyntorque.trim-census-probe.cpp` | the shipped translation with six counters; `TRIMCENSUS calls=1097 n_le_0=0 n_eq_1=0 n_min=9 n_max=21 with_trailing_blank=0` |
-| `run_postintegration_redtest.sh`, `harness.postintegration.redtest.json` | the wrapper red test, 1097 of 1131 |
+| `run_postintegration_redtest.sh`, `harness.postintegration.redtest.json` | the wrapper red test, 1330 of 1373 (1097 of 1131 in the first dispatch) |
 | `gate.redtests.txt` | the one gate red test, its per-scenario channel list, and the scenario-17 blind spot |
 | `gate.scenario17-probe.json`, `gate.scenario17-probe2.json` | the two probes that named it |
 | `done_check.txt` | the done-condition, captured by `scripts/capture_done_check.sh` |
@@ -132,10 +142,20 @@ annihilated by a gain of exactly zero.** The hit count says nothing about it.
 3. **A hit count does not say a call site is observable.** 15,062 hits, a gain of
    0.0, and two probes moving 0 of 208,000.
 4. **Measure the price of an ablation on every survivor, not on the one that
-   motivated it.** Three of the four turned out to be unreachable for a
-   completely different reason, which the trim census names.
-5. **The reference's own parentheses are load-bearing and the sweep says by how
+   motivated it.** That measurement is what made the second dispatch's fix
+   possible: it named `cap == 30` as the one case R13 would have killed, so the
+   ablation could be replaced by a stated hole of the fourteen cases that have no
+   oracle — 242 capacities MORE than the ablation carried — and `88466711` died.
+5. **"The corpus does not contain the killing input" and "no corpus can" are
+   different findings, and a census cannot tell them apart.** Ask instead whether
+   `ORIGINAL == REFERENCE` and `MUTANT != REFERENCE` can hold together. Two of
+   these four survivors are separated from the original at 1,680 and 13,344
+   configurations and **every single one is already red**.
+6. **Execute an equivalence argument before believing it.** The first model of
+   the green-kill probe proved three mutants behaviour-preserving from a clean
+   inequality and was false. Running it is what caught it.
+7. **The reference's own parentheses are load-bearing and the sweep says by how
    much.** `PI*(R*R)` → `(PI*R)*R` kills 52 of 1131 and
-   `0.5*(rho*area)` → `(0.5*rho)*area` kills **1** of 1131. One case out of
-   eleven hundred is the entire margin between a transcription and an algebraic
-   rearrangement.
+   `0.5*(rho*area)` → `(0.5*rho)*area` kills **1** of 1131 (first dispatch's
+   corpus). One case out of eleven hundred is the entire margin between a
+   transcription and an algebraic rearrangement.

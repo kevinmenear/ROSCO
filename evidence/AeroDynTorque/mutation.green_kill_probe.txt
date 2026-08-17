@@ -50,3 +50,47 @@ CONTROL negative  the ORIGINAL scored against itself: 0 green kill(s) -- as requ
 CONTROL positive  a green kill was found for 1 of the four mutant(s); the probe can report a kill
 CONTROL reading   full-capacity and extent-only comparison disagree at 0 configuration(s)
 ```
+
+## Is the probe's REFERENCE MODEL the harness's actual reference? Three checks.
+
+The `(c)` disposition of `06f7d2c8` and `26021804` rests entirely on one
+modelling claim -- that the harness's reference chain is unbounded internally and
+gates ONCE, on the final message, at the generated bridge's export. If that were
+wrong the whole finding would be wrong, so it is checked against the instrument
+three ways rather than asserted.
+
+1. THE MODEL PREDICTS THE FIRST TAKE'S FAILING SET, EXACTLY. From the two
+   lengths it predicts red at capacities [L_callee, L_final) = [16, 30) and green
+   everywhere else. The first dispatch measured, with the emitted test's own diff
+   cap raised so every index was recorded, cases 1140..1153 of 1387 -- fourteen,
+   contiguous, and nothing outside them
+   (`harness.first_take.all_14_cases.json`). Predicted set == measured set, and
+   the prediction was written down before the set was read.
+
+2. THE MODEL PREDICTS WHICH CASES A GREEN CORPUS MAY CONTAIN, AND IT IS GREEN.
+   The second dispatch removed exactly the fourteen the model names -- no more,
+   no fewer -- and re-ran: `harness/AeroDynTorque.json`, 1373 checked, 0 failed,
+   0 inadmissible. A model that had the window wrong by one case in either
+   direction would have left a red case in the corpus or dropped a green one, and
+   `vit_mutate.py` refuses to score against a red baseline, so the mutation sweep
+   is a second consumer of the same prediction.
+
+3. THE SHIPPED PROGRAM PRINTS THE THREE GATES. The post-integration run's own
+   stderr, per case, at a stated capacity of 14:
+
+       VIT: interp1d: ErrVar%ErrMsg needs 16 bytes, the staging buffer holds 14;
+            the assignment is refused
+       VIT: AeroDynTorque: ErrVar%ErrMsg needs 21 bytes, the staging buffer
+            holds 14; the assignment is refused
+       VIT bridge: ErrVar%ErrMsg assignment of 30 bytes exceeds the 14-byte
+            buffer the caller supplied; left unchanged
+
+   Two gates inside the translation and one at the bridge, on one buffer, at
+   three different lengths -- which is the composition the model encodes. BELOW
+   the window all three refuse and the case agrees, which is why the stated hole
+   is [16, 29] and not [0, 29].
+
+A fourth, weaker check is already committed: `mutation.survivors_on_full_corpus.txt`
+ran all four survivors over the FULL 1387-case corpus and found the failing case
+SET of these two IDENTICAL to the unmutated baseline's -- they add no failure
+anywhere in it. That is the corpus saying what the probe says about the domain.
