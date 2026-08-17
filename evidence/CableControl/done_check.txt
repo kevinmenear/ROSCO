@@ -1,6 +1,6 @@
-# done_check.py CableControl -- captured 2026-08-17T21:15:14Z by scripts/capture_done_check.sh
+# done_check.py CableControl -- captured 2026-08-17T21:15:24Z by scripts/capture_done_check.sh
 
-Run against the committed state at ff648413 ("CableControl: state brought current -- integrated, 82 of 85, 0.9647, three survivors with dispositions"), with a CLEAN tree, with stdout
+Run against the committed state at 462f77d4 ("CableControl: done_check captured -- 12 of 14, P5 open only because the capture is the file P5 asks for"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -20,13 +20,13 @@ done_check exited 1 (0 only when COMPLETE).
 
 baseline (inferred): 669d5f6  -- the commit before c386a83 touched translations/Controllers/cablecontrol.cpp
 
-CableControl: Verdict.INCOMPLETE  (12/14 PASS)
+CableControl: Verdict.INCOMPLETE  (13/14 PASS)
 
 [  ok  ] P1   commits exist                      
 [  ok  ] P2   clean tree                         
 [  ok  ] P3   disposition recorded               
 [  ok  ] P4   evidence recorded                  
-[ FAIL ] P5   evidence resolves                  unresolved_evidence:evidence/CableControl/done_check.txt
+[  ok  ] P5   evidence resolves                  
 [  ok  ] P6   functional commit                  
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
