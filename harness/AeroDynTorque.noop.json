@@ -1,8 +1,8 @@
 {
  "unit": "AeroDynTorque",
  "against": "translation",
- "checked": 1131,
- "failed": 1127,
+ "checked": 1373,
+ "failed": 1369,
  "inadmissible": 0,
  "rule_coverage": [
   "  applied  R5_non_degenerate_shape    5 varied extent(s) at [3, 3, 4, 4, 7] and [3, 4, 4, 5, 5]; 25 FIXED by the type at [2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 12, 12, 12, 12, 256, 1024, 1024, 1024, 1024, 1024] -- not varied; 76 HELD -- they size arrays the reference does not read; TIED, so NOT pairwise distinct and a stride error that agrees when they are equal is unreachable here: PerfData_Cp_mat_cols follows PerfData_Beta_vec_n, PerfData_Cp_mat_rows follows PerfData_TSR_vec_n, NO index parameter identified, array elements distinct",
@@ -12,7 +12,7 @@
   "  applied  R3_no_dead_signal          8 real value(s), none zero in every case; 6 HELD string(s) are all-blank in every case by construction -- nothing a defect on those could move; 276 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output",
   "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
   "  N/A      R12_narrowing_width        no CHARACTER local is narrower than a dummy assigned into it -- the reference truncates nothing, so there is no boundary for this rule to reach",
-  "  N/A      R13_staging_capacity       ABLATED by --disable -- this run did NOT apply it and the corpus is missing its cases. Whether it had a site in this unit was NOT computed: that is decided inside the block this flag skipped. Compare against a run without the flag to read its kill set.",
+  "  applied  R13_staging_capacity       242 case(s) sweeping the stated staging capacity of every deferred-length CHARACTER output from 0 to 255 bytes above what the case supplies, every other input at its base draw -- so the output has one length across the block and exactly one case sizes the buffer TO it, one a byte short and one a byte long. A capacity a case does not state is `emit.ALLOC_HEADROOM`, which is what every case outside this block still carries. 14 further case(s) are EXCLUDED by a stated `staging_capacity_excludes`: ErrVar_ErrMsg [16, 29] -- the interp2d_c bridge gates this same buffer on 16 bytes before assign_errmsg gates it on 30, so inside [16,30) the reference and the translation hold two different values and NEITHER is the reference's own 30-byte answer -- the case has no oracle. Predicted from the two lengths, then measured at cases 1140..1153 (harness.staging_composition.txt).",
   "  N/A      R14_planted_word           no CHARACTER ARRAY input -- there is no element for a scalar string to be a word OF, so no comparison of this shape exists to reach",
   "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
   "  applied  R4_compare_all_outputs     return value + 5 out-parameter(s): ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg"
@@ -119,12 +119,12 @@
   "PerfData_Cp_mat_cols": "PerfData_Beta_vec_n",
   "PerfData_Cp_mat_rows": "PerfData_TSR_vec_n"
  },
- "loop_rev": "b875e83-nogit",
- "gen_rev": "gen-41def86911b3",
+ "loop_rev": "1b2ba64-nogit",
+ "gen_rev": "gen-c9c444313f10",
  "vit_rev": "a16a7ab-nogit",
  "red_test": {
-  "perturbation": "the unit as a no-op: returns 0.0, writes no output, calls nothing (the interp2d_c call is behind an unsatisfiable guard so the callee bridge is still emitted)",
-  "result": "1127 of 1131 case(s) failed",
+  "perturbation": "the whole unit as a no-op: the translation returns 0.0 and touches no output",
+  "result": "1369 of 1373 case(s) failed",
   "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
  }
 }

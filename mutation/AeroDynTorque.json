@@ -47,12 +47,12 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 35,
- "killed": 28,
- "survived": 4,
+ "killed": 29,
+ "survived": 3,
  "equivalent": 3,
  "declared_but_killed": [],
- "score": 0.875,
- "loop_rev": "b875e83-nogit",
+ "score": 0.9062,
+ "loop_rev": "1b2ba64-nogit",
  "vit_rev": "a16a7ab-nogit",
  "merged_from": [
   {
@@ -65,9 +65,9 @@
    "total": 18,
    "mutants": 18,
    "nocompile": 0,
-   "killed": 13,
-   "survived": 4,
-   "score": 0.7647
+   "killed": 14,
+   "survived": 3,
+   "score": 0.8235
   },
   {
    "part": "mutation/AeroDynTorque.clean.struct_calls.json",
@@ -88,15 +88,9 @@
    "score": 1.0
   }
  ],
- "merged_why": "two foreground parts under scripts/mutate_guarded.sh, 145s and 138s. 35 mutants would probably have fitted one 600s foreground call; 'probably' is the reason it was split anyway -- unit #41 lost a 69-mutant part to exactly that ceiling and a hard kill is what leaves a mutant live in the translation.",
+ "merged_why": "two foreground parts under scripts/mutate_guarded.sh, 134s and 130s, over the 1373-case corpus the stated staging_capacity_excludes produced. 35 mutants would probably have fitted one 600s foreground call; 'probably' is the reason it was split anyway -- unit #41 lost a 69-mutant part to exactly that ceiling and a hard kill is what leaves a mutant live in the translation.",
  "merged_by": "scripts/_mutation_merge.py",
  "survivors": [
-  {
-   "id": "88466711",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
   {
    "id": "11c1e326",
    "operator": "const_tweak",
