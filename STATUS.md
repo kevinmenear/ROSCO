@@ -5,23 +5,26 @@
 stand*. One copy of every count — do not duplicate them anywhere else.
 
 **As of 2026-08-17: unit #48 `AeroDynTorque` is `integrated`, and it closes at 13
-of 14 with P12 failing on purpose.** Four layers, all four red-tested, and the
-mutation score is an honest **0.8750** against a threshold of 1.000: 28 of 32
-scoreable killed, **3 declared equivalent** with proofs in
-`mutation/AeroDynTorque.equivalences.{json,md}`, **4 survivors standing** with
-the input that would kill each named and measured in
-`evidence/AeroDynTorque/mutation.census.txt`. **Not one survivor is in the
-arithmetic** — all four are in the two CHARACTER helpers. **Each of the four now
-carries a disposition rather than a count**: two are `(b)` inputs the corpus does
-not draw, and **two are `(c)` — blind spots this harness cannot close on any
-input**, proved by a green-kill probe with a passing negative control. See the
-table below.
+of 14 with P12 failing — honestly, and now with a proof that it cannot do
+otherwise.** Four layers, all four red-tested, and the mutation score is
+**0.9062** against a threshold of 1.000: 29 of 32 scoreable killed, **3 declared
+equivalent** with proofs in `mutation/AeroDynTorque.equivalences.{json,md}`,
+**3 survivors standing**. **Not one survivor is in the arithmetic** — all three
+are in the two CHARACTER helpers.
+
+**THE SECOND DISPATCH GAVE EACH SURVIVOR A DISPOSITION INSTEAD OF A COUNT, AND
+THEN ACTED ON IT.** `88466711` was `(b)` — the input existed and the corpus did
+not draw it — so the inputs were fixed and it is dead. `11c1e326` is `(b)` with
+its input named and the rule that would draw it specified. `06f7d2c8` and
+`26021804` are `(c)`: **blind spots this harness cannot close on any input**,
+proved by a green-kill probe with a passing negative control. **P12 cannot reach
+1.000 for this unit**, and that is a measurement rather than a shrug.
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness (`harness/AeroDynTorque.json`) | **1131 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, the `interp2d_c` bridge kept so both sides run one interp2d — this unit's primary evidence | the unit as a no-op: **1127 of 1131** |
-| mutation (`mutation/AeroDynTorque.json`) | **28 of 32 scoreable, 0.8750**, 3 declared, 0 no-compile, 10 operators, **4 survivors standing** | the score *is* the red test, 28 times |
-| post-integration (`harness/AeroDynTorque.postintegration.json`) | 1131 checked, 0 failed | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **1097 of 1131**; reverted, rebuilt, green re-taken at 0 |
+| differential harness (`harness/AeroDynTorque.json`) | **1373 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, the `interp2d_c` bridge kept so both sides run one interp2d — this unit's primary evidence | the unit as a no-op: **1369 of 1373** |
+| mutation (`mutation/AeroDynTorque.json`) | **29 of 32 scoreable, 0.9062**, 3 declared, 0 no-compile, 10 operators, **3 survivors standing** | the score *is* the red test, 29 times |
+| post-integration (`harness/AeroDynTorque.postintegration.json`) | 1373 checked, 0 failed | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **1330 of 1373**; reverted, rebuilt, green re-taken at 0 |
 | gate, 27 scenarios (`gate/AeroDynTorque.json`) | 5,252,000 values / 351 channels, 0 mismatched | `PI` in the 13th digit moves **145,146**, 21 of 351 channels, scenarios 1, 7, 8, 12, 16, 25; revert verified |
 
 **THE STAGING-REFUSAL CONVENTION IS NOT COMPOSITIONAL, AND THIS IS THE FIRST
@@ -35,13 +38,16 @@ write-back on 16, then `assign_errmsg` on 30. `interp2d` inherited the same
 helper and never composed, because its own prefix is reached only on the
 bilinear path and that is the one path on which it does not call `interp1d`.
 Raised in DECISIONS.md as a proposed method amendment (make such a case
-INADMISSIBLE — a count the harness already keeps) with the reason it was not
-taken here: it changes a generator every unit's evidence came from (X3).
+INADMISSIBLE — a count the harness already keeps). **Still not taken, and the
+reason is now sharper than X3**: the refusal happens in the Fortran bridge
+`vit test-validate` generates, so the fix is a change to VIT — the instrument
+that produced this unit's extract/verify/integrate evidence — and not to the
+loop repo at all.
 
-**THE PRICE OF THE ABLATION IS MEASURED FOR ALL FOUR SURVIVORS, NOT FOR THE ONE
-THAT MOTIVATED IT.** `--disable R13_staging_capacity`, then every survivor re-run
-over the FULL 1387-case corpus and compared by failing case SET rather than by
-count (both are red there, so a count could hide a swap):
+**WHAT THE FIRST DISPATCH DID, AND WHAT THE SECOND DID INSTEAD.** The first
+ablated the whole rule — `--disable R13_staging_capacity` — and measured the
+price for all four survivors over the FULL 1387-case corpus, by failing case SET
+rather than by count (both are red there, so a count could hide a swap):
 
 | | failed | failing cases |
 |---|---|---|
@@ -56,6 +62,19 @@ buffer TO the composed message. **Five other units declared that site
 unreachable and this one does not**, because interp2d's R13 block never reaches
 `assign_errmsg` and this unit's would.
 
+**THAT MEASUREMENT IS WHAT THE SECOND DISPATCH ACTED ON.** The ablation was
+dropping all 256 capacities to avoid 14 — including the one at which the mutant
+R13 exists to kill actually dies. It is replaced by a **stated hole of exactly
+those fourteen**: a sixth judgement kind in `harness/ranges.toml`
+(`ErrVar_ErrMsg = { staging_capacity_excludes = [16, 29], reason = … }`, read by
+`translation-loop@1b2ba64`). The corpus goes **1131 → 1373** — 242 capacities
+MORE than the ablation carried, 14 fewer than the raw ladder — and `88466711` is
+killed at 2 of 1373. The R13 coverage row now NAMES the fourteen and why, which
+is the one thing `--disable` could not say. The rule refuses a malformed
+interval, a missing `reason`, a parameter R13 does not sweep, and — the one that
+matters — an interval that excludes no case. Nothing changes for a unit that
+states nothing, asserted by a test comparing corpora case for case (P5).
+
 **AND TWO OF THE FOUR ARE NOT CORPUS GAPS AT ALL — THEY CANNOT BE KILLED BY THIS
 HARNESS ON ANY INPUT.** The census asked "does the corpus contain the killing
 input" and answered by counting. `evidence/AeroDynTorque/aerodyntorque.green-kill-probe.cpp`
@@ -68,8 +87,8 @@ original scored against itself, 0 kills.
 
 | survivor | green kills | separates from the original at | disposition |
 |---|---|---|---|
-| `88466711` `s.size() > cap` → `>=` | **2100** | 3096 | **(b)** the input exists; `R13` was ablated |
-| `11c1e326` `n > 0` → `n > 1` | **18** | 504 | **(b)** needs `n_ErrMsg == 1` crossed with `cap == 14` **and** a callee that REPLACED the message |
+| `88466711` `s.size() > cap` → `>=` | **2100** | 3096 | **(b)** — FIXED. The input existed and the ablation was hiding it. Killed at 2 of 1373 |
+| `11c1e326` `n > 0` → `n > 1` | **18** | 504 | **(b)** — OPEN. Needs `n_ErrMsg == 1` crossed with `cap == 14` **and** a callee that REPLACED the message: three factors at once, and R13's ladder moves only one of them |
 | `06f7d2c8` `: 0` → `: 1` | **0** | 1680 | **(c)** every separating input is already red |
 | `26021804` `+ 1` → `+ 2` | **0** | 13344 | **(c)** same, 13,344 of them |
 
@@ -89,6 +108,16 @@ that, tied the callee's message length to the entry's, and was wrong:
 increasing'` before prefixing it, so a 42-byte message over a 14-byte capacity
 puts the entry length back in front of the trim.
 
+**A SECOND TOOL DEFECT, FOUND BY THE FIRST ONE'S OWN CONTROL BEING TOO COARSE.**
+`b875e83`'s control was "pytest: 345 passed / 73 failed / 9 errors, the same
+counts as before", taken over the whole suite where 73 were already failing for
+want of `git` in the container. `tests/test_harness.py` alone reads **119 passed
+/ 1 failed at `b875e83~1` and 118 / 2 at `b875e83`** — that commit broke
+`test_R6_reports_character_coverage_separately_from_numeric`, which asserts the
+detail string it rewrote, and a suite-wide count that coarse cannot see one test
+flip. Recorded, not repaired here: it is a separate change and belongs in its own
+commit with its own reading. The suite reads 124 / 2 after `1b2ba64`.
+
 **ONE TOOL DEFECT, FIXED RATHER THAN ROUTED AROUND (X2).** `--disable <rule>`
 made the artifact say the rule had **no site** — every rule's detail string is
 left at the "found nothing to do" value it was initialised to, so an ablation
@@ -96,8 +125,9 @@ read as an inapplicability. Fixed in `translation-loop@b875e83`, once, after the
 coverage table is built. Three controls: the corpus hashes identically either
 side (`0893b9eb…8972`, additive — P5), the row now says ABLATED without quoting
 the uncomputed detail as a counterfactual, and a misspelt `--disable` name
-raises `ValueError`. This is the first artifact-revision move of the campaign
-since `eb5028e`; every artifact of this unit names `b875e83`.
+raises `ValueError`. Every result artifact of this unit names **`1b2ba64`**, the
+second dispatch's revision, and `revcheck --unit AeroDynTorque` reports all ten
+clean.
 
 **A CALL SITE WITH FIFTEEN THOUSAND HITS THAT THE GATE CANNOT SEE, BECAUSE A
 GAIN IS 0.0.** This unit has two call sites. The I&I one (clean
@@ -110,14 +140,17 @@ is `Examples/DISCON.IN:123`, `WE_Gamma = 0.0`, and the arm multiplies `Tau_r` by
 it. Second instance in two units of "a hit count does not say a call site is
 observable", after #47's scenario 8 holding `AWC_amp` at 0.0.
 
-**Procedure.** TWO reset windows, each opened and closed inside this dispatch —
-the first for the harness, the no-op red test and the two guarded mutation
-parts; the second for the four-survivor full-corpus measurement, by a script
-that opens and closes its own window and asserts the scored corpus's sha256
-before leaving. The gate was re-run after the second and is byte-identical in
-every field but the note (`gate/AeroDynTorque.postroundtrip.json`). Nothing
-backgrounded, nothing polled. Ten commits, one per expensive artifact.
-`revcheck --unit AeroDynTorque` is clean.
+**Procedure.** First dispatch: two reset windows, each opened and closed inside
+it. Second dispatch: ONE window — harness, no-op red test, two guarded mutation
+parts — opened only after everything was committed and closed the moment the
+clean-tree measurement was done, before anything else. Every long command routed
+through `scripts/run_if_time_remains.sh` with a seconds estimate, every mutation
+sweep through `scripts/mutate_guarded.sh`; nothing backgrounded, nothing polled.
+The gate was then re-taken three times — green, red test, repeatability — so
+that every artifact names one generator revision, and
+`gate/AeroDynTorque.postroundtrip.json` says in its own `notes` that what it is
+evidence OF has changed. Commits one per expensive artifact.
+`revcheck --unit AeroDynTorque` is clean at `1b2ba64`, all ten artifacts.
 
 **`PerformanceData` is the campaign's first NEW view type since setup**, and it
 needed no manual work: `vit translate` wrote `performancedata_view_t` into

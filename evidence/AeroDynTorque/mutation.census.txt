@@ -1,11 +1,17 @@
 # Unit #48 `AeroDynTorque` — every surviving mutant, with the measurement
 
-`mutation/AeroDynTorque.json`: **28 of 32 scoreable killed, 0.8750**, 35 mutants,
-**3 declared equivalent**, **0 no-compile**, 10 operators, **4 survivors
-standing**. Threshold is 1.000, so P12 fails, on purpose and with the four
-reasons below.
+`mutation/AeroDynTorque.json`: **29 of 32 scoreable killed, 0.9062**, 35 mutants,
+**3 declared equivalent**, **0 no-compile**, 10 operators, **3 survivors
+standing**, over the **1373-case** corpus. Threshold is 1.000, so P12 still
+fails -- and the second dispatch's green-kill probe shows it CANNOT pass: two of
+the three standing are unkillable by this harness on any input.
 
-Split by operator across two guarded foreground parts (145 s and 138 s) and
+The numbers in the first-dispatch sections below (0.8750, 4 survivors, 1131
+cases) are what was measured then and are left as measured. What changed is the
+corpus: `--disable R13_staging_capacity` became a stated fourteen-capacity hole
+in `harness/ranges.toml`, and `88466711` died.
+
+Split by operator across two guarded foreground parts (134 s and 130 s) and
 merged by `scripts/_mutation_merge.py`, which refuses a union that does not
 cover every operator `harness.cppmutate` offers.
 
@@ -66,6 +72,16 @@ amendment does not close them either.
 ## The four standing
 
 ### 1. `88466711` — the capacity boundary in `assign_errmsg`. R13's kill set, ablated.
+
+**KILLED BY THE SECOND DISPATCH, at 2 of 1373.** Disposition `(b)`: the input
+existed and the corpus did not draw it, so the INPUTS were fixed. The whole-rule
+ablation this section describes is replaced by
+`ErrVar_ErrMsg = { staging_capacity_excludes = [16, 29] }` in
+`harness/ranges.toml` -- the fourteen capacities at which the two chains gate the
+same buffer a different number of times and the case has no oracle. That is 242
+capacities MORE than the ablation carried, and one of them is `cap == 30`. The
+rest of this section is the first dispatch's reading and is why the fix was
+possible; only its conclusion ("so the mutant survives it") no longer holds.
 
     if (static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap)   ->  >=
 

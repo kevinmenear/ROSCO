@@ -10387,3 +10387,77 @@ score would read 1.000. It was caught by running it rather than by reading it:
 the probe printed differences where the argument predicted none. **A proof of
 equivalence that has not been executed against the callee's actual message set is
 a hypothesis.**
+
+### The ablation was replaced by a stated hole, and `88466711` is dead
+
+The disposition `(b)` above was acted on rather than filed. `--disable
+R13_staging_capacity` dropped **all 256** capacities to avoid the **14** that
+have no oracle — and one of the 242 it took with them is the capacity at which
+the mutant R13 exists to kill actually dies.
+
+`translation-loop@1b2ba64` adds the **sixth judgement kind** to
+`harness/ranges.toml`:
+
+```toml
+ErrVar_ErrMsg = { staging_capacity_excludes = [16, 29], reason = "..." }
+```
+
+a closed interval of STATED CAPACITIES that R13's ladder may not put in the
+corpus, per unit and per deferred-length CHARACTER output. It is the first entry
+in that file that narrows a RULE'S LADDER rather than a parameter's values, and
+the reason is carried in the entry, not in a commit message.
+
+**IT IS STRICTLY MORE INPUT THAN WHAT IT REPLACES**, which is the whole argument
+for it and is why it is not "declaring inputs inadmissible to make a number go
+up". The excluded window was derived and published by the FIRST dispatch, before
+this mutant was in question, and the killing case sits one capacity ABOVE it:
+
+```
+corpus      1131  (ablated)  ->  1373  (stated hole)      +242 capacities
+mutation    28/32  0.8750    ->  29/32  0.9062
+88466711    SURVIVED         ->  killed at 2 of 1373
+red test    1127 of 1131     ->  1369 of 1373             same 4 immovable cases
+post-integ  1097 of 1131     ->  1330 of 1373
+gate        145,146 moved    ->  145,146 moved            unchanged, as it must be
+```
+
+The R13 coverage row now NAMES the fourteen and the reason, which is the one
+thing `--disable` could not say even after `b875e83` taught it to say ABLATED.
+
+**Four refusals rather than four silent no-ops**, because a narrowing that
+narrows nothing reads as a cost that was paid — the same judgement that refused
+`nondecreasing_only` on `PerfData_Beta_vec` on this unit: a malformed interval, a
+missing `reason`, a parameter R13 does not sweep, and an interval that excludes
+no case in the generated ladder. **P5 control**: a unit that states nothing gets
+a corpus identical *case for case*, asserted by a test rather than by reading the
+diff. Suite 124 passed / 2 failed against 118 / 2 before.
+
+**THE PRINCIPLED FIX IS STILL NOT TAKEN, AND THE REASON IS NOW SHARPER THAN X3.**
+A case whose reference-side write-back cannot carry the reference's own answer
+should be INADMISSIBLE. The first dispatch declined it as "a change to a
+generator every unit's evidence came from". The real obstacle is narrower and
+worse: the refusal happens in `<stem>_bridge.f90`, which **`vit test-validate`**
+writes — so the fix is a change to **VIT**, the instrument that produced this
+unit's extract, verify and integrate evidence, and `scripts/harness.sh`'s own
+header records why this campaign does not swap VIT mid-unit.
+
+**AND IT WOULD NOT CLOSE P12 EVEN IF TAKEN**, which is the finding the section
+above establishes: `06f7d2c8` and `26021804` are killed only on cases the
+amendment would mark inadmissible, and an inadmissible case is not a kill.
+
+**WHAT IS LEFT, NAMED SO THE NEXT DISPATCH DOES NOT HAVE TO REDERIVE IT.**
+`11c1e326` needs `n_ErrMsg == 1` with a non-blank byte, `cap == 14`, and a callee
+that REPLACED the message — three factors at once. R13 sweeps the capacity around
+ONE base case whose other inputs never move, so the capacity ladder and the
+character ladder never meet and the callee-error configuration is whatever the
+base draw happened to be. The rule that would draw it crosses all three. That is
+a rule, not a hand-picked case, and writing it is the next dispatch's work.
+
+**ONE PROCESS FINDING, RECORDED BECAUSE IT NEARLY REVERTED A COMMIT.** Checking
+whether two test failures pre-dated `b875e83` meant `git checkout b875e83~1` in
+the loop repo with the work stashed; `git checkout -` from a detached HEAD
+returns to the PREVIOUS detached commit, not to the branch, and popping the stash
+there produced a tree that was `eb5028e` + this dispatch's edits with
+`b875e83`'s change silently absent. Caught by grepping for a string that commit
+introduced before committing anything. A stash pop onto the wrong base is a
+merge that succeeds.
