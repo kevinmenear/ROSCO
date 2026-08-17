@@ -1,0 +1,128 @@
+ARM CENSUS of the committed corpus (harness/ActiveWakeControl.json, 3231 cases).
+
+Taken by patching ONE fprintf into the generated test source, immediately after
+LocalVar_a.restart is read and before any call, and relinking with
+`harness.sh --no-generate` -- which keeps the corpus. The probe reports INPUTS,
+which the case file fixes, so it needed no clean tree and no reset window.
+
+CntrPar%AWC_Mode, all 3231 cases:
+   3032 mode=-600
+     19 mode=1
+     19 mode=0
+     18 mode=6
+     18 mode=5
+     18 mode=4
+     18 mode=3
+     18 mode=2
+      2 mode=-9
+      1 mode=999999999
+      1 mode=99999999
+      1 mode=9999999
+      1 mode=999999
+      1 mode=99999
+      1 mode=9999
+      1 mode=999
+      1 mode=995
+      1 mode=99
+      1 mode=983
+      1 mode=904
+      1 mode=9
+      1 mode=878
+      1 mode=855
+      1 mode=829
+      1 mode=820
+      1 mode=801
+      1 mode=708
+      1 mode=639
+      1 mode=502
+      1 mode=360
+      1 mode=35
+      1 mode=334
+      1 mode=272
+      1 mode=2147483647
+      1 mode=169
+      1 mode=1000000000
+      1 mode=100000000
+      1 mode=10000000
+      1 mode=1000000
+      1 mode=100000
+      1 mode=10000
+      1 mode=1000
+      1 mode=100
+      1 mode=10
+      1 mode=-999999999
+      1 mode=-99999999
+      1 mode=-9999999
+      1 mode=-999999
+      1 mode=-99999
+      1 mode=-9999
+      1 mode=-999
+      1 mode=-994
+      1 mode=-99
+      1 mode=-978
+      1 mode=-976
+      1 mode=-938
+      1 mode=-885
+      1 mode=-744
+      1 mode=-733
+      1 mode=-676
+      1 mode=-671
+      1 mode=-621
+      1 mode=-488
+      1 mode=-456
+      1 mode=-403
+      1 mode=-2147483648
+      1 mode=-153
+      1 mode=-140
+      1 mode=-1000000000
+      1 mode=-100000000
+      1 mode=-10000000
+      1 mode=-1000000
+      1 mode=-100000
+      1 mode=-10000
+      1 mode=-1000
+      1 mode=-100
+      1 mode=-10
+      1 mode=-1
+
+cases per LIVE arm (AWC_Mode 1..5):
+     19 mode=1 
+     18 mode=2 
+     18 mode=3 
+     18 mode=4 
+     18 mode=5 
+
+cases with AWC_harmonic(1) == 0 among the live arms:
+0
+
+cases with AWC_harmonic(1) == 0, ANY mode:
+0
+
+WHAT THIS SAYS, and both halves are findings rather than notes.
+
+1. 91 of 3231 cases reach an arm at all. 3032 sit at AWC_Mode = -600, the
+   inert value the generator holds a scalar at when no rule is varying it, and
+   the rest are R6's integer ladder -- decade boundaries and the two 32-bit
+   extremes -- none of which is 1..5. The five live modes come from R6's
+   predicate cross-product (AWC_Mode x AWC_NumModes x NumBl x Time), which is
+   the ONLY block that puts this unit's own switch on a value it branches on.
+   The no-op red test fails 86 of the same 3231, five short of 91: five live
+   cases in which the reference's writes land on values the inert state already
+   held.
+
+2. NO CASE IN THE CORPUS HAS AWC_harmonic(1) == 0, and neither does any of the
+   27 gate scenarios. That guard appears twice --
+
+       :803-:806  the TiltMean accumulation and StartTime = 1/AWC_freq(1)
+       :829-:830  PitCom(K) = PitCom(K) + AWC_TiltYaw(1)
+
+   -- and BOTH arms are outside every instrument this campaign has. The cause
+   is not the range pins: `AWC_harmonic` is an ALLOCATABLE INTEGER array and
+   `generate._fill_array` ramps it across the defaulted +/-1e3 bounds, so
+   element 1 is about -600 in every case. It is not a knob either: the
+   reference's predicate is written against `AWC_harmonic(1)`, a constant-
+   subscript element of an array parameter, and the knob extractor takes
+   scalars. A `lo`/`hi` pin cannot repair it, because the ramp is monotone --
+   any bound that puts 0 in the array puts it at element 1 in EVERY case, which
+   would delete the ELSE arms that all 27 scenarios do exercise. What is needed
+   is a knob, and that is a change to the generator, not to ranges.toml.
