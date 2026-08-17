@@ -1,6 +1,6 @@
-# done_check.py CableControl -- captured 2026-08-17T22:07:04Z by scripts/capture_done_check.sh
+# done_check.py CableControl -- captured 2026-08-17T22:08:24Z by scripts/capture_done_check.sh
 
-Run against the committed state at 5de4359e ("CableControl: the state brought current -- 14 of 14, and one sentence of the first dispatch corrected"), with a CLEAN tree, with stdout
+Run against the committed state at 22b75d34 ("RUNBOOK target layer: four entries earned by this unit's second dispatch"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
