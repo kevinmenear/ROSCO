@@ -21,7 +21,7 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "b875e83",
+ "loop_rev": "1b2ba64",
  "mismatched": 145146,
  "mismatched_channels": [
   "scenario_1:gen_power 11341/40000",

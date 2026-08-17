@@ -20,13 +20,13 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "b875e83",
+ "loop_rev": "1b2ba64",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "RE-TAKEN after this dispatch's second reset/restore round trip (evidence/AeroDynTorque/run_survivors_on_full_corpus.sh opened and closed one). Whether the library that now ships is the library gate/AeroDynTorque.json measured is a question a round trip makes live, and this artifact answers it with a run rather than an argument -- diff it against gate/AeroDynTorque.json."
+  "RE-TAKEN in the second dispatch, and what it is evidence OF has changed -- stated rather than left to be inferred from the filename. In the first dispatch this ran after a reset/restore round trip that had happened AFTER gate/AeroDynTorque.json, so it answered 'is the library that now ships the library the gate measured'. In this dispatch the single round trip (harness, no-op red test, two mutation parts) came BEFORE both gate runs, so gate/AeroDynTorque.json is itself post-round-trip and that question is already answered by it. This run is therefore the REPEATABILITY control instead: the same measurement taken twice on one library, which is what P10 asks for and what nothing else here provides. Diff it against gate/AeroDynTorque.json -- every field but this note should agree."
  ],
  "perturbed": false,
  "residual_dirt": [],
