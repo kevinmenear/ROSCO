@@ -1033,6 +1033,20 @@ translations:
   ratelimit:
     status: integrated
     cpp_file: translations/Functions/ratelimit.cpp
+
+  # UNIT #47. Re-added by hand after `vit integrate --apply` for the same reason
+  # recorded above `ratelimit`: the command rewrites this file through a YAML
+  # round-trip that DELETES EVERY COMMENT in it, so the commented file is
+  # restored with `git checkout -- vit.yaml` and the entry put back here.
+  #
+  # `vit integrate` also wrote `verification: simulation`; REMOVED. The gate
+  # does see this unit -- six of the 27 scenarios call it and five of its arms
+  # are live -- so the line would even have been true, and it is still a claim
+  # written by a command that ran no simulation and read no result. What
+  # verified this unit is in plan.json's `evidence`.
+  ActiveWakeControl:
+    status: integrated
+    cpp_file: translations/Controllers/activewakecontrol.cpp
 types:
   ControlParameters:
     strategy: view

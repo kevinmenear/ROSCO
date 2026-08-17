@@ -8,10 +8,18 @@ MODULE vit_localvariables_view
     IMPLICIT NONE
     PRIVATE
     PUBLIC :: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables, vit_original_localvariables
+    PUBLIC :: vit_direct_localvariables, vit_view_in_localvariables, vit_view_out_localvariables
 
     ! Kernel stash: pointer to original Fortran type, set by wrapper before calling C++.
     ! Callee bridges USE this to pass the original type to Fortran callees.
     TYPE(LocalVariables), POINTER, SAVE :: vit_original_localvariables => NULL()
+
+    ! DIRECT-CALLER ORIGINAL. The stash above is set by an integration or
+    ! kernel WRAPPER before it calls the C++. A C++ caller with NO wrapper --
+    ! the differential harness calls the translation directly -- leaves it
+    ! NULL, and a callee bridge that passes it dereferences a null pointer.
+    ! This is the object the bridge points it at in that case.
+    TYPE(LocalVariables), TARGET, SAVE :: vit_direct_localvariables
 
     ! Nested BIND(C) mirror for TYPE(WE)
     TYPE, BIND(C) :: we_view_t
@@ -753,5 +761,350 @@ CONTAINS
         dest%rlP%LastSignal = view%rlP%LastSignal
 
     END SUBROUTINE vit_copy_scalars_to_localvariables
+
+    SUBROUTINE vit_view_in_localvariables(view, dest)
+        ! view -> Fortran TYPE, reading the CALLER'S buffers.
+        TYPE(localvariables_view_t), INTENT(IN) :: view
+        TYPE(LocalVariables), INTENT(INOUT) :: dest
+
+        ! The direct-caller conversion is not measured on these field(s):
+        !  ACC_INFILE, WE, FP, piP, resP, rlP
+        ERROR STOP 'VIT: vit_view_in_localvariables: an unmeasured field kind; see the comment above'
+        dest%iStatus = INT(view%iStatus, C_INT)
+        dest%AlreadyInitialized = INT(view%AlreadyInitialized, C_INT)
+        dest%RestartWSE = INT(view%RestartWSE, C_INT)
+        dest%Time = REAL(view%Time, C_DOUBLE)
+        dest%DT = REAL(view%DT, C_DOUBLE)
+        dest%WriteThisStep = view%WriteThisStep
+        dest%n_DT = INT(view%n_DT, C_INT)
+        dest%Time_Last = REAL(view%Time_Last, C_DOUBLE)
+        dest%VS_GenPwr = REAL(view%VS_GenPwr, C_DOUBLE)
+        dest%GenSpeed = REAL(view%GenSpeed, C_DOUBLE)
+        dest%RotSpeed = REAL(view%RotSpeed, C_DOUBLE)
+        dest%NacHeading = REAL(view%NacHeading, C_DOUBLE)
+        dest%NacVane = REAL(view%NacVane, C_DOUBLE)
+        dest%NacVaneF = REAL(view%NacVaneF, C_DOUBLE)
+        dest%WindDir = REAL(view%WindDir, C_DOUBLE)
+        dest%HorWindV = REAL(view%HorWindV, C_DOUBLE)
+        dest%HorWindV_F = REAL(view%HorWindV_F, C_DOUBLE)
+        dest%rootMOOP = view%rootMOOP
+        dest%rootMOOPF = view%rootMOOPF
+        dest%BlPitch = view%BlPitch
+        dest%BlPitchCMeas = REAL(view%BlPitchCMeas, C_DOUBLE)
+        dest%Azimuth = REAL(view%Azimuth, C_DOUBLE)
+        dest%OL_Azimuth = REAL(view%OL_Azimuth, C_DOUBLE)
+        dest%AzUnwrapped = REAL(view%AzUnwrapped, C_DOUBLE)
+        dest%AzError = REAL(view%AzError, C_DOUBLE)
+        dest%GenTqAz = REAL(view%GenTqAz, C_DOUBLE)
+        dest%AzBuffer = view%AzBuffer
+        dest%NumBl = INT(view%NumBl, C_INT)
+        dest%FA_Acc_TT = REAL(view%FA_Acc_TT, C_DOUBLE)
+        dest%SS_Acc_TT = REAL(view%SS_Acc_TT, C_DOUBLE)
+        dest%FA_Acc_Nac = REAL(view%FA_Acc_Nac, C_DOUBLE)
+        dest%NacIMU_FA_RAcc = REAL(view%NacIMU_FA_RAcc, C_DOUBLE)
+        dest%FA_AccHPF = REAL(view%FA_AccHPF, C_DOUBLE)
+        dest%FA_AccHPFI = REAL(view%FA_AccHPFI, C_DOUBLE)
+        dest%FA_PitCom = view%FA_PitCom
+        dest%VS_RefSpd = REAL(view%VS_RefSpd, C_DOUBLE)
+        dest%VS_RefSpd_TSR = REAL(view%VS_RefSpd_TSR, C_DOUBLE)
+        dest%VS_RefSpd_TRA = REAL(view%VS_RefSpd_TRA, C_DOUBLE)
+        dest%VS_RefSpd_RL = REAL(view%VS_RefSpd_RL, C_DOUBLE)
+        dest%PC_RefSpd = REAL(view%PC_RefSpd, C_DOUBLE)
+        dest%PC_RefSpd_SS = REAL(view%PC_RefSpd_SS, C_DOUBLE)
+        dest%PC_RefSpd_PRC = REAL(view%PC_RefSpd_PRC, C_DOUBLE)
+        dest%RotSpeedF = REAL(view%RotSpeedF, C_DOUBLE)
+        dest%GenSpeedF = REAL(view%GenSpeedF, C_DOUBLE)
+        dest%GenTq = REAL(view%GenTq, C_DOUBLE)
+        dest%GenTqMeas = REAL(view%GenTqMeas, C_DOUBLE)
+        dest%GenArTq = REAL(view%GenArTq, C_DOUBLE)
+        dest%GenBrTq = REAL(view%GenBrTq, C_DOUBLE)
+        dest%VS_KOmega2_GenTq = REAL(view%VS_KOmega2_GenTq, C_DOUBLE)
+        dest%VS_ConstPwr_GenTq = REAL(view%VS_ConstPwr_GenTq, C_DOUBLE)
+        dest%IPC_PitComF = view%IPC_PitComF
+        dest%PC_KP = REAL(view%PC_KP, C_DOUBLE)
+        dest%PC_KI = REAL(view%PC_KI, C_DOUBLE)
+        dest%PC_KD = REAL(view%PC_KD, C_DOUBLE)
+        dest%PC_TF = REAL(view%PC_TF, C_DOUBLE)
+        dest%PC_MaxPit = REAL(view%PC_MaxPit, C_DOUBLE)
+        dest%PC_MinPit = REAL(view%PC_MinPit, C_DOUBLE)
+        dest%PC_PitComT = REAL(view%PC_PitComT, C_DOUBLE)
+        dest%PC_PitComT_Last = REAL(view%PC_PitComT_Last, C_DOUBLE)
+        dest%BlPitchCMeasF = REAL(view%BlPitchCMeasF, C_DOUBLE)
+        dest%PC_PitComT_IPC = view%PC_PitComT_IPC
+        dest%PC_PwrErr = REAL(view%PC_PwrErr, C_DOUBLE)
+        dest%PC_SpdErr = REAL(view%PC_SpdErr, C_DOUBLE)
+        dest%IPC_AxisTilt_1P = REAL(view%IPC_AxisTilt_1P, C_DOUBLE)
+        dest%IPC_AxisYaw_1P = REAL(view%IPC_AxisYaw_1P, C_DOUBLE)
+        dest%IPC_AxisTilt_2P = REAL(view%IPC_AxisTilt_2P, C_DOUBLE)
+        dest%IPC_AxisYaw_2P = REAL(view%IPC_AxisYaw_2P, C_DOUBLE)
+        dest%axisTilt_1P = REAL(view%axisTilt_1P, C_DOUBLE)
+        dest%axisYaw_1P = REAL(view%axisYaw_1P, C_DOUBLE)
+        dest%axisYawF_1P = REAL(view%axisYawF_1P, C_DOUBLE)
+        dest%axisTilt_2P = REAL(view%axisTilt_2P, C_DOUBLE)
+        dest%axisYaw_2P = REAL(view%axisYaw_2P, C_DOUBLE)
+        dest%axisYawF_2P = REAL(view%axisYawF_2P, C_DOUBLE)
+        dest%IPC_KI = view%IPC_KI
+        dest%IPC_KP = view%IPC_KP
+        dest%IPC_IntSat = REAL(view%IPC_IntSat, C_DOUBLE)
+        dest%PC_State = INT(view%PC_State, C_INT)
+        dest%PitCom = view%PitCom
+        dest%PitCom_SD = view%PitCom_SD
+        dest%PitComAct = view%PitComAct
+        dest%SS_DelOmegaF = REAL(view%SS_DelOmegaF, C_DOUBLE)
+        dest%TestType = REAL(view%TestType, C_DOUBLE)
+        dest%Kp_Float = REAL(view%Kp_Float, C_DOUBLE)
+        dest%VS_MaxTq = REAL(view%VS_MaxTq, C_DOUBLE)
+        dest%VS_LastGenTrq = REAL(view%VS_LastGenTrq, C_DOUBLE)
+        dest%VS_LastGenPwr = REAL(view%VS_LastGenPwr, C_DOUBLE)
+        dest%VS_MechGenPwr = REAL(view%VS_MechGenPwr, C_DOUBLE)
+        dest%VS_SpdErrAr = REAL(view%VS_SpdErrAr, C_DOUBLE)
+        dest%VS_SpdErrBr = REAL(view%VS_SpdErrBr, C_DOUBLE)
+        dest%VS_SpdErr = REAL(view%VS_SpdErr, C_DOUBLE)
+        dest%VS_State = INT(view%VS_State, C_INT)
+        dest%VS_Rgn3Pitch = REAL(view%VS_Rgn3Pitch, C_DOUBLE)
+        dest%WE_Vw = REAL(view%WE_Vw, C_DOUBLE)
+        dest%WE_Vw_F = REAL(view%WE_Vw_F, C_DOUBLE)
+        dest%WE_VwI = REAL(view%WE_VwI, C_DOUBLE)
+        dest%WE_VwIdot = REAL(view%WE_VwIdot, C_DOUBLE)
+        dest%WE_Op = INT(view%WE_Op, C_INT)
+        dest%WE_Op_Last = INT(view%WE_Op_Last, C_INT)
+        dest%VS_LastGenTrqF = REAL(view%VS_LastGenTrqF, C_DOUBLE)
+        dest%PRC_WSE_F = REAL(view%PRC_WSE_F, C_DOUBLE)
+        dest%PRC_R_Speed = REAL(view%PRC_R_Speed, C_DOUBLE)
+        dest%PRC_R_Torque = REAL(view%PRC_R_Torque, C_DOUBLE)
+        dest%PRC_R_Pitch = REAL(view%PRC_R_Pitch, C_DOUBLE)
+        dest%PRC_R_Total = REAL(view%PRC_R_Total, C_DOUBLE)
+        dest%PRC_Min_Pitch = REAL(view%PRC_Min_Pitch, C_DOUBLE)
+        dest%PS_Min_Pitch = REAL(view%PS_Min_Pitch, C_DOUBLE)
+        dest%OL_Index = REAL(view%OL_Index, C_DOUBLE)
+        dest%SU_Stage = INT(view%SU_Stage, C_INT)
+        dest%SU_LoadStageStartTime = REAL(view%SU_LoadStageStartTime, C_DOUBLE)
+        dest%SU_RotSpeedF = REAL(view%SU_RotSpeedF, C_DOUBLE)
+        dest%SD_Trigger = INT(view%SD_Trigger, C_INT)
+        dest%SD_BlPitchF = REAL(view%SD_BlPitchF, C_DOUBLE)
+        dest%SD_NacVaneF = REAL(view%SD_NacVaneF, C_DOUBLE)
+        dest%SD_GenSpeedF = REAL(view%SD_GenSpeedF, C_DOUBLE)
+        dest%SD_Stage = INT(view%SD_Stage, C_INT)
+        dest%SD_StageStartTime = REAL(view%SD_StageStartTime, C_DOUBLE)
+        dest%SD_MaxPitchRate = REAL(view%SD_MaxPitchRate, C_DOUBLE)
+        dest%SD_MaxTorqueRate = REAL(view%SD_MaxTorqueRate, C_DOUBLE)
+        dest%GenTq_SD = REAL(view%GenTq_SD, C_DOUBLE)
+        dest%Fl_PitCom = REAL(view%Fl_PitCom, C_DOUBLE)
+        dest%NACIMU_FA_AccF = REAL(view%NACIMU_FA_AccF, C_DOUBLE)
+        dest%FA_AccF = REAL(view%FA_AccF, C_DOUBLE)
+        dest%FA_Hist = INT(view%FA_Hist, C_INT)
+        dest%TRA_LastRefSpd = REAL(view%TRA_LastRefSpd, C_DOUBLE)
+        dest%VS_RefSpeed = REAL(view%VS_RefSpeed, C_DOUBLE)
+        dest%PtfmTDX = REAL(view%PtfmTDX, C_DOUBLE)
+        dest%PtfmTDY = REAL(view%PtfmTDY, C_DOUBLE)
+        dest%PtfmTDZ = REAL(view%PtfmTDZ, C_DOUBLE)
+        dest%PtfmRDX = REAL(view%PtfmRDX, C_DOUBLE)
+        dest%PtfmRDY = REAL(view%PtfmRDY, C_DOUBLE)
+        dest%PtfmRDZ = REAL(view%PtfmRDZ, C_DOUBLE)
+        dest%PtfmTVX = REAL(view%PtfmTVX, C_DOUBLE)
+        dest%PtfmTVY = REAL(view%PtfmTVY, C_DOUBLE)
+        dest%PtfmTVZ = REAL(view%PtfmTVZ, C_DOUBLE)
+        dest%PtfmRVX = REAL(view%PtfmRVX, C_DOUBLE)
+        dest%PtfmRVY = REAL(view%PtfmRVY, C_DOUBLE)
+        dest%PtfmRVZ = REAL(view%PtfmRVZ, C_DOUBLE)
+        dest%PtfmTAX = REAL(view%PtfmTAX, C_DOUBLE)
+        dest%PtfmTAY = REAL(view%PtfmTAY, C_DOUBLE)
+        dest%PtfmTAZ = REAL(view%PtfmTAZ, C_DOUBLE)
+        dest%PtfmRAX = REAL(view%PtfmRAX, C_DOUBLE)
+        dest%PtfmRAY = REAL(view%PtfmRAY, C_DOUBLE)
+        dest%PtfmRAZ = REAL(view%PtfmRAZ, C_DOUBLE)
+        dest%CC_DesiredL = view%CC_DesiredL
+        dest%CC_ActuatedL = view%CC_ActuatedL
+        dest%CC_ActuatedDL = view%CC_ActuatedDL
+        dest%StC_Input = view%StC_Input
+        dest%Flp_Angle = view%Flp_Angle
+        dest%RootMyb_Last = view%RootMyb_Last
+        dest%ACC_INFILE_SIZE = INT(view%ACC_INFILE_SIZE, C_INT)
+        dest%restart = view%restart
+        dest%AWC_complexangle = view%AWC_complexangle
+        dest%TiltMean = REAL(view%TiltMean, C_DOUBLE)
+        dest%YawMean = REAL(view%YawMean, C_DOUBLE)
+        dest%ZMQ_ID = INT(view%ZMQ_ID, C_INT)
+        dest%ZMQ_YawOffset = REAL(view%ZMQ_YawOffset, C_DOUBLE)
+        dest%ZMQ_TorqueOffset = REAL(view%ZMQ_TorqueOffset, C_DOUBLE)
+        dest%ZMQ_PitOffset = view%ZMQ_PitOffset
+        dest%ZMQ_R_Speed = REAL(view%ZMQ_R_Speed, C_DOUBLE)
+        dest%ZMQ_R_Torque = REAL(view%ZMQ_R_Torque, C_DOUBLE)
+        dest%ZMQ_R_Pitch = REAL(view%ZMQ_R_Pitch, C_DOUBLE)
+
+    END SUBROUTINE vit_view_in_localvariables
+
+    SUBROUTINE vit_view_out_localvariables(src, view)
+        ! Fortran TYPE -> view, writing INTO the caller's buffer and
+        ! leaving its pointer and capacity exactly as it supplied them.
+        TYPE(LocalVariables), INTENT(IN) :: src
+        TYPE(localvariables_view_t), INTENT(INOUT) :: view
+
+        ! The direct-caller conversion is not measured on these field(s):
+        !  ACC_INFILE, WE, FP, piP, resP, rlP
+        ERROR STOP 'VIT: vit_view_out_localvariables: an unmeasured field kind; see the comment above'
+        view%iStatus = INT(src%iStatus, C_INT)
+        view%AlreadyInitialized = INT(src%AlreadyInitialized, C_INT)
+        view%RestartWSE = INT(src%RestartWSE, C_INT)
+        view%Time = REAL(src%Time, C_DOUBLE)
+        view%DT = REAL(src%DT, C_DOUBLE)
+        view%WriteThisStep = LOGICAL(src%WriteThisStep, C_BOOL)
+        view%n_DT = INT(src%n_DT, C_INT)
+        view%Time_Last = REAL(src%Time_Last, C_DOUBLE)
+        view%VS_GenPwr = REAL(src%VS_GenPwr, C_DOUBLE)
+        view%GenSpeed = REAL(src%GenSpeed, C_DOUBLE)
+        view%RotSpeed = REAL(src%RotSpeed, C_DOUBLE)
+        view%NacHeading = REAL(src%NacHeading, C_DOUBLE)
+        view%NacVane = REAL(src%NacVane, C_DOUBLE)
+        view%NacVaneF = REAL(src%NacVaneF, C_DOUBLE)
+        view%WindDir = REAL(src%WindDir, C_DOUBLE)
+        view%HorWindV = REAL(src%HorWindV, C_DOUBLE)
+        view%HorWindV_F = REAL(src%HorWindV_F, C_DOUBLE)
+        view%rootMOOP = src%rootMOOP
+        view%rootMOOPF = src%rootMOOPF
+        view%BlPitch = src%BlPitch
+        view%BlPitchCMeas = REAL(src%BlPitchCMeas, C_DOUBLE)
+        view%Azimuth = REAL(src%Azimuth, C_DOUBLE)
+        view%OL_Azimuth = REAL(src%OL_Azimuth, C_DOUBLE)
+        view%AzUnwrapped = REAL(src%AzUnwrapped, C_DOUBLE)
+        view%AzError = REAL(src%AzError, C_DOUBLE)
+        view%GenTqAz = REAL(src%GenTqAz, C_DOUBLE)
+        view%AzBuffer = src%AzBuffer
+        view%NumBl = INT(src%NumBl, C_INT)
+        view%FA_Acc_TT = REAL(src%FA_Acc_TT, C_DOUBLE)
+        view%SS_Acc_TT = REAL(src%SS_Acc_TT, C_DOUBLE)
+        view%FA_Acc_Nac = REAL(src%FA_Acc_Nac, C_DOUBLE)
+        view%NacIMU_FA_RAcc = REAL(src%NacIMU_FA_RAcc, C_DOUBLE)
+        view%FA_AccHPF = REAL(src%FA_AccHPF, C_DOUBLE)
+        view%FA_AccHPFI = REAL(src%FA_AccHPFI, C_DOUBLE)
+        view%FA_PitCom = src%FA_PitCom
+        view%VS_RefSpd = REAL(src%VS_RefSpd, C_DOUBLE)
+        view%VS_RefSpd_TSR = REAL(src%VS_RefSpd_TSR, C_DOUBLE)
+        view%VS_RefSpd_TRA = REAL(src%VS_RefSpd_TRA, C_DOUBLE)
+        view%VS_RefSpd_RL = REAL(src%VS_RefSpd_RL, C_DOUBLE)
+        view%PC_RefSpd = REAL(src%PC_RefSpd, C_DOUBLE)
+        view%PC_RefSpd_SS = REAL(src%PC_RefSpd_SS, C_DOUBLE)
+        view%PC_RefSpd_PRC = REAL(src%PC_RefSpd_PRC, C_DOUBLE)
+        view%RotSpeedF = REAL(src%RotSpeedF, C_DOUBLE)
+        view%GenSpeedF = REAL(src%GenSpeedF, C_DOUBLE)
+        view%GenTq = REAL(src%GenTq, C_DOUBLE)
+        view%GenTqMeas = REAL(src%GenTqMeas, C_DOUBLE)
+        view%GenArTq = REAL(src%GenArTq, C_DOUBLE)
+        view%GenBrTq = REAL(src%GenBrTq, C_DOUBLE)
+        view%VS_KOmega2_GenTq = REAL(src%VS_KOmega2_GenTq, C_DOUBLE)
+        view%VS_ConstPwr_GenTq = REAL(src%VS_ConstPwr_GenTq, C_DOUBLE)
+        view%IPC_PitComF = src%IPC_PitComF
+        view%PC_KP = REAL(src%PC_KP, C_DOUBLE)
+        view%PC_KI = REAL(src%PC_KI, C_DOUBLE)
+        view%PC_KD = REAL(src%PC_KD, C_DOUBLE)
+        view%PC_TF = REAL(src%PC_TF, C_DOUBLE)
+        view%PC_MaxPit = REAL(src%PC_MaxPit, C_DOUBLE)
+        view%PC_MinPit = REAL(src%PC_MinPit, C_DOUBLE)
+        view%PC_PitComT = REAL(src%PC_PitComT, C_DOUBLE)
+        view%PC_PitComT_Last = REAL(src%PC_PitComT_Last, C_DOUBLE)
+        view%BlPitchCMeasF = REAL(src%BlPitchCMeasF, C_DOUBLE)
+        view%PC_PitComT_IPC = src%PC_PitComT_IPC
+        view%PC_PwrErr = REAL(src%PC_PwrErr, C_DOUBLE)
+        view%PC_SpdErr = REAL(src%PC_SpdErr, C_DOUBLE)
+        view%IPC_AxisTilt_1P = REAL(src%IPC_AxisTilt_1P, C_DOUBLE)
+        view%IPC_AxisYaw_1P = REAL(src%IPC_AxisYaw_1P, C_DOUBLE)
+        view%IPC_AxisTilt_2P = REAL(src%IPC_AxisTilt_2P, C_DOUBLE)
+        view%IPC_AxisYaw_2P = REAL(src%IPC_AxisYaw_2P, C_DOUBLE)
+        view%axisTilt_1P = REAL(src%axisTilt_1P, C_DOUBLE)
+        view%axisYaw_1P = REAL(src%axisYaw_1P, C_DOUBLE)
+        view%axisYawF_1P = REAL(src%axisYawF_1P, C_DOUBLE)
+        view%axisTilt_2P = REAL(src%axisTilt_2P, C_DOUBLE)
+        view%axisYaw_2P = REAL(src%axisYaw_2P, C_DOUBLE)
+        view%axisYawF_2P = REAL(src%axisYawF_2P, C_DOUBLE)
+        view%IPC_KI = src%IPC_KI
+        view%IPC_KP = src%IPC_KP
+        view%IPC_IntSat = REAL(src%IPC_IntSat, C_DOUBLE)
+        view%PC_State = INT(src%PC_State, C_INT)
+        view%PitCom = src%PitCom
+        view%PitCom_SD = src%PitCom_SD
+        view%PitComAct = src%PitComAct
+        view%SS_DelOmegaF = REAL(src%SS_DelOmegaF, C_DOUBLE)
+        view%TestType = REAL(src%TestType, C_DOUBLE)
+        view%Kp_Float = REAL(src%Kp_Float, C_DOUBLE)
+        view%VS_MaxTq = REAL(src%VS_MaxTq, C_DOUBLE)
+        view%VS_LastGenTrq = REAL(src%VS_LastGenTrq, C_DOUBLE)
+        view%VS_LastGenPwr = REAL(src%VS_LastGenPwr, C_DOUBLE)
+        view%VS_MechGenPwr = REAL(src%VS_MechGenPwr, C_DOUBLE)
+        view%VS_SpdErrAr = REAL(src%VS_SpdErrAr, C_DOUBLE)
+        view%VS_SpdErrBr = REAL(src%VS_SpdErrBr, C_DOUBLE)
+        view%VS_SpdErr = REAL(src%VS_SpdErr, C_DOUBLE)
+        view%VS_State = INT(src%VS_State, C_INT)
+        view%VS_Rgn3Pitch = REAL(src%VS_Rgn3Pitch, C_DOUBLE)
+        view%WE_Vw = REAL(src%WE_Vw, C_DOUBLE)
+        view%WE_Vw_F = REAL(src%WE_Vw_F, C_DOUBLE)
+        view%WE_VwI = REAL(src%WE_VwI, C_DOUBLE)
+        view%WE_VwIdot = REAL(src%WE_VwIdot, C_DOUBLE)
+        view%WE_Op = INT(src%WE_Op, C_INT)
+        view%WE_Op_Last = INT(src%WE_Op_Last, C_INT)
+        view%VS_LastGenTrqF = REAL(src%VS_LastGenTrqF, C_DOUBLE)
+        view%PRC_WSE_F = REAL(src%PRC_WSE_F, C_DOUBLE)
+        view%PRC_R_Speed = REAL(src%PRC_R_Speed, C_DOUBLE)
+        view%PRC_R_Torque = REAL(src%PRC_R_Torque, C_DOUBLE)
+        view%PRC_R_Pitch = REAL(src%PRC_R_Pitch, C_DOUBLE)
+        view%PRC_R_Total = REAL(src%PRC_R_Total, C_DOUBLE)
+        view%PRC_Min_Pitch = REAL(src%PRC_Min_Pitch, C_DOUBLE)
+        view%PS_Min_Pitch = REAL(src%PS_Min_Pitch, C_DOUBLE)
+        view%OL_Index = REAL(src%OL_Index, C_DOUBLE)
+        view%SU_Stage = INT(src%SU_Stage, C_INT)
+        view%SU_LoadStageStartTime = REAL(src%SU_LoadStageStartTime, C_DOUBLE)
+        view%SU_RotSpeedF = REAL(src%SU_RotSpeedF, C_DOUBLE)
+        view%SD_Trigger = INT(src%SD_Trigger, C_INT)
+        view%SD_BlPitchF = REAL(src%SD_BlPitchF, C_DOUBLE)
+        view%SD_NacVaneF = REAL(src%SD_NacVaneF, C_DOUBLE)
+        view%SD_GenSpeedF = REAL(src%SD_GenSpeedF, C_DOUBLE)
+        view%SD_Stage = INT(src%SD_Stage, C_INT)
+        view%SD_StageStartTime = REAL(src%SD_StageStartTime, C_DOUBLE)
+        view%SD_MaxPitchRate = REAL(src%SD_MaxPitchRate, C_DOUBLE)
+        view%SD_MaxTorqueRate = REAL(src%SD_MaxTorqueRate, C_DOUBLE)
+        view%GenTq_SD = REAL(src%GenTq_SD, C_DOUBLE)
+        view%Fl_PitCom = REAL(src%Fl_PitCom, C_DOUBLE)
+        view%NACIMU_FA_AccF = REAL(src%NACIMU_FA_AccF, C_DOUBLE)
+        view%FA_AccF = REAL(src%FA_AccF, C_DOUBLE)
+        view%FA_Hist = INT(src%FA_Hist, C_INT)
+        view%TRA_LastRefSpd = REAL(src%TRA_LastRefSpd, C_DOUBLE)
+        view%VS_RefSpeed = REAL(src%VS_RefSpeed, C_DOUBLE)
+        view%PtfmTDX = REAL(src%PtfmTDX, C_DOUBLE)
+        view%PtfmTDY = REAL(src%PtfmTDY, C_DOUBLE)
+        view%PtfmTDZ = REAL(src%PtfmTDZ, C_DOUBLE)
+        view%PtfmRDX = REAL(src%PtfmRDX, C_DOUBLE)
+        view%PtfmRDY = REAL(src%PtfmRDY, C_DOUBLE)
+        view%PtfmRDZ = REAL(src%PtfmRDZ, C_DOUBLE)
+        view%PtfmTVX = REAL(src%PtfmTVX, C_DOUBLE)
+        view%PtfmTVY = REAL(src%PtfmTVY, C_DOUBLE)
+        view%PtfmTVZ = REAL(src%PtfmTVZ, C_DOUBLE)
+        view%PtfmRVX = REAL(src%PtfmRVX, C_DOUBLE)
+        view%PtfmRVY = REAL(src%PtfmRVY, C_DOUBLE)
+        view%PtfmRVZ = REAL(src%PtfmRVZ, C_DOUBLE)
+        view%PtfmTAX = REAL(src%PtfmTAX, C_DOUBLE)
+        view%PtfmTAY = REAL(src%PtfmTAY, C_DOUBLE)
+        view%PtfmTAZ = REAL(src%PtfmTAZ, C_DOUBLE)
+        view%PtfmRAX = REAL(src%PtfmRAX, C_DOUBLE)
+        view%PtfmRAY = REAL(src%PtfmRAY, C_DOUBLE)
+        view%PtfmRAZ = REAL(src%PtfmRAZ, C_DOUBLE)
+        view%CC_DesiredL = src%CC_DesiredL
+        view%CC_ActuatedL = src%CC_ActuatedL
+        view%CC_ActuatedDL = src%CC_ActuatedDL
+        view%StC_Input = src%StC_Input
+        view%Flp_Angle = src%Flp_Angle
+        view%RootMyb_Last = src%RootMyb_Last
+        view%ACC_INFILE_SIZE = INT(src%ACC_INFILE_SIZE, C_INT)
+        view%restart = LOGICAL(src%restart, C_BOOL)
+        view%AWC_complexangle = src%AWC_complexangle
+        view%TiltMean = REAL(src%TiltMean, C_DOUBLE)
+        view%YawMean = REAL(src%YawMean, C_DOUBLE)
+        view%ZMQ_ID = INT(src%ZMQ_ID, C_INT)
+        view%ZMQ_YawOffset = REAL(src%ZMQ_YawOffset, C_DOUBLE)
+        view%ZMQ_TorqueOffset = REAL(src%ZMQ_TorqueOffset, C_DOUBLE)
+        view%ZMQ_PitOffset = src%ZMQ_PitOffset
+        view%ZMQ_R_Speed = REAL(src%ZMQ_R_Speed, C_DOUBLE)
+        view%ZMQ_R_Torque = REAL(src%ZMQ_R_Torque, C_DOUBLE)
+        view%ZMQ_R_Pitch = REAL(src%ZMQ_R_Pitch, C_DOUBLE)
+
+    END SUBROUTINE vit_view_out_localvariables
 
 END MODULE vit_localvariables_view

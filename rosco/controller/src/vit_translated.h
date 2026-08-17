@@ -75,6 +75,7 @@ void structuralcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, loca
 void yawratecontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_view_t* ErrVar);
 double interp2d_c(double* xData, int n_xData, double* yData, int n_yData, double* zData, int n_zData_rows, int n_zData_cols, double xq, double yq, errorvariables_view_t* ErrVar);
 double ratelimit_c(double inputSignal, double minRate, double maxRate, double DT, int32_t reset, rlparams_t* rlP, int* inst, int has_ResetValue, double ResetValue);
+void activewakecontrol_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, debugvariables_t* DebugVar, objectinstances_t* objInst);
 
 #ifdef __cplusplus
 }

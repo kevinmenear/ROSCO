@@ -8,10 +8,18 @@ MODULE vit_controlparameters_view
     IMPLICIT NONE
     PRIVATE
     PUBLIC :: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters, vit_original_controlparameters
+    PUBLIC :: vit_direct_controlparameters, vit_view_in_controlparameters, vit_view_out_controlparameters
 
     ! Kernel stash: pointer to original Fortran type, set by wrapper before calling C++.
     ! Callee bridges USE this to pass the original type to Fortran callees.
     TYPE(ControlParameters), POINTER, SAVE :: vit_original_controlparameters => NULL()
+
+    ! DIRECT-CALLER ORIGINAL. The stash above is set by an integration or
+    ! kernel WRAPPER before it calls the C++. A C++ caller with NO wrapper --
+    ! the differential harness calls the translation directly -- leaves it
+    ! NULL, and a callee bridge that passes it dereferences a null pointer.
+    ! This is the object the bridge points it at in that case.
+    TYPE(ControlParameters), TARGET, SAVE :: vit_direct_controlparameters
 
     ! Mirror of the C view struct — layout MUST match controlparameters_view_t in C header
     TYPE, BIND(C) :: controlparameters_view_t
@@ -1106,5 +1114,353 @@ CONTAINS
         dest%VS_MinOMTq = REAL(view%VS_MinOMTq, C_DOUBLE)
 
     END SUBROUTINE vit_copy_scalars_to_controlparameters
+
+    SUBROUTINE vit_view_in_controlparameters(view, dest)
+        ! view -> Fortran TYPE, reading the CALLER'S buffers.
+        TYPE(controlparameters_view_t), INTENT(IN) :: view
+        TYPE(ControlParameters), INTENT(INOUT) :: dest
+        INTEGER :: i
+
+        ! The direct-caller conversion is not measured on these field(s):
+        !  F_GenSpdNotch_Ind, F_TwrTopNotch_Ind, F_NotchFreqs, F_NotchBetaNum, F_NotchBetaDen, 
+        !  F_FlCornerFreq, F_FlpCornerFreq, IPC_Vramp, IPC_KP, IPC_KI, IPC_aziOffset, PC_GS_angles, 
+        !  PC_GS_KP, PC_GS_KI, PC_GS_KD, PC_GS_TF, VS_KP, VS_KI, VS_FBP_U, VS_FBP_Omega, 
+        !  VS_FBP_Tau, PRC_WindSpeeds, PRC_GenSpeeds, PRC_Pitch_Table, PRC_R_Table, WE_CP, 
+        !  PerfTableSize, WE_FOPoles_v, WE_FOPoles, Y_ErrThresh, PS_WindSpeeds, PS_BldPitchMin, 
+        !  SU_LoadStages, SU_LoadRampDuration, SU_LoadHoldDuration, SD_MaxTorqueRate, 
+        !  SD_MaxPitchRate, SD_StagePitch, SD_StageTime, Fl_Kp, Fl_U, Ind_BldPitch, RP_Gains, 
+        !  Ind_CableControl, Ind_StructControl, OL_Breakpoints, OL_BldPitch1, OL_BldPitch2, 
+        !  OL_BldPitch3, OL_CableControl, OL_StructControl, OL_GenTq, OL_YawRate, OL_Azimuth, 
+        !  OL_R_Speed, OL_R_Torque, OL_R_Pitch, OL_Channels, AWC_n, AWC_harmonic, AWC_freq, 
+        !  AWC_amp, AWC_clockangle, AWC_CntrGains, PF_Offsets, PF_TimeStuck, CC_GroupIndex, 
+        !  StC_GroupIndex
+        ERROR STOP 'VIT: vit_view_in_controlparameters: an unmeasured field kind; see the comment above'
+        dest%ZMQ_ID = INT(view%ZMQ_ID, C_INT)
+        dest%LoggingLevel = INT(view%LoggingLevel, C_INT)
+        dest%Echo = INT(view%Echo, C_INT)
+        dest%Ext_Interface = INT(view%Ext_Interface, C_INT)
+        dest%DT_Out = REAL(view%DT_Out, C_DOUBLE)
+        dest%n_DT_Out = INT(view%n_DT_Out, C_INT)
+        dest%n_DT_ZMQ = INT(view%n_DT_ZMQ, C_INT)
+        dest%F_LPFType = INT(view%F_LPFType, C_INT)
+        dest%F_LPFCornerFreq = REAL(view%F_LPFCornerFreq, C_DOUBLE)
+        dest%F_LPFDamping = REAL(view%F_LPFDamping, C_DOUBLE)
+        dest%F_NumNotchFilts = INT(view%F_NumNotchFilts, C_INT)
+        dest%F_GenSpdNotch_N = INT(view%F_GenSpdNotch_N, C_INT)
+        dest%F_TwrTopNotch_N = INT(view%F_TwrTopNotch_N, C_INT)
+        dest%F_SSCornerFreq = REAL(view%F_SSCornerFreq, C_DOUBLE)
+        dest%F_WECornerFreq = REAL(view%F_WECornerFreq, C_DOUBLE)
+        dest%F_FlHighPassFreq = REAL(view%F_FlHighPassFreq, C_DOUBLE)
+        dest%F_YawErr = REAL(view%F_YawErr, C_DOUBLE)
+        dest%F_VSRefSpdCornerFreq = REAL(view%F_VSRefSpdCornerFreq, C_DOUBLE)
+        dest%TRA_Mode = INT(view%TRA_Mode, C_INT)
+        dest%TRA_ExclSpeed = REAL(view%TRA_ExclSpeed, C_DOUBLE)
+        dest%TRA_ExclBand = REAL(view%TRA_ExclBand, C_DOUBLE)
+        dest%TRA_RateLimit = REAL(view%TRA_RateLimit, C_DOUBLE)
+        dest%TD_Mode = INT(view%TD_Mode, C_INT)
+        dest%FA_HPFCornerFreq = REAL(view%FA_HPFCornerFreq, C_DOUBLE)
+        dest%FA_IntSat = REAL(view%FA_IntSat, C_DOUBLE)
+        dest%FA_KI = REAL(view%FA_KI, C_DOUBLE)
+        dest%IPC_ControlMode = INT(view%IPC_ControlMode, C_INT)
+        dest%IPC_IntSat = REAL(view%IPC_IntSat, C_DOUBLE)
+        dest%IPC_SatMode = INT(view%IPC_SatMode, C_INT)
+        dest%IPC_CornerFreqAct = REAL(view%IPC_CornerFreqAct, C_DOUBLE)
+        dest%PC_ControlMode = INT(view%PC_ControlMode, C_INT)
+        dest%PC_GS_n = INT(view%PC_GS_n, C_INT)
+        dest%PC_MaxPit = REAL(view%PC_MaxPit, C_DOUBLE)
+        dest%PC_MinPit = REAL(view%PC_MinPit, C_DOUBLE)
+        dest%PC_MaxRat = REAL(view%PC_MaxRat, C_DOUBLE)
+        dest%PC_MinRat = REAL(view%PC_MinRat, C_DOUBLE)
+        dest%PC_RefSpd = REAL(view%PC_RefSpd, C_DOUBLE)
+        dest%PC_FinePit = REAL(view%PC_FinePit, C_DOUBLE)
+        dest%PC_Switch = REAL(view%PC_Switch, C_DOUBLE)
+        dest%VS_ControlMode = INT(view%VS_ControlMode, C_INT)
+        dest%VS_ConstPower = INT(view%VS_ConstPower, C_INT)
+        dest%VS_FBP = INT(view%VS_FBP, C_INT)
+        dest%VS_GenEff = REAL(view%VS_GenEff, C_DOUBLE)
+        dest%VS_ArSatTq = REAL(view%VS_ArSatTq, C_DOUBLE)
+        dest%VS_MaxRat = REAL(view%VS_MaxRat, C_DOUBLE)
+        dest%VS_MaxTq = REAL(view%VS_MaxTq, C_DOUBLE)
+        dest%VS_MinTq = REAL(view%VS_MinTq, C_DOUBLE)
+        dest%VS_MinOMSpd = REAL(view%VS_MinOMSpd, C_DOUBLE)
+        dest%VS_Rgn2K = REAL(view%VS_Rgn2K, C_DOUBLE)
+        dest%VS_RtPwr = REAL(view%VS_RtPwr, C_DOUBLE)
+        dest%VS_RtTq = REAL(view%VS_RtTq, C_DOUBLE)
+        dest%VS_RefSpd = REAL(view%VS_RefSpd, C_DOUBLE)
+        dest%VS_n = INT(view%VS_n, C_INT)
+        dest%VS_TSRopt = REAL(view%VS_TSRopt, C_DOUBLE)
+        dest%VS_FBP_n = INT(view%VS_FBP_n, C_INT)
+        dest%SS_Mode = INT(view%SS_Mode, C_INT)
+        dest%SS_VSGain = REAL(view%SS_VSGain, C_DOUBLE)
+        dest%SS_PCGain = REAL(view%SS_PCGain, C_DOUBLE)
+        dest%PRC_Mode = INT(view%PRC_Mode, C_INT)
+        dest%PRC_Comm = INT(view%PRC_Comm, C_INT)
+        dest%PRC_n = INT(view%PRC_n, C_INT)
+        dest%PRC_LPF_Freq = REAL(view%PRC_LPF_Freq, C_DOUBLE)
+        dest%PRC_R_Torque = REAL(view%PRC_R_Torque, C_DOUBLE)
+        dest%PRC_R_Speed = REAL(view%PRC_R_Speed, C_DOUBLE)
+        dest%PRC_R_Pitch = REAL(view%PRC_R_Pitch, C_DOUBLE)
+        dest%PRC_Table_n = INT(view%PRC_Table_n, C_INT)
+        dest%WE_Mode = INT(view%WE_Mode, C_INT)
+        dest%WE_BladeRadius = REAL(view%WE_BladeRadius, C_DOUBLE)
+        dest%WE_CP_n = INT(view%WE_CP_n, C_INT)
+        dest%WE_Gamma = REAL(view%WE_Gamma, C_DOUBLE)
+        dest%WE_GearboxRatio = REAL(view%WE_GearboxRatio, C_DOUBLE)
+        dest%WE_Jtot = REAL(view%WE_Jtot, C_DOUBLE)
+        dest%WE_RhoAir = REAL(view%WE_RhoAir, C_DOUBLE)
+        DO i = 1, 1024
+            dest%PerfFileName(i:i) = view%PerfFileName(i)
+        END DO
+        dest%WE_FOPoles_N = INT(view%WE_FOPoles_N, C_INT)
+        dest%Y_ControlMode = INT(view%Y_ControlMode, C_INT)
+        dest%Y_uSwitch = REAL(view%Y_uSwitch, C_DOUBLE)
+        dest%Y_Rate = REAL(view%Y_Rate, C_DOUBLE)
+        dest%Y_MErrSet = REAL(view%Y_MErrSet, C_DOUBLE)
+        dest%Y_IPC_IntSat = REAL(view%Y_IPC_IntSat, C_DOUBLE)
+        dest%Y_IPC_KP = REAL(view%Y_IPC_KP, C_DOUBLE)
+        dest%Y_IPC_KI = REAL(view%Y_IPC_KI, C_DOUBLE)
+        dest%PS_Mode = INT(view%PS_Mode, C_INT)
+        dest%PS_BldPitchMin_N = INT(view%PS_BldPitchMin_N, C_INT)
+        dest%SU_Mode = INT(view%SU_Mode, C_INT)
+        dest%SU_StartTime = REAL(view%SU_StartTime, C_DOUBLE)
+        dest%SU_FW_MinDuration = REAL(view%SU_FW_MinDuration, C_DOUBLE)
+        dest%SU_RotorSpeedThresh = REAL(view%SU_RotorSpeedThresh, C_DOUBLE)
+        dest%SU_RotorSpeedCornerFreq = REAL(view%SU_RotorSpeedCornerFreq, C_DOUBLE)
+        dest%SU_LoadStages_N = INT(view%SU_LoadStages_N, C_INT)
+        dest%SD_Mode = INT(view%SD_Mode, C_INT)
+        dest%SD_TimeActivate = REAL(view%SD_TimeActivate, C_DOUBLE)
+        dest%SD_EnablePitch = INT(view%SD_EnablePitch, C_INT)
+        dest%SD_EnableYawError = INT(view%SD_EnableYawError, C_INT)
+        dest%SD_EnableGenSpeed = INT(view%SD_EnableGenSpeed, C_INT)
+        dest%SD_EnableTime = INT(view%SD_EnableTime, C_INT)
+        dest%SD_MaxPit = REAL(view%SD_MaxPit, C_DOUBLE)
+        dest%SD_PitchCornerFreq = REAL(view%SD_PitchCornerFreq, C_DOUBLE)
+        dest%SD_MaxYawError = REAL(view%SD_MaxYawError, C_DOUBLE)
+        dest%SD_YawErrorCornerFreq = REAL(view%SD_YawErrorCornerFreq, C_DOUBLE)
+        dest%SD_MaxGenSpd = REAL(view%SD_MaxGenSpd, C_DOUBLE)
+        dest%SD_GenSpdCornerFreq = REAL(view%SD_GenSpdCornerFreq, C_DOUBLE)
+        dest%SD_Time = REAL(view%SD_Time, C_DOUBLE)
+        dest%SD_Method = INT(view%SD_Method, C_INT)
+        dest%SD_Stage_N = INT(view%SD_Stage_N, C_INT)
+        dest%Fl_Mode = INT(view%Fl_Mode, C_INT)
+        dest%Fl_n = INT(view%Fl_n, C_INT)
+        dest%Flp_Mode = INT(view%Flp_Mode, C_INT)
+        dest%Flp_Angle = REAL(view%Flp_Angle, C_DOUBLE)
+        dest%Flp_Kp = REAL(view%Flp_Kp, C_DOUBLE)
+        dest%Flp_Ki = REAL(view%Flp_Ki, C_DOUBLE)
+        dest%Flp_MaxPit = REAL(view%Flp_MaxPit, C_DOUBLE)
+        DO i = 1, 1024
+            dest%OL_Filename(i:i) = view%OL_Filename(i)
+        END DO
+        dest%OL_Mode = INT(view%OL_Mode, C_INT)
+        dest%OL_BP_Mode = INT(view%OL_BP_Mode, C_INT)
+        dest%OL_BP_FiltFreq = REAL(view%OL_BP_FiltFreq, C_DOUBLE)
+        dest%Ind_Breakpoint = INT(view%Ind_Breakpoint, C_INT)
+        dest%Ind_GenTq = INT(view%Ind_GenTq, C_INT)
+        dest%Ind_YawRate = INT(view%Ind_YawRate, C_INT)
+        dest%Ind_R_Speed = INT(view%Ind_R_Speed, C_INT)
+        dest%Ind_R_Torque = INT(view%Ind_R_Torque, C_INT)
+        dest%Ind_R_Pitch = INT(view%Ind_R_Pitch, C_INT)
+        dest%Ind_Azimuth = INT(view%Ind_Azimuth, C_INT)
+        dest%PA_Mode = INT(view%PA_Mode, C_INT)
+        dest%PA_CornerFreq = REAL(view%PA_CornerFreq, C_DOUBLE)
+        dest%PA_Damping = REAL(view%PA_Damping, C_DOUBLE)
+        dest%AWC_Mode = INT(view%AWC_Mode, C_INT)
+        dest%AWC_NumModes = INT(view%AWC_NumModes, C_INT)
+        dest%AWC_phaseoffset = REAL(view%AWC_phaseoffset, C_DOUBLE)
+        dest%PF_Mode = INT(view%PF_Mode, C_INT)
+        dest%Ext_Mode = INT(view%Ext_Mode, C_INT)
+        DO i = 1, 1024
+            dest%DLL_FileName(i:i) = view%DLL_FileName(i)
+        END DO
+        DO i = 1, 1024
+            dest%DLL_InFile(i:i) = view%DLL_InFile(i)
+        END DO
+        DO i = 1, 1024
+            dest%DLL_ProcName(i:i) = view%DLL_ProcName(i)
+        END DO
+        dest%ZMQ_Mode = INT(view%ZMQ_Mode, C_INT)
+        DO i = 1, 256
+            dest%ZMQ_CommAddress(i:i) = view%ZMQ_CommAddress(i)
+        END DO
+        dest%ZMQ_UpdatePeriod = REAL(view%ZMQ_UpdatePeriod, C_DOUBLE)
+        dest%CC_Mode = INT(view%CC_Mode, C_INT)
+        dest%CC_Group_N = INT(view%CC_Group_N, C_INT)
+        dest%CC_ActTau = REAL(view%CC_ActTau, C_DOUBLE)
+        dest%StC_Mode = INT(view%StC_Mode, C_INT)
+        dest%StC_Group_N = INT(view%StC_Group_N, C_INT)
+        dest%PC_RtTq99 = REAL(view%PC_RtTq99, C_DOUBLE)
+        dest%VS_MaxOMTq = REAL(view%VS_MaxOMTq, C_DOUBLE)
+        dest%VS_MinOMTq = REAL(view%VS_MinOMTq, C_DOUBLE)
+
+    END SUBROUTINE vit_view_in_controlparameters
+
+    SUBROUTINE vit_view_out_controlparameters(src, view)
+        ! Fortran TYPE -> view, writing INTO the caller's buffer and
+        ! leaving its pointer and capacity exactly as it supplied them.
+        TYPE(ControlParameters), INTENT(IN) :: src
+        TYPE(controlparameters_view_t), INTENT(INOUT) :: view
+
+        ! The direct-caller conversion is not measured on these field(s):
+        !  F_GenSpdNotch_Ind, F_TwrTopNotch_Ind, F_NotchFreqs, F_NotchBetaNum, F_NotchBetaDen, 
+        !  F_FlCornerFreq, F_FlpCornerFreq, IPC_Vramp, IPC_KP, IPC_KI, IPC_aziOffset, PC_GS_angles, 
+        !  PC_GS_KP, PC_GS_KI, PC_GS_KD, PC_GS_TF, VS_KP, VS_KI, VS_FBP_U, VS_FBP_Omega, 
+        !  VS_FBP_Tau, PRC_WindSpeeds, PRC_GenSpeeds, PRC_Pitch_Table, PRC_R_Table, WE_CP, 
+        !  PerfTableSize, WE_FOPoles_v, WE_FOPoles, Y_ErrThresh, PS_WindSpeeds, PS_BldPitchMin, 
+        !  SU_LoadStages, SU_LoadRampDuration, SU_LoadHoldDuration, SD_MaxTorqueRate, 
+        !  SD_MaxPitchRate, SD_StagePitch, SD_StageTime, Fl_Kp, Fl_U, Ind_BldPitch, RP_Gains, 
+        !  Ind_CableControl, Ind_StructControl, OL_Breakpoints, OL_BldPitch1, OL_BldPitch2, 
+        !  OL_BldPitch3, OL_CableControl, OL_StructControl, OL_GenTq, OL_YawRate, OL_Azimuth, 
+        !  OL_R_Speed, OL_R_Torque, OL_R_Pitch, OL_Channels, AWC_n, AWC_harmonic, AWC_freq, 
+        !  AWC_amp, AWC_clockangle, AWC_CntrGains, PF_Offsets, PF_TimeStuck, CC_GroupIndex, 
+        !  StC_GroupIndex
+        ERROR STOP 'VIT: vit_view_out_controlparameters: an unmeasured field kind; see the comment above'
+        view%ZMQ_ID = INT(src%ZMQ_ID, C_INT)
+        view%LoggingLevel = INT(src%LoggingLevel, C_INT)
+        view%Echo = INT(src%Echo, C_INT)
+        view%Ext_Interface = INT(src%Ext_Interface, C_INT)
+        view%DT_Out = REAL(src%DT_Out, C_DOUBLE)
+        view%n_DT_Out = INT(src%n_DT_Out, C_INT)
+        view%n_DT_ZMQ = INT(src%n_DT_ZMQ, C_INT)
+        view%F_LPFType = INT(src%F_LPFType, C_INT)
+        view%F_LPFCornerFreq = REAL(src%F_LPFCornerFreq, C_DOUBLE)
+        view%F_LPFDamping = REAL(src%F_LPFDamping, C_DOUBLE)
+        view%F_NumNotchFilts = INT(src%F_NumNotchFilts, C_INT)
+        view%F_GenSpdNotch_N = INT(src%F_GenSpdNotch_N, C_INT)
+        view%F_TwrTopNotch_N = INT(src%F_TwrTopNotch_N, C_INT)
+        view%F_SSCornerFreq = REAL(src%F_SSCornerFreq, C_DOUBLE)
+        view%F_WECornerFreq = REAL(src%F_WECornerFreq, C_DOUBLE)
+        view%F_FlHighPassFreq = REAL(src%F_FlHighPassFreq, C_DOUBLE)
+        view%F_YawErr = REAL(src%F_YawErr, C_DOUBLE)
+        view%F_VSRefSpdCornerFreq = REAL(src%F_VSRefSpdCornerFreq, C_DOUBLE)
+        view%TRA_Mode = INT(src%TRA_Mode, C_INT)
+        view%TRA_ExclSpeed = REAL(src%TRA_ExclSpeed, C_DOUBLE)
+        view%TRA_ExclBand = REAL(src%TRA_ExclBand, C_DOUBLE)
+        view%TRA_RateLimit = REAL(src%TRA_RateLimit, C_DOUBLE)
+        view%TD_Mode = INT(src%TD_Mode, C_INT)
+        view%FA_HPFCornerFreq = REAL(src%FA_HPFCornerFreq, C_DOUBLE)
+        view%FA_IntSat = REAL(src%FA_IntSat, C_DOUBLE)
+        view%FA_KI = REAL(src%FA_KI, C_DOUBLE)
+        view%IPC_ControlMode = INT(src%IPC_ControlMode, C_INT)
+        view%IPC_IntSat = REAL(src%IPC_IntSat, C_DOUBLE)
+        view%IPC_SatMode = INT(src%IPC_SatMode, C_INT)
+        view%IPC_CornerFreqAct = REAL(src%IPC_CornerFreqAct, C_DOUBLE)
+        view%PC_ControlMode = INT(src%PC_ControlMode, C_INT)
+        view%PC_GS_n = INT(src%PC_GS_n, C_INT)
+        view%PC_MaxPit = REAL(src%PC_MaxPit, C_DOUBLE)
+        view%PC_MinPit = REAL(src%PC_MinPit, C_DOUBLE)
+        view%PC_MaxRat = REAL(src%PC_MaxRat, C_DOUBLE)
+        view%PC_MinRat = REAL(src%PC_MinRat, C_DOUBLE)
+        view%PC_RefSpd = REAL(src%PC_RefSpd, C_DOUBLE)
+        view%PC_FinePit = REAL(src%PC_FinePit, C_DOUBLE)
+        view%PC_Switch = REAL(src%PC_Switch, C_DOUBLE)
+        view%VS_ControlMode = INT(src%VS_ControlMode, C_INT)
+        view%VS_ConstPower = INT(src%VS_ConstPower, C_INT)
+        view%VS_FBP = INT(src%VS_FBP, C_INT)
+        view%VS_GenEff = REAL(src%VS_GenEff, C_DOUBLE)
+        view%VS_ArSatTq = REAL(src%VS_ArSatTq, C_DOUBLE)
+        view%VS_MaxRat = REAL(src%VS_MaxRat, C_DOUBLE)
+        view%VS_MaxTq = REAL(src%VS_MaxTq, C_DOUBLE)
+        view%VS_MinTq = REAL(src%VS_MinTq, C_DOUBLE)
+        view%VS_MinOMSpd = REAL(src%VS_MinOMSpd, C_DOUBLE)
+        view%VS_Rgn2K = REAL(src%VS_Rgn2K, C_DOUBLE)
+        view%VS_RtPwr = REAL(src%VS_RtPwr, C_DOUBLE)
+        view%VS_RtTq = REAL(src%VS_RtTq, C_DOUBLE)
+        view%VS_RefSpd = REAL(src%VS_RefSpd, C_DOUBLE)
+        view%VS_n = INT(src%VS_n, C_INT)
+        view%VS_TSRopt = REAL(src%VS_TSRopt, C_DOUBLE)
+        view%VS_FBP_n = INT(src%VS_FBP_n, C_INT)
+        view%SS_Mode = INT(src%SS_Mode, C_INT)
+        view%SS_VSGain = REAL(src%SS_VSGain, C_DOUBLE)
+        view%SS_PCGain = REAL(src%SS_PCGain, C_DOUBLE)
+        view%PRC_Mode = INT(src%PRC_Mode, C_INT)
+        view%PRC_Comm = INT(src%PRC_Comm, C_INT)
+        view%PRC_n = INT(src%PRC_n, C_INT)
+        view%PRC_LPF_Freq = REAL(src%PRC_LPF_Freq, C_DOUBLE)
+        view%PRC_R_Torque = REAL(src%PRC_R_Torque, C_DOUBLE)
+        view%PRC_R_Speed = REAL(src%PRC_R_Speed, C_DOUBLE)
+        view%PRC_R_Pitch = REAL(src%PRC_R_Pitch, C_DOUBLE)
+        view%PRC_Table_n = INT(src%PRC_Table_n, C_INT)
+        view%WE_Mode = INT(src%WE_Mode, C_INT)
+        view%WE_BladeRadius = REAL(src%WE_BladeRadius, C_DOUBLE)
+        view%WE_CP_n = INT(src%WE_CP_n, C_INT)
+        view%WE_Gamma = REAL(src%WE_Gamma, C_DOUBLE)
+        view%WE_GearboxRatio = REAL(src%WE_GearboxRatio, C_DOUBLE)
+        view%WE_Jtot = REAL(src%WE_Jtot, C_DOUBLE)
+        view%WE_RhoAir = REAL(src%WE_RhoAir, C_DOUBLE)
+        view%PerfFileName = TRANSFER(src%PerfFileName, view%PerfFileName)
+        view%WE_FOPoles_N = INT(src%WE_FOPoles_N, C_INT)
+        view%Y_ControlMode = INT(src%Y_ControlMode, C_INT)
+        view%Y_uSwitch = REAL(src%Y_uSwitch, C_DOUBLE)
+        view%Y_Rate = REAL(src%Y_Rate, C_DOUBLE)
+        view%Y_MErrSet = REAL(src%Y_MErrSet, C_DOUBLE)
+        view%Y_IPC_IntSat = REAL(src%Y_IPC_IntSat, C_DOUBLE)
+        view%Y_IPC_KP = REAL(src%Y_IPC_KP, C_DOUBLE)
+        view%Y_IPC_KI = REAL(src%Y_IPC_KI, C_DOUBLE)
+        view%PS_Mode = INT(src%PS_Mode, C_INT)
+        view%PS_BldPitchMin_N = INT(src%PS_BldPitchMin_N, C_INT)
+        view%SU_Mode = INT(src%SU_Mode, C_INT)
+        view%SU_StartTime = REAL(src%SU_StartTime, C_DOUBLE)
+        view%SU_FW_MinDuration = REAL(src%SU_FW_MinDuration, C_DOUBLE)
+        view%SU_RotorSpeedThresh = REAL(src%SU_RotorSpeedThresh, C_DOUBLE)
+        view%SU_RotorSpeedCornerFreq = REAL(src%SU_RotorSpeedCornerFreq, C_DOUBLE)
+        view%SU_LoadStages_N = INT(src%SU_LoadStages_N, C_INT)
+        view%SD_Mode = INT(src%SD_Mode, C_INT)
+        view%SD_TimeActivate = REAL(src%SD_TimeActivate, C_DOUBLE)
+        view%SD_EnablePitch = INT(src%SD_EnablePitch, C_INT)
+        view%SD_EnableYawError = INT(src%SD_EnableYawError, C_INT)
+        view%SD_EnableGenSpeed = INT(src%SD_EnableGenSpeed, C_INT)
+        view%SD_EnableTime = INT(src%SD_EnableTime, C_INT)
+        view%SD_MaxPit = REAL(src%SD_MaxPit, C_DOUBLE)
+        view%SD_PitchCornerFreq = REAL(src%SD_PitchCornerFreq, C_DOUBLE)
+        view%SD_MaxYawError = REAL(src%SD_MaxYawError, C_DOUBLE)
+        view%SD_YawErrorCornerFreq = REAL(src%SD_YawErrorCornerFreq, C_DOUBLE)
+        view%SD_MaxGenSpd = REAL(src%SD_MaxGenSpd, C_DOUBLE)
+        view%SD_GenSpdCornerFreq = REAL(src%SD_GenSpdCornerFreq, C_DOUBLE)
+        view%SD_Time = REAL(src%SD_Time, C_DOUBLE)
+        view%SD_Method = INT(src%SD_Method, C_INT)
+        view%SD_Stage_N = INT(src%SD_Stage_N, C_INT)
+        view%Fl_Mode = INT(src%Fl_Mode, C_INT)
+        view%Fl_n = INT(src%Fl_n, C_INT)
+        view%Flp_Mode = INT(src%Flp_Mode, C_INT)
+        view%Flp_Angle = REAL(src%Flp_Angle, C_DOUBLE)
+        view%Flp_Kp = REAL(src%Flp_Kp, C_DOUBLE)
+        view%Flp_Ki = REAL(src%Flp_Ki, C_DOUBLE)
+        view%Flp_MaxPit = REAL(src%Flp_MaxPit, C_DOUBLE)
+        view%OL_Filename = TRANSFER(src%OL_Filename, view%OL_Filename)
+        view%OL_Mode = INT(src%OL_Mode, C_INT)
+        view%OL_BP_Mode = INT(src%OL_BP_Mode, C_INT)
+        view%OL_BP_FiltFreq = REAL(src%OL_BP_FiltFreq, C_DOUBLE)
+        view%Ind_Breakpoint = INT(src%Ind_Breakpoint, C_INT)
+        view%Ind_GenTq = INT(src%Ind_GenTq, C_INT)
+        view%Ind_YawRate = INT(src%Ind_YawRate, C_INT)
+        view%Ind_R_Speed = INT(src%Ind_R_Speed, C_INT)
+        view%Ind_R_Torque = INT(src%Ind_R_Torque, C_INT)
+        view%Ind_R_Pitch = INT(src%Ind_R_Pitch, C_INT)
+        view%Ind_Azimuth = INT(src%Ind_Azimuth, C_INT)
+        view%PA_Mode = INT(src%PA_Mode, C_INT)
+        view%PA_CornerFreq = REAL(src%PA_CornerFreq, C_DOUBLE)
+        view%PA_Damping = REAL(src%PA_Damping, C_DOUBLE)
+        view%AWC_Mode = INT(src%AWC_Mode, C_INT)
+        view%AWC_NumModes = INT(src%AWC_NumModes, C_INT)
+        view%AWC_phaseoffset = REAL(src%AWC_phaseoffset, C_DOUBLE)
+        view%PF_Mode = INT(src%PF_Mode, C_INT)
+        view%Ext_Mode = INT(src%Ext_Mode, C_INT)
+        view%DLL_FileName = TRANSFER(src%DLL_FileName, view%DLL_FileName)
+        view%DLL_InFile = TRANSFER(src%DLL_InFile, view%DLL_InFile)
+        view%DLL_ProcName = TRANSFER(src%DLL_ProcName, view%DLL_ProcName)
+        view%ZMQ_Mode = INT(src%ZMQ_Mode, C_INT)
+        view%ZMQ_CommAddress = TRANSFER(src%ZMQ_CommAddress, view%ZMQ_CommAddress)
+        view%ZMQ_UpdatePeriod = REAL(src%ZMQ_UpdatePeriod, C_DOUBLE)
+        view%CC_Mode = INT(src%CC_Mode, C_INT)
+        view%CC_Group_N = INT(src%CC_Group_N, C_INT)
+        view%CC_ActTau = REAL(src%CC_ActTau, C_DOUBLE)
+        view%StC_Mode = INT(src%StC_Mode, C_INT)
+        view%StC_Group_N = INT(src%StC_Group_N, C_INT)
+        view%PC_RtTq99 = REAL(src%PC_RtTq99, C_DOUBLE)
+        view%VS_MaxOMTq = REAL(src%VS_MaxOMTq, C_DOUBLE)
+        view%VS_MinOMTq = REAL(src%VS_MinOMTq, C_DOUBLE)
+
+    END SUBROUTINE vit_view_out_controlparameters
 
 END MODULE vit_controlparameters_view
