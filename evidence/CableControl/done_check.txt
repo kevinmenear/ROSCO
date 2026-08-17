@@ -1,6 +1,6 @@
-# done_check.py CableControl -- captured 2026-08-17T21:23:00Z by scripts/capture_done_check.sh
+# done_check.py CableControl -- captured 2026-08-17T21:26:13Z by scripts/capture_done_check.sh
 
-Run against the committed state at 133591c5 ("CableControl: four target-layer entries and the sharper statement in STATUS"), with a CLEAN tree, with stdout
+Run against the committed state at 5b5738bb ("CableControl: the shipped-library control -- the gate re-run last, byte-identical to the green"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
