@@ -51,8 +51,13 @@ own `(aviFAIL, n_ErrMsg, n_ErrMsg_cap)` triples: `s.size() > cap → >=` needs
 capacity block and R6's character-length rungs, all taken "with every other
 input at its base draw", sit where `IF (ErrVar%aviFAIL < 0)` is false and neither
 helper is entered at all. Unit #47's "a midpoint is not a mode", met a second
-time. All three are (b) and not (c): the harness is green at 3354 of 3354, so no
-separating input lies inside a window where the reference already disagrees.
+time. All three are (b) and not (c), and THAT IS EXECUTED RATHER THAN ARGUED —
+`evidence/CableControl/cablecontrol.green-kill-probe.cpp` runs both chains over
+100,100 configurations and reports **385, 376 and 1128 green kills**, negative
+control **0**, positive control **46,130**, with `separates == green kills` for
+all three: not one separating input lies where the two chains already disagree.
+Unit #48's first model of the same probe proved three mutants equivalent from a
+clean inequality and was FALSE; running it is what catches that.
 **Third unit at this wall** after #43 and #48; the two levers that exist — a
 `lo`/`hi` pin moving the base draw, and unit #47's `values = [...]` spelling —
 are named in `DECISIONS.md` and were not pulled, because either is a corpus

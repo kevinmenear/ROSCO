@@ -1,0 +1,93 @@
+GREEN-KILL PROBE -- unit #49 `CableControl`
+===========================================
+
+Source: evidence/CableControl/cablecontrol.green-kill-probe.cpp
+Run:    docker exec vit-dev bash -lc "cd /workspace/ROSCO-r2 && \
+            g++ -O2 -std=c++17 -o /tmp/cc_gkp \
+                evidence/CableControl/cablecontrol.green-kill-probe.cpp && /tmp/cc_gkp"
+
+THE QUESTION, and it is NOT the census's. `errmsg_census.txt` asks whether the
+SCORED CORPUS contains the input that kills each survivor and answers 0, 0 and 0.
+That number cannot separate
+
+    (b) the corpus does not contain the killing input, and a corpus could
+    (c) NO corpus can, because every separating input is already RED
+
+and unit #48 had both: it recorded four survivors with reading (b) and two of
+them turned out to be (c). The deciding question is whether any input exists
+with ORIGINAL == REFERENCE and MUTANT != REFERENCE, because a corpus can only
+kill where the original is green.
+
+This EXECUTES both chains rather than arguing from an inequality -- unit #48's
+first model of exactly this probe proved three mutants behaviour-preserving from
+a clean argument and was FALSE, and running it is what caught that. Both chains
+are transcribed side by side from the two files that ship:
+
+    reference     cablecontrol_bridge.f90:1758-1764 (import),
+                  the body's `ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrMsg)`,
+                  and :3265-3277 (export, ONE capacity gate `LEN(...) <= cap`)
+    translation   cablecontrol.cpp `errmsg_trim` + `assign_errmsg`
+                  (its own gate, `s.size() > cap` -> refuse)
+
+THE RESULT
+----------
+
+
+  configurations swept                              100100
+  of those, RED before any mutation (org != ref)    20592
+
+  chain                                     separates  GREEN kills
+  NEGATIVE CONTROL (original vs itself)             0            0
+  8d2724ea  `s.size() > cap` -> `>=`              385          385
+  97aefd80  `n > 0 ? n : 0` -> `n > 1`            376          376
+  1a26a963  `n > 0 ? n : 0` -> `: 1`             1128         1128
+  POSITIVE CONTROL (aviFAIL guard neg.)         49232        46130
+
+  THE SMALLEST WITNESS FOR EACH, printed by the probe rather than argued:
+    8d2724ea  `s.size() > cap` -> `>=`     fill=0("") n=-2 cap=18 aviFAIL=-1  ref.n=18 org.n=18 mut.n=-2
+    97aefd80  `n > 0 ? n : 0` -> `n > 1`   fill=0("") n=1 cap=18 aviFAIL=-1  ref.n=1 org.n=1 mut.n=18
+    1a26a963  `n > 0 ? n : 0` -> `: 1`     fill=0("") n=-2 cap=18 aviFAIL=-1  ref.n=18 org.n=18 mut.n=-2
+    POSITIVE CONTROL (aviFAIL guard neg.)  fill=0("") n=-2 cap=18 aviFAIL=-1  ref.n=18 org.n=18 mut.n=-2
+
+  A GREEN kill is an input with ORIGINAL == REFERENCE and
+  MUTANT != REFERENCE -- i.e. an input a green corpus could hold.
+
+READ IT LIKE THIS
+-----------------
+
+  NEGATIVE CONTROL 0. The original scored against itself kills nothing, so the
+  probe is measuring the program and not its own model.
+  POSITIVE CONTROL 46,130. A mutant the real sweep KILLED (the `aviFAIL < 0`
+  guard negated, killed at 3336 of 3354) is separated on a large set here, so a
+  green kill is a thing this probe can actually find.
+
+  ALL THREE SURVIVORS HAVE `separates == GREEN kills`. Not one of their
+  separating inputs lies in the region where the translation and the reference
+  already disagree. So all three are (b) -- the corpus does not contain the
+  killing input and a corpus COULD -- and none is unit #48's (c). P12 fails here
+  for want of a corpus rule, not because the harness is blind.
+
+WHAT THE 20,592 RED CONFIGURATIONS ARE, STATED SO THEY ARE NOT MISREAD
+-----------------------------------------------------------------------
+
+The sweep crosses `n` from -2 to 32 against `cap` from 0 to 64 independently, so
+it includes 20,592 configurations with `n > cap` -- a stated length longer than
+the buffer that holds it. THE EMITTED TEST CANNOT PRODUCE THOSE: it sizes the
+staging vector as `max(n,0) + headroom` (cablecontrol_test.cpp:1296), so `n <=
+cap` always, and the census confirms it on the scored corpus (`cap - need` is
+4078 or 4079 in all 223 prefix cases). They are swept anyway because excluding
+them would make the probe's own domain a claim rather than a measurement, and
+because the three survivors' kill sets are entirely OUTSIDE them -- which is what
+`separates == kills` says.
+
+WHAT THE PROBE DOES NOT MODEL
+-----------------------------
+
+The `CC_Mode == 2` path, on which `interp1d` writes `ErrVar%ErrMsg` through its
+own bridge before this unit prefixes it. That is unit #48's non-compositional
+staging window, and it is not modelled because it does not arise on the corpus:
+the harness is GREEN at 3354 of 3354, and R13's capacity block runs at
+`CC_Mode = -300` where the arm cannot execute. A corpus rule that put a negative
+`aviFAIL` under the R13 ladder WITHOUT also putting `CC_Mode = 2` there keeps it
+that way; one that does both would need the `staging_capacity_excludes` hole unit
+#48 states. Written down because it is the trap the next dispatch would fall in.

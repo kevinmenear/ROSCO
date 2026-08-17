@@ -77,9 +77,14 @@ THE THREE STANDING SURVIVORS ARE ALL (b), AND THE MEASUREMENT IS SEPARATE
 
 All three are in the two copied ErrMsg helpers; not one is in the arithmetic.
 `evidence/CableControl/errmsg_census.txt` gives, over the SCORED corpus, the
-input each one needs, the count of cases that hold it (0, 0 and 0), and the
-argument that a GREEN case could hold it -- which is what separates (b) from unit
-#48's (c). The cause is a single fact: this unit's base draw is
+input each one needs and the count of cases that hold it: 0, 0 and 0.
+`evidence/CableControl/mutation.green_kill_probe.txt` then answers the question
+that DECIDES the disposition -- is there any input with ORIGINAL == REFERENCE and
+MUTANT != REFERENCE -- by executing both chains over 100,100 configurations
+rather than arguing it: 385, 376 and 1128 green kills, negative control 0,
+positive control 46,130, and `separates == kills` for all three, so not one
+separating input lies where the two chains already disagree. All three are (b);
+none is unit #48's (c). The cause is a single fact: this unit's base draw is
 `aviFAIL = 300` and `CC_Mode = -300`, the midpoints of the +/-1e3 default, so
 R13's whole 256-case capacity block and R6's character-length rungs sit where
 `IF (ErrVar%aviFAIL < 0)` is false and neither helper is entered at all.

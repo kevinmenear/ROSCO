@@ -75,6 +75,24 @@ None of the three lies inside a window where the harness's own reference
 disagrees with the translation -- the harness is GREEN at 3354 of 3354 -- so
 unlike unit #48's two (c) survivors these are corpus gaps and not blind spots.
 
+AND THE ARGUMENT ABOVE WAS THEN EXECUTED RATHER THAN LEFT AS AN ARGUMENT, which
+is the rule unit #48 paid for: its first model of the same probe proved three
+mutants behaviour-preserving from a clean inequality and was FALSE.
+evidence/CableControl/cablecontrol.green-kill-probe.cpp runs BOTH chains over
+100,100 configurations and reports, per mutant, how many inputs have
+ORIGINAL == REFERENCE and MUTANT != REFERENCE:
+
+    NEGATIVE CONTROL (original vs itself)          0 green kills
+    8d2724ea                                     385
+    97aefd80                                     376
+    1a26a963                                    1128
+    POSITIVE CONTROL (a mutant the sweep killed) 46130
+
+For all three, `separates` equals `green kills` exactly: not one separating
+input lies in the region where the two chains already disagree. The smallest
+witness of each is printed by the probe. Full reading, and what the probe does
+NOT model, in evidence/CableControl/mutation.green_kill_probe.txt.
+
 WHAT WOULD CLOSE THEM, AND WHY IT WAS NOT DONE HERE
 ---------------------------------------------------
 

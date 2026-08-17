@@ -66,8 +66,21 @@ second take    3354   82 of 85  0.9647 ( 3 survivors, 4 declared)
 All three are in the two copied ErrMsg helpers; **not one is in the arithmetic**.
 `errmsg_census.txt` reads the scored corpus's own `(aviFAIL, n_ErrMsg,
 n_ErrMsg_cap)` triples and gives, per mutant, the input it needs and the count of
-cases holding it — 0, 0 and 0 — plus the argument that a *green* case could hold
-it, which is what separates these from unit #48's two blind spots.
+cases holding it — **0, 0 and 0**. `mutation.green_kill_probe.txt` then answers
+the question that decides the disposition, by **executing both chains** over
+100,100 configurations rather than arguing it:
+
+| survivor | separates | green kills | disposition |
+|---|---|---|---|
+| `8d2724ea` `s.size() > cap` → `>=` | 385 | **385** | **(b)** |
+| `97aefd80` `n > 0` → `n > 1` | 376 | **376** | **(b)** |
+| `1a26a963` `: 0` → `: 1` | 1128 | **1128** | **(b)** |
+| negative control (original vs itself) | 0 | **0** | — |
+| positive control (a mutant the sweep killed) | 49232 | **46130** | — |
+
+`separates == green kills` for all three: **not one separating input lies where
+the two chains already disagree**, so none of these is unit #48's (c). P12 fails
+here for want of a corpus rule, not because the harness is blind.
 
 The cause is one fact and it is the **base draw**, not the ladders:
 
@@ -128,7 +141,8 @@ instrument to certify this unit with, which is why the step constant — one par
 | `run_mutation_part.sh` | one guarded, operator-filtered part |
 | `mutation.first_take.*.json` | the first sweep, 3300 cases, 12 survivors, nothing declared |
 | `mutation.census.txt` | all twelve first-take survivors with their dispositions, and the NaN finding in full |
-| `errmsg_census.txt`, `cablecontrol.errmsg-census-probe.cpp` | the probe and the measurement that dispose the three standing survivors |
+| `errmsg_census.txt`, `cablecontrol.errmsg-census-probe.cpp` | the corpus census: what each standing survivor needs and how many cases hold it |
+| `cablecontrol.green-kill-probe.cpp`, `mutation.green_kill_probe.txt` | **the decisive probe**: both chains executed over 100,100 configurations, negative control 0, positive control 46,130 |
 | `run_postintegration_redtest.sh`, `harness.postintegration.redtest.json` | the wrapper red test, 3157 of 3354 |
 | `harness.postintegration.WRONG-TREE.json` | the C12 artifact: a green about a tree nobody meant to measure |
 | `gate.redtests.txt` | the three gate perturbations, their per-scenario channel lists, and the scenario-3 finding |
