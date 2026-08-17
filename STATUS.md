@@ -4,19 +4,27 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-17: unit #49 `CableControl` is `integrated`, and it closes at 13
-of 14 with P12 failing at 0.9647 — three survivors standing, all three in the two
-CHARACTER helpers, not one in the arithmetic.** Four layers, all four
-red-tested. **Two mutation sweeps, and the first is committed**: 77 of 89 with
-TWELVE survivors, then three R11 baseline states killed five and four were
-declared equivalent with proofs read off the generated bridge.
+**As of 2026-08-17: unit #49 `CableControl` is `integrated` and CLOSES AT 14 of
+14. The mutation score is 1.000.** Four layers, all four red-tested. **Two
+dispatches, and the second changed the CORPUS and not the program**: the first
+closed at 13 of 14 with P12 at 0.9647 and three survivors standing, all three in
+the two CHARACTER helpers and not one in the arithmetic, each recorded as (b)
+with a green-kill probe separating (b) from (c). The second pulled the two levers
+that census named, re-took every layer over the corpus they produce, and the
+three died. `translations/Controllers/cablecontrol.cpp` is **byte-identical
+across both dispatches** — nothing was rewritten to raise the score and nothing
+further was declared equivalent to raise it either.
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness (`harness/CableControl.json`) | **3354 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, all three callee bridges kept so both sides run one `interp1d`, one `SecLPFilter_Vel` and one `PIController` — this unit's primary evidence | the unit as a no-op: **3207 of 3354**, same corpus count, case file byte-identical either side |
-| mutation (`mutation/CableControl.json`) | **82 of 85 scoreable, 0.9647**, 4 declared, 0 no-compile, 7 operators, **3 survivors standing** | the score *is* the red test, 82 times |
-| post-integration (`harness/CableControl.postintegration.json`) | 3354 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **3157 of 3354**; reverted, rebuilt, green re-taken at 0 |
+| differential harness (`harness/CableControl.json`) | **7640 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, all three callee bridges kept so both sides run one `interp1d`, one `SecLPFilter_Vel` and one `PIController` — this unit's primary evidence | the unit as a no-op: **7324 of 7640**, same corpus count, case file byte-identical either side |
+| mutation (`mutation/CableControl.json`) | **85 of 85 scoreable, 1.0000**, 4 declared, 0 no-compile, 7 operators, **no survivor, `declared_but_killed` empty** | the score *is* the red test, 85 times |
+| post-integration (`harness/CableControl.postintegration.json`) | 7640 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **7161 of 7640**; reverted, rebuilt, green re-taken at 0, and the revert checked (`git diff` clean AND 3 `cablecontrol_c` references still present) |
 | gate, 27 scenarios (`gate/CableControl.json`) | 5,252,000 values / 351 channels, 0 mismatched | **THREE**: the first step constant moves **14,572** (scenarios 7 and 27, 3,999 of each 24,000); PI in its 12th digit moves **2**; the whole `CC_Mode == 2` arm moves **0**. All revert-verified |
+
+The gate is the one layer not re-taken on the second dispatch, and it has nothing
+to re-take over: it runs 27 simulations against the shipped library and never
+reads the harness corpus, and neither the translation nor the wrapper moved.
 
 **FIVE OF THE FIRST SWEEP'S TWELVE SURVIVORS WERE ONE FACT ABOUT A NaN, AND THE
 KILL COUNTS POINTED THE OTHER WAY.** `PIController`'s `kp` and `ki` both
@@ -39,6 +47,7 @@ states carry it, plus two index ramps at the open-loop arm.
               cases   mutants    score
 first take     3300   77 of 89   0.865   12 survivors, 0 declared
 second take    3354   82 of 85   0.9647   3 survivors, 4 declared
+third take     7640   85 of 85   1.0000   0 survivors, 4 declared   <- 2nd dispatch
 ```
 
 **THE THREE THAT STAND ARE (b), AND THE CAUSE IS THE BASE DRAW RATHER THAN THE
@@ -58,19 +67,52 @@ control **0**, positive control **46,130**, with `separates == green kills` for
 all three: not one separating input lies where the two chains already disagree.
 Unit #48's first model of the same probe proved three mutants equivalent from a
 clean inequality and was FALSE; running it is what catches that.
-**Third unit at this wall** after #43 and #48. A `lo`/`hi` pin moving
-`aviFAIL`'s base draw would close **two** of the three — they need only that
-`aviFAIL` be negative where the two ladders already run — and it was not pulled
-because it is a corpus change every artifact of the unit would have to be
-re-taken over. **The third cannot be closed by any entry this campaign owns**:
-`1a26a963` needs `n_ErrMsg <= 0`, the field's LENGTH, and `harness/ranges.toml`
-has exactly six judgement kinds, none of which states one (`text` pins a string's
-CONTENT in every case and destroys R6's ladder rather than extending it), while
-`_baseline_state` skips every `char[]` parameter outright. The enumeration is a
-table in `DECISIONS.md` and it is re-derivable from `vit_harness.py`'s five
-`split_*` functions plus `statevary.constrain`, not asserted. Closing it needs
-R6's character ladder to emit the view's own `VIT_CHAR_UNALLOCATED` state — a
-change to the instrument.
+**Third unit at this wall** after #43 and #48. *(That reading is the FIRST
+dispatch's and it is kept because it is the measurement that made the levers
+findable. What follows is the second dispatch's, and one sentence of it is a
+correction.)*
+
+**BOTH LEVERS WERE PULLED, THE CORPUS WENT 3354 → 7640, AND ALL THREE DIED. THE
+TWO ENTRIES ARE DECLARATIONS ABOUT THE INPUT DOMAIN — NEITHER TOUCHES THE
+TRANSLATION AND NEITHER IS AN EQUIVALENCE CLAIM.**
+
+```
+harness/ranges.toml     ErrVar_aviFAIL = { values = [-1, 0, 1] }
+harness/baseline.CableControl.json
+                        state 4   ErrVar_ErrMsg_n = 1   with aviFAIL = -1
+                        state 5   ErrVar_ErrMsg_n = 0   with aviFAIL = -1
+```
+
+The first is about a **base draw**, which is why it reaches R13 at all: R13's
+256-case capacity block and R6's character rungs are both taken "with every other
+input at its base draw", so a base draw on a dead arm spends two entire rules
+there. `values` and not `lo`/`hi` because a bounds pin also drops the parameter
+out of R6's integer ladder and leaves `aviFAIL == 0` and `== -1` — which the
+other two mutants need — to a uniform draw over a 1500-wide interval. **A stated
+`values` list does NOT bound R7's knob cross-product**, which still draws
+`aviFAIL = 2` five times; measured, not assumed.
+
+**THE SENTENCE ABOVE THAT SAYS THE THIRD CANNOT BE CLOSED BY ANY ENTRY THIS
+CAMPAIGN OWNS IS WRONG, AND THE CITATION IT RESTS ON IS RIGHT.**
+`_baseline_state`'s `continue` at `harness/generate.py:1138` is inside
+`for p in sig.inputs` and skips a CHARACTER parameter's **bytes**. Thirty lines
+below it, after that loop has closed, every EXTENT the state names is applied —
+output extents included — and `_case_impl` folds an extent override into
+`extents` before it fills anything. So a baseline state can state a string's
+LENGTH and have R6's corpus draw the string at it, which is exactly what
+`n_ErrMsg <= 0` needed. Two states do. **The six judgement kinds in
+`harness/ranges.toml` are still six; what was missed is that `harness/baseline.
+<Unit>.json` is a SEVENTH place a length can come from.** Raised in
+`DECISIONS.md`.
+
+**WHAT IT COST, IN CASES.** `aviFAIL` leaves R6's integer ladder (205 integer
+values → 164), 41 rungs on a quantity this unit reads through one pure sign test;
+the flag arity goes 2 → 5 and the corpus 3354 → 7640. The census over the new
+corpus counts **1** case at `cap == need` — R13's one-length-per-block design
+rather than luck — **59** at `n == 1` with a non-blank byte and the prefix arm
+live, and **15** at `n == 0`, against 0, 0 and 0 before
+(`evidence/CableControl/errmsg_census.retake.txt`). The four standing equivalence
+declarations survived the wider corpus: `declared_but_killed` is empty.
 
 **A RED TEST'S REVERT DELETED THE THING UNDER TEST, AND NOTHING FAILED (C12).**
 `evidence/CableControl/harness.postintegration.WRONG-TREE.json` printed
@@ -123,13 +165,22 @@ taken, so whether what ships is what was measured is a live question.
 mismatched, and `diff` against `gate/CableControl.json` empty in every field
 except `notes` — including `loop_rev` and `vit_rev`.
 
-**Procedure.** ONE reset window, opened only after the translation, the range
-pins and the red-test stub were committed, and closed the moment the clean-tree
-measurements were done. Every long command routed through
+**Procedure.** ONE reset window per dispatch, opened only after the translation,
+the range pins and the red-test stub were committed, and closed the moment the
+clean-tree measurements were done. On the second dispatch the two corpus entries
+were committed BEFORE the window opened and the window held exactly the harness
+green, the no-op red test, the three mutation parts and the merge — then
+`restore_integrated.sh`, then a commit. Every long command routed through
 `scripts/run_if_time_remains.sh` with a seconds estimate, every mutation sweep
-through `scripts/mutate_guarded.sh`; nothing backgrounded, nothing polled.
+through `scripts/mutate_guarded.sh`, which cleared its marker on all three parts.
 Commits one per expensive artifact. `revcheck --unit CableControl` is clean at
 `832fa2a`, every artifact.
+
+*One part was moved to the background by the tool's own 120-second ceiling rather
+than by choice; it is harness-tracked and it reported back, and the remaining
+parts were run with the ceiling raised so they blocked in the foreground. That
+ceiling — not the guard script — is what decides whether a `docker exec` blocks,
+and it is worth knowing before the first long command rather than after it.*
 
 ---
 

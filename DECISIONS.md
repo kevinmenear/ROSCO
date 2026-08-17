@@ -10636,3 +10636,114 @@ The general form: **when a survivor sits at a coefficient, check what the value
 it multiplies actually IS on the cases that reach it, not only whether those
 cases exist.** A NaN, an exact zero and a saturated constant all make a
 coefficient unobservable, and only the third leaves a trace in the kill counts.
+
+## Unit #49 — CableControl, second dispatch — 2026-08-17
+
+### `harness/baseline.<Unit>.json` is a SEVENTH place a CHARACTER length can come from, and the first dispatch said it was none (a correction, and a proposed method amendment)
+
+The first dispatch recorded, in three committed artifacts — `STATUS.md`,
+`evidence/CableControl/errmsg_census.txt` and the `why` block of
+`harness/baseline.CableControl.json` — that one surviving mutant could be closed
+by nothing this campaign owns:
+
+> `1a26a963` needs `n_ErrMsg <= 0`, the field's LENGTH, and `harness/ranges.toml`
+> has exactly six judgement kinds, none of which states one … while
+> `_baseline_state` skips every `char[]` parameter outright
+> (`harness/generate.py:1138`).
+
+**The line number is right, the reading of it is not, and the difference is
+thirty lines.** That `continue` sits inside `for p in sig.inputs`:
+
+```python
+        if p.kind == "char[]":
+            # A string is left to the corpus: R6's character ladder owns it …
+            continue
+```
+
+— it skips the string's **bytes**. After that loop has closed:
+
+```python
+    # The extents the state states, applied last so an array body written
+    # against them is not cut to the case's own extent.
+    for k, v in vals.items():
+        q = _maybe(sig, k)
+        if q is not None and q.role == "extent":
+            over[k] = int(v)
+```
+
+Every extent the state names is applied, **output extents included**, and
+`_case_impl` folds an extent override into `extents` before it fills anything —
+so the string is drawn by R6's corpus **at the length the state stated**. A
+baseline state cannot say a string's bytes; it can say its length. The two
+sentences are not the same sentence and the first dispatch collapsed them.
+
+The general form, and it is what makes this worth an amendment rather than a
+correction: **an enumeration of "the kinds of judgement a campaign can state" is
+a claim about a set of FILES, and the enumeration this campaign wrote down
+covered one file.** `harness/ranges.toml`'s six kinds were derived correctly, from
+`vit_harness.py`'s `split_*` functions plus `statevary.constrain` — and then used
+to answer a question about the input domain as a whole, which `baseline.
+<Unit>.json` also constrains and which no part of that derivation looked at. The
+check that would have caught it is one line long: before writing "no entry can
+state X", grep the OTHER input file for the name of the thing X is a property of.
+
+### The base draw is a rule's coverage, not one parameter's value
+
+`R13_staging_capacity`'s own coverage line says its 256 cases are taken "with
+every other input at its base draw", and R6's character rungs are taken the same
+way. So a base draw that sits on a dead arm does not cost one case — **it costs
+the whole rule.** This unit's `ErrVar_aviFAIL` was left at the unstated ±1e3
+default, whose base draw at this parameter's index is `+300`, and `IF
+(ErrVar%aviFAIL < 0)` is the guard on both ErrMsg helpers: R13's entire capacity
+ladder and R6's entire character-length ladder ran where neither helper was
+entered. 256 + 366 cases spent, and three mutants standing because of it.
+
+```
+harness/ranges.toml     ErrVar_aviFAIL = { values = [-1, 0, 1] }
+
+                                first take   second take
+  corpus                              3354          7640
+  aviFAIL < 0                          223          2767
+  cases with cap == need & aviFAIL<0     0             1
+  cases with n == 1, trim 1, aviFAIL<0   0            59
+  cases with n == 0 & aviFAIL < 0        0            15
+  mutation                       82 of 85      85 of 85
+                                   0.9647        1.0000
+```
+
+**`values` and not `lo`/`hi`, and the reason is a second-order effect worth
+stating.** Both move the base draw — `_case_impl` takes `p.values[0]` for a
+parameter that states values and `_base`'s fraction for one that states bounds.
+But a `lo`/`hi` pin ALSO removes the parameter from R6's integer ladder
+(`q.lo is None and q.hi is None` is the filter) and leaves its value to
+`rng.randint`, and two of this unit's three mutants need `aviFAIL` at **exactly**
+0 and **exactly** -1. A uniform draw over a 1500-wide interval supplies neither.
+Stating the domain gets the base draw AND keeps the exact values, at the price of
+the flag crossing — arity 2 → 5, corpus 2.3×.
+
+**And a stated `values` list does not bound R7's knobs.** The corpus's aviFAIL
+histogram after the change is `{-1: 2767, 0: 2446, 1: 2422, 2: 5}`: the knob
+cross-product draws its values from the reference's own literals and is not
+filtered by the declaration. That is a fact about what `values` means — it states
+the base draw and the flag crossing — and it was measured rather than assumed,
+because the entry's own cost paragraph had asserted the opposite.
+
+### A dispatch that changes only the corpus must re-take every layer that reads it, and exactly those
+
+The translation is byte-identical across both dispatches of this unit. What
+changed is two entries in two committed input files, and what had to be re-taken
+is everything downstream of the case file: the clean-tree harness green, its
+no-op red test (7324 of 7640 — the same corpus count, unit #26's rule), the three
+mutation parts and their merge, the post-integration green, its red test and the
+green after its revert. **The gate was NOT re-taken and that is not an omission**:
+it runs 27 simulations against the shipped library, never reads the corpus, and
+neither the translation nor the wrapper moved. `revcheck` reporting all twelve
+result artifacts at one revision is what makes that claim checkable rather than
+asserted.
+
+The corpus is **not** a strict extension this time, and the reason is worth
+knowing before choosing the lever: R11 states append, so states 4 and 5 leave
+every earlier case index alone — but a new FLAG renumbers every stage before R11.
+A campaign that wants its greens comparable case-for-case across a corpus change
+should reach for a baseline state first and a flag only when the base draw is
+what is wrong.
