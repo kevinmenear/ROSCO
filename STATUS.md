@@ -84,10 +84,16 @@ WHAT SAYS WHICH ARM EACH ONE REACHED.** `PI` in the 13th digit moves 97,118 of
 the 11th digit moves 50,605 across 15 and 22 — modes 2 and 5. The union is one
 scenario per arm. Scenarios 8 and 27 call this unit and move under neither: both
 are mode 4, the arm scenario 5 already moves, and `vit.yaml` already records that
-scenario 8 holds `AWC_amp` at 0.0. **The gate is the first dispatch's and is
-still current** — the translation is byte-identical to what it gated, and that
-dispatch re-ran it after a full reset/restore round trip to an artifact identical
-in every field including `vit_rev` (`gate/ActiveWakeControl.postroundtrip.json`).
+scenario 8 holds `AWC_amp` at 0.0. **The gate was RE-RUN at the end of this
+dispatch and is byte-identical** — this dispatch put the tree through its own
+reset/restore round trip, so whether the library that now ships is the library
+the gate measured is a live question, and `gate/ActiveWakeControl.dispatch2.json`
+answers it with a run: 5,252,000 values, 0 mismatched, and `diff` against
+`gate/ActiveWakeControl.json` empty in every field including `loop_rev` and
+`vit_rev`. Second time this unit has been asked it after a round trip; the first
+is `gate/ActiveWakeControl.postroundtrip.json`. The two gate RED tests are the
+first dispatch's and stand unchanged — the translation is byte-identical to what
+they perturbed.
 
 **AN INDETERMINATE ANSWER STORED IN A `SAVE` LOCAL OUTLIVES THE CASE THAT
 PRODUCED IT.** The first clean-tree sweep came back **22 failed of 6436** with
