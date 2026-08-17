@@ -96,6 +96,16 @@ NOT model, in evidence/CableControl/mutation.green_kill_probe.txt.
 WHAT WOULD CLOSE THEM, AND WHY IT WAS NOT DONE HERE
 ---------------------------------------------------
 
+TWO of the three need only that `aviFAIL` be negative WHERE R13's capacity ladder
+and R6's character-length ladder already run, and a `lo`/`hi` pin on
+`ErrVar_aviFAIL` moving its BASE DRAW would do that. The THIRD, `1a26a963`, needs
+`n_ErrMsg <= 0` -- the field's LENGTH -- and NO judgement kind in
+`harness/ranges.toml` can state it: the file has exactly six (`lo`/`hi`,
+`values`, `text`, `same_as`, `no_oracle`, `ordered_only`/`nondecreasing_only`,
+`staging_capacity_excludes`), `text` pins a string's CONTENT in every case rather
+than adding a length to the ladder, and `_baseline_state` skips every `char[]`
+parameter outright. The enumeration is in DECISIONS.md as a table.
+
 All three need a CHARACTER parameter's LENGTH or a staging CAPACITY crossed
 with the `aviFAIL` knob. `harness/baseline.CableControl.json` cannot do it:
 `_baseline_state` deliberately skips every `char[]` parameter

@@ -10562,6 +10562,38 @@ dispatch stopped at the measurement rather than starting a re-take it might not
 finish, which is RUNBOOK step 2's instruction, and the gap is named rather than
 absorbed.
 
+**AND THE TWO LEVERS CLOSE TWO OF THE THREE, NOT THREE — WHICH IS WHY THE
+AMENDMENT BELOW IS ABOUT THE GENERATOR AND NOT ABOUT THIS UNIT'S `ranges.toml`.**
+`8d2724ea` and `97aefd80` need only that `aviFAIL` be negative WHERE R13's
+capacity ladder and R6's character-length ladder already run, and a base-draw pin
+does that. `1a26a963` needs `n_ErrMsg <= 0` — the field's LENGTH, not its
+content — and **no judgement kind in `harness/ranges.toml` can state it.** The
+file has exactly six, and the enumeration is checkable rather than asserted
+(`vit_harness.py`'s five `split_*` functions plus `statevary.constrain`):
+
+| kind | what it states | can it give `n_ErrMsg <= 0`? |
+|---|---|---|
+| `lo` / `hi` | a numeric parameter's bounds | no — `ErrMsg` is `char[]`, `n_ErrMsg` is not a parameter |
+| `values` | a numeric parameter's declared values, R2 flag | no, same |
+| `text = "..."` | a CHARACTER parameter's CONTENT, as code points | no — it pins ONE string in every case and destroys R6's ladder rather than extending it |
+| `same_as` | two extents jointly admissible | no — this is not an extent |
+| `no_oracle` | an OUTPUT has no answer | it would EXCLUDE the field, not reach the value |
+| `ordered_only` / `nondecreasing_only` | an ARRAY's ordering ladder | no |
+| `staging_capacity_excludes` | a hole in R13's capacity ladder | it removes capacities; it cannot move a length |
+
+And `harness/baseline.CableControl.json` cannot do it either: `_baseline_state`
+`continue`s on every `p.kind == "char[]"` (`harness/generate.py:1138`), with its
+own comment saying a unit whose admissibility depends on a string's bytes is one
+the convention would have to be extended for, **loudly**.
+
+So the honest statement is stronger than "not pulled": **P12 cannot reach 1.000
+for this unit by any entry in the files this campaign owns.** It needs R6's
+character ladder to emit a zero or negative supplied length — the view's own
+`VIT_CHAR_UNALLOCATED` state, which the C side is built to carry and the corpus
+never produces — and that is a change to `harness/generate.py`, i.e. to the
+instrument. Unit #43 recorded the same three boundaries as unreached and did not
+say that no file could reach them; this unit checked.
+
 **PROPOSED AMENDMENT, and it is about the generator rather than this unit.**
 R13 and R6's character ladder both take "every other input at its base draw", and
 the base draw is computed with no knowledge of whether it reaches the code the
