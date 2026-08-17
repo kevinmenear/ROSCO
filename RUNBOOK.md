@@ -6581,6 +6581,123 @@ would have been faster than reproducing it.
   have read 1.000. It was caught by running it. A proof of equivalence that has
   not been executed against the callee's actual output set is a hypothesis.
 
+## A red test's revert can delete the thing under test, and nothing fails
+
+- **`git checkout -- <file>` restores to HEAD, so a runner that reverts an
+  INTEGRATED source file needs the integration to be COMMITTED first.** Unit #49.
+
+  ```
+  trap 'git checkout -- "$F"; build; ...' EXIT     <- $F = Controllers.f90
+  POST-INTEGRATION PASS: checked 3354  failed 0
+  $ grep -c cablecontrol_c rosco/controller/src/Controllers.f90
+  0
+  ```
+
+  The revert removed the WRAPPER rather than the perturbation, and the
+  "revert-verified" green that followed compared the C++ against the ORIGINAL
+  Fortran body with every callee integrated. A real green, about a tree nobody
+  meant to measure, and indistinguishable from the one it was supposed to be.
+  What caught it was `git diff --stat` reporting the file unmodified right after
+  an integration had been applied to it.
+
+  **The rule already exists one artifact over and is about the wrong file.**
+  Every `run_harness_redtest.sh` header says "COMMIT THE TRANSLATION FIRST: unit
+  #43 measured that an uncommitted edit to it is destroyed silently here." Nobody
+  wrote it about the `.f90`, and the wrapper is the more dangerous of the two: an
+  uncommitted translation is destroyed loudly at the next build, while a deleted
+  wrapper still builds, still runs 27 scenarios and still prints PASS. Assert
+  `git show HEAD:$F | grep -q '<unit>_c'` before arming the trap.
+
+## Know the WIDTH of the channel a gate red test has to move
+
+- **A unit whose outputs reach the gate through `avrSWAP` is measured in
+  REAL(4), and a perturbation sized for a REAL(8) channel reads as "the gate can
+  barely see this unit".** Unit #49.
+
+  ```
+  PI  3.14159265359 -> ...58   relative 3e-12        2 of 5,252,000
+  the first step constant, one part in 1,451    14,572 of 5,252,000
+  ```
+
+  `avrSWAP` is `REAL(ReKi) :: avrSWAP(*)`, so binary32's ~1.2e-7 spacing is the
+  floor: a 12th-digit change is five orders below it and moves only the samples
+  that happen to straddle a rounding boundary. Units #47 and #48 perturbed PI in
+  its 11th and 13th digits and moved 97,118 and 145,146, because their channels
+  are REAL(8). **Pick the perturbation from the channel's WIDTH, not from the
+  previous unit's artifact**, and commit the coarse one as
+  `gate/<Unit>.redtest.json` — the fine one is a resolution measurement and
+  belongs beside it under its own name.
+
+## When a survivor sits at a coefficient, ask what the value it multiplies IS
+
+- **A NaN, an exact zero and a saturated constant all make a coefficient
+  unobservable, and only the third leaves a trace in the kill counts.** Unit #49.
+
+  ```
+  PIController kp 0.0 -> 1.0    SURVIVED
+  PIController ki 1.0 -> 2.0    SURVIVED
+  minValue -1000.0 -> -1001.0   killed, 1703 cases   <- so the arm IS reached
+  maxValue  1000.0 ->  1001.0   killed,    1 case
+
+  Filters.f90, SecLPFilter_Vel
+    IF ((iStatus == 0) .OR. reset) THEN   ... the six coefficients ...   ENDIF
+    SecLPFilter_Vel = 1.0/FP%lpfV_a2(inst) * ( ... )
+  ```
+
+  The kill counts say the integrating arm is reached and clamped, which reads as
+  an ordinary corpus gap. It is wrong: `LocalVar%FP` is a nested type the
+  generator zero-initialises and does NOT vary — the harness prints
+  `UNOBSERVABLE LocalVar.FP: nested type, zero-initialised (not varied)` in its
+  own coverage — so every case with `iStatus /= 0` and `reset` false divides by
+  `a2 = 0.0` and returns `Inf * 0.0`. `kp*error` is NaN whichever kp holds.
+
+  **AND THE SECOND HALF IS WHY NO SINGLE KNOB FIXES IT.** The corpus's only route
+  to an initialised filter is `restart`, which is the SAME value the caller hands
+  `PIController` as its `reset` — and that arm assigns `I0` and reads neither
+  gain. The one live configuration is `iStatus == 0` **with** `restart` false:
+  two names, one on and one off, which no ladder crosses and a baseline state
+  states in one line.
+
+## `harness/ranges.toml` cannot state a CHARACTER parameter's LENGTH, and that is
+## checkable rather than a suspicion
+
+- **Six judgement kinds, none of them a length.** Unit #49, after units #43 and
+  #48 met the same three sites without saying whether any file could reach them.
+
+  ```
+  lo / hi                         a numeric parameter's bounds
+  values                          its declared values, as an R2 flag
+  text = "..."                    a CHARACTER parameter's CONTENT, pinned in
+                                  EVERY case -- it destroys R6's ladder rather
+                                  than extending it
+  same_as                         two extents jointly admissible
+  no_oracle                       an OUTPUT has no answer
+  ordered_only / nondecreasing_only   an ARRAY's ordering ladder
+  staging_capacity_excludes       a hole in R13's capacity ladder
+  ```
+
+  The enumeration is `vit_harness.py`'s five `split_*` functions plus
+  `statevary.constrain`, so it can be re-derived rather than believed. And
+  `_baseline_state` `continue`s on every `p.kind == "char[]"`
+  (`harness/generate.py:1138`) with its own comment saying the convention would
+  have to be extended LOUDLY for a unit whose admissibility depends on a
+  string's bytes.
+
+  **So a survivor that needs `n_<field> <= 0` — the view's own
+  `VIT_CHAR_UNALLOCATED` state, which the C side is built to carry and R6's
+  ladder never emits — cannot be closed by any entry this campaign owns.** Say
+  that, rather than "the corpus does not contain it": the two are different
+  findings and only the second leaves the next dispatch a lever to pull.
+
+  The neighbouring survivors usually CAN be closed, and the lever is the base
+  draw. R13's coverage line states its own convention — 256 capacity cases "with
+  every other input at its base draw" — and R6's character rungs are taken the
+  same way, so if the base draw sits on a dead arm the whole ladder is spent
+  there. Unit #49's was `aviFAIL = 300`, `CC_Mode = -300`: both midpoints of the
+  +/-1e3 default, which is unit #47's "a midpoint is not a mode" met a second
+  time and for a second reason. **Read case 0's inputs before calling a ladder
+  inadequate** — the census probe costs fifteen seconds and needs no clean tree.
+
 ## Do not background a build and poll for it
 
 Run builds, gates and mutation runs in the **foreground**. Backgrounded work is

@@ -58,10 +58,19 @@ control **0**, positive control **46,130**, with `separates == green kills` for
 all three: not one separating input lies where the two chains already disagree.
 Unit #48's first model of the same probe proved three mutants equivalent from a
 clean inequality and was FALSE; running it is what catches that.
-**Third unit at this wall** after #43 and #48; the two levers that exist — a
-`lo`/`hi` pin moving the base draw, and unit #47's `values = [...]` spelling —
-are named in `DECISIONS.md` and were not pulled, because either is a corpus
-change every artifact of the unit would have to be re-taken over.
+**Third unit at this wall** after #43 and #48. A `lo`/`hi` pin moving
+`aviFAIL`'s base draw would close **two** of the three — they need only that
+`aviFAIL` be negative where the two ladders already run — and it was not pulled
+because it is a corpus change every artifact of the unit would have to be
+re-taken over. **The third cannot be closed by any entry this campaign owns**:
+`1a26a963` needs `n_ErrMsg <= 0`, the field's LENGTH, and `harness/ranges.toml`
+has exactly six judgement kinds, none of which states one (`text` pins a string's
+CONTENT in every case and destroys R6's ladder rather than extending it), while
+`_baseline_state` skips every `char[]` parameter outright. The enumeration is a
+table in `DECISIONS.md` and it is re-derivable from `vit_harness.py`'s five
+`split_*` functions plus `statevary.constrain`, not asserted. Closing it needs
+R6's character ladder to emit the view's own `VIT_CHAR_UNALLOCATED` state — a
+change to the instrument.
 
 **A RED TEST'S REVERT DELETED THE THING UNDER TEST, AND NOTHING FAILED (C12).**
 `evidence/CableControl/harness.postintegration.WRONG-TREE.json` printed
