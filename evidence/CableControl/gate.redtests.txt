@@ -82,3 +82,18 @@ the initial value of a state the scenario's own run length never lets the unit
 write. Closing it needs a scenario that reaches t > 500 with CC_Mode = 1, which
 scenarios 7 and 27 already are; scenario 3 adds nothing this unit can be
 measured on and the gate says so.
+
+THE SHIPPED-LIBRARY CONTROL, TAKEN AS THE LAST ACT OF THE DISPATCH
+------------------------------------------------------------------
+
+`gate/CableControl.json` was measured BEFORE three perturbing runs and one probe,
+each of which rebuilt and re-installed `libdiscon.so` twice. Whether the library
+that now ships is the library that green was about is therefore a live question,
+and it is answered with a run rather than with an argument:
+
+  gate/CableControl.repeatability.json   5,252,000 values, 0 mismatched
+
+`diff` against `gate/CableControl.json` is empty in EVERY field except `notes` --
+`compared`, `mismatched`, `channels_compared`, `scenarios`, `loop_rev` and
+`vit_rev` all agree. Unit #47 asked the same question after a reset/restore round
+trip; this unit asks it after four perturb-and-revert cycles.

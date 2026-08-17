@@ -116,6 +116,13 @@ Correcting it would make this translation disagree with the program it replaces
 on every input that reaches the prefix, and the gate reaches that statement in
 none of the 27 scenarios (P7).
 
+**THE GATE WAS RE-RUN AS THE LAST ACT OF THE DISPATCH**, because three
+perturbing runs and a probe each rebuilt the library twice after the green was
+taken, so whether what ships is what was measured is a live question.
+`gate/CableControl.repeatability.json` answers it with a run: 5,252,000 values, 0
+mismatched, and `diff` against `gate/CableControl.json` empty in every field
+except `notes` — including `loop_rev` and `vit_rev`.
+
 **Procedure.** ONE reset window, opened only after the translation, the range
 pins and the red-test stub were committed, and closed the moment the clean-tree
 measurements were done. Every long command routed through
