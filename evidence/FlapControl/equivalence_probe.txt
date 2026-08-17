@@ -1,0 +1,64 @@
+Unit #50 FlapControl -- the equivalence argument for eight of the nine
+declarations, EXECUTED against the scored corpus rather than argued.
+
+THE CLAIM. `Controllers.f90:670`
+
+    DO K = 1,LocalVar%NumBl
+        LocalVar%Flp_Angle(K) = PIIController(RootMyb_VelErr(K), 0 - LocalVar%Flp_Angle(K),
+                                              CntrPar%Flp_Kp, CntrPar%Flp_Ki, 0.05_DbKi,
+                                              -CntrPar%Flp_MaxPit, CntrPar%Flp_MaxPit,
+                                              LocalVar%DT, 0.0_DbKi, LocalVar%piP,
+                                              LocalVar%restart, objInst%instPI)
+    END DO
+
+sits inside `IF (LocalVar%iStatus == 0)`. `PIIController` reads `error`,
+`error2`, `kp`, `ki`, `ki2`, `minValue`, `maxValue` and `DT` on its `.NOT.
+reset` branch ONLY. If `reset` is true on every case that reaches this call,
+mutants of those eight arguments cannot be killed by any case in the corpus --
+and, because `harness/ranges.toml`'s `implied_by` entry states a relation the
+SHIPPED PROGRAM enforces, cannot be killed by any input the program can produce
+either. That is a (c)-class blind spot rather than a corpus gap.
+
+THE PROBE. One counting block patched into
+`translations/Controllers/flapcontrol_test/flapcontrol_test.cpp` immediately
+before the call pair, then `scripts/harness.sh ... --no-generate` (corpus and
+test source kept byte for byte) and the binary run by hand. The block was
+stripped afterwards.
+
+    PROBE cases=9721 iStatus==0:114 restart true:114 false:9607 |
+          Flp_Mode==2 & iStatus==0:55 |
+          reaching :670 with reset:37 WITHOUT reset:0
+
+READ IT IN THREE PARTS.
+
+1. THE STATED IMPLICATION HOLDS CASE FOR CASE. 114 cases have `iStatus == 0`
+   and exactly 114 have `restart` true. Neither number is 0 and neither is 9721,
+   so the corpus varies both and the entry is doing what it says.
+
+2. THE SITE IS LIVE -- the positive control. 55 cases have `Flp_Mode == 2` with
+   `iStatus == 0`, and 37 of those have `NumBl >= 1` and therefore execute the
+   loop body. A survivor at a site the corpus never reaches would be a much
+   duller finding and this rules it out.
+
+3. NO CASE REACHES THE ARM THAT READS THE EIGHT ARGUMENTS. 37 with reset, 0
+   without. That is the whole equivalence argument, and it is a count rather
+   than a claim.
+
+WHAT THIS PROBE DOES NOT SHOW, stated because a control that is not stated is a
+control nobody can check: it does not show that `PIIController`'s reset branch
+reads no more than `I0`, `piP` and `inst`. That is read from the callee's source
+(`Controllers.f90`, the `IF (reset)` arm), and the callee is reached through a
+bridge by BOTH chains, so it is the same implementation on both sides of the
+comparison.
+
+THE NINTH DECLARATION IS NOT ABOUT THIS SITE. `93fc46a5` turns
+`LocalVar->restart ? 1 : 0` into `? 2 : 0`, and the generated bridge converts
+the C `int` with `(reset /= 0)`
+(`translations/Controllers/flapcontrol_test/flapcontrol_callees.f90:68`), so 2
+and 1 are the same LOGICAL argument on every input and at every call site. That
+one is behaviour-preserving outright, not merely unreachable.
+
+THE COUNTER-CHECK THAT THE OPERATOR IS NOT BLIND. The SAME
+`0.0 - LocalVar->Flp_Angle` -> `0.0 + LocalVar->Flp_Angle` mutation at the
+mode-2 arm's call (`flapcontrol.cpp:262`) was KILLED by this corpus. So
+`arith_op` can reach this shape; it is this SITE that is dead.

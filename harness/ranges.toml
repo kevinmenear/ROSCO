@@ -1877,3 +1877,74 @@ objInst_instPI = { lo = 1, hi = 1000 }
 #      literals and is not filtered by a stated `values` list (unit #49 measured
 #      that on `aviFAIL`). The fall-through path therefore still has cases.
 CntrPar_Flp_Mode = { values = [2, 0, 1, 3] }
+
+# THE FOURTH PIN, AND IT IS THE FIRST ENTRY IN THIS FILE THAT IS ABOUT A PAIR OF
+# INPUTS RATHER THAN ABOUT ONE. It is also the reason `implied_by` exists at all
+# (`translation-loop@d947d92`, the eighth judgement kind).
+#
+# THE REFERENCE READS A LOCAL IT NEVER WRITES.
+#
+#     Controllers.f90:653   REAL(DbKi) :: RootMyb_VelErr(3)
+#     Controllers.f90:670   LocalVar%Flp_Angle(K) =
+#                               PIIController(RootMyb_VelErr(K), ...)
+#
+# `RootMyb_VelErr` is assigned by no statement in `FlapControl` and by no
+# statement anywhere else in ROSCO -- `grep -rn RootMyb_VelErr` finds the
+# declaration and that one use. In Fortran the value is undefined: whatever the
+# stack slot holds. No translation can reproduce it and none should try (P7).
+#
+# THE SHIPPED PROGRAM NEVER READS IT, AND THAT IS AN INVARIANT RATHER THAN LUCK.
+# `PIIController` reads its `error` argument on ONE branch:
+#
+#     IF (reset) THEN   piP%ITerm(inst) = I0 ... PIIController = I0
+#     ELSE              PTerm = kp*error ...
+#
+# and the call above sits inside `IF (LocalVar%iStatus == 0)`. `ReadAvrSWAP`
+# runs at the top of every DISCON call, before every controller, and ends with
+#
+#     IF (LocalVar%iStatus == 0) THEN ; LocalVar%restart = 1
+#     ELSE                            ; LocalVar%restart = 0
+#
+# (`rosco/controller/src/readavrswap.cpp:161-165`, unit #16, transcribed from
+# the same statement in the clean ReadSetParameters.f90). Nothing else in ROSCO
+# assigns `LocalVar%restart` -- ROSCO_IO reads and writes it for checkpointing
+# and ReadAvrSWAP overwrites it afterwards. So at this unit's call site
+# `restart` IS `iStatus == 0`, the init arm always takes `PIIController`'s reset
+# branch, and the undefined value is never read. All five gate scenarios run
+# that line -- scenario 4 four times -- without depending on it.
+#
+# THE GENERATOR DREW THE TWO INDEPENDENTLY AND THE HARNESS WENT RED ON 12 OF
+# 9721. Measured before this entry existed, and the failing set is exactly the
+# predicted region (`evidence/FlapControl/undefined_read_census.txt`):
+#
+#     cases 9299, 9323, 9371, 9395, 9443, 9467, 9515, 9539, 9587, 9611, 9659, 9683
+#     every one:  Flp_Mode = 2, iStatus = 0, restart = 0, NumBl in {1, 2}
+#     every one:  LocalVar.piP and nothing else
+#
+# `piP` alone rather than `Flp_Angle` because those twelve cases happen to hold
+# `Flp_Kp = 0` (R6's isolating pin), so `kp*error` is 0 and the saturated sum
+# hides the difference the integrator state still records. That is luck and not
+# a property: at any non-zero `Flp_Kp` the difference reaches `Flp_Angle` and
+# `avrSWAP` as well, which is why `no_oracle = "LocalVar_piP"` was NOT the fix
+# taken -- it would have been green on this corpus and silent on the cause.
+#
+# WHY NOT A PIN ON ONE OF THE FOUR. Each single-parameter narrowing that removes
+# the region removes an arm with it: `iStatus /= 0` deletes the whole
+# initialisation arm (nine statements), `Flp_Mode /= 2` deletes the PII arm,
+# `NumBl = 0` deletes both loops, and `restart` held true sends the mode-2 and
+# mode-3 arms down `PIIController`'s and `PIController`'s reset branch, which
+# reads neither gain. The relation is what is admissible, so the relation is
+# what is stated.
+#
+# THE COST, STATED. `restart` stops being a free R2 flag: its two values now
+# track `iStatus`, so the pair (iStatus /= 0, restart true) leaves the corpus
+# along with (iStatus == 0, restart false). Neither pair is producible by the
+# program. What IS lost is the ability to catch a translation that read
+# `iStatus` where the reference reads `restart`, or the reverse -- the two are
+# no longer independent, so no case separates them. This unit reads both, in
+# different places (`iStatus == 0` selects the arm; `restart` crosses to the two
+# controllers), and that confusion is now invisible to this harness. It is not
+# invisible to the gate, which runs the real program in which the implication
+# holds and would still be bit-identical, so the honest statement is that this
+# harness cannot see it and neither can anything else here.
+LocalVar_restart = { implied_by = "LocalVar_iStatus", relation = "== 0", reason = "ReadAvrSWAP sets restart = (iStatus == 0) before every controller call and nothing else in ROSCO assigns it, so the pair the generator draws freely is not producible; the pair (iStatus == 0, restart false) is the only one on which this unit reads RootMyb_VelErr, a local the reference declares and never writes" }

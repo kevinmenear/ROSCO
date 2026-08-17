@@ -1,0 +1,64 @@
+Unit #50 FlapControl -- the twelve red cases of the FIRST harness take, and what
+they have in common.
+
+THE FIRST TAKE, before `harness/ranges.toml` stated the implication:
+
+    HARNESS FAIL: checked 9721  failed 12  inadmissible 0
+    every mismatch on LocalVar.piP and on nothing else
+    cases 9299 9323 9371 9395 9443 9467 9515 9539 9587 9611 9659 9683
+
+THE PROBE. One fprintf patched into
+`translations/Controllers/flapcontrol_test/flapcontrol_test.cpp`, immediately
+before the call pair, printing the inputs of those twelve case indices only;
+then `scripts/harness.sh ... --no-generate` (which keeps `flapcontrol_cases.bin`
+and the test source byte for byte, so the numbers are about the SCORED corpus)
+and the built binary run by hand. Fifteen seconds. The `fprintf` was stripped
+afterwards -- a later `--no-generate` keeps the test source too, and a mutation
+sweep would print twelve lines per mutant. RUNBOOK, unit #47.
+
+    PROBE case 9299 Flp_Mode=2 iStatus=0 NumBl=1 restart=0 Flp_Kp=0 Flp_Ki=-300 Flp_MaxPit=300 DT=300 CntrPar_Flp_Angle=600
+    PROBE case 9323 Flp_Mode=2 iStatus=0 NumBl=2 restart=0 Flp_Kp=0 Flp_Ki=-300 Flp_MaxPit=300 DT=300 CntrPar_Flp_Angle=600
+    PROBE case 9371 Flp_Mode=2 iStatus=0 NumBl=1 restart=0 Flp_Kp=0 Flp_Ki=-300 Flp_MaxPit=300 DT=300 CntrPar_Flp_Angle=600
+    PROBE case 9395 Flp_Mode=2 iStatus=0 NumBl=2 restart=0 Flp_Kp=0 Flp_Ki=-300 Flp_MaxPit=300 DT=300 CntrPar_Flp_Angle=600
+    PROBE case 9443 Flp_Mode=2 iStatus=0 NumBl=1 restart=0 Flp_Kp=0 Flp_Ki=-300 Flp_MaxPit=300 DT=300 CntrPar_Flp_Angle=600
+    PROBE case 9467 Flp_Mode=2 iStatus=0 NumBl=2 restart=0 Flp_Kp=0 Flp_Ki=-300 Flp_MaxPit=300 DT=300 CntrPar_Flp_Angle=600
+    PROBE case 9515 Flp_Mode=2 iStatus=0 NumBl=1 restart=0 Flp_Kp=0 Flp_Ki=-300 Flp_MaxPit=300 DT=300 CntrPar_Flp_Angle=600
+    PROBE case 9539 Flp_Mode=2 iStatus=0 NumBl=2 restart=0 Flp_Kp=0 Flp_Ki=-300 Flp_MaxPit=300 DT=300 CntrPar_Flp_Angle=600
+    PROBE case 9587 Flp_Mode=2 iStatus=0 NumBl=1 restart=0 Flp_Kp=0 Flp_Ki=-300 Flp_MaxPit=300 DT=300 CntrPar_Flp_Angle=600
+    PROBE case 9611 Flp_Mode=2 iStatus=0 NumBl=2 restart=0 Flp_Kp=0 Flp_Ki=-300 Flp_MaxPit=300 DT=300 CntrPar_Flp_Angle=600
+    PROBE case 9659 Flp_Mode=2 iStatus=0 NumBl=1 restart=0 Flp_Kp=0 Flp_Ki=-300 Flp_MaxPit=300 DT=300 CntrPar_Flp_Angle=600
+    PROBE case 9683 Flp_Mode=2 iStatus=0 NumBl=2 restart=0 Flp_Kp=0 Flp_Ki=-300 Flp_MaxPit=300 DT=300 CntrPar_Flp_Angle=600
+
+TWELVE OF TWELVE ARE THE SAME CONFIGURATION AND IT IS THE PREDICTED ONE:
+
+    Flp_Mode == 2  AND  iStatus == 0  AND  restart == 0  AND  NumBl >= 1
+
+which is exactly the region in which `Controllers.f90:670` passes
+`RootMyb_VelErr(K)` -- a local the reference DECLARES AND NEVER ASSIGNS -- into
+`PIIController` on the branch that reads it. `NumBl == 0` is absent because the
+loop runs zero times there; `NumBl == 3` is absent because 3 is not one of R6's
+knob values for it ([0, 1, 2]).
+
+WHY ONLY `LocalVar.piP` MOVED, AND WHY THAT IS LUCK RATHER THAN A PROPERTY.
+`PIIController` computes
+
+    PTerm  = kp*error
+    ITerm  = saturate(ITerm  + DT*ki *error , min, max)
+    ITerm2 = saturate(ITerm2 + DT*ki2*error2, min, max)
+    result = saturate(PTerm + ITerm + ITerm2, min, max)
+
+All twelve cases hold `Flp_Kp = 0` -- R6's isolating 0.0 pin, not the base draw
+-- so `PTerm` is 0 whatever the undefined `error` is, and with `Flp_Ki = -300`,
+`DT = 300` and `error2 = 0 - 600` the sum saturates to the same limit on both
+chains. The difference survives only in `ITerm`, which is `piP`'s business and
+is compared bytewise. At ANY non-zero `Flp_Kp` the undefined value reaches the
+result directly and `LocalVar.Flp_Angle` and `avrSWAP` diverge as well.
+
+That is why `no_oracle = "LocalVar_piP"` was considered and NOT taken. It would
+have been green on this corpus, silent about the cause, and wrong the moment the
+corpus moved -- and it would have cost the piP comparison on the 9709 cases
+where the reference does have an answer for it.
+
+WHAT WAS DONE INSTEAD is `harness/ranges.toml`'s new `implied_by` entry, which
+states the relation `restart == (iStatus == 0)` that `ReadAvrSWAP` establishes
+before every controller call. See that entry for the citation and the cost.

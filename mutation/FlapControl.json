@@ -1,0 +1,104 @@
+{
+ "unit": "FlapControl",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "index_offset",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "operator_population": {
+  "compare_op": 8,
+  "arith_op": 13,
+  "swap_operands": 13,
+  "index_offset": 22,
+  "const_tweak": 40,
+  "negate_cond": 6
+ },
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutants": 97,
+ "equivalent_declared": 9,
+ "nocompile": 5,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.049,
+ "nocompile_refused": false,
+ "total": 102,
+ "killed": 88,
+ "survived": 0,
+ "equivalent": 9,
+ "declared_but_killed": [],
+ "score": 1.0,
+ "loop_rev": "d947d92-nogit",
+ "vit_rev": "a16a7ab-nogit",
+ "merged_from": [
+  {
+   "part": "mutation/FlapControl.clean.arith_swap.json",
+   "operators_filter": [
+    "arith_op",
+    "swap_operands"
+   ],
+   "total": 26,
+   "mutants": 21,
+   "nocompile": 5,
+   "killed": 20,
+   "survived": 0,
+   "score": 1.0
+  },
+  {
+   "part": "mutation/FlapControl.clean.const_tweak.json",
+   "operators_filter": [
+    "const_tweak"
+   ],
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 33,
+   "survived": 0,
+   "score": 1.0
+  },
+  {
+   "part": "mutation/FlapControl.clean.index.json",
+   "operators_filter": [
+    "index_offset"
+   ],
+   "total": 22,
+   "mutants": 22,
+   "nocompile": 0,
+   "killed": 21,
+   "survived": 0,
+   "score": 1.0
+  },
+  {
+   "part": "mutation/FlapControl.clean.negate_compare.json",
+   "operators_filter": [
+    "compare_op",
+    "negate_cond"
+   ],
+   "total": 14,
+   "mutants": 14,
+   "nocompile": 0,
+   "killed": 14,
+   "survived": 0,
+   "score": 1.0
+  }
+ ],
+ "merged_why": "split by operator so each part blocks inside the dispatch's foreground ceiling; four parts, disjoint, covering all six operators the mutator offers a site for",
+ "merged_by": "scripts/_mutation_merge.py",
+ "survivors": []
+}
