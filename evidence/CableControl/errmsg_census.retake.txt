@@ -1,0 +1,117 @@
+ERRMSG CENSUS, SECOND TAKE -- unit #49 `CableControl`, over the 7640-case corpus
+================================================================================
+
+`errmsg_census.txt` beside this file is the FIRST take, over the 3354-case
+corpus, and it is kept unchanged: it is the measurement that named the cause and
+the two levers, and a file rewritten in place would leave the second dispatch's
+score standing on a reading nobody could go back to. This file is the same probe
+re-run after those levers were pulled.
+
+Taken with `evidence/CableControl/cablecontrol.errmsg-census-probe.cpp` on the
+clean tree, injected immediately above the call in the generated test source,
+built and run, and STRIPPED afterwards -- the harness green and the mutation
+sweep that follow were both taken from the un-probed source (the test .cpp was
+copied aside before injection and copied back after, and the harness was re-run
+from scratch, reporting the same 7640).
+
+  need = 18 + LEN(TRIM(ErrMsg))   -- what `RoutineName//':'//TRIM(ErrMsg)` asks
+                                     for, len('StructuralControl') + len(':')
+
+WHAT CHANGED IN THE CORPUS, AND IT IS TWO ENTRIES
+--------------------------------------------------
+
+  harness/ranges.toml   ErrVar_aviFAIL = { values = [-1, 0, 1] }
+  harness/baseline.CableControl.json
+                        state 4  ErrVar_ErrMsg_n = 1  with aviFAIL = -1
+                        state 5  ErrVar_ErrMsg_n = 0  with aviFAIL = -1
+
+Nothing else moved. The translation is byte-identical to the one the first
+dispatch scored -- `git diff` over `translations/Controllers/cablecontrol.cpp`
+across both dispatches is empty -- so every number below is a statement about
+the CORPUS and not about the program.
+
+                                        first take        second take
+  cases                                       3354               7640
+  aviFAIL <  0  -- the prefix runs at all      223               2767
+  aviFAIL >= 0  -- assign_errmsg not reached  3131               4873
+
+  aviFAIL histogram   {-1: 2767, 0: 2446, 1: 2422, 2: 5}
+  n_ErrMsg histogram  {0: 18, 1: 145, 2: 367, 3: 1, 8: 6742, 13: 367}
+  n_ErrMsg over aviFAIL < 0
+                      {0: 15, 1: 64, 2: 131, 3: 1, 8: 2427, 13: 129}
+
+THE THREE STANDING SURVIVORS AND THE INPUT EACH ONE NEEDED
+-----------------------------------------------------------
+
+                                                first take   second take
+  8d2724ea  `s.size() > cap` -> `>=`
+     cases with aviFAIL < 0 and cap == need              0             1
+     cases with aviFAIL < 0 and cap <  need              0            18
+
+  97aefd80  `n > 0 ? n : 0` -> `n > 1 ? n : 0`
+     cases with n == 1 AND aviFAIL < 0                   0            64
+     ... of those, with a NON-BLANK byte (trim == 1)     0            59
+
+  1a26a963  `n > 0 ? n : 0` -> `n > 0 ? n : 1`
+     cases with n <= 0 ANYWHERE                          0            18
+     cases with n <= 0 AND aviFAIL < 0                   0            15
+
+ONE case at `cap == need`, and that is R13's design rather than luck: the whole
+256-case block is `cap_base` copied with one headroom per case and EVERY OTHER
+INPUT AT ITS BASE DRAW, so the output has one length across the block and
+exactly one capacity sizes the buffer to it. The block's own diagnostics are
+visible in the harness run --
+
+    VIT: CableControl: ErrVar%ErrMsg needs 26 bytes, the staging buffer holds
+         17..25; the assignment is refused
+    VIT bridge: ErrVar%ErrMsg assignment of 26 bytes exceeds the 17..25-byte
+         buffer the caller supplied; left unchanged
+
+-- one line from each chain at each of the 18 capacities below `need`, which is
+the shape unit #48's `staging_capacity_excludes` exists for and which this unit
+does NOT need: its two chains agree there because only ONE assignment is staged.
+`interp1d` is the callee that could stage a second, and it is reached only on
+the `CC_Mode == 2` arm, which the R13 block does not take (`CC_Mode` is at its
+base draw of -300 throughout).
+
+THE SMALLEST WITNESS OF EACH, PRINTED BY THE PROBE
+---------------------------------------------------
+
+  case 7402   aviFAIL -1   n 8   cap 26   trim 8   need 26   CC_Mode -300
+              the R13 rung at which the buffer is sized exactly TO the message.
+              Original writes 26 bytes; `>=` refuses and leaves n_ErrMsg at 8.
+
+  case 2524   aviFAIL -1   n 1   cap 4097  trim 1   need 19   CC_Mode -300
+              R6's character rung at length 1, now taken under the flag value
+              -1. Original trims to 1 and writes 19; `n > 1` views nothing and
+              writes 18.
+
+  case 7366   aviFAIL -1   n 0   cap 4096  trim 0   need 18   CC_Mode 0
+              R11 state 5. Original views nothing and writes 18; `: 1` views one
+              byte of the zero-filled staging buffer and writes 19. The
+              comparison catches it on `ErrVar.n_ErrMsg` (18 against 19) and NOT
+              on the bytes, which agree -- the extra byte is the NUL that was
+              already there (`std::vector<char> ErrVar_ErrMsg_a(..., 0)`,
+              cablecontrol_test.cpp:1296).
+
+WHAT THE SWEEP THEN SAID
+-------------------------
+
+  mutation/CableControl.json   85 killed of 85 scoreable, 4 declared, 0
+                               no-compile, 7 operators, score 1.0000,
+                               `survivors: []`, `declared_but_killed: []`.
+
+All three are killed and NOT ONE of them was declared equivalent -- which is the
+distinction the dispatch asked for. They were case (b) and they were closed as
+(b): the inputs were fixed, not the record.
+
+WHAT THIS FILE DOES NOT CONTAIN, STATED RATHER THAN LEFT TO BE NOTICED
+-----------------------------------------------------------------------
+
+The PER-MUTANT kill counts for parts 2 and 3. `vit_mutate.py` prints
+`killed (N/7640 cases)` per mutant on stdout and records only the SURVIVORS in
+its artifact, so once a part's stdout is gone the count is not recoverable from
+anything committed. The counts above are the census's count of cases holding the
+separating input, which bounds the kill count from above and is measured from
+the same case file -- they are not the sweep's own numbers and are not written
+here as if they were.

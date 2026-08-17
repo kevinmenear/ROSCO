@@ -1760,11 +1760,17 @@ objInst_instPI = { lo = 1, hi = 1000 }
 #      2.5x. The corpus grows and every artifact of this unit is re-taken over
 #      the larger one; the harness and mutation counts either side are recorded
 #      in evidence/CableControl/README.md rather than left to be inferred.
-#   3. A value OUTSIDE {-1, 0, 1} is no longer generated. That is a narrowing,
-#      and it is the one narrowing in this entry that could hide a defect: a
-#      translation that tested `aviFAIL < -1` instead of `< 0` would now be
-#      caught (the corpus holds -1), but one that tested `aviFAIL /= 300` would
-#      not. No such shape exists in the translation, and the mutation operators
-#      that could introduce one -- `const_tweak` on the literal 0 -- move it by
-#      +/-1, which the stated set separates.
+#   3. A value far outside the stated set is no longer drawn. That is a
+#      narrowing, and it is the one narrowing in this entry that could hide a
+#      defect: a translation that tested `aviFAIL < -1` instead of `< 0` is
+#      still caught (the corpus holds -1), but one that tested `aviFAIL /= 300`
+#      would not be. No such shape exists in the translation, and the mutation
+#      operator that could introduce one -- `const_tweak` on the literal 0 --
+#      moves it by +/-1, which the stated set separates.
+#      MEASURED RATHER THAN ASSUMED, and it is one value WIDER than the set:
+#      the corpus's aviFAIL histogram is {-1: 2767, 0: 2446, 1: 2422, 2: 5}.
+#      The 2 is R7's knob cross-product, which draws its values from the
+#      reference's own literals and is not filtered by a stated `values` list.
+#      So `values` states the BASE DRAW and the flag crossing; it does not
+#      bound the knob.
 ErrVar_aviFAIL = { values = [-1, 0, 1] }
