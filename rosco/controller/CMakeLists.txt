@@ -134,6 +134,7 @@ set(SOURCES
     src/vit_performancedata_view.f90
     src/aerodyntorque.cpp
     src/cablecontrol.cpp
+    src/flapcontrol.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

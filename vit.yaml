@@ -1081,6 +1081,15 @@ translations:
   CableControl:
     status: integrated
     cpp_file: translations/Controllers/cablecontrol.cpp
+  # HAND-WRITTEN, as every entry above it is, for unit #14's reason and unit
+  # #49's: `vit integrate --apply` rewrites this whole file through a YAML round
+  # trip, which deletes every comment in it, re-encodes the em dashes and adds a
+  # `verification: simulation` line that is false -- this unit's evidence is a
+  # differential harness, a mutation sweep and a 27-scenario gate, and which of
+  # those it is belongs in plan.json's `evidence`, not in a field nothing reads.
+  FlapControl:
+    status: integrated
+    cpp_file: translations/Controllers/flapcontrol.cpp
 types:
   ControlParameters:
     strategy: view

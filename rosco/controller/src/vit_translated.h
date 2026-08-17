@@ -78,6 +78,7 @@ double ratelimit_c(double inputSignal, double minRate, double maxRate, double DT
 void activewakecontrol_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, debugvariables_t* DebugVar, objectinstances_t* objInst);
 double aerodyntorque_c(double RotSpeed, double BldPitch, localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, performancedata_view_t* PerfData, errorvariables_view_t* ErrVar);
 void cablecontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst, errorvariables_view_t* ErrVar);
+void flapcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst);
 
 #ifdef __cplusplus
 }
