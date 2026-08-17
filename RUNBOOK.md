@@ -6698,6 +6698,123 @@ would have been faster than reproducing it.
   time and for a second reason. **Read case 0's inputs before calling a ladder
   inadequate** — the census probe costs fifteen seconds and needs no clean tree.
 
+## The section above is right about `ranges.toml` and wrong about the CAMPAIGN,
+## and the difference is one file
+
+- **`harness/baseline.<Unit>.json` can state a CHARACTER parameter's LENGTH, and
+  the entry above concluded from `ranges.toml`'s six kinds that nothing could.**
+  Unit #49, second dispatch. The claim it rests on —
+
+  ```
+  `_baseline_state` `continue`s on every `p.kind == "char[]"`
+  (`harness/generate.py:1138`)
+  ```
+
+  — cites the right line and reads it one scope too wide. That `continue` is
+  inside `for p in sig.inputs` and skips the string's **BYTES**. Thirty lines
+  below it, after the loop has closed:
+
+  ```python
+      # The extents the state states, applied last …
+      for k, v in vals.items():
+          q = _maybe(sig, k)
+          if q is not None and q.role == "extent":
+              over[k] = int(v)
+  ```
+
+  every extent the state names is applied, **output extents included**, and
+  `_case_impl` folds an extent override into `extents` before it fills anything.
+  So a state says `ErrVar_ErrMsg_n = 0` and R6's corpus draws the string at
+  length 0. A state cannot say a string's bytes; it can say its length, and for
+  a survivor that needs `n <= 0` the bytes are not what is being asked for.
+
+  **THE GENERAL SHAPE, AND IT IS WHY THIS IS A SEPARATE ENTRY RATHER THAN AN
+  EDIT.** "No entry this campaign owns can state X" is a claim about a SET OF
+  FILES. The six kinds above were derived correctly, from `vit_harness.py`'s
+  `split_*` functions plus `statevary.constrain` — and then used to answer a
+  question about the whole input domain, which `baseline.<Unit>.json` also
+  constrains and which that derivation never looked at. **Before writing "no
+  entry can state X", grep the OTHER input file for the name of the thing X is a
+  property of.** One line, and it is the whole check.
+
+  The entry above is left standing because its `ranges.toml` enumeration is
+  still correct and still worth having, and because the census it describes is
+  what made the levers findable. Read the two together.
+
+## A base draw is a RULE's coverage, and stating a domain is how you move it
+
+- **R13's 256-case capacity block and R6's character rungs are both taken "with
+  every other input at its base draw", so a base draw on a dead arm does not
+  cost a case — it costs the whole rule.** Unit #49, second dispatch, the fix to
+  the entry two above.
+
+  ```
+  harness/ranges.toml    ErrVar_aviFAIL = { values = [-1, 0, 1] }
+
+                                first take   second take
+    corpus                            3354          7640
+    aviFAIL < 0                        223          2767
+    cap == need   & aviFAIL < 0          0             1
+    n == 1, trim 1, aviFAIL < 0          0            59
+    n == 0        & aviFAIL < 0          0            15
+    mutation                     82 of 85      85 of 85
+                                   0.9647        1.0000
+  ```
+
+  **`values` and not `lo`/`hi`, and it is a second-order effect.** Both move the
+  base draw — `_case_impl` takes `p.values[0]` for a parameter that states values
+  and `_base`'s fraction for one that states bounds. But a bounds pin ALSO drops
+  the parameter out of R6's integer ladder (`q.lo is None and q.hi is None` is
+  the filter) and leaves it to `rng.randint`, and a mutant that needs the value
+  **exactly** 0 or **exactly** -1 is not served by a uniform draw over 1500
+  values. The price of `values` is the flag crossing: arity 2 -> 5 here, corpus
+  2.3x. Cheap, because a mutation sweep's wall clock is per-mutant COMPILE time
+  and barely moves with the case count — 89 mutants took ~11s each at 3354 cases
+  and ~11s each at 7640.
+
+  **A stated `values` list does NOT bound R7's knob cross-product.** Measured:
+  the aviFAIL histogram afterwards is `{-1: 2767, 0: 2446, 1: 2422, 2: 5}`. The
+  knobs draw from the reference's own literals and are not filtered by the
+  declaration. `values` states the base draw and the flag crossing; that is all
+  it states, and the entry's own cost paragraph had asserted otherwise until the
+  census was read.
+
+## A corpus change re-takes every layer that reads the corpus, and exactly those
+
+- **Choose the lever with renumbering in mind: R11 states APPEND, a new FLAG
+  RENUMBERS.** Unit #49, second dispatch. States 4 and 5 leave every earlier case
+  index alone, so a green re-taken over them is comparable case-for-case with the
+  one before; the `aviFAIL` flag moves every stage ahead of R11, so the corpus is
+  not a strict extension and nothing case-for-case survives it. Reach for a
+  baseline state first; reach for a flag when the BASE DRAW is what is wrong.
+
+  What had to be re-taken: the clean-tree harness green, its no-op red test
+  (7324 of 7640 — the same corpus count, unit #26's rule), the three mutation
+  parts and their merge, the post-integration green, its red test, and the green
+  after that red test's revert. **What did NOT: the gate.** It runs 27
+  simulations against the shipped library, never reads the case file, and neither
+  the translation nor the wrapper moved. `revcheck` reporting all twelve result
+  artifacts at one revision is what makes that a checkable claim rather than an
+  assertion.
+
+## The tool's own foreground ceiling is 120 seconds, and the guard script is not it
+
+- **`scripts/run_if_time_remains.sh` decides whether a command may START; the
+  Bash tool's `timeout` decides whether it BLOCKS.** Unit #49, second dispatch.
+  A 135-second mutation part routed correctly through the guard was still moved
+  to the background at 120s, because that is the tool's default. It was
+  harness-tracked and it reported back, so nothing was lost — but the same
+  default is what a session ends under if it then says "I will wait".
+
+  Raise it explicitly on anything that might run long:
+
+  ```
+  Bash(..., timeout: 600000)      # 600s, the maximum
+  ```
+
+  and keep the guard's seconds estimate as well: they answer different questions
+  — "is there clock left for this?" and "will this block?".
+
 ## Do not background a build and poll for it
 
 Run builds, gates and mutation runs in the **foreground**. Backgrounded work is
