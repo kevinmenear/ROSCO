@@ -2790,6 +2790,7 @@
       "evidence": [
         "evidence/ActiveWakeControl/README.md",
         "evidence/ActiveWakeControl/done_check.txt",
+        "evidence/ActiveWakeControl/reset_restore_roundtrip.txt",
         "evidence/ActiveWakeControl/activewakecontrol.final.cpp",
         "evidence/ActiveWakeControl/harness.restart_probe.txt",
         "evidence/ActiveWakeControl/harness.first_take.restart_indeterminate.json",

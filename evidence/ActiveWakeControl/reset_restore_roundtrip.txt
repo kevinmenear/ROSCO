@@ -1,0 +1,40 @@
+RESET / RESTORE ROUND TRIP, taken after unit #47 closed.
+
+The pair is what every later unit's extraction and every clean-tree
+measurement depends on. This unit added rosco/controller/src/activewakecontrol.cpp
+and 709 lines to two view populators, so the question is whether
+restore_integrated.sh still puts the tree back BIT FOR BIT with them in it.
+
+== HEAD before ==
+91c47c8b6118f57b274b62dae9dd52d36dc3e765
+== tree clean before ==
+       0
+== activewakecontrol_c in the installed library before ==
+1
+
+== reset_to_clean.sh ==
+  left at HEAD (no wrappers): Constants.f90 DISCON.F90 ROSCO_Types.f90 SysFlangLinux.f90 SysGnuLinux.f90 SysGnuWin.f90 SysIFL.f90 SysIVF.f90 SysLLVMLinux.f90 SysLLVMWin.f90
+  0 file(s) reverted whose only change was line endings
+  extraction leftovers removed (kernel/ state/ model/ elapsedtime/ logs, .kgen_org)
+  47 translated .cpp source(s) removed from CMakeLists (E1.2 flags kept)
+  0 instrumented object(s) removed from the build tree
+  rebuilt and installed; kgen symbols in rosco/lib/libdiscon.so: 0
+-- Fortran wrapper gone? (0 = clean source) --
+0
+-- kgen symbols / C++ in the library --
+0
+
+== restore_integrated.sh ==
+  taken since.
+restore_integrated: 76 file(s) restored from HEAD (vit_types.h untouched)
+  CMakeLists.txt restored: the translated .cpp sources are back in the build
+  rebuilt and installed. Gate now measures the INTEGRATED build.
+
+== tree clean after (0 = byte-identical round trip) ==
+       0
+== diff against HEAD, name-only ==
+       0
+== activewakecontrol_c in the installed library after ==
+1
+== HEAD after ==
+91c47c8b6118f57b274b62dae9dd52d36dc3e765
