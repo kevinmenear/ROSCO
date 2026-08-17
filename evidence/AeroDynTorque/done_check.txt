@@ -1,6 +1,6 @@
-# done_check.py AeroDynTorque -- captured 2026-08-17T19:35:07Z by scripts/capture_done_check.sh
+# done_check.py AeroDynTorque -- captured 2026-08-17T19:36:47Z by scripts/capture_done_check.sh
 
-Run against the committed state at 4612c122 ("RUNBOOK target layer: the sixth judgement kind, and the question that decides a survivor's disposition"), with a CLEAN tree, with stdout
+Run against the committed state at 93397fb5 ("AeroDynTorque: the evidence README follows, and the (c) claim's own model is checked against the instrument"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
