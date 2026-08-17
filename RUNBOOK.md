@@ -358,6 +358,100 @@ has executed it yet.
 The container mounts `~/Artifacts/vit_translation` at `/workspace`, so this tree
 is `/workspace/ROSCO-r2`.
 
+- **A REFUSE-RATHER-THAN-TRUNCATE STAGING RULE THAT IS RIGHT FOR ONE ASSIGNMENT
+  IS WRONG FOR TWO, AND THE WINDOW IS EXACT ARITHMETIC.** Unit #48.
+
+  ```
+  L_callee = len("interp1d:") + len(TRIM(entry)) =  9 + 7 = 16
+  L_final  = len("AeroDynTorque:") + L_callee    = 14 +16 = 30
+  cap  <  16   both refuse            got  7  ref  7   PASS
+  16<=cap< 30  bridge writes, assign refuses
+                                      got 16  ref  7   FAIL   <- 14 cases
+  cap >= 30    both write             got 30  ref 30   PASS
+  ```
+
+  The reference chain is Fortran throughout with ONE capacity gate, in the
+  generated bridge, on the final value. The translation chain has one gate per
+  nested C boundary. R13's own header says the model: "the translation refusing
+  an assignment that does not fit and the generated Fortran bridge refusing THE
+  SAME ONE." **Before assuming a red on a CHARACTER output is a translation
+  defect, count the staged assignments on the path** — `grep -c assign_errmsg`
+  in the translation plus one per callee that prefixes. Two is the first number
+  at which the instrument stops modelling the program. `interp2d` has the same
+  helper and never composes, because its prefix is reached only on the bilinear
+  path and that is the one path on which it does not call `interp1d`.
+
+- **AN ABLATED RULE REPORTED ITSELF AS ONE THAT HAD NO SITE.** Unit #48, fixed
+  in `translation-loop@b875e83`.
+
+  ```
+  --disable R13_staging_capacity
+  N/A  R13_staging_capacity  no deferred-length CHARACTER output ...   <- FALSE
+  ```
+
+  Every rule is `if <sites> and "<rule>" not in off:`, so an ablated rule keeps
+  the detail string it was INITIALISED to — which is the "found nothing to do"
+  sentence. The artifact then says the rule was inapplicable when it was
+  switched off and its cases are missing from the corpus every later number,
+  mutation score included, is taken over. **If you pass `--disable`, read the
+  rule's row in the artifact before believing it.** The fix is one rewrite after
+  the table is built; the control that it is additive is the corpus SHA either
+  side, not the diff.
+
+- **MEASURE AN ABLATION'S PRICE ON EVERY SURVIVOR, NOT ON THE ONE THAT MOTIVATED
+  IT, AND COMPARE FAILING SETS RATHER THAN COUNTS.** Unit #48.
+
+  ```
+  BASELINE   14 failed  cases 1140..1153
+  88466711   15 failed  cases 1140..1153 + 1154   <- the ablated rule kills it
+  11c1e326   14 failed  identical set             <- it does not
+  06f7d2c8   14 failed  identical set
+  26021804   14 failed  identical set
+  ```
+
+  The full corpus is RED for this unit, so both the baseline and every mutant
+  fail; a mutant that turned one of the baseline's own failures into a pass
+  while adding one elsewhere shows the SAME COUNT. Comparing sets costs one
+  patched `diffs.size() < 16` and answers the question. And three of four turned
+  out to be unreachable for a completely unrelated reason — measuring only the
+  first would have attributed all four to the ablation.
+
+- **A CALL SITE WITH FIFTEEN THOUSAND HITS THAT NO GATE PERTURBATION REACHES,
+  BECAUSE A GAIN IS EXACTLY 0.0.** Unit #48, second instance after unit #47's
+  scenario 8.
+
+  ```
+  ControllerBlocks.f90:389   15,062 hits, scenario 17 ONLY
+  PI -> 3.2 (1.9% of the rotor area)        0 of 208,000
+  the RETURN VALUE forced to >= 1.0e5       0 of 208,000
+  scenario_17.npz  gen_speed 16,000 distinct   <- the scenario is ALIVE
+  Examples/DISCON.IN:123   0.0   ! WE_Gamma
+  WE_VwIdot = WE_Gamma/WE_Jtot*(... - Tau_r)
+  ```
+
+  Two probes, thirteen seconds each, and the second is the one that matters:
+  forcing the RETURN VALUE separates "the gate cannot observe this call site"
+  from "the perturbation was annihilated downstream". **When a red test's
+  scenario list omits a scenario that coverage says calls the unit, grep the
+  consuming expression for a gain and grep `Examples/DISCON*.IN` for its
+  value.** Do not conclude it from the hit count and do not conclude it from the
+  arm structure — the first reading here was "the value only reaches a channel
+  under WE_Mode == 2", which is wrong, and it is corrected in
+  `evidence/AeroDynTorque/gate.redtests.txt` rather than left standing.
+
+- **A GROUPING THE REFERENCE WROTE CAN BE WORTH ONE CASE IN ELEVEN HUNDRED, AND
+  THAT IS STILL THE WHOLE ARGUMENT.** Unit #48.
+
+  ```
+  PI * (R*R)        -> (PI * R) * R         killed, 52 of 1131
+  0.5 * (rho*area)  -> (0.5 * rho) * area   killed,  1 of 1131
+  ```
+
+  `assoc_reorder` is the operator that grades the `exponent-grouping` rule, and
+  the second margin is one case. A corpus one rung narrower reports it as an
+  equivalence, and a translation that "simplified" the parentheses passes.
+  Transcribe the shape, and expect the sweep's confirmation to be thin.
+
 - **AN INDETERMINATE ANSWER STORED IN A `SAVE` LOCAL OUTLIVES THE CASE THAT
   PRODUCED IT, AND A PER-CASE CORPUS RULE CANNOT SEE THAT.** Unit #47.
 

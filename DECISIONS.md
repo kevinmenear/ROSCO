@@ -10126,3 +10126,169 @@ The post-integration green re-take after the wrapper red test died at the link
 with no source change between it and the run that passed at 21236/0. Identical to
 the shim-object race recorded at the end of the first dispatch. Recorded, not
 repaired: the failure is LOUD and a retry is the whole fix.
+
+---
+
+## Unit #48 — AeroDynTorque — 2026-08-17
+
+### The staging-refusal convention is not compositional (a proposed method amendment)
+
+The first differential-harness take was **RED at 14 of 1387**, and every one of
+the fourteen is `ErrVar.ErrMsg`/`n_ErrMsg` at a contiguous block of cases inside
+R13_staging_capacity's sweep. The window is exact arithmetic:
+
+```
+L_callee = len("interp1d:") + len(TRIM(entry msg)) = 9 + 7  = 16
+L_final  = len("AeroDynTorque:") + L_callee        = 14 + 16 = 30
+
+cap  <  16      both sides refuse everything    got  7  ref  7   PASS
+16 <= cap < 30  the callee bridge writes 16,
+                assign_errmsg refuses 30        got 16  ref  7   FAIL
+cap >= 30       both write                      got 30  ref 30   PASS
+```
+
+`[16, 30)` is fourteen capacities and the failing case set is exactly
+1140..1153, measured with the emitted test's own diff cap raised
+(`evidence/AeroDynTorque/harness.first_take.all_14_cases.json`), not inferred.
+
+**The mechanism.** The reference chain is Fortran → Fortran → Fortran with a
+reallocating `ErrMsg`, and exactly ONE capacity gate: the generated bridge's
+write-back, on the final 30 bytes. The translation chain is C++ →
+`interp2d_c` bridge → Fortran, and it has TWO: the bridge's write-back on 16,
+then `assign_errmsg` on 30. R13's own header states the model it was built on —
+"the translation refusing an assignment that does not fit and the generated
+Fortran bridge refusing *the same one*". With two staged assignments there are
+two, and they have different lengths.
+
+**Why this unit and not an earlier one.** `interp1d` (unit #23) established
+"refuse rather than truncate" because a shortened message is the one wrong
+answer a byte comparison cannot tell from a right one. `interp2d` (unit #45)
+inherited the helper and never composed: its own `RoutineName//':'` prefix is
+reached ONLY on the bilinear path, and the bilinear path is the one path on
+which it does not call `interp1d`. That is why interp2d's `98926651` could be
+declared UNREACHABLE with R13 applied — its R13 block never reaches
+`assign_errmsg` at all. `AeroDynTorque` calls `interp2d` on every case and
+prefixes on every case with `aviFAIL < 0`, so the two assignments land in one
+buffer, one after the other.
+
+**PROPOSED AMENDMENT.** A reference-side write-back that cannot carry the
+reference's own answer should make the case **INADMISSIBLE**, not failed. The
+harness already keeps an `inadmissible` count and the concept is exactly this
+one: on those fourteen cases the reference's answer is 30 bytes, neither side
+can carry it, and the value the oracle records — what `ErrMsg` held on ENTRY —
+is a value upstream ROSCO never produces (P7: the oracle is the original
+source). The fix needs the generated bridge to signal "capacity exceeded" back
+to the test, which is a change to a generator every unit's evidence came from.
+
+**NOT TAKEN IN THIS DISPATCH, and the reason is X3.** Changing the emitted
+bridge changes what every unit's harness compares. What was done instead is
+`--disable R13_staging_capacity` on this unit, with the price measured:
+
+```
+BASELINE   14 failed   cases 1140..1153            (evidence/AeroDynTorque/
+88466711   15 failed   cases 1140..1153 + 1154      mutation.survivors_on_
+11c1e326   14 failed   identical set                full_corpus.txt)
+06f7d2c8   14 failed   identical set
+26021804   14 failed   identical set
+```
+
+**Exactly one mutant, at exactly one case** — the `cap == 30` case that sizes
+the buffer TO the composed message. `88466711` is left standing as an honest
+survivor with that case named, and is deliberately NOT declared unreachable the
+way five other units at that same site declared it.
+
+The comparison is between failing case SETS and not between counts, on purpose:
+both the baseline and every mutant are red on the full corpus, and a mutant that
+turned one of the baseline's own failures into a pass while adding one elsewhere
+would show the same count.
+
+### `--disable` reported an ablated rule as one that had no site (X2, fixed)
+
+`--disable R13_staging_capacity` wrote, into the committed artifact:
+
+```
+N/A  R13_staging_capacity  no deferred-length CHARACTER output -- no parameter
+                           whose LENGTH the callee chooses
+```
+
+which is false. Every rule's `if <sites> and "<rule>" not in off:` leaves its
+detail at the string it was INITIALISED to, and that string is the sentence for
+"the rule found nothing to do". A reader concludes the rule was inapplicable,
+when it was switched off and its 256 cases are missing from the corpus every
+later number — the mutation score included — is taken over. `--disable` exists
+to measure a rule's kill set, and the two runs it compares are not comparable if
+neither says which one it is.
+
+Fixed in `translation-loop@b875e83`: one rewrite after the table is built, not
+ten edits at the sites. Three controls, all taken:
+
+* the corpus hashes identically either side of the change (`0893b9eb…8972`), so
+  it is additive (P5) — proved by hashing, not by reading the diff;
+* the ablated row now says ABLATED, and does **not** quote the uncomputed detail
+  as a counterfactual. The first version of the fix appended "Had it not been
+  disabled: <detail>", which turns one false sentence into a false sentence
+  wearing a hedge — whether the rule had a site is decided inside the block that
+  did not run;
+* `--disable R13_staging_capacityy` raises `ValueError` instead of silently
+  ablating nothing.
+
+`pytest`: 345 passed / 73 failed / 9 errors, the same counts as before the change
+(the 73 are environmental — no `git` in `vit-dev`).
+
+### A call site with fifteen thousand hits that the gate cannot see, because a gain is 0.0
+
+The gate red test moved scenarios 1, 7, 8, 12, 16 and 25 — and **not 17**.
+Scenario 17 is the only one of the 27 that reaches this unit's SECOND call site
+(clean `ControllerBlocks.f90:389`, the I&I arm, `WE_Mode == 1 .AND. WE_Op > 0`),
+15,062 hits there and 0 everywhere else.
+
+Two probes, both committed:
+
+```
+gate.scenario17-probe.json    PI 3.14159265359 -> 3.2   0 of 208,000
+                              (a 1.9% change in the rotor area)
+gate.scenario17-probe2.json   the RETURN VALUE forced to >= 1.0e5 N-m
+                                                        0 of 208,000
+```
+
+Scenario 17 is not a dead scenario — its baseline has 16,000 distinct
+`gen_speed` values and 14,085 distinct `gen_torque` values. The cause is one
+number in the input file, `Examples/DISCON.IN:123`, `WE_Gamma = 0.0`, against an
+arm that reads
+
+```
+WE_VwIdot = WE_Gamma/WE_Jtot * (VS_LastGenTrq*GearboxRatio - Tau_r)
+WE_Vw     = WE_VwI + WE_Gamma*RotSpeedF
+```
+
+so the returned torque is multiplied by exactly zero and the estimate never
+moves. **A hit count does not say a call site is observable** — this is P9's
+sharpest form and the second instance in two units, after #47's scenario 8
+holding `AWC_amp` at 0.0.
+
+The first reading of the absence — "the value only reaches a channel under
+`WE_Mode == 2`" — was written into `gate.redtests.txt` and is WRONG; it is
+corrected in the file rather than left standing beside the right one.
+
+### The reference's parentheses are load-bearing, and the sweep says by how much
+
+Both `assoc_reorder` mutants of this unit's two grouped products were killed,
+and the margins are the argument for transcribing the shape rather than the
+algebra:
+
+```
+PI * (R*R)         ->  (PI * R) * R          killed, 52 of 1131
+0.5 * (rho*area)   ->  (0.5 * rho) * area    killed,  1 of 1131
+```
+
+**One case out of eleven hundred** is the entire difference for the second. A
+corpus one rung narrower would have reported it as an equivalence.
+
+### `vit integrate --apply` strips every comment from vit.yaml, third unit running
+
+1091 lines to 246. Established that the ONLY semantic difference was the one
+added entry by loading both with `yaml.safe_load` and walking them key by key,
+rather than by reading a 61 KB diff; then `git checkout -- vit.yaml` and the
+entry put back by hand, with `verification: simulation` dropped as for
+`ratelimit` and `ActiveWakeControl`. Recorded a third time because three
+occurrences is the point at which "somebody remembers" stops being a repair.

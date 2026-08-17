@@ -4,6 +4,99 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-17: unit #48 `AeroDynTorque` is `integrated`, and it closes at 13
+of 14 with P12 failing on purpose.** Four layers, all four red-tested, and the
+mutation score is an honest **0.8750** against a threshold of 1.000: 28 of 32
+scoreable killed, **3 declared equivalent** with proofs in
+`mutation/AeroDynTorque.equivalences.{json,md}`, **4 survivors standing** with
+the input that would kill each named and measured in
+`evidence/AeroDynTorque/mutation.census.txt`. **Not one survivor is in the
+arithmetic** — all four are in the two CHARACTER helpers.
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (`harness/AeroDynTorque.json`) | **1131 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, the `interp2d_c` bridge kept so both sides run one interp2d — this unit's primary evidence | the unit as a no-op: **1127 of 1131** |
+| mutation (`mutation/AeroDynTorque.json`) | **28 of 32 scoreable, 0.8750**, 3 declared, 0 no-compile, 10 operators, **4 survivors standing** | the score *is* the red test, 28 times |
+| post-integration (`harness/AeroDynTorque.postintegration.json`) | 1131 checked, 0 failed | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **1097 of 1131**; reverted, rebuilt, green re-taken at 0 |
+| gate, 27 scenarios (`gate/AeroDynTorque.json`) | 5,252,000 values / 351 channels, 0 mismatched | `PI` in the 13th digit moves **145,146**, 21 of 351 channels, scenarios 1, 7, 8, 12, 16, 25; revert verified |
+
+**THE STAGING-REFUSAL CONVENTION IS NOT COMPOSITIONAL, AND THIS IS THE FIRST
+UNIT IN WHICH TWO STAGED CHARACTER ASSIGNMENTS COMPOSE.** The first harness take
+was **RED at 14 of 1387**, all fourteen on `ErrVar.ErrMsg`/`n_ErrMsg`, contiguous
+at cases 1140–1153, and the window is exact arithmetic:
+`[L_callee, L_callee + L_prefix)` = **[16, 30)** in the staging capacity R13
+sweeps. The reference chain has ONE capacity gate — the generated bridge, on the
+final 30 bytes — and the translation chain has TWO: the `interp2d_c` bridge's
+write-back on 16, then `assign_errmsg` on 30. `interp2d` inherited the same
+helper and never composed, because its own prefix is reached only on the
+bilinear path and that is the one path on which it does not call `interp1d`.
+Raised in DECISIONS.md as a proposed method amendment (make such a case
+INADMISSIBLE — a count the harness already keeps) with the reason it was not
+taken here: it changes a generator every unit's evidence came from (X3).
+
+**THE PRICE OF THE ABLATION IS MEASURED FOR ALL FOUR SURVIVORS, NOT FOR THE ONE
+THAT MOTIVATED IT.** `--disable R13_staging_capacity`, then every survivor re-run
+over the FULL 1387-case corpus and compared by failing case SET rather than by
+count (both are red there, so a count could hide a swap):
+
+| | failed | failing cases |
+|---|---|---|
+| the unmutated translation | 14 | 1140..1153 |
+| `88466711` `s.size() > cap` → `>=` | **15** | 1140..1153 **+ 1154** |
+| `11c1e326` `n > 0` → `n > 1` | 14 | identical |
+| `06f7d2c8` `: 0` → `: 1` | 14 | identical |
+| `26021804` `+ 1` → `+ 2` | 14 | identical |
+
+Exactly one mutant at exactly one case — the `cap == 30` case that sizes the
+buffer TO the composed message. **Five other units declared that site
+unreachable and this one does not**, because interp2d's R13 block never reaches
+`assign_errmsg` and this unit's would.
+
+The other three are unreachable for a different reason, and the reason is a
+census rather than a reading: `TRIMCENSUS calls=1097 n_le_0=0 n_eq_1=0 n_min=9
+n_max=21 with_trailing_blank=0`. `n_min = 9` is `len("interp1d:")` — by the time
+this unit trims, its callee has already reassigned `ErrMsg` to an exactly-sized
+string, so **the length the trim sees is chosen by the callee and not by the
+corpus**.
+
+**ONE TOOL DEFECT, FIXED RATHER THAN ROUTED AROUND (X2).** `--disable <rule>`
+made the artifact say the rule had **no site** — every rule's detail string is
+left at the "found nothing to do" value it was initialised to, so an ablation
+read as an inapplicability. Fixed in `translation-loop@b875e83`, once, after the
+coverage table is built. Three controls: the corpus hashes identically either
+side (`0893b9eb…8972`, additive — P5), the row now says ABLATED without quoting
+the uncomputed detail as a counterfactual, and a misspelt `--disable` name
+raises `ValueError`. This is the first artifact-revision move of the campaign
+since `eb5028e`; every artifact of this unit names `b875e83`.
+
+**A CALL SITE WITH FIFTEEN THOUSAND HITS THAT THE GATE CANNOT SEE, BECAUSE A
+GAIN IS 0.0.** This unit has two call sites. The I&I one (clean
+`ControllerBlocks.f90:389`, `WE_Mode == 1 .AND. WE_Op > 0`) is reached by
+**scenario 17 and by nothing else**, 15,062 hits — and scenario 17 did not move
+under the red test. Two probes: `PI` → 3.2, a 1.9% change in the rotor area,
+moves **0 of 208,000**; the return value forced to ≥ 1.0e5 N·m moves **0 of
+208,000**. Scenario 17 is alive (16,000 distinct `gen_speed` values). The cause
+is `Examples/DISCON.IN:123`, `WE_Gamma = 0.0`, and the arm multiplies `Tau_r` by
+it. Second instance in two units of "a hit count does not say a call site is
+observable", after #47's scenario 8 holding `AWC_amp` at 0.0.
+
+**Procedure.** TWO reset windows, each opened and closed inside this dispatch —
+the first for the harness, the no-op red test and the two guarded mutation
+parts; the second for the four-survivor full-corpus measurement, by a script
+that opens and closes its own window and asserts the scored corpus's sha256
+before leaving. The gate was re-run after the second and is byte-identical in
+every field but the note (`gate/AeroDynTorque.postroundtrip.json`). Nothing
+backgrounded, nothing polled. Ten commits, one per expensive artifact.
+`revcheck --unit AeroDynTorque` is clean.
+
+**`PerformanceData` is the campaign's first NEW view type since setup**, and it
+needed no manual work: `vit translate` wrote `performancedata_view_t` into
+`vit_types.h` and generated `vit_performancedata_view.f90`, and its three
+ALLOCATABLE fields cross as pointer+extent with `Cp_mat` column-major. The three
+view populators that already existed are byte-identical after the run.
+
+---
+
 **As of 2026-08-17: unit #47 `ActiveWakeControl` is `integrated`, and it closes
 at 13 of 14 with P12 failing on purpose.** This is its SECOND dispatch, opened on
 that one unmet condition. The translation was not touched; the CORPUS was
