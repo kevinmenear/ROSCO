@@ -1,6 +1,6 @@
-# done_check.py ActiveWakeControl -- captured 2026-08-17T17:30:08Z by scripts/capture_done_check.sh
+# done_check.py ActiveWakeControl -- captured 2026-08-17T17:32:38Z by scripts/capture_done_check.sh
 
-Run against the committed state at 8b055e12 ("ActiveWakeControl: the gate re-run against the library as it now ships -- byte-identical"), with a CLEAN tree, with stdout
+Run against the committed state at 84dec39f ("RUNBOOK target layer: six entries earned at unit #47's second dispatch"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
