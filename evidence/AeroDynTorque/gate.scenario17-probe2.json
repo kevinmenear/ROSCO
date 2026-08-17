@@ -1,0 +1,44 @@
+{
+ "baseline": "baseline_arrays",
+ "channels_compared": 13,
+ "channels_mismatched": 0,
+ "compared": 208000,
+ "comparison_verdict": "PASS",
+ "generated_by": "scripts/gate.py",
+ "inputs_restored": [
+  "Examples/DISCON.IN"
+ ],
+ "loop_rev": "b875e83",
+ "mismatched": 0,
+ "mismatched_channels": [],
+ "missing_channels": [],
+ "missing_scenarios": [],
+ "notes": [
+  "SECOND PROBE ON SCENARIO 17. The first (gate.scenario17-probe.json) showed that a 1.9 percent change in PI moves 0 of 208,000 there. This one forces the RETURN VALUE itself to at least 1.0e5 N-m, which no arithmetic inside the unit can undo, and so separates 'the gate cannot observe this call site at all' from 'the returned torque is clamped to 0 here and annihilates any perturbation of the arithmetic'."
+ ],
+ "perturbation": {
+  "file": "rosco/controller/src/aerodyntorque.cpp",
+  "from": "AeroDynTorque_result = std::fmax(AeroDynTorque_result, 0.0);",
+  "replacements": 1,
+  "to": "AeroDynTorque_result = std::fmax(AeroDynTorque_result, 1.0e5);"
+ },
+ "perturbation_broke_scenarios": [],
+ "perturbed": true,
+ "residual_dirt": [],
+ "revert_build_ok": true,
+ "revert_compared": 208000,
+ "revert_mismatched": 0,
+ "revert_scenarios_failed": [],
+ "revert_verified": true,
+ "reverted": true,
+ "scenarios": [
+  17
+ ],
+ "scenarios_failed": [],
+ "shape_mismatches": [],
+ "unit": "AeroDynTorque",
+ "unit_of_count": "values",
+ "verdict": "RED_TEST_FAIL",
+ "vit_rev": "a16a7ab",
+ "went_red": false
+}

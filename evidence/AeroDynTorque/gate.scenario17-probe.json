@@ -1,0 +1,44 @@
+{
+ "baseline": "baseline_arrays",
+ "channels_compared": 13,
+ "channels_mismatched": 0,
+ "compared": 208000,
+ "comparison_verdict": "PASS",
+ "generated_by": "scripts/gate.py",
+ "inputs_restored": [
+  "Examples/DISCON.IN"
+ ],
+ "loop_rev": "b875e83",
+ "mismatched": 0,
+ "mismatched_channels": [],
+ "missing_channels": [],
+ "missing_scenarios": [],
+ "notes": [
+  "PROBE, NOT THE UNIT'S RED TEST. Scenario 17 is the ONLY one of the 27 that reaches the WE_Mode == 1 call site (clean ControllerBlocks.f90:389, 15,062 hits, 0 in every other scenario), and it did NOT move under the 13th-digit PI perturbation that moved 145,146 values across scenarios 1, 7, 8, 12, 16 and 25. This asks whether it moves under a GROSS perturbation of the same constant -- 3.14159265359 -> 3.2, a 1.9 percent change in the rotor area -- so that 'the gate cannot see this call site' is separated from 'the perturbation was too small to survive that consumer'."
+ ],
+ "perturbation": {
+  "file": "rosco/controller/src/aerodyntorque.cpp",
+  "from": "constexpr double PI = 3.14159265359;",
+  "replacements": 1,
+  "to": "constexpr double PI = 3.2;"
+ },
+ "perturbation_broke_scenarios": [],
+ "perturbed": true,
+ "residual_dirt": [],
+ "revert_build_ok": true,
+ "revert_compared": 208000,
+ "revert_mismatched": 0,
+ "revert_scenarios_failed": [],
+ "revert_verified": true,
+ "reverted": true,
+ "scenarios": [
+  17
+ ],
+ "scenarios_failed": [],
+ "shape_mismatches": [],
+ "unit": "AeroDynTorque",
+ "unit_of_count": "values",
+ "verdict": "RED_TEST_FAIL",
+ "vit_rev": "a16a7ab",
+ "went_red": false
+}

@@ -1,0 +1,118 @@
+# Unit #48 `AeroDynTorque` — every surviving mutant, with the measurement
+
+`mutation/AeroDynTorque.json`: **28 of 32 scoreable killed, 0.8750**, 35 mutants,
+**3 declared equivalent**, **0 no-compile**, 10 operators, **4 survivors
+standing**. Threshold is 1.000, so P12 fails, on purpose and with the four
+reasons below.
+
+Split by operator across two guarded foreground parts (145 s and 138 s) and
+merged by `scripts/_mutation_merge.py`, which refuses a union that does not
+cover every operator `harness.cppmutate` offers.
+
+    arith_op 5   assoc_reorder 2   compare_op 4   const_tweak 9   drop_call 2
+    drop_factor 5   negate_cond 3   swap_call_args 2   swap_callee 2
+    swap_operands 1                                            = 35
+
+## The three declared, and why each is an EQUIVALENCE and not a blind spot
+
+All three are behaviour-preserving on every input of the type — none is the
+weaker *unreachable-with-a-measurement* claim. Reasons in
+`mutation/AeroDynTorque.equivalences.json`.
+
+| id | site | proof |
+|---|---|---|
+| `04ed59c3` | `n > 0 ? (size_t)n : 0` → `>=`, in `errmsg_trim` | the two conditions differ at exactly one value, `n == 0`, and both arms yield 0 there. Third unit at this site: interp1d `b61327db` (exhaustive over all 2^32 ints), interp2d `f0949202` |
+| `b600adf5` | `fmax(WE_Vw, DBL_EPSILON)` arguments swapped | unit #24's bit-level probe, `evidence/saturate/minmax_probe.txt`: `fmax` commutative at both signed zeros and at a NaN, both orders of both |
+| `0490bff2` | `fmax(result, 0.0)` arguments swapped | same probe, same two inputs |
+
+## The four standing
+
+### 1. `88466711` — the capacity boundary in `assign_errmsg`. R13's kill set, ablated.
+
+    if (static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap)   ->  >=
+
+Differs on exactly one input: `s.size() == n_ErrMsg_cap`. That input is what
+R13_staging_capacity exists to produce — it is unit #30's finding, and R13's own
+header names this mutant as the reason the rule was written.
+
+**THIS UNIT'S CORPUS HAS R13 ABLATED** (`--disable R13_staging_capacity`; the
+reason is `harness.staging_composition.txt`), so the mutant survives it. The
+price was **measured, not asserted**, and measured for all four survivors rather
+than for this one — `mutation.survivors_on_full_corpus.txt`:
+
+    BASELINE   14 failed   cases 1140..1153
+    88466711   15 failed   cases 1140..1153 + 1154
+
+so R13 kills it at exactly one case, **case 1154**, the capacity == 30 case that
+sizes the buffer TO the composed message
+`"AeroDynTorque:interp1d:@ABYZ[^"`.
+
+**IT IS NOT DECLARED, AND FIVE OTHER UNITS DID DECLARE IT.** ReadAvrSWAP
+`e82a5f90`, ExtController `11d2c9cc`, UpdateZeroMQ `ac7a5b72`, interp1d
+`e34d5cc4` and interp2d `98926651` all declared this same site UNREACHABLE with
+a measurement — and interp2d's corpus *had R13 applied*, with
+`s.size() == cap` reached 0 times, because interp2d prefixes only on the
+bilinear path and the R13 base case does not take it. **This unit prefixes on
+every case with `aviFAIL < 0`**, so the same declaration would be false here.
+The input that kills it is named, exists, and is one flag away.
+
+### 2 and 3. `11c1e326` and `06f7d2c8` — the two guards in `errmsg_trim`
+
+    const std::string_view v(ErrVar->ErrMsg, n > 0 ? static_cast<size_t>(n) : 0);
+      11c1e326   n > 1 ? ...     kills it: n_ErrMsg == 1 exactly
+      06f7d2c8   ... : 1         kills it: n_ErrMsg <= 0 with a non-blank byte
+
+**MEASURED over the scored corpus**, not argued — `aerodyntorque.trim-census-probe.cpp`
+is the shipped translation with six counters and nothing else changed, run over
+the same 1131 cases:
+
+    TRIMCENSUS calls=1097  n_le_0=0  n_eq_1=0  n_min=9  n_max=21
+               empty_view=0  with_trailing_blank=0  all_blank=0
+
+`n_min = 9` is `len("interp1d:")`, and that is the whole explanation: by the
+time this unit trims, its callee has already reassigned `ErrVar%ErrMsg` to an
+exactly-sized string. Every path through `interp2d` that can leave `aviFAIL < 0`
+passes through either `interp1d`'s prefix or `interp2d`'s own, so **the length
+this unit's trim sees is never chosen by the corpus** — it is chosen by the
+callee.
+
+Also measured on the FULL corpus: both survive it with a failing case set
+IDENTICAL to the baseline's, so R13 does not reach them either.
+
+They are the same two survivors interp2d left standing (`c2c4e0b7`, `922581aa`),
+in the same copied helper, and they are left standing here for the same reason:
+an input in the reference's own well-defined domain kills each, and no rule this
+generator has draws it. What would draw it is a rule that crosses the character
+ladder with the callee's behaviour — the ladder does put `n_ErrMsg` at 1 and at
+0, and every one of those cases has its message replaced before the trim runs.
+
+### 4. `26021804` — the trim itself
+
+    return std::string(v.substr(0, v.find_last_not_of(' ') + 1));   ->  + 2
+
+Differs whenever the view has at least one trailing blank (and on an all-blank
+view, where `npos + 1 = 0` and `npos + 2 = 1`). The same census row settles it:
+**`with_trailing_blank = 0` and `all_blank = 0` over 1097 calls**, for the same
+reason as 2 and 3 — a Fortran reallocating assignment produces a string of
+exactly its right-hand side's length, and `TRIM` has already run on the part
+that came from the caller.
+
+The killing input is an `ErrMsg` that still carries a trailing blank when this
+unit trims it, which requires `aviFAIL < 0` on entry AND the callee's write-back
+to have been refused. That configuration exists only where the staging capacity
+is too small — i.e. inside R13's block — and the full-corpus run shows it is not
+reached there either: identical failing set, 14 of 1387.
+
+## What the four have in common, stated because it is the finding
+
+**All four are in the two CHARACTER helpers, and not one is in the arithmetic.**
+Every mutant of the torque expression, the tip-speed ratio, the rotor area, the
+two `fmax`es, the `interp2d` call and the `aviFAIL` branch was killed — including
+both `assoc_reorder` mutants, which are the two grouping decisions the header of
+the translation is about:
+
+    PI * (R*R)          ->  (PI * R) * R          killed,  52 of 1131
+    0.5 * (rho*area)    ->  (0.5 * rho) * area    killed,   1 of 1131
+
+The second killed one case out of 1131, and that is the whole argument for
+writing the parentheses the reference's way rather than the algebra's.

@@ -1,0 +1,91 @@
+ONE GATE RED TEST, AND THE REASON IS A HIT COUNT RATHER THAN AN ARGUMENT.
+
+Unit #40's rule is that two arms with disjoint scenario sets need two red tests.
+This unit has ONE live arm. Its only branch is
+
+    IF (ErrVar%aviFAIL < 0) THEN
+        ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
+    ENDIF
+
+and clean `Functions.f90:447` -- the assignment inside it -- has ZERO hits in
+all 27 scenarios, while :435, :436, :437, :440, :442, :443 and :450 each carry
+78,756 in scenario 1 alone and are hit in 22 of the 27. `aviFAIL < 0` never
+holds at a Cp lookup in a running simulation. There is no second arm for a
+second perturbation to reach, and that sentence is recorded INTO the artifact
+with `--note` rather than left in a file beside it.
+
+  gate/AeroDynTorque.redtest.json
+      constexpr double PI = 3.14159265359;  ->  3.141592653591   (13th digit)
+      replacements: 1, asserted by gate.py, in
+        rosco/controller/src/aerodyntorque.cpp -- THIS unit's own translation
+        unit, so nothing outside it can move (unit #45's rule about a
+        perturbation matching a generated line in more than one wrapper)
+      moved 145,146 of 5,252,000, across 21 of 351 channels
+      revert verified at 0 of 5,252,000, revert_build_ok true
+
+  scenarios moved, read out of `mismatched_channels` rather than predicted:
+
+      1   gen_power 11341/40000  gen_speed 11428/40000  gen_torque    47/40000
+      7   bld_pitch 16481/24000  bld_pitch_2 16481      bld_pitch_3 16481
+          gen_power 19591/24000  gen_speed 19590        gen_torque 12358
+      8   bld_pitch_3    1/16000
+     12   bld_pitch  10/16000  bld_pitch_2 10  bld_pitch_3 10
+          gen_power  54/16000  gen_speed   55
+     16   bld_pitch   1/16000  bld_pitch_2  1  bld_pitch_3  1
+     25   gen_power 10551/16000  gen_speed 10607  gen_torque 47/16000
+
+WHY `PI` AND NOT THE RESULT. `PI` enters this unit at exactly one site,
+`RotorArea = PI*(R*R)`, whose only consumer is the returned torque -- so the
+perturbation is a clean scale on the return value and reaches nothing else. It
+is the same constant and the same digit unit #47 used, which makes the two
+numbers comparable.
+
+WHY SIX SCENARIOS AND NOT THE TWENTY-THREE THAT CALL THE UNIT, AND WHY SCENARIO
+17 IS THE INTERESTING ABSENCE.
+
+This unit has TWO call sites, in two different arms of `WindSpeedEstimator`:
+
+    clean ControllerBlocks.f90:441   the EKF arm (WE_Mode == 2)
+                                     hit in 22 scenarios, 78,756 in scenario 1
+    clean ControllerBlocks.f90:389   the I&I arm (WE_Mode == 1 .AND. WE_Op > 0)
+                                     15,062 hits, in SCENARIO 17 AND NOWHERE ELSE
+
+Scenario 17 did not move under the red test. TWO PROBES, BOTH COMMITTED, SETTLE
+WHY -- and the first reading, "the value only reaches a channel under WE_Mode ==
+2", was wrong and is corrected here rather than left standing.
+
+  gate.scenario17-probe.json    PI 3.14159265359 -> 3.2, a 1.9% change in the
+                                rotor area, scenario 17 only:  0 of 208,000
+  gate.scenario17-probe2.json   the RETURN VALUE forced to at least 1.0e5 N-m,
+                                which no arithmetic inside the unit can undo:
+                                0 of 208,000
+
+Scenario 17 is not a dead scenario -- `baseline_arrays/scenario_17.npz` has
+16,000 distinct `gen_speed` values and 14,085 distinct `gen_torque` values. The
+cause is one number in the input file:
+
+    Examples/DISCON.IN:123    0.0    ! WE_Gamma - Adaption gain of the wind
+                                       speed estimator algorithm [m/rad]
+
+and the I&I arm is
+
+    WE_VwIdot = WE_Gamma/WE_Jtot * (VS_LastGenTrq*GearboxRatio - Tau_r)
+    WE_VwI    = WE_VwI + WE_VwIdot*DT
+    WE_Vw     = WE_VwI + WE_Gamma*RotSpeedF
+
+so `Tau_r` is multiplied by EXACTLY 0.0 and the estimate never moves. A call
+site with fifteen thousand hits whose returned value is annihilated by a gain of
+zero: the hit count says nothing about it, which is P9 in its sharpest form.
+Same shape as unit #47's scenario 8, where `vit.yaml` already records `AWC_amp`
+held at 0.0.
+
+WHAT THAT COSTS, STATED. The gate cannot distinguish ANY behaviour of this unit
+at the I&I call site, so nothing that is true only there is covered by this
+layer. It is not a gap in the unit's ARMS -- there is one arm and the EKF site
+exercises it -- but it is a gap in the CALL SITES, and closing it needs a
+scenario with a non-zero `WE_Gamma`, which no `Examples/DISCON*.IN` has.
+
+THE GATE WAS RE-RUN AFTER THIS DISPATCH'S SECOND RESET/RESTORE ROUND TRIP and is
+identical in every field but the note (`gate/AeroDynTorque.postroundtrip.json`).
+The red test is NOT re-taken: it perturbs a file byte-identical to the one it
+perturbed, and its own revert was verified at 0 within the same run.
