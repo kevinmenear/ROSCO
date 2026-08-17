@@ -1,0 +1,73 @@
+{
+ "unit": "CableControl",
+ "operators": [
+  "const_tweak"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "const_tweak"
+ ],
+ "operators_filter_unmatched": [],
+ "mutants": 40,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 40,
+ "killed": 35,
+ "survived": 5,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.875,
+ "loop_rev": "832fa2a-nogit",
+ "gen_rev": "gen-c9c444313f10",
+ "vit_rev": "a16a7ab-nogit",
+ "survivors": [
+  {
+   "id": "97aefd80",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "1a26a963",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "3e8f1ad8",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "d54225a5",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "049cd9a7",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  }
+ ]
+}

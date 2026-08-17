@@ -1,0 +1,93 @@
+ERRMSG CENSUS -- unit #49 `CableControl`, over the SCORED 3354-case corpus
+=========================================================================
+
+Taken with evidence/CableControl/cablecontrol.errmsg-census-probe.cpp on the
+clean tree, `--no-generate` so the case file is the one harness/CableControl.json
+was green on and mutation/CableControl.json was scored against. It reads the
+case's INPUTS only, before either chain runs.
+
+  need = 18 + LEN(TRIM(ErrMsg))  -- what `RoutineName//':'//TRIM(ErrMsg)` asks
+                                    for, len('StructuralControl') + len(':')
+
+THE THREE STANDING SURVIVORS AND THE INPUT EACH ONE NEEDS
+---------------------------------------------------------
+
+  cases                                                  3354
+  aviFAIL <  0  -- the prefix runs at all                223
+  aviFAIL >= 0  -- assign_errmsg is never reached        3131
+
+  8d2724ea  `s.size() > cap` -> `>=`   needs  cap == need
+     cases with aviFAIL < 0 and cap == need              0
+     cases with aviFAIL < 0 and cap <  need              0
+     cap - need over those cases                         [(4078, 209), (4079, 14)]
+
+  97aefd80  `n > 0 ? n : 0` -> `n > 1 ? n : 0`   needs  n == 1
+     cases with n == 1 ANYWHERE                          58
+     cases with n == 1 AND aviFAIL < 0                   0
+
+  1a26a963  `n > 0 ? n : 0` -> `n > 0 ? n : 1`   needs  n <= 0
+     cases with n <= 0 ANYWHERE                          0
+     cases with n <= 0 AND aviFAIL < 0                   0
+
+  n_ErrMsg over all cases        [(1, 58), (2, 154), (3, 1), (8, 2987), (13, 154)]
+  n_ErrMsg over aviFAIL < 0      [(8, 223)]
+  LEN(TRIM) over aviFAIL < 0     [(7, 14), (8, 209)]
+
+THE CAUSE IS ONE FACT AND IT IS THE BASE DRAW, NOT THE LADDERS
+--------------------------------------------------------------
+
+Every rung of every ladder that could supply one of the three inputs is taken
+`with every other input at its base draw` -- R13's own coverage line says so --
+and this unit's base draw is:
+
+  ErrVar_aviFAIL   [(-2147483648, 2), (-1000000000, 2), (-999999999, 2), (-100000000, 2), (-99999999, 2), (-10000000, 2)] ...
+  CntrPar_CC_Mode  [(-2147483648, 2), (-1000000000, 2), (-999999999, 2), (-100000000, 2), (-99999999, 2), (-10000000, 2)] ...
+
+  case 0:  aviFAIL = 300   CC_Mode = -300
+
+300 and -300 are MIDPOINTS of the +/-1e3 default range, which is unit #47's
+finding met a second time: `_base` puts a selector at the midpoint of its
+range and a midpoint is not a mode. So R13's 256 capacity cases and R6's
+character-length rungs all sit at `aviFAIL = 300`, where `IF (ErrVar%aviFAIL
+< 0)` is false and neither helper is entered at all -- which is why the
+capacity ladder and the arm that reads the capacity are DISJOINT.
+
+ALL THREE ARE (b), NOT (c): A GREEN CORPUS COULD CONTAIN THE KILLING INPUT
+--------------------------------------------------------------------------
+
+The question that decides a disposition is whether any input exists with
+ORIGINAL == REFERENCE and MUTANT != REFERENCE. For all three it does, and the
+argument is short enough to check by reading:
+
+  8d2724ea  at cap == need the message FITS. The reference's generated bridge
+            exports the same 18+trim bytes into the same capacity and also
+            fits, so ORIGINAL == REFERENCE; the mutant's `>=` refuses at
+            exactly that capacity and writes nothing.
+  97aefd80  at n == 1 with a non-blank byte, TRIM gives length 1 on both
+            sides, so ORIGINAL == REFERENCE = 'StructuralControl:' + that
+            byte; the mutant's `n > 1` gives length 0 and writes 18 bytes.
+  1a26a963  at n == 0 the reference's TRIM of a zero-length string is
+            zero-length, so ORIGINAL == REFERENCE = 'StructuralControl:';
+            the mutant's `: 1` reads one byte of the staging buffer, which
+            the emitted test zero-fills, and writes 19.
+
+None of the three lies inside a window where the harness's own reference
+disagrees with the translation -- the harness is GREEN at 3354 of 3354 -- so
+unlike unit #48's two (c) survivors these are corpus gaps and not blind spots.
+
+WHAT WOULD CLOSE THEM, AND WHY IT WAS NOT DONE HERE
+---------------------------------------------------
+
+All three need a CHARACTER parameter's LENGTH or a staging CAPACITY crossed
+with the `aviFAIL` knob. `harness/baseline.CableControl.json` cannot do it:
+`_baseline_state` deliberately skips every `char[]` parameter
+(harness/generate.py:1138), and `harness/ranges.toml` has no entry kind that
+states a character length. The two levers that exist are a range pin moving
+`aviFAIL`'s and `CC_Mode`'s BASE DRAW onto a live arm (`lo`/`hi`), and making
+them R2 FLAGS (`values = [...]`), which is unit #47's fix and multiplies the
+corpus. Either is a change to the generated corpus that every later artifact
+of this unit would have to be re-taken over, and this dispatch stopped at the
+measurement rather than starting a re-take it could not finish (RUNBOOK step
+2). THIS IS THE THIRD UNIT AT THE SAME WALL: unit #43 recorded it as
+'the ErrMsg helpers' three boundaries ... no state in this file can move
+them', unit #48 from the other side, and this unit measures the reason.

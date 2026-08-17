@@ -1,0 +1,115 @@
+{
+ "unit": "CableControl",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "operator_population": {
+  "compare_op": 12,
+  "drop_factor": 1,
+  "arith_op": 13,
+  "swap_operands": 12,
+  "index_offset": 4,
+  "const_tweak": 40,
+  "negate_cond": 7
+ },
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutants": 89,
+ "equivalent_declared": 4,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 89,
+ "killed": 82,
+ "survived": 3,
+ "equivalent": 4,
+ "declared_but_killed": [],
+ "score": 0.9647,
+ "loop_rev": "832fa2a-nogit",
+ "vit_rev": "a16a7ab-nogit",
+ "merged_from": [
+  {
+   "part": "mutation/CableControl.clean.index_negate_factor.json",
+   "operators_filter": [
+    "drop_factor",
+    "index_offset",
+    "negate_cond"
+   ],
+   "total": 12,
+   "mutants": 12,
+   "nocompile": 0,
+   "killed": 12,
+   "survived": 0,
+   "score": 1.0
+  },
+  {
+   "part": "mutation/CableControl.clean.arith_cmp_swap.json",
+   "operators_filter": [
+    "arith_op",
+    "compare_op",
+    "swap_operands"
+   ],
+   "total": 37,
+   "mutants": 37,
+   "nocompile": 0,
+   "killed": 35,
+   "survived": 1,
+   "score": 0.9722
+  },
+  {
+   "part": "mutation/CableControl.clean.const_tweak.json",
+   "operators_filter": [
+    "const_tweak"
+   ],
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 35,
+   "survived": 2,
+   "score": 0.9459
+  }
+ ],
+ "merged_why": "89 mutants at ~8.5s each is over 12 minutes and a dispatch's foreground command may block for 600s (unit #41 lost a 69-mutant part to exactly that ceiling). Three parts, each in the foreground, each through scripts/mutate_guarded.sh, unioned here.",
+ "merged_by": "scripts/_mutation_merge.py",
+ "survivors": [
+  {
+   "id": "8d2724ea",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "97aefd80",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "1a26a963",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  }
+ ]
+}
