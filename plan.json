@@ -2983,7 +2983,27 @@
     "value": "unknown",
     "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
-   "observability": null
+   "observability": "The differential harness is the primary evidence: 9,721 cases against the CLEAN Fortran, all five callee bridges kept so both sides run one ColemanTransform, one ColemanTransformInverse, one PIController, one PIIController and one saturate. THE CORPUS CARRIES A STATED IMPLICATION: harness/ranges.toml derives LocalVar_restart from LocalVar_iStatus == 0, because ReadAvrSWAP establishes that relation before every controller call and is the only writer of restart in ROSCO. Without it 12 of 9,721 cases reach a PIIController call whose `error` argument is a local the reference declares and never writes, and on those the reference has no oracle. The cost of the entry, stated: iStatus and restart are no longer independent, so nothing here can catch a translation that read one where the reference reads the other. THE GATE IS NARROWER THAN ITS COUNT LOOKS: five of 27 scenarios call this unit, and in four of those five the flap channels are exactly zero for every sample -- only scenario 26 carries dynamic range.",
+   "disposition": "integrated",
+   "evidence": [
+    "harness/FlapControl.json",
+    "harness/FlapControl.postintegration.json",
+    "harness/FlapControl.postintegration.revert-verified.json",
+    "mutation/FlapControl.json",
+    "mutation/FlapControl.equivalences.json",
+    "gate/FlapControl.json",
+    "gate/FlapControl.redtest.json",
+    "gate/FlapControl.redtest.mode3_NP1.json",
+    "gate/FlapControl.redtest.mode2_R2D.json",
+    "gate/FlapControl.mode2-probe.json",
+    "evidence/FlapControl/harness.noop.json",
+    "evidence/FlapControl/harness.postintegration.redtest.json",
+    "evidence/FlapControl/undefined_read_census.txt",
+    "evidence/FlapControl/equivalence_probe.txt",
+    "evidence/FlapControl/gate.redtests.txt",
+    "evidence/FlapControl/README.md",
+    "evidence/FlapControl/done_check.txt"
+   ]
   },
   {
    "order": 51,

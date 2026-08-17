@@ -4,6 +4,103 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-17: unit #50 `FlapControl` is `integrated` and CLOSES AT 14 of
+14. The mutation score is 1.000.** Four layers, all four red-tested. One
+dispatch. The unit itself is small — four arms in one `ELSEIF` chain and three
+fixed `avrSWAP` writes — and everything interesting about it comes from one line
+of the reference.
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (`harness/FlapControl.json`) | **9721 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, all five callee bridges kept so both sides run one `ColemanTransform`, one `ColemanTransformInverse`, one `PIController`, one `PIIController` and one `saturate` — this unit's primary evidence | the unit as a no-op: **7292 of 9721**, same corpus count, case file byte-identical either side |
+| mutation (`mutation/FlapControl.json`) | **88 of 88 scoreable, 1.0000**, 9 declared, 5 no-compile, 6 operators, **no survivor, `declared_but_killed` empty** | the score *is* the red test, 88 times |
+| post-integration (`harness/FlapControl.postintegration.json`) | 9721 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **4862 of 9721**; reverted, rebuilt, green re-taken at 0, and the revert checked both ways |
+| gate, 27 scenarios (`gate/FlapControl.json`) | 5,252,000 values / 351 channels, 0 mismatched | **TWO that land and one that does not**: the unit's own `avrSWAP` channel moves **75,995** across all five scenarios that call it; `NP_1` moves **79,992** in the two mode-3 scenarios; `R2D` moves **0**, and a fourth run explains why |
+
+**THE REFERENCE READS A LOCAL IT NEVER WRITES, AND THE REGION WHERE THAT MATTERS
+IS A RELATION BETWEEN TWO INPUTS.** `Controllers.f90:653` declares
+`REAL(DbKi) :: RootMyb_VelErr(3)`; nothing in ROSCO assigns it; `:670` passes
+`RootMyb_VelErr(K)` to `PIIController` as its `error`. The first harness take was
+RED at **12 of 9721**, every mismatch on `LocalVar.piP`, and the failing set was
+predicted before it was read and matched exactly:
+`Flp_Mode == 2 ∧ iStatus == 0 ∧ restart == 0 ∧ NumBl >= 1`. `PIIController` reads
+`error` only when `.NOT. reset`, and the shipped program cannot reach that
+branch there — `ReadAvrSWAP` runs before every controller call and ends with
+`LocalVar%restart = (LocalVar%iStatus == 0)`, and nothing else in ROSCO assigns
+`restart`.
+
+**SO THE CAMPAIGN GAINED AN EIGHTH JUDGEMENT KIND, AND IT IS THE FIRST ABOUT A
+PAIR OF INPUTS.** `translation-loop@d947d92`:
+
+```toml
+LocalVar_restart = { implied_by = "LocalVar_iStatus", relation = "== 0", reason = "…" }
+```
+
+Every earlier entry in `harness/ranges.toml` narrows ONE parameter, because that
+is all `_case_impl` could express. Applied after every stage, counted, reported
+as `STATED_implication` (`rewrote 4782 of 9721`), an ERROR if it rewrites no
+case. **Additive, proved by hash rather than by diff**: `CableControl` states
+nothing and its corpus is byte-identical either side (`b7a51f87…`, 7640 cases,
+harness re-passing 7640/0); 178 of 179 generator tests pass, the one failure
+being the container's missing `git` binary and predating the change.
+
+**`no_oracle` WAS THE CHEAP OPTION AND IT WAS REJECTED ON A MEASUREMENT.** All
+twelve failing cases held `Flp_Kp = 0` — R6's *isolating* pin, not the base draw
+— so `kp*error` was 0 and the saturated sum hid the difference that survived only
+in the integrator state. `no_oracle = "LocalVar_piP"` would have been green here,
+silent about the cause, wrong at any non-zero `Flp_Kp`, and would have cost the
+`piP` comparison on the 9709 cases that do have an answer. **Which output an
+undefined read reaches is a property of the corpus; the read is a property of the
+program.**
+
+**NINE SURVIVORS, TWO SITES, AND THEY ARE (c) BECAUSE OF A FACT ABOUT THE
+PROGRAM.** All nine sit at the declaration of the never-written local and at the
+argument list of the call that reads it. Eight are dead because `reset` is true
+wherever that call runs; the ninth because the bridge converts with
+`(reset /= 0)`, so `? 2 : 0` and `? 1 : 0` are one argument. **Executed rather
+than argued** (`evidence/FlapControl/equivalence_probe.txt`): 37 cases reach the
+call, **37 with reset and 0 without**, the 37 being the positive control that the
+site is live. The counter-check that the operator is not blind: the same
+`0.0 - Flp_Angle → 0.0 + Flp_Angle` mutation at the mode-2 arm's call was killed.
+
+**FOUR OF THE FIVE SCENARIOS THAT CALL THIS UNIT DRIVE IT ON AN EXACT ZERO.**
+
+```
+baseline_arrays/scenario_N.npz, flp_angle_1/2/3
+  3   16,000 samples        0 non-zero      7   24,000 samples        0 non-zero
+  4    4,000 samples        0 non-zero     16   16,000 samples        0 non-zero
+ 26   16,000 samples   15,999 non-zero, ~15,990 distinct, ±0.24678
+```
+
+`R2D` coarsened 1.2% moves **0 of 5,252,000**: scenario 4 sets `Flp_Angle = 0.0`
+and runs a 1-DOF sim whose `rootMOOPF` is exactly zero, so `saturate(0.0,…)*R2D`
+is 0.0 for every R2D — the gains are non-zero and the input is not. Fourth
+instance in four units, first in which the zero is the driving SIGNAL rather than
+a configured gain or an unwritten state. `gate/FlapControl.mode2-probe.json`
+separates annihilation from blindness in one run by perturbing the same statement
+**additively**: 11,997 values, all three flap channels of scenario 4.
+
+**A BASE DRAW STATED BEFORE THE SURVIVORS RATHER THAN AFTER THEM, AND THE COST
+OF DOING SO.** `CntrPar_Flp_Mode = { values = [2, 0, 1, 3] }` was written at the
+start of this unit on units #47's and #49's finding, not on any measurement of
+this unit's own — the unstated ±1e3 default puts the base draw at +300, which
+passes `Flp_Mode > 0` and matches no arm. **There is therefore no measurement of
+what that entry bought here**, because there is no dispatch on the other side of
+it. A rule earned from two units and applied in advance to a third is cheaper and
+less evidenced than one measured in place; both are true at once.
+
+**Procedure.** ONE reset window, opened only after the translation, the range
+pins and the red-test stub were committed, and closed the moment the clean-tree
+measurements were done — harness green, no-op red test, four mutation parts and
+their re-take with the equivalences. Every long command routed through
+`scripts/run_if_time_remains.sh` with a seconds estimate and the Bash timeout
+raised to 600 s; every mutation sweep through `scripts/mutate_guarded.sh`, which
+cleared its marker on all seven runs. Commits one per expensive artifact. One
+`make test` died at rc=2 and the identical command succeeded on retry — the
+bind-mount race this runbook already records.
+
+---
+
 **As of 2026-08-17: unit #49 `CableControl` is `integrated` and CLOSES AT 14 of
 14. The mutation score is 1.000.** Four layers, all four red-tested. **Two
 dispatches, and the second changed the CORPUS and not the program**: the first

@@ -10747,3 +10747,118 @@ every earlier case index alone — but a new FLAG renumbers every stage before R
 A campaign that wants its greens comparable case-for-case across a corpus change
 should reach for a baseline state first and a flag only when the base draw is
 what is wrong.
+
+## Unit #50 — FlapControl — 2026-08-17
+
+### The reference reads a local it never writes, and the region where that matters is a RELATION between two inputs
+
+`Controllers.f90:653` declares `REAL(DbKi) :: RootMyb_VelErr(3)` and no statement
+in `FlapControl` — or anywhere else in ROSCO; `grep -rn` finds the declaration
+and one use — ever assigns it. `Controllers.f90:670` passes `RootMyb_VelErr(K)`
+to `PIIController` as its `error`. The value is undefined in Fortran, no
+translation can reproduce it, and the first harness take was RED at 12 of 9721,
+every mismatch on `LocalVar.piP`.
+
+**The failing set was predicted before it was read and it matched exactly**:
+`Flp_Mode == 2 ∧ iStatus == 0 ∧ restart == 0 ∧ NumBl >= 1`. `PIIController` reads
+`error` on its `.NOT. reset` branch only, and the shipped program cannot reach
+that branch there — `ReadAvrSWAP` runs at the top of every DISCON call, before
+every controller, and ends with `LocalVar%restart = (LocalVar%iStatus == 0)`.
+Nothing else in ROSCO assigns `restart`.
+
+**So the admissible domain of this procedure is a RELATION, and
+`harness/ranges.toml` had no spelling for one.** Every entry in that file narrows
+ONE parameter, because that is all the generator could express: `_case_impl`
+chooses each parameter independently and R2 crosses the flags as a free product.
+The two remedies that existed both cost more than the defect — pinning either of
+the pair deletes an ARM (`iStatus /= 0` deletes the whole initialisation arm;
+`restart` held true sends the mode-2 and mode-3 arms down a branch that reads
+neither gain), and `no_oracle` on the output it poisons deletes an ANSWER.
+
+`implied_by` is the eighth judgement kind (`translation-loop@d947d92`):
+
+```toml
+LocalVar_restart = { implied_by = "LocalVar_iStatus", relation = "== 0", reason = "…" }
+```
+
+Applied after every stage, counted, reported in the coverage table as
+`STATED_implication` (`rewrote 4782 of 9721`), and an ERROR if it rewrites no
+case. Additive, proved by hash rather than by diff: `CableControl` states nothing
+and its corpus is byte-identical either side (`b7a51f87…`, 7640 cases, harness
+re-passing 7640/0).
+
+### `no_oracle` on the output an undefined read happens to reach is not a fix for the read
+
+This was the cheap option and it was rejected on a measurement rather than on
+taste. All twelve failing cases held `Flp_Kp = 0` — R6's *isolating* pin, not the
+base draw — so `kp*error` was 0 and the saturated sum hid the difference that
+survived only in the integrator state. `no_oracle = "LocalVar_piP"` would have
+been green on this corpus, silent about the cause, wrong at any non-zero
+`Flp_Kp`, and would have cost the `piP` comparison on the 9709 cases where the
+reference does have an answer for it.
+
+**The general shape.** Which OUTPUT an undefined read reaches is a property of
+the corpus; the READ is a property of the program. Fix the one that does not
+move.
+
+### A base draw stated before the survivors rather than after them
+
+`CntrPar_Flp_Mode = { values = [2, 0, 1, 3] }` was written at the start of this
+unit on units #47's and #49's finding — "a midpoint is not a mode" — and not on
+any measurement of this unit's own. The unstated ±1e3 default puts the base draw
+at **+300**, which passes `IF (Flp_Mode > 0)` and matches none of the four arms,
+so every stage taken "with every other input at its base draw" — R6's
+real-literal ladder above all, this unit's only instrument on `Flp_Kp`, `Flp_Ki`,
+`Flp_MaxPit`, `DT`, `rootMOOPF` and `Azimuth` — would have been spent on a
+fall-through. `2` is first because `_case_impl` takes `p.values[0]` and the
+`Flp_Mode == 2` arm is the deepest this unit has.
+
+**What this costs the campaign's own bookkeeping, and it is worth saying plainly:
+there is now no measurement of what that entry bought.** Unit #49 could price its
+levers because it had a dispatch on either side of them. This unit has the entry
+and no counterfactual. A rule earned from two units and applied in advance to a
+third is cheaper and less evidenced than one measured in place, and both those
+things are true at once.
+
+### The nine survivors are (c) because of a fact about the PROGRAM, not about the harness
+
+All nine sit at two sites: the declaration of the never-written local, and the
+argument list of the call that reads it. Eight are unkillable because `reset` is
+true on every case that reaches that call and `PIIController` reads `error`,
+`error2`, `kp`, `ki`, `ki2`, `minValue`, `maxValue` and `DT` only when it is
+false. **Executed rather than argued** (unit #48's rule, whose own first model of
+this kind of proof was false): 37 corpus cases reach the call, 37 with reset and
+0 without, with the 37 as the positive control that the site is live. The ninth
+is behaviour-preserving outright — the bridge converts `int` to LOGICAL with
+`(reset /= 0)`, so `? 2 : 0` and `? 1 : 0` are the same argument.
+
+The counter-check that the operator is not blind: the SAME
+`0.0 - Flp_Angle → 0.0 + Flp_Angle` mutation at the mode-2 arm's call was
+**killed**. It is the site that is dead, not the operator.
+
+### A scale factor cannot be red-tested through an exact zero
+
+`R2D` coarsened by 1.2% — four orders above the REAL(4) channel's resolution —
+moved **0 of 5,252,000**. `baseline_arrays` says why in four lines: `flp_angle_*`
+has **zero** non-zero samples in scenarios 3, 4, 7 and 16, and 15,999 of 16,000
+in scenario 26. Scenario 4 sets `Flp_Angle = 0.0` and runs a 1-DOF simulation
+whose `rootMOOPF` is exactly zero, so `saturate(0.0, …) * R2D` is 0.0 for every
+R2D; the gains are non-zero and the INPUT is not.
+
+Fourth instance in four units, and the first where the zero is the driving
+SIGNAL rather than a configured gain or a state the run length never lets the
+unit write. `gate/FlapControl.mode2-probe.json` separates annihilation from
+blindness in one run by perturbing the same statement **additively**: 11,997
+values, all three flap channels of scenario 4.
+
+### Proposed method amendment — a campaign that can change its own generator should say so where the units can see it
+
+`implied_by` is the second judgement kind this campaign has added to its own
+harness (`staging_capacity_excludes` was unit #48's). Both were reached only
+after a unit had spent time looking for a way to express something inside the
+existing vocabulary and concluding there was none. The RUNBOOK's target layer now
+records both, but the *invariant* layer says nothing about the loop repo being in
+scope for a unit's own dispatch — and a unit that does not know it can extend the
+instrument will reach for `--disable` or `no_oracle` instead, which is exactly
+what units #48 and #49 first did and what this unit nearly did. Raised for the
+Driver; not edited into the invariant layer here.

@@ -6842,6 +6842,144 @@ GetWords' 252, and it cost about $12.55 against GetWords' $40.20 -- it was
 sleeping, not thinking. Cost and wall clock are not the same axis here, and a
 unit can exhaust the second while barely touching the first.
 
+## `harness/ranges.toml` takes a SEVENTH kind of entry: a RELATION between two
+## inputs
+
+- **`{ implied_by = "<param>", relation = "<op> <int>", reason = "why" }`**
+  derives one input's value from another's, in every case, after every stage.
+  `translation-loop@d947d92`, unit #50 `FlapControl`. It is the first entry in
+  that file that is about a PAIR of parameters rather than about one
+  parameter's values or one rule's ladder.
+
+  **REACH FOR IT WHEN THE REFERENCE'S ADMISSIBLE DOMAIN IS A RELATION.** The
+  generator chooses each parameter independently — `_case_impl` fills them one
+  at a time and R2 crosses the flags as a free product — so a procedure whose
+  caller establishes an invariant between two of its inputs will be handed
+  pairs the program cannot produce. If the reference has no defined behaviour
+  on those pairs, the harness goes red and no per-parameter narrowing fixes it
+  without deleting an arm.
+
+  ```
+  Controllers.f90:653  REAL(DbKi) :: RootMyb_VelErr(3)   ! declared, never assigned
+  Controllers.f90:670  Flp_Angle(K) = PIIController(RootMyb_VelErr(K), ...)
+                       ! inside IF (iStatus == 0); PIIController reads `error`
+                       ! only when .NOT. reset
+  ReadAvrSWAP          LocalVar%restart = (LocalVar%iStatus == 0)   ! the only writer
+  first take           HARNESS FAIL: checked 9721 failed 12, all LocalVar.piP
+  the failing set      Flp_Mode==2 & iStatus==0 & restart==0 & NumBl>=1, 12 of 12
+  ```
+
+  **THE THREE CHEAPER MOVES AND WHY EACH IS WRONG.** `no_oracle` on the output
+  the defect happens to reach is luck: all twelve cases here held `Flp_Kp = 0`
+  (R6's *isolating* pin), so the difference survived only in the integrator
+  state, and at any non-zero `Flp_Kp` it reaches the unit's main answer too.
+  Pinning either half of the pair deletes an ARM — `iStatus /= 0` deletes the
+  whole initialisation arm; `restart` held true sends two more arms down a
+  branch that reads no gain. And LEAVING IT RED IS NOT AN OPTION THAT EXISTS:
+  `vit_mutate.py` refuses to score against a red baseline, so a red primary
+  layer takes the mutation layer with it.
+
+  **WHAT IT COSTS, AND SAY IT.** The derived parameter stops being a free flag;
+  its values track the source's, so the mirror pair goes too. Here that means
+  nothing in this campaign can catch a translation that read `iStatus` where
+  the reference reads `restart` — the gate runs the program in which the
+  implication holds and would be bit-identical either way. Write that in the
+  entry, not just the reason for it.
+
+  It refuses a relation outside the closed operator set, a name the signature
+  does not have, an `implied_by` on an OUTPUT, and — the one that matters — an
+  implication that rewrites NO case. Additivity is provable rather than
+  arguable: a unit that states nothing must produce a byte-identical corpus, so
+  hash the case file either side of the generator change (`CableControl`,
+  `b7a51f87…`, 7640 cases). That control is the whole of P5 here.
+
+## Which OUTPUT an undefined read reaches is a property of the CORPUS; the read
+## is a property of the PROGRAM
+
+- **Fix the one that does not move.** Unit #50. Twelve red cases, every mismatch
+  on one nested output — which reads as "that output has no oracle" and is the
+  shape `no_oracle` exists for. It was not:
+
+  ```
+  the 12 red cases      Flp_Kp = 0 in all twelve  <- R6's ISOLATING pin, not the base draw
+  PIIController         result = saturate(kp*error + ITerm + ITerm2, min, max)
+                        ITerm  = saturate(ITerm + DT*ki*error, min, max)
+  so at kp == 0         the undefined error survives only in ITerm -> piP
+  at any kp != 0        it reaches the result, Flp_Angle and avrSWAP
+  ```
+
+  `no_oracle` on that output would have been green on this corpus, silent about
+  the cause, and wrong the moment any rung moved — and it would have cost the
+  comparison on the 9709 cases that DO have an answer for it. **Before excluding
+  an output, ask which of the failing cases' inputs put the difference THERE
+  rather than somewhere else.** If the answer is a value some ladder happened to
+  pin, the exclusion is a coincidence with a JSON entry behind it.
+
+## Stating a base draw in ADVANCE is cheaper than measuring it, and the cost is
+## that nobody can price it
+
+- **Unit #50 wrote `CntrPar_Flp_Mode = { values = [2, 0, 1, 3] }` before its
+  first sweep**, on units #47's and #49's "a midpoint is not a mode" rather than
+  on any measurement of its own: the unstated +/-1e3 default puts the base draw
+  at **+300**, which passes `IF (Flp_Mode > 0)` and matches none of the four
+  arms, so R6's real-literal ladder — the unit's only instrument on five of its
+  six real inputs — would have been spent on a fall-through. `2` is first
+  because `_case_impl` takes `p.values[0]` and that is the deepest arm.
+
+  **AND THERE IS NO NUMBER FOR WHAT IT BOUGHT.** Unit #49 could price its two
+  levers because it had a dispatch either side of them; a rule applied in
+  advance has no counterfactual. That is the right trade for a rule earned
+  twice, and it is worth writing down that the campaign's evidence for it stops
+  growing at the point it starts being obeyed. If a later unit wants the number,
+  the ablation is one `--out` away and costs one harness run.
+
+## A SCALE cannot be red-tested through an exact zero, and one ADDITIVE run
+## settles it
+
+- **Unit #50, and it is the fourth unit in four to meet a five-figure hit count
+  that no perturbation reaches because a quantity is exactly 0.0.**
+
+  ```
+  R2D  57.2957795130 -> 58.0   (1.2%, four orders above REAL(4) resolution)
+                                             0 of 5,252,000
+  the same statement, + 1.0 appended    11,997 of 5,252,000, scenario 4, 3 channels
+  baseline_arrays flp_angle_1/2/3   scenarios 3, 4, 7, 16:  0 non-zero samples
+                                    scenario 26:       15,999 of 16,000
+  ```
+
+  #47's `AWC_amp` and #48's `WE_Gamma` were configured GAINS, #49's was a state
+  the run length never let the unit write, and this one is the driving SIGNAL of
+  a 1-DOF simulation. **The separating probe is unit #48's and it is cheaper
+  than it looks**: perturb the same statement ADDITIVELY rather than
+  multiplicatively. An exact zero annihilates a factor and cannot annihilate a
+  term, so one run distinguishes "the gate cannot see this arm" from "this arm
+  computed zero". Commit the failed scale red test under its own name with
+  `went_red: false` — it is a measurement of the scenarios, not a red test of
+  the unit.
+
+  **And read `baseline_arrays/scenario_<n>.npz` FIRST when a red test on an arm
+  moves nothing.** Four lines of numpy, no rebuild, and here it answered the
+  question outright: four of the five scenarios that call the unit hold its
+  output channels at exactly zero for every sample.
+
+## An equivalence argument is executed by COUNTING the cases that reach the site
+
+- **Unit #50, nine declarations, and the whole proof is two integers.** Eight of
+  the nine are mutants of arguments a callee reads on one branch only, at a call
+  site the stated domain always sends down the OTHER branch:
+
+  ```
+  reaching Controllers.f90:670  with reset: 37   WITHOUT reset: 0
+  ```
+
+  The 37 is the positive control — a site the corpus never reaches would make
+  the same mutants unkillable for a much duller reason, and a proof that cannot
+  tell those apart is not a proof. **And add the counter-check that the OPERATOR
+  is not blind**: the identical `0.0 - x` -> `0.0 + x` mutation at this unit's
+  other `PIIController` call was killed, so it is the SITE that is dead. Unit
+  #48's rule — execute the argument, do not trust it — is met here by a probe
+  that costs one `--no-generate` rebuild and nine seconds.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
