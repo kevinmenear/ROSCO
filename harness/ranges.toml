@@ -1505,6 +1505,58 @@ CntrPar_AWC_phaseoffset = { lo = 0, hi = 360 }
 PerfData_Cp_mat_cols = { same_as = "PerfData_Beta_vec_n" }
 PerfData_Cp_mat_rows = { same_as = "PerfData_TSR_vec_n" }
 
+# A FIFTH ENTRY, ADDED BY THE SECOND DISPATCH: THE HOLE IN R13'S CAPACITY LADDER.
+#
+# It replaces `--disable R13_staging_capacity`, and it is STRICTLY MORE INPUT
+# than what it replaces -- the ablation dropped all 256 capacities to avoid 14.
+#
+# THE ARITHMETIC, and it was written down before the failing set was read
+# (evidence/AeroDynTorque/harness.staging_composition.txt):
+#
+#     L_callee = len("interp1d:") + len(TRIM(entry msg)) = 9 + 7  = 16
+#     L_final  = len("AeroDynTorque:") + L_callee        = 14 + 16 = 30
+#
+#     cap  <  16      both sides refuse everything                 PASS
+#     16 <= cap < 30  the interp2d_c bridge WRITES 16, and
+#                     assign_errmsg then refuses 30                FAIL
+#     cap >= 30       both write                                   PASS
+#
+# The failing window is exactly [L_callee, L_final), which is fourteen
+# capacities, and the measured failing set (cases 1140..1153 of the 1387-case
+# corpus) is the predicted set.
+#
+# WHY THE CASE HAS NO ORACLE THERE, which is what makes this a narrowing of the
+# ADMISSIBLE domain and not a convenience. The reference chain is Fortran ->
+# Fortran -> Fortran with a reallocating `ErrMsg` and ONE capacity gate, the
+# generated bridge's export, on the final 30 bytes. The translation chain
+# reaches the same Fortran interp2d through the `interp2d_c` bridge and gates
+# TWICE: the bridge's write-back on 16, then `assign_errmsg` on 30. Inside the
+# window the reference holds the value ErrMsg had ON ENTRY and the translation
+# holds the callee's 16 -- and the reference's OWN answer, 30 bytes of
+# "AeroDynTorque:interp1d:@ABYZ[^", is a value NEITHER side can carry. A case
+# whose oracle records something upstream ROSCO never produces is not a case
+# this comparison can adjudicate (P7).
+#
+# THE PRICE, STATED. R13's design wants one case AT the boundary, one below and
+# one above; the one BELOW (capacity 29) is inside the window and is gone. What
+# remains is capacity 30 -- the case that sizes the buffer TO the composed
+# message -- and 31 above it, plus every capacity from the extent up to 15.
+#
+# THIS IS NOT THE PRINCIPLED FIX and the principled fix is not available here:
+# a case whose REFERENCE-side write-back cannot carry the reference's answer
+# should be counted INADMISSIBLE by the generated comparison, which is a count
+# the artifact already keeps. That needs the generated Fortran bridge to signal
+# its refusal back to the test, and that bridge is written by `vit
+# test-validate` -- by VIT, whose swap mid-unit this campaign declined for its
+# own reasons (harness.sh's header). Raised in DECISIONS.md.
+#
+# SECOND UNIT AT THIS SHAPE, not first: `PitchSaturation` double-gated its
+# reference for the neighbouring reason (an already-integrated callee re-enters
+# C++ through its own bridge over a module staging buffer) and ablated R13 too.
+# Its window is [14, 29] and it is NOT stated here -- this entry is one unit's
+# judgement and that unit's would have to be measured, not copied.
+ErrVar_ErrMsg = { staging_capacity_excludes = [16, 29], reason = "the interp2d_c bridge gates this same buffer on 16 bytes before assign_errmsg gates it on 30, so inside [16,30) the reference and the translation hold two different values and NEITHER is the reference's own 30-byte answer -- the case has no oracle. Predicted from the two lengths, then measured at cases 1140..1153 (harness.staging_composition.txt)." }
+
 # A THIRD AND FOURTH ENTRY WERE WRITTEN AND THE TOOL REFUSED THEM, WHICH IS
 # THE RIGHT ANSWER AND IS RECORDED RATHER THAN DELETED.
 #
