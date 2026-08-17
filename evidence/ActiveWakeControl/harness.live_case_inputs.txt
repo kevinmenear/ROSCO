@@ -1,3 +1,15 @@
+SUPERSEDED -- THIS FILE DESCRIBES THE FIRST DISPATCH'S CORPUS (3231 cases, 91 of
+them reaching an arm). It is kept because it is the measurement that FORCED the
+two harness/ranges.toml entries added at the second dispatch: one AWC_phaseoffset
+value and one (PC_MinPit, PC_MaxPit) pair across the whole live domain.
+
+The corpus it describes no longer exists. The current one is 21236 cases with
+17697 reaching an arm, and its census -- which joins the arm census and these
+input measurements into one file, because there is no longer a small live subset
+to report separately -- is evidence/ActiveWakeControl/harness.arm_census.txt.
+
+--- original, unchanged, below this line ---------------------------------------
+
 LIVE-CASE INPUT MEASUREMENTS -- the 91 cases of harness/ActiveWakeControl.json
 whose AWC_Mode is in 1..5, i.e. the ones that reach an arm at all.
 

@@ -1,128 +1,133 @@
-ARM CENSUS of the committed corpus (harness/ActiveWakeControl.json, 3231 cases).
+ARM CENSUS AND LIVE-CASE INPUTS of the corpus at harness/ActiveWakeControl.json
+(21236 cases), unit #47 ActiveWakeControl, SECOND DISPATCH.
 
-Taken by patching ONE fprintf into the generated test source, immediately after
-LocalVar_a.restart is read and before any call, and relinking with
-`harness.sh --no-generate` -- which keeps the corpus. The probe reports INPUTS,
-which the case file fixes, so it needed no clean tree and no reset window.
+Supersedes the first dispatch's split pair (this file and harness.live_case_inputs.txt,
+which are joined here because there is no longer a small "live" subset to report
+separately). The first dispatch's numbers are kept in the table at the bottom.
 
-CntrPar%AWC_Mode, all 3231 cases:
-   3032 mode=-600
-     19 mode=1
-     19 mode=0
-     18 mode=6
-     18 mode=5
-     18 mode=4
-     18 mode=3
-     18 mode=2
-      2 mode=-9
-      1 mode=999999999
-      1 mode=99999999
-      1 mode=9999999
-      1 mode=999999
-      1 mode=99999
-      1 mode=9999
-      1 mode=999
-      1 mode=995
-      1 mode=99
-      1 mode=983
-      1 mode=904
-      1 mode=9
-      1 mode=878
-      1 mode=855
-      1 mode=829
-      1 mode=820
-      1 mode=801
-      1 mode=708
-      1 mode=639
-      1 mode=502
-      1 mode=360
-      1 mode=35
-      1 mode=334
-      1 mode=272
-      1 mode=2147483647
-      1 mode=169
-      1 mode=1000000000
-      1 mode=100000000
-      1 mode=10000000
-      1 mode=1000000
-      1 mode=100000
-      1 mode=10000
-      1 mode=1000
-      1 mode=100
-      1 mode=10
-      1 mode=-999999999
-      1 mode=-99999999
-      1 mode=-9999999
-      1 mode=-999999
-      1 mode=-99999
-      1 mode=-9999
-      1 mode=-999
-      1 mode=-994
-      1 mode=-99
-      1 mode=-978
-      1 mode=-976
-      1 mode=-938
-      1 mode=-885
-      1 mode=-744
-      1 mode=-733
-      1 mode=-676
-      1 mode=-671
-      1 mode=-621
-      1 mode=-488
-      1 mode=-456
-      1 mode=-403
-      1 mode=-2147483648
-      1 mode=-153
-      1 mode=-140
-      1 mode=-1000000000
-      1 mode=-100000000
-      1 mode=-10000000
-      1 mode=-1000000
-      1 mode=-100000
-      1 mode=-10000
-      1 mode=-1000
-      1 mode=-100
-      1 mode=-10
-      1 mode=-1
+HOW IT WAS TAKEN. ONE fprintf patched into the GENERATED test source,
+immediately after `LocalVar_a.restart` is read from the case stream and before
+any call, then rebuilt in place and run:
 
-cases per LIVE arm (AWC_Mode 1..5):
-     19 mode=1 
-     18 mode=2 
-     18 mode=3 
-     18 mode=4 
-     18 mode=5 
+  fprintf(stderr, "PROBE %d mode=%d nmodes=%d numbl=%d restart=%d harm0=%d "
+          "time=%.17g freq0=%.17g phaseoff=%.17g minpit=%.17g maxpit=%.17g "
+          "g0=%.17g g1=%.17g cplx0re=%.17g cplx0im=%.17g dt=%.17g\n",
+          c, CntrPar_a.AWC_Mode, ...);
 
-cases with AWC_harmonic(1) == 0 among the live arms:
-0
+The probe reports INPUTS ONLY, which the case file fixes, so it needed no clean
+tree and no reset window was spent on it. The generated source was restored from
+a copy afterwards and the binary rebuilt and re-run: 21236 checked, 0 failed.
 
-cases with AWC_harmonic(1) == 0, ANY mode:
-0
+==============================================================================
+CntrPar%AWC_Mode over all 21236 cases
 
-WHAT THIS SAYS, and both halves are findings rather than notes.
+    3546  mode=3          the base, values[0] in harness/ranges.toml
+    3539  mode=0          no arm
+    3538  mode=5
+    3538  mode=1
+    3538  mode=2
+    3537  mode=4
 
-1. 91 of 3231 cases reach an arm at all. 3032 sit at AWC_Mode = -600, the
-   inert value the generator holds a scalar at when no rule is varying it, and
-   the rest are R6's integer ladder -- decade boundaries and the two 32-bit
-   extremes -- none of which is 1..5. The five live modes come from R6's
-   predicate cross-product (AWC_Mode x AWC_NumModes x NumBl x Time), which is
-   the ONLY block that puts this unit's own switch on a value it branches on.
-   The no-op red test fails 86 of the same 3231, five short of 91: five live
-   cases in which the reference's writes land on values the inert state already
-   held.
+  17697 of 21236 cases reach an arm -- 83%.
 
-2. NO CASE IN THE CORPUS HAS AWC_harmonic(1) == 0, and neither does any of the
-   27 gate scenarios. That guard appears twice --
+That even spread is the whole of the corpus repair. The first dispatch had 3032
+of 3231 cases at mode = -600 and 91 reaching an arm at all. AWC_Mode is now
+written in harness/ranges.toml as the enumeration it is, so R2's flag_variants
+re-runs every ladder rung and every R6 magnitude under every mode.
 
-       :803-:806  the TiltMean accumulation and StartTime = 1/AWC_freq(1)
-       :829-:830  PitCom(K) = PitCom(K) + AWC_TiltYaw(1)
+==============================================================================
+LocalVar%NumBl over the 17697 live cases
 
-   -- and BOTH arms are outside every instrument this campaign has. The cause
-   is not the range pins: `AWC_harmonic` is an ALLOCATABLE INTEGER array and
-   `generate._fill_array` ramps it across the defaulted +/-1e3 bounds, so
-   element 1 is about -600 in every case. It is not a knob either: the
-   reference's predicate is written against `AWC_harmonic(1)`, a constant-
-   subscript element of an array parameter, and the knob extractor takes
-   scalars. A `lo`/`hi` pin cannot repair it, because the ramp is monotone --
-   any bound that puts 0 in the array puts it at element 1 in EVERY case, which
-   would delete the ELSE arms that all 27 scenarios do exercise. What is needed
-   is a knob, and that is a change to the generator, not to ranges.toml.
+    17163  numbl=1        the base, int(3 * 0.35)
+      266  numbl=2
+      257  numbl=0
+       11  numbl=3        <- and FIVE of these are at AWC_Mode == 1
+
+`NumBl == 3` reaches an arm for the first time in this campaign. It arrives only
+through the random-fill stratum (`_random_over` draws `rng.randint(lo, hi)` on
+the stated [0, 3]), and R2 gives that stratum eight cases under EVERY declared
+mode -- which is why five of the eleven are in Mode 1. Those five are what
+killed the first dispatch's eleven blade-3 survivors: `AWC_angle(3)`, `phi3`,
+`AWC_complexangle(3)` and `PitCom(3)` are now read as well as written.
+
+==============================================================================
+CntrPar%AWC_harmonic(1) -- the arm NOTHING reaches, still
+
+    0 cases of 21236 have AWC_harmonic(1) == 0.
+
+Unchanged, and unchangeable from harness/ranges.toml: AWC_harmonic is an
+ALLOCATABLE INTEGER array, `_fill_array` gives it one monotone ramp, and any
+bound that puts 0 into the array puts it at element 1 in EVERY case -- which
+would delete the ELSE arms all 27 gate scenarios do exercise. Five mutation
+survivors are here (R2 of mutation.census.txt); the cause is a regex in
+`predicate_knobs_from` and it is escalated in DECISIONS.md.
+
+The arm is NOT dead code: negating either guard moves 6309 and 6972 of 21236
+cases in the negate_cond mutation run. What no input reaches is the guard being
+true.
+
+==============================================================================
+CntrPar%AWC_phaseoffset over the 17697 live cases
+
+    130 distinct values;  48 cases at exactly 0.0
+
+The first dispatch had ONE value, 0.0, in all 91 live cases -- `_base`'s midpoint
+of a +/-1e3 range is exactly zero, and at zero `x*D2R`, `x` and `x/D2R` are the
+same bits. Held to one turn, [0, 360], the midpoint is 180. Four mutation
+survivors died on this alone.
+
+==============================================================================
+CntrPar%PC_MinPit / PC_MaxPit -- the controller saturation window
+
+    537 distinct (min, max) pairs over the live cases
+    311 live cases with a window wider than 1e6
+
+The first dispatch had ONE pair, (0, 600), in all 91 live cases, against gains
+and errors three orders of magnitude wider -- so both callees clamped in every
+case and which array element supplied kp or ki could not be seen. Three of that
+group's five survivors are now dead. The two that remain are not about the
+window; see R4 of mutation.census.txt.
+
+==============================================================================
+LocalVar%AWC_complexangle(1) AS SUPPLIED
+
+    (0.0, 0.0) in ALL 21236 cases.
+
+Unchanged. The COMPLEX(DbKi) view field crosses in both directions and the
+generated test source contains ZERO `VITCMP("LocalVar.AWC_complexangle` lines --
+481 VITCMP lines in total, three of them on LocalVar.PitCom and one on
+DebugVar.axisTilt_1P, and none on this field. Five mutation survivors are here
+(R1 of mutation.census.txt). A generator gap, escalated in DECISIONS.md.
+
+==============================================================================
+CASE ORDER, which is what decides a SAVE local's initialiser
+
+    FIRST case of the stream          case 0:  mode 3, Time = 600
+    first Mode 3 or 4 case            case 0
+    first Mode 5 case                 case 20: Time = 600
+    Mode 3/4 cases with Time <= 0     740 of 7083 -- all of them AFTER case 0
+
+`Time = 600` is `_base`'s value on the defaulted +/-1e3 range at frac 0.8. It is
+POSITIVE, so the very first live case takes `Time > StartTime` (StartTime is 0.0
+and stays 0.0, because the only assignment to it is inside the
+`AWC_harmonic(1) == 0` arm nothing reaches). The loop therefore runs and writes
+`Error(1)` before `:289 DebugVar%axisYaw_2P = Error(1)` reads it, and the
+initialiser is masked from then on.
+
+THAT IS THE EXACT MECHANISM OF THIS DISPATCH'S ONE REGRESSION, ced1c24e, and it
+is measured here rather than argued: 740 Mode 3/4 cases DO have `Time <= 0`, and
+every one of them comes after case 0 has already written the slot.
+
+==============================================================================
+FIRST DISPATCH -> SECOND, side by side
+
+  cases                                 3231   ->   21236
+  cases reaching an arm             91 (2.8%)  ->   17697 (83%)
+  no-op red test                    86 of 3231 ->   17645 of 21236
+  post-integration red test         70 of 3231 ->   17521 of 21236
+  distinct AWC_phaseoffset (live)          1   ->   130
+  distinct (PC_MinPit, PC_MaxPit) (live)   1   ->   537
+  live cases with NumBl == 3               0   ->   11
+  cases with AWC_harmonic(1) == 0          0   ->   0
+  AWC_complexangle supplied non-zero       0   ->   0
+  mutation score                      0.7857   ->   0.9200
