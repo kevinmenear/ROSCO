@@ -1583,3 +1583,131 @@ ErrVar_ErrMsg = { staging_capacity_excludes = [16, 29], reason = "the interp2d_c
 # (`_fill_array`: lo + span*(k+1) + jitter) cannot. Whether any case reaches
 # the out-of-bounds read is a MEASUREMENT and it is taken rather than assumed:
 # see the arm census in evidence/AeroDynTorque/.
+
+# ---------------------------------------------------------------------------
+# CableControl
+#
+# FIVE PINS, AND FOUR OF THEM ARE UNIT #43's WORD FOR WORD ONE ARRAY OVER. This
+# unit is `StructuralControl`'s twin: same five arguments, same three arms, same
+# `Time > 500` step, same `interp1d` row-of-a-2-D-array call, same write loop
+# over an `avrSWAP` subscript drawn as a VALUE. Where the reasoning is identical
+# it is cited rather than restated, and where it is NOT identical -- the group
+# index -- the difference is the whole entry.
+#
+# `CC_Group_N` bounds ALL THREE of this unit's loops and bounds nothing else:
+#
+#     Controllers.f90:924  DO I_GROUP = 1,CntrPar%CC_Group_N
+#                              ... CntrPar%Ind_CableControl(I_GROUP) ...
+#                              ... CntrPar%OL_CableControl(I_GROUP,:) ...
+#                              ... LocalVar%CC_DesiredL(I_GROUP) ...
+#     Controllers.f90:938  DO I_GROUP = 1, CntrPar%CC_Group_N
+#                              ... LocalVar%CC_ActuatedDL(I_GROUP) ...
+#                              ... LocalVar%CC_ActuatedL(I_GROUP) ...
+#     Controllers.f90:952  DO I_GROUP = 1, CntrPar%CC_Group_N
+#                              avrSWAP(CntrPar%CC_GroupIndex(I_GROUP))   = ...
+#                              avrSWAP(CntrPar%CC_GroupIndex(I_GROUP)+1) = ...
+#
+# and NOTHING in this procedure relates the bound to any of the six arrays those
+# loops subscript. The relation is established by the reference's own reader:
+#
+#     ReadSetParameters.f90:577  ParseInput(..., 'CC_Group_N',    CntrPar%CC_Group_N, ...)
+#     ReadSetParameters.f90:578  ParseAry(...,   'CC_GroupIndex', CntrPar%CC_GroupIndex,    CntrPar%CC_Group_N, ...)
+#     ReadSetParameters.f90:588  ParseAry(..., 'Ind_CableControl', CntrPar%Ind_CableControl, CntrPar%CC_Group_N, ...)
+#
+# so `SIZE(CC_GroupIndex) == SIZE(Ind_CableControl) == CC_Group_N` by
+# construction, always. `CC_DesiredL`, `CC_ActuatedL` and `CC_ActuatedDL` are
+# separately fixed at 12 by the type, and the reference's own comment at
+# Controllers.f90:890 states the relation the reader enforces: *"LocalVar%CC_Actuated*(),
+# and CC_Desired() has a fixed max size of 12, which can be increased in
+# rosco_types.yaml"*.
+#
+# THE UPPER BOUND IS 3 FOR UNIT #43's REASON: 3 is the smallest extent R5
+# generates (`_extent_plan` builds `[3 + bump + i]`), so inside 0..3 no loop can
+# leave any of the six arrays at any shape the generator draws.
+#
+# THE COST, STATED. `CC_Group_N` leaves R6's integer ladder, so the decade
+# boundaries and the two 32-bit extremes are gone from it -- and every one of
+# those is a value at which the REFERENCE reads and writes past six arrays, so
+# nothing observable is lost. What remains is 0 (all three loops skipped, which
+# is what every scenario that leaves CC_Mode at 0 does), 1 (what all three
+# scenarios that enable this unit do) and 2..3, which no scenario reaches.
+[CableControl]
+
+CntrPar_CC_Group_N = { lo = 0, hi = 3 }
+
+# THE ONE PIN THAT IS NOT UNIT #43's, AND THE DIFFERENCE IS EXACTLY ONE.
+# `CC_GroupIndex(I_GROUP)` is a drawn VALUE used as an `avrSWAP` subscript, as
+# `StC_GroupIndex` is -- but this unit writes TWO slots per group:
+#
+#     avrSWAP(CntrPar%CC_GroupIndex(I_GROUP))     = LocalVar%CC_ActuatedL(I_GROUP)
+#     avrSWAP(CntrPar%CC_GroupIndex(I_GROUP)+1)   = LocalVar%CC_ActuatedDL(I_GROUP)
+#
+# so the last element the reference can touch is `CC_GroupIndex + 1`, not
+# `CC_GroupIndex`. `avrSWAP` is an assumed-size dummy, `REAL(ReKi) ::
+# avrSWAP(*)`, so the reference has no extent to check against even in principle
+# and gfortran cannot bounds-check it. This campaign's stated extent is 3000
+# (`vit.yaml` `assumed_size_arrays`), which is also what the harness allocates.
+# Unit #43's bound of 3000 would therefore put the SECOND write at element 3001,
+# one past the comparison's own buffer, on every case that drew the top of the
+# range -- a write past the end rather than a wrong answer. The bound here is
+# 2999 and the missing 1 IS the second statement.
+#
+# The shipped inputs sit far inside it: `CC_GroupIndex` is 2601 in all three
+# scenarios that set it (`Examples/vit_sim.py` scenarios 3, 7 and 27), and
+# ROSCO's Bladed-style record numbering puts the cable-control block there.
+#
+# THE COST, STATED, AND IT IS ONE CASE WIDER THAN UNIT #43's. The corpus cannot
+# place a group index at 0, at a negative value, past the end of `avrSWAP`, or
+# at 3000 -- so a translation that wrote `avrSWAP[idx]` instead of
+# `avrSWAP[idx - 1]` still disagrees everywhere inside the range and nothing is
+# lost there, but an off-by-one AT the last usable slot has no case to be caught
+# on. That defect is undefined behaviour in the reference too, so no oracle
+# exists for it.
+CntrPar_CC_GroupIndex = { lo = 1, hi = 2999 }
+
+# THE `interp1d` SIZE TIE, FOR THE FOURTH TIME IN THIS FILE -- see `[interp1d]`'s
+# `n_yData`, `[PowerControlSetpoints]`'s three OL_ entries and
+# `[StructuralControl]`'s `CntrPar_OL_StructControl_cols`. The call is
+#
+#     interp1d(CntrPar%OL_Breakpoints, CntrPar%OL_CableControl(I_GROUP,:), ...)
+#
+# and the second argument is a ROW of a 2-D array, so the length that has to
+# match `SIZE(OL_Breakpoints)` is the COLUMN count. `_extent_plan` makes extents
+# pairwise distinct on purpose, which here means every `CC_Mode == 2` case with
+# a positive `Ind_CableControl` would reach `interp1d`'s
+# `SIZE(xData) .NE. SIZE(yData)` arm, whose internal WRITE formats 53 characters
+# into the 38-character record the statement above it allocated and kills the
+# process.
+#
+# The relation is the reader's, as with the other three: `Read_OL_Input`
+# allocates `OL_CableControl(N_OL_Cables, SIZE(CntrPar%OL_Channels, DIM=1))`
+# (ReadSetParameters.f90:759) and fills each row from `OL_Channels(:, ...)`,
+# whose first dimension is the breakpoint count.
+#
+# ROWS ARE NOT TIED, deliberately: rows stays distinct from cols, so a
+# translation that strode this column-major array by the column count instead of
+# the row count still disagrees.
+CntrPar_OL_CableControl_cols = { same_as = "CntrPar_OL_Breakpoints_n" }
+
+# THE OLDEST JUDGEMENT IN THIS FILE, MET A NINTH AND TENTH TIME.
+# `objInst%instSecLPFV` and `objInst%instPI` are INOUT to `SecLPFilter_Vel` and
+# `PIController`, which subscript `FP`'s ten `lpfV_*` DIMENSION(1024) arrays and
+# `piP`'s five with the counter and then post-increment it -- INSIDE the callee,
+# where no compared out-parameter exists for an inference to attach a role to.
+# Unit #41 paid for this with `Error allocating 11703869192 bytes` from its own
+# bridge; unit #47 carries the same two lines for `instPI` and `instRes`.
+#
+# THE ARITHMETIC IS THREE CALLS EACH, NOT ONE: both are called once per group on
+# the second loop and `CC_Group_N` is pinned at 0..3 above, so the bound could be
+# 1024 - 3. 1000 is used anyway, because it is the number the other six units in
+# this file already carry and a bound that differs by 21 buys nothing that could
+# be measured.
+#
+# THE COST, STATED: both counters leave R6's integer ladder, so the decade
+# boundaries and the two 32-bit extremes are gone from them. Every one of those
+# is a value at which the REFERENCE has no defined behaviour, and a defect at
+# the last slot would be a defect in SecLPFilter_Vel (unit #19) or PIController
+# (unit #33), each of which is CALLED rather than inlined and is therefore the
+# same implementation on both sides of this comparison.
+objInst_instSecLPFV = { lo = 1, hi = 1000 }
+objInst_instPI = { lo = 1, hi = 1000 }
