@@ -96,6 +96,13 @@ The input that kills it is named, exists, and is one flag away.
 
 ### 2 and 3. `11c1e326` and `06f7d2c8` — the two guards in `errmsg_trim`
 
+**SUPERSEDED IN PART.** `11c1e326` is `(b)`: 18 green kills exist, and the
+reading below misses the third factor -- the callee REPLACING the message
+(`|M| = 42`) rather than prefixing it, which is what puts a `n_ErrMsg == 1`
+entry back in front of the trim at `cap == 14`. `06f7d2c8` is `(c)`: 0 green
+kills exist, so it is not a corpus gap at all. The trim census below is correct
+and is not the whole story.
+
     const std::string_view v(ErrVar->ErrMsg, n > 0 ? static_cast<size_t>(n) : 0);
       11c1e326   n > 1 ? ...     kills it: n_ErrMsg == 1 exactly
       06f7d2c8   ... : 1         kills it: n_ErrMsg <= 0 with a non-blank byte
@@ -125,6 +132,13 @@ ladder with the callee's behaviour — the ladder does put `n_ErrMsg` at 1 and a
 0, and every one of those cases has its message replaced before the trim runs.
 
 ### 4. `26021804` — the trim itself
+
+**SUPERSEDED.** `(c)`: 13,344 inputs separate it from the original and every
+one of them is already red. `with_trailing_blank = 0` is true of the corpus and
+is not the reason -- the reason is that a trailing blank is visible to this
+unit's trim only when the callee's staged write was REFUSED, and the reference's
+own answer is 14 bytes longer than the callee's, so it is refused too and the
+case is red before anything is mutated.
 
     return std::string(v.substr(0, v.find_last_not_of(' ') + 1));   ->  + 2
 
