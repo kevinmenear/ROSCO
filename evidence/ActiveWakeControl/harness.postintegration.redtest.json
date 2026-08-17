@@ -1,13 +1,13 @@
 {
  "unit": "ActiveWakeControl",
  "against": "integrated",
- "checked": 3231,
- "failed": 70,
+ "checked": 21236,
+ "failed": 17521,
  "inadmissible": 0,
  "rule_coverage": [
   "  applied  R5_non_degenerate_shape    6 varied extent(s) at [3, 4, 5, 6, 7, 8] and [3, 4, 5, 6, 7, 8]; 25 FIXED by the type at [2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 12, 12, 12, 12, 256, 1024, 1024, 1024, 1024, 1024] -- not varied; 66 HELD -- they size arrays the reference does not read, NO index parameter identified, array elements distinct",
-  "  applied  R2_flag_values             1 value(s) across 1 flag(s), each with 8 case(s) of the remaining inputs varied under it",
-  "  applied  R6_reference_literals      1884 value(s) from 25 literal(s) in the reference, each under every declared value of 1 flag(s); 82 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 396 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 480 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 120 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 12 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits; 126 combination(s) of the 4 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead",
+  "  applied  R2_flag_values             7 value(s) across 2 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R6_reference_literals      1836 value(s) from 25 literal(s) in the reference, each under every declared value of 2 flag(s); 41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 363 real magnitude(s) -- the thresholds at which a product first goes subnormal, first flushes to zero and first overflows, plus one decade inside each region -- across the scalar real parameter(s) whose range is defaulted rather than declared; 440 of those magnitudes re-run with every OTHER defaulted scalar real pinned to an isolating 0.0 or 1e300, because a rung on one parameter is drowned by the ordinary-magnitude terms the others put in the same expression; 110 of those magnitudes re-run UNPINNED, every other real at its ordinary default, because a coefficient that is a bare product is annihilated by both isolating values and has no term to remove; 11 scalar real(s) at NEGATIVE ZERO -- the value the ladders' own `dict.fromkeys` dedup absorbs into 0.0, and the only input on which a `< 0` saturation guard and a `<= 0` one produce different bits; 126 combination(s) of the 4 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead",
   "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
   "  applied  R3_no_dead_signal          19 real value(s), none zero in every case; 6 HELD string(s) are all-blank in every case by construction -- nothing a defect on those could move; 284 HELD real(s) are zero in every case by construction -- a scaling defect on one of those cannot move any output",
   "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
@@ -19,100 +19,100 @@
  ],
  "mismatches": [
   {
-   "case": 1992,
+   "case": 0,
    "output": "LocalVar.PitCom",
-   "ref": "389f6c8af1ca7dc0f6c58580bbda48401d9d52c8b82d8040",
-   "got": "7f52eb1d0de07dc0f6c58580bbda48401d9d52c8b82d8040"
+   "ref": "27b746e41e897cc030f5be383a04b33ff9d2e815a9a08040",
+   "got": "56647237c2ed614030f5be383a04b33ff9d2e815a9a08040"
   },
   {
-   "case": 3102,
+   "case": 3,
    "output": "LocalVar.PitCom",
-   "ref": "7a301c4543f37ec0cfeec01de90741400cf11dff3c398140",
-   "got": "20d666362f427ec0cfeec01de90741400cf11dff3c398140"
+   "ref": "ef5cfc1d4d286ec06c6993eb7cab634018999a2913ef8140",
+   "got": "adc3bc6a0e1662406c6993eb7cab634018999a2913ef8140"
   },
   {
-   "case": 3103,
-   "output": "LocalVar.PitCom",
-   "ref": "6edc804ac6e97cc042b77c0cf4803740749979ddc02d8040",
-   "got": "b2693364cb957dc042b77c0cf4803740749979ddc02d8040"
+   "case": 3,
+   "output": "LocalVar.piP",
+   "ref": "0000000000000000000000000000000000000000000000000000000000000000...",
+   "got": "0000000000000000000000000000000000000000000000000000000000000000..."
   },
   {
-   "case": 3104,
+   "case": 5,
    "output": "LocalVar.PitCom",
-   "ref": "cfab4452a7957bc0257dabbba114334043772339cec28040",
-   "got": "e4efe0e84bea7bc0257dabbba114334043772339cec28040"
+   "ref": "92815fd6a35176c006ae3f57b8795bc02398d62ab1896340",
+   "got": "20f29c18c01e78c0c48d89c87e7864c02398d62ab1896340"
   },
   {
-   "case": 3105,
-   "output": "LocalVar.PitCom",
-   "ref": "ca11c05a6a3d7bc03c7b688b9b3b2b4091c3d62d98578040",
-   "got": "d2eda0a0b0bf7bc0529988078725244091c3d62d98578040"
+   "case": 5,
+   "output": "LocalVar.piP",
+   "ref": "0000000000000000000000000000000000000000000000000000000000000000...",
+   "got": "0000000000000000000000000000000000000000000000000000000000000000..."
   },
   {
-   "case": 3106,
+   "case": 6,
    "output": "LocalVar.PitCom",
-   "ref": "69d4320c135a7ec0491f0a206f663c405ea2f2262d258040",
-   "got": "643c4de5c9e27dc036af0392879e40405ea2f2262d258040"
+   "ref": "a52dc9119bc743400e8c0f3e11fc7440d41e670342fa8340",
+   "got": "4adfc0b2dd7943400e8c0f3e11fc7440d41e670342fa8340"
   },
   {
-   "case": 3107,
-   "output": "LocalVar.PitCom",
-   "ref": "87ebada533da7cc03a377babe87642407f21b93485188040",
-   "got": "75c52377df8e7dc0930c283eed4f43407f21b93485188040"
+   "case": 6,
+   "output": "LocalVar.piP",
+   "ref": "0000000000000000000000000000000000000000000000000000000000000000...",
+   "got": "0000000000000000000000000000000000000000000000000000000000000000..."
   },
   {
-   "case": 3111,
+   "case": 7,
    "output": "LocalVar.PitCom",
-   "ref": "0eb56bb75c9a7ec0f0ba53369d784d403f3d13e1dfa48140",
-   "got": "e383d24ebc657ec0f0ba53369d784d403f3d13e1dfa48140"
+   "ref": "545a2d665da585c0cd256692bdc97ac0dd0b44b0964b66c0",
+   "got": "8baa222f2da585c0cd256692bdc97ac0dd0b44b0964b66c0"
   },
   {
-   "case": 3112,
+   "case": 8,
    "output": "LocalVar.PitCom",
-   "ref": "6248953a874f7cc0c2f16c64cc95174092ca0336f6178140",
-   "got": "231e4989d9347cc0c2f16c64cc95174092ca0336f6178140"
+   "ref": "54d1ea46f0ca69c0c097604a0849c63ffa55b65f3d6e6b40",
+   "got": "c2fe986e733380c0c097604a0849c63ffa55b65f3d6e6b40"
   },
   {
-   "case": 3113,
-   "output": "LocalVar.PitCom",
-   "ref": "71c46aafd4b97dc0667c6fb9aa2d4440f99eeff25a068140",
-   "got": "a79256682bc57ec0667c6fb9aa2d4440f99eeff25a068140"
+   "case": 8,
+   "output": "LocalVar.piP",
+   "ref": "0000000000000000000000000000000000000000000000000000000000000000...",
+   "got": "0000000000000000000000000000000000000000000000000000000000000000..."
   },
   {
-   "case": 3114,
+   "case": 9,
    "output": "LocalVar.PitCom",
-   "ref": "663867ecf38c7cc0869e1bf32aad3c40b33f7d682b467f40",
-   "got": "73187a4a98f87cc0daf6634a25b04440b33f7d682b467f40"
+   "ref": "4b6c4d28f8f95e40f826f62c9198784067cb87fb51968440",
+   "got": "a0ebc239f33f65c05c90f61766e85840fb6213502cce7640"
   },
   {
-   "case": 3115,
-   "output": "LocalVar.PitCom",
-   "ref": "053f575038047cc0c82c0c1a72be26400b0cb5eaca4b8140",
-   "got": "c1a5eac0a3607cc0b838de9ab055f93f0b0cb5eaca4b8140"
+   "case": 9,
+   "output": "LocalVar.piP",
+   "ref": "0000000000000000000000000000000000000000000000000000000000000000...",
+   "got": "0000000000000000000000000000000000000000000000000000000000000000..."
   },
   {
-   "case": 3116,
+   "case": 10,
    "output": "LocalVar.PitCom",
-   "ref": "d8305265a5897ec04d2c297ba56a494068d7b1e6489b8040",
-   "got": "1b3b370e56347ec0f9432c7801a4424068d7b1e6489b8040"
+   "ref": "3d478dc89a8079c089acaab2f18b64c0386c5cad14c85340",
+   "got": "486d60cf08374fc06641220b16ef7fc0386c5cad14c85340"
   },
   {
-   "case": 3120,
+   "case": 11,
    "output": "LocalVar.PitCom",
-   "ref": "ca247617b6f57dc03586a606fb734540657e33eb15948040",
-   "got": "06d6ea2ce6977dc03586a606fb734540657e33eb15948040"
+   "ref": "388ef454129e7dc0b0415a89b2d62840890cbfea89448040",
+   "got": "10fb53aeb6875f40b0415a89b2d62840890cbfea89448040"
   },
   {
-   "case": 3121,
-   "output": "LocalVar.PitCom",
-   "ref": "cd79e71f659f7cc0ce334b8c38db3740a7558749d3728040",
-   "got": "ac79299705647dc0ce334b8c38db3740a7558749d3728040"
+   "case": 11,
+   "output": "LocalVar.resP",
+   "ref": "0000000000000000000000000000000000000000000000000000000000000000...",
+   "got": "0000000000000000000000000000000000000000000000000000000000000000..."
   },
   {
-   "case": 3122,
+   "case": 12,
    "output": "LocalVar.PitCom",
-   "ref": "e071f59474057fc0530f9d5fd94f2d403cfe1178839e7f40",
-   "got": "9c955b429b847ec0530f9d5fd94f2d403cfe1178839e7f40"
+   "ref": "9562e6cd30697ec038729a2f807f36c03e695ed8a33e7d40",
+   "got": "b251b171fd718bc038729a2f807f36c03e695ed8a33e7d40"
   }
  ],
  "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
@@ -120,7 +120,7 @@
  "vit_rev": "a16a7ab",
  "red_test": {
   "perturbation": "this unit's vit_copy_scalars_to_localvariables call deleted from its own wrapper",
-  "result": "70 of 3231 case(s) failed",
+  "result": "17521 of 21236 case(s) failed",
   "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
  }
 }
