@@ -1,0 +1,57 @@
+The clean-tree sweep at harness/ActiveWakeControl.json (first take: checked 6436,
+failed 22) recorded sixteen mismatches, every one of them DebugVar.axisTilt_1P:
+
+  cases 6307 6309 6310 6311 6313 6315 6316 6317 6319 6321 6322 6323 6325 6327 6328 6329
+
+To name the set rather than infer it, the GENERATED test source was patched with
+one line, immediately after LocalVar_a.restart is read from the case stream and
+before any call:
+
+  fprintf(stderr, "PROBE %d mode=%d nmodes=%d numbl=%d restart=%d harm0=%d\n",
+          c, CntrPar_a.AWC_Mode, CntrPar_a.AWC_NumModes, LocalVar_a.NumBl,
+          LocalVar_a.restart, CntrPar_a.AWC_harmonic[0]);
+
+and relinked with `harness.sh --no-generate`, which keeps the corpus and rebuilds
+for the tree on disk. The answers that run produced are irrelevant and were not
+read: the probe reports INPUTS, which the case file fixes, so it did not need the
+clean tree and no reset window was spent on it.
+
+VERDICT: all sixteen are AWC_Mode == 4 -- the ResController arm. Thirteen are at
+restart == 1; the three that are not (6310, 6316, 6322) each follow one that is,
+which is the SAVE local AWC_TiltYaw carrying the indeterminate value past the
+case that produced it.
+
+The rows below are cases 6304..6335 of that run.
+
+PROBE 6304 mode=4 nmodes=1 numbl=0 restart=0 harm0=-558
+PROBE 6305 mode=4 nmodes=1 numbl=0 restart=1 harm0=-571
+PROBE 6306 mode=4 nmodes=1 numbl=0 restart=0 harm0=-594
+PROBE 6307 mode=4 nmodes=1 numbl=0 restart=1 harm0=-592
+PROBE 6308 mode=4 nmodes=1 numbl=0 restart=0 harm0=-587
+PROBE 6309 mode=4 nmodes=1 numbl=0 restart=1 harm0=-593
+PROBE 6310 mode=4 nmodes=1 numbl=1 restart=0 harm0=-550
+PROBE 6311 mode=4 nmodes=1 numbl=1 restart=1 harm0=-595
+PROBE 6312 mode=4 nmodes=1 numbl=1 restart=0 harm0=-571
+PROBE 6313 mode=4 nmodes=1 numbl=1 restart=1 harm0=-581
+PROBE 6314 mode=4 nmodes=1 numbl=1 restart=0 harm0=-590
+PROBE 6315 mode=4 nmodes=1 numbl=1 restart=1 harm0=-588
+PROBE 6316 mode=4 nmodes=1 numbl=2 restart=0 harm0=-594
+PROBE 6317 mode=4 nmodes=1 numbl=2 restart=1 harm0=-553
+PROBE 6318 mode=4 nmodes=1 numbl=2 restart=0 harm0=-549
+PROBE 6319 mode=4 nmodes=1 numbl=2 restart=1 harm0=-575
+PROBE 6320 mode=4 nmodes=1 numbl=2 restart=0 harm0=-571
+PROBE 6321 mode=4 nmodes=1 numbl=2 restart=1 harm0=-584
+PROBE 6322 mode=4 nmodes=2 numbl=0 restart=0 harm0=-572
+PROBE 6323 mode=4 nmodes=2 numbl=0 restart=1 harm0=-591
+PROBE 6324 mode=4 nmodes=2 numbl=0 restart=0 harm0=-588
+PROBE 6325 mode=4 nmodes=2 numbl=0 restart=1 harm0=-551
+PROBE 6326 mode=4 nmodes=2 numbl=0 restart=0 harm0=-567
+PROBE 6327 mode=4 nmodes=2 numbl=0 restart=1 harm0=-590
+PROBE 6328 mode=4 nmodes=2 numbl=1 restart=0 harm0=-573
+PROBE 6329 mode=4 nmodes=2 numbl=1 restart=1 harm0=-583
+PROBE 6330 mode=4 nmodes=2 numbl=1 restart=0 harm0=-599
+PROBE 6331 mode=4 nmodes=2 numbl=1 restart=1 harm0=-554
+PROBE 6332 mode=4 nmodes=2 numbl=1 restart=0 harm0=-564
+PROBE 6333 mode=4 nmodes=2 numbl=1 restart=1 harm0=-560
+PROBE 6334 mode=4 nmodes=2 numbl=2 restart=0 harm0=-584
+PROBE 6335 mode=4 nmodes=2 numbl=2 restart=1 harm0=-548

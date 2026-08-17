@@ -1340,3 +1340,41 @@ LocalVar_NumBl = { lo = 0, hi = 3 }
 # same implementation on both sides of this comparison.
 objInst_instPI = { lo = 1, hi = 1000 }
 objInst_instRes = { lo = 1, hi = 1000 }
+
+# THE FIFTH PIN, AND IT IS THE ONE THAT HAD TO BE MEASURED. `LocalVar%restart`
+# is a PURE PASS-THROUGH here -- it appears in no predicate this unit writes,
+# only as the `reset` argument of the two callee calls -- and the first
+# clean-tree sweep still came back
+#
+#     HARNESS FAIL: checked 6436  failed 22  inadmissible 0
+#       case 6307 DebugVar.axisTilt_1P: ref 0020217fd5bf0000 != got 2020202020202020
+#
+# with every one of the sixteen recorded mismatches on `DebugVar.axisTilt_1P`
+# and NOTHING else. An instrumented rebuild of the generated test source
+# (`evidence/ActiveWakeControl/harness.restart_probe.txt`) printed the four
+# inputs per case and named the set exactly: ALL SIXTEEN ARE `AWC_Mode == 4`,
+# thirteen of them at `restart == 1` and the other three at `restart == 0`
+# IMMEDIATELY AFTER one that was.
+#
+# `AWC_Mode == 4` is the `ResController` arm, and unit #39 already measured what
+# that callee does on its reset arm: it assigns its result ONLY in the ELSE
+# branch, so `IF (reset)` returns whatever the result slot holds. That is the
+# reference having no answer for its own return value, which the two sides reach
+# down call stacks of different depth and need not agree on.
+#
+# WHAT IS NEW HERE IS THE THREE CASES AT `restart == 0`. This unit stores that
+# value into `AWC_TiltYaw`, which is implicitly SAVE, so the indeterminate value
+# OUTLIVES THE CASE THAT PRODUCED IT and a later case that does not rewrite the
+# slot compares two different leftovers. An indeterminate answer in a SAVE local
+# is not confined to its own case.
+#
+# THE COST, STATED, and it is smaller than the pin looks. What leaves the corpus
+# is the reset arm of `PIController` (unit #33) and of `ResController`
+# (unit #39). Both are CALLED rather than inlined, so on the clean tree both
+# sides of this comparison reach the same Fortran body through the same
+# `<callee>_c` bridge, and both were scored against their own corpora as units.
+# `PIController`'s reset arm is perfectly determinate -- it assigns `I0` -- and
+# is lost only as collateral: `ranges.toml` states a judgement about ONE
+# parameter and cannot say "restart may be true unless AWC_Mode is 4".
+# Nothing this unit's own body does is removed.
+LocalVar_restart = { values = [0] }
