@@ -1,0 +1,51 @@
+# What `--disable R13_staging_capacity` cost, measured for ALL FOUR survivors
+
+Produced by `evidence/AeroDynTorque/run_survivors_on_full_corpus.sh`, which
+opens and closes its own reset window. Each mutant is `CppMutant.source` for the
+id vit_mutate.py scored (`evidence/AeroDynTorque/mutant.<id>.cpp`), run over the
+FULL 1387-case corpus -- the one R13 contributes 256 cases to and which the
+scored corpus does not have.
+
+THE COMPARISON IS BETWEEN FAILING CASE SETS, NOT COUNTS. Both the baseline and
+every mutant are RED on this corpus (14 cases; see
+harness.staging_composition.txt for why), so a mutant that turned one of the
+baseline's own failures into a pass while adding one elsewhere would show the
+same count and a different set. The sets are printed in full.
+
+RESULT: R13's kill set on this unit is exactly {88466711} -- one mutant, one
+case, case 1154, the capacity == 30 case that sizes the buffer TO the composed
+message. The other three survive the full corpus with a failing set IDENTICAL to
+the baseline's, so the ablation did not cost them: they are unreachable for a
+different reason, which the trim census measures (`errmsg_trim` sees n_ErrMsg in
+9..21 over 1097 calls, never <= 0, never 1, never with a trailing blank, because
+interp1d/interp2d rewrite ErrMsg to an exactly-sized string before this unit
+trims it).
+
+The run below is reproduced verbatim.
+
+  48 translated .cpp source(s) removed from CMakeLists (E1.2 flags kept)
+  0 instrumented object(s) removed from the build tree
+  rebuilt and installed; kgen symbols in rosco/lib/libdiscon.so: 0
+=== generating the FULL 1387-case corpus (R13 applied) ===
+  case 1143 ErrVar.ErrMsg: ref 404142595a5b5e000000000000000000000000 != got 696e7465727031643a404142595a5b5e000000
+artifact: /workspace/ROSCO-r2/harness/AeroDynTorque.json
+diff cap raised to 4000
+=== the unmutated translation, FULL corpus (the baseline for the sets below) ===
+cp: translations/Functions/aerodyntorque.cpp and translations/Functions/aerodyntorque.cpp are identical (not copied).
+BASELINE        checked 1387  failed 14  cases [1140, 1141, 1142, 1143, 1144, 1145, 1146, 1147, 1148, 1149, 1150, 1151, 1152, 1153]
+=== mutant 88466711 ===
+MUTANT 88466711  checked 1387  failed 15  cases [1140, 1141, 1142, 1143, 1144, 1145, 1146, 1147, 1148, 1149, 1150, 1151, 1152, 1153, 1154]
+=== mutant 11c1e326 ===
+MUTANT 11c1e326  checked 1387  failed 14  cases [1140, 1141, 1142, 1143, 1144, 1145, 1146, 1147, 1148, 1149, 1150, 1151, 1152, 1153]
+=== mutant 06f7d2c8 ===
+MUTANT 06f7d2c8  checked 1387  failed 14  cases [1140, 1141, 1142, 1143, 1144, 1145, 1146, 1147, 1148, 1149, 1150, 1151, 1152, 1153]
+=== mutant 26021804 ===
+MUTANT 26021804  checked 1387  failed 14  cases [1140, 1141, 1142, 1143, 1144, 1145, 1146, 1147, 1148, 1149, 1150, 1151, 1152, 1153]
+--- regenerating the ABLATED corpus (the one the score was taken on) ---
+HARNESS PASS: checked 1131  failed 0  inadmissible 0
+artifact: /workspace/ROSCO-r2/harness/AeroDynTorque.json
+corpus sha256 0893b9ebd947a0e14decb7ed027a4c32786f733b1f43f25d69bcc57308a98972 -- matches the scored corpus
+--- closing the reset window ---
+restore_integrated: 78 file(s) restored from HEAD (vit_types.h untouched)
+  CMakeLists.txt restored: the translated .cpp sources are back in the build
+  rebuilt and installed. Gate now measures the INTEGRATED build.
