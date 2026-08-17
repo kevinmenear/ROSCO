@@ -9962,3 +9962,167 @@ checked / 0 failed. This is the bind-mount write/read race the runbook already
 records for `cp`, met on an object the same `docker exec` chain had just written
 three commands earlier. Recorded rather than repaired: the failure is LOUD (a
 link error, not a wrong number) and a retry is the whole fix.
+
+---
+
+## Unit #47 `ActiveWakeControl`, second dispatch — a mode selector written as an enumeration, and what it bought
+
+**The dispatch was opened on one unmet condition: P12 at 0.7857 with 45
+survivors.** It closes at **0.9200 with 16**, still below the 1.000 threshold and
+still failing on purpose. 20 of the 45 are killed, 10 are declared equivalent
+with reasons in `mutation/ActiveWakeControl.equivalences.md`, 15 still stand, and
+one mutant the old corpus killed now survives.
+
+### The finding worth carrying out of this unit
+
+**`_base` puts a mode selector at the midpoint of its range, and a midpoint is
+not a mode.** `CntrPar%AWC_Mode` had no stated range, so it sat at −600 —
+`_base`'s midpoint of ±1e3 — in **3032 of 3231 cases**. The reference's body is
+one `IF`/`ELSEIF` chain over that selector with **no `ELSE`**, so 94% of the
+corpus executed nothing. Every ladder rung, every R6 magnitude, every negative
+zero and every random fill was spent on the empty path. **91 of 3231 cases
+reached an arm at all, and the unit's own no-op red test moved 86 of 3231 —
+2.7%.**
+
+Writing it in `harness/ranges.toml` as `values = [3, 4, 5, 1, 2, 0]` rather than
+as `lo`/`hi` is what fixed it, and the difference between those two spellings is
+the whole lesson:
+
+| | `lo = 0, hi = 5` | `values = [...]` |
+|---|---|---|
+| what `_base` gives every non-flag case | ONE mode, `int(5·frac)` | `values[0]`, chosen |
+| R2 `flag_values` | does not apply | applies: every value appears |
+| R6 ladders | run under ONE mode | **re-run under EVERY mode** |
+| corpus size | unchanged | × (sum of flag arities) |
+
+`lo`/`hi` would have deepened exactly one arm, whichever `_base`'s frac happened
+to select. `values` deepened all six. The cost is real and is a cost in TIME:
+3231 → 21236 cases, and the mutation sweep from ~35 to ~50 minutes.
+
+**Measured outcome:** 17697 of 21236 cases reach an arm (83%), the no-op red test
+moves 17645 of 21236, and the post-integration wrapper red test moves 17521.
+
+### The named next step from the first dispatch was reached WITHOUT the generator change
+
+The first dispatch recorded "**11 survivors would die from one knob value**" —
+`NumBl == 3` never co-occurring with a live `AWC_Mode` — and costed it as a
+generator change with an X3 price paid by every later unit. **It did not need
+one.** `NumBl == 3` arrives through the random-fill stratum, which R2 gives eight
+cases under *every declared flag value*; with `AWC_Mode` declared, five live cases
+now carry `NumBl == 3` in Mode 1 and all eleven of those survivors are dead.
+
+**The general form, and it is the reusable part:** a stratum that already varies a
+quantity becomes reachable *in a branch* the moment the branch selector is a
+flag. Before reaching for a knob change, ask whether the selector is a declared
+enumeration — the knob and the flag are different mechanisms and the flag is the
+one `ranges.toml` can pull.
+
+The same statement dissolved three of the five survivors that the first dispatch
+attributed to a saturated controller output. It was not the window that was
+narrow: `PC_MinPit`/`PC_MaxPit` were at ONE pair, (0, 600), in all 91 live cases,
+because they too were at `_base`. They now take **537 distinct pairs, 311 of them
+wider than 1e6.**
+
+### The price, paid and reported: one mutant went from killed to alive
+
+`ced1c24e` — `Error`'s first `SAVE` initialiser — was killed by the old corpus
+and survives this one. This is the shape already recorded above as *"the kill
+counts went down by REPLACEMENT"*, met a second time and with an exact mechanism
+rather than a suspicion.
+
+**A `SAVE` local's initialiser is an ORDERING property, not a value property.** It
+is observable only where a read of the slot precedes every write of it across the
+whole run. The old corpus happened to reach `Error(1)` first at case 3135, a
+Mode 3 case whose `Time > StartTime` guard was false. The new corpus's case 0 is
+a Mode 3 case at `Time = 600` — `_base` at frac 0.8, positive — so the loop runs
+and writes the slot before `:289` reads it. 740 of the 7083 Mode 3/4 cases DO
+have `Time <= 0`; every one comes after case 0.
+
+**`values[0]` is the only lever `ranges.toml` has on case order**, and it was used
+deliberately here — it is what killed `537e3fe0`, `AWC_TiltYaw`'s first
+initialiser. It is not enough, because which side of zero `_base` puts
+`LocalVar%Time` on is the midpoint of a range and not an admissibility judgement.
+Pinning `Time` to reach it would be fitting the domain to the score.
+
+**ESCALATED, as a generator capability that does not exist: no rule in this
+generator orders cases.** Every rule chooses each parameter independently of the
+case index. Two survivors here need a first case with specified state, and the
+`ExtController` entry in `harness/ranges.toml` records the same wall from the
+other side ("*ordering the case set instead — one `iStatus == 0` case first, the
+rest not — is not something this generator can express*"). That is now two units.
+
+### Four instrument gaps, each named to a function or a regex
+
+Twelve of the sixteen standing survivors are these. None is repaired here: each
+moves the corpus of every unit already scored, which is X3's business and the
+Driver's, not a unit dispatch's.
+
+1. **A COMPLEX view field is neither compared nor supplied non-zero — 5
+   survivors.** `LocalVar%AWC_complexangle` crosses in both directions and the
+   generated test source carries **0 of its 481 `VITCMP` lines** on it; it is
+   supplied as (0,0) in all 21236 cases. Two changes: R4's out-parameter
+   enumeration must emit a COMPLEX field as two outputs, and the case emitter
+   must fill it. Carried over from the first dispatch, now with a fifth survivor
+   attributed to it — `97b678b5`, previously mis-attributed to negative zero.
+
+2. **A predicate on a constant-subscript array element is not a knob — 5
+   survivors.** `IF (CntrPar%AWC_harmonic(1) == 0)`: **0 cases of 21236, 0 hits
+   in 27 scenarios.** Carried over, and this dispatch narrows the fix to one
+   line: `predicate_knobs_from`'s `_NAME` has no subscript group, while its two
+   siblings in the same file — `relational_pairs_from` and
+   `divisibility_pairs_from` — both carry `(?:\(\s*(\d+)\s*\))?` for exactly this
+   shape. `predicate_knobs_from` already RETURNS `(param, index, values)` and
+   `_knob_overrides` already handles a non-None index. **The machinery exists;
+   the pattern does not reach it.**
+
+3. **A nested derived type inside a view struct is zero-filled and never varied —
+   2 survivors.** The harness reports this about itself
+   (`UNOBSERVABLE LocalVar.resP: nested type, zero-initialised (not varied)`), and
+   this is the first measured consequence. With all four `resP` history arrays at
+   zero, `ResController` collapses from a Tustin biquad to
+   `kp·error + 2·DT·ki·error/(4 + (2π·freq·DT)²)` — four of five terms multiply
+   zero. `freq` then enters ONLY through that denominator, which at ±1e3
+   magnitudes is of order 1e13 and annihilates the `ki` term. **A stated
+   limitation becomes a measurement the moment a survivor lands on it.**
+
+4. **A crossing rule against an EXPRESSION over a parameter — 1 survivor.**
+   `LocalVar%Time .GT. 1/CntrPar%AWC_freq(1)`, `>` against `>=`, differs on one
+   input and no case is on it. `relational_pairs_from` needs both sides to be
+   parameters; `reduction_pairs_from` extended it to `MINVAL`/`MAXVAL` of an
+   array for `interp1d`'s endpoint branches — whose survivors were this same
+   pair of operators. This is that extension one step further out, to a
+   reciprocal.
+
+### An out-of-bounds store is not an equivalent program
+
+`e9d4580d` stores one element past `static double AWC_TiltYaw[2]`. The first
+dispatch's census grouped it with `df13f212`, which stores to a *valid* element
+the loop below overwrites, and called both "changes nothing". **That is right
+about the observable values and wrong about the program.** `df13f212` is declared
+equivalent; `e9d4580d` stays an honest survivor, in the category unit #4 recorded
+for `GetRoot` — a memory error no value comparison can see, whose instrument is
+`-fsanitize=address` on the harness build.
+
+### An assembly diff cannot confirm what a non-empty diff shows
+
+The first dispatch left eight extent-enlarging mutants undeclared and named the
+missing measurement: *"a diff of the generated assembly, which was not taken."*
+**It was taken here and it answers nothing.** Growing a stack array by eight
+bytes moves the frame size and reshuffles the register allocator across the whole
+function; all eight diffs are non-empty (6 to 448 lines) and two change the
+instruction mix. An empty diff would have confirmed equivalence; a non-empty one
+is silent. What the declaration rests on instead is a COMPLETE enumeration of
+every subscript on the four arrays against the bounds `harness/ranges.toml`
+states — `evidence/ActiveWakeControl/mutation.extent_equivalence.txt`.
+
+**The general form:** "compile both and diff" is a confirmation instrument, not a
+decision instrument. Proposing one in a census commits the next dispatch to
+running it; say which answer would settle the question before proposing it.
+
+### The link race, met again
+
+The post-integration green re-take after the wrapper red test died at the link
+(`make: *** [Makefile:90: test] Error 1`) moments after the revert-and-rebuild,
+with no source change between it and the run that passed at 21236/0. Identical to
+the shim-object race recorded at the end of the first dispatch. Recorded, not
+repaired: the failure is LOUD and a retry is the whole fix.
