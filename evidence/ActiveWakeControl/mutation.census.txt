@@ -1,0 +1,203 @@
+MUTATION SURVIVOR CENSUS -- unit #47 ActiveWakeControl
+
+mutation/ActiveWakeControl.json: 165 killed of 210 behavioural, 14 no-compile,
+224 mutants offered, 0 declared equivalent, score 0.7857 against a threshold of
+1.000. Every one of the 45 survivors is listed below, grouped by the ONE fact
+that explains it, and every fact is a MEASUREMENT taken on the corpus the score
+was computed over -- not an argument about what the corpus probably contains.
+
+The two probes those measurements come from are
+evidence/ActiveWakeControl/harness.arm_census.txt (AWC_Mode, AWC_harmonic) and
+evidence/ActiveWakeControl/harness.live_case_inputs.txt (the rest). Both are one
+fprintf into the GENERATED test source, relinked with `harness.sh --no-generate`
+so the corpus is the scored one, and both report INPUTS only, which is why
+neither needed a reset window.
+
+NOTHING IS DECLARED EQUIVALENT. This campaign's rule is that a declaration rests
+on a measurement, and for eight of these ten groups the measurement says
+'unreachable in this corpus', which is a statement about the corpus and not
+about the program. Declaring those would convert a corpus weakness into a
+score. Same standing as interp2d at 0.9744 and unwrap at 0.960: P12 is left
+failing on purpose.
+
+==============================================================================
+G1 -- BLADE 3 IS COMPUTED AND NEVER READ.  11 survivors
+
+MEASURED: of the 91 cases that reach an arm at all, NumBl is 0 in 30, 1 in 31
+and 2 in 30. NumBl == 3 occurs in exactly 6 cases of the 3231 and AWC_Mode is
+outside 1..5 in all six. So `AWC_angle[2]`, `phi3`, `AWC_complexangle[2]` and
+`PitCom[2]` are written by the reference and by the translation and read by
+neither. The cause is not a range pin -- `LocalVar_NumBl` is pinned to [0, 3] --
+but R6's predicate cross product, whose NumBl values are read out of the
+reference's own literals and are {0, 1, 2}.
+THE INPUT THAT KILLS EVERY ONE: AWC_Mode == 1 with NumBl == 3.
+
+   104  4ac01351  swap_operands  '4.0 / 3.0' -> '3.0 / 4.0'
+   104  90644531  arith_op       '4.0 / 3.0' -> '4.0 * 3.0'
+   104  e39a85d5  drop_factor    '3.0 * PI' -> '3.0'
+   104  e624233f  const_tweak    '4.0' -> '5.0'
+   104  ee298a06  const_tweak    '3.0' -> '4.0'
+   167  823554cc  arith_op       'omega * LocalVar->Time' -> 'omega / LocalVar->Time'
+   167  d97775d4  drop_factor    'omega * LocalVar->Time' -> 'omega'
+   168  4d827a15  swap_operands  'Imode - 1' -> '1 - Imode'
+   168  c43a94b6  const_tweak    '1' -> '2'
+   168  e087f4e0  arith_op       'Imode - 1' -> 'Imode + 1'
+   169  7997dd17  arith_op       'LocalVar->Azimuth + phi3' -> 'LocalVar->Azimuth - phi3'
+
+==============================================================================
+G2 -- LocalVar%AWC_complexangle IS NOT COMPARED, AND ARRIVES ZERO.  5 survivors
+
+MEASURED: the generated test source contains ONE `VITCMP("LocalVar.PitCom"` and
+ONE `VITCMP("DebugVar.axisTilt_1P"` and ZERO `VITCMP("LocalVar.AWC_complexangle`
+-- the COMPLEX(DbKi) view field is absent from R4's out-parameter list entirely.
+And `AWC_complexangle[0]` is supplied as (0.0, 0.0) in all 91 live cases. So the
+zeroing loop has nothing to zero, and the imaginary half of the accumulator is
+an output no case can read. The real half reaches PitCom and IS compared, which
+is why the two mutants at :174 that survive are the two on `.im`.
+THE INPUT THAT KILLS THEM: a case supplying a non-zero AWC_complexangle, and a
+generator that compares the field. Neither exists today; this is a GENERATOR
+gap, recorded as such rather than as a property of the translation.
+
+   151  1dab0371  const_tweak    '0' -> '1'
+   152  50dd458b  index_offset   '[i]' -> '[i + 1]'
+   153  7acaa843  const_tweak    '0.0' -> '1.0'
+   174  221fb7c7  arith_op       'K - 1' -> 'K + 1'
+   174  30539381  const_tweak    '1' -> '2'
+
+==============================================================================
+G3 -- THE MUTANT ONLY ENLARGES AN ARRAY'S DECLARED EXTENT.  8 survivors
+
+`double AWC_angle[3]` -> `[4]`, `static double AWC_TiltYaw[2] = {0.0, 0.0}` ->
+`[3]`, and the same on `Error` and `FixedFrameM`. No read and no write moves;
+the extra element is never named by any subscript in the function, and a static
+array's unlisted initialisers are zero either way. NO INPUT CAN KILL THESE --
+they are equivalent by C++ semantics rather than by this corpus, and they are
+the only eight here for which that is true. They are still not declared: a
+declaration in this campaign rests on a measurement, and the measurement that
+would settle it is a diff of the generated assembly, which was not taken.
+
+   113  acf8643f  const_tweak    '3' -> '4'
+   113  b2eb03aa  index_offset   '[3]' -> '[3 + 1]'
+   134  3b46e0e1  const_tweak    '2' -> '3'
+   134  4353c022  index_offset   '[2]' -> '[2 + 1]'
+   135  87d2ec58  index_offset   '[2]' -> '[2 + 1]'
+   135  cde1bef2  const_tweak    '2' -> '3'
+   138  7dd59c0c  index_offset   '[2]' -> '[2 + 1]'
+   138  aae1839e  const_tweak    '2' -> '3'
+
+==============================================================================
+G4 -- THE INITIAL VALUE OF A SAVE LOCAL, NEVER READ BEFORE IT IS WRITTEN.  3
+
+MEASURED, in stream order: the first live case is 1992 (AWC_Mode 1), the first
+mode-2 case precedes the first mode-3 case (3135), and mode 2 opens with
+`AWC_TiltYaw = [0.0, 0.0]` unconditionally. So by the time any arm READS
+AWC_TiltYaw, a mode-2 case has already overwritten both elements and the
+declaration's initialiser is gone. `Error(2)` is stronger than that: the
+reference writes it and NOTHING reads it -- `DebugVar%axisYaw_2P = Error(1)` is
+the only read of the array -- so no ordering could expose it.
+The `Error(1)` initialiser is NOT here: it IS read, at case 3135, by a mode-3
+case whose `Time > StartTime` guard is false, and its mutant was killed.
+THE INPUT THAT KILLS THE TWO AWC_TiltYaw ones: a corpus whose FIRST live case is
+mode 3, 4 or 5 with Time <= StartTime.
+
+   134  537e3fe0  const_tweak    '0.0' -> '1.0'
+   134  d600d733  const_tweak    '0.0' -> '1.0'
+   135  5ea58638  const_tweak    '0.0' -> '1.0'
+
+==============================================================================
+G5 -- CntrPar%AWC_phaseoffset IS 0.0 ON THE WHOLE REACHABLE DOMAIN.  4 survivors
+
+MEASURED: `phaseoff=0` in all 91 live cases. `0.0 * D2R`, `0.0` and `0.0 / D2R`
+are the same bits, so the three sites that pass `AWC_phaseoffset * D2R` to
+ColemanTransformInverse cannot tell the three apart. This is an equivalence ON
+THIS CORPUS and not in the program: any non-zero phase offset separates them.
+THE INPUT THAT KILLS THEM: AWC_Mode in 2..5 with AWC_phaseoffset /= 0.
+
+   208  14442d6b  arith_op       'CntrPar->AWC_phaseoffset * D2R' -> 'CntrPar->AWC_phaseoffset / D2R'
+   208  d30024a6  drop_factor    'CntrPar->AWC_phaseoffset * D2R' -> 'CntrPar->AWC_phaseoffset'
+   270  7a23f68a  drop_factor    'CntrPar->AWC_phaseoffset * D2R' -> 'CntrPar->AWC_phaseoffset'
+   325  2642cda3  drop_factor    'CntrPar->AWC_phaseoffset * D2R' -> 'CntrPar->AWC_phaseoffset'
+
+==============================================================================
+G6 -- THE TWO ARMS GUARDED BY AWC_harmonic(1) == 0.  5 survivors
+
+MEASURED: zero cases of 3231 have AWC_harmonic(1) == 0, and zero hits in all 27
+gate scenarios (evidence/ActiveWakeControl/harness.arm_census.txt). These five
+mutants are inside those arms or move the subscript of the guard itself from
+element 1 to element 2, which is also non-zero in every case. This is the one
+group NO instrument in this campaign reaches, and the reason is written up in
+the arm census: the predicate is on a constant-subscript element of an
+ALLOCATABLE array, which the knob extractor does not take, and a lo/hi pin
+cannot repair it because the array filler's ramp is monotone.
+THE INPUT THAT KILLS THEM: AWC_Mode 3 or 4 with AWC_harmonic(1) == 0.
+
+   234  a9ff5bba  index_offset   '[0]' -> '[0 + 1]'
+   236  f9478329  index_offset   '[0]' -> '[0 + 1]'
+   238  c83a8294  index_offset   '[0]' -> '[0 + 1]'
+   274  31a68d6a  index_offset   '[0]' -> '[0 + 1]'
+   275  e0b52838  index_offset   '[0]' -> '[0 + 1]'
+
+==============================================================================
+G7 -- THE PI/PR CONTROLLER'S OUTPUT IS SATURATED IN EVERY LIVE CASE.  5
+
+MEASURED: `PC_MinPit = 0` and `PC_MaxPit = 600` in all 91 live cases, while
+`AWC_CntrGains` runs about -750, -540, -320 and `AWC_amp(1)` about -677. Both
+callees end in `saturate(..., minValue, maxValue)`, so with gains and errors
+three orders of magnitude wide against a 600-wide window the answer is a
+clamp -- and which array element supplies kp or ki, or which element supplies
+the resonant frequency, does not survive a clamp. THIS IS THE ONE GROUP WHOSE
+MECHANISM IS INFERRED FROM THE INPUTS RATHER THAN OBSERVED AT THE OUTPUT: the
+numbers above are measured, the clamp is read from PIController and
+ResController's own source, and no probe was run inside the callee.
+THE INPUT THAT KILLS THEM: a live case whose PC_MinPit/PC_MaxPit window is wide
+enough for the controller not to clamp.
+
+   254  893badc4  index_offset   '[0]' -> '[0 + 1]'
+   254  b796d413  index_offset   '[1]' -> '[1 + 1]'
+   255  f337e5a2  swap_operands  'Imode - 1' -> '1 - Imode'
+   260  3daf5a09  index_offset   '[1]' -> '[1 + 1]'
+   260  46d44447  index_offset   '[0]' -> '[0 + 1]'
+
+==============================================================================
+G8 -- A DEAD STORE THE PINNED DOMAIN MAKES DEAD.  2 survivors
+
+`AWC_TiltYaw = [0.0, 0.0]` at the top of the mode-2 arm is overwritten before it
+is read: the loop below writes `AWC_TiltYaw(Imode)` for Imode = 1..AWC_NumModes
+and, when AWC_NumModes == 1, writes element 2 as well. `CntrPar_AWC_NumModes` is
+pinned to [1, 2] in harness/ranges.toml, so both elements are always rewritten
+and moving either reset to another element changes nothing. THE PIN IS WHAT
+MAKES THIS TRUE: at AWC_NumModes == 0 the reset is the only writer, and that is
+the value the pin removes -- for a different reason (an uninitialised
+`AWC_angle` read), stated there.
+THE INPUT THAT KILLS THEM: AWC_Mode == 2 with AWC_NumModes == 0, which is
+outside this corpus by a pin whose own cost is recorded in ranges.toml.
+
+   192  df13f212  index_offset   '[0]' -> '[0 + 1]'
+   193  e9d4580d  index_offset   '[1]' -> '[1 + 1]'
+
+==============================================================================
+G9 -- A BOUNDARY NO CASE LANDS ON.  1 survivor
+
+`LocalVar%Time .GT. 1/AWC_freq(1)` -> `>=` differs on exactly one input: Time
+equal to 1/AWC_freq(1) to the bit. MEASURED: Time is 0, 1 or 2 in 90 of the 91
+live cases and 600 in the remaining one, while AWC_freq(1) is a ramp value of
+order 1e2..1e3, so 1/AWC_freq(1) is of order 1e-3 and no case is near it.
+THE INPUT THAT KILLS IT: Time == 1/AWC_freq(1) exactly, in mode 5.
+
+   312  2d7ffe20  compare_op     '>' -> '>='
+
+==============================================================================
+G10 -- ADDING AND SUBTRACTING A ZERO PARAMETER.  1 survivor
+
+`phi1` is `REAL(DbKi), PARAMETER :: phi1 = 0.0`, so `Azimuth + phi1` and
+`Azimuth - phi1` differ only when Azimuth is negative zero, and even then only
+until `clockang` is added: `-0.0 + 0.0` and `-0.0 - 0.0` are `+0.0` and `-0.0`,
+and adding any non-zero clockang collapses them again. The corpus varies
+Azimuth on the +/-1e3 default and no case presents -0.0 for it.
+THE INPUT THAT KILLS IT: Azimuth == -0.0 with clockang == -0.0 and
+omega*Time == 0, in mode 1 with NumBl >= 1.
+
+   163  97b678b5  arith_op       'LocalVar->Azimuth + phi1' -> 'LocalVar->Azimuth - phi1'
+
+==============================================================================
+TOTAL: 11 + 5 + 8 + 3 + 4 + 5 + 5 + 2 + 1 + 1 = 45.

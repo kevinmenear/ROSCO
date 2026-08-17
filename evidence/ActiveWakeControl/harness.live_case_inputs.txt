@@ -1,0 +1,44 @@
+LIVE-CASE INPUT MEASUREMENTS -- the 91 cases of harness/ActiveWakeControl.json
+whose AWC_Mode is in 1..5, i.e. the ones that reach an arm at all.
+
+Taken by one fprintf patched into the GENERATED test source immediately after
+LocalVar_a.restart is read, relinked with harness.sh --no-generate so the corpus
+is the scored one. Inputs only -- no clean tree, no reset window.
+
+--- NumBl over the live cases ---
+     30 numbl=0
+     31 numbl=1
+     30 numbl=2
+--- cases with NumBl == 3 anywhere in the 3231 ---
+6 case(s), and their AWC_Mode:
+      1 mode=-488
+      1 mode=-671
+      1 mode=-676
+      1 mode=169
+      1 mode=272
+      1 mode=360
+--- CntrPar%AWC_phaseoffset over the live cases ---
+     91 phaseoff=0
+--- CntrPar%PC_MinPit / PC_MaxPit over the live cases ---
+     91 minpit=0 maxpit=600
+--- LocalVar%AWC_complexangle(1) AS SUPPLIED over the live cases ---
+     91 cplx0=0,0
+--- LocalVar%Time over the live cases ---
+     30 time=0
+     30 time=1
+     30 time=2
+      1 time=600
+--- AWC_CntrGains(1..3), first five live cases, for the saturation argument ---
+g0=-755.66944039699604 g1=-547.45619894160802 g2=-322.12502483628549
+g0=-752.76795638583781 g1=-528.4869015817917 g2=-317.82768907122386
+g0=-758.09926677416672 g1=-529.46827042681286 g2=-308.65340052464251
+g0=-764.72532009934071 g1=-529.98025939475895 g2=-331.38746837522029
+g0=-766.19643492504724 g1=-547.22614005894854 g2=-326.19279339545375
+--- stream order: first live case, and the first mode-3/4/5 case ---
+1992 mode=1 nmodes=1 numbl=1 time=600
+3135 mode=3 nmodes=1 numbl=0 time=0
+
+--- which outputs the generated test compares (grep VITCMP) ---
+LocalVar.PitCom             1
+DebugVar.axisTilt_1P        1
+LocalVar.AWC_complexangle   0

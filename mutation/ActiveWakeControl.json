@@ -1,0 +1,403 @@
+{
+ "unit": "ActiveWakeControl",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "operator_population": {
+  "compare_op": 20,
+  "drop_factor": 23,
+  "arith_op": 40,
+  "swap_operands": 40,
+  "index_offset": 40,
+  "const_tweak": 40,
+  "negate_cond": 10,
+  "drop_call": 11
+ },
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutants": 210,
+ "equivalent_declared": 0,
+ "nocompile": 14,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0625,
+ "nocompile_refused": false,
+ "total": 224,
+ "killed": 165,
+ "survived": 45,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.7857,
+ "loop_rev": "eb5028e-nogit",
+ "vit_rev": "a16a7ab-nogit",
+ "merged_from": [
+  {
+   "part": "mutation/ActiveWakeControl.part.negate_cond.json",
+   "operators_filter": [
+    "negate_cond"
+   ],
+   "total": 10,
+   "mutants": 10,
+   "nocompile": 0,
+   "killed": 10,
+   "survived": 0,
+   "score": 1.0
+  },
+  {
+   "part": "mutation/ActiveWakeControl.part.cmp_call_factor.json",
+   "operators_filter": [
+    "compare_op",
+    "drop_call",
+    "drop_factor"
+   ],
+   "total": 54,
+   "mutants": 45,
+   "nocompile": 9,
+   "killed": 39,
+   "survived": 6,
+   "score": 0.8667
+  },
+  {
+   "part": "mutation/ActiveWakeControl.part.arith_op.json",
+   "operators_filter": [
+    "arith_op"
+   ],
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 33,
+   "survived": 7,
+   "score": 0.825
+  },
+  {
+   "part": "mutation/ActiveWakeControl.part.const_tweak.json",
+   "operators_filter": [
+    "const_tweak"
+   ],
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 27,
+   "survived": 13,
+   "score": 0.675
+  },
+  {
+   "part": "mutation/ActiveWakeControl.part.index_offset.json",
+   "operators_filter": [
+    "index_offset"
+   ],
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 24,
+   "survived": 16,
+   "score": 0.6
+  },
+  {
+   "part": "mutation/ActiveWakeControl.part.swap_operands.json",
+   "operators_filter": [
+    "swap_operands"
+   ],
+   "total": 40,
+   "mutants": 35,
+   "nocompile": 5,
+   "killed": 32,
+   "survived": 3,
+   "score": 0.9143
+  }
+ ],
+ "merged_why": "224 mutants at ~9.5s each is 35 minutes; a foreground command must not be backgrounded, so the sweep was split by operator and joined here",
+ "merged_by": "scripts/_mutation_merge.py",
+ "survivors": [
+  {
+   "id": "2d7ffe20",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "e39a85d5",
+   "operator": "drop_factor",
+   "before": "3.0 * PI",
+   "after": "3.0"
+  },
+  {
+   "id": "d97775d4",
+   "operator": "drop_factor",
+   "before": "omega * LocalVar->Time",
+   "after": "omega"
+  },
+  {
+   "id": "d30024a6",
+   "operator": "drop_factor",
+   "before": "CntrPar->AWC_phaseoffset * D2R",
+   "after": "CntrPar->AWC_phaseoffset"
+  },
+  {
+   "id": "7a23f68a",
+   "operator": "drop_factor",
+   "before": "CntrPar->AWC_phaseoffset * D2R",
+   "after": "CntrPar->AWC_phaseoffset"
+  },
+  {
+   "id": "2642cda3",
+   "operator": "drop_factor",
+   "before": "CntrPar->AWC_phaseoffset * D2R",
+   "after": "CntrPar->AWC_phaseoffset"
+  },
+  {
+   "id": "90644531",
+   "operator": "arith_op",
+   "before": "4.0 / 3.0",
+   "after": "4.0 * 3.0"
+  },
+  {
+   "id": "97b678b5",
+   "operator": "arith_op",
+   "before": "LocalVar->Azimuth + phi1",
+   "after": "LocalVar->Azimuth - phi1"
+  },
+  {
+   "id": "823554cc",
+   "operator": "arith_op",
+   "before": "omega * LocalVar->Time",
+   "after": "omega / LocalVar->Time"
+  },
+  {
+   "id": "e087f4e0",
+   "operator": "arith_op",
+   "before": "Imode - 1",
+   "after": "Imode + 1"
+  },
+  {
+   "id": "7997dd17",
+   "operator": "arith_op",
+   "before": "LocalVar->Azimuth + phi3",
+   "after": "LocalVar->Azimuth - phi3"
+  },
+  {
+   "id": "221fb7c7",
+   "operator": "arith_op",
+   "before": "K - 1",
+   "after": "K + 1"
+  },
+  {
+   "id": "14442d6b",
+   "operator": "arith_op",
+   "before": "CntrPar->AWC_phaseoffset * D2R",
+   "after": "CntrPar->AWC_phaseoffset / D2R"
+  },
+  {
+   "id": "e624233f",
+   "operator": "const_tweak",
+   "before": "4.0",
+   "after": "5.0"
+  },
+  {
+   "id": "ee298a06",
+   "operator": "const_tweak",
+   "before": "3.0",
+   "after": "4.0"
+  },
+  {
+   "id": "acf8643f",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "3b46e0e1",
+   "operator": "const_tweak",
+   "before": "2",
+   "after": "3"
+  },
+  {
+   "id": "d600d733",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "537e3fe0",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "cde1bef2",
+   "operator": "const_tweak",
+   "before": "2",
+   "after": "3"
+  },
+  {
+   "id": "5ea58638",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "aae1839e",
+   "operator": "const_tweak",
+   "before": "2",
+   "after": "3"
+  },
+  {
+   "id": "1dab0371",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "7acaa843",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "c43a94b6",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "30539381",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "b2eb03aa",
+   "operator": "index_offset",
+   "before": "[3]",
+   "after": "[3 + 1]"
+  },
+  {
+   "id": "4353c022",
+   "operator": "index_offset",
+   "before": "[2]",
+   "after": "[2 + 1]"
+  },
+  {
+   "id": "87d2ec58",
+   "operator": "index_offset",
+   "before": "[2]",
+   "after": "[2 + 1]"
+  },
+  {
+   "id": "7dd59c0c",
+   "operator": "index_offset",
+   "before": "[2]",
+   "after": "[2 + 1]"
+  },
+  {
+   "id": "50dd458b",
+   "operator": "index_offset",
+   "before": "[i]",
+   "after": "[i + 1]"
+  },
+  {
+   "id": "df13f212",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "e9d4580d",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "a9ff5bba",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "f9478329",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "c83a8294",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "893badc4",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "b796d413",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "46d44447",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "3daf5a09",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "31a68d6a",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "e0b52838",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "4ac01351",
+   "operator": "swap_operands",
+   "before": "4.0 / 3.0",
+   "after": "3.0 / 4.0"
+  },
+  {
+   "id": "4d827a15",
+   "operator": "swap_operands",
+   "before": "Imode - 1",
+   "after": "1 - Imode"
+  },
+  {
+   "id": "f337e5a2",
+   "operator": "swap_operands",
+   "before": "Imode - 1",
+   "after": "1 - Imode"
+  }
+ ]
+}
