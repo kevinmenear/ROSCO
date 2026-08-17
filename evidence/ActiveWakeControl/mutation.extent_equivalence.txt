@@ -1,0 +1,118 @@
+EXTENT-EQUIVALENCE MEASUREMENT -- unit #47 ActiveWakeControl, second dispatch.
+
+THE QUESTION. Eight of the first dispatch's 45 mutation survivors (group G3 of
+mutation.census.txt) only ENLARGE a declared array extent:
+
+  :113  double AWC_angle[3]              -> [4]  / [3 + 1]
+  :134  static double AWC_TiltYaw[2]     -> [3]  / [2 + 1]
+  :135  static double Error[2]           -> [3]  / [2 + 1]
+  :138  double FixedFrameM[2]            -> [3]  / [2 + 1]
+
+They differ from the original only if some lvalue in the function names the
+added element. So the measurement is a COMPLETE ENUMERATION of every subscript
+on those four arrays -- every occurrence in the translation, produced by a regex
+over translations/Controllers/activewakecontrol.cpp and reproduced verbatim
+below. "BARE" is a mention with no subscript: those are the pointer arguments.
+
+--- AWC_angle ---
+  :113  AWC_angle[3]
+  :161  AWC_angle[0]
+  :164  AWC_angle[1]
+  :167  AWC_angle[2]
+  :176  AWC_angle[K - 1]
+  :182  BARE  for (K = 1; K <= LocalVar->NumBl; ++K) {  // Loop through all blades, apply AWC_angle
+  :208  BARE  CntrPar->AWC_phaseoffset * D2R, AWC_angle);
+  :211  BARE  for (K = 1; K <= LocalVar->NumBl; ++K) {  // Loop through all blades, apply AWC_angle
+  :212  AWC_angle[K - 1]
+  :271  BARE  AWC_angle);
+  :273  BARE  for (K = 1; K <= LocalVar->NumBl; ++K) {  // Loop through all blades, apply AWC_angle
+  :277  AWC_angle[K - 1]
+  :326  BARE  AWC_angle);
+  :328  BARE  for (K = 1; K <= LocalVar->NumBl; ++K) {  // Loop through all blades, apply AWC_angle
+  :329  AWC_angle[K - 1]
+--- AWC_TiltYaw ---
+  :134  AWC_TiltYaw[2]
+  :192  AWC_TiltYaw[0]
+  :193  AWC_TiltYaw[1]
+  :195  AWC_TiltYaw[Imode - 1]
+  :200  AWC_TiltYaw[1]
+  :206  AWC_TiltYaw[0]
+  :206  AWC_TiltYaw[1]
+  :216  AWC_TiltYaw[0]
+  :217  AWC_TiltYaw[1]
+  :222  AWC_TiltYaw[0]
+  :222  AWC_TiltYaw[1]
+  :224  AWC_TiltYaw[0]
+  :225  AWC_TiltYaw[1]
+  :253  AWC_TiltYaw[Imode - 1]
+  :259  AWC_TiltYaw[Imode - 1]
+  :269  AWC_TiltYaw[0]
+  :269  AWC_TiltYaw[1]
+  :275  AWC_TiltYaw[0]
+  :282  AWC_TiltYaw[0]
+  :313  AWC_TiltYaw[0]
+  :323  AWC_TiltYaw[0]
+  :324  AWC_TiltYaw[0]
+  :334  AWC_TiltYaw[0]
+--- Error ---
+  :135  Error[2]
+  :245  Error[Imode - 1]
+  :254  Error[Imode - 1]
+  :260  Error[Imode - 1]
+  :289  Error[0]
+  :303  Error[0]
+  :313  Error[0]
+  :339  Error[0]
+--- FixedFrameM ---
+  :138  FixedFrameM[2]
+  :232  FixedFrameM[0]
+  :232  FixedFrameM[1]
+  :236  FixedFrameM[0]
+  :249  FixedFrameM[Imode - 1]
+  :284  FixedFrameM[0]
+  :296  FixedFrameM[0]
+  :296  FixedFrameM[1]
+  :299  FixedFrameM[0]
+  :300  FixedFrameM[1]
+  :305  FixedFrameM[0]
+  :308  FixedFrameM[1]
+  :336  FixedFrameM[0]
+
+THE BOUNDS, from harness/ranges.toml, which states the admissible domain and the
+measurement forcing each end:
+
+  LocalVar_NumBl        [0, 3]   so  K - 1     <= 2   AWC_angle's largest index
+  CntrPar_AWC_NumModes  [1, 2]   so  Imode - 1 <= 1   the other three's
+
+Every index is strictly inside the ORIGINAL extent, so no load and no store
+moves. The bare uses are pointers into callees whose own declarations fix what
+they write: colemantransforminverse_c's Fortran dummy is PitComIPC(3), and
+colemantransform_c takes &FixedFrameM[0] and &FixedFrameM[1] as two scalars.
+
+AT AWC_NumModes == 3 THE TWO PROGRAMS GENUINELY DIFFER -- :195 would write
+AWC_TiltYaw[2], outside the original and inside the mutant. That value is
+inadmissible because the REFERENCE's AWC_TiltYaw is DIMENSION(2) and writes past
+its own frame there. The declaration is "equivalent on every admissible input".
+
+THE ASSEMBLY DIFF, WHICH THE CENSUS PROPOSED AND WHICH DOES NOT ANSWER THIS.
+g++ -O2 -fPIC -ffp-contract=off -S, original against each mutant, one translation
+unit (the .cpp plus activewakecontrol_callees.h), in the vit-dev container:
+
+  acf8643f  448 changed asm line(s)   instruction-mnemonic multiset identical: NO
+  b2eb03aa  448                                                                NO
+  3b46e0e1  155                                                                NO
+  4353c022  155                                                                NO
+  87d2ec58    6                                                                yes
+  cde1bef2    6                                                                yes
+  7dd59c0c  158                                                                yes
+  aae1839e  158                                                                yes
+
+Growing a stack array by eight bytes moves the frame size and reshuffles the
+register allocator across the whole function; two of the eight change the
+instruction mix as well. An EMPTY assembly diff would have confirmed equivalence;
+a non-empty one says nothing either way, and every one of these is non-empty.
+The census's proposed measurement is therefore RETRACTED rather than dropped
+quietly, and the enumeration above is what the declaration rests on.
+
+Declared in mutation/ActiveWakeControl.equivalences.json, reasoned in
+mutation/ActiveWakeControl.equivalences.md.

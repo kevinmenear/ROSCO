@@ -1378,3 +1378,80 @@ objInst_instRes = { lo = 1, hi = 1000 }
 # parameter and cannot say "restart may be true unless AWC_Mode is 4".
 # Nothing this unit's own body does is removed.
 LocalVar_restart = { values = [0] }
+
+# ---------------------------------------------------------------------------
+# THE SIXTH AND SEVENTH PINS, ADDED AT THE SECOND DISPATCH OF THIS UNIT, and
+# both exist to repair a MEASURED corpus weakness rather than to state a
+# narrower domain. `mutation/ActiveWakeControl.json` read 0.7857 with 45
+# survivors, and `evidence/ActiveWakeControl/mutation.census.txt` grouped every
+# one of them behind a measurement. Two of those measurements are repairable
+# here; the rest are instrument gaps and are recorded as such.
+
+# `CntrPar%AWC_Mode` IS AN ENUMERATION, AND WRITING IT AS ONE IS WHAT MAKES
+# 97% OF THIS UNIT'S CORPUS REACH AN ARM AT ALL.
+#
+# MEASURED, on the corpus this pin replaces
+# (evidence/ActiveWakeControl/harness.arm_census.txt): of 3231 cases, 3032 sat
+# at AWC_Mode = -600 and a further 108 on R6's integer ladder (999999999,
+# 99999999, ... -9). NINETY-ONE cases of 3231 reached an arm, and all 91 came
+# from the knob cross product. The body is one IF/ELSEIF chain over AWC_Mode
+# with NO ELSE, so every other case ran the empty path: the ladders that vary
+# Time, the magnitudes that unsaturate a controller, the negative zero, the
+# random fill that is the only source of `NumBl == 3` -- every one of them was
+# spent on a case that executes nothing. That is not a small loss. It is 32 of
+# the 45 survivors.
+#
+# -600 is not an admissible AWC_Mode. It is `_base`'s midpoint of a +/-1e3
+# range nobody chose, on a parameter whose whole domain is the six values the
+# reference's own predicates name (1..5) plus the off value ROSCO's input files
+# write (0). Stated as `values`, R2 applies: every value appears, and every
+# ladder rung is re-run under every one of them, so each arm gets the SAME
+# ladders instead of one arm getting all of them.
+#
+# THE COST, STATED, and it is a cost in TIME rather than in coverage: R2's
+# `flag_variants` multiplies the ladder and R6 stages by the SUM of the flag
+# arities, so this takes the corpus from 3231 cases to roughly seven times that
+# and the mutation sweep with it. Nothing leaves the corpus: AWC_Mode's own
+# integer ladder is dropped (a declared range is not laddered), and every value
+# it carried -- 999999999 down to -9 -- runs the same empty path that 0 runs.
+#
+# THE ORDER IS PART OF THE JUDGEMENT AND IS NOT ARBITRARY. `values[0]` is the
+# base that every case NOT reached by a flag variant carries, which is the
+# first cases in the stream. This unit holds four implicitly-SAVE locals
+# (`AWC_TiltYaw`, `Error`, `StartTime`), and a SAVE local's declared
+# INITIALISER is observable only before anything has written it -- so only in
+# an arm that READS it without necessarily writing it. Modes 3 and 4 are those
+# arms: they read `AWC_TiltYaw(1)` and `(2)` through ColemanTransformInverse
+# whether or not `LocalVar%Time > StartTime` let the loop above assign them.
+# Mode 3 is therefore first. Three mutation survivors (G4 of the census) are
+# exactly those initialisers.
+CntrPar_AWC_Mode = { values = [3, 4, 5, 1, 2, 0] }
+
+# `CntrPar%AWC_phaseoffset` IS AN ANGLE IN DEGREES, AND ONE TURN IS THE WHOLE
+# OF ITS DOMAIN -- so this entry narrows nothing at all.
+#
+# It is read at exactly three sites, all of them `CntrPar%AWC_phaseoffset*D2R`
+# passed as `aziOffset` to ColemanTransformInverse, whose body is
+#
+#     PitComIPC(k) = cos(nHarmonic*(aziAngle+aziOffset+phi_k))*axTIn + sin(...)
+#
+# with `nHarmonic` an INTEGER. cos and sin have period 2*PI in their argument
+# and `nHarmonic*(aziOffset + 360*D2R)` differs from `nHarmonic*aziOffset` by
+# `nHarmonic*2*PI`, so every value outside one turn is the mathematical image
+# of one inside it. The domain is the quotient, and [0, 360] covers it.
+#
+# WHY IT IS NEEDED. MEASURED: `phaseoff = 0` in ALL 91 live cases of the corpus
+# this replaces (evidence/ActiveWakeControl/harness.live_case_inputs.txt). Not
+# by accident -- `_base` returns `lo + (hi-lo)*frac`, and on the DEFAULTED
+# +/-1e3 range the midpoint frac of 0.5 is exactly 0.0. At 0.0 the three
+# expressions `x*D2R`, `x` and `x/D2R` are the same bits, so four mutants (G5
+# of the census) could not be distinguished by any case. On [0, 360] the same
+# midpoint is 180.
+#
+# THE COST, STATED: R6's real MAGNITUDE ladder runs only on scalar reals whose
+# range is defaulted, so this parameter leaves it -- the subnormal,
+# flush-to-zero and overflow rungs go, along with the negative-zero case. All
+# of them are angles no caller can produce and none of them is a value at which
+# the reference changes its answer: the only thing done to this parameter is
+# adding it inside a cosine.
+CntrPar_AWC_phaseoffset = { lo = 0, hi = 360 }
