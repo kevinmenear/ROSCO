@@ -1262,3 +1262,81 @@ n_zData_cols = { same_as = "n_xData" }
 n_zData_rows = { same_as = "n_yData" }
 xData = { nondecreasing_only = "the reference reads zData(i, 0) on an INVERTED table and cannot on a tied one, because its search runs only where xq > MINVAL(xData) and a non-decreasing body has MINVAL(xData) == xData(1) -- see above" }
 yData = { nondecreasing_only = "the reference reads zData(0, j) on an INVERTED table and cannot on a tied one, for the same reason one dimension over -- see above" }
+
+# ---------------------------------------------------------------------------
+# ActiveWakeControl
+#
+# FOUR PINS. Three are subscripts the reference computes from a count it is also
+# handed, and the fourth is the counter shape five other units already carry.
+# The fifth candidate -- `LocalVar%restart` -- is deliberately NOT pinned here
+# until it is measured; see the note under the sweep in
+# evidence/ActiveWakeControl/.
+
+# `CntrPar%AWC_NumModes` BOUNDS THREE DIFFERENT SUBSCRIPTS AND ITS TWO ENDS ARE
+# FORCED BY DIFFERENT THINGS.
+#
+# hi = 2, because the loop counter subscripts two LOCALS of extent 2:
+#
+#     :775  AWC_TiltYaw(Imode) = D2R*AWC_amp(Imode)*sin(...)     DIMENSION(2)
+#     :811  Error(Imode)       = AWC_amp(Imode)*sin(...) + ...   DIMENSION(2)
+#     :815/:818  AWC_TiltYaw(Imode) = ResController/PIController(...)
+#
+# and neither loop is guarded. `AWC_NumModes = 3` writes one element past a
+# two-element array ON THE STACK, in the REFERENCE as much as in the
+# translation; the reference's own comment at :799 says "If AWC_harmonic > 0,
+# use AWC_NumModes=2", which is the same bound stated as advice.
+#
+# lo = 1, and this end is about a READ rather than a write. `AWC_angle` is the
+# one local with no initialiser that a path can reach without writing:
+#
+#     :774  DO Imode = 1,AWC_NumModes
+#     :781      CALL ColemanTransformInverse(..., AWC_angle)   <- the only writer
+#     :785  LocalVar%PitCom(K) = LocalVar%PitCom(K) + AWC_angle(K)
+#
+# With `AWC_NumModes = 0` in Mode 2 the loop body never runs and :785 adds three
+# words of whatever the stack held. That is indeterminate in the reference, and
+# the two sides of this comparison reach it down call stacks of different depth
+# (the C++ side through the generated `colemantransforminverse_c` bridge), so
+# they need not even agree on the garbage. Modes 1, 3, 4 and 5 all write
+# `AWC_angle` unconditionally and would have been safe at 0.
+#
+# THE COST, STATED: `AWC_NumModes` leaves R6's integer ladder, so the decade
+# boundaries and the two 32-bit extremes are gone from it, along with the
+# zero-trip loop in Modes 1, 3 and 4. Every one of those is a value at which the
+# reference has no defined behaviour or writes outside its own frame.
+CntrPar_AWC_NumModes = { lo = 1, hi = 2 }
+
+# `LocalVar%NumBl` IS THE OTHER LOOP BOUND, AND IT SUBSCRIBES THREE ARRAYS OF
+# EXTENT 3 IN ALL FOUR ARMS:
+#
+#     :761  LocalVar%AWC_complexangle(K)      COMPLEX(DbKi) :: (3)
+#     :766  LocalVar%PitCom(K)                REAL(DbKi)    :: (3)
+#     :785/:832/:869  AWC_angle(K)            REAL(DbKi), DIMENSION(3)
+#
+# None of the four loops is guarded, so 3 is the bound. lo = 0 is kept: a
+# zero-blade rotor runs no loop body and is defined -- it is the only value at
+# which this unit writes no PitCom at all, which is a distinct arm.
+LocalVar_NumBl = { lo = 0, hi = 3 }
+
+# THE OLDEST JUDGEMENT IN THIS FILE, MET A SEVENTH AND EIGHTH TIME.
+# `objInst%instPI` and `objInst%instRes` are INOUT to `PIController` and
+# `ResController`, which subscript `piP`'s five `DIMENSION(1024)` arrays and
+# `resP`'s four with the counter and then post-increment it -- INSIDE the
+# callee, where no compared out-parameter exists for an inference to attach a
+# role to. Unit #41 paid for this with `Error allocating 11703869192 bytes` from
+# its own bridge.
+#
+# THE ARITHMETIC IS TWO CALLS, NOT FOUR: Mode 3 calls `PIController` once per
+# mode and `AWC_NumModes` is pinned at 2 above, so the bound is 1024 - 2. Mode 4
+# calls `ResController` on the same loop, and Mode 5 calls `PIController` once.
+# 1000 is used anyway, because it is the number the other five units already
+# carry and a bound that differs by 22 buys nothing that could be measured.
+#
+# THE COST, STATED: both counters leave R6's integer ladder, so the decade
+# boundaries and the two 32-bit extremes are gone from them. Every one of those
+# is a value at which the REFERENCE has no defined behaviour, and a defect at
+# the last slot would be a defect in PIController (unit #33) or ResController
+# (unit #39), each of which is CALLED rather than inlined and is therefore the
+# same implementation on both sides of this comparison.
+objInst_instPI = { lo = 1, hi = 1000 }
+objInst_instRes = { lo = 1, hi = 1000 }
