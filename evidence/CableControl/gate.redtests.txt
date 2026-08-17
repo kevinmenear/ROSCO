@@ -1,0 +1,84 @@
+GATE, 27 SCENARIOS -- unit #49 `CableControl`
+=============================================
+
+  gate/CableControl.json      compared 5252000 value(s) across 351 channel(s) / 27 scenario(s); mismatched 0
+
+THREE PERTURBATIONS, ALL THREE IN THIS UNIT'S OWN TRANSLATION UNIT
+(rosco/controller/src/cablecontrol.cpp), each with `replacements` asserted at
+1 by gate.py, each reverted and RE-RUN GREEN afterwards.
+
+  the first step constant, -14.51 -> -14.52
+      gate/CableControl.redtest.json
+      moved 14572 of 5252000;  after revert 0 of 5252000
+        scenario_7:cc_actuated_dl 3287/24000
+        scenario_7:cc_actuated_l 3999/24000
+        scenario_27:cc_actuated_dl 3287/24000
+        scenario_27:cc_actuated_l 3999/24000
+
+  PI, 3.14159265359 -> ...58
+      gate/CableControl.redtest.pi_12th_digit.json
+      moved 2 of 5252000;  after revert 0 of 5252000
+        scenario_7:cc_actuated_dl 1/24000
+        scenario_27:cc_actuated_dl 1/24000
+
+  the whole CC_Mode == 2 arm made unreachable
+      gate/CableControl.redtest.openloop_arm.json
+      moved 0 of 5252000;  after revert 0 of 5252000
+        (no channel moved)
+
+WHAT THE FIRST ONE SAYS, AND IT AGREES WITH COVERAGE TO THE SCENARIO.
+`coverage/line_coverage.json` puts 3,998 hits on clean Controllers.f90:912 --
+the first step constant -- under scenario 7, 3,998 under scenario 27 and ZERO
+under scenario 3. The red test moves exactly scenarios 7 and 27, and 3,999 of
+each scenario's 24,000 timesteps: the steps after t = 500, which is the guard.
+
+WHY `cc_actuated_dl` MOVES ON 3,287 AND `cc_actuated_l` ON 3,999. The DL
+channel is the SecLPFilter_Vel output, which decays back toward the new
+constant; the L channel is the PIController integral of it, which never
+forgets. 712 of the DL samples land on the same REAL(4) as before and the
+integral's do not.
+
+THE GATE'S RESOLUTION ON THIS UNIT IS SINGLE PRECISION, AND THE SECOND RED
+TEST IS WHERE THAT IS MEASURED RATHER THAN ASSERTED. Everything this unit
+sends to a gate channel goes through `avrSWAP`, which is `REAL(ReKi) ::
+avrSWAP(*)` -- REAL(4). PI moved in its twelfth significant digit is a
+relative change of about 3e-12, ~5 orders below the ~1.2e-7 spacing of
+binary32, so it moves 2 values in 5,252,000: one sample in each of the two
+live scenarios that happened to straddle a rounding boundary. It IS red and it
+IS revert-verified, and it is the wrong instrument to certify this unit with --
+which is why the step constant, one part in 1,451, is the one committed as
+`gate/CableControl.redtest.json`. A unit whose outputs narrow to REAL(4) needs
+a coarser perturbation than unit #47's or unit #48's, both of which reached
+REAL(8) channels.
+
+A CALL SITE WITH SIXTEEN THOUSAND HITS THAT NO REAL PERTURBATION REACHES,
+BECAUSE AN INPUT IS EXACTLY 0.0 -- THIRD UNIT IN THREE
+--------------------------------------------------------------------------
+
+Scenario 3 calls this unit 15,999 times (clean Controllers.f90:907, 938, 952,
+960 all carry it) and moved under NEITHER real red test. The two readings that
+would explain that are 'the gate cannot observe this call site' and 'the
+perturbation was annihilated downstream', and a hit count cannot tell them
+apart. The probe that can forces the VALUE WRITTEN:
+
+  evidence/CableControl/gate.scenario3-probe.json
+      avrSWAP(CC_GroupIndex) forced 1.0e5 away: moved 63997 of 5252000
+        scenario_3:cc_actuated_l 15999/16000
+        scenario_7:cc_actuated_l 23999/24000
+        scenario_27:cc_actuated_l 23999/24000
+
+Scenario 3's `cc_actuated_l` moves on 15,999 of its 16,000 samples. THE SITE IS
+FULLY OBSERVABLE. What annihilates the two real perturbations is that scenario
+3 runs to t = 400 and every writer of `LocalVar%CC_DesiredL` in this unit is
+behind `IF (LocalVar%Time > 500)`, so the filter's input is exactly 0.0 for the
+whole run: `1/a2 * (b2*0 + b1*0 + b0*0 - a1*0 - a0*0)` is 0.0 for every value
+of the six coefficients, the integrator integrates 0.0, and both avrSWAP slots
+are 0.0 whatever PI or the step constants hold.
+
+This is the same shape as unit #47's scenario 8 (`AWC_amp` at 0.0) and unit
+#48's scenario 17 (`WE_Gamma` at 0.0), and it is the third instance in three
+units. The difference here is that the zero is not a configured GAIN -- it is
+the initial value of a state the scenario's own run length never lets the unit
+write. Closing it needs a scenario that reaches t > 500 with CC_Mode = 1, which
+scenarios 7 and 27 already are; scenario 3 adds nothing this unit can be
+measured on and the gate says so.
