@@ -11,7 +11,11 @@ scoreable killed, **3 declared equivalent** with proofs in
 `mutation/AeroDynTorque.equivalences.{json,md}`, **4 survivors standing** with
 the input that would kill each named and measured in
 `evidence/AeroDynTorque/mutation.census.txt`. **Not one survivor is in the
-arithmetic** — all four are in the two CHARACTER helpers.
+arithmetic** — all four are in the two CHARACTER helpers. **Each of the four now
+carries a disposition rather than a count**: two are `(b)` inputs the corpus does
+not draw, and **two are `(c)` — blind spots this harness cannot close on any
+input**, proved by a green-kill probe with a passing negative control. See the
+table below.
 
 | layer | result | red-tested |
 |---|---|---|
@@ -52,12 +56,38 @@ buffer TO the composed message. **Five other units declared that site
 unreachable and this one does not**, because interp2d's R13 block never reaches
 `assign_errmsg` and this unit's would.
 
-The other three are unreachable for a different reason, and the reason is a
-census rather than a reading: `TRIMCENSUS calls=1097 n_le_0=0 n_eq_1=0 n_min=9
-n_max=21 with_trailing_blank=0`. `n_min = 9` is `len("interp1d:")` — by the time
-this unit trims, its callee has already reassigned `ErrMsg` to an exactly-sized
-string, so **the length the trim sees is chosen by the callee and not by the
-corpus**.
+**AND TWO OF THE FOUR ARE NOT CORPUS GAPS AT ALL — THEY CANNOT BE KILLED BY THIS
+HARNESS ON ANY INPUT.** The census asked "does the corpus contain the killing
+input" and answered by counting. `evidence/AeroDynTorque/aerodyntorque.green-kill-probe.cpp`
+asks the question that decides a disposition: is there ANY input at which
+`ORIGINAL == REFERENCE` **and** `MUTANT != REFERENCE` — i.e. could a *green*
+corpus contain a case that kills this mutant. It models both chains, sweeps
+203,700 configurations (entry shape × fill × `n_ErrMsg` −2..32 × capacity 0..96 ×
+the four messages `interp2d` can leave) and carries a negative control — the
+original scored against itself, 0 kills.
+
+| survivor | green kills | separates from the original at | disposition |
+|---|---|---|---|
+| `88466711` `s.size() > cap` → `>=` | **2100** | 3096 | **(b)** the input exists; `R13` was ablated |
+| `11c1e326` `n > 0` → `n > 1` | **18** | 504 | **(b)** needs `n_ErrMsg == 1` crossed with `cap == 14` **and** a callee that REPLACED the message |
+| `06f7d2c8` `: 0` → `: 1` | **0** | 1680 | **(c)** every separating input is already red |
+| `26021804` `+ 1` → `+ 2` | **0** | 13344 | **(c)** same, 13,344 of them |
+
+The whole kill set of the last two lies inside the **50,616 configurations where
+the harness's own reference disagrees with the translation** — the
+non-compositional staging window. A corpus cannot contain a case that is red
+before the mutation, so **P12 cannot reach 1.000 for this unit by any change to
+the inputs**, and not by the proposed INADMISSIBLE amendment either: that
+amendment reclassifies exactly those cases, and an inadmissible case is not a
+kill. This supersedes the census's reading of these two, which was that the
+callee chooses the length the trim sees. It does — `TRIMCENSUS calls=1097
+n_le_0=0 n_eq_1=0 n_min=9 n_max=21 with_trailing_blank=0`, and `n_min = 9` is
+`len("interp1d:")` — but only while the callee's staged write LANDS. The first
+model of the probe (`aerodyntorque.trim-composition-probe.cpp`, kept) assumed
+that, tied the callee's message length to the entry's, and was wrong:
+`interp2d` and `interp1d` **replace** `ErrMsg` with `' xData is not strictly
+increasing'` before prefixing it, so a 42-byte message over a 14-byte capacity
+puts the entry length back in front of the trim.
 
 **ONE TOOL DEFECT, FIXED RATHER THAN ROUTED AROUND (X2).** `--disable <rule>`
 made the artifact say the rule had **no site** — every rule's detail string is

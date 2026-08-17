@@ -10292,3 +10292,98 @@ rather than by reading a 61 KB diff; then `git checkout -- vit.yaml` and the
 entry put back by hand, with `verification: simulation` dropped as for
 `ratelimit` and `ActiveWakeControl`. Recorded a third time because three
 occurrences is the point at which "somebody remembers" stops being a repair.
+
+### Two survivors are not corpus gaps: this harness cannot kill them on any input (a proposed method amendment, and a category the loop has no name for)
+
+Second dispatch of unit #48, sent to address exactly the four survivors. The
+first dispatch left them standing with a measurement of the form "the corpus does
+not contain the killing input"; that measurement is true and it is the wrong
+question, because it cannot distinguish an input the corpus *does not draw* from
+an input the harness *cannot score*.
+
+**THE QUESTION THAT DECIDES A DISPOSITION.** For a mutant M of unit U, a corpus
+can kill M only at a case where the ORIGINAL agrees with the reference and M does
+not. So the question is not "is the killing input in the corpus" but
+
+```
+    does any input exist with   ORIGINAL == REFERENCE   and   MUTANT != REFERENCE ?
+```
+
+`evidence/AeroDynTorque/aerodyntorque.green-kill-probe.cpp` answers it by
+executing both chains — the harness reference (one capacity gate, on the final
+message, at the generated bridge's export) and the translation (two: the
+`interp2d_c` bridge's write-back, then `assign_errmsg`) — over 203,700
+configurations: 5 entry shapes × 3 fills for the bytes outside `[0, n)` ×
+`n_ErrMsg` in [−2, 32] × capacity in [0, 96] × the four messages `interp2d` can
+leave. Negative control: the ORIGINAL scored against itself, **0** green kills.
+
+```
+mutant     site                               GREENKILL  orig-red  kill-any
+88466711   assign_errmsg  '>' -> '>='              2100     50616      3096
+11c1e326   errmsg_trim    'n > 0' -> 'n > 1'         18     50616       504
+06f7d2c8   errmsg_trim    ': 0' -> ': 1'              0     50616      1680
+26021804   errmsg_trim    '+ 1' -> '+ 2'              0     50616     13344
+```
+
+**`06f7d2c8` AND `26021804` ARE DISPOSITION (c).** They are separated from the
+original at 1,680 and 13,344 configurations respectively, and **every one of
+those is inside the 50,616 at which the original is ALREADY RED**. The reason is
+one inequality. To see a `n_ErrMsg <= 0` or a trailing blank, the trim must read
+the buffer the *unit* was given, which requires the callee's staged write to have
+been REFUSED — and a callee write of `L` bytes is refused only when `L > cap`,
+while the reference's own answer is `14 + L` bytes and is refused for the same
+`cap` *a fortiori*. So on every input that exposes them the reference has kept
+its ENTRY value, the translation has moved, and the case is red before anything
+is mutated. **P12 cannot reach 1.000 for this unit by any change to the inputs.**
+
+It cannot reach it by the amendment the first dispatch proposed either, and that
+is worth stating because the amendment looks like the fix. Making a case
+INADMISSIBLE when the reference's write-back cannot carry the reference's answer
+reclassifies *exactly* the 50,616 — an inadmissible case is excluded from
+`checked` and is not a kill. The amendment repairs the harness's honesty about
+those cases; it does not make these two mutants scoreable. **A mutant whose
+entire kill set is inadmissible is a category this loop has no name for**, and it
+is not "equivalent": the SHIPPED program does differ there
+(`n_ErrMsg <= 0`, `cap == 14`, a callee that errored — the original writes 14
+bytes, the mutant 15). Escalated as a proposed amendment: the mutation artifact
+needs a third bucket beside `killed` and `equivalent_declared`, for
+**unscoreable-by-this-oracle**, carrying the probe that proves it. Declaring
+these two equivalent would raise the score to 1.000 and would be false.
+
+**`88466711` AND `11c1e326` ARE DISPOSITION (b), AND THE INPUTS ARE NAMED.**
+
+* `88466711` — 2100 green kills; the corpus's own is `cap == 30`, case 1154,
+  which `--disable R13_staging_capacity` removed. Un-ablating R13 costs 14 red
+  cases at 1140..1153, and the fix is a per-unit statement that the ladder may
+  not state a capacity in `[L_callee, L_final)` — the window the first dispatch
+  already derived and measured. NOT TAKEN IN THIS DISPATCH, and the reason is
+  the clock, stated rather than dressed up: every result artifact of a unit must
+  name one generator commit (`revcheck` (1)), so a change to `harness/generate.py`
+  forces a re-take of all eleven of this unit's harness, mutation and gate
+  artifacts inside one dispatch. Named as the next dispatch's first move.
+* `11c1e326` — 18 green kills, and every one of them needs THREE things at once:
+  `n_ErrMsg == 1` with a non-blank byte, `cap == 14`, and a callee that
+  **replaced** the message (`|M| = 42`) rather than prefixing it. R13 sweeps the
+  capacity around ONE base case whose other inputs never move, so the capacity
+  ladder and the character ladder never meet. The rule that would draw it is the
+  cross product, and it is the rule the first dispatch's census asked for without
+  being able to name the third factor.
+
+**THE FIRST MODEL WAS WRONG AND IS KEPT.**
+`aerodyntorque.trim-composition-probe.cpp` tied the callee's message length to
+the entry's (`L = 9 + LEN(TRIM(entry))`) and concluded all three trim mutants
+were behaviour-preserving on every admissible input — a clean argument from
+`len("AeroDynTorque:") = 14 > len("interp1d:") = 9`, and false.  `interp2d` and
+`interp1d` do not only prefix; they **replace**:
+
+```
+ErrVar%ErrMsg = ' xData is not strictly increasing'      Functions.f90, clean
+```
+
+so `|M|` is 42 regardless of how short the entry was, and a 42-byte message over
+a 14-byte capacity puts the entry length back in front of the trim. Had that
+model been trusted, three mutants would have been declared equivalent and the
+score would read 1.000. It was caught by running it rather than by reading it:
+the probe printed differences where the argument predicted none. **A proof of
+equivalence that has not been executed against the callee's actual message set is
+a hypothesis.**
