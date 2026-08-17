@@ -1065,6 +1065,22 @@ translations:
   AeroDynTorque:
     status: integrated
     cpp_file: translations/Functions/aerodyntorque.cpp
+  # ADDED BY HAND, as unit #14's entry above records for the same reason and
+  # unit #5's for a second one. `vit integrate --apply` rewrote this whole file
+  # through a YAML round trip: every comment in it was deleted, the em dashes in
+  # two `red_test_detail` strings were re-encoded as `\u2014`, and a
+  # `verification: simulation` line was written under this unit. The functional
+  # diff was exactly those three things, so the file was reverted and the two
+  # lines below written by hand.
+  #
+  # `verification: simulation` is NOT carried, for ExtController's reason: it is
+  # a claim about what verified this unit, made by a command that ran no
+  # simulation and read no result. What verified CableControl is the differential
+  # harness, the mutation score, the post-integration harness and the gate, and
+  # that lives in plan.json's `evidence`.
+  CableControl:
+    status: integrated
+    cpp_file: translations/Controllers/cablecontrol.cpp
 types:
   ControlParameters:
     strategy: view
