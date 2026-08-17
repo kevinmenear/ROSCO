@@ -6508,6 +6508,79 @@ across because it is nearby is not the same as diagnosing. And the real cause
 was already written down in the previous campaign's own bug report; reading it
 would have been faster than reproducing it.
 
+## `harness/ranges.toml` takes a SIXTH kind of entry: a hole in R13's ladder
+
+- **`{ staging_capacity_excludes = [lo, hi], reason = "why" }`** states, per unit
+  and per deferred-length CHARACTER output, a closed interval of STATED
+  CAPACITIES that `R13_staging_capacity`'s ladder may not put in the corpus. It
+  is the first entry in that file that narrows a RULE'S LADDER rather than a
+  parameter's values. `translation-loop@1b2ba64`, unit #48 `AeroDynTorque`.
+
+  **REACH FOR IT WHEN THE UNIT'S CALLEE WRITES THE SAME DEFERRED-LENGTH OUTPUT.**
+  R13's model is one capacity gate on each side. A unit that reaches its callee
+  through a bridge has TWO on the translation side and the reference has ONE, so
+  between the callee's message length and the unit's own the two chains hold
+  different values and NEITHER holds the reference's answer. Those cases have no
+  oracle and they are RED, contiguously, in a window of width
+  `len("<Unit>:")`. Two units have now hit it -- `PitchSaturation` for the
+  neighbouring reason (an integrated callee re-entering C++ over a MODULE
+  staging buffer) and `AeroDynTorque` -- and both first reached for
+  `--disable R13_staging_capacity`.
+
+  **THE ABLATION IS THE WRONG TOOL AND THE DIFFERENCE IS MEASURABLE.** It drops
+  all 256 capacities to avoid 14, and one of the 242 it takes with them is the
+  capacity at which the `'>' -> '>='` refusal-boundary mutant R13 exists to kill
+  actually dies -- `cap == L_final`, one above the window. On `AeroDynTorque`:
+  ablated 1131 cases and 0.8750 with that mutant standing; stated hole 1373 cases
+  and 0.9062 with it dead. **The stated hole is strictly more input.**
+
+  Derive the window before you read the failing set, from the two lengths:
+
+  ```
+  L_callee = len("<callee>:") + len(TRIM(entry msg))
+  L_final  = len("<Unit>:")   + L_callee
+  excluded = [L_callee, L_final - 1]        the closed interval to state
+  ```
+
+  Then confirm the harness is green and the R13 coverage row NAMES the excluded
+  count and the reason. It refuses a malformed interval, a missing `reason`, a
+  parameter R13 does not sweep, and an interval that excludes no case.
+
+  **IT IS NOT THE PRINCIPLED FIX.** That is to count such a case INADMISSIBLE in
+  the generated comparison, and it needs the Fortran bridge `vit test-validate`
+  writes to signal its refusal back -- a change to VIT, not to the loop repo.
+  And it would not raise a score on its own: a mutant whose whole kill set is
+  inadmissible is still not killed. Measure that with a green-kill probe before
+  assuming a survivor is a corpus gap.
+
+## Before calling a survivor a corpus gap, ask whether a GREEN case could kill it
+
+- **"The corpus does not contain the killing input" and "no corpus can" are two
+  different findings and the census that measures the first cannot tell them
+  apart.** Unit #48 recorded four survivors with the first reading; two of them
+  had the second. The question that decides it is
+
+  ```
+  does any input exist with  ORIGINAL == REFERENCE  and  MUTANT != REFERENCE ?
+  ```
+
+  because a corpus can only kill where the original is green. Answer it with a
+  probe that executes BOTH chains -- the harness's reference model and the
+  translation's -- over the domain in which the two can differ, and give it a
+  NEGATIVE control (the original scored against itself: 0) and a POSITIVE one.
+  `evidence/AeroDynTorque/aerodyntorque.green-kill-probe.cpp` is the pattern;
+  203,700 configurations, seconds to run.
+
+  **AND EXECUTE THE EQUIVALENCE ARGUMENT BEFORE BELIEVING IT.** The first model
+  in that same unit proved all three trim mutants behaviour-preserving from a
+  clean inequality and was FALSE: it assumed the callee only PREFIXES the error
+  message, and `interp2d`/`interp1d` REPLACE it
+  (`ErrVar%ErrMsg = ' xData is not strictly increasing'`), which puts a short
+  entry length back in front of the trim at a small capacity. Had it been
+  trusted, three mutants would have been declared equivalent and the score would
+  have read 1.000. It was caught by running it. A proof of equivalence that has
+  not been executed against the callee's actual output set is a hypothesis.
+
 ## Do not background a build and poll for it
 
 Run builds, gates and mutation runs in the **foreground**. Backgrounded work is
