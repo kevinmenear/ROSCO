@@ -13,14 +13,18 @@
 # `vit_harness.py` derives the corpus from the FORTRAN reference alone, so a
 # red-test stub containing no predicate cannot collapse the corpus that proves
 # the harness can fail. If a run below reports anything other than the committed
-# `harness/AeroDynTorque.json`'s 1131, the two results are not about one corpus
+# `harness/AeroDynTorque.json`'s 1373, the two results are not about one corpus
 # and the difference is the finding.
 #
-# THE ADDITION: `--disable R13_staging_capacity`, WHICH THE GREEN ALSO CARRIES.
-# That is the whole reason it is here -- the flag changes the corpus (1387 ->
-# 1131), so a red test taken without it would be a red test over a corpus the
-# green was never taken on, which is exactly the count check above. The reason
-# the green carries it is in evidence/AeroDynTorque/harness.staging_composition.txt.
+# THE ADDITION IS GONE, AND SO IS THE FLAG (second dispatch). It used to read
+# `--disable R13_staging_capacity`, WHICH THE GREEN ALSO CARRIED -- the flag
+# changed the corpus (1387 -> 1131) and a red test taken without it would have
+# been taken over a corpus the green was never taken on. The ablation is now a
+# STATED HOLE of fourteen capacities in `harness/ranges.toml`
+# (`ErrVar_ErrMsg = { staging_capacity_excludes = [16, 29] }`), which is read
+# from the file by both runs, so neither needs a flag and the count check above
+# still binds. The corpus is 1373, and the reason is in
+# evidence/AeroDynTorque/harness.staging_composition.txt.
 #
 # RUN IT ON THE CLEAN TREE. This unit calls `interp2d`, which IS integrated: on
 # an integrated tree the Fortran reference reaches the C++ interp2d through its
@@ -38,5 +42,5 @@ trap 'git checkout -- "$CPP"; echo "restored $CPP"' EXIT
 cp "$E/$1" "$CPP"
 bash scripts/harness.sh AeroDynTorque Functions aerodyntorque \
     rosco/controller/src/Functions.f90 \
-    --against translation --disable R13_staging_capacity \
+    --against translation \
     --out "$2" --red-test "$3" 2>&1 | tail -12

@@ -1,6 +1,11 @@
 #!/bin/bash
 # WHAT `--disable R13_staging_capacity` COST, MEASURED RATHER THAN ASSERTED.
 #
+# RETIRED BY THE SECOND DISPATCH -- DO NOT RE-RUN AS IT STANDS, for the same
+# reason as run_survivors_on_full_corpus.sh beside it: it regenerates the corpus
+# with `--disable R13_staging_capacity`, which is no longer what the scored
+# corpus carries. Its measurement is what the replacement rests on.
+#
 #   bash scripts/run_if_time_remains.sh 400 bash evidence/AeroDynTorque/run_r13_price.sh
 #
 # The scored corpus is the ABLATED one (1131 cases) and mutant `88466711` --

@@ -1,6 +1,15 @@
 #!/bin/bash
 # WHICH OF THE FOUR SURVIVORS R13 WOULD HAVE KILLED, MEASURED FOR ALL FOUR.
 #
+# RETIRED BY THE SECOND DISPATCH -- DO NOT RE-RUN AS IT STANDS. Its result stands
+# (mutation.survivors_on_full_corpus.txt) and it is what justified replacing the
+# whole-rule ablation with a fourteen-capacity hole. But its EXIT trap
+# regenerates the corpus with `--disable R13_staging_capacity` and asserts a
+# sha256 that no longer describes the scored corpus, so running it now would
+# leave the wrong `aerodyntorque_cases.bin` on disk and report a MISMATCH it
+# caused itself. Kept because the measurement it took is cited, not because it
+# is still a tool.
+#
 #   bash scripts/run_if_time_remains.sh 700 \
 #       bash evidence/AeroDynTorque/run_survivors_on_full_corpus.sh
 #

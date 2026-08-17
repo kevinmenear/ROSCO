@@ -26,12 +26,16 @@
 # three hard kills in this campaign have left a mutant in the tree. The guard
 # raises a marker that only comes down when the file hashes back.
 #
-# THE CORPUS IS THE ONE ON DISK AND IT CARRIES `--disable R13_staging_capacity`.
-# `vit_mutate.py` reuses `<stem>_cases.bin` rather than regenerating, so the
-# score below is a statement about the 1131-case corpus `harness/AeroDynTorque.json`
-# was green on -- which is unit #26's rule. What that ablation costs is stated
-# in evidence/AeroDynTorque/harness.staging_composition.txt, and the survivor it
-# is expected to produce is named there BEFORE the sweep rather than after.
+# THE CORPUS IS THE ONE ON DISK AND IT IS NO LONGER THE ABLATED ONE (second
+# dispatch). `vit_mutate.py` reuses `<stem>_cases.bin` rather than regenerating,
+# so the score below is a statement about the 1373-case corpus
+# `harness/AeroDynTorque.json` was green on -- which is unit #26's rule.
+# `--disable R13_staging_capacity` is gone; what remains is a STATED HOLE of
+# fourteen capacities in `harness/ranges.toml`, [16, 29], which is where the two
+# chains gate the same buffer a different number of times and the case has no
+# oracle. That is 242 capacities MORE than the ablation carried, including the
+# one at which the refusal-boundary mutant `88466711` dies (30). The reason for
+# the hole is in evidence/AeroDynTorque/harness.staging_composition.txt.
 set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"; cd "$ROOT"
 PART="${1:?usage: run_mutation_part.sh <part-name> <operator>[,<op>...] [--equivalences]}"
