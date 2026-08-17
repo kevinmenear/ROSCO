@@ -1,0 +1,39 @@
+# done_check.py ActiveWakeControl -- captured 2026-08-17T15:51:20Z by scripts/capture_done_check.sh
+
+Run against the committed state at e2aa61fd ("ActiveWakeControl: seven target-layer entries -- SAVE-carried indeterminacy, the inputs-only probe, the uncompared COMPLEX field, the knob a pin cannot substitute for, the TOML table header, two red tests for five arms, and the symbol-less shim"), with a CLEAN tree, with stdout
+going to a file outside the repository. The run is reproduced below verbatim.
+
+ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
+target before the subprocess runs, so
+
+    python3 scripts/done_check.py ActiveWakeControl > evidence/ActiveWakeControl/done_check.txt
+
+always sees a modified tracked file and reports `P2 clean tree: dirty_tree`,
+one predicate worse than the truth. That is why this file is captured out of
+tree and moved in, and why it is written by a script rather than by hand: the
+header was added once at 48b9ae3 and a plain re-capture at 73d3521 removed it.
+Reproduce the reading below with no redirection:
+
+    python3 scripts/done_check.py ActiveWakeControl
+
+done_check exited 1 (0 only when COMPLETE).
+
+baseline (inferred): c30c12d  -- the commit before 914f187 touched translations/Controllers/activewakecontrol.cpp
+
+ActiveWakeControl: Verdict.INCOMPLETE  (12/14 PASS)
+
+[  ok  ] P1   commits exist                      
+[  ok  ] P2   clean tree                         
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[ FAIL ] P5   evidence resolves                  unresolved_evidence:evidence/ActiveWakeControl/done_check.txt
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[  ok  ] P9   gate compared and matched          
+[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/ActiveWakeControl.json 165/210 = 0.786 < 1.0 -- survivors: compare_op[2d7ffe20], drop_factor[e39a85d5], drop_factor[d97775d4], drop_factor[d30024a6], drop_factor[7a23f68a], drop_factor[2642cda3]
+[  ok  ] P11  post-integration harness re-run    3231 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible              
+[  ok  ] P14  artifact revisions agree           3 artifact(s) at eb5028e
+
