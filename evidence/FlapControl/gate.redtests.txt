@@ -1,0 +1,77 @@
+Unit #50 FlapControl -- the gate's four perturbations, what each one moved, and
+the one that moved nothing.
+
+THE GREEN this certifies: gate/FlapControl.json, 5,252,000 values across 351
+channels and 27 scenarios, 0 mismatched.
+
+FIVE SCENARIOS CALL THIS UNIT and twenty-two do not: 3, 4, 7, 16 and 26, read
+from coverage/line_coverage.json. DISCON's call site is itself behind
+`IF (CntrPar%Flp_Mode > 0)`, so the other twenty-two never enter the procedure
+at all -- the `ELSE RETURN` at Controllers.f90:707 has zero hits in all 27.
+
+    perturbation                          moved        scenarios / channels
+    ------------------------------------  -----------  --------------------------
+    avrSWAP(120) offset by 1.0 deg        75,995       3, 4, 7, 16, 26 (flp_angle_1)
+    NP_1  1 -> 2  (mode-3 arm only)       79,992       16 (flp_angle_2,3),
+                                                       26 (flp_angle_1,2,3)
+    R2D   57.2957795130 -> 58.0           **0**        none
+      (mode-2 arm only)
+    mode-2 result + 1.0 (the PROBE)       11,997       4 (flp_angle_1,2,3)
+
+THE FIRST IS THE UNIT'S OWN CHANNEL and it reaches every scenario that calls the
+procedure. 75,995 = 15,999 + 3,999 + 23,999 + 15,999 + 15,999, which is every
+call in every one of the five minus the first timestep of each. The gate can
+see this unit.
+
+THE SECOND IS AN ARM. `NP_1` is read only by the `Flp_Mode == 3` Coleman pair,
+so it is unit #40's per-arm red test taken with a CONSTANT rather than a
+statement (unit #47's economy). It moves exactly the two scenarios coverage says
+run that arm. Note it moves `flp_angle_2` and `flp_angle_3` in scenario 16 while
+that scenario's baselines for those channels are ALL EXACTLY ZERO: the gate
+compares bit patterns, and the perturbed run puts a `-0.0` where the reference
+has `+0.0`. A value comparison would have called that green.
+
+THE THIRD MOVED NOTHING, AND THAT IS A MEASUREMENT RATHER THAN A GAP.
+`* R2D` is the last operation of the `Flp_Mode == 2` arm, which scenario 4 runs
+15,992 times. The census below is why it cannot be seen:
+
+    baseline_arrays/scenario_N.npz, channel flp_angle_1/2/3
+      scenario  3   16,000 samples   0 non-zero   1 distinct value
+      scenario  4    4,000 samples   0 non-zero   1 distinct value   <- mode 2
+      scenario  7   24,000 samples   0 non-zero   1 distinct value
+      scenario 16   16,000 samples   0 non-zero   1 distinct value   <- mode 3
+      scenario 26   16,000 samples  15,999 non-zero  ~15,990 distinct
+                                    min -0.24678  max +0.24678
+
+FOUR OF THE FIVE SCENARIOS THAT CALL THIS UNIT DRIVE IT ON AN EXACT ZERO.
+Scenario 4 sets `Flp_Angle = 0.0` (the initial flap angle) and runs a 1-DOF
+simulation in which the blade root moments `rootMOOPF` are exactly zero, so
+`PIIController(-0.0, 0.0 - 0.0, kp, ki, ...)` returns 0.0, `saturate(0.0, ...)`
+is 0.0, and `0.0 * R2D` is 0.0 for every value of R2D. The gains are not the
+cause -- `Flp_Kp = -0.001` and `Flp_Ki = -0.0005` are both non-zero in that
+scenario's own DISCON patch (Examples/vit_sim.py, run_scenario_4) -- the INPUT
+is.
+
+FOURTH INSTANCE IN FOUR UNITS of a five-figure hit count that no perturbation
+reaches because a quantity is exactly 0.0: unit #47's `AWC_amp`, unit #48's
+`WE_Gamma`, unit #49's `CC_DesiredL` behind `Time > 500`, and now this. The
+first two were configured GAINS and the third a state the run length never let
+the unit write; this one is the driving SIGNAL of a 1-DOF simulation.
+
+THE FOURTH RUN IS THE PROBE THAT SEPARATES THE TWO READINGS, and it is unit
+#48's rule applied: forcing the arm's RESULT rather than a factor of it. The
+same statement, `saturate(...) * R2D`, with `+ 1.0` appended -- an ADDITIVE
+perturbation, which an exact zero cannot annihilate. It moves 11,997 values:
+all three flap channels of scenario 4, 3,999 of 4,000 samples each. So the
+mode-2 arm is FULLY OBSERVABLE to the gate and the R2D result is annihilation,
+not blindness. Both artifacts are committed; the R2D one carries
+`verdict: RED_TEST_FAIL` and `went_red: false` and is kept under its own name
+rather than beside the green, because it is not this unit's red test.
+
+WHAT THE GATE THEREFORE CERTIFIES, STATED AT ITS TRUE WIDTH. It runs the real
+program end to end and compares 5,252,000 values bit for bit, but on this unit's
+own channels only scenario 26 carries a signal with any dynamic range. Every
+other scenario's flap commands are exactly zero, so the gate's green for those
+four scenarios says the translation also writes zero -- true, and cheap. The
+instrument that constrains the arithmetic here is the differential harness
+(9,721 cases) and the mutation sweep, not the gate.
