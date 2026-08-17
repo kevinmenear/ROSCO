@@ -1,6 +1,6 @@
-# done_check.py ActiveWakeControl -- captured 2026-08-17T15:51:28Z by scripts/capture_done_check.sh
+# done_check.py ActiveWakeControl -- captured 2026-08-17T15:52:36Z by scripts/capture_done_check.sh
 
-Run against the committed state at fa221936 ("ActiveWakeControl: done_check captured -- 12 of 14, P5 unresolved on the file being written"), with a CLEAN tree, with stdout
+Run against the committed state at 67684141 ("ActiveWakeControl: the reset/restore round trip, taken after the unit closed -- byte-identical, 0 dirty, 0 diff against HEAD"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
