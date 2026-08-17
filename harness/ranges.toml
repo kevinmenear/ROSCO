@@ -1774,3 +1774,106 @@ objInst_instPI = { lo = 1, hi = 1000 }
 #      So `values` states the BASE DRAW and the flag crossing; it does not
 #      bound the knob.
 ErrVar_aviFAIL = { values = [-1, 0, 1] }
+
+# ---------------------------------------------------------------------------
+[FlapControl]
+
+# `LocalVar%NumBl` IS THE ONLY LOOP BOUND IN THIS UNIT, AND IT SUBSCRIPTS TWO
+# ARRAYS OF EXTENT 3:
+#
+#     :670  LocalVar%Flp_Angle(K)      REAL(DbKi) :: Flp_Angle(3)
+#     :684  LocalVar%rootMOOPF(K)      REAL(DbKi) :: rootMOOPF(3)
+#     :684/:686  LocalVar%Flp_Angle(K)
+#
+# Neither of the two `DO K = 1,LocalVar%NumBl` loops is guarded, so 3 is the
+# bound and a NumBl above it is a read and a write past a fixed-size field in
+# the REFERENCE. `lo = 0` is kept: a zero-blade rotor runs neither loop body,
+# which is the only configuration in which the `iStatus == 0` arm reaches
+# `Flp_Mode == 2` and still writes no `Flp_Angle` through the controller -- a
+# distinct arm, and the one the mode-3 branch is NOT bounded by (the Coleman
+# pair writes all three blades whatever NumBl holds).
+#
+# The same bound and the same reason as `[PreFilterMeasuredSignals]` and
+# `[ActiveWakeControl]`; this is the third unit to carry it.
+#
+# THE COST, STATED: NumBl leaves R6's integer ladder, so the decade boundaries
+# and the two 32-bit extremes are gone from it. Every one of those is a value at
+# which the reference writes outside its own fields.
+LocalVar_NumBl = { lo = 0, hi = 3 }
+
+# THE OLDEST JUDGEMENT IN THIS FILE, MET AN ELEVENTH TIME. `objInst%instPI` is
+# INTENT(INOUT) to both `PIIController` and `PIController`, each of which
+# subscripts `piP`'s five DIMENSION(1024) arrays with it and then
+# post-increments -- INSIDE the callee, where no compared out-parameter exists
+# for an inference to attach a role to. Unit #41 paid for this with
+# `Error allocating 11703869192 bytes` from its own bridge.
+#
+# THE ARITHMETIC IS THREE CALLS AT MOST. The two PII loops run `NumBl <= 3`
+# times and the cyclic arm calls `PIController` twice, and the arms are mutually
+# exclusive, so the worst case is 3 and the bound could be 1024 - 3. 1000 is
+# used anyway, because it is the number the other seven units in this file
+# already carry and a bound that differs by 21 buys nothing measurable.
+#
+# THE COST, STATED: the counter leaves R6's integer ladder. A defect at the last
+# slot would be a defect in `PIIController` (unit #35) or `PIController`
+# (unit #33), each of which is CALLED rather than inlined here and is therefore
+# the same implementation on both sides of this comparison.
+objInst_instPI = { lo = 1, hi = 1000 }
+
+# THE BASE-DRAW ENTRY, STATED BEFORE THE MEASUREMENT RATHER THAN AFTER IT, ON
+# UNIT #47's AND UNIT #49's FINDING RATHER THAN ON THIS UNIT'S OWN.
+#
+# `CntrPar%Flp_Mode` is a MODE, and its domain is four values enforced by the
+# program itself:
+#
+#     ROSCO_Types.f90:161  ! Flap actuator mode {0 - off, 1 - fixed flap
+#                          !   position, 2 - PI flap control}
+#     CheckInputs          IF ((Flp_Mode < 0) .OR. (Flp_Mode > 3)) THEN
+#                              aviFAIL = -1
+#                              ErrMsg = 'Flp_Mode must be 0, 1, 2, or 3.'
+#
+# (the check is unit #29's translation, `checkinputs.cpp:303`, transcribed from
+# the same statement in the clean Fortran). The +/-1e3 default this file leaves
+# an unstated integer at is not a wide statement of that domain, it is a wrong
+# one: 1997 of its 2001 values are rejected by the program's own input reader
+# before this unit is ever called.
+#
+# WHY IT MATTERS HERE, AND IT IS THE BASE DRAW AND NOT THE LADDER. `_base` puts
+# an unstated integer at `lo + (hi - lo) * 0.65` = **+300**, and `Flp_Mode = 300`
+# passes `IF (Flp_Mode > 0)` and then matches NONE of the four arms: the unit
+# falls through the whole `ELSEIF` chain and does nothing but copy three
+# unchanged `Flp_Angle` elements into `avrSWAP`. Every stage the generator takes
+# "with every other input at its base draw" -- R6's real-literal ladder above
+# all, which is this unit's only instrument on `Flp_Kp`, `Flp_Ki`, `Flp_MaxPit`,
+# `DT`, `rootMOOPF` and `Azimuth` -- would be spent on that path. Unit #49
+# measured exactly this on `ErrVar%aviFAIL` and unit #47 on `AWC_Mode`; it is
+# recorded in RUNBOOK.md as "a midpoint is not a mode", and this is the first
+# unit to act on it BEFORE the survivors rather than after.
+#
+# `values` AND NOT `lo`/`hi`, for unit #49's reason: a bounds pin moves the base
+# draw too, but it also drops the parameter out of R6's integer ladder and
+# leaves the value to `rng.randint`, and this unit needs `Flp_Mode` at EXACTLY
+# 1, 2 and 3 to reach three different arms. A uniform draw over a four-wide
+# interval would supply them unevenly and a `const_tweak` mutant of any of the
+# three literals would have no reliable case to die on.
+#
+# THE ORDER IS DELIBERATE AND `2` IS FIRST. `_case_impl` takes `p.values[0]` as
+# the base draw, and the `Flp_Mode == 2` arm is the deepest one this unit has --
+# a `PIIController` call, a `saturate` call and a degree conversion, per blade.
+# Putting it first is what points R6's ladders at arithmetic instead of at a
+# fall-through.
+#
+# THE COST, STATED.
+#   1. `Flp_Mode` leaves R6's integer ladder. This unit reads it in four places
+#      and all four are comparisons against 0, 1, 2 and 3, so no decade boundary
+#      is distinguishable from a stated value by anything this procedure
+#      computes.
+#   2. The flag arity of this signature rises by 4 and every flag-crossed stage
+#      is taken once per mode, so the corpus grows and every artifact of this
+#      unit is a statement about the larger one. The count is recorded in
+#      evidence/FlapControl/README.md.
+#   3. A `Flp_Mode` far outside the stated set is no longer the base draw, but
+#      it is not gone: R7's knob cross-product draws from the reference's own
+#      literals and is not filtered by a stated `values` list (unit #49 measured
+#      that on `aviFAIL`). The fall-through path therefore still has cases.
+CntrPar_Flp_Mode = { values = [2, 0, 1, 3] }
