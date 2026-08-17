@@ -1,0 +1,52 @@
+# Unit #48 `AeroDynTorque` -- the four survivors, each put to the decisive question
+
+Captured 2026-08-17T19:03:54Z. Both probes are committed source; both
+were built and run inside `vit-dev` with the campaign's own flags. Reproduce with
+the command in each probe's header.
+
+## Run 1 -- `aerodyntorque.trim-composition-probe.cpp` (the FIRST model, and it was WRONG)
+
+It swept the callee result length L freely over {0} U [9,40] and reported all four
+mutants different somewhere. That is not the question the census asks, and the sweep
+is not sound either: it admits (entry, L) pairs interp2d cannot produce. Kept because
+it is what showed the first model of this dispatch -- "L = 9 + LEN(TRIM(entry)), so
+the trim never sees a corpus-chosen length" -- to be false. interp2d and interp1d
+REPLACE ErrMsg (`= ' xData is not strictly increasing'`) before prefixing it.
+
+```
+TRIMCOMP configs=1299078  shapes=6 fills=3  n=[-2,24] cap=[0,80] L={0}U[9,40]
+
+mutant     site                                diff L>=9   diff L=0 first L>=9
+---------- ---------------------------------- ---------- ---------- ----------
+88466711   assign_errmsg  '>' -> '>='              25086        486   shape=0 fill=0 n=-2 cap=14 L=15
+11c1e326   errmsg_trim    'n > 0' -> 'n > 1'        3861        737   shape=0 fill=0 n=1 cap=14 L=15
+06f7d2c8   errmsg_trim    ': 0' -> ': 1'           12636       2412   shape=0 fill=0 n=-2 cap=14 L=15
+26021804   errmsg_trim    '+ 1' -> '+ 2'           63159      14493   shape=0 fill=1 n=1 cap=14 L=15
+
+CONTROL positive  88466711 differs at 25086 configuration(s) with the real callee -- the probe can go red
+CONTROL counterfactual  the three trim mutants differ at 17642 configuration(s) when the callee does NOT write -- the callee's write is what makes them equivalent
+```
+
+## Run 2 -- `aerodyntorque.green-kill-probe.cpp` (the decisive one)
+
+Same helpers, but it models BOTH CHAINS -- the harness reference (one capacity gate,
+on the final message) and the translation (two: the callee bridge, then
+`assign_errmsg`) -- and asks, for each mutant, whether ANY input exists at which
+`ORIGINAL == REFERENCE` and `MUTANT != REFERENCE`. That is exactly "could a green
+corpus contain a case that kills this mutant".
+
+```
+GREENKILL configs=203700  shapes=5 fills=3 n=[-2,32] cap=[0,96] M-forms=4
+M-forms: 0 'interp1d:'+TRIM(entry)  1 'interp2d:'+TRIM(entry)  2/3 the 42-byte 'not strictly increasing' messages
+
+mutant     site                               GREENKILL  orig-red  kill-any  first green kill
+---------- ---------------------------------- --------- --------- ---------  ----------------------------------------
+88466711   assign_errmsg  '>' -> '>='              2100     50616      3096  shape=0 fill=0 n=-2 cap=23 |M|=9
+11c1e326   errmsg_trim    'n > 0' -> 'n > 1'         18     50616       504  shape=0 fill=0 n=1 cap=14 |M|=42
+06f7d2c8   errmsg_trim    ': 0' -> ': 1'              0     50616      1680  (NONE EXISTS)
+26021804   errmsg_trim    '+ 1' -> '+ 2'              0     50616     13344  (NONE EXISTS)
+
+CONTROL negative  the ORIGINAL scored against itself: 0 green kill(s) -- as required
+CONTROL positive  a green kill was found for 1 of the four mutant(s); the probe can report a kill
+CONTROL reading   full-capacity and extent-only comparison disagree at 0 configuration(s)
+```
