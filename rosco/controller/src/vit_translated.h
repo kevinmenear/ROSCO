@@ -76,6 +76,7 @@ void yawratecontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localva
 double interp2d_c(double* xData, int n_xData, double* yData, int n_yData, double* zData, int n_zData_rows, int n_zData_cols, double xq, double yq, errorvariables_view_t* ErrVar);
 double ratelimit_c(double inputSignal, double minRate, double maxRate, double DT, int32_t reset, rlparams_t* rlP, int* inst, int has_ResetValue, double ResetValue);
 void activewakecontrol_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, debugvariables_t* DebugVar, objectinstances_t* objInst);
+double aerodyntorque_c(double RotSpeed, double BldPitch, localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, performancedata_view_t* PerfData, errorvariables_view_t* ErrVar);
 
 #ifdef __cplusplus
 }

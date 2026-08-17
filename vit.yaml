@@ -1047,6 +1047,24 @@ translations:
   ActiveWakeControl:
     status: integrated
     cpp_file: translations/Controllers/activewakecontrol.cpp
+
+  # UNIT #48. Re-added by hand, third time in three units, for the reason
+  # recorded above `ratelimit` and again above `ActiveWakeControl`: `vit
+  # integrate --apply` rewrites this file through a YAML round-trip that
+  # DELETES EVERY COMMENT in it -- 1091 lines to 246, and the ONLY semantic
+  # difference between the two was this one entry (verified by loading both
+  # with `yaml.safe_load` and walking them key by key, rather than by reading
+  # the diff). So the commented file is restored with `git checkout -- vit.yaml`
+  # and the entry put back here.
+  #
+  # `vit integrate` also wrote `verification: simulation`; REMOVED, same as for
+  # the two units above. It is a claim written by a command that ran no
+  # simulation and read no result. What verified this unit is in plan.json's
+  # `evidence`, and its primary layer is a direct-call harness, not a
+  # simulation.
+  AeroDynTorque:
+    status: integrated
+    cpp_file: translations/Functions/aerodyntorque.cpp
 types:
   ControlParameters:
     strategy: view

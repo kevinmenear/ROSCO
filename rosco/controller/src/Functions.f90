@@ -181,6 +181,21 @@ IMPLICIT NONE
         END FUNCTION ratelimit_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of AeroDynTorque
+    INTERFACE
+        FUNCTION aerodyntorque_c(RotSpeed, BldPitch, LocalVar, CntrPar, PerfData, ErrVar) BIND(C, NAME='aerodyntorque_c')
+            USE ISO_C_BINDING
+            REAL(C_DOUBLE), VALUE :: RotSpeed
+            REAL(C_DOUBLE), VALUE :: BldPitch
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: PerfData
+            TYPE(C_PTR), VALUE :: ErrVar
+            REAL(C_DOUBLE) :: aerodyntorque_c
+        END FUNCTION aerodyntorque_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION saturate(inputValue, minValue, maxValue) RESULT(saturate_result)
@@ -336,45 +351,33 @@ CONTAINS
     END FUNCTION CPfunction
 
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION AeroDynTorque(RotSpeed, BldPitch, LocalVar, CntrPar, PerfData, ErrVar)
-    ! Function for computing the aerodynamic torque, divided by the effective rotor torque of the turbine, for use in wind speed estimation
-        
+    FUNCTION AeroDynTorque(RotSpeed, BldPitch, LocalVar, CntrPar, PerfData, ErrVar) RESULT(AeroDynTorque_result)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, PerformanceData, ErrorVariables
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
+        USE vit_performancedata_view, ONLY: performancedata_view_t, vit_populate_performancedata, vit_copy_scalars_to_performancedata
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
         IMPLICIT NONE
-    
-        ! Inputs
-        TYPE(ControlParameters), INTENT(IN) :: CntrPar
-        TYPE(LocalVariables), INTENT(IN) :: LocalVar
-        TYPE(PerformanceData), INTENT(IN) :: PerfData
-        TYPE(ErrorVariables), INTENT(INOUT) :: ErrVar
-
-        REAL(DbKi), INTENT(IN)  :: RotSpeed
-        REAL(DbKi), INTENT(IN)  :: BldPitch
-            
-        ! Local
-        REAL(DbKi) :: RotorArea
-        REAL(DbKi) :: Cp
-        REAL(DbKi) :: Lambda
-        REAL(DbKi) :: WindSpeed
-
-        CHARACTER(*), PARAMETER                 :: RoutineName = 'AeroDynTorque'
-
-        ! Find Torque
-        RotorArea = PI*CntrPar%WE_BladeRadius**2
-        WindSpeed = MAX(LocalVar%WE_Vw,EPSILON(1.0_DbKi))
-        Lambda = RotSpeed*CntrPar%WE_BladeRadius/WindSpeed
-
-        ! Compute Cp
-        Cp = interp2d(PerfData%Beta_vec,PerfData%TSR_vec,PerfData%Cp_mat, BldPitch*R2D, Lambda, ErrVar)
-        
-        AeroDynTorque = 0.5*(CntrPar%WE_RhoAir*RotorArea)*(LocalVar%WE_Vw**3/RotSpeed)*Cp
-        AeroDynTorque = MAX(AeroDynTorque, 0.0_DbKi)
-
-        ! Add RoutineName to error message
-        IF (ErrVar%aviFAIL < 0) THEN
-            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
-        ENDIF
-        
+        REAL(8), INTENT(IN) :: RotSpeed
+        REAL(8), INTENT(IN) :: BldPitch
+        TYPE(LOCALVARIABLES), INTENT(IN), TARGET :: LocalVar
+        TYPE(CONTROLPARAMETERS), INTENT(IN), TARGET :: CntrPar
+        TYPE(PERFORMANCEDATA), INTENT(IN), TARGET :: PerfData
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        REAL(8) :: AeroDynTorque_result
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(performancedata_view_t), TARGET :: PerfData_view
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_performancedata(PerfData, PerfData_view)
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        AeroDynTorque_result = REAL(aerodyntorque_c(RotSpeed, BldPitch, C_LOC(LocalVar_view), C_LOC(CntrPar_view), C_LOC(PerfData_view), C_LOC(ErrVar_view)), 8)
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
     END FUNCTION AeroDynTorque
 !-------------------------------------------------------------------------------------------------------------------------------
     FUNCTION wrap_180(x) RESULT(wrap_180_result)

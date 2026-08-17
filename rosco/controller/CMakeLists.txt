@@ -131,6 +131,8 @@ set(SOURCES
     src/interp2d.cpp
     src/ratelimit.cpp
     src/activewakecontrol.cpp
+    src/vit_performancedata_view.f90
+    src/aerodyntorque.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
