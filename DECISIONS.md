@@ -9853,3 +9853,112 @@ debt is recorded here rather than paid silently: **P9 is exercised at unit #46**
 and the same edit would also carry the proposed amendment above (*presence in a
 capture window is not visibility either*), which is what makes it an amendment
 rather than a bookkeeping change.
+
+## Unit #47 — ActiveWakeControl — 2026-08-17
+
+### No kernel, and it was decided against the arms rather than against the clock
+
+`plan.json` allowed "kernel replay **or** direct-call harness; bit-identical".
+This unit's whole body is one `IF/ELSEIF` chain over `CntrPar%AWC_Mode` with five
+arms, and coverage puts each arm in a different scenario:
+
+```
+mode 1  scenario 11        15,999 calls        mode 4  scenarios 5, 8, 27
+mode 2  scenario 15        15,999 calls        mode 5  scenario 22   15,999 calls
+mode 3  scenario 21        15,999 calls
+```
+
+A KGen kernel is aimed at ONE call site in ONE scenario, so a kernel here could
+have seen exactly one arm of five, and the other four would have needed four more
+extractions with four `vit.yaml` edits between them. The differential harness
+varies `AWC_Mode` itself and reaches all five from one corpus. Second reason,
+independent of the first: this unit has **four implicitly-`SAVE` locals**, and
+unit #44 measured that `kernel_driver.f90` calls the procedure three times per
+case and verifies the third while the in-state carries only the dummies — so a
+`SAVE` local is whatever the previous call left. `AWC_TiltYaw`, `Error` and
+`StartTime` are all read on a path that does not write them.
+
+### An indeterminate answer stored in a SAVE local outlives the case that produced it
+
+Unit #39 recorded that `ResController` assigns its result only in its `ELSE`
+branch, so `IF (reset)` returns whatever the result slot holds, and pinned
+`reset` out of *its own* corpus by naming `vit_result` in `no_oracle`. That
+repair does not carry here, because in this unit the value is not a return value:
+it is stored into `AWC_TiltYaw(Imode)`, which is implicitly `SAVE`.
+
+The first clean-tree sweep: **22 failed of 6436**, every recorded mismatch on
+`DebugVar.axisTilt_1P`. All sixteen are `AWC_Mode == 4`; **thirteen** are at
+`restart == 1` and **three** at `restart == 0`, each of those three one case
+after one that is not. So the indeterminacy is not confined to the case that
+produced it, and a corpus rule written per-case cannot see that.
+
+`LocalVar_restart = { values = [0] }`, and the cost is stated where the pin is:
+`restart` is a PURE PASS-THROUGH in this unit — it enters no predicate this unit
+writes — so what leaves the corpus is the reset arm of `PIController` and of
+`ResController`, both CALLED rather than inlined, both scored as units, and
+`PIController`'s reset arm is perfectly determinate and is lost only as
+collateral. `ranges.toml` states a judgement about ONE parameter and cannot say
+"restart may be true unless AWC_Mode is 4".
+
+### The mutation score is 0.7857 and nothing is declared
+
+165 of 210 behavioural killed, 14 no-compile, 45 survivors. **Zero declarations**,
+and that is the decision rather than an omission. Eight of the 45 are equivalent
+by C++ semantics — they enlarge a declared array extent and no subscript names
+the extra element — and the campaign could have declared those on an argument.
+It has already recorded, at unit #45, that declaring on an argument rather than a
+probe is what it does not want, and the measurement that would settle these eight
+is an assembly diff that was not taken. The other 37 are unreachable IN THIS
+CORPUS for six separately measured reasons, and declaring those would convert a
+corpus weakness into a score. P12 fails and the disposition says so. Same
+standing as `interp2d` at 0.9744, `unwrap` at 0.960 and `YawRateControl` at
+0.8961.
+
+### Two gaps that belong to the generator, not to this unit
+
+**1. A `COMPLEX(DbKi)` view field is not compared.** `LocalVar%AWC_complexangle`
+crosses in both directions as `vit_complex_double[3]` and the bridge carries it
+correctly — the gate is bit-identical over 5,252,000 values with mode 1 live in
+scenario 11. The generated differential test has **one** `VITCMP` for
+`LocalVar.PitCom`, **one** for `DebugVar.axisTilt_1P` and **zero** for
+`LocalVar.AWC_complexangle`: the field is absent from R4's out-parameter list
+entirely. Five survivors live in the imaginary half, which reaches no other
+output. Not repaired here: adding a comparison changes the compared set of every
+unit already scored (X3), and this dispatch's clock went on the sweep.
+
+**2. A predicate on a constant-subscript element of an ALLOCATABLE array is not a
+knob.** `IF (CntrPar%AWC_harmonic(1) == 0)` guards two writes with **0 hits in
+all 27 scenarios and 0 cases of 3231**. `harness/ranges.toml` cannot repair it:
+`generate._fill_array` ramps an array monotonically across its bounds, so any
+`lo`/`hi` that puts 0 in `AWC_harmonic` puts it at element 1 in EVERY case,
+deleting the `ELSE` arms that all 27 scenarios do exercise. The repair is to make
+such a predicate a knob — R6 already builds a cross product over the quantities
+the reference tests, and it takes scalars. That is a generator change with an X3
+cost (it moves the corpus of every later unit whose reference has one), so it is
+recorded for the Driver with the number that would justify it: **5 of this unit's
+45 survivors, and the campaign's only arm no instrument reaches.**
+
+### A named next step this dispatch did not take
+
+**11 survivors would die from one knob value.** `NumBl` is 0, 1 or 2 in all 91
+live cases; the six cases with `NumBl == 3` all have `AWC_Mode` outside 1..5. So
+blade 3's angle is computed and never read, and `phi3`, `AWC_angle(3)` and
+`PitCom(3)` have no witness. `LocalVar_NumBl` is already pinned `[0, 3]`, so this
+is not a pin problem either — R6's knob values are read out of the reference's own
+literals and are `{0, 1, 2}`. Adding the pin's upper bound to the knob would be a
+one-value change with the same X3 cost as the item above and, on this unit,
+0.7857 → about 0.84. Not taken: the corpus is fixed the moment the first part of a
+sweep is taken (unit #43's rule), so it would have meant re-running all 224
+mutants and re-taking the harness green and its red test.
+
+### A shim object with no symbols, one command after the command that wrote it
+
+The post-integration green re-take after the wrapper red test died at the link
+with `undefined reference to activewakecontrol_c`, against a **952-byte**
+`vit_integration_shim.o` that `nm` reports as carrying **no symbols at all**,
+where the identical `g++ -c` run by hand produces **1528 bytes** and the symbol.
+The identical invocation, repeated with nothing changed, then passed at 3231
+checked / 0 failed. This is the bind-mount write/read race the runbook already
+records for `cp`, met on an object the same `docker exec` chain had just written
+three commands earlier. Recorded rather than repaired: the failure is LOUD (a
+link error, not a wrong number) and a retry is the whole fix.

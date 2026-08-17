@@ -4,6 +4,84 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-17: unit #47 `ActiveWakeControl` is `integrated`, and it closes
+at 12 of 14 with P12 failing on purpose.** Four layers, all four alive, all four
+red-tested, and the mutation score is an honest **0.7857** — 165 of 210
+behavioural killed, **0 declared**, **45 survivors left standing**, every one of
+them listed in `evidence/ActiveWakeControl/mutation.census.txt` in ten groups
+with the measurement that explains it and the input that would kill it.
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (`harness/ActiveWakeControl.json`) | **3231 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, all five callee bridges kept — this unit's primary evidence | the unit as a no-op: **86 of 3231**, and the shortfall is the measurement |
+| mutation (`mutation/ActiveWakeControl.json`) | **165 of 210 behavioural, 0.7857**, 0 declared, 14 no-compile, 8 operators, **45 survivors standing** | the score *is* the red test, 165 times |
+| post-integration (`harness/ActiveWakeControl.postintegration.json`) | 3231 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **70 of 3231**; reverted, rebuilt, green re-taken at 0 |
+| gate, 27 scenarios (`gate/ActiveWakeControl.json`) | 5,252,000 values / 351 channels, 0 mismatched | **TWO**: PI moves **97,118** (scenarios 5, 11, 15, 21), D2R moves **50,605** (15, 22). Both revert-verified |
+
+**NO KERNEL, AND IT IS A CHOICE WITH A REASON.** The plan allowed "kernel replay
+**or** direct-call harness". This unit's body is one IF/ELSEIF chain over
+`CntrPar%AWC_Mode` and each of its five arms is reached by a DIFFERENT scenario —
+mode 1 by scenario 11, mode 2 by 15, mode 3 by 21, mode 4 by 5/8/27, mode 5 by
+22 — so a kernel, which is aimed at one call site in one scenario, could have
+seen at most one of them. It also carries FOUR implicitly-`SAVE` locals, and unit
+#44 measured that a KGen kernel cannot replay `SAVE` state.
+
+**THE FIVE ARMS FORCED TWO GATE RED TESTS, AND THE PER-SCENARIO CHANNEL LIST IS
+WHAT SAYS WHICH ARM EACH ONE REACHED.** One perturbation could not speak for five
+arms with disjoint scenario sets (unit #40's rule, met with five instead of two).
+Two constants were perturbed instead of five statements: `PI` in the 13th digit
+moves 97,118 of 5,252,000 across scenarios 5, 11, 15 and 21 — modes 4, 1, 2 and 3
+— and `D2R` in the 11th digit moves 50,605 across 15 and 22 — modes 2 and 5. The
+union is one scenario per arm. Scenarios 8 and 27 call this unit and move under
+neither: both are mode 4, the arm scenario 5 already moves, and `vit.yaml`
+already records that scenario 8 holds `AWC_amp` at 0.0.
+
+**AN INDETERMINATE ANSWER STORED IN A `SAVE` LOCAL OUTLIVES THE CASE THAT
+PRODUCED IT.** The first clean-tree sweep came back **22 failed of 6436** with
+every recorded mismatch on `DebugVar.axisTilt_1P` and nothing else. An
+instrumented relink of the GENERATED test source — one `fprintf` after the case
+read, so INPUTS only, so no reset window — named the set exactly: all sixteen are
+`AWC_Mode == 4`, the `ResController` arm whose reset branch never assigns its own
+result (unit #39's finding). Thirteen are at `restart == 1`; the other **three
+are at `restart == 0` and each follows one that is not**, because this unit
+stores that value into the implicitly-`SAVE` `AWC_TiltYaw`. `LocalVar_restart` is
+pinned to `[0]` and the cost is stated in `harness/ranges.toml`: what leaves the
+corpus is the reset arm of `PIController` and `ResController`, both of which are
+CALLED rather than inlined and were scored as units.
+
+**A `COMPLEX(DbKi)` VIEW FIELD CROSSES IN BOTH DIRECTIONS AND IS NOT COMPARED.**
+`LocalVar%AWC_complexangle(3)` is this unit's Mode-1 accumulator. It crosses as
+`vit_complex_double[3]` — the campaign's first complex-valued field, and the
+bridge carries it correctly, which the gate confirms over 5,252,000 values. The
+generated differential test has **one** `VITCMP` for `LocalVar.PitCom`, **one**
+for `DebugVar.axisTilt_1P` and **zero** for `LocalVar.AWC_complexangle`: the
+field is absent from R4's out-parameter list entirely. Five of the 45 survivors
+live in the imaginary half, which reaches no other output. That is a generator
+gap and is recorded as one.
+
+**AND ONE GUARD IS OUTSIDE EVERY INSTRUMENT THIS CAMPAIGN HAS.**
+`IF (CntrPar%AWC_harmonic(1) == 0)` guards two writes and has **0 hits in all 27
+scenarios and 0 cases of 3231**. The cause is measured, not guessed:
+`AWC_harmonic` is an ALLOCATABLE INTEGER array whose elements
+`generate._fill_array` ramps across the defaulted ±1e3 bounds, so element 1 is
+about −600 in every case; and the reference's predicate is written against a
+constant-subscript ELEMENT of an array parameter, which the knob extractor does
+not take. **A `lo`/`hi` pin cannot repair it** — the ramp is monotone, so any
+bound that puts 0 in the array puts it at element 1 in EVERY case, deleting the
+ELSE arms all 27 scenarios do exercise. What is needed is a knob, which is a
+change to the generator. 5 of the 45 survivors are there.
+
+**THE CORPUS'S REAL SIZE FOR THIS UNIT IS 91 CASES, NOT 3231**, and that is a
+count off the case file rather than an estimate: 3032 of 3231 sit at
+`AWC_Mode = -600`, the inert value, and the rest are R6's integer ladder. The 91
+live cases come from R6's predicate cross product alone. `NumBl` is 0, 1 or 2 in
+every one of them — the six cases with `NumBl == 3` all have `AWC_Mode` outside
+1..5 — so blade 3's angle is computed and never read, which is 11 of the 45
+survivors. `evidence/ActiveWakeControl/harness.arm_census.txt` and
+`harness.live_case_inputs.txt`.
+
+---
+
 **As of 2026-08-15: unit #46 `ratelimit` is `integrated`.** Five layers, all
 five alive, all five red-tested, and the mutation score is **1.000** on 17
 behavioural mutants with **nothing declared equivalent**.
@@ -3428,11 +3506,16 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-40 attempted / **36 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+47 attempted / **43 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 **3 deferred** (unit #29 `CheckInputs`, unit #31 `Debug`, unit #32 `FindLine`) /
 **1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 29 remain. 36 + 3 + 1 + 29 = 69.
+69 units in `plan.json`; 22 remain. 43 + 3 + 1 + 22 = 69.
+
+RECOUNTED at unit #47 from `plan.json` with the one command below, not
+incremented. It was **seven units stale** (`36 / 29 remain`, last recounted at
+unit #40) — longer than it has ever been wrong before, and the seventh time the
+unit that fixed it was not the unit that broke it.
 
 RECOUNTED at unit #40 from `plan.json` with the one command below, not
 incremented. It was **six units stale** (`30 / 35 remain`, last recounted at
