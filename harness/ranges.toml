@@ -1711,3 +1711,60 @@ CntrPar_OL_CableControl_cols = { same_as = "CntrPar_OL_Breakpoints_n" }
 # same implementation on both sides of this comparison.
 objInst_instSecLPFV = { lo = 1, hi = 1000 }
 objInst_instPI = { lo = 1, hi = 1000 }
+
+# A SIXTH PIN, ADDED ON THE SECOND DISPATCH OF THIS UNIT, AND IT IS THE ONE THAT
+# MOVES THE BASE DRAW RATHER THAN A LADDER.
+#
+# `ErrVar%aviFAIL` is the Bladed-interface status ROSCO writes into
+# `avrSWAP(129)`. Its domain is three values and the reference's own writers say
+# so -- `ErrVar%aviFAIL = -1` on an error (ReadSetParameters.f90, Functions.f90,
+# passim), `= 1` on a warning, `= 0` otherwise -- and nothing anywhere assigns
+# it anything else. The +/-1e3 DEFAULT this file leaves an unstated integer at
+# is therefore not a wide statement of the domain, it is a WRONG one: 1997 of
+# its 2001 values are outside the set the program can produce, and the one the
+# generator actually uses is the midpoint.
+#
+# THAT MIDPOINT IS WHY THREE MUTANTS STOOD. `_base` puts an unstated parameter
+# at `lo + (hi - lo) * 0.65` for a parameter at this index, which is `+300`, and
+# R13's whole 256-case capacity block and R6's character-length rungs are taken
+# `with every other input at its base draw` -- so every one of them sat where
+# `IF (ErrVar%aviFAIL < 0)` is FALSE and neither ErrMsg helper was entered at
+# all. The capacity ladder and the arm that reads the capacity were disjoint,
+# and the census that measured it is
+# `evidence/CableControl/errmsg_census.txt`:
+#
+#     cases                                            3354
+#     aviFAIL <  0  -- the prefix runs at all           223
+#     cases with aviFAIL < 0 and cap == need              0
+#     cases with n_ErrMsg == 1 AND aviFAIL < 0            0   (58 have n == 1)
+#
+# `values` rather than `lo`/`hi`, and the difference is not cosmetic. Both move
+# the base draw, because `_case_impl` takes `p.values[0]` for a parameter that
+# states values and `_base`'s fraction for one that states bounds -- but a
+# `lo`/`hi` pin ALSO drops the parameter out of R6's integer ladder and leaves
+# its value to `rng.randint`, and this unit's corpus needs `aviFAIL` at exactly
+# 0 and exactly -1 to kill `< 0` widened to `<= 0` and `< 0` tweaked to `< -1`.
+# A uniform draw over a 1500-wide interval supplies neither. Stating the three
+# values makes `aviFAIL` an R2 FLAG, which is unit #47's fix, and every rung of
+# every other ladder is then taken under each of them.
+#
+# THE COST, STATED, AND IT IS PAID IN CASES RATHER THAN IN COVERAGE.
+#   1. `aviFAIL` leaves R6's integer ladder (`q.values` excludes it), so the
+#      decade boundaries and the two 32-bit extremes are gone from it. This unit
+#      reads `aviFAIL` in exactly one place -- `IF (ErrVar%aviFAIL < 0)`, a pure
+#      SIGN test -- so a decade boundary is distinguishable from -1, 0 or 1 by
+#      nothing this procedure computes. Nothing observable is lost.
+#   2. The flag arity of this signature goes from 2 to 5, and `flag_variants`
+#      is additive across flags, so every flag-crossed stage (R_ladder, R6's
+#      real literals, R6's character rungs and the planted strings) is taken
+#      2.5x. The corpus grows and every artifact of this unit is re-taken over
+#      the larger one; the harness and mutation counts either side are recorded
+#      in evidence/CableControl/README.md rather than left to be inferred.
+#   3. A value OUTSIDE {-1, 0, 1} is no longer generated. That is a narrowing,
+#      and it is the one narrowing in this entry that could hide a defect: a
+#      translation that tested `aviFAIL < -1` instead of `< 0` would now be
+#      caught (the corpus holds -1), but one that tested `aviFAIL /= 300` would
+#      not. No such shape exists in the translation, and the mutation operators
+#      that could introduce one -- `const_tweak` on the literal 0 -- move it by
+#      +/-1, which the stated set separates.
+ErrVar_aviFAIL = { values = [-1, 0, 1] }
