@@ -5,80 +5,146 @@
 stand*. One copy of every count — do not duplicate them anywhere else.
 
 **As of 2026-08-17: unit #47 `ActiveWakeControl` is `integrated`, and it closes
-at 12 of 14 with P12 failing on purpose.** Four layers, all four alive, all four
-red-tested, and the mutation score is an honest **0.7857** — 165 of 210
-behavioural killed, **0 declared**, **45 survivors left standing**, every one of
-them listed in `evidence/ActiveWakeControl/mutation.census.txt` in ten groups
-with the measurement that explains it and the input that would kill it.
+at 13 of 14 with P12 failing on purpose.** This is its SECOND dispatch, opened on
+that one unmet condition. The translation was not touched; the CORPUS was
+repaired, and the mutation score moved from an honest **0.7857 with 45
+survivors** to an honest **0.9200 with 16** — 184 of 200 scoreable killed, **10
+declared equivalent** with reasons in `mutation/ActiveWakeControl.equivalences.md`,
+every one of the 16 survivors listed in
+`evidence/ActiveWakeControl/mutation.census.txt` in five groups with the
+measurement that explains it and the input or instrument that would kill it.
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness (`harness/ActiveWakeControl.json`) | **3231 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, all five callee bridges kept — this unit's primary evidence | the unit as a no-op: **86 of 3231**, and the shortfall is the measurement |
-| mutation (`mutation/ActiveWakeControl.json`) | **165 of 210 behavioural, 0.7857**, 0 declared, 14 no-compile, 8 operators, **45 survivors standing** | the score *is* the red test, 165 times |
-| post-integration (`harness/ActiveWakeControl.postintegration.json`) | 3231 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **70 of 3231**; reverted, rebuilt, green re-taken at 0 |
+| differential harness (`harness/ActiveWakeControl.json`) | **21236 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, all five callee bridges kept — this unit's primary evidence | the unit as a no-op: **17645 of 21236** |
+| mutation (`mutation/ActiveWakeControl.json`) | **184 of 200 scoreable, 0.9200**, 10 declared, 14 no-compile, 8 operators, **16 survivors standing** | the score *is* the red test, 184 times |
+| post-integration (`harness/ActiveWakeControl.postintegration.json`) | 21236 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **17521 of 21236**; reverted, rebuilt, green re-taken at 0 |
 | gate, 27 scenarios (`gate/ActiveWakeControl.json`) | 5,252,000 values / 351 channels, 0 mismatched | **TWO**: PI moves **97,118** (scenarios 5, 11, 15, 21), D2R moves **50,605** (15, 22). Both revert-verified |
 
+**`_base` PUTS A MODE SELECTOR AT THE MIDPOINT OF ITS RANGE, AND A MIDPOINT IS
+NOT A MODE.** `CntrPar%AWC_Mode` had no stated range, so it sat at **−600 in 3032
+of the first dispatch's 3231 cases** — on a body that is one `IF`/`ELSEIF` chain
+with **no `ELSE`**. 91 cases of 3231 reached an arm at all, and the unit's own
+no-op red test moved 86 of them: **2.7%**. Every ladder rung, every R6 magnitude,
+every negative zero and every random fill was spent on the empty path.
+
+Writing it in `harness/ranges.toml` as `values = [3, 4, 5, 1, 2, 0]` rather than
+as `lo`/`hi` is what fixed it, and the two spellings are different mechanisms:
+`lo`/`hi` moves `_base` and deepens **one** arm, `values` makes it an **R2 flag**
+and re-runs every ladder rung under **every** mode. The order is part of the
+judgement — `values[0]` is the base the first cases carry, and modes 3/4 are the
+only arms that read the `SAVE` locals without necessarily writing them. The cost
+is TIME: 3231 → 21236 cases, and the sweep from ~35 to ~50 minutes.
+
+The second entry, `CntrPar_AWC_phaseoffset = { lo = 0, hi = 360 }`, narrows
+nothing — it is read only as `aziOffset` inside `cos`/`sin` with an INTEGER
+harmonic, so one turn is the whole domain — and moves it off the exact `0.0` at
+which `x*D2R`, `x` and `x/D2R` are the same bits.
+
+| | first dispatch | second |
+|---|---|---|
+| cases | 3231 | **21236** |
+| cases reaching an arm | 91 (2.8%) | **17697 (83%)** |
+| distinct `AWC_phaseoffset` over live cases | 1 | **130** |
+| distinct `(PC_MinPit, PC_MaxPit)` over live | 1 | **537**, 311 wider than 1e6 |
+| live cases with `NumBl == 3` | 0 | **11**, five of them in Mode 1 |
+| cases with `AWC_harmonic(1) == 0` | 0 | 0 |
+| `AWC_complexangle` supplied non-zero | 0 | 0 |
+
+Of the 45 survivors: **20 killed, 10 declared, 15 standing, +1 new**.
+
+**A STRATUM THAT ALREADY VARIES A QUANTITY BECOMES REACHABLE *IN A BRANCH* THE
+MOMENT THE BRANCH SELECTOR IS A FLAG.** The first dispatch recorded "11 survivors
+would die from one knob value" and costed it as a generator change with an X3
+price paid by every later unit. It did not need one: `NumBl == 3` arrives through
+the random-fill stratum, which R2 gives eight cases under *every* declared flag
+value, and all eleven of those survivors are dead.
+
+**THE PRICE IS REPORTED, NOT ABSORBED: ONE MUTANT WENT FROM KILLED TO ALIVE.**
+`ced1c24e`, `Error`'s first `SAVE` initialiser. **A `SAVE` local's initialiser is
+an ORDERING property** — observable only where a read precedes every write across
+the whole run. The old corpus reached `Error(1)` first at a Mode 3 case whose
+`Time > StartTime` guard was false; this corpus's **case 0** is a Mode 3 case at
+`Time = 600`, so the loop writes the slot first. 740 of the 7083 Mode 3/4 cases
+DO have `Time <= 0` and every one comes after case 0. `values[0]` is the only
+lever `ranges.toml` has on case order, it was used, and it is not enough:
+**no rule in this generator orders cases.** `ExtController`'s `ranges.toml` entry
+records the same wall from the other side, so this is now two units.
+
 **NO KERNEL, AND IT IS A CHOICE WITH A REASON.** The plan allowed "kernel replay
-**or** direct-call harness". This unit's body is one IF/ELSEIF chain over
-`CntrPar%AWC_Mode` and each of its five arms is reached by a DIFFERENT scenario —
-mode 1 by scenario 11, mode 2 by 15, mode 3 by 21, mode 4 by 5/8/27, mode 5 by
-22 — so a kernel, which is aimed at one call site in one scenario, could have
-seen at most one of them. It also carries FOUR implicitly-`SAVE` locals, and unit
-#44 measured that a KGen kernel cannot replay `SAVE` state.
+**or** direct-call harness". Each of the five arms is reached by a DIFFERENT
+scenario — mode 1 by 11, mode 2 by 15, mode 3 by 21, mode 4 by 5/8/27, mode 5 by
+22 — so a kernel, aimed at one call site in one scenario, could have seen at most
+one. It also carries FOUR implicitly-`SAVE` locals, and unit #44 measured that a
+KGen kernel cannot replay `SAVE` state.
 
 **THE FIVE ARMS FORCED TWO GATE RED TESTS, AND THE PER-SCENARIO CHANNEL LIST IS
-WHAT SAYS WHICH ARM EACH ONE REACHED.** One perturbation could not speak for five
-arms with disjoint scenario sets (unit #40's rule, met with five instead of two).
-Two constants were perturbed instead of five statements: `PI` in the 13th digit
-moves 97,118 of 5,252,000 across scenarios 5, 11, 15 and 21 — modes 4, 1, 2 and 3
-— and `D2R` in the 11th digit moves 50,605 across 15 and 22 — modes 2 and 5. The
-union is one scenario per arm. Scenarios 8 and 27 call this unit and move under
-neither: both are mode 4, the arm scenario 5 already moves, and `vit.yaml`
-already records that scenario 8 holds `AWC_amp` at 0.0.
+WHAT SAYS WHICH ARM EACH ONE REACHED.** `PI` in the 13th digit moves 97,118 of
+5,252,000 across scenarios 5, 11, 15 and 21 — modes 4, 1, 2 and 3 — and `D2R` in
+the 11th digit moves 50,605 across 15 and 22 — modes 2 and 5. The union is one
+scenario per arm. Scenarios 8 and 27 call this unit and move under neither: both
+are mode 4, the arm scenario 5 already moves, and `vit.yaml` already records that
+scenario 8 holds `AWC_amp` at 0.0. **The gate is the first dispatch's and is
+still current** — the translation is byte-identical to what it gated, and that
+dispatch re-ran it after a full reset/restore round trip to an artifact identical
+in every field including `vit_rev` (`gate/ActiveWakeControl.postroundtrip.json`).
 
 **AN INDETERMINATE ANSWER STORED IN A `SAVE` LOCAL OUTLIVES THE CASE THAT
 PRODUCED IT.** The first clean-tree sweep came back **22 failed of 6436** with
-every recorded mismatch on `DebugVar.axisTilt_1P` and nothing else. An
-instrumented relink of the GENERATED test source — one `fprintf` after the case
-read, so INPUTS only, so no reset window — named the set exactly: all sixteen are
-`AWC_Mode == 4`, the `ResController` arm whose reset branch never assigns its own
-result (unit #39's finding). Thirteen are at `restart == 1`; the other **three
-are at `restart == 0` and each follows one that is not**, because this unit
-stores that value into the implicitly-`SAVE` `AWC_TiltYaw`. `LocalVar_restart` is
-pinned to `[0]` and the cost is stated in `harness/ranges.toml`: what leaves the
-corpus is the reset arm of `PIController` and `ResController`, both of which are
-CALLED rather than inlined and were scored as units.
+every mismatch on `DebugVar.axisTilt_1P`. An inputs-only relink named the set
+exactly: all sixteen are `AWC_Mode == 4`, the `ResController` arm whose reset
+branch never assigns its own result (unit #39). Thirteen are at `restart == 1`;
+the other **three are at `restart == 0` and each follows one that is not**.
+`LocalVar_restart` is pinned to `[0]` with the cost stated in `ranges.toml`.
 
 **A `COMPLEX(DbKi)` VIEW FIELD CROSSES IN BOTH DIRECTIONS AND IS NOT COMPARED.**
-`LocalVar%AWC_complexangle(3)` is this unit's Mode-1 accumulator. It crosses as
+`LocalVar%AWC_complexangle(3)` is the Mode-1 accumulator. It crosses as
 `vit_complex_double[3]` — the campaign's first complex-valued field, and the
 bridge carries it correctly, which the gate confirms over 5,252,000 values. The
-generated differential test has **one** `VITCMP` for `LocalVar.PitCom`, **one**
-for `DebugVar.axisTilt_1P` and **zero** for `LocalVar.AWC_complexangle`: the
-field is absent from R4's out-parameter list entirely. Five of the 45 survivors
-live in the imaginary half, which reaches no other output. That is a generator
-gap and is recorded as one.
+generated test carries **0 of its 481 `VITCMP` lines** on it: the field is absent
+from R4's out-parameter list entirely, and is supplied as (0,0) in all 21236
+cases. **Five** survivors, up from four — `97b678b5` is reattributed here from
+the first census's negative-zero group, because `phi1` is `0.0` and a sign of
+zero is absorbed by `cos` and carried only by `sin`, so it can reach nothing but
+the imaginary half.
 
 **AND ONE GUARD IS OUTSIDE EVERY INSTRUMENT THIS CAMPAIGN HAS.**
-`IF (CntrPar%AWC_harmonic(1) == 0)` guards two writes and has **0 hits in all 27
-scenarios and 0 cases of 3231**. The cause is measured, not guessed:
-`AWC_harmonic` is an ALLOCATABLE INTEGER array whose elements
-`generate._fill_array` ramps across the defaulted ±1e3 bounds, so element 1 is
-about −600 in every case; and the reference's predicate is written against a
-constant-subscript ELEMENT of an array parameter, which the knob extractor does
-not take. **A `lo`/`hi` pin cannot repair it** — the ramp is monotone, so any
-bound that puts 0 in the array puts it at element 1 in EVERY case, deleting the
-ELSE arms all 27 scenarios do exercise. What is needed is a knob, which is a
-change to the generator. 5 of the 45 survivors are there.
+`IF (CntrPar%AWC_harmonic(1) == 0)`: **0 hits in all 27 scenarios and 0 cases of
+21236**, unchanged by the repair. A `lo`/`hi` pin cannot fix it — `_fill_array`'s
+ramp is monotone, so any bound putting 0 in the array puts it at element 1 in
+EVERY case, deleting the ELSE arms all 27 scenarios do exercise. The arm is NOT
+dead code: negating either guard moves 6309 and 6972 of 21236 cases. This
+dispatch narrows the cause to **one regex** — `predicate_knobs_from`'s `_NAME`
+has no subscript group, while `relational_pairs_from` and
+`divisibility_pairs_from` in the same file both carry one, and the knob machinery
+already handles an indexed knob. 5 of the 16 survivors are there.
 
-**THE CORPUS'S REAL SIZE FOR THIS UNIT IS 91 CASES, NOT 3231**, and that is a
-count off the case file rather than an estimate: 3032 of 3231 sit at
-`AWC_Mode = -600`, the inert value, and the rest are R6's integer ladder. The 91
-live cases come from R6's predicate cross product alone. `NumBl` is 0, 1 or 2 in
-every one of them — the six cases with `NumBl == 3` all have `AWC_Mode` outside
-1..5 — so blade 3's angle is computed and never read, which is 11 of the 45
-survivors. `evidence/ActiveWakeControl/harness.arm_census.txt` and
-`harness.live_case_inputs.txt`.
+**A NESTED DERIVED TYPE INSIDE A VIEW STRUCT IS ZERO-FILLED AND NEVER VARIED, AND
+THIS IS THE FIRST SURVIVOR TO LAND ON IT.** The harness reports it about itself
+(`UNOBSERVABLE LocalVar.resP`). With all four `resP` history arrays at zero,
+`ResController` collapses from a Tustin biquad to
+`kp·error + 2·DT·ki·error/(4 + (2π·freq·DT)²)` — four of five terms multiply zero
+— so `freq` enters ONLY through that denominator, which at ±1e3 magnitudes is of
+order 1e13 and annihilates the `ki` term. 2 survivors.
+
+**TWO CORRECTIONS TO THE FIRST CENSUS, EACH STATED RATHER THAN DROPPED.** An
+out-of-bounds store (`e9d4580d`, one element past a two-element `static` array)
+is **not** an equivalent program and stays an honest survivor; its neighbour
+`df13f212` stores to a valid element the loop overwrites and IS declared. And the
+assembly diff the first census proposed for the eight extent mutants **was taken
+and answers nothing** — enlarging a stack array reshuffles the register
+allocator, so all eight diffs are non-empty. What the declaration rests on is a
+complete enumeration of every subscript on the four arrays
+(`evidence/ActiveWakeControl/mutation.extent_equivalence.txt`).
+
+**Procedure.** One reset window, opened and closed in this dispatch: reset,
+harness, no-op red test, six foreground mutation parts each under
+`mutate_guarded.sh` and each routed through the clock, merge, restore. Nothing
+backgrounded by hand and nothing polled — the two parts that exceeded the tool's
+600s foreground limit were moved to the harness's own tracked tasks, which
+re-invoke on completion. Six commits, one per expensive artifact.
+`revcheck --unit ActiveWakeControl` is clean at 13 artifacts, all naming
+`eb5028e`.
 
 ---
 
