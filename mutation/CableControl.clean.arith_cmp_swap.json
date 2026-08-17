@@ -34,20 +34,13 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 37,
- "killed": 35,
- "survived": 1,
+ "killed": 36,
+ "survived": 0,
  "equivalent": 1,
  "declared_but_killed": [],
- "score": 0.9722,
+ "score": 1.0,
  "loop_rev": "832fa2a-nogit",
  "gen_rev": "gen-c9c444313f10",
  "vit_rev": "a16a7ab-nogit",
- "survivors": [
-  {
-   "id": "8d2724ea",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  }
- ]
+ "survivors": []
 }

@@ -41,11 +41,11 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 89,
- "killed": 82,
- "survived": 3,
+ "killed": 85,
+ "survived": 0,
  "equivalent": 4,
  "declared_but_killed": [],
- "score": 0.9647,
+ "score": 1.0,
  "loop_rev": "832fa2a-nogit",
  "vit_rev": "a16a7ab-nogit",
  "merged_from": [
@@ -73,9 +73,9 @@
    "total": 37,
    "mutants": 37,
    "nocompile": 0,
-   "killed": 35,
-   "survived": 1,
-   "score": 0.9722
+   "killed": 36,
+   "survived": 0,
+   "score": 1.0
   },
   {
    "part": "mutation/CableControl.clean.const_tweak.json",
@@ -85,31 +85,12 @@
    "total": 40,
    "mutants": 40,
    "nocompile": 0,
-   "killed": 35,
-   "survived": 2,
-   "score": 0.9459
+   "killed": 37,
+   "survived": 0,
+   "score": 1.0
   }
  ],
- "merged_why": "89 mutants at ~8.5s each is over 12 minutes and a dispatch's foreground command may block for 600s (unit #41 lost a 69-mutant part to exactly that ceiling). Three parts, each in the foreground, each through scripts/mutate_guarded.sh, unioned here.",
+ "merged_why": "89 mutants at ~11s each is over 16 minutes and a dispatch's foreground command may block for 600s (unit #41 lost a 69-mutant part to exactly that ceiling). Three parts, each in the foreground, each through scripts/mutate_guarded.sh, unioned here. SECOND DISPATCH, over the 7640-case corpus: the three survivors of the first are all dead and none of them was declared.",
  "merged_by": "scripts/_mutation_merge.py",
- "survivors": [
-  {
-   "id": "8d2724ea",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "97aefd80",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "1a26a963",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  }
- ]
+ "survivors": []
 }
