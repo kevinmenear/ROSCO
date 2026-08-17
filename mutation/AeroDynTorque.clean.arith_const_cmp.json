@@ -1,0 +1,71 @@
+{
+ "unit": "AeroDynTorque",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "arith_op",
+  "compare_op",
+  "const_tweak"
+ ],
+ "operators_filter_unmatched": [],
+ "mutants": 18,
+ "equivalent_declared": 1,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 18,
+ "killed": 13,
+ "survived": 4,
+ "equivalent": 1,
+ "declared_but_killed": [],
+ "score": 0.7647,
+ "loop_rev": "b875e83-nogit",
+ "gen_rev": "gen-41def86911b3",
+ "vit_rev": "a16a7ab-nogit",
+ "survivors": [
+  {
+   "id": "88466711",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "11c1e326",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "06f7d2c8",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "26021804",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  }
+ ]
+}

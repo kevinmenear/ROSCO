@@ -1,0 +1,98 @@
+# The first take was RED at 14 of 1387, and all fourteen are one shape
+
+Artifacts: `harness.first_take.staging_composition.json` (the run as it came
+out, 1387 checked / 14 failed / 0 inadmissible) and
+`harness.first_take.all_14_cases.json` (the same run with the emitted test's
+`diffs.size() < 16` cap raised to 4000, so every failing case index is
+recorded rather than the first eight).
+
+## The measurement
+
+    failing cases   1140 1141 1142 1143 1144 1145 1146 1147
+                    1148 1149 1150 1151 1152 1153
+                    -- fourteen, CONTIGUOUS, and nothing outside them
+
+    case 1140   compared 16 bytes   ref "@ABYZ[^........."   n_ErrMsg  7
+                                    got "interp1d:@ABYZ[^"   n_ErrMsg 16
+    case 1153   compared 29 bytes   ref "@ABYZ[^..........."  n_ErrMsg  7
+                                    got "interp1d:@ABYZ[^..." n_ErrMsg 16
+
+Only `ErrVar.ErrMsg` and `ErrVar.n_ErrMsg` ever differ. The return value,
+`aviFAIL`, `ErrStat` and `size_avcMSG` agree on all 1387.
+
+## Where those fourteen come from, as arithmetic
+
+R13_staging_capacity is the last 256 cases (1387 - 256 = 1131). It copies ONE
+base case and sweeps the stated staging capacity of `ErrVar%ErrMsg`, so
+
+    case      1131 + k          k = 0 .. 255
+    capacity  n_ErrMsg + k    = 7 + k          (the emitted test sizes BOTH
+                                                sides' buffer to n + k)
+
+The base case has `aviFAIL < 0` and a table that sends `interp2d` down one of
+its five early-return paths, so `interp1d` runs and assigns
+
+    L_callee = len("interp1d:") + len(TRIM("@ABYZ[^")) = 9 + 7 = 16
+
+and this unit then assigns
+
+    L_final  = len("AeroDynTorque:") + L_callee = 14 + 16 = 30
+
+Both sides refuse a staged assignment that does not fit. They refuse a
+DIFFERENT NUMBER OF TIMES:
+
+    reference chain   Fortran AeroDynTorque -> Fortran interp2d -> Fortran
+                      interp1d, all in Fortran with a reallocating ErrMsg, and
+                      then ONE capacity gate in the generated bridge, on 30.
+    translation chain C++ AeroDynTorque -> interp2d_c bridge -> Fortran
+                      interp2d -> Fortran interp1d, with a capacity gate at
+                      the bridge's write-back, on 16, and a SECOND one in
+                      `assign_errmsg`, on 30.
+
+so
+
+    cap  <  16     bridge refuses 16, assign refuses 30   -> got 7    ref 7   PASS
+    16 <= cap < 30 bridge WRITES 16,  assign refuses 30   -> got 16   ref 7   FAIL
+    cap >= 30      both write                             -> got 30   ref 30  PASS
+
+The failing window is exactly `[L_callee, L_callee + L_prefix)` = [16, 30),
+which is `k` in [9, 22], which is cases 1140 .. 1153. Fourteen. The predicted
+set and the measured set are the same set, and the measurement was taken
+before the explanation was written down rather than after.
+
+## What it is NOT
+
+It is not this unit's arithmetic. `AeroDynTorque` returns bit-identical values
+on all 1387 cases including these fourteen, and the two size-mismatch branches
+and the strictly-increasing scan inside `interp2d` are run by BOTH sides
+through the SAME Fortran body (`harness.sh: keeping the interp2d_c bridge`).
+
+It is not a defect the reference does not have. The REFERENCE's own answer here
+is 30 bytes, `"AeroDynTorque:interp1d:@ABYZ[^"`, at every capacity. At a
+capacity below 30 NEITHER side can carry it: the translation carries the
+callee's 16 and the bridge carries nothing. The oracle's recorded answer on
+those fourteen cases -- the value ErrMsg had on ENTRY -- is a value upstream
+ROSCO never produces.
+
+## The general statement
+
+**THE STAGING-REFUSAL CONVENTION IS NOT COMPOSITIONAL, AND THIS IS THE FIRST
+UNIT IN WHICH TWO STAGED ASSIGNMENTS COMPOSE.** `interp1d` (unit #23)
+established "refuse rather than truncate" because a shortened message is the
+one wrong answer a byte comparison cannot tell from a right one. `interp2d`
+(unit #45) inherited it and never composed: its own `RoutineName//':'` prefix
+is reached ONLY on the bilinear path, and the bilinear path is the one path on
+which it does not call `interp1d`. `AeroDynTorque` calls `interp2d` on every
+case and prefixes on every case with `aviFAIL < 0`, so the callee's staged
+assignment and this unit's staged assignment land in the same buffer, one
+after the other, and the reference's single gate cannot model two.
+
+R13's own header states the model it is built on: "the bridge takes it by value
+and BOTH sides branch on it, the translation refusing an assignment that does
+not fit and the generated Fortran bridge refusing the same one." *The same
+one.* With two assignments there are two, and they have different lengths.
+
+Raised in DECISIONS.md as a proposed method amendment, with the shape of the
+fix (a reference-side write-back that cannot carry the reference's answer makes
+the case INADMISSIBLE, which is a count the harness already keeps) and the
+reason it was not taken in this dispatch.

@@ -1,0 +1,119 @@
+{
+ "unit": "AeroDynTorque",
+ "operators": [
+  "arith_op",
+  "assoc_reorder",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "operator_population": {
+  "assoc_reorder": 2,
+  "compare_op": 4,
+  "drop_factor": 5,
+  "arith_op": 5,
+  "swap_operands": 1,
+  "const_tweak": 9,
+  "negate_cond": 3,
+  "drop_call": 2,
+  "swap_call_args": 2,
+  "swap_callee": 2
+ },
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutants": 35,
+ "equivalent_declared": 3,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 35,
+ "killed": 28,
+ "survived": 4,
+ "equivalent": 3,
+ "declared_but_killed": [],
+ "score": 0.875,
+ "loop_rev": "b875e83-nogit",
+ "vit_rev": "a16a7ab-nogit",
+ "merged_from": [
+  {
+   "part": "mutation/AeroDynTorque.clean.arith_const_cmp.json",
+   "operators_filter": [
+    "arith_op",
+    "compare_op",
+    "const_tweak"
+   ],
+   "total": 18,
+   "mutants": 18,
+   "nocompile": 0,
+   "killed": 13,
+   "survived": 4,
+   "score": 0.7647
+  },
+  {
+   "part": "mutation/AeroDynTorque.clean.struct_calls.json",
+   "operators_filter": [
+    "assoc_reorder",
+    "drop_call",
+    "drop_factor",
+    "negate_cond",
+    "swap_call_args",
+    "swap_callee",
+    "swap_operands"
+   ],
+   "total": 17,
+   "mutants": 17,
+   "nocompile": 0,
+   "killed": 15,
+   "survived": 0,
+   "score": 1.0
+  }
+ ],
+ "merged_why": "two foreground parts under scripts/mutate_guarded.sh, 145s and 138s. 35 mutants would probably have fitted one 600s foreground call; 'probably' is the reason it was split anyway -- unit #41 lost a 69-mutant part to exactly that ceiling and a hard kill is what leaves a mutant live in the translation.",
+ "merged_by": "scripts/_mutation_merge.py",
+ "survivors": [
+  {
+   "id": "88466711",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "11c1e326",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "06f7d2c8",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "26021804",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  }
+ ]
+}

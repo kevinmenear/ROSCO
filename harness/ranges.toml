@@ -1455,3 +1455,79 @@ CntrPar_AWC_Mode = { values = [3, 4, 5, 1, 2, 0] }
 # the reference changes its answer: the only thing done to this parameter is
 # adding it inside a cosine.
 CntrPar_AWC_phaseoffset = { lo = 0, hi = 360 }
+
+# ---------------------------------------------------------------------------
+# AeroDynTorque
+#
+# FOUR ENTRIES, AND ALL FOUR ARE INHERITED FROM THE CALLEE RATHER THAN EARNED
+# HERE. This unit's own body has no admissibility question in it: six
+# statements, two `fmax`es and one divide, defined on every double. What it
+# does have is ONE CALL --
+#
+#     Cp = interp2d(PerfData%Beta_vec, PerfData%TSR_vec, PerfData%Cp_mat, ...)
+#
+# -- passing three of its own inputs straight into a reference that unit #45
+# measured has no answer on two shapes of table. The bridge is KEPT on this
+# unit's harness (`harness.sh: keeping the interp2d_c bridge`), so BOTH sides
+# run the same Fortran interp2d and both meet the same wall.
+#
+# THE TWO TIES ARE THE SAME JUDGEMENT interp2d's OWN TABLE CARRIES, one level
+# up and under this unit's parameter names. Without them R5 hands the plan
+#
+#     PerfData_TSR_vec_n 3   PerfData_Beta_vec_n 4
+#     PerfData_Cp_mat_rows 5   PerfData_Cp_mat_cols 6
+#
+# -- pairwise distinct by construction, which is R5's whole point and is here
+# the one shape interp2d cannot survive. Both of its size checks then fire on
+# EVERY case, and each is
+#
+#     WRITE(ErrVar%ErrMsg,"(A,I4,A,I4,A)") " SIZE(xData) =", SIZE(xData), ...
+#
+# formatting 59 characters into `ErrVar%ErrMsg` AS IT STANDS -- a record the
+# character ladder makes 1, 2 or 7 bytes long. gfortran ends the process with
+# `End of record` and the run produces no cases at all rather than a red one.
+#
+# THE DIRECTION IS THE MATRIX FOLLOWING THE VECTOR, and which vector is which
+# is read from `ReadSetParameters.f90:832`, not from the field names:
+# `ALLOCATE(PerfData%Cp_mat(PerfTableSize(2), PerfTableSize(1)))` with
+# `Beta_vec` sized (1) and `TSR_vec` sized (2), so Cp_mat is (TSR, Beta) --
+# ROWS are TSR. interp2d takes `Beta_vec` as `xData` and checks
+# `SIZE(xData) /= SIZE(zData,2)`, so it is COLS that must follow Beta.
+#
+# THE TABLE HEADER IS THE LINE ABOVE THESE KEYS AND IT IS NOT THE COMMENT
+# BANNER. Unit #47 lost a generated corpus to exactly this: a block appended
+# under a `# AeroDynTorque` comment lands every key in the PREVIOUS table,
+# silently, because TOML is happy and `constrain()` matches by parameter name
+# so an unmatched name is simply not applied. Caught here by
+# `tomllib.load(...)['AeroDynTorque']` raising KeyError before anything was
+# generated; confirm with `--dump-plan`, which prints `bounds_source`.
+[AeroDynTorque]
+PerfData_Cp_mat_cols = { same_as = "PerfData_Beta_vec_n" }
+PerfData_Cp_mat_rows = { same_as = "PerfData_TSR_vec_n" }
+
+# A THIRD AND FOURTH ENTRY WERE WRITTEN AND THE TOOL REFUSED THEM, WHICH IS
+# THE RIGHT ANSWER AND IS RECORDED RATHER THAN DELETED.
+#
+#     PerfData_Beta_vec = { nondecreasing_only = "..." }
+#     PerfData_TSR_vec  = { nondecreasing_only = "..." }
+#
+#     AeroDynTorque: `nondecreasing_only` names PerfData_Beta_vec, but the
+#     order ladder does not fire for it -- the reference does not compare two
+#     elements of it. An exclusion that excludes nothing reads as a cost that
+#     was paid.
+#
+# The argument for them was unit #45's, inherited through the call: interp2d's
+# corner search runs only where `xq > MINVAL(xData)`, and on an INVERTED body
+# `j = j - 1` can reach 0 and the reference reads `zData(i, 0)`. The argument
+# is about the CALLEE's body. `ordered_only`/`nondecreasing_only` act on the
+# ORDER LADDER, and the order ladder is derived from the body of the unit UNDER
+# TEST -- which never subscripts these two arrays, so it does not fire and
+# there is no inversion to exclude. A judgement that names a hazard the
+# instrument does not produce is not a narrowing; it is a claim about coverage
+# with nothing behind it.
+#
+# WHAT REMAINS UNGUARDED, STATED SO IT IS NOT MISTAKEN FOR ABSENT. The random
+# fill stratum can still hand interp2d an unsorted axis, and the ramp filler
+# (`_fill_array`: lo + span*(k+1) + jitter) cannot. Whether any case reaches
+# the out-of-bounds read is a MEASUREMENT and it is taken rather than assumed:
+# see the arm census in evidence/AeroDynTorque/.
