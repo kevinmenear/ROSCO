@@ -1,6 +1,6 @@
-# done_check.py IPC -- captured 2026-08-18T16:36:26Z by scripts/capture_done_check.sh
+# done_check.py IPC -- captured 2026-08-18T19:13:44Z by scripts/capture_done_check.sh
 
-Run against the committed state at 8c80e326 ("revcheck: a unit can be closed TWICE, and the reading must match the LATEST close"), with a CLEAN tree, with stdout
+Run against the committed state at d7c34d5e ("plan.json: IPC's evidence and verification string brought current"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -31,8 +31,8 @@ IPC: Verdict.INCOMPLETE  (13/14 PASS)
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
 [  ok  ] P9   gate compared and matched          
-[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/IPC.json 92/118 = 0.780 < 1.0 -- survivors: index_offset[293e1cfa], index_offset[a4268819], index_offset[1ed626ad], index_offset[a142c881], drop_call[b36f5d50], drop_call[452847c1]
-[  ok  ] P11  post-integration harness re-run    63888 check(s) against the integrated build
+[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/IPC.json 96/104 = 0.923 < 1.0 -- survivors: swap_call_args[f43d4529], swap_call_args[90fd1954], index_offset[7512a165], index_offset[f7f90ca1], const_tweak[257ba010], const_tweak[f9e75298]
+[  ok  ] P11  post-integration harness re-run    84754 check(s) against the integrated build
 [  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
 [  ok  ] P10  evidence reproducible              
 [  ok  ] P14  artifact revisions agree           4 artifact(s) at 4751161

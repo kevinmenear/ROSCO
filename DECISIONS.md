@@ -12036,3 +12036,19 @@ That was true before this dispatch and after it; it is measured now, and the fix
 (`CntrPar_IPC_IntSat = { lo = 0, hi = 1e3 }`) is stated and not taken, because
 it deletes half of an admissible domain and costs another 70-minute sweep that
 would not have been documented before the clock ran out.
+
+### P12's failing message names only the FIRST SIX survivors, and a dispatch told to "address exactly these" addresses six of however many there are
+
+`loop/done.py:555` builds the message from `d.get("survivors", [])[:6]`. IPC was
+relaunched with six ids named and **twenty-six** open, so "address exactly
+these" covered 23% of them. It happened to be the right 23% — the four
+`index_offset` declarations and the two `drop_call` corpus gaps are the two
+categories the whole classification splits into — but that was luck, not design,
+and the same truncation is in front of the next unit. This dispatch's own close
+reports six of eight for the same reason.
+
+Not proposed as a code change here, because the truncation is a display choice
+with a good motive (an untruncated message on a 26-survivor unit is unreadable
+in a predicate line). What is proposed is that the message SAY it is truncated:
+`survivors: a, b, c, d, e, f (6 of 26)`. One f-string, and the dispatch prompt
+that quotes it then carries the count.
