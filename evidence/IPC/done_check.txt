@@ -1,6 +1,6 @@
-# done_check.py IPC -- captured 2026-08-18T16:28:26Z by scripts/capture_done_check.sh
+# done_check.py IPC -- captured 2026-08-18T16:33:02Z by scripts/capture_done_check.sh
 
-Run against the committed state at 47a2b122 ("IPC: state brought current -- disposition deferred on 0.7797, and three findings that are not this unit's"), with a CLEAN tree, with stdout
+Run against the committed state at b42b7005 ("IPC: the survivor table checked against the artifact, and it was wrong by one"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
