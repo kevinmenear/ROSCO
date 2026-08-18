@@ -28,6 +28,14 @@ cannot be split, because `vit_mutate.py --limit` has no offset and
 own operator's sites. The refusal is committed
 (`evidence/IPC/mutation.merge_refusal.txt`), run rather than described.
 
+**AND THE GAP IS NOT WHAT DECIDES THE DISPOSITION.** Even a complete
+`const_tweak` part could not have made P12 pass: `min_mutation_score` is 1.0 and
+this unit has twelve survivors, eight of which the gate has PROVEN
+non-equivalent by killing one of them on 159,758 values. A full 118-mutant sweep
+would have scored about 0.85 and failed P12 on the number instead of on the
+absence. The unscored 40 are a real gap in the evidence and they are named as
+one; they are not the reason this unit is `deferred`.
+
 Shrinking the corpus was tried and does not reach: `LocalVar_NumBl = { values =
 [3, 0] }` gives 42,694 cases and 19.4 s per mutant (`const_tweak` still 796 s),
 and 40 compiles alone are ~180 s, so the corpus would have to fall to ~25,000

@@ -122,6 +122,14 @@ call against a 600 s ceiling**. It cannot be split:
 So there is **no `mutation/IPC.json`**, P12 cannot be satisfied, and the unit is
 `deferred` on that one predicate.
 
+**AND THE GAP IS NOT WHAT DECIDES THE DISPOSITION.** Even a complete
+`const_tweak` part could not have made P12 pass: `min_mutation_score` is 1.0 and
+this unit has twelve survivors, eight of which the gate has PROVEN
+non-equivalent by killing one of them on 159,758 values. A full 118-mutant sweep
+would have scored about 0.85 and failed P12 on the number instead of on the
+absence. The unscored 40 are a real gap in the evidence and they are named as
+one; they are not the reason this unit is `deferred`.
+
 **A narrowing was tried as a way out and is kept because it priced itself at
 zero.** `LocalVar_NumBl = { values = [3, 0] }` gives 42,694 cases and 19.4 s per
 mutant — not enough (const_tweak would still be 796 s), and `values = [3]` would
