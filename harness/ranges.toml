@@ -2498,9 +2498,50 @@ Ary = { no_oracle_when = ["alloc_Ary == 0", "ErrVar_aviFAIL >= 0"], and_referenc
 # this unit's 230 calls. The sibling's same two lines run 66 times across 21
 # scenarios. So for THIS unit the default arm is reached by the differential
 # harness and by nothing else.
+#
+# TWO FURTHER ENTRIES, ADDED AT THE SECOND DISPATCH, AND NEITHER IS A NARROWING.
+# Both are BASE-DRAW corrections -- unit #49's lever -- written because a
+# surviving mutant named the region and a probe said why.
+#
+# `alloc_Ary = { values = [1, 0] }`. R13's 256-case staging-capacity block is
+# taken "with every other input at its base draw", and this unit's base draw
+# landed on the one arm that ASSIGNS NO ErrMsg AT ALL. MEASURED, on the corpus
+# the first dispatch scored (evidence/ParseInAry_Opt/r13_base_draw_probe.txt):
+# cases 13386..13641 are the block, all 256 carry `alloc_Ary = 0`,
+# `has_AllowDefault = 0` and `ErrVar_aviFAIL = 300`, so the reference ALLOCATEs
+# successfully, finds no line, allows the default, and returns with `aviFAIL`
+# unchanged -- 0 of 256 write a message. Across ALL 13,674 cases there is
+# therefore NO case in which the length of an assigned `ErrVar%ErrMsg` equals
+# the staging capacity, which is the one thing R13's ladder exists to produce
+# and the one input that can tell `s.size() > cap` from `s.size() >= cap`.
+# Survivor `66860b6f` (`assign_errmsg`, `>` -> `>=`) is that mutant, and it is a
+# CORPUS gap rather than an equivalence. Reordering this flag puts the block on
+# the already-ALLOCATED arm, which writes
+# `'ParseInAry_Opt:Error allocating memory for the '//TRIM(ParamName)//' array;
+# array was already allocated.'` -- 82 + LEN_TRIM(ParamName) bytes, and the
+# block's `ParamName` is 5 bytes wide, so one length in [82, 87] across all 256
+# cases against capacities 8 .. 263. Exactly one case sizes the buffer TO it.
+# It is also the SAFER of the two arms that write: `alloc_Ary == 1` is outside
+# the `no_oracle_when` condition below, so these cases gain a compared `Ary`
+# rather than losing one.
+#
+# `UnEc`'s `values = [0]`, BESIDE the bounds and not instead of them. R14 sets
+# EVERY free scalar integer to `k - 1` and to `k` in the same case and DROPS the
+# whole shape when any one of them is outside its stated range
+# (`generate.py::_admits`). `UnEc` is pinned to exactly 0, so k = 2 and k = 3
+# need `UnEc` at 1, 2 or 3 and were dropped -- which is what
+# `harness/ParseInAry_Opt.json`'s R14 line reports as
+# `NOT reached ['2:plant', '3:plant']`. THE PIN THAT DELETED TWO THIRDS OF THAT
+# RULE IS ON A PARAMETER THE RULE IS NOT ABOUT: `UnEc` has nothing to do with
+# which word `FindLine` compares. A parameter that states `values` is excluded
+# from `plant_ints`, so the pin still holds at exactly 0 -- the bounds are kept
+# so that R6's integer ladder and R7's knobs continue to see a pinned quantity,
+# and the corpus is asserted after regeneration to carry `UnEc = 0` in every
+# case, exactly as before.
 # ---------------------------------------------------------------------------
 [ParseInAry_Opt]
 
 AryLen = { lo = 0, hi = 32 }
-UnEc = { lo = 0, hi = 0 }
+UnEc = { lo = 0, hi = 0, values = [0] }
+alloc_Ary = { values = [1, 0] }
 Ary = { no_oracle_when = ["alloc_Ary == 0", "ErrVar_aviFAIL >= 0"], and_reference = "ErrVar.aviFAIL < 0", reason = "the reference ALLOCATEd Ary on this call and then RETURNed on an arm that assigns none of it (.NOT. AllowDefault_) or only a prefix (the READ error arm); those elements are recycled heap and a comparison against them decides nothing about either implementation. MEASURED ON THIS UNIT'S OWN CORPUS before this entry was written: 4,067 of 13,674 cases, classified in evidence/ParseInAry_Opt/harness_partition.txt -- 100% of both cells and 0% of the other five, and 0 Ary-failing cases outside the condition. The one-relation form excludes 4,233; the extra 166 arrived already failed and never entered the reference's body." }

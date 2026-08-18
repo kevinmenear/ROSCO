@@ -1,0 +1,67 @@
+ParseInAry_Opt -- WHY `assign_errmsg`'s `s.size() > cap` -> `>=` SURVIVED
+the base draw of R13's staging-capacity block, measured on the corpus the
+first dispatch scored (parseinary_opt_cases.bin, sha256 0c18dba4...)
+
+HOW: one fprintf in the generated test, printed to stderr, and a rebuild
+without regenerating the corpus -- unit #47's probe, the same one that built
+harness_partition.txt. It reads only quantities the CASE supplied plus the
+REFERENCE's returned aviFAIL and n_ErrMsg; nothing on the translation's side.
+The run is the post-integration configuration, which is admissible here
+because the question is about the CORPUS and about the reference's own
+message lengths, and the pre- and post-integration runs agree at 13,674 / 0.
+
+cases                                                  13674
+cases in which the reference ASSIGNS ErrVar%ErrMsg     10611
+  ... of those, LEN(ErrMsg) == the staging capacity    0   <-- THE NUMBER
+
+`assign_errmsg` refuses when `s.size() > cap`; the Fortran bridge writes when
+`LEN(msg) <= cap`. The two agree everywhere EXCEPT at `s.size() == cap`, so a
+corpus with zero such cases cannot tell `>` from `>=`. That is survivor
+66860b6f, and it is a corpus gap (b), not an equivalence (a).
+
+R13's BLOCK, WHICH EXISTS TO PRODUCE EXACTLY THAT CASE:
+  case indices                    13386 .. 13641  (256 cases)
+  headroom swept                  0 .. 255
+  staging capacity swept          8 .. 263
+  alloc_Ary  (base draw)          [0]
+  has_AllowDefault (base draw)    [0]
+  ErrVar_aviFAIL   (base draw)    [300]
+  AryLen           (base draw)    [6]
+  LEN(ParamName)                  [5]
+  cases writing a message         0 of 256
+
+So the whole block sits on: aviFAIL >= 0 (the body runs), Ary NOT already
+allocated (the ALLOCATE succeeds), AllowDefault absent (AllowDefault_ = TRUE)
+and no line found -- the arm that assigns `Ary = 0`, PRINTs, and returns with
+no error at all. Unit #49's finding, one unit over: a base draw on a dead arm
+does not cost a case, it costs the whole rule.
+
+THE MESSAGE LENGTHS THE REFERENCE ACTUALLY WRITES, over all 13,674 cases:
+     83 bytes        1 case(s)
+     84 bytes      308 case(s)
+     85 bytes      413 case(s)
+     86 bytes      112 case(s)
+     87 bytes      150 case(s)
+     88 bytes     4615 case(s)
+     93 bytes       98 case(s)
+    108 bytes       90 case(s)
+    109 bytes      366 case(s)
+    111 bytes      129 case(s)
+    112 bytes     3860 case(s)
+    117 bytes      366 case(s)
+    167 bytes       48 case(s)
+    177 bytes        1 case(s)
+    178 bytes       54 case(s)
+
+Every one of them is inside R13's swept capacity range [8, 263], so moving the
+block onto an arm that writes puts exactly one case at cap == LEN.
+
+THE PIN THAT HOLDS, checked in the same run:
+  UnEc across the corpus          {0: 13674}
+  AryLen == 0 (R14's 1:plant)     64 case(s)
+  AryLen == 1 or 2 (2:/3:plant)   69 case(s)
+
+R14 sets every free scalar integer to k-1 AND k and drops the shape when any
+one of them is outside its stated range. `UnEc = {lo=0, hi=0}` therefore
+admits only k = 1. The AryLen histogram above is that fact from the other
+side: the plant's own integer never leaves 0.
