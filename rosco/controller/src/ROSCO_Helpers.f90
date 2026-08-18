@@ -204,6 +204,28 @@ MODULE ROSCO_Helpers
         END SUBROUTINE parsedbary_opt_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of ParseInAry_Opt
+    INTERFACE
+        SUBROUTINE parseinary_opt_c(FileLines, n_FileLines, len_FileLines, ParamName, len_ParamName, Ary, AryLen, FileName, len_FileName, ErrVar, has_AllowDefault, AllowDefault, has_UnEc, UnEc) BIND(C, NAME='parseinary_opt_c')
+            USE ISO_C_BINDING
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: FileLines(*)
+            INTEGER(C_INT), VALUE :: n_FileLines
+            INTEGER(C_INT), VALUE :: len_FileLines
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: ParamName(*)
+            INTEGER(C_INT), VALUE :: len_ParamName
+            INTEGER(C_INT), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: Ary
+            INTEGER(C_INT), VALUE :: AryLen
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: FileName(*)
+            INTEGER(C_INT), VALUE :: len_FileName
+            TYPE(C_PTR), VALUE :: ErrVar
+            INTEGER(C_INT), VALUE :: has_AllowDefault
+            INTEGER(C_INT), VALUE :: AllowDefault
+            INTEGER(C_INT), VALUE :: has_UnEc
+            INTEGER(C_INT), VALUE :: UnEc
+        END SUBROUTINE parseinary_opt_c
+    END INTERFACE
+
 CONTAINS
 
     !=======================================================================
@@ -898,142 +920,64 @@ END SUBROUTINE ParseInAry
 !> This subroutine parses the specified line of text for AryLen INTEGER values.
 !! Generate an error message if the value is the wrong type.
 !! Use ParseAry (nwtc_io::parseary) instead of directly calling a specific routine in the generic interface.   
-  SUBROUTINE ParseInAry_Opt( FileLines, ParamName, Ary, AryLen, FileName, ErrVar, AllowDefault, UnEc )
+    SUBROUTINE ParseInAry_Opt(FileLines, ParamName, Ary, AryLen, FileName, ErrVar, AllowDefault, UnEc)
+        USE ISO_C_BINDING
+        USE ROSCO_Types, ONLY : ErrorVariables
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
+        IMPLICIT NONE
+        INTEGER(4), INTENT(INOUT), ALLOCATABLE :: Ary(:)
+        INTEGER, INTENT(IN) :: AryLen
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        LOGICAL, INTENT(IN), OPTIONAL :: AllowDefault
+        INTEGER(4), INTENT(IN), OPTIONAL :: UnEc
+        CHARACTER(*), INTENT(IN) :: FileLines(:)
+        CHARACTER(*), INTENT(IN) :: ParamName
+        CHARACTER(*), INTENT(IN) :: FileName
+        CHARACTER(KIND=C_CHAR) :: FileLines_c((LEN(FileLines)) * (SIZE(FileLines)))
+        INTEGER :: vit_i_FileLines, vit_j_FileLines
+        CHARACTER(KIND=C_CHAR) :: ParamName_c(LEN(ParamName))
+        INTEGER :: vit_i_ParamName
+        CHARACTER(KIND=C_CHAR) :: FileName_c(LEN(FileName))
+        INTEGER :: vit_i_FileName
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
 
-    USE ROSCO_Types, ONLY : ErrorVariables
+        ! Local variables for OPTIONAL args
+        INTEGER(C_INT) :: has_AllowDefault_flag
+        INTEGER(C_INT) :: AllowDefault_val
+        INTEGER(C_INT) :: has_UnEc_flag
+        INTEGER(C_INT) :: UnEc_val
 
-    ! Arguments declarations.
-    CHARACTER(*),  INTENT(IN   ), DIMENSION(:)     :: FileLines   ! Input file unit
-    INTEGER,                INTENT(IN   )          :: AryLen                        !< The length of the array to parse.
-    INTEGER(IntKi), ALLOCATABLE,   INTENT(INOUT)   :: Ary(:)            !< The array to receive the input values.
-    CHARACTER(*),           INTENT(IN)             :: FileName                      !< The name of the file being parsed.
-    CHARACTER(*),           INTENT(IN)             :: ParamName                       !< The array name we are trying to fill.
-    TYPE(ErrorVariables),   INTENT(INOUT)          :: ErrVar   ! Current line of input
-    Integer(IntKi), OPTIONAL, INTENT(IN   )               :: UnEc   ! Variable
-    LOGICAL, OPTIONAL,      INTENT(IN   )        :: AllowDefault   
-
-    ! Local declarations.
-    INTEGER(IntKi)                                 :: FinalAryLen                   !< Final array length, non-input
-    INTEGER(IntKi)                                 :: LineNum                       !< The number of the line to parse.
-    CHARACTER(MaxLineLength)                       :: Line
-    INTEGER(IntKi)                                 :: ErrStatLcl                    ! Error status local to this routine.
-    INTEGER(IntKi)                                 :: i
-
-    CHARACTER(MaxParamLength), ALLOCATABLE          :: Words_Ary       (:)               ! The array "words" parsed from the line.
-    CHARACTER(MaxLineLength)                        :: Debug_String 
-    CHARACTER(*), PARAMETER                         :: RoutineName = 'ParseInAry_Opt'
-    CHARACTER(MaxParamLength)                       :: ParamNameUC
-    LOGICAL                                         :: AllowDefault_, FoundLine
-
-    ! Figure out if we allow default
-    AllowDefault_ = .TRUE.
-    if (PRESENT(AllowDefault)) AllowDefault_ = AllowDefault    
-
-    ! If we've already failed, don't read anything
-    IF (ErrVar%aviFAIL >= 0) THEN
-        
-        CALL FindLine(FileLines, ParamName, FoundLine, Line, LineNum, AryLen)
-
-        ! PRINT *, "Line: ", TRIM(Line)
-
-        ! Minimum array length
-        IF (AryLen < 1) THEN
-            FinalAryLen = 1
-        ELSE
-            FinalAryLen = AryLen
-        ENDIF
-
-        ! Allocate array and handle errors
-         ALLOCATE ( Ary(FinalAryLen) , STAT=ErrStatLcl )
-        IF ( ErrStatLcl /= 0 ) THEN
-            IF ( ALLOCATED(Ary) ) THEN
-                ErrVar%aviFAIL = -1
-                ErrVar%ErrMsg = RoutineName//':Error allocating memory for the '//TRIM( ParamName )//' array; array was already allocated.'
-            ELSE
-                ErrVar%aviFAIL = -1
-                ErrVar%ErrMsg = RoutineName//':Error allocating memory for '//TRIM(Int2LStr( AryLen ))//' characters in the '//TRIM( ParamName )//' array.'
-            END IF
+        has_AllowDefault_flag = 0
+        AllowDefault_val = 0
+        IF (PRESENT(AllowDefault)) THEN
+            has_AllowDefault_flag = 1
+            AllowDefault_val = MERGE(1_C_INT, 0_C_INT, AllowDefault)
         END IF
-
-        ! Print warning with default
-        IF (.NOT. FoundLine) THEN
-            IF (.NOT. AllowDefault_) THEN
-                ErrVar%aviFAIL = -1
-                ErrVar%ErrMsg = RoutineName//':Missing or default values are not allowed for '//TRIM( ParamName )//'. Please check control modes and array length.'
-                RETURN
-            ENDIF
-
-            Ary = 0     ! Default of allocatable arrays is 0 for now
-            PRINT *, "ROSCO Warning: Did not find correct size "//TRIM( ParamName )//" in input file.  Using default value of [", Ary, "]"
-        ENDIF
-
-        IF (FoundLine) THEN
-    
-            ! Allocate words array
-            ALLOCATE ( Words_Ary( AryLen + 1 ) , STAT=ErrStatLcl )
-            IF ( ErrStatLcl /= 0 )  THEN
-                ErrVar%aviFAIL = -1
-                ErrVar%ErrMsg = RoutineName//':Fatal error allocating memory for the Words array.'
-                CALL Cleanup()
-                RETURN
-            ENDIF
-
-            ! Separate line string into AryLen + 1 words, should include variable name
-            CALL GetWords ( Line, Words_Ary, AryLen + 1 )  
-
-            ! Debug Output
-            IF (DEBUG_PARSING) THEN
-                Debug_String = ''
-                DO i = 1,AryLen+1
-                    Debug_String = TRIM(Debug_String)//TRIM(Words_Ary(i))
-                    IF (i < AryLen + 1) THEN
-                        Debug_String = TRIM(Debug_String)//','
-                    END IF
-                END DO
-                print *, 'Read: '//TRIM(Debug_String)//' on line ', LineNum
-            END IF
-        
-            ! Read array
-            READ (Line,*,IOSTAT=ErrStatLcl)  Ary
-            IF ( ErrStatLcl /= 0 )  THEN
-                ErrVar%aviFAIL = -1
-                ErrVar%ErrMsg = RoutineName//':A fatal error occurred when parsing data from "' &
-                                //TRIM( FileName )//'".'//NewLine//  &
-                                ' >> The "'//TRIM( ParamName )//'" array was not assigned valid REAL values on line #' &
-                                //TRIM( Int2LStr( LineNum ) )//'.'//NewLine//' >> The text being parsed was :'//NewLine &
-                                //'    "'//TRIM( Line )//'"' 
-                RETURN
-                CALL Cleanup()         
-            ENDIF
-
-        ENDIF
-
-        IF ( PRESENT(UnEc))  THEN
-            IF ( UnEc > 0 )  WRITE (UnEc,*)  LineNum, Tab, ParamName, Tab, Ary
+        has_UnEc_flag = 0
+        UnEc_val = 0
+        IF (PRESENT(UnEc)) THEN
+            has_UnEc_flag = 1
+            UnEc_val = INT(UnEc, C_INT)
         END IF
-
-        CALL Cleanup()
-    ENDIF
-
-    RETURN
-
-    !=======================================================================
-    CONTAINS
-    !=======================================================================
-        SUBROUTINE Cleanup ( )
-
-            ! This subroutine cleans up the parent routine before exiting.
-
-            ! Deallocate the Words array if it had been allocated.
-
-            IF ( ALLOCATED( Words_Ary ) ) DEALLOCATE( Words_Ary )
-
-
-            RETURN
-
-        END SUBROUTINE Cleanup
-
-END SUBROUTINE ParseInAry_Opt
+        ! Populate view structs from Fortran types
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        ! Convert CHARACTER args to C_CHAR arrays
+        DO vit_j_FileLines = 1, SIZE(FileLines)
+            DO vit_i_FileLines = 1, LEN(FileLines)
+                FileLines_c((vit_j_FileLines - 1) * (LEN(FileLines)) + vit_i_FileLines) = &
+                    FileLines(vit_j_FileLines)(vit_i_FileLines:vit_i_FileLines)
+            END DO
+        END DO
+        DO vit_i_ParamName = 1, LEN(ParamName)
+            ParamName_c(vit_i_ParamName) = ParamName(vit_i_ParamName:vit_i_ParamName)
+        END DO
+        DO vit_i_FileName = 1, LEN(FileName)
+            FileName_c(vit_i_FileName) = FileName(vit_i_FileName:vit_i_FileName)
+        END DO
+        CALL parseinary_opt_c(FileLines_c, SIZE(FileLines), LEN(FileLines), ParamName_c, LEN(ParamName), Ary, AryLen, FileName_c, LEN(FileName), C_LOC(ErrVar_view), has_AllowDefault_flag, AllowDefault_val, has_UnEc_flag, UnEc_val)
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
+    END SUBROUTINE ParseInAry_Opt
 
 !=======================================================================
 !> This subroutine parses the specified line of text for AryLen INTEGER values.

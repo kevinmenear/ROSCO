@@ -246,6 +246,10 @@ translations:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/parsedbary_opt.cpp
     verification: simulation
+  ParseInAry_Opt:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/parseinary_opt.cpp
+    verification: simulation
 types:
   ControlParameters:
     strategy: view
