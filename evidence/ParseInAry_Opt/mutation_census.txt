@@ -1,0 +1,255 @@
+run_if_time_remains: 12740s remain, 900s needed -- starting
+157 mutant(s) from parseinary_opt.cpp
+
+baseline: 13674 case(s), 0 failed, 0.6s; per-mutant watchdog 60s
+
+  [  1/157] compare_op       '==' -> '!='  killed (10611/13674 cases)
+  [  2/157] compare_op       '>' -> '>='  SURVIVED
+  [  3/157] compare_op       '==' -> '!='  killed (4/13674 cases)
+  [  4/157] compare_op       '==' -> '!='  killed (4/13674 cases)
+  [  5/157] compare_op       '==' -> '!='  killed (4/13674 cases)
+  [  6/157] compare_op       '==' -> '!='  killed (4/13674 cases)
+  [  7/157] compare_op       '>=' -> '>'  killed (3/13674 cases)
+  [  8/157] compare_op       '<=' -> '<'  killed (1/13674 cases)
+  [  9/157] compare_op       '==' -> '!='  killed (7/13674 cases)
+  [ 10/157] compare_op       '==' -> '!='  killed (7/13674 cases)
+  [ 11/157] compare_op       '<' -> '<='  SURVIVED
+  [ 12/157] compare_op       '==' -> '!='  SURVIVED
+  [ 13/157] compare_op       '==' -> '!='  SURVIVED
+  [ 14/157] compare_op       '==' -> '!='  SURVIVED
+  [ 15/157] compare_op       '<' -> '<='  SURVIVED
+  [ 16/157] compare_op       '>' -> '>='  SURVIVED
+  [ 17/157] compare_op       '==' -> '!='  killed (4/13674 cases)
+  [ 18/157] compare_op       '>' -> '>='  SURVIVED
+  [ 19/157] compare_op       '<' -> '<='  SURVIVED
+  [ 20/157] compare_op       '<' -> '<='  SURVIVED
+  [ 21/157] compare_op       '<' -> '<='  SURVIVED
+  [ 22/157] compare_op       '<' -> '<='  SURVIVED
+  [ 23/157] compare_op       '==' -> '!='  SURVIVED
+  [ 24/157] compare_op       '<' -> '<='  SURVIVED
+  [ 25/157] compare_op       '<' -> '<='  SURVIVED
+  [ 26/157] compare_op       '>=' -> '>'  SURVIVED
+  [ 27/157] compare_op       '==' -> '!='  killed (56/13674 cases)
+  [ 28/157] compare_op       '==' -> '!='  killed (13/13674 cases)
+  [ 29/157] compare_op       '<' -> '<='  SURVIVED
+  [ 30/157] compare_op       '==' -> '!='  killed (3/13674 cases)
+  [ 31/157] compare_op       '!=' -> '=='  SURVIVED
+  [ 32/157] compare_op       '<' -> '<='  SURVIVED
+  [ 33/157] compare_op       '<' -> '<='  SURVIVED
+  [ 34/157] compare_op       '>' -> '>='  SURVIVED
+  [ 35/157] compare_op       '<' -> '<='  SURVIVED
+  [ 36/157] compare_op       '==' -> '!='  killed (6/13674 cases)
+  [ 37/157] compare_op       '<' -> '<='  SURVIVED
+  [ 38/157] compare_op       '>' -> '>='  SURVIVED
+  [ 39/157] compare_op       '<=' -> '<'  SURVIVED
+  [ 40/157] compare_op       '>' -> '>='  SURVIVED
+  [ 41/157] drop_factor      'acc * 10' -> 'acc'  killed (3/13674 cases)
+  [ 42/157] drop_factor      'count * 10' -> 'count'  SURVIVED
+  [ 43/157] arith_op         'ErrVar->ErrMsg + s.size' -> 'ErrVar->ErrMsg - s.size'  killed (crash)
+  [ 44/157] arith_op         'acc * 10' -> 'acc / 10'  killed (3/13674 cases)
+  [ 45/157] arith_op         'return -1' -> 'return + 1'  SURVIVED
+  [ 46/157] arith_op         'count * 10' -> 'count / 10'  SURVIVED
+  [ 47/157] arith_op         'MaxRepeat + 1' -> 'MaxRepeat - 1'  SURVIVED
+  [ 48/157] arith_op         'q + 1' -> 'q - 1'  SURVIVED
+  [ 49/157] arith_op         'lower_bound + i' -> 'lower_bound - i'  killed (crash)
+  [ 50/157] arith_op         'AryLen + 1' -> 'AryLen - 1'  killed (crash)
+  [ 51/157] swap_operands    'return -1' -> '1 - return'  excluded (no compile)
+  [ 52/157] index_offset     '[Int2LStrLen]' -> '[Int2LStrLen + 1]'  SURVIVED
+  [ 53/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 54/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 55/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 56/157] index_offset     '[p]' -> '[p + 1]'  killed (3/13674 cases)
+  [ 57/157] index_offset     '[p]' -> '[p + 1]'  killed (3/13674 cases)
+  [ 58/157] index_offset     '[p]' -> '[p + 1]'  killed (2/13674 cases)
+  [ 59/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 60/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 61/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 62/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 63/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 64/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 65/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 66/157] index_offset     '[p]' -> '[p + 1]'  killed (2/13674 cases)
+  [ 67/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 68/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 69/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 70/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 71/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 72/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 73/157] index_offset     '[q]' -> '[q + 1]'  SURVIVED
+  [ 74/157] index_offset     '[q]' -> '[q + 1]'  SURVIVED
+  [ 75/157] index_offset     '[k]' -> '[k + 1]'  SURVIVED
+  [ 76/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 77/157] index_offset     '[p]' -> '[p + 1]'  SURVIVED
+  [ 78/157] index_offset     '[p]' -> '[p + 1]'  killed (3/13674 cases)
+  [ 79/157] index_offset     '[32]' -> '[32 + 1]'  SURVIVED
+  [ 80/157] index_offset     '[i]' -> '[i + 1]'  SURVIVED
+  [ 81/157] index_offset     '[0]' -> '[0 + 1]'  killed (5696/13674 cases)
+  [ 82/157] index_offset     '[0]' -> '[0 + 1]'  killed (crash)
+  [ 83/157] const_tweak      '2048' -> '2049'  killed (103/13674 cases)
+  [ 84/157] const_tweak      '200' -> '201'  SURVIVED
+  [ 85/157] const_tweak      '11' -> '12'  killed (103/13674 cases)
+  [ 86/157] const_tweak      '0' -> '1'  killed (10610/13674 cases)
+  [ 87/157] const_tweak      '1' -> '2'  killed (1223/13674 cases)
+  [ 88/157] const_tweak      '0' -> '1'  killed (10611/13674 cases)
+  [ 89/157] const_tweak      '200000000' -> '200000001'  SURVIVED
+  [ 90/157] const_tweak      '0' -> '1'  killed (1/13674 cases)
+  [ 91/157] const_tweak      '0' -> '1'  killed (3/13674 cases)
+  [ 92/157] const_tweak      '10' -> '11'  killed (3/13674 cases)
+  [ 93/157] const_tweak      '0' -> '1'  killed (1/13674 cases)
+  [ 94/157] const_tweak      '0' -> '1'  killed (3/13674 cases)
+  [ 95/157] const_tweak      '0' -> '1'  killed (11/13674 cases)
+  [ 96/157] const_tweak      '1' -> '2'  SURVIVED
+  [ 97/157] const_tweak      '0' -> '1'  killed (1/13674 cases)
+  [ 98/157] const_tweak      '5010' -> '5011'  SURVIVED
+  [ 99/157] const_tweak      '1' -> '2'  killed (3/13674 cases)
+  [100/157] const_tweak      '0' -> '1'  SURVIVED
+  [101/157] const_tweak      '10' -> '11'  SURVIVED
+  [102/157] const_tweak      '1' -> '2'  SURVIVED
+  [103/157] const_tweak      '0' -> '1'  SURVIVED
+  [104/157] const_tweak      '5010' -> '5011'  SURVIVED
+  [105/157] const_tweak      '1' -> '2'  SURVIVED
+  [106/157] const_tweak      '0' -> '1'  SURVIVED
+  [107/157] const_tweak      '0' -> '1'  SURVIVED
+  [108/157] const_tweak      '5010' -> '5011'  SURVIVED
+  [109/157] const_tweak      '5010' -> '5011'  SURVIVED
+  [110/157] const_tweak      '0' -> '1'  killed (3/13674 cases)
+  [111/157] const_tweak      '0' -> '1'  SURVIVED
+  [112/157] const_tweak      '32' -> '33'  SURVIVED
+  [113/157] const_tweak      '12' -> '13'  SURVIVED
+  [114/157] const_tweak      '1' -> '2'  SURVIVED
+  [115/157] const_tweak      '0' -> '1'  SURVIVED
+  [116/157] const_tweak      '1' -> '2'  SURVIVED
+  [117/157] const_tweak      '0' -> '1'  killed (5696/13674 cases)
+  [118/157] const_tweak      '0' -> '1'  SURVIVED
+  [119/157] const_tweak      '0' -> '1'  killed (crash)
+  [120/157] const_tweak      '0' -> '1'  killed (6436/13674 cases)
+  [121/157] const_tweak      '0' -> '1'  killed (32/13674 cases)
+  [122/157] const_tweak      '0' -> '1'  SURVIVED
+  [123/157] negate_cond      'if (ErrVar->ErrMsg == nullptr)' -> 'if (!(ErrVar->ErrMsg == nullptr))'  killed (10611/13674 cases)
+  [124/157] negate_cond      'if (static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap)' -> 'if (!(static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap))'  killed (10611/13674 cases)
+  [125/157] negate_cond      "if (p < len && (rec[p] == '+' || rec[p] == '-'))" -> "if (!(p < len && (rec[p] == '+' || rec[p] == '-')))"  SURVIVED
+  [126/157] negate_cond      'if (!overflow)' -> 'if (!(!overflow))'  killed (3/13674 cases)
+  [127/157] negate_cond      'if (acc > 4294967296LL)' -> 'if (!(acc > 4294967296LL))'  killed (3/13674 cases)
+  [128/157] negate_cond      'if (digits == 0)' -> 'if (!(digits == 0))'  killed (4/13674 cases)
+  [129/157] negate_cond      'if (overflow || v > 2147483647LL || v < -2147483648LL)' -> 'if (!(overflow || v > 2147483647LL || v < -2147483648LL))'  killed (3/13674 cases)
+  [130/157] negate_cond      'if (is_eol(rec[p]))' -> 'if (!(is_eol(rec[p])))'  SURVIVED
+  [131/157] negate_cond      "if (p < len && rec[p] == ',')" -> "if (!(p < len && rec[p] == ','))"  SURVIVED
+  [132/157] negate_cond      'if (p >= len)' -> 'if (!(p >= len))'  killed (4/13674 cases)
+  [133/157] negate_cond      "if (rec[p] == '/')" -> "if (!(rec[p] == '/'))"  killed (56/13674 cases)
+  [134/157] negate_cond      "if (rec[p] == ',')" -> "if (!(rec[p] == ','))"  killed (13/13674 cases)
+  [135/157] negate_cond      "if (rec[p] == ';')" -> "if (!(rec[p] == ';'))"  killed (3/13674 cases)
+  [136/157] negate_cond      'if (first_item || sep != Sep::Blank)' -> 'if (!(first_item || sep != Sep::Blank))'  SURVIVED
+  [137/157] negate_cond      "if (q > p && q < len && rec[q] == '*')" -> "if (!(q > p && q < len && rec[q] == '*'))"  killed (6/13674 cases)
+  [138/157] negate_cond      'if (count > MaxRepeat)' -> 'if (!(count > MaxRepeat))'  SURVIVED
+  [139/157] negate_cond      'if (count <= 0 || count_over || count > MaxRepeat)' -> 'if (!(count <= 0 || count_over || count > MaxRepeat))'  SURVIVED
+  [140/157] negate_cond      "if (p >= len || is_value_terminator(rec[p]) || rec[p] == ';')" -> "if (!(p >= len || is_value_terminator(rec[p]) || rec[p] == ';'))"  SURVIVED
+  [141/157] negate_cond      'if (!parse_int(rec, len, p, value))' -> 'if (!(!parse_int(rec, len, p, value)))'  killed (4/13674 cases)
+  [142/157] negate_cond      'if (p < len && !is_value_terminator(rec[p]))' -> 'if (!(p < len && !is_value_terminator(rec[p])))'  killed (10/13674 cases)
+  [143/157] negate_cond      'if (static_cast<int>(text.size()) > w)' -> 'if (!(static_cast<int>(text.size()) > w))'  SURVIVED
+  [144/157] negate_cond      'if (has_AllowDefault)' -> 'if (!(has_AllowDefault))'  killed (6838/13674 cases)
+  [145/157] negate_cond      'if (ErrVar->aviFAIL < 0)' -> 'if (!(ErrVar->aviFAIL < 0))'  killed (13674/13674 cases)
+  [146/157] negate_cond      'if (AryLen < 1)' -> 'if (!(AryLen < 1))'  killed (2840/13674 cases)
+  [147/157] negate_cond      'if (was_allocated)' -> 'if (!(was_allocated))'  killed (9442/13674 cases)
+  [148/157] negate_cond      'if (ErrStatLcl != 0)' -> 'if (!(ErrStatLcl != 0))'  killed (8534/13674 cases)
+  [149/157] negate_cond      'if (ary_allocated(Ary))' -> 'if (!(ary_allocated(Ary)))'  killed (5697/13674 cases)
+  [150/157] negate_cond      'if (!FoundLine)' -> 'if (!(!FoundLine))'  killed (10555/13674 cases)
+  [151/157] negate_cond      'if (!AllowDefault_)' -> 'if (!(!AllowDefault_))'  killed (13344/13674 cases)
+  [152/157] negate_cond      'if (FoundLine)' -> 'if (!(FoundLine))'  killed (8636/13674 cases)
+  [153/157] negate_cond      'if (DEBUG_PARSING)' -> 'if (!(DEBUG_PARSING))'  SURVIVED
+  [154/157] negate_cond      'if (ErrStatLcl != 0)' -> 'if (!(ErrStatLcl != 0))'  killed (104/13674 cases)
+  [155/157] drop_call        'std::max(NumWords, 0)' -> 'NumWords'  SURVIVED
+  [156/157] swap_call_args   'NumWords, 0' -> '0, NumWords'  SURVIVED
+  [157/157] swap_callee      'max' -> 'min'  killed (crash)
+
+killed 68 of 156 BEHAVIOURAL scoreable (0 declared equivalent, 1 did not compile and are excluded)   score 0.436
+  SURVIVOR 66860b6f compare_op: '>' -> '>='
+  SURVIVOR 2f8001ae compare_op: '<' -> '<='
+  SURVIVOR ad38f36b compare_op: '==' -> '!='
+  SURVIVOR ba05f614 compare_op: '==' -> '!='
+  SURVIVOR 6d203c33 compare_op: '==' -> '!='
+  SURVIVOR 08ff2c98 compare_op: '<' -> '<='
+  SURVIVOR e6bc72cb compare_op: '>' -> '>='
+  SURVIVOR 51771298 compare_op: '>' -> '>='
+  SURVIVOR 7d77a31a compare_op: '<' -> '<='
+  SURVIVOR d99e45ef compare_op: '<' -> '<='
+  SURVIVOR da89c70f compare_op: '<' -> '<='
+  SURVIVOR b663872a compare_op: '<' -> '<='
+  SURVIVOR ccd4583a compare_op: '==' -> '!='
+  SURVIVOR 112d63b1 compare_op: '<' -> '<='
+  SURVIVOR 7560589c compare_op: '<' -> '<='
+  SURVIVOR 7aad97cf compare_op: '>=' -> '>'
+  SURVIVOR 7fd4edf1 compare_op: '<' -> '<='
+  SURVIVOR 71d3528f compare_op: '!=' -> '=='
+  SURVIVOR 4b65a2f1 compare_op: '<' -> '<='
+  SURVIVOR 64cfaba1 compare_op: '<' -> '<='
+  SURVIVOR a4bdfbcc compare_op: '>' -> '>='
+  SURVIVOR 356f870c compare_op: '<' -> '<='
+  SURVIVOR 4655ac21 compare_op: '<' -> '<='
+  SURVIVOR b2849cc7 compare_op: '>' -> '>='
+  SURVIVOR a45110fc compare_op: '<=' -> '<'
+  SURVIVOR 9120d215 compare_op: '>' -> '>='
+  SURVIVOR 6ae5a0a4 drop_factor: 'count * 10' -> 'count'
+  SURVIVOR 80184bd0 arith_op: 'return -1' -> 'return + 1'
+  SURVIVOR b82b582f arith_op: 'count * 10' -> 'count / 10'
+  SURVIVOR e905195c arith_op: 'MaxRepeat + 1' -> 'MaxRepeat - 1'
+  SURVIVOR 3629accc arith_op: 'q + 1' -> 'q - 1'
+  SURVIVOR b54ac6eb index_offset: '[Int2LStrLen]' -> '[Int2LStrLen + 1]'
+  SURVIVOR 85758208 index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR 3226d0dc index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR b9434920 index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR 3dfee86c index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR 85857c57 index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR 14fc62e9 index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR f448c16f index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR 0ccde40f index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR 8fa93551 index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR 58ec3d92 index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR 7784f889 index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR 6c2149c9 index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR 78f9ef7a index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR 3d58e9ee index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR dbdc6be6 index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR 9a98ecd6 index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR 07c406a1 index_offset: '[q]' -> '[q + 1]'
+  SURVIVOR 1e691028 index_offset: '[q]' -> '[q + 1]'
+  SURVIVOR 328f7798 index_offset: '[k]' -> '[k + 1]'
+  SURVIVOR e96f6152 index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR b300704f index_offset: '[p]' -> '[p + 1]'
+  SURVIVOR f5386894 index_offset: '[32]' -> '[32 + 1]'
+  SURVIVOR 4cc504a0 index_offset: '[i]' -> '[i + 1]'
+  SURVIVOR 8464d14d const_tweak: '200' -> '201'
+  SURVIVOR b93bad70 const_tweak: '200000000' -> '200000001'
+  SURVIVOR c8a37018 const_tweak: '1' -> '2'
+  SURVIVOR 56160d94 const_tweak: '5010' -> '5011'
+  SURVIVOR fd9d54d0 const_tweak: '0' -> '1'
+  SURVIVOR 54d6e349 const_tweak: '10' -> '11'
+  SURVIVOR 5477861c const_tweak: '1' -> '2'
+  SURVIVOR 33023944 const_tweak: '0' -> '1'
+  SURVIVOR 6b5c6a0f const_tweak: '5010' -> '5011'
+  SURVIVOR 91b70005 const_tweak: '1' -> '2'
+  SURVIVOR d3e0a66b const_tweak: '0' -> '1'
+  SURVIVOR 4f1acf76 const_tweak: '0' -> '1'
+  SURVIVOR 24e73513 const_tweak: '5010' -> '5011'
+  SURVIVOR 3683a56a const_tweak: '5010' -> '5011'
+  SURVIVOR 26d402b2 const_tweak: '0' -> '1'
+  SURVIVOR 34a3b929 const_tweak: '32' -> '33'
+  SURVIVOR 0562d216 const_tweak: '12' -> '13'
+  SURVIVOR bb16f729 const_tweak: '1' -> '2'
+  SURVIVOR 72edee9b const_tweak: '0' -> '1'
+  SURVIVOR 373af6ff const_tweak: '1' -> '2'
+  SURVIVOR 6fb2c552 const_tweak: '0' -> '1'
+  SURVIVOR e9786fd2 const_tweak: '0' -> '1'
+  SURVIVOR 73ad4165 negate_cond: "if (p < len && (rec[p] == '+' || rec[p] == '-'))" -> "if (!(p < len && (rec[p] == '+' || rec[p] == '-')))"
+  SURVIVOR 07b5ee72 negate_cond: 'if (is_eol(rec[p]))' -> 'if (!(is_eol(rec[p])))'
+  SURVIVOR b947b4b0 negate_cond: "if (p < len && rec[p] == ',')" -> "if (!(p < len && rec[p] == ','))"
+  SURVIVOR f0af84b4 negate_cond: 'if (first_item || sep != Sep::Blank)' -> 'if (!(first_item || sep != Sep::Blank))'
+  SURVIVOR 5baa764c negate_cond: 'if (count > MaxRepeat)' -> 'if (!(count > MaxRepeat))'
+  SURVIVOR 7025bae7 negate_cond: 'if (count <= 0 || count_over || count > MaxRepeat)' -> 'if (!(count <= 0 || count_over || count > MaxRepeat))'
+  SURVIVOR 03f79cf0 negate_cond: "if (p >= len || is_value_terminator(rec[p]) || rec[p] == ';')" -> "if (!(p >= len || is_value_terminator(rec[p]) || rec[p] == ';'))"
+  SURVIVOR 9381bdef negate_cond: 'if (static_cast<int>(text.size()) > w)' -> 'if (!(static_cast<int>(text.size()) > w))'
+  SURVIVOR afece932 negate_cond: 'if (DEBUG_PARSING)' -> 'if (!(DEBUG_PARSING))'
+  SURVIVOR b1c839d7 drop_call: 'std::max(NumWords, 0)' -> 'NumWords'
+  SURVIVOR a61c0a99 swap_call_args: 'NumWords, 0' -> '0, NumWords'
+artifact: /workspace/ROSCO-r2/mutation/ParseInAry_Opt.json
+mutate_guarded: translations/ROSCO_Helpers/parseinary_opt.cpp restored to 413614f3b40ef889dfebb38154b92573f7426142; marker cleared; sweep exit 0
+run_if_time_remains: exit 0 after 101s (estimated 900s; 12639s now remain)

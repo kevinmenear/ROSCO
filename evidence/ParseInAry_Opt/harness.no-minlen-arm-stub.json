@@ -1,0 +1,125 @@
+{
+  "unit": "ParseInAry_Opt",
+  "against": "integrated",
+  "checked": 13674,
+  "failed": 16,
+  "inadmissible": 0,
+  "no_oracle_when_skipped": {
+    "Ary": 4067
+  },
+  "rule_coverage": [
+    "  applied  R5_non_degenerate_shape    6 varied extent(s) at [3, 4, 5, 6, 7, 8] and [3, 4, 5, 6, 7, 8], NO index parameter identified, array elements distinct",
+    "  applied  R2_flag_values             8 value(s) across 4 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+    "  applied  R6_reference_literals      41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 12 combination(s) of the 3 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead; 480 character value(s) from a corpus of 30 (the reference's own character literals and their collating neighbours) across 4 string(s), each at length(s) [1, 2, 8, 13] and in the mixed / padded / all-blank / leading-blank shapes, plus 1104 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
+    "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
+    "  N/A      R3_no_dead_signal          no real parameter",
+    "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
+    "  N/A      R12_narrowing_width        no CHARACTER local is narrower than a dummy assigned into it -- the reference truncates nothing, so there is no boundary for this rule to reach",
+    "  applied  R13_staging_capacity       256 case(s) sweeping the stated staging capacity of every deferred-length CHARACTER output from 0 to 255 bytes above what the case supplies, every other input at its base draw -- so the output has one length across the block and exactly one case sizes the buffer TO it, one a byte short and one a byte long. A capacity a case does not state is `emit.ALLOC_HEADROOM`, which is what every case outside this block still carries",
+    "  applied  R14_planted_word           32 case(s) planting a free scalar CHARACTER input as word [1, 2, 3] of ONE element of a CHARACTER ARRAY input -- the element FIRST and LAST, so a search that skips the first is distinguishable; every free scalar integer at k-1 and at k, so whichever offset the reference uses to pick its word is hit; the key case-INVERTED against the word, so an uppercasing pass dropped on either side breaks the match; every other element and every other word a decoy that no key spells. Reached ['1:plant']; NOT reached ['2:plant', '3:plant'] -- the field is too narrow to carry the plant, or the integer values it needs are outside a stated range",
+    "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
+    "  applied  R4_compare_all_outputs     return value + 6 out-parameter(s): Ary, ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg -- Ary: COMPARED ONLY WHERE THE REFERENCE HAS AN ORACLE (no_oracle_when; the excluded count is in the artifact)"
+  ],
+  "mismatches": [
+    {
+      "case": 13276,
+      "output": "Ary",
+      "ref": "010000000100000000000000010000000000000000000000",
+      "got": "0100000000000000000000000100000000000000"
+    },
+    {
+      "case": 13279,
+      "output": "Ary",
+      "ref": "010000000100000000000000010000000000000000000000",
+      "got": "0100000000000000000000000100000000000000"
+    },
+    {
+      "case": 13282,
+      "output": "Ary",
+      "ref": "010000000100000000000000010000000000000000000000",
+      "got": "0100000000000000000000000100000000000000"
+    },
+    {
+      "case": 13292,
+      "output": "Ary",
+      "ref": "010000000100000000000000010000000000000000000000",
+      "got": "0100000000000000000000000100000000000000"
+    },
+    {
+      "case": 13295,
+      "output": "Ary",
+      "ref": "010000000100000000000000010000000000000000000000",
+      "got": "0100000000000000000000000100000000000000"
+    },
+    {
+      "case": 13642,
+      "output": "ErrVar.aviFAIL",
+      "ref": "ffffffff",
+      "got": "2c010000"
+    },
+    {
+      "case": 13642,
+      "output": "ErrVar.n_ErrMsg",
+      "ref": "b2000000",
+      "got": "08000000"
+    },
+    {
+      "case": 13642,
+      "output": "ErrVar.ErrMsg",
+      "ref": "5061727365496e4172795f4f70743a4120666174616c206572726f72206f6363...",
+      "got": "393a404142595a5b000000000000000000000000000000000000000000000000..."
+    },
+    {
+      "case": 13650,
+      "output": "ErrVar.aviFAIL",
+      "ref": "ffffffff",
+      "got": "2c010000"
+    },
+    {
+      "case": 13650,
+      "output": "ErrVar.n_ErrMsg",
+      "ref": "b2000000",
+      "got": "08000000"
+    },
+    {
+      "case": 13650,
+      "output": "ErrVar.ErrMsg",
+      "ref": "5061727365496e4172795f4f70743a4120666174616c206572726f72206f6363...",
+      "got": "404142595a5b5f60000000000000000000000000000000000000000000000000..."
+    },
+    {
+      "case": 13652,
+      "output": "ErrVar.aviFAIL",
+      "ref": "ffffffff",
+      "got": "2c010000"
+    },
+    {
+      "case": 13652,
+      "output": "ErrVar.n_ErrMsg",
+      "ref": "b2000000",
+      "got": "08000000"
+    },
+    {
+      "case": 13652,
+      "output": "ErrVar.ErrMsg",
+      "ref": "5061727365496e4172795f4f70743a4120666174616c206572726f72206f6363...",
+      "got": "38393a404142595a000000000000000000000000000000000000000000000000..."
+    },
+    {
+      "case": 13653,
+      "output": "ErrVar.aviFAIL",
+      "ref": "ffffffff",
+      "got": "2c010000"
+    },
+    {
+      "case": 13653,
+      "output": "ErrVar.n_ErrMsg",
+      "ref": "b2000000",
+      "got": "08000000"
+    }
+  ],
+  "red_test": "the IF (AryLen < 1) FinalAryLen = 1 arm deleted, so AryLen = 0 allocates a zero-extent array. PREDICTED 16 = 8 (alloc_Ary=0, AryLen<1, other arm -- Ary compared, extent 1 against 0) + 8 (alloc_Ary=0, AryLen<1, read-failed arm -- Ary excluded, but a READ of zero items cannot fail so aviFAIL and ErrMsg differ); the 15 not-allowed cases in the same cell must still pass",
+  "red_test_note": "run with --no-generate, so this is the same case file the green in harness/ParseInAry_Opt.json was taken on",
+  "loop_rev": "2ff3660-nogit",
+  "loop_rev_note": "stamped from harness/ParseInAry_Opt.json, the green this red test is scored against: ./test's own stdout carries no revision and the run is the same binary, same corpus, same command"
+}

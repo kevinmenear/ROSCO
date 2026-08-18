@@ -1,0 +1,44 @@
+ParseInAry_Opt -- the differential harness partitioned by (alloc_Ary on entry, arm)
+13674 cases, 4067 failing, EVERY failure on Ary and on no other output.
+
+HOW: one fprintf in the generated test (translations/ROSCO_Helpers/parseinary_opt_test/
+parseinary_opt_test.cpp) and a rebuild without regenerating the corpus -- unit #47's
+probe. It reads THREE things and all three are properties of (corpus x reference):
+  alloc_Ary  the descriptor flag the CASE supplied, read before either call
+  entry      ErrVar%aviFAIL as the CASE supplied it, snapshotted before either call
+             because both calls overwrite it
+  arm        which message the REFERENCE's own ErrVar%ErrMsg carries on return
+Nothing on the translation's side is read, so the table is identical under every
+mutant and every stub -- which is what makes a mutation score over it a measurement.
+
+  alloc  arm             cases   Ary-failing
+      0  not-allowed      4006     4006
+      0  other            3003        0
+      0  read-failed        61       61
+      1  already-alloc    5697        0
+      1  not-allowed       805        0
+      1  other              60        0
+      1  read-failed        42        0
+
+100% of two cells and 0% of the other five. A case fails IF AND ONLY IF the reference
+ALLOCATEd Ary on this call and then RETURNed on a path that assigns none of it
+(.NOT. AllowDefault_) or only a prefix of it (the READ error arm). Those elements are
+undefined in the reference -- the recorded diffs are pointer values, e.g.
+b00aab0220e80000 -- so the comparison decides nothing about either implementation.
+There is no coincidental agreement anywhere, which is the statement no rate can make.
+
+THE EXCLUSION'S SIZE, PREDICTED FROM THIS TABLE BEFORE THE ENTRY WAS WRITTEN:
+  alloc_Ary == 0  AND  entry aviFAIL >= 0  AND  reference returned aviFAIL < 0
+    -> 4067 cases, of which 4067 are Ary-failing
+    -> Ary-failing cases OUTSIDE it: 0
+  the ONE-RELATION form (dropping the entry-status half): 4233
+    -> 166 cases too many. Those are exactly the ones that arrived
+       ALREADY FAILED and never entered the reference's body (IF (ErrVar%aviFAIL >= 0)
+       wraps everything), where Ary is untouched on both sides and perfectly defined.
+
+THIS TABLE IS CELL-FOR-CELL IDENTICAL TO evidence/ParseDbAry_Opt/harness_partition.txt,
+and it was MEASURED here rather than inherited. The two units share a signature and a
+body, so the corpus rules draw the same 13674 cases -- but the case FILE differs
+(sha256 0c18dba45e22d2df0239c79c7410e11b45b7e28dbf3bcea04f13edf0cce68900 against the
+sibling's 64942b97..., because Ary's elements are 4 bytes here and 8 there), so nothing
+about the agreement was guaranteed in advance.
