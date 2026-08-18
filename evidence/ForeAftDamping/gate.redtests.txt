@@ -1,0 +1,108 @@
+# evidence/ForeAftDamping/gate.redtests.txt
+# Unit #52 `ForeAftDamping`. THREE gate perturbations, all in this unit's own
+# translation unit (rosco/controller/src/foreaftdamping.cpp), all with
+# `replacements: 1` and all revert-verified at 0 of 5,252,000 by gate.py's own
+# revert-rebuild-rerun. TWO OF THE THREE MOVED NOTHING, AND THAT IS THE FINDING.
+#
+#   artifact                                    perturbation                          moved
+#   gate/ForeAftDamping.redtest.json            the stored value  + 0.01              311,723
+#   gate/ForeAftDamping.redtest.loopbound.json  `K <= NumBl` -> `K < NumBl`                 0
+#   gate/ForeAftDamping.redtest.scale.json      the stored value  * 2.0                     0
+#
+# THE FIRST AND THE THIRD ARE THE SAME STATEMENT, AND THAT IS UNIT #48's
+# SEPARATING PROBE RUN DELIBERATELY RATHER THAN MET BY ACCIDENT. An additive
+# perturbation of a value moves whatever the value is; a multiplicative one
+# cannot move an exact zero. Same site, same scenarios, same 5,252,000 compared
+# values, opposite results -- so the two zeros are ANNIHILATION and not
+# blindness, and the gate does reach the statement.
+#
+# ---------------------------------------------------------------------------
+# THIS UNIT'S ANSWER IS EXACTLY ZERO IN ALL 27 SHIPPED SCENARIOS, AND IT IS AN
+# INVARIANT OF THE INPUT FILES RATHER THAN OF THE RUN LENGTH
+# ---------------------------------------------------------------------------
+#
+#     grep -n 'FA_KI\|FA_IntSat\|FA_HPFCornerFreq' Examples/DISCON*.IN
+#
+#     ALL 21 DISCON files, without exception:
+#       0.00000   ! FA_KI              - Integral gain for the fore-aft tower damper
+#       0.00000   ! FA_HPFCornerFreq   - Corner frequency of the HPF on the FA acceleration
+#       0.00000   ! FA_IntSat          - Integrator saturation, [rad]
+#
+# The unit's only arithmetic is
+#
+#     LocalVar%FA_AccHPFI = PIController(LocalVar%FA_AccHPF, 0.0, CntrPar%FA_KI,
+#                                        -CntrPar%FA_IntSat, CntrPar%FA_IntSat, ...)
+#
+# and `PIController` ends `PIController = saturate(PTerm + ITerm, minValue,
+# maxValue)` (translations/Controllers/picontroller.cpp:73). With
+# `minValue == maxValue == -0.0 == +0.0` the result is clamped to zero for EVERY
+# input, whatever `FA_AccHPF` holds and whatever `ki` does -- and `ki` is 0.0
+# too, so the integrator never accumulates in the first place. The loop then
+# writes that zero into all three `FA_PitCom` slots, and
+# `Controllers.f90:277` adds it to the pitch command:
+#
+#     LocalVar%PitCom(K) = LocalVar%PC_PitComT + LocalVar%FA_PitCom(K)
+#
+# Adding exactly 0.0 to a live pitch command is what makes the +0.01 run move
+# 311,723 values while every structural change to the same statement moves none.
+#
+# WHY THE LOOP-BOUND RUN IS ALSO ZERO, AND WHY THAT IS THE SAME FACT. Dropping
+# the third iteration leaves `FA_PitCom(3)` at the value it held from the
+# previous timestep -- which is 0.0, because every timestep writes 0.0. The
+# third blade IS compared and IS alive: `scenario_3:bld_pitch_3 15999/16000`,
+# `scenario_7:bld_pitch_3 21694/24000`, `scenario_27:bld_pitch_3 10084/24000`
+# all moved under the +0.01 run. So this is not a missing channel and not a
+# dead scenario; it is a state whose only possible value is the one skipping the
+# write leaves behind.
+#
+# ---------------------------------------------------------------------------
+# WHICH SCENARIOS, AND THE COUNT IS READ RATHER THAN ASSERTED
+# ---------------------------------------------------------------------------
+#
+# THREE of the 27 call this unit -- 3, 7 and 27 -- because DISCON's call site at
+# Controllers.f90:80 (clean) is behind `IF (CntrPar%TD_Mode > 0)`. Eleven of the
+# DISCON files set TD_Mode = 1, but only three of the 27 scenarios use one of
+# them AND run controller code. coverage/line_coverage.json, clean line numbers:
+#
+#   :586  the procedure entry     3: 15,999   7: 23,999   27: 23,999
+#   :599  the PIController call    the same three counts
+#   :602  DO K = 1,NumBl          3: 63,996   7: 95,996   27: 95,996
+#   :603  the loop body            the same three counts
+#
+# 63,996 = 4 x 15,999 and 95,996 = 4 x 23,999 -- gcov's count for a three-trip
+# loop, so NumBl == 3 in every one of the 63,997 calls. The gate never sees any
+# other trip count, and {0, 1, 2} exist in this campaign only in the harness
+# corpus (evidence/ForeAftDamping/numbl_census.txt).
+#
+# `mismatched_channels` in gate/ForeAftDamping.redtest.json names the 18
+# channels that moved and they fall in exactly those three scenarios:
+#
+#   scenario_3    bld_pitch 15999/16000   bld_pitch_2 15999   bld_pitch_3 15999
+#                 gen_power 15465         gen_speed   15998   gen_torque  15465
+#   scenario_7    bld_pitch 21694/24000   bld_pitch_2 21694   bld_pitch_3 21694
+#                 gen_power 23505         gen_speed   23998   gen_torque  16685
+#   scenario_27   bld_pitch  9070/24000   bld_pitch_2 10140   bld_pitch_3 10084
+#                 gen_power 23969         gen_speed   23998   gen_torque  10267
+#
+# ---------------------------------------------------------------------------
+# WHAT THE GATE THEREFORE IS AND IS NOT EVIDENCE FOR
+# ---------------------------------------------------------------------------
+#
+# It is evidence that this unit's answer REACHES a compared channel in three
+# scenarios, and that the wrapper, the view marshalling and the C_LOC objInst
+# path carry it there: perturb the answer by a constant and 311,723 values move.
+#
+# It is NOT evidence about the arithmetic. Every scenario drives the unit with
+# both gains at exactly 0.0, so any translation that returns zero -- including
+# one that never calls PIController at all, or reads the wrong acceleration
+# signal, or subscripts the wrong blade -- passes the gate. The instruments that
+# constrain the arithmetic here are the differential harness (7,567 cases, both
+# gains varied, 0 failed, red-tested at 7567 of 7567) and the mutation sweep
+# (8 of 8, one declaration, red-tested 8 times).
+#
+# FIFTH INSTANCE IN SIX UNITS of an exact zero annihilating a gate perturbation
+# -- #47's AWC_amp, #48's WE_Gamma, #49's unwritten filter state, #50's 1-DOF
+# rootMOOPF -- and the WIDEST: those were one scenario or one arm, and this is
+# every scenario the campaign has. Unit #51 was the exception, for the same
+# structural reason inverted: its answer was added to a live pitch command with
+# a non-zero gain.
