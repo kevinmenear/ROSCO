@@ -1,0 +1,120 @@
+{
+ "unit": "IPC",
+ "operators": [
+  "const_tweak"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "const_tweak"
+ ],
+ "operators_filter_unmatched": [],
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 14,
+  "scored": 14,
+  "of": 40
+ },
+ "scored_ids": [
+  "fd776540",
+  "0471bc7c",
+  "257ba010",
+  "f9e75298",
+  "05cb7960",
+  "f56feead",
+  "aed80394",
+  "e4ee88fc",
+  "3dcdfa38",
+  "305b22ce",
+  "eeb4299f",
+  "f4319f87",
+  "bceb5f82",
+  "f365411d"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "const_tweak"
+ ],
+ "mutants": 14,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "sanitize": false,
+ "killed_by_sanitizer": 0,
+ "killed_by_sanitizer_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 14,
+ "killed": 6,
+ "survived": 8,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.4286,
+ "loop_rev": "4751161-nogit",
+ "gen_rev": "gen-cf5dcfa09cce",
+ "vit_rev": "3f6e2ce-nogit",
+ "survivors": [
+  {
+   "id": "257ba010",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "f9e75298",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "f56feead",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "aed80394",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "e4ee88fc",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "3dcdfa38",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "305b22ce",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "f4319f87",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  }
+ ]
+}
