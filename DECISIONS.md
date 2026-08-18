@@ -4,6 +4,93 @@ Append-only record of *why*. Never read end to end.
 
 ## Unit #54 — ParseDbAry_Opt — 2026-08-18
 
+### A Fortran unit that returns an ALLOCATED, UNASSIGNED array cannot be adjudicated, and this campaign has no key for it (a proposed tooling amendment)
+
+`ParseDbAry_Opt` fails 4,067 of 13,674 differential cases, and the failing set is
+a partition:
+
+```
+  alloc  arm             cases   Ary-failing
+      0  not-allowed      4006     4006      <- 100%
+      0  read-failed        61       61      <- 100%
+      0  other            3003        0
+      1  already-alloc    5697        0
+      1  not-allowed       805        0
+      1  read-failed        42        0
+      1  other              60        0
+```
+
+A case fails **iff** the reference ALLOCATED `Ary` on this call and then returned
+on a path assigning none of it or only a prefix. The elements are undefined; the
+diffs are pointer values.
+
+**The two keys this campaign has do not fit, and both were tried.**
+
+* `no_oracle` is barred by the RUNBOOK's own unit #51 rule — the excused output
+  IS this unit's whole answer.
+* The domain pin unit #51 took instead was written and **did not apply**:
+  `alloc_Ary = { lo = 1, hi = 1 }` produced a byte-for-byte identical corpus,
+  because `alloc_Ary` is a synthetic descriptor flag rather than a signature
+  parameter and `statevary.constrain` matches by parameter name. This is unit
+  #47's rule met from the other end: there, `--dump-plan` caught a pin that
+  silently did nothing; here the pinned run's own case count did.
+
+What the shape actually needs is a judgement neither key expresses: **this
+OUTPUT has no oracle ON THE CASES WHERE THE REFERENCE DID NOT WRITE IT.** The
+generator cannot infer that condition, and the harness's existing
+`inadmissible` counter — which is declared and printed but never incremented on
+this unit's emitted test — is the vocabulary it belongs in. Proposed rather than
+implemented: it is a generator change with real design risk, and this dispatch
+had a translation to finish. Until then the honest close is a red primary layer
+with the partition committed beside it, which is what this unit does.
+
+**And note which side of it the campaign's own instruments landed on.** The
+three cases where `Ary` arrived ALLOCATED are the ones that exposed a REAL
+parser defect (§ the zero-store rule); the 4,067 where it did not are the ones
+nothing can adjudicate. The same fact produced both.
+
+### The echo `WRITE (UnEc,*)` cannot be translated at all, and four more units carry it
+
+```fortran
+IF ( PRESENT(UnEc))  THEN
+    IF ( UnEc > 0 )  WRITE (UnEc,*)  LineNum, Tab, ParamName, Tab, Ary
+END IF
+```
+
+`UnEc` is a Fortran UNIT NUMBER, and the record must go to whatever file the
+CALLER connected it to — `<RootName>.RO.echo`, OPENed by
+`ReadControlParameterFileSub` when `CntrPar%Echo > 0`. C++ has no access to the
+Fortran runtime's unit table. The only record the translation could write is one
+to `fort.<UnEc>`, a **different file**, whenever the arm is live at all.
+
+So nothing is emitted — not even a guarded no-op, which would be a mutable
+comparison no input could kill — and `harness/ranges.toml` holds `UnEc` at 0 so
+the reference does not write a record the translation has no counterpart for.
+
+**The arm is dead in all 27 scenarios and it is NOT dead in ROSCO.**
+`coverage/line_coverage.json` has `ReadSetParameters.f90:359` reached 28 times
+and `:360` zero, and all 22 `Examples/DISCON*.IN` set `Echo` to 0. A user who
+sets `Echo = 1` gets an echo file whose array lines stop appearing.
+
+**This is a family decision, not a local one.** The identical statement is at
+`ROSCO_Helpers.f90:187`, `:269`, `:349`, `:852` and `:991` — units #55
+`ParseInAry_Opt`, #56 `ParseInput_Dbl_Opt`, #57 `ParseInput_Int_Opt` and #58
+`ParseInput_Str_Opt` all carry it. Three ways to close it, in increasing cost:
+accept the gap in all five (what this unit does, named in §7 of its evidence);
+add a permanent Fortran bridge `vit_write_unec(unit, ...)` that the translations
+call, which is the only option that preserves the behaviour; or promote `UnEc`
+out of the translated boundary. Raised for the Driver rather than decided here,
+because the answer should be the same for all five and #54 is the first.
+
+### The gate's `--note` is a shell argument, and backticks inside double quotes run
+
+The first take of the default-arm gate red test recorded a note that had been
+partly eaten: `` `Ary = 0` `` inside a double-quoted argument ran `Ary` as a
+command (`/bin/bash: Ary: command not found`) and the artifact lost the text
+that explained a zero. Re-taken with single quotes; the count was 0 both times.
+A red test recording 0 is exactly the artifact whose note is load-bearing (unit
+#43), so the mangling is worth one line: **single-quote every `--note`.**
+
 ### The dispatch opened on a live orphaned sweep, a live mutant, and a de-integrated tree
 
 `ParseDbAry_Opt`'s dispatch began at 23:48 local. The tree it inherited from unit

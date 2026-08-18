@@ -4,6 +4,89 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-18: unit #54 `ParseDbAry_Opt` is `deferred`, and it is the first
+unit in this campaign whose PRIMARY layer is RED.** One dispatch. The unit finds
+a line in an input file and reads `AryLen` doubles out of it with a Fortran
+list-directed `READ` — the campaign's first parser — and three things happened
+that are worth keeping separate.
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (`harness/ParseDbAry_Opt.json`) | **13,674 checked, 4,067 failed**, 0 inadmissible, against the CLEAN Fortran with all three callee bridges kept. Every failure on `Ary` and on **no other output** | **four stubs**, each moving EXACTLY the cell in which its behaviour has an oracle: no-op **13,448**; the `.NOT. AllowDefault_` arm **4,872** (+805); the READ **4,109** (+42); the zero-store rule **4,070** (+3) |
+| mutation | **NOT AVAILABLE — 189 mutants, none scored** (`evidence/ParseDbAry_Opt/mutation.refusal.txt`) | — |
+| post-integration (`harness/ParseDbAry_Opt.postintegration.json`) | 13,674 checked, 0 failed | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **10,611 of 13,674**, the pass set PREDICTED in the runner's header before the run and matched to the case; reverted, rebuilt, green re-taken at 0 |
+| gate, 27 scenarios (`gate/ParseDbAry_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched | **TWO**: every parsed value + 0.01 moves **2,236,141** (43% of the gate); the `Ary = 0` default arm moves **0**, argued in the artifact |
+
+**THE RED IS A PARTITION, NOT A DEFECT, AND THAT IS ARITHMETIC RATHER THAN
+JUDGEMENT.** A case fails **if and only if** the reference ALLOCATED `Ary` on
+this call and then returned on a path that assigns none of it or only a prefix:
+
+```
+  alloc  arm             cases   Ary-failing
+      0  not-allowed      4006     4006      <- 100%
+      0  read-failed        61       61      <- 100%
+      0  other            3003        0
+      1  already-alloc    5697        0
+      1  not-allowed       805        0
+      1  read-failed        42        0
+      1  other              60        0
+```
+
+100% of both cells, 0% of the other five, and no coincidental agreement
+anywhere. Those elements are **undefined in the reference** — recycled heap, and
+the recorded diffs are pointer values. **The 9,607 cases in which every compared
+output has an oracle agree on every compared output.** That is what the artifact
+certifies and it is not called a green.
+
+**`no_oracle` IS NOT AVAILABLE AND THE ALTERNATIVE WAS TRIED AND DOES NOT
+APPLY.** The RUNBOOK's unit #51 rule bars `no_oracle` on a unit whose excused
+output IS its whole answer, and `Ary` is this unit's whole answer. The domain
+pin unit #51 took instead — `alloc_Ary = { lo = 1, hi = 1 }` — produced a corpus
+**identical** to the unpinned one, 13,674 cases and 4,067 failures, because
+`alloc_Ary` is a synthetic descriptor flag and `constrain()` matches by
+parameter name. The run's own count is what said so. The file and its artifact
+were **deleted rather than kept**: an artifact named `.allocated.json` reporting
+the unpinned number is a trap.
+
+**THE SIXTH UPSTREAM ROSCO OBSERVATION, recorded not repaired (P7):**
+`ParseDbAry_Opt` returns an ALLOCATED, UNASSIGNED `REAL(DbKi) :: Ary(:)` on two
+live paths — the `.NOT. AllowDefault_` arm and the `READ` error arm. Harmless in
+the shipped program (both set `aviFAIL = -1` and every caller returns on that),
+and it is what decides this unit's disposition.
+
+**THE HARNESS FOUND A REAL PARSER DEFECT, three cases of 13,674, and they are
+exactly the three that had an oracle.** gfortran transfers **0.0** for a numeric
+field with a decimal point and no digits (`.`, `-.`, `.e1`, `.d0`) and transfers
+**nothing** without the point (`+`, `-`, `e1`) or with a malformed exponent
+(`-.e`). Fifty-one records measured across two probes; the pre-fix artifact is
+kept. The three visible cases are the ones where `Ary` arrived ALLOCATED — which
+is the same fact that makes the other 4,067 unadjudicable, seen from the other
+side.
+
+**TWO VIT BRIDGE DEFECTS, BOTH FIXED IN VIT (X2), NEITHER WORKED AROUND.**
+`FindLine` is the first bridged procedure in either campaign with a CHARACTER
+dummy whose length is a module PARAMETER, and with a by-reference LOGICAL dummy.
+`vit@1e30f79` imports the constant; `vit@3f6e2ce` stages the LOGICAL. The first
+is additive, checked by regenerating `ChkParseData`'s bridge byte-identically.
+
+**THE `UnEc` ECHO WRITE IS NOT TRANSLATED, and it is a FAMILY decision.** `UnEc`
+is a Fortran unit number; C++ cannot reach the runtime's unit table, so the only
+record it could write is to `fort.<UnEc>` — a different file from the
+reference's. The arm is dead in all 27 scenarios (`Echo == 0` everywhere) but it
+is NOT dead in ROSCO. Units #55–#58 carry the identical statement. Raised in
+`DECISIONS.md`.
+
+**THE DISPATCH OPENED ON A LIVE ORPHANED SWEEP.** Unit #53's `const_tweak` run
+was still executing inside the container ten minutes into this dispatch, with an
+`index_offset` mutant live in `translations/Controllers/ipc.cpp` and the tree
+de-integrated. Both markers held: the pre-commit hook refused every commit in the
+window, and `MUTATE_IN_PROGRESS` named the file, the intended hash and the
+repair. Recovered per its own instructions. What no guard does is reach into the
+container — `mutate_guarded.sh` records a HOST pid — which is raised in
+`DECISIONS.md` as a proposed amendment.
+
+---
+
 **As of 2026-08-17: unit #53 `IPC` is `deferred`, and it closes on P12 ALONE.**
 Four layers, all four red-tested. One dispatch. The unit is the campaign's
 largest so far — six distinct callees, eight arms, fourteen `LocalVariables`

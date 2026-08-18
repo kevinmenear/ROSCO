@@ -1,26 +1,3 @@
-# VIT configuration for rosco-r2.
-#
-# DERIVED from ROSCO-replication's vit.yaml AT bf25e35 -- its SETUP commit, the
-# revision campaigns/rosco-r2.toml already pins as `src_rev`. Not from its HEAD.
-# That distinction is the whole point: at HEAD the file carries 54 integrated
-# translations, five `types` entries, a `shared_files` list and a widened kgen
-# invocation, all of which were LEARNED DURING the first run. Deriving from HEAD
-# would hand this campaign an answer key -- 54 of 69 units pre-declared done,
-# and the names of the files a translator is supposed to produce.
-#
-# Deriving from the setup commit takes only what the first replication knew
-# BEFORE it translated anything.
-#
-# The only substantive change from bf25e35 is mechanical:
-#   /workspace/ROSCO-replication -> /workspace/ROSCO-r2   (4 commands)
-# Everything else is byte-equal to the source; the added comments are why this
-# is declared `derive` rather than `copy`.
-#
-# NOT carried, because they postdate bf25e35:
-#   types.ErrorVariables, types.LocalVariables   (3 types at setup, 5 at HEAD)
-#   shared_files:                                (absent at setup entirely)
-#   invocation's second range 0:0:20000-20020    (setup had 0:0:1-20)
-
 project:
   name: ROSCO
   source_dir: rosco/controller/src
@@ -28,424 +5,12 @@ project:
 kgen:
   path: /workspace/KGen/bin/kgen
   build_cmd: cd /workspace/ROSCO-r2/rosco/controller/build && cmake --build .
-  # SCENARIO 27 for unit #38 `PreFilterMeasuredSignals`, chosen because it is
-  # the scenario that reaches the MOST of the unit's arms at once, read from
-  # coverage/line_coverage.json (whose line numbers are the CLEAN source's, one
-  # less than the integrated file's in this region):
-  #
-  #   :355  DO n = 1,F_GenSpdNotch_N       48,000 vs 24,000 calls -> the body RUNS
-  #   :395  TD_Mode > 0, FA_AccHPF         24,000 -- only 3, 7 and 27 reach it
-  #   :405  NotchFilterSlopes, all blades  72,000 = 3 x 24,000
-  #
-  # UNIT #39 `ResController` REUSED THIS UNCHANGED. Its call site is
-  # Controllers.f90:815 (clean), inside the AWC_Mode==4 arm, and scenario 27
-  # is one of only three that reach it (5, 8, 27) and the only one that also
-  # patches AWC_amp to a non-default 2.0 deg -- scenario 8 sets it to 0.0.
-  # 23,998 hits, the highest of the three, and the window's third range
-  # (23900-23920) lands inside it.
-  #
-  # No scenario reaches everything. Three arms are outside scenario 27 and the
-  # kernel therefore cannot see them: the `Flp_Mode == 2` blade-root arm
-  # (:406-:417, scenario 4 ONLY), the `F_LPFType == 2` SecLPFilter arm
-  # (:349-:351, ZERO hits in all 27) and the tower-top notch loop (:379, whose
-  # DO line carries exactly the call count, so the body iterates 0 times in
-  # every scenario). Restored to the default after the extraction.
-  #
-  # SCENARIO 25 for unit #40 `SetpointSmoother`, and the reason is a PRODUCT
-  # that is 1.0 everywhere else. The unit's first statement is
-  #
-  #     R_Total = LocalVar%PRC_R_Speed * LocalVar%PRC_R_Torque * LocalVar%PRC_R_Pitch
-  #
-  # and scenario 25 patches `PRC_R_Speed = 0.9` (PRC_Mode=2, PRC_Comm=0), so the
-  # product is not 1.0 there. Hit counts do not decide this one: scenario 1
-  # executes the call site 79,998 times against scenario 25's 15,999 and is
-  # blind to the same three inputs.
-  #
-  # CORRECTED AFTER THE FACT, AND THE CORRECTION IS THE POINT. This comment and
-  # commit 05ef7cae both said 25 was "the ONLY scenario whose PRC_R_* product is
-  # not 1.0". IT IS NOT. Measured by gate/SetpointSmoother.redtest.r_total.json,
-  # which drops `R_Total` to the constant 1.0 and moves 56,128 values across TWO
-  # scenarios:
-  #
-  #     scenario_9   33,686 values, 6 channels     <- and it moves MORE than 25
-  #     scenario_25  22,442 values, 6 channels
-  #
-  # The claim read `CntrPar%PRC_R_Speed`, the control PARAMETER. The unit
-  # multiplies `LocalVar%PRC_R_Speed`, a runtime variable of the same name, and
-  # ControllerBlocks.f90:555-581 (`StartupControl`) drives both it and
-  # `PRC_R_Torque` off 1.0 for the whole startup ramp whenever `SU_Mode` is on.
-  # Scenario 9 sets SU_Mode=1. A scenario census that greps the patch dicts for
-  # `PRC_` cannot see that, and this one did not.
-  #
-  # The CHOICE stands: 25 does discriminate, and the kernel built on it is the
-  # committed one. What was wrong was the stated basis, and it took a red test
-  # rather than a re-reading to find -- which is the whole argument for running
-  # one perturbation per claim instead of per unit.
-  #
-  # The ELSE arm (`SS_Mode /= 1`) is outside this kernel and outside 26 of the
-  # 27 scenarios: coverage/line_coverage.json line :514 carries hits for
-  # SCENARIO 23 ALONE (15,999), which is the `PS_Mode=0 and SS_Mode=0` disabled-
-  # paths sim, and scenario 23 in turn never reaches :508-:512. No scenario
-  # reaches both arms, so no kernel can. The differential harness draws
-  # `CntrPar%SS_Mode` freely and is the instrument that covers both.
-  #
-  # SCENARIO 9 for unit #41 `Shutdown`, and it is not a choice between
-  # scenarios -- it is the ONLY one. `coverage/line_coverage.json` carries hits
-  # for `DISCON.F90:107` (the `IF (CntrPar%SD_Mode > 0)` call site) under
-  # scenario 9 alone: 11,999 invocations, and 0 in the other 26. Every line of
-  # `Shutdown` in that file likewise reads `scen=['9']`.
-  #
-  # What scenario 9 REACHES, from the same file, so the kernel's blind spots
-  # are stated before it is built rather than after:
-  #
-  #   :655 IF (iStatus == 0)              11,999 calls, the arm taken ONCE
-  #   :671 the trigger window             11,999 / :672,:676,:679,:682 10,002
-  #   :683 SD_Trigger = 4 (SD_EnableTime)      1   <- the ONLY trigger that fires
-  #   :674/:677/:680 Trigger = 1 / 2 / 3       0   <- pitch, yaw, genspeed: never
-  #   :688 SD_Method == 1                 11,999  <- always
-  #   :691 SD_Stage == 0                  10,002  |  :702 the stage arm 1,997
-  #   :708 SD_Stage = SD_Stage + 1             0   <- the stage never advances
-  #   :711 the ELSE (Stage > SD_Stage_N)       0
-  #   :713-:748 the whole SD_Method == 2 arm   0
-  #
-  # So a kernel built here can see the two live stage arms and ONE of the four
-  # trigger conditions, and is blind to method 2 entirely. The differential
-  # harness draws `CntrPar%SD_Method`, the four `SD_Enable*` flags and
-  # `SD_Stage` freely, and is the instrument that covers the rest.
-  #
-  # SCENARIO 9 AGAIN for unit #42 `Startup`, and for the same reason as #41 --
-  # it is not a choice. `coverage/line_coverage.json` carries hits for
-  # `DISCON.F90:112` (the `IF (CntrPar%SU_Mode > 0)` call site) under scenario 9
-  # alone: 11,999 invocations, 0 in the other 26. Every line of `Startup` in
-  # `ControllerBlocks.f90` likewise reads `scen=['9']`.
-  #
-  # What scenario 9 REACHES, read from the same file against the CLEAN source
-  # (`Startup` at ControllerBlocks.f90:548-636 at baseline 54dd134), so the
-  # kernel's blind spots are stated before it is built rather than after:
-  #
-  #   :575 IF (iStatus == 0)                 11,999 calls, the arm taken ONCE
-  #   :581 SU_Stage = 1  (past SU_StartTime)      1
-  #   :585 the freewheel low-speed test      11,999 / :587 the WRITE  0  <- never
-  #   :594 SU_Stage = 2  (freewheel exit)         1
-  #   :602 SU_Stage = SU_Stage + 1                2  <- 2->3 and 3->4
-  #   :608 Stage==1  PRC_R_Speed const          199
-  #   :610/:614 Stage==2  PRC_R_Speed sigma      800
-  #   :616 Stage in [2, N+1]  SU_PrevLoad        800
-  #   :619 SU_Stage = 0  (startup complete)        1
-  #   :624 Stage 1 or -1  PRC_R_Torque = 0       200
-  #   :626 the torque ramp test                1,600 / :629 sigma 800 / :631 800
-  #
-  # ONE ARM IS OUTSIDE SCENARIO 9 AND THEREFORE OUTSIDE THIS KERNEL: :587,
-  # `SU_LoadStageStartTime = LocalVar%Time` on a freewheeling rotor still below
-  # 0.95*SU_RotorSpeedThresh. Scenario 9 starts the rotor at 4 rpm = 0.419 rad/s
-  # against a threshold of 0.95*0.3 = 0.285, so the test is false on every one of
-  # its 11,999 calls and `SU_LoadStageStartTime` keeps its initial value through
-  # the whole freewheel stage. The differential harness draws `SU_RotSpeedF`'s
-  # inputs and `SU_RotorSpeedThresh` freely and is the instrument that reaches
-  # it.
-  #
-  # SCENARIO 7 for unit #43 `StructuralControl`, and it is a choice between two
-  # scenarios that are IDENTICAL for this unit rather than a choice between many.
-  # `coverage/line_coverage.json` carries hits for `DISCON.F90:137` (the
-  # `IF (CntrPar%StC_Mode > 0)` call site) under scenarios 3, 7 and 27 only:
-  #
-  #   scenario  3   15,999 invocations   tlen = 400   StC_Mode 1, StC_Group_N 1
-  #   scenario  7   23,999 invocations   tlen = 600   StC_Mode 1, StC_Group_N 1
-  #   scenario 27   23,999 invocations   tlen = 600   StC_Mode 1, StC_Group_N 1
-  #
-  # SCENARIO 3 IS DISQUALIFIED BY ARITHMETIC, not by hit count. The unit's only
-  # arm that writes anything is guarded by `LocalVar%Time > 500`, and scenario 3
-  # runs to t = 400. Coverage agrees from the other end: Controllers.f90:996-998
-  # (clean source) carry 3,998 hits under 7 and 27 and ZERO under 3. A window
-  # into scenario 3 would capture 15,999 invocations of a procedure that copies
-  # its own unchanged state to `avrSWAP` and writes nothing else.
-  #
-  # 7 over 27 because scenario 7's own docstring names this unit as the reason
-  # it runs to 600 s ("tlen=600s: exceeds Time>500 threshold for
-  # StructuralControl/CableControl"), and because for THIS unit the two are the
-  # same run: both patch StC_Mode 1, StC_Group_N 1, StC_GroupIndex 2801, both
-  # step dt = 0.025 to tlen = 600, and both record 23,999 / 3,998.
-  #
-  # What scenario 7 REACHES, read against the CLEAN source
-  # (`StructuralControl` at Controllers.f90:967-1029 at baseline 54dd134):
-  #
-  #   :991 IF (StC_Mode == 1)              23,999  <- taken on EVERY call
-  #   :994 IF (Time > 500)                 23,999 tested / :996-:998  3,998 taken
-  #   :1003 the whole StC_Mode == 2 arm         0  <- and 0 in all 27 scenarios
-  #   :1020/:1021 the avrSWAP copy loop    47,998  = 2 x 23,999, StC_Group_N = 1
-  #   :1025 IF (aviFAIL < 0)               23,999 tested, the body 0
-  #
-  # TWO ARMS ARE OUTSIDE THIS KERNEL AND OUTSIDE EVERY SIMULATION THE CAMPAIGN
-  # RUNS: the `StC_Mode == 2` open-loop arm -- which is the ONLY caller of
-  # `interp1d` in this unit and the only reader of `Ind_StructControl`,
-  # `OL_Breakpoints` and `OL_StructControl` -- and the `aviFAIL < 0` error
-  # message prefix. `StC_Mode` is 1 in all three scenarios that set it at all,
-  # and no shipped `Examples/DISCON*.IN` sets it to 2. The differential harness
-  # draws `StC_Mode`, `StC_Group_N`, `Ind_StructControl` and the two OL arrays
-  # freely and is the instrument that reaches them.
-  #
-  # SCENARIO 7 AGAIN for unit #44 `YawRateControl`, and this time the scenario is
-  # named by its own docstring: "NacVane/NacHeading: oscillating yaw error for
-  # YawRateControl". `coverage/line_coverage.json` carries hits for
-  # `DISCON.F90:123` (the unconditional call site) under four scenarios:
-  #
-  #   scenario  2    3,999 invocations   Y_ControlMode /= 1 -- the body never runs
-  #   scenario  3   15,999 invocations   Y_ControlMode = 1, but see below
-  #   scenario  7   23,999 invocations   Y_ControlMode = 1, synthetic NacVane
-  #   scenario 27   23,999 invocations   Y_ControlMode = 1, synthetic NacVane
-  #
-  # SCENARIO 3 IS DISQUALIFIED BY WHAT IT LEAVES DEAD. This unit is a three-state
-  # machine (`YawState` in {-1, 0, 1}) and scenario 3 stays in state 0 for all
-  # 15,999 calls: clean-source lines :434-:452 -- both persist arms, both stop
-  # arms and the two guards that reach them -- carry ZERO hits under 3 and 10,273
-  # / 10,226 under 7. Scenario 3 executes only :456/:460/:464, the arm that
-  # writes `YawRateCom = 0.0` and leaves. Its 15,999 calls cannot tell a correct
-  # translation from one that has no state machine at all.
-  #
-  # 7 over 27 because the two are the same run for this unit -- both patch
-  # Y_ControlMode = 1, both step dt = 0.025 to tlen = 600, both record 23,999 --
-  # and 7's docstring names this unit as the reason its NacVane is synthetic.
-  #
-  # What scenario 7 REACHES, read against the CLEAN source
-  # (`YawRateControl` at Controllers.f90:367-485 at baseline 54dd134):
-  #
-  #   :404/:405 the iStatus == 0 init            1  <- YawState = 0, Tidx = 1
-  #   :412 NacVaneOffset = Y_MErrSet        23,999
-  #   :417/:418 the two LPFilter calls      23,999 each
-  #   :433 IF (YawState == 1)               23,999 tested / :434 10,273 taken
-  #   :440/:441 persist right               10,261
-  #   :436/:437 stop from right                 12
-  #   :445 IF (NacHeadingError >= 0)        10,226 / :451/:452 persist left 10,215
-  #   :447/:448 stop from left                  11
-  #   :457 start right / :461 start left        12 each
-  #   :468 avrSWAP(48) = YawRateCom * D2R   23,999
-  #
-  # THREE ARMS ARE OUTSIDE THIS KERNEL AND OUTSIDE EVERY SIMULATION THE CAMPAIGN
-  # RUNS -- all three carry 0 hits in all 27 scenarios:
-  #
-  #   :410 the ZMQ_Mode == 1 offset            no scenario sets ZMQ_Mode = 1
-  #   :427 deadband = Y_ErrThresh(1)           the WE_Vw_F <= Y_uSwitch low arm
-  #   :473-:475 the OL_Mode yaw override       this unit's only interp1d call
-  #
-  # The third is dead for the reason units #23, #26 and #43 already measured and
-  # STATUS.md has carried since phase 3: scenario 24 is the one scenario that
-  # sets `OL_Mode`, and `Read_OL_Input` returns on the absent
-  # `Examples/example_inputs/OL_Mode2_Input.dat`, so all 8,000 of its DISCON
-  # calls fall through before the main block. The differential harness draws
-  # `ZMQ_Mode`, `Y_uSwitch`, `OL_Mode`, `Ind_YawRate` and the two OL arrays
-  # freely and is the instrument that reaches all three.
-  #
-  # SCENARIO 8 for unit #46 `ratelimit`, and the choice is made on WHETHER THE
-  # CLAMP FIRES rather than on hit count -- unit #24's rule ("the kernel is
-  # alive" and "the kernel can see what this unit is FOR" are two claims, and
-  # only the second decides a call site").
-  #
-  # This unit's whole purpose is `rate = saturate(rate, minRate, maxRate)`, and
-  # at the three PitchControl call sites the bounds are `CntrPar%PC_MinRat` /
-  # `PC_MaxRat`, which is 0.1745 rad/s in all 14 shipped `Examples/DISCON*.IN`.
-  # The LAST of those three sites writes `LocalVar%PitComAct(K)`, which reaches
-  # `avrSWAP(42..44)` unchanged whenever `PF_Mode == 0` -- so `bld_pitch` in the
-  # COMMITTED baseline arrays IS this unit's own output, per invocation, and
-  # `|diff(bld_pitch)| == PC_MaxRat*dt` is the clamp firing. Same instrument as
-  # unit #44's `sign(diff(nac_yaw)/dt)`: read off an artifact the campaign
-  # already owns, not computed from a patch dict.
-  #
-  # The census over all 27 committed baselines (dt = 0.025, so the clamp value
-  # is 0.1745*0.025 = 0.004362501):
-  #
-  #   scenario  8   4,611 upper + 4,557 lower of 15,999   <- BOTH clamps, ~57%
-  #   scenario 22   2,142 upper + 2,085 lower             AWC_Mode=5
-  #   scenario 27   1,065 upper + 1,131 lower
-  #   scenario  9      43 upper +    36 lower
-  #   scenario 20     121 upper +      0 lower            <- one-sided
-  #   scenarios 1,3,5,7,11,15,16,18,21,25   1 to 8 upper, ZERO lower
-  #
-  # THE DEFAULT SCENARIO WOULD HAVE BEEN NEARLY BLIND. Scenario 1 runs the site
-  # 79,998 times and clamps on 4 of them, all in the same direction -- a kernel
-  # built there would pass a translation with no lower clamp at all, which is
-  # exactly unit #24's `ControllerBlocks.f90:332` failure one function up.
-  # Scenario 8 clamps in both directions on more than half its invocations
-  # because IPC_ControlMode=1 with non-zero gains puts a 1P oscillation on each
-  # blade's command.
   run_cmd: cd /workspace/ROSCO-r2/Examples && python3 vit_sim.py --scenario 8
   clean_cmd: cd /workspace/ROSCO-r2/rosco/controller/build && make clean
   install_cmd: cp /workspace/ROSCO-r2/rosco/controller/build/libdiscon.so /workspace/ROSCO-r2/rosco/lib/libdiscon.so
-  # WIDENED 2026-08-10 during unit #2, and it took two tries. The setup value
-  # 0:0:1-20 is VACUOUS for ColemanTransform: the first 21 invocations at
-  # Controllers.f90:510 land at simulation start, where Azimuth and rootMOOPF
-  # are 0, so the function was handed zero and expected to return zero in every
-  # captured case. A translation reading none of its inputs and writing 0.0
-  # passed 21/21 with 4725/4725 IDENTICAL. That artifact is kept, deliberately,
-  # under evidence/ColemanTransform/.
-  #
-  # Widening alone did not fix it. Against scenario 6 -- which coverage shows
-  # executing the call site 3,999 times -- invocations 2000-2020 and 3900-3920
-  # are ALSO all-zero: scenario 6 is a 1-DOF sim that never drives azimuth or
-  # blade root moments, so the line ran 7,998 times on zeros. P9 in one
-  # measurement: coverage says a line executed, not that it executed on data
-  # that can tell two translations apart.
-  #
-  # Scenario 27 injects synthetic azimuth and per-blade rootMOOP and has the
-  # highest measured hit count at this call site, 23,999. The ranges span its
-  # start, middle and end. Chosen from coverage/line_coverage.json, not copied
-  # from the first replication.
-  #
-  # NARROWED for unit #40 to fit scenario 25, which calls DISCON 15,999 times
-  # rather than scenario 27's 23,999: the third range 23900-23920 would land
-  # past the end of the run and capture nothing. Same three-point shape --
-  # start, middle, end -- arithmetic against the scenario's own call count.
-  #
-  # RE-AIMED for unit #41 at scenario 9's 11,999 invocations of DISCON.F90:107.
-  # The middle range is NOT the midpoint this time, and the arithmetic is the
-  # reason: coverage splits the call site 10,002 / 1,997 between the
-  # `SD_Stage == 0` arm and the stage arm, so the state transition happens at
-  # invocation 10,002 and a midpoint window (6000) would land 4,000 calls
-  # before anything moves. 9995-10015 straddles it, which is the only place in
-  # the run where `SD_Trigger` and `SD_Stage` both change.
-  #
-  # RE-AIMED AGAIN for unit #42 `Startup`, and this time there are FOUR ranges
-  # rather than three, because this unit is a STATE MACHINE whose whole life is
-  # over by invocation 1,801 of 11,999. A start/middle/end window would spend
-  # two of its three ranges on `SU_Stage == 0`, where the body writes nothing.
-  #
-  # The transitions are arithmetic against scenario 9's own patch dict
-  # (`Examples/vit_sim.py::run_scenario_9`: dt = 0.025, SU_StartTime = 0,
-  # SU_FW_MinDuration = 5, SU_LoadStages_N = 2, SU_LoadRampDuration = 10 10,
-  # SU_LoadHoldDuration = 10 10) and each one is CONFIRMED by a coverage count:
-  #
-  #   invocation     1  t = 0.000  iStatus == 0, SU_Stage = -1     :577  1 hit
-  #   invocation     2  t = 0.025  Time > SU_StartTime -> Stage 1  :581  1 hit
-  #   invocations 2-200            Stage 1, 199 calls              :608  199
-  #   invocation   201  t = 5.000  Time >= 5 + 0     -> Stage 2    :594  1 hit
-  #   invocations 201-1000         Stage 2, 800 calls              :610  800
-  #   invocation  1001  t = 25.00  Time >= 5 + 10+10 -> Stage 3    :602  2 hits
-  #   invocations 1001-1800        Stage 3, 800 calls              :616  800
-  #   invocation  1801  t = 45.00  Time >= 25 + 10+10 -> Stage 4,
-  #                                then Stage == N+2 -> Stage 0    :619  1 hit
-  #
-  # So the four ranges are 1-20 (initialisation, freewheel, the -1 -> 1 edge),
-  # 195-215 (the 1 -> 2 edge, and the torque HOLD arm on its low side against
-  # the RAMP arm on its high side), 995-1015 (the 2 -> 3 edge, and the only
-  # place `SU_PrevLoad = SU_LoadStages(SU_Stage-2)` is reachable beside a stage
-  # change) and 1795-1815 (the 3 -> 4 -> 0 edge, which is the ONLY invocation in
-  # the entire run that executes :619).
-  #
-  # 83 cases rather than #41's 62. The cost is stated because it is paid on
-  # every `vit verify`: the kernel replay is roughly linear in case count.
-  #
-  # RE-AIMED for unit #43 `StructuralControl` at scenario 7's 23,999 invocations
-  # of DISCON.F90:137, and this unit has exactly ONE edge in the whole run --
-  # `LocalVar%Time > 500` -- so the middle range is aimed at it and nothing else.
-  #
-  # The edge is arithmetic against scenario 7's own loop
-  # (`Examples/vit_sim.py::run_scenario_7`: dt = 0.025, tlen = 600,
-  # `t = np.arange(0, 600, 0.025)`, the controller called at i = 1..23999 with
-  # `Time = t[i]`), and it is CONFIRMED by a coverage count rather than trusted:
-  # `Controllers.f90:996-998` carry 3,998 hits, and 23,999 - 3,998 + 1 = 20,002,
-  # so the first invocation that takes the arm is 20,002. `Time` reaches the
-  # comparison through `avrSWAP(2)`, which is REAL(ReKi) = REAL(4), so the
-  # rounding of `t[i]` to float32 is part of where the edge lands -- which is
-  # the reason the range STRADDLES 20,002 rather than starting at it.
-  #
-  #   invocation      1  t = 0.000   iStatus == 0, StC_Input all 0
-  #   invocations 1-20            Time <= 500, the guarded arm NOT taken
-  #   invocation  20001  t = 500.02  the last call before the step   (predicted)
-  #   invocation  20002  t = 500.05  the FIRST call that writes the three
-  #                                  constants -- and the only invocation in the
-  #                                  run where avrSWAP(2801) CHANGES value
-  #   invocations 20002-23999     3,998 calls, all writing the same constants
-  #
-  # THE COST OF THAT LAST LINE, STATED BEFORE THE KERNEL IS BUILT. `avrSWAP` is
-  # INOUT and persists across calls in the driver, so from invocation 20,003
-  # onwards the value this unit writes into `avrSWAP(2801)` is already there on
-  # entry. A translation that does nothing at all therefore reproduces every
-  # steady-state case, and the kernel's whole discriminating power against a
-  # no-op sits on the ONE case at the edge. That is what the middle range is
-  # for, and `evidence/StructuralControl/kernel.stubs.txt` is where the claim is
-  # measured rather than asserted.
-  #
-  # Three ranges, 62 cases: 1-20 (initialisation and the un-taken arm),
-  # 19995-20015 (the step, straddling 20,002) and 23975-23995 (steady state
-  # deep in the taken arm, short of the iStatus == -1 final call).
-  #
-  # RE-AIMED for unit #44 `YawRateControl` at FIVE ranges, aimed at the four
-  # state-machine edges plus initialisation. Same shape as unit #42's four --
-  # a start/middle/end window would spend every range inside a persist arm,
-  # which is 20,476 of scenario 7's 23,999 calls and is where the unit copies a
-  # constant it was already handed.
-  #
-  # THE EDGES ARE MEASURED, NOT ESTIMATED, and the instrument is a committed
-  # artifact this campaign already owns. `Examples/vit_sim.py::run_scenario_7`
-  # integrates the commanded yaw rate itself -- `nac_yaw[i] = nac_yaw[i-1] +
-  # nac_yawrate[i]*dt` -- and `nac_yaw` is one of the 13 channels in
-  # `baseline_arrays/scenario_7.npz`. So `sign(diff(nac_yaw)/dt)` IS `YawState`
-  # as written, per invocation, read off the reference run:
-  #
-  #   invocation    1   iStatus == 0     YawState = 0, Tidx = 1        :404/:405
-  #   invocation  187   error > deadband  YawState 0 -> 1 (rate still 0)   :457
-  #   invocation  188   the first call commanding +Y_Rate                :440
-  #   invocation 1044   error <= 0        YawState 1 -> 0, rate to 0  :436/:437
-  #   invocation 1188   error < -deadband YawState 0 -> -1 (rate still 0) :461
-  #   invocation 1189   the first call commanding -Y_Rate                :451
-  #   invocation 2044   error >= 0        YawState -1 -> 0, rate to 0 :447/:448
-  #
-  # and it repeats every 2,000 invocations (NacVane is 20 deg at a 50 s period,
-  # 50 / 0.025 = 2000). CROSS-CHECKED against coverage rather than trusted: the
-  # census of that same sign array is 10,261 / 10,215 / 3,522, and clean-source
-  # :440-:441 carry 10,261 hits and :451-:452 carry 10,215 -- exact, both.
-  #
-  # THE COST OF THE PERSIST ARMS, STATED BEFORE THE KERNEL IS BUILT. `avrSWAP` is
-  # INOUT and persists across calls in the driver, and inside a persist arm
-  # `YawRateCom` is the same `+/-Y_Rate` on every call, so `avrSWAP(48)` does not
-  # change value. From invocation 189 to 1043 a translation that writes nothing
-  # to avrSWAP(48) reproduces the reference. What it cannot reproduce is an edge,
-  # and each of the four is one invocation wide in the entire 600 s run.
-  #
-  # Five ranges, 105 cases: 1-20 (initialisation and the YawState == 0 arm before
-  # any edge), 177-197 (the 0 -> 1 start, straddling 187), 1034-1054 (the 1 -> 0
-  # stop, straddling 1044), 1178-1198 (the 0 -> -1 start, straddling 1188) and
-  # 2034-2054 (the -1 -> 0 stop, straddling 2044). The two stops are separate
-  # ranges because they are separate ARMS -- :436/:437 and :447/:448 -- and one
-  # `NacHeadingError` cannot be in both.
-  #
-  # RE-AIMED for unit #46 `ratelimit` at the clean call site
-  # `Controllers.f90:181` -- `LocalVar%PitComAct(K) = ratelimit(...)`, inside
-  # `DO K = 1,LocalVar%NumBl`, so the site runs THREE times per DISCON call and
-  # the invocation index is 3x the timestep. Total 3 x 15,999 = 47,997 in
-  # scenario 8.
-  #
-  # THE RESET ARM IS ONE INVOCATION WIDE PER CALL SITE, IN EVERY SCENARIO.
-  # `LocalVar%restart` is `(iStatus == 0)` and nothing else (readavrswap.cpp,
-  # unit #16), so the THEN arm of this unit runs exactly once per call site per
-  # run. Coverage agrees exactly: clean `Functions.f90:75` records 8 hits in
-  # every scenario, which is 1 (Controllers:103) + 3 (Controllers:121) +
-  # 3 (Controllers:181) + 1 (Controllers:319) -- the eight ratelimit calls of
-  # the FIRST DISCON call and no others. Scenario 9 records 9 because
-  # `ControllerBlocks.f90:813` (TRA) is a ninth site it alone reaches.
-  #
-  # So the first range MUST start at 1 or the reset arm -- and with it the
-  # `PRESENT(ResetValue)` branch, which is only observable there -- is outside
-  # the kernel entirely.
-  #
-  #   invocations   1-3     iStatus == 0, restart TRUE, K = 1,2,3   the THEN arm
-  #   invocations   4-20    the ELSE arm at timesteps 1..5
-  #   invocations 23990-24010  timestep ~8000, dense clamping both directions
-  #   invocations 47900-47920  timestep ~15970, ditto, short of the run's end
-  #
-  # `inst` is `objInst%instRL`, reset to 1 in `ReadAvrSWAP`
-  # (ReadSetParameters.f90:121) at the top of every DISCON call and incremented
-  # by this unit itself. DISCON.F90 calls VariableSpeedControl (:319, inst 1)
-  # before PitchControl (:103 -> 2, :121 K=1,2,3 -> 3,4,5, :181 K=1,2,3 ->
-  # 6,7,8), so at THIS site `inst` takes 6, 7, 8 -- three distinct subscripts
-  # rather than PIController's single 3 (unit #33's stated blind spot #2,
-  # avoided here by the choice of site rather than by a rule).
   invocation: 0:0:1-20,0:0:23990-24010,0:0:47900-47920
-  # Interface truth about the Bladed-style array: DISCON receives it as an
-  # assumed-size dummy, so nothing in the source states its extent.
   assumed_size_arrays:
     avrSWAP: 3000
-  # DISCON holds SAVE state across calls in DLL memory that dlclose() does not
-  # reliably release. A replayed kernel must re-enter initialisation.
   dll_persistence:
     resets:
     - anchor: CALL ReadAvrSWAP
@@ -461,14 +26,6 @@ fortran:
     SiKi: REAL(4)
     IntKi: INTEGER(4)
   compiler: gfortran
-  # -ffp-contract=off is E1.2's method requirement, not a preference: without it
-  # the compiler may fuse a multiply-add and the two sides stop being
-  # bit-comparable. CLOSED 2026-08-10 -- rosco/controller/CMakeLists.txt now
-  # passes it to gfortran AND to g++, and scripts/assert_fp_contract.sh checks
-  # both the build line and the absence of FMA in the linked library. The gap
-  # this comment used to describe was not theoretical: it cost unit #2 a ~1 ULP
-  # disagreement on 105 of 200 inputs, and closing it meant regenerating 20 of
-  # 27 baselines.
   flags: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
 verification:
   tolerance: 1.0e-14
@@ -491,14 +48,6 @@ translations:
   Conv2UC:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/conv2uc.cpp
-  # `vit integrate` also wrote `verification: simulation` here. REMOVED, and the
-  # removal is the point: it is a claim about what verified this unit, made by a
-  # command that ran no simulation and read no result -- the same shape as the
-  # `// After verification: <name> kernel PASSED` comment `37f8bdf` deleted from
-  # every generated file. It is FALSE for this unit specifically: the gate runs
-  # 27 scenarios and is blind to ExtController, and gate/ExtController.redtest.json
-  # is the failed red test that says so. What verified it is the differential
-  # harness and the mutation score; that lives in plan.json's `evidence`.
   ExtController:
     status: integrated
     cpp_file: translations/ExtControl/extcontroller.cpp
@@ -517,13 +66,6 @@ translations:
   LPFilter:
     status: integrated
     cpp_file: translations/Filters/lpfilter.cpp
-  # ADDED BY HAND at unit #14, not by `vit integrate`. Unit #12 correctly
-  # reverted vit.yaml wholesale after a STUB `vit verify` wrote a false
-  # `cases_passed` record into it, and `NonDecreasing`'s own entry went with the
-  # revert -- so this file listed twelve translations against thirteen
-  # integrated units. Recorded by unit #13 as a candidate for the Driver;
-  # closed here, because a machine-readable file disagreeing with plan.json is
-  # the shape this campaign has been bitten by before.
   NonDecreasing:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/nondecreasing.cpp
@@ -536,383 +78,69 @@ translations:
   PathIsRelative:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/pathisrelative.cpp
-  # ADDED BY HAND at unit #16, for the reason unit #14 recorded: `vit verify`
-  # rewrites this file through a YAML round-trip that DELETES EVERY COMMENT in
-  # it, so the only way to keep both the entry and the file's own reasoning is
-  # to restore the commented file and re-add the entry. `vit integrate` also
-  # wrote `verification: simulation` here again; REMOVED again, and this unit is
-  # the case that shows why the rule is not pedantry. The gate DID run for
-  # ReadAvrSWAP and it DID pass -- and 23 of the unit's 43 output fields are
-  # invisible to it (see plan.json `observability`). "Verified by simulation" is
-  # a true sentence and a misleading one, written by a command that read no
-  # result.
   ReadAvrSWAP:
     status: integrated
     cpp_file: translations/ReadSetParameters/readavrswap.cpp
-  # Unit #17, and the FIRST `respecify` unit in this campaign. `status:
-  # integrated` here is a statement about the BUILD -- the wrapper ships, the
-  # library links and the gate compares 5,252,000 values with 0 mismatched --
-  # and NOT about verification. The disposition in plan.json is `blocked`: the
-  # differential harness refuses the signature, so there is no mutation score.
-  # `vit integrate` also wrote `verification: simulation` here again; removed
-  # again, for the reason recorded above ExtController.
   Read_OL_Input:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/read_ol_input.cpp
-  # ADDED BY HAND at unit #18, for the reason units #14 and #16 both recorded:
-  # `vit verify` rewrites this file through a YAML round-trip that DELETES EVERY
-  # COMMENT in it, so restoring the commented file is the only way to keep the
-  # file's own reasoning -- and then the entry has to be re-added.
-  #
-  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
-  # For this unit the gate DID run and DID see it -- 1,349,326 of 5,252,000
-  # values moved under a 1.000001 perturbation -- so the line would even have
-  # been true, and it is still the wrong claim: it is written by a command that
-  # ran no simulation and read no result. What verified this unit is in
-  # plan.json's `evidence`.
   SecLPFilter:
     status: integrated
     cpp_file: translations/Filters/seclpfilter.cpp
   SecLPFilter_Vel:
     status: integrated
     cpp_file: translations/Filters/seclpfilter_vel.cpp
-  # ADDED BY HAND at unit #20, for the reason units #14, #16 and #18 all
-  # recorded: `vit verify` and `vit integrate` rewrite this file through a YAML
-  # round-trip that DELETES EVERY COMMENT in it, so restoring the commented
-  # file is the only way to keep the file's own reasoning -- and then the entry
-  # has to be re-added. Paid for twice here: the second `vit integrate` of this
-  # unit stripped the file again, and the `git checkout --` that repaired it
-  # took this entry with it.
-  #
-  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
-  # The gate DID run for this unit and DID see it -- a whole-unit no-op moves
-  # 1,526,538 of 5,252,000 values -- and the line is still the wrong claim,
-  # written by a command that ran no simulation and read no result. What
-  # verified this unit is in plan.json's `evidence`.
   StateMachine:
     status: integrated
     cpp_file: translations/ControllerBlocks/statemachine.cpp
-  # ADDED BY HAND at unit #21, for the reason units #14, #16, #18 and #20 all
-  # recorded: `vit integrate` rewrites this file through a YAML round-trip that
-  # DELETES EVERY COMMENT in it, so restoring the commented file is the only way
-  # to keep the file's own reasoning -- and then the entry has to be re-added.
-  #
-  # `vit integrate` wrote `verification: simulation` here again; REMOVED again,
-  # and for this unit the line is not merely unchecked, it is FALSE. The gate
-  # ran, compared 5,252,000 values and is BLIND to this unit: both call sites
-  # are guarded by `ZMQ_Mode > 0`, which is 0 in all 14 inputs, so a whole-unit
-  # no-op moves nothing (gate/UpdateZeroMQ.redtest.json, with a same-build
-  # control that moves 1,857,893). What verified this unit is the differential
-  # harness and the mutation score; that lives in plan.json's `evidence`.
   UpdateZeroMQ:
     status: integrated
     cpp_file: translations/ZeroMQInterface/updatezeromq.cpp
-  # ADDED BY HAND at unit #22, for the reason units #14, #16, #18 and #20 all
-  # recorded: `vit verify` and `vit integrate` rewrite this file through a YAML
-  # round-trip that DELETES EVERY COMMENT in it, so restoring the commented file
-  # is the only way to keep the file's own reasoning -- and then the entry has to
-  # be re-added. Paid for twice here as well: three STUB `vit verify` runs (the
-  # no-op, the constant and the wrong-constant of evidence/identity/) each wrote
-  # a `cases_passed` record for a run of something that is not the translation,
-  # which is unit #11's finding, so each was reverted wholesale.
-  #
-  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
-  # For this unit the gate DID run and DID see it -- 1,462,798 of 5,252,000
-  # values moved across 115 channels and 22 scenarios -- so the line would even
-  # have been true, and it is still the wrong claim: it is written by a command
-  # that ran no simulation and read no result. What verified this unit is in
-  # plan.json's `evidence`.
   identity:
     status: integrated
     cpp_file: translations/Functions/identity.cpp
-  # ADDED BY HAND at unit #23, for the reason units #14, #16, #18, #20, #21 and
-  # #22 all recorded: `vit verify` and `vit integrate` rewrite this file through
-  # a YAML round-trip that DELETES EVERY COMMENT in it, so restoring the
-  # commented file is the only way to keep the file's own reasoning -- and then
-  # the entry has to be re-added. Paid for three times here: two `vit integrate`
-  # runs (the second added `--reverse-copy`, see below) and one `vit verify`.
-  #
-  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
-  # For this unit the gate DID run and DID see it -- 1,341,803 of 5,252,000
-  # values moved under a x1.000001 perturbation -- so the line would even have
-  # been true, and it is still the wrong claim: it is written by a command that
-  # ran no simulation and read no result. What verified this unit is in
-  # plan.json's `evidence`, and one layer of it went RED first: the wrapper
-  # `vit integrate` generated WITHOUT `--reverse-copy` dropped every write this
-  # unit makes to `ErrVar%aviFAIL` and `ErrVar%ErrMsg`, and the kernel and the
-  # gate both passed it (evidence/interp1d/harness.postintegration.NO-REVERSE-COPY-FAILS-454-of-497.json).
   interp1d:
     status: integrated
     cpp_file: translations/Functions/interp1d.cpp
-  # ADDED BY HAND at unit #45, for the reason units #14, #16, #18, #20, #21,
-  # #22, #23, #25, #26 and every unit since all recorded: `vit integrate`
-  # rewrites this file through a YAML round-trip that DELETES EVERY COMMENT in
-  # it, so restoring the commented file is the only way to keep the file's own
-  # reasoning -- and then the entry has to be re-added.
-  #
-  # `--reverse-copy` IS REQUIRED, and it is required for interp1d's reason one
-  # level up (evidence/interp1d/README.md): this unit writes `ErrVar%aviFAIL`
-  # and `ErrVar%ErrMsg` on four error paths and in the RoutineName prefix, and
-  # without the flag the wrapper `vit integrate` emits copies the view IN and
-  # nothing copies it back, so every one of those writes is lost. Unit #23
-  # measured that the kernel and the gate both PASS that wrapper and only the
-  # post-integration harness sees it.
-  #
-  # No `verification:` line: this unit's evidence is the differential harness
-  # (1005 cases), its no-op red test (1005 of 1005), the mutation score and the
-  # gate, and that lives in plan.json's `evidence` rather than in a field
-  # written by a command that ran no simulation.
   interp2d:
     status: integrated
     cpp_file: translations/Functions/interp2d.cpp
-  # ADDED BY HAND at unit #25, for the reason units #14, #16, #18, #20, #21,
-  # #22 and #23 all recorded: `vit verify` and `vit integrate` rewrite this file
-  # through a YAML round-trip that DELETES EVERY COMMENT in it -- 179 lines of
-  # this file's own reasoning, measured on the diff -- so restoring the
-  # commented file is the only way to keep it, and then the entry has to be
-  # re-added.
-  #
-  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
-  # For this unit the gate DID run and DID see it -- the cubic ramp replaced by
-  # its own lower bound moves 229,165 of 5,252,000 values, revert verified -- so
-  # the line would even have been true, and it is still the wrong claim: it is
-  # written by a command that ran no simulation and read no result. And it would
-  # be the WEAKEST of this unit's five layers if it were: the gate's 27 scenarios
-  # hold `IPC_Vramp` at 9.12/11.4 in all 14 inputs, so the two CLAMPS are outside
-  # what any of them drives. What verified this unit is in plan.json's `evidence`.
   sigma:
     status: integrated
     cpp_file: translations/Functions/sigma.cpp
-  # ADDED BY HAND at unit #26, for the reason units #14, #16, #18, #20, #21,
-  # #22, #23 and #25 all recorded: `vit integrate` rewrites this file through a
-  # YAML round-trip that DELETES EVERY COMMENT in it -- 187 lines of this file's
-  # own reasoning, measured on this run's diff -- so restoring the commented file
-  # is the only way to keep it, and then the entry has to be re-added.
-  #
-  # `vit integrate` wrote `verification: simulation` here again; REMOVED again,
-  # and for this unit the line is FALSE rather than merely unchecked -- the same
-  # standing UpdateZeroMQ's entry records. The gate ran and compared 5,252,000
-  # values while BLIND to this unit: `unwrap` has two call sites and both have
-  # ZERO hits in all 27 scenarios (Controllers.f90:339 and
-  # ReadSetParameters.f90:807), so no value the gate compared was produced here.
-  # gate/unwrap.redtest.json is the failed red test that says so, with a
-  # same-build control beside it. What verified this unit is the differential
-  # harness (403 cases), the mutation score and the post-integration harness;
-  # that lives in plan.json's `evidence`.
   unwrap:
     status: integrated
     cpp_file: translations/Functions/unwrap.cpp
-  # ADDED BY HAND at unit #27, for the reason units #14, #16, #18, #20, #21,
-  # #22, #23, #25 and #26 all recorded: `vit integrate` rewrites this file
-  # through a YAML round-trip that DELETES EVERY COMMENT in it -- 213 lines of
-  # this file's own reasoning, measured on this run's diff -- so restoring the
-  # commented file is the only way to keep it, and then the entry has to be
-  # re-added. Ten units in a row now; it is a defect in VIT, not a habit of
-  # this campaign, and it is in DECISIONS.md as a candidate.
-  #
-  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
-  # For this unit the line is FALSE in a way that is worth being exact about,
-  # because the gate DID run and DID see the unit: a whole-unit no-op moves
-  # values, since all 675,987 calls in the 27 scenarios take the pass-through
-  # branch and a no-op changes what they return. What the gate CANNOT see is
-  # the two wrapping branches -- zero hits on both, in all 27 scenarios, at all
-  # six call sites (evidence/wrap_180/coverage_branch_deadness.txt) -- so a
-  # translation that dropped them both passes the gate and the kernel alike.
-  # What verified those is the differential harness and the mutation score;
-  # that lives in plan.json's `evidence`.
   wrap_180:
     status: integrated
     cpp_file: translations/Functions/wrap_180.cpp
-  # wrap_360: the same shape one screen down and the OPPOSITE comparison pair
-  # (`.lt.` low, `.ge.` high -> [0, 360)). Unlike wrap_180 its high branch is
-  # LIVE: 15,199 of 19,998 calls take it, all in scenario 22, and the kernel
-  # captured at Controllers.f90:845 sees 21 of its 41 cases wrapped. The LOW
-  # branch (x < 0) is dead at both call sites in all 27 scenarios.
   wrap_360:
     status: integrated
     cpp_file: translations/Functions/wrap_360.cpp
   ChkParseData:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/chkparsedata.cpp
-  # ADDED BY HAND at unit #31, for the reason units #14, #16, #18, #20, #21,
-  # #22, #23, #25, #26 and #27 all recorded: `vit integrate` rewrites this file
-  # through a YAML round-trip that DELETES EVERY COMMENT in it -- 240 lines of
-  # this file's own reasoning on this run's diff -- so restoring the commented
-  # file is the only way to keep it, and then the entry has to be re-added.
-  # Eleven units in a row; it is a defect in VIT and it is in DECISIONS.md.
-  #
-  # `status: integrated` here is a statement about the BUILD. For this unit the
-  # gate is blind BY CONSTRUCTION and not merely by corpus: `Debug` writes
-  # `<RootName>.RO.dbg` and assigns nothing in its own signature, while the gate
-  # compares `avrSWAP` arrays recorded by `Examples/vit_sim.py`, which never
-  # reads a `.dbg`. What compares this unit is `scripts/dbgcheck.py`; that lives
-  # in plan.json's `evidence`.
   Debug:
     status: integrated
     cpp_file: translations/ROSCO_IO/debug.cpp
-  # ADDED BY HAND at unit #32, for the reason units #14, #16, #18, #20, #21,
-  # #22, #23, #25, #26, #27 and #31 all recorded: `vit verify` and
-  # `vit integrate` rewrite this file through a YAML round-trip that DELETES
-  # EVERY COMMENT in it -- 245 lines of this file's own reasoning on this run's
-  # diff -- so restoring the commented file is the only way to keep it, and then
-  # the entry has to be re-added. Twelve units in a row; it is a defect in VIT
-  # and it is in DECISIONS.md.
-  #
-  # `vit verify` also wrote `status: non_discriminating`, `cases_passed: 20` and
-  # a `red_test: not_constructed` record here. REMOVED, and the removal is the
-  # point: VIT declined to build a red test for this unit (no by-value
-  # floating-point argument), so `cases_passed: 20` would be a machine-readable
-  # claim, in the config every later unit reads, resting on a run whose
-  # discriminating power that same command says is UNMEASURED. It was measured,
-  # by four stubs, and what they found is in plan.json's `observability` -- the
-  # kernel scores a FIRST-match-wins translation 20/20 IDENTICAL.
-  #
-  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
-  # For this unit the gate DID run and DID see it: disabling the name match
-  # moves 1,857,893 of 5,252,000 values, revert-verified. What verified the
-  # unit is in plan.json's `evidence`.
   FindLine:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/findline.cpp
-  # ADDED BY HAND at unit #33, for the reason units #14, #16, #18, #20, #21,
-  # #22, #23, #25, #26, #27, #31 and #32 all recorded: `vit verify` and
-  # `vit integrate` rewrite this file through a YAML round-trip that DELETES
-  # EVERY COMMENT in it -- 267 lines of this file's own reasoning on this run's
-  # diff -- so restoring the commented file is the only way to keep it, and then
-  # the entry has to be re-added. Thirteen units in a row; it is a defect in VIT
-  # and it is in DECISIONS.md.
-  #
-  # `vit verify` also wrote `cases_passed: 62`, `red_test: demonstrated` and a
-  # `red_test_detail` here. REMOVED. The detail line was the useful half and it
-  # is not lost -- it said the two INPUT perturbations on `error` were ABSORBED,
-  # which is this unit's kernel blindness, and it is measured rather than quoted
-  # in plan.json's `observability`: the reference return value equals `minValue`
-  # in 62 of 62 captured cases, and a stub that ignores `error` entirely passes
-  # 45 of them.
-  #
-  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
-  # For this unit the gate DID run -- see plan.json's `evidence` for what it
-  # could and could not see -- and the line would still be a claim about
-  # verification made by a command that ran no simulation and read no result.
   PIController:
     status: integrated
     cpp_file: translations/Controllers/picontroller.cpp
-  # ADDED BY HAND at unit #34, for the reason units #14, #16, #18 and #20 all
-  # recorded: `vit integrate` rewrites this file through a YAML round-trip that
-  # DELETES EVERY COMMENT in it, so restoring the commented file is the only way
-  # to keep the file's own reasoning -- and then the entry has to be re-added.
-  #
-  # `vit integrate` wrote `verification: simulation` here again; REMOVED again,
-  # and this unit is the sharpest case for the rule so far. The gate DID run and
-  # it is BLIND: PIDController's one call site has 0 hits in all 27 scenarios
-  # (evidence/PIDController/coverage_deadness.txt), and gate/PIDController.redtest.json
-  # is the failed red test that says so. "Verified by simulation" would be a
-  # false sentence written by a command that ran no simulation and read no
-  # result. What verified this unit is the differential harness and the mutation
-  # score; that lives in plan.json's `evidence`.
   PIDController:
     status: integrated
     cpp_file: translations/Controllers/pidcontroller.cpp
-  # ADDED BY HAND at unit #35, for the reason units #14, #16, #18, #20, #21,
-  # #22, #23, #25, #26, #27, #31, #32, #33 and #34 all recorded: `vit verify`
-  # and `vit integrate` rewrite this file through a YAML round-trip that DELETES
-  # EVERY COMMENT in it -- 289 lines of this file's own reasoning on this run's
-  # diff -- so restoring the commented file is the only way to keep it, and then
-  # the entry has to be re-added. Fifteen units in a row; it is a defect in VIT
-  # and it is in DECISIONS.md.
-  #
-  # `vit verify` also wrote `status: verified`, `cases_passed: 20`,
-  # `cases_total: 20`, `red_test: demonstrated` and a `red_test_detail` here.
-  # REMOVED. The kernel DID pass 20 of 20 and VIT's own red test DID go red, and
-  # both facts belong in plan.json's `evidence` beside the count of cases the
-  # capture could hold -- the configured window is 20 + 21 + 21 = 62 and this
-  # unit's only live call site (Controllers.f90:684) is called 11,994 times, so
-  # the second and third ranges are past its last call and 20 is the WHOLE of
-  # what the kernel could ever have been. A `cases_passed: 20` in the config
-  # every later unit reads does not carry that.
-  #
-  # `vit integrate` wrote `verification: simulation` here again; REMOVED again.
-  # For this unit the gate DID run and DID see it -- see plan.json's `evidence`
-  # -- and the line would still be a claim about verification made by a command
-  # that ran no simulation and read no result.
   PIIController:
     status: integrated
     cpp_file: translations/Controllers/piicontroller.cpp
-  # `vit verify` also wrote, here, `red_test: demonstrated` with the detail
-  # `the kernel failed to build with the return value scaled by 1.00001`. BOTH
-  # LINES ARE REMOVED and the removal is the point, for ExtController's reason
-  # one instrument over: it is a claim about this kernel's discriminating power
-  # made by a run that never got a perturbed kernel to execute.
-  #
-  # `vit/redtest.py` rewrites EVERY `return <expr>;` in the file, not only the
-  # translated function's, and this unit's `errmsg_trim` helper returns a
-  # `std::string` -- so `return (std::string(...)) * 1.00001;` does not compile.
-  # `cli.py:_run_red_test` treats a build failure as "a red of the crudest kind,
-  # and an honest one" and RETURNS ON THE FIRST perturbation, so the two
-  # value-level perturbations were never tried. The same shape would fire on
-  # `interp1d.cpp` and `sigma.cpp`, which carry the same helper.
-  #
-  # What this kernel can and cannot see was measured instead, by hand, against
-  # the committed kernel: evidence/PitchSaturation/. Seven stubs, of which THREE
-  # can fail.
-  #
-  # `vit integrate` then rewrote this entry to `status: integrated` and added
-  # `verification: simulation`. The status is kept; the verification line is
-  # REMOVED, for ExtController's reason applied to a case where the claim
-  # happens to be TRUE: the gate did run for this unit and did see it --
-  # gate/PitchSaturation.json, 5,252,000 values 0 mismatched, red-tested at
-  # 1,976,629 moved. But `vit integrate` wrote that word before the gate ran, so
-  # what it recorded was a prediction, and a prediction that comes true is still
-  # not a measurement. What verified this unit is named in plan.json's
-  # `evidence`, which points at artifacts.
   PitchSaturation:
     status: integrated
     cpp_file: translations/ControllerBlocks/pitchsaturation.cpp
-  # ADDED BY HAND at unit #37, for the reason units #14, #16, #18, #20, #21,
-  # #22, #23, #25, #26, #27, #31, #32, #33 and #35 all recorded: `vit verify`
-  # rewrites this file through a YAML round-trip that DELETES EVERY COMMENT in
-  # it -- 303 lines of this file's own reasoning on this run's diff -- so
-  # restoring the commented file is the only way to keep it, and then the entry
-  # has to be re-added. Seventeen units in a row; it is a defect in VIT and it
-  # is in DECISIONS.md.
-  #
-  # `vit verify` also wrote `status: non_discriminating`, `cases_passed: 41`,
-  # `red_test: not_constructed` and a `red_test_detail` here. REMOVED, and the
-  # refusal is the useful half rather than the count: VIT declined to build a
-  # red test because this unit has no by-value floating-point parameter and no
-  # floating-point result, which is FindLine's standing at unit #32. So the
-  # 41/41 is a pass whose discriminating power VIT itself calls UNMEASURED, and
-  # a `cases_passed: 41` in the config every later unit reads does not carry
-  # that.
-  #
-  # It was measured instead, by hand, against the committed kernel, and the
-  # answer is that this kernel can see almost nothing: all four outputs are
-  # CONSTANT in all 41 captured cases -- 0.9, 1.0, 1.0, 0.0 -- so a translation
-  # that reads no input and assigns those four numbers passes 41 of 41. The
-  # stubs and their runs are in evidence/PowerControlSetpoints/.
-  #
-  # `vit integrate` will write `verification: simulation` here; it is REMOVED
-  # for ExtController's reason. What verified this unit is in plan.json's
-  # `evidence`.
   PowerControlSetpoints:
     status: integrated
     cpp_file: translations/ControllerBlocks/powercontrolsetpoints.cpp
-  # Unit #38, and `status: integrated` here is `vit integrate`'s word, written
-  # over the `non_discriminating` this file carried before it. `vit integrate`
-  # also wrote `verification: simulation`; REMOVED again, for the reason
-  # recorded above ExtController -- and it is false twice over for this unit,
-  # because the gate's SECOND red test FAILED (`gate/PreFilterMeasuredSignals.
-  # redtest.flpmode2.json`, 0 of 5,252,000): the simulation does not see the
-  # Flp_Mode == 2 arm at all.
-  #
-  # `vit verify` reported 62/62 IDENTICAL over 28,582 field rows and
-  # then REFUSED to certify its own red test -- "no by-value floating-point
-  # parameter and no floating-point result: every input arrives behind a
-  # pointer or inside a derived type" -- so it wrote `non_discriminating`
-  # rather than a pass. That refusal is kept here verbatim because it is TRUE
-  # and because the campaign's rule (units #32, #33, #35) is that a refusal's
-  # stated reason is a claim of its own: it is measured by hand in
-  # evidence/PreFilterMeasuredSignals/kernel.stubs.txt, not quoted.
   PreFilterMeasuredSignals:
     status: integrated
     cases_passed: 62
@@ -924,10 +152,6 @@ translations:
       \ a derived type, and perturbing one of those could change what BOTH implementations\
       \ compute. The kernel's discriminating power is therefore UNMEASURED for this\
       \ function"
-  # Unit #39. `vit verify` ran on the SHIPPED translation, and its own red test
-  # went red -- `error` scaled by 1.00001 produced a mismatch. The six hand
-  # stubs are in evidence/ResController/kernel.stubs.txt; two of the six cannot
-  # fail, and only one of those is a blindness.
   ResController:
     status: integrated
     cases_passed: 62
@@ -937,28 +161,13 @@ translations:
     kernel_dir: kernel/ResController
     red_test: demonstrated
     red_test_detail: the kernel reported a mismatch with input `error` scaled by 1.00001
-  # Unit #40. `vit verify` ran on the SHIPPED translation -- 62/62, 14,508 field
-  # rows all IDENTICAL -- and DECLINED to construct its own red test, for the
-  # reason PreFilterMeasuredSignals got above: every argument arrives behind a
-  # pointer or inside a derived type. `status: non_discriminating` is VIT's own
-  # verdict on the kernel, kept verbatim rather than argued away; the hand stubs
-  # that measure what the kernel can and cannot see are in
-  # evidence/SetpointSmoother/kernel.stubs.txt, and one of them PASSES.
-  # INTEGRATED, and `status` still says what the KERNEL found. `vit integrate`
-  # rewrote this block to `status: integrated` / `verification: simulation`,
-  # deleting `cases_passed`, `kernel_dir`, `red_test` and the detail above --
-  # having run no simulation and read no result, which is the RUNBOOK's recorded
-  # complaint about that generator met a second time. Reverted and re-entered by
-  # hand: `integrated` is true and is recorded once, in plan.json's
-  # `disposition`, where the loop reads it; what belongs here is the kernel's
-  # own verdict, which is `non_discriminating` and has not changed.
   SetpointSmoother:
     status: non_discriminating
     cases_passed: 62
     cpp_file: translations/ControllerBlocks/setpointsmoother.cpp
     kernel_dir: kernel/SetpointSmoother
     red_test: not_constructed
-    red_test_detail: "NOT CONSTRUCTED — no by-value floating-point parameter\
+    red_test_detail: "NOT CONSTRUCTED \u2014 no by-value floating-point parameter\
       \ and no floating-point result: every input arrives behind a pointer or inside\
       \ a derived type, and perturbing one of those could change what BOTH implementations\
       \ compute. The kernel's discriminating power is therefore UNMEASURED for this\
@@ -997,96 +206,30 @@ translations:
       \ compute. The kernel's discriminating power is therefore UNMEASURED for this\
       \ function"
     verification: simulation
-  # RE-MERGED BY HAND, and it has to be. `vit verify` rewrites this file with
-  # `yaml.dump`, which drops every comment in it -- 735 of 747 lines on this
-  # run. The block below is the ONLY thing that run added; it was taken from
-  # the rewritten file and pasted into the committed one, rather than the
-  # rewritten file being committed. Same shape as the entries above it.
   YawRateControl:
     status: integrated
     cases_passed: 104
     cpp_file: translations/Controllers/yawratecontrol.cpp
     kernel_dir: kernel/YawRateControl
     red_test: not_constructed
-    red_test_detail: "NOT CONSTRUCTED — no by-value floating-point parameter\
+    red_test_detail: "NOT CONSTRUCTED \u2014 no by-value floating-point parameter\
       \ and no floating-point result: every input arrives behind a pointer or inside\
       \ a derived type, and perturbing one of those could change what BOTH implementations\
       \ compute. The kernel's discriminating power is therefore UNMEASURED for this\
       \ function"
     verification: simulation
-  # ADDED BY HAND at unit #46, for the reason units #14, #16, #18 and #20 all
-  # recorded: `vit verify` and `vit integrate` rewrite this file through a YAML
-  # round-trip that DELETES EVERY COMMENT in it -- including the ~300 lines of
-  # call-site and window reasoning above -- so restoring the commented file is
-  # the only way to keep it, and then the entry has to be re-added. Paid twice
-  # here, once after `vit verify` and once after `vit integrate`.
-  #
-  # `vit integrate` also wrote `verification: simulation` here; REMOVED, for the
-  # reason recorded above ExtController. For THIS unit the gate does see the
-  # function, so the line would even have been true -- and it is still a claim
-  # written by a command that ran no simulation and read no result. What
-  # verified this unit is in plan.json's `evidence`.
-  #
-  # The kernel numbers are NOT recorded here either. `cases_passed: 62` is true
-  # and says nothing about what those 62 cases could catch; the nine stubs in
-  # evidence/ratelimit/ are what say that, and two of them pass 62 of 62.
   ratelimit:
     status: integrated
     cpp_file: translations/Functions/ratelimit.cpp
-
-  # UNIT #47. Re-added by hand after `vit integrate --apply` for the same reason
-  # recorded above `ratelimit`: the command rewrites this file through a YAML
-  # round-trip that DELETES EVERY COMMENT in it, so the commented file is
-  # restored with `git checkout -- vit.yaml` and the entry put back here.
-  #
-  # `vit integrate` also wrote `verification: simulation`; REMOVED. The gate
-  # does see this unit -- six of the 27 scenarios call it and five of its arms
-  # are live -- so the line would even have been true, and it is still a claim
-  # written by a command that ran no simulation and read no result. What
-  # verified this unit is in plan.json's `evidence`.
   ActiveWakeControl:
     status: integrated
     cpp_file: translations/Controllers/activewakecontrol.cpp
-
-  # UNIT #48. Re-added by hand, third time in three units, for the reason
-  # recorded above `ratelimit` and again above `ActiveWakeControl`: `vit
-  # integrate --apply` rewrites this file through a YAML round-trip that
-  # DELETES EVERY COMMENT in it -- 1091 lines to 246, and the ONLY semantic
-  # difference between the two was this one entry (verified by loading both
-  # with `yaml.safe_load` and walking them key by key, rather than by reading
-  # the diff). So the commented file is restored with `git checkout -- vit.yaml`
-  # and the entry put back here.
-  #
-  # `vit integrate` also wrote `verification: simulation`; REMOVED, same as for
-  # the two units above. It is a claim written by a command that ran no
-  # simulation and read no result. What verified this unit is in plan.json's
-  # `evidence`, and its primary layer is a direct-call harness, not a
-  # simulation.
   AeroDynTorque:
     status: integrated
     cpp_file: translations/Functions/aerodyntorque.cpp
-  # ADDED BY HAND, as unit #14's entry above records for the same reason and
-  # unit #5's for a second one. `vit integrate --apply` rewrote this whole file
-  # through a YAML round trip: every comment in it was deleted, the em dashes in
-  # two `red_test_detail` strings were re-encoded as `\u2014`, and a
-  # `verification: simulation` line was written under this unit. The functional
-  # diff was exactly those three things, so the file was reverted and the two
-  # lines below written by hand.
-  #
-  # `verification: simulation` is NOT carried, for ExtController's reason: it is
-  # a claim about what verified this unit, made by a command that ran no
-  # simulation and read no result. What verified CableControl is the differential
-  # harness, the mutation score, the post-integration harness and the gate, and
-  # that lives in plan.json's `evidence`.
   CableControl:
     status: integrated
     cpp_file: translations/Controllers/cablecontrol.cpp
-  # HAND-WRITTEN, as every entry above it is, for unit #14's reason and unit
-  # #49's: `vit integrate --apply` rewrites this whole file through a YAML round
-  # trip, which deletes every comment in it, re-encodes the em dashes and adds a
-  # `verification: simulation` line that is false -- this unit's evidence is a
-  # differential harness, a mutation sweep and a 27-scenario gate, and which of
-  # those it is belongs in plan.json's `evidence`, not in a field nothing reads.
   FlapControl:
     status: integrated
     cpp_file: translations/Controllers/flapcontrol.cpp
@@ -1099,6 +242,10 @@ translations:
   IPC:
     status: integrated
     cpp_file: translations/Controllers/ipc.cpp
+  ParseDbAry_Opt:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/parsedbary_opt.cpp
+    verification: simulation
 types:
   ControlParameters:
     strategy: view
@@ -1106,32 +253,6 @@ types:
     strategy: view
   ExtControlType:
     strategy: view
-  # ADDED BY `vit translate` at unit #5, not carried from the first replication.
-  # The header above says these two were deliberately NOT taken from that
-  # campaign's HEAD, because taking them would have been an answer key. These
-  # were derived by the tool from THIS tree's ROSCO_Types.f90 -- it detects the
-  # ALLOCATABLE fields and writes the entry itself -- so they are a measurement,
-  # not a copy, and they are kept for that reason.
-  #
-  # What they mean today, measured at unit #5 and true until VIT changes:
-  # LocalVariables crosses (167 fields, one CHARACTER array, five nested types;
-  # `strategy: view` handles all of it). ErrorVariables DOES NOT. Its four
-  # fields include `CHARACTER(:), ALLOCATABLE :: ErrMsg`, and `vit translate`
-  # refuses it -- "Deferred-length CHARACTER(:) is not C-compatible".
-  #
-  # So with this entry present `vit interface` emits a five-argument wrapper
-  # that USEs `vit_errorvariables_view`, a module nothing can generate: the
-  # wrapper will not compile. Without it, the same command silently emitted a
-  # three-argument bridge that compiled and could not see `LocalVar%iStatus`.
-  # The entry stays because failing to build beats failing silently, and
-  # because 37 of this campaign's 69 units take a TYPE(ErrorVariables) dummy --
-  # the gap has to be closed in VIT, not routed around here. See DECISIONS.md
-  # and plan.json's ExtController entry.
-  #
-  # `vit analyze-types --fix character` is the remedy VIT's error message
-  # suggests, and it is REFUSED here: it rewrites ROSCO's own type definition
-  # to a fixed length, which changes LEN(ErrVar%ErrMsg) and so changes the
-  # oracle's behaviour. P7.
   LocalVariables:
     strategy: view
   ErrorVariables:
