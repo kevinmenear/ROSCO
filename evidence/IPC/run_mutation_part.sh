@@ -41,11 +41,29 @@
 # `harness/IPC.json` was green on -- which is unit #26's rule.
 set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"; cd "$ROOT"
-PART="${1:?usage: run_mutation_part.sh <part-name> <operator>[,<op>...] [--equivalences]}"
+PART="${1:?usage: run_mutation_part.sh <part-name> <operator>[,<op>...] [--equivalences] [--offset N] [--limit N]}"
 OPS="${2:?}"
+shift 2
+
+# AND THE SLICE, WHICH IS WHY THIS UNIT CAN BE SCORED AT ALL. `const_tweak` is
+# 40 mutants here at 26.5s each -- 1,040s against the 600s a foreground command
+# may block for -- and until loop 4751161 `--limit` could only truncate, so
+# mutants 21..40 were not addressable by any sequence of runs. `--offset N
+# --limit M` names a window; `scripts/_mutation_merge.py` checks that the
+# windows of the parts sharing an operator PARTITION it, by mutant id.
+#
+# Anything not recognised here is passed through to `vit_mutate.py` unchanged,
+# so the two slice flags need no special case.
 EQ=""
-[ "${3:-}" = "--equivalences" ] && \
-    EQ="--equivalences /workspace/ROSCO-r2/mutation/IPC.equivalences.json"
+EXTRA=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --equivalences)
+            EQ="--equivalences /workspace/ROSCO-r2/mutation/IPC.equivalences.json" ;;
+        *) EXTRA="$EXTRA $1" ;;
+    esac
+    shift
+done
 
 OPARGS=""
 if [ "$OPS" != "all" ]; then
@@ -58,4 +76,4 @@ bash scripts/mutate_guarded.sh translations/Controllers/ipc.cpp \
       "cd /workspace/ROSCO-r2 && python3 /workspace/translation-loop/scripts/vit_mutate.py \
          IPC --root /workspace/ROSCO-r2 \
          --cpp translations/Controllers/ipc.cpp --module Controllers \
-         $OPARGS $EQ --out mutation/IPC.clean.$PART.json"
+         $OPARGS $EQ $EXTRA --out mutation/IPC.clean.$PART.json"
