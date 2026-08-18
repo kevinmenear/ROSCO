@@ -89,7 +89,10 @@ artifact — `N/A R14_planted_word: no CHARACTER ARRAY input` — and
 hash is the check, and it could have gone the other way.
 
 Every number re-taken came back **identical**: 63,888/0; 63,888 of 63,888 twice;
-5,252,000/0; 334,388; 201,604; 159,758. The four non-const_tweak operators that
+5,252,000/0; 334,388; 201,604; 159,758. The gate was then run a THIRD time at the
+very end of the dispatch, after all three perturb/revert cycles, and rewrote
+`gate/IPC.json` **byte for byte** — `git status` reported nothing to commit, so
+that artifact is reproducible rather than merely repeatable. The four non-const_tweak operators that
 had been scored before returned the same survivors BY ID. So the instrument move
 is visible in the stamps and nowhere in the results — which is what a re-take
 that changes only the instrument should look like.
@@ -138,9 +141,15 @@ in DECISIONS.md as a campaign decision rather than this unit's.
 | `ipc.cpp:170-173` — the four fixed-size local DECLARATIONS `double PitComIPC[3];` etc. | **8** (`index_offset '[3]'->'[3 + 1]'` ×4, `const_tweak '3'->'4'` ×4) | **(c)** — declaring a four-element array where three are used. The extra slot is never written and never read, and none of the four locals is compared: they are procedure locals, not fields. Behaviour-preserving everywhere, on an argument that does not mention the corpus. |
 | `ipc.cpp:380-385` — the `IPC_SatMode` split and its two `std::fmin` saturations | **9** (`drop_call` ×2, `swap_call_args` ×2, `arith_op` ×2, `swap_operands` ×1, `const_tweak` ×2) | **(a) — a CORPUS GAP, established by execution.** Not declared equivalent. See below. |
 | `ipc.cpp:249, 276, 436` — `LocalVar->restart ? 1 : 0` at the three callee calls | **3** (`const_tweak '1'->'2'`) | **(c)**, and argued in the translation's own comment before these mutants existed: the generated wrapper writes `MERGE(1_C_INT, 0_C_INT, reset)` and the callee converts back with `(reset != 0)`, so the particular non-zero value is not observable on either tree. |
-| `ipc.cpp:132-133` — `errmsg_trim`, the blank-trimming helper | **3** (`compare_op '>'->'>='`, `const_tweak '0'->'1'` ×2, `'1'->'2'`) | **(c)/(a) mixed.** `n >= 0` differs from `n > 0` only for a NEGATIVE length, which a length field cannot hold. `find_last_not_of(' ') + 2` appends one character that is a blank by construction, and Fortran CHARACTER assignment blank-pads, so a trailing blank is not observable through this boundary. The two `0 -> 1` need an ErrMsg of length exactly 0 or 1 carrying a non-blank first byte; R13 sweeps the staging CAPACITY, not that. |
+| `ipc.cpp:132-133` — `errmsg_trim`, the blank-trimming helper | **4** (`compare_op '>'->'>='`, `const_tweak '0'->'1'` ×2, `const_tweak '1'->'2'`) | **(c)/(a) mixed.** `n >= 0` differs from `n > 0` only for a NEGATIVE length, which a length field cannot hold. `find_last_not_of(' ') + 2` appends one character that is a blank by construction, and Fortran CHARACTER assignment blank-pads, so a trailing blank is not observable through this boundary. The two `0 -> 1` need an ErrMsg of length exactly 0 or 1 carrying a non-blank first byte; R13 sweeps the staging CAPACITY, not that. |
 | `ipc.cpp:250, 305` — `0, 0.0)` (LPFilter's optional pair) and `Y_MErrF = 0.0` | **2** (`const_tweak '0.0'->'1.0'`) | **(c)** — the first is the VALUE half of an optional-argument pair whose presence flag is the `0` beside it, so the value is never read; the second is the dead assignment the translation notes at the declaration, written by the reference and by this and read on no path. |
-| `ipc.cpp:382` — one `swap_operands` and both `arith_op` at the saturation | (counted in the 9 above) | |
+
+**The five rows sum to 8 + 9 + 3 + 4 + 2 = 26, which is `survived` in
+`mutation/IPC.json`, and every survivor id appears in exactly one row.** Checked
+by set difference against the artifact rather than by adding the column up: a
+classification that quietly drops a survivor is how a blind spot stops being
+counted. The first draft of this table said 3 for the `errmsg_trim` row and
+listed four mutants in its own parenthesis.
 
 **The 380-385 row is the unit's headline and it was not argued.** The surviving
 `drop_call` mutant `b36f5d50` was run through the gate character for character
