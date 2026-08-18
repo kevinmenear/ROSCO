@@ -2073,3 +2073,55 @@ CntrPar_Fl_Mode = { values = [1, 2] }
 # than inlined here and is therefore the same implementation on both sides of
 # this comparison.
 objInst_instPI = { lo = 1, hi = 1000 }
+
+[ForeAftDamping]
+
+# THE ONLY LOOP BOUND IN THIS UNIT, AND IT SUBSCRIPTS ONE FIXED-SIZE ARRAY OF
+# EXTENT 3:
+#
+#     :602  DO K = 1,LocalVar%NumBl
+#     :603      LocalVar%FA_PitCom(K) = LocalVar%FA_AccHPFI
+#
+#     ROSCO_Types.f90:341   REAL(DbKi) :: FA_PitCom(3)
+#
+# The loop is not guarded and nothing in the reference tests NumBl against 3, so
+# a NumBl above 3 is a WRITE past a fixed-size field in the REFERENCE -- not a
+# read, as unit #38's and unit #47's instances were, and not a case where the
+# slack can quietly agree on both sides. `lo = 0` is kept deliberately: a
+# zero-blade rotor runs the loop body zero times, which is the ONLY input under
+# which this unit calls PIController, advances `objInst%instPI` and writes
+# `LocalVar%FA_AccHPFI` while leaving all three `FA_PitCom` slots at the values
+# they arrived with. It is the one thing that can tell this unit's two
+# statements apart, so it is worth more here than in the three units that
+# already carry this pin.
+#
+# The same bound and the same reason as `[PreFilterMeasuredSignals]`,
+# `[ActiveWakeControl]` and `[FlapControl]`; this is the fourth unit to carry
+# it.
+#
+# THE COST, STATED: NumBl leaves R6's integer ladder, so the decade boundaries
+# and the two 32-bit extremes are gone from it. Every one of those is a value at
+# which the reference writes outside its own fields. The gate cannot restore
+# them either -- all three scenarios that reach this unit run NumBl == 3, read
+# from the loop's own gcov counts (63,996 = 4 x 15,999 and 95,996 = 4 x 23,999),
+# so {0, 1, 2} exist in this campaign ONLY in the harness corpus.
+LocalVar_NumBl = { lo = 0, hi = 3 }
+
+# THE OLDEST JUDGEMENT IN THIS FILE, MET A THIRTEENTH TIME. `objInst%instPI` is
+# INTENT(INOUT) to `PIController`, which subscripts `piP`'s five DIMENSION(1024)
+# arrays with it and then post-increments -- INSIDE the callee, where no
+# compared out-parameter exists for an inference to attach a role to. Unit #41
+# paid for this with `Error allocating 11703869192 bytes` from its own bridge.
+#
+# THE ARITHMETIC IS EXACTLY ONE CALL. This unit has no branch at all: the single
+# `PIController` call runs on every invocation, above and outside the only loop,
+# so the counter advances by 1 whatever NumBl holds and the bound could be
+# 1024 - 1. 1000 is used anyway, because it is the number the other nine units
+# in this file already carry and a bound differing by 23 buys nothing
+# measurable.
+#
+# THE COST, STATED: the counter leaves R6's integer ladder. A defect at the last
+# slot would be a defect in `PIController` (unit #33), which is CALLED rather
+# than inlined here and is therefore the same implementation on both sides of
+# this comparison.
+objInst_instPI = { lo = 1, hi = 1000 }
