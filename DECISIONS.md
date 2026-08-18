@@ -2,6 +2,57 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #54 — ParseDbAry_Opt — 2026-08-18
+
+### The dispatch opened on a live orphaned sweep, a live mutant, and a de-integrated tree
+
+`ParseDbAry_Opt`'s dispatch began at 23:48 local. The tree it inherited from unit
+#53 carried, simultaneously:
+
+```
+.loop-run/TREE_IS_DE_INTEGRATED   raised 03:35:25Z -- 9 src files reverted to 54dd134
+.loop-run/MUTATE_IN_PROGRESS      raised 03:38:03Z -- host pid 78240, GONE
+translations/Controllers/ipc.cpp  CntrPar->IPC_KI[i - 1] -> [i - 2]   <- A LIVE MUTANT
+container pid 1117614             vit_mutate.py IPC --operator const_tweak, STILL RUNNING
+```
+
+The host side of that `docker exec` was killed with the dispatch. **The
+container side was not**, and ten minutes later it was still sweeping — which is
+exactly the outliving-orphan failure the prompt's step 2 describes, observed
+here rather than inherited. It had written no artifact yet (`vit_mutate.py`
+writes its JSON at the end), so nothing was lost by ending it.
+
+Recovery, in the order the marker itself prescribes:
+
+```
+docker exec vit-dev kill 1117614          # the orphan, confirmed gone
+git checkout HEAD -- translations/Controllers/ipc.cpp
+git hash-object ...  811d6842dccf68f59ba7a7a7c44901bb5d436245   == intended
+rm .loop-run/MUTATE_IN_PROGRESS           # only after the hash agreed
+bash scripts/restore_integrated.sh        # 83 files, CMakeLists, rebuild+install
+nm -D rosco/lib/libdiscon.so              # 3 of 3 _c bridges present, 0 kgen symbols
+```
+
+**The guard worked.** `MUTATE_IN_PROGRESS` named the file, the intended hash and
+the exact repair, and the pre-commit hook refused every commit in the window —
+so the mutant could not be committed and, because `TREE_IS_DE_INTEGRATED` was
+also up, neither could the de-integrated tree. Two markers, two refusals, and
+the recovery was mechanical rather than a diagnosis.
+
+**What the guard does not do is reach into the container.** `mutate_guarded.sh`
+records a *host* pid, and the process that must be killed is a *container* one;
+nothing in the campaign kills it, and nothing would have noticed had it run to
+completion and written `mutation/IPC.clean.const_tweak.json` into a tree that had
+since been restored. Raised as a proposed amendment: the marker should record the
+container-side command's own pid (or a container-visible marker file the sweep
+removes), so that a later session can ask *is it still running* rather than
+inferring it from a dead host pid. Until then, the check is one command and it
+belongs beside the hash check:
+
+```
+docker exec vit-dev bash -lc "ps aux | grep '[v]it_mutate'"
+```
+
 ## Unit #53 — IPC — 2026-08-17
 
 ### An operator's mutant population can exceed one foreground call, and nothing in the toolchain can split it (a proposed tooling amendment)
