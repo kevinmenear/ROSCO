@@ -176,3 +176,23 @@ WHAT NO INSTRUMENT HERE REACHES
     and compares it; the gate runs it at its initial value on every call.
   * the 40 `const_tweak` mutants: not scored at all -- see
     mutation.merge_refusal.txt and evidence/IPC/README.md.
+
+================================================================================
+SECOND DISPATCH: ALL THREE RE-TAKEN AT loop 4751161 / vit 3f6e2ce
+
+The first dispatch took these at (loop d947d92, vit a16a7ab). Completing the
+mutation layer required moving the whole unit to the current instrument, so all
+three were re-run rather than left behind at a revision nothing else names.
+
+  additive        + 0.01   334,388 of 5,252,000   revert 0     (was 334,388)
+  multiplicative  * 2.0    201,604 of 5,252,000   revert 0     (was 201,604)
+  drop_call  b36f5d50      159,758 of 5,252,000   revert 0     (was 159,758)
+
+Identical to the value, all three. So everything this file concludes from them
+stands unchanged: the additive/multiplicative DIFFERENCE still names scenarios
+2, 6 and 18 as the ones where LocalVar%IPC_PitComF is exactly 0.0, and the
+drop_call result still says the corpus gap at IPC_SatMode/fmin is a gap and not
+an equivalence.
+
+gate/IPC.redtest.json is the drop_call run; gate.redtest.fmin_dropcall.json is a
+copy of it, kept because this file's argument refers to it by that name.
