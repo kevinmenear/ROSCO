@@ -1,0 +1,178 @@
+Unit #53 `IPC` -- the three gate perturbations, and the one that answers a
+question the differential harness could not
+
+Green: gate/IPC.json, 5,252,000 values / 351 channels / 27 scenarios, 0
+mismatched. Green alone is not evidence; these are the reds beside it.
+
+===============================================================================
+WHICH SCENARIOS CAN SEE THIS UNIT AT ALL
+===============================================================================
+
+Coverage (coverage/line_coverage.json, against the clean source) says FIVE of
+the 27 reach the body: 2, 6, 8, 18 and 27. DISCON's call site is guarded by
+`IPC_ControlMode >= 1 .OR. Y_ControlMode == 2` and the shipped inputs say why --
+every one of the 22 `Examples/DISCON*.IN`:
+
+    file                 IPC_CM  Y_CM  SatMode  CornerFreqAct  IPC_KP        IPC_KI
+    DISCON_yaw.IN          0      2       2        0.0         0.0  0.0      0.0  0.0
+    DISCON_ipc_awc.IN      1      0       2        0.0         0.1  0.1      0.01 0.01
+    DISCON_ipc.IN          2      0       2        0.0         0.1  0.05     0.01 0.005
+    DISCON_stress27.IN     1      1       2        0.0         0.1  0.0      0.01 0.0
+    the other 18           0     0/1      2        0.0         0.0  0.0      0.0  0.0
+
+Three facts fall straight out of that table and each one costs the gate an arm:
+
+  * `IPC_SatMode == 2` IN ALL 22.       The SatMode == 3 arm and the SatMode
+                                        fall-through are unreachable from any
+                                        shipped input -- 0 hits, all 27.
+  * `IPC_CornerFreqAct == 0.0` IN ALL 22. The `> 0` LPFilter arm inside the
+                                        per-blade loop is unreachable -- 0 hits,
+                                        all 27. The pass-through arm is what
+                                        every scenario runs.
+  * `Y_IPC_KP = Y_IPC_KI = Y_IPC_IntSat = 0.00000` in DISCON_yaw, the ONLY file
+                                        with Y_ControlMode == 2. The yaw-by-IPC
+                                        PIController therefore has zero gains
+                                        AND a zero saturation interval, so its
+                                        answer is exactly 0.0 on every call.
+
+The ErrMsg prefix (`aviFAIL < 0`) has 0 hits in all 27 as well. So four of this
+unit's arms are outside the gate entirely, and the differential harness -- whose
+R7 predicate knob sweeps IPC_SatMode over [0,1,2,3,4] and IPC_CornerFreqAct over
+[-1,0,1,2] -- is the only instrument that reaches them.
+
+===============================================================================
+RED TEST 1 -- ADDITIVE, on the statement that stores this unit's whole answer
+===============================================================================
+
+    rosco/controller/src/ipc.cpp
+    from  LocalVar->IPC_PitComF[K - 1] = PitComIPCF[K - 1];
+    to    LocalVar->IPC_PitComF[K - 1] = PitComIPCF[K - 1] + 0.01;
+
+    RED TEST PASS: moved 334,388 of 5,252,000; after revert 0 of 5,252,000
+    30 of 351 channels; scenarios 2, 6, 8, 18, 27
+    gate.redtest.additive.json
+
+The five scenarios that move are exactly the five coverage says call the unit --
+no more and no fewer -- which is the control that the perturbation is reaching
+the unit and not something else. Six channels move in each: bld_pitch,
+bld_pitch_2, bld_pitch_3, gen_power, gen_speed, gen_torque.
+
+===============================================================================
+RED TEST 2 -- MULTIPLICATIVE, on the SAME statement, run on purpose
+===============================================================================
+
+    from  LocalVar->IPC_PitComF[K - 1] = PitComIPCF[K - 1];
+    to    LocalVar->IPC_PitComF[K - 1] = PitComIPCF[K - 1] * 2.0;
+
+    RED TEST PASS: moved 201,604 of 5,252,000; after revert 0
+    scenarios 8 and 27 ONLY
+    gate.redtest.multiplicative.json
+
+    additive        334,388     scenarios 2, 6, 8, 18, 27
+    multiplicative  201,604     scenarios       8,     27
+    difference                  scenarios 2, 6,    18
+
+This is unit #52's pair, run deliberately rather than met by accident. An
+additive perturbation moves whatever the value is; a multiplicative one cannot
+move an exact zero. So in scenarios 2, 6 and 18 `LocalVar%IPC_PitComF` is
+EXACTLY 0.0 on every invocation -- ANNIHILATION, not blindness. The gate does
+reach the statement in all five.
+
+AND THE BASELINE ITSELF SAYS SO INDEPENDENTLY, which is unit #46's rule (a
+baseline array can be a unit's own output) used as a control rather than as a
+selector. `IPC_PitComF(K)` is the only per-blade term the collective pitch
+command gets from this unit, so a scenario in which it is zero has three
+IDENTICAL blade-pitch channels:
+
+    scenario   bld_pitch range               1/2/3 identical?
+      2        [0.0, 0.0024175008293241]     yes  -> IPC contributes nothing
+      6        [0.0, 0.0024175008293241]     yes  -> IPC contributes nothing
+     18        [0.0, 0.0935264825820923]     yes  -> IPC contributes nothing
+      8        [-4.3e-19, 0.4911 / 0.7906 / 0.8706]   NO
+     27        [0.0, 1.5800 / 1.5600 / 1.5750]        NO
+
+Two different measurements, the same three scenarios. And the REASONS differ,
+which is worth keeping apart:
+
+    scenario  2   Y_ControlMode == 2 with all three Y_IPC parameters at
+                  0.00000, and IPC_ControlMode == 0, so the four-zeros ELSE arm
+                  runs and the yaw term is 0.0 as well. Both inputs to the
+                  inverse Coleman transform are exactly zero.
+    scenario  6   IPC_ControlMode == 1, but its own docstring says it: "In the
+                  1-DOF sim, blade root moments are 0". `rootMOOPF` is zero, so
+                  both Coleman axes are zero and the PI outputs are zero.
+    scenario 18   IPC_ControlMode == 2 with NON-ZERO gains (0.1/0.05,
+                  0.01/0.005) -- and still exactly zero, for scenario 6's
+                  reason. This is the one that cannot be predicted from the
+                  DISCON table alone, and it is the reason the pair was run.
+
+SO THE 2P ARM -- the one only scenario 18 reaches, `IPC_ControlMode >= 2` -- is
+in the gate's window and computes an exact zero there. The gate can tell that
+the arm RAN (the additive perturbation moves it) and cannot tell what it
+COMPUTED. That is unit #46's finding one level up: presence is not visibility.
+
+===============================================================================
+RED TEST 3 -- THE MUTANT THE DIFFERENTIAL HARNESS COULD NOT KILL
+===============================================================================
+
+The mutation sweep left 12 survivors, 8 of them at the two `std::fmin`
+saturation statements: `drop_call` on both arms, `swap_call_args` on both, and
+`arith_op` on both, plus `swap_operands` and `compare_op` on one each. The
+question that raises is whether those are equivalences or a corpus gap, and it
+is answered by EXECUTION on the other instrument rather than by argument.
+
+The perturbation is the surviving `drop_call` mutant, character for character:
+
+    from  LocalVar->IPC_IntSat = std::fmin(CntrPar->IPC_IntSat,
+                                           LocalVar->BlPitchCMeas - CntrPar->PC_MinPit);
+    to    LocalVar->IPC_IntSat = CntrPar->IPC_IntSat;
+
+    mutation/IPC.clean.calls.json   SURVIVOR b36f5d50, 63,888 cases
+    RED TEST PASS: moved 159,758 of 5,252,000; after revert 0
+    scenarios 8 and 27 ONLY
+    gate.redtest.fmin_dropcall.json
+
+**THE SAME EDIT SURVIVES 63,888 DIFFERENTIAL CASES AND IS KILLED BY THE GATE ON
+159,758 VALUES.** So mutant b36f5d50 is NOT equivalent, and the eight survivors
+at that site are a property of the harness CORPUS rather than of the program.
+The two instruments are complementary here in the direction this campaign
+usually finds the other way round: the gate is normally the coarser instrument
+(unit #52's gate constrained nothing its unit computed), and on this site it is
+the only one that discriminates.
+
+Which scenarios move is the consistency check: 8 and 27, the same two the
+multiplicative test moved, and the only two in which this unit's answer is
+non-zero. `LocalVar%IPC_IntSat` reaches an output ONLY as the saturation pair of
+the `IPC_ControlMode >= 1 .AND. Y_ControlMode /= 2` PIController calls, so a
+scenario whose PI output is zero cannot see it either -- which is why scenario
+18, with non-zero gains and the 2P arm live, does not move.
+
+WHAT THE HARNESS'S OWN MEASUREMENTS ALREADY SAID ABOUT THAT SITE, before this
+red test was run, and it is not "the arm is unreachable":
+
+    swap_operands 'BlPitchCMeas - LocalVar->PC_MinPit'  (the SatMode == 3 arm)
+        -> 'LocalVar->PC_MinPit - BlPitchCMeas'                        KILLED
+    swap_operands 'BlPitchCMeas - CntrPar->PC_MinPit'   (the SatMode == 2 arm)
+        -> 'CntrPar->PC_MinPit - BlPitchCMeas'                       SURVIVED
+
+Both arms ARE reached by the corpus -- one of the two swaps dies there. What the
+corpus does not contain is a case in which `fmin`'s SECOND argument wins on the
+SatMode == 2 arm: every edit that changes only that argument's value is
+invisible, and the one edit that made it much smaller (the SatMode == 3 swap)
+killed. The gate supplies exactly that case.
+
+===============================================================================
+WHAT NO INSTRUMENT HERE REACHES
+===============================================================================
+
+  * `IPC_SatMode == 3` and the SatMode fall-through: reached by the harness
+    corpus (R7's knob), 0 hits in all 27 gate scenarios.
+  * `IPC_CornerFreqAct > 0.0`, the per-blade LPFilter: reached by the harness
+    corpus, 0 hits in all 27.
+  * the `'IPC:'` ErrMsg prefix: reached by the harness corpus (aviFAIL knob at
+    -1), 0 hits in all 27.
+  * `LocalVar%axisYawF_2P`: read at :548 and written by NOTHING in ROSCO. Its
+    value is whatever `LocalVariables` was initialised to. The harness draws it
+    and compares it; the gate runs it at its initial value on every call.
+  * the 40 `const_tweak` mutants: not scored at all -- see
+    mutation.merge_refusal.txt and evidence/IPC/README.md.
