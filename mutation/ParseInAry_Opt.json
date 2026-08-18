@@ -35,21 +35,15 @@
  "nocompile_ratio": 0.0064,
  "nocompile_refused": false,
  "total": 157,
- "killed": 68,
- "survived": 88,
+ "killed": 69,
+ "survived": 87,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.4359,
+ "score": 0.4423,
  "loop_rev": "2ff3660-nogit",
  "gen_rev": "gen-8256909adf67",
  "vit_rev": "3f6e2ce-nogit",
  "survivors": [
-  {
-   "id": "66860b6f",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
   {
    "id": "2f8001ae",
    "operator": "compare_op",

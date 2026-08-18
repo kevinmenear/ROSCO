@@ -1,22 +1,22 @@
 {
  "unit": "ParseInAry_Opt",
  "against": "integrated",
- "checked": 13674,
+ "checked": 15504,
  "failed": 0,
  "inadmissible": 0,
  "no_oracle_when_skipped": {
-  "Ary": 4067
+  "Ary": 1283
  },
  "rule_coverage": [
   "  applied  R5_non_degenerate_shape    6 varied extent(s) at [3, 4, 5, 6, 7, 8] and [3, 4, 5, 6, 7, 8], NO index parameter identified, array elements distinct",
-  "  applied  R2_flag_values             8 value(s) across 4 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+  "  applied  R2_flag_values             9 value(s) across 5 flag(s), each with 8 case(s) of the remaining inputs varied under it",
   "  applied  R6_reference_literals      41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 12 combination(s) of the 3 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead; 480 character value(s) from a corpus of 30 (the reference's own character literals and their collating neighbours) across 4 string(s), each at length(s) [1, 2, 8, 13] and in the mixed / padded / all-blank / leading-blank shapes, plus 1104 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
   "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
   "  N/A      R3_no_dead_signal          no real parameter",
   "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
   "  N/A      R12_narrowing_width        no CHARACTER local is narrower than a dummy assigned into it -- the reference truncates nothing, so there is no boundary for this rule to reach",
   "  applied  R13_staging_capacity       256 case(s) sweeping the stated staging capacity of every deferred-length CHARACTER output from 0 to 255 bytes above what the case supplies, every other input at its base draw -- so the output has one length across the block and exactly one case sizes the buffer TO it, one a byte short and one a byte long. A capacity a case does not state is `emit.ALLOC_HEADROOM`, which is what every case outside this block still carries",
-  "  applied  R14_planted_word           32 case(s) planting a free scalar CHARACTER input as word [1, 2, 3] of ONE element of a CHARACTER ARRAY input -- the element FIRST and LAST, so a search that skips the first is distinguishable; every free scalar integer at k-1 and at k, so whichever offset the reference uses to pick its word is hit; the key case-INVERTED against the word, so an uppercasing pass dropped on either side breaks the match; every other element and every other word a decoy that no key spells. Reached ['1:plant']; NOT reached ['2:plant', '3:plant'] -- the field is too narrow to carry the plant, or the integer values it needs are outside a stated range",
+  "  applied  R14_planted_word           216 case(s) planting a free scalar CHARACTER input as word [1, 2, 3] of ONE element of a CHARACTER ARRAY input -- the element FIRST and LAST, so a search that skips the first is distinguishable; every free scalar integer at k-1 and at k, so whichever offset the reference uses to pick its word is hit; the key case-INVERTED against the word, so an uppercasing pass dropped on either side breaks the match; every other element and every other word a decoy that no key spells. Reached ['1:plant', '2:plant', '3:plant']",
   "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
   "  applied  R4_compare_all_outputs     return value + 6 out-parameter(s): Ary, ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg -- Ary: COMPARED ONLY WHERE THE REFERENCE HAS AN ORACLE (no_oracle_when; the excluded count is in the artifact)"
  ],
@@ -28,7 +28,7 @@
     "ErrVar_aviFAIL >= 0"
    ],
    "reference_returned": "ErrVar.aviFAIL < 0",
-   "cases_not_compared": 4067,
+   "cases_not_compared": 1283,
    "reason": "the reference ALLOCATEd Ary on this call and then RETURNed on an arm that assigns none of it (.NOT. AllowDefault_) or only a prefix (the READ error arm); those elements are recycled heap and a comparison against them decides nothing about either implementation. MEASURED ON THIS UNIT'S OWN CORPUS before this entry was written: 4,067 of 13,674 cases, classified in evidence/ParseInAry_Opt/harness_partition.txt -- 100% of both cells and 0% of the other five, and 0 Ary-failing cases outside the condition. The one-relation form excludes 4,233; the extra 166 arrived already failed and never entered the reference's body."
   }
  },

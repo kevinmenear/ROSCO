@@ -1,44 +1,74 @@
 ParseInAry_Opt -- the differential harness partitioned by (alloc_Ary on entry, arm)
-13674 cases, 4067 failing, EVERY failure on Ary and on no other output.
+MEASURED ON THE SECOND DISPATCH'S CORPUS (15,504 cases), after the two
+base-draw corrections in harness/ranges.toml. The first dispatch's table, on
+the 13,674-case corpus, is in the git history of this file.
 
-HOW: one fprintf in the generated test (translations/ROSCO_Helpers/parseinary_opt_test/
-parseinary_opt_test.cpp) and a rebuild without regenerating the corpus -- unit #47's
-probe. It reads THREE things and all three are properties of (corpus x reference):
+HOW: one fprintf in the generated test and a rebuild WITHOUT regenerating the
+corpus -- unit #47's probe. It reads THREE things and all three are properties
+of (corpus x reference):
   alloc_Ary  the descriptor flag the CASE supplied, read before either call
-  entry      ErrVar%aviFAIL as the CASE supplied it, snapshotted before either call
-             because both calls overwrite it
-  arm        which message the REFERENCE's own ErrVar%ErrMsg carries on return
-Nothing on the translation's side is read, so the table is identical under every
-mutant and every stub -- which is what makes a mutation score over it a measurement.
+  entry      ErrVar%aviFAIL as the CASE supplied it, snapshotted before both
+             calls because both of them overwrite it
+  arm        what the REFERENCE returned: its aviFAIL, whether its ErrMsg
+             length moved, and byte 16 of the message it left
+Nothing on the translation's side is read, so the table is identical under
+every mutant and every stub -- which is what makes a mutation score over it a
+measurement.  `error, msg refused` is the arm where the reference DID set
+aviFAIL = -1 and the bridge would not fit the message in the staging buffer;
+that is a real cell here rather than a corner, because R13 sweeps the
+capacity from below the message length to above it.
 
-  alloc  arm             cases   Ary-failing
-      0  not-allowed      4006     4006
-      0  other            3003        0
-      0  read-failed        61       61
-      1  already-alloc    5697        0
-      1  not-allowed       805        0
-      1  other              60        0
-      1  read-failed        42        0
+15504 cases, 0 failing with the `no_oracle_when` entry APPLIED.
 
-100% of two cells and 0% of the other five. A case fails IF AND ONLY IF the reference
-ALLOCATEd Ary on this call and then RETURNed on a path that assigns none of it
-(.NOT. AllowDefault_) or only a prefix of it (the READ error arm). Those elements are
-undefined in the reference -- the recorded diffs are pointer values, e.g.
-b00aab0220e80000 -- so the comparison decides nothing about either implementation.
-There is no coincidental agreement anywhere, which is the statement no rate can make.
+  alloc  arm                   cases  failing
+      0  arrived-failed          184        0
+      0  error, msg refused      104        0
+      0  no-error               6515        0
+      0  not-allowed            1120        0
+      0  read-failed              59        0
+      1  already-alloc          6542        0
+      1  arrived-failed           76        0
+      1  not-allowed             817        0
+      1  read-failed              87        0
 
-THE EXCLUSION'S SIZE, PREDICTED FROM THIS TABLE BEFORE THE ENTRY WAS WRITTEN:
-  alloc_Ary == 0  AND  entry aviFAIL >= 0  AND  reference returned aviFAIL < 0
-    -> 4067 cases, of which 4067 are Ary-failing
-    -> Ary-failing cases OUTSIDE it: 0
-  the ONE-RELATION form (dropping the entry-status half): 4233
-    -> 166 cases too many. Those are exactly the ones that arrived
-       ALREADY FAILED and never entered the reference's body (IF (ErrVar%aviFAIL >= 0)
-       wraps everything), where Ary is untouched on both sides and perfectly defined.
+THE STATED EXCLUSION -- alloc_Ary == 0 AND entry aviFAIL >= 0 AND the
+reference returned aviFAIL < 0 -- holds on 1283 of 15504 cases (8.3%).
+On the first dispatch's corpus it held on 4,067 of 13,674 (29.7%), so the
+corrected base draw did not widen the region the harness cannot judge: it
+SHRANK it to a quarter of its share, because `alloc_Ary == 1` cases have a
+perfectly defined Ary and the corrected draw puts more of the corpus there.
+The one-relation form (dropping the entry-status half) excludes 1467,
+184 too many -- again the cases that arrived already failed.
 
-THIS TABLE IS CELL-FOR-CELL IDENTICAL TO evidence/ParseDbAry_Opt/harness_partition.txt,
-and it was MEASURED here rather than inherited. The two units share a signature and a
-body, so the corpus rules draw the same 13674 cases -- but the case FILE differs
-(sha256 0c18dba45e22d2df0239c79c7410e11b45b7e28dbf3bcea04f13edf0cce68900 against the
-sibling's 64942b97..., because Ary's elements are 4 bytes here and 8 there), so nothing
-about the agreement was guaranteed in advance.
+AND THE CHECK ON THE EXCLUSION IS THE GREEN ITSELF: 0 failing cases means no
+case OUTSIDE the condition disagrees on Ary. That check is not free here --
+see DECISIONS.md on the corpus variant that was measured and NOT taken,
+in which exactly one case outside the condition did.
+
+R13's STAGING-CAPACITY BLOCK, WHICH IS WHAT THE BASE-DRAW CORRECTION WAS FOR:
+  block size                       256
+  alloc_Ary                        [0]
+  has_AllowDefault / AllowDefault  [(1, 0)]   (was [(0, 0)])
+  ErrVar_aviFAIL at entry          [300]
+  cases reaching an ERROR arm      256 of 256      (was 0 of 256)
+  ... in which the bridge FITS it  152
+  the one message length           [112]
+  capacities swept                 8 .. 263
+  cases at LEN(ErrMsg) == cap      1      <-- the input that tells `>` from `>=`
+
+EXACTLY ONE, WHICH IS WHAT R13 CLAIMS: one length across the block, one case
+that sizes the buffer TO it, one a byte short and one a byte long. On the
+first dispatch's corpus this number was 0, and `assign_errmsg`'s
+`s.size() > cap` -> `>=` survived on it.
+
+cases assigning ErrVar%ErrMsg, whole corpus:   8625
+  of those, LEN == the staging capacity:       1
+
+PINS ASSERTED ON THE REGENERATED CORPUS, because a pin restated in a second
+spelling is a pin that could have come loose:
+  UnEc                             {0: 15504}
+  AryLen at 0/1/2/3 (R14's plant)  [(0, 74), (1, 110), (2, 111), (3, 39)]
+
+The AryLen line is R14's second and third plant positions arriving: on the
+first dispatch's corpus the plant's own integer never left 0 (64 cases at
+AryLen 0, and 2:plant / 3:plant reported NOT reached).
