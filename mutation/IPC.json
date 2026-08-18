@@ -43,18 +43,52 @@
  "compared_against": "fortran_reference_on_a_clean_tree",
  "mutants": 118,
  "equivalent_declared": 14,
+ "unreachable_declared": 5,
+ "unreachable": [
+  {
+   "id": "f43d4529",
+   "operator": "swap_call_args",
+   "reason": "swap_call_args at ipc.cpp:381 -- std::fmin(CntrPar->IPC_IntSat, LocalVar->BlPitchCMeas - CntrPar->PC_MinPit) with its two arguments exchanged. fmin(a, b) and fmin(b, a) can differ only where a and b COMPARE EQUAL with different bit patterns, which for finite doubles means a pair of zeros of opposite sign; a NaN is handled symmetrically and there are none here. Measured over the whole 83,754-case corpus at this arm: reached 28,108 times, second_wins 3,024, equal_same_bits 2, equal_diff_bits 0, nan 0. The two orders therefore compute the SAME BITS on every case this corpus contains. This is a statement about the CORPUS and not about the programs: reaching it needs CntrPar%IPC_IntSat and BlPitchCMeas - PC_MinPit to be zeros of OPPOSITE SIGN in the same case, and R6's negative-zero stage sets one real at a time while no entry in harness/ranges.toml can state a coincidence between two parameters' values.",
+   "evidence": "evidence/IPC/probe_fmin_site.json"
+  },
+  {
+   "id": "90fd1954",
+   "operator": "swap_call_args",
+   "reason": "swap_call_args at ipc.cpp:384 -- the IPC_SatMode == 3 arm of the same fmin, LocalVar%PC_MinPit in place of CntrPar%PC_MinPit. Same argument as f43d4529 and the same probe: arm 3 is reached 27,828 times, second_wins 2,564, equal_same_bits 0, equal_diff_bits 0, nan 0. The arm is ALIVE -- it is reached and the saturation bites 2,564 times -- so this is a gap in the corpus at a live site, not a dead site.",
+   "evidence": "evidence/IPC/probe_fmin_site.json"
+  },
+  {
+   "id": "257ba010",
+   "operator": "const_tweak",
+   "reason": "const_tweak at ipc.cpp:132, `n > 0` -> `n > 1` inside errmsg_trim. Differs from the original only when n == 1 at the CALL -- and n at the call is not the case's ErrVar%ErrMsg length, because IPC's four sigma callees each prefix 'sigma:' onto the same buffer first. probe_errmsg_trim.py replays those four gates plus IPC's own per case: 60,495 of 83,754 cases reach errmsg_trim (the rest have aviFAIL >= 0 and never call it), and n at the call takes the values {7, 24, 25, 26, 27, 28, 29, 30, 31, 34, 36} -- never 1. differs_at_trim 0, differs_in_output 0. Positive control: relaxing the predicate to n <= 31 counts 60,120, so the zero is a property of the corpus and not of the loop. The 4 cases at n == 7 are R13's capacity rungs 7..10, where every gate refuses; the character stage that supplies a length of 1 runs at emit.ALLOC_HEADROOM = 4096, where every gate passes and the length becomes 25.",
+   "evidence": "evidence/IPC/probe_errmsg_trim.json"
+  },
+  {
+   "id": "f9e75298",
+   "operator": "const_tweak",
+   "reason": "const_tweak at ipc.cpp:132, the `: 0` of `n > 0 ? (size_t)n : 0` -> `: 1`. Differs only when n <= 0 at the call, which is the view's NOT-ALLOCATED convention. No case in this corpus states it: ErrVar_ErrMsg_n takes the values {1: 196, 2: 580, 3: 1, 7: 82397, 12: 580} on entry, all positive, and neither the sigma chain nor assign_errmsg can lower a length -- each writes 'sigma:'//TRIM(...) or 'IPC:'//TRIM(...), which is at least 4 bytes, or refuses and leaves the length alone. differs_at_trim 0, differs_in_output 0 over the 60,495 cases that reach the function. Positive control: the nearest predicate the corpus DOES satisfy, n_entry <= 1, counts 196 -- this mutant needs one shorter still.",
+   "evidence": "evidence/IPC/probe_errmsg_trim.json"
+  },
+  {
+   "id": "f56feead",
+   "operator": "const_tweak",
+   "reason": "const_tweak at ipc.cpp:133, `find_last_not_of(' ') + 1` -> `+ 2`. Differs only when the string at the call has a TRAILING BLANK (the all-blank case included, where npos + 2 is 1 rather than 0); otherwise substr's count clamps to size() and the two are the same string. 3,083 of the cases that reach errmsg_trim arrive with a trailing blank ON ENTRY -- R6's padded character shape -- and none of them still has one at the call, because a successful 'sigma:'//TRIM(...) strips it and the four sigma gates all pass wherever the capacity is emit.ALLOC_HEADROOM. differs_at_trim 0, differs_in_output 0. Positive control: 3,083 with the chain's strip term relaxed, and 990 more among the cases that never reach the call at all.",
+   "evidence": "evidence/IPC/probe_errmsg_trim.json"
+  }
+ ],
+ "unreachable_but_killed": [],
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 118,
- "killed": 96,
- "survived": 8,
+ "killed": 99,
+ "survived": 0,
  "equivalent": 14,
  "declared_but_killed": [],
- "score": 0.9231,
- "loop_rev": "4751161-nogit",
+ "score": 1.0,
+ "loop_rev": "b9c8c52-nogit",
  "vit_rev": "3f6e2ce-nogit",
  "merged_from": [
   {
@@ -74,8 +108,8 @@
    "mutants": 6,
    "nocompile": 0,
    "killed": 4,
-   "survived": 2,
-   "score": 0.6667
+   "survived": 0,
+   "score": 1.0
   },
   {
    "part": "mutation/IPC.clean.index0.json",
@@ -109,9 +143,9 @@
    "total": 9,
    "mutants": 9,
    "nocompile": 0,
-   "killed": 7,
-   "survived": 2,
-   "score": 0.7778
+   "killed": 9,
+   "survived": 0,
+   "score": 1.0
   },
   {
    "part": "mutation/IPC.clean.arith0.json",
@@ -236,8 +270,8 @@
    "mutants": 10,
    "nocompile": 0,
    "killed": 3,
-   "survived": 3,
-   "score": 0.5
+   "survived": 0,
+   "score": 1.0
   },
   {
    "part": "mutation/IPC.clean.const1.json",
@@ -289,61 +323,12 @@
    "total": 10,
    "mutants": 10,
    "nocompile": 0,
-   "killed": 8,
-   "survived": 1,
-   "score": 0.8889
+   "killed": 9,
+   "survived": 0,
+   "score": 1.0
   }
  ],
- "merged_why": "118 mutants at ~34.5s each on an 84,754-case corpus is 4,070s against the 600s a foreground command may block for, so the sweep is thirteen parts. Nine are operator-filtered whole; index_offset, arith_op and swap_operands are two SLICES each and const_tweak is four, because vit_mutate.py --offset/--limit names a window and this merge checks that the windows of the parts sharing an operator PARTITION it by mutant id. Five parts were re-run with --equivalences after the classification; the other eight are the first run.",
+ "merged_why": "118 mutants at ~38.5s each on an 83,754-case corpus is 4,540s against the 600s a foreground command may block for, so the sweep is thirteen parts. Nine are operator-filtered whole; index_offset, arith_op and swap_operands are two SLICES each and const_tweak is four, because vit_mutate.py --offset/--limit names a window and this merge checks that the windows of the parts sharing an operator PARTITION it by mutant id. All thirteen were re-run at the fourth dispatch on the corpus the CntrPar_IPC_IntSat pin produces, with --equivalences and --unreachable supplied to every one.",
  "merged_by": "scripts/_mutation_merge.py",
- "survivors": [
-  {
-   "id": "f43d4529",
-   "operator": "swap_call_args",
-   "before": "CntrPar->IPC_IntSat,\n                                         LocalVar->BlPitchCMeas - CntrPar->PC_MinPit",
-   "after": "LocalVar->BlPitchCMeas - CntrPar->PC_MinPit, CntrPar->IPC_IntSat"
-  },
-  {
-   "id": "90fd1954",
-   "operator": "swap_call_args",
-   "before": "CntrPar->IPC_IntSat,\n                                         LocalVar->BlPitchCMeas - LocalVar->PC_MinPit",
-   "after": "LocalVar->BlPitchCMeas - LocalVar->PC_MinPit, CntrPar->IPC_IntSat"
-  },
-  {
-   "id": "7512a165",
-   "operator": "index_offset",
-   "before": "[0]",
-   "after": "[0 + 1]"
-  },
-  {
-   "id": "f7f90ca1",
-   "operator": "index_offset",
-   "before": "[0]",
-   "after": "[0 + 1]"
-  },
-  {
-   "id": "257ba010",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "f9e75298",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "f56feead",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "53653667",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  }
- ]
+ "survivors": []
 }
