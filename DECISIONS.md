@@ -12157,3 +12157,57 @@ which of two adjacent gains they read, and the corpus separates those two gains
 in very few cases. A `values` list on `CntrPar_IPC_KP`/`IPC_KI` making the two
 elements deliberately unequal would widen it. Not taken, and priced: another
 full re-take of every layer that reads the corpus.
+
+**A KILLED SWEEP'S MARKER TELLS YOU TO REPAIR THE FILE, AND THAT INSTRUCTION IS
+WRONG ON ITS OWN WHEN THE SWEEP IS STILL ALIVE.** `MUTATE_IN_PROGRESS` prints
+
+```
+  CHECK:  git hash-object <the .cpp>        # must equal the intended hash
+  FIX:    git checkout HEAD -- <the .cpp>   # if it does not
+```
+
+and the pre-commit hook prints the same two steps in the same order. Followed
+literally on IPC's inherited marker, both steps *succeeded*: the checkout
+restored `ipc.cpp` to `811d6842`, the hash agreed, and the marker's own
+condition for coming down was met. It was still the wrong repair, because the
+sweep that raised the marker was **not dead**. The host pid it records (86429)
+was gone; container pid 1205860 was thirteen minutes in and compiling a
+sanitized mutant, `cc1plus` at 99% CPU. `vit_mutate.py` writes the .cpp in
+place once per mutant, so the restored file had a known lifetime measured in
+seconds, and the agreeing hash would have been a snapshot between two writes.
+
+RUNBOOK already carries the container check, added after unit #54 inherited
+unit #53's live sweep. What that note does not say, and what this dispatch
+found by ordering it correctly, is that the check is not merely *additional* to
+the hash repair — it must come **before** it, and the hash must be taken
+**again after the kill**. The sequence that is actually sound:
+
+```
+docker exec vit-dev bash -lc "ps aux | grep '[v]it_mutate'"   # 1. is it alive
+kill the container tree: python PARENT first, then make/cc1plus  # 2. stop writes
+git checkout HEAD -- <the .cpp>                               # 3. repair
+git hash-object <the .cpp>                                    # 4. RE-verify
+```
+
+Step 2's order matters too: killing the parent first is what stops further
+writes to the tree; the surviving `make`/`cc1plus` only touch the test
+directory. (The `docker exec` running a broad `pkill` killed its own shell —
+exit 137 — leaving those two behind, which is why they needed a second pass by
+pid. Kill by pid, not by pattern, from inside a container you are exec'd into.)
+
+The marker text and the hook text are both invariant-layer artifacts, so the
+amendment is **proposed, not applied**: add the container check and the
+re-verify to the two `FIX:` blocks, ahead of the checkout rather than after it.
+As written they describe the recovery from a sweep that is *dead*, and they do
+not say that this is the case they assume — which is exactly the assumption a
+dead host pid invites a reader to make, twice now.
+
+**AND THE COROLLARY FOR WHAT COUNTS AS "THE UNIT IS DONE".** IPC reached
+`COMPLETE 14/14` at `aad8e597`, and the dispatch after it was reported as
+failing on `P2:dirty_tree`. Nothing about the translation had regressed: the
+dirty tree was an *extra* `--sanitize` sweep begun after the close, on a unit
+with **zero survivors**, i.e. against the class `--sanitize` exists to reach
+when a value comparison cannot. Two dispatches were spent on that sweep and
+neither finished it. **A sweep taken after the close can only lower the unit's
+state, never raise it** — there is no survivor for it to explain — and it opens
+the de-integration and in-place-mutation windows to do so. Not re-taken here.
