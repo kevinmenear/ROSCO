@@ -2396,7 +2396,61 @@ ErrVar_ErrMsg = { staging_capacity_excludes = [11, 34], reason = "IPC prefixes '
 # for arbitrary N, including unit 6, which is the stdout the harness reads its
 # own JSON out of.
 # ---------------------------------------------------------------------------
+#
+# A THIRD ENTRY, ADDED AT THE SECOND DISPATCH: `Ary` HAS NO ORACLE ON EXACTLY
+# THE CASES WHERE THE REFERENCE ALLOCATED IT AND THEN RETURNED WITHOUT WRITING
+# IT, AND THAT IS A CONDITION, NOT A DOMAIN.
+#
+#     ALLOCATE ( Ary(FinalAryLen) , STAT=ErrStatLcl )   ! contents UNDEFINED
+#     IF (.NOT. FoundLine) THEN
+#         IF (.NOT. AllowDefault_) THEN
+#             ErrVar%aviFAIL = -1
+#             RETURN                                    ! ... and still are
+#     READ (Line,*,IOSTAT=ErrStatLcl)  Ary
+#     IF ( ErrStatLcl /= 0 )  RETURN                    ! ... or a PREFIX is
+#
+# The first dispatch measured this as 4,067 red cases of 13,674, classified
+# them (`evidence/ParseDbAry_Opt/harness_partition.txt`) and left the layer red
+# -- which took the MUTATION layer with it, because `vit_mutate.py` refuses to
+# score against a non-green baseline. That refusal is correct. This states the
+# region instead.
+#
+# THE CONDITION IS A CONJUNCTION AND BOTH HALVES ARE LOAD-BEARING. It is the
+# NINTH judgement kind (loop `bf5a91b`), and it exists because neither of the
+# two spellings that already existed can name this region:
+#
+#   * `no_oracle = "..."` on `Ary` drops the output for the WHOLE corpus, and
+#     `Ary` is this unit's whole answer -- the RUNBOOK's unit #51 rule.
+#   * no `lo`/`hi`/`values` narrowing can reach it either. Whether the
+#     reference returns an unwritten array is decided by ITS OWN CONTROL FLOW,
+#     and the closest input-only pin (`alloc_Ary = { values = [1] }`) would
+#     cost the 3,003 `alloc = 0, other` cases -- the only ones in which the
+#     reference's own ALLOCATE sets the extent and `Ary = 0` then defines every
+#     element, so `FinalAryLen` and the `IF (AryLen < 1)` arm are observable
+#     THERE AND NOWHERE ELSE.
+#
+# `alloc_Ary == 0` says the array arrived UNALLOCATED, so whatever storage it
+# comes back on was allocated by this call. `ErrVar.aviFAIL < 0` is the
+# REFERENCE's OWN returned status, and it is `< 0` exactly on the two arms that
+# return early: measured, at `alloc_Ary == 0` the cells are
+#
+#     not-allowed  4006     read-failed    61     other  3003
+#
+# and the first two are 100% Ary-failing while the third is 0%. 4,067 = the red
+# set exactly, predicted by the partition before this pin was written.
+#
+# THE REFERENCE SIDE IS THE ONE READ, never the translation's: the excluded set
+# is then a property of (corpus x reference), identical under every mutant and
+# every stub, which is what makes a mutation score over it a measurement.
+#
+# WHAT IT COSTS, stated: on those 4,067 cases `Ary` is not compared. Every
+# OTHER output still is -- `ErrVar.aviFAIL`, `ErrVar.ErrStat`, `ErrVar.ErrMsg`,
+# its length and `size_avcMSG` -- and the call is still made on both sides. The
+# count lands in the artifact beside `checked`, and `vit_harness.py` refuses to
+# write an artifact whose stated exclusion excluded nothing.
+# ---------------------------------------------------------------------------
 [ParseDbAry_Opt]
 
 AryLen = { lo = 0, hi = 32 }
 UnEc = { lo = 0, hi = 0 }
+Ary = { no_oracle_when = "alloc_Ary == 0", and_reference = "ErrVar.aviFAIL < 0", reason = "the reference ALLOCATEd Ary on this call and then RETURNed on an arm that assigns none of it (.NOT. AllowDefault_) or only a prefix (the READ error arm); those elements are recycled heap and a comparison against them decides nothing about either implementation. 4,067 of 13,674 cases, classified in evidence/ParseDbAry_Opt/harness_partition.txt: 100% of both cells and 0% of the other five." }
