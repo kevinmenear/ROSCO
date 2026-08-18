@@ -1,0 +1,131 @@
+ParseInAry_Opt -- THE SIX SURVIVORS THE DONE-CONDITION NAMED, ONE AT A TIME
+
+The second dispatch was given six ids by `done_check.py`'s P12 line and asked,
+for each, which of three things it is:
+
+  (a) genuinely equivalent -- the mutated program agrees with the original on
+      every admissible input
+  (b) the harness cannot reach it -- fix the INPUTS, not the record
+  (c) a blind spot no rule covers -- record it as a known gap and escalate
+
+NONE OF THE SIX IS (a). One was (b) and is now DEAD; three are (b) with the fix
+outside this unit's authority; two are (c), in a class this campaign already
+has open. Nothing below is declared equivalent.
+
+Those six are `d["survivors"][:6]` -- the artifact's list truncated by the
+predicate's own formatting, not a selected set. The other 82 are placed by
+region in `mutation_survivors.txt` and put through the second instrument in
+`survivor_replay.txt`; the two causes there are unchanged and both are already
+escalated.
+
+===============================================================================
+66860b6f   line  97   assign_errmsg   compare_op  '>' -> '>='
+           (b) -- FIXED, AND IT IS THE ONLY VERDICT THAT MOVED
+===============================================================================
+`assign_errmsg` refuses the assignment when `s.size() > cap`; the Fortran
+bridge writes when `LEN(msg) <= cap`. The two agree on every input EXCEPT
+`s.size() == cap`, so the question is entirely whether the corpus contains a
+case in which the reference assigns an `ErrVar%ErrMsg` whose length is exactly
+the staging capacity the case supplied.
+
+MEASURED (evidence/ParseInAry_Opt/r13_base_draw_probe.txt): on the first
+dispatch's corpus, 10,611 of 13,674 cases assign a message and ZERO of them at
+`LEN == cap`. R13's 256-case staging-capacity block exists to produce exactly
+that case, and this unit's base draw put the whole block on the one arm that
+assigns NO message at all -- `alloc_Ary = 0`, `has_AllowDefault = 0`,
+`aviFAIL = 300`: allocate, find no line, allow the default, return clean.
+0 of 256 wrote anything.
+
+THE FIX IS TO THE INPUTS. `harness/ranges.toml` now states
+`has_AllowDefault = { values = [1, 0] }` and `AllowDefault = { values = [0, 1] }`
+-- present, and false -- which puts the block on the `.NOT. AllowDefault_` arm.
+On the corrected corpus 256 of 256 reach an error arm, 152 of them fit the
+staging buffer, the message is 112 bytes across the whole block, the capacities
+sweep 8 .. 263, and EXACTLY ONE case sizes the buffer to 112.
+
+  mutation sweep, corrected corpus:  66860b6f KILLED
+  the only verdict that moved:       68/156 -> 69/156, no regressions
+
+===============================================================================
+ad38f36b   line 202   parse_int   compare_op  '==' -> '!='   (`rec[p] == '+'`)
+ba05f614   line 202   parse_int   compare_op  '==' -> '!='   (`rec[p] == '-'`)
+6d203c33   line 203   parse_int   compare_op  '==' -> '!='   (`neg = rec[p] == '-'`)
+           (b) -- REACHABLE, AND THE FIX IS A SHARED RULE THIS UNIT MAY NOT MAKE
+===============================================================================
+All three are inside the sign-handling of `parse_int`, and all three are KILLED
+by the other instrument -- the 113-record parser replay -- at 60, 62 and 5
+records of 113 respectively (`survivor_replay.json`). A mutant killed by one
+instrument is not equivalent, whatever the other reports, so these are a CORPUS
+gap and nothing more.
+
+WHAT THE CORPUS CANNOT DO, measured rather than asserted. The differential
+harness reaches the parser at all only where `FindLine` matches, and `FindLine`
+matches a WORD of a file line against `ParamName`. Two independently drawn
+strings never coincide, so the only matches the corpus produces are R14's
+deliberate plant and the all-blank coincidence. R14's alphabet is `aA`, `bB`,
+`cC` -- LETTERS. So every record the parser is ever handed either is blank or
+begins with a letter, and it fails at the first character, before any sign is
+read. The no-read stub measures the whole region at 146 cases of 15,504.
+
+This dispatch made R14 plant at words 1, 2 AND 3 rather than word 1 alone (the
+`UnEc` entry below), which is why the region grew from 103 of 13,674. It does
+not put a DIGIT in front of a matched word, and it cannot: the plant alphabet
+is `generate.py`'s, shared by every unit in the campaign. Unit #54 escalated
+exactly this to the Driver -- "every unit in the `Parse*_Opt` family is a parser
+behind that search, so every one will reach its parser in ~1% of its cases
+unless the rule plants more" -- and it is the Driver's to weigh.
+
+The `UnEc` correction is the part that WAS in this unit's authority:
+
+  UnEc = { lo = 0, hi = 0, values = [0] }
+
+R14 sets EVERY free scalar integer to `k-1` and to `k` in the same case and
+drops the whole shape when any one of them is outside its stated range. `UnEc`
+is pinned to exactly 0 by this unit's own entry, so `k = 2` and `k = 3` needed
+`UnEc` at 1, 2 or 3 and were dropped -- a pin on a parameter the rule is not
+about deleted two thirds of the rule, and the artifact said so
+(`NOT reached ['2:plant', '3:plant']`) for a whole dispatch before anyone read
+it. Stating `values` as well as the bounds takes `UnEc` out of `plant_ints`
+while pinning it at the same single value; the regenerated corpus carries
+`UnEc = 0` in all 15,504 cases, asserted, and R14 now reports
+`Reached ['1:plant', '2:plant', '3:plant']`.
+
+===============================================================================
+2f8001ae   line 202   parse_int   compare_op  '<' -> '<='   (`p < len`)
+08ff2c98   line 209   parse_int   compare_op  '<' -> '<='   (`p < len`)
+           (c) -- THE CAMPAIGN'S SANITISER-BUILD CLASS, AND THEY BELONG TO IT
+===============================================================================
+Both widen a record-bound check so that at `p == len` the mutant reads
+`rec[len]`. `rec` is `Line.data()` and `Line` is `std::vector<char>(2048)`
+(translation line 473), so `rec[len]` is ONE PAST THE END of the allocation.
+That is undefined behaviour, not a defined read of a blank -- the vector has no
+guaranteed element there, unlike a `std::string`, whose `data()[size()]` is a
+defined NUL. So this is NOT case (a): there is no argument that the two
+programs agree on every admissible input, only an observation that on this
+allocator the byte that happens to follow is another blank and the answer does
+not change.
+
+NEITHER INSTRUMENT REACHES THEM, and that is measured on both:
+
+  differential harness   survived
+  parser replay          unreached, 0 of 113 records
+
+They are two of the nineteen READ-region survivors that nothing reaches, of
+which fifteen are this same shape (`p < len` -> `p <= len` and `rec[p]` ->
+`rec[p + 1]` at record bounds). What would kill them is not a case -- it is a
+BUILD: ASan or `_GLIBCXX_DEBUG`, under which a one-past-the-end read faults
+instead of returning a blank. That is unit #31's open amendment. This unit adds
+only that these two, and the other seventeen, belong to it -- measured, not
+assumed.
+
+===============================================================================
+SUMMARY
+===============================================================================
+  66860b6f   (b)   fixed here: R13's base draw corrected, mutant KILLED
+  ad38f36b   (b)   corpus gap; killed by the parser replay at 60/113
+  ba05f614   (b)   corpus gap; killed by the parser replay at 62/113
+  6d203c33   (b)   corpus gap; killed by the parser replay at  5/113
+  2f8001ae   (c)   one-past-the-end read; needs a sanitiser build
+  08ff2c98   (c)   one-past-the-end read; needs a sanitiser build
+
+  (a) genuinely equivalent:  none of the six.
