@@ -2337,3 +2337,66 @@ objInst_instSecLPF = { lo = 1, hi = 1000 }
 # stating one. This entry is STRICTLY MORE INPUT than the ablation it replaces:
 # `--disable R13_staging_capacity` would drop all 256 rungs to avoid 24.
 ErrVar_ErrMsg = { staging_capacity_excludes = [11, 34], reason = "IPC prefixes 'IPC:' onto ErrVar%ErrMsg after its four sigma callees have each prefixed 'sigma:' onto the same buffer, so the translation chain gates the staging buffer FIVE times where the reference chain gates it once, on the final 35 bytes. Inside [11, 35) the reference holds the entry value, the translation holds a partial composition, and the reference's own 35-byte answer is a value neither side can carry -- the case has no oracle. Predicted from the two prefix lengths, then measured at cases 63660..63683 (24 cases, k = 4..27 of the ladder)." }
+
+# ---------------------------------------------------------------------------
+# ParseDbAry_Opt                                                     unit #54
+#
+# TWO PINS. The first is INHERITED FROM A MEASUREMENT THIS CAMPAIGN ALREADY
+# TOOK; the second is the corpus half of a translation decision, and it is
+# stated here rather than left to be inferred from the .cpp.
+#
+# `AryLen` -- the same bound `[FindLine]` above carries, for the same reason
+# and at the same site. `ParseDbAry_Opt`'s FIRST statement inside the guard is
+# `CALL FindLine(FileLines, ParamName, FoundLine, Line, LineNum, AryLen)`, so
+# every value of `AryLen` reaches `WordInd = AryLen + 1` and
+# `ALLOCATE(Words(WordInd))` unchanged. Unit #32's probe
+# (`evidence/FindLine/arylen_probe.txt`, thirteen values, one process each,
+# against the clean Fortran) is therefore a probe of THIS unit's domain too:
+#
+#     -2147483648   SIGSEGV in __rosco_helpers_MOD_findline
+#     -100 / -2 / -1   SIGABRT, malloc(): corrupted top size
+#     0             returns          <- and it is the `AryLen < 1` arm here
+#     1 .. 100000   returns
+#     2147483647    SIGSEGV -- AryLen + 1 overflows
+#
+# `lo = 0` is the boundary and not a margin: `IF (AryLen < 1) FinalAryLen = 1`
+# is this unit's own arm and 0 is the only reachable value that takes it --
+# the shipped callers pass `CntrPar%F_NumNotchFilts` and friends, which are 0
+# in most `Examples/DISCON*.IN`, and coverage records the arm 66 times across
+# 21 scenarios. `hi = 32` is a narrowing, stated as one; the reference is
+# defined to at least 100000. Copied from `[FindLine]` rather than re-derived.
+#
+# `UnEc` -- held at the value the SHIPPED PROGRAM has at every one of this
+# unit's 1,232 calls, because the arm it gates is NOT TRANSLATED and a corpus
+# that drove it would drive it on one side only.
+#
+#     IF ( PRESENT(UnEc))  THEN
+#         IF ( UnEc > 0 )  WRITE (UnEc,*)  LineNum, Tab, ParamName, Tab, Ary
+#     END IF
+#
+# `UnEc` is a Fortran UNIT NUMBER. The record goes to whatever file the CALLER
+# connected it to -- `<RootName>.RO.echo`, OPENed by
+# `ReadControlParameterFileSub` when `CntrPar%Echo > 0`
+# (ReadSetParameters.f90:358-362, clean) -- and C++ cannot reach the Fortran
+# runtime's unit table. The only record the translation could write is one to
+# `fort.<UnEc>`, a different file, so it writes none; see the comment at the
+# statement in `translations/ROSCO_Helpers/parsedbary_opt.cpp`.
+#
+# THE ARM IS DEAD IN ALL 27 SCENARIOS, measured rather than assumed:
+# `coverage/line_coverage.json` has ReadSetParameters.f90:359
+# (`IF (CntrPar%Echo > 0)`) reached 28 times and :360 (the first statement
+# inside it) ZERO times, so `UnEc` is 0 at every call and the guard is false at
+# every one. All 22 `Examples/DISCON*.IN` set `Echo` to 0.
+#
+# WHAT THE PIN COSTS, stated: `UnEc` leaves R6's ladder and R7's predicate
+# knob, so no case in this corpus has `UnEc > 0`. Nothing is lost on the
+# translation side -- there is no code there to reach -- and what is lost on
+# the REFERENCE side is a side effect no layer of this unit's evidence
+# compares. Without the pin the reference would write records to `fort.<N>`
+# for arbitrary N, including unit 6, which is the stdout the harness reads its
+# own JSON out of.
+# ---------------------------------------------------------------------------
+[ParseDbAry_Opt]
+
+AryLen = { lo = 0, hi = 32 }
+UnEc = { lo = 0, hi = 0 }
