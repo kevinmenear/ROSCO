@@ -46,6 +46,21 @@
  ],
  "mutants": 6,
  "equivalent_declared": 0,
+ "unreachable_declared": 2,
+ "unreachable": [
+  {
+   "id": "f43d4529",
+   "operator": "swap_call_args",
+   "reason": "swap_call_args at ipc.cpp:381 -- std::fmin(CntrPar->IPC_IntSat, LocalVar->BlPitchCMeas - CntrPar->PC_MinPit) with its two arguments exchanged. fmin(a, b) and fmin(b, a) can differ only where a and b COMPARE EQUAL with different bit patterns, which for finite doubles means a pair of zeros of opposite sign; a NaN is handled symmetrically and there are none here. Measured over the whole 83,754-case corpus at this arm: reached 28,108 times, second_wins 3,024, equal_same_bits 2, equal_diff_bits 0, nan 0. The two orders therefore compute the SAME BITS on every case this corpus contains. This is a statement about the CORPUS and not about the programs: reaching it needs CntrPar%IPC_IntSat and BlPitchCMeas - PC_MinPit to be zeros of OPPOSITE SIGN in the same case, and R6's negative-zero stage sets one real at a time while no entry in harness/ranges.toml can state a coincidence between two parameters' values.",
+   "evidence": "evidence/IPC/probe_fmin_site.json"
+  },
+  {
+   "id": "90fd1954",
+   "operator": "swap_call_args",
+   "reason": "swap_call_args at ipc.cpp:384 -- the IPC_SatMode == 3 arm of the same fmin, LocalVar%PC_MinPit in place of CntrPar%PC_MinPit. Same argument as f43d4529 and the same probe: arm 3 is reached 27,828 times, second_wins 2,564, equal_same_bits 0, equal_diff_bits 0, nan 0. The arm is ALIVE -- it is reached and the saturation bites 2,564 times -- so this is a gap in the corpus at a live site, not a dead site.",
+   "evidence": "evidence/IPC/probe_fmin_site.json"
+  }
+ ],
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
@@ -56,25 +71,13 @@
  "nocompile_refused": false,
  "total": 6,
  "killed": 4,
- "survived": 2,
+ "survived": 0,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.6667,
- "loop_rev": "4751161-nogit",
+ "unreachable_but_killed": [],
+ "score": 1.0,
+ "loop_rev": "b9c8c52-nogit",
  "gen_rev": "gen-cf5dcfa09cce",
  "vit_rev": "3f6e2ce-nogit",
- "survivors": [
-  {
-   "id": "f43d4529",
-   "operator": "swap_call_args",
-   "before": "CntrPar->IPC_IntSat,\n                                         LocalVar->BlPitchCMeas - CntrPar->PC_MinPit",
-   "after": "LocalVar->BlPitchCMeas - CntrPar->PC_MinPit, CntrPar->IPC_IntSat"
-  },
-  {
-   "id": "90fd1954",
-   "operator": "swap_call_args",
-   "before": "CntrPar->IPC_IntSat,\n                                         LocalVar->BlPitchCMeas - LocalVar->PC_MinPit",
-   "after": "LocalVar->BlPitchCMeas - LocalVar->PC_MinPit, CntrPar->IPC_IntSat"
-  }
- ]
+ "survivors": []
 }

@@ -46,6 +46,8 @@
  ],
  "mutants": 10,
  "equivalent_declared": 1,
+ "unreachable_declared": 0,
+ "unreachable": [],
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
@@ -55,20 +57,14 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 10,
- "killed": 8,
- "survived": 1,
+ "killed": 9,
+ "survived": 0,
  "equivalent": 1,
  "declared_but_killed": [],
- "score": 0.8889,
- "loop_rev": "4751161-nogit",
+ "unreachable_but_killed": [],
+ "score": 1.0,
+ "loop_rev": "b9c8c52-nogit",
  "gen_rev": "gen-cf5dcfa09cce",
  "vit_rev": "3f6e2ce-nogit",
- "survivors": [
-  {
-   "id": "53653667",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  }
- ]
+ "survivors": []
 }
