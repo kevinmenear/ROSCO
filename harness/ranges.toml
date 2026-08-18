@@ -2464,3 +2464,42 @@ ErrVar_ErrMsg = { staging_capacity_excludes = [11, 34], reason = "IPC prefixes '
 AryLen = { lo = 0, hi = 32 }
 UnEc = { lo = 0, hi = 0 }
 Ary = { no_oracle_when = ["alloc_Ary == 0", "ErrVar_aviFAIL >= 0"], and_reference = "ErrVar.aviFAIL < 0", reason = "the reference ALLOCATEd Ary on this call and then RETURNed on an arm that assigns none of it (.NOT. AllowDefault_) or only a prefix (the READ error arm); those elements are recycled heap and a comparison against them decides nothing about either implementation. 4,067 of 13,674 cases, classified in evidence/ParseDbAry_Opt/harness_partition.txt: 100% of both cells and 0% of the other five." }
+
+# ---------------------------------------------------------------------------
+# ParseInAry_Opt                                                     unit #55
+#
+# THE SAME TWO PINS AS `[ParseDbAry_Opt]` ABOVE, FOR THE SAME REASONS AT THE
+# SAME SITES. The two subroutines differ only in the declaration of `Ary`
+# (`INTEGER(IntKi)` here, `REAL(DbKi)` there) and in their names; the reasoning
+# in that block applies to this one word for word and is not restated. What IS
+# restated is the part that had to be re-measured on THIS unit, because a
+# reason copied without its measurement is the shape unit #54 recorded as
+# dangerous.
+#
+# `AryLen = { lo = 0, hi = 32 }` -- inherited from `[FindLine]`. This unit's
+# first statement inside the guard is
+# `CALL FindLine(FileLines, ParamName, FoundLine, Line, LineNum, AryLen)`, so
+# unit #32's thirteen-value probe (`evidence/FindLine/arylen_probe.txt`) is a
+# probe of this domain too: -1 and below abort or segfault inside FindLine,
+# 2147483647 overflows `AryLen + 1`, and 0 .. 100000 return. `lo = 0` is this
+# unit's own `IF (AryLen < 1)` boundary; `hi = 32` is a stated narrowing.
+#
+# `UnEc = { lo = 0, hi = 0 }` -- the echo WRITE is NOT TRANSLATED, because
+# `UnEc` is a Fortran UNIT NUMBER and C++ cannot reach the Fortran runtime's
+# unit table; the only record this side could write is one to `fort.<UnEc>`, a
+# different file. Unit #54's family decision, in DECISIONS.md, and this is the
+# second of the five units carrying the identical statement.
+#
+# AND ONE THING THAT IS **NOT** THE SAME, measured on this unit rather than
+# assumed from the sibling: the arm the pin protects is DEAD IN A STRONGER
+# SENSE HERE. `coverage/line_coverage.json` records ROSCO_Helpers.f90:775
+# (`CALL FindLine`) 230 times across all 27 scenarios and :806/:807 (`Ary = 0`
+# and the PRINT) with NO COUNTER AT ALL -- `FoundLine` is TRUE at every one of
+# this unit's 230 calls. The sibling's same two lines run 66 times across 21
+# scenarios. So for THIS unit the default arm is reached by the differential
+# harness and by nothing else.
+# ---------------------------------------------------------------------------
+[ParseInAry_Opt]
+
+AryLen = { lo = 0, hi = 32 }
+UnEc = { lo = 0, hi = 0 }
