@@ -137,11 +137,36 @@ mutants there gets its one case is a redraw lottery, and the corpus change
 merely re-rolled it.
 
 That is the unit's largest remaining blind spot and it is bigger than the two
-mutants that exposed it. The fix that would close it is stateable and is NOT
-taken here: `CntrPar_IPC_IntSat = { lo = 0, hi = 1e3 }` makes the window live,
-at the price of the negative half of an admissible domain, of that parameter's
-magnitude ladder and of its negative-zero case — and of another 70-minute
-re-sweep. Named rather than rushed.
+mutants that exposed it.
+
+**THE FIX IS NAMED, AND — BECAUSE NAMING IT COSTS NOTHING AND THE NEXT DISPATCH
+WOULD HAVE TO GUESS — IT IS ALSO MEASURED.** `probe_fmin_site.py` was run once
+more with `CntrPar_IPC_IntSat = { lo = 0, hi = 1e3 }` added, and the entry was
+then REVERTED without being applied:
+
+```
+                        cases    block_runs   IntSat<0   ==0    IntSat>0
+committed (no pin)      84754        17486      17474      0          12
+with the pin            83754        17478         13     14       17451
+```
+
+**It works, and it is CHEAPER than the corpus that is committed** — 83,754
+against 84,754 cases, because the pin also takes `CntrPar_IPC_IntSat` out of the
+magnitude ladder and the negative-zero stage, which is a thousand cases. The
+`fmin` site improves as well rather than regressing: arm 2's second argument
+wins 3,024 times against 1,494 and arm 3's 2,564 against 1,453, and all three
+`IPC_SatMode` arms survive (28,108 / 27,828 / 27,818). `equal_diff_bits` stays
+**0**, so it does not reach the two `swap_call_args`.
+
+**IT IS NOT APPLIED HERE, and the reason is unit #26's rule rather than the
+clock.** `harness/IPC.json` and `mutation/IPC.json` were taken on the
+84,754-case corpus. Committing a `ranges.toml` that produces a different one,
+without re-taking both, would leave the file describing a corpus no artifact was
+ever measured on — the exact failure the corpus hash exists to catch. Applying
+it means the whole cycle again: green, no-op red, thirteen parts, merge,
+post-integration green/red/green. Priced at **~95 minutes** against the **78**
+this dispatch had left when the measurement came back. Taking the refusal, and
+leaving the next dispatch a number instead of a hypothesis.
 
 ## What this unit is
 

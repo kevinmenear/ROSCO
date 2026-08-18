@@ -12052,3 +12052,32 @@ with a good motive (an untruncated message on a 26-survivor unit is unreadable
 in a predicate line). What is proposed is that the message SAY it is truncated:
 `survivors: a, b, c, d, e, f (6 of 26)`. One f-string, and the dispatch prompt
 that quotes it then carries the count.
+
+### The refused fix was measured before it was refused, and it is cheaper than the corpus it would replace
+
+`IPC`'s largest blind spot — 17,474 of 17,486 cases reaching the 1P
+`PIController` pair with an inverted saturation window — has a one-line fix, and
+this dispatch did not have the ~95 minutes the full re-take needs. What it did
+have was 35 seconds, which is what `probe_fmin_site.py` costs:
+
+    committed (no pin)   84,754 cases   IntSat<0: 17474   IntSat>0:    12
+    CntrPar_IPC_IntSat = { lo = 0, hi = 1e3 }
+                         83,754 cases   IntSat<0:    13   IntSat>0: 17451
+
+**The pin makes the window live, improves the `fmin` site as well (arm 2's
+second argument wins 3,024 times against 1,494), keeps all three `IPC_SatMode`
+arms, and produces a SMALLER corpus** — because it also removes that parameter
+from the magnitude ladder and the negative-zero stage, which is the thousand
+cases of difference and is the stated price alongside the negative half of the
+domain.
+
+It is reverted and NOT committed, because `harness/IPC.json` and
+`mutation/IPC.json` name the 84,754-case corpus and a `ranges.toml` describing a
+different one is unit #26's failure written into the tree.
+
+**The general point is the one worth carrying: a refused piece of work should be
+handed on as a NUMBER, not as a hypothesis.** "Take the refusal, say which
+pieces were not taken" is cheap to obey and easy to obey badly — a named gap
+whose fix is unmeasured makes the next dispatch repeat the reasoning and risk
+the same 95 minutes on a guess. Thirty-five seconds converts it into a decision
+somebody else can make.
