@@ -21,7 +21,7 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "d947d92",
+ "loop_rev": "829625b",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
@@ -30,7 +30,8 @@
   "THE DEFAULT ARM: Ary = 0, taken when FindLine does not find the parameter and the caller allows a default.",
   "MOVED 0, AND THAT IS THE EXPECTED ANSWER, not a silent one. The arm RUNS: coverage records ROSCO_Helpers.f90:945 (clean) 66 times across 21 of the 27 scenarios.",
   "What it writes cannot reach a channel. The arm is reached only when AryLen is 0, and AryLen at these call sites is F_NumNotchFilts / F_GenSpdNotch_N / F_TwrTopNotch_N -- so the arrays that take a default are exactly the notch-filter arrays of a scenario with zero notch filters. Both consumers are behind that same count: prefiltermeasuredsignals.cpp:148 sits in a loop bounded by F_GenSpdNotch_N, and checkinputs.cpp:329 is IF (F_NumNotchFilts > 0). Zero iterations and a false guard.",
-  "The differential harness is the layer that covers this arm: the 3003 cases of the alloc=0 / other cell in evidence/ParseDbAry_Opt/harness_partition.txt, every one of which compares Ary against a fully defined reference answer."
+  "The differential harness is the layer that covers this arm: the 3003 cases of the alloc=0 / other cell in evidence/ParseDbAry_Opt/harness_partition.txt, every one of which compares Ary against a fully defined reference answer -- and the exclusion added at the second dispatch does NOT touch them, because their reference returns aviFAIL >= 0.",
+  "RE-TAKEN at the second dispatch (loop 829625b). The first take is at d947d92 and also moved 0."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parsedbary_opt.cpp",
@@ -81,6 +82,6 @@
  "unit": "ParseDbAry_Opt",
  "unit_of_count": "values",
  "verdict": "RED_TEST_FAIL",
- "vit_rev": "1e30f79-dirty",
+ "vit_rev": "3f6e2ce",
  "went_red": false
 }
