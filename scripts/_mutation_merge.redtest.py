@@ -131,7 +131,36 @@ def main() -> int:
     case("RED    a shared operator where one part carries no scored_ids",
          [g1, str(tmp / "n6.json"), g3], 2, "carries no `scored_ids`")
 
-    print(f"\n{6 - bad} of 6 cases behaved as stated")
+    # 7. RED. One part scored under `--sanitize` and one not. Every other field
+    #    unions cleanly -- the operators partition, the ids cover, the reference
+    #    side agrees -- and the two parts were graded by DIFFERENT oracles, which
+    #    nothing else in the artifact records. Added with the field itself at
+    #    rosco-r2 unit #54's third dispatch, the campaign's first split sanitised
+    #    sweep.
+    s7a = part(tmp / "s7a.json", ["alpha"], ["a1", "a2"], sanitize=True,
+               killed_by_sanitizer_ids=["a1"])
+    s7b = part(tmp / "s7b.json", ["alpha"], ["a3", "a4"], sanitize=False)
+    case("RED    one part sanitised and one not",
+         [s7a, s7b, g3], 2, "DIFFERENT oracles")
+
+    # 8. GREEN, and it is case 7's control: the SAME parts with the oracle
+    #    agreeing merge, and the flag reaches the merged artifact rather than
+    #    being dropped on the way through.
+    s8b = part(tmp / "s8b.json", ["alpha"], ["a3", "a4"], sanitize=True,
+               killed_by_sanitizer_ids=["a4"])
+    s8c = part(tmp / "s8c.json", ["beta"], ["b1", "b2"], sanitize=True)
+    case("GREEN  every part sanitised, and the flag survives the union",
+         [s7a, s8b, s8c], 0, "")
+    merged = json.loads(out.read_text())
+    if merged.get("sanitize") is not True or merged.get("killed_by_sanitizer") != 2:
+        print(f"[ FAIL ] the merged artifact dropped the oracle: "
+              f"sanitize={merged.get('sanitize')} "
+              f"killed_by_sanitizer={merged.get('killed_by_sanitizer')}")
+        bad += 1
+    else:
+        print("[  ok  ] merged carries sanitize=True and 2 sanitiser kills")
+
+    print(f"\n{9 - bad} of 9 cases behaved as stated")
     return 1 if bad else 0
 
 

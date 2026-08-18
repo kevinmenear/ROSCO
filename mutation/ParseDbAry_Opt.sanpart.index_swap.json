@@ -1,0 +1,253 @@
+{
+ "unit": "ParseDbAry_Opt",
+ "operators": [
+  "drop_call",
+  "index_offset",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "drop_call",
+  "index_offset",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "operators_filter_unmatched": [],
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 0,
+  "scored": 49,
+  "of": 49
+ },
+ "scored_ids": [
+  "2791fc1f",
+  "f60553a5",
+  "da9ef9ac",
+  "c10feafe",
+  "9416ffb6",
+  "7302f2f5",
+  "89e19caf",
+  "d7fb141b",
+  "d0f864bf",
+  "057b4549",
+  "0d6c3ff2",
+  "1beac345",
+  "8d6f88d8",
+  "af82f401",
+  "244ff7a9",
+  "2a9e1695",
+  "8cc95e66",
+  "69bb4461",
+  "a84574aa",
+  "e2d47adf",
+  "91f2ce24",
+  "6350880c",
+  "5d7ed85b",
+  "a98bafcd",
+  "495cd9fe",
+  "15e82a3e",
+  "bd474795",
+  "fb8c0706",
+  "4d1ccfed",
+  "f0ee2a4d",
+  "a88935b1",
+  "ab289323",
+  "2469ce80",
+  "a7cf9a5e",
+  "6aa7aacf",
+  "6ac870af",
+  "d9fff844",
+  "4d44e6d2",
+  "80b445cc",
+  "fa5926ac",
+  "b563bb58",
+  "f6007814",
+  "b1e31cf4",
+  "472a36fc",
+  "77da7114",
+  "b2bbedf3",
+  "85f40cb7",
+  "dd749c6b",
+  "558a53f0"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "compare_op",
+  "const_tweak",
+  "negate_cond"
+ ],
+ "mutants": 46,
+ "equivalent_declared": 0,
+ "unreachable_declared": 0,
+ "unreachable": [],
+ "nocompile": 3,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "sanitize": true,
+ "killed_by_sanitizer": 6,
+ "killed_by_sanitizer_ids": [
+  "15e82a3e",
+  "4d44e6d2",
+  "f6007814",
+  "b1e31cf4",
+  "472a36fc",
+  "558a53f0"
+ ],
+ "nocompile_ratio": 0.0612,
+ "nocompile_refused": false,
+ "total": 49,
+ "killed": 25,
+ "survived": 21,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "unreachable_but_killed": [],
+ "score": 0.5435,
+ "loop_rev": "b9c8c52-nogit",
+ "gen_rev": "gen-cf5dcfa09cce",
+ "vit_rev": "3f6e2ce-nogit",
+ "survivors": [
+  {
+   "id": "c10feafe",
+   "operator": "swap_operands",
+   "before": "q - p",
+   "after": "p - q"
+  },
+  {
+   "id": "9416ffb6",
+   "operator": "swap_operands",
+   "before": "16 - decexp",
+   "after": "decexp - 16"
+  },
+  {
+   "id": "7302f2f5",
+   "operator": "index_offset",
+   "before": "[Int2LStrLen]",
+   "after": "[Int2LStrLen + 1]"
+  },
+  {
+   "id": "89e19caf",
+   "operator": "index_offset",
+   "before": "[k]",
+   "after": "[k + 1]"
+  },
+  {
+   "id": "057b4549",
+   "operator": "index_offset",
+   "before": "[64]",
+   "after": "[64 + 1]"
+  },
+  {
+   "id": "0d6c3ff2",
+   "operator": "index_offset",
+   "before": "[q]",
+   "after": "[q + 1]"
+  },
+  {
+   "id": "1beac345",
+   "operator": "index_offset",
+   "before": "[n]",
+   "after": "[n + 1]"
+  },
+  {
+   "id": "8d6f88d8",
+   "operator": "index_offset",
+   "before": "[start]",
+   "after": "[start + 1]"
+  },
+  {
+   "id": "e2d47adf",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "91f2ce24",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "4d1ccfed",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "f0ee2a4d",
+   "operator": "index_offset",
+   "before": "[q]",
+   "after": "[q + 1]"
+  },
+  {
+   "id": "a88935b1",
+   "operator": "index_offset",
+   "before": "[q]",
+   "after": "[q + 1]"
+  },
+  {
+   "id": "ab289323",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "2469ce80",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "a7cf9a5e",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "80b445cc",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "fa5926ac",
+   "operator": "index_offset",
+   "before": "[512]",
+   "after": "[512 + 1]"
+  },
+  {
+   "id": "b563bb58",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "b2bbedf3",
+   "operator": "drop_call",
+   "before": "std::max(NumWords, 0)",
+   "after": "NumWords"
+  },
+  {
+   "id": "dd749c6b",
+   "operator": "swap_call_args",
+   "before": "NumWords, 0",
+   "after": "0, NumWords"
+  }
+ ]
+}

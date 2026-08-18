@@ -295,6 +295,25 @@ def main() -> int:
         return die(f"the parts were produced by different instruments: {revs}")
     loop_rev, vit_rev = next(iter(revs))
 
+    # WHICH ORACLE THE PARTS WERE SCORED UNDER HAS TO SURVIVE THE UNION, for
+    # exactly the reason `capped_operators` does one clause down. `--sanitize`
+    # builds every mutant with `-fsanitize=address,undefined` and counts a
+    # sanitiser report as a kill, so a merged artifact that dropped the flag
+    # would read as an ordinary value-oracle sweep while carrying kills no
+    # value oracle made. rosco-r2 unit #54's third dispatch is the first split
+    # sweep taken under it.
+    #
+    # REFUSED IF THE PARTS DISAGREE. A union of one sanitised part and one
+    # unsanitised part is two measurements with one score over them, and the
+    # difference is invisible in every other field.
+    sans = {bool(d.get("sanitize", False)) for _, d in parts}
+    if len(sans) != 1:
+        return die("the parts were scored under DIFFERENT oracles: "
+                   f"sanitize={sorted(sans)} -- a sanitised part and an "
+                   f"unsanitised one do not union into one sweep")
+    sanitize = next(iter(sans))
+    san_ids = [i for _, d in parts for i in d.get("killed_by_sanitizer_ids", [])]
+
     doc = {
         "unit": a.unit,
         "operators": sorted(pop),
@@ -318,6 +337,9 @@ def main() -> int:
                                         for o in d.get("capped_operators", [])})}
            if any("capped_operators" in d for _, d in parts) else {}),
         "compared_against": compared_against,
+        "sanitize": sanitize,
+        "killed_by_sanitizer": len(san_ids),
+        "killed_by_sanitizer_ids": san_ids,
         "mutants": behavioural,
         "equivalent_declared": eq,
         "unreachable_declared": unr,
