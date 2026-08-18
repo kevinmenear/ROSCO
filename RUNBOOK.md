@@ -7377,18 +7377,97 @@ unit can exhaust the second while barely touching the first.
   as a defect with a tendency.
 
 ## A RED PRIMARY LAYER TAKES THE MUTATION LAYER WITH IT, AND THAT IS THE TOOL
-## BEING RIGHT
+## BEING RIGHT -- SO MAKE THE PRIMARY LAYER GREEN FOR A STATEABLE REASON
 
-- **Unit #54.** `vit_mutate.py` requires `base["failed"] == 0` and refuses
-  otherwise -- with a red baseline every kill would be attributable to the
-  harness rather than to the mutant. So 189 mutants exist and none are scored,
-  `mutation/<Unit>.json` does not exist, and P12 fails on ABSENCE.
+- **Unit #54, first dispatch.** `vit_mutate.py` requires `base["failed"] == 0`
+  and refuses otherwise -- with a red baseline every kill would be attributable
+  to the harness rather than to the mutant. So 189 mutants existed and none were
+  scored, `mutation/<Unit>.json` did not exist, and P12 failed on ABSENCE.
 
-  **The two layers are not independent, and a unit whose corpus cannot be made
-  green cannot be mutation-scored at all.** Budget for that when the harness
-  goes red for a reason that is not the translation: there is no partial credit
-  and no split that reaches it. Run the sweep anyway and commit the refusal
-  (`evidence/<Unit>/mutation.refusal.txt`) -- IPC's rule, one refusal over.
+  **The two layers are not independent.** Budget for that when the harness goes
+  red for a reason that is not the translation. Run the sweep anyway and commit
+  the refusal (`evidence/<Unit>/mutation.refusal.txt`) -- IPC's rule, one
+  refusal over.
+
+- **Unit #54, second dispatch: the redness was removable, and the sentence
+  "a unit whose corpus cannot be made green cannot be mutation-scored at all"
+  is only true once you have shown the corpus cannot be made green.** Here it
+  could, without touching one case of the corpus, by stating WHERE the reference
+  has no answer instead of comparing against it there. See the section below.
+
+  What it bought: 189 mutants scored, 77 killed, 108 survivors -- and the
+  survivors localise the corpus's blind spot in a way no green can. The
+  differential harness reports the same 13,674 / 0 whether the corpus exercises
+  the unit's parser 13,674 times or 103 times. The mutation sweep is what says
+  103.
+
+## `harness/ranges.toml` TAKES A NINTH KIND OF ENTRY: `no_oracle` MADE
+## CONDITIONAL, FOR A REFERENCE THAT IS UNDEFINED ON SOME OF ITS OWN PATHS
+
+- **Unit #54.** The reference ALLOCATEs its `INTENT(INOUT)` array and then
+  RETURNs on two arms without assigning it. Neither existing key reaches that:
+  `no_oracle` deletes the output everywhere and the output IS the unit's whole
+  answer (#51's rule), and NO narrowing of the input domain can name a region
+  the reference's own control flow decides.
+
+  ```toml
+  Ary = { no_oracle_when = ["alloc_Ary == 0", "ErrVar_aviFAIL >= 0"],
+          and_reference  = "ErrVar.aviFAIL < 0", reason = "..." }
+  ```
+
+  The named output is not compared on a case where every stated relation holds:
+  a conjunction over the inputs AS SUPPLIED, and one relation over a field the
+  REFERENCE RETURNED. Every other output on that case is still compared and both
+  sides are still called. Loop `bf5a91b` and `829625b`.
+
+  **Four things about it that are not optional, three of which were wrong first:**
+
+  1. **It reads the REFERENCE side.** Reading the translation's output would let
+     a MUTANT choose the cases that grade it. The excluded set must be a
+     property of (corpus x reference), identical under every mutant and stub.
+  2. **The input half is a SNAPSHOT taken before the calls.** An INOUT input is
+     overwritten by them; evaluated afterwards it is an output wearing an
+     input's name.
+  3. **The input half is a LIST.** One relation could not separate "the
+     reference allocated here and failed" from "the reference never ran": the
+     one-relation form excluded 4,233 where the partition predicted 4,067, and
+     the 166 difference is exactly the cases that arrived already failed, whose
+     `Ary` is untouched on both sides and perfectly defined.
+  4. **The size is a prediction, not a report.** The count of excluded cases is
+     in the artifact beside `checked`, and `vit_harness.py` refuses to write an
+     artifact whose exclusion excluded nothing.
+
+  **AND CHECK THAT THE CORPUS DID NOT MOVE.** The entry is split out before
+  `constrain()`, so the case file must hash identically before and after -- it
+  did -- which is what keeps every earlier artifact comparable case-for-case.
+
+## STATE AN EXCLUSION'S SIZE BEFORE THE RUN, THE WAY A RED TEST'S COUNT IS
+## STATED BEFORE THE RUN
+
+- **Unit #54.** The first form of the exclusion was defensible on its face and
+  over-excluded by 166 cases. What caught it was not review: the first dispatch
+  had MEASURED and PARTITIONED the region, so the pin had a number to be checked
+  against before anybody believed it. Same shape as this unit's four red-test
+  stubs, all four predicted from the partition and all four exact (13,448 /
+  4,811 / 103 / 3).
+
+  **A judgement whose size is predicted is checkable; one whose size is only
+  reported is not.**
+
+## AN EVIDENCE FILE'S WRONG MECHANISM IS WHAT THE NEXT UNIT COPIES
+
+- **Unit #54.** The first dispatch recorded that pinning `alloc_Ary` did nothing
+  because it "is a synthetic descriptor flag, not a signature parameter, and
+  `constrain()` matches by parameter name". It IS a signature parameter, built
+  by `harness/vitbridge.py` as `Param(name=alloc, kind="int",
+  values=(0.0, 1.0))`; `constrain()` matched it and applied the pin. It did
+  nothing because a parameter carrying `values` draws its cases from `values`,
+  and `lo`/`hi` narrow a ladder it does not have -- `values = [1]` is the form
+  that applies.
+
+  The CONCLUSION was right, which is what made the wrong mechanism dangerous:
+  nothing about the outcome contradicts it, and the next unit to reach for a
+  flag pin would have read "flags cannot be pinned" and stopped.
 
 ## THE STRONGEST SHAPE A RED TEST CAN HAVE IS TO MOVE EXACTLY THE CELL ITS
 ## BEHAVIOUR HAS AN ORACLE IN

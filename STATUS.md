@@ -4,21 +4,22 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-18: unit #54 `ParseDbAry_Opt` is `deferred`, and it is the first
-unit in this campaign whose PRIMARY layer is RED.** One dispatch. The unit finds
-a line in an input file and reads `AryLen` doubles out of it with a Fortran
-list-directed `READ` — the campaign's first parser — and three things happened
-that are worth keeping separate.
+**As of 2026-08-18: unit #54 `ParseDbAry_Opt` is `deferred`. Two dispatches. The
+first left the PRIMARY layer RED at 4,067 of 13,674 and the mutation layer
+UNAVAILABLE; the second made the primary layer GREEN by NAMING the region the
+reference has no answer for, and the mutation layer then ran — 77 of 185.** The
+unit finds a line in an input file and reads `AryLen` doubles out of it with a
+Fortran list-directed `READ`: the campaign's first parser.
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness (`harness/ParseDbAry_Opt.json`) | **13,674 checked, 4,067 failed**, 0 inadmissible, against the CLEAN Fortran with all three callee bridges kept. Every failure on `Ary` and on **no other output** | **four stubs**, each moving EXACTLY the cell in which its behaviour has an oracle: no-op **13,448**; the `.NOT. AllowDefault_` arm **4,872** (+805); the READ **4,109** (+42); the zero-store rule **4,070** (+3) |
-| mutation | **NOT AVAILABLE — 189 mutants, none scored** (`evidence/ParseDbAry_Opt/mutation.refusal.txt`) | — |
-| post-integration (`harness/ParseDbAry_Opt.postintegration.json`) | 13,674 checked, 0 failed | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **10,611 of 13,674**, the pass set PREDICTED in the runner's header before the run and matched to the case; reverted, rebuilt, green re-taken at 0 |
-| gate, 27 scenarios (`gate/ParseDbAry_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched | **TWO**: every parsed value + 0.01 moves **2,236,141** (43% of the gate); the `Ary = 0` default arm moves **0**, argued in the artifact |
+| differential harness (`harness/ParseDbAry_Opt.json`) | **13,674 checked, 0 failed**, 0 inadmissible, against the CLEAN Fortran with all three callee bridges kept. `Ary` **not compared on 4,067** cases; every other output compared on all 13,674 | **four stubs**, re-taken on this comparison, **all four predicted in advance and all four exact**: no-op **13,448**; the `.NOT. AllowDefault_` arm **4,811** = 4006+805; the READ **103** = 61+42; the zero-store rule **3** |
+| mutation (`mutation/ParseDbAry_Opt.json`) | **189 mutants, 185 behavioural, 77 killed, 108 survived, score 0.416 — BELOW THRESHOLD** | the score IS the red test. 103 of the 108 survivors are in two regions with measured causes (below) |
+| post-integration (`harness/ParseDbAry_Opt.postintegration.json`) | 13,674 checked, 0 failed | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **10,611 of 13,674**, the pass set PREDICTED in the runner's header before the run; reverted, rebuilt, green re-taken at 0 |
+| gate, 27 scenarios (`gate/ParseDbAry_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched | **TWO**: every parsed value + 0.01 moves **2,236,141** (43% of the gate); the `Ary = 0` default arm moves **0**, argued in the artifact. Both reproduced to the value at the second dispatch |
 
-**THE RED IS A PARTITION, NOT A DEFECT, AND THAT IS ARITHMETIC RATHER THAN
-JUDGEMENT.** A case fails **if and only if** the reference ALLOCATED `Ary` on
+**THE RED WAS A PARTITION, AND THE SECOND DISPATCH STATES IT RATHER THAN
+CARRYING IT.** A case failed **if and only if** the reference ALLOCATED `Ary` on
 this call and then returned on a path that assigns none of it or only a prefix:
 
 ```
@@ -32,27 +33,75 @@ this call and then returned on a path that assigns none of it or only a prefix:
       1  other              60        0
 ```
 
-100% of both cells, 0% of the other five, and no coincidental agreement
-anywhere. Those elements are **undefined in the reference** — recycled heap, and
-the recorded diffs are pointer values. **The 9,607 cases in which every compared
-output has an oracle agree on every compared output.** That is what the artifact
-certifies and it is not called a green.
+`harness/ranges.toml` now says exactly that, with the ninth judgement kind
+(`no_oracle_when`, loop `829625b`, added for this unit):
 
-**`no_oracle` IS NOT AVAILABLE AND THE ALTERNATIVE WAS TRIED AND DOES NOT
-APPLY.** The RUNBOOK's unit #51 rule bars `no_oracle` on a unit whose excused
-output IS its whole answer, and `Ary` is this unit's whole answer. The domain
-pin unit #51 took instead — `alloc_Ary = { lo = 1, hi = 1 }` — produced a corpus
-**identical** to the unpinned one, 13,674 cases and 4,067 failures, because
-`alloc_Ary` is a synthetic descriptor flag and `constrain()` matches by
-parameter name. The run's own count is what said so. The file and its artifact
-were **deleted rather than kept**: an artifact named `.allocated.json` reporting
-the unpinned number is a trap.
+```toml
+Ary = { no_oracle_when = ["alloc_Ary == 0", "ErrVar_aviFAIL >= 0"],
+        and_reference  = "ErrVar.aviFAIL < 0", reason = "..." }
+```
+
+**Three checks, and they are why this is a statement and not a convenience.**
+(1) The corpus did not move: `parsedbary_opt_cases.bin` hashes
+`64942b97cc3a4c2a…` before and after, because the entry is split out before
+`constrain()` — it moves the COMPARISON, not one case. (2) The count is **4,067
+exactly**, the number the first dispatch measured and partitioned, predicted
+before the pin existed; the one-relation form gave **4,233**, and the extra 166
+are the cases that arrived ALREADY FAILED and never entered the reference's body
+(`IF (ErrVar%aviFAIL >= 0) THEN` wraps everything), where `Ary` is untouched on
+both sides. (3) The condition reads the REFERENCE side, and an input the calls
+overwrite is snapshotted before them — so the excluded set is a property of
+(corpus × reference), identical under every mutant, which is what makes a
+mutation score over it a measurement.
+
+**THE MUTATION SCORE IS THE FINDING, AND IT IS NOT ABOUT THE TRANSLATION.**
+
+```
+survived / mutants   region
+     87 / 151        the list-directed READ (match_word, lower, is_separator,
+                     parse_real, list_read_reals)
+     16 /  17        the PRINT record (field, nonfinite_text,
+                     list_directed_real, print_default_warning)
+      3 /  10        the unit's own body, its constants and ary_at
+```
+
+**The READ is reachable-but-barely: deleting the whole READ moves 103 cases of
+13,674**, so the number of cases that can distinguish anything about the parser
+is 0.75% of the corpus — `FindLine` finds the parameter only where R14 planted
+it, and R14 reached its `1:plant` shape alone in both dispatches. **The PRINT is
+compared by nothing**: it goes to stdout, which is where the harness reads its
+own JSON from. The unit's own body — the `aviFAIL` guard, the `AryLen < 1` arm,
+the already-allocated ALLOCATE branch, the `.NOT. AllowDefault_` return, the
+`Ary = 0` default arm, `ary_at`'s stride — is 7 of 10 killed, and the three
+survivors are a constant no output reads and a `std::max(NumWords, 0)` clamp
+that cannot bite while `AryLen = { lo = 0 }` is stated. **Nothing is declared
+equivalent**: an unreached mutant and a behaviour-preserving one are different
+claims. `evidence/ParseDbAry_Opt/mutation_survivors.txt` has all 108 by line.
+
+**WHAT WOULD MOVE IT**, recorded so a third dispatch does not re-derive it: a
+corpus in which `FindLine` FINDS the line in thousands of cases rather than a
+hundred — R14's `2:plant`/`3:plant` shapes, and a planted line carrying varied
+numeric text. That is a generator change and it re-takes every layer that reads
+the corpus. The PRINT survivors need a different instrument: one that compares
+the two sides' stdout.
+
+**`no_oracle` IS STILL NOT AVAILABLE, and the first dispatch's account of the
+alternative was half wrong.** The RUNBOOK's unit #51 rule bars `no_oracle` on a
+unit whose excused output IS its whole answer. The domain pin unit #51 took —
+`alloc_Ary = { lo = 1, hi = 1 }` — produced a corpus identical to the unpinned
+one, and the first dispatch recorded the cause as "`alloc_Ary` is a synthetic
+descriptor flag, not a signature parameter". It **is** a `Param`
+(`harness/vitbridge.py` builds it with `values=(0.0, 1.0)`), so `constrain()`
+matched it; `lo`/`hi` narrow a ladder a flag does not have, and `values = [1]`
+is the pin that would have applied. The conclusion — that it is the wrong lever,
+because it costs the 3,003 `alloc = 0, other` cases where `FinalAryLen` is
+observable at all — stands.
 
 **THE SIXTH UPSTREAM ROSCO OBSERVATION, recorded not repaired (P7):**
 `ParseDbAry_Opt` returns an ALLOCATED, UNASSIGNED `REAL(DbKi) :: Ary(:)` on two
 live paths — the `.NOT. AllowDefault_` arm and the `READ` error arm. Harmless in
 the shipped program (both set `aviFAIL = -1` and every caller returns on that),
-and it is what decides this unit's disposition.
+and it is what forced the ninth judgement kind.
 
 **THE HARNESS FOUND A REAL PARSER DEFECT, three cases of 13,674, and they are
 exactly the three that had an oracle.** gfortran transfers **0.0** for a numeric
@@ -76,14 +125,18 @@ reference's. The arm is dead in all 27 scenarios (`Echo == 0` everywhere) but it
 is NOT dead in ROSCO. Units #55–#58 carry the identical statement. Raised in
 `DECISIONS.md`.
 
-**THE DISPATCH OPENED ON A LIVE ORPHANED SWEEP.** Unit #53's `const_tweak` run
-was still executing inside the container ten minutes into this dispatch, with an
+**THE FIRST DISPATCH OPENED ON A LIVE ORPHANED SWEEP.** Unit #53's `const_tweak`
+run was still executing inside the container ten minutes in, with an
 `index_offset` mutant live in `translations/Controllers/ipc.cpp` and the tree
-de-integrated. Both markers held: the pre-commit hook refused every commit in the
-window, and `MUTATE_IN_PROGRESS` named the file, the intended hash and the
-repair. Recovered per its own instructions. What no guard does is reach into the
+de-integrated. Both markers held. What no guard does is reach into the
 container — `mutate_guarded.sh` records a HOST pid — which is raised in
 `DECISIONS.md` as a proposed amendment.
+
+**EVERY ARTIFACT OF THIS UNIT NAMES ONE INSTRUMENT REVISION.** The gate and the
+post-integration layer needed no new numbers and were re-run anyway, because the
+mutation artifact this dispatch produced names loop `829625b` and a unit whose
+artifacts name two revisions is not commensurable with itself (`revcheck`, P14).
+Neither number moved.
 
 ---
 

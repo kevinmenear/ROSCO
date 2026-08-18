@@ -2,6 +2,112 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #54 — ParseDbAry_Opt — second dispatch — 2026-08-18
+
+### The proposed amendment of the first dispatch was BUILT: `no_oracle_when`, the ninth judgement kind
+
+The first dispatch (below) recorded that neither of the campaign's two keys fits
+a reference that is undefined on SOME of its own paths, and proposed one. It
+exists now, in the loop repo at `bf5a91b` and `829625b`, with tests:
+
+```toml
+Ary = { no_oracle_when = ["alloc_Ary == 0", "ErrVar_aviFAIL >= 0"],
+        and_reference  = "ErrVar.aviFAIL < 0", reason = "..." }
+```
+
+The output named by the key is not compared on a case where every stated
+condition holds — a conjunction of relations on the inputs AS THE CASE SUPPLIED
+THEM, and one relation on a field the REFERENCE RETURNED. Everything else about
+such a case is still compared, and both sides are still called.
+
+**Four design points, each of which is a thing that would otherwise have gone
+wrong, and three of them did before they were fixed.**
+
+1. **The reference side, never the translation's.** `_b` is the Fortran. Reading
+   `_a` would let a MUTANT choose which cases grade it — the excluded set has to
+   be a property of (corpus × reference), identical under every mutant and every
+   stub, or a mutation score over it is not a measurement.
+2. **The input half reads a SNAPSHOT taken before the calls.** `ErrVar_aviFAIL`
+   is an INOUT: it is read from the stream into `ErrVar_a.aviFAIL`, which both
+   calls then write. Evaluated at comparison time it would be an OUTPUT wearing
+   an input's name.
+3. **The input half is a LIST.** One relation could not separate "the reference
+   allocated here and failed" from "the reference never ran". Measured: the
+   one-relation form excluded **4,233** where the partition predicts **4,067**,
+   and 4,233 − 4,067 = 166 is exactly the set that arrived with `aviFAIL < 0`
+   and never entered the body, where `Ary` is untouched on both sides.
+4. **It refuses to excuse nothing.** Only the RUN knows how many cases the
+   condition caught, because half of it reads the reference's return, so the
+   generated program counts them, the count lands in the artifact beside
+   `checked`, R4's coverage line says the output carries a region, and
+   `vit_harness.py` returns 2 without writing an artifact if the count is zero —
+   the same refusal `implied_by` makes about an implication that rewrote no case.
+
+**The check that makes it a statement rather than a convenience: the corpus did
+not move.** `parsedbary_opt_cases.bin` hashes
+`64942b97cc3a4c2ab6631f8a452141b3e02335f8fd1acfdde613320aa77390c7` before and
+after. The entry is split out before `constrain()`, so every case index is the
+one every earlier artifact was taken on, and the four red-test stubs are
+comparable case-for-case with the green (unit #26's rule).
+
+**METHOD, not campaign — the Driver should consider it for the invariant layer.**
+P6 says absence must not render as a value, and this is the same argument one
+level down: a reference that has no answer on part of its domain must be able to
+SAY SO on that part, or the layer is red for a reason that is not a defect and
+every layer built on it goes with it (here: the mutation layer, entirely).
+
+### A red PRIMARY layer takes the MUTATION layer with it — and the converse, which is the part worth keeping
+
+The first dispatch recorded the first half. The second half is that **removing
+the redness for the right reason cost nothing and bought the strongest evidence
+this unit has**: 189 mutants scored, 77 killed, 108 survivors — and the survivors
+say something no other layer of this unit could.
+
+```
+survived / mutants   region
+     87 / 151        the list-directed READ
+     16 /  17        the PRINT record
+      3 /  10        the unit's own body, its constants and ary_at
+```
+
+**A mutation score localises a corpus's blind spot in a way a green cannot.**
+The differential harness reports 13,674 cases and 0 failures; that number is the
+same whether the corpus exercises the parser 13,674 times or 103. The mutation
+sweep is what says 103 — and the no-read stub is what CONFIRMS it, moving
+exactly 103 cases when the whole READ is deleted. Two instruments, one number,
+neither of them the one that looked strongest.
+
+### A `no_oracle_when` condition can be RIGHT and still over-exclude, and the number that says so is one the campaign already had
+
+The first form of the pin was defensible on its face — "the array arrived
+unallocated and the reference came back failed" — and it excluded 166 cases too
+many. What caught it was not review: it was that the first dispatch had already
+MEASURED and PARTITIONED the region, so the pin had a number to be checked
+against before anyone believed it.
+
+**A judgement whose size is predicted in advance is checkable; one whose size is
+only reported is not.** Same shape as this unit's four red-test stubs, all four
+of which were predicted from the partition and all four of which came back
+exact. The general rule: when stating an exclusion, state its expected SIZE
+first and let the run agree or disagree.
+
+### An evidence file's wrong MECHANISM is what the next unit copies
+
+The first dispatch recorded that `alloc_Ary = { lo = 1, hi = 1 }` did nothing
+because "`alloc_Ary` is a synthetic descriptor flag, not a signature parameter,
+and `constrain()` matches by parameter name". It IS a signature parameter —
+`harness/vitbridge.py` builds it as `Param(name=alloc, kind="int",
+values=(0.0, 1.0))` — so `constrain()` matched it and applied the pin. The pin
+did nothing because a parameter carrying `values` draws its cases from `values`,
+and `lo`/`hi` narrow a ladder it does not have. The applicable form is
+`values = [1]`.
+
+The CONCLUSION was right (it is the wrong lever: it costs the 3,003
+`alloc = 0, other` cases, the only ones where `FinalAryLen` is observable), and
+that is exactly why the wrong mechanism was dangerous — nothing about the
+outcome would have contradicted it, and the next unit to reach for a flag pin
+would have read "flags cannot be pinned" and stopped.
+
 ## Unit #54 — ParseDbAry_Opt — 2026-08-18
 
 ### A Fortran unit that returns an ALLOCATED, UNASSIGNED array cannot be adjudicated, and this campaign has no key for it (a proposed tooling amendment)
