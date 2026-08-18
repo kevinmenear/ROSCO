@@ -1,0 +1,6 @@
+run_if_time_remains: 12272s remain, 600s needed -- starting
+baseline is not green (ok); refusing to score
+189 mutant(s) from parsedbary_opt.cpp
+
+mutate_guarded: translations/ROSCO_Helpers/parsedbary_opt.cpp restored to 6abb3328d6410276adb7e93ac897767e12fe3d77; marker cleared; sweep exit 2
+run_if_time_remains: exit 2 after 1s (estimated 600s; 12270s now remain)

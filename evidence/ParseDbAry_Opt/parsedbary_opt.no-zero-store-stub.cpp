@@ -362,10 +362,10 @@ int list_read_reals(const char* rec, int len, double* v, int n) {
 
         double value = 0.0;
         const RealParse verdict = parse_real(rec, len, p, value);
-        if (verdict == RealParse::BadNoStore) {
+        if (verdict == RealParse::BadNoStore || verdict == RealParse::BadStoreZero) {
             return 5010;
         }
-        if (verdict == RealParse::BadStoreZero) {
+        if (false && verdict == RealParse::BadStoreZero) {
             // The point-without-digits field: converted, transferred, then
             // failed. The terminator still decides -- '..' has a point and is
             // NOT stored, because the second point is a stray character rather

@@ -673,7 +673,9 @@ void ParseDbAry_Opt(char* FileLines, int n_FileLines, int len_FileLines,
         for (int i = 0; i < n; ++i) {
             values[static_cast<std::size_t>(i)] = *ary_at(Ary, i);
         }
-        ErrStatLcl = list_read_reals(Line.data(), MaxLineLength, values.data(), n);
+        // RED TEST: the list-directed READ deleted. `Ary` keeps whatever it had
+        // and the transfer is reported as having succeeded.
+        ErrStatLcl = 0;
         for (int i = 0; i < n; ++i) {
             *ary_at(Ary, i) = values[static_cast<std::size_t>(i)];
         }

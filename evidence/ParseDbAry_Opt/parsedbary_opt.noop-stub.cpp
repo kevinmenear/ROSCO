@@ -523,221 +523,23 @@ void ParseDbAry_Opt(char* FileLines, int n_FileLines, int len_FileLines,
                     errorvariables_view_t* ErrVar,
                     int has_AllowDefault, int32_t AllowDefault,
                     int has_UnEc, int UnEc) {
-    // ! Figure out if we allow default
-    // AllowDefault_ = .TRUE.
-    // if (PRESENT(AllowDefault)) AllowDefault_ = AllowDefault
-    bool AllowDefault_ = true;
-    if (has_AllowDefault) {
-        AllowDefault_ = (AllowDefault != 0);
+    // NO-OP STUB. Every statement of the unit removed, the signature kept.
+    // The `findline_c(` call below is unreachable and is here on purpose: VIT
+    // decides whether to generate a callee bridge by scanning THIS FILE's text
+    // for `<callee>_c(`, and `harness.sh` has already dropped the integrated
+    // objects from LIBS in favour of those bridges. A stub that calls nothing
+    // fails to LINK, and a red test that fails to build is not a red test
+    // (rosco-r2 units #42 and #45). `AryLen == 0x7fffffff` is outside the
+    // stated range [0, 32], so no case in the corpus reaches it.
+    (void)FileLines; (void)n_FileLines; (void)len_FileLines;
+    (void)ParamName; (void)len_ParamName; (void)Ary; (void)FileName;
+    (void)len_FileName; (void)ErrVar; (void)has_AllowDefault; (void)AllowDefault;
+    (void)has_UnEc; (void)UnEc;
+    if (AryLen == 0x7fffffff) {
+        int32_t f = 0; int ln = 0; char l[8] = {0}; char w[8] = {0};
+        findline_c(FileLines, n_FileLines, len_FileLines, ParamName, len_ParamName,
+                   &f, l, &ln, 1, AryLen);
+        getwords_c(l, 8, w, 8, 1);
+        int2lstr_c(AryLen, w);
     }
-
-    // ! If we've already failed, don't read anything
-    // IF (ErrVar%aviFAIL >= 0) THEN
-    if (ErrVar->aviFAIL < 0) {
-        return;
-    }
-
-    // CALL FindLine(FileLines, ParamName, FoundLine, Line, LineNum, AryLen)
-    //
-    // `Line` is `CHARACTER(MaxLineLength), INTENT(OUT)` in the callee, so the
-    // buffer is the callee's to fill; it is NOT blank-initialised here, because
-    // the reference does not initialise its own local either and every path
-    // that reads `Line` is inside `IF (FoundLine)`, where FindLine has assigned
-    // it. Reproduce that, do not improve on it (P7).
-    std::vector<char> Line(static_cast<std::size_t>(MaxLineLength));
-    int32_t FoundLine_l = 0;
-    int LineNum = 0;
-    findline_c(FileLines, n_FileLines, len_FileLines, ParamName, len_ParamName,
-               &FoundLine_l, Line.data(), &LineNum, 1, AryLen);
-    const bool FoundLine = (FoundLine_l != 0);
-
-    // ! Minimum array length
-    // IF (AryLen < 1) THEN ; FinalAryLen = 1 ; ELSE ; FinalAryLen = AryLen ; ENDIF
-    int FinalAryLen;
-    if (AryLen < 1) {
-        FinalAryLen = 1;
-    } else {
-        FinalAryLen = AryLen;
-    }
-
-    // ! Allocate array and handle errors
-    // ALLOCATE ( Ary(FinalAryLen) , STAT=ErrStatLcl )
-    //
-    // THE REFERENCE DOES NOT DEALLOCATE FIRST, and that is the whole of this
-    // arm: `ALLOCATE` on an object that is already allocated is an ERROR in
-    // Fortran, so a caller who hands in an allocated `Ary` gets a non-zero
-    // STAT, keeps the array it arrived with -- data, extent and bounds -- and
-    // falls into the branch whose message says so. The `ALLOCATED(Ary)` test
-    // that picks between the two messages is therefore TRUE on exactly the
-    // reachable failure and FALSE only on a genuine allocation failure.
-    int ErrStatLcl = 0;
-    const bool was_allocated = ary_allocated(Ary);
-    if (was_allocated) {
-        ErrStatLcl = 5014;   // gfortran: "Attempt to allocate an allocated object"
-    } else {
-        CFI_index_t lo = 1;
-        CFI_index_t hi = FinalAryLen;
-        ErrStatLcl = CFI_allocate(Ary, &lo, &hi, 0);
-    }
-    if (ErrStatLcl != 0) {
-        if (ary_allocated(Ary)) {
-            ErrVar->aviFAIL = -1;
-            std::string msg(RoutineName);
-            msg += ":Error allocating memory for the ";
-            msg.append(ftrim(ParamName, len_ParamName));
-            msg += " array; array was already allocated.";
-            assign_errmsg(ErrVar, msg);
-        } else {
-            ErrVar->aviFAIL = -1;
-            std::string msg(RoutineName);
-            msg += ":Error allocating memory for ";
-            msg += int2lstr_trimmed(AryLen);
-            msg += " characters in the ";
-            msg.append(ftrim(ParamName, len_ParamName));
-            msg += " array.";
-            assign_errmsg(ErrVar, msg);
-        }
-    }
-
-    const int n = static_cast<int>(ary_size(Ary));
-
-    // ! Print warning with default
-    // IF (.NOT. FoundLine) THEN
-    if (!FoundLine) {
-        if (!AllowDefault_) {
-            ErrVar->aviFAIL = -1;
-            std::string msg(RoutineName);
-            msg += ":Missing or default values are not allowed for ";
-            msg.append(ftrim(ParamName, len_ParamName));
-            msg += ". Please check control modes and array length.";
-            assign_errmsg(ErrVar, msg);
-            // RETURN -- and the reference does NOT call Cleanup here. It cannot
-            // leak: `Words_Ary` is allocated further down, inside the
-            // `IF (FoundLine)` block this arm is the negation of.
-            return;
-        }
-
-        // Ary = 0     ! Default of allocatable arrays is 0 for now
-        for (int i = 0; i < n; ++i) {
-            *ary_at(Ary, i) = 0.0;
-        }
-
-        // PRINT *, "ROSCO Warning: ..."
-        std::vector<double> values(static_cast<std::size_t>(n));
-        for (int i = 0; i < n; ++i) {
-            values[static_cast<std::size_t>(i)] = *ary_at(Ary, i);
-        }
-        print_default_warning(ftrim(ParamName, len_ParamName), values.data(), n);
-    }
-
-    // IF (FoundLine) THEN
-    if (FoundLine) {
-        // ! Allocate words array
-        // ALLOCATE ( Words_Ary( AryLen + 1 ) , STAT=ErrStatLcl )
-        //
-        // `Words_Ary` is `CHARACTER(MaxParamLength), ALLOCATABLE (:)` and is
-        // read by NOTHING outside the DEBUG_PARSING block, which is dead. It is
-        // still allocated and still passed to `GetWords`, because that is what
-        // the reference does and X1 forbids routing around a callee. The vector
-        // below IS the allocation -- `MaxParamLength` bytes per element, the
-        // same layout `GetWords`'s bridge expects -- so the call is the
-        // reference's call and not a re-implementation of it.
-        //
-        // THE `STAT=` BRANCH IS NOT TRANSLATED. `std::vector` reports failure
-        // by throwing, not by a status, so there is no `ErrStatLcl` to test --
-        // and the branch it guards needs a genuine out-of-memory, which no
-        // input in this unit's domain produces (`AryLen` is pinned to
-        // [0, 32], so the request is at most 33 x 200 bytes). Writing
-        // `ErrStatLcl = 0; if (ErrStatLcl != 0)` would put a comparison in the
-        // translation that no input can make either way -- the shape units #1,
-        // #4 and #43 each measured as surviving mutants. Named in §7.
-        const int NumWords = AryLen + 1;
-        std::vector<char> Words_Ary(
-            static_cast<std::size_t>(std::max(NumWords, 0))
-            * static_cast<std::size_t>(MaxParamLength));
-
-        // ! Separate line string into AryLen + 1 words, should include variable name
-        // CALL GetWords ( Line, Words_Ary, AryLen + 1 )
-        getwords_c(Line.data(), MaxLineLength, Words_Ary.data(), MaxParamLength, NumWords);
-
-        // ! Debug Output -- IF (DEBUG_PARSING) THEN ... END IF
-        // DEBUG_PARSING is `.FALSE.` as a PARAMETER; the block is dead in every
-        // build of this tree and is not translated.
-        if (DEBUG_PARSING) {
-            // intentionally empty; see the constant above
-        }
-
-        // ! Read array
-        // READ (Line,*,IOSTAT=ErrStatLcl)  Ary
-        std::vector<double> values(static_cast<std::size_t>(n));
-        for (int i = 0; i < n; ++i) {
-            values[static_cast<std::size_t>(i)] = *ary_at(Ary, i);
-        }
-        ErrStatLcl = list_read_reals(Line.data(), MaxLineLength, values.data(), n);
-        for (int i = 0; i < n; ++i) {
-            *ary_at(Ary, i) = values[static_cast<std::size_t>(i)];
-        }
-
-        if (ErrStatLcl != 0) {
-            ErrVar->aviFAIL = -1;
-            std::string msg(RoutineName);
-            msg += ":A fatal error occurred when parsing data from \"";
-            msg.append(ftrim(FileName, len_FileName));
-            msg += "\".";
-            msg += NewLine;
-            msg += " >> The \"";
-            msg.append(ftrim(ParamName, len_ParamName));
-            msg += "\" array was not assigned valid REAL values on line #";
-            msg += int2lstr_trimmed(LineNum);
-            msg += ".";
-            msg += NewLine;
-            msg += " >> The text being parsed was :";
-            msg += NewLine;
-            msg += "    \"";
-            msg.append(ftrim(Line.data(), MaxLineLength));
-            msg += "\"";
-            assign_errmsg(ErrVar, msg);
-            // RETURN, and the `CALL Cleanup()` the reference writes on the NEXT
-            // line is unreachable Fortran -- a statement after an unconditional
-            // RETURN. Transcribed as unreachable: the vector's destructor is
-            // what actually frees `Words_Ary`, so the reference's leak is not
-            // reproduced. Recorded in §7 of the evidence README rather than
-            // silently repaired.
-            return;
-        }
-    }
-
-    // IF ( PRESENT(UnEc))  THEN
-    //     IF ( UnEc > 0 )  WRITE (UnEc,*)  LineNum, Tab, ParamName, Tab, Ary
-    // END IF
-    //
-    // NOT TRANSLATED, AND THE REASON IS THE TRANSLATION BOUNDARY RATHER THAN
-    // THIS UNIT. `UnEc` is a Fortran UNIT NUMBER, and the record has to go to
-    // whatever file the CALLER connected it to -- `<RootName>.RO.echo`, which
-    // `ReadControlParameterFileSub` OPENs on it when `CntrPar%Echo > 0`
-    // (ReadSetParameters.f90:358-362, clean). C++ has no access to the Fortran
-    // runtime's unit table, so the only record this side could write is one to
-    // `fort.<UnEc>` -- a DIFFERENT file from the one the reference writes,
-    // whenever the arm is live at all. Writing to the wrong file is worse than
-    // not writing, so nothing is emitted and the gap is named.
-    //
-    // THE ARM IS DEAD IN EVERY CONFIGURATION THIS CAMPAIGN TESTS, measured
-    // rather than assumed: `CntrPar%Echo > 0` is FALSE in all 27 scenarios
-    // (`coverage/line_coverage.json`, ReadSetParameters.f90:359 reached 28
-    // times, :360 zero), so `UnEc` is 0 at every one of this unit's 1,232
-    // calls and the guard is false at all of them. All 22 `Examples/DISCON*.IN`
-    // set `Echo` to 0.
-    //
-    // Emitting NOTHING rather than a guarded no-op is deliberate: a translated
-    // `if (UnEc > 0) { }` would be a mutable comparison no input could kill.
-    // `harness/ranges.toml` holds `UnEc` at 0 for the same reason, so the
-    // reference does not write a record the translation has no counterpart for.
-    // Raised in DECISIONS.md -- the four sibling `Parse*_Opt` units carry the
-    // identical statement, so this is a family decision, not a local one.
-    (void)has_UnEc;
-    (void)UnEc;
-    (void)LineNum;
-    (void)Tab;
-
-    // CALL Cleanup() -- deallocates Words_Ary, which is out of scope by here.
 }

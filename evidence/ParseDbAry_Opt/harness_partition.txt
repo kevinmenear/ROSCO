@@ -1,0 +1,11 @@
+ParseDbAry_Opt -- the differential harness partitioned by (alloc_Ary on entry, arm)
+13674 cases, 4067 failing, EVERY failure on Ary and on no other output.
+
+  alloc  arm             cases   Ary-failing
+      0  not-allowed      4006     4006
+      0  other            3003        0
+      0  read-failed        61       61
+      1  already-alloc    5697        0
+      1  not-allowed       805        0
+      1  other              60        0
+      1  read-failed        42        0

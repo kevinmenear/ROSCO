@@ -604,7 +604,9 @@ void ParseDbAry_Opt(char* FileLines, int n_FileLines, int len_FileLines,
     // ! Print warning with default
     // IF (.NOT. FoundLine) THEN
     if (!FoundLine) {
-        if (!AllowDefault_) {
+        // RED TEST: the `.NOT. AllowDefault_` arm deleted; every not-found case
+        // takes the default path instead of reporting.
+        if (false && !AllowDefault_) {
             ErrVar->aviFAIL = -1;
             std::string msg(RoutineName);
             msg += ":Missing or default values are not allowed for ";
