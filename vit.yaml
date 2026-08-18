@@ -1093,6 +1093,9 @@ translations:
   FloatingFeedback:
     status: integrated
     cpp_file: translations/Controllers/floatingfeedback.cpp
+  ForeAftDamping:
+    status: integrated
+    cpp_file: translations/Controllers/foreaftdamping.cpp
 types:
   ControlParameters:
     strategy: view

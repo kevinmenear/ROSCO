@@ -80,6 +80,7 @@ double aerodyntorque_c(double RotSpeed, double BldPitch, localvariables_view_t* 
 void cablecontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst, errorvariables_view_t* ErrVar);
 void flapcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst);
 double floatingfeedback_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_view_t* ErrVar);
+void foreaftdamping_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst);
 
 #ifdef __cplusplus
 }

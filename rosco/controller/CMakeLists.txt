@@ -136,6 +136,7 @@ set(SOURCES
     src/cablecontrol.cpp
     src/flapcontrol.cpp
     src/floatingfeedback.cpp
+    src/foreaftdamping.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
