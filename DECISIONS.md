@@ -4,6 +4,36 @@ Append-only record of *why*. Never read end to end.
 
 ## Unit #54 — ParseDbAry_Opt — second dispatch — 2026-08-18
 
+### PROPOSED AMENDMENT, for the Driver: the campaign has no instrument that compares a translated PRINT, and four more units carry one
+
+Not a finding about `ParseDbAry_Opt`. `list_directed_real`, `field`,
+`nonfinite_text` and `print_default_warning` exist only to reproduce the
+reference's `PRINT *` record, byte for byte, and their layout was measured
+against gfortran's own runtime (`fortran_io_probe.txt`). **16 of their 17
+mutants survive the differential harness, and gate run `ae3f319a` shows the gate
+does not reach them either: 0 of 5,252,000.** Two instruments, neither of which
+can tell whether that code is right.
+
+The record IS live in ROSCO — 66 executions across 21 of the 27 scenarios — and
+units #55–#58 carry the identical statement, so this is a family-sized hole and
+not a corner of one unit.
+
+**What would close it:** a differential harness that captures each side's stdout
+across the call and compares it as another output. The generated test already
+runs both sides in one process; what it does not do is separate their output.
+Note the complication rather than hiding it: the test writes its own JSON to
+stdout, and libgfortran buffers unit 6 independently of C++'s `stdout`, so the
+capture has to flush both runtimes and restore the descriptor before the JSON is
+written.
+
+**Second proposed amendment, smaller:** R14 plants the key as a word of ONE
+element of a CHARACTER array, which is what makes `FindLine` succeed at all
+here — and it succeeds in **103 cases of 13,674**. Every unit in the
+`Parse*_Opt` family is a parser behind exactly that search, so every one of them
+will have a corpus that reaches its parser in ~1% of cases unless the rule
+plants more. That is a change to a SHARED rule and so is the Driver's to weigh,
+not a unit's.
+
 ### The proposed amendment of the first dispatch was BUILT: `no_oracle_when`, the ninth judgement kind
 
 The first dispatch (below) recorded that neither of the campaign's two keys fits
