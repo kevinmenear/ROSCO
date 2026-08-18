@@ -1,6 +1,6 @@
-# done_check.py IPC -- captured 2026-08-18T03:27:42Z by scripts/capture_done_check.sh
+# done_check.py IPC -- captured 2026-08-18T03:28:16Z by scripts/capture_done_check.sh
 
-Run against the committed state at 2806fb26 ("IPC: the three plan.json keys the done_check crash named -- source_file, translation, harness_required"), with a CLEAN tree, with stdout
+Run against the committed state at 8f231b7d ("IPC: the const_tweak gap is real and it is NOT what decides the disposition"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
