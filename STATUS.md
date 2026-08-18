@@ -279,6 +279,11 @@ Neither number moved.
 
 ---
 
+*(SUPERSEDED by the third-dispatch block at the end of this file: the corpus
+was changed, the score is now 0.9231, and every count below that names 63,888
+cases is a statement about a corpus this campaign no longer has. The block is
+kept because the two dispatches' numbers are the measurement of what changed.)*
+
 **As of 2026-08-18: unit #53 `IPC` is `deferred`, and it closes on P12 ALONE —
 now on a NUMBER (0.7797) rather than on an absent artifact.** Four layers, all
 four red-tested. Two dispatches. The unit is the campaign's largest so far — six
@@ -5632,3 +5637,68 @@ shape as `LoggingLevel = 1` hiding a third of this unit, one layer down.
 (`mutation/Debug.ablation-s35.index_offset.1.json`). It is kept OUT of
 `mutation/Debug.json` because the merge refuses parts that ran different
 scenarios; the next dispatch folds it in and re-sweeps for 145/155 = 0.9355.
+
+
+---
+
+**As of 2026-08-18: unit #53 `IPC` is `deferred` on P12 alone, now at 0.9231 —
+96 killed of 104 behavioural, 14 declared equivalent, 8 open.** Third dispatch.
+It was relaunched with six survivors named, and the single result worth carrying
+is that **the six were two different kinds of thing and one probe told them
+apart**.
+
+| the named survivor | classification | what was done |
+|---|---|---|
+| `index_offset` ×4, `'[3]' -> '[3 + 1]'` at four local declarations | **(a)** equivalent | declared, with the argument written where it can be disputed, and the four `const_tweak '3' -> '4'` twins declared with it |
+| `drop_call` ×2 at the `IPC_SatMode`/`fmin` site | **(b)** the corpus could not reach it | the INPUTS were fixed. Both KILLED, at 1,494 and 1,453 cases |
+
+```
+0.7797  92/118   the second dispatch
+0.8136  96/118   + the corpus change: seven of the nine mutants at the fmin site
+0.9231  96/104   + fourteen declarations, none of them at that site
+```
+
+**THE CORPUS CHANGE, AND THE PROBE THAT DESIGNED IT.** `IPC_SatMode` is a scalar
+INTEGER the reference compares against literals, so R7's predicate knob was the
+only stage that ever put 2 or 3 in it — and the knob stage holds every REAL at
+its base draw. The `min` saturation was reached 9,216 times, at ONE triple of
+real values, and never bit once. `evidence/IPC/probe_fmin_site.py` generates the
+corpus and stops before `emit`: **30 seconds against the sweep's 70 minutes**. It
+predicted the kills to the case before the sweep ran.
+
+    harness/ranges.toml   CntrPar_IPC_SatMode = { values = [2, 3, 0] }
+                          LocalVar_NumBl      = { values = [3, 0, 1] }
+
+    corpus 63,888 -> 84,754 cases, 656 MB -> 870 MB
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (`harness/IPC.json`) | **84,754 checked, 0 failed, 0 inadmissible**, clean tree, six callee bridges kept | the no-op stub: **84,754 of 84,754** — the empty pass set, at the SAME count as the green |
+| mutation (`mutation/IPC.json`, THIRTEEN parts) | **96 of 104, 0.9231**, 0 no-compile, 14 declared, 8 open at three sites | `declared_but_killed` is EMPTY — every declared mutant was still built and run |
+| post-integration (`harness/IPC.postintegration.json`) | 84,754 checked, 0 failed | the copy-back deleted from the wrapper: **84,754 of 84,754**; reverted, rebuilt, green re-taken at 0 |
+| gate, 27 scenarios (`gate/IPC.json`) | 5,252,000 values, 0 mismatched | unchanged and **deliberately not re-taken**: the gate reads no case file and neither the translation nor the wrapper moved |
+
+**TWO CORRECTIONS THE RUN FORCED.** A stated `values` list DOES bound R7's knob
+— `values = [2, 3]` reported `else: 0` and had deleted one of the unit's eight
+arms while the harness stayed green. And `harness/emit.py` has a memory ceiling
+between 84,754 and 95,310 cases: it was SIGKILLed writing 1.0 GB in a 7.7 GiB VM
+holding nothing else, which is why `NumBl` had to give up a value to buy the
+`SatMode` fall-through. Both in DECISIONS.md.
+
+**AND ONE HYPOTHESIS WITHDRAWN BY THE SAME PROBE.** Two `index_offset` kills at
+`LocalVar%IPC_KI(1)` were LOST — killed on the old corpus, alive on this one.
+The first explanation written down was that the corpus change shadowed them
+through `IPC_IntSat`. It is wrong. Of the 17,486 cases that run the 1P
+`PIController` block, **17,474 arrive with an inverted saturation window** and
+**12** have a live one — and that was already true before. The site is killable
+by about one case in 84,754, so which of its four mutants gets its case is a
+redraw lottery. **That is this unit's largest blind spot and the dispatch did
+not create it and did not close it.** The fix is stated
+(`CntrPar_IPC_IntSat = { lo = 0, hi = 1e3 }`) and refused on price: it deletes
+half of an admissible domain and costs a fourth full sweep.
+
+**Procedure.** Thirteen sweep parts plus five re-runs with `--equivalences`,
+every one foreground, under `mutate_guarded.sh`, routed through the clock with
+`timeout: 600000`; nothing backgrounded, nothing polled. Three reset windows,
+each opened and closed inside one command or one short sequence, and every
+commit taken outside them. Eight commits, one per expensive artifact.
