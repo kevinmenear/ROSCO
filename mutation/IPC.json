@@ -36,6 +36,10 @@
   "swap_callee",
   "swap_operands"
  ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "const_tweak"
+ ],
  "compared_against": "fortran_reference_on_a_clean_tree",
  "mutants": 118,
  "equivalent_declared": 0,

@@ -283,6 +283,23 @@ def main() -> int:
         "operators": sorted(pop),
         "operator_population": counts,
         "operators_offered": parts[0][1]["operators_offered"],
+        # THE CAP HAS TO SURVIVE THE UNION OR THE UNION UNDOES THE FIX. Every
+        # part written by loop 4751161 carries `limit_per_operator` and
+        # `capped_operators`; the merged artifact is what `loop/done.py` P12
+        # and any reader actually open, and the first union taken after the fix
+        # dropped both -- so `mutation/IPC.json` said 118 mutants with no word
+        # that 39 of the unit's 157 were never enumerated, which is the exact
+        # silence the fix was for, reintroduced one file later.
+        #
+        # Taken from the parts rather than recomputed: they are the runs that
+        # met the cap. Refused if they disagree, because two parts of one sweep
+        # naming different caps did not enumerate one population.
+        **({"limit_per_operator": caps.pop()} if len(caps := {
+            d["limit_per_operator"] for _, d in parts
+            if "limit_per_operator" in d}) == 1 else {}),
+        **({"capped_operators": sorted({o for _, d in parts
+                                        for o in d.get("capped_operators", [])})}
+           if any("capped_operators" in d for _, d in parts) else {}),
         "compared_against": compared_against,
         "mutants": behavioural,
         "equivalent_declared": eq,
