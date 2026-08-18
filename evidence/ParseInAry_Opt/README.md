@@ -10,17 +10,23 @@ of that line with a Fortran **list-directed READ**. Three callees — `FindLine`
 27 scenarios: **230 calls**.
 
 **Disposition: `deferred`.** Six layers ran. **Five are green and red-tested;
-the sixth, mutation, is far below the campaign's threshold at 68 of 156** — for
+the sixth, mutation, is far below the campaign's threshold at 69 of 156** — for
 the same reason as the sibling, and this unit measures the reason from a second
 direction that the sibling did not have.
+
+**SECOND DISPATCH, 2026-08-18.** The corpus was corrected at two base draws, one
+survivor died, and two instruments were found to have been reporting something
+other than what they claimed. **§8 is the whole of it**; the numbers in this
+table and below are the second dispatch's, and the first dispatch's are named
+beside them wherever they moved.
 
 | layer | result | red-tested |
 |---|---|---|
 | parser conformance (`parser_conformance.txt`, `parser_replay.txt`) | **113 records, 0 mismatched.** Every record is gfortran's own answer for that record, emitted as ICHAR codes beside its iostat and every element; `parser_conformance.cpp` textually includes the SHIPPED translation and replays them through its own `list_read_ints` | **three**, each a mistake this parser could plausibly *have*: the sibling's separator set **3**; the semicolon guard's `sep != Sep::Blank` half **8**; the sibling's zero-store rule **26** |
-| differential harness (`harness/ParseInAry_Opt.json`) | **13,674 checked, 0 failed**, 0 inadmissible, against the CLEAN Fortran. `Ary` **not compared on 4,067** cases — the size PREDICTED from this unit's own partition before the entry was written (§4) | **four stubs, every count predicted first and every one exact**: no-op **13,448**; the `.NOT. AllowDefault_` arm deleted **4,811** = 4006 + 805; the READ deleted **103** = 61 + 42; the `IF (AryLen < 1)` arm deleted **16** = 8 + 8, two different cells |
-| mutation (`mutation/ParseInAry_Opt.json`) | **157 mutants, 1 nocompile, 156 behavioural, 68 killed, 88 survived, score 0.4359** — BELOW the threshold, and the number is real: green baseline, clean tree, `compared_against: fortran_reference_on_a_clean_tree` | — the score IS the red test (E4.6). 79 of the 88 survivors are in two regions: the list-directed READ, which only **103 cases of 13,674** can distinguish anything about, and the PRINT record, which no layer compares. `mutation_survivors.txt` |
-| survivor cross-check (`survivor_replay.json`) | **53 of the 88 survivors are KILLED by the parser replay** — 52 in the READ region, 1 outside | the **negative control is built in**: 16 of the 17 survivors outside the parser come back `unreached`, because the replay enters the translation only through `list_read_ints` (§5) |
-| post-integration (`harness/ParseInAry_Opt.postintegration.json`) | 13,674 checked, **0 failed** | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **10,611 of 13,674**, predicted in the runner's header BEFORE the run; reverted, rebuilt, green re-taken at 0 |
+| differential harness (`harness/ParseInAry_Opt.json`) | **15,504 checked, 0 failed**, 0 inadmissible, against the CLEAN Fortran (was 13,674). `Ary` **not compared on 1,283** cases — 8.3% of the corpus, against 29.7% before: the corrected base draw SHRANK the region the harness cannot judge (§4, §8) | **four stubs, every count predicted from the re-measured partition first and every one exact**: no-op **15,244**; the `.NOT. AllowDefault_` arm deleted **2,041** = 1120 + 817 + 104; the READ deleted **146** = 59 + 87; the `IF (AryLen < 1)` arm deleted **19** = 17 + 2 + 0 |
+| mutation (`mutation/ParseInAry_Opt.json`) | **157 mutants, 1 nocompile, 156 behavioural, 69 killed, 87 survived, score 0.4423** — BELOW the threshold, and the number is real: green baseline, clean tree, `compared_against: fortran_reference_on_a_clean_tree` | — the score IS the red test (E4.6). 79 of the 87 survivors are in two regions: the list-directed READ, which only **146 cases of 15,504** can distinguish anything about, and the PRINT record, which no layer compares. `mutation_survivors.txt`, `named_survivors.txt` |
+| survivor cross-check (`survivor_replay.json`) | **53 of the 87 survivors are KILLED by the parser replay** — 52 in the READ region, 1 outside | the negative control is built in (15 of the 16 survivors outside the parser come back `unreached`) **and it was not enough** — the runner now carries a POSITIVE control too, and §8 is why |
+| post-integration (`harness/ParseInAry_Opt.postintegration.json`) | 15,504 checked, **0 failed** | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **8,729 of 15,504**, RE-PREDICTED from the re-measured partition in the runner's header BEFORE the run; reverted, rebuilt, green re-taken at 0 |
 | gate, 27 scenarios (`gate/ParseInAry_Opt.json`) | 5,252,000 values / 351 channels, **0 mismatched** | **TWO**: every parsed value + 1 moves **1,857,893** (35% of the gate), revert-verified at 0; the `Ary = 0` default arm moves **0**, and the artifact carries the argument for the zero (§6) |
 
 **Every artifact of this unit names one instrument revision** — loop `2ff3660`,
@@ -520,17 +526,104 @@ parser_conformance.cpp                   the replay -- textually includes the SH
                                          translation so it tests that function, not a copy
 run_parser_replay.sh                     the replay plus its three red tests
 parser_replay.txt                        0 / 113, and 3, 8, 26 under perturbation
-harness_partition.txt                    the 13,674 cases by (alloc_Ary, entry status, arm)
+harness_partition.txt                    the 15,504 cases by (alloc_Ary, entry status, arm)
 mutation_census.txt                      the sweep's own stdout, every mutant with its verdict
-mutation_survivors.txt                   the 88 survivors by source region, and the
+mutation_survivors.txt                   the 87 survivors by source region, and the
                                          cross-instrument result
 run_survivor_replay.sh                   every survivor through the parser replay
-survivor_replay.txt / .json              53 of 88 killed, and the negative control
+survivor_replay.txt / .json              53 of 87 killed, both controls
 run_harness_stub.sh                      one stub through the harness, --no-generate
 parseinary_opt.noop-stub.cpp             every statement removed
 parseinary_opt.no-allowdefault-arm-stub.cpp   the .NOT. AllowDefault_ arm deleted
 parseinary_opt.no-read-stub.cpp          the list-directed READ deleted
 parseinary_opt.no-minlen-arm-stub.cpp    the IF (AryLen < 1) arm deleted
-harness.*-stub.json                      the four red tests, all at 13,674 cases
+harness.*-stub.json                      the four red tests, all at 15,504 cases
 run_wrapper_redtest.sh                   perturb the wrapper, prove red, revert, prove green
+r13_base_draw_probe.txt                  WHY 66860b6f survived: R13's block wrote 0 messages
+run_base_draw_probe.sh                   that probe, reproducible
+named_survivors.txt                      the six survivors P12 named, one at a time
 ```
+
+---
+
+## 8. The second dispatch — 2026-08-18
+
+The first dispatch closed at 13 of 14, `INCOMPLETE` on P12 alone, and named six
+survivors. **None of the six is an equivalent mutant.** `named_survivors.txt`
+takes them one at a time; this section is what changed in the tree.
+
+### 8a. Two base draws were wrong, and a surviving mutant is what said so
+
+`assign_errmsg` refuses an assignment when `s.size() > cap` and the Fortran
+bridge writes when `LEN(msg) <= cap`: the two differ **only** at
+`s.size() == cap`. R13's 256-case staging-capacity block exists to produce that
+case. `r13_base_draw_probe.txt` measured what the block actually contained:
+
+```
+cases 13386..13641      alloc_Ary = 0, has_AllowDefault = 0, aviFAIL = 300
+                        -> allocate, find no line, ALLOW the default, return clean
+cases writing a message 0 of 256
+LEN(ErrMsg) == cap      0 of 13,674 cases in the whole corpus
+```
+
+Unit #49's finding, one unit over: **a base draw on a dead arm does not cost a
+case, it costs the whole rule.** `harness/ranges.toml` now states
+`has_AllowDefault = { values = [1, 0] }` and `AllowDefault = { values = [0, 1] }`
+— present, and false. The block moves to the `.NOT. AllowDefault_` arm: 256 of
+256 reach an error arm, the message is 112 bytes across the block, the
+capacities sweep 8 .. 263, and **exactly one** case sizes the buffer to 112.
+`66860b6f` is killed, and it is the **only** verdict that moved.
+
+The second entry, `UnEc = { lo = 0, hi = 0, values = [0] }`, is the same shape
+of defect one rule over. R14 sets every free scalar integer to `k-1` and `k` and
+drops the shape when any is outside its range, so **this unit's own pin on
+`UnEc` deleted two thirds of a rule about `FindLine`**. The artifact had said so
+for a whole dispatch — `NOT reached ['2:plant', '3:plant']` — and it now reads
+`Reached ['1:plant', '2:plant', '3:plant']`. `UnEc` is still 0 in all 15,504
+cases, asserted on the regenerated corpus rather than assumed.
+
+### 8b. The variant that was measured and NOT taken
+
+`alloc_Ary = { values = [1, 0] }` reaches the already-ALLOCATED arm and would do
+the same job. It was generated and run: **15,504 cases, one failing**, and the
+failing case is not a defect. Its record is `/\]^`; an all-blank `ParamName`
+matches every line; and gfortran's list-directed READ treats a leading `/` as a
+**terminator** — it stops with `IOSTAT = 0` and leaves all six elements of a
+freshly `ALLOCATE`d `Ary` **undefined while returning `aviFAIL >= 0`**.
+
+That is a **third undefined-`Ary` path**, and no `no_oracle_when` can name it:
+the entry's reference half must be one relation on a field the reference
+RETURNS, and on this path the reference returns exactly what a fully successful
+read returns. The `AllowDefault` pair reaches the same rule with no such case,
+so it is the one taken — and the `/` finding is escalated in `DECISIONS.md` as a
+tenth judgement kind rather than dodged.
+
+### 8c. An instrument whose failure mode was its own control
+
+`parser_conformance.cpp` reaches the translation by **textual include**, and
+both replay runners put `-I rosco/controller/src` before the directory holding
+the perturbed copy. `vit integrate` puts a copy of the translation in that
+directory — so on an **integrated** tree every mutant compiled the shipped file.
+The first dispatch ran the replay *before* integration, when that file did not
+exist, and was right by accident.
+
+Re-run as it stood, the report was **87 of 87 `unreached`, KILLS 0** — which
+**satisfies the runner's only control** (a survivor outside the parser must come
+back unreached) more completely than a working run does. A control that a broken
+instrument passes more easily than a working one is not a control.
+
+Fixed two ways: the directory under test goes first on the include path, and the
+runner now takes a **positive** control before it scores anything — `;` added to
+`is_value_terminator`, whose delta this campaign has already measured through
+the same path, must come back at **3 of 113** or the run refuses. With both in
+place: READ `KILLED 52` / `unreached 19`, other `KILLED 1` / `unreached 15`.
+
+### 8d. What did not move
+
+The translation. The wrapper. The gate. The parser conformance corpus and its
+three red tests. `Ary`'s `no_oracle_when` entry. The score is still below the
+campaign's threshold and **nothing is declared equivalent** — 71 of the 87
+survivors are in the list-directed READ, which the corpus reaches in 146 cases
+of 15,504 because R14's plant alphabet is letters, and closing that needs a
+change to a **shared generator rule** that unit #54 has already put to the
+Driver.
