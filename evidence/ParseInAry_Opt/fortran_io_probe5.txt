@@ -1,0 +1,8 @@
+READ  semi-semi-n3   n= 3  iostat=  5010  -> 1 -987654 -987654
+READ  semi-sp-semi   n= 3  iostat=  5010  -> 1 -987654 -987654
+READ  semi-then-comma  n= 3  iostat=     0  -> 1 -987654 -987654
+READ  comma-then-semi-n3  n= 3  iostat=  5010  -> 1 -987654 -987654
+READ  comma-blank-semi  n= 3  iostat=  5010  -> 1 -987654 -987654
+READ  lf-then-semi   n= 2  iostat=  5010  -> 1 -987654
+READ  semi-after-null-blank  n= 3  iostat=     0  -> 1 2 -987654
+READ  nl-sep-comma   n= 2  iostat=     0  -> 1 2

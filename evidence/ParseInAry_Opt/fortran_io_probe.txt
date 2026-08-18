@@ -1,0 +1,48 @@
+run_if_time_remains: 14149s remain, 120s needed -- starting
+--- 1. list-directed READ of INTEGER(4) from an internal file ---
+READ  plain-2        n= 2  iostat=     0  -> 3 4
+READ  plain-1        n= 1  iostat=     0  -> 0
+READ  signed         n= 2  iostat=     0  -> 7 -8
+READ  leading-zero   n= 1  iostat=     0  -> 7
+READ  short          n= 2  iostat=  5010  -> 5 -987654
+READ  empty          n= 1  iostat=    -1  -> -987654
+READ  runout         n= 4  iostat=    -1  -> 1 2 -987654 -987654
+READ  name-first     n= 1  iostat=  5010  -> -987654
+READ  commas         n= 3  iostat=     0  -> 1 2 3
+READ  null-value     n= 3  iostat=     0  -> 1 -987654 3
+READ  tab-sep        n= 2  iostat=     0  -> 1 2
+READ  semicolon      n= 2  iostat=  5010  -> -987654 -987654
+READ  repeat         n= 3  iostat=     0  -> 7 7 7
+READ  repeat-null    n= 3  iostat=     0  -> -987654 -987654 8
+READ  zero-repeat    n= 2  iostat=  5010  -> -987654 -987654
+READ  star-alone     n= 1  iostat=  5010  -> -987654
+READ  slash          n= 3  iostat=     0  -> 1 -987654 -987654
+READ  slash-first    n= 2  iostat=     0  -> -987654 -987654
+READ  real-form      n= 2  iostat=  5010  -> -987654 -987654
+READ  trailing-dot   n= 1  iostat=  5010  -> -987654
+READ  leading-dot    n= 1  iostat=  5010  -> -987654
+READ  dot-alone      n= 1  iostat=  5010  -> -987654
+READ  dot-sign       n= 1  iostat=  5010  -> -987654
+READ  two-dots       n= 1  iostat=  5010  -> -987654
+READ  exponent       n= 1  iostat=  5010  -> -987654
+READ  d-exponent     n= 1  iostat=  5010  -> -987654
+READ  bare-exponent  n= 1  iostat=  5010  -> -987654
+READ  bad-first      n= 2  iostat=  5010  -> -987654 -987654
+READ  partial-fail   n= 4  iostat=  5010  -> 1 2 -987654 -987654
+READ  digits-junk    n= 2  iostat=  5010  -> -987654 -987654
+READ  bang           n= 1  iostat=  5010  -> -987654
+READ  quoted         n= 2  iostat=  5010  -> -987654 -987654
+READ  sign-only      n= 1  iostat=  5010  -> -987654
+READ  minus-only     n= 1  iostat=  5010  -> -987654
+READ  int-max        n= 1  iostat=     0  -> 2147483647
+READ  int-max-p1     n= 1  iostat=  5010  -> -987654
+READ  int-min        n= 1  iostat=     0  -> -2147483648
+READ  int-min-m1     n= 1  iostat=  5010  -> -987654
+READ  huge-digits    n= 2  iostat=  5010  -> -987654 -987654
+READ  overflow-2nd   n= 2  iostat=  5010  -> 1 -987654
+--- 2. PRINT *, <char>, Ary, "]"   (Ary is all zero here) ---
+PRINT3 | ROSCO Warning: Did not find correct size F_NotchType in input file.  Using default value of [           0           0           0 ]
+PRINT1 | ROSCO Warning: Did not find correct size F_NotchType in input file.  Using default value of [           0 ]
+PRINT4 | [           0          -1  2147483647 -2147483647 ]
+--- 3. WRITE (UnEc,*) LineNum, Tab, ParamName, Tab, Ary ---
+run_if_time_remains: exit 0 after 1s (estimated 120s; 14148s now remain)

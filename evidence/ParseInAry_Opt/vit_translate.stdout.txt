@@ -1,0 +1,320 @@
+run_if_time_remains: 13858s remain, 180s needed -- starting
+
+SUBROUTINE ParseInAry_Opt
+  File: rosco/controller/src/ROSCO_Helpers.f90:901
+  Module: ROSCO_Helpers
+  Arguments:
+    FileLines: CHARACTER(*) INTENT(IN)(:)
+    ParamName: CHARACTER(*) INTENT(IN)
+    Ary: INTEGER(IntKi) INTENT(INOUT)(:)
+    AryLen: INTEGER INTENT(IN)
+    FileName: CHARACTER(*) INTENT(IN)
+    ErrVar: TYPE(ErrorVariables) INTENT(INOUT)
+    AllowDefault: LOGICAL INTENT(IN)
+    UnEc: Integer(IntKi) INTENT(IN)
+  C name: parseinary_opt_c
+
+✓ Scaffold written: translations/ROSCO_Helpers/parseinary_opt.cpp
+  Module: ROSCO_Helpers
+
+────────────────────────────────────────────────────────────
+Translation prompt:
+────────────────────────────────────────────────────────────
+
+# Translate Fortran function `ParseInAry_Opt` to C++
+
+## Original Fortran Source
+
+From `rosco/controller/src/ROSCO_Helpers.f90`:
+
+```fortran
+SUBROUTINE ParseInAry_Opt( FileLines, ParamName, Ary, AryLen, FileName, ErrVar, AllowDefault, UnEc )
+
+    USE ROSCO_Types, ONLY : ErrorVariables
+
+    ! Arguments declarations.
+    CHARACTER(*),  INTENT(IN   ), DIMENSION(:)     :: FileLines   ! Input file unit
+    INTEGER,                INTENT(IN   )          :: AryLen                        !< The length of the array to parse.
+    INTEGER(IntKi), ALLOCATABLE,   INTENT(INOUT)   :: Ary(:)            !< The array to receive the input values.
+    CHARACTER(*),           INTENT(IN)             :: FileName                      !< The name of the file being parsed.
+    CHARACTER(*),           INTENT(IN)             :: ParamName                       !< The array name we are trying to fill.
+    TYPE(ErrorVariables),   INTENT(INOUT)          :: ErrVar   ! Current line of input
+    Integer(IntKi), OPTIONAL, INTENT(IN   )               :: UnEc   ! Variable
+    LOGICAL, OPTIONAL,      INTENT(IN   )        :: AllowDefault   
+
+    ! Local declarations.
+    INTEGER(IntKi)                                 :: FinalAryLen                   !< Final array length, non-input
+    INTEGER(IntKi)                                 :: LineNum                       !< The number of the line to parse.
+    CHARACTER(MaxLineLength)                       :: Line
+    INTEGER(IntKi)                                 :: ErrStatLcl                    ! Error status local to this routine.
+    INTEGER(IntKi)                                 :: i
+
+    CHARACTER(MaxParamLength), ALLOCATABLE          :: Words_Ary       (:)               ! The array "words" parsed from the line.
+    CHARACTER(MaxLineLength)                        :: Debug_String 
+    CHARACTER(*), PARAMETER                         :: RoutineName = 'ParseInAry_Opt'
+    CHARACTER(MaxParamLength)                       :: ParamNameUC
+    LOGICAL                                         :: AllowDefault_, FoundLine
+
+    ! Figure out if we allow default
+    AllowDefault_ = .TRUE.
+    if (PRESENT(AllowDefault)) AllowDefault_ = AllowDefault    
+
+    ! If we've already failed, don't read anything
+    IF (ErrVar%aviFAIL >= 0) THEN
+        
+        CALL FindLine(FileLines, ParamName, FoundLine, Line, LineNum, AryLen)
+
+        ! PRINT *, "Line: ", TRIM(Line)
+
+        ! Minimum array length
+        IF (AryLen < 1) THEN
+            FinalAryLen = 1
+        ELSE
+            FinalAryLen = AryLen
+        ENDIF
+
+        ! Allocate array and handle errors
+         ALLOCATE ( Ary(FinalAryLen) , STAT=ErrStatLcl )
+        IF ( ErrStatLcl /= 0 ) THEN
+            IF ( ALLOCATED(Ary) ) THEN
+                ErrVar%aviFAIL = -1
+                ErrVar%ErrMsg = RoutineName//':Error allocating memory for the '//TRIM( ParamName )//' array; array was already allocated.'
+            ELSE
+                ErrVar%aviFAIL = -1
+                ErrVar%ErrMsg = RoutineName//':Error allocating memory for '//TRIM(Int2LStr( AryLen ))//' characters in the '//TRIM( ParamName )//' array.'
+            END IF
+        END IF
+
+        ! Print warning with default
+        IF (.NOT. FoundLine) THEN
+            IF (.NOT. AllowDefault_) THEN
+                ErrVar%aviFAIL = -1
+                ErrVar%ErrMsg = RoutineName//':Missing or default values are not allowed for '//TRIM( ParamName )//'. Please check control modes and array length.'
+                RETURN
+            ENDIF
+
+            Ary = 0     ! Default of allocatable arrays is 0 for now
+            PRINT *, "ROSCO Warning: Did not find correct size "//TRIM( ParamName )//" in input file.  Using default value of [", Ary, "]"
+        ENDIF
+
+        IF (FoundLine) THEN
+    
+            ! Allocate words array
+            ALLOCATE ( Words_Ary( AryLen + 1 ) , STAT=ErrStatLcl )
+            IF ( ErrStatLcl /= 0 )  THEN
+                ErrVar%aviFAIL = -1
+                ErrVar%ErrMsg = RoutineName//':Fatal error allocating memory for the Words array.'
+                CALL Cleanup()
+                RETURN
+            ENDIF
+
+            ! Separate line string into AryLen + 1 words, should include variable name
+            CALL GetWords ( Line, Words_Ary, AryLen + 1 )  
+
+            ! Debug Output
+            IF (DEBUG_PARSING) THEN
+                Debug_String = ''
+                DO i = 1,AryLen+1
+                    Debug_String = TRIM(Debug_String)//TRIM(Words_Ary(i))
+                    IF (i < AryLen + 1) THEN
+                        Debug_String = TRIM(Debug_String)//','
+                    END IF
+                END DO
+                print *, 'Read: '//TRIM(Debug_String)//' on line ', LineNum
+            END IF
+        
+            ! Read array
+            READ (Line,*,IOSTAT=ErrStatLcl)  Ary
+            IF ( ErrStatLcl /= 0 )  THEN
+                ErrVar%aviFAIL = -1
+                ErrVar%ErrMsg = RoutineName//':A fatal error occurred when parsing data from "' &
+                                //TRIM( FileName )//'".'//NewLine//  &
+                                ' >> The "'//TRIM( ParamName )//'" array was not assigned valid REAL values on line #' &
+                                //TRIM( Int2LStr( LineNum ) )//'.'//NewLine//' >> The text being parsed was :'//NewLine &
+                                //'    "'//TRIM( Line )//'"' 
+                RETURN
+                CALL Cleanup()         
+            ENDIF
+
+        ENDIF
+
+        IF ( PRESENT(UnEc))  THEN
+            IF ( UnEc > 0 )  WRITE (UnEc,*)  LineNum, Tab, ParamName, Tab, Ary
+        END IF
+
+        CALL Cleanup()
+    ENDIF
+
+    RETURN
+
+    !=======================================================================
+    CONTAINS
+    !=======================================================================
+        SUBROUTINE Cleanup ( )
+
+            ! This subroutine cleans up the parent routine before exiting.
+
+            ! Deallocate the Words array if it had been allocated.
+
+            IF ( ALLOCATED( Words_Ary ) ) DEALLOCATE( Words_Ary )
+
+
+            RETURN
+
+        END SUBROUTINE Cleanup
+```
+
+## C++ Scaffold (correct signature — preserve exactly)
+
+```cpp
+// VIT Translation Scaffold
+// Function: ParseInAry_Opt
+// Source: ROSCO_Helpers.f90
+// Module: ROSCO_Helpers
+// Fortran: SUBROUTINE ParseInAry_Opt(FileLines, ParamName, Ary, AryLen, FileName, ErrVar, AllowDefault, UnEc)
+// Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+// Source MD5: ee7c19a2c357
+// VIT: 0.1.0
+// Status: unverified
+// Generated: 2026-08-18T06:20:19Z
+
+#include <ISO_Fortran_binding.h>
+
+#include "vit_types.h"
+
+void ParseInAry_Opt(char* FileLines, int n_FileLines, int len_FileLines, char* ParamName, int len_ParamName, CFI_cdesc_t* Ary, int AryLen, char* FileName, int len_FileName, errorvariables_view_t* ErrVar, int has_AllowDefault, int32_t AllowDefault, int has_UnEc, int UnEc) {
+    // TODO: implement ParseInAry_Opt
+}
+```
+
+Replace the `// TODO` placeholder with the algorithm. Do not change the function signature.
+
+## C Struct Definitions
+
+These struct types are passed by pointer to the C++ function:
+
+```c
+// Auto-generated view struct for Fortran TYPE(ErrorVariables)
+// Generated by VIT (Verified Incremental Translator)
+// ALLOCATABLE fields exposed as pointer+size pairs.
+// Scalars and CHARACTER fields copied directly.
+// 2D arrays use column-major layout: mat[col * n_rows + row]
+
+#ifndef ERRORVARIABLES_VIEW_T_H
+#define ERRORVARIABLES_VIEW_T_H
+
+#include <stdint.h>
+
+#ifndef VIT_COMPLEX_T_DEFINED
+#define VIT_COMPLEX_T_DEFINED
+typedef struct { double re, im; } vit_complex_double;
+typedef struct { float  re, im; } vit_complex_float;
+#endif
+
+#ifndef VIT_CHAR_UNALLOCATED
+// A deferred-length `CHARACTER(:), ALLOCATABLE` field crosses as three
+// members: the buffer `<f>`, its current length `n_<f>`, and the number of
+// bytes `n_<f>_cap` the C++ side may write into it.
+//
+// `n_<f>` carries THREE states, and a consumer that collapses the first two
+// into one is wrong:
+//
+//     n <  0   VIT_CHAR_UNALLOCATED -- NOT ALLOCATED; ALLOCATED() is .FALSE.
+//     n == 0   ALLOCATED, and of length zero
+//     n >  0   ALLOCATED, with that many significant bytes
+//
+// Absence is carried by the LENGTH, not by a NULL pointer. `<f>` always
+// points at a writable buffer, because C++ must be able to perform
+// `X = '...'` on a field Fortran left unallocated -- which Fortran itself
+// permits, and which no amount of pointer-checking makes possible without a
+// buffer to write into. Supplying that buffer forfeits null-as-absence, so
+// the length carries absence instead. It is a forced trade, not a repair.
+//
+// Before using `n_<f>` AS A LENGTH -- to size a buffer, to bound a copy, to
+// pass to a bridge -- test it against this constant. It is negative, so it
+// does not fail loudly: cast to an unsigned size it becomes SIZE_MAX, and
+// `(size_t)n + 1` wraps to a zero-length allocation that then overflows.
+#define VIT_CHAR_UNALLOCATED (-1)
+#endif
+
+typedef struct {
+    // --- Scalar and fixed-size fields ---
+    int size_avcMSG;
+    int aviFAIL;
+    int ErrStat;
+
+    // --- ALLOCATABLE fields (pointer + size) ---
+    char* ErrMsg;  // deferred-length CHARACTER — blank-padded staging buffer
+    int32_t n_ErrMsg;      // current LEN; set to the new LEN to reassign
+    int32_t n_ErrMsg_cap;  // bytes of ErrMsg the C++ may write
+} errorvariables_view_t;
+
+#endif // ERRORVARIABLES_VIEW_T_H
+```
+
+## Already-Translated Callees
+
+This function calls the following already-translated functions. Call them directly using these C signatures — the declarations are provided automatically by VIT (do NOT add your own `extern "C"` or `#include` for these).
+
+```c
+void findline_c(char* FileLines, int n_FileLines, int len_FileLines, char* ParamName, int len_ParamName, int32_t* FoundLine, char* Line, int* LineNum, int has_AryLen, int AryLen);
+void getwords_c(char* Line, int len_Line, char* Words, int len_Words, int NumWords);
+void int2lstr_c(int Num, char* Int2LStr_result);
+```
+
+## ALLOCATABLE INTENT(INOUT) arguments — C descriptors
+
+`Ary` arrives as `CFI_cdesc_t*` — the CALLER'S OWN Fortran descriptor, not a copy of its data pointer. That is what lets the body do what the Fortran does: replace both the data and the extent, as `allocate` + `move_alloc` does.
+
+```c
+d->base_addr == nullptr           // .NOT. ALLOCATED(x)
+d->dim[0].extent                  // SIZE(x)
+d->dim[0].lower_bound             // LBOUND(x, 1)
+CFI_index_t s = lb + i;
+*(T*)CFI_address(d, &s)           // x(s) -- SUBSCRIPTS ARE FORTRAN'S,
+                                  // so they start at lower_bound, not 0
+CFI_deallocate(d);                // DEALLOCATE(x)
+CFI_index_t lo = 1, hi = n;
+CFI_allocate(d, &lo, &hi, 0);     // ALLOCATE(x(1:n))
+```
+
+Copy the old contents out BEFORE `CFI_deallocate` — it frees the storage `CFI_address` was reading. `move_alloc` gives the result the SOURCE's bounds, and an `allocate(tmp(n))` source is `1:n`, so a Fortran `move_alloc` into this dummy leaves its lower bound 1 whatever the caller's was. Reproduce that; do not improve on it.
+
+## ALLOCATABLE Fields (may need pre-allocation)
+
+If this function allocates or populates arrays in these types, the Fortran wrapper will need ALLOCATE statements before calling C++. The view struct exposes these as pointer+size pairs.
+
+**ErrorVariables** (view type — ALLOCATABLE fields):
+- `ErrMsg` — `CHARACTER(:), DIMENSION(:)`
+
+## Known-shape defects (generated from VIT's check registry)
+
+`vit check` enforces each of these mechanically; they are listed so you can avoid them, not so you can be trusted to.
+
+- Do not `#include "vit_translated.h"` or `"vit_kernel_callees.h"`. VIT injects callee declarations itself, and injects a different header while verifying than after integration.
+- Never use `toupper`/`tolower` for a Fortran case conversion — they are locale-dependent and undefined on negative `char`. Fortran's `CHAR(ICHAR(c)-32)` guarded by `'a'..'z'` is plain ASCII; compare through `unsigned char`.
+- Do not use `strftime` or `%b` for a Fortran date string — `%b` is locale-dependent. Reproduce the hardcoded English month table, and keep the day zero-padded.
+- Fortran `NINT` is round-half-away-from-zero. `rint`/`nearbyint` are half-to-even and a cast truncates; all three agree on values exact in the source type, so this survives a kernel sample. Use `std::lround`.
+- A bare cast TRUNCATES; Fortran `NINT` rounds half away from zero. If the reference uses `NINT`, the translation needs `std::lround` — a cast is only right where the Fortran says `INT`.
+- `MINVAL`/`MAXVAL` are not the first/last element. Substituting the endpoints is identical for sorted input and differs for exactly the malformed input the surrounding check exists to report.
+- A Fortran `SAVE` local — including the implicit form, a declaration with an initialiser — becomes a function-local `static`. It is load-bearing wherever a path reads it without having written it on that call.
+- Fortran `a*x**2` means `a * (x*x)`; C++ `a * x * x` means `(a*x) * x`, and the different intermediate rounding is 1-3 ULP. Parenthesise the power: `a * (x * x)`.
+- Fortran is column-major: `X(row, col)` flattens to `X[(col-1) * n_X_rows + (row-1)]` — the stride is the ROW count. Striding by the column count is silently wrong for any non-square array.
+- A Fortran CHARACTER assignment blank-fills the entire declared width. `buf[0] = '\0'` sets one byte, passes baselines because callers trim at the first space, and fails a byte-for-byte kernel compare. Use `std::memset(buf, ' ', <width>)`.
+- gfortran expands `x**N` by repeated multiplication for an INTEGER exponent and for the real literal `2.0`, but emits a libm `pow` call for a REAL exponent of 3.0 or more — and the two differ by 1 ULP. Match the reference: `std::pow(x, 3.0)`, not `x*x*x`.
+- `/` and `*` have equal precedence and associate left to right, so `1.0/a * b` is a reciprocal then a multiply — which rounds differently from `b/a`. Transcribe the shape, not the algebra.
+- A Fortran array section is not a pointer. `A(i, :)` is a STRIDED row of a column-major array and must be gathered element by element; its length is the other dimension. (`A(:, j)` is contiguous and can be passed as `&buf[(j-1)*rows]`.)
+- A CHARACTER local narrower than what is assigned into it truncates silently — no cast, no warning — and every later comparison runs on the truncated value. Read each CHARACTER local's declared length before translating.
+- `SCAN`/`INDEX`/`VERIFY` take a character SET, and the set is load-bearing — `>1`, `==1` and `==0` mean word, skip and stop. Carry the Fortran literal across exactly.
+
+## Instructions
+
+Consider the Fortran code carefully and be intentional about every translation choice. Pay attention to:
+- Array indexing (Fortran is 1-based, C++ is 0-based)
+- Fortran intrinsic functions and their C++ equivalents
+- Integer vs. floating-point division
+- Any implicit type conversions
+
+If anything is unclear or ambiguous, ask rather than assume.
+
+run_if_time_remains: exit 0 after 0s (estimated 180s; 13857s now remain)

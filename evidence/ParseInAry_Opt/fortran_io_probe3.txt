@@ -1,0 +1,28 @@
+--- semicolon, systematically ---
+READ  semi-only      n= 1  iostat=  5010  -> -987654
+READ  semi-1         n= 1  iostat=  5010  -> -987654
+READ  semi-tight     n= 2  iostat=  5010  -> -987654 -987654
+READ  semi-sp-before  n= 2  iostat=     0  -> 1 -987654
+READ  semi-sp-both   n= 2  iostat=     0  -> 1 -987654
+READ  semi-sp-after  n= 2  iostat=  5010  -> -987654 -987654
+READ  semi-n1        n= 1  iostat=  5010  -> -987654
+READ  semi-3rd       n= 3  iostat=     0  -> 1 2 -987654
+READ  semi-after-comma  n= 2  iostat=  5010  -> 1 -987654
+READ  semi-eor       n= 2  iostat=     0  -> 1 -987654
+--- repeat-count bound ---
+READ  rep-2147483647  n= 2  iostat=  5010  -> -987654 -987654
+READ  rep-2147483648  n= 2  iostat=  5010  -> -987654 -987654
+READ  rep-100000     n= 2  iostat=     0  -> 7 7
+READ  rep-negative   n= 2  iostat=  5010  -> -987654 -987654
+READ  rep-star-star  n= 2  iostat=  5010  -> -987654 -987654
+--- terminator of a good value ---
+READ  val-then-star  n= 2  iostat=    -1  -> -987654 -987654
+READ  val-then-quote  n= 2  iostat=  5010  -> -987654 -987654
+READ  val-then-bang  n= 2  iostat=  5010  -> -987654 -987654
+READ  val-then-cr    n= 2  iostat=     0  -> 1 2
+READ  val-then-lf    n= 2  iostat=     0  -> 1 2
+--- overflow boundary ---
+READ  p2147483646    n= 1  iostat=     0  -> 2147483646
+READ  m2147483648    n= 1  iostat=     0  -> -2147483648
+READ  p0021474836488  n= 1  iostat=  5010  -> -987654
+READ  m0000000000005  n= 1  iostat=     0  -> -5

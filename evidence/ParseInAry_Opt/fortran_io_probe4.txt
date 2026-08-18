@@ -1,0 +1,12 @@
+READ  two-blanks     n= 2  iostat=     0  -> 1 -987654
+READ  tab-then-semi  n= 2  iostat=     0  -> 1 -987654
+READ  comma-sp-semi  n= 2  iostat=  5010  -> 1 -987654
+READ  null-then-semi  n= 3  iostat=  5010  -> 1 -987654 -987654
+READ  rep-then-semi  n= 3  iostat=     0  -> -987654 -987654 -987654
+READ  semi-item3-comma  n= 3  iostat=     0  -> 1 2 -987654
+READ  semi-after-3blank  n= 2  iostat=     0  -> 1 -987654
+READ  semi-last-item  n= 2  iostat=     0  -> 1 2
+READ  blank-semi-first  n= 1  iostat=  5010  -> -987654
+READ  semi-then-semi  n= 2  iostat=     0  -> 1 -987654
+READ  slash-then-semi  n= 2  iostat=     0  -> 1 -987654
+READ  semi-n3-first  n= 3  iostat=     0  -> 1 -987654 2

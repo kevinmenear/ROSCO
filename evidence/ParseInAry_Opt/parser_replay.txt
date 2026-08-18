@@ -1,0 +1,134 @@
+run_if_time_remains: 13463s remain, 240s needed -- starting
+=== the shipped translation ===
+parser_conformance: 113 records, 0 mismatched
+  [green] exit 0
+  patched 1 site: return is_blank(c) || is_eol(c) || c == ',' || c == '/';  ->  return is_blank(c) || is_eol(c) || c == ',' || c == '/' || c == ';';
+=== RED TEST: ';' added to is_value_terminator -- the sibling unit's REAL separator set ===
+MISMATCH  case 85  n=2  record "1;2"
+   gfortran  iostat=5010   -987654 -987654
+   c++       iostat=0   1 -987654
+MISMATCH  case 86  n=1  record "1;2"
+   gfortran  iostat=5010   -987654
+   c++       iostat=0   1
+MISMATCH  case 89  n=2  record "1; 2"
+   gfortran  iostat=5010   -987654 -987654
+   c++       iostat=0   1 -987654
+parser_conformance: 113 records, 3 mismatched
+  [red-semisep] exit 1
+  patched 1 site: if (first_item || sep != Sep::Blank) {  ->  if (first_item) {
+=== RED TEST: the sep != Sep::Blank half of the semicolon guard deleted ===
+MISMATCH  case 91  n=2  record "1, ;2"
+   gfortran  iostat=5010   1 -987654
+   c++       iostat=0   1 -987654
+MISMATCH  case 96  n=2  record "1 , ;2"
+   gfortran  iostat=5010   1 -987654
+   c++       iostat=0   1 -987654
+MISMATCH  case 97  n=3  record "1,,;3"
+   gfortran  iostat=5010   1 -987654 -987654
+   c++       iostat=0   1 -987654 -987654
+MISMATCH  case 106  n=3  record "1 ;;2 3"
+   gfortran  iostat=5010   1 -987654 -987654
+   c++       iostat=0   1 -987654 -987654
+MISMATCH  case 107  n=3  record "1 ; ;2"
+   gfortran  iostat=5010   1 -987654 -987654
+   c++       iostat=0   1 -987654 -987654
+MISMATCH  case 109  n=3  record "1, ;2"
+   gfortran  iostat=5010   1 -987654 -987654
+   c++       iostat=0   1 -987654 2
+MISMATCH  case 110  n=3  record "1 , ;2 3"
+   gfortran  iostat=5010   1 -987654 -987654
+   c++       iostat=0   1 -987654 2
+MISMATCH  case 111  n=2  record "1<LF>;2"
+   gfortran  iostat=5010   1 -987654
+   c++       iostat=0   1 -987654
+parser_conformance: 113 records, 8 mismatched
+  [red-semiguard] exit 1
+  patched 1 site: if (!parse_int(rec, len, p, value)) {
+            return 5010;
+        }  ->  if (!parse_int(rec, len, p, value)) {
+            v[i] = value;
+            return 5010;
+        }
+=== RED TEST: the failing item stores 0 instead of keeping its value -- the REAL reader's rule ===
+MISMATCH  case 4  n=2  record "5   NameHere"
+   gfortran  iostat=5010   5 -987654
+   c++       iostat=5010   5 0
+MISMATCH  case 7  n=1  record "NameHere 1"
+   gfortran  iostat=5010   -987654
+   c++       iostat=5010   0
+MISMATCH  case 12  n=2  record "1, Name"
+   gfortran  iostat=5010   1 -987654
+   c++       iostat=5010   1 0
+MISMATCH  case 19  n=1  record "*1"
+   gfortran  iostat=5010   -987654
+   c++       iostat=5010   0
+MISMATCH  case 34  n=2  record "2**7 Name"
+   gfortran  iostat=5010   -987654 -987654
+   c++       iostat=5010   0 -987654
+MISMATCH  case 47  n=1  record ".5 Name"
+   gfortran  iostat=5010   -987654
+   c++       iostat=5010   0
+MISMATCH  case 48  n=1  record ". 1"
+   gfortran  iostat=5010   -987654
+   c++       iostat=5010   0
+MISMATCH  case 49  n=1  record "-. 1"
+   gfortran  iostat=5010   -987654
+   c++       iostat=5010   0
+MISMATCH  case 54  n=2  record ". 5"
+   gfortran  iostat=5010   -987654 -987654
+   c++       iostat=5010   0 -987654
+MISMATCH  case 55  n=2  record "., 5"
+   gfortran  iostat=5010   -987654 -987654
+   c++       iostat=5010   0 -987654
+MISMATCH  case 56  n=2  record "./ 5"
+   gfortran  iostat=5010   -987654 -987654
+   c++       iostat=5010   0 -987654
+MISMATCH  case 57  n=2  record "+. 5"
+   gfortran  iostat=5010   -987654 -987654
+   c++       iostat=5010   0 -987654
+MISMATCH  case 60  n=2  record "e1 5"
+   gfortran  iostat=5010   -987654 -987654
+   c++       iostat=5010   0 -987654
+MISMATCH  case 61  n=2  record ".e1 5"
+   gfortran  iostat=5010   -987654 -987654
+   c++       iostat=5010   0 -987654
+MISMATCH  case 62  n=2  record "bad 2"
+   gfortran  iostat=5010   -987654 -987654
+   c++       iostat=5010   0 -987654
+MISMATCH  case 63  n=4  record "1 2 bad 4"
+   gfortran  iostat=5010   1 2 -987654 -987654
+   c++       iostat=5010   1 2 0 -987654
+MISMATCH  case 65  n=1  record "! Name"
+   gfortran  iostat=5010   -987654
+   c++       iostat=5010   0
+MISMATCH  case 66  n=2  record "'1' 2"
+   gfortran  iostat=5010   -987654 -987654
+   c++       iostat=5010   0 -987654
+MISMATCH  case 67  n=1  record "+ 1"
+   gfortran  iostat=5010   -987654
+   c++       iostat=5010   0
+MISMATCH  case 68  n=1  record "- 1"
+   gfortran  iostat=5010   -987654
+   c++       iostat=5010   0
+MISMATCH  case 69  n=1  record "- 5"
+   gfortran  iostat=5010   -987654
+   c++       iostat=5010   0
+MISMATCH  case 72  n=1  record "2147483648 Name"
+   gfortran  iostat=5010   -987654
+   c++       iostat=5010   0
+MISMATCH  case 74  n=1  record "-2147483649 Name"
+   gfortran  iostat=5010   -987654
+   c++       iostat=5010   0
+MISMATCH  case 75  n=2  record "99999999999999999999 2"
+   gfortran  iostat=5010   -987654 -987654
+   c++       iostat=5010   0 -987654
+MISMATCH  case 76  n=2  record "1 99999999999999999999"
+   gfortran  iostat=5010   1 -987654
+   c++       iostat=5010   1 0
+MISMATCH  case 78  n=1  record "002147483648"
+   gfortran  iostat=5010   -987654
+   c++       iostat=5010   0
+parser_conformance: 113 records, 26 mismatched
+  [red-zerostore] exit 1
+=== all three perturbations turned the replay red ===
+run_if_time_remains: exit 0 after 2s (estimated 240s; 13461s now remain)
