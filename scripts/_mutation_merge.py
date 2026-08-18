@@ -245,6 +245,13 @@ def main() -> int:
     killed = sum(d["killed"] for _, d in parts)
     survived = sum(d["survived"] for _, d in parts)
     eq = sum(d["equivalent_declared"] for _, d in parts)
+    # The third disposition unions the same way the second does. `.get` with a
+    # default, not `[]`: parts written before loop 4751161+ have no such key,
+    # and a merge that refuses to read last week's parts is a merge nobody can
+    # use to re-take half a sweep.
+    unr = sum(d.get("unreachable_declared", 0) for _, d in parts)
+    unr_records = [r for _, d in parts for r in d.get("unreachable", [])]
+    unr_killed = [i for _, d in parts for i in d.get("unreachable_but_killed", [])]
     hung_ids = [i for _, d in parts for i in d.get("killed_by_timeout_ids", [])]
 
     if behavioural + nocompile != total:
@@ -263,13 +270,23 @@ def main() -> int:
     # is the campaign's first SPLIT sweep that declares any equivalence, so the
     # gap could not have surfaced earlier; PitchSaturation (#36) declares six and
     # ran in one part, and every earlier split part declared none.
-    if killed + survived + eq != behavioural:
+    # The identity now has three declared terms, for the reason recorded above:
+    # `mutants` counts every declared mutant and `killed`/`survived` count none
+    # of them, so each disposition has to appear on the left or the union
+    # refuses every sweep that uses it -- which is how the equivalence term got
+    # here in the first place.
+    if killed + survived + eq + unr != behavioural:
         return die(f"{killed} killed + {survived} survived + {eq} declared "
-                   f"equivalent != {behavioural} behavioural")
+                   f"equivalent + {unr} declared unreachable != {behavioural} "
+                   f"behavioural")
+    if len(unr_records) != unr:
+        return die(f"{len(unr_records)} unreachable record(s) but "
+                   f"unreachable_declared={unr} -- the count without the "
+                   f"reasons is what loop/done.py P12 refuses")
     if len(survivors) != survived:
         return die(f"{len(survivors)} survivor record(s) but survived={survived}")
 
-    denom = behavioural - eq
+    denom = behavioural - eq - unr
     score = killed / denom if denom else 0.0
     ratio = nocompile / total if total else 0.0
 
@@ -303,6 +320,9 @@ def main() -> int:
         "compared_against": compared_against,
         "mutants": behavioural,
         "equivalent_declared": eq,
+        "unreachable_declared": unr,
+        "unreachable": unr_records,
+        "unreachable_but_killed": unr_killed,
         "nocompile": nocompile,
         "killed_by_timeout": len(hung_ids),
         "killed_by_timeout_ids": hung_ids,

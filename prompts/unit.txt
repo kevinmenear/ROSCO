@@ -83,6 +83,44 @@ procedure, and every step exists because a unit of this campaign was lost at it.
    the translation, the harness result, the mutation result, the gate result,
    the evidence. Not one commit at the end.
 
+EVERY MUTANT GETS AN ANSWER, AND THERE ARE NOW THREE OF THEM. The bar is not
+"kill every mutant", it is EXPLAIN every mutant. P12 divides by
+`mutants - equivalent_declared - unreachable_declared`, so an explained mutant
+leaves the ratio instead of dragging it down. For each survivor, pick one:
+
+  KILL IT.        Usually the corpus is too narrow, not the translation wrong.
+                  Fix the inputs, not the record.
+
+  EQUIVALENT.     The two programs agree on every admissible input. A claim
+                  about the PROGRAMS. `--equivalences <file>`, a JSON list of
+                  ids, with the reasons written where they can be disputed.
+
+  UNREACHABLE.    The corpus cannot reach it, and you can show that. A claim
+                  about the CORPUS -- cheaper to assert, so it is checked
+                  harder. `--unreachable <file>`, a JSON OBJECT:
+
+                      {{"<id>": {{"reason": "<why no case reaches it>",
+                                 "evidence": "<path that shows it>"}}}}
+
+                  Both fields are required and the evidence path must EXIST or
+                  the run is refused before a mutant is built. Declare one the
+                  corpus then kills and P12 fails the unit outright -- so
+                  declare what you proved, not what you suspect.
+
+IF YOUR SURVIVORS ARE OUT-OF-BOUNDS READS OR WRITES, RE-RUN THE SWEEP WITH
+`--sanitize`. It builds the mutants with `-fsanitize=address,undefined`, which
+reaches the class no corpus can: a mutant whose only difference is at addresses
+the program does not own is invisible to a value comparison, and three
+identical runs over one such mutant scored 0.983, 1.000, 0.983 -- the 1.000 is
+the run that measured least. `p < len` becoming `p <= len`, `rec[p]` becoming
+`rec[p+1]`, and index_offset survivors generally are the shape that wants it.
+
+A SANITISER BASELINE THAT REPORTS ON THE UNMUTATED TRANSLATION IS A FINDING,
+NOT AN OBSTACLE. `vit_mutate.py --sanitize` refuses to score when the clean
+build already reports, because every mutant would then "die" of the original's
+own defect. Do not route around the refusal: it has found a real bug in the
+translation or in the harness, and that bug is worth more than the sweep.
+
 BEFORE YOU SET A DISPOSITION, two checks and one capture:
 
     python3 scripts/revcheck.py --unit {unit}
