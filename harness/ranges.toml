@@ -2042,6 +2042,14 @@ CntrPar_Fl_Kp_n = { same_as = "CntrPar_Fl_U_n" }
 #      reference's own literals and unit #49 measured that a stated `values`
 #      list does not bound it. Whether the fall-through therefore still has
 #      cases is a MEASUREMENT and is recorded in evidence/FloatingFeedback/.
+#      MEASURED, AND IT WENT THE OTHER WAY: over the scored 6734-case corpus
+#      the histogram is {1: 3518, 2: 3216} and the fall-through set is EMPTY
+#      (evidence/FloatingFeedback/fallthrough_census.txt). So the stated list
+#      bounded R7's knob for THIS parameter in THIS run. That is the narrow
+#      statement and it is the only one the probe supports -- it is not
+#      evidence about unit #49's aviFAIL = 2 and not a claim about the
+#      generator. It matters because the opposite result would have left the
+#      green resting on a comparison of two undefined slots that agreed.
 #   3. The narrowing removes NO ARM. Unlike unit #50's four candidate pins, each
 #      of which would have deleted a branch with nine statements in it, the
 #      region excluded here contains no statement at all -- it is the absence of
