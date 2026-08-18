@@ -1,6 +1,6 @@
-# done_check.py FloatingFeedback -- captured 2026-08-18T00:41:29Z by scripts/capture_done_check.sh
+# done_check.py FloatingFeedback -- captured 2026-08-18T00:42:47Z by scripts/capture_done_check.sh
 
-Run against the committed state at ccd80ca4 ("FloatingFeedback: the done_check, first capture -- 13 of 14, P5 open on this file itself"), with a CLEAN tree, with stdout
+Run against the committed state at 0708a9d0 ("RUNBOOK target layer: five entries earned by unit #51"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
