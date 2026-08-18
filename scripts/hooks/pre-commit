@@ -1,0 +1,76 @@
+#!/bin/bash
+# Refuse to commit while the tree is de-integrated.
+#
+# scripts/reset_to_clean.sh reverts every integrated unit's Fortran to the clean
+# pin so `vit extract` has pristine source; scripts/restore_integrated.sh puts
+# HEAD back. The pair is MANUAL and nothing guarantees the second runs, so a
+# session killed, timed out, or simply ended in between leaves the tree
+# reverted. That window opened twice on 2026-08-13.
+#
+# Committing inside it is the one irreversible outcome: a `git add -A` would
+# record 28 units of de-integration as a real commit. Both occurrences missed
+# that by timing alone, and the commit-each-artifact prompt rule multiplied the
+# chances. This converts the irreversible half into a loud, self-explaining stop.
+#
+# THE COPY UNDER scripts/hooks/ IS THE SOURCE; .git/hooks/pre-commit is an
+# INSTALLED copy. git does not version .git/hooks and `git bundle` does not
+# carry it, so for its first five weeks this guard existed on exactly one
+# disk, in no backup and no remote -- a guard whose own loss would be silent.
+# Install or re-install with: bash scripts/hooks/install.sh
+# Check for drift with:       bash scripts/hooks/install.sh --check
+S="$(git rev-parse --show-toplevel)/.loop-run/TREE_IS_DE_INTEGRATED"
+if [ -f "$S" ]; then
+cat >&2 <<MSG
+
+COMMIT REFUSED -- this tree is DE-INTEGRATED.
+
+$(cat "$S")
+
+Every integrated unit's C++ bridge is currently absent from
+rosco/controller/src. Committing now would record that as the state of the
+campaign.
+
+  FIX:  bash scripts/restore_integrated.sh
+        then commit again.
+
+That is a checkout from HEAD; it restores the wrappers and clears this block.
+Anything uncommitted under rosco/controller/src is lost by it, which is the
+in-flight-integration case the script's own header warns about -- if you have an
+integration you have not committed, re-run \`vit integrate ... --apply\` after
+restoring and discard any gate result taken since.
+
+Bypass with --no-verify only if you have read the above and mean it.
+
+MSG
+exit 1
+fi
+
+# Refuse to commit while a mutation sweep is unaccounted for.
+#
+# scripts/mutate_guarded.sh raises this and takes it down only when the
+# translation hashes back to what it was before the sweep. Three of three hard
+# kills left a mutant in the .cpp; the last was four characters and would have
+# been rebuilt into libdiscon.so by the next restore. Committing one records a
+# mutant as the translation -- the same irreversible half as the block above.
+S="$(git rev-parse --show-toplevel)/.loop-run/MUTATE_IN_PROGRESS"
+if [ -f "$S" ]; then
+cat >&2 <<MSG
+
+COMMIT REFUSED -- a mutation sweep is unaccounted for.
+
+$(cat "$S")
+
+Either a sweep is running right now -- in which case the translation on disk is
+a MUTANT and anything measured against it is measuring the mutant -- or one was
+killed and never restored the file.
+
+  FIX:  check the hash above. If it disagrees:
+            git checkout HEAD -- <the file named above>
+        then remove .loop-run/MUTATE_IN_PROGRESS and commit again.
+
+Bypass with --no-verify only if you have read the above and mean it.
+
+MSG
+exit 1
+fi
+exit 0
