@@ -4,22 +4,75 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-18: unit #55 `ParseInAry_Opt` is `deferred`. One dispatch. Six
-layers ran; five are green and red-tested and the mutation layer is 68 of 156 —
-below threshold, for the same measured reason as its sibling #54, and this unit
-pins that reason from a second direction.** The unit is `ParseDbAry_Opt` with one
-declaration changed: `diff` of the two clean bodies is the routine name, the
-declaration of `Ary` (`INTEGER(IntKi)` here, `REAL(DbKi)` there), the order of
-three locals, one commented-out `PRINT`, and whitespace.
+**As of 2026-08-18: unit #55 `ParseInAry_Opt` is `deferred`. TWO dispatches. Six
+layers; five green and red-tested, and the mutation layer at 69 of 156 — still
+below threshold, for a cause that is now measured from three directions and
+whose remedy is a shared generator rule the Driver holds.** The unit is
+`ParseDbAry_Opt` with one declaration changed: `diff` of the two clean bodies is
+the routine name, the declaration of `Ary` (`INTEGER(IntKi)` here, `REAL(DbKi)`
+there), the order of three locals, one commented-out `PRINT`, and whitespace.
 
 | layer | result | red-tested |
 |---|---|---|
 | parser conformance (`evidence/ParseInAry_Opt/parser_replay.txt`) | **113 records, 0 mismatched** — every record gfortran's own answer, replayed through the SHIPPED `list_read_ints` by textual include | **three**, each a mistake this parser could plausibly *have*: the sibling's separator set **3**; the semicolon guard **8**; the sibling's zero-store rule **26** |
-| differential harness (`harness/ParseInAry_Opt.json`) | **13,674 checked, 0 failed**, 0 inadmissible, against the CLEAN Fortran. `Ary` **not compared on 4,067** cases | **four stubs, every count predicted first and every one exact**: no-op **13,448**; the `.NOT. AllowDefault_` arm **4,811** = 4006+805; the READ **103** = 61+42; the `IF (AryLen < 1)` arm **16** = 8+8 |
-| mutation (`mutation/ParseInAry_Opt.json`) | **157 mutants, 156 behavioural, 68 killed, 88 survived, score 0.4359 — BELOW THRESHOLD** | the score IS the red test. 79 of the 88 are in two regions with measured causes |
-| survivor cross-check (`evidence/ParseInAry_Opt/survivor_replay.json`) | **53 of the 88 survivors KILLED by the parser replay** — 52 in the READ region, 1 outside | the negative control is built in: 16 of the 17 survivors outside the parser come back `unreached` |
-| post-integration (`harness/ParseInAry_Opt.postintegration.json`) | 13,674 checked, 0 failed | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **10,611**, predicted before the run |
+| differential harness (`harness/ParseInAry_Opt.json`) | **15,504 checked, 0 failed**, 0 inadmissible, against the CLEAN Fortran. `Ary` **not compared on 1,283** — 8.3%, against the first dispatch's 4,067 of 13,674 = 29.7% | **four stubs, every count re-predicted from the re-measured partition and every one exact**: no-op **15,244**; the `.NOT. AllowDefault_` arm **2,041** = 1120+817+104; the READ **146** = 59+87; the `IF (AryLen < 1)` arm **19** = 17+2+0 |
+| mutation (`mutation/ParseInAry_Opt.json`) | **157 mutants, 156 behavioural, 69 killed, 87 survived, score 0.4423 — BELOW THRESHOLD** | the score IS the red test. 79 of the 87 are in two regions with measured causes, both escalated |
+| survivor cross-check (`evidence/ParseInAry_Opt/survivor_replay.json`) | **53 of the 87 survivors KILLED by the parser replay** — 52 in the READ region, 1 outside | **two controls now**: the negative one (15 of 16 outside the parser `unreached`) and a POSITIVE one, because the negative one alone was satisfied by a broken instrument |
+| post-integration (`harness/ParseInAry_Opt.postintegration.json`) | 15,504 checked, 0 failed | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **8,729**, re-predicted before the run |
 | gate, 27 scenarios (`gate/ParseInAry_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched, re-taken at close at the same number | **TWO**: every parsed value **+ 1** moves **1,857,893** (35% of the gate); the `Ary = 0` default arm moves **0**, argued in the artifact |
+
+**THE SECOND DISPATCH WAS ASKED FOR SIX SURVIVORS BY NAME AND NONE OF THEM IS AN
+EQUIVALENT MUTANT.** `evidence/ParseInAry_Opt/named_survivors.txt` takes them one
+at a time: one was a corpus gap and is now **dead**; three are corpus gaps the
+parser replay kills at 60, 62 and 5 records of 113; two read one past the end of
+a `std::vector<char>` and belong to unit #31's open sanitiser-build class.
+Nothing was declared equivalent, and the score moved by exactly the one mutant
+the fix targeted.
+
+**TWO BASE DRAWS WERE WRONG AND A SURVIVING MUTANT IS WHAT SAID SO.** Unit #49's
+lever, twice:
+
+```
+harness/ranges.toml   has_AllowDefault = { values = [1, 0] }   R13's 256-case block
+                      AllowDefault     = { values = [0, 1] }   0 -> 256 write an ErrMsg
+                      UnEc = { lo = 0, hi = 0, values = [0] }  R14 1:plant -> 1:/2:/3:plant
+
+  corpus            13,674 -> 15,504        Ary excluded  4,067 -> 1,283
+  LEN(ErrMsg)==cap       0 -> 1             mutation      68/156 -> 69/156
+```
+
+`assign_errmsg` refuses at `s.size() > cap` and the bridge writes at
+`LEN <= cap`, so they differ ONLY at equality — and R13's whole block sat on the
+arm that assigns no message at all, 0 of 256. The `UnEc` entry is the same
+finding one rule over and in a form the campaign had not met: **R14 drops its
+plant when ANY free scalar integer is outside its range, so this unit's pin on a
+Fortran unit number deleted two thirds of a rule about `FindLine`** — and the
+artifact had said `NOT reached ['2:plant', '3:plant']` for a whole dispatch.
+
+**AN INSTRUMENT WHOSE FAILURE MODE SATISFIED ITS OWN CONTROL.** The survivor
+replay reaches the translation by textual include, and `-I rosco/controller/src`
+preceded the mutant's directory; after integration that directory holds a copy
+of the translation, so every mutant compiled the shipped file. The run reported
+**87 of 87 `unreached`, KILLS 0** — which satisfies the runner's negative
+control *more completely than a working run does*. Fixed two ways: the include
+order, and a **positive** control (`;` in `is_value_terminator` must replay 3 of
+113 or the run refuses). Proposed as a method amendment.
+
+**A THIRD UNDEFINED-`Ary` PATH, FOUND AND NOT PAPERED OVER.** A corpus variant
+that was generated and run (`alloc_Ary` reordered) goes red on one case: an
+all-blank `ParamName` matches a line beginning `/`, gfortran's list-directed
+READ treats it as a TERMINATOR, and the reference returns `IOSTAT = 0` and
+`aviFAIL >= 0` with a freshly `ALLOCATE`d `Ary` entirely undefined. **No
+`no_oracle_when` can name it** — the ninth kind's reference half is one relation
+on a returned field, and on this path the reference returns what a successful
+read returns. The variant was NOT taken, the case is characterised in
+DECISIONS.md, and a tenth judgement kind is proposed.
+
+**The score stays below threshold and nothing is declared equivalent.** 71 of
+the 87 survivors are in the list-directed READ, which the corpus reaches in
+**146 cases of 15,504** because R14's plant alphabet is LETTERS — so the parser
+is only ever asked to fail on the first character. Closing that needs a change
+to a shared generator rule; unit #54 escalated it and it is the Driver's.
 
 **THE SIBLING'S EVIDENCE IS THE MOST DANGEROUS THING IN THIS UNIT'S ROOM.**
 `;` is in `ParseDbAry_Opt`'s separator set because gfortran's REAL reader stores
@@ -29,68 +82,20 @@ and an error after a comma, after an end-of-line, or at the first item.
 Thirty-one semicolon records to pin it. Copying the sibling is red test 1: 3 of
 113.
 
-The same for the sibling's other parser rule: a REAL field with a decimal point
-and no digits transfers a converted `0.0` before failing. The INTEGER reader has
-no such path, and its absence was **looked for** (`'. 5'`, `'5. 6'`, `'.e1 5'` —
-all 5010, every element at the sentinel) rather than assumed. Transplanting it is
-red test 3: 26 of 113.
-
 **A LAYER THIS UNIT ADDED: 113 RECORDS FROM gfortran, REPLAYED THROUGH THE
 SHIPPED FUNCTION.** `parser_conformance.f90` emits each record as ICHAR codes
 beside gfortran's iostat and every element; `parser_conformance.cpp` textually
 includes `parseinary_opt.cpp`, so it exercises the function that ships rather
-than a copy that could go stale. It cost about twenty minutes and it is what the
-next three `Parse*_Opt` units should copy.
-
-**AND IT ANSWERS A QUESTION THE MUTATION SCORE CANNOT.** The RUNBOOK's rule
-(unit #53) is to ask whether another instrument can reach a survivor before
-calling it a corpus gap; unit #54 asked once per REGION with two gate runs. This
-unit asked for **every survivor**, because the replay costs about a second a
-mutant — 42 s for all 88:
-
-```
-  region        verdict      count
-  READ          KILLED       52
-  READ          unreached    19
-  other         KILLED        1
-  other         unreached    16
-```
-
-**The negative control is the half that makes it evidence** and it holds: the
-replay enters the translation only through `list_read_ints`, so the PRINT record,
-`assign_errmsg`, `ary_at` and the body must come back unreached — and 16 of 17
-do. The one that crosses is `MaxRepeat` `200000000 -> 200000001`, killed by
-**one record of 113**: the record put in the corpus for exactly that boundary,
-which was measured (`'199999999*7'` and `'200000000*7'` give `7 7`,
-`'200000001*7'` gives 5010) rather than recalled from libgfortran's source.
-
-The 19 READ survivors nothing reached are one thing: 15 are `p < len` →
-`p <= len` and `rec[p]` → `rec[p + 1]` at the record-bound checks, reading one
-byte past a blank-padded buffer whose next byte is another blank. That is the
-campaign's sanitiser-build class (unit #31's open amendment).
-
-**The score stays 0.4359 and nothing is declared equivalent.** A kill by a
-different instrument on a different corpus is not a kill by this one. What the
-run replaces is the ARGUMENT: "the parser's survivors are a corpus gap" was
-prose, and it is now 53 measurements.
-
-**THE EXCLUSION'S SIZE WAS PREDICTED AND THE PARTITION WAS MEASURED, NOT
-INHERITED.** `no_oracle_when` on `Ary` — unit #54's ninth judgement kind, applied
-unchanged — excludes 4,067 cases. The table it is predicted from is cell-for-cell
-identical to the sibling's (4006/3003/61 and 5697/805/60/42) and was measured
-here: the case FILE differs (`0c18dba4…` against `64942b97…`) because `Ary`'s
-elements are 4 bytes rather than 8, so nothing about the agreement was
-guaranteed. Predicted 4,067 / measured 4,067; the one-relation form predicted
-4,233 / measured 4,233. The corpus hashes identically before and after.
+than a copy that could go stale. It is what the next three `Parse*_Opt` units
+should copy — with the include-path order the second dispatch had to fix.
 
 **A C1 CORRECTION THAT IS THIS UNIT'S OWN.** The sibling's `.NOT. FoundLine`
 default arm runs 66 times across 21 of the 27 scenarios. **This one's never
 runs.** `coverage/line_coverage.json` records `ROSCO_Helpers.f90:775` (the
 `FindLine` call) **230 times across all 27 scenarios** and `:806`/`:807` with no
 counter at all. That makes the gate's zero on the default arm strictly stronger
-than the sibling's — there the arm ran and computed something the gate could not
-see; here it is not reached — and it makes the differential harness the only
-layer that covers the arm at all.
+than the sibling's, and it makes the differential harness the only layer that
+covers the arm at all.
 
 **THE GATE PERTURBATION IS `+ 1`, NOT AN EPSILON, AND THAT IS THE UNIT.** All ten
 shipped `CALL ParseAry` sites that resolve to this member of the generic fill
@@ -103,12 +108,9 @@ controller indexes with, and it moves 1,857,893 of 5,252,000.
 `vit_mutate.py` and `vit_harness.py` decoded the generated test's stdout as
 strict UTF-8. A unit whose reference `PRINT`s a CHARACTER argument writes
 whatever bytes the CORPUS put in it, and the sweep died at mutant 116 of 157 on
-`0xf1`. The tolerant `_payload()` read two lines below the failing call cannot
-help — the process raises before it is reached. Loop `2ff3660`, and the same edit
-made to the `make` invocation beside it. **Additive and checked**: the green
-re-taken either side differs in `loop_rev` alone, and the corpus hashes
-identically. Every artifact of this unit was then re-taken under the new
-revision, and `revcheck --unit` reports all 9 at `2ff3660`.
+`0xf1`. Loop `2ff3660`, and the same edit made to the `make` invocation beside
+it. Every artifact of this unit is at that revision; `revcheck --unit` is the
+check.
 
 **A RED TEST THAT CHANGED THE FILE AND NOT THE PROGRAM.** The third parser
 perturbation was first written as `out = 0;` inside `parse_int`, and it stayed
