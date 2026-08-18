@@ -1,4 +1,4 @@
-run_if_time_remains: 13463s remain, 240s needed -- starting
+run_if_time_remains: 12217s remain, 300s needed -- starting
 === the shipped translation ===
 parser_conformance: 113 records, 0 mismatched
   [green] exit 0
@@ -131,4 +131,4 @@ MISMATCH  case 78  n=1  record "002147483648"
 parser_conformance: 113 records, 26 mismatched
   [red-zerostore] exit 1
 === all three perturbations turned the replay red ===
-run_if_time_remains: exit 0 after 2s (estimated 240s; 13461s now remain)
+run_if_time_remains: exit 0 after 2s (estimated 300s; 12215s now remain)

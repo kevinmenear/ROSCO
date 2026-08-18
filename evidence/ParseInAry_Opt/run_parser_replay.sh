@@ -26,13 +26,22 @@ C=vit-dev
 W=/workspace/ROSCO-r2
 SRC=translations/ROSCO_Helpers/parseinary_opt.cpp
 
+# THE DIRECTORY UNDER TEST GOES FIRST ON THE INCLUDE PATH, and that ordering is
+# load-bearing rather than tidy. `vit integrate` copies the translation to
+# `rosco/controller/src/parseinary_opt.cpp`, which is on this line for
+# `vit_types.h` and `vit_translated.h` -- so on an INTEGRATED tree a
+# `-I$W/rosco/controller/src` placed first resolves
+# `#include "parseinary_opt.cpp"` to the SHIPPED copy and the perturbed one in
+# `$1` is never compiled. Second dispatch, measured: with the old order every
+# one of 87 mutants replayed 0 mismatched of 113 and was recorded `unreached`.
+# The first dispatch ran this before integration, when that file did not exist.
 build_and_run() {   # $1 = CONTAINER directory holding parseinary_opt.cpp  $2 = label
     local rc=0
     docker exec "$C" bash -lc "
         set -e
         GCC_INC=\$(dirname \$(gfortran -print-file-name=include/ISO_Fortran_binding.h))
         g++ -std=c++17 -O2 -ffp-contract=off -I\"\$GCC_INC\" \
-            -I$W/rosco/controller/src -I$1 \
+            -I$1 -I$W/rosco/controller/src \
             $W/evidence/ParseInAry_Opt/parser_conformance.cpp \
             -o /tmp/pc_replay -lgfortran
         /tmp/pc_replay $W/evidence/ParseInAry_Opt/parser_conformance.txt" || rc=$?

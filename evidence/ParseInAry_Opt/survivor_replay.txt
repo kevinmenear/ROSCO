@@ -1,99 +1,83 @@
-run_if_time_remains: 12454s remain, 900s needed -- starting
-control: the shipped translation replays 0 mismatched of 113 records
-  [  1/88] 8464d14d line   60 other unreached  0/113  const_tweak: '200' -> '201'
-  [  2/88] 66860b6f line   97 other unreached  0/113  compare_op: '>' -> '>='
-  [  3/88] b54ac6eb line  114 other unreached  0/113  index_offset: '[Int2LStrLen]' -> '[Int2LStrLen + 1]'
-  [  4/88] b93bad70 line  194 other KILLED     1/113  const_tweak: '200000000' -> '200000001'
-  [  5/88] 2f8001ae line  202 READ  unreached  0/113  compare_op: '<' -> '<='
-  [  6/88] ad38f36b line  202 READ  KILLED     60/113  compare_op: '==' -> '!='
-  [  7/88] ba05f614 line  202 READ  KILLED     62/113  compare_op: '==' -> '!='
-  [  8/88] 85758208 line  202 READ  KILLED     3/113  index_offset: '[p]' -> '[p + 1]'
-  [  9/88] 3226d0dc line  202 READ  KILLED     4/113  index_offset: '[p]' -> '[p + 1]'
-  [ 10/88] 73ad4165 line  202 READ  KILLED     63/113  negate_cond: "if (p < len && (rec[p] == '+' || rec[p] == '-'))" -> "if (!(p < len && (rec[p] == '+' || rec[p] == '-')))"
-  [ 11/88] 6d203c33 line  203 READ  KILLED     5/113  compare_op: '==' -> '!='
-  [ 12/88] b9434920 line  203 READ  KILLED     4/113  index_offset: '[p]' -> '[p + 1]'
-  [ 13/88] 08ff2c98 line  209 READ  unreached  0/113  compare_op: '<' -> '<='
-  [ 14/88] e6bc72cb line  217 READ  unreached  0/113  compare_op: '>' -> '>='
-  [ 15/88] 51771298 line  227 READ  KILLED     1/113  compare_op: '>' -> '>='
-  [ 16/88] 7d77a31a line  227 READ  KILLED     1/113  compare_op: '<' -> '<='
-  [ 17/88] d99e45ef line  248 READ  unreached  0/113  compare_op: '<' -> '<='
-  [ 18/88] 3dfee86c line  248 READ  KILLED     4/113  index_offset: '[p]' -> '[p + 1]'
-  [ 19/88] da89c70f line  257 READ  unreached  0/113  compare_op: '<' -> '<='
-  [ 20/88] 85857c57 line  257 READ  KILLED     29/113  index_offset: '[p]' -> '[p + 1]'
-  [ 21/88] 14fc62e9 line  257 READ  KILLED     3/113  index_offset: '[p]' -> '[p + 1]'
-  [ 22/88] f448c16f line  258 READ  KILLED     1/113  index_offset: '[p]' -> '[p + 1]'
-  [ 23/88] 07b5ee72 line  258 READ  KILLED     14/113  negate_cond: 'if (is_eol(rec[p]))' -> 'if (!(is_eol(rec[p])))'
-  [ 24/88] b663872a line  263 READ  unreached  0/113  compare_op: '<' -> '<='
-  [ 25/88] ccd4583a line  263 READ  KILLED     38/113  compare_op: '==' -> '!='
-  [ 26/88] 0ccde40f line  263 READ  KILLED     11/113  index_offset: '[p]' -> '[p + 1]'
-  [ 27/88] b947b4b0 line  263 READ  KILLED     38/113  negate_cond: "if (p < len && rec[p] == ',')" -> "if (!(p < len && rec[p] == ','))"
-  [ 28/88] 112d63b1 line  265 READ  unreached  0/113  compare_op: '<' -> '<='
-  [ 29/88] 8fa93551 line  265 READ  KILLED     7/113  index_offset: '[p]' -> '[p + 1]'
-  [ 30/88] 58ec3d92 line  265 READ  unreached  0/113  index_offset: '[p]' -> '[p + 1]'
-  [ 31/88] 7560589c line  274 READ  KILLED     43/113  compare_op: '<' -> '<='
-  [ 32/88] 7aad97cf line  275 READ  KILLED     5/113  compare_op: '>=' -> '>'
-  [ 33/88] 80184bd0 line  276 READ  KILLED     5/113  arith_op: 'return -1' -> 'return + 1'
-  [ 34/88] c8a37018 line  276 READ  KILLED     5/113  const_tweak: '1' -> '2'
-  [ 35/88] 7784f889 line  283 READ  KILLED     12/113  index_offset: '[p]' -> '[p + 1]'
-  [ 36/88] 7fd4edf1 line  287 READ  unreached  0/113  compare_op: '<' -> '<='
-  [ 37/88] 6c2149c9 line  287 READ  KILLED     4/113  index_offset: '[p]' -> '[p + 1]'
-  [ 38/88] 78f9ef7a line  287 READ  unreached  0/113  index_offset: '[p]' -> '[p + 1]'
-  [ 39/88] 3d58e9ee line  294 READ  KILLED     12/113  index_offset: '[p]' -> '[p + 1]'
-  [ 40/88] 71d3528f line  298 READ  KILLED     19/113  compare_op: '!=' -> '=='
-  [ 41/88] f0af84b4 line  298 READ  KILLED     23/113  negate_cond: 'if (first_item || sep != Sep::Blank)' -> 'if (!(first_item || sep != Sep::Blank))'
-  [ 42/88] 56160d94 line  299 READ  KILLED     12/113  const_tweak: '5010' -> '5011'
-  [ 43/88] 4b65a2f1 line  303 READ  unreached  0/113  compare_op: '<' -> '<='
-  [ 44/88] dbdc6be6 line  303 READ  KILLED     1/113  index_offset: '[p]' -> '[p + 1]'
-  [ 45/88] 9a98ecd6 line  303 READ  unreached  0/113  index_offset: '[p]' -> '[p + 1]'
-  [ 46/88] 64cfaba1 line  316 READ  unreached  0/113  compare_op: '<' -> '<='
-  [ 47/88] 07c406a1 line  316 READ  KILLED     12/113  index_offset: '[q]' -> '[q + 1]'
-  [ 48/88] a4bdfbcc line  319 READ  unreached  0/113  compare_op: '>' -> '>='
-  [ 49/88] 356f870c line  319 READ  unreached  0/113  compare_op: '<' -> '<='
-  [ 50/88] 1e691028 line  319 READ  KILLED     12/113  index_offset: '[q]' -> '[q + 1]'
-  [ 51/88] fd9d54d0 line  320 READ  KILLED     6/113  const_tweak: '0' -> '1'
-  [ 52/88] 4655ac21 line  322 READ  KILLED     5/113  compare_op: '<' -> '<='
-  [ 53/88] 6ae5a0a4 line  323 READ  KILLED     4/113  drop_factor: 'count * 10' -> 'count'
-  [ 54/88] b82b582f line  323 READ  KILLED     5/113  arith_op: 'count * 10' -> 'count / 10'
-  [ 55/88] 328f7798 line  323 READ  KILLED     12/113  index_offset: '[k]' -> '[k + 1]'
-  [ 56/88] 54d6e349 line  323 READ  KILLED     2/113  const_tweak: '10' -> '11'
-  [ 57/88] b2849cc7 line  324 READ  KILLED     1/113  compare_op: '>' -> '>='
-  [ 58/88] 5baa764c line  324 READ  KILLED     12/113  negate_cond: 'if (count > MaxRepeat)' -> 'if (!(count > MaxRepeat))'
-  [ 59/88] e905195c line  326 READ  unreached  0/113  arith_op: 'MaxRepeat + 1' -> 'MaxRepeat - 1'
-  [ 60/88] 5477861c line  326 READ  unreached  0/113  const_tweak: '1' -> '2'
-  [ 61/88] a45110fc line  329 READ  KILLED     1/113  compare_op: '<=' -> '<'
-  [ 62/88] 9120d215 line  329 READ  KILLED     1/113  compare_op: '>' -> '>='
-  [ 63/88] 33023944 line  329 READ  KILLED     1/113  const_tweak: '0' -> '1'
-  [ 64/88] 7025bae7 line  329 READ  KILLED     17/113  negate_cond: 'if (count <= 0 || count_over || count > MaxRepeat)' -> 'if (!(count <= 0 || count_over || count > MaxRepeat))'
-  [ 65/88] 6b5c6a0f line  330 READ  KILLED     5/113  const_tweak: '5010' -> '5011'
-  [ 66/88] 3629accc line  333 READ  KILLED     12/113  arith_op: 'q + 1' -> 'q - 1'
-  [ 67/88] 91b70005 line  333 READ  KILLED     9/113  const_tweak: '1' -> '2'
-  [ 68/88] e96f6152 line  337 READ  KILLED     8/113  index_offset: '[p]' -> '[p + 1]'
-  [ 69/88] b300704f line  337 READ  unreached  0/113  index_offset: '[p]' -> '[p + 1]'
-  [ 70/88] 03f79cf0 line  337 READ  KILLED     14/113  negate_cond: "if (p >= len || is_value_terminator(rec[p]) || rec[p] == ';')" -> "if (!(p >= len || is_value_terminator(rec[p]) || rec[p] == ';'))"
-  [ 71/88] d3e0a66b line  338 READ  KILLED     4/113  const_tweak: '0' -> '1'
-  [ 72/88] 4f1acf76 line  346 READ  unreached  0/113  const_tweak: '0' -> '1'
-  [ 73/88] 24e73513 line  348 READ  KILLED     26/113  const_tweak: '5010' -> '5011'
-  [ 74/88] 3683a56a line  351 READ  KILLED     16/113  const_tweak: '5010' -> '5011'
-  [ 75/88] 26d402b2 line  358 READ  KILLED     44/113  const_tweak: '0' -> '1'
-  [ 76/88] 9381bdef line  399 other unreached  0/113  negate_cond: 'if (static_cast<int>(text.size()) > w)' -> 'if (!(static_cast<int>(text.size()) > w))'
-  [ 77/88] f5386894 line  407 other unreached  0/113  index_offset: '[32]' -> '[32 + 1]'
-  [ 78/88] 34a3b929 line  407 other unreached  0/113  const_tweak: '32' -> '33'
-  [ 79/88] 0562d216 line  409 other unreached  0/113  const_tweak: '12' -> '13'
-  [ 80/88] bb16f729 line  414 other unreached  0/113  const_tweak: '1' -> '2'
-  [ 81/88] 72edee9b line  418 other unreached  0/113  const_tweak: '0' -> '1'
-  [ 82/88] 4cc504a0 line  419 other unreached  0/113  index_offset: '[i]' -> '[i + 1]'
-  [ 83/88] 373af6ff line  424 other unreached  0/113  const_tweak: '1' -> '2'
-  [ 84/88] 6fb2c552 line  434 other unreached  0/113  const_tweak: '0' -> '1'
-  [ 85/88] e9786fd2 line  474 other unreached  0/113  const_tweak: '0' -> '1'
-  [ 86/88] b1c839d7 line  587 other unreached  0/113  drop_call: 'std::max(NumWords, 0)' -> 'NumWords'
-  [ 87/88] a61c0a99 line  587 other unreached  0/113  swap_call_args: 'NumWords, 0' -> '0, NumWords'
-  [ 88/88] afece932 line  597 other unreached  0/113  negate_cond: 'if (DEBUG_PARSING)' -> 'if (!(DEBUG_PARSING))'
+ParseInAry_Opt -- EVERY SURVIVOR PUT THROUGH THE OTHER INSTRUMENT
+second dispatch, on the corrected corpus (15,504 cases) and the 87 survivors
+of mutation/ParseInAry_Opt.json.
+
+THE RUNNER HAD A DEFECT AND IT IS THE REASON THIS FILE WAS RE-TAKEN.
+`parser_conformance.cpp` reaches the translation by TEXTUAL INCLUDE, and the
+compile line carried `-I rosco/controller/src` BEFORE the directory holding
+the mutant. `vit integrate` puts a copy of the translation in that directory,
+so on an integrated tree `#include "parseinary_opt.cpp"` resolved to the
+SHIPPED file and no mutant was ever compiled. The first dispatch ran this
+before integration, when that file did not exist, so it was right by accident.
+Re-run as it stood, the report was:
+
+  region        verdict      count
+  READ          unreached    71
+  other         unreached    16
+  the parser replay KILLS 0 of 87 survivors
+
+WHICH IS A PERFECT NEGATIVE CONTROL. The runner's only control was `a
+survivor outside the parser must come back unreached`, and 87 of 87 unreached
+satisfies it completely. A control that a broken instrument passes MORE easily
+than a working one is not a control -- so the runner now carries a POSITIVE
+one, taken before it scores anything: `;` added to `is_value_terminator`, a
+perturbation whose delta this campaign has already measured through the same
+path, must come back at 3 records of 113 or the run refuses.
+
+  control:          the shipped translation replays 0 mismatched of 113
+  positive control: ';' in is_value_terminator replays 3 of 113 (3 expected)
 
   region        verdict      count
   READ          KILLED       52
   READ          unreached    19
   other         KILLED       1
-  other         unreached    16
+  other         unreached    15
 
-the parser replay KILLS 53 of 88 survivors, 52 of them in the READ region and 1 outside it
-run_if_time_remains: exit 0 after 42s (estimated 900s; 12412s now remain)
+the parser replay KILLS 53 of 87 survivors, 52 in the READ region and 1 outside it
+
+THE NEGATIVE CONTROL STILL HOLDS, and it holds with one fewer member than the
+first dispatch's 16 of 17: `66860b6f` (`assign_errmsg`, `>` -> `>=`) is no
+longer a survivor at all -- the corrected base draw of R13's staging-capacity
+block kills it in the differential harness. 15 of the 16 survivors outside the
+parser come back unreached; the one that crosses is the one that should:
+
+  b93bad70  line 194  const_tweak: '200000000' -> '200000001'
+      killed by 1 record(s) of 113
+
+`MaxRepeat` is file-scope, so it lands outside the READ span by position -- and
+it is read by the parser and by nothing else. The record that kills it is the
+one put in the corpus for exactly that boundary, MEASURED ('199999999*7' and
+'200000000*7' give 7 7, '200000001*7' gives 5010) rather than recalled.
+
+THE 19 READ SURVIVORS THE REPLAY ALSO CANNOT REACH:
+  2f8001ae  line  202  compare_op: '<' -> '<='
+  08ff2c98  line  209  compare_op: '<' -> '<='
+  e6bc72cb  line  217  compare_op: '>' -> '>='
+  d99e45ef  line  248  compare_op: '<' -> '<='
+  da89c70f  line  257  compare_op: '<' -> '<='
+  b663872a  line  263  compare_op: '<' -> '<='
+  112d63b1  line  265  compare_op: '<' -> '<='
+  58ec3d92  line  265  index_offset: '[p]' -> '[p + 1]'
+  7fd4edf1  line  287  compare_op: '<' -> '<='
+  78f9ef7a  line  287  index_offset: '[p]' -> '[p + 1]'
+  4b65a2f1  line  303  compare_op: '<' -> '<='
+  9a98ecd6  line  303  index_offset: '[p]' -> '[p + 1]'
+  64cfaba1  line  316  compare_op: '<' -> '<='
+  a4bdfbcc  line  319  compare_op: '>' -> '>='
+  356f870c  line  319  compare_op: '<' -> '<='
+  e905195c  line  326  arith_op: 'MaxRepeat + 1' -> 'MaxRepeat - 1'
+  5477861c  line  326  const_tweak: '1' -> '2'
+  b300704f  line  337  index_offset: '[p]' -> '[p + 1]'
+  4f1acf76  line  346  const_tweak: '0' -> '1'
+
+Fifteen of the nineteen are `p < len` -> `p <= len` or `rec[p]` -> `rec[p + 1]`
+at the record-bound checks, reading ONE BYTE PAST a blank-padded buffer whose
+next byte is, on this allocator, another blank. The answer does not change.
+That is the campaign's sanitiser-build class (unit #31's open amendment); this
+unit adds only that its 19 belong to it, measured.
+
+THE SCORE IN mutation/ParseInAry_Opt.json IS UNCHANGED BY THIS RUN, at
+69/156 = 0.4423, AND NOTHING IS DECLARED EQUIVALENT.
+A kill by a different instrument on a different corpus is not a kill by this
+one, and folding it in would make the number unreadable. What the run replaces
+is the ARGUMENT.

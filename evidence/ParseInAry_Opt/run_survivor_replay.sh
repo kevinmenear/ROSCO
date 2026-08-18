@@ -48,9 +48,15 @@ READ = [fn_span(s) for s in ('bool is_blank(','bool is_eol(','bool is_digit(',
 in_read = lambda ln: any(a<=ln<=b for a,b in READ)
 
 def run_replay(container_dir):
+    # THE DIRECTORY UNDER TEST GOES FIRST. `vit integrate` copies the
+    # translation to `rosco/controller/src/parseinary_opt.cpp`, which is on this
+    # line for `vit_types.h`; with that -I first, `#include "parseinary_opt.cpp"`
+    # resolves to the SHIPPED copy on an integrated tree and every mutant
+    # replays as the original. See the positive control below, which is what
+    # turns that from a silent 0 into a refusal.
     cmd = ("set -e; GCC_INC=$(dirname $(gfortran -print-file-name=include/ISO_Fortran_binding.h)); "
-           f"g++ -std=c++17 -O2 -ffp-contract=off -I\"$GCC_INC\" -I{W}/rosco/controller/src "
-           f"-I{container_dir} {W}/evidence/ParseInAry_Opt/parser_conformance.cpp "
+           f"g++ -std=c++17 -O2 -ffp-contract=off -I\"$GCC_INC\" -I{container_dir} "
+           f"-I{W}/rosco/controller/src {W}/evidence/ParseInAry_Opt/parser_conformance.cpp "
            f"-o /tmp/sr_replay -lgfortran; /tmp/sr_replay {W}/evidence/ParseInAry_Opt/parser_conformance.txt")
     r = subprocess.run(['docker','exec','vit-dev','bash','-lc',cmd],
                        capture_output=True, text=True, errors='replace')
@@ -65,6 +71,34 @@ subprocess.run(['docker','exec','vit-dev','bash','-lc',f'rm -rf /tmp/sr && mkdir
 base, _ = run_replay(f'{W}/translations/ROSCO_Helpers')
 print(f"control: the shipped translation replays {base} mismatched of 113 records")
 assert base == 0, "the shipped translation does not replay clean -- refusing to score"
+
+# POSITIVE CONTROL, AND IT IS THE ONE THIS RUNNER DID NOT HAVE.
+#
+# The negative control -- "a survivor outside the parser must come back
+# unreached" -- cannot tell a replay that CANNOT reach a mutant from a replay
+# that never compiled it. Both render as `unreached`, and the second renders as
+# a PERFECT negative control: 87 of 87 unreached. That is exactly what happened
+# on the second dispatch, when `-I rosco/controller/src` preceded the mutant's
+# own directory on an integrated tree and every mutant replayed the shipped
+# file. The run reported "KILLS 0 of 87" and looked like a finding.
+#
+# So before scoring anything, put a perturbation whose delta is ALREADY MEASURED
+# through the same path and require the measured number back. This one is red
+# test 1 of `run_parser_replay.sh`: `;` added to `is_value_terminator`, the
+# sibling unit's separator set, 3 records of 113.
+_FROM = "return is_blank(c) || is_eol(c) || c == ',' || c == '/';"
+_TO   = "return is_blank(c) || is_eol(c) || c == ',' || c == '/' || c == ';';"
+assert src.count(_FROM) == 1, "the positive control's site is not unique"
+_ctl = pathlib.Path(tempfile.mkdtemp())/'parseinary_opt.cpp'
+_ctl.write_text(src.replace(_FROM, _TO))
+subprocess.run(['docker','exec','vit-dev','bash','-lc','rm -rf /tmp/sr_ctl && mkdir -p /tmp/sr_ctl'],
+               capture_output=True)
+subprocess.run(['docker','cp',str(_ctl),'vit-dev:/tmp/sr_ctl/parseinary_opt.cpp'], capture_output=True)
+_n, _ = run_replay('/tmp/sr_ctl')
+print(f"positive control: ';' added to is_value_terminator replays {_n} mismatched "
+      f"of 113 records (3 expected)")
+assert _n == 3, ("the replay did not see a perturbation whose delta is measured -- it is "
+                 "compiling something other than the file it was given; refusing to score")
 
 rows = []
 tmp = pathlib.Path(tempfile.mkdtemp())

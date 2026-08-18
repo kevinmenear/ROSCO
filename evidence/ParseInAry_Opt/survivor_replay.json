@@ -10,16 +10,6 @@
   "after": "201"
  },
  {
-  "id": "66860b6f",
-  "line": 97,
-  "in_read_region": false,
-  "replay": "unreached",
-  "mismatched_records": 0,
-  "operator": "compare_op",
-  "before": ">",
-  "after": ">="
- },
- {
   "id": "b54ac6eb",
   "line": 114,
   "in_read_region": false,
