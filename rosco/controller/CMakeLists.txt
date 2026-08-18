@@ -138,6 +138,7 @@ set(SOURCES
     src/floatingfeedback.cpp
     src/foreaftdamping.cpp
     src/ipc.cpp
+    src/parsedbary_opt.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

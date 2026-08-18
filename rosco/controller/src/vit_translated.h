@@ -82,6 +82,7 @@ void flapcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvaria
 double floatingfeedback_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, errorvariables_view_t* ErrVar);
 void foreaftdamping_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst);
 void ipc_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_view_t* ErrVar);
+void parsedbary_opt_c(char* FileLines, int n_FileLines, int len_FileLines, char* ParamName, int len_ParamName, CFI_cdesc_t* Ary, int AryLen, char* FileName, int len_FileName, errorvariables_view_t* ErrVar, int has_AllowDefault, int32_t AllowDefault, int has_UnEc, int UnEc);
 
 #ifdef __cplusplus
 }
