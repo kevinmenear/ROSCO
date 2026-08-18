@@ -1,0 +1,60 @@
+# evidence/ForeAftDamping/numbl_census.txt
+# Unit #52 `ForeAftDamping`. TWO censuses of the SAME probe over TWO corpora,
+# the second taken because the first said the corpus was concentrated.
+#
+# HOW. One `fprintf(stderr, "PROBE %d restart=%d NumBl=%d\n", ...)` inserted
+# into translations/Controllers/foreaftdamping_test/foreaftdamping_test.cpp
+# immediately before the `ForeAftDamping(&CntrPar_a, ...)` call, rebuilt with
+# `scripts/harness.sh ... --no-generate` (which keeps <stem>_cases.bin byte for
+# byte, so the numbers are about the SCORED corpus), run, and the fprintf
+# stripped afterwards. Unit #47's method; it reads the QUESTIONS, not the
+# answers, so it needs no clean-tree reference and costs about fifteen seconds.
+#
+# ---------------------------------------------------------------------------
+# TAKE 1 -- harness/ranges.toml at LocalVar_NumBl = { lo = 0, hi = 3 }
+# ---------------------------------------------------------------------------
+PROBE lines 2539        (= the whole corpus of the first take)
+restart   0: 1272    1: 1267
+NumBl     0:   14    1: 2505    2:   12    3:    8
+
+# WHAT THAT COSTS, AND IT IS AN EXACT ARITHMETIC MATCH TO THE SWEEP.
+# mutation/ForeAftDamping.clean.first_take.json, scored over this corpus:
+#
+#   compare_op   '<=' -> '<'        killed 2525 of 2539     2539 - 14 = 2525
+#   arith_op     'K - 1' -> 'K + 1' killed 2525 of 2539     the 14 are NumBl == 0
+#   const_tweak  '1' -> '2' (:143)  killed 2525 of 2539     -- the loop never runs
+#   const_tweak  '1' -> '2' (:144)  killed 2525 of 2539
+#   swap_operands 'K - 1' -> '1 - K' killed   20 of 2539    12 + 8 = 20
+#
+# The last one is the finding. At NumBl == 1 the loop runs once with K == 1 and
+# `K - 1` and `1 - K` are BOTH 0, so the only cases that can tell this unit's
+# subscript arithmetic apart are the ones with NumBl >= 2 -- and there were 20
+# of them, 0.8% of the corpus. The value ROSCO itself runs, NumBl == 3 in all
+# three gate scenarios, had 8.
+#
+# 98.7% of the corpus sat at NumBl == 1 because a `lo`/`hi` pin drops the
+# parameter out of R6's integer ladder and leaves the base draw at one value
+# (unit #49's finding). The three earlier units carrying this pin
+# (PreFilterMeasuredSignals, ActiveWakeControl, FlapControl) have the same
+# shape; this is the first time the concentration was measured.
+#
+# ---------------------------------------------------------------------------
+# TAKE 2 -- harness/ranges.toml at LocalVar_NumBl = { values = [3, 0, 1, 2] }
+# ---------------------------------------------------------------------------
+PROBE lines 7567        (= the whole corpus the committed layers are scored on)
+restart   0: 3791    1: 3776
+NumBl     0: 1890    1: 1894    2: 1893    3: 1890
+          NumBl >= 1 : 5677        NumBl >= 2 : 3783
+
+# The `values` list makes NumBl a second FLAG (the run's header prints "6
+# value(s) across 2 flag(s)" where the first take printed "2 value(s) across 1
+# flag(s)"), so R2 and R6 re-run their ladders under EVERY declared value rather
+# than under the base draw alone. Corpus 2539 -> 7567; NumBl is now near-uniform
+# over the whole admissible interval; the index arithmetic is observable on
+# 3,783 cases instead of 20, and ROSCO's own NumBl == 3 on 1,890 instead of 8.
+#
+# THE POSITIVE CONTROL FOR THE ONE DECLARED EQUIVALENCE is `restart 1: 3776`:
+# 3,776 cases select the `? 1` branch of `LocalVar->restart ? 1 : 0` at
+# foreaftdamping.cpp:115, and the `const_tweak '1' -> '2'` mutant on that token
+# still survives. See evidence/ForeAftDamping/equivalence_probe.txt for the
+# counter-control on the same conditional.

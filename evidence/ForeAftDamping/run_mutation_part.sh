@@ -36,9 +36,21 @@ EQ=""
 [ "${3:-}" = "--equivalences" ] && \
     EQ="--equivalences /workspace/ROSCO-r2/mutation/ForeAftDamping.equivalences.json"
 
+# `all` RUNS THE WHOLE POPULATION IN ONE PART, WHICH IS WHAT THIS UNIT NEEDS.
+# The operator split exists because a 192-mutant sweep cannot fit in a 600 s
+# foreground call (unit #41); it is not a rule that a small unit must be split.
+# `ForeAftDamping` is two statements, and unit #51 -- one procedure over, with
+# one more callee and a two-arm IF -- produced 26 mutants and scored them in a
+# single unfiltered run. A part with no `--operator` is NOT mergeable by
+# `scripts/_mutation_merge.py` (it refuses a part with no `operators_filter`),
+# and it does not need to be: an unfiltered run already covers the population
+# and records `operators_offered` beside `operators`, which is the same
+# coverage claim the merge check makes for a split one.
 OPARGS=""
-IFS=, read -ra _ops <<< "$OPS"
-for o in "${_ops[@]}"; do OPARGS="$OPARGS --operator $o"; done
+if [ "$OPS" != "all" ]; then
+    IFS=, read -ra _ops <<< "$OPS"
+    for o in "${_ops[@]}"; do OPARGS="$OPARGS --operator $o"; done
+fi
 
 bash scripts/mutate_guarded.sh translations/Controllers/foreaftdamping.cpp \
     docker exec vit-dev bash -lc \

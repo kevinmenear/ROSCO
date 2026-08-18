@@ -1,0 +1,74 @@
+# evidence/ForeAftDamping/equivalence_probe.txt
+# Unit #52 `ForeAftDamping`. The executed argument behind the ONE declared
+# equivalence, with a positive control and a counter-control.
+#
+# THE SURVIVOR. mutation/ForeAftDamping.clean.second_take.json, the sweep taken
+# BEFORE anything was declared:
+#
+#     7c03f696  const_tweak  '1' -> '2'   SURVIVED
+#     killed 8 of 9, score 0.889, 0 declared, 0 no-compile
+#
+# The id resolves to a site by asking the mutator itself rather than by reading
+# the file:
+#
+#     python3 -c "import sys; sys.path.insert(0,'/workspace/translation-loop')
+#                 from harness.cppmutate import mutants
+#                 for m in mutants('foreaftdamping', open(CPP).read()):
+#                     print(m.mid, m.operator, m.before, '->', m.after, m.line)"
+#
+#     84075c8a compare_op    '<='   -> '<'      line 143
+#     df7d91a1 arith_op      'K - 1'-> 'K + 1'  line 144
+#     d1bf066e swap_operands 'K - 1'-> '1 - K'  line 144
+#     fd75c456 const_tweak   '0.0'  -> '1.0'    line 110   (kp)
+#     6a35df73 const_tweak   '0.0'  -> '1.0'    line 114   (I0)
+#     7c03f696 const_tweak   '1'    -> '2'      line 115   <- THE SURVIVOR
+#     a9c89ca7 const_tweak   '0'    -> '1'      line 115
+#     3ad2f422 const_tweak   '1'    -> '2'      line 143   (K = 1)
+#     5839a7f4 const_tweak   '1'    -> '2'      line 144   (K - 1)
+#
+# Line 115 is `LocalVar->restart ? 1 : 0`, the ninth argument of this unit's
+# `picontroller_c` call.
+#
+# WHY IT IS (c)-CLASS -- behaviour-preserving on EVERY input, not merely
+# unreachable on this corpus. `PIController`'s `reset` dummy is Fortran LOGICAL
+# and crosses as INTEGER(C_INT). Every converter on every path in this campaign
+# folds non-zero to .TRUE.:
+#
+#   clean tree, the generated callee bridge THIS SWEEP scored against --
+#     translations/Controllers/foreaftdamping_test/foreaftdamping_callees.f90:28
+#       bridge_result = REAL(PIController(..., piP_f, (reset /= 0), inst), C_DOUBLE)
+#
+#   integrated tree, unit #33's translation, which IS picontroller_c afterwards --
+#     translations/Controllers/picontroller.cpp:30
+#       if (reset != 0) {
+#
+# so `? 2 : 0` and `? 1 : 0` are one argument and no input can separate them.
+# The same declaration units #50 (flapcontrol.cpp:217) and #51
+# (floatingfeedback.cpp:160 and :163) made for the same token.
+#
+# EXECUTED, NOT ARGUED (unit #48's rule). Both controls are numbers off the
+# SCORED corpus -- foreaftdamping_cases.bin, md5 58d86ec137a144e769513938e5c170d1,
+# 7567 cases, byte-identical across every run quoted here.
+#
+#   THE POSITIVE CONTROL, evidence/ForeAftDamping/numbl_census.txt take 2:
+#     restart == 1 -- the `? 1` branch TAKEN     3776 of 7567
+#     restart == 0 -- the `: 0` branch taken     3791 of 7567
+#   The single picontroller_c call is guarded by nothing and runs on all 7567
+#   cases, so 3,776 cases select the very token the mutation edits -- and the
+#   mutant still survives.
+#
+#   THE COUNTER-CONTROL, that the operator is not blind at this statement:
+#     a9c89ca7  '0' -> '1'  on the SAME conditional, the SAME line   KILLED 3389
+#   Same operator, same statement, same corpus, opposite verdicts. `: 1` changes
+#   a .FALSE. into a .TRUE. and dies; `? 2` changes a .TRUE. into a .TRUE. and
+#   cannot.
+#
+#   A THIRD NUMBER THAT SAYS THE SAME THING FROM THE OTHER SIDE:
+#     6a35df73  I0 '0.0' -> '1.0' at line 114                        KILLED 3776
+#   exactly the count of restart == 1, because `PIController` returns its `I0`
+#   on precisely the reset path this token selects. The two numbers agreeing to
+#   the case is an arithmetic control on the census.
+#
+# NOTHING ELSE IS DECLARED. The two takes before any declaration killed 8 of 9;
+# this one mutant is the whole difference between 0.8889 and 1.0000, and
+# `declared_but_killed` is empty on the re-take.

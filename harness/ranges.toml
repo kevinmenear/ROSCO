@@ -2105,7 +2105,44 @@ objInst_instPI = { lo = 1, hi = 1000 }
 # them either -- all three scenarios that reach this unit run NumBl == 3, read
 # from the loop's own gcov counts (63,996 = 4 x 15,999 and 95,996 = 4 x 23,999),
 # so {0, 1, 2} exist in this campaign ONLY in the harness corpus.
-LocalVar_NumBl = { lo = 0, hi = 3 }
+#
+# *** THE BOUNDS PIN WAS TAKEN FIRST AND THEN REPLACED, ON A CENSUS OF THE
+# CORPUS IT PRODUCED RATHER THAN ON AN ARGUMENT. *** `{ lo = 0, hi = 3 }` --
+# the spelling the three earlier units carry -- gave this histogram over its own
+# 2539 cases (evidence/ForeAftDamping/numbl_census.txt):
+#
+#     NumBl   0: 14     1: 2505     2: 12     3: 8
+#
+# 98.7% of the corpus at NumBl == 1, because a bounds pin drops the parameter
+# out of R6's integer ladder and leaves the base draw at a single value
+# (unit #49's finding). At NumBl == 1 the loop runs once with K == 1, where
+# `K - 1` and `1 - K` are both 0 -- so the `swap_operands` mutant on this unit's
+# ONLY index arithmetic was killed on 20 cases of 2539, and 20 is exactly
+# 12 + 8, the cases with NumBl >= 2. The whole of this unit's subscript
+# arithmetic rested on 20 cases, and the value ROSCO actually runs -- NumBl == 3
+# in all three gate scenarios -- had 8.
+#
+# So the entry is a `values` list with 3 FIRST, which makes the base draw the
+# configuration the shipped program uses, and keeps 0, 1 and 2 for the arms they
+# reach. Unit #50's `CntrPar_Flp_Mode = { values = [2, 0, 1, 3] }` is the same
+# lever; the difference is that #50 stated it in ADVANCE and could not price it,
+# while this one was pulled on a measurement, with the first take kept beside
+# the second (mutation/ForeAftDamping.clean.first_take.json, 9 mutants, 0.889).
+#
+# WHY A `values` LIST IS AT LEAST AS SAFE AS THE BOUNDS PIN HERE: every member
+# is inside [0, 3], and R7's predicate knob for this parameter draws [0, 1, 2]
+# -- the run prints it -- which is also inside. Nothing in either mechanism can
+# reach a NumBl above 3, the value at which the reference writes past
+# `FA_PitCom(3)`. Re-measured after the change rather than assumed; the second
+# census is in the same file.
+#
+# THE COST, STATED, AND IT IS THE BOUNDS PIN'S COST PLUS ONE: NumBl leaves R6's
+# integer ladder (so the decade boundaries and the two 32-bit extremes are gone,
+# each of them a value at which the reference writes outside its own fields),
+# AND the four values are no longer drawn from a range but taken from a stated
+# list -- which costs nothing here only because the list IS the whole interval
+# [0, 3], every member of it enumerated.
+LocalVar_NumBl = { values = [3, 0, 1, 2] }
 
 # THE OLDEST JUDGEMENT IN THIS FILE, MET A THIRTEENTH TIME. `objInst%instPI` is
 # INTENT(INOUT) to `PIController`, which subscripts `piP`'s five DIMENSION(1024)
