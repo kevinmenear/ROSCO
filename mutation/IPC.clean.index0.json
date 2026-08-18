@@ -24,8 +24,8 @@
  "operators_filter_unmatched": [],
  "mutant_slice": {
   "offset": 0,
-  "limit": 0,
-  "scored": 18,
+  "limit": 9,
+  "scored": 9,
   "of": 18
  },
  "scored_ids": [
@@ -37,22 +37,13 @@
   "eac8fc92",
   "d044d53d",
   "a021c195",
-  "210e5e8d",
-  "7512a165",
-  "00c540ca",
-  "f7f90ca1",
-  "2d1c77b0",
-  "7995f1e4",
-  "0b6f8444",
-  "df831fb4",
-  "9de4104e",
-  "b3289e25"
+  "210e5e8d"
  ],
  "limit_per_operator": 40,
  "capped_operators": [
   "const_tweak"
  ],
- "mutants": 18,
+ "mutants": 9,
  "equivalent_declared": 0,
  "nocompile": 0,
  "killed_by_timeout": 0,
@@ -62,12 +53,12 @@
  "killed_by_sanitizer_ids": [],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
- "total": 18,
- "killed": 14,
+ "total": 9,
+ "killed": 5,
  "survived": 4,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.7778,
+ "score": 0.5556,
  "loop_rev": "4751161-nogit",
  "gen_rev": "gen-cf5dcfa09cce",
  "vit_rev": "3f6e2ce-nogit",

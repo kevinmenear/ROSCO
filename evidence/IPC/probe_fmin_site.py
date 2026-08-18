@@ -177,7 +177,14 @@ def _wrapped(signature, *a, **kw):
         "unit": "IPC",
         "cases": len(gen.cases),
         "loop_rev": vit_harness.loop_rev(),
-        "gen_rev": vit_harness.gen_rev(ROOT),
+        # `gen_rev()` WITH NO ARGUMENT, which is what `vit_harness` itself does.
+        # Handed the CAMPAIGN root it hashes `ROSCO-r2/harness/` -- a directory
+        # that exists and contains no `*.py` -- and returns sha256(""), which is
+        # `gen-e3b0c44298fc`. Its own docstring says absence must not read as an
+        # identity, and the guard for that tests `is_dir()` AFTER the loop, so it
+        # catches a MISSING directory and not an EMPTY one. The first draft of
+        # this probe stamped itself with the empty hash. See DECISIONS.md.
+        "gen_rev": vit_harness.gen_rev(),
         "site": "translations/Controllers/ipc.cpp:380-388 -- the IPC_SatMode "
                 "split and its two std::fmin saturations",
         "satmode_distribution": {str(k): v for k, v in arms.items()},

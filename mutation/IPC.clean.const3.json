@@ -23,22 +23,22 @@
  ],
  "operators_filter_unmatched": [],
  "mutant_slice": {
-  "offset": 0,
+  "offset": 30,
   "limit": 10,
   "scored": 10,
   "of": 40
  },
  "scored_ids": [
-  "fd776540",
-  "0471bc7c",
-  "257ba010",
-  "f9e75298",
-  "05cb7960",
-  "f56feead",
-  "aed80394",
-  "e4ee88fc",
-  "3dcdfa38",
-  "305b22ce"
+  "2bafb69e",
+  "7a91501a",
+  "6058839b",
+  "95e20ce8",
+  "8fd02fc2",
+  "66829425",
+  "b1356e7d",
+  "53653667",
+  "9003aa54",
+  "479d5d80"
  ],
  "limit_per_operator": 40,
  "capped_operators": [
@@ -55,56 +55,26 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 10,
- "killed": 3,
- "survived": 7,
+ "killed": 8,
+ "survived": 2,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.3,
+ "score": 0.8,
  "loop_rev": "4751161-nogit",
  "gen_rev": "gen-cf5dcfa09cce",
  "vit_rev": "3f6e2ce-nogit",
  "survivors": [
   {
-   "id": "257ba010",
+   "id": "53653667",
    "operator": "const_tweak",
    "before": "0",
    "after": "1"
   },
   {
-   "id": "f9e75298",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "f56feead",
+   "id": "479d5d80",
    "operator": "const_tweak",
    "before": "1",
    "after": "2"
-  },
-  {
-   "id": "aed80394",
-   "operator": "const_tweak",
-   "before": "3",
-   "after": "4"
-  },
-  {
-   "id": "e4ee88fc",
-   "operator": "const_tweak",
-   "before": "3",
-   "after": "4"
-  },
-  {
-   "id": "3dcdfa38",
-   "operator": "const_tweak",
-   "before": "3",
-   "after": "4"
-  },
-  {
-   "id": "305b22ce",
-   "operator": "const_tweak",
-   "before": "3",
-   "after": "4"
   }
  ]
 }

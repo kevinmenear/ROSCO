@@ -1,0 +1,77 @@
+{
+ "unit": "IPC",
+ "cases": 84754,
+ "loop_rev": "4751161-nogit",
+ "gen_rev": "gen-cf5dcfa09cce",
+ "site": "translations/Controllers/ipc.cpp:380-388 -- the IPC_SatMode split and its two std::fmin saturations",
+ "satmode_distribution": {
+  "2": 28446,
+  "3": 28164,
+  "else": 28144,
+  "missing": 0
+ },
+ "per_arm": {
+  "2": {
+   "reached": 28446,
+   "second_wins": 1494,
+   "equal_same_bits": 622,
+   "equal_diff_bits": 0,
+   "first_wins": 26330,
+   "nan": 0,
+   "witness_second_wins": {
+    "IPC_IntSat": 1000.0,
+    "BlPitchCMeas": -334.628372406649,
+    "PC_MinPit": -42.06717232552724,
+    "second": -292.5612000811218
+   },
+   "witness_equal_diff": null
+  },
+  "3": {
+   "reached": 28164,
+   "second_wins": 1453,
+   "equal_same_bits": 637,
+   "equal_diff_bits": 0,
+   "first_wins": 26074,
+   "nan": 0,
+   "witness_second_wins": {
+    "IPC_IntSat": 1000.0,
+    "BlPitchCMeas": -1000.0,
+    "PC_MinPit": 0.4596179250442962,
+    "second": -1000.4596179250443
+   },
+   "witness_equal_diff": null
+  }
+ },
+ "arm_selector": {
+  "both_reachable": 56610,
+  "minpit_differs": 51486,
+  "answer_differs": 621,
+  "witness": {
+   "IPC_SatMode": 2,
+   "IPC_IntSat": 1000.0,
+   "BlPitchCMeas": -334.628372406649,
+   "CntrPar_PC_MinPit": -42.06717232552724,
+   "LocalVar_PC_MinPit": -231.68054506126757,
+   "arm2_answer": -292.5612000811218,
+   "arm3_answer": -102.94782734538146,
+   "unused_r2r3": [
+    -292.5612000811218,
+    -102.94782734538146
+   ]
+  }
+ },
+ "inputs_read": {
+  "satmode": "CntrPar_IPC_SatMode",
+  "first": "CntrPar_IPC_IntSat",
+  "blpitch": "LocalVar_BlPitchCMeas",
+  "arm2_minpit": "CntrPar_PC_MinPit",
+  "arm3_minpit": "LocalVar_PC_MinPit"
+ },
+ "params_present": [
+  "CntrPar_IPC_IntSat",
+  "CntrPar_IPC_SatMode",
+  "CntrPar_PC_MinPit",
+  "LocalVar_BlPitchCMeas",
+  "LocalVar_PC_MinPit"
+ ]
+}

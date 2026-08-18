@@ -23,31 +23,28 @@
  ],
  "operators_filter_unmatched": [],
  "mutant_slice": {
-  "offset": 27,
-  "limit": 13,
-  "scored": 13,
+  "offset": 20,
+  "limit": 10,
+  "scored": 10,
   "of": 40
  },
  "scored_ids": [
+  "f54f824c",
+  "94c75ce0",
+  "edc0a88b",
+  "e2f8c882",
+  "07ee5311",
+  "bab359b5",
+  "bd091199",
   "0681e035",
   "ccdadb8a",
-  "8c49be55",
-  "2bafb69e",
-  "7a91501a",
-  "6058839b",
-  "95e20ce8",
-  "8fd02fc2",
-  "66829425",
-  "b1356e7d",
-  "53653667",
-  "9003aa54",
-  "479d5d80"
+  "8c49be55"
  ],
  "limit_per_operator": 40,
  "capped_operators": [
   "const_tweak"
  ],
- "mutants": 13,
+ "mutants": 10,
  "equivalent_declared": 0,
  "nocompile": 0,
  "killed_by_timeout": 0,
@@ -57,33 +54,14 @@
  "killed_by_sanitizer_ids": [],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
- "total": 13,
+ "total": 10,
  "killed": 10,
- "survived": 3,
+ "survived": 0,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.7692,
+ "score": 1.0,
  "loop_rev": "4751161-nogit",
  "gen_rev": "gen-cf5dcfa09cce",
  "vit_rev": "3f6e2ce-nogit",
- "survivors": [
-  {
-   "id": "6058839b",
-   "operator": "const_tweak",
-   "before": "2",
-   "after": "3"
-  },
-  {
-   "id": "95e20ce8",
-   "operator": "const_tweak",
-   "before": "3",
-   "after": "4"
-  },
-  {
-   "id": "479d5d80",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  }
- ]
+ "survivors": []
 }

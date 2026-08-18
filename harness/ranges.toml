@@ -2246,7 +2246,139 @@ CntrPar_IPC_aziOffset_n = { lo = 2, hi = 3 }
 # all five scenarios that reach this unit run NumBl == 3 (the loop's gcov counts
 # are 4x the entry count in every one of them), so {0, 1, 2} exist in this
 # campaign only in the harness corpus.
-LocalVar_NumBl = { values = [3, 0, 1, 2] }
+# THE FOURTH VALUE WAS SPENT, AT THE THIRD DISPATCH, AND THIS IS THE PRICE OF
+# THE ENTRY BELOW IT. The list was `[3, 0, 1, 2]`. `CntrPar_IPC_SatMode` had to
+# become a flag to close this unit's one measured corpus gap, and R2's flag
+# stratification is the SUM of the flags' arities, so three flags at 4 + 2 + 3
+# put the corpus at 95,310 cases and 1.0 GB of case data -- and `harness/emit.py`
+# was SIGKILLed writing it. Measured, not assumed:
+#
+#     NumBl [3,0,1,2] + SatMode [2,3,0]   95,310 cases   emit KILLED (137)
+#     NumBl [3,0,1,2] + SatMode [2,3]     84,754 cases   870 MB, emitted
+#     NumBl [3,0,1]   + SatMode [2,3,0]   84,754 cases   870 MB, emitted
+#
+# The ceiling is the emitter's memory in `vit-dev` (7.737 GiB, and nothing else
+# in the VM is holding any of it -- the two sibling containers were at 372 KB and
+# 412 KB when this was measured), and it sits between 84,754 and 95,310 cases.
+# `--disable` is not a way out: it drops a whole rule.
+#
+# SO ONE OF THE TWO LISTS HAD TO GIVE UP A VALUE, AND 2 IS THE ONE TO GIVE UP.
+# 0 runs the loop body zero times, 1 runs it once, 3 is what ROSCO ships and is
+# the extent of every array the loop subscripts. `NumBl == 2` is the interior
+# value, and it is the only one of the four whose loop-trip behaviour is
+# bracketed on both sides by values that remain -- a mutant that a two-trip loop
+# kills and neither a one-trip nor a three-trip loop does would have to be
+# sensitive to the trip COUNT and not to the boundaries. The alternative was to
+# drop the SatMode fall-through, which the paragraph below measures as deleting
+# an ARM.
+#
+# AND IT IS NOT COSTLESS: `narrow_knobs` intersects R7's NumBl knob [0, 1, 2]
+# with this list, so `NumBl == 2` is gone from the corpus ENTIRELY and not
+# merely from the flag cross. The previous dispatch's two-value probe
+# (`evidence/IPC/mutation.index.numbl_2value.json`, NumBl `[3, 0]`) is the
+# nearest measurement of what that costs: the whole `index_offset` population
+# scored 14 of 18 with the SAME FOUR SURVIVORS BY ID as the four-value list. So
+# the operator most likely to care about a loop bound was measured indifferent
+# to two of these values; that is evidence, not proof, and it is why this is
+# stated here rather than left to be inferred from the diff.
+LocalVar_NumBl = { values = [3, 0, 1] }
+
+# --- THE ARM SELECTOR, MADE A FLAG BECAUSE ITS BASE DRAW WAS THE BLIND SPOT ---
+#
+# ADDED AT THE THIRD DISPATCH, FROM A MEASUREMENT AND NOT FROM A SUSPICION.
+# `evidence/IPC/probe_fmin_site.py` generates the corpus, stops before `emit`,
+# and COUNTS what happens at
+#
+#     IF (CntrPar%IPC_SatMode == 2) THEN
+#         LocalVar%IPC_IntSat = min(CntrPar%IPC_IntSat, &
+#                                   LocalVar%BlPitchCMeas - CntrPar%PC_MinPit)
+#     ELSEIF (CntrPar%IPC_SatMode == 3) THEN
+#         LocalVar%IPC_IntSat = min(CntrPar%IPC_IntSat, &
+#                                   LocalVar%BlPitchCMeas - LocalVar%PC_MinPit)
+#
+# BEFORE this entry the answer was:
+#
+#     arm 2 reached 4608   second argument wins     0
+#     arm 3 reached 4608   second argument wins     0
+#     the two arms' second arguments differ   9216
+#     the two arms' ANSWERS differ               0
+#
+# Both arms reached -- that is the positive control, and it is why this is not a
+# dead site -- and the saturation NEVER BIT in 9,216 chances. Every mutant that
+# can only change the SECOND argument's value, or which arm supplies it, is
+# therefore unkillable: `min` returns its FIRST argument in every case, so
+# `drop_call` (`min(a, b)` -> `a`) computes the reference's own answer. The gate
+# had already killed one of those `drop_call` mutants on 159,758 values, so this
+# was a corpus gap and not an equivalence.
+#
+# WHY. `IPC_SatMode` is a scalar INTEGER the reference compares against literals,
+# so R7's predicate knob gives it [0, 1, 2, 3, 4] -- and the knob cross-product
+# was the ONLY stage that ever put 2 or 3 in it. Every other stage left it at its
+# base draw, and in the knob stage every REAL sits at ITS base draw. So the site
+# was reached 9,216 times at ONE triple of real values. Unit #49's finding, one
+# parameter over: a base draw on the wrong value does not cost a case, it costs
+# every rule that runs "with every other input at its base".
+#
+# `values` AND NOT `lo`/`hi`, for unit #49's reason exactly. A bounds pin moves
+# the base draw and hands the parameter to `rng.randint`; a mutant that needs the
+# value EXACTLY 2 is not served by a uniform draw over an interval. A `values`
+# list states the base draw (`values[0]` = 2) AND makes the parameter one of
+# R2's flags, which `flag_variants` crosses into the real ladder, R6's literal
+# and character rungs, the magnitude ladder, the negative-zero stage and R13's
+# capacity block. That is the cross the knob stage cannot supply.
+#
+# 2 FIRST BECAUSE 2 IS WHAT ROSCO SHIPS: all 22 `Examples/DISCON*.IN` set
+# `IPC_SatMode = 2`, so the base draw is the configuration the simulation runs.
+# 3 IS THE OTHER ARM. 0 IS THE FALL-THROUGH, and it has to be listed --
+# see the next paragraph, which is a correction of what this entry first said.
+#
+# *** A STATED `values` LIST **DOES** BOUND R7's KNOB, MEASURED HERE. *** The
+# first draft of this entry wrote `values = [2, 3]` on the argument that the
+# fall-through arm would still arrive from the knob cross-product, citing unit
+# #49's note that "a stated `values` list does NOT bound R7's knob". The probe
+# said otherwise, in one run:
+#
+#     values = [2, 3]        IPC_SatMode == 2: 42525   == 3: 42229   else: 0
+#     values = [2, 3, 0]     IPC_SatMode == 2: 28446   == 3: 28164   else: 28144
+#
+# `vit_harness.narrow_knobs` intersects every knob with the declared values, so
+# the two-value list DELETED one of this unit's eight arms and the harness would
+# still have gone green over it. Unit #49's histogram (`{-1: 2767, 0: 2446,
+# 1: 2422, 2: 5}`) is not evidence against that -- its five cases at the
+# undeclared value are the random fill, not the knob. **A `values` list is a
+# statement about the admissible domain and the knobs respect it. Every arm the
+# unit has must appear in the list, or the list deletes it.**
+#
+# MEASURED WITH THE THREE-VALUE LIST, on the same probe:
+#
+#     arm 2 reached 28446   second argument wins   1494
+#     arm 3 reached 28164   second argument wins   1453
+#     fall-through reached  28144
+#     the two arms' ANSWERS differ                  621
+#
+# First witness: `IPC_IntSat = 1000, BlPitchCMeas = -334.628372406649,
+# CntrPar%PC_MinPit = -42.06717232552724`, second argument -292.56.
+#
+# WHAT IT COSTS, STATED. `IPC_SatMode` leaves R6's INTEGER ladder -- the filter
+# there is `not q.values and q.lo is None and q.hi is None` -- so the decade
+# boundaries and the two 32-bit extremes are gone from it. Every one of those is
+# a FALL-THROUGH value, and the fall-through statement is
+# `LocalVar%IPC_IntSat = CntrPar%IPC_IntSat`, which does not depend on the value
+# that selected it -- so 0 stands in for all of them exactly. That is why this
+# cost is smaller than `LocalVar_NumBl`'s above, where every value dropped was
+# one at which the reference writes outside its own storage.
+#
+# WHAT IT STILL CANNOT DO, and this one is NOT closed. `equal_diff_bits` is
+# **0** before and after: no case has the two arguments of `min` comparing EQUAL
+# with different bit patterns, which is the only input on which
+# `swap_call_args` (`min(a, b)` -> `min(b, a)`) is observable -- glibc's `fmin`
+# returns its FIRST argument when the two compare equal, so `fmin(+0.0, -0.0)`
+# is `+0.0` and the swap is `-0.0`. Reaching it needs `CntrPar%IPC_IntSat` and
+# `BlPitchCMeas - PC_MinPit` to be zeros of OPPOSITE SIGN in the same case, and
+# the negative-zero stage sets ONE real at a time. No entry in this file can
+# state that. It is recorded as a known gap in `evidence/IPC/README.md` and
+# raised in DECISIONS.md rather than declared equivalent.
+CntrPar_IPC_SatMode = { values = [2, 3, 0] }
 
 # --- THE THREE INSTANCE COUNTERS ---
 #
