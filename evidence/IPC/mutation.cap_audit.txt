@@ -1,0 +1,25 @@
+cppmutate cap = 40 mutants per operator. 15 of 55 translation(s) have an operator at or over it.
+
+translation                 offered   actual  unseen  artifact  capped operators
+activewakecontrol               224      452     228       224  arith_op:89, const_tweak:172, index_offset:73, swap_operands:54
+cablecontrol                     89       96       7        89  const_tweak:47
+checkinputs                     192      848     656       192  compare_op:226, const_tweak:383, negate_cond:167
+debug                           182      695     513       182  compare_op:47, const_tweak:355, index_offset:231
+flapcontrol                     102      122      20       102  const_tweak:60
+interp2d                        168      196      28       168  arith_op:44, const_tweak:60, swap_operands:44
+ipc                             118      157      39       118  const_tweak:79
+notchfilter                     127      127       0       127  arith_op:40
+parsedbary_opt                  189      305     116       189  compare_op:93, const_tweak:94, negate_cond:49
+parseinary_opt                  157      199      42       157  compare_op:60, const_tweak:62
+prefiltermeasuredsignals        126      223      97       126  const_tweak:137
+read_ol_input                   157      196      39       164  compare_op:66, const_tweak:53
+readavrswap                     115      167      52       113  const_tweak:77, index_offset:55
+shutdown                        109      124      15       109  const_tweak:55
+startup                         106      110       4       106  const_tweak:44
+
+1856 mutant(s) across these translations were never enumerated by any sweep.
+`offered` is what the mutator returns at the cap; `actual` is what the .cpp has; `unseen` is the difference.
+`artifact` is the committed mutation/<Unit>.json total, blank where the unit has none. Where it is below `offered` the unit was also
+scored under a --limit or is missing operators; where it equals `offered` the sweep was complete AS OFFERED and short of `actual`.
+
+wrote evidence/IPC/mutation.cap_audit.json

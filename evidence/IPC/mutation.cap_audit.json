@@ -1,0 +1,186 @@
+{
+ "cap": 40,
+ "translations_examined": 55,
+ "translations_capped": 15,
+ "rows": [
+  {
+   "stem": "activewakecontrol",
+   "unit": "ActiveWakeControl",
+   "capped_operators": {
+    "arith_op": 89,
+    "const_tweak": 172,
+    "index_offset": 73,
+    "swap_operands": 54
+   },
+   "population_uncapped": 452,
+   "population_offered": 224,
+   "never_enumerated": 228,
+   "artifact_total": 224
+  },
+  {
+   "stem": "cablecontrol",
+   "unit": "CableControl",
+   "capped_operators": {
+    "const_tweak": 47
+   },
+   "population_uncapped": 96,
+   "population_offered": 89,
+   "never_enumerated": 7,
+   "artifact_total": 89
+  },
+  {
+   "stem": "checkinputs",
+   "unit": "CheckInputs",
+   "capped_operators": {
+    "compare_op": 226,
+    "const_tweak": 383,
+    "negate_cond": 167
+   },
+   "population_uncapped": 848,
+   "population_offered": 192,
+   "never_enumerated": 656,
+   "artifact_total": 192
+  },
+  {
+   "stem": "debug",
+   "unit": "Debug",
+   "capped_operators": {
+    "compare_op": 47,
+    "const_tweak": 355,
+    "index_offset": 231
+   },
+   "population_uncapped": 695,
+   "population_offered": 182,
+   "never_enumerated": 513,
+   "artifact_total": 182
+  },
+  {
+   "stem": "flapcontrol",
+   "unit": "FlapControl",
+   "capped_operators": {
+    "const_tweak": 60
+   },
+   "population_uncapped": 122,
+   "population_offered": 102,
+   "never_enumerated": 20,
+   "artifact_total": 102
+  },
+  {
+   "stem": "interp2d",
+   "unit": "interp2d",
+   "capped_operators": {
+    "arith_op": 44,
+    "const_tweak": 60,
+    "swap_operands": 44
+   },
+   "population_uncapped": 196,
+   "population_offered": 168,
+   "never_enumerated": 28,
+   "artifact_total": 168
+  },
+  {
+   "stem": "ipc",
+   "unit": "IPC",
+   "capped_operators": {
+    "const_tweak": 79
+   },
+   "population_uncapped": 157,
+   "population_offered": 118,
+   "never_enumerated": 39,
+   "artifact_total": 118
+  },
+  {
+   "stem": "notchfilter",
+   "unit": "NotchFilter",
+   "capped_operators": {
+    "arith_op": 40
+   },
+   "population_uncapped": 127,
+   "population_offered": 127,
+   "never_enumerated": 0,
+   "artifact_total": 127
+  },
+  {
+   "stem": "parsedbary_opt",
+   "unit": "ParseDbAry_Opt",
+   "capped_operators": {
+    "compare_op": 93,
+    "const_tweak": 94,
+    "negate_cond": 49
+   },
+   "population_uncapped": 305,
+   "population_offered": 189,
+   "never_enumerated": 116,
+   "artifact_total": 189
+  },
+  {
+   "stem": "parseinary_opt",
+   "unit": "ParseInAry_Opt",
+   "capped_operators": {
+    "compare_op": 60,
+    "const_tweak": 62
+   },
+   "population_uncapped": 199,
+   "population_offered": 157,
+   "never_enumerated": 42,
+   "artifact_total": 157
+  },
+  {
+   "stem": "prefiltermeasuredsignals",
+   "unit": "PreFilterMeasuredSignals",
+   "capped_operators": {
+    "const_tweak": 137
+   },
+   "population_uncapped": 223,
+   "population_offered": 126,
+   "never_enumerated": 97,
+   "artifact_total": 126
+  },
+  {
+   "stem": "read_ol_input",
+   "unit": "Read_OL_Input",
+   "capped_operators": {
+    "compare_op": 66,
+    "const_tweak": 53
+   },
+   "population_uncapped": 196,
+   "population_offered": 157,
+   "never_enumerated": 39,
+   "artifact_total": 164
+  },
+  {
+   "stem": "readavrswap",
+   "unit": "ReadAvrSWAP",
+   "capped_operators": {
+    "const_tweak": 77,
+    "index_offset": 55
+   },
+   "population_uncapped": 167,
+   "population_offered": 115,
+   "never_enumerated": 52,
+   "artifact_total": 113
+  },
+  {
+   "stem": "shutdown",
+   "unit": "Shutdown",
+   "capped_operators": {
+    "const_tweak": 55
+   },
+   "population_uncapped": 124,
+   "population_offered": 109,
+   "never_enumerated": 15,
+   "artifact_total": 109
+  },
+  {
+   "stem": "startup",
+   "unit": "Startup",
+   "capped_operators": {
+    "const_tweak": 44
+   },
+   "population_uncapped": 110,
+   "population_offered": 106,
+   "never_enumerated": 4,
+   "artifact_total": 106
+  }
+ ]
+}
