@@ -1,6 +1,6 @@
-# done_check.py IPC -- captured 2026-08-18T19:19:42Z by scripts/capture_done_check.sh
+# done_check.py IPC -- captured 2026-08-18T22:27:46Z by scripts/capture_done_check.sh
 
-Run against the committed state at 88ab0d41 ("IPC: the refused fix MEASURED before it was refused -- it works, and it is cheaper than the corpus it replaces"), with a CLEAN tree, with stdout
+Run against the committed state at 01ca128f ("IPC closed: disposition `integrated`, mutation 1.0000, state brought current"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -16,11 +16,11 @@ Reproduce the reading below with no redirection:
 
     python3 scripts/done_check.py IPC
 
-done_check exited 1 (0 only when COMPLETE).
+done_check exited 0 (0 only when COMPLETE).
 
 baseline (inferred): df19c0b  -- the commit before 1f33e6e touched translations/Controllers/ipc.cpp
 
-IPC: Verdict.INCOMPLETE  (13/14 PASS)
+IPC: Verdict.COMPLETE  (14/14 PASS)
 
 [  ok  ] P1   commits exist                      
 [  ok  ] P2   clean tree                         
@@ -31,9 +31,9 @@ IPC: Verdict.INCOMPLETE  (13/14 PASS)
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
 [  ok  ] P9   gate compared and matched          
-[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/IPC.json 96/104 = 0.923 < 1.0 -- survivors: swap_call_args[f43d4529], swap_call_args[90fd1954], index_offset[7512a165], index_offset[f7f90ca1], const_tweak[257ba010], const_tweak[f9e75298]
-[  ok  ] P11  post-integration harness re-run    84754 check(s) against the integrated build
+[  ok  ] P12  mutation score for this unit       99/99 mutant(s) killed, 14 declared equivalent, 5 declared unreachable
+[  ok  ] P11  post-integration harness re-run    83754 check(s) against the integrated build
 [  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
 [  ok  ] P10  evidence reproducible              
-[  ok  ] P14  artifact revisions agree           4 artifact(s) at 4751161
+[  ok  ] P14  artifact revisions agree           4 artifact(s) at b9c8c52
 
