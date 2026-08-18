@@ -7112,6 +7112,113 @@ unit can exhaust the second while barely touching the first.
   fact in the declaration's own comment; a later reader diffing the files will
   otherwise find a contradiction and "fix" one of them.
 
+## A range pin can be correctly APPLIED and still leave the corpus unable to
+## discriminate, and the base draw is one probe
+
+- **Unit #52 priced the pin three earlier units inherited, and it cost 99% of
+  the corpus.**
+
+  ```
+  --dump-plan   "bounds_source": "stated:LocalVar_NumBl"      <- applied. correct.
+  { lo = 0, hi = 3 }   2539 cases   NumBl  0:14  1:2505  2:12  3:8
+  swap_operands 'K - 1' -> '1 - K'  killed 20 of 2539   = 12 + 8, NumBl >= 2
+  { values = [3,0,1,2] } 7567 cases NumBl  0:1890 1:1894 2:1893 3:1890
+  the same mutant                   killed 3783 of 7567
+  ```
+
+  Unit #47's rule is to read `--dump-plan` before believing a pin. That check
+  answers "was it applied" and this one does not: the entry was applied, in
+  domain and right, and it still put 98.7% of the cases at one value, because a
+  `lo`/`hi` pin drops the parameter out of R6's integer ladder and leaves the
+  base draw fixed (unit #49). At `NumBl == 1` the loop runs once with `K == 1`
+  and `K - 1` and `1 - K` are both 0, so the unit's ONLY index arithmetic rested
+  on 20 cases and nothing in the artifact said so — the sweep scored 8 of 9
+  either way.
+
+  **The census is the probe, and it costs one `fprintf` and a `--no-generate`
+  rebuild** (unit #47's method; it reads the QUESTIONS, so no clean tree). Take
+  it whenever a `lo`/`hi` pin bounds something the unit SUBSCRIPTS or LOOPS on,
+  and compare each mutant's kill count against a case count from it: five of
+  this unit's nine matched to the case, which is what turns a score into a
+  statement about a corpus.
+
+  **`values` is the cheap lever only when the interval can be enumerated.** Here
+  it is `[0, 3]`, every member written out, base draw at the configuration ROSCO
+  ships — so the list costs exactly what the bounds pin already cost and buys R2
+  and R6 re-running under every value. On a real or wide integer parameter it
+  would cost far more than it removes. Raised in DECISIONS.md as P9 one level
+  down from unit #46's capture-window form.
+
+## When a gate perturbation moves zero, run the ADDITIVE/MULTIPLICATIVE pair on
+## the same statement — on purpose, not after a hunt
+
+- **Unit #52, and the answer was "every scenario drives this unit at an exact
+  zero", which no green could have said.**
+
+  ```
+  the stored value + 0.01   311,723 of 5,252,000   scenarios 3, 7, 27
+  the stored value * 2.0            0              <- the SAME statement
+  the loop bound <= -> <            0
+  grep FA_KI\|FA_IntSat Examples/DISCON*.IN   0.00000  in ALL 21 files
+  picontroller.cpp:73  saturate(PTerm + ITerm, minValue, maxValue)
+  ```
+
+  Units #47 and #48 met this shape while chasing a perturbation that moved
+  nothing, and #48 wrote down that forcing the value separates "the gate cannot
+  observe this site" from "the perturbation was annihilated". Running the pair
+  DELIBERATELY costs one extra gate run (~290 s) and converts a green into a
+  statement: with `minValue == maxValue == 0.0` the callee's own `saturate`
+  clamps this unit's answer to zero on all 63,997 calls, so **any translation
+  returning zero passes this gate, including one that never calls the callee.**
+
+  Fifth instance in six units and the widest — #47's `AWC_amp`, #48's
+  `WE_Gamma`, #49's unwritten filter state and #50's 1-DOF `rootMOOPF` were one
+  scenario or one arm; this is all 27. **Before writing "gate: 0 mismatched" as
+  a unit's evidence, grep `Examples/DISCON*.IN` for the gains its arithmetic
+  multiplies.** Two greps and one gate run, and it belongs in `observability`
+  rather than in a reader's inference.
+
+## A copy-back red test's pass set is "the unit changed NOTHING in the type",
+## not "the unit wrote nothing"
+
+- **Unit #52 predicted the whole corpus and was wrong by 42.**
+
+  ```
+  POST-INTEGRATION RED TEST OK (went red): checked 7567  failed 7525
+  whole LocalVariables unchanged    42     restart==1 42/42
+                                           NumBl==0   42/42
+                                           FA_AccHPFI_in == 0.0  42/42
+  ```
+
+  Deleting `vit_copy_scalars_to_localvariables` makes the Fortran side return
+  the INCOMING type, so a case passes iff every field the unit touches already
+  held what the unit writes — including the nested `piP`, which the generator
+  zero-initialises and which a `reset` call fills with `I0 = 0.0`. Reasoning
+  from "the unit writes this field unconditionally" gets the prediction wrong
+  whenever the written value can coincide with the drawn one.
+
+  **The probe needs NO perturbed wrapper**: copy the whole view struct before
+  the call, `memcmp` after, on the UNPERTURBED tree — "the reference did not
+  move it" IS the pass condition. One `--no-generate` rebuild, and it names the
+  set instead of leaving a 42 unexplained.
+
+## Two units can transcribe the SAME operator to opposite C++ and both be right
+
+- **`-CntrPar%FA_IntSat` (unit #52) and `(0.0_DbKi - FA_vel)` (unit #51) are one
+  procedure apart in one file.**
+
+  ```
+  foreaftdamping.cpp   -CntrPar->FA_IntSat            <- the reference: -X
+  floatingfeedback.cpp (0.0 - FA_vel) * Kp_Float      <- the reference: 0.0 - X
+  ```
+
+  They differ at a zero — `0.0 - (+0.0)` is `+0.0`, `-(+0.0)` is `-0.0` — and
+  this campaign's harness compares bit patterns, so "simplifying" either into
+  the other is a different program on a four-figure number of cases (unit #51
+  measured 1544). The rule is one rule: transcribe the shape. Say which shape
+  the reference wrote in the translation's own comment, or a later reader
+  diffing two files in the same module finds a contradiction and fixes one.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
