@@ -284,6 +284,11 @@ was changed, the score is now 0.9231, and every count below that names 63,888
 cases is a statement about a corpus this campaign no longer has. The block is
 kept because the two dispatches' numbers are the measurement of what changed.)*
 
+*(AND SUPERSEDED AGAIN, by the FOURTH-dispatch block that follows the third one:
+`IPC` is now `integrated` and CLOSED at mutation **1.0000** on an 83,754-case
+corpus — 99 of 99 behavioural, 14 declared equivalent, 5 declared unreachable,
+zero open.)*
+
 **As of 2026-08-18: unit #53 `IPC` is `deferred`, and it closes on P12 ALONE —
 now on a NUMBER (0.7797) rather than on an absent artifact.** Four layers, all
 four red-tested. Two dispatches. The unit is the campaign's largest so far — six
@@ -5641,6 +5646,11 @@ scenarios; the next dispatch folds it in and re-sweeps for 145/155 = 0.9355.
 
 ---
 
+*(SUPERSEDED. This is the THIRD dispatch's block; the FOURTH is below it and
+closes the unit at 1.0000 on an 83,754-case corpus. The counts here belong to
+the 84,754-case corpus and are what the `CntrPar_IPC_IntSat` pin is measured
+against.)*
+
 **As of 2026-08-18: unit #53 `IPC` is `deferred` on P12 alone, now at 0.9231 —
 96 killed of 104 behavioural, 14 declared equivalent, 8 open.** Third dispatch.
 It was relaunched with six survivors named, and the single result worth carrying
@@ -5702,3 +5712,79 @@ every one foreground, under `mutate_guarded.sh`, routed through the clock with
 `timeout: 600000`; nothing backgrounded, nothing polled. Three reset windows,
 each opened and closed inside one command or one short sequence, and every
 commit taken outside them. Eight commits, one per expensive artifact.
+
+---
+
+**As of 2026-08-18: unit #53 `IPC` is `integrated` and CLOSED — mutation
+1.0000, 99 killed of 99 behavioural, 14 declared equivalent, 5 declared
+UNREACHABLE, ZERO open.** Fourth dispatch. It was relaunched with the two
+capabilities the third dispatch did not have — the `unreachable` disposition
+and `--sanitize` — and the result is that the eight open survivors split into
+two groups that wanted opposite treatment.
+
+| the third dispatch left | what this dispatch did | the number |
+|---|---|---|
+| `index_offset` ×2 + `const_tweak` ×1 at `LocalVar%IPC_KP(1)`/`IPC_KI(1)`, ipc.cpp:434/:438 | **KILLED**, by fixing the INPUTS — the pin the third dispatch measured and refused on price | 2 cases each |
+| `swap_call_args` ×2 at the two `std::fmin` saturations, :381/:384 | **UNREACHABLE**, with a probe and a cross-instrument control | `equal_diff_bits` 0 of 55,936 reached |
+| `const_tweak` ×3 in `errmsg_trim`, :132/:133 | **UNREACHABLE**, with a probe that replays the five-gate staging chain | 0 of 60,495 that call it |
+
+```
+0.7797  92/118   the second dispatch
+0.8136  96/118   + the SatMode corpus change
+0.9231  96/104   + fourteen equivalence declarations
+1.0000  99/99    + the IPC_IntSat pin (3 kills) and five unreachable declarations
+```
+
+**THE PIN, AND WHY IT IS THE ADMISSIBLE DOMAIN RATHER THAN A NARROWING.**
+
+    harness/ranges.toml   CntrPar_IPC_IntSat = { lo = 0, hi = 1e3 }
+
+    corpus 84,754 -> 83,754 cases, 870 MB -> 860 MB      (it gets SMALLER)
+
+`LocalVar%IPC_IntSat` is both the value the `min` computes and the saturation
+PAIR of all four `PIController` calls, and `PIController` ends in
+`saturate(x, -IntSat, IntSat)` = `fmin(fmax(x, lo), hi)`. With `IntSat < 0` the
+pair is inverted, `lo > hi`, and the result is `hi` for EVERY x — so the output
+is `IPC_IntSat` itself and no gain mutant at any of the four sites is
+observable. Of the cases that RUN the 1P block, 17,474 of 17,486 were in that
+state. All 22 `Examples/DISCON*.IN` document the parameter as an integrator
+saturation AMPLITUDE and set it to 0.3; a negative amplitude is not a
+configuration ROSCO can be run in, which is the same kind of statement
+`[FindLine]`'s `AryLen` bound makes about a length.
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (`harness/IPC.json`) | **83,754 checked, 0 failed, 0 inadmissible**, clean tree, six callee bridges kept | the no-op stub: **83,754 of 83,754** — the empty pass set, at the SAME count as the green |
+| mutation (`mutation/IPC.json`, THIRTEEN parts, all re-run) | **99 of 99, 1.0000**, 0 no-compile, 14 equivalent, 5 unreachable, **0 open** | `declared_but_killed` and `unreachable_but_killed` are both EMPTY |
+| post-integration (`harness/IPC.postintegration.json`) | 83,754 checked, 0 failed | the copy-back deleted from this unit's own wrapper: **83,754 of 83,754**; reverted, rebuilt, green re-taken at 0 |
+| gate, 27 scenarios (`gate/IPC.json`) | 5,252,000 values / 351 channels, 0 mismatched | `gate/IPC.redtest.json` **159,758**, and a NEGATIVE CONTROL at **0** |
+
+**THE NEGATIVE CONTROL IS THE PART WORTH COPYING.** A declared-unreachable
+mutant is a claim about the CORPUS, so the cheapest way to attack it is to ask
+the OTHER instrument. `swap_call_args f43d4529` was run through the gate,
+character for character out of the mutation artifact, at the SAME statement
+whose `drop_call` moves 159,758 — so the site is demonstrably exercised and
+observable. It moved **0 of 5,252,000**
+(`evidence/IPC/gate.control.swap_call_args.json`). Predicted zero before the
+run, because all 22 shipped inputs set `IPC_IntSat = 0.3` and `fmin(a,b)` and
+`fmin(b,a)` differ only where the two compare EQUAL with different bits.
+
+**A CROSS-CHECK NOBODY DESIGNED.** `const0`'s third kill is
+`v.substr(0, …)` → `substr(1, …)`, and it dies on **60,492** cases.
+`probe_errmsg_trim.py`, replaying the staging chain in Python with no shared
+code, counted **60,495** cases reaching `errmsg_trim`. Three apart on two
+independent instruments — which is what the three unreachable declarations
+beside it rest on.
+
+**THE FINDING THIS DISPATCH PAID FOR.** `scripts/reset_to_clean.sh --no-build`
+leaves the BUILD TREE integrated while the SOURCE is clean. `harness.sh` reads
+the source, decides to keep all six callee bridges, and then links
+`Controllers.f90.o` — which still holds the IPC WRAPPER. The reference side
+then calls `ipc_c`, the harness's own C++ copy, and the run SIGSEGVs at case 0
+with `harness produced no JSON`. Neither script reports the skew. Cost: about
+25 minutes, and a 872 MB core file was the only artifact that said anything.
+
+**Procedure.** Thirteen sweep parts, every one foreground under
+`mutate_guarded.sh` and routed through the clock with `timeout: 600000`;
+nothing backgrounded, nothing polled. Three reset windows, each closed before a
+commit was taken. Eight commits, one per expensive artifact.

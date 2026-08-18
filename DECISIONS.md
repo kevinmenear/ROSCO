@@ -12081,3 +12081,79 @@ pieces were not taken" is cheap to obey and easy to obey badly — a named gap
 whose fix is unmeasured makes the next dispatch repeat the reasoning and risk
 the same 95 minutes on a guess. Thirty-five seconds converts it into a decision
 somebody else can make.
+
+---
+
+## Unit #53 `IPC`, fourth dispatch — the refused pin taken, and the third disposition used for the first time
+
+**THE NUMBER THE THIRD DISPATCH HANDED ON WAS ACTED ON UNCHANGED, WHICH IS THE
+POINT OF HANDING ONE ON.** `CntrPar_IPC_IntSat = { lo = 0, hi = 1e3 }` was
+measured, priced at ~95 minutes and reverted. This dispatch applied it and the
+probe reproduced the prediction to the case: 83,754 cases, `block_runs` 17,478,
+`IntSat > 0` 17,451. The re-take cost about 80 minutes of the 240 available and
+the three `IPC_KP(1)`/`IPC_KI(1)` mutants died on it, at 2 cases each.
+
+**AND THE PIN IS BETTER JUSTIFIED THAN "IT WORKS", WHICH IS WHY IT IS COMMITTED
+RATHER THAN MERELY EFFECTIVE.** The third dispatch called it "deletes half of an
+admissible domain". It does not: `IPC_IntSat` is documented in all 22
+`Examples/DISCON*.IN` as *"Integrator saturation (maximum signal amplitude
+contribution to pitch from IPC), [rad]"* and set to 0.3 in every one, with the
+sibling `Y_IPC_IntSat` at 0.0. An amplitude's admissible domain is
+non-negative. **A range pin that is hard to justify on price can be easy to
+justify on MEANING, and the input file's own comment is where the meaning is
+written down.** This is the same statement `[FindLine]`'s `AryLen` bound makes
+about a length, one type over.
+
+**THE THIRD DISPOSITION, USED FOR THE FIRST TIME IN THIS CAMPAIGN, AND WHAT IT
+COST TO USE HONESTLY.** Five of the eight survivors were declared
+`unreachable`; three were not, and the difference is the whole content of the
+dispatch:
+
+* the three at `LocalVar%IPC_KP(1)`/`IPC_KI(1)` were **reachable**. The corpus
+  ran that block 17,486 times. It could not DISCRIMINATE there, which is a
+  corpus gap and not an unreachable site, and the sibling mutants on `IPC_KP(1)`
+  being killed by one case each is what said so. Declaring those unreachable
+  would have been the cheap claim doing exactly what the disposition's own
+  docstring warns about.
+* the five that were declared each carry a probe that COUNTS, not an argument.
+
+**A DECLARED-UNREACHABLE MUTANT SHOULD BE RUN THROUGH THE OTHER INSTRUMENT, AND
+THE COST IS ONE GATE RUN.** The campaign already had this rule for
+*equivalence* (unit #50, "one gate run replaces the argument"); it applies at
+least as hard to the cheaper claim. `swap_call_args f43d4529` was taken
+character for character out of `mutation/IPC.clean.calls.json` and perturbed
+into the integrated tree: **0 of 5,252,000 values**, at the SAME statement whose
+`drop_call` moves 159,758. The zero is informative precisely because the
+neighbouring perturbation is not zero — the site is exercised and observable,
+and the mutant is still invisible. 288 seconds.
+
+**A PROBE'S MODEL IS CHECKABLE AGAINST THE SWEEP IT WAS WRITTEN TO EXPLAIN, FOR
+FREE.** `probe_errmsg_trim.py` replays the five-gate `ErrMsg` staging chain in
+Python and reports that 60,495 cases reach `errmsg_trim`. The sweep, sharing no
+code with it, kills the `v.substr(0, …)` → `substr(1, …)` mutant on **60,492**
+cases — a mutant that is observable on exactly the cases that call the
+function. Three apart. **When a probe predicts which cases reach a site, the
+mutant that dies on all of them is the control on the probe.** Look for one
+before trusting a probe's zero.
+
+**A `--no-build` RESET IS A DIFFERENT TREE FROM A RESET.** `reset_to_clean.sh
+--no-build` restores clean Fortran SOURCE and leaves the BUILD TREE integrated.
+`harness.sh` reads the SOURCE to decide whether to keep the callee bridges,
+keeps all six, and then links `Controllers.f90.o` — which still contains the
+integration wrapper. The reference side calls `ipc_c`, i.e. the harness's own
+compiled C++, and the process SIGSEGVs at case 0 with `harness produced no
+JSON`. Nothing in either script notices, and the first hypothesis a reader forms
+is that the corpus change broke something. Cost here: ~25 minutes, and the only
+artifact that said anything was an 872 MB core file whose notes readelf declined
+to decode. **`--no-build` is for probes that read source only. Any layer that
+RUNS the reference needs the full reset.** Proposed for the RUNBOOK target layer.
+
+**AND ONE THING THAT IS STILL NOT CLOSED, STATED RATHER THAN LEFT.** The three
+kills at the gain site land on **2 cases of 83,754**. The pin moved that site
+from "12 cases could see it" to "17,451 cases run it with a live window", and
+what is killable at 2 cases is killable, not comfortably killable — the two
+`index_offset` mutants that survive there differ from their killed siblings by
+which of two adjacent gains they read, and the corpus separates those two gains
+in very few cases. A `values` list on `CntrPar_IPC_KP`/`IPC_KI` making the two
+elements deliberately unequal would widen it. Not taken, and priced: another
+full re-take of every layer that reads the corpus.

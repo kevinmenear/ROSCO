@@ -1,11 +1,146 @@
 # Unit #53 — `IPC`
 
 `rosco/controller/src/Controllers.f90:487-584` (clean, at `54dd134`).
-Disposition **deferred**, on P12 and on P12 alone. Four layers, all four
-red-tested, and the mutation score is **0.9231 — 96 killed of 104 behavioural,
-14 declared equivalent, 8 open**.
+Disposition **integrated**. Four layers, all four red-tested, and the mutation
+score is **1.0000 — 99 killed of 99 behavioural, 14 declared equivalent, 5
+declared unreachable, ZERO open**, on an **83,754-case** corpus.
 
-**This is the THIRD dispatch, and it exists because six survivors were named and
+---
+
+## THE FOURTH DISPATCH — what changed, and what every count below means now
+
+**READ THIS BEFORE THE REST OF THE FILE.** Everything from the next rule down is
+the THIRD dispatch's report against an **84,754-case** corpus that no longer
+exists. It is kept, not rewritten, because the two corpora are the measurement
+of what the change did. Where a number below disagrees with a number here, the
+number here is the current one.
+
+| the third dispatch left open | this dispatch | count |
+|---|---|---|
+| `index_offset` ×2 + `const_tweak` ×1 at `LocalVar%IPC_KP(1)`/`IPC_KI(1)` (`ipc.cpp:434`, `:438`) | **KILLED** by applying the pin the third dispatch measured and refused | 2 cases each |
+| `swap_call_args` ×2 at the two `std::fmin` saturations (`:381`, `:384`) | **UNREACHABLE**, `mutation/IPC.unreachable.json` | `equal_diff_bits` 0 of 55,936 reached |
+| `const_tweak` ×3 in `errmsg_trim` (`:132`, `:133`) | **UNREACHABLE**, same file | 0 of the 60,495 cases that call it |
+
+```
+0.7797  92/118   dispatch 2
+0.8136  96/118   + the IPC_SatMode corpus change      (dispatch 3)
+0.9231  96/104   + fourteen equivalence declarations  (dispatch 3)
+1.0000  99/ 99   + the IPC_IntSat pin and five unreachable declarations
+```
+
+### The pin
+
+    harness/ranges.toml   CntrPar_IPC_IntSat = { lo = 0, hi = 1e3 }
+    corpus 84,754 -> 83,754 cases, 870 MB -> 860 MB   (it gets SMALLER)
+
+`LocalVar%IPC_IntSat` is both the value the `min` computes and the saturation
+PAIR of all four `PIController` calls. `PIController` ends in
+`saturate(x, -IntSat, IntSat)` = `fmin(fmax(x, lo), hi)`, so with `IntSat < 0`
+the pair inverts, `lo > hi`, and the result is `hi` for EVERY x — the output is
+`IPC_IntSat` itself and no gain mutant at any of the four sites is observable.
+17,474 of the 17,486 cases that ran the 1P block were in that state; with the
+pin, 17,451 of 17,478 are not. Reproduced by `probe_fmin_site.py` before
+anything was built.
+
+**It is the ADMISSIBLE DOMAIN, not a narrowing.** All 22 `Examples/DISCON*.IN`
+carry the comment *"IPC_IntSat — Integrator saturation (maximum signal amplitude
+contribution to pitch from IPC), [rad]"* and set it to 0.3, with the sibling
+`Y_IPC_IntSat` at 0.0. An amplitude is non-negative; a negative one inverts the
+reference's own saturation. Same shape as `[FindLine]`'s `AryLen` bound.
+
+**The stated cost:** the parameter leaves R6's real-magnitude ladder and the
+negative-zero stage, which is the thousand cases of difference, and with it goes
+any case in which `-LocalVar%IPC_IntSat` is a unary negation of a negative
+operand. `arith_op` and `negate_cond` were re-scored rather than assumed: 17 of
+17 and 9 of 9, unchanged.
+
+### The four layers, re-taken on the new corpus
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (`harness/IPC.json`) | **83,754 checked, 0 failed, 0 inadmissible**, clean tree, six callee bridges kept | the no-op stub: **83,754 of 83,754** — the empty pass set at the SAME count as the green |
+| mutation (`mutation/IPC.json`, thirteen parts, ALL re-run) | **99 of 99, 1.0000**, 0 no-compile, 14 equivalent, 5 unreachable, **0 open** | `declared_but_killed` and `unreachable_but_killed` are both EMPTY |
+| post-integration (`harness/IPC.postintegration.json`) | 83,754 checked, 0 failed | the copy-back deleted from this unit's own wrapper: **83,754 of 83,754**; reverted, rebuilt, green re-taken at 0 (`harness/IPC.postintegration.revert-verified.json`) |
+| gate, 27 scenarios (`gate/IPC.json`) | 5,252,000 values / 351 channels, 0 mismatched | `gate/IPC.redtest.json` **159,758**, and a NEGATIVE CONTROL at **0** |
+
+**THE GATE WAS RE-TAKEN, AND NOT FOR ITS NUMBER'S SAKE.** `git diff` between
+`2aec8811` (which wrote the old gate artifact) and HEAD over
+`translations/Controllers/ipc.cpp`, `rosco/controller/src/Controllers.f90` and
+`rosco/controller/CMakeLists.txt` is EMPTY, and the gate reads no case file. It
+was re-taken because `revcheck --unit IPC` reported a **BASE-SHA SPLIT**:
+eighteen artifacts at `b9c8c52` against two at `4751161`. The red test then
+reproduced its predecessor's count to the value — 159,758 both times — which is
+what makes a re-take across an instrument move a check rather than a fresh
+measurement.
+
+### The negative control, which is the part worth copying
+
+A declared-`unreachable` mutant is a claim about the CORPUS, so the cheapest
+attack on it is the OTHER instrument. `swap_call_args f43d4529` was taken
+character for character out of `mutation/IPC.clean.calls.json` and perturbed
+into the integrated tree:
+
+```
+evidence/IPC/gate.control.swap_call_args.json
+    moved 0 of 5,252,000 compared values; after revert 0 of 5,252,000
+```
+
+Predicted zero before the run. It is informative rather than vacuous because the
+`drop_call` at the SAME statement moves 159,758 — the site is demonstrably
+reached and demonstrably observable, and the mutant is still invisible. It is
+written to `evidence/` and not to `gate/IPC.redtest.json` on purpose: `gate.py`
+reports `RED TEST FAIL` and exits 1 when a perturbation moves nothing, and a
+negative control living in the red-test artifact would fail the unit for
+succeeding.
+
+### A cross-check nobody designed
+
+`const0`'s third kill is the OTHER `'0' -> '1'` on `ipc.cpp:133` —
+`v.substr(0, …)` becoming `substr(1, …)` — and it dies on **60,492** cases.
+`probe_errmsg_trim.py`, which shares no code with the mutator, counted **60,495**
+cases reaching `errmsg_trim` by replaying the staging chain. That mutant is
+observable on exactly the cases that call the function and no others. Three
+apart, and it is the control on the probe's MODEL that the probe's own positive
+controls cannot be.
+
+### What is still open, stated
+
+The three kills at the gain site land on **2 cases of 83,754**. The pin moved
+that site from "12 cases could see it" to "17,451 run it with a live window",
+but the two `index_offset` mutants there differ from their killed siblings only
+in which of two ADJACENT gains they read, and the corpus makes
+`LocalVar%IPC_KP(1)` and `(2)` (and the `IPC_KI` pair) differ in very few cases.
+A `values` list on `CntrPar_IPC_KP`/`IPC_KI` forcing the two elements apart
+would widen it. Not taken, and priced: another full re-take of every layer that
+reads the corpus.
+
+`capped_operators` still names `const_tweak`: 79 sites, 40 enumerated. **118 is
+the population the mutator OFFERED and 157 is the population the translation
+HAS**; the 39 never-built mutants are UNKNOWN, not none. That is unchanged and
+is a campaign-level item, not this unit's.
+
+**Artifacts still stamped at the older instrument, named rather than left.**
+`harness.staging_composition.{json,txt}` (dispatch 3's reason: a red-test
+decoding of a window the corpus fixes by construction) and
+`gate.redtest.{additive,multiplicative,fmin_dropcall}.json` — the last of which
+is superseded by `gate/IPC.redtest.json`, re-taken here at `b9c8c52` with the
+same perturbation and the same count. `revcheck` scans `gate/`, `harness/` and
+`mutation/` and reports **clean**.
+
+### New files at this dispatch
+
+| file | what it records |
+|---|---|
+| `mutation/IPC.unreachable.json` | the five declarations the tool reads — one `reason` and one `evidence` path each, both mandatory and both checked before a mutant is built |
+| `probe_errmsg_trim.{py,json}` | the five-gate staging chain replayed per case, with each of the three `errmsg_trim` mutants' question asked at the point the function is actually CALLED rather than at the point the case is written. Carries its own positive controls (60,120 / 196 / 3,083), because a zero from a loop that cannot count is not evidence |
+| `gate.control.swap_call_args.json` | the cross-instrument NEGATIVE control: a declared-unreachable mutant run through the gate, 0 of 5,252,000, at the statement whose neighbour moves 159,758 |
+| `run_mutation_part.sh` | grew a `--unreachable` flag beside `--equivalences`, spelt separately because the two are different claims |
+
+---
+
+## The THIRD dispatch's report (84,754-case corpus — superseded above)
+
+**This was the THIRD dispatch, and it exists because six survivors were named and
 two of them were not equivalences.** The first produced every layer except a
 mutation score (`const_tweak` would not fit a foreground call). The second
 produced the score: **0.7797, 92 of 118**. This one asked what the six named
@@ -236,6 +371,12 @@ in DECISIONS.md as a campaign decision rather than this unit's.
 
 ## The eight open survivors, at four sites — and none of them declared
 
+*(SUPERSEDED by the fourth-dispatch section at the top: three of these eight
+are now KILLED and the other five are DECLARED UNREACHABLE with a reason and
+an evidence path each. `survived` in `mutation/IPC.json` is 0. The table below
+is the state of the 84,754-case corpus and is what the pin is measured
+against.)*
+
 `equivalent_declared` is **14** and every one of the fourteen has its argument
 written out in `mutation.equivalences.md`, where it can be disputed. What
 follows is the other list: the mutants that are still alive and are NOT claimed
@@ -382,7 +523,15 @@ error prefix. All 22 `Examples/DISCON*.IN` set `IPC_SatMode = 2` and
 | `done_check.txt` | the done-condition, captured by `scripts/capture_done_check.sh` |
 | `../../harness/ranges.toml` | nine pins: four ALLOCATABLE extents at `{lo=2,hi=3}` (and why not `hi=2`), `LocalVar_NumBl` for the fifth time and now at three values rather than four, **`CntrPar_IPC_SatMode` made a flag** (this dispatch), three instance counters for the first unit that needs all three at once, and the `staging_capacity_excludes` window |
 
-## Why the disposition is `deferred`
+## Why the disposition was `deferred` (third dispatch)
+
+*(SUPERSEDED. The disposition is `integrated`: P12 passes at 1.0000. Of the
+three groups this section says are not killed, the first was answered by a
+measured `unreachable` declaration plus a gate control at 0, the second was
+KILLED by the `CntrPar_IPC_IntSat` pin, and the third was answered by
+`probe_errmsg_trim.py` -- the `ErrVar_aviFAIL` flag this section prices and
+refuses was not needed, because the mutants are unreachable rather than
+merely unkilled.)*
 
 `min_mutation_score` is **1.0** and this unit scores **0.9231**. P12 fails on
 that number and on nothing else; the other thirteen predicates pass.

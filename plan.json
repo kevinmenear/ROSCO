@@ -3134,14 +3134,14 @@
         "DISCON"
       ],
       "dependency_depth": 2,
-      "verification": "direct-call differential harness (84,754 cases) + mutation (96 of 104 behavioural, 0.9231, 14 declared equivalent, 8 open) + 27-scenario gate; bit-identical",
+      "verification": "direct-call differential harness (83,754 cases) + mutation (99 of 99 behavioural, 1.0000, 14 declared equivalent, 5 declared unreachable with a reason and a probe each, 0 open) + 27-scenario gate (5,252,000 values, red at 159,758); bit-identical",
       "why": "every input and output crosses the signature",
       "bridge_feasible": {
         "value": "unknown",
         "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
       },
       "observability": null,
-      "disposition": null,
+      "disposition": "integrated",
       "evidence": [
         "evidence/IPC/README.md",
         "evidence/IPC/gate.redtests.txt",
@@ -3187,7 +3187,12 @@
         "scripts/_mutation_merge.redtest.py",
         "gate/IPC.json",
         "translations/Controllers/ipc.cpp",
-        "harness/ranges.toml"
+        "harness/ranges.toml",
+        "evidence/IPC/probe_errmsg_trim.py",
+        "evidence/IPC/probe_errmsg_trim.json",
+        "evidence/IPC/gate.control.swap_call_args.json",
+        "mutation/IPC.unreachable.json",
+        "gate/IPC.redtest.json"
       ],
       "source_file": "rosco/controller/src/Controllers.f90",
       "translation": "translations/Controllers/ipc.cpp",

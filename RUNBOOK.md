@@ -7887,6 +7887,87 @@ unit can exhaust the second while barely touching the first.
   Caught by printing the merged document's keys instead of assuming the parts'
   content had arrived. A union is a lossy projection by default.
 
+## `reset_to_clean.sh --no-build` IS A DIFFERENT TREE FROM `reset_to_clean.sh`,
+## AND THE HARNESS SEGFAULTS RATHER THAN SAYING SO
+
+- **`--no-build` restores clean Fortran SOURCE and leaves the BUILD TREE
+  INTEGRATED.** Unit #53, fourth dispatch. `harness.sh` decides whether to keep
+  a callee bridge by reading the SOURCE -- it printed "keeping the
+  colemantransform_c bridge ... the Fortran colemantransform is the real body on
+  this tree" for all six callees -- and then linked
+  `rosco/controller/build/.../Controllers.f90.o`, which still held the
+  integration WRAPPER. So the reference side called `ipc_c`, i.e. the harness's
+  own compiled C++, and the process **SIGSEGVed at case 0**:
+
+  ```
+  wrote .../ipc_test.cpp  (83754 cases, 859566154 bytes of case data)
+  harness produced no JSON
+  ```
+
+  `vit_harness.py` prints the tail of a stdout that is empty, so the run reports
+  nothing at all about the cause. The first hypothesis a reader forms is that
+  whatever changed the corpus broke the unit; it cost about 25 minutes to reject
+  that, and the only artifact with anything in it was an 872 MB core file whose
+  notes `readelf` refused to decode ("Cannot decode 64-bit note in 32-bit
+  build", aarch64).
+
+- **The rule.** `--no-build` is for probes that read the Fortran SOURCE and
+  nothing else -- `probe_*.py`, `generate`-but-do-not-`emit`. **Any layer that
+  RUNS the reference -- the harness, its red tests, every mutation part -- needs
+  the full `reset_to_clean.sh`.** The full reset is 7 seconds when the sources
+  are already clean, so there is no saving to defend.
+
+- **How to check it in one command**, rather than by remembering which flag was
+  used:
+
+  ```bash
+  docker exec vit-dev bash -lc \
+    "nm rosco/controller/build/CMakeFiles/discon.dir/src/<File>.f90.o | grep ' U .*_c$'"
+  ```
+
+  Any output means the object still calls a translated bridge and the tree is
+  integrated whatever the source says.
+
+## A DECLARED-`unreachable` MUTANT COSTS ONE GATE RUN TO ATTACK, AND THE ZERO IS
+## ONLY WORTH SOMETHING NEXT TO A NON-ZERO AT THE SAME STATEMENT
+
+- **`unreachable` is a claim about the CORPUS, so the cheapest attack is the
+  OTHER instrument.** The campaign already had this rule for `equivalent`
+  (unit #50). It matters more here, because the claim is weaker and easier to
+  make. Unit #53 ran `swap_call_args f43d4529` -- copied character for character
+  out of `mutation/IPC.clean.calls.json` -- through `scripts/gate.py` against
+  the integrated tree: **0 of 5,252,000 values**, 288 seconds.
+
+- **Write it to `evidence/<Unit>/gate.control.<what>.json`, NOT to
+  `gate/<Unit>.redtest.json`.** `gate.py` reports `RED TEST FAIL` and exits 1
+  when a perturbation moves nothing, and `gate/<Unit>.redtest.json` is the
+  artifact a predicate reads for `went_red`. A negative control written there
+  would fail the unit for succeeding.
+
+- **State the predicted delta as ZERO before the run** (the rule one section up
+  is the same rule with a non-zero prediction), and **pick a statement whose
+  NEIGHBOURING perturbation is known to be non-zero.** IPC's control sits on the
+  same `std::fmin` whose `drop_call` moves 159,758, so the site is demonstrably
+  reached and demonstrably observable and the zero is about the mutant. A zero
+  at a statement no scenario executes says only that no scenario executes it.
+
+## A PROBE THAT PREDICTS WHICH CASES REACH A SITE HAS A CONTROL WAITING IN THE
+## SWEEP, AND IT IS FREE
+
+- **Find the mutant that is observable on EXACTLY the cases the probe says
+  reach the site, and compare the two counts.** Unit #53's
+  `evidence/IPC/probe_errmsg_trim.py` replays the five-gate `ErrMsg` staging
+  chain in Python and reports 60,495 cases reaching `errmsg_trim`. The sweep --
+  sharing no code with it -- kills `v.substr(0, ...)` -> `substr(1, ...)` on
+  **60,492** cases, and that mutant changes the answer on every case that calls
+  the function and no other. Three apart.
+
+- **Why it is worth looking for.** Three of that unit's five `unreachable`
+  declarations rest on the probe's model of the chain being right. The probe's
+  own positive controls (P10) show its LOOP can count; the sweep cross-check is
+  the only thing that shows its MODEL of which cases arrive is right, and it was
+  already paid for.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
