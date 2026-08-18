@@ -1,0 +1,89 @@
+FloatingFeedback (unit #51) -- the three gate perturbations, and the arithmetic
+control that says the two arms partition the union.
+
+THE GREEN, for the numbers below to be about:
+
+    gate/FloatingFeedback.json
+    compared 5,252,000 value(s) across 351 channel(s) / 27 scenario(s)
+    mismatched 0
+
+WHICH SCENARIOS CAN SEE THIS UNIT AT ALL, from coverage/line_coverage.json
+against the clean source at 54dd134. DISCON's call site (Controllers.f90:95) is
+behind `IF (CntrPar%Fl_Mode > 0)`, so 23 of the 27 scenarios never enter the
+procedure:
+
+    :95   IF (Fl_Mode > 0)      407,976 hits across 23 scenarios
+    :96   the CALL               79,996 hits across FOUR:  3, 7, 19, 27
+    :632  the Fl_Mode == 1 arm   39,998        3: 15,999   7: 23,999
+    :634  the Fl_Mode == 2 arm   39,998       19: 15,999  27: 23,999
+
+The two arms therefore have DISJOINT scenario sets, which is unit #40's rule
+that two arms need two red tests. All three runs below are in this unit's own
+translation unit, all three assert `replacements: 1`, and all three are
+revert-verified by `scripts/gate.py` itself -- it reverts, rebuilds and re-runs
+the whole gate in the same process, and every one came back at 0 of 5,252,000.
+
+  ---------------------------------------------------------------------------
+  1. THE UNIT'S ANSWER, OFFSET.   gate/FloatingFeedback.redtest.json
+
+     return FloatingFeedback_result;  ->  return FloatingFeedback_result + 0.01;
+
+     moved 404,454 of 5,252,000    scenarios 3, 7, 19, 27    revert 0
+
+     channels: bld_pitch, bld_pitch_2, bld_pitch_3, gen_power, gen_speed,
+     gen_torque -- 24 channel/scenario pairs.
+
+     ADDITIVE AND NOT A SCALE, on unit #50's finding. `Fl_PitCom` is a pitch
+     contribution and nothing in this campaign guarantees it is non-zero in any
+     given scenario; a scale factor cannot be red-tested through an exact zero,
+     and one additive run settles it without a separating probe afterwards.
+     0.01 rad is ~0.57 deg, four orders above the REAL(4) resolution of the
+     `avrSWAP(42..44)` slots the pitch channels come from (unit #49's rule about
+     picking the perturbation from the CHANNEL's width).
+
+     This is the coarse test and it is the one committed as `.redtest.json`.
+
+  ---------------------------------------------------------------------------
+  2. THE Fl_Mode == 1 ARM ONLY.   gate/FloatingFeedback.redtest.mode1_arm.json
+
+     FloatingFeedback_result = (0.0 - FA_vel) * LocalVar->Kp_Float;
+       ->  ... * LocalVar->Kp_Float + 0.01;
+
+     moved 223,222 of 5,252,000    scenarios 3 and 7 ONLY    revert 0
+
+  ---------------------------------------------------------------------------
+  3. THE Fl_Mode == 2 ARM ONLY.   gate/FloatingFeedback.redtest.mode2_arm.json
+
+     FloatingFeedback_result = (0.0 - NacIMU_FA_vel) * LocalVar->Kp_Float;
+       ->  ... * LocalVar->Kp_Float + 0.01;
+
+     moved 181,232 of 5,252,000    scenarios 19 and 27 ONLY  revert 0
+
+  ---------------------------------------------------------------------------
+  THE CONTROL THAT MAKES THE ATTRIBUTION A MEASUREMENT AND NOT AN INFERENCE:
+
+      223,222  (arm 1, scenarios 3 and 7)
+    + 181,232  (arm 2, scenarios 19 and 27)
+    = 404,454  (the shared return, scenarios 3, 7, 19, 27)
+
+  EXACTLY. The two arm-scoped perturbations partition the shared one's total to
+  the value, and their scenario sets are disjoint and their union is the shared
+  one's. So the arms really are mutually exclusive at run time, each arm's own
+  arithmetic is separately observable through the gate, and neither arm is
+  riding on the other's scenarios. `mismatched_channels` in each artifact names
+  the scenarios, so this is READ rather than asserted (unit #47's rule).
+
+  NOTHING HERE MOVED ZERO. This is the first unit in five without an
+  annihilated-by-an-exact-zero finding -- #47's `AWC_amp`, #48's `WE_Gamma`,
+  #49's unwritten `CC_DesiredL` and #50's 1-DOF `rootMOOPF` each had one. The
+  reason is structural rather than lucky: this unit's answer is ADDED to
+  `LocalVar%PC_PitComT`, which is a live pitch command in every scenario that
+  reaches the call, and the perturbations are additive at the point of the sum.
+
+  WHAT THE GATE STILL CANNOT SEE HERE. `LocalVar%Kp_Float` reaches no channel
+  of its own -- it is consumed by the two arms and by nothing else in ROSCO --
+  and `objInst%instPI` reaches none either. A defect that got the gain schedule
+  or the instance counter wrong is visible to the gate ONLY through the product
+  it forms, and to `piP` not at all. The differential harness and the mutation
+  sweep are the instruments that constrain those; the gate constrains the
+  answer.
