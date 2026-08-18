@@ -1,0 +1,10 @@
+Unit #53 IPC -- why there is no mutation/IPC.json, run rather than asserted
+
+$ python3 scripts/_mutation_merge.py --unit IPC --cpp translations/Controllers/ipc.cpp \
+      --part mutation/IPC.clean.index.json --part mutation/IPC.clean.calls.json \
+      --part mutation/IPC.clean.arith.json --part mutation/IPC.clean.swap.json \
+      --part mutation/IPC.clean.compare.json --part mutation/IPC.clean.negate.json \
+      --out mutation/IPC.json --why "..."
+
+_mutation_merge: REFUSING -- operator(s) ['const_tweak'] found a site in this unit and are in NO part -- this union does not cover the sweep
+exit 2

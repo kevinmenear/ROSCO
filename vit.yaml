@@ -1096,6 +1096,9 @@ translations:
   ForeAftDamping:
     status: integrated
     cpp_file: translations/Controllers/foreaftdamping.cpp
+  IPC:
+    status: integrated
+    cpp_file: translations/Controllers/ipc.cpp
 types:
   ControlParameters:
     strategy: view

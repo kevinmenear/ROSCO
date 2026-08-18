@@ -190,6 +190,19 @@ MODULE Controllers
         END SUBROUTINE foreaftdamping_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of IPC
+    INTERFACE
+        SUBROUTINE ipc_c(CntrPar, LocalVar, objInst, DebugVar, ErrVar) BIND(C, NAME='ipc_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: objInst
+            TYPE(C_PTR), VALUE :: DebugVar
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE ipc_c
+    END INTERFACE
+
 CONTAINS
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE PitchControl(avrSWAP, CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -561,102 +574,29 @@ CONTAINS
     END SUBROUTINE YawRateControl
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE IPC(CntrPar, LocalVar, objInst, DebugVar, ErrVar)
-        ! Individual pitch control subroutine
-        !   - Calculates the commanded pitch angles for IPC employed for blade fatigue load reductions at 1P and 2P
-        !   - Includes yaw by IPC
-
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : ControlParameters, LocalVariables, ObjectInstances, DebugVariables, ErrorVariables
-        
-        TYPE(ControlParameters),    INTENT(INOUT)       :: CntrPar
-        TYPE(LocalVariables),       INTENT(INOUT)       :: LocalVar
-        TYPE(ObjectInstances),      INTENT(INOUT)       :: objInst
-        TYPE(DebugVariables),       INTENT(INOUT)        :: DebugVar
-        TYPE(ErrorVariables),       INTENT(INOUT)        :: ErrVar
-
-        ! Local variables
-        REAL(DbKi)                  :: PitComIPC(3), PitComIPCF(3), PitComIPC_1P(3), PitComIPC_2P(3)
-        INTEGER(IntKi)              :: i, K                                    ! Integer used to loop through gains and turbine blades
-        REAL(DbKi)                  :: axisYawIPC_1P                           ! IPC contribution with yaw-by-IPC component
-        REAL(DbKi)                  :: Y_MErr, Y_MErrF, Y_MErrF_IPC            ! Unfiltered and filtered yaw alignment error [rad]
-        
-        CHARACTER(*),               PARAMETER           :: RoutineName = 'IPC'
-
-        ! Body
-        ! Pass rootMOOPs through the Coleman transform to get the tilt and yaw moment axis
-        CALL ColemanTransform(LocalVar%rootMOOPF, LocalVar%Azimuth, NP_1, LocalVar%axisTilt_1P, LocalVar%axisYaw_1P)
-        CALL ColemanTransform(LocalVar%rootMOOPF, LocalVar%Azimuth, NP_2, LocalVar%axisTilt_2P, LocalVar%axisYaw_2P)
-
-        ! High-pass filter the MBC yaw component and filter yaw alignment error, and compute the yaw-by-IPC contribution
-        IF (CntrPar%Y_ControlMode == 2) THEN
-            Y_MErr = wrap_360(LocalVar%NacHeading + LocalVar%NacVane)
-            Y_MErrF = LPFilter(Y_MErr, LocalVar%DT, CntrPar%F_YawErr, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF)
-            Y_MErrF_IPC = PIController(Y_MErrF, CntrPar%Y_IPC_KP, CntrPar%Y_IPC_KI, -CntrPar%Y_IPC_IntSat, CntrPar%Y_IPC_IntSat, LocalVar%DT, 0.0_DbKi, LocalVar%piP, LocalVar%restart, objInst%instPI)
-        ELSE
-            LocalVar%axisYawF_1P = LocalVar%axisYaw_1P
-            Y_MErrF = 0.0
-            Y_MErrF_IPC = 0.0
-        END IF
-
-        ! Soft cutin with sigma function 
-        DO i = 1,2
-            LocalVar%IPC_KP(i) = sigma(LocalVar%WE_Vw, CntrPar%IPC_Vramp(1), CntrPar%IPC_Vramp(2), 0.0_DbKi, CntrPar%IPC_KP(i), ErrVar)
-            LocalVar%IPC_KI(i) = sigma(LocalVar%WE_Vw, CntrPar%IPC_Vramp(1), CntrPar%IPC_Vramp(2), 0.0_DbKi, CntrPar%IPC_KI(i), ErrVar)
-        END DO
-
-        ! Handle saturation limit, depends on IPC_SatMode
-        IF (CntrPar%IPC_SatMode == 2) THEN
-            ! Saturate to min allowed pitch angle, softly using IPC_IntSat
-            LocalVar%IPC_IntSat = min(CntrPar%IPC_IntSat,LocalVar%BlPitchCMeas - CntrPar%PC_MinPit)
-        ELSEIF (CntrPar%IPC_SatMode == 3) THEN
-            ! Saturate to peak shaving, softly using IPC_IntSat
-            LocalVar%IPC_IntSat = min(CntrPar%IPC_IntSat,LocalVar%BlPitchCMeas - LocalVar%PC_MinPit)
-        ELSE
-            LocalVar%IPC_IntSat = CntrPar%IPC_IntSat
-        ENDIF
-        
-        ! Integrate the signal and multiply with the IPC gain
-        IF (CntrPar%IPC_ControlMode >= 1 .AND. CntrPar%Y_ControlMode /= 2)  THEN
-            LocalVar%IPC_axisTilt_1P = PIController(LocalVar%axisTilt_1P, LocalVar%IPC_KP(1), LocalVar%IPC_KI(1), -LocalVar%IPC_IntSat, LocalVar%IPC_IntSat, LocalVar%DT, 0.0_DbKi, LocalVar%piP, LocalVar%restart, objInst%instPI) 
-            LocalVar%IPC_axisYaw_1P = PIController(LocalVar%axisYawF_1P, LocalVar%IPC_KP(1), LocalVar%IPC_KI(1), -LocalVar%IPC_IntSat, LocalVar%IPC_IntSat, LocalVar%DT, 0.0_DbKi, LocalVar%piP, LocalVar%restart, objInst%instPI) 
-            
-            IF (CntrPar%IPC_ControlMode >= 2) THEN
-                LocalVar%IPC_axisTilt_2P = PIController(LocalVar%axisTilt_2P, LocalVar%IPC_KP(2), LocalVar%IPC_KI(2), -LocalVar%IPC_IntSat, LocalVar%IPC_IntSat, LocalVar%DT, 0.0_DbKi, LocalVar%piP, LocalVar%restart, objInst%instPI) 
-                LocalVar%IPC_axisYaw_2P = PIController(LocalVar%axisYawF_2P, LocalVar%IPC_KP(2), LocalVar%IPC_KI(2), -LocalVar%IPC_IntSat, LocalVar%IPC_IntSat, LocalVar%DT, 0.0_DbKi, LocalVar%piP, LocalVar%restart, objInst%instPI) 
-            END IF
-        ELSE
-            LocalVar%IPC_axisTilt_1P = 0.0
-            LocalVar%IPC_axisYaw_1P = 0.0
-            LocalVar%IPC_axisTilt_2P = 0.0
-            LocalVar%IPC_axisYaw_2P = 0.0
-        ENDIF
-        
-        ! Add the yaw-by-IPC contribution
-        axisYawIPC_1P = LocalVar%IPC_axisYaw_1P + Y_MErrF_IPC
-        
-        ! Pass direct and quadrature axis through the inverse Coleman transform to get the commanded pitch angles
-        CALL ColemanTransformInverse(LocalVar%IPC_axisTilt_1P, axisYawIPC_1P, LocalVar%Azimuth, NP_1, CntrPar%IPC_aziOffset(1), PitComIPC_1P)
-        CALL ColemanTransformInverse(LocalVar%IPC_axisTilt_2P, LocalVar%IPC_axisYaw_2P, LocalVar%Azimuth, NP_2, CntrPar%IPC_aziOffset(2), PitComIPC_2P)
-        
-        ! Sum nP IPC contributions and store to LocalVar data type
-        DO K = 1,LocalVar%NumBl
-            PitComIPC(K) = PitComIPC_1P(K) + PitComIPC_2P(K)
-            
-            ! Optionally filter the resulting signal to induce a phase delay
-            IF (CntrPar%IPC_CornerFreqAct > 0.0) THEN
-                PitComIPCF(K) = LPFilter(PitComIPC(K), LocalVar%DT, CntrPar%IPC_CornerFreqAct, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
-            ELSE
-                PitComIPCF(K) = PitComIPC(K)
-            END IF
-            
-            LocalVar%IPC_PitComF(K) = PitComIPCF(K)
-        END DO
-
-
-        ! Add RoutineName to error message
-        IF (ErrVar%aviFAIL < 0) THEN
-            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
-        ENDIF
-
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
+        IMPLICIT NONE
+        TYPE(CONTROLPARAMETERS), INTENT(INOUT), TARGET :: CntrPar
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(OBJECTINSTANCES), INTENT(INOUT), TARGET :: objInst
+        TYPE(DEBUGVARIABLES), INTENT(INOUT), TARGET :: DebugVar
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        CALL ipc_c(C_LOC(CntrPar_view), C_LOC(LocalVar_view), C_LOC(objInst), C_LOC(DebugVar), C_LOC(ErrVar_view))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_controlparameters(CntrPar_view, CntrPar)
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
     END SUBROUTINE IPC
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE ForeAftDamping(CntrPar, LocalVar, objInst)
