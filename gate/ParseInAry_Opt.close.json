@@ -26,7 +26,7 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "the CLOSE gate, taken against the SHIPPED build after the wrapper red test had reverted and rebuilt -- so this measures the library the unit actually leaves behind, not the one the first gate run measured before the post-integration layer touched the source."
+  "the CLOSE gate, RE-TAKEN against the library that exists at close. The reset/restore pair was round-tripped after integration as a check that the next unit can extract -- 55 translated .cpp removed on reset, up from 54, so the scripts pick this unit up with no edit -- and restore_integrated rebuilds and installs. The sources are identical (HEAD unchanged, git status clean) and the build is deterministic, so this number was expected to be the same one; it is re-taken rather than argued."
  ],
  "perturbed": false,
  "residual_dirt": [],
