@@ -1,0 +1,164 @@
+ParseDbAry_Opt -- the 108 mutation survivors, by the region of the translation
+they sit in.
+
+  mutation/ParseDbAry_Opt.json: 189 mutants, 4 did not compile, 185 behavioural,
+  77 killed, 108 survived, score 0.4162, against the GREEN 13,674-case baseline
+  on a clean tree (`compared_against: fortran_reference_on_a_clean_tree`).
+
+WHERE THEY ARE. Every mutant is placed by the position `harness/cppmutate.py`
+gives it, not by a text search -- several `before` strings occur many times in
+this file and a search would attribute them all to the first.
+
+    survived / mutants   region
+         87 / 151        the list-directed READ
+                         match_word, lower, is_separator, parse_real,
+                         list_read_reals  (lines 155-400)
+         16 /  17        the PRINT record
+                         field, nonfinite_text, list_directed_real,
+                         print_default_warning  (lines 425-500)
+          1 /   6        assign_errmsg
+          1 /   1        int2lstr_trimmed
+          3 /  10        the unit's own body, its constants and ary_at
+        ---------
+        108 / 185
+
+AND WHY, in one sentence each. Neither is a fact about the translation.
+
+  THE READ IS REACHED BY 103 CASES OF 13,674. Measured, not estimated:
+  `harness.no-read-stub.json` deletes the whole list-directed READ and moves
+  103 cases. Whatever number of cases enter that code, the number that can
+  DISTINGUISH anything about it is 103 -- 0.75% of the corpus -- because
+  `FindLine` finds the parameter only in the cases R14 planted, and R14 reached
+  its 1:plant shape only (`rule_coverage`, both dispatches). 87 survivors in
+  151 mutants is what a corpus that exercises a parser 103 times looks like.
+
+  THE PRINT IS NOT COMPARED BY ANY LAYER. Stated in this unit's evidence README
+  from the first dispatch (section 8, bullet 6) and unchanged by anything here:
+  the harness compares out-parameters, the gate compares simulation channels,
+  and the record this code writes goes to stdout -- the same stdout the harness
+  parses its own JSON out of. 16 of 17 mutants in it therefore cannot be killed
+  by this instrument at all, and the one that dies does so by crashing.
+
+THE UNIT'S OWN BODY IS NOT WHERE THEY ARE, and that is the part of this table
+worth keeping. The guard `ErrVar->aviFAIL < 0`, the `AryLen < 1` arm, the
+ALLOCATE-already-allocated branch, the `.NOT. AllowDefault_` return, the
+`Ary = 0` default arm, `ary_at`'s stride and `ary_size` -- 7 of 10 mutants
+there are killed, and the three that survive are named below (a `MaxParamLength`
+constant no output reads, and the `std::max(NumWords, 0)` clamp plus its
+argument order, which cannot bite while `AryLen >= 0` is a stated range).
+
+NONE OF THESE ARE DECLARED EQUIVALENT. An unreached mutant and a
+behaviour-preserving one are different claims, and `mutation/<U>.equivalences.json`
+is for the second. These are unreached or uncompared, which is a fact about the
+corpus and the instrument, and the campaign's threshold is not met.
+
+--------------------------------------------------------------------------
+  line  operator        id        before -> after
+   50  const_tweak     4c9f1d23  '200' -> '201'
+   91  compare_op      b5366e74  '>' -> '>='
+  108  index_offset    7302f2f5  '[Int2LStrLen]' -> '[Int2LStrLen + 1]'
+  170  arith_op        4d01524f  'c + 32' -> 'c - 32'
+  170  compare_op      5bfdaacf  '<=' -> '<'
+  170  compare_op      6b5fc8ce  '>=' -> '>'
+  170  const_tweak     1be033e2  '32' -> '33'
+  175  arith_op        f4077220  'p + static_cast' -> 'p - static_cast'
+  175  compare_op      76abf5f3  '>' -> '>='
+  175  negate_cond     5428f2cc  'if (p + static_cast<int>(word.size()) > len)' -> 'if (!(p + static_cast<int>(word.size()) '
+  178  compare_op      09fbe682  '<' -> '<='
+  178  const_tweak     42edf275  '0' -> '1'
+  179  arith_op        28e276aa  'p + static_cast' -> 'p - static_cast'
+  179  index_offset    89e19caf  '[k]' -> '[k + 1]'
+  223  compare_op      0a3516d1  '<' -> '<='
+  223  index_offset    d7fb141b  '[p]' -> '[p + 1]'
+  231  const_tweak     00d622d9  '64' -> '65'
+  231  index_offset    057b4549  '[64]' -> '[64 + 1]'
+  232  const_tweak     32d10914  '0' -> '1'
+  234  compare_op      1df32d1d  '<' -> '<='
+  234  compare_op      cb9fd797  '<' -> '<='
+  234  const_tweak     5b1c8101  '62' -> '63'
+  234  index_offset    0d6c3ff2  '[q]' -> '[q + 1]'
+  237  index_offset    1beac345  '[n]' -> '[n + 1]'
+  239  compare_op      2eee5f51  '==' -> '!='
+  239  const_tweak     2766e582  '1' -> '2'
+  239  index_offset    8d6f88d8  '[start]' -> '[start + 1]'
+  242  compare_op      03a2a772  '!=' -> '=='
+  242  compare_op      ca00a9b5  '==' -> '!='
+  242  negate_cond     0f9388b7  "if (end == nullptr || *end != '\\0')" -> "if (!(end == nullptr || *end != '\\0'))"
+  252  compare_op      2763d449  '<' -> '<='
+  253  compare_op      2f05620e  '<' -> '<='
+  256  compare_op      56c1dd4d  '<' -> '<='
+  256  index_offset    2a9e1695  '[p]' -> '[p + 1]'
+  266  compare_op      a98553ab  '<' -> '<='
+  266  negate_cond     ec529e34  'if (p < len)' -> 'if (!(p < len))'
+  267  index_offset    8cc95e66  '[p]' -> '[p + 1]'
+  271  index_offset    69bb4461  '[p]' -> '[p + 1]'
+  271  index_offset    a84574aa  '[p]' -> '[p + 1]'
+  276  compare_op      a0007207  '<' -> '<='
+  276  compare_op      a3c545ac  '==' -> '!='
+  276  compare_op      e9efc13b  '==' -> '!='
+  276  index_offset    91f2ce24  '[p]' -> '[p + 1]'
+  276  index_offset    e2d47adf  '[p]' -> '[p + 1]'
+  276  negate_cond     1b204ba2  "if (p < len && (rec[p] == '+' || rec[p] == '-'))" -> "if (!(p < len && (rec[p] == '+' || rec[p"
+  279  const_tweak     7d8e5de9  '0' -> '1'
+  280  index_offset    6350880c  '[p]' -> '[p + 1]'
+  281  const_tweak     01038e66  '0' -> '1'
+  281  negate_cond     d6189f14  'if (edigits == 0)' -> 'if (!(edigits == 0))'
+  305  arith_op        7f3857d0  'p - exp_start' -> 'p + exp_start'
+  305  arith_op        e0b05cef  'rec + exp_start' -> 'rec - exp_start'
+  305  swap_operands   f60553a5  'p - exp_start' -> 'exp_start - p'
+  306  const_tweak     8498214d  '0' -> '1'
+  306  const_tweak     d078bd37  '0' -> '1'
+  306  index_offset    5d7ed85b  '[0]' -> '[0 + 1]'
+  306  index_offset    a98bafcd  '[0]' -> '[0 + 1]'
+  306  negate_cond     9840df22  "if (!exp.empty() && (lower(exp[0]) == 'e' || lower(exp[0]) =" -> 'if (!(!exp.empty() && (lower(exp[0]) == '
+  307  const_tweak     cc0f460c  '0' -> '1'
+  307  index_offset    495cd9fe  '[0]' -> '[0 + 1]'
+  308  const_tweak     d04a0070  '1' -> '2'
+  308  const_tweak     dd8ac03f  '0' -> '1'
+  327  arith_op        37ba45eb  'return -1' -> 'return + 1'
+  327  const_tweak     cf85bd96  '1' -> '2'
+  337  index_offset    4d1ccfed  '[p]' -> '[p + 1]'
+  338  const_tweak     b76a0c84  '5010' -> '5011'
+  344  index_offset    f0ee2a4d  '[q]' -> '[q + 1]'
+  345  index_offset    a88935b1  '[q]' -> '[q + 1]'
+  346  arith_op        48542e3d  'rec + p' -> 'rec - p'
+  346  arith_op        ea525151  'q - p' -> 'q + p'
+  346  swap_operands   c10feafe  'q - p' -> 'p - q'
+  347  const_tweak     1cc25f2d  '10' -> '11'
+  348  const_tweak     acc506ca  '0' -> '1'
+  348  negate_cond     1e3dd7a5  'if (repeat <= 0)' -> 'if (!(repeat <= 0))'
+  349  const_tweak     d764720b  '5010' -> '5011'
+  351  arith_op        aad8cf72  'q + 1' -> 'q - 1'
+  351  const_tweak     e8fdf285  '1' -> '2'
+  353  index_offset    ab289323  '[p]' -> '[p + 1]'
+  353  negate_cond     8354fa45  'if (p >= len || is_separator(rec[p]))' -> 'if (!(p >= len || is_separator(rec[p])))'
+  354  const_tweak     f9fcb3ba  '0' -> '1'
+  357  index_offset    2469ce80  '[p]' -> '[p + 1]'
+  358  index_offset    a7cf9a5e  '[p]' -> '[p + 1]'
+  358  negate_cond     5aff750f  "if (p < len && rec[p] == ',')" -> "if (!(p < len && rec[p] == ','))"
+  363  const_tweak     269b76b7  '0.0' -> '1.0'
+  366  const_tweak     81b6a619  '5010' -> '5011'
+  374  const_tweak     412b5d5b  '5010' -> '5011'
+  377  const_tweak     49ce3a9d  '5010' -> '5011'
+  380  const_tweak     1bbaf2d2  '5010' -> '5011'
+  385  index_offset    4d44e6d2  '[p]' -> '[p + 1]'
+  386  index_offset    80b445cc  '[p]' -> '[p + 1]'
+  386  negate_cond     f0543531  "if (p < len && rec[p] == ',')" -> "if (!(p < len && rec[p] == ','))"
+  432  negate_cond     123a7dde  'if (static_cast<int>(text.size()) > w)' -> 'if (!(static_cast<int>(text.size()) > w)'
+  441  negate_cond     2af0b6bd  'if (std::isnan(v))' -> 'if (!(std::isnan(v)))'
+  442  negate_cond     fa4f36de  'if (std::isinf(v))' -> 'if (!(std::isinf(v)))'
+  453  negate_cond     c6a83a1d  'if (nonfinite_text(v, text))' -> 'if (!(nonfinite_text(v, text)))'
+  457  index_offset    fa5926ac  '[512]' -> '[512 + 1]'
+  461  arith_op        a867a839  'epos + 1' -> 'epos - 1'
+  463  negate_cond     8bb5f06d  'if (decexp >= -1 && decexp <= 16)' -> 'if (!(decexp >= -1 && decexp <= 16))'
+  464  arith_op        ae3f319a  '16 - decexp' -> '16 + decexp'
+  464  swap_operands   9416ffb6  '16 - decexp' -> 'decexp - 16'
+  467  negate_cond     bea19ce7  'if (d == 0)' -> 'if (!(d == 0))'
+  474  arith_op        7dee2fff  'epos + 1' -> 'epos - 1'
+  475  arith_op        ce45e93d  'epos + 2' -> 'epos - 2'
+  476  index_offset    b563bb58  '[0]' -> '[0 + 1]'
+  479  negate_cond     6238b54e  'if (edig.size() > 3)' -> 'if (!(edig.size() > 3))'
+  482  arith_op        83744180  '3 - edig.size' -> '3 + edig.size'
+  493  index_offset    f6007814  '[i]' -> '[i + 1]'
+  656  drop_call       b2bbedf3  'std::max(NumWords, 0)' -> 'NumWords'
+  656  swap_call_args  dd749c6b  'NumWords, 0' -> '0, NumWords'
