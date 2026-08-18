@@ -21,17 +21,15 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "829625b",
+ "loop_rev": "b9c8c52",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
   "THE DEFAULT ARM: Ary = 0, taken when FindLine does not find the parameter and the caller allows a default.",
-  "MOVED 0, AND THAT IS THE EXPECTED ANSWER, not a silent one. The arm RUNS: coverage records ROSCO_Helpers.f90:945 (clean) 66 times across 21 of the 27 scenarios.",
-  "What it writes cannot reach a channel. The arm is reached only when AryLen is 0, and AryLen at these call sites is F_NumNotchFilts / F_GenSpdNotch_N / F_TwrTopNotch_N -- so the arrays that take a default are exactly the notch-filter arrays of a scenario with zero notch filters. Both consumers are behind that same count: prefiltermeasuredsignals.cpp:148 sits in a loop bounded by F_GenSpdNotch_N, and checkinputs.cpp:329 is IF (F_NumNotchFilts > 0). Zero iterations and a false guard.",
-  "The differential harness is the layer that covers this arm: the 3003 cases of the alloc=0 / other cell in evidence/ParseDbAry_Opt/harness_partition.txt, every one of which compares Ary against a fully defined reference answer -- and the exclusion added at the second dispatch does NOT touch them, because their reference returns aviFAIL >= 0.",
-  "RE-TAKEN at the second dispatch (loop 829625b). The first take is at d947d92 and also moved 0."
+  "MOVED 0, AND THAT IS THE EXPECTED ANSWER, not a silent one. The arm RUNS: coverage records ROSCO_Helpers.f90:945 66 times across 21 of the 27 scenarios. It is reached only when AryLen is 0, and AryLen at these call sites is F_NumNotchFilts / F_GenSpdNotch_N / F_TwrTopNotch_N, so the arrays that take a default are the notch arrays of a scenario with ZERO notch filters -- and both consumers sit behind that same count (prefiltermeasuredsignals.cpp:148 inside a loop bounded by F_GenSpdNotch_N, checkinputs.cpp:329 inside if (CntrPar->F_NumNotchFilts > 0)). Zero iterations and a false guard.",
+  "THIRD DISPATCH re-take at loop b9c8c52. The differential harness is the layer that covers this arm, and the corpus change moved its cell: 3,003 alloc=0/other cases at the second dispatch, 3,036 at this one. PREDICTED 0 again."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parsedbary_opt.cpp",

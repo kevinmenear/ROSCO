@@ -21,7 +21,7 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "829625b",
+ "loop_rev": "b9c8c52",
  "mismatched": 2236141,
  "mismatched_channels": [
   "scenario_3:bld_pitch 15999/16000",
@@ -170,7 +170,7 @@
  "missing_scenarios": [],
  "notes": [
   "Every value the list-directed READ transfers is shifted by 0.01. This is the unit's whole product: the arrays it fills are CntrPar's gain schedules, notch frequencies and IPC ramps.",
-  "RE-TAKEN at the second dispatch (loop 829625b), so this red test and the green it certifies name the same instrument. The first take is at d947d92 and measured the same 2,236,141."
+  "RE-TAKEN at the THIRD dispatch, at loop b9c8c52, on the 16,512-case corpus. The gate does not read the case file, so this number is not expected to move; it is re-taken because a unit whose artifacts name two instrument revisions is not commensurable with itself (revcheck, P14). PREDICTED before the run: 2,236,141, the second dispatch's value, exactly."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parsedbary_opt.cpp",

@@ -21,14 +21,14 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "829625b",
+ "loop_rev": "b9c8c52",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "THE NEGATIVE CONTROL FOR THE RUN BESIDE IT. Mutant ae3f319a, arith_op, parsedbary_opt.cpp:464 inside list_directed_real -- the routine that formats a REAL for the PRINT record the default arm writes to unit 6. It SURVIVED the differential harness, and it is EXPECTED to move zero here: the gate compares simulation channels and this code's only product is a line of text on stdout.",
-  "The pair is the point. 2a9e1695 survives the harness and the gate KILLS it, so the READ survivors are a corpus gap rather than a blind spot of the campaign. This one survives BOTH, so the PRINT survivors are a genuine hole that needs an instrument neither layer has: one that compares the two sides' stdout."
+  "THE NEGATIVE CONTROL. Mutant ae3f319a, arith_op, parsedbary_opt.cpp:464 inside list_directed_real -- the routine that formats a REAL for the PRINT record the default arm writes to unit 6. It SURVIVES the 16,512-case differential harness and it survives the sanitised sweep.",
+  "PREDICTED 0 of 5,252,000, and re-taken at loop b9c8c52 with that prediction unchanged from the second dispatch. The PRINT record is compared by NO layer of this unit's evidence: the differential harness compares out-parameters, the gate compares simulation channels, and this record goes to stdout. A zero here is what an INSTRUMENT gap looks like, as against the CORPUS gap the run beside it measures."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parsedbary_opt.cpp",

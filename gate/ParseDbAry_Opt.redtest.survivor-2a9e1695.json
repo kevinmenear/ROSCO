@@ -21,7 +21,7 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "829625b",
+ "loop_rev": "b9c8c52",
  "mismatched": 1583216,
  "mismatched_channels": [
   "scenario_3:bld_pitch 10334/16000",
@@ -162,8 +162,8 @@
   27
  ],
  "notes": [
-  "A SURVIVING MUTANT OF THE MUTATION SWEEP, RUN THROUGH THE OTHER INSTRUMENT (RUNBOOK: before calling a survivor a corpus gap, ask whether the OTHER instrument can reach it -- one gate run replaces the argument). Mutant 2a9e1695, index_offset, parsedbary_opt.cpp:256 inside parse_real's fraction-digit loop: rec[p] -> rec[p + 1]. It SURVIVED the 13,674-case differential harness.",
-  "The two-line anchor is the same single-token edit the mutator makes; the surrounding line is quoted only to make the site unique in the file (the identical while-loop appears twice in parse_real)."
+  "Mutant 2a9e1695, index_offset, parse_real's fraction-digit loop: rec[p] -> rec[p + 1].",
+  "THIRD DISPATCH, AND ITS STATUS HAS CHANGED. At the second dispatch this was a SURVIVOR of the mutation sweep and this gate run was the argument that the READ region is a CORPUS gap the gate covers. On the 16,512-case corpus it is KILLED by the differential harness -- 2a9e1695 is not in mutation/ParseDbAry_Opt.json's survivor list any more. So this run is no longer an argument; it is the CONTROL on that claim, re-taken at loop b9c8c52 to show the gate still moves on the same statement while the harness has caught up with it. PREDICTED 1,583,216 moved of 4,732,000, with scenarios 19 and 27 failing to run at all."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parsedbary_opt.cpp",
