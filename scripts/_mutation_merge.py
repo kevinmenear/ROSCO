@@ -20,7 +20,13 @@ WHAT IT REFUSES, because a union is a coverage claim and a coverage claim that
 cannot fail is not one (P10):
 
   * a part with no `operators_filter`  -- an unfiltered run is not a part
-  * parts whose filters overlap        -- a mutant scored twice, counted twice
+  * parts whose filters overlap WITHOUT `scored_ids` to tell them apart -- a
+    mutant scored twice, counted twice. An operator too large for one
+    foreground call may be split across parts by `vit_mutate.py --offset`, and
+    then the partition is checked by ID: no mutant in two parts, every mutant
+    of every named operator in one. See the block at `ids_ok` for why the id
+    check is stronger than the count arithmetic it replaces rather than a
+    relaxation of it.
   * parts that do not COVER the unit's operator set. The population is asked of
     `harness.cppmutate` directly -- the same function `vit_mutate.py` calls --
     because a part's own `operators` field is computed AFTER the filter and so
@@ -54,20 +60,29 @@ LOOP = "/workspace/translation-loop"
 NOCOMPILE_LIMIT = 0.25   # vit_mutate.py's own limit, not a second opinion
 
 
-def population_from_cppmutate(unit: str, cpp: str) -> dict[str, int]:
-    """{operator: mutant count} straight out of the mutator vit_mutate.py uses.
+def population_from_cppmutate(unit: str, cpp: str) -> dict[str, list[str]]:
+    """{operator: [mutant id, ...]} straight out of the mutator vit_mutate.py uses.
 
     Read from the instrument rather than from the parts, so that "did the union
     cover the sweep" is a question the union can fail. Returns {} when the
     mutator cannot be reached, which the caller renders as a refusal and never
     as an empty population that every union trivially covers (P6).
+
+    IT RETURNS IDS AND NOT ONLY COUNTS, and the difference is what lets one
+    operator be scored by several runs. A count answers "are all 40 there"; ids
+    answer "are they the SAME 40", which is the only question worth asking of a
+    union of slices -- two parts can agree about indices 0..19 and 20..39 of two
+    different enumerations and sum to 40 having scored one mutant twice and
+    another never. Counts are derived from the ids below, so every check the
+    count-based version made is still made, over a strictly stronger input.
     """
     prog = (
         "import sys, json, collections; sys.path.insert(0, %r);"
         "from harness.cppmutate import mutants;"
         "src = open(%r).read();"
-        "print(json.dumps(collections.Counter("
-        "m.operator for m in mutants(%r, src))))"
+        "d = collections.defaultdict(list);"
+        "[d[m.operator].append(m.mid) for m in mutants(%r, src)];"
+        "print(json.dumps(d))"
         % (LOOP, f"{WORKDIR}/{cpp}", unit.lower())
     )
     r = subprocess.run(
@@ -117,19 +132,46 @@ def main() -> int:
                        f"measurement wearing the name of one")
 
     # --- the union must be disjoint and must exhaust the operator set ---------
-    seen: dict[str, str] = {}
+    # AN OPERATOR MAY SPAN SEVERAL PARTS, AND ONLY IF THEIR IDS PARTITION IT.
+    #
+    # Until unit #53 the rule was one operator, one part: a repeat was refused
+    # outright because its mutants would be counted twice. That rule was right
+    # about the hazard and wrong about the remedy, and IPC is where the
+    # difference cost a measurement -- 40 const_tweak mutants at 26.5s on a
+    # 63,888-case corpus is 1,040s against a 600s foreground ceiling, so the
+    # operator could not be scored by ONE part and was not allowed to be scored
+    # by two. The unit closed with no `mutation/IPC.json` at all.
+    #
+    # What the old rule really enforced was a PARTITION, using "at most one
+    # part" as a sufficient condition for disjointness because nothing in the
+    # artifact could express any other. `scored_ids` can, so the partition is
+    # now checked directly: no id in two parts, and every id of every operator
+    # in some part. That is strictly stronger than the count arithmetic it
+    # replaces -- it catches a part that scored 40 of the RIGHT SIZE and the
+    # wrong membership, which counts cannot see.
+    #
+    # THE OLD RULE STILL APPLIES TO PARTS THAT CANNOT BE CHECKED THAT WAY. An
+    # artifact written before `scored_ids` existed carries no ids, so for those
+    # the sharing refusal and the count arithmetic stand unchanged. A union may
+    # not mix the two: a part with ids and a part without, sharing an operator,
+    # is precisely the case neither rule covers.
+    ids_ok = all("scored_ids" in d for _, d in parts)
+    seen: dict[str, list[str]] = {}
     for name, d in parts:
         for op in d["operators_filter"]:
-            if op in seen:
-                return die(f"operator {op!r} is in both {seen[op]} and {name}; "
-                           f"its mutants would be counted twice")
-            seen[op] = name
+            if op in seen and not ids_ok:
+                return die(f"operator {op!r} is in both {seen[op][0]} and "
+                           f"{name}, and at least one of them carries no "
+                           f"`scored_ids` -- its mutants would be counted twice "
+                           f"and nothing here could tell")
+            seen.setdefault(op, []).append(name)
 
-    counts = population_from_cppmutate(a.unit, a.cpp)
-    if not counts:
+    population = population_from_cppmutate(a.unit, a.cpp)
+    if not population:
         return die(f"could not ask harness.cppmutate for {a.unit}'s mutant "
                    f"population; an unchecked union is not a sweep")
-    pop = set(counts)
+    counts = {op: len(v) for op, v in population.items()}
+    pop = set(population)
     missing = pop - set(seen)
     if missing:
         return die(f"operator(s) {sorted(missing)} found a site in this unit and "
@@ -138,12 +180,44 @@ def main() -> int:
     if extra:
         return die(f"part(s) filter on {sorted(extra)}, which found no site in "
                    f"this unit; the parts and the population disagree")
-    for name, d in parts:
-        want = sum(counts[op] for op in d["operators_filter"])
-        if d["total"] != want:
-            return die(f"{name} scored {d['total']} mutant(s) but its operators "
-                       f"{d['operators_filter']} produce {want} -- the part is "
-                       f"not a whole slice of the sweep")
+
+    if ids_ok:
+        # Every id scored, and the part that scored it. Overlap is a repeat.
+        by_id: dict[str, str] = {}
+        for name, d in parts:
+            if len(d["scored_ids"]) != d["total"]:
+                return die(f"{name} lists {len(d['scored_ids'])} scored id(s) "
+                           f"but reports total={d['total']}; the artifact does "
+                           f"not agree with itself")
+            for mid in d["scored_ids"]:
+                if mid in by_id:
+                    return die(f"mutant {mid} was scored by both {by_id[mid]} "
+                               f"and {name} -- the slices overlap and it would "
+                               f"be counted twice")
+                by_id[mid] = name
+        want_ids = {mid for op in pop for mid in population[op]}
+        unscored = want_ids - set(by_id)
+        if unscored:
+            owner = {mid: op for op in pop for mid in population[op]}
+            byop: dict[str, int] = {}
+            for mid in unscored:
+                byop[owner[mid]] = byop.get(owner[mid], 0) + 1
+            return die(f"{len(unscored)} mutant(s) of this unit are in NO part "
+                       f"({', '.join(f'{o}:{n}' for o, n in sorted(byop.items()))})"
+                       f" -- the slices do not cover the operators they name")
+        alien = set(by_id) - want_ids
+        if alien:
+            return die(f"{len(alien)} scored id(s) are not in this unit's "
+                       f"population at all (e.g. {sorted(alien)[:3]}) -- the "
+                       f"parts and the mutator disagree about what the mutants "
+                       f"ARE, not merely how many")
+    else:
+        for name, d in parts:
+            want = sum(counts[op] for op in d["operators_filter"])
+            if d["total"] != want:
+                return die(f"{name} scored {d['total']} mutant(s) but its "
+                           f"operators {d['operators_filter']} produce {want} "
+                           f"-- the part is not a whole slice of the sweep")
 
     # --- the reference side, which is the whole reason for the re-take --------
     against = {d.get("compared_against") for _, d in parts}
@@ -229,6 +303,7 @@ def main() -> int:
         "merged_from": [
             {"part": name,
              "operators_filter": d["operators_filter"],
+             **({"mutant_slice": d["mutant_slice"]} if "mutant_slice" in d else {}),
              "total": d["total"], "mutants": d["mutants"],
              "nocompile": d["nocompile"], "killed": d["killed"],
              "survived": d["survived"], "score": d["score"]}
