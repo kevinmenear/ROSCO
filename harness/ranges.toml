@@ -2430,9 +2430,19 @@ ErrVar_ErrMsg = { staging_capacity_excludes = [11, 34], reason = "IPC prefixes '
 #     THERE AND NOWHERE ELSE.
 #
 # `alloc_Ary == 0` says the array arrived UNALLOCATED, so whatever storage it
-# comes back on was allocated by this call. `ErrVar.aviFAIL < 0` is the
-# REFERENCE's OWN returned status, and it is `< 0` exactly on the two arms that
-# return early: measured, at `alloc_Ary == 0` the cells are
+# comes back on was allocated by this call. `ErrVar_aviFAIL >= 0` is the status
+# the case SUPPLIED, and it is the reference's own guard --
+#
+#     IF (ErrVar%aviFAIL >= 0) THEN     ! the whole body
+#
+# so without it the condition also catches the cases that arrived ALREADY
+# FAILED and never entered the body at all. Those have a perfect oracle: `Ary`
+# is untouched and unallocated on both sides. MEASURED, and this is why the
+# second half is here rather than argued for: the one-relation form excluded
+# 4,233 where the partition predicts 4,067, and 4,233 - 4,067 = 166 is exactly
+# that set. `ErrVar.aviFAIL < 0` is the REFERENCE's OWN RETURNED status, and it
+# is `< 0` exactly on the two arms that return early: measured, at
+# `alloc_Ary == 0` and an admissible entry status the cells are
 #
 #     not-allowed  4006     read-failed    61     other  3003
 #
@@ -2453,4 +2463,4 @@ ErrVar_ErrMsg = { staging_capacity_excludes = [11, 34], reason = "IPC prefixes '
 
 AryLen = { lo = 0, hi = 32 }
 UnEc = { lo = 0, hi = 0 }
-Ary = { no_oracle_when = "alloc_Ary == 0", and_reference = "ErrVar.aviFAIL < 0", reason = "the reference ALLOCATEd Ary on this call and then RETURNed on an arm that assigns none of it (.NOT. AllowDefault_) or only a prefix (the READ error arm); those elements are recycled heap and a comparison against them decides nothing about either implementation. 4,067 of 13,674 cases, classified in evidence/ParseDbAry_Opt/harness_partition.txt: 100% of both cells and 0% of the other five." }
+Ary = { no_oracle_when = ["alloc_Ary == 0", "ErrVar_aviFAIL >= 0"], and_reference = "ErrVar.aviFAIL < 0", reason = "the reference ALLOCATEd Ary on this call and then RETURNed on an arm that assigns none of it (.NOT. AllowDefault_) or only a prefix (the READ error arm); those elements are recycled heap and a comparison against them decides nothing about either implementation. 4,067 of 13,674 cases, classified in evidence/ParseDbAry_Opt/harness_partition.txt: 100% of both cells and 0% of the other five." }

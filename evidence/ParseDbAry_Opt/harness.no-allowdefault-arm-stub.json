@@ -2,8 +2,11 @@
   "unit": "ParseDbAry_Opt",
   "against": "integrated",
   "checked": 13674,
-  "failed": 4872,
+  "failed": 4811,
   "inadmissible": 0,
+  "no_oracle_when_skipped": {
+    "Ary": 4067
+  },
   "rule_coverage": [
     "  applied  R5_non_degenerate_shape    6 varied extent(s) at [3, 4, 5, 6, 7, 8] and [3, 4, 5, 6, 7, 8], NO index parameter identified, array elements distinct",
     "  applied  R2_flag_values             8 value(s) across 4 flag(s), each with 8 case(s) of the remaining inputs varied under it",
@@ -15,15 +18,9 @@
     "  applied  R13_staging_capacity       256 case(s) sweeping the stated staging capacity of every deferred-length CHARACTER output from 0 to 255 bytes above what the case supplies, every other input at its base draw -- so the output has one length across the block and exactly one case sizes the buffer TO it, one a byte short and one a byte long. A capacity a case does not state is `emit.ALLOC_HEADROOM`, which is what every case outside this block still carries",
     "  applied  R14_planted_word           32 case(s) planting a free scalar CHARACTER input as word [1, 2, 3] of ONE element of a CHARACTER ARRAY input -- the element FIRST and LAST, so a search that skips the first is distinguishable; every free scalar integer at k-1 and at k, so whichever offset the reference uses to pick its word is hit; the key case-INVERTED against the word, so an uppercasing pass dropped on either side breaks the match; every other element and every other word a decoy that no key spells. Reached ['1:plant']; NOT reached ['2:plant', '3:plant'] -- the field is too narrow to carry the plant, or the integer values it needs are outside a stated range",
     "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
-    "  applied  R4_compare_all_outputs     return value + 6 out-parameter(s): Ary, ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg"
+    "  applied  R4_compare_all_outputs     return value + 6 out-parameter(s): Ary, ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg -- Ary: COMPARED ONLY WHERE THE REFERENCE HAS AN ORACLE (no_oracle_when; the excluded count is in the artifact)"
   ],
   "mismatches": [
-    {
-      "case": 4,
-      "output": "Ary",
-      "ref": "010000000f000000000000000100000000000000bc42a9730c00000000000000...",
-      "got": "010000000f000000000000000100000000000000000000000000000000000000..."
-    },
     {
       "case": 4,
       "output": "ErrVar.aviFAIL",
@@ -59,12 +56,6 @@
       "output": "ErrVar.ErrMsg",
       "ref": "506172736544624172795f4f70743a4d697373696e67206f722064656661756c...",
       "got": "506172736544624172795f4f70743a4572726f7220616c6c6f636174696e6720..."
-    },
-    {
-      "case": 29,
-      "output": "Ary",
-      "ref": "01000000060000000000000001000000000000002e8682e736c7000000000000...",
-      "got": "0100000006000000000000000100000000000000000000000000000000000000..."
     },
     {
       "case": 29,
@@ -113,8 +104,20 @@
       "output": "ErrVar.n_ErrMsg",
       "ref": "70000000",
       "got": "58000000"
+    },
+    {
+      "case": 39,
+      "output": "ErrVar.ErrMsg",
+      "ref": "506172736544624172795f4f70743a4d697373696e67206f722064656661756c...",
+      "got": "506172736544624172795f4f70743a4572726f7220616c6c6f636174696e6720..."
+    },
+    {
+      "case": 41,
+      "output": "ErrVar.aviFAIL",
+      "ref": "ffffffff",
+      "got": "bd030000"
     }
   ],
-  "red_test": "the .NOT. AllowDefault_ error arm deleted; every not-found case takes the default path",
+  "red_test": "the .NOT. AllowDefault_ arm deleted",
   "red_test_note": "run with --no-generate, so this is the same case file the green in harness/ParseDbAry_Opt.json was taken on"
 }
