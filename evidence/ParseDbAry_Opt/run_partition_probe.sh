@@ -60,20 +60,33 @@ for line in pathlib.Path(sys.argv[1]).read_text(errors="replace").splitlines():
 print(f"{len(rows)} case(s) with a probe record")
 
 # THE ARM IS READ OFF THE REFERENCE'S OWN MESSAGE, not off a guess about which
-# branch ran. The four the unit can produce, in the order the source writes them.
+# branch ran, and the substrings are COPIED from `ROSCO_Helpers.f90` at the
+# clean baseline rather than recalled. Tested in the order the source WRITES
+# them, last writer first: the already-allocated ALLOCATE arm sets `ErrMsg` and
+# does not return, so the `.NOT. AllowDefault_` arm and the READ arm overwrite
+# it, and the final message is the arm the call ended on.
+#
+# The first version of this classifier guessed the strings ("Line does not
+# contain", "Error parsing") and matched NONE of them, so 8,302 cases came back
+# `other` and the two error cells read as empty. Kept in the history rather than
+# quietly corrected: a partition whose buckets are spelled wrong reports the
+# region it cannot see as absent.
 def arm(msg, sup, avi):
     m = msg.strip()
-    if sup < 0:                                   return "entered-failed"
-    if "already allocated" in m:                  return "already-alloc"
-    if "Error allocating memory" in m:            return "alloc-failed"
-    if "Line does not contain" in m or "not found" in m.lower():  return "not-allowed"
-    if "Error parsing" in m or "read" in m.lower():               return "read-failed"
+    if sup < 0:                                                  return "entered-failed"
+    if "Missing or default values are not allowed" in m:         return "not-allowed"
+    if "A fatal error occurred when parsing data" in m:          return "read-failed"
+    if "array was already allocated" in m:                       return "already-alloc"
+    if "Fatal error allocating memory for the Words array" in m: return "words-alloc-failed"
+    if "Error allocating memory for" in m:                       return "alloc-failed"
     return "other"
 
 tab = collections.Counter((r[1], arm(r[6], r[2], r[3])) for r in rows)
-print("\n  alloc  arm             cases")
-for (a, k), n in sorted(tab.items()):
-    print(f"    {a:3d}  {k:15s} {n:6d}")
+chg = collections.Counter((r[1], arm(r[6], r[2], r[3]))
+                          for r in rows if r[3] != r[2])
+print("\n  alloc  arm                 cases   aviFAIL-changed")
+for k in sorted(tab):
+    print(f"    {k[0]:3d}  {k[1]:18s} {tab[k]:7d}   {chg.get(k, 0):7d}")
 
 # WHAT A DELETED `vit_copy_scalars_to_errorvariables` WOULD MOVE. The call
 # carries the SCALARS of the view struct back into the Fortran derived type, so

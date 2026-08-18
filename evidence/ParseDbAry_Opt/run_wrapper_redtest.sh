@@ -22,6 +22,15 @@
 # `already-alloc` (5697) = 10,611; the `other` cells (3003 + 60) = 3063 write no
 # scalar at all and must still pass.
 #
+# THIRD DISPATCH, on the 16,512-case corpus, re-derived from the re-taken
+# partition rather than scaled from the number above: `not-allowed`
+# (5207 + 872), `read-failed` (59 + 311) and `already-alloc` (6767) = 13,216
+# must fail; `other` (3036) and `entered-failed` (184 + 76) = 3,296 write no
+# scalar and must pass. `ErrStat` and `size_avcMSG` are 0 both supplied and
+# returned in all 16,512, so `aviFAIL` alone decides the set.
+#
+#     PREDICTED 13216 failing, 3296 passing.
+#
 # ANCHORED TO THE UNIT, NOT TO THE STRING. That CALL is generated into every
 # wrapper in this file that takes an `ErrorVariables`, so a `str.replace` would
 # perturb a dozen units, measure none of them, and write a red artifact

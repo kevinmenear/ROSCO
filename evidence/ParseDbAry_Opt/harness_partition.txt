@@ -1,11 +1,68 @@
 ParseDbAry_Opt -- the differential harness partitioned by (alloc_Ary on entry, arm)
-13674 cases, 4067 failing, EVERY failure on Ary and on no other output.
 
-  alloc  arm             cases   Ary-failing
-      0  not-allowed      4006     4006
-      0  other            3003        0
-      0  read-failed        61       61
-      1  already-alloc    5697        0
-      1  not-allowed       805        0
-      1  other              60        0
-      1  read-failed        42        0
+THIRD DISPATCH, 16512 cases, 0 failing. Produced by
+`evidence/ParseDbAry_Opt/run_partition_probe.sh` against the CLEAN Fortran, so
+every column is the REFERENCE's own behaviour. The arm is read off the
+reference's returned ErrMsg, matching substrings copied from ROSCO_Helpers.f90
+at baseline 54dd134.
+
+  alloc  arm                  cases   aviFAIL-changed
+      0  entered-failed         184         0
+      0  not-allowed           5207      5207
+      0  other                 3036         0
+      0  read-failed             59        59
+      1  already-alloc         6767      6767
+      1  entered-failed          76         0
+      1  not-allowed            872       872
+      1  read-failed            311       311
+                              ------      ------
+                               16512     13216
+
+`entered-failed` is new as a named cell: those are the cases that arrived with
+`ErrVar%aviFAIL < 0` and never entered the body at all (`IF (ErrVar%aviFAIL >= 0)`
+wraps everything). The first dispatch's table folded them into `other`, which is
+why its `other` cells were 3003 / 60 rather than 3036 / 184+76.
+
+`alloc = 1, other` is EMPTY and that is a property of the program, not of the
+corpus: a case that supplies an already-allocated `Ary` always fails the
+`ALLOCATE` and always gets the already-allocated message, so the only way out of
+that cell is a LATER arm overwriting it -- `not-allowed` (872) or `read-failed`
+(311).
+
+## Against the first dispatch's table, on 13674 cases
+
+      0  not-allowed           4006  ->  5207
+      0  other                 3003  ->  3036   (+ 184 entered-failed, split out)
+      0  read-failed             61  ->    59
+      1  already-alloc         5697  ->  6767
+      1  not-allowed            805  ->   872
+      1  read-failed             42  ->   311     <- 7.4x, and it is the point
+      1  other                   60  ->    76     (all entered-failed)
+
+THE READ CELL IS WHAT THE CORPUS CHANGE BOUGHT. `read-failed` totals 370 against
+the first dispatch's 103, and the no-read stub -- which deletes the whole
+list-directed READ rather than only its failing arm -- moves 394 of 16512
+against 103 of 13674.
+
+## WHAT THE WRAPPER RED TEST'S PASS SET IS, DERIVED HERE AND PREDICTED BEFORE
+## THE RUN
+
+`vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)` is the only thing that
+carries this unit's SCALAR writes out of the view struct and back into the
+Fortran derived type. Delete it and the reference side returns the scalars the
+case SUPPLIED, so a case fails iff the unit changed one of them.
+
+    aviFAIL      changed on 13216 of 16512 -- every case of `not-allowed`
+                 (5207 + 872), `read-failed` (59 + 311) and `already-alloc`
+                 (6767); no case of `other` or `entered-failed`
+    ErrStat      returned 0 in all 16512, and 0 is what every case supplies
+    size_avcMSG  returned 0 in all 16512, likewise
+
+    PREDICTED post-integration red-test failure count:  13216
+    PREDICTED pass set:  3036 + 184 + 76 = 3296
+
+`ErrMsg` is NOT carried by that call -- it is a deferred-length CHARACTER staged
+by its own assignment -- so it stays correct under the red test and is not part
+of the prediction.
+
+MEASURED: harness/ParseDbAry_Opt.postintegration.redtest.json.
