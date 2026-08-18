@@ -6980,6 +6980,138 @@ unit can exhaust the second while barely touching the first.
   #48's rule — execute the argument, do not trust it — is met here by a probe
   that costs one `--no-generate` rebuild and nine seconds.
 
+## Two arm-scoped gate red tests whose counts SUM to a shared one's is an
+## arithmetic control on the arm attribution
+
+- **Unit #51, three gate runs, and the third one is a subtraction.** The unit is
+  a two-arm `IF`/`ELSEIF` whose arms have disjoint scenario sets — unit #40's
+  rule that two arms need two red tests, and unit #47's sharpening that a shared
+  perturbation covers the chain if `mismatched_channels` names the scenarios.
+
+  ```
+  the unit's answer + 0.01 rad     404,454     scenarios 3, 7, 19, 27
+  the mode-1 arm    + 0.01 rad     223,222     scenarios 3 and 7 ONLY
+  the mode-2 arm    + 0.01 rad     181,232     scenarios 19 and 27 ONLY
+                                   -------
+  223,222 + 181,232              = 404,454     EXACTLY
+  ```
+
+  The two arm-scoped runs partition the shared one **to the value**, with
+  disjoint scenario sets whose union is the shared one's. **That check FAILS
+  LOUDLY where the scenario list alone would not**: if the arms overlapped at run
+  time, if either were riding on the other's scenarios, or if a perturbation
+  matched more than the line it was aimed at, the sum would not close. It costs
+  one gate run (~286 s) beyond the two the rule already requires, and it replaces
+  an argument about mutual exclusion with a subtraction.
+
+## `no_oracle` is not available to a unit whose excused output IS its whole answer
+
+- **Unit #51 met unit #39's exact shape and could not take unit #39's fix.** Both
+  units have a result variable assigned on one arm of a split and undefined on
+  the other; `harness/ranges.toml:747` answers it for `ResController` with
+  `vit_result = { no_oracle = ... }`.
+
+  ```
+  FloatingFeedback writes:  vit_result           <- the two arms' arithmetic
+                            LocalVar%Kp_Float    <- written by interp1d
+                            LocalVar%piP         <- written by PIController
+                            objInst%instPI       <- post-incremented by it
+  ```
+
+  Three of the four are written by a CALLEE, and on the clean tree both sides
+  reach the same callee through the kept bridge — so they are one implementation
+  compared against itself. Excusing `vit_result` would have left the primary
+  layer green over nothing the translation computes. `ResController` can afford
+  the entry because `resP`'s four arrays are its own and because its unassigned
+  path is *reachable*, so no domain statement could remove it.
+
+  **Before writing `no_oracle`, ask what the layer still compares afterwards.**
+  On a unit with one output it is a statement that the layer has nothing to do.
+  The alternative taken here was a domain pin, `CntrPar_Fl_Mode = { values = [1,
+  2] }`, and it is cheap for a reason unit #50's four rejected pins were not: the
+  region it removes contains **no statement at all** — it is the absence of an
+  `ELSE`. A narrowing that removes no arm removes nothing the harness could have
+  checked.
+
+## Whether a stated `values` list bounds R7's predicate knob is one probe, and
+## it is worth taking when the excluded region has no oracle
+
+- **Unit #51, ~40 seconds, and the opposite answer would have invalidated the
+  primary layer.** The `values` entry excluded the modes on which the reference
+  returns an undefined slot. Two things then disagreed:
+
+  ```
+  harness/ranges.toml       CntrPar_Fl_Mode = { values = [1, 2] }
+  the run's own header      PREDICATE KNOB: CntrPar_Fl_Mode at [0.0,1.0,2.0,3.0]
+  unit #49's measurement    aviFAIL {-1: 2767, 0: 2446, 1: 2422, 2: 5}
+                            against a stated set of three  <- the knob drew past
+  ```
+
+  0 and 3 are the collating neighbours of the two literals the unit tests and
+  BOTH fall through. Had the corpus held them, the green would have been a
+  comparison of two undefined slots that happened to agree — unit #36's
+  out-of-bounds pass in a different costume, and unit #37 measured that such a
+  comparison reports `0 failed` as readily as it reports denormals.
+
+  One `fprintf` before the `VITCMP("vit_result", ...)` line plus a
+  `--no-generate` rebuild (unit #47's probe) settled it: **6734 PROBE lines,
+  `{1: 3518, 2: 3216}`, fall-through set EMPTY.** The list bounded the knob here.
+
+  **State it narrowly.** One number, one parameter, one run. It is not evidence
+  about unit #49's `aviFAIL = 2` and not a claim about the generator. The reason
+  to take the probe is the asymmetry, not the expected answer.
+
+## `--reverse-copy` is decided by READING the emitted wrapper, and the campaign's
+## rule about that file is about a different failure
+
+- **Unit #51's first `vit integrate --apply` emitted no copy-back at all.** The
+  unit's only `LocalVariables` write is the SCALAR `LocalVar%Kp_Float` —
+  `interp1d` writes it into the view struct and both arms read it back to form
+  the answer.
+
+  ```
+  without --reverse-copy    ... = REAL(floatingfeedback_c(C_LOC(LocalVar_view), ...))
+                            END FUNCTION                <- Kp_Float dies in the view
+  with    --reverse-copy    CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+                            CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
+  ```
+
+  Caught because the wrapper was read before it was believed, which is unit #49's
+  recorded practice, so no artifact was ever taken against it. Had it not been,
+  the post-integration harness would have gone red on `Kp_Float` and the
+  diagnosis would have started at the translation.
+
+  **The rule the campaign already has is about the other failure on the same
+  file.** Every `run_postintegration_redtest.sh` header says to COMMIT the
+  wrapper before arming the trap; nothing says to READ it after generating it.
+  The check is `grep -c vit_copy_scalars_to_ ` over the wrapper's own line range
+  and it is five seconds. Note also which copy-back to perturb later: this unit's
+  wrapper carries two and only the `localvariables` one is about this unit —
+  `aviFAIL` and `ErrMsg` are the CALLEE's writes.
+
+## An uninitialised C++ result and a zero-initialised one are both right, on
+## different facts about reachability
+
+- **Units #39 and #51 make opposite choices for the same Fortran shape.**
+
+  ```
+  rescontroller.cpp:48       double ResController_result = 0.0;
+  floatingfeedback.cpp       double FloatingFeedback_result;     <- no initialiser
+  ```
+
+  `ResController`'s unassigned path is the `reset` path: reachable, taken on the
+  first call of every simulation, and its value is stored into `AWC_TiltYaw`.
+  Returning an indeterminate double there is undefined BEHAVIOUR executed in
+  production, not merely an undefined VALUE. `FloatingFeedback`'s unassigned path
+  is reachable by no ROSCO configuration — `Controllers.f90:95` guards the call
+  site at `Fl_Mode > 0` and `checkinputs.cpp:297` rejects `Fl_Mode > 2` — so
+  defining it would be the translation answering a question the reference does
+  not answer (P7).
+
+  **The two look like an inconsistency and are one rule on two facts.** Say which
+  fact in the declaration's own comment; a later reader diffing the files will
+  otherwise find a contradiction and "fix" one of them.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
