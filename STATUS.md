@@ -78,6 +78,17 @@ that cannot bite while `AryLen = { lo = 0 }` is stated. **Nothing is declared
 equivalent**: an unreached mutant and a behaviour-preserving one are different
 claims. `evidence/ParseDbAry_Opt/mutation_survivors.txt` has all 108 by line.
 
+**TWO SURVIVORS WERE RUN THROUGH THE GATE, and the pair says which kind of gap
+each region is.** `2a9e1695` (`rec[p]` → `rec[p + 1]` in `parse_real`'s
+fraction-digit loop) survives 13,674 harness cases and the gate moves
+**1,583,216 of 4,732,000** under it — with scenarios 19 and 27 failing to run at
+all, so 520,000 values could not even be compared. `ae3f319a`
+(`16 - decexp` → `16 + decexp` in the PRINT formatter) survives the harness and
+moves **0 of 5,252,000**. Both revert-verified. **The READ survivors are a
+CORPUS gap the gate covers; the PRINT survivors are an INSTRUMENT gap nothing
+here covers**, and the negative control is what makes that a measurement rather
+than an assumption.
+
 **WHAT WOULD MOVE IT**, recorded so a third dispatch does not re-derive it: a
 corpus in which `FindLine` FINDS the line in thousands of cases rather than a
 hundred — R14's `2:plant`/`3:plant` shapes, and a planted line carrying varied

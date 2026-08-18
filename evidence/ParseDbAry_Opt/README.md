@@ -311,6 +311,33 @@ survived / mutants   region
   output reads and the `std::max(NumWords, 0)` clamp with its argument order,
   which cannot bite while `AryLen = { lo = 0 }` is stated.
 
+**TWO OF THE SURVIVORS WERE RUN THROUGH THE OTHER INSTRUMENT, and the pair
+settles which kind of gap each region is.** The RUNBOOK's rule: before calling a
+survivor a corpus gap, ask whether the gate can reach it — one gate run replaces
+the argument.
+
+```
+2a9e1695  index_offset  parse_real:256  rec[p] -> rec[p + 1]   (the fraction-digit loop)
+          harness: SURVIVED 13,674 cases
+          gate:    1,583,216 of 4,732,000 moved, and scenarios 19 and 27
+                   FAILED TO RUN AT ALL under it -- 520,000 values that could
+                   not even be compared. Revert-verified: 5,252,000 / 0.
+          gate/ParseDbAry_Opt.redtest.survivor-2a9e1695.json
+
+ae3f319a  arith_op      list_directed_real:464  16 - decexp -> 16 + decexp
+          harness: SURVIVED 13,674 cases
+          gate:    0 of 5,252,000. Revert-verified: 0.
+          gate/ParseDbAry_Opt.redtest.survivor-ae3f319a.json
+```
+
+**So the 87 READ survivors are a CORPUS GAP and the 16 PRINT survivors are an
+INSTRUMENT GAP, and those are different things to fix.** The gate reaches the
+parser hard — it is the same 43% of the campaign's compared values that the
+`v[i++] = value + 0.01` perturbation moves — so a defect in the READ path would
+not leave this campaign undetected even though this unit's own harness cannot
+see it. The PRINT is reached by neither layer, and the negative control is what
+turns that from an assumption into a measurement.
+
 **Nothing is declared equivalent.** An unreached mutant and a
 behaviour-preserving one are different claims; these are unreached or
 uncompared, and calling them equivalent would be the exact shape of a green

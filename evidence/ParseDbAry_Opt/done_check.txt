@@ -1,6 +1,6 @@
-# done_check.py ParseDbAry_Opt -- captured 2026-08-18T04:56:45Z by scripts/capture_done_check.sh
+# done_check.py ParseDbAry_Opt -- captured 2026-08-18T05:48:33Z by scripts/capture_done_check.sh
 
-Run against the committed state at 77408b5a ("ParseDbAry_Opt: the gate re-taken at close against the SHIPPED build -- 5,252,000 / 0"), with a CLEAN tree, with stdout
+Run against the committed state at faff5016 ("ParseDbAry_Opt: the close gate against the shipped build -- 5,252,000 / 0"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -31,9 +31,9 @@ ParseDbAry_Opt: Verdict.INCOMPLETE  (13/14 PASS)
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
 [  ok  ] P9   gate compared and matched          
-[ FAIL ] P12  mutation score for this unit       mutation_missing:no mutation/ParseDbAry_Opt.json
+[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/ParseDbAry_Opt.json 77/185 = 0.416 < 1.0 -- survivors: compare_op[b5366e74], compare_op[6b5fc8ce], compare_op[5bfdaacf], compare_op[76abf5f3], compare_op[09fbe682], compare_op[0a3516d1]
 [  ok  ] P11  post-integration harness re-run    13674 check(s) against the integrated build
 [  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
 [  ok  ] P10  evidence reproducible              
-[  ok  ] P14  artifact revisions agree           2 artifact(s) at d947d92
+[  ok  ] P14  artifact revisions agree           3 artifact(s) at 829625b
 

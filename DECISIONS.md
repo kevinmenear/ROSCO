@@ -77,6 +77,29 @@ sweep is what says 103 — and the no-read stub is what CONFIRMS it, moving
 exactly 103 cases when the whole READ is deleted. Two instruments, one number,
 neither of them the one that looked strongest.
 
+### A survivor is a corpus gap or an instrument gap, and ONE GATE RUN EACH is what tells them apart
+
+The RUNBOOK already says to ask whether the other instrument can reach a
+survivor before calling it a corpus gap. Unit #54 has 108 of them in two
+regions, so the question was asked ONCE PER REGION, with the answer predicted
+first:
+
+```
+2a9e1695  parse_real:256  rec[p] -> rec[p + 1]     harness SURVIVED
+          gate 1,583,216 of 4,732,000 moved, scenarios 19 and 27 dead
+ae3f319a  list_directed_real:464  16 - decexp      harness SURVIVED
+          gate 0 of 5,252,000
+```
+
+**The negative control is the half that makes it evidence.** A single red run
+would have shown the gate can kill A survivor; the pair shows the gate can kill
+the READ survivors and CANNOT kill the PRINT ones — so the two regions need
+different repairs (a corpus that finds the line more than 103 times; an
+instrument that compares stdout) and the campaign is not exposed on the first.
+
+Cost: two gate runs, about ten minutes. Compare with the argument it replaces,
+which is unfalsifiable prose about what a simulation probably exercises.
+
 ### A `no_oracle_when` condition can be RIGHT and still over-exclude, and the number that says so is one the campaign already had
 
 The first form of the pin was defensible on its face — "the array arrived

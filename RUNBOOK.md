@@ -7441,6 +7441,30 @@ unit can exhaust the second while barely touching the first.
   `constrain()`, so the case file must hash identically before and after -- it
   did -- which is what keeps every earlier artifact comparable case-for-case.
 
+## RUN ONE SURVIVOR PER REGION THROUGH THE GATE, AND MAKE ONE OF THEM A
+## NEGATIVE CONTROL
+
+- **Unit #54.** 108 survivors in two regions. The existing rule says to ask
+  whether the other instrument can reach a survivor before calling it a corpus
+  gap; asked once per REGION, with the answer predicted first:
+
+  ```
+  2a9e1695  parse_real:256  rec[p] -> rec[p + 1]      harness SURVIVED
+            gate 1,583,216 of 4,732,000 moved, and scenarios 19 and 27 failed
+            to run at all under it
+  ae3f319a  list_directed_real:464  16 - decexp       harness SURVIVED
+            gate 0 of 5,252,000
+  ```
+
+  **The negative control is the half that makes it evidence.** One red run shows
+  the gate can kill A survivor. The PAIR shows the gate kills the READ survivors
+  and cannot kill the PRINT ones -- so the two regions need different repairs (a
+  corpus that finds the line more than 103 times of 13,674; an instrument that
+  compares stdout) and the campaign is not exposed on the first.
+
+  Two gate runs, about ten minutes, replacing unfalsifiable prose about what a
+  simulation probably exercises.
+
 ## STATE AN EXCLUSION'S SIZE BEFORE THE RUN, THE WAY A RED TEST'S COUNT IS
 ## STATED BEFORE THE RUN
 
