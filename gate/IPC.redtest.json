@@ -21,7 +21,7 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "4751161",
+ "loop_rev": "b9c8c52",
  "mismatched": 159758,
  "mismatched_channels": [
   "scenario_8:bld_pitch 15300/16000",
@@ -40,7 +40,8 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "the surviving drop_call mutant b36f5d50, character for character out of mutation/IPC.clean.calls.json, run through the OTHER instrument"
+  "drop_call b36f5d50 of mutation/IPC.clean.calls.json, character for character, run through the OTHER instrument",
+  "RE-TAKEN AT THE FOURTH DISPATCH, at loop b9c8c52, so this unit has no base-sha split. The mutant is no longer a survivor: the corpus change committed at cd2b0230 kills it on 3024 of 83754 cases. It is kept as the gate red test because it is the perturbation whose gate-side count is already known (159758), which makes a re-take a check rather than a fresh measurement."
  ],
  "perturbation": {
   "file": "rosco/controller/src/ipc.cpp",
