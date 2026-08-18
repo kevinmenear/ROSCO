@@ -4,6 +4,110 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-17: unit #51 `FloatingFeedback` is `integrated` and CLOSES AT 14
+of 14. The mutation score is 1.000.** Four layers, all four red-tested. One
+dispatch. The unit is seven statements — one `interp1d` gain schedule, two
+unconditional `PIController` calls and a two-arm `IF`/`ELSEIF` — and everything
+interesting about it is that the chain has no `ELSE`.
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (`harness/FloatingFeedback.json`) | **6734 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, both callee bridges kept so each side runs one `interp1d` and one `PIController` — this unit's primary evidence | the unit as a no-op: **6734 of 6734**, the WHOLE corpus, and the count the stub predicted in its own header |
+| mutation (`mutation/FloatingFeedback.json`) | **24 of 24 scoreable, 1.0000**, 2 declared, 0 no-compile, 5 operators, **no survivor, `declared_but_killed` empty** | the score *is* the red test, 24 times |
+| post-integration (`harness/FloatingFeedback.postintegration.json`) | 6734 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **6734 of 6734**; reverted, rebuilt, green re-taken at 0, revert checked both ways |
+| gate, 27 scenarios (`gate/FloatingFeedback.json`) | 5,252,000 values / 351 channels, 0 mismatched | **THREE, AND THEY ADD UP**: the answer offset 0.01 rad moves **404,454** across all four scenarios that call it; the mode-1 arm alone **223,222** (scenarios 3, 7); the mode-2 arm alone **181,232** (19, 27) |
+
+**TWO ARMS OF A THREE-WAY SPLIT, AND THE THIRD HAS NO ANSWER.**
+`Controllers.f90:631-635` writes the result variable on `Fl_Mode == 1` and on
+`Fl_Mode == 2` and has no `ELSE`, so on any other mode the function returns a
+slot nothing ever wrote — the campaign's third undefined read after unit #39's
+`ResController` and unit #50's `FlapControl`. The shipped program cannot present
+one, and it is an invariant of two statements rather than luck:
+`Controllers.f90:95` guards the call site with `IF (Fl_Mode > 0)` and
+`checkinputs.cpp:297` rejects `Fl_Mode > 2` with `aviFAIL = -1` before the first
+controller call. `harness/ranges.toml` states that domain,
+`CntrPar_Fl_Mode = { values = [1, 2] }`.
+
+**`no_oracle` WAS UNIT #39's ANSWER TO THE IDENTICAL SHAPE AND IT IS NOT
+AVAILABLE HERE.** `vit_result` **is** this unit's answer: the two arms are its
+only arithmetic, and `Kp_Float`, `piP` and `instPI` are all written by a callee
+that is the same implementation on both sides of the comparison. Excusing the
+return would have left the primary layer comparing nothing this translation
+computes. Unit #39 could afford it because its `reset` path is reachable and its
+other four outputs are its own — the two entries solve one problem and are not
+interchangeable.
+
+**THE C++ RESULT IS LEFT UNINITIALISED, WHICH IS THE OPPOSITE OF WHAT UNIT #39
+DID, AND THE TWO DIFFER ON A FACT.** `rescontroller.cpp:48` defines its result at
+`0.0` because its unassigned path is *reachable and taken on the first call of
+every simulation*; returning an indeterminate double there would be undefined
+behaviour executed in production. This unit's unassigned path is reachable by no
+ROSCO configuration, so defining it would be the translation answering a question
+the reference does not answer (P7).
+
+**AND THE GREEN WAS RESTING ON THAT UNTIL A PROBE SAID OTHERWISE.** The pin's own
+cost note predicted, from unit #49's `aviFAIL` histogram, that R7's predicate
+knob draws past a stated `values` list — and the run's header prints
+`PREDICATE KNOB: CntrPar_Fl_Mode at [0, 1, 2, 3]`, whose 0 and 3 both fall
+through. If the corpus held them the green would have been two undefined slots
+agreeing.
+
+```
+evidence/FloatingFeedback/fallthrough_census.txt   6734 cases
+  Fl_Mode == 1   3518        Fl_Mode == 2   3216        FALLTHROUGH   0
+  return == +0.0  1729       return == -0.0  1544
+```
+
+Measured, over the scored corpus with the case file byte-identical either side.
+The stated list **did** bound the knob here — narrowly stated: for this parameter
+in this run, which is not evidence about #49's `aviFAIL = 2` and not a claim
+about the generator.
+
+**1544 CASES RETURN NEGATIVE ZERO, WHICH IS WHAT MAKES `0.0 - x` RATHER THAN
+`-x` LOAD-BEARING.** `PIController` returns its `I0` on a reset and this call
+site passes `I0 = 0.0`, so both velocities are exactly `+0.0` on the whole
+`restart` half of the corpus; `(0.0 - (+0.0)) * negative` is `-0.0` where
+`-(+0.0) * negative` is `+0.0`. The harness compares bit patterns.
+
+**TWO SURVIVORS, ONE TOKEN, AND THE ARGUMENT WAS EXECUTED.** Both are the `1` of
+`LocalVar->restart ? 1 : 0`. The callee bridge converts with `(reset /= 0)` and
+the integrated `picontroller.cpp:30` with `(reset != 0)`, so `? 2 : 0` and
+`? 1 : 0` are one argument on both trees — (c)-class, and the same declaration
+unit #50 made at `flapcontrol.cpp:217`.
+`evidence/FloatingFeedback/equivalence_probe.txt`: **3209 of 6734 cases TAKE that
+branch** (the site is live and the mutant still survives), and the **other arm of
+the same conditional, `'0' -> '1'`, was KILLED at 3461** in both places (the
+operator is not blind).
+
+**THE GATE'S THREE PERTURBATIONS PARTITION, TO THE VALUE.**
+223,222 + 181,232 = 404,454, with disjoint scenario sets whose union is the
+shared perturbation's. That is an arithmetic control on the arm attribution
+rather than an argument for it, and it is cheaper than one. **First unit in five
+with no annihilated-by-an-exact-zero finding**, for a structural reason: this
+unit's answer is *added* to `LocalVar%PC_PitComT`, a live pitch command in every
+scenario that reaches the call.
+
+**`--reverse-copy` WAS DECIDED BY READING THE EMITTED WRAPPER, NOT BY
+REMEMBERING.** The first `vit integrate --apply` was run without the flag and the
+wrapper it emitted carried **no copy-back at all** — which would have left
+`LocalVar%Kp_Float`, this unit's only `LocalVariables` write and the value both
+arms read back, dying inside the view struct. Reverted and re-applied with the
+flag; no artifact was ever taken against the wrong wrapper. `vit integrate` again
+rewrote `vit.yaml` through a YAML round trip, as units #14 and #49 record.
+
+**Procedure.** ONE reset window, opened only after the translation, the three
+range pins, the no-op stub and both runners were committed, and closed the moment
+the clean-tree measurements were done — harness green, no-op red test, two
+probes, the mutation first take and its re-take with the equivalences. Every long
+command routed through `scripts/run_if_time_remains.sh` with a seconds estimate;
+both mutation sweeps through `scripts/mutate_guarded.sh`, which cleared its marker
+on both. The first sweep was moved to the background at the Bash tool's own 120 s
+default — harness-tracked, so it reported back and nothing was lost, and the
+second was run with `timeout: 600000` as the RUNBOOK says. Commits one per
+expensive artifact.
+
+---
+
 **As of 2026-08-17: unit #50 `FlapControl` is `integrated` and CLOSES AT 14 of
 14. The mutation score is 1.000.** Four layers, all four red-tested. One
 dispatch. The unit itself is small — four arms in one `ELSEIF` chain and three

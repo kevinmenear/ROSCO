@@ -10862,3 +10862,145 @@ scope for a unit's own dispatch — and a unit that does not know it can extend 
 instrument will reach for `--disable` or `no_oracle` instead, which is exactly
 what units #48 and #49 first did and what this unit nearly did. Raised for the
 Driver; not edited into the invariant layer here.
+
+## Unit #51 — FloatingFeedback — 2026-08-17
+
+### `no_oracle` on the RETURN VALUE is not available to a unit whose return value is its whole answer
+
+Unit #39 (`ResController`) met the identical shape — a result variable assigned
+on one arm of a two-arm split, returning an undefined slot on the other — and
+answered it with `vit_result = { no_oracle = ... }` in `harness/ranges.toml`.
+That entry is right for that unit and would have been wrong here, and the
+difference is not taste.
+
+`FloatingFeedback` writes four things: the return value, `LocalVar%Kp_Float`,
+`LocalVar%piP` and `objInst%instPI`. The last three are all written by a CALLEE —
+`interp1d` writes `Kp_Float`, `PIController` writes `piP` and post-increments
+`instPI` — and on the clean tree both sides of the comparison reach the same
+`interp1d` and the same `PIController` through the kept bridges. So the last
+three are, by construction, the same implementation compared against itself. The
+two arms are the only arithmetic this unit has, and the return value is where
+they land. Excusing it would have left the primary layer green over nothing this
+translation computes.
+
+`ResController` could afford the entry because it has four out-parameters of its
+own — `resP`'s four DIMENSION(1024) arrays — and because its unassigned path is
+*reachable*, so no domain statement could remove it.
+
+**The general form:** before writing `no_oracle` on an output, ask what the layer
+is still comparing afterwards. `no_oracle` is a statement that ONE output has no
+answer; on a unit with one output it is a statement that the layer has nothing to
+do. Both entries are in the same file and they solve the same problem.
+
+### The domain a procedure is CALLED on can be a narrowing that removes no arm
+
+The pin taken instead is `CntrPar_Fl_Mode = { values = [1, 2] }`, and the reason
+it is cheap is worth separating from the reason it is correct.
+
+Correct: `Controllers.f90:95` guards DISCON's only call site with
+`IF (CntrPar%Fl_Mode > 0)` and `checkinputs.cpp:297` (unit #29's translation of
+the clean `ReadSetParameters.f90`) rejects `Fl_Mode > 2` with `aviFAIL = -1`
+before the first controller call. Two statements, and between them `{1, 2}` is
+exactly the set on which ROSCO calls this procedure.
+
+Cheap: unit #50 rejected all four of its candidate single-parameter pins because
+each removed an ARM with nine or more statements in it. The region excluded here
+contains **no statement at all** — it is the absence of an `ELSE`. There is
+nothing in it for the harness to have checked, so the narrowing costs the corpus
+nothing but the flag arity.
+
+### A stated `values` list bounding R7's predicate knob is checkable in one probe, and worth checking when the excluded region has no oracle
+
+The `Fl_Mode` entry was written with a cost note carrying unit #49's measurement:
+a stated `values` list does not bound R7's predicate-knob cross product
+(`ErrVar_aviFAIL` at `{-1: 2767, 0: 2446, 1: 2422, 2: 5}` against a stated set of
+three). The harness prints the same warning shape here —
+`PREDICATE KNOB: CntrPar_Fl_Mode at [0.0, 1.0, 2.0, 3.0]` — and 0 and 3 are the
+collating neighbours of the two literals this unit tests, both of which fall
+through to the undefined slot.
+
+**If the corpus held them, the green would have been a comparison of two
+undefined slots that happened to agree** — unit #36's out-of-bounds pass in a
+different costume, and unit #37 measured that such a comparison can report
+`0 failed` just as easily as it can report denormals.
+
+One `fprintf` and a `--no-generate` rebuild answered it (unit #47's probe, ~40 s):
+6734 PROBE lines, `{1: 3518, 2: 3216}`, fall-through set EMPTY. The stated list
+did bound the knob here.
+
+**Stated narrowly on purpose.** This is one number, for one parameter, in one
+run. It is not evidence that #49's `aviFAIL = 2` came from somewhere else, and it
+is not a claim about the generator. The reason to record it is the asymmetry: the
+opposite result would have invalidated the primary layer, and nothing but this
+probe distinguishes the two outcomes.
+
+### Two arm-scoped gate perturbations whose counts SUM to a shared one's is an arithmetic control on the arm attribution
+
+Unit #40's rule is that two arms with disjoint scenario sets need two red tests,
+and unit #47 sharpened it: a shared perturbation can cover the chain if the
+artifact's `mismatched_channels` names the scenarios, so which arm each reached
+is read rather than asserted.
+
+This unit adds a third form, and it is stronger than either for the same cost:
+
+```
+the unit's answer + 0.01 rad     404,454     scenarios 3, 7, 19, 27
+the mode-1 arm    + 0.01 rad     223,222     scenarios 3 and 7 ONLY
+the mode-2 arm    + 0.01 rad     181,232     scenarios 19 and 27 ONLY
+                                 -------
+223,222 + 181,232              = 404,454     EXACTLY
+```
+
+The two arm-scoped runs partition the shared one **to the value**, and their
+scenario sets are disjoint with the shared one's as their union. That is a check
+that FAILS LOUDLY if the arms overlap at run time, if either arm is riding on the
+other's scenarios, or if a perturbation matched more than the line it was aimed
+at — none of which the scenario list alone would catch. It costs one extra gate
+run (~286 s) over the two the rule already requires, and it replaces an argument
+about mutual exclusion with a subtraction.
+
+### `--reverse-copy` is decided by reading the emitted wrapper, not by remembering
+
+The first `vit integrate --apply` here was run without the flag. The wrapper it
+emitted had **no copy-back at all**, and this unit's only `LocalVariables` write
+is the SCALAR `LocalVar%Kp_Float` — written by `interp1d` into the view struct
+and read back by both arms to form the answer. Without
+`vit_copy_scalars_to_localvariables` that write lives and dies inside the view.
+
+It was caught because the wrapper was read before it was believed, which is unit
+#49's recorded practice, and no artifact was ever taken against it. Had it not
+been, the post-integration harness would have gone red on `Kp_Float` and the
+diagnosis would have started at the translation.
+
+**The rule the campaign already has is about a different file.** Every
+`run_postintegration_redtest.sh` header says to commit the wrapper before arming
+the trap. Nothing says to READ the wrapper after generating it. The check is
+`grep -c vit_copy_scalars_to_ <the wrapper's line range>` and it is five seconds.
+
+### An uninitialised C++ result and a zero-initialised one are both right, on different facts
+
+`rescontroller.cpp:48` defines its result at `0.0` and says why: that unit's
+unassigned path is the `reset` path, taken on the first call of every simulation,
+and the caller stores the answer into `AWC_TiltYaw`. Returning an indeterminate
+double there would be undefined BEHAVIOUR executed in production, not merely an
+undefined VALUE.
+
+`floatingfeedback.cpp` leaves its result uninitialised, because its unassigned
+path is reachable by no ROSCO configuration (the two statements above) and
+defining it would be the translation answering a question the reference does not
+answer (P7).
+
+The two choices look like a contradiction and are the same rule applied to two
+different facts about reachability. Recorded together so a later reader diffing
+the two files finds the distinction rather than an inconsistency.
+
+### The Bash tool's 120 s default backgrounded a mutation sweep, and the RUNBOOK already said how to prevent it
+
+The first mutation sweep (234 s) was routed correctly through
+`scripts/run_if_time_remains.sh` and was still moved to the background at 120 s,
+which is the tool's own default and not the guard's business. It was
+harness-tracked, it reported back, and nothing was lost — the same outcome unit
+#49 measured. The RUNBOOK's target layer already carries the fix
+(`timeout: 600000`); it was applied to the second sweep and to every run
+afterwards. No amendment proposed: the rule exists and this dispatch simply
+proved it is easy to forget on the first long command of a session.
