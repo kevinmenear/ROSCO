@@ -1,6 +1,6 @@
-# done_check.py ParseDbAry_Opt -- captured 2026-08-18T04:50:42Z by scripts/capture_done_check.sh
+# done_check.py ParseDbAry_Opt -- captured 2026-08-18T04:50:51Z by scripts/capture_done_check.sh
 
-Run against the committed state at d9faecb3 ("ParseDbAry_Opt: the post-integration layer, the evidence README, and the state brought current"), with a CLEAN tree, with stdout
+Run against the committed state at c145ce2e ("ParseDbAry_Opt: the done_check, first capture -- 12 of 14, P5 self-referential and P12 the real one"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -20,13 +20,13 @@ done_check exited 1 (0 only when COMPLETE).
 
 baseline (inferred): cfd637c  -- the commit before 2b2b453 touched translations/ROSCO_Helpers/parsedbary_opt.cpp
 
-ParseDbAry_Opt: Verdict.INCOMPLETE  (12/14 PASS)
+ParseDbAry_Opt: Verdict.INCOMPLETE  (13/14 PASS)
 
 [  ok  ] P1   commits exist                      
 [  ok  ] P2   clean tree                         
 [  ok  ] P3   disposition recorded               
 [  ok  ] P4   evidence recorded                  
-[ FAIL ] P5   evidence resolves                  unresolved_evidence:evidence/ParseDbAry_Opt/done_check.txt
+[  ok  ] P5   evidence resolves                  
 [  ok  ] P6   functional commit                  
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                

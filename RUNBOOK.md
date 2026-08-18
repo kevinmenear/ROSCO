@@ -7333,6 +7333,206 @@ unit can exhaust the second while barely touching the first.
   the channel census; agreeing instruments are what turn "the gate is blind here"
   into "the value is exactly zero here".
 
+## `no_oracle` HAS A THIRD CASE THE CAMPAIGN HAD NO KEY FOR, AND THE WAY TO
+## SHOW IT IS A PARTITION RATHER THAN A COUNT
+
+- **Unit #54, and it is the first unit whose PRIMARY layer closes RED.** The
+  reference returns an ALLOCATED, UNASSIGNED array on two live paths, so 4,067
+  of 13,674 differential cases compare recycled heap. Both keys this campaign
+  has were tried and neither fits:
+
+  ```
+  no_oracle on Ary        barred by unit #51's rule -- Ary IS the whole answer
+  alloc_Ary = {lo=1,hi=1} corpus IDENTICAL: 13,674 cases, 4,067 failures
+  ```
+
+  The second is unit #47's finding met from the OTHER end. There `--dump-plan`
+  caught a pin that silently did nothing; here the pinned run's own **case
+  count** did, because `alloc_<name>` is a synthetic descriptor flag built with
+  hard-coded `values=(0.0, 1.0)` in `harness/vitbridge.py` and `constrain()`
+  matches by parameter name. **A pin on a name the SIGNATURE does not carry is
+  not a pin.** The file and its artifact were deleted rather than kept: an
+  artifact named `.allocated.json` reporting the unpinned number is a trap.
+
+  **What makes the red attributable is a PARTITION, not a rate.** One `fprintf`
+  and a `--no-generate` rebuild (unit #47's probe) classify every case by an
+  input and by which arm the reference's own `ErrMsg` says it took:
+
+  ```
+    alloc  arm             cases   Ary-failing
+        0  not-allowed      4006     4006      <- 100%
+        0  read-failed        61       61      <- 100%
+        0  other            3003        0
+        1  already-alloc    5697        0
+        1  not-allowed       805        0
+        1  read-failed        42        0
+        1  other              60        0
+  ```
+
+  100% of two cells and 0% of five is a statement no rate can make: there is no
+  coincidental agreement anywhere, so the failing set is exactly "the reference
+  allocated and did not assign" and the artifact can say what it certifies --
+  **9,607 of 9,607 cases with an oracle agree on every output**. Before
+  reporting a red primary layer, build the table. A percentage would have read
+  as a defect with a tendency.
+
+## A RED PRIMARY LAYER TAKES THE MUTATION LAYER WITH IT, AND THAT IS THE TOOL
+## BEING RIGHT
+
+- **Unit #54.** `vit_mutate.py` requires `base["failed"] == 0` and refuses
+  otherwise -- with a red baseline every kill would be attributable to the
+  harness rather than to the mutant. So 189 mutants exist and none are scored,
+  `mutation/<Unit>.json` does not exist, and P12 fails on ABSENCE.
+
+  **The two layers are not independent, and a unit whose corpus cannot be made
+  green cannot be mutation-scored at all.** Budget for that when the harness
+  goes red for a reason that is not the translation: there is no partial credit
+  and no split that reaches it. Run the sweep anyway and commit the refusal
+  (`evidence/<Unit>/mutation.refusal.txt`) -- IPC's rule, one refusal over.
+
+## THE STRONGEST SHAPE A RED TEST CAN HAVE IS TO MOVE EXACTLY THE CELL ITS
+## BEHAVIOUR HAS AN ORACLE IN
+
+- **Unit #54, four stubs against a red baseline of 4,067 of 13,674:**
+
+  ```
+  the whole unit as a no-op              13,448
+  the .NOT. AllowDefault_ arm deleted     4,872   = 4,067 + 805
+  the list-directed READ deleted          4,109   = 4,067 +  42
+  the measured zero-store rule removed    4,070   = 4,067 +   3
+  ```
+
+  805 and 42 are the `alloc = 1` rows of the partition above -- the cases where
+  that arm's answer IS defined -- and 3 is the number of cases that found the
+  real defect. Unit #48's rule was to compare failing SETS rather than counts
+  when the baseline is red; this is the case where the counts are enough,
+  **because the partition predicts each one in advance**. A red test whose
+  delta equals a cell you measured beforehand is worth more than a large delta
+  nobody predicted.
+
+  Same shape in the post-integration layer: the runner's header predicted
+  10,611 from the table (the arms that write `aviFAIL`) and the run returned
+  10,611.
+
+## AN UNDEFINED REFERENCE OUTPUT IS ALSO WHAT MAKES A REAL DEFECT VISIBLE, AND
+## THE TWO ARE THE SAME FACT
+
+- **Unit #54.** Three cases of 13,674 disagreed for a reason that was NOT
+  undefined memory, and they are exactly the three where `Ary` arrived
+  ALLOCATED -- so the elements the parser failed to write had an oracle.
+
+  ```
+  c=3979  line ",-./"   ref Ary(2) = 0   got Ary(2) = the value it arrived with
+  ```
+
+  gfortran does not decide "is this a number" and then convert. It scans, and a
+  DECIMAL POINT is enough to reach a state where the field could have ended
+  (`1.` is legal), so it calls `strtod` -- which yields 0.0 for a field with no
+  digits -- **and transfers that value before raising the error**:
+
+  ```
+  STORED 0.0 then 5010:  '.'  '-.'  '+.'  './'  '-./'  '.,'  '.e1'  '.d0'
+  NOT STORED,    5010:   '+'  '-'  '+/'  '+,'  'e1'  '..'  '-.e'
+  ```
+
+  Fifty-one records across two probes, none of it read off the standard. **When
+  a reference's failure path leaves an output partly written, model WHICH items
+  it wrote, not just the verdict** -- the status is one integer the caller tests
+  for `/= 0`, and the array is the rest of the answer.
+
+## VIT's CALLEE BRIDGE HAD TWO GAPS THAT ONLY A CALLEE WITH THE RIGHT DUMMIES
+## REACHES, AND `ONLY` IS WHAT CAUSES THE FIRST
+
+- **Unit #54.** `FindLine` is the first bridged procedure in either campaign
+  with a CHARACTER dummy whose length is a MODULE PARAMETER, and with a
+  by-reference LOGICAL dummy.
+
+  ```
+  CHARACTER(maxlinelength) :: local_Line
+  Error: Symbol 'maxlinelength' at (1) has no IMPLICIT type          vit@1e30f79
+  CALL FindLine(..., FoundLine, ...)
+  Error: Type mismatch in argument 'foundline'; passed INTEGER(4) to LOGICAL(4)
+                                                                    vit@3f6e2ce
+  ```
+
+  The first is `USE <module>, ONLY : <callee>` doing exactly what `ONLY` is for:
+  the staging local inherits the callee's declared length and the name that
+  spells it is not imported. **Import the name; do not substitute its value** --
+  a generator that baked in 2048 goes silently wrong when the module changes its
+  constant. The second is the mirror of a conversion `interface_gen` already did
+  in three other places, and its own comment said so; an `INTENT(OUT)` scalar
+  cannot be converted in the call, so it needs a staging local.
+
+  Both are in `vit/`, and BOTH FIXES ARE ADDITIVE, checked rather than argued:
+  regenerating `ChkParseData`'s callee bridge before and after gives a
+  byte-identical file. And the second fix lives in `test_validate.py`, not in
+  `interface_gen.py`, because the STANDALONE harness writes its own `USE` line
+  -- `parse_signature_from_source` cannot know the enclosing module, so
+  `sig.module_name` is None there and `interface_gen`'s own emitter never runs.
+  **Patch the emitter that actually wrote the line**: the first attempt fixed
+  the unreachable one and the generated file did not change.
+
+## A FORTRAN UNIT NUMBER CANNOT CROSS THE TRANSLATION BOUNDARY AT ALL
+
+- **Unit #54, and it is a FAMILY decision rather than a local one.**
+
+  ```fortran
+  IF ( UnEc > 0 )  WRITE (UnEc,*)  LineNum, Tab, ParamName, Tab, Ary
+  ```
+
+  The record has to go to whatever file the CALLER connected the unit to, and
+  C++ has no access to the Fortran runtime's unit table. The only record the
+  translation could write is one to `fort.<UnEc>` -- a DIFFERENT FILE whenever
+  the arm is live. Writing to the wrong file is worse than not writing, so
+  nothing is emitted, **not even a guarded no-op**: a translated
+  `if (UnEc > 0) { }` is a mutable comparison no input can kill.
+
+  Pin the input so the REFERENCE does not write one either
+  (`UnEc = { lo = 0, hi = 0 }`), state the pin's reason in `ranges.toml`, and
+  name the arm in the evidence. The same statement is at `ROSCO_Helpers.f90`
+  :187, :269, :349, :852 and :991 -- units #55 through #58 all carry it -- so
+  the answer should be the same for all five. Raised in `DECISIONS.md`.
+
+  **Contrast the `PRINT` two lines above it, which IS translated**: it goes to
+  unit 6, which C++ can reach, and it is LIVE (66 executions across 21
+  scenarios). The distinction is not "is it compared" -- neither is -- it is
+  "can the translation reach the same destination".
+
+## `--note` IS A SHELL ARGUMENT, AND BACKTICKS INSIDE DOUBLE QUOTES RUN
+
+- **Unit #54.** `--note "... the \`Ary = 0\` arm ..."` ran `Ary` as a command
+  (`/bin/bash: Ary: command not found`) and the artifact lost the sentence that
+  explained a zero. **Single-quote every `--note`.** A red test recording 0 is
+  precisely the artifact whose note is load-bearing (unit #43), which is why
+  this is worth a line rather than a shrug.
+
+## A MUTATION SWEEP OUTLIVES THE DISPATCH THAT STARTED IT, AND NO MARKER HERE
+## CAN SEE INTO THE CONTAINER
+
+- **Unit #54 inherited unit #53's, still running, ten minutes in.** The host
+  side of the `docker exec` died with the dispatch; the container side did not.
+
+  ```
+  .loop-run/MUTATE_IN_PROGRESS   host pid 78240, GONE
+  container pid 1117614          vit_mutate.py --operator const_tweak, RUNNING
+  translations/Controllers/ipc.cpp   IPC_KI[i - 1] -> [i - 2]   A LIVE MUTANT
+  ```
+
+  Both markers held -- the pre-commit hook refused every commit in the window,
+  so neither the mutant nor the de-integrated tree could be recorded -- and the
+  recovery was mechanical because `MUTATE_IN_PROGRESS` names the file, the
+  intended hash and the repair. **What no guard does is reach into the
+  container.** `mutate_guarded.sh` records a HOST pid, and the process that must
+  be killed is a container one. The check is one command and belongs beside the
+  hash check:
+
+  ```
+  docker exec vit-dev bash -lc "ps aux | grep '[v]it_mutate'"
+  ```
+
+  Run it at the START of any dispatch that inherits a raised marker, before
+  concluding the sweep is dead from a host pid that is.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
