@@ -2,29 +2,128 @@
 
 `rosco/controller/src/Controllers.f90:487-584` (clean, at `54dd134`).
 Disposition **deferred**, on P12 and on P12 alone. Four layers, all four
-red-tested, and the mutation score is **0.7797 — 92 killed of 118**, the first
-complete sweep this unit has had.
+red-tested, and the mutation score is **0.9231 — 96 killed of 104 behavioural,
+14 declared equivalent, 8 open**.
 
-**This is the second dispatch.** The first produced everything below except the
-mutation score: `const_tweak` is 40 mutants at 26.5s on this unit's 63,888-case
-corpus — 1,040s against the 600s a foreground command may block for — and
-`vit_mutate.py --limit` could only TRUNCATE, so mutants 21..40 were not
-addressable by any sequence of runs. The unit closed with no `mutation/IPC.json`
-at all. That is fixed rather than worked around; §"What the second dispatch
-changed" has it.
+**This is the THIRD dispatch, and it exists because six survivors were named and
+two of them were not equivalences.** The first produced every layer except a
+mutation score (`const_tweak` would not fit a foreground call). The second
+produced the score: **0.7797, 92 of 118**. This one asked what the six named
+survivors actually were, and the answer split them in half:
+
+| the driver named | what it turned out to be | what was done |
+|---|---|---|
+| `index_offset` ×4 — `'[3]' -> '[3 + 1]'` at the four local declarations | **(a) genuinely equivalent** | declared, with the argument in `mutation.equivalences.md`, and the four `const_tweak '3' -> '4'` twins at the same four lines declared with it |
+| `drop_call` ×2 at the `IPC_SatMode`/`fmin` site | **(b) the corpus could not reach it** — and the gate had already proved it by killing one on 159,758 values | the INPUTS were fixed, not the record: `harness/ranges.toml` now makes the arm selector a flag. Both are KILLED, at 1,494 and 1,453 cases |
+
+The corpus fix took **seven** of the nine mutants at that site with it. The
+score moved `0.7797 (92/118) -> 0.8136 (96/118) -> 0.9231 (96/104)`, the first
+step from kills and the second from declarations.
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness (`harness/IPC.json`) | **63,888 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, all six callee bridges kept so each side runs one ColemanTransform, one ColemanTransformInverse, one LPFilter, one PIController, one sigma and one wrap_360 — this unit's primary evidence | the unit as a no-op: **63,888 of 63,888**, the whole corpus, the empty pass set the stub predicted in its own header |
-| mutation (`mutation/IPC.json`, nine parts) | **92 of 118 killed, 0.7797**, 0 no-compile, 26 survivors, at five sites | the score *is* the red test, 92 times; the union's own refusals are in `mutation.merge_controls.txt`; and the survivors are probed by the gate, below |
-| post-integration (`harness/IPC.postintegration.json`) | 63,888 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **63,888 of 63,888**, an EMPTY pass set; reverted, rebuilt, green re-taken at 0, revert checked both ways |
-| gate, 27 scenarios (`gate/IPC.json`) | 5,252,000 values / 351 channels, 0 mismatched | **THREE**: additive on the stored answer moves **334,388** across all five scenarios that call the unit; multiplicative on the same statement moves **201,604** across two; and the surviving `drop_call` mutant moves **159,758** |
+| differential harness (`harness/IPC.json`) | **84,754 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, all six callee bridges kept so each side runs one ColemanTransform, one ColemanTransformInverse, one LPFilter, one PIController, one sigma and one wrap_360 — this unit's primary evidence | the unit as a no-op: **84,754 of 84,754**, the whole corpus, the empty pass set the stub predicted in its own header |
+| mutation (`mutation/IPC.json`, thirteen parts) | **96 of 104, 0.9231**, 0 no-compile, 14 declared equivalent, 8 open, at four sites | the score *is* the red test, 96 times; `declared_but_killed` is empty, so no declaration excused a mutant the corpus would have killed |
+| post-integration (`harness/IPC.postintegration.json`) | 84,754 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **84,754 of 84,754**, an EMPTY pass set; reverted, rebuilt, green re-taken at 0 (`harness/IPC.postintegration.revert-verified.json`) |
+| gate, 27 scenarios (`gate/IPC.json`) | 5,252,000 values / 351 channels, 0 mismatched | **THREE**: additive on the stored answer moves **334,388** across all five scenarios that call the unit; multiplicative on the same statement moves **201,604** across two; and the then-surviving `drop_call` mutant moved **159,758** |
+
+**THE GATE IS NOT RE-TAKEN AND THAT IS THE POINT OF SAYING SO.** A corpus change
+re-takes every layer that reads the corpus and exactly those. The gate runs 27
+simulations against the shipped library, never reads the case file, and neither
+the translation nor the wrapper moved this dispatch — `translations/Controllers/ipc.cpp`
+is byte-for-byte what the first dispatch verified, `811d6842`. What WAS re-taken:
+the clean-tree green, its no-op red test, all thirteen mutation parts and their
+merge, the post-integration green, its red test, and the green after that red
+test's revert.
 
 **No kernel.** The plan allowed "kernel replay **or** direct-call harness". The
 direct-call harness is the layer taken, as for units #45 through #52, and it is
 right here for this unit's own reason: three of its six callees carry
 per-instance state indexed by an `objInst` counter they post-increment, and unit
 #44 measured that a KGen kernel cannot replay SAVE-like state.
+
+## The corpus change, which is this dispatch's whole functional result
+
+**COUNT THE CASES THAT REACH THE SITE BEFORE ARGUING ABOUT THE SITE.**
+`probe_fmin_site.py` generates the corpus, stops before `emit`, and reports what
+happens at the `IPC_SatMode` split. It costs 30 seconds and no build, which is
+why the design was iterated on it four times instead of on a 70-minute sweep.
+
+```
+                        arm 2 reached   2nd wins   arm 3 reached   2nd wins   else
+before                       4608           0          4608           0      54672
+values = [2, 3]             42525        2171         42229        2197          0   <- deletes an ARM
+values = [2, 3, 0]  (kept)  28446        1494         28164        1453      28144
+```
+
+Both arms were reached BEFORE — that is the positive control, and it is what
+makes this a corpus gap rather than a dead site. The saturation simply never bit
+in 9,216 chances, because `IPC_SatMode` is an INTEGER the reference compares
+against literals, so R7's predicate knob was the only stage that ever put 2 or 3
+in it — and in the knob stage every REAL sits at its base draw. The site was
+reached 9,216 times at ONE triple of real values.
+
+`values` makes it one of R2's flags, which `flag_variants` crosses into the real
+ladder, R6's rungs, the magnitude ladder, the negative-zero stage and R13's
+capacity block. **The predicted kills landed to the case:**
+
+```
+drop_call     b36f5d50  1494      452847c1  1453        <- the two the driver named
+arith_op      1da84c7a  2010      e63a2311  2512
+swap_operands 069907e7   979
+const_tweak   6058839b  1804 (== 2 -> == 3)   95e20ce8  1453 (== 3 -> == 4)
+```
+
+`answer_differs = 621` predicted the last pair; those two are transcription
+decision 3 below, and the sweep now says in numbers that the harness checks it.
+
+### Two corrections the run forced, both measured
+
+**1. A stated `values` list DOES bound R7's knob.** The first draft wrote
+`values = [2, 3]` on unit #49's note that it does not, reasoning that the
+fall-through would still arrive from the knob cross-product. One probe run said
+`else: 0`: `vit_harness.narrow_knobs` intersects every knob with the declared
+values, so the two-value list DELETED one of this unit's eight arms — and the
+harness would have gone green over it. **Every arm a unit has must appear in the
+list, or the list deletes it.**
+
+**2. `harness/emit.py` has a memory ceiling between 84,754 and 95,310 cases.**
+R2's stratification is the SUM of the flags' arities. Three flags at 4 + 2 + 3
+is 95,310 cases and 1.0 GB, and emit was SIGKILLed (137) writing it; nothing
+else in the VM was holding memory (the two sibling containers were at 372 KB and
+412 KB). So one list had to give up a value, and `LocalVar_NumBl` gave up 2 —
+0 (no trips), 1 (one trip) and 3 (what ROSCO ships, and the extent of every
+array the loop subscripts) remain, and 2 is the only one of the four bracketed
+on both sides by values that stay. `narrow_knobs` means it is gone from the
+corpus entirely, not merely from the flag cross.
+
+### And it was not free: two kills were lost, and the reason is worse than the loss
+
+`index_offset 7512a165` and `f7f90ca1` — `LocalVar%IPC_KI(1)` at the two 1P
+`PIController` calls — were killed on the 63,888-case corpus and survive on this
+one. The first explanation written down was that this dispatch's change
+shadowed them; **the probe refutes it.** Of the 17,486 cases that RUN the 1P
+block:
+
+```
+IPC_IntSat < 0   17474     the saturation pair is INVERTED: -IntSat > +IntSat,
+IPC_IntSat = 0       0     so saturate(x, lo, hi) = fmin(fmax(x, lo), hi) = hi
+IPC_IntSat > 0      12     for EVERY x, and the gains are unobservable
+```
+
+and that was already true before, because `CntrPar%IPC_IntSat`'s own base draw
+is negative and 96.5% of cases take `IPC_IntSat` straight from it either way.
+**Twelve cases in 84,754 can see a gain at that site at all.** The three
+siblings on `IPC_KP(1)` are killed by ONE case each. So which of the four
+mutants there gets its one case is a redraw lottery, and the corpus change
+merely re-rolled it.
+
+That is the unit's largest remaining blind spot and it is bigger than the two
+mutants that exposed it. The fix that would close it is stateable and is NOT
+taken here: `CntrPar_IPC_IntSat = { lo = 0, hi = 1e3 }` makes the window live,
+at the price of the negative half of an admissible domain, of that parameter's
+magnitude ladder and of its negative-zero case — and of another 70-minute
+re-sweep. Named rather than rushed.
 
 ## What this unit is
 
@@ -53,49 +152,7 @@ Three transcription decisions are worth knowing before reading the C++:
    transcription error here that staring at the expression does not find,
    because both spellings compile and both are plausible. **The mutation sweep
    has since measured that the corpus cannot tell those two fields apart**
-   (§"The 26 survivors"), so this decision rests on reading, not on the harness.
-
-## What the second dispatch changed
-
-Every artifact was re-taken, because completing the mutation layer required it.
-
-**WHY A RE-TAKE AND NOT ONE MORE PART.** The first dispatch's twelve artifacts
-were stamped `(loop d947d92, vit a16a7ab)`. Both instruments have since moved —
-the loop by five commits, VIT by two callee-bridge fixes. A new part carries the
-new stamp, and `_mutation_merge.py` refuses parts from two instruments while
-`revcheck.py` reports the same disagreement across the unit. So the choice was a
-full re-take or no mutation number, and there was no third option that did not
-involve rolling a shared repository backwards to make a stamp read a chosen
-value.
-
-**AND THE RE-TAKE WAS CHEAP BECAUSE OF ONE HASH.** `vit_harness.py` regenerates
-the corpus; the concern is unit #26's rule, that a score and the green it rests
-on must name the same corpus. Measured rather than argued:
-
-```
-before  e5909178b374dd940125a9e9717063eb80c0b01b16393e08b1edf4baddcd3ced
-after   e5909178b374dd940125a9e9717063eb80c0b01b16393e08b1edf4baddcd3ced
-        655,681,672 bytes, 63,888 cases, at d947d92 and at 4751161
-```
-
-**Byte-identical.** So every count in this file — the 24-case R13 staging window
-at 63660..63683, the no-op red test's 63,888 of 63,888, the per-mutant cost — is
-a statement about one corpus across both instruments. `gen_rev` DID change
-(`gen-ffac3ef69dd5` → `gen-cf5dcfa09cce`), because it hashes the generator's
-code and not its output; the corpus hash is the measurement and `gen_rev` is
-not. The reason the output did not move is readable in this unit's own
-artifact — `N/A R14_planted_word: no CHARACTER ARRAY input` — and
-`no_oracle_when` emits nothing when no range states one. Both are arguments. The
-hash is the check, and it could have gone the other way.
-
-Every number re-taken came back **identical**: 63,888/0; 63,888 of 63,888 twice;
-5,252,000/0; 334,388; 201,604; 159,758. The gate was then run a THIRD time at the
-very end of the dispatch, after all three perturb/revert cycles, and rewrote
-`gate/IPC.json` **byte for byte** — `git status` reported nothing to commit, so
-that artifact is reproducible rather than merely repeatable. The four non-const_tweak operators that
-had been scored before returned the same survivors BY ID. So the instrument move
-is visible in the stamps and nowhere in the results — which is what a re-take
-that changes only the instrument should look like.
+   (§"The eight open survivors"), so this decision rests on reading, not on the harness.
 
 ## The mutation layer, and the two tool defects it took to get it
 
@@ -134,52 +191,29 @@ mutants campaign-wide were never enumerated** — `mutation.cap_audit.txt`, from
 sites. Recorded as C12, with the wrong artifacts still in the tree, and raised
 in DECISIONS.md as a campaign decision rather than this unit's.
 
-## The 26 survivors, at five sites
+## The eight open survivors, at four sites — and none of them declared
+
+`equivalent_declared` is **14** and every one of the fourteen has its argument
+written out in `mutation.equivalences.md`, where it can be disputed. What
+follows is the other list: the mutants that are still alive and are NOT claimed
+to be equivalent.
 
 | site | mutants | what the corpus cannot do |
 |---|---|---|
-| `ipc.cpp:170-173` — the four fixed-size local DECLARATIONS `double PitComIPC[3];` etc. | **8** (`index_offset '[3]'->'[3 + 1]'` ×4, `const_tweak '3'->'4'` ×4) | **(c)** — declaring a four-element array where three are used. The extra slot is never written and never read, and none of the four locals is compared: they are procedure locals, not fields. Behaviour-preserving everywhere, on an argument that does not mention the corpus. |
-| `ipc.cpp:380-385` — the `IPC_SatMode` split and its two `std::fmin` saturations | **9** (`drop_call` ×2, `swap_call_args` ×2, `arith_op` ×2, `swap_operands` ×1, `const_tweak` ×2) | **(a) — a CORPUS GAP, established by execution.** Not declared equivalent. See below. |
-| `ipc.cpp:249, 276, 436` — `LocalVar->restart ? 1 : 0` at the three callee calls | **3** (`const_tweak '1'->'2'`) | **(c)**, and argued in the translation's own comment before these mutants existed: the generated wrapper writes `MERGE(1_C_INT, 0_C_INT, reset)` and the callee converts back with `(reset != 0)`, so the particular non-zero value is not observable on either tree. |
-| `ipc.cpp:132-133` — `errmsg_trim`, the blank-trimming helper | **4** (`compare_op '>'->'>='`, `const_tweak '0'->'1'` ×2, `const_tweak '1'->'2'`) | **(c)/(a) mixed.** `n >= 0` differs from `n > 0` only for a NEGATIVE length, which a length field cannot hold. `find_last_not_of(' ') + 2` appends one character that is a blank by construction, and Fortran CHARACTER assignment blank-pads, so a trailing blank is not observable through this boundary. The two `0 -> 1` need an ErrMsg of length exactly 0 or 1 carrying a non-blank first byte; R13 sweeps the staging CAPACITY, not that. |
-| `ipc.cpp:250, 305` — `0, 0.0)` (LPFilter's optional pair) and `Y_MErrF = 0.0` | **2** (`const_tweak '0.0'->'1.0'`) | **(c)** — the first is the VALUE half of an optional-argument pair whose presence flag is the `0` beside it, so the value is never read; the second is the dead assignment the translation notes at the declaration, written by the reference and by this and read on no path. |
+| `ipc.cpp:381, 384` — the two `std::fmin` saturations | **2** (`swap_call_args`) | **(c) — a blind spot no rule covers.** `fmin(a, b)` and `fmin(b, a)` differ only where the two compare EQUAL with different bit patterns, because glibc's `fmin` returns its FIRST argument on a tie: `fmin(+0.0, -0.0)` is `+0.0` and the swap is `-0.0`. `equal_diff_bits` is **0** before and after the corpus change. Reaching it needs `CntrPar%IPC_IntSat` and `BlPitchCMeas - PC_MinPit` to be zeros of OPPOSITE SIGN in the SAME case, and the negative-zero stage sets ONE real at a time. **No entry in `ranges.toml` can state a coincidence between two parameters' values** — `implied_by` states a relation on integers, not a bit pattern. This is a new category and it is escalated in DECISIONS.md. |
+| `ipc.cpp:434, 438` — `LocalVar%IPC_KI(1)` at the two 1P `PIController` calls | **3** (`index_offset` ×2, `const_tweak` ×1) | **(b)**, and the size of the gap is measured above: **12 of the 17,486 cases that run this block have a live saturation window.** The other 17,474 arrive with `IPC_IntSat < 0`, which inverts the pair and pins `saturate()` to `maxValue` for every input. Two of the three were killed on the previous corpus; the siblings on `IPC_KP(1)` are killed by ONE case each, so the site is a lottery at this width. The fix is named above and is not taken. |
+| `ipc.cpp:132-133` — `errmsg_trim` | **3** (`const_tweak '0'->'1'` ×2, `'1'->'2'`) | **(b), one gap seen three times.** `n > 1` needs an ErrMsg of length exactly 1 with a non-blank first byte; `: 1` needs a non-positive length with a non-blank byte 0; `+ 2` needs a TRAILING BLANK — and all three need `aviFAIL < 0` in the SAME case, because that is the only path that reaches `errmsg_trim` at all. R6's character stage runs the string at lengths [1, 2, 7, 12] and in the padded shape, and holds `aviFAIL` at its base draw; R7's knob puts -1 in `aviFAIL` and holds the string at ITS base. **The two ladders never cross** — which is the same shape as the `IPC_SatMode` gap this dispatch closed, one parameter over. The same fix applies: `ErrVar_aviFAIL = { values = [-1, 0, 1] }`, unit #49's own entry. **It is priced and refused**: a fourth flag at arity 3 takes the sum of arities from 8 to 11 and the corpus from 84,754 to about 116,000, and `emit` was already killed at 95,310. |
 
-**The five rows sum to 8 + 9 + 3 + 4 + 2 = 26, which is `survived` in
-`mutation/IPC.json`, and every survivor id appears in exactly one row.** Checked
-by set difference against the artifact rather than by adding the column up: a
-classification that quietly drops a survivor is how a blind spot stops being
-counted. The first draft of this table said 3 for the `errmsg_trim` row and
-listed four mutants in its own parenthesis.
+**The four rows sum to 2 + 3 + 3 = 8, which is `survived` in `mutation/IPC.json`**,
+and the ids were checked by set difference against the artifact rather than by
+adding the column up.
 
-**The 380-385 row is the unit's headline and it was not argued.** The surviving
-`drop_call` mutant `b36f5d50` was run through the gate character for character
-and **killed on 159,758 of 5,252,000 values**, scenarios 8 and 27
-(`gate.redtest.fmin_dropcall.json`, and `gate/IPC.redtest.json` is the same run).
-A mutant killed by one instrument is not equivalent, whatever the other
-instrument reports.
-
-What the corpus can and cannot do at that site, from its own numbers:
-
-```
-swap_operands 'BlPitchCMeas - LocalVar->PC_MinPit'  (SatMode == 3)   KILLED
-swap_operands 'BlPitchCMeas - CntrPar->PC_MinPit'   (SatMode == 2)   SURVIVED
-```
-
-Both arms **are** reached — one of the two swaps dies there. What the corpus does
-not contain is a case in which `fmin`'s SECOND argument wins on the
-`SatMode == 2` arm, so every edit that changes only that argument's value is
-invisible. The gate supplies exactly that case. The two `const_tweak` survivors
-newly visible here (`IPC_SatMode == 2` → `== 3`, `== 3` → `== 4`) are the SAME
-blind spot seen from the arm selector: sending an arm-2 case down arm 3 swaps
-`CntrPar%PC_MinPit` for `LocalVar%PC_MinPit`, which is precisely the difference
-the corpus cannot see. That is transcription decision 3 above, and the sweep now
-says in numbers that the harness does not check it.
-
-`swap_call_args` on a commutative `fmin` would be a (c) equivalence on its own
-merits; it is left undeclared because it sits inside a site the corpus cannot
-see, and declaring an equivalence inside a blind spot is how a real defect gets
-excused. **`equivalent_declared` is 0 for this unit.** The classifications above
-are a reader's map, not a deduction from the score.
+**`swap_call_args` WOULD have been the easy declaration** — a commutative `fmin`
+— and it is left open because `fmin` is not commutative at a signed zero and the
+campaign compares bit patterns. Unit #21 measured that `fmin`/`fmax` agree with
+gfortran's intrinsic on all 12,167 triples *in the argument order written*;
+nothing measured the swapped order, and an equivalence nobody measured inside a
+site the corpus cannot see is how a real defect gets excused.
 
 ## Two range-pin findings, and the first is a trap
 
@@ -241,24 +275,32 @@ quietly left.)*
 
 ## The corpus is this campaign's largest, and that is what shaped the sweep
 
-**63,888 cases, 656 MB**, against `ForeAftDamping`'s 7,567 and `CheckInputs`'
-16,769. Measured cost per mutant, from nine parts:
+**84,754 cases, 870 MB**, against `ForeAftDamping`'s 7,567 and `CheckInputs`'
+16,769 — and 656 MB / 63,888 cases before this dispatch widened it. Measured
+cost, thirteen parts:
 
 ```
-const_tweak  40 in 1178 s (3 slices)   index_offset  18 in 511 s
-arith_op     17 in  487 s              swap_operands 15 in 413 s
-compare_op   13 in  369 s              negate_cond    9 in 268 s
-calls         6 in  204 s              ->  26.5 s per mutant, 3,430 s total
+118 mutants, ~34.5 s each, 4,070 s total against a 600 s foreground ceiling
+const_tweak  40 in 4 slices    index_offset  18 in 2      arith_op  17 in 2
+swap_operands 15 in 2          compare_op    13           negate_cond  9
+calls          6
 ```
 
-**A narrowing was tried as a way out and is kept because it priced itself at
-zero.** `LocalVar_NumBl = { values = [3, 0] }` gives 42,694 cases and 19.4 s per
-mutant. `mutation.index.numbl_2value.json` is the `index_offset` population
-scored on that corpus: **14 of 18, the same four survivors by id**, identical to
-the 63,888-case result. So the two-value list costs nothing measurable here and
-buys nothing either; the four-value list is kept because it is strictly more
-input. That is unit #52's lever priced in the other direction, and it is the
-second data point on it.
+`mutation/IPC.clean.{index,arith,swap}.json` were DELETED with this dispatch:
+they are parts of the 63,888-case sweep and would otherwise sit beside the new
+ones under confusable names. `mutation.index.numbl_2value.json` is kept and is
+still the nearest measurement of what dropping `NumBl` values costs — the whole
+`index_offset` population scored 14 of 18 with the SAME FOUR SURVIVOR IDS on the
+two-value list, which is the evidence the `[3, 0, 1]` trade rests on.
+
+**AND ONE THING THAT DID NOT SHOW UP IN `git status` AND SHOULD HAVE.**
+`mutation/IPC.clean.compare.json` and `.negate.json` came back byte-identical to
+their predecessors — 12/1 and 9/0 both times — because **a mutation part
+artifact does not record the corpus it was scored against.** It carries
+`loop_rev`, `vit_rev`, `gen_rev`, the operator filter and the slice, and nothing
+that identifies the case file. Two parts from two different corpora are
+indistinguishable, and `revcheck` cannot see the difference either. Both parts
+WERE re-run. Raised in DECISIONS.md.
 
 ## The gate is green and it constrains three of five scenarios not at all
 
@@ -278,23 +320,6 @@ fall-through, the `IPC_CornerFreqAct > 0` per-blade filter, and the `'IPC:'`
 error prefix. All 22 `Examples/DISCON*.IN` set `IPC_SatMode = 2` and
 `IPC_CornerFreqAct = 0.0`.
 
-## Why the disposition is `deferred`
-
-`min_mutation_score` is **1.0** and this unit scores **0.7797**. P12 fails on
-that number. It is the only failing predicate; the other thirteen pass.
-
-The distinction against the first dispatch is the whole point of the relaunch:
-P12 failed then because `mutation/IPC.json` did not exist, and fails now because
-it does and says 0.7797. Nothing about the translation changed between the two —
-`translations/Controllers/ipc.cpp` is byte-for-byte what the first dispatch
-verified, and the harness, post-integration and gate layers all reproduced their
-numbers exactly.
-
-Reaching 1.0 would require declaring 26 equivalences, and 9 of them sit at a site
-the gate has PROVEN non-equivalent by killing one of them on 159,758 values. The
-honest reading is that this unit's corpus has one blind spot, at
-`IPC_SatMode`/`fmin`, and that the gate covers it.
-
 ## What each file is
 
 | file | what it records |
@@ -306,11 +331,36 @@ honest reading is that this unit's corpus has one blind spot, at
 | `mutation.merge_refusal.txt` | the FIRST dispatch's refusal, kept: `_mutation_merge.py` rejecting six parts because `const_tweak` was in none of them. It is why there was no score, and it is the artifact the fix is measured against |
 | `mutation.cap_audit.{txt,json}` | 15 of 55 translations have an operator over `cppmutate`'s cap of 40; 1,856 mutants campaign-wide were never enumerated. From `scripts/mutation_cap_audit.py` |
 | `run_mutation_part.sh` | the guarded sweep runner, now taking `--offset`/`--limit` |
-| `run_postintegration_redtest.sh`, `harness.postintegration.redtest.json` | the copy-back red test, **63,888 of 63,888**, and the argument for perturbing the `localvariables` copy-back rather than either of the other two the wrapper carries |
+| `run_postintegration_redtest.sh`, `harness.postintegration.redtest.json` | the copy-back red test, **84,754 of 84,754**, and the argument for perturbing the `localvariables` copy-back rather than either of the other two the wrapper carries |
 | `gate.redtests.txt` | the three gate perturbations, the 22-file DISCON survey, the scenario-by-scenario reasons for the three exact zeros, and the drop_call cross-instrument result |
 | `gate.redtest.{additive,multiplicative,fmin_dropcall}.json` | those three runs, all three re-taken at the current instrument |
+| `probe_fmin_site.{py,json}` | the 30-second generate-but-do-not-emit probe that designed the corpus change and then refuted this dispatch's own first explanation of the two lost kills. It is the cheapest instrument in this unit's evidence and it decided every judgement above |
+| `mutation.equivalences.md`, `../../mutation/IPC.equivalences.json` | the fourteen declarations: the id list the tool takes, and the reasons it does not carry. Two of the five groups were settled by READING the generated bridge |
 | `done_check.txt` | the done-condition, captured by `scripts/capture_done_check.sh` |
-| `../../harness/ranges.toml` | eight pins: four ALLOCATABLE extents at `{lo=2,hi=3}` (and why not `hi=2`), `LocalVar_NumBl` for the fifth time, three instance counters for the first unit that needs all three at once, and the `staging_capacity_excludes` window |
+| `../../harness/ranges.toml` | nine pins: four ALLOCATABLE extents at `{lo=2,hi=3}` (and why not `hi=2`), `LocalVar_NumBl` for the fifth time and now at three values rather than four, **`CntrPar_IPC_SatMode` made a flag** (this dispatch), three instance counters for the first unit that needs all three at once, and the `staging_capacity_excludes` window |
+
+## Why the disposition is `deferred`
+
+`min_mutation_score` is **1.0** and this unit scores **0.9231**. P12 fails on
+that number and on nothing else; the other thirteen predicates pass.
+
+Reaching 1.0 from here means killing eight mutants, and each of the three groups
+has a named reason it is not killed:
+
+* the two `swap_call_args` need an input NO RULE IN THE GENERATOR CAN PRODUCE —
+  two independently drawn parameters made equal with opposite zero signs. That
+  is a category, not a range, and it is escalated.
+* the three `IPC_KI(1)` mutants need `CntrPar_IPC_IntSat` narrowed to a positive
+  interval, which deletes half of an admissible domain and that parameter's
+  magnitude ladder, and costs a 70-minute re-sweep.
+* the three `errmsg_trim` mutants need `ErrVar_aviFAIL` made a flag, which
+  `emit` cannot hold: 84,754 cases is already inside a ceiling measured at
+  between 84,754 and 95,310.
+
+**None of the eight is declared equivalent**, and the distinction from the
+fourteen that are is the whole content of this dispatch: `drop_call` looked
+exactly like the `swap_call_args` beside it and was not equivalent at all, which
+the gate had proved and the corpus then reproduced at 1,494 cases.
 
 ## The findings worth carrying
 
@@ -323,8 +373,10 @@ honest reading is that this unit's corpus has one blind spot, at
    because the last gate is the cheapest.
 3. **A mutant that survives one instrument and is killed by another is a corpus
    gap, and running it through the other instrument costs one gate run.** Nine
-   of this unit's twenty-six survivors were about to be reasoned about; one 291 s
-   red test settled all nine.
+   of this unit's survivors were about to be reasoned about; one 291 s gate red
+   test settled all nine — and the dispatch after it turned seven of the nine
+   into kills by fixing the INPUTS, which is what "corpus gap" is supposed to
+   mean and what "declare it equivalent" would have prevented forever.
 4. **An operator population can exceed one foreground call, and now it splits.**
    40 mutants × 26.5 s against a 600 s ceiling. `--offset` plus a union checked
    as a partition by id. The first dispatch's refusal is kept beside the fix.
@@ -335,3 +387,22 @@ honest reading is that this unit's corpus has one blind spot, at
    corpus is byte-identical, every count in the old evidence survives the move
    and the re-take is 71 s. If it is not, that is the finding. Do not argue it
    from which rules are N/A — take the hash.
+7. **A generate-but-do-not-emit probe costs 30 seconds and decides everything a
+   70-minute sweep would otherwise decide by accident.** `emit` writes 870 MB and
+   builds; `generate` is where the whole corpus decision is made. Monkeypatching
+   the name `vit_harness` imported `generate` under, counting, and exiting is
+   four lines. This unit's corpus design was iterated FOUR times on it, one of
+   those iterations caught a deleted ARM, and the same probe then refuted the
+   author's own written explanation of a regression.
+8. **A stated `values` list bounds R7's predicate knob, so it can DELETE an arm.**
+   Measured: `IPC_SatMode = { values = [2, 3] }` gave `else: 0` on 84,754 cases
+   and the harness stayed green. Every arm a unit has must appear in the list.
+9. **The corpus has a memory ceiling and it is reached before the case count
+   looks alarming.** `emit` SIGKILLed at 95,310 cases / 1.0 GB in a 7.7 GiB VM
+   holding nothing else. R2's flag stratification is the SUM of the arities, so
+   the ceiling is spent one flag value at a time and the last one bought is the
+   one that has to be argued for.
+10. **A mutation part artifact does not name its corpus.** Two of this unit's
+   thirteen parts came back byte-identical to parts scored on a corpus 25%
+   smaller, so `git status` reported them as not re-run. Nothing in the artifact,
+   and nothing in `revcheck`, can tell those two situations apart.
