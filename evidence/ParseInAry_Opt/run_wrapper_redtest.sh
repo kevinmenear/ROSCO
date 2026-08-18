@@ -19,10 +19,16 @@
 # evidence rather than a number. From
 # `evidence/ParseInAry_Opt/harness_partition.txt`, MEASURED ON THIS UNIT'S OWN
 # CORPUS, the cases that reach an arm writing `aviFAIL` are `not-allowed`
-# (4006 + 805), `read-failed` (61 + 42) and `already-alloc` (5697) = 10,611;
-# the `other` cells (3003 + 60) = 3063 write no scalar at all and must still
-# pass. The two units' tables agree cell for cell, but the number is this
-# unit's own -- it was not carried across.
+# (1120 + 817), `error, msg refused` (104), `read-failed` (59 + 87) and
+# `already-alloc` (6542) = 8,729; the `no-error` cell (6515) and the
+# `arrived-failed` cells (184 + 76) = 6,775 write no scalar at all and must
+# still pass. 8,729 + 6,775 = 15,504.
+#
+# SECOND DISPATCH: THE NUMBER MOVED AND THE PREDICTION WAS RE-DERIVED, NOT
+# EDITED TO MATCH. The first dispatch predicted and measured 10,611 of 13,674 on
+# the corpus it had; the two base-draw corrections in `harness/ranges.toml`
+# changed which arm the base draw takes, so both the corpus and the partition
+# moved. The number above comes from the re-measured table, before this run.
 #
 # ANCHORED TO THE UNIT, NOT TO THE STRING. That CALL is generated into every
 # wrapper in this file that takes an `ErrorVariables`, so a `str.replace` would
