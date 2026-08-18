@@ -2380,6 +2380,60 @@ LocalVar_NumBl = { values = [3, 0, 1] }
 # raised in DECISIONS.md rather than declared equivalent.
 CntrPar_IPC_SatMode = { values = [2, 3, 0] }
 
+# --- THE SATURATION AMPLITUDE, PINNED TO ITS ADMISSIBLE SIGN ---
+#
+# ADDED AT THE FOURTH DISPATCH. The third dispatch MEASURED this entry, wrote
+# the number down and then reverted it without applying it, because applying it
+# means re-taking every layer that reads the corpus and it had 78 minutes left.
+# This dispatch has the clock for the re-take, so the entry goes in.
+#
+# WHAT IT IS FOR. `LocalVar%IPC_IntSat` is BOTH the value the `min` above
+# computes AND the saturation PAIR handed to all four `PIController` calls:
+#
+#     PIController(..., LocalVar%IPC_KP(1), LocalVar%IPC_KI(1),
+#                  -LocalVar%IPC_IntSat, LocalVar%IPC_IntSat, ...)
+#
+# `PIController` ends in `saturate(x, minValue, maxValue)` = `fmin(fmax(x, lo), hi)`.
+# With `IPC_IntSat < 0` the pair is `lo = -IntSat > 0 > hi = IntSat`, so
+# `fmax(x, lo) >= lo > hi` and the result is `hi` for EVERY x. The output is
+# `IPC_IntSat` itself, independent of `error`, `kp` and `ki` -- so on such a
+# case NO gain mutant at any of the four call sites is observable.
+#
+# MEASURED, on `evidence/IPC/probe_fmin_site.py`, of the cases that RUN the 1P
+# block:
+#
+#                            cases   block_runs   IntSat<0   ==0   IntSat>0
+#     without this entry     84754        17486      17474     0         12
+#     with this entry        83754        17478         13    14      17451
+#
+# TWELVE cases in 84,754 could see a gain at all, and three of the four mutants
+# at `LocalVar%IPC_KP(1)`/`IPC_KI(1)` were killed by ONE case each -- which is a
+# lottery, not a measurement, and the third dispatch watched two kills change
+# sides on an unrelated corpus edit for exactly that reason.
+#
+# WHY THIS IS THE ADMISSIBLE DOMAIN AND NOT A NARROWING. `IPC_IntSat` is
+# documented in every shipped input file as
+#
+#     0.3   ! IPC_IntSat  - Integrator saturation (maximum signal amplitude
+#                           contribution to pitch from IPC), [rad]
+#
+# an AMPLITUDE. All 22 `Examples/DISCON*.IN` set it to 0.3 and all 22 set its
+# sibling `Y_IPC_IntSat` to 0.0, so zero is inside the domain and is kept as
+# `lo`. A negative amplitude is not a configuration ROSCO can be run in; it is a
+# region in which the reference's own saturation inverts and pins every PI
+# output to a constant. Compare `[FindLine]`'s `AryLen`, where the excluded
+# region is one the reference SEGVs in: the same kind of statement, made about
+# the sign of an amplitude rather than the sign of a length.
+#
+# THE COST, STATED. `CntrPar_IPC_IntSat` leaves R6's real ladder's negative
+# rungs, the magnitude ladder and the negative-zero stage -- which is why the
+# corpus gets SMALLER, 84,754 -> 83,754, and this is the only pin in this file
+# that buys coverage and cases at the same time. What is lost is the ability to
+# observe `-LocalVar%IPC_IntSat` as a unary negation on a negative operand; the
+# `arith_op` and `negate_cond` populations were 17 of 17 and 9 of 9 killed
+# before this entry and are re-scored with it rather than assumed.
+CntrPar_IPC_IntSat = { lo = 0, hi = 1e3 }
+
 # --- THE THREE INSTANCE COUNTERS ---
 #
 # THE OLDEST JUDGEMENT IN THIS FILE, AND THIS IS THE FIRST UNIT THAT NEEDS ALL

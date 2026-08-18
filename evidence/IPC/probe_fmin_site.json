@@ -1,22 +1,22 @@
 {
  "unit": "IPC",
- "cases": 84754,
- "loop_rev": "4751161-nogit",
+ "cases": 83754,
+ "loop_rev": "b9c8c52-nogit",
  "gen_rev": "gen-cf5dcfa09cce",
  "site": "translations/Controllers/ipc.cpp:380-388 -- the IPC_SatMode split and its two std::fmin saturations",
  "satmode_distribution": {
-  "2": 28446,
-  "3": 28164,
-  "else": 28144,
+  "2": 28108,
+  "3": 27828,
+  "else": 27818,
   "missing": 0
  },
  "per_arm": {
   "2": {
-   "reached": 28446,
-   "second_wins": 1494,
-   "equal_same_bits": 622,
+   "reached": 28108,
+   "second_wins": 3024,
+   "equal_same_bits": 2,
    "equal_diff_bits": 0,
-   "first_wins": 26330,
+   "first_wins": 25082,
    "nan": 0,
    "witness_second_wins": {
     "IPC_IntSat": 1000.0,
@@ -27,11 +27,11 @@
    "witness_equal_diff": null
   },
   "3": {
-   "reached": 28164,
-   "second_wins": 1453,
-   "equal_same_bits": 637,
+   "reached": 27828,
+   "second_wins": 2564,
+   "equal_same_bits": 0,
    "equal_diff_bits": 0,
-   "first_wins": 26074,
+   "first_wins": 25264,
    "nan": 0,
    "witness_second_wins": {
     "IPC_IntSat": 1000.0,
@@ -43,28 +43,28 @@
   }
  },
  "arm_selector": {
-  "both_reachable": 56610,
-  "minpit_differs": 51486,
-  "answer_differs": 621,
+  "both_reachable": 55936,
+  "minpit_differs": 51027,
+  "answer_differs": 1599,
   "witness": {
    "IPC_SatMode": 2,
-   "IPC_IntSat": 1000.0,
-   "BlPitchCMeas": -334.628372406649,
-   "CntrPar_PC_MinPit": -42.06717232552724,
-   "LocalVar_PC_MinPit": -231.68054506126757,
-   "arm2_answer": -292.5612000811218,
-   "arm3_answer": -102.94782734538146,
+   "IPC_IntSat": 0.0,
+   "BlPitchCMeas": -0.6039194352944259,
+   "CntrPar_PC_MinPit": -51.99069772540721,
+   "LocalVar_PC_MinPit": -0.21238409643658107,
+   "arm2_answer": 0.0,
+   "arm3_answer": -0.39153533885784486,
    "unused_r2r3": [
-    -292.5612000811218,
-    -102.94782734538146
+    0.0,
+    -0.39153533885784486
    ]
   }
  },
  "pi_saturation_window": {
-  "block_runs": 17486,
-  "intsat_negative": 17474,
-  "intsat_zero": 0,
-  "intsat_positive": 12,
+  "block_runs": 17478,
+  "intsat_negative": 13,
+  "intsat_zero": 14,
+  "intsat_positive": 17451,
   "intsat_nan": 0
  },
  "inputs_read": {
