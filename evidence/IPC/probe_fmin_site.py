@@ -167,6 +167,63 @@ def _stats(cases):
     return arms, per_arm, selector
 
 
+CTRLMODE = "CntrPar_IPC_ControlMode"
+YCTRLMODE = "CntrPar_Y_ControlMode"
+
+
+def _pi_window(cases):
+    """What the SatMode split hands the 1P PIController pair as its saturation.
+
+    ADDED AT THE THIRD DISPATCH, TO MEASURE A REPLACEMENT RATHER THAN ASSERT IT.
+    Closing the `fmin` gap cost two `index_offset` kills at
+
+        LocalVar%IPC_axisTilt_1P = PIController(..., LocalVar%IPC_KP(1),
+            LocalVar%IPC_KI(1), -LocalVar%IPC_IntSat, LocalVar%IPC_IntSat, ...)
+
+    and the suspected mechanism is this unit's OWN data flow: `IPC_IntSat` is
+    both the value the `min` computes and the PI controller's saturation PAIR.
+    `PIController` ends in `saturate(x, minValue, maxValue)`, which is
+    `fmin(fmax(x, lo), hi)` (translations/Functions/saturate.cpp). With
+    `IPC_IntSat < 0` the pair is `lo = -IntSat > 0 > hi = IntSat`, so
+    `fmax(x, lo) >= lo > hi` and the result is `hi` for EVERY x -- the output is
+    `IPC_IntSat` itself, independent of `error`, `kp` and `ki`. A gain mutant is
+    invisible on every such case.
+
+    So the count that matters is: of the cases that RUN the 1P block, how many
+    arrive with `IPC_IntSat <= 0`. Run this probe with the entry removed from
+    `harness/ranges.toml` to get the before number.
+    """
+    out = {"block_runs": 0, "intsat_negative": 0, "intsat_zero": 0,
+           "intsat_positive": 0, "intsat_nan": 0}
+    for c in cases:
+        cm, ym = c.get(CTRLMODE), c.get(YCTRLMODE)
+        if cm is None or ym is None or not (int(cm) >= 1 and int(ym) != 2):
+            continue
+        sm = c.get(SATMODE)
+        a = _num(c.get(FIRST))
+        b = _num(c.get(BLPITCH))
+        if sm is None or a is None:
+            continue
+        sm = int(sm)
+        m = _num(c.get(ARM2 if sm == 2 else ARM3))
+        if sm in (2, 3) and b is not None and m is not None:
+            second = b - m
+            # fmin returns its FIRST argument when the two compare equal.
+            intsat = second if second < a else a
+        else:
+            intsat = a
+        out["block_runs"] += 1
+        if math.isnan(intsat):
+            out["intsat_nan"] += 1
+        elif intsat < 0:
+            out["intsat_negative"] += 1
+        elif intsat == 0:
+            out["intsat_zero"] += 1
+        else:
+            out["intsat_positive"] += 1
+    return out
+
+
 _real = vit_harness.generate
 
 
@@ -190,6 +247,7 @@ def _wrapped(signature, *a, **kw):
         "satmode_distribution": {str(k): v for k, v in arms.items()},
         "per_arm": {str(k): v for k, v in per_arm.items()},
         "arm_selector": selector,
+        "pi_saturation_window": _pi_window(gen.cases),
         "inputs_read": {"satmode": SATMODE, "first": FIRST,
                         "blpitch": BLPITCH, "arm2_minpit": ARM2,
                         "arm3_minpit": ARM3},

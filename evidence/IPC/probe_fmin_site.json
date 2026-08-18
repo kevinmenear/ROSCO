@@ -60,6 +60,13 @@
    ]
   }
  },
+ "pi_saturation_window": {
+  "block_runs": 17486,
+  "intsat_negative": 17474,
+  "intsat_zero": 0,
+  "intsat_positive": 12,
+  "intsat_nan": 0
+ },
  "inputs_read": {
   "satmode": "CntrPar_IPC_SatMode",
   "first": "CntrPar_IPC_IntSat",
