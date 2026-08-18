@@ -115,9 +115,9 @@
    "got": "814322e2bd2f7dc0b6db3c6b2d514e402630978f6bb17f40"
   }
  ],
- "loop_rev": "d947d92-nogit",
- "gen_rev": "gen-ffac3ef69dd5",
- "vit_rev": "a16a7ab-nogit",
+ "loop_rev": "4751161-nogit",
+ "gen_rev": "gen-cf5dcfa09cce",
+ "vit_rev": "3f6e2ce-nogit",
  "red_test": {
   "perturbation": "the unit as a no-op: every statement of the body removed, six callee calls kept behind an unsatisfiable guard so the bridges are still emitted",
   "result": "63888 of 63888 case(s) failed",
