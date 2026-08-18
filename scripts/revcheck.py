@@ -143,6 +143,30 @@ def readings(disp: dict[str, str | None]) -> dict[str, tuple[str, str]] | None:
     pos = {s: i for i, s in enumerate(order.split())}
     closed_at: dict[str, str] = {}
     seq: list[tuple[str, str]] = []
+    # A UNIT CAN BE CLOSED TWICE, AND IT IS THE LATEST CLOSE THAT THE READING
+    # HAS TO BE CONTEMPORANEOUS WITH.
+    #
+    # This recorded the FIRST commit at which a unit ever held a disposition and
+    # never revised it, so a unit the Driver cleared back to `pending` and a
+    # later dispatch re-closed was measured against a window opening at its
+    # ORIGINAL close -- months of campaign, and every unit closed in between
+    # counted against it. Unit #53 `IPC` was relaunched on 2026-08-18 and its
+    # capture, taken minutes after its new disposition and against the tree that
+    # disposition describes, was reported RETROACTIVE on the strength of two
+    # units that closed while IPC was not being worked at all.
+    #
+    # The check's own criterion is "was the reading taken while this unit was
+    # still the unit being worked", and tracking the LATEST None -> set
+    # transition is that criterion implemented rather than a relaxation of it: a
+    # unit never re-opened has one transition and is unaffected, which the audit
+    # either side of this change confirms (14 NO RECORDED READING and 3 of the 4
+    # RETROACTIVE READINGs are identical; only IPC's, the re-opened one, goes).
+    #
+    # `seq` keeps EVERY close, not only the latest, because the question asked
+    # of it is "did any other unit close inside this window" -- and a unit that
+    # closed, re-opened and re-closed inside someone else's window did move the
+    # campaign on, twice.
+    was: dict[str, bool] = {}
     for sha in log.split():
         raw = _git("show", f"{sha}:plan.json")
         if not raw:
@@ -152,9 +176,11 @@ def readings(disp: dict[str, str | None]) -> dict[str, tuple[str, str]] | None:
         except Exception:
             continue
         for u in units:
-            if u.get("disposition") and u["name"] not in closed_at:
+            now = bool(u.get("disposition"))
+            if now and not was.get(u["name"], False):
                 closed_at[u["name"]] = sha
                 seq.append((sha, u["name"]))
+            was[u["name"]] = now
     out: dict[str, tuple[str, str]] = {}
     for n, close in closed_at.items():
         if not disp.get(n):
@@ -167,9 +193,16 @@ def readings(disp: dict[str, str | None]) -> dict[str, tuple[str, str]] | None:
         a, b = pos.get(close, -1), pos.get(cap, -1)
         moved = [m for s, m in seq if m != n and a < pos.get(s, -1) <= b]
         if moved:
+            # CLOSES, NOT UNITS, and they are not the same number once a
+            # re-closed unit counts twice: this read "closed 3 other unit(s):
+            # CheckInputs, CheckInputs, CheckInputs". The count that matters is
+            # how far the campaign moved, which is closes; the names are what a
+            # reader needs to place it, which is units.
+            who = sorted(set(moved))
             out[n] = (RETRO, f"{ev} committed at {cap[:7]}, after the campaign "
-                             f"closed {len(moved)} other unit(s): {', '.join(moved[:4])}"
-                             + (" ..." if len(moved) > 4 else ""))
+                             f"took {len(moved)} other close(s) across "
+                             f"{len(who)} unit(s): {', '.join(who[:4])}"
+                             + (" ..." if len(who) > 4 else ""))
     return out
 
 
