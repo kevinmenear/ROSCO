@@ -4,6 +4,105 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-17: unit #52 `ForeAftDamping` is `integrated` and CLOSES AT 14
+of 14. The mutation score is 1.000.** Four layers, all four red-tested. One
+dispatch. The unit is two statements and no branch — one `PIController` call and
+a `DO K = 1,LocalVar%NumBl` writing its result into all three `FA_PitCom` slots
+— and everything interesting about it is a fact about the CORPUS and a fact
+about the SCENARIOS, pointing in opposite directions.
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (`harness/ForeAftDamping.json`) | **7567 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, the one callee bridge kept so each side runs one `PIController` — this unit's primary evidence | the unit as a no-op: **7567 of 7567**, the WHOLE corpus, and the count the stub predicted in its own header |
+| mutation (`mutation/ForeAftDamping.json`) | **8 of 8 scoreable, 1.0000**, 1 declared, 0 no-compile, 4 operators of 12 offered, **no survivor, `declared_but_killed` empty** | the score *is* the red test, 8 times |
+| post-integration (`harness/ForeAftDamping.postintegration.json`) | 7567 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **7525 of 7567**, and the 42 that pass are named exactly; reverted, rebuilt, green re-taken at 0, revert checked both ways |
+| gate, 27 scenarios (`gate/ForeAftDamping.json`) | 5,252,000 values / 351 channels, 0 mismatched | **THREE, AND TWO MOVE NOTHING**: the stored value + 0.01 rad moves **311,723** (scenarios 3, 7, 27); the SAME statement × 2.0 moves **0**; the loop bound `<=` → `<` moves **0** |
+
+**A BOUNDS PIN WAS PRICED INSTEAD OF INHERITED, AND IT COST 99% OF THE CORPUS.**
+`LocalVar_NumBl` was first written `{ lo = 0, hi = 3 }` — the spelling units
+#38, #47 and #50 carry — and the pin was correctly applied
+(`bounds_source: "stated:LocalVar_NumBl"` in `--dump-plan`). A census of the
+corpus it produced says what "applied" is worth:
+
+```
+evidence/ForeAftDamping/numbl_census.txt, take 1
+2539 cases     NumBl   0: 14    1: 2505    2: 12    3: 8
+```
+
+At `NumBl == 1` the loop runs once with `K == 1`, where `K - 1` and `1 - K` are
+both 0 — so the `swap_operands` mutant on this unit's **only** index arithmetic
+was killed on **20 cases of 2539**, exactly the 12 + 8 with `NumBl >= 2`, and
+ROSCO's own `NumBl == 3` had 8. `{ values = [3, 0, 1, 2] }` — the same interval,
+every member enumerated, base draw at the shipped configuration — makes NumBl a
+second FLAG, so R2 and R6 re-run under every value: **2539 → 7567 cases**,
+`{0: 1890, 1: 1894, 2: 1893, 3: 1890}`, the subscript observable on **3,783**.
+Both takes are on the record with the translation byte-identical across them
+(`mutation/ForeAftDamping.clean.{first,second}_take.json`), which is the
+difference between this lever and unit #50's, stated in advance and unpriced.
+
+**EVERY KILL COUNT IN THE RE-TAKE MATCHES THE CENSUS TO THE CASE.**
+
+```
+compare_op    '<=' -> '<'         5677 = NumBl >= 1
+arith_op      'K - 1' -> 'K + 1'  5677 = NumBl >= 1
+const_tweak   '1' -> '2'  (x2)    5677 = NumBl >= 1
+swap_operands 'K - 1' -> '1 - K'  3783 = NumBl >= 2
+const_tweak   I0 '0.0' -> '1.0'   3776 = restart == 1
+```
+
+**THE GATE IS GREEN ON 5,252,000 VALUES AND CONSTRAINS NOTHING THIS UNIT
+COMPUTES.** All 21 `Examples/DISCON*.IN` set `FA_KI = 0.00000` **and**
+`FA_IntSat = 0.00000`, and `PIController` ends
+`saturate(PTerm + ITerm, minValue, maxValue)` with this call site passing
+`±FA_IntSat` as the limits. The answer is therefore exactly `0.0` on every one
+of the **63,997** calls the 27 scenarios make, and what the gate observes is
+`PC_PitComT + 0.0`. Unit #48's separating probe, run **deliberately** rather
+than met by accident, says so in one run: the same statement moves 311,723
+values under `+ 0.01` and 0 under `* 2.0`. So the zeros are ANNIHILATION, not
+blindness — and `bld_pitch_3` moved in all three scenarios under the additive
+run, so the third blade is alive too. **Fifth instance in six units, and the
+widest**: #47's `AWC_amp`, #48's `WE_Gamma`, #49's unwritten filter state and
+#50's 1-DOF `rootMOOPF` were one scenario or one arm; this is every scenario the
+campaign has. Any translation returning zero passes this gate, including one
+that never calls `PIController`.
+
+**ONE SURVIVOR, ONE TOKEN, AND THREE CONTROLS.** The `1` of
+`LocalVar->restart ? 1 : 0` — (c)-class, the same declaration units #50 and #51
+made. `evidence/ForeAftDamping/equivalence_probe.txt`: **3776 of 7567 cases take
+that branch** and the mutant still survives (positive control); the **other arm
+of the same conditional, `'0' -> '1'`, was KILLED at 3389** (the operator is not
+blind); and the `I0` argument one line above was killed at **exactly 3776**,
+because `PIController` returns its `I0` on precisely the reset path this token
+selects — an arithmetic control on the census rather than a second argument.
+
+**A COPY-BACK RED TEST'S PASS SET IS "THE UNIT CHANGED NOTHING", NOT "THE UNIT
+WROTE NOTHING".** The runner's header predicted the whole corpus and was wrong by
+42, so the set was measured (`nomove_census.txt`): all 42 have `restart == 1`
+**and** `NumBl == 0` **and** incoming `FA_AccHPFI == 0.0`, and each conjunct
+kills one of the unit's three LocalVariables effects. `objInst%instPI` is not in
+it and could not be — `objInst` crosses by `C_LOC`, not through a view struct.
+
+**`--reverse-copy` WAS DECIDED BY READING THE EMITTED WRAPPER.** The first
+`vit integrate --apply` was run without it and the wrapper carried **no
+copy-back at all**, which would have left both of this unit's LocalVariables
+writes dying inside the view struct with harness and gate green on it (unit
+#23's shape). Reverted and re-applied; no artifact was taken against the wrong
+wrapper. The re-applied wrapper also carries a
+`vit_copy_scalars_to_controlparameters` call — correct and inert, since ROSCO
+declares `CntrPar` INTENT(INOUT) here and this unit assigns nothing in it, which
+is why the red test perturbs the LocalVariables call and not that one.
+`vit integrate` again rewrote `vit.yaml` through a YAML round trip.
+
+**Procedure.** ONE reset window, opened only after the translation, the two range
+pins, the no-op stub and both runners were committed, and closed the moment the
+clean-tree measurements were done — harness green, no-op red test, two censuses,
+three mutation sweeps. Every long command routed through
+`scripts/run_if_time_remains.sh` with a seconds estimate; every sweep through
+`scripts/mutate_guarded.sh`, which cleared its marker on all three. Commits one
+per expensive artifact.
+
+---
+
 **As of 2026-08-17: unit #51 `FloatingFeedback` is `integrated` and CLOSES AT 14
 of 14. The mutation score is 1.000.** Four layers, all four red-tested. One
 dispatch. The unit is seven statements — one `interp1d` gain schedule, two

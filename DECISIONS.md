@@ -2,6 +2,85 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #52 — ForeAftDamping — 2026-08-17
+
+### A stated range is applied and yet the corpus it produces may discriminate nothing, and that is P9 one level down (a proposed method amendment)
+
+`harness/ranges.toml` entries are written to keep a corpus inside the domain the
+reference has an answer on. This campaign already has one check that a pin was
+*applied* — `vit_harness.py --no-build --dump-plan` prints `bounds_source`, and
+unit #47 lost a corpus to a TOML block whose keys silently landed in the wrong
+table. That check passed here on the first try:
+
+```
+{"name": "LocalVar_NumBl", "kind": "int", "lo": null, "hi": null,
+ "values": [3, 0, 1, 2], "bounds_source": "stated:LocalVar_NumBl"}
+```
+
+**Applied is not the same as discriminating.** The pin as first written was
+`{ lo = 0, hi = 3 }` — the spelling three earlier units carry — and it was
+applied then too. A census of the corpus it produced
+(`evidence/ForeAftDamping/numbl_census.txt`) says:
+
+```
+2539 cases     NumBl   0: 14    1: 2505    2: 12    3: 8
+```
+
+98.7% at one value. This unit's only index arithmetic is `FA_PitCom[K - 1]`,
+and at `NumBl == 1` the loop runs once with `K == 1`, where `K - 1` and `1 - K`
+are both 0. So the `swap_operands` mutant on that subscript was killed on **20
+cases of 2539** — exactly the 12 + 8 with `NumBl >= 2` — and the configuration
+ROSCO itself runs, `NumBl == 3` in all three gate scenarios, had 8 cases. The
+sweep still scored 8 of 9; nothing in the artifact said the margin was 0.8% of
+the corpus.
+
+Replacing the entry with `{ values = [3, 0, 1, 2] }` — the same interval, every
+member enumerated, base draw at the shipped configuration — makes NumBl a second
+FLAG, so R2 and R6 re-run their ladders under every declared value: 7567 cases,
+`{0: 1890, 1: 1894, 2: 1893, 3: 1890}`, the subscript observable on 3,783.
+
+**The proposed amendment.** P9 says coverage is not visibility. Unit #46 raised
+the capture-window form of it: presence of an arm in a capture window is not
+visibility of that arm, and only a stub settles it. This is the *stated-range*
+form: a pin that is applied, in-domain and correct still fixes a base draw, and
+the base draw is a claim about what the corpus can discriminate that no artifact
+in this campaign currently reports. What would close it is not a new rule but a
+number the generator already knows — the per-parameter value histogram of the
+corpus it just wrote, printed beside `bounds_source` in `--dump-plan`. Today it
+costs an `fprintf` and a `--no-generate` rebuild per unit, which is why three
+earlier units carry the same pin and nobody had looked.
+
+**What is NOT claimed.** This is one parameter in one unit. It is not evidence
+that `[PreFilterMeasuredSignals]`, `[ActiveWakeControl]` or `[FlapControl]`
+have concentrated corpora — none of the three has been censused — and it is not
+a claim that a `values` list is generally better than a `lo`/`hi` pair. The
+`values` form is only cheap here because the admissible interval is `[0, 3]` and
+can be written out; on a real-valued or wide integer parameter it would be a
+much larger cost than the one it removes.
+
+### The gate can be green on 5,252,000 values while every scenario drives the unit at an exact zero, and the separating probe should be run on purpose
+
+Unit #48 discovered the additive/multiplicative distinction by accident, chasing
+a perturbation that moved nothing. Run deliberately it costs one gate run and it
+answers a question the green cannot:
+
+```
+the stored value + 0.01    311,723 of 5,252,000
+the stored value * 2.0             0                <- the SAME statement
+```
+
+All 21 `Examples/DISCON*.IN` set `FA_KI = 0.00000` and `FA_IntSat = 0.00000`,
+and `PIController` ends `saturate(PTerm + ITerm, minValue, maxValue)` with both
+limits at zero, so this unit's answer is exactly `0.0` on all 63,997 calls the
+27 scenarios make. Any translation returning zero passes this gate.
+
+That belongs in E5.2's verification ledger as this unit's "what it could not
+see", and it is stated in `plan.json`'s `observability` rather than left to be
+inferred from a green. Whether the ledger should carry a *column* for it —
+"gate perturbation class that moves the unit's own channel: additive only" — is
+the campaign question this raises; it is the fifth instance in six units and the
+first in which the zero covers every scenario rather than one.
+
 ## Unit #44 — YawRateControl — 2026-08-15
 
 ### The reference cannot pass its own kernel, and only a positive control could say so (C12, and a proposed method amendment)
