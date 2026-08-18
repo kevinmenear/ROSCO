@@ -3134,13 +3134,44 @@
     "DISCON"
    ],
    "dependency_depth": 2,
-   "verification": "kernel replay or direct-call harness; bit-identical",
+   "verification": "direct-call differential harness (63,888 cases) + mutation + 27-scenario gate; bit-identical",
    "why": "every input and output crosses the signature",
    "bridge_feasible": {
     "value": "unknown",
     "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
    },
-   "observability": null
+   "observability": null,
+   "disposition": "deferred",
+   "evidence": [
+    "evidence/IPC/README.md",
+    "evidence/IPC/gate.redtests.txt",
+    "evidence/IPC/gate.redtest.additive.json",
+    "evidence/IPC/gate.redtest.multiplicative.json",
+    "evidence/IPC/gate.redtest.fmin_dropcall.json",
+    "evidence/IPC/harness.staging_composition.json",
+    "evidence/IPC/harness.staging_composition.txt",
+    "evidence/IPC/harness.postintegration.redtest.json",
+    "evidence/IPC/mutation.index.numbl_2value.json",
+    "evidence/IPC/mutation.merge_refusal.txt",
+    "evidence/IPC/ipc.hstub-noop.cpp",
+    "evidence/IPC/run_harness_redtest.sh",
+    "evidence/IPC/run_mutation_part.sh",
+    "evidence/IPC/run_postintegration_redtest.sh",
+    "evidence/IPC/done_check.txt",
+    "harness/IPC.json",
+    "harness/IPC.noop.json",
+    "harness/IPC.postintegration.json",
+    "harness/IPC.postintegration.revert-verified.json",
+    "mutation/IPC.clean.index.json",
+    "mutation/IPC.clean.calls.json",
+    "mutation/IPC.clean.arith.json",
+    "mutation/IPC.clean.swap.json",
+    "mutation/IPC.clean.compare.json",
+    "mutation/IPC.clean.negate.json",
+    "gate/IPC.json",
+    "translations/Controllers/ipc.cpp",
+    "harness/ranges.toml"
+   ]
   },
   {
    "order": 54,

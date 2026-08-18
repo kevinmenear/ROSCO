@@ -4,6 +4,105 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-17: unit #53 `IPC` is `deferred`, and it closes on P12 ALONE.**
+Four layers, all four red-tested. One dispatch. The unit is the campaign's
+largest so far — six distinct callees, eight arms, fourteen `LocalVariables`
+outputs — and the two things worth knowing about it are that its differential
+corpus is 8.4x anything before it, and that the gate killed a mutant the
+corpus could not.
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (`harness/IPC.json`) | **63,888 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, all six callee bridges kept | the unit as a no-op: **63,888 of 63,888**, the whole corpus, the EMPTY pass set the stub predicted |
+| mutation (`mutation/IPC.clean.*.json`, six parts) | **66 of 78 killed, 0.846**, 0 no-compile, 12 survivors at TWO sites — and **40 `const_tweak` mutants NOT SCORED** | the score *is* the red test, 66 times |
+| post-integration (`harness/IPC.postintegration.json`) | 63,888 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **63,888 of 63,888**, an EMPTY pass set; reverted, rebuilt, green re-taken at 0 |
+| gate, 27 scenarios (`gate/IPC.json`) | 5,252,000 values / 351 channels, 0 mismatched | **THREE**: additive **334,388** (scenarios 2, 6, 8, 18, 27); the SAME statement × 2.0 **201,604** (8, 27 only); the surviving `drop_call` mutant **159,758** (8, 27) |
+
+**WHY IT IS `deferred`, AND IT IS ARITHMETIC RATHER THAN JUDGEMENT.** There is no
+`mutation/IPC.json`, so P12 cannot pass. The corpus is **63,888 cases / 656 MB**
+against `ForeAftDamping`'s 7,567 and `CheckInputs`' 16,769, which makes a mutant
+cost **25.5 s** (five parts agree to within 2%). `const_tweak` produces 40, so
+that operator is a **1040 s foreground call against a 600 s ceiling** — and it
+cannot be split, because `vit_mutate.py --limit` has no offset and
+`scripts/_mutation_merge.py` correctly refuses a part that scored a subset of its
+own operator's sites. The refusal is committed
+(`evidence/IPC/mutation.merge_refusal.txt`), run rather than described.
+
+Shrinking the corpus was tried and does not reach: `LocalVar_NumBl = { values =
+[3, 0] }` gives 42,694 cases and 19.4 s per mutant (`const_tweak` still 796 s),
+and 40 compiles alone are ~180 s, so the corpus would have to fall to ~25,000
+with no admissibility argument to justify it. The two-value take was KEPT because
+it answers unit #52's question a second time: the identical 18 `index_offset`
+mutants score **14 of 18 with the same four survivor ids** on both corpora
+(`evidence/IPC/mutation.index.numbl_2value.json`). The narrower list costs
+nothing measurable here.
+
+**THE GATE KILLED A MUTANT 63,888 DIFFERENTIAL CASES COULD NOT, AND THAT IS THIS
+CAMPAIGN'S COMPLEMENTARITY INVERTED.** Eight of the twelve survivors sit at the
+two `std::fmin` saturation statements. Rather than argue them equivalent, the
+surviving `drop_call` mutant was run through the gate character for character:
+
+```
+mutation/IPC.clean.calls.json   SURVIVOR b36f5d50   63,888 cases, SURVIVED
+gate.redtest.fmin_dropcall.json                     159,758 of 5,252,000, KILLED
+```
+
+So the eight are a **corpus gap**, established by execution, and nothing was
+declared equivalent. The gate is normally the coarser instrument — five units in
+six have found an exact zero annihilating a gate perturbation — and at this site
+it is the only one that discriminates. The corpus does REACH the arm (one of the
+two `swap_operands` mutants dies there); what it never supplies is a case in
+which `fmin`'s second argument wins.
+
+**A RANGE PIN WRITTEN TO PROTECT FOUR INPUTS DELETED THEM FROM THE COMPARISON.**
+`{ lo = 2, hi = 2 }` on an ALLOCATABLE extent triggers `Param.fixed_extent`,
+which is DEFINED as `lo == hi` and means "an extent the TYPE fixes":
+
+```
+UNOBSERVABLE CntrPar.IPC_Vramp: the bridge and the C struct disagree about its
+  shape; supplied to Fortran as a zeroed buffer and NOT compared
+```
+
+Four of this unit's inputs were zeroed and dropped, silently, and **the harness
+still passed**. `{ lo = 2, hi = 3 }` is the same narrowing without the collision.
+Unit #47's `--dump-plan` check does not catch it: the plan reports
+`bounds_source: "stated:..."`, which is true. Raised in `DECISIONS.md`.
+
+**THE R13 STAGING WINDOW WAS PREDICTED FROM TWO PREFIX LENGTHS AND MEASURED TO
+THE CASE.** Five staged CHARACTER assignments on one path — four `sigma` calls
+prefixing `'sigma:'`, then `'IPC:'` — is the campaign's longest chain.
+`L_final = 7 + 4*6 + 4 = 35`, `L_first = 7 + 4 = 11` (the LAST gate is the
+cheapest, because `'IPC:'` is four bytes and `'sigma:'` is six), so the window is
+`[11, 35)`: 24 capacities, k = 4..27. Measured: `failed 24`, cases
+63660..63683, and the decoded diffs climb the chain one gate at a time.
+`staging_capacity_excludes = [11, 34]` is strictly more input than the
+`--disable R13_staging_capacity` it replaces. Third unit at this shape after
+`AeroDynTorque` (two gates) and `PitchSaturation` (ablated instead).
+
+**AN ARM CAN BE IN THE GATE'S WINDOW, EXERCISED, AND STILL COMPUTE AN EXACT
+ZERO.** The additive/multiplicative pair says `IPC_PitComF` is exactly 0.0 in
+scenarios 2, 6 and 18, and the baseline arrays say it independently — all three
+`bld_pitch` channels identical in exactly those three. Scenario 18 is the
+campaign's ONLY `IPC_ControlMode == 2` scenario, so it is the only one that
+reaches the 2P arm, and it runs non-zero gains and still computes zero (its
+1-DOF sim has zero blade root moments). The gate can tell that arm RAN and
+cannot tell what it COMPUTED.
+
+Four arms have **zero hits in all 27 scenarios** — `IPC_SatMode == 3`, the
+SatMode fall-through, the `IPC_CornerFreqAct > 0` per-blade filter, and the
+`'IPC:'` error prefix. All 22 `Examples/DISCON*.IN` set `IPC_SatMode = 2` and
+`IPC_CornerFreqAct = 0.0`. The differential harness is the only instrument that
+reaches them.
+
+**One upstream ROSCO observation, recorded not repaired (P7):**
+`LocalVar%axisYawF_2P` is READ at `Controllers.f90:548` and written by NOTHING
+in ROSCO — it appears there and in `ROSCO_IO`'s state serialisation and nowhere
+else. `axisYawF_1P` has exactly one writer, whose condition is the same one that
+guards its only reader, so that field is safe; the 2P one is an undefined read in
+the reference and the translation reproduces it.
+
+---
+
 **As of 2026-08-17: unit #52 `ForeAftDamping` is `integrated` and CLOSES AT 14
 of 14. The mutation score is 1.000.** Four layers, all four red-tested. One
 dispatch. The unit is two statements and no branch — one `PIController` call and
@@ -4214,11 +4313,16 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-47 attempted / **43 integrated** / 0 integrated_unexercised / 0 out_of_scope /
-**3 deferred** (unit #29 `CheckInputs`, unit #31 `Debug`, unit #32 `FindLine`) /
-**1 blocked** (unit #17 `Read_OL_Input`).
+53 attempted / **48 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+**4 deferred** (unit #29 `CheckInputs`, unit #31 `Debug`, unit #32 `FindLine`,
+unit #53 `IPC`) / **1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 22 remain. 43 + 3 + 1 + 22 = 69.
+69 units in `plan.json`; 16 remain. 48 + 4 + 1 + 16 = 69.
+
+RECOUNTED at unit #53 from `plan.json` with the one command below, not
+incremented. It was **six units stale** (`47 / 43 integrated / 22 remain`, last
+recounted at unit #47) — the eighth time, and the eighth time the unit that
+fixed it was not the unit that broke it.
 
 RECOUNTED at unit #47 from `plan.json` with the one command below, not
 incremented. It was **seven units stale** (`36 / 29 remain`, last recounted at

@@ -7219,6 +7219,120 @@ unit can exhaust the second while barely touching the first.
   the reference wrote in the translation's own comment, or a later reader
   diffing two files in the same module finds a contradiction and fixes one.
 
+## A `{ lo = N, hi = N }` pin on an ALLOCATABLE extent DELETES that array from
+## the comparison, and the harness still passes
+
+- **Unit #53, and the loss is announced in a line nobody had been reading.**
+
+  ```
+  CntrPar_IPC_Vramp_n = { lo = 2, hi = 2 }      <- the admissibility argument
+  UNOBSERVABLE CntrPar.IPC_Vramp: the bridge and the C struct disagree about
+    its shape; supplied to Fortran as a zeroed buffer and NOT compared
+  HARNESS PASS: checked 63912  failed 24        <- and the 24 are unrelated
+  ```
+
+  `Param.fixed_extent` is DEFINED as `lo == hi` (`harness/signature.py:83`) and
+  means *an extent the TYPE fixes* — the mechanism `vitbridge.py` uses to model
+  `REAL(DbKi) :: rootMOOP(3)`. So `emit.py` lays the array out as a fixed C
+  struct member while the real view struct carries a pointer and a count, and
+  four of the unit's INPUTS were zeroed and dropped from the compared set by a
+  pin written to protect them.
+
+  **Unit #47's rule does not catch this.** `--dump-plan` reports
+  `bounds_source: "stated:CntrPar_IPC_Vramp_n"`, which is TRUE; the loss happens
+  one layer down, in the C layout. The check that does catch it is one grep of
+  the run's own output: `UNOBSERVABLE` beside a parameter the unit READS.
+
+  The repair is one wider end — `{ lo = 2, hi = 3 }` — wherever an extent above
+  the pinned one is admissible, which it is whenever the unit subscripts the
+  array with literals. Raised in DECISIONS.md as a proposed method amendment.
+
+## An operator's mutant population can exceed one foreground call, and the split
+## the campaign already uses cannot cut it
+
+- **Unit #53, and the arithmetic is the whole finding.** The per-mutant cost is
+  the corpus, and this unit's corpus is 8.4x the campaign's previous largest:
+
+  ```
+  63,888 cases / 656 MB          ForeAftDamping 7,567   CheckInputs 16,769
+  index_offset 18 in 476 s   arith_op 17 in 453 s   swap_operands 15 in 400 s
+  compare_op   13 in 358 s   negate_cond 9 in 264 s   -> 25.5 s per mutant
+  const_tweak  40            -> 1040 s against a 600 s ceiling
+  ```
+
+  It cannot be split into two parts. `vit_mutate.py --limit` is
+  `ms = ms[:args.limit]` applied AFTER the operator filter — no offset, so
+  mutants 21..40 are not addressable — and `scripts/_mutation_merge.py` refuses
+  a part that scored a subset of its own operator's sites. Both are correct;
+  together they make the split impossible rather than awkward.
+
+  **Shrinking the corpus does not reach either, and that is measurable before it
+  is attempted.** 40 compiles alone are ~180 s, so the corpus has to fall to
+  roughly 25,000 cases; `LocalVar_NumBl = { values = [3, 0] }` reaches only
+  42,694 (19.4 s per mutant, `const_tweak` still 796 s). **Take that measurement
+  BEFORE narrowing anything** — one harness run prints the case count, and a
+  narrowing that does not reach the ceiling is a weaker corpus bought for
+  nothing.
+
+  When a unit hits this, the honest close is `deferred` on P12 with the merge's
+  own refusal committed. Do not unset `--mutation-glob` and do not merge a
+  partial union.
+
+## Before declaring a mutation survivor equivalent, ask whether the OTHER
+## instrument can reach it — one gate run replaces the argument
+
+- **Unit #53. Eight survivors at one site, and the argument for equivalence was
+  available and wrong.**
+
+  ```
+  mutation/IPC.clean.calls.json   SURVIVOR b36f5d50   63,888 cases   SURVIVED
+    drop_call  std::fmin(A, B) -> A
+  gate.py --perturb-from '<the same edit>' --perturb-to '<the same edit>'
+                                  159,758 of 5,252,000               KILLED
+  ```
+
+  A mutant killed by one instrument is not equivalent, whatever the other
+  reports — so the survivors were a CORPUS gap and nothing was declared. The
+  perturbation is the mutant's `before`/`after` strings copied out of the
+  artifact, which makes the cross-instrument run mechanical rather than a new
+  judgement.
+
+  **This is the campaign's usual complementarity inverted.** The gate is normally
+  the coarser instrument — five units in six have found an exact zero
+  annihilating a gate perturbation — and at this site it was the only one that
+  discriminated. Note also what the corpus's OWN numbers said before the gate
+  run, and that it is not "the arm is unreachable": one of the two
+  `swap_operands` mutants on the sibling arm DIED. The arm is reached; what the
+  corpus never supplies is a case in which `fmin`'s second argument wins.
+
+  Cost: 289 s. It replaced eight equivalence arguments with a measurement, and
+  with the opposite conclusion.
+
+## An arm can be inside the gate's window, exercised, and still compute an exact
+## zero — and it can be the campaign's ONLY scenario for that arm
+
+- **Unit #53, and it is unit #46's finding at the level of a whole arm.**
+
+  ```
+  IPC_PitComF[K-1] + 0.01   334,388 of 5,252,000   scenarios 2, 6, 8, 18, 27
+  IPC_PitComF[K-1] * 2.0    201,604 of 5,252,000   scenarios       8,     27
+  scenario 18   IPC_ControlMode = 2, IPC_KP = 0.1 0.05, IPC_KI = 0.01 0.005
+  baseline_arrays/scenario_18.npz   bld_pitch == bld_pitch_2 == bld_pitch_3
+  ```
+
+  Scenario 18 is the campaign's only `IPC_ControlMode == 2` run, so it is the
+  only one that reaches the 2P arm, and its answer there is exactly 0.0 —
+  because its 1-DOF sim has zero blade root moments, which no reading of
+  `Examples/DISCON*.IN` would have said. The gate can tell that the arm RAN and
+  cannot tell what it COMPUTED.
+
+  **The baseline is the second, independent measurement and it is four lines of
+  numpy**: this unit's output is the only per-blade term in the pitch command, so
+  a scenario in which it is zero has three IDENTICAL `bld_pitch` channels. The
+  same three scenarios fall out of both. Run the additive/multiplicative pair AND
+  the channel census; agreeing instruments are what turn "the gate is blind here"
+  into "the value is exactly zero here".
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's

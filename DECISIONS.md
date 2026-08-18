@@ -2,6 +2,146 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #53 — IPC — 2026-08-17
+
+### An operator's mutant population can exceed one foreground call, and nothing in the toolchain can split it (a proposed tooling amendment)
+
+`IPC`'s differential corpus is **63,888 cases and 656 MB** — 8.4x
+`ForeAftDamping`'s and 3.8x `CheckInputs`'. The per-mutant cost that follows is
+25.5 s, and five operator-filtered parts agree on it to within 2%:
+
+```
+index_offset 18 in 476 s   arith_op 17 in 453 s   swap_operands 15 in 400 s
+compare_op   13 in 358 s   negate_cond 9 in 264 s
+```
+
+`const_tweak` produces 40 mutants. 40 x 25.5 + 20 = **1040 s against the Bash
+tool's 600 s ceiling**, and it cannot be split into two parts:
+
+* `vit_mutate.py --limit` is `ms = ms[:args.limit]` applied AFTER the operator
+  filter. There is no offset, so mutants 21..40 are not addressable at all.
+* `scripts/_mutation_merge.py` refuses a part that scored a subset of its own
+  operator's sites (*"each part's mutant total must equal the number of mutants
+  its operators produce"*) and refuses a union missing an operator. Both
+  refusals are correct — they are what stops a partial sweep reading as a whole
+  one — and together they make the split impossible rather than merely awkward.
+
+So `IPC` closes `deferred` on P12 with 78 of 118 mutants scored, and the
+refusal is committed (`evidence/IPC/mutation.merge_refusal.txt`) rather than
+described.
+
+**THE OBVIOUS WAY OUT WAS TRIED AND PRICED AT ZERO, WHICH IS WHY IT WAS NOT
+TAKEN.** `LocalVar_NumBl = { values = [3, 0] }` shrinks the corpus to 42,694 and
+the per-mutant cost to 19.4 s — `const_tweak` would still be 796 s. `values =
+[3]` would not have been enough either: 40 compiles alone are about 180 s, so
+the corpus would have to fall to roughly 25,000 cases, and there is no narrowing
+of that size with an admissibility argument behind it. The two-value take was
+kept anyway, because it answers unit #52's question a second time:
+`evidence/IPC/mutation.index.numbl_2value.json` scores the identical 18
+`index_offset` mutants at 14 of 18 with the SAME four survivor ids as the
+63,888-case take. The narrower list costs nothing measurable here — which is a
+second data point on #52's lever, in the opposite direction from #52's own.
+
+**What would fix it, in order of how little it changes.** (a) an `--offset N` on
+`vit_mutate.py` plus a merge that sums per-operator counts across parts instead
+of checking them per part; (b) putting the generated case file on
+container-local storage rather than the bind mount, since 24 s to read 656 MB is
+27 MB/s and the run is I/O bound rather than compute bound. Neither was done
+here: both change the instrument, and changing it mid-unit would split
+`loop_rev` across this unit's own artifacts, which is exactly what
+`scripts/revcheck.py` exists to catch. Raised rather than taken.
+
+### `{ lo = N, hi = N }` on an ALLOCATABLE extent silently deletes that array from the comparison (a proposed method amendment)
+
+This unit reads four `CntrPar` ALLOCATABLE arrays and subscripts every one with
+a literal. ROSCO's own reader allocates each at exactly 2
+(`ReadSetParameters.f90:389,392-394`), and an extent below 2 is an
+out-of-bounds read in the REFERENCE — so `{ lo = 2, hi = 2 }` is the pin the
+admissibility argument asks for. It is also the wrong pin, and the run says so
+in a place nobody had been reading:
+
+```
+UNOBSERVABLE CntrPar.IPC_Vramp: the bridge and the C struct disagree about its
+  shape (no member not in the struct); supplied to Fortran as a zeroed buffer
+  and NOT compared
+```
+
+`Param.fixed_extent` is DEFINED as `lo == hi` (`harness/signature.py:83`) and
+means "an extent the TYPE fixes, not one the caller chooses" — the mechanism
+`vitbridge.py` uses to model `REAL(DbKi) :: rootMOOP(3)`. So `emit.py` laid all
+four arrays out as fixed C struct members while the real view struct carries a
+pointer and a count, and four of this unit's inputs were zeroed and dropped from
+the comparison by a pin written to protect them. **The harness still passed.**
+
+`{ lo = 2, hi = 3 }` is the same narrowing without the collision. But the
+general shape is a method-level hazard rather than this unit's: a bounds pin
+whose ends are EQUAL is a different kind of statement from one whose ends
+differ, and `harness/ranges.toml`'s header does not say so. Two candidate fixes,
+neither taken here: have `constrain()` raise when a stated `lo == hi` lands on
+an ALLOCATABLE field's extent, or have the run promote its own UNOBSERVABLE
+lines from a note to a refusal when the parameter is one the unit READS.
+
+Unit #47's rule — read `--dump-plan` before believing a pin — does not catch
+this one. The plan reports `bounds_source: "stated:CntrPar_IPC_Vramp_n"`, which
+is true; the loss happens one layer down, in the C layout.
+
+### A mutant that survives one instrument and is killed by another is a corpus gap, and one gate run settles it
+
+Eight of this unit's twelve mutation survivors sit at the two `std::fmin`
+saturation statements: `drop_call` on both arms, `swap_call_args` on both,
+`arith_op` on both, `swap_operands` and `compare_op` on one each. Every one of
+them looked like a candidate for an equivalence declaration, and an argument for
+one was available (`fmin` is commutative; the saturation only reaches an output
+on one arm; and so on).
+
+The surviving `drop_call` mutant was instead run through the GATE, character for
+character, as a `--perturb-from/--perturb-to` pair:
+
+```
+mutation/IPC.clean.calls.json   SURVIVOR b36f5d50   63,888 cases, survived
+gate.redtest.fmin_dropcall.json                     159,758 of 5,252,000, KILLED
+```
+
+**The same edit survives 63,888 differential cases and is killed by the gate.**
+So it is not equivalent, and the eight survivors are a property of the harness
+corpus rather than of the program. No declaration was made.
+
+This is the campaign's usual complementarity inverted. The gate is normally the
+coarser instrument — unit #52's gate constrained nothing its unit computed, and
+five units in six have found an exact zero annihilating a gate perturbation. Here
+the gate is the ONLY instrument that discriminates at this site, because the
+harness reaches the arm (one of the two `swap_operands` mutants dies there) and
+never supplies a case in which `fmin`'s second argument wins.
+
+**The practice worth generalising:** before declaring a survivor equivalent, ask
+whether the OTHER instrument can reach it, and if it can, spend the run. One
+289 s gate red test replaced eight equivalence arguments with a measurement, and
+it replaced them with the opposite conclusion.
+
+### An arm can be inside the gate's window, exercised, and still compute an exact zero — and the additive/multiplicative pair is what says so
+
+Unit #52's pair, run deliberately on the same statement:
+
+```
+IPC_PitComF[K-1] = PitComIPCF[K-1] + 0.01    334,388 of 5,252,000   scenarios 2, 6, 8, 18, 27
+IPC_PitComF[K-1] = PitComIPCF[K-1] * 2.0     201,604 of 5,252,000   scenarios       8,     27
+```
+
+Scenarios 2, 6 and 18 run this unit and its answer is EXACTLY 0.0 in all three.
+The baselines confirm it independently — all three `bld_pitch` channels are
+identical in exactly those three scenarios and differ in the other two, which is
+unit #46's "a baseline array can be a unit's own output" used as a control
+rather than as a selector.
+
+Scenario 18 is the one that matters: it is the campaign's ONLY scenario with
+`IPC_ControlMode == 2`, so it is the only one that reaches the 2P arm, and it
+runs non-zero gains (0.1/0.05, 0.01/0.005). It still computes zero, because its
+1-DOF sim has zero blade root moments and the Coleman axes are therefore zero.
+**The gate can tell that the 2P arm RAN and cannot tell what it COMPUTED.** That
+is unit #46's finding — presence in a window is not visibility — met at the
+level of a whole arm rather than of an invocation, and it is the reason a
+scenario census by hit count would have been misleading here.
+
 ## Unit #52 — ForeAftDamping — 2026-08-17
 
 ### A stated range is applied and yet the corpus it produces may discriminate nothing, and that is P9 one level down (a proposed method amendment)
