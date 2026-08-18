@@ -2,6 +2,182 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #55 — ParseInAry_Opt — 2026-08-18
+
+### PROPOSED AMENDMENT, for the Driver: a red test must assert that it changed the ANSWER, not that it changed the SOURCE
+
+Not a finding about `ParseInAry_Opt`. The campaign's red-test runners all assert
+the same thing — that the perturbation applied, at exactly one site — and
+`evidence/ParseInAry_Opt/run_parser_replay.sh` did too. Its third perturbation
+was `out = 0;` inside `parse_int`. It applied, at exactly one site, and the
+instrument stayed GREEN.
+
+**It stayed green because it was correct to.** `out` is discarded by the caller
+on a false return, so the edit changed the file and not the program: a genuine
+equivalent mutant, hand-written. Moved one level out, to the caller where the
+store reaches `v[i]`, the same intent moves 26 of 113 records.
+
+The failure mode is the dangerous direction. The runner's own message on a green
+red test is *"the replay stayed GREEN under a perturbation — it is not an
+instrument"*, which is **the wrong diagnosis**: the instrument was fine and the
+perturbation was empty. A session that trusted it would have gone looking for a
+weakness in a working instrument, and a session in a hurry would have weakened
+the instrument until the test passed.
+
+**What would close it:** a red test whose perturbation is checked for
+observability before its verdict is read. On a mutation-style perturbation that
+is free — `vit_mutate.py` already distinguishes `nocompile` from `survived` and
+could distinguish `no-op` too. On a hand-written one it needs the same thing the
+campaign already asks of an exclusion: **state the expected delta first.** Every
+other red test this unit ran did that (13,448 / 4,811 / 103 / 16 / 10,611, all
+predicted, all exact), and every one of them would have caught an empty
+perturbation immediately, because 0 is not the predicted number. The three
+parser perturbations were the only ones with no predicted count, and the empty
+one is the one that had no prediction to fail.
+
+**Method, not campaign:** it generalises to every `--red-test` and `--perturb-*`
+in the loop, and the rule is one sentence — *a perturbation with no predicted
+delta is not a red test, it is a hope.*
+
+### A SECOND INSTRUMENT FOR ONE REGION IS WORTH MORE THAN A BETTER SCORE, AND IT COST TWENTY MINUTES
+
+This unit's mutation score is 0.4359 and the sibling's is 0.4162, for the same
+reason: the differential corpus reaches the list-directed READ in **103 cases of
+13,674**. Unit #54 named that and stopped. This unit built the instrument the
+naming implies:
+
+```
+parser_conformance.f90   113 records through gfortran's OWN list-directed READ,
+                         emitted as ICHAR codes beside its iostat and every element
+parser_conformance.cpp   textually #includes the SHIPPED translation and replays
+                         them through its own list_read_ints
+                         -> 113 records, 0 mismatched; 3 / 8 / 26 under perturbation
+```
+
+**The textual include is the load-bearing choice.** `list_read_ints` is in an
+anonymous namespace, where it belongs — nothing outside the file may call it. A
+COPY of the parser in the test would have tested a copy, and would have gone
+stale silently the first time the translation changed. Including the .cpp puts
+`main` in the same translation unit, so the replay exercises the function that
+ships.
+
+**And then it answered a question the mutation score cannot.** The RUNBOOK's
+rule is to ask whether another instrument can reach a survivor before calling it
+a corpus gap. Unit #54 asked once per REGION with two gate runs, about ten
+minutes. Here the replay costs about a second a mutant, so it was asked for
+**every one of the 88 survivors** in 42 seconds:
+
+```
+  READ    KILLED 52   unreached 19
+  other   KILLED  1   unreached 16
+```
+
+**The negative control is built into the shape of the instrument**, which is
+better than choosing one: the replay enters the translation only through the
+parser, so the PRINT record, `assign_errmsg`, `ary_at` and the unit's body MUST
+come back unreached, and 16 of 17 do. The one that crosses — `MaxRepeat`
+`200000000 -> 200000001` — is killed by exactly one record, the boundary record
+that exists because the boundary was measured rather than recalled.
+
+**Nothing is folded into the score and nothing is declared equivalent.** A kill
+by a different instrument on a different corpus is not a kill by this one
+(unit #31's rule: a corpus change invalidates every part already taken). What
+the run replaces is an ARGUMENT with a measurement, in the direction that makes
+the evidence weaker-looking and truer: 35 survivors that NO instrument reached
+are now named, where before there were 88 that "the gate probably covers".
+
+### THE SIBLING'S OWN EVIDENCE IS THE MOST DANGEROUS INPUT TO A UNIT THAT DIFFERS FROM IT IN ONE DECLARATION
+
+`ParseDbAry_Opt` and `ParseInAry_Opt` differ in the declaration of `Ary` and
+nothing else that matters. That makes copying right for most of the file (P4)
+and **specifically wrong for the two rules that are properties of the READER**:
+
+```
+                        REAL reader (#54)              INTEGER reader (#55)
+'1.0;2.0' / '1;2'       stores 1.0, then 5010          stores NOTHING, 5010
+'. 5'                   stores 0.0, then 5010          stores nothing, 5010
+```
+
+Both of the sibling's rules were transplanted deliberately as red tests, and
+both go red: 3 records and 26. Had they been transplanted by accident they would
+have been **invisible to every other layer of this unit** — the differential
+harness reaches the parser 103 times of 13,674, and the gate's shipped input
+files contain no semicolons and no malformed numerics at all.
+
+**The rule, stated so it is checkable rather than a caution:** when two units
+differ only in a type, the things to re-measure are exactly the things the
+RUNTIME dispatches on that type. Here that is two: the reader and the output
+field width. Everything else — control flow, error messages, the descriptor
+handling, the pins, the partition's shape — copies, and copying it is what made
+this unit one dispatch instead of two.
+
+### A `no_oracle_when` SIZE PREDICTED FROM ONE UNIT AND MEASURED ON ANOTHER IS A CHECK ON BOTH
+
+Unit #54's partition and this unit's are cell-for-cell identical:
+4006 / 3003 / 61 and 5697 / 805 / 60 / 42. That was not guaranteed — the case
+FILE differs (`0c18dba4…` against `64942b97…`), because `Ary`'s elements are 4
+bytes here and 8 there, so the corpus generator ran over different data.
+
+So the agreement is evidence rather than a shortcut, and it was **taken in the
+right order**: the harness ran first WITHOUT the exclusion (4,067 red), the
+partition was measured on this unit's own corpus, and only then was the entry
+written with 4,067 as its predicted size. The one-relation form was checked the
+same way and gave 4,233, whose extra 166 are again the cases that arrived
+already failed.
+
+Doing it the other way — copying the entry from the sibling and reading the
+number the run reports — would have produced the identical artifact and proved
+nothing.
+
+### `vit_mutate.py` DECODED THE TEST'S STDOUT AS STRICT UTF-8, AND THE TOLERANT READ TWO LINES BELOW COULD NOT HELP
+
+X2, fixed in the loop repo at `2ff3660` rather than worked around. The sweep died
+at mutant 116 of 157:
+
+```
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf1 in position 1814
+```
+
+A unit whose reference `PRINT`s a CHARACTER argument writes whatever bytes the
+CORPUS put in it, and the corpus draws arbitrary bytes. The comment directly
+above the failing call already records the same class of problem for a different
+reason — `json.loads(run.stdout)` called a clean `ExtController` baseline a crash
+because its Fortran writes five lines per case — and the fix for that was a
+tolerant PARSE. **A tolerant parse cannot run if the DECODE raised**, which is
+this defect in one sentence, and it is why the fix is `errors="replace"` on the
+subprocess and not another `try` around `_payload`.
+
+The same edit was made to the `make` invocation beside it, and to both in
+`vit_harness.py`: a compiler diagnostic quoting a source byte has the same
+failure, and the harness runs the same `./test`.
+
+**Additive, and checked rather than argued** (the campaign's standing
+requirement for a mid-run tool change, X3): the green harness re-taken either
+side of the fix differs in `loop_rev` alone — same 13,674 checked, same 0 failed,
+same 4,067 excluded, same corpus hash. Every artifact of this unit was then
+re-taken under the new revision so `revcheck --unit` reports one instrument, and
+that re-take is why the four stub artifacts carry a stamped `loop_rev`: the stub
+runner rebuilds its JSON from `./test`'s own stdout, which carries no revision.
+
+### THE DEFAULT ARM IS DEAD HERE AND LIVE IN THE SIBLING, AND THAT CHANGES WHAT A GATE ZERO MEANS
+
+Both units' `Ary = 0` default-arm perturbation moves 0 of 5,252,000. The two
+zeros are not the same statement.
+
+```
+#54  ROSCO_Helpers.f90:945   66 executions across 21 of 27 scenarios
+     the arm RUNS; it computes an exact zero, because the arrays that take a
+     default are the notch arrays of a scenario with zero notch filters
+#55  ROSCO_Helpers.f90:806   NO COUNTER, against 230 executions of :775
+     the arm is NEVER REACHED; FoundLine is TRUE at every call
+```
+
+The sibling's zero is unit #46's finding (an arm inside the window, exercised,
+computing an exact zero). This one's is the simpler thing, and it is worth
+recording that the simpler thing had to be MEASURED to be distinguished from the
+subtler one — the two units' source is identical at that statement, and reading
+the code would have given the sibling's answer.
+
 ## Unit #54 — ParseDbAry_Opt — second dispatch — 2026-08-18
 
 ### PROPOSED AMENDMENT, for the Driver: the campaign has no instrument that compares a translated PRINT, and four more units carry one

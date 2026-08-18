@@ -7636,6 +7636,163 @@ unit can exhaust the second while barely touching the first.
   Run it at the START of any dispatch that inherits a raised marker, before
   concluding the sweep is dead from a host pid that is.
 
+## A RED TEST WHOSE PERTURBATION IS A NO-OP REPORTS THE INSTRUMENT AS BROKEN,
+## AND THE ONLY CHEAP DEFENCE IS A PREDICTED DELTA
+
+- **Unit #55.** The perturbation applied, at exactly one site, and the
+  instrument stayed green.
+
+  ```
+  out = 0;   inside parse_int, before `return false`     113 records, 0 moved
+  v[i] = value;   at the CALLER, before `return 5010`    113 records, 26 moved
+  ```
+
+  The first is a genuine equivalent mutant: `out` is discarded on a false
+  return, so the edit changed the FILE and not the PROGRAM. The runner's
+  assertion — that the patch matched exactly one site — cannot see that, and its
+  message on a green red test says *"it is not an instrument"*, which is the
+  wrong diagnosis in the dangerous direction: the instrument was fine.
+
+  **Every other red test this unit ran had a predicted count** — 13,448 / 4,811
+  / 103 / 16 / 10,611 — and every one of them would have caught an empty
+  perturbation instantly, because 0 is not the predicted number. The three
+  parser perturbations were the only ones written without a prediction, and the
+  empty one is the one that had no prediction to fail. Raised in `DECISIONS.md`
+  as a proposed amendment.
+
+## WHEN TWO UNITS DIFFER IN ONE DECLARATION, RE-MEASURE EXACTLY WHAT THE RUNTIME
+## DISPATCHES ON THAT DECLARATION -- AND COPY THE REST
+
+- **Unit #55 is unit #54 with `REAL(DbKi) :: Ary(:)` changed to
+  `INTEGER(IntKi)`.** `diff` of the two clean bodies is the routine name, that
+  declaration, the order of three locals, one commented-out `PRINT`, and
+  whitespace.
+
+  Two things are properties of the READER and both would have been wrong:
+
+  ```
+                       REAL reader (#54)         INTEGER reader (#55)
+  '1.0;2.0' / '1;2'    stores 1.0, then 5010     stores NOTHING, 5010
+  '. 5'                stores 0.0, then 5010     stores nothing, 5010
+  field width          26 (21 + 5 trailing)      12, and no '*' fill is reachable
+  ```
+
+  Both of the sibling's rules were transplanted deliberately as red tests and
+  both go red (3 records and 26). Transplanted by accident they would have been
+  **invisible to every other layer**: the differential harness reaches the
+  parser 103 times of 13,674, and the shipped input files contain no semicolons
+  and no malformed numerics at all.
+
+  Everything else copies — control flow, messages, descriptor handling, the two
+  range pins, the partition's shape, the stub runner, the wrapper red-test
+  runner — and copying it is what made this unit one dispatch instead of two.
+  **The list of things to re-measure is short and derivable: what does the
+  runtime dispatch on this type?**
+
+## A SECOND INSTRUMENT FOR ONE REGION CAN BE CHEAPER THAN ARGUING ABOUT IT, AND
+## IT TURNS EVERY SURVIVOR INTO A MEASUREMENT
+
+- **Unit #55, about twenty minutes to build and 42 seconds to run over all 88
+  survivors.**
+
+  ```
+  parser_conformance.f90   113 records through gfortran's OWN list-directed READ,
+                           each emitted as ICHAR codes beside its iostat and every
+                           element
+  parser_conformance.cpp   textually #includes the SHIPPED translation and replays
+                           them through its own list_read_ints
+  ```
+
+  **The textual include is the load-bearing choice.** The parser is in an
+  anonymous namespace, where it belongs. A COPY in the test would test a copy
+  and go stale silently; including the .cpp puts `main` in the same translation
+  unit, so the replay exercises the function that ships. The three callee
+  bridges are stubbed because the linker wants them, and are never called.
+
+  Then the RUNBOOK's own rule — ask whether another instrument can reach a
+  survivor before calling it a corpus gap — was asked **per survivor** rather
+  than per region:
+
+  ```
+    READ    KILLED 52   unreached 19
+    other   KILLED  1   unreached 16
+  ```
+
+  **The negative control is built into the instrument's shape rather than
+  chosen**, which is stronger: the replay enters the translation only through
+  the parser, so the PRINT record, `assign_errmsg`, `ary_at` and the body must
+  come back unreached, and 16 of 17 do. The one that crosses is a `MaxRepeat`
+  constant killed by exactly one record — the boundary record, which exists
+  because the boundary was measured (`200000000` passes, `200000001` fails)
+  rather than recalled from libgfortran's source.
+
+  **Fold nothing into the score.** A kill by a different instrument on a
+  different corpus is not a kill by this one. The value is that 88 survivors
+  "the gate probably covers" became 53 measured kills and **35 that no
+  instrument reached**, named.
+
+## A `no_oracle_when` COPIED FROM A SIBLING PROVES NOTHING; RUN RED FIRST, THEN
+## PREDICT, THEN PIN
+
+- **Unit #55.** The sibling's entry would have applied verbatim and the artifact
+  would have been identical. The order taken instead:
+
+  ```
+  1. harness WITHOUT the entry            13,674 checked, 4,067 FAILED
+  2. partition, measured on THIS corpus   4006/3003/61 and 5697/805/60/42
+  3. predict                              4,067 -- and 4,233 for the one-relation form
+  4. write the entry, re-run              4,067 and 4,233, exact
+  ```
+
+  Step 2 was not a formality. The two units' tables agree cell for cell, and the
+  case FILE does not (`0c18dba4…` against `64942b97…`, because `Ary`'s elements
+  are 4 bytes rather than 8), so the generator ran over different data and the
+  agreement is a result. Copying at step 4 and reading the number the run
+  reports would have produced the same file and established nothing.
+
+## `vit_mutate.py` AND `vit_harness.py` DECODED `./test`'s STDOUT AS STRICT UTF-8
+
+- **Unit #55, fixed at loop `2ff3660` (X2), and the sweep died at mutant 116 of
+  157.**
+
+  ```
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf1 in position 1814
+  ```
+
+  A unit whose reference `PRINT`s a CHARACTER argument writes whatever bytes the
+  CORPUS put in it. The comment directly above the failing call already records
+  the same class for a different reason — a tolerant PARSE, added because
+  `ExtController`'s Fortran writes five lines per case — and **a tolerant parse
+  cannot run if the decode raised**. So the fix is `errors="replace"` on the
+  subprocess, not another `try` around the parse, and it is made at all four
+  sites that read a build or a run of the unit under test.
+
+  **Additive and checked rather than argued**: the green re-taken either side
+  differs in `loop_rev` alone — same 13,674, same 0 failed, same 4,067 excluded,
+  same corpus hash. Then every artifact of the unit is re-taken under the new
+  revision, because a unit whose artifacts name two revisions is not
+  commensurable with itself. That re-take is also why the four stub artifacts
+  carry a *stamped* `loop_rev`: the stub runner rebuilds its JSON from
+  `./test`'s own stdout, which carries no revision at all.
+
+## TWO GATE ZEROS ON THE SAME STATEMENT IN TWO UNITS CAN BE DIFFERENT STATEMENTS
+
+- **Units #54 and #55, the identical `Ary = 0` default arm, both moving 0 of
+  5,252,000.**
+
+  ```
+  #54  ROSCO_Helpers.f90:945   66 executions across 21 of 27 scenarios
+       the arm RUNS and computes an exact zero -- unit #46's finding
+  #55  ROSCO_Helpers.f90:806   NO COUNTER, against 230 executions of :775
+       the arm is NEVER REACHED; FoundLine is TRUE at every call
+  ```
+
+  The source is identical at that statement, so reading the code gives the
+  sibling's answer for both. **Take the coverage counter for the arm in THIS
+  unit before writing the argument for its zero** — it is one lookup, and the
+  two arguments are not interchangeable: one says the gate cannot see what the
+  arm computed, the other says there is nothing to see.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
