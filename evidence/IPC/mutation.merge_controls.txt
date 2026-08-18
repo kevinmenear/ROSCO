@@ -1,0 +1,21 @@
+Unit #53 IPC -- the union's own refusals, run against THIS unit's real parts
+
+X4: a merge accepted on its first use is a check nobody has seen fail. Three
+perturbations of the nine-part union that produced mutation/IPC.json, each
+one edit away from it.
+
+1. THE MIDDLE SLICE OF const_tweak DROPPED  (the shape that made this unit
+   deferred last dispatch: an operator with a hole in it)
+   _mutation_merge: REFUSING -- 13 mutant(s) of this unit are in NO part (const_tweak:13) -- the slices do not cover the operators they name
+   exit 2
+
+2. ONE SLICE SUPPLIED TWICE  (const0 in the union twice over)
+   _mutation_merge: REFUSING -- mutant fd776540 was scored by both mutation/IPC.clean.const0.json and mutation/IPC.clean.const0.json -- the slices overlap and it would be counted twice
+   exit 2
+
+3. A WHOLE OPERATOR MISSING  (negate_cond dropped)
+   _mutation_merge: REFUSING -- operator(s) ['negate_cond'] found a site in this unit and are in NO part -- this union does not cover the sweep
+   exit 2
+
+None of the three wrote an artifact. The union that did is mutation/IPC.json,
+92 killed of 118, score 0.7797.
