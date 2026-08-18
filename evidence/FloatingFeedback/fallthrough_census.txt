@@ -1,0 +1,93 @@
+FloatingFeedback (unit #51) -- the fall-through census, and what the return
+value actually looks like on the 6734 cases the harness scored.
+
+WHY THIS WAS RUN. The reference has no ELSE:
+
+    Controllers.f90:631-635
+        if (CntrPar%Fl_Mode == 1) THEN
+            FloatingFeedback = (0.0_DbKi - FA_vel) * LocalVar%Kp_Float
+        ELSEIF (CntrPar%Fl_Mode == 2) THEN
+            FloatingFeedback = (0.0_DbKi - NacIMU_FA_vel) * LocalVar%Kp_Float
+        END IF
+
+so on any other Fl_Mode the RESULT VARIABLE is never written and the function
+returns an undefined slot. `harness/ranges.toml` states the domain -- Fl_Mode =
+{ values = [1, 2] } -- on the ground that DISCON's call site guards Fl_Mode > 0
+and CheckInputs rejects Fl_Mode > 2, so {1, 2} is exactly the set on which ROSCO
+calls this procedure. THE ENTRY'S OWN COST NOTE SAID THAT MIGHT NOT BE ENOUGH:
+unit #49 measured that R7's predicate-knob cross-product draws from the
+reference's own literals and is NOT filtered by a stated `values` list -- its
+`ErrVar_aviFAIL` histogram was {-1: 2767, 0: 2446, 1: 2422, 2: 5} against a
+stated set of {-1, 0, 1}. The harness's own header prints the same warning
+shape for this unit:
+
+    PREDICATE KNOB: CntrPar_Fl_Mode at [0.0, 1.0, 2.0, 3.0]
+    R6 ... 4 combination(s) of the 1 quantit(y/ies) the reference's own
+    predicates test, the full cross product
+
+0 and 3 are the collating neighbours of the two literals this unit tests, and
+both of them fall through. If the corpus held them, the green in
+harness/FloatingFeedback.json would be resting on a comparison of two undefined
+slots that happened to agree -- unit #36's out-of-bounds pass in a different
+costume.
+
+HOW IT WAS MEASURED. Unit #47's probe: ONE `fprintf` patched into
+translations/Controllers/floatingfeedback_test/floatingfeedback_test.cpp
+immediately before the `VITCMP("vit_result", ...)` line, printing the case
+index, `CntrPar_a.Fl_Mode`, and BOTH sides' return value as raw bits; then
+
+    bash scripts/harness.sh FloatingFeedback Controllers floatingfeedback \
+        rosco/controller/src/Controllers.f90 --against translation --no-generate
+
+which rebuilds for the current tree and keeps `floatingfeedback_cases.bin` and
+the patched test source byte for byte, so the numbers below are about the SAME
+corpus `harness/FloatingFeedback.json` is green on. The probe was stripped
+afterwards and the green re-taken.
+
+THE RESULT.
+
+    PROBE lines                                   6734    (= the whole corpus)
+    Fl_Mode == 1                                  3518
+    Fl_Mode == 2                                  3216
+    FALLTHROUGH (Fl_Mode outside {1, 2})             0
+    cases where the two sides' return bits differ    0
+
+    checked 6734  failed 0                        (the run's own JSON)
+
+SO THE STATED DOMAIN DID BOUND THE KNOB HERE. Every one of the 6734 cases takes
+one of the two arms, the undefined slot is read by nothing, and the green is
+about 6734 answers the reference actually has. That is the opposite of what unit
+#49's measurement predicted, and the honest statement is the narrow one: the
+`values` list bounded R7's knob for THIS parameter in THIS run. It is not
+evidence that #49's aviFAIL = 2 came from somewhere else, and it is not a claim
+about the generator in general -- it is one number, measured, on the corpus that
+carries this unit's green. The reason to write it down is that the opposite
+result would have invalidated the primary layer, and nothing but this probe
+distinguishes the two.
+
+WHAT ELSE THE PROBE SHOWED, AND IT IS THE MORE USEFUL HALF.
+
+    distinct return values over the 6734 cases          3208
+    return == +0.0   (0000000000000000)                 1729   (1 mode-1, 870
+                                                               of them; mode-2,
+                                                               859)
+    return == -0.0   (8000000000000000)                 1544   (792 / 752)
+    return == c09849ee01387d99                           256   (R13's block)
+    every other value                                 1 case each
+
+**1544 CASES RETURN NEGATIVE ZERO, AND THAT IS THE `0.0 - x` TRANSCRIPTION BEING
+LOAD-BEARING RATHER THAN PEDANTIC.** `PIController` returns its `I0` on a reset
+and this call site passes `I0 = 0.0_DbKi`, so `FA_vel` and `NacIMU_FA_vel` are
+EXACTLY +0.0 on the whole `restart` half of the corpus. `(0.0 - (+0.0))` is
+`+0.0`; multiplied by a NEGATIVE `Kp_Float` that is `-0.0`. Had the translation
+written `-FA_vel` instead -- the shape a reader simplifying the expression would
+reach for -- the same case would yield `-0.0 * negative = +0.0`, a different bit
+pattern on a case count in the four figures. The harness compares bit patterns
+(unit #50 found the same distinction in the gate), so this corpus separates the
+two spellings; the mutation sweep is where that separation is graded rather than
+asserted.
+
+The 256 identical values are R13's staging-capacity block, which sweeps a
+CHARACTER capacity with every other input at its base draw -- one input vector,
+256 times, so one answer 256 times. Expected, and it is the reason the distinct
+count is 3208 rather than ~3400.

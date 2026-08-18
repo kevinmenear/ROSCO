@@ -1,0 +1,69 @@
+FloatingFeedback (unit #51) -- the executed argument behind the two declared
+equivalences, with both controls.
+
+THE TWO SURVIVORS OF THE FIRST TAKE (evidence/FloatingFeedback/
+mutation.first_take.json, 24 of 26 killed, score 0.9231):
+
+    SURVIVOR 7a1e1a43  const_tweak  '1' -> '2'  at floatingfeedback.cpp:160
+    SURVIVOR f0b04939  const_tweak  '1' -> '2'  at floatingfeedback.cpp:163
+
+Both are the `1` of `LocalVar->restart ? 1 : 0` -- the ninth argument of the two
+`picontroller_c` calls. Nothing else in the translation survived.
+
+THE CLAIM: `? 2 : 0` AND `? 1 : 0` ARE THE SAME ARGUMENT, ON BOTH TREES.
+`PIController`'s `reset` dummy is Fortran LOGICAL and crosses the boundary as
+`INTEGER(C_INT)`. Every converter on every path folds non-zero to .TRUE.:
+
+  clean tree (what this sweep scored) -- the generated callee bridge:
+    translations/Controllers/floatingfeedback_test/floatingfeedback_callees.f90:66
+      bridge_result = REAL(PIController(error, kp, ki, minValue, maxValue, DT,
+                                        I0, piP_f, (reset /= 0), inst), C_DOUBLE)
+
+  integrated tree -- unit #33's own translation, which IS `picontroller_c` after
+  integration:
+    translations/Controllers/picontroller.cpp:30
+      if (reset != 0) {
+
+So this is unit #48's (c) class -- behaviour-preserving EVERYWHERE, not merely
+unreachable on this corpus. No input can distinguish 1 from 2 here, and no wider
+draw would help. It is the same declaration unit #50 made for the same token at
+`flapcontrol.cpp:217`, for the same reason.
+
+EXECUTED, NOT ARGUED (unit #48's rule -- its first model of the same kind of
+proof was false, and running it is what caught that). One `fprintf` patched into
+translations/Controllers/floatingfeedback_test/floatingfeedback_test.cpp
+immediately before the `VITCMP("vit_result", ...)` line, run under
+`scripts/harness.sh --no-generate` so the scored corpus is kept byte for byte
+(`floatingfeedback_cases.bin` md5 6e39efea72d47ccf77ce2ba3f0e5ad2f, unchanged
+before and after), then stripped and the green re-taken at 6734 / 0.
+
+  THE POSITIVE CONTROL -- the site is live, and it is live in the branch the
+  mutant edits:
+
+      EQP lines                                   6734   (= the whole corpus)
+      restart == 1  (the `? 1` branch is TAKEN)   3209
+      restart == 0  (the `: 0` branch is taken)   3525
+      checked 6734  failed 0                      (the run's own JSON)
+
+  3209 cases select the very token the mutation changes, both `picontroller_c`
+  calls run on EVERY case -- they sit above the mode test and are guarded by
+  nothing -- and the mutant still survives. A dead site would have shown 0 here
+  and the declaration would have been about reachability instead.
+
+  THE COUNTER-CONTROL -- the operator is not blind at this site. The OTHER arm
+  of the same conditional, `'0' -> '1'` at the same two lines, was KILLED, and
+  by a large margin:
+
+      [ 13/26] const_tweak  '0' -> '1'  killed (3461/6734 cases)   line 160
+      [ 20/26] const_tweak  '0' -> '1'  killed (3461/6734 cases)   line 163
+
+  0 -> 1 turns a .FALSE. reset into a .TRUE. one and 3461 cases notice; 1 -> 2
+  leaves a .TRUE. reset .TRUE. and none can. Same operator, same statement, same
+  corpus, opposite verdicts. That is the whole difference between "the corpus
+  cannot reach this" and "no corpus can distinguish this".
+
+WHAT THE SECOND TAKE MEASURED. Re-run with `--equivalences
+mutation/FloatingFeedback.equivalences.json`: 26 mutants, 2 declared, 24
+killed, 0 survived, `declared_but_killed` empty, score 1.0000. The empty
+`declared_but_killed` is the check that neither declaration was excusing a
+mutant the corpus in fact kills.

@@ -1,0 +1,42 @@
+{
+ "unit": "FloatingFeedback",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "negate_cond",
+  "swap_operands"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutants": 26,
+ "equivalent_declared": 2,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 26,
+ "killed": 24,
+ "survived": 0,
+ "equivalent": 2,
+ "declared_but_killed": [],
+ "score": 1.0,
+ "loop_rev": "d947d92-nogit",
+ "gen_rev": "gen-ffac3ef69dd5",
+ "vit_rev": "a16a7ab-nogit",
+ "survivors": []
+}
