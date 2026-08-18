@@ -27,7 +27,8 @@ step from kills and the second from declarations.
 | post-integration (`harness/IPC.postintegration.json`) | 84,754 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **84,754 of 84,754**, an EMPTY pass set; reverted, rebuilt, green re-taken at 0 (`harness/IPC.postintegration.revert-verified.json`) |
 | gate, 27 scenarios (`gate/IPC.json`) | 5,252,000 values / 351 channels, 0 mismatched | **THREE**: additive on the stored answer moves **334,388** across all five scenarios that call the unit; multiplicative on the same statement moves **201,604** across two; and the then-surviving `drop_call` mutant moved **159,758** |
 
-**THE GATE IS NOT RE-TAKEN AND THAT IS THE POINT OF SAYING SO.** A corpus change
+**THE GATE IS NOT RE-TAKEN, THE CLAIM IS CHECKED TWO WAYS, AND IT WAS THEN RUN
+ANYWAY AS A ROUND-TRIP CONTROL.** A corpus change
 re-takes every layer that reads the corpus and exactly those. The gate runs 27
 simulations against the shipped library, never reads the case file, and neither
 the translation nor the wrapper moved this dispatch — `translations/Controllers/ipc.cpp`
@@ -35,6 +36,23 @@ is byte-for-byte what the first dispatch verified, `811d6842`. What WAS re-taken
 the clean-tree green, its no-op red test, all thirteen mutation parts and their
 merge, the post-integration green, its red test, and the green after that red
 test's revert.
+
+The claim that the gate could not have moved is not an argument here: `git diff`
+between the commit that wrote `gate/IPC.json` and HEAD over
+`translations/Controllers/ipc.cpp`, `rosco/controller/src/Controllers.f90` and
+`rosco/controller/CMakeLists.txt` is EMPTY. And because this dispatch opened
+three reset/restore windows and rebuilt the library in each, the gate was then
+run once more as a control on the round trip:
+
+```
+GATE PASS: compared 5252000 value(s) across 351 channel(s) / 27 scenario(s); mismatched 0
+wrote gate/IPC.json          144 s
+git status gate/             (nothing)
+```
+
+**Byte for byte.** So the tree this dispatch leaves behind builds the library the
+gate artifact describes, and `reset_to_clean.sh` / `restore_integrated.sh`
+round-tripped three times without moving a compared value.
 
 **No kernel.** The plan allowed "kernel replay **or** direct-call harness". The
 direct-call harness is the layer taken, as for units #45 through #52, and it is
