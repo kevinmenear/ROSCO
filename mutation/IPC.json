@@ -42,7 +42,7 @@
  ],
  "compared_against": "fortran_reference_on_a_clean_tree",
  "mutants": 118,
- "equivalent_declared": 0,
+ "equivalent_declared": 14,
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
@@ -50,10 +50,10 @@
  "nocompile_refused": false,
  "total": 118,
  "killed": 96,
- "survived": 22,
- "equivalent": 0,
+ "survived": 8,
+ "equivalent": 14,
  "declared_but_killed": [],
- "score": 0.8136,
+ "score": 0.9231,
  "loop_rev": "4751161-nogit",
  "vit_rev": "3f6e2ce-nogit",
  "merged_from": [
@@ -92,8 +92,8 @@
    "mutants": 9,
    "nocompile": 0,
    "killed": 5,
-   "survived": 4,
-   "score": 0.5556
+   "survived": 0,
+   "score": 1.0
   },
   {
    "part": "mutation/IPC.clean.index1.json",
@@ -200,8 +200,8 @@
    "mutants": 13,
    "nocompile": 0,
    "killed": 12,
-   "survived": 1,
-   "score": 0.9231
+   "survived": 0,
+   "score": 1.0
   },
   {
    "part": "mutation/IPC.clean.negate.json",
@@ -236,8 +236,8 @@
    "mutants": 10,
    "nocompile": 0,
    "killed": 3,
-   "survived": 7,
-   "score": 0.3
+   "survived": 3,
+   "score": 0.5
   },
   {
    "part": "mutation/IPC.clean.const1.json",
@@ -254,8 +254,8 @@
    "mutants": 10,
    "nocompile": 0,
    "killed": 6,
-   "survived": 4,
-   "score": 0.6
+   "survived": 0,
+   "score": 1.0
   },
   {
    "part": "mutation/IPC.clean.const2.json",
@@ -290,11 +290,11 @@
    "mutants": 10,
    "nocompile": 0,
    "killed": 8,
-   "survived": 2,
-   "score": 0.8
+   "survived": 1,
+   "score": 0.8889
   }
  ],
- "merged_why": "118 mutants at ~34.5s each on an 84,754-case corpus is 4,070s against the 600s a foreground command may block for, so the sweep is thirteen parts. Nine are operator-filtered whole; index_offset, arith_op and swap_operands are two SLICES each and const_tweak is four, because vit_mutate.py --offset/--limit names a window and this merge checks that the windows of the parts sharing an operator PARTITION it by mutant id.",
+ "merged_why": "118 mutants at ~34.5s each on an 84,754-case corpus is 4,070s against the 600s a foreground command may block for, so the sweep is thirteen parts. Nine are operator-filtered whole; index_offset, arith_op and swap_operands are two SLICES each and const_tweak is four, because vit_mutate.py --offset/--limit names a window and this merge checks that the windows of the parts sharing an operator PARTITION it by mutant id. Five parts were re-run with --equivalences after the classification; the other eight are the first run.",
  "merged_by": "scripts/_mutation_merge.py",
  "survivors": [
   {
@@ -310,30 +310,6 @@
    "after": "LocalVar->BlPitchCMeas - LocalVar->PC_MinPit, CntrPar->IPC_IntSat"
   },
   {
-   "id": "293e1cfa",
-   "operator": "index_offset",
-   "before": "[3]",
-   "after": "[3 + 1]"
-  },
-  {
-   "id": "a4268819",
-   "operator": "index_offset",
-   "before": "[3]",
-   "after": "[3 + 1]"
-  },
-  {
-   "id": "1ed626ad",
-   "operator": "index_offset",
-   "before": "[3]",
-   "after": "[3 + 1]"
-  },
-  {
-   "id": "a142c881",
-   "operator": "index_offset",
-   "before": "[3]",
-   "after": "[3 + 1]"
-  },
-  {
    "id": "7512a165",
    "operator": "index_offset",
    "before": "[0]",
@@ -344,12 +320,6 @@
    "operator": "index_offset",
    "before": "[0]",
    "after": "[0 + 1]"
-  },
-  {
-   "id": "b1dc4faa",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
   },
   {
    "id": "257ba010",
@@ -370,64 +340,10 @@
    "after": "2"
   },
   {
-   "id": "aed80394",
-   "operator": "const_tweak",
-   "before": "3",
-   "after": "4"
-  },
-  {
-   "id": "e4ee88fc",
-   "operator": "const_tweak",
-   "before": "3",
-   "after": "4"
-  },
-  {
-   "id": "3dcdfa38",
-   "operator": "const_tweak",
-   "before": "3",
-   "after": "4"
-  },
-  {
-   "id": "305b22ce",
-   "operator": "const_tweak",
-   "before": "3",
-   "after": "4"
-  },
-  {
-   "id": "f4319f87",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "622f752b",
-   "operator": "const_tweak",
-   "before": "0.0",
-   "after": "1.0"
-  },
-  {
-   "id": "9ea2b033",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "03813f34",
-   "operator": "const_tweak",
-   "before": "0.0",
-   "after": "1.0"
-  },
-  {
    "id": "53653667",
    "operator": "const_tweak",
    "before": "0",
    "after": "1"
-  },
-  {
-   "id": "479d5d80",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
   }
  ]
 }
