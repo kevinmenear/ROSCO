@@ -21,7 +21,7 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "d947d92",
+ "loop_rev": "4751161",
  "mismatched": 159758,
  "mismatched_channels": [
   "scenario_8:bld_pitch 15300/16000",
@@ -39,6 +39,9 @@
  ],
  "missing_channels": [],
  "missing_scenarios": [],
+ "notes": [
+  "the surviving drop_call mutant b36f5d50, character for character out of mutation/IPC.clean.calls.json, run through the OTHER instrument"
+ ],
  "perturbation": {
   "file": "rosco/controller/src/ipc.cpp",
   "from": "LocalVar->IPC_IntSat = std::fmin(CntrPar->IPC_IntSat,\n                                         LocalVar->BlPitchCMeas - CntrPar->PC_MinPit);",
@@ -88,6 +91,6 @@
  "unit": "IPC",
  "unit_of_count": "values",
  "verdict": "RED_TEST_PASS",
- "vit_rev": "a16a7ab",
+ "vit_rev": "3f6e2ce",
  "went_red": true
 }
