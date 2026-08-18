@@ -2,6 +2,147 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #55 — ParseInAry_Opt — second dispatch — 2026-08-18
+
+### PROPOSED AMENDMENT, for the Driver: an instrument whose failure mode SATISFIES its own control
+
+Not a finding about `ParseInAry_Opt`, and the sharpest thing this dispatch
+produced. `evidence/ParseInAry_Opt/run_survivor_replay.sh` puts every mutation
+survivor through the parser replay. Its control was the campaign's usual shape
+and a good one: *the replay enters the translation only through
+`list_read_ints`, so a survivor outside the parser MUST come back `unreached`* —
+16 of 17 did, and that is what made the first dispatch's run evidence.
+
+Re-run on an **integrated** tree it reported:
+
+```
+  READ   unreached 71      other  unreached 16
+  the parser replay KILLS 0 of 87 survivors
+```
+
+**87 of 87 unreached satisfies that control completely.** The cause was an
+include-path order: `parser_conformance.cpp` reaches the translation by textual
+include, the compile line carried `-I rosco/controller/src` before the directory
+holding the mutant, and `vit integrate` puts a copy of the translation in that
+directory. Every mutant compiled the shipped file. The first dispatch ran before
+integration, when that file did not exist, and was right by accident.
+
+**The general rule: a control that a BROKEN instrument passes more easily than a
+working one is not a control.** Every "must be unreached", "must be zero", "must
+be absent" control in this campaign has that shape, and each one needs a
+companion that fails when the instrument stops working. The companion is cheap
+and it is the same object the campaign already builds: a perturbation whose
+delta has been measured, required back at its measured value before anything is
+scored. This runner now takes `;` added to `is_value_terminator` — red test 1 of
+`run_parser_replay.sh`, 3 records of 113 — and refuses to score if it does not
+see 3.
+
+**This is the same amendment the first dispatch proposed, from the other side.**
+That one said a red test must assert it changed the ANSWER, not the SOURCE. This
+one says a GREEN control must be able to distinguish a working instrument from a
+dead one. Both reduce to: state the expected delta first.
+
+### PROPOSED AMENDMENT, for the Driver: a TENTH judgement kind, for a reference undefined on a path it does not SIGNAL
+
+Unit #54 built the ninth kind, `no_oracle_when`, for a reference that is
+undefined on some of its own paths. Its shape is a conjunction of relations on
+the inputs as supplied plus **one relation on a field the reference RETURNS**,
+and for this family that field is `ErrVar%aviFAIL`.
+
+This dispatch found a path where the reference is undefined and **returns
+nothing that says so**. Measured, on a corpus variant that was generated and run
+(`alloc_Ary = { values = [1, 0] }`, 15,504 cases, one failing):
+
+```
+  FileLines(3) = '/\]^'      ParamName = '  '      AryLen = 6      alloc_Ary = 0
+  an all-blank ParamName matches every line, so FoundLine is TRUE and Line = '/\]^'
+  gfortran's list-directed READ treats a leading '/' as a TERMINATOR:
+      IOSTAT = 0, and all six elements of the freshly ALLOCATEd Ary are UNCHANGED
+  the reference returns aviFAIL >= 0 -- exactly what a fully successful read returns
+```
+
+The recorded diff is a pointer value, `48ce335f1bc40000...`, against the C++
+side's fresh zeros: both sides left the elements alone, from different
+allocations. No `no_oracle_when` can name this. There is no compared field of
+the reference that separates "read everything" from "hit a terminator and read
+nothing", because the reference's whole answer on both is the same.
+
+**What would close it:** the general question is *which elements did the
+reference DEFINE*, and the general answer is a differential the harness can take
+by itself — run the reference twice from differently-poisoned buffers and
+exclude the elements that differ. That is a property of (corpus × reference)
+alone, so it keeps the guarantee the ninth kind was built around: the excluded
+set must be identical under every mutant and every stub. It is a change to the
+generated test, so it is the Driver's.
+
+**What was done instead, stated plainly rather than left to be inferred.** A
+second corpus variant, `has_AllowDefault`/`AllowDefault` reordered, moves the
+same base draw for the same reason and contains no such case; it is the one
+taken. Choosing between two admissible corpora by *which one the instrument can
+judge* is one step from tuning an instrument until it passes, so the rejected
+variant is named, its failing case is characterised in full, and the gap is
+escalated here rather than dodged.
+
+### A BASE DRAW IS A RULE'S COVERAGE, AND A PIN ON ONE PARAMETER CAN DELETE A RULE ABOUT ANOTHER
+
+Unit #49 found that a base draw on a dead arm costs the whole rule. Both of this
+dispatch's corpus corrections are that finding, and the second is a form of it
+the campaign had not met.
+
+**R13.** `assign_errmsg` refuses at `s.size() > cap`, the bridge writes at
+`LEN <= cap`; they differ only at equality, and R13's 256-case block exists to
+produce equality. `evidence/ParseInAry_Opt/r13_base_draw_probe.txt`: all 256
+cases carried `alloc_Ary = 0`, `has_AllowDefault = 0`, `aviFAIL = 300` — the arm
+that assigns **no message at all** — so 0 of 256 wrote anything and 0 of 13,674
+cases in the whole corpus had `LEN(ErrMsg) == cap`. Survivor `66860b6f` was that
+one missing case. Corrected, the block writes 112 bytes across all 256, the
+capacities sweep 8..263, exactly one case sizes the buffer TO it, and the mutant
+dies. **It is the only verdict that moved**, which is what makes it a targeted
+fix rather than a corpus shuffle.
+
+**R14, and this is the new form.** R14 sets EVERY free scalar integer to `k-1`
+and to `k` in the same case and drops the shape when any one of them falls
+outside its stated range. This unit pins `UnEc = { lo = 0, hi = 0 }` because the
+echo WRITE is not translated — a pin about a Fortran unit number, having nothing
+to do with which word `FindLine` compares — and it therefore admitted `k = 1`
+alone. **A pin on one parameter deleted two thirds of a rule about another**,
+and `harness/ParseInAry_Opt.json` had been saying so for a whole dispatch:
+`NOT reached ['2:plant', '3:plant']`. Stating `values = [0]` beside the bounds
+takes `UnEc` out of `plant_ints` while pinning it at the same single value; the
+regenerated corpus is asserted to carry `UnEc = 0` in all 15,504 cases.
+
+**The generalisation is checkable and belongs to the method:** any rule that
+requires ALL of a class of parameters to admit a value is silently bounded by
+the narrowest member of that class. `_admits` is the predicate; `plant_ints` is
+the class. A campaign that pins one parameter for an unrelated reason will lose
+the rule and be told only by a coverage string nobody reads.
+
+### THE FOUR RED-TEST COUNTS WERE RE-DERIVED, NOT EDITED TO MATCH
+
+A corpus change re-takes every layer that reads the corpus. All four stub counts
+and the wrapper red test's count were re-predicted from the re-measured
+partition **before** each run, and the two that did not match the naive
+prediction are the two worth keeping:
+
+```
+  no-op                    15,244 predicted   15,244
+  the .NOT. AllowDefault_   1,937 predicted    2,041   +104
+  the READ                    146 predicted      146
+  the IF (AryLen < 1) arm        21 predicted       19   -2
+  the wrapper reverse copy   8,729 predicted    8,729
+```
+
+The `+104` is a cell the partition's arm classifier had not separated: cases
+where the reference DID set `aviFAIL = -1` on the not-allowed arm and the bridge
+could not fit the 112-byte message into the staging buffer R13 was sweeping. The
+`-2` is the opposite: cases with `AryLen = 0`, `alloc_Ary = 0` and the
+not-allowed arm, where deleting the minimum-length arm changes `Ary`'s extent
+but `Ary` is EXCLUDED and nothing else moves — a perturbation that is real,
+reaches the case, and is invisible. Both were re-derived from the table and both
+then match exactly. **A prediction that misses and is explained from the same
+table it came from is worth more than one that was right**, because the residual
+named a cell.
+
 ## Unit #55 — ParseInAry_Opt — 2026-08-18
 
 ### PROPOSED AMENDMENT, for the Driver: a red test must assert that it changed the ANSWER, not that it changed the SOURCE
