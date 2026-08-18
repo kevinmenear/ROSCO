@@ -2162,3 +2162,121 @@ LocalVar_NumBl = { values = [3, 0, 1, 2] }
 # than inlined here and is therefore the same implementation on both sides of
 # this comparison.
 objInst_instPI = { lo = 1, hi = 1000 }
+
+# ---------------------------------------------------------------------------
+# IPC
+#
+# SEVEN PINS AND SIX OF THEM ARE ONE ARGUMENT REPEATED: an extent this unit
+# subscripts with a LITERAL, and a per-instance counter a callee post-increments.
+# Nothing here is new in kind; the arithmetic behind each one is this unit's.
+#
+# --- THE FOUR ALLOCATABLE EXTENTS ---
+#
+# `IPC` reads four `CntrPar` ALLOCATABLE arrays and subscripts every one of them
+# with a CONSTANT -- the harness's own plan says so, once per site:
+#
+#     note: CntrPar_IPC_Vramp[0]:     subscript not traceable to a parameter
+#     note: CntrPar_IPC_Vramp[1]:     ...
+#     note: CntrPar_IPC_KP[i - 1]:    ... (the DO runs i = 1,2, a literal bound)
+#     note: CntrPar_IPC_KI[i - 1]:    ...
+#     note: CntrPar_IPC_aziOffset[0]: ...
+#     note: CntrPar_IPC_aziOffset[1]: ...
+#
+# so elements 1 and 2 of each array are read UNCONDITIONALLY, with no ALLOCATED
+# test and no bound check anywhere in the procedure. ROSCO's own reader
+# allocates each of the four at exactly 2:
+#
+#     ReadSetParameters.f90:389  ParseAry(..., 'IPC_Vramp',     CntrPar%IPC_Vramp,     2, ...)
+#     ReadSetParameters.f90:392  ParseAry(..., 'IPC_KP',        CntrPar%IPC_KP,        2, ...)
+#     ReadSetParameters.f90:393  ParseAry(..., 'IPC_KI',        CntrPar%IPC_KI,        2, ...)
+#     ReadSetParameters.f90:394  ParseAry(..., 'IPC_aziOffset', CntrPar%IPC_aziOffset, 2, ...)
+#
+# R5's extent plan is `3 + bump + i`, so the BASE draw is already 3, 4, 5 and 6
+# -- above 2, and harmless -- but the ladder sweeps DOWNWARD as well, and an
+# extent of 0 or 1 is an out-of-bounds read in the REFERENCE. The two sides read
+# out of different allocations there, so the comparison would be adjudicating
+# two different pieces of adjacent memory rather than this unit's arithmetic.
+#
+# THE COST, STATED, AND IT IS SMALLER HERE THAN THE USUAL EXTENT PIN. The four
+# arrays leave R5's extent ladder. Nothing observable goes with them: the unit
+# reads elements 1 and 2 and nothing else, so extents 3, 4, 5, 6 and 2 are ONE
+# input as far as this procedure is concerned, and the plan's six notes say the
+# indices were never exercised by R5 in the first place. `hi = 2` rather than a
+# larger bound because 2 is what the program itself produces on every run.
+[IPC]
+
+CntrPar_IPC_Vramp_n = { lo = 2, hi = 2 }
+CntrPar_IPC_KP_n = { lo = 2, hi = 2 }
+CntrPar_IPC_KI_n = { lo = 2, hi = 2 }
+CntrPar_IPC_aziOffset_n = { lo = 2, hi = 2 }
+
+# --- THE LOOP BOUND ---
+#
+# `DO K = 1,LocalVar%NumBl` at :565 subscripts FOUR arrays of extent 3, three of
+# them procedure LOCALS and one a field:
+#
+#     REAL(DbKi) :: PitComIPC(3), PitComIPCF(3), PitComIPC_1P(3), PitComIPC_2P(3)
+#     ROSCO_Types.f90:357   REAL(DbKi) :: IPC_PitComF(3)
+#
+# The loop is unguarded and nothing in the reference tests NumBl against 3, so a
+# NumBl above 3 writes past a LOCAL and past a fixed-size field in the
+# REFERENCE. This is the fifth unit to carry the bound, after
+# `[PreFilterMeasuredSignals]`, `[ActiveWakeControl]`, `[FlapControl]` and
+# `[ForeAftDamping]`, and the first where the overrun is onto stack locals.
+#
+# `values` RATHER THAN `lo`/`hi`, ON UNIT #52's MEASUREMENT AND NOT ON A FRESH
+# ONE. That dispatch priced the `{ lo = 0, hi = 3 }` spelling three earlier
+# units had inherited: it put 98.7% of its corpus at `NumBl == 1`, because a
+# bounds pin drops the parameter out of R6's integer ladder and leaves the base
+# draw at one value (unit #49). The list is the whole admissible interval with
+# every member enumerated, 3 first so the base draw is the configuration ROSCO
+# ships -- and R7's predicate knob for this parameter draws [0, 1, 2], every
+# member of which is inside the list.
+#
+# WHY 0 IS KEPT. `NumBl == 0` runs the loop body zero times, and it is the only
+# input that separates this unit's two Coleman-inverse calls -- which write all
+# three elements of `PitComIPC_1P` and `PitComIPC_2P` whatever NumBl holds --
+# from the summation that consumes them. It is also the only input under which
+# `LocalVar%IPC_PitComF` arrives and leaves unchanged while every other output
+# moves.
+#
+# THE COST, STATED: NumBl leaves R6's integer ladder, so the decade boundaries
+# and the two 32-bit extremes are gone. Every one of those is a value at which
+# the reference writes outside its own storage. The gate cannot restore them:
+# all five scenarios that reach this unit run NumBl == 3 (the loop's gcov counts
+# are 4x the entry count in every one of them), so {0, 1, 2} exist in this
+# campaign only in the harness corpus.
+LocalVar_NumBl = { values = [3, 0, 1, 2] }
+
+# --- THE THREE INSTANCE COUNTERS ---
+#
+# THE OLDEST JUDGEMENT IN THIS FILE, AND THIS IS THE FIRST UNIT THAT NEEDS ALL
+# THREE OF ITS SPELLINGS AT ONCE. Each counter is INTENT(INOUT) to a callee that
+# subscripts a DIMENSION(1024) array with it and then post-increments -- INSIDE
+# the callee, where no compared out-parameter exists for an inference to attach
+# a role to. Unit #41 paid for the missing bound with
+# `Error allocating 11703869192 bytes` from its own bridge.
+#
+# THE ARITHMETIC, PER COUNTER, WORST CASE OVER THE ARMS:
+#
+#   instPI      4   the 1P pair plus the 2P pair (IPC_ControlMode >= 2), OR
+#                   1 on the yaw-by-IPC arm -- the two arms partition, so 4
+#   instSecLPF  1   the yaw-error LPFilter at :516, which is handed the
+#                   SECOND-order counter although it is the first-order filter.
+#                   That is the reference's choice and is transcribed; see the
+#                   note in translations/Controllers/ipc.cpp.
+#   instLPF     3   one per blade, inside the loop, on the
+#                   `IPC_CornerFreqAct > 0` arm only -- so 0 or NumBl, and NumBl
+#                   is bounded at 3 above.
+#
+# The bound could therefore be 1024 - 4. 1000 is used anyway, because it is the
+# number the other units in this file already carry and a bound differing by 20
+# buys nothing measurable.
+#
+# THE COST, STATED: each counter leaves R6's integer ladder. A defect at the
+# last slot would be a defect in `PIController` (unit #33) or `LPFilter`
+# (unit #14), each of which is CALLED rather than inlined here and is therefore
+# the same implementation on both sides of this comparison.
+objInst_instPI = { lo = 1, hi = 1000 }
+objInst_instLPF = { lo = 1, hi = 1000 }
+objInst_instSecLPF = { lo = 1, hi = 1000 }

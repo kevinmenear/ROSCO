@@ -1,0 +1,610 @@
+// VIT Translation Scaffold
+// Function: IPC
+// Source: Controllers.f90
+// Module: Controllers
+// Fortran: SUBROUTINE IPC(CntrPar, LocalVar, objInst, DebugVar, ErrVar)
+// Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+// Source MD5: 1996fbc4060e
+// VIT: 0.1.0
+// Status: unverified
+// Generated: 2026-08-18T01:37:09Z
+//
+// CONTRACT: mirror (plan.json). Every input and every output crosses the
+// signature, and the body is transcribed statement for statement.
+//
+// SIX CALLEES, ALL SIX ALREADY TRANSLATED, AND THE ORDER OF THE CALLS IS
+// LOAD-BEARING TWICE OVER. Clean `Controllers.f90:487-584` at `54dd134`:
+// ColemanTransform (x2), wrap_360, LPFilter, PIController (x1..5), sigma (x4),
+// ColemanTransformInverse (x2), LPFilter again (x0..NumBl). Three of those --
+// LPFilter, PIController and the second LPFilter loop -- carry per-instance
+// state indexed by an `objInst` counter they POST-INCREMENT, so the sequence in
+// which they are issued decides which slot of `LocalVar%FP` and `LocalVar%piP`
+// each one reads and writes. Reordering two calls that look independent puts
+// each one's filter state in the other's slot: identical on the first case of a
+// fresh state and permanently wrong afterwards (unit #50's note, one procedure
+// over).
+//
+// WHAT THE 27 SCENARIOS SEE, read from coverage/line_coverage.json against the
+// clean source. FIVE scenarios reach this unit -- 2, 6, 8, 18 and 27 -- because
+// DISCON's caller guards it with `IPC_ControlMode >= 1 .OR. Y_ControlMode == 2`
+// at `Controllers.f90:73`:
+//
+//   :510/:511  the two ColemanTransform calls   2: 3,999   6: 3,999
+//                                               8: 15,999  18: 15,999  27: 23,999
+//   :514  IF (Y_ControlMode == 2)               tested on every one of those
+//   :515-:517  the yaw-by-IPC arm               2: 3,999 -- SCENARIO 2 ONLY
+//   :519-:521  the ELSE arm                     6, 8, 18, 27
+//   :526/:527  the two sigma calls              2x and 3x the entry count
+//   :531  IF (IPC_SatMode == 2)                 tested on every call
+//   :533  the SatMode == 2 arm                  TAKEN in all five
+//   :536  the SatMode == 3 arm                  0 hits, ALL 27 SCENARIOS
+//   :538  the SatMode ELSE arm                  0 hits, ALL 27 SCENARIOS
+//   :543/:544  the 1P PIController pair         6, 8, 18, 27  (not 2)
+//   :547/:548  the 2P PIController pair         18 ONLY
+//   :551-:554  the four zeros                   2 ONLY
+//   :561/:562  the two inverse transforms       all five
+//   :569  IF (IPC_CornerFreqAct > 0.0)          tested 3x per call
+//   :570  the LPFilter arm                      0 hits, ALL 27 SCENARIOS
+//   :572  the pass-through arm                  all five
+//   :581  the ErrMsg prefix                     0 hits, ALL 27 SCENARIOS
+//
+// So the gate cannot see FOUR of this unit's arms: `IPC_SatMode == 3`, the
+// `IPC_SatMode` fall-through, the `IPC_CornerFreqAct > 0` filter and the error
+// prefix. The differential harness draws all four freely -- `IPC_SatMode` and
+// `IPC_CornerFreqAct` are ordinary scalar fields of the view and R7's predicate
+// knob picks them up from the reference's own tests -- and where that is
+// measured is recorded in evidence/IPC/, not asserted here.
+
+#include "vit_types.h"
+
+#include <cmath>
+#include <cstdio>
+#include <cstring>
+#include <string>
+#include <string_view>
+
+namespace {
+
+// INTEGER(IntKi), PARAMETER :: NP_1 = 1              (Constants.f90:25)
+// INTEGER(IntKi), PARAMETER :: NP_2 = 2              (Constants.f90:26)
+//
+// The first and second rotational harmonics. They are the `nHarmonic` argument
+// of both Coleman transforms and they are the ONLY thing that distinguishes the
+// 1P chain from the 2P chain -- same callee, same shape, different harmonic.
+// Same spelling as `translations/Controllers/flapcontrol.cpp:71`.
+constexpr int NP_1 = 1;
+constexpr int NP_2 = 2;
+
+// CHARACTER(*), PARAMETER :: RoutineName = 'IPC'
+//
+// Three characters, and the shortest `RoutineName` in the campaign. It matters
+// arithmetically rather than cosmetically: the prefix this unit writes is
+// `'IPC:'`, four bytes, and the four `sigma` calls above it each prefix
+// `'sigma:'`, six bytes. See the composition note at the ErrMsg tail.
+constexpr std::string_view RoutineName = "IPC";
+
+// THE TWO HELPERS BELOW ARE COPIED FROM
+// `translations/Controllers/cablecontrol.cpp` (unit #44), which took them from
+// `structuralcontrol.cpp`, which took them from `pitchsaturation.cpp`, which
+// took them from `interp1d.cpp` -- the unit that established the shape. They
+// are not re-derived from prose (P4). The only edit is the diagnostic string,
+// which names THIS unit so a reader of stderr knows which translation refused.
+//
+// `ErrVar%ErrMsg = <expr>` on a `CHARACTER(:), ALLOCATABLE` field is a
+// REALLOCATING assignment: the field's new LEN is the right-hand side's. The
+// view carries a finite staging buffer, so an assignment that does not fit is
+// REFUSED and reported rather than truncated -- a shortened message is the one
+// wrong answer a byte comparison cannot tell from a right one.
+void assign_errmsg(errorvariables_view_t* ErrVar, std::string_view s) {
+    if (ErrVar->ErrMsg == nullptr) {
+        std::fprintf(stderr,
+                     "VIT: IPC: ErrVar%%ErrMsg has no staging buffer; "
+                     "the assignment of %d bytes is refused\n",
+                     static_cast<int>(s.size()));
+        return;
+    }
+    if (static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap) {
+        std::fprintf(stderr,
+                     "VIT: IPC: ErrVar%%ErrMsg needs %d bytes, the staging "
+                     "buffer holds %d; the assignment is refused\n",
+                     static_cast<int>(s.size()), static_cast<int>(ErrVar->n_ErrMsg_cap));
+        return;
+    }
+    std::memcpy(ErrVar->ErrMsg, s.data(), s.size());
+    ErrVar->n_ErrMsg = static_cast<int32_t>(s.size());
+}
+
+// TRIM(ErrVar%ErrMsg): trailing blanks only, off the field's CURRENT length.
+// `find_last_not_of` rather than a hand-written backward scan, for unit #15's
+// and unit #17's reason: a loop written `while (n > 0 && s[n-1] == ' ')` offers
+// a `> 0` -> `>= 0` mutant that reads the byte BEFORE the buffer, which is
+// undefined behaviour rather than a wrong answer and which no value comparison
+// can be relied on to catch.
+//
+// A NEGATIVE length is the view's NOT-ALLOCATED convention, and it collapses to
+// the same empty string a zero LENGTH gives -- correct for both, because the
+// reference's `RoutineName//':'//TRIM(ErrMsg)` on a zero-length ErrMsg is
+// exactly `'IPC:'`. No `== npos` branch: `find_last_not_of` returns `npos`,
+// which is `SIZE_MAX`, and `npos + 1` is 0 by the defined wraparound of an
+// unsigned type -- so the all-blank string falls out of the same expression.
+std::string errmsg_trim(const errorvariables_view_t* ErrVar) {
+    const int n = ErrVar->n_ErrMsg;
+    const std::string_view v(ErrVar->ErrMsg, n > 0 ? static_cast<size_t>(n) : 0);
+    return std::string(v.substr(0, v.find_last_not_of(' ') + 1));
+}
+
+}  // namespace
+
+void IPC(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar,
+         objectinstances_t* objInst, debugvariables_t* DebugVar,
+         errorvariables_view_t* ErrVar) {
+    // `DebugVar` IS IN THE SIGNATURE AND IS READ AND WRITTEN NOWHERE IN THE
+    // BODY. The reference declares it `TYPE(DebugVariables), INTENT(INOUT)` and
+    // then never mentions it again -- upstream ROSCO passes it to every
+    // controller procedure whether or not that procedure logs anything. It is
+    // kept in the signature because the signature is the contract `vit
+    // integrate` generates the wrapper from; it is deliberately not touched
+    // here, because touching it would be behaviour the reference does not have.
+    (void)DebugVar;
+
+    // ! Local variables
+    // REAL(DbKi) :: PitComIPC(3), PitComIPCF(3), PitComIPC_1P(3), PitComIPC_2P(3)
+    //
+    // FOUR FIXED-SIZE LOCALS OF EXTENT 3, AND NONE OF THEM IS INITIALISED HERE.
+    // That is unit #51's side of the rule the runbook states (`FloatingFeedback`
+    // declares its result with no initialiser; `ResController` zero-initialises
+    // its own), and the fact it rests on is reachability:
+    //
+    //   * `PitComIPC_1P` and `PitComIPC_2P` are the OUTPUT arguments of the two
+    //     `ColemanTransformInverse` calls, which write all three elements
+    //     unconditionally on every invocation. No path reads them unwritten.
+    //   * `PitComIPC(K)` and `PitComIPCF(K)` are written then read inside the
+    //     same trip of the `DO K = 1,LocalVar%NumBl` loop, so no element is
+    //     read on a trip that did not write it, and elements above `NumBl` are
+    //     neither written nor read.
+    //
+    // So no path reads an indeterminate element, and zero-initialising them
+    // would be the translation answering a question the reference does not
+    // answer (P7). Fortran locals without an initialiser are indeterminate too
+    // -- these are not `SAVE`d, because none carries an initialiser.
+    double PitComIPC[3];
+    double PitComIPCF[3];
+    double PitComIPC_1P[3];
+    double PitComIPC_2P[3];
+
+    // INTEGER(IntKi) :: i, K
+    // Declared at their loops below; neither has any life outside one.
+
+    // REAL(DbKi) :: axisYawIPC_1P
+    // REAL(DbKi) :: Y_MErr, Y_MErrF, Y_MErrF_IPC
+    //
+    // `Y_MErr` and `Y_MErrF_IPC` are written on one arm and read after the IF.
+    // `Y_MErrF` IS WRITTEN ON BOTH ARMS AND READ ON NEITHER after the IF -- it
+    // is dead in the reference. It is transcribed anyway, both assignments,
+    // because the contract is a statement-for-statement mirror; a mutant of
+    // either is unobservable BY CONSTRUCTION and is classified as such in the
+    // mutation evidence rather than removed from the program here.
+    double Y_MErr;
+    double Y_MErrF;
+    double Y_MErrF_IPC;
+    double axisYawIPC_1P;
+
+    // ! Body
+    // ! Pass rootMOOPs through the Coleman transform to get the tilt and yaw
+    // ! moment axis
+    // CALL ColemanTransform(LocalVar%rootMOOPF, LocalVar%Azimuth, NP_1, &
+    //                       LocalVar%axisTilt_1P, LocalVar%axisYaw_1P)
+    // CALL ColemanTransform(LocalVar%rootMOOPF, LocalVar%Azimuth, NP_2, &
+    //                       LocalVar%axisTilt_2P, LocalVar%axisYaw_2P)
+    //
+    // `rootMOOPF` is `REAL(DbKi) :: rootMOOPF(3)` (ROSCO_Types.f90:352), a
+    // fixed-size field, so it is contiguous in the view struct and crosses as a
+    // bare pointer -- no gather. The two INTENT(OUT) scalars are FIELDS of
+    // `LocalVariables`, not locals, so their addresses are taken INTO the view
+    // struct and they are four of this unit's outputs. They come back out only
+    // through `vit_copy_scalars_to_localvariables`, which is what
+    // `vit integrate --reverse-copy` emits.
+    //
+    // BOTH CALLS ARE UNCONDITIONAL AND BOTH RUN ON EVERY INVOCATION, including
+    // when `IPC_ControlMode` is 0 and the whole PI block below is skipped. So a
+    // configuration that reaches this unit only through `Y_ControlMode == 2`
+    // still recomputes all four Coleman axes.
+    colemantransform_c(LocalVar->rootMOOPF, LocalVar->Azimuth, NP_1,
+                       &LocalVar->axisTilt_1P, &LocalVar->axisYaw_1P);
+    colemantransform_c(LocalVar->rootMOOPF, LocalVar->Azimuth, NP_2,
+                       &LocalVar->axisTilt_2P, &LocalVar->axisYaw_2P);
+
+    // ! High-pass filter the MBC yaw component and filter yaw alignment error,
+    // ! and compute the yaw-by-IPC contribution
+    // IF (CntrPar%Y_ControlMode == 2) THEN
+    if (CntrPar->Y_ControlMode == 2) {
+        // Y_MErr = wrap_360(LocalVar%NacHeading + LocalVar%NacVane)
+        //
+        // The SUM is the argument, not either term: `wrap_360` folds into
+        // [0, 360) and the fold of a sum is not the sum of the folds.
+        Y_MErr = wrap_360_c(LocalVar->NacHeading + LocalVar->NacVane);
+
+        // Y_MErrF = LPFilter(Y_MErr, LocalVar%DT, CntrPar%F_YawErr, &
+        //     LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instSecLPF)
+        //
+        // *** THE INSTANCE COUNTER IS `instSecLPF`, NOT `instLPF`, AND THAT IS
+        // THE REFERENCE'S CHOICE. *** `LPFilter` is the FIRST-order filter and
+        // every other call site in ROSCO hands it `objInst%instLPF`; this one
+        // hands it the SECOND-order counter. The two counters index different
+        // members of `LocalVar%FP` inside the callee, so the state this filter
+        // keeps lives in the second-order filter's slots and advances the
+        // second-order filter's counter. Transcribed exactly (P7): "correcting"
+        // it would move every filter instance in the process by one and change
+        // every later filter's answer.
+        //
+        // The two trailing arguments are VIT's OPTIONAL-`InitialValue`
+        // convention -- `has_InitialValue = 0` and an unread `0.0`, because the
+        // reference passes seven arguments and `InitialValue` is not among them.
+        // `LocalVar%restart` is LOGICAL and crosses as `int8_t`; `? 1 : 0`
+        // matches the `MERGE(1_C_INT, 0_C_INT, reset)` the generated wrapper
+        // writes, and the callee converts back with `(reset != 0)`, so the
+        // particular non-zero value is not observable on either tree.
+        Y_MErrF = lpfilter_c(Y_MErr, LocalVar->DT, CntrPar->F_YawErr,
+                             &LocalVar->FP, LocalVar->iStatus,
+                             LocalVar->restart ? 1 : 0, &objInst->instSecLPF,
+                             0, 0.0);
+
+        // Y_MErrF_IPC = PIController(Y_MErrF, CntrPar%Y_IPC_KP, CntrPar%Y_IPC_KI, &
+        //     -CntrPar%Y_IPC_IntSat, CntrPar%Y_IPC_IntSat, LocalVar%DT, &
+        //     0.0_DbKi, LocalVar%piP, LocalVar%restart, objInst%instPI)
+        //
+        // `-CntrPar%Y_IPC_IntSat` IS A UNARY NEGATION AND IS TRANSCRIBED AS
+        // ONE. Unit #52's rule: the two spellings `-X` and `(0.0 - X)` differ
+        // at a zero (`-(+0.0)` is `-0.0`, `0.0 - (+0.0)` is `+0.0`) and this
+        // campaign's harness compares bit patterns, so the shape the reference
+        // writes is the shape that goes here. `Y_IPC_IntSat` is a configured
+        // real and 0.0 is inside the harness's draw for it.
+        //
+        // The order of the two saturation arguments is `-IntSat` then `+IntSat`
+        // -- minValue then maxValue. Swapping them clamps to an empty interval
+        // whenever `Y_IPC_IntSat > 0`.
+        //
+        // THIS CALL CONSUMES ONE `instPI` SLOT AND IT IS ISSUED BEFORE ANY OF
+        // THE FOUR BELOW. On this arm, though, none of the four below runs:
+        // their guard is `IPC_ControlMode >= 1 .AND. Y_ControlMode /= 2`, and
+        // `Y_ControlMode` is 2 here. So the two arms of this IF and the two
+        // arms of the IF at :542 partition -- exactly one `instPI`-consuming
+        // group runs per invocation.
+        Y_MErrF_IPC = picontroller_c(Y_MErrF, CntrPar->Y_IPC_KP,
+                                     CntrPar->Y_IPC_KI, -CntrPar->Y_IPC_IntSat,
+                                     CntrPar->Y_IPC_IntSat, LocalVar->DT, 0.0,
+                                     &LocalVar->piP, LocalVar->restart ? 1 : 0,
+                                     &objInst->instPI);
+    // ELSE
+    } else {
+        // LocalVar%axisYawF_1P = LocalVar%axisYaw_1P
+        // Y_MErrF = 0.0
+        // Y_MErrF_IPC = 0.0
+        //
+        // *** THIS ARM IS THE ONLY WRITER OF `LocalVar%axisYawF_1P` IN ALL OF
+        // ROSCO, AND `LocalVar%axisYawF_2P` HAS NO WRITER AT ALL. *** Grepped
+        // across `rosco/controller/src/*.f90`: `axisYawF_1P` appears at :519
+        // (this assignment), at :544 (read) and in `ROSCO_IO`'s state
+        // serialisation; `axisYawF_2P` appears at :548 (read) and in
+        // `ROSCO_IO` only. The comment above the IF says "High-pass filter the
+        // MBC yaw component", which is what these fields were for; the filter
+        // is gone from upstream ROSCO and the fields are not.
+        //
+        // The 1P field is safe: its reader at :544 is behind
+        // `Y_ControlMode /= 2`, which is exactly this arm's condition, so every
+        // read is preceded by this write in the same invocation. The 2P field
+        // is read at :548 having never been written by anything -- it holds
+        // whatever `LocalVariables` was initialised to. That is a property of
+        // the REFERENCE and the translation reproduces it by reading the same
+        // field out of the view struct; it is recorded in evidence/IPC/ rather
+        // than repaired here (P7).
+        //
+        // `Y_MErrF = 0.0` is the dead assignment noted at the declaration. The
+        // reference writes it and so does this.
+        LocalVar->axisYawF_1P = LocalVar->axisYaw_1P;
+        Y_MErrF = 0.0;
+        Y_MErrF_IPC = 0.0;
+    // END IF
+    }
+    (void)Y_MErrF;  // written on both arms, read on neither -- see above.
+
+    // ! Soft cutin with sigma function
+    // DO i = 1,2
+    //     LocalVar%IPC_KP(i) = sigma(LocalVar%WE_Vw, CntrPar%IPC_Vramp(1), &
+    //         CntrPar%IPC_Vramp(2), 0.0_DbKi, CntrPar%IPC_KP(i), ErrVar)
+    //     LocalVar%IPC_KI(i) = sigma(LocalVar%WE_Vw, CntrPar%IPC_Vramp(1), &
+    //         CntrPar%IPC_Vramp(2), 0.0_DbKi, CntrPar%IPC_KI(i), ErrVar)
+    // END DO
+    //
+    // THE TRIP COUNT IS THE LITERAL 2 AND IT IS NOT `NumBl`. The two harmonics
+    // 1P and 2P each have a gain pair, and `LocalVar%IPC_KP` / `IPC_KI` are
+    // `REAL(DbKi) :: IPC_KP(2)` (ROSCO_Types.f90:380-381), fixed-size fields of
+    // extent 2. `CntrPar%IPC_KP` and `CntrPar%IPC_KI` are the ALLOCATABLE
+    // SOURCE gains -- a DIFFERENT pair of arrays with the same names one type
+    // over -- read at the same subscript and written nowhere. So this loop
+    // reads the configured gain and writes the ramped one, and the destination
+    // is `LocalVar`, never `CntrPar`.
+    //
+    // `sigma` RAMPS FROM 0 TO THE CONFIGURED GAIN over the wind-speed interval
+    // `[IPC_Vramp(1), IPC_Vramp(2)]`, so `y0` is the literal `0.0_DbKi` and
+    // `y1` is the gain. The four calls are the only readers of `IPC_Vramp` and
+    // the only writers of `ErrVar` in this unit other than the tail -- `sigma`
+    // prefixes `'sigma:'` onto `ErrVar%ErrMsg` when `aviFAIL < 0` on entry, and
+    // it does that once per call. See the ErrMsg tail for the arithmetic.
+    //
+    // `CntrPar%IPC_Vramp`, `IPC_KP` and `IPC_KI` are ALLOCATABLE and ROSCO's
+    // own reader allocates each at exactly 2 (`ReadSetParameters.f90:389,
+    // 392-393`, `ParseAry(..., 2, ...)`). Nothing here tests ALLOCATED and
+    // nothing bounds the subscript, so an extent below 2 is an out-of-bounds
+    // read in the REFERENCE -- which is why harness/ranges.toml states the
+    // extent rather than letting the generator draw one.
+    for (int i = 1; i <= 2; ++i) {
+        LocalVar->IPC_KP[i - 1] = sigma_c(LocalVar->WE_Vw, CntrPar->IPC_Vramp[0],
+                                          CntrPar->IPC_Vramp[1], 0.0,
+                                          CntrPar->IPC_KP[i - 1], ErrVar);
+        LocalVar->IPC_KI[i - 1] = sigma_c(LocalVar->WE_Vw, CntrPar->IPC_Vramp[0],
+                                          CntrPar->IPC_Vramp[1], 0.0,
+                                          CntrPar->IPC_KI[i - 1], ErrVar);
+    }
+
+    // ! Handle saturation limit, depends on IPC_SatMode
+    // IF (CntrPar%IPC_SatMode == 2) THEN
+    //     ! Saturate to min allowed pitch angle, softly using IPC_IntSat
+    //     LocalVar%IPC_IntSat = min(CntrPar%IPC_IntSat, &
+    //                               LocalVar%BlPitchCMeas - CntrPar%PC_MinPit)
+    // ELSEIF (CntrPar%IPC_SatMode == 3) THEN
+    //     ! Saturate to peak shaving, softly using IPC_IntSat
+    //     LocalVar%IPC_IntSat = min(CntrPar%IPC_IntSat, &
+    //                               LocalVar%BlPitchCMeas - LocalVar%PC_MinPit)
+    // ELSE
+    //     LocalVar%IPC_IntSat = CntrPar%IPC_IntSat
+    // ENDIF
+    //
+    // THE THREE ARMS DIFFER IN ONE FIELD AND THE FIELD IS THE WHOLE POINT:
+    // arm 2 subtracts `CntrPar%PC_MinPit`, the CONFIGURED minimum pitch, and
+    // arm 3 subtracts `LocalVar%PC_MinPit`, the peak-shaving minimum the pitch
+    // saturation block recomputes each step. Two identically-shaped statements
+    // reading two different fields with the same name in different types -- the
+    // one transcription error here that no amount of staring at the expression
+    // finds, because both spellings compile and both are plausible.
+    //
+    // `min` IS gfortran's INTRINSIC AND ITS C++ SPELLING IS `std::fmin`, not a
+    // branch. Unit #21 measured this at the campaign's flags over 12,167
+    // triples: `fmin`/`fmax` agree with the intrinsic on all of them, while
+    // both branch spellings differ at a signed zero and at a NaN, in opposite
+    // directions (`translations/Functions/saturate.cpp:20-36`).
+    //
+    // `LocalVar%IPC_IntSat` IS BOTH THE DESTINATION AND, ON THE ELSE ARM, A
+    // COPY OF `CntrPar%IPC_IntSat` -- a different field of a different type.
+    // The two never alias.
+    if (CntrPar->IPC_SatMode == 2) {
+        LocalVar->IPC_IntSat = std::fmin(CntrPar->IPC_IntSat,
+                                         LocalVar->BlPitchCMeas - CntrPar->PC_MinPit);
+    } else if (CntrPar->IPC_SatMode == 3) {
+        LocalVar->IPC_IntSat = std::fmin(CntrPar->IPC_IntSat,
+                                         LocalVar->BlPitchCMeas - LocalVar->PC_MinPit);
+    } else {
+        LocalVar->IPC_IntSat = CntrPar->IPC_IntSat;
+    }
+
+    // ! Integrate the signal and multiply with the IPC gain
+    // IF (CntrPar%IPC_ControlMode >= 1 .AND. CntrPar%Y_ControlMode /= 2) THEN
+    //
+    // `.AND.` IS TRANSCRIBED AS `&&` AND THE SHORT-CIRCUIT IS NOT OBSERVABLE:
+    // both operands are field reads with no side effect. Fortran does not
+    // promise to evaluate the second operand and C++ promises not to; neither
+    // choice can be seen from outside.
+    //
+    // THE SECOND CONJUNCT IS WHAT MAKES THE FOUR ARMS PARTITION. Together with
+    // the IF at :514 there are exactly three reachable configurations:
+    //   Y_ControlMode == 2                   -> yaw-by-IPC arm, this block skipped
+    //   /= 2 and IPC_ControlMode >= 1        -> this block, no yaw contribution
+    //   /= 2 and IPC_ControlMode <= 0        -> the four zeros below
+    // and the third is reachable from DISCON only when the caller's guard
+    // `IPC_ControlMode >= 1 .OR. Y_ControlMode == 2` is satisfied by the OTHER
+    // disjunct -- so from the caller it is unreachable, and from the harness,
+    // which calls this procedure directly, it is not.
+    if (CntrPar->IPC_ControlMode >= 1 && CntrPar->Y_ControlMode != 2) {
+        // LocalVar%IPC_axisTilt_1P = PIController(LocalVar%axisTilt_1P, &
+        //     LocalVar%IPC_KP(1), LocalVar%IPC_KI(1), -LocalVar%IPC_IntSat, &
+        //     LocalVar%IPC_IntSat, LocalVar%DT, 0.0_DbKi, LocalVar%piP, &
+        //     LocalVar%restart, objInst%instPI)
+        // LocalVar%IPC_axisYaw_1P = PIController(LocalVar%axisYawF_1P, ...)
+        //
+        // TWO CALLS IN THIS ORDER, tilt then yaw, each consuming one `instPI`
+        // slot -- unit #50's note for the same callee: swapping them puts each
+        // axis's integrator state in the other's slot.
+        //
+        // THE TWO INPUTS ARE NOT THE SAME FIELD. Tilt reads `axisTilt_1P`, the
+        // Coleman output written at :510. Yaw reads `axisYawF_1P` -- the
+        // FILTERED field written by the ELSE arm at :519 -- and NOT
+        // `axisYaw_1P`. On this branch `Y_ControlMode /= 2`, so :519 ran this
+        // invocation and the two hold the same value; the distinction is
+        // invisible on every input and is transcribed anyway, because it is the
+        // field the reference names and because a translation that reads
+        // `axisYaw_1P` here would diverge the moment upstream ROSCO puts its
+        // high-pass filter back.
+        //
+        // The gains are `LocalVar%IPC_KP(1)` / `IPC_KI(1)` -- the RAMPED gains
+        // this unit just wrote at index 1 -- and the saturation pair is
+        // `LocalVar%IPC_IntSat`, the value the SatMode block just chose. Both
+        // are read back out of the view struct rather than out of a local, as
+        // the reference reads them back out of the type.
+        LocalVar->IPC_AxisTilt_1P = picontroller_c(
+            LocalVar->axisTilt_1P, LocalVar->IPC_KP[0], LocalVar->IPC_KI[0],
+            -LocalVar->IPC_IntSat, LocalVar->IPC_IntSat, LocalVar->DT, 0.0,
+            &LocalVar->piP, LocalVar->restart ? 1 : 0, &objInst->instPI);
+        LocalVar->IPC_AxisYaw_1P = picontroller_c(
+            LocalVar->axisYawF_1P, LocalVar->IPC_KP[0], LocalVar->IPC_KI[0],
+            -LocalVar->IPC_IntSat, LocalVar->IPC_IntSat, LocalVar->DT, 0.0,
+            &LocalVar->piP, LocalVar->restart ? 1 : 0, &objInst->instPI);
+
+        // IF (CntrPar%IPC_ControlMode >= 2) THEN
+        //     LocalVar%IPC_axisTilt_2P = PIController(LocalVar%axisTilt_2P, &
+        //         LocalVar%IPC_KP(2), LocalVar%IPC_KI(2), ...)
+        //     LocalVar%IPC_axisYaw_2P = PIController(LocalVar%axisYawF_2P, ...)
+        // END IF
+        //
+        // THE 2P PAIR IS NESTED, so `IPC_ControlMode == 1` leaves
+        // `IPC_AxisTilt_2P` and `IPC_AxisYaw_2P` at the values they arrived
+        // with -- NOT at zero. The zeros at :551-:554 belong to the outer ELSE
+        // and this arm does not reach them. That asymmetry is the reference's
+        // and it is visible: a 1P-only configuration still feeds the stale 2P
+        // integrals into the second inverse Coleman transform at :562.
+        //
+        // INDEX 2 OF THE RAMPED GAINS, and `LocalVar%axisYawF_2P` as the yaw
+        // input -- the field nothing in ROSCO writes. See the note at :519.
+        if (CntrPar->IPC_ControlMode >= 2) {
+            LocalVar->IPC_AxisTilt_2P = picontroller_c(
+                LocalVar->axisTilt_2P, LocalVar->IPC_KP[1], LocalVar->IPC_KI[1],
+                -LocalVar->IPC_IntSat, LocalVar->IPC_IntSat, LocalVar->DT, 0.0,
+                &LocalVar->piP, LocalVar->restart ? 1 : 0, &objInst->instPI);
+            LocalVar->IPC_AxisYaw_2P = picontroller_c(
+                LocalVar->axisYawF_2P, LocalVar->IPC_KP[1], LocalVar->IPC_KI[1],
+                -LocalVar->IPC_IntSat, LocalVar->IPC_IntSat, LocalVar->DT, 0.0,
+                &LocalVar->piP, LocalVar->restart ? 1 : 0, &objInst->instPI);
+        }
+    // ELSE
+    } else {
+        // LocalVar%IPC_axisTilt_1P = 0.0
+        // LocalVar%IPC_axisYaw_1P  = 0.0
+        // LocalVar%IPC_axisTilt_2P = 0.0
+        // LocalVar%IPC_axisYaw_2P  = 0.0
+        //
+        // ALL FOUR, including the 2P pair the arm above writes only
+        // conditionally. `0.0` is a default-real literal assigned to a
+        // `REAL(DbKi)` field; the conversion is exact and `0.0` in C++ is the
+        // same `+0.0`.
+        LocalVar->IPC_AxisTilt_1P = 0.0;
+        LocalVar->IPC_AxisYaw_1P = 0.0;
+        LocalVar->IPC_AxisTilt_2P = 0.0;
+        LocalVar->IPC_AxisYaw_2P = 0.0;
+    // ENDIF
+    }
+
+    // ! Add the yaw-by-IPC contribution
+    // axisYawIPC_1P = LocalVar%IPC_axisYaw_1P + Y_MErrF_IPC
+    //
+    // THE SUM IS ALWAYS TAKEN AND ONE TERM IS ALWAYS ZERO, because the two IFs
+    // partition: on `Y_ControlMode == 2` the PI block was skipped and
+    // `IPC_AxisYaw_1P` is 0.0 from the ELSE arm, while `Y_MErrF_IPC` carries
+    // the yaw controller's output; otherwise `Y_MErrF_IPC` is the 0.0 written
+    // at :521. The addition is still not a no-op in either direction: `x + 0.0`
+    // is `x` for every double except a negative zero, where `-0.0 + +0.0` is
+    // `+0.0`. Transcribed as the addition it is.
+    axisYawIPC_1P = LocalVar->IPC_AxisYaw_1P + Y_MErrF_IPC;
+
+    // ! Pass direct and quadrature axis through the inverse Coleman transform
+    // ! to get the commanded pitch angles
+    // CALL ColemanTransformInverse(LocalVar%IPC_axisTilt_1P, axisYawIPC_1P, &
+    //     LocalVar%Azimuth, NP_1, CntrPar%IPC_aziOffset(1), PitComIPC_1P)
+    // CALL ColemanTransformInverse(LocalVar%IPC_axisTilt_2P, LocalVar%IPC_axisYaw_2P, &
+    //     LocalVar%Azimuth, NP_2, CntrPar%IPC_aziOffset(2), PitComIPC_2P)
+    //
+    // THE 1P CALL TAKES THE LOCAL `axisYawIPC_1P` -- the yaw axis PLUS the
+    // yaw-by-IPC contribution -- AND THE 2P CALL TAKES THE FIELD DIRECTLY.
+    // There is no `axisYawIPC_2P`: the yaw-by-IPC term is added at 1P only.
+    //
+    // Both write all three elements of their output array unconditionally, so
+    // `PitComIPC_1P` and `PitComIPC_2P` are fully defined here regardless of
+    // `NumBl`. `IPC_aziOffset` is the ALLOCATABLE phase offset, element 1 for
+    // the first harmonic and 2 for the second; ROSCO's reader allocates it at
+    // exactly 2 (`ReadSetParameters.f90:394`) and this unit does not bound the
+    // subscript, which is the second reason harness/ranges.toml states extents.
+    colemantransforminverse_c(LocalVar->IPC_AxisTilt_1P, axisYawIPC_1P,
+                              LocalVar->Azimuth, NP_1, CntrPar->IPC_aziOffset[0],
+                              PitComIPC_1P);
+    colemantransforminverse_c(LocalVar->IPC_AxisTilt_2P, LocalVar->IPC_AxisYaw_2P,
+                              LocalVar->Azimuth, NP_2, CntrPar->IPC_aziOffset[1],
+                              PitComIPC_2P);
+
+    // ! Sum nP IPC contributions and store to LocalVar data type
+    // DO K = 1,LocalVar%NumBl
+    //
+    // WRITTEN 1-BASED, WITH `<=`, BECAUSE THAT IS THE OBSERVABLE SHAPE (unit
+    // #44's rule): an off-by-one in a literally transcribed Fortran loop shows
+    // up as a missing element, while the same loop rewritten 0-based can hide
+    // it. `K - 1` at each subscript is where `index_offset` can grade it.
+    //
+    // FOUR ARRAYS ARE SUBSCRIBED BY `K` AND ALL FOUR HAVE EXTENT 3: the three
+    // locals and `LocalVar%IPC_PitComF`, which is `REAL(DbKi) :: IPC_PitComF(3)`
+    // (ROSCO_Types.f90:357) -- a fixed-size field, not an ALLOCATABLE, so it
+    // crosses inside the view struct with no synthesised extent. Nothing in the
+    // reference tests `NumBl` against 3, so a NumBl above 3 writes past a local
+    // AND past a field in the REFERENCE; harness/ranges.toml bounds it for that
+    // reason. A guard here would be a test the reference does not have (P7).
+    for (int K = 1; K <= LocalVar->NumBl; ++K) {
+        // PitComIPC(K) = PitComIPC_1P(K) + PitComIPC_2P(K)
+        PitComIPC[K - 1] = PitComIPC_1P[K - 1] + PitComIPC_2P[K - 1];
+
+        // ! Optionally filter the resulting signal to induce a phase delay
+        // IF (CntrPar%IPC_CornerFreqAct > 0.0) THEN
+        //     PitComIPCF(K) = LPFilter(PitComIPC(K), LocalVar%DT, &
+        //         CntrPar%IPC_CornerFreqAct, LocalVar%FP, LocalVar%iStatus, &
+        //         LocalVar%restart, objInst%instLPF)
+        // ELSE
+        //     PitComIPCF(K) = PitComIPC(K)
+        // END IF
+        //
+        // THE TEST IS INSIDE THE LOOP AND SO IS THE COUNTER ADVANCE. On the
+        // filtered arm this unit consumes ONE `instLPF` slot PER BLADE, so the
+        // counter advances by `NumBl` -- and on the pass-through arm by zero.
+        // That is what the `objInst_instLPF` bound in harness/ranges.toml has
+        // to cover, and it is why the bound is not "one call".
+        //
+        // `> 0.0` IS STRICT AND THE COMPARISON IS AGAINST A DEFAULT-REAL ZERO
+        // widened to DbKi -- exact. A corner frequency of exactly 0.0 takes the
+        // pass-through arm, which is what all 21 shipped `Examples/DISCON*.IN`
+        // do and why the gate never reaches the filter (coverage: :570 has 0
+        // hits in all 27 scenarios).
+        //
+        // THIS `instLPF` IS THE ORDINARY FIRST-ORDER COUNTER -- unlike the
+        // `instSecLPF` the yaw-error filter at :516 is given. Two `LPFilter`
+        // calls in one procedure, handed two different counters, is the
+        // reference's shape and both are transcribed as written.
+        if (CntrPar->IPC_CornerFreqAct > 0.0) {
+            PitComIPCF[K - 1] = lpfilter_c(PitComIPC[K - 1], LocalVar->DT,
+                                           CntrPar->IPC_CornerFreqAct,
+                                           &LocalVar->FP, LocalVar->iStatus,
+                                           LocalVar->restart ? 1 : 0,
+                                           &objInst->instLPF, 0, 0.0);
+        } else {
+            PitComIPCF[K - 1] = PitComIPC[K - 1];
+        }
+
+        // LocalVar%IPC_PitComF(K) = PitComIPCF(K)
+        //
+        // The staging through `PitComIPCF` is not removable: on the filtered
+        // arm the callee's return goes to the local first and the field is
+        // written from the local, and a translation that wrote the field
+        // directly would be the same program only because nothing reads
+        // `PitComIPCF` again. Transcribed as two statements because that is
+        // what the reference has.
+        LocalVar->IPC_PitComF[K - 1] = PitComIPCF[K - 1];
+    // END DO
+    }
+
+    // ! Add RoutineName to error message
+    // IF (ErrVar%aviFAIL < 0) THEN
+    //     ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
+    // ENDIF
+    //
+    // *** FIVE STAGED ASSIGNMENTS ON THE PATH, WHICH IS THE LARGEST NUMBER IN
+    // THIS CAMPAIGN, AND UNIT #48's RULE SAYS TO COUNT THEM BEFORE READING A
+    // RED ON A CHARACTER OUTPUT. *** `aviFAIL < 0` is a property of the state
+    // ON ENTRY -- nothing in this unit sets it -- and the four `sigma` calls
+    // above test the same predicate and each prefix `'sigma:'`. So with an
+    // entry message of trimmed length m and `aviFAIL < 0`:
+    //
+    //     sigma x4   m -> m+6 -> m+12 -> m+18 -> m+24
+    //     here                                -> m+28   ('IPC:' is 4 bytes)
+    //
+    // The reference chain is Fortran throughout with ONE capacity gate, in the
+    // generated bridge, on the final m+28. The translation chain gates at every
+    // one of the five. Where the two therefore disagree is a window in R13's
+    // capacity ladder, and it is measured rather than assumed -- see
+    // harness/ranges.toml `[IPC]` and evidence/IPC/.
+    if (ErrVar->aviFAIL < 0) {
+        assign_errmsg(ErrVar, std::string(RoutineName) + ':' + errmsg_trim(ErrVar));
+    }
+}
