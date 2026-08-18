@@ -507,7 +507,7 @@ done_check.txt                           the done-condition at close
 vit_translate.stdout.txt                 the scaffold prompt, as generated
 fortran_io_probe.f90  / .txt             40 records through the reference's own READ,
                                          plus the PRINT record layouts
-fortran_io_probe2.f90 / .txt             33 more -- separators, repeat counts, and the
+fortran_io_probe2.f90 / .txt             28 more -- separators, repeat counts, and the
                                          search for a zero-store rule that is not there
 fortran_io_probe3.f90 / .txt             the semicolon systematically, the repeat-count
                                          ceiling, and what terminates a good value
