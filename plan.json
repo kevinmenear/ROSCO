@@ -3171,7 +3171,10 @@
     "gate/IPC.json",
     "translations/Controllers/ipc.cpp",
     "harness/ranges.toml"
-   ]
+   ],
+   "source_file": "rosco/controller/src/Controllers.f90",
+   "translation": "translations/Controllers/ipc.cpp",
+   "harness_required": true
   },
   {
    "order": 54,
