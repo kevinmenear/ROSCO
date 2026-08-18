@@ -135,6 +135,7 @@ set(SOURCES
     src/aerodyntorque.cpp
     src/cablecontrol.cpp
     src/flapcontrol.cpp
+    src/floatingfeedback.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

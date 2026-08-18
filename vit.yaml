@@ -1090,6 +1090,9 @@ translations:
   FlapControl:
     status: integrated
     cpp_file: translations/Controllers/flapcontrol.cpp
+  FloatingFeedback:
+    status: integrated
+    cpp_file: translations/Controllers/floatingfeedback.cpp
 types:
   ControlParameters:
     strategy: view
