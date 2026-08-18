@@ -54,12 +54,23 @@ shift 2
 #
 # Anything not recognised here is passed through to `vit_mutate.py` unchanged,
 # so the two slice flags need no special case.
+# `--unreachable` IS A DIFFERENT CLAIM FROM `--equivalences` AND IS SPELT
+# SEPARATELY SO IT READS AS ONE. Added at the fourth dispatch, when the
+# disposition became reachable from a unit session (loop b9c8c52). Equivalence
+# says the two PROGRAMS agree on every admissible input; unreachable says this
+# CORPUS never reaches the mutant -- a weaker claim, which is why
+# `vit_mutate.load_unreachable` refuses any entry without a `reason` and an
+# `evidence` path that EXISTS, and why `loop/done.py` P12 fails the unit
+# outright if the corpus then kills one.
 EQ=""
+UNR=""
 EXTRA=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --equivalences)
             EQ="--equivalences /workspace/ROSCO-r2/mutation/IPC.equivalences.json" ;;
+        --unreachable)
+            UNR="--unreachable /workspace/ROSCO-r2/mutation/IPC.unreachable.json" ;;
         *) EXTRA="$EXTRA $1" ;;
     esac
     shift
@@ -76,4 +87,4 @@ bash scripts/mutate_guarded.sh translations/Controllers/ipc.cpp \
       "cd /workspace/ROSCO-r2 && python3 /workspace/translation-loop/scripts/vit_mutate.py \
          IPC --root /workspace/ROSCO-r2 \
          --cpp translations/Controllers/ipc.cpp --module Controllers \
-         $OPARGS $EQ $EXTRA --out mutation/IPC.clean.$PART.json"
+         $OPARGS $EQ $UNR $EXTRA --out mutation/IPC.clean.$PART.json"
