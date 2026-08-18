@@ -21,7 +21,7 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "d947d92",
+ "loop_rev": "4751161",
  "mismatched": 334388,
  "mismatched_channels": [
   "scenario_2:bld_pitch 3999/4000",
@@ -57,6 +57,9 @@
  ],
  "missing_channels": [],
  "missing_scenarios": [],
+ "notes": [
+  "ADDITIVE on the stored answer: moves every scenario in which this unit computes anything at all, and cannot be annihilated by an exact zero the way a scale can"
+ ],
  "perturbation": {
   "file": "rosco/controller/src/ipc.cpp",
   "from": "LocalVar->IPC_PitComF[K - 1] = PitComIPCF[K - 1];",
@@ -106,6 +109,6 @@
  "unit": "IPC",
  "unit_of_count": "values",
  "verdict": "RED_TEST_PASS",
- "vit_rev": "a16a7ab",
+ "vit_rev": "3f6e2ce",
  "went_red": true
 }
