@@ -1,0 +1,74 @@
+Unit #53 IPC -- the R13 staging-capacity composition window, MEASURED
+
+Run: `bash scripts/harness.sh IPC Controllers ipc
+      rosco/controller/src/Controllers.f90 --against translation`, CLEAN tree,
+before any `staging_capacity_excludes` was stated. This is the artifact the
+[IPC] entry in harness/ranges.toml rests on, and it is kept because a window
+that is asserted and a window that is measured are different kinds of claim.
+
+checked 63912  failed 24  inadmissible 0
+loop_rev d947d92-nogit  gen_rev gen-ffac3ef69dd5  vit_rev a16a7ab-nogit
+
+THE PREDICTION, written from two prefix lengths and the R13 base draw m = 7
+(the base case's ErrVar%ErrMsg is `abyz{9:`, seven bytes) BEFORE the failing
+set was read:
+
+    L_final = 7 + 4*len('sigma:') + len('IPC:') = 7 + 24 + 4 = 35
+    L_first = 7 + len('IPC:')                   = 11
+      -- 'IPC:' is FOUR bytes and 'sigma:' is SIX, so the LAST gate in the
+         chain is the cheapest one, and 11 rather than 13 is the bottom of
+         the window.
+
+    cap  <  11      every gate on both sides refuses                PASS
+    11 <= cap < 35  the reference bridge refuses all 35 and keeps
+                    the entry value; the translation writes
+                    whatever prefix of the five-gate chain fits     FAIL
+    cap >= 35       both write 35                                   PASS
+
+    -> 35 - 11 = 24 capacities, k = 4..27 of R13's ladder (cap = 7 + k)
+
+THE MEASUREMENT:
+    failed 24 -- the predicted count, to the case
+    the R13 block is the last 256 cases: 63656..63911
+    so the failing cases are 63660..63683
+
+    `mismatches` is capped at 16 RECORDS by the emitter, which is 8 cases at
+    two fields each (`ErrVar.n_ErrMsg` and `ErrVar.ErrMsg`) -- so the list
+    below is the first 8 of the 24 and NOT the whole failing set. The count
+    is what names the set; the records are what decode it.
+
+EVERY MISMATCHED OUTPUT, and there are only two -- nothing this unit computes
+numerically is in the list:
+       8  ErrVar.ErrMsg
+       8  ErrVar.n_ErrMsg
+
+THE DIFFS, decoded. `ref` is the entry value the reference-side bridge
+refused to overwrite; `got` is how far up the five-gate chain the translation
+got at that capacity. Trailing NULs are the comparison buffer, not content.
+
+    case 63660  cap  11   ref 'abyz{9:'      got 'IPC:abyz{9:'
+    case 63661  cap  12   ref 'abyz{9:'      got 'IPC:abyz{9:'
+    case 63662  cap  13   ref 'abyz{9:'      got 'sigma:abyz{9:'
+    case 63663  cap  14   ref 'abyz{9:'      got 'sigma:abyz{9:'
+    case 63664  cap  15   ref 'abyz{9:'      got 'sigma:abyz{9:'
+    case 63665  cap  16   ref 'abyz{9:'      got 'sigma:abyz{9:'
+    case 63666  cap  17   ref 'abyz{9:'      got 'IPC:sigma:abyz{9:'
+    case 63667  cap  18   ref 'abyz{9:'      got 'IPC:sigma:abyz{9:'
+
+Read the `got` column downward and the five gates are visible one at a time:
+    cap 11..12   only 'IPC:' fits            -> 11 bytes
+    cap 13..16   the first sigma fits        -> 13 bytes
+    cap 17..18   that plus 'IPC:'            -> 17 bytes
+    cap 19..22   two sigmas                  -> 19 bytes
+and so on to cap 31..34, where all four sigmas fit and 'IPC:' does not.
+
+WHY THE CASE HAS NO ORACLE INSIDE THE WINDOW. The reference chain is Fortran
+throughout with a reallocating ErrMsg and ONE capacity gate -- the generated
+bridge's export, on the final 35 bytes. The translation chain gates FIVE
+times: once in each sigma_c bridge write-back and once in assign_errmsg.
+Inside the window the reference holds the entry value and the translation
+holds a partial composition, and the reference's OWN answer -- 35 bytes of
+'IPC:sigma:sigma:sigma:sigma:abyz{9:' -- is a value NEITHER side can carry.
+A case whose oracle records something upstream ROSCO never produces is not a
+case this comparison can adjudicate (P7). Unit #48 measured the same shape at
+two gates; this is the same shape at five.

@@ -1,0 +1,67 @@
+{
+ "unit": "IPC",
+ "operators": [
+  "index_offset"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "index_offset"
+ ],
+ "operators_filter_unmatched": [],
+ "mutants": 18,
+ "equivalent_declared": 0,
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 18,
+ "killed": 14,
+ "survived": 4,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.7778,
+ "loop_rev": "d947d92-nogit",
+ "gen_rev": "gen-ffac3ef69dd5",
+ "vit_rev": "a16a7ab-nogit",
+ "survivors": [
+  {
+   "id": "293e1cfa",
+   "operator": "index_offset",
+   "before": "[3]",
+   "after": "[3 + 1]"
+  },
+  {
+   "id": "a4268819",
+   "operator": "index_offset",
+   "before": "[3]",
+   "after": "[3 + 1]"
+  },
+  {
+   "id": "1ed626ad",
+   "operator": "index_offset",
+   "before": "[3]",
+   "after": "[3 + 1]"
+  },
+  {
+   "id": "a142c881",
+   "operator": "index_offset",
+   "before": "[3]",
+   "after": "[3 + 1]"
+  }
+ ]
+}

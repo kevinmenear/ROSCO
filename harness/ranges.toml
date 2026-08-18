@@ -2205,10 +2205,10 @@ objInst_instPI = { lo = 1, hi = 1000 }
 # larger bound because 2 is what the program itself produces on every run.
 [IPC]
 
-CntrPar_IPC_Vramp_n = { lo = 2, hi = 2 }
-CntrPar_IPC_KP_n = { lo = 2, hi = 2 }
-CntrPar_IPC_KI_n = { lo = 2, hi = 2 }
-CntrPar_IPC_aziOffset_n = { lo = 2, hi = 2 }
+CntrPar_IPC_Vramp_n = { lo = 2, hi = 3 }
+CntrPar_IPC_KP_n = { lo = 2, hi = 3 }
+CntrPar_IPC_KI_n = { lo = 2, hi = 3 }
+CntrPar_IPC_aziOffset_n = { lo = 2, hi = 3 }
 
 # --- THE LOOP BOUND ---
 #
@@ -2280,3 +2280,60 @@ LocalVar_NumBl = { values = [3, 0, 1, 2] }
 objInst_instPI = { lo = 1, hi = 1000 }
 objInst_instLPF = { lo = 1, hi = 1000 }
 objInst_instSecLPF = { lo = 1, hi = 1000 }
+
+# --- THE HOLE IN R13's CAPACITY LADDER, PREDICTED THEN MEASURED ---
+#
+# FIFTH STAGED ASSIGNMENT IN THE CAMPAIGN'S LONGEST CHAIN. Unit #48's rule is to
+# COUNT the staged assignments on the path before reading a red on a CHARACTER
+# output. `IPC` calls `sigma` four times, each of which ends with
+#
+#     IF (ErrVar%aviFAIL < 0) ErrVar%ErrMsg = 'sigma'//':'//TRIM(ErrVar%ErrMsg)
+#
+# and then writes its own `'IPC'//':'//TRIM(...)`. So with an entry message of
+# trimmed length m and `aviFAIL < 0` -- which is the base draw here, R7's
+# predicate knob puts -1 in it -- the reference's ErrMsg goes
+#
+#     m -> m+6 -> m+12 -> m+18 -> m+24 -> m+28
+#
+# THE ARITHMETIC, WRITTEN FROM THE TWO LENGTHS AND THEN CHECKED AGAINST THE RUN.
+# The R13 base case supplies m = 7 (`abyz{9:`), so:
+#
+#     L_final  = 7 + 4*6 + 4 = 35        the reference's own answer
+#     L_first  = 7 + 4      = 11         the SHORTEST prefix the chain can write
+#                                        -- 'IPC:' is four bytes and 'sigma:' is
+#                                        six, so the LAST gate is the cheapest
+#
+#     cap < 11        every gate on both sides refuses            PASS
+#     11 <= cap < 35  the reference's bridge refuses all 35 and
+#                     holds the entry value; the translation
+#                     writes whatever prefix of the chain fits    FAIL  <- 24
+#     cap >= 35       both write 35                               PASS
+#
+# 35 - 11 = 24 capacities, and the run measured `failed 24`, cases 63660..63683,
+# which is exactly k = 4..27 of the ladder (capacity = 7 + k). The two values
+# seen in the diff are the two the model predicts: `IPC:aybz{9:` at 11 bytes
+# where only the last gate passes, and `sigma:aybz{9:` at 13 where the first
+# does and the rest do not.
+#
+# WHY THE CASE HAS NO ORACLE THERE. The reference chain is Fortran throughout
+# with a reallocating `ErrMsg` and ONE capacity gate -- the generated bridge's
+# export, on the final 35 bytes. The translation chain gates FIVE times: once in
+# each `sigma_c` bridge write-back and once in `assign_errmsg`. Inside the
+# window the reference holds the value ErrMsg had ON ENTRY and the translation
+# holds a partial composition, and the reference's OWN answer -- 35 bytes of
+# `sigma:sigma:sigma:sigma:aybz{9:` prefixed with `IPC:` -- is a value NEITHER
+# side can carry. A case whose oracle records something upstream ROSCO never
+# produces is not a case this comparison can adjudicate (P7).
+#
+# THE PRICE, STATED. R13 wants one case AT the boundary, one below and one
+# above. The one below (capacity 34) is inside the window and is gone. What
+# remains is 35 -- the case that sizes the buffer TO the composed message, and
+# the case the boundary mutant `'>' -> '>='` on the refusal is graded by -- 36
+# above it, and every capacity from 7 to 10 below. The ladder still runs 232 of
+# its 256 rungs.
+#
+# THIRD UNIT AT THIS SHAPE. `AeroDynTorque` (unit #48) states [16, 29] for a
+# two-gate chain and `PitchSaturation` ablated R13 for the same reason without
+# stating one. This entry is STRICTLY MORE INPUT than the ablation it replaces:
+# `--disable R13_staging_capacity` would drop all 256 rungs to avoid 24.
+ErrVar_ErrMsg = { staging_capacity_excludes = [11, 34], reason = "IPC prefixes 'IPC:' onto ErrVar%ErrMsg after its four sigma callees have each prefixed 'sigma:' onto the same buffer, so the translation chain gates the staging buffer FIVE times where the reference chain gates it once, on the final 35 bytes. Inside [11, 35) the reference holds the entry value, the translation holds a partial composition, and the reference's own 35-byte answer is a value neither side can carry -- the case has no oracle. Predicted from the two prefix lengths, then measured at cases 63660..63683 (24 cases, k = 4..27 of the ladder)." }
