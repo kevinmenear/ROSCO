@@ -29,10 +29,42 @@
 # Exit: the command's own status on a proved restore, 3 on a live mutant.
 set -uo pipefail
 
+# A GUARD THAT CANNOT MEASURE MUST NOT REPORT A CLEAN RESTORE.
+#
+# `git` is on neither vit-dev nor vit-harness. Invoked INSIDE a container every
+# `git` call below failed, BEFORE and AFTER were both the empty string, they
+# compared EQUAL, and the marker came down -- announcing a proved restore having
+# proved nothing, and printing `restored to ` with the hash missing. That is the
+# exact disarm this script exists to prevent, arriving through the script itself.
+# Measured 2026-08-18 on the first `--sanitize` sweep.
+#
+# So it refuses rather than degrades. It wraps `docker exec` FROM THE HOST; it
+# does not run inside the container.
+command -v git >/dev/null 2>&1 || {
+    cat >&2 <<'NOGIT'
+mutate_guarded: REFUSING TO RUN -- no `git` on PATH.
+
+This script proves the restore by hashing the .cpp through git, so without git
+it cannot measure anything and would clear its marker unconditionally. Neither
+container carries git: run this ON THE HOST, wrapping the container command.
+
+  bash scripts/mutate_guarded.sh <the .cpp> docker exec vit-dev python3 ...
+NOGIT
+    exit 4
+}
+
 ROOT="$(git rev-parse --show-toplevel)"
 CPP="$1"; shift
 M="$ROOT/.loop-run/MUTATE_IN_PROGRESS"
 BEFORE="$(git -C "$ROOT" hash-object "$CPP")"
+
+# An unhashable file is the same absence of a measurement as a missing git --
+# a mistyped path, or the .cpp argument omitted so the command lands in $1.
+[ -n "$BEFORE" ] || {
+    echo "mutate_guarded: REFUSING TO RUN -- cannot hash '$CPP'." >&2
+    echo "  Argument 1 must be the .cpp to guard, then the command." >&2
+    exit 4
+}
 
 mkdir -p "$ROOT/.loop-run"
 cat > "$M" <<SENTINEL
@@ -50,7 +82,9 @@ SENTINEL
 "$@"; rc=$?
 
 AFTER="$(git -C "$ROOT" hash-object "$CPP")"
-if [ "$AFTER" = "$BEFORE" ]; then
+# `-n "$AFTER"` carries its weight: an empty AFTER must never satisfy this, or a
+# hash that failed at the END would clear the marker the same way it did above.
+if [ -n "$AFTER" ] && [ "$AFTER" = "$BEFORE" ]; then
     rm -f "$M"
     echo "mutate_guarded: $CPP restored to $BEFORE; marker cleared; sweep exit $rc"
     exit $rc
