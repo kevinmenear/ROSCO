@@ -1,6 +1,6 @@
-# done_check.py ParseInAry_Opt -- captured 2026-08-18T07:14:01Z by scripts/capture_done_check.sh
+# done_check.py ParseInAry_Opt -- captured 2026-08-18T08:00:07Z by scripts/capture_done_check.sh
 
-Run against the committed state at 8fa9059e ("ParseInAry_Opt: the close gate re-taken against the library at close -- 5,252,000 / 0"), with a CLEAN tree, with stdout
+Run against the committed state at c5ae5a84 ("ParseInAry_Opt: plan.json brought current -- six layers at the second dispatch's numbers, three new evidence files, disposition unchanged at deferred"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -31,8 +31,8 @@ ParseInAry_Opt: Verdict.INCOMPLETE  (13/14 PASS)
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
 [  ok  ] P9   gate compared and matched          
-[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/ParseInAry_Opt.json 68/156 = 0.436 < 1.0 -- survivors: compare_op[66860b6f], compare_op[2f8001ae], compare_op[ad38f36b], compare_op[ba05f614], compare_op[6d203c33], compare_op[08ff2c98]
-[  ok  ] P11  post-integration harness re-run    13674 check(s) against the integrated build
+[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/ParseInAry_Opt.json 69/156 = 0.442 < 1.0 -- survivors: compare_op[2f8001ae], compare_op[ad38f36b], compare_op[ba05f614], compare_op[6d203c33], compare_op[08ff2c98], compare_op[e6bc72cb]
+[  ok  ] P11  post-integration harness re-run    15504 check(s) against the integrated build
 [  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
 [  ok  ] P10  evidence reproducible              
 [  ok  ] P14  artifact revisions agree           3 artifact(s) at 2ff3660

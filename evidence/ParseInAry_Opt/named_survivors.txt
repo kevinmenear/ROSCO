@@ -129,3 +129,61 @@ SUMMARY
   08ff2c98   (c)   one-past-the-end read; needs a sanitiser build
 
   (a) genuinely equivalent:  none of the six.
+
+===============================================================================
+ADDENDUM -- THE LIST ROTATES, AND THE SEVENTH NAME IS THE FIRST (a) THIS UNIT
+HAS FOUND
+===============================================================================
+P12 prints `d["survivors"][:6]`. Killing 66860b6f promoted the next survivor
+into the printed set, so the re-captured `done_check.txt` names
+
+  2f8001ae, ad38f36b, ba05f614, 6d203c33, 08ff2c98, e6bc72cb
+
+-- the same five as above plus one new id. It is determined here so that the
+next dispatch is not handed a name with no history.
+
+  e6bc72cb   line 217   parse_int   compare_op  '>' -> '>='
+             (a) GENUINELY EQUIVALENT -- and NOT declared. Both halves matter.
+
+```c++
+    if (acc > 4294967296LL) {      // -> acc >= 4294967296LL
+        overflow = true;
+    }
+```
+
+`acc` accumulates the digit string; `overflow` exists ONLY to stop accumulating
+once the magnitude can no longer matter, so that a 20-digit record cannot
+overflow the `long long`. The verdict is taken afterwards:
+
+```c++
+    if (overflow || v > 2147483647LL || v < -2147483648LL) return false;
+```
+
+THE ARGUMENT. The two programs differ on exactly one state: `acc` reaching
+4294967296 = 2^32 exactly. Take that state and follow both.
+
+  * mutant: `overflow = true`, accumulation stops, and the verdict is `false`.
+  * original: `overflow` stays false and the loop continues.
+      - if another digit follows, `acc` grows past 2^32, `overflow` is set on
+        that iteration, and the verdict is `false`.
+      - if no digit follows, `v` is +/- 4294967296. 4294967296 > 2147483647 and
+        -4294967296 < -2147483648, so the range test fires and the verdict is
+        `false`.
+
+Both return `false` on every continuation, and `out` is written on neither, so
+no caller can observe the difference. The equivalence is not "the input is
+unreachable" -- `'4294967296'` reaches it -- it is that 2^32 is already outside
+INT32 on BOTH signs, so a threshold moved by one representable value cannot
+change a verdict that is already "reject". This is disputable and is written to
+be disputed: the way to break it would be a continuation on which the original
+returns `true` with `acc` having passed through exactly 2^32, and there is none,
+because `acc` is monotonically non-decreasing in the loop.
+
+WHY IT IS NOT FOLDED INTO THE SCORE. `equivalent_declared` reduces the
+denominator, and declaring THIS mutant because a formatter happened to print its
+id -- while 86 other survivors go un-audited for equivalence -- would make the
+score a function of which six names P12 truncated to. This unit's standing
+position, taken on the first dispatch and unchanged, is that nothing is
+declared: 69/156 = 0.4423 is the number, and the argument above is offered to
+the Driver to fold in or dispute rather than applied unilaterally to a number
+nobody could then check against the others.
