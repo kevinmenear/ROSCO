@@ -3134,14 +3134,14 @@
         "DISCON"
       ],
       "dependency_depth": 2,
-      "verification": "direct-call differential harness (63,888 cases) + mutation + 27-scenario gate; bit-identical",
+      "verification": "direct-call differential harness (63,888 cases) + mutation (92 of 118, 0.7797) + 27-scenario gate; bit-identical",
       "why": "every input and output crosses the signature",
       "bridge_feasible": {
         "value": "unknown",
         "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
       },
       "observability": null,
-      "disposition": null,
+      "disposition": "deferred",
       "evidence": [
         "evidence/IPC/README.md",
         "evidence/IPC/gate.redtests.txt",
@@ -3153,6 +3153,9 @@
         "evidence/IPC/harness.postintegration.redtest.json",
         "evidence/IPC/mutation.index.numbl_2value.json",
         "evidence/IPC/mutation.merge_refusal.txt",
+        "evidence/IPC/mutation.merge_controls.txt",
+        "evidence/IPC/mutation.cap_audit.txt",
+        "evidence/IPC/mutation.cap_audit.json",
         "evidence/IPC/ipc.hstub-noop.cpp",
         "evidence/IPC/run_harness_redtest.sh",
         "evidence/IPC/run_mutation_part.sh",
@@ -3168,6 +3171,12 @@
         "mutation/IPC.clean.swap.json",
         "mutation/IPC.clean.compare.json",
         "mutation/IPC.clean.negate.json",
+        "mutation/IPC.clean.const0.json",
+        "mutation/IPC.clean.const1.json",
+        "mutation/IPC.clean.const2.json",
+        "mutation/IPC.json",
+        "scripts/mutation_cap_audit.py",
+        "scripts/_mutation_merge.redtest.py",
         "gate/IPC.json",
         "translations/Controllers/ipc.cpp",
         "harness/ranges.toml"

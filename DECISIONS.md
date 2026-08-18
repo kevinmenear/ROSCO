@@ -2,6 +2,111 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #53 — IPC — second dispatch — 2026-08-18
+
+### PROPOSED AMENDMENT, for the Driver: 1,856 mutants were never enumerated, across 15 units
+
+The sharpest thing this dispatch found, and it is not about IPC.
+`harness.cppmutate.mutants` takes `limit_per_operator=40`, and its own docstring
+says of it: *"It is a cap, and a silent cap reads as full coverage — callers must
+report when it bites."* `scripts/dbgmutate.py` reports it, in
+`capped_operators`. `scripts/vit_mutate.py` never did.
+
+```
+translation                offered  actual  unseen   capped operators
+checkinputs                    192     848     656   compare_op:226, const_tweak:383, negate_cond:167
+activewakecontrol              224     452     228
+parsedbary_opt                 189     305     116
+prefiltermeasuredsignals       126     223      97
+readavrswap                    115     167      52
+parseinary_opt                 157     199      42
+ipc                            118     157      39
+...                                          1,856   over 15 of 55 translations
+```
+
+`mutation/CheckInputs.json` says 192 mutants. The .cpp has 848 sites. The 192 are
+not wrong — every kill in them is a kill — but the score's REACH is unstated,
+which is P9 exactly: coverage is not visibility. A reader comparing 0.978 on one
+unit with 0.780 on another is comparing two fractions with silently different
+denominators.
+
+Fixed forward in loop `4751161`: `vit_mutate.py` now prints the cap when it bites
+and writes `limit_per_operator` and `capped_operators` into every artifact — the
+two fields copied from `dbgmutate.py` rather than re-derived (P4). IPC's nine
+parts and `mutation/IPC.json` are the first artifacts to carry them.
+
+**THE DECISION IS NOT THIS UNIT'S.** Fourteen other units' committed artifacts
+still do not say it. Three options, none of which a unit dispatch should take
+alone: (a) re-take those fourteen mutation layers with the cap reported, which is
+the honest state but costs the campaign a full mutation pass; (b) leave them and
+publish the audit beside the ledger, so every score is read next to how much of
+its population was outside the sweep; (c) raise the cap, which changes what
+"killed" means for every unit and makes new scores incomparable with old ones.
+`scripts/mutation_cap_audit.py` produces the table on demand, so (b) is available
+at zero cost today.
+
+Recorded as C12 with the wrong artifacts still in the tree
+(`evidence/IPC/mutation.cap_audit.{txt,json}`), before the fix was relied on.
+
+### PROPOSED AMENDMENT: two mutators, two spellings for the same split
+
+`dbgmutate.py` slices with `--slice i/n` and records `slice`; `vit_mutate.py` now
+slices with `--offset N --limit M` and records `mutant_slice` plus `scored_ids`.
+Both are right for their own tool — `vit_mutate.py` already had `--limit`, and
+`i/n` cannot express an uneven window — but a campaign with two spellings for one
+idea will eventually have a merge that understands one of them. `dbgmutate_merge`
+checks slices by index; `_mutation_merge` now checks them by mutant id, which is
+the stronger check and the one worth converging on. Raised, not taken: unifying
+them touches a unit (#42 `Debug`) that is already closed.
+
+### A fix that undoes itself one file later, found because the artifact was read
+
+The cap fix landed in `vit_mutate.py` and every part carried
+`capped_operators: ["const_tweak"]`. The merged `mutation/IPC.json` — which is
+the file `loop/done.py` P12 and every reader actually open — did not: the union
+does not copy fields it was not told about. So the first artifact produced after
+the fix reproduced the exact silence the fix was for.
+
+Caught by printing the merged doc's keys rather than trusting that the parts'
+content had arrived. The general shape, and it is worth carrying: **when a field
+is added to a part, ask what the union does with it.** A union is a lossy
+projection by default.
+
+### Re-taking a unit across an instrument move is priced by ONE HASH
+
+This unit's twelve artifacts were stamped `(loop d947d92, vit a16a7ab)` and both
+instruments had moved. A new mutation part therefore could not join them — the
+merge refuses two instruments, `revcheck` reports the same disagreement across
+the unit — so the choice was a full re-take or no mutation score. The re-take
+looked expensive because `vit_harness.py` regenerates a 656 MB corpus, and unit
+#26's rule is that a score and the green it rests on must name the same corpus.
+
+It cost **71 seconds**, and the reason it was safe to do is a hash:
+
+```
+before  e5909178b374dd940125a9e9717063eb80c0b01b16393e08b1edf4baddcd3ced
+after   e5909178b374dd940125a9e9717063eb80c0b01b16393e08b1edf4baddcd3ced
+```
+
+Byte-identical across the two generator revisions, so every count in the old
+evidence survived the move — and every re-taken number did come back to the
+value, including four operators' survivor ids.
+
+**Do not argue this from which rules are N/A.** The argument was available
+(`R14_planted_word` is N/A for this unit, `no_oracle_when` emits nothing unless a
+range states one) and it is the weaker instrument: `gen_rev` DID change, because
+it hashes the generator's code and not its output. Take the hash before and
+after. If it differs, that is the finding and the re-take has just become a
+different job.
+
+**The alternative that was considered and rejected:** checking the loop and VIT
+repositories out at the OLD revisions so the new part's stamp would match the old
+ones. It would have produced true stamps — that code would really have run — but
+the motive would have been the stamp rather than the measurement, VIT does not
+even execute during a mutation sweep, and it would have meant running a mutator
+with a known utf-8 decode defect to preserve a string. A shared repository rolled
+backwards also outlives the dispatch that rolled it.
+
 ## Unit #55 — ParseInAry_Opt — second dispatch — 2026-08-18
 
 ### PROPOSED AMENDMENT, for the Driver: an instrument whose failure mode SATISFIES its own control

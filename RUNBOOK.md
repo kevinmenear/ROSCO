@@ -7793,6 +7793,100 @@ unit can exhaust the second while barely touching the first.
   two arguments are not interchangeable: one says the gate cannot see what the
   arm computed, the other says there is nothing to see.
 
+## AN OPERATOR TOO BIG FOR ONE CALL NOW SPLITS, AND THE UNION IS CHECKED BY ID
+
+- **Unit #53, second dispatch. The entry above this one said it could not be
+  done; it can, and the fix is two flags and one stronger check.**
+
+  ```
+  vit_mutate.py --operator const_tweak --offset 0  --limit 14
+                                       --offset 14 --limit 13
+                                       --offset 27 --limit 13
+  _mutation_merge.py --part ... x9   ->  92 killed of 118   score 0.7797
+  ```
+
+  `--offset` skips before `--limit` truncates (loop `4751161`), so the pair
+  names any window. The part records `mutant_slice` and `scored_ids`, and
+  `_mutation_merge.py` accepts several parts per operator **only** when their
+  ids partition it: no id twice, none missing, none the mutator does not
+  produce. That replaced "one operator, one part", which enforced disjointness
+  by construction because nothing in the artifact could express anything else.
+
+  **The id check is stronger than the count arithmetic, not a relaxation of
+  it** — two parts can agree about indices 0..19 and 20..39 of two different
+  enumerations, sum to 40, and have scored one mutant twice. Make it go red
+  before believing it: `mutation.merge_controls.txt` does it on the unit's real
+  parts (drop a slice, duplicate a slice, drop an operator), and
+  `scripts/_mutation_merge.redtest.py` does it on synthetic ones, 6 of 6.
+
+  **Do not reach for the corpus instead.** Narrowing to fit a ceiling was tried
+  here first and is the wrong lever: 42,694 cases still left `const_tweak` at
+  796 s, and a weaker corpus bought to fit a clock is a worse measurement even
+  when it fits.
+
+## `cppmutate` CAPS EVERY OPERATOR AT 40, AND ONE OF THE TWO MUTATORS NEVER SAID SO
+
+- **Unit #53, campaign-wide: 1,856 mutants across 15 of 55 translations were
+  never enumerated by any sweep.**
+
+  ```
+  ipc          artifact 118 mutants   .cpp has 157   const_tweak 79 sites
+  checkinputs  artifact 192 mutants   .cpp has 848
+  ```
+
+  `mutants(unit, src, limit_per_operator=40)` returns the capped list, so the
+  capped and uncapped populations are **indistinguishable after the call** —
+  the only way to report the cap is to enumerate past it once, which costs a
+  pass over the source text and no build. `dbgmutate.py` did this from the
+  start; `vit_mutate.py` did not until `4751161`.
+
+  A score over a sample is not wrong, it is unstated: two units' scores are two
+  fractions with silently different denominators. **Before comparing any two
+  mutation scores in this campaign, run `scripts/mutation_cap_audit.py`** — it
+  prints offered against actual per translation and takes seconds.
+
+  What it CANNOT tell you is what the score would have been. Unenumerated
+  mutants were never built, so their survival is UNKNOWN and not 'none' (P6).
+
+## RE-TAKING A UNIT ACROSS AN INSTRUMENT MOVE IS PRICED BY ONE HASH
+
+- **Unit #53. Twelve artifacts at (loop d947d92, vit a16a7ab), both instruments
+  moved, one layer still missing.** A new part cannot join the old ones — the
+  merge refuses two instruments and `revcheck` reports the same disagreement
+  across the unit — so a missing layer forces a choice between a FULL re-take
+  and no measurement at all. There is no partial move that leaves the evidence
+  coherent.
+
+  Take the corpus hash before and after regenerating:
+
+  ```
+  before/after  e5909178b374dd940125a9e9717063eb80c0b01b16393e08b1edf4baddcd3ced
+  harness re-take 71 s;  every re-taken number identical to the value
+  ```
+
+  Byte-identical means every count in the old evidence survives the move, and
+  the whole re-take is minutes. **`gen_rev` is not this check** — it hashes the
+  generator's CODE and it did change here while the output did not. Nor is
+  "which rules are N/A": that is an argument, and the hash is a measurement
+  that can go the other way.
+
+  **Rolling the instrument repositories BACK to match the old stamps is the
+  move not to make.** The stamps would be true, and the motive would be the
+  stamp rather than the measurement; here it would also have meant running a
+  mutator with a known utf-8 decode defect, and a shared repo checked out
+  backwards outlives the dispatch that did it.
+
+## WHEN A FIELD IS ADDED TO A PART, ASK WHAT THE UNION DOES WITH IT
+
+- **Unit #53, one file after the fix.** `capped_operators` was added to
+  `vit_mutate.py`, every one of nine parts carried it, and `mutation/IPC.json`
+  — the file P12 and every reader actually open — did not, because
+  `_mutation_merge.py` copies the fields it was written to copy. The first
+  artifact produced after the fix reproduced the exact silence the fix was for.
+
+  Caught by printing the merged document's keys instead of assuming the parts'
+  content had arrived. A union is a lossy projection by default.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's

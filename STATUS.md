@@ -279,50 +279,84 @@ Neither number moved.
 
 ---
 
-**As of 2026-08-17: unit #53 `IPC` is `deferred`, and it closes on P12 ALONE.**
-Four layers, all four red-tested. One dispatch. The unit is the campaign's
-largest so far — six distinct callees, eight arms, fourteen `LocalVariables`
-outputs — and the two things worth knowing about it are that its differential
-corpus is 8.4x anything before it, and that the gate killed a mutant the
-corpus could not.
+**As of 2026-08-18: unit #53 `IPC` is `deferred`, and it closes on P12 ALONE —
+now on a NUMBER (0.7797) rather than on an absent artifact.** Four layers, all
+four red-tested. Two dispatches. The unit is the campaign's largest so far — six
+distinct callees, eight arms, fourteen `LocalVariables` outputs — and the three
+things worth knowing about it are that its differential corpus is 8.4x anything
+before it, that the gate killed a mutant the corpus could not, and that
+completing its mutation layer required fixing two defects in the mutator.
 
 | layer | result | red-tested |
 |---|---|---|
 | differential harness (`harness/IPC.json`) | **63,888 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, all six callee bridges kept | the unit as a no-op: **63,888 of 63,888**, the whole corpus, the EMPTY pass set the stub predicted |
-| mutation (`mutation/IPC.clean.*.json`, six parts) | **66 of 78 killed, 0.846**, 0 no-compile, 12 survivors at TWO sites — and **40 `const_tweak` mutants NOT SCORED** | the score *is* the red test, 66 times |
+| mutation (`mutation/IPC.json`, NINE parts) | **92 of 118 killed, 0.7797**, 0 no-compile, 26 survivors at five sites; `const_tweak` scored as three SLICES | the score *is* the red test, 92 times; and the union's own three refusals in `mutation.merge_controls.txt` |
 | post-integration (`harness/IPC.postintegration.json`) | 63,888 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **63,888 of 63,888**, an EMPTY pass set; reverted, rebuilt, green re-taken at 0 |
 | gate, 27 scenarios (`gate/IPC.json`) | 5,252,000 values / 351 channels, 0 mismatched | **THREE**: additive **334,388** (scenarios 2, 6, 8, 18, 27); the SAME statement × 2.0 **201,604** (8, 27 only); the surviving `drop_call` mutant **159,758** (8, 27) |
 
-**WHY IT IS `deferred`, AND IT IS ARITHMETIC RATHER THAN JUDGEMENT.** There is no
-`mutation/IPC.json`, so P12 cannot pass. The corpus is **63,888 cases / 656 MB**
-against `ForeAftDamping`'s 7,567 and `CheckInputs`' 16,769, which makes a mutant
-cost **25.5 s** (five parts agree to within 2%). `const_tweak` produces 40, so
-that operator is a **1040 s foreground call against a 600 s ceiling** — and it
-cannot be split, because `vit_mutate.py --limit` has no offset and
-`scripts/_mutation_merge.py` correctly refuses a part that scored a subset of its
-own operator's sites. The refusal is committed
-(`evidence/IPC/mutation.merge_refusal.txt`), run rather than described.
+**WHY IT IS `deferred`.** `min_mutation_score` is 1.0 and this unit scores
+**0.7797**. P12 fails on that number and nothing else does; the other thirteen
+predicates pass. Reaching 1.0 would mean declaring 26 equivalences, nine of them
+at a site the gate has PROVEN non-equivalent by killing one of them on 159,758
+values. `equivalent_declared` is 0.
 
-**AND THE GAP IS NOT WHAT DECIDES THE DISPOSITION.** Even a complete
-`const_tweak` part could not have made P12 pass: `min_mutation_score` is 1.0 and
-this unit has twelve survivors, eight of which the gate has PROVEN
-non-equivalent by killing one of them on 159,758 values. A full 118-mutant sweep
-would have scored about 0.85 and failed P12 on the number instead of on the
-absence. The unscored 40 are a real gap in the evidence and they are named as
-one; they are not the reason this unit is `deferred`.
+**THE FIRST DISPATCH COULD NOT TAKE THAT NUMBER, AND THE REASON WAS THE
+TOOLCHAIN.** The corpus is **63,888 cases / 656 MB** against `ForeAftDamping`'s
+7,567 and `CheckInputs`' 16,769, which makes a mutant cost **26.5 s**.
+`const_tweak` produces 40, so that operator is a **1,040 s foreground call
+against a 600 s ceiling** — and `vit_mutate.py --limit` could only truncate, so
+mutants 21..40 were unreachable by any sequence of runs. That refusal is kept
+(`evidence/IPC/mutation.merge_refusal.txt`) beside the fix that removed it:
 
-Shrinking the corpus was tried and does not reach: `LocalVar_NumBl = { values =
-[3, 0] }` gives 42,694 cases and 19.4 s per mutant (`const_tweak` still 796 s),
-and 40 compiles alone are ~180 s, so the corpus would have to fall to ~25,000
-with no admissibility argument to justify it. The two-value take was KEPT because
+* **`vit_mutate.py --offset`** (loop `4751161`) makes any window addressable,
+  records it as `mutant_slice` and the ids as `scored_ids`.
+* **`_mutation_merge.py`** now accepts several parts per operator when their ids
+  PARTITION it — no id twice, none missing, none the mutator does not produce.
+  Strictly stronger than the count arithmetic it replaces, and seen to go red
+  three ways on this unit's own parts before its output was believed (X4).
+
+**AND THE SCORE IS OVER A SAMPLE OF ONE OPERATOR, WHICH NO ARTIFACT USED TO
+SAY.** `cppmutate` caps every operator at 40; IPC's `const_tweak` has **79**
+sites. 118 is what the mutator OFFERED, 157 is what the translation HAS, and 39
+mutants were never compiled — UNKNOWN, not 'none' (P6). **This is campaign-wide:
+15 of 55 translations have an operator over the cap and 1,856 mutants were never
+enumerated; `mutation/CheckInputs.json` reports 192 against 848 sites.**
+`cppmutate`'s docstring already required callers to report it and
+`scripts/dbgmutate.py` already did — only `vit_mutate.py` did not. Recorded as
+C12 with the wrong artifacts still in the tree
+(`evidence/IPC/mutation.cap_audit.txt`, from `scripts/mutation_cap_audit.py`),
+fixed forward, and raised in `DECISIONS.md` because re-taking the other fourteen
+units is a campaign decision.
+
+**THE RE-TAKE COST 71 SECONDS BECAUSE OF ONE HASH.** Completing the mutation
+layer meant moving the whole unit to the current instrument — a part at a new
+`loop_rev` is refused by the merge and reported as a split by `revcheck`. The
+regenerated corpus hashed **byte-identical** to the one the first dispatch
+measured (`e5909178…`, 655,681,672 bytes), so every count in the old evidence
+survives the move, and all sixteen artifacts now name `4751161`. Every re-taken
+number came back to the value: 63,888/0, 63,888 of 63,888 twice, 5,252,000/0,
+334,388, 201,604, 159,758, and the same survivor ids for the four operators
+scored both times.
+
+Shrinking the corpus was tried first, before the tool was fixed, and does not
+reach: `LocalVar_NumBl = { values = [3, 0] }` gives 42,694 cases and 19.4 s per
+mutant (`const_tweak` still 796 s), and 40 compiles alone are ~180 s, so the
+corpus would have to fall to ~25,000 with no admissibility argument to justify
+it. Weakening the corpus to fit a ceiling was the wrong lever and the slice is
+the right one. The two-value take was KEPT because
 it answers unit #52's question a second time: the identical 18 `index_offset`
 mutants score **14 of 18 with the same four survivor ids** on both corpora
 (`evidence/IPC/mutation.index.numbl_2value.json`). The narrower list costs
 nothing measurable here.
 
 **THE GATE KILLED A MUTANT 63,888 DIFFERENTIAL CASES COULD NOT, AND THAT IS THIS
-CAMPAIGN'S COMPLEMENTARITY INVERTED.** Eight of the twelve survivors sit at the
-two `std::fmin` saturation statements. Rather than argue them equivalent, the
+CAMPAIGN'S COMPLEMENTARITY INVERTED.** Nine of the twenty-six survivors sit in
+the `IPC_SatMode` split and its two `std::fmin` saturations — seven at the
+saturations, and two `const_tweak` mutants on the arm SELECTORS themselves,
+which the complete sweep newly exposed and which are the same blind spot seen
+from the other end: sending an arm-2 case down arm 3 swaps `CntrPar%PC_MinPit`
+for `LocalVar%PC_MinPit`, exactly the difference the corpus cannot see. Rather
+than argue them equivalent, the
 surviving `drop_call` mutant was run through the gate character for character:
 
 ```
@@ -330,7 +364,7 @@ mutation/IPC.clean.calls.json   SURVIVOR b36f5d50   63,888 cases, SURVIVED
 gate.redtest.fmin_dropcall.json                     159,758 of 5,252,000, KILLED
 ```
 
-So the eight are a **corpus gap**, established by execution, and nothing was
+So the nine are a **corpus gap**, established by execution, and nothing was
 declared equivalent. The gate is normally the coarser instrument — five units in
 six have found an exact zero annihilating a gate perturbation — and at this site
 it is the only one that discriminates. The corpus does REACH the arm (one of the
