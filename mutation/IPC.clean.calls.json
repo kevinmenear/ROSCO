@@ -26,11 +26,32 @@
   "swap_callee"
  ],
  "operators_filter_unmatched": [],
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 0,
+  "scored": 6,
+  "of": 6
+ },
+ "scored_ids": [
+  "b36f5d50",
+  "452847c1",
+  "f43d4529",
+  "90fd1954",
+  "19009330",
+  "de3657d9"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "const_tweak"
+ ],
  "mutants": 6,
  "equivalent_declared": 0,
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
+ "sanitize": false,
+ "killed_by_sanitizer": 0,
+ "killed_by_sanitizer_ids": [],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 6,
@@ -39,9 +60,9 @@
  "equivalent": 0,
  "declared_but_killed": [],
  "score": 0.3333,
- "loop_rev": "d947d92-nogit",
- "gen_rev": "gen-ffac3ef69dd5",
- "vit_rev": "a16a7ab-nogit",
+ "loop_rev": "4751161-nogit",
+ "gen_rev": "gen-cf5dcfa09cce",
+ "vit_rev": "3f6e2ce-nogit",
  "survivors": [
   {
    "id": "b36f5d50",
