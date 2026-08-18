@@ -11942,3 +11942,97 @@ harness-tracked, it reported back, and nothing was lost — the same outcome uni
 (`timeout: 600000`); it was applied to the second sweep and to every run
 afterwards. No amendment proposed: the rule exists and this dispatch simply
 proved it is easy to forget on the first long command of a session.
+
+## Unit #53 `IPC`, third dispatch — the six named survivors were two different animals
+
+### Three findings raised as proposed amendments to the METHOD, not to this campaign
+
+**1. A GENERATE-BUT-DO-NOT-EMIT PROBE BELONGS IN THE CYCLE, BESIDE C6.** The
+whole corpus decision is made in `harness.generate.generate`; `emit` is what
+writes 870 MB and builds. A four-line monkeypatch of the name `vit_harness`
+imported `generate` under, counting whatever the question is and exiting, costs
+**30 seconds** where the mutation sweep costs **70 minutes**
+(`evidence/IPC/probe_fmin_site.py`). On this unit it: designed the corpus change
+and predicted its kills to the case (1,494 and 1,453, both exact); caught a
+candidate `values` list that DELETED one of the unit's eight arms while leaving
+the harness green; priced the emitter's memory ceiling in three runs; and then
+REFUTED the author's own written explanation of a regression. The runbook
+already says an equivalence argument is executed by counting the cases that
+reach the site (unit #50). What it does not say is that the counting can happen
+BEFORE the expensive layer rather than after it, and that is the amendment.
+
+**2. A STATED `values` LIST BOUNDS R7's PREDICATE KNOB, AND THE RUNBOOK'S
+UNIT #49 ENTRY SAYS IT DOES NOT.** Measured here in one probe run:
+
+    CntrPar_IPC_SatMode = { values = [2, 3] }     == 2: 42525  == 3: 42229  else: 0
+    CntrPar_IPC_SatMode = { values = [2, 3, 0] }  == 2: 28446  == 3: 28164  else: 28144
+
+`vit_harness.narrow_knobs` intersects every knob with the declared values. The
+two-value list deleted this unit's `IPC_SatMode` fall-through arm ENTIRELY —
+not from the flag cross, from the corpus — and the 84,754-case harness went
+green over it. Unit #49's histogram (`{-1: 2767, 0: 2446, 1: 2422, 2: 5}`) is
+not a counter-example: the five cases at the undeclared value are the random
+fill, not the knob. **The rule to state is: every arm a unit has must appear in
+its `values` list, or the list deletes the arm and nothing reports it.** The
+RUNBOOK's target-layer entry "A base draw is a RULE's coverage" carries the
+wrong sentence today and a later unit will copy it.
+
+**3. A MUTATION PART ARTIFACT DOES NOT NAME ITS CORPUS, SO A STALE PART AND A
+FRESH ONE ARE BYTE-IDENTICAL.** Two of this unit's thirteen parts —
+`mutation/IPC.clean.compare.json` and `.negate.json` — came back with the same
+grades on a corpus 33% larger, so `git status` reported them as unmodified and a
+reader of the history would conclude they were not re-run. The artifact carries
+`loop_rev`, `vit_rev`, `gen_rev`, `operators_filter`, `mutant_slice` and
+`scored_ids`, and nothing that identifies the case file. `revcheck` cannot see
+the difference either: it asks whether the artifacts name the same INSTRUMENT,
+and two corpora at one instrument are exactly what it cannot distinguish.
+`vit_harness` already computes a corpus the mutator then reuses; stamping
+`sha256(<stem>_cases.bin)` into every part and into `harness/<U>.json` would make
+"the score and the green name the same corpus" — unit #26's rule — a check
+rather than a discipline. Proposed for `scripts/vit_mutate.py` and
+`scripts/vit_harness.py`.
+
+### Two campaign-level facts measured here, not amendments
+
+**`harness/emit.py` HAS A MEMORY CEILING BETWEEN 84,754 AND 95,310 CASES.**
+`emit` was SIGKILLed (137) writing a 1.0 GB case file in the 7.737 GiB `vit-dev`
+VM with nothing else in it (the two sibling containers were at 372 KB and
+412 KB). R2's flag stratification is the SUM of the flags' arities, so the
+ceiling is spent one flag value at a time — and `IPC` had to give up
+`LocalVar_NumBl == 2` to buy `CntrPar_IPC_SatMode == 0`. Any unit with three or
+more flags is now near this wall, and `--disable` is not a way out because it
+drops a whole rule. Stated so the next unit prices it before designing a corpus
+rather than after a SIGKILL.
+
+**`vit_harness.gen_rev(root)` RETURNS sha256("") FOR A ROOT WHOSE `harness/`
+HOLDS NO `*.py`.** Its own docstring says absence must not read as an identity,
+and the guard for that is `if not d.is_dir()` placed AFTER the loop — so it
+catches a MISSING directory and not an EMPTY one. The campaign tree's
+`harness/` is exactly such a directory (it holds `ranges.toml` and the result
+JSON). No committed artifact is affected: `vit_harness` and `vit_mutate` both
+call `gen_rev()` with no argument. The first draft of `probe_fmin_site.py`
+stamped itself `gen-e3b0c44298fc`, which is that empty hash, and it is fixed
+there with the reason in the code. Recorded because the `root` parameter is a
+trap for the next caller, not because it broke anything here.
+
+### What the disposition rests on, and what it does not
+
+`IPC` closes `deferred` at **0.9231** against a threshold of 1.0. The eight open
+survivors are three groups, each with a named reason and a priced fix
+(`evidence/IPC/README.md`). **None is declared equivalent, and the reason to be
+careful is in this unit's own history**: `drop_call` at the `fmin` site looked
+exactly like the `swap_call_args` sitting beside it, an obvious commutativity
+argument was available for both, and `drop_call` was not equivalent at all —
+the gate killed it on 159,758 values and, once the inputs were fixed, so did the
+harness on 1,494. An equivalence declared inside a blind spot is a defect with a
+signature on it.
+
+The largest blind spot this unit has is NOT the one that was closed. Of the
+17,486 cases that reach the 1P `PIController` pair, **17,474 arrive with an
+inverted saturation window** (`IPC_IntSat < 0`, so `-IntSat > +IntSat` and
+`saturate` returns `maxValue` for every input) and **12** have a live one. Every
+gain argument at that site is unobservable on 99.93% of the cases that reach it.
+That was true before this dispatch and after it; it is measured now, and the fix
+(`CntrPar_IPC_IntSat = { lo = 0, hi = 1e3 }`) is stated and not taken, because
+it deletes half of an admissible domain and costs another 70-minute sweep that
+would not have been documented before the clock ran out.
