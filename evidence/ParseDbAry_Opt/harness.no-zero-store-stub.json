@@ -1,43 +1,49 @@
 {
   "unit": "ParseDbAry_Opt",
   "against": "integrated",
-  "checked": 13674,
-  "failed": 3,
+  "checked": 16512,
+  "failed": 4,
   "inadmissible": 0,
   "no_oracle_when_skipped": {
-    "Ary": 4067
+    "Ary": 5266
   },
   "rule_coverage": [
     "  applied  R5_non_degenerate_shape    6 varied extent(s) at [3, 4, 5, 6, 7, 8] and [3, 4, 5, 6, 7, 8], NO index parameter identified, array elements distinct",
-    "  applied  R2_flag_values             8 value(s) across 4 flag(s), each with 8 case(s) of the remaining inputs varied under it",
+    "  applied  R2_flag_values             9 value(s) across 5 flag(s), each with 8 case(s) of the remaining inputs varied under it",
     "  applied  R6_reference_literals      41 integer value(s) -- the decade boundaries and the representable extremes of a 32-bit INTEGER, signed -- across the scalar integer parameter(s) whose range is defaulted rather than declared; 12 combination(s) of the 3 quantit(y/ies) the reference's own predicates test, the full cross product, each quantity taken WHERE IT ENTERS -- an element of an array parameter when the reference reassigns the tested name from one, because a ladder over that name is dead; 480 character value(s) from a corpus of 30 (the reference's own character literals and their collating neighbours) across 4 string(s), each at length(s) [1, 2, 8, 13] and in the mixed / padded / all-blank / leading-blank shapes, plus 1104 planted at an interior position of an ordinary string so the character AFTER a matched literal is not its own collating neighbour",
     "  N/A      R8_file_contents           no file-valued input -- no reference OPENs or INQUIREs on a dummy",
     "  applied  R3_no_dead_signal          1 real value(s), none zero in every case",
     "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
     "  N/A      R12_narrowing_width        no CHARACTER local is narrower than a dummy assigned into it -- the reference truncates nothing, so there is no boundary for this rule to reach",
     "  applied  R13_staging_capacity       256 case(s) sweeping the stated staging capacity of every deferred-length CHARACTER output from 0 to 255 bytes above what the case supplies, every other input at its base draw -- so the output has one length across the block and exactly one case sizes the buffer TO it, one a byte short and one a byte long. A capacity a case does not state is `emit.ALLOC_HEADROOM`, which is what every case outside this block still carries",
-    "  applied  R14_planted_word           32 case(s) planting a free scalar CHARACTER input as word [1, 2, 3] of ONE element of a CHARACTER ARRAY input -- the element FIRST and LAST, so a search that skips the first is distinguishable; every free scalar integer at k-1 and at k, so whichever offset the reference uses to pick its word is hit; the key case-INVERTED against the word, so an uppercasing pass dropped on either side breaks the match; every other element and every other word a decoy that no key spells. Reached ['1:plant']; NOT reached ['2:plant', '3:plant'] -- the field is too narrow to carry the plant, or the integer values it needs are outside a stated range",
+    "  applied  R14_planted_word           1224 case(s) planting a free scalar CHARACTER input as word [1, 2, 3] of ONE element of a CHARACTER ARRAY input -- the element FIRST and LAST, so a search that skips the first is distinguishable; every free scalar integer at k-1 and at k, so whichever offset the reference uses to pick its word is hit; the key case-INVERTED against the word, so an uppercasing pass dropped on either side breaks the match; every other element and every other word a decoy that no key spells. The words BEFORE the key are also planted as numeric literals (0, -1, +2, 3.5, 6E1, 7D1, 8Q1) at every k > 1, so a parser reading a value from the head of the record is handed a digit rather than a letter and does not stop at character one. Reached ['1:plant', '2:num:dec', '2:num:expD', '2:num:expE', '2:num:expQ', '2:num:neg', '2:num:plus', '2:num:zero', '2:plant', '3:num:dec', '3:num:expD', '3:num:expE', '3:num:expQ', '3:num:neg', '3:num:plus', '3:num:zero', '3:plant']",
     "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
     "  applied  R4_compare_all_outputs     return value + 6 out-parameter(s): Ary, ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg -- Ary: COMPARED ONLY WHERE THE REFERENCE HAS AN ORACLE (no_oracle_when; the excluded count is in the artifact)"
   ],
   "mismatches": [
     {
-      "case": 3979,
+      "case": 3798,
       "output": "Ary",
-      "ref": "0100000006000000000000000100000000000000409026dcf7a685c000000000...",
-      "got": "0100000006000000000000000100000000000000409026dcf7a685c0066b52d6..."
+      "ref": "010000000600000000000000010000000000000073692695a45685c000000000...",
+      "got": "010000000600000000000000010000000000000073692695a45685c01705f1ea..."
     },
     {
-      "case": 3984,
+      "case": 4470,
       "output": "Ary",
-      "ref": "01000000060000000000000001000000000000000000000000000000f23fee56...",
-      "got": "0100000006000000000000000100000000000000ea6ee3ceafb585c0f23fee56..."
+      "ref": "010000000600000000000000010000000000000000000000000000001073c2b7...",
+      "got": "01000000060000000000000001000000000000009745a2ce1fd985c01073c2b7..."
     },
     {
-      "case": 4619,
+      "case": 4473,
       "output": "Ary",
-      "ref": "010000000600000000000000010000000000000000000000000000003b403ff3...",
-      "got": "010000000600000000000000010000000000000001c84dc0c12886c03b403ff3..."
+      "ref": "010000000600000000000000010000000000000000000000000000004a3ce82a...",
+      "got": "010000000600000000000000010000000000000072186417b7ac85c04a3ce82a..."
+    },
+    {
+      "case": 5189,
+      "output": "Ary",
+      "ref": "01000000060000000000000001000000000000003e4a06d5e3c385c000000000...",
+      "got": "01000000060000000000000001000000000000003e4a06d5e3c385c0d89a4897..."
     }
   ],
   "red_test": "the measured zero-store rule removed",

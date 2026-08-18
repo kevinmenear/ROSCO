@@ -2648,7 +2648,7 @@ ErrVar_ErrMsg = { staging_capacity_excludes = [11, 34], reason = "IPC prefixes '
 [ParseDbAry_Opt]
 
 AryLen = { lo = 0, hi = 32 }
-UnEc = { lo = 0, hi = 0 }
+UnEc = { lo = 0, hi = 0, values = [0] }
 Ary = { no_oracle_when = ["alloc_Ary == 0", "ErrVar_aviFAIL >= 0"], and_reference = "ErrVar.aviFAIL < 0", reason = "the reference ALLOCATEd Ary on this call and then RETURNed on an arm that assigns none of it (.NOT. AllowDefault_) or only a prefix (the READ error arm); those elements are recycled heap and a comparison against them decides nothing about either implementation. 4,067 of 13,674 cases, classified in evidence/ParseDbAry_Opt/harness_partition.txt: 100% of both cells and 0% of the other five." }
 
 # ---------------------------------------------------------------------------

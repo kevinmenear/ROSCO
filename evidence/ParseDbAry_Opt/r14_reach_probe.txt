@@ -1,0 +1,133 @@
+# R14's reach on this unit — why the numeric lead landed nowhere, and one
+# prediction written BEFORE the corpus was regenerated.
+
+THIRD DISPATCH. The relaunch's stated reason (`e2f5139`) was that the generator
+had moved under this unit: loop `b33a761` plants NUMERIC literals in the words
+before R14's key, written from this unit's own survivor profile, and it took
+`ParseInAry_Opt`'s R14 region from 216 cases to 1,224.
+
+## 1. The re-take at loop b9c8c52 moved NOTHING, and that is the finding
+
+    corpus before   64942b97cc3a4c2ab6631f8a452141b3e02335f8fd1acfdde613320aa77390c7
+    corpus after    64942b97cc3a4c2ab6631f8a452141b3e02335f8fd1acfdde613320aa77390c7
+
+Byte-identical. 13,674 cases either side, 0 failed, `Ary` excluded on 4,067
+either side. `gen_rev` moved (`gen-8256909adf67` -> `gen-cf5dcfa09cce`) and the
+corpus did not, so the generator change is inert HERE while being worth 1,008
+cases on the sibling.
+
+R14's own coverage line says why, and it said it at both earlier dispatches too:
+
+    Reached ['1:plant']
+    NOT reached ['2:num:dec', '2:num:expD', '2:num:expE', '2:num:expQ',
+                 '2:num:neg', '2:num:plus', '2:num:zero', '2:plant',
+                 '3:num:dec', ... , '3:plant']
+
+Every k >= 2 shape is missed -- including the PLAIN `2:plant`, which predates
+the numeric lead entirely. The numeric shapes are missed as a consequence of
+that, not on their own account: they only exist for k > 1.
+
+## 2. The cause is one keyword in this unit's range pin
+
+`harness/generate.py`, R14:
+
+    plant_ints = [q for q in live(sig.inputs)
+                  if q.kind == "int" and not q.dims and not q.values
+                  and q.role not in ("extent", "index") and not q.is_output]
+    ...
+    ints = ([{}] if not plant_ints else
+            [{q.name: v for q in plant_ints}
+             for v in (k - 1, k)
+             if all(_admits(q, v) for q in plant_ints)])
+    if not ints:
+        plant_missed.add(f"{k}:{label}")
+        continue
+
+A parameter carrying an explicit `values` list is NOT a plant_int. A parameter
+narrowed by `lo`/`hi` IS one, and it then has to admit `k-1` and `k` -- and the
+`all(...)` is over every plant_int at once, so ONE pinned integer vetoes the
+whole word index for the whole unit.
+
+    [ParseDbAry_Opt]   UnEc = { lo = 0, hi = 0 }               <- a plant_int
+    [ParseInAry_Opt]   UnEc = { lo = 0, hi = 0, values = [0] } <- not one
+
+The two spellings state the SAME domain: `UnEc` is exactly 0. The sibling's
+carries `values` and this one does not, and that is the entire difference
+between reaching R14's three word indices and reaching one of them. With
+`UnEc` in `plant_ints`, `k = 1` survives only because `v = k - 1 = 0` is the
+pinned value; `k = 2` needs `UnEc` at 1 or 2 and `k = 3` at 2 or 3, and both are
+refused.
+
+That is why the loop-side fix could not reach this unit: it appended shapes to a
+`k > 1` branch that this unit's own pin had already emptied.
+
+## 3. THE PREDICTION, written before the entry was changed
+
+Add `values = [0]` to `[ParseDbAry_Opt].UnEc` -- the sibling's spelling of the
+identical pin, changing no admissible value of any input.
+
+Counted from the code above and from the 32 cases R14 produces today:
+
+    today      1 shape (1:plant)  x 2 elements x 1 int-variant x 16 flag = 32
+    predicted 17 shapes           x 2 elements x 2 int-variants x 16 flag = 1088
+
+      17 = 3 plain plants (k=1,2,3) + 7 numeric leads at k=2 + 7 at k=3
+      the int-variants double because `v = k` is admissible once `UnEc` leaves
+      `plant_ints`; `AryLen = { lo = 0, hi = 32 }` admits 0,1,2,3
+
+    R14                32  ->  1088
+    corpus     13674 - 32 + 1088 = 14730 cases
+
+`Ary`'s `no_oracle_when` exclusion is measured on the reference's own control
+flow, so its count moves with the new cases; the 4,067 is NOT predicted to stay
+fixed and is reported below as measured.
+
+## 4. MEASURED -- AND THE PREDICTION WAS WRONG BY A FACTOR THE RUN NAMES
+
+    R14                1224 case(s)     PREDICTED 1088    WRONG
+    Reached            all 17 shapes, nothing missed:
+                       ['1:plant', '2:num:dec', '2:num:expD', '2:num:expE',
+                        '2:num:expQ', '2:num:neg', '2:num:plus', '2:num:zero',
+                        '2:plant', '3:num:dec', '3:num:expD', '3:num:expE',
+                        '3:num:expQ', '3:num:neg', '3:num:plus', '3:num:zero',
+                        '3:plant']
+    corpus             16512 case(s)    PREDICTED 14730   WRONG
+    checked / failed   16512 / 0
+    Ary not compared   5266             (was 4067)
+    corpus sha256      ad74f416ff861350622bb071cb6f2c1bfaaba00ab7e15f1e59de409f0da15e24
+                       was              64942b97cc3a4c2ab6631f8a452141b3e02335f8fd1acfdde613320aa77390c7
+    PREFIX control     REFUSED. The first 2,027,029 bytes of the new case file
+                       hash 2f5cefb8...,  not 64942b97... -- the new corpus is
+                       NOT an extension of the old one. Cases moved.
+
+**WHY, and it is one line of the run's own output.** The shape count and the
+element count were right; the multiplier was not:
+
+    before   applied  R2_flag_values   8 value(s) across 4 flag(s)
+    after    applied  R2_flag_values   9 value(s) across 5 flag(s)
+
+`values = [0]` does not only take `UnEc` OUT of `plant_ints`. It puts it IN to
+R2's flag set -- a flag is a parameter with a stated value list, which is the
+same predicate read the other way round. So `flag_variants` went 16 -> 18 and
+R14 came out at 17 x 2 x 2 x 18 = 1,224 rather than 1,088; and R2's own block
+grew as well, which is the other 1,614 cases of the 2,838 the corpus gained.
+
+That second effect is why the PREFIX control refuses: R2 runs BEFORE R14, so
+its extra cases displace every later index. A corpus change of this shape is
+therefore NOT case-for-case comparable with the one before it, and every layer
+that reads the corpus has to be re-taken rather than compared -- which is what
+this dispatch does.
+
+The prediction is kept as it was written rather than repaired to match. Its
+error is the useful part: a pin restated in the spelling that reaches R14 also
+enters a rule nobody was thinking about, and the two effects are not separable
+by reading the entry.
+
+## 5. WHAT IT IS WORTH, measured against the region it was aimed at
+
+    no-read stub, old corpus 13,674     103 cases move   (0.75%)
+    no-read stub, new corpus 16,512     see below and harness.no-read-stub.json
+
+The list-directed READ is the region that held 87 of the second dispatch's 108
+mutation survivors. What a corpus can distinguish about it is bounded by the
+number of cases that reach it, which is what the stub measures.
