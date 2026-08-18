@@ -1,0 +1,206 @@
+ParseInAry_Opt -- the 88 surviving mutants, placed by harness/cppmutate.py's own
+recorded position rather than by a text search, grouped by the region they sit in.
+
+THE IDS ARE COMPUTED FROM THE LOWERCASED UNIT NAME (RUNBOOK, unit #40), and this
+file checks that rather than assuming it: with 'ParseInAry_Opt' 0 of 88 ids resolve,
+with 'parseinary_opt' all 88 do, and the script refuses to print a placement if any
+id fails to resolve.
+
+157 mutants, 1 did not compile, 156 behavioural;
+68 killed, 88 SURVIVED, score 0.4359 -- BELOW the campaign threshold.
+
+  survived / mutants   region
+         71 / 112      the list-directed READ
+          8 / 8        the PRINT record
+          4 / 18       the unit's own body
+          2 / 4        the constants and the file scope
+          1 / 6        assign_errmsg
+          1 / 1        int2lstr_trimmed
+          1 / 6        the Ary descriptor helpers
+          0 / 2        ftrim
+
+WHY, and it is a fact about the CORPUS and the INSTRUMENT rather than about the
+translation.
+
+  * THE LIST-DIRECTED READ IS REACHED BY 103 CASES OF 13,674 -- measured, not
+    estimated. evidence/ParseInAry_Opt/harness.no-read-stub.json deletes the whole
+    parser and moves exactly 103 cases: 0.75% of the corpus. FindLine finds the
+    parameter only where R14 planted it, and R14 reports reaching its '1:plant'
+    shape alone. A region of 112 mutants scored by 103 cases is what this number
+    looks like from the other side.
+
+    AND THIS REGION HAS A SECOND INSTRUMENT THAT THE HARNESS DOES NOT:
+    evidence/ParseInAry_Opt/parser_replay.txt replays 113 records taken from
+    gfortran's own runtime through this same code and reports 0 mismatches, and
+    three deliberate perturbations of it move 3, 8 and 26 records. That is not a
+    mutation score and is not folded into one -- but it is the reason the 88
+    survivors are a corpus gap rather than an unexamined region.
+
+  * THE PRINT RECORD IS COMPARED BY NOTHING. The harness compares out-parameters,
+    the gate compares simulation channels, and this record goes to stdout. ALL 8
+    of its mutants survive, and that is the whole of the region: 8 of 8.
+
+--- every survivor, in source order ---
+  8464d14d  line   60  [the constants and the file scope]  const_tweak: '200' -> '201'
+  66860b6f  line   97  [assign_errmsg]  compare_op: '>' -> '>='
+  b54ac6eb  line  114  [int2lstr_trimmed]  index_offset: '[Int2LStrLen]' -> '[Int2LStrLen + 1]'
+  b93bad70  line  194  [the constants and the file scope]  const_tweak: '200000000' -> '200000001'
+  2f8001ae  line  202  [the list-directed READ]  compare_op: '<' -> '<='
+  ad38f36b  line  202  [the list-directed READ]  compare_op: '==' -> '!='
+  ba05f614  line  202  [the list-directed READ]  compare_op: '==' -> '!='
+  85758208  line  202  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  3226d0dc  line  202  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  73ad4165  line  202  [the list-directed READ]  negate_cond: "if (p < len && (rec[p] == '+' || rec[p] == '-'))" -> "if (!(p < len && (rec[p] == '+' || rec[p] == '-')))"
+  6d203c33  line  203  [the list-directed READ]  compare_op: '==' -> '!='
+  b9434920  line  203  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  08ff2c98  line  209  [the list-directed READ]  compare_op: '<' -> '<='
+  e6bc72cb  line  217  [the list-directed READ]  compare_op: '>' -> '>='
+  51771298  line  227  [the list-directed READ]  compare_op: '>' -> '>='
+  7d77a31a  line  227  [the list-directed READ]  compare_op: '<' -> '<='
+  d99e45ef  line  248  [the list-directed READ]  compare_op: '<' -> '<='
+  3dfee86c  line  248  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  da89c70f  line  257  [the list-directed READ]  compare_op: '<' -> '<='
+  85857c57  line  257  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  14fc62e9  line  257  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  f448c16f  line  258  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  07b5ee72  line  258  [the list-directed READ]  negate_cond: 'if (is_eol(rec[p]))' -> 'if (!(is_eol(rec[p])))'
+  b663872a  line  263  [the list-directed READ]  compare_op: '<' -> '<='
+  ccd4583a  line  263  [the list-directed READ]  compare_op: '==' -> '!='
+  0ccde40f  line  263  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  b947b4b0  line  263  [the list-directed READ]  negate_cond: "if (p < len && rec[p] == ',')" -> "if (!(p < len && rec[p] == ','))"
+  112d63b1  line  265  [the list-directed READ]  compare_op: '<' -> '<='
+  8fa93551  line  265  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  58ec3d92  line  265  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  7560589c  line  274  [the list-directed READ]  compare_op: '<' -> '<='
+  7aad97cf  line  275  [the list-directed READ]  compare_op: '>=' -> '>'
+  80184bd0  line  276  [the list-directed READ]  arith_op: 'return -1' -> 'return + 1'
+  c8a37018  line  276  [the list-directed READ]  const_tweak: '1' -> '2'
+  7784f889  line  283  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  7fd4edf1  line  287  [the list-directed READ]  compare_op: '<' -> '<='
+  6c2149c9  line  287  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  78f9ef7a  line  287  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  3d58e9ee  line  294  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  71d3528f  line  298  [the list-directed READ]  compare_op: '!=' -> '=='
+  f0af84b4  line  298  [the list-directed READ]  negate_cond: 'if (first_item || sep != Sep::Blank)' -> 'if (!(first_item || sep != Sep::Blank))'
+  56160d94  line  299  [the list-directed READ]  const_tweak: '5010' -> '5011'
+  4b65a2f1  line  303  [the list-directed READ]  compare_op: '<' -> '<='
+  dbdc6be6  line  303  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  9a98ecd6  line  303  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  64cfaba1  line  316  [the list-directed READ]  compare_op: '<' -> '<='
+  07c406a1  line  316  [the list-directed READ]  index_offset: '[q]' -> '[q + 1]'
+  a4bdfbcc  line  319  [the list-directed READ]  compare_op: '>' -> '>='
+  356f870c  line  319  [the list-directed READ]  compare_op: '<' -> '<='
+  1e691028  line  319  [the list-directed READ]  index_offset: '[q]' -> '[q + 1]'
+  fd9d54d0  line  320  [the list-directed READ]  const_tweak: '0' -> '1'
+  4655ac21  line  322  [the list-directed READ]  compare_op: '<' -> '<='
+  6ae5a0a4  line  323  [the list-directed READ]  drop_factor: 'count * 10' -> 'count'
+  b82b582f  line  323  [the list-directed READ]  arith_op: 'count * 10' -> 'count / 10'
+  328f7798  line  323  [the list-directed READ]  index_offset: '[k]' -> '[k + 1]'
+  54d6e349  line  323  [the list-directed READ]  const_tweak: '10' -> '11'
+  b2849cc7  line  324  [the list-directed READ]  compare_op: '>' -> '>='
+  5baa764c  line  324  [the list-directed READ]  negate_cond: 'if (count > MaxRepeat)' -> 'if (!(count > MaxRepeat))'
+  e905195c  line  326  [the list-directed READ]  arith_op: 'MaxRepeat + 1' -> 'MaxRepeat - 1'
+  5477861c  line  326  [the list-directed READ]  const_tweak: '1' -> '2'
+  a45110fc  line  329  [the list-directed READ]  compare_op: '<=' -> '<'
+  9120d215  line  329  [the list-directed READ]  compare_op: '>' -> '>='
+  33023944  line  329  [the list-directed READ]  const_tweak: '0' -> '1'
+  7025bae7  line  329  [the list-directed READ]  negate_cond: 'if (count <= 0 || count_over || count > MaxRepeat)' -> 'if (!(count <= 0 || count_over || count > MaxRepeat))'
+  6b5c6a0f  line  330  [the list-directed READ]  const_tweak: '5010' -> '5011'
+  3629accc  line  333  [the list-directed READ]  arith_op: 'q + 1' -> 'q - 1'
+  91b70005  line  333  [the list-directed READ]  const_tweak: '1' -> '2'
+  e96f6152  line  337  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  b300704f  line  337  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
+  03f79cf0  line  337  [the list-directed READ]  negate_cond: "if (p >= len || is_value_terminator(rec[p]) || rec[p] == ';')" -> "if (!(p >= len || is_value_terminator(rec[p]) || rec[p] == ';'))"
+  d3e0a66b  line  338  [the list-directed READ]  const_tweak: '0' -> '1'
+  4f1acf76  line  346  [the list-directed READ]  const_tweak: '0' -> '1'
+  24e73513  line  348  [the list-directed READ]  const_tweak: '5010' -> '5011'
+  3683a56a  line  351  [the list-directed READ]  const_tweak: '5010' -> '5011'
+  26d402b2  line  358  [the list-directed READ]  const_tweak: '0' -> '1'
+  9381bdef  line  399  [the PRINT record]  negate_cond: 'if (static_cast<int>(text.size()) > w)' -> 'if (!(static_cast<int>(text.size()) > w))'
+  f5386894  line  407  [the PRINT record]  index_offset: '[32]' -> '[32 + 1]'
+  34a3b929  line  407  [the PRINT record]  const_tweak: '32' -> '33'
+  0562d216  line  409  [the PRINT record]  const_tweak: '12' -> '13'
+  bb16f729  line  414  [the PRINT record]  const_tweak: '1' -> '2'
+  72edee9b  line  418  [the PRINT record]  const_tweak: '0' -> '1'
+  4cc504a0  line  419  [the PRINT record]  index_offset: '[i]' -> '[i + 1]'
+  373af6ff  line  424  [the PRINT record]  const_tweak: '1' -> '2'
+  6fb2c552  line  434  [the Ary descriptor helpers]  const_tweak: '0' -> '1'
+  e9786fd2  line  474  [the unit's own body]  const_tweak: '0' -> '1'
+  b1c839d7  line  587  [the unit's own body]  drop_call: 'std::max(NumWords, 0)' -> 'NumWords'
+  a61c0a99  line  587  [the unit's own body]  swap_call_args: 'NumWords, 0' -> '0, NumWords'
+  afece932  line  597  [the unit's own body]  negate_cond: 'if (DEBUG_PARSING)' -> 'if (!(DEBUG_PARSING))'
+
+==============================================================================
+EVERY SURVIVOR PUT THROUGH THE OTHER INSTRUMENT -- 53 of 88 DIE
+==============================================================================
+
+The RUNBOOK's rule (unit #53) is to ask whether another instrument can reach a
+survivor before calling it a corpus gap. Unit #54 asked it once per REGION with
+two gate runs. This unit has a second instrument for its largest region that
+costs about a second a mutant, so it was asked for EVERY survivor:
+`evidence/ParseInAry_Opt/run_survivor_replay.sh`, results in survivor_replay.json
+and survivor_replay.txt. Each mutant's source is cppmutate's OWN `.source` -- the
+same bytes vit_mutate.py compiled -- not a text substitution.
+
+  region        verdict      count
+  READ          KILLED       52
+  READ          unreached    19
+  other         KILLED       1
+  other         unreached    16
+
+THE NEGATIVE CONTROL IS THE HALF THAT MAKES IT EVIDENCE, and it holds: the
+replay enters the translation only through `list_read_ints`, so the PRINT record,
+`assign_errmsg`, `ary_at`, `ftrim` and the unit's own body must come back
+unreached -- and 16 of the 17 survivors outside the READ region do. A run in
+which everything died would have meant the replay was measuring something else.
+
+THE ONE THAT CROSSES IS THE ONE THAT SHOULD:
+
+  b93bad70  line 194  const_tweak: 200000000 -> 200000001
+      killed by 1 record of 113
+
+`MaxRepeat` is file-scope, so it lands outside the READ span by position -- and it
+is read by the parser and by nothing else. One record kills it, and it is the
+record put in the corpus for exactly that: '200000001*7 Name'. The boundary was
+MEASURED ('199999999*7' and '200000000*7' both give 7 7, '200000001*7' gives
+5010) rather than recalled from libgfortran's source, and the measurement is
+what the kill rests on.
+
+WHAT THE 19 UNREACHED READ SURVIVORS ARE, and they are one thing:
+
+  2f8001ae  line  202  compare_op: < -> <=
+  08ff2c98  line  209  compare_op: < -> <=
+  e6bc72cb  line  217  compare_op: > -> >=
+  d99e45ef  line  248  compare_op: < -> <=
+  da89c70f  line  257  compare_op: < -> <=
+  b663872a  line  263  compare_op: < -> <=
+  112d63b1  line  265  compare_op: < -> <=
+  58ec3d92  line  265  index_offset: [p] -> [p + 1]
+  7fd4edf1  line  287  compare_op: < -> <=
+  78f9ef7a  line  287  index_offset: [p] -> [p + 1]
+  4b65a2f1  line  303  compare_op: < -> <=
+  9a98ecd6  line  303  index_offset: [p] -> [p + 1]
+  64cfaba1  line  316  compare_op: < -> <=
+  a4bdfbcc  line  319  compare_op: > -> >=
+  356f870c  line  319  compare_op: < -> <=
+  e905195c  line  326  arith_op: MaxRepeat + 1 -> MaxRepeat - 1
+  5477861c  line  326  const_tweak: 1 -> 2
+  b300704f  line  337  index_offset: [p] -> [p + 1]
+  4f1acf76  line  346  const_tweak: 0 -> 1
+
+Fifteen of the nineteen are `p < len` -> `p <= len` or `rec[p]` -> `rec[p + 1]` at
+the record-bound checks. The record is 2048 bytes blank-padded and every one of
+the 113 conformance records, and every line the corpus supplies, terminates well
+before the end -- so the perturbed bound reads ONE BYTE PAST a buffer whose next
+byte is, on this allocator, another blank. The answer does not change. This is
+the campaign's known (c) class: it needs a SANITISER BUILD, not a case. It is
+already in DECISIONS.md as a proposed amendment from unit #31 and nothing new is
+claimed for it here -- only that this unit's 19 belong to it, measured rather
+than assumed.
+
+WHAT THIS DOES AND DOES NOT CHANGE. The score in mutation/ParseInAry_Opt.json
+stays 68/156 = 0.4359. A kill by a different instrument on a different corpus is
+not a kill by this one, and folding it in would make the number unreadable
+(RUNBOOK, unit #31: a corpus change invalidates every part already taken).
+NOTHING IS DECLARED EQUIVALENT. What the run replaces is the ARGUMENT: 'the
+parser's survivors are a corpus gap' was prose, and it is now 53 measurements.

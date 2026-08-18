@@ -1,0 +1,882 @@
+[
+ {
+  "id": "8464d14d",
+  "line": 60,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "const_tweak",
+  "before": "200",
+  "after": "201"
+ },
+ {
+  "id": "66860b6f",
+  "line": 97,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "compare_op",
+  "before": ">",
+  "after": ">="
+ },
+ {
+  "id": "b54ac6eb",
+  "line": 114,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "index_offset",
+  "before": "[Int2LStrLen]",
+  "after": "[Int2LStrLen + 1]"
+ },
+ {
+  "id": "b93bad70",
+  "line": 194,
+  "in_read_region": false,
+  "replay": "KILLED",
+  "mismatched_records": 1,
+  "operator": "const_tweak",
+  "before": "200000000",
+  "after": "200000001"
+ },
+ {
+  "id": "2f8001ae",
+  "line": 202,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "compare_op",
+  "before": "<",
+  "after": "<="
+ },
+ {
+  "id": "ad38f36b",
+  "line": 202,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 60,
+  "operator": "compare_op",
+  "before": "==",
+  "after": "!="
+ },
+ {
+  "id": "ba05f614",
+  "line": 202,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 62,
+  "operator": "compare_op",
+  "before": "==",
+  "after": "!="
+ },
+ {
+  "id": "85758208",
+  "line": 202,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 3,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "3226d0dc",
+  "line": 202,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 4,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "73ad4165",
+  "line": 202,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 63,
+  "operator": "negate_cond",
+  "before": "if (p < len && (rec[p] == '+' || rec[p] == '-'))",
+  "after": "if (!(p < len && (rec[p] == '+' || rec[p] == '-')))"
+ },
+ {
+  "id": "6d203c33",
+  "line": 203,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 5,
+  "operator": "compare_op",
+  "before": "==",
+  "after": "!="
+ },
+ {
+  "id": "b9434920",
+  "line": 203,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 4,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "08ff2c98",
+  "line": 209,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "compare_op",
+  "before": "<",
+  "after": "<="
+ },
+ {
+  "id": "e6bc72cb",
+  "line": 217,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "compare_op",
+  "before": ">",
+  "after": ">="
+ },
+ {
+  "id": "51771298",
+  "line": 227,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 1,
+  "operator": "compare_op",
+  "before": ">",
+  "after": ">="
+ },
+ {
+  "id": "7d77a31a",
+  "line": 227,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 1,
+  "operator": "compare_op",
+  "before": "<",
+  "after": "<="
+ },
+ {
+  "id": "d99e45ef",
+  "line": 248,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "compare_op",
+  "before": "<",
+  "after": "<="
+ },
+ {
+  "id": "3dfee86c",
+  "line": 248,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 4,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "da89c70f",
+  "line": 257,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "compare_op",
+  "before": "<",
+  "after": "<="
+ },
+ {
+  "id": "85857c57",
+  "line": 257,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 29,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "14fc62e9",
+  "line": 257,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 3,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "f448c16f",
+  "line": 258,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 1,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "07b5ee72",
+  "line": 258,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 14,
+  "operator": "negate_cond",
+  "before": "if (is_eol(rec[p]))",
+  "after": "if (!(is_eol(rec[p])))"
+ },
+ {
+  "id": "b663872a",
+  "line": 263,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "compare_op",
+  "before": "<",
+  "after": "<="
+ },
+ {
+  "id": "ccd4583a",
+  "line": 263,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 38,
+  "operator": "compare_op",
+  "before": "==",
+  "after": "!="
+ },
+ {
+  "id": "0ccde40f",
+  "line": 263,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 11,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "b947b4b0",
+  "line": 263,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 38,
+  "operator": "negate_cond",
+  "before": "if (p < len && rec[p] == ',')",
+  "after": "if (!(p < len && rec[p] == ','))"
+ },
+ {
+  "id": "112d63b1",
+  "line": 265,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "compare_op",
+  "before": "<",
+  "after": "<="
+ },
+ {
+  "id": "8fa93551",
+  "line": 265,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 7,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "58ec3d92",
+  "line": 265,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "7560589c",
+  "line": 274,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 43,
+  "operator": "compare_op",
+  "before": "<",
+  "after": "<="
+ },
+ {
+  "id": "7aad97cf",
+  "line": 275,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 5,
+  "operator": "compare_op",
+  "before": ">=",
+  "after": ">"
+ },
+ {
+  "id": "80184bd0",
+  "line": 276,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 5,
+  "operator": "arith_op",
+  "before": "return -1",
+  "after": "return + 1"
+ },
+ {
+  "id": "c8a37018",
+  "line": 276,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 5,
+  "operator": "const_tweak",
+  "before": "1",
+  "after": "2"
+ },
+ {
+  "id": "7784f889",
+  "line": 283,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 12,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "7fd4edf1",
+  "line": 287,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "compare_op",
+  "before": "<",
+  "after": "<="
+ },
+ {
+  "id": "6c2149c9",
+  "line": 287,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 4,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "78f9ef7a",
+  "line": 287,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "3d58e9ee",
+  "line": 294,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 12,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "71d3528f",
+  "line": 298,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 19,
+  "operator": "compare_op",
+  "before": "!=",
+  "after": "=="
+ },
+ {
+  "id": "f0af84b4",
+  "line": 298,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 23,
+  "operator": "negate_cond",
+  "before": "if (first_item || sep != Sep::Blank)",
+  "after": "if (!(first_item || sep != Sep::Blank))"
+ },
+ {
+  "id": "56160d94",
+  "line": 299,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 12,
+  "operator": "const_tweak",
+  "before": "5010",
+  "after": "5011"
+ },
+ {
+  "id": "4b65a2f1",
+  "line": 303,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "compare_op",
+  "before": "<",
+  "after": "<="
+ },
+ {
+  "id": "dbdc6be6",
+  "line": 303,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 1,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "9a98ecd6",
+  "line": 303,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "64cfaba1",
+  "line": 316,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "compare_op",
+  "before": "<",
+  "after": "<="
+ },
+ {
+  "id": "07c406a1",
+  "line": 316,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 12,
+  "operator": "index_offset",
+  "before": "[q]",
+  "after": "[q + 1]"
+ },
+ {
+  "id": "a4bdfbcc",
+  "line": 319,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "compare_op",
+  "before": ">",
+  "after": ">="
+ },
+ {
+  "id": "356f870c",
+  "line": 319,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "compare_op",
+  "before": "<",
+  "after": "<="
+ },
+ {
+  "id": "1e691028",
+  "line": 319,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 12,
+  "operator": "index_offset",
+  "before": "[q]",
+  "after": "[q + 1]"
+ },
+ {
+  "id": "fd9d54d0",
+  "line": 320,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 6,
+  "operator": "const_tweak",
+  "before": "0",
+  "after": "1"
+ },
+ {
+  "id": "4655ac21",
+  "line": 322,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 5,
+  "operator": "compare_op",
+  "before": "<",
+  "after": "<="
+ },
+ {
+  "id": "6ae5a0a4",
+  "line": 323,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 4,
+  "operator": "drop_factor",
+  "before": "count * 10",
+  "after": "count"
+ },
+ {
+  "id": "b82b582f",
+  "line": 323,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 5,
+  "operator": "arith_op",
+  "before": "count * 10",
+  "after": "count / 10"
+ },
+ {
+  "id": "328f7798",
+  "line": 323,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 12,
+  "operator": "index_offset",
+  "before": "[k]",
+  "after": "[k + 1]"
+ },
+ {
+  "id": "54d6e349",
+  "line": 323,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 2,
+  "operator": "const_tweak",
+  "before": "10",
+  "after": "11"
+ },
+ {
+  "id": "b2849cc7",
+  "line": 324,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 1,
+  "operator": "compare_op",
+  "before": ">",
+  "after": ">="
+ },
+ {
+  "id": "5baa764c",
+  "line": 324,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 12,
+  "operator": "negate_cond",
+  "before": "if (count > MaxRepeat)",
+  "after": "if (!(count > MaxRepeat))"
+ },
+ {
+  "id": "e905195c",
+  "line": 326,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "arith_op",
+  "before": "MaxRepeat + 1",
+  "after": "MaxRepeat - 1"
+ },
+ {
+  "id": "5477861c",
+  "line": 326,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "const_tweak",
+  "before": "1",
+  "after": "2"
+ },
+ {
+  "id": "a45110fc",
+  "line": 329,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 1,
+  "operator": "compare_op",
+  "before": "<=",
+  "after": "<"
+ },
+ {
+  "id": "9120d215",
+  "line": 329,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 1,
+  "operator": "compare_op",
+  "before": ">",
+  "after": ">="
+ },
+ {
+  "id": "33023944",
+  "line": 329,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 1,
+  "operator": "const_tweak",
+  "before": "0",
+  "after": "1"
+ },
+ {
+  "id": "7025bae7",
+  "line": 329,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 17,
+  "operator": "negate_cond",
+  "before": "if (count <= 0 || count_over || count > MaxRepeat)",
+  "after": "if (!(count <= 0 || count_over || count > MaxRepeat))"
+ },
+ {
+  "id": "6b5c6a0f",
+  "line": 330,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 5,
+  "operator": "const_tweak",
+  "before": "5010",
+  "after": "5011"
+ },
+ {
+  "id": "3629accc",
+  "line": 333,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 12,
+  "operator": "arith_op",
+  "before": "q + 1",
+  "after": "q - 1"
+ },
+ {
+  "id": "91b70005",
+  "line": 333,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 9,
+  "operator": "const_tweak",
+  "before": "1",
+  "after": "2"
+ },
+ {
+  "id": "e96f6152",
+  "line": 337,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 8,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "b300704f",
+  "line": 337,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "index_offset",
+  "before": "[p]",
+  "after": "[p + 1]"
+ },
+ {
+  "id": "03f79cf0",
+  "line": 337,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 14,
+  "operator": "negate_cond",
+  "before": "if (p >= len || is_value_terminator(rec[p]) || rec[p] == ';')",
+  "after": "if (!(p >= len || is_value_terminator(rec[p]) || rec[p] == ';'))"
+ },
+ {
+  "id": "d3e0a66b",
+  "line": 338,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 4,
+  "operator": "const_tweak",
+  "before": "0",
+  "after": "1"
+ },
+ {
+  "id": "4f1acf76",
+  "line": 346,
+  "in_read_region": true,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "const_tweak",
+  "before": "0",
+  "after": "1"
+ },
+ {
+  "id": "24e73513",
+  "line": 348,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 26,
+  "operator": "const_tweak",
+  "before": "5010",
+  "after": "5011"
+ },
+ {
+  "id": "3683a56a",
+  "line": 351,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 16,
+  "operator": "const_tweak",
+  "before": "5010",
+  "after": "5011"
+ },
+ {
+  "id": "26d402b2",
+  "line": 358,
+  "in_read_region": true,
+  "replay": "KILLED",
+  "mismatched_records": 44,
+  "operator": "const_tweak",
+  "before": "0",
+  "after": "1"
+ },
+ {
+  "id": "9381bdef",
+  "line": 399,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "negate_cond",
+  "before": "if (static_cast<int>(text.size()) > w)",
+  "after": "if (!(static_cast<int>(text.size()) > w))"
+ },
+ {
+  "id": "f5386894",
+  "line": 407,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "index_offset",
+  "before": "[32]",
+  "after": "[32 + 1]"
+ },
+ {
+  "id": "34a3b929",
+  "line": 407,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "const_tweak",
+  "before": "32",
+  "after": "33"
+ },
+ {
+  "id": "0562d216",
+  "line": 409,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "const_tweak",
+  "before": "12",
+  "after": "13"
+ },
+ {
+  "id": "bb16f729",
+  "line": 414,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "const_tweak",
+  "before": "1",
+  "after": "2"
+ },
+ {
+  "id": "72edee9b",
+  "line": 418,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "const_tweak",
+  "before": "0",
+  "after": "1"
+ },
+ {
+  "id": "4cc504a0",
+  "line": 419,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "index_offset",
+  "before": "[i]",
+  "after": "[i + 1]"
+ },
+ {
+  "id": "373af6ff",
+  "line": 424,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "const_tweak",
+  "before": "1",
+  "after": "2"
+ },
+ {
+  "id": "6fb2c552",
+  "line": 434,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "const_tweak",
+  "before": "0",
+  "after": "1"
+ },
+ {
+  "id": "e9786fd2",
+  "line": 474,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "const_tweak",
+  "before": "0",
+  "after": "1"
+ },
+ {
+  "id": "b1c839d7",
+  "line": 587,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "drop_call",
+  "before": "std::max(NumWords, 0)",
+  "after": "NumWords"
+ },
+ {
+  "id": "a61c0a99",
+  "line": 587,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "swap_call_args",
+  "before": "NumWords, 0",
+  "after": "0, NumWords"
+ },
+ {
+  "id": "afece932",
+  "line": 597,
+  "in_read_region": false,
+  "replay": "unreached",
+  "mismatched_records": 0,
+  "operator": "negate_cond",
+  "before": "if (DEBUG_PARSING)",
+  "after": "if (!(DEBUG_PARSING))"
+ }
+]
