@@ -3141,7 +3141,7 @@
         "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
       },
       "observability": null,
-      "disposition": "deferred",
+      "disposition": null,
       "evidence": [
         "evidence/IPC/README.md",
         "evidence/IPC/gate.redtests.txt",
@@ -3202,7 +3202,7 @@
       "source_file": "rosco/controller/src/ROSCO_Helpers.f90",
       "translation": "translations/ROSCO_Helpers/parsedbary_opt.cpp",
       "harness_required": true,
-      "disposition": "deferred",
+      "disposition": null,
       "evidence": [
         "evidence/ParseDbAry_Opt/README.md",
         "evidence/ParseDbAry_Opt/done_check.txt",
@@ -3268,7 +3268,7 @@
       "source_file": "rosco/controller/src/ROSCO_Helpers.f90",
       "translation": "translations/ROSCO_Helpers/parseinary_opt.cpp",
       "harness_required": true,
-      "disposition": "deferred",
+      "disposition": null,
       "evidence": [
         "evidence/ParseInAry_Opt/README.md",
         "evidence/ParseInAry_Opt/done_check.txt",
