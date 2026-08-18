@@ -1,6 +1,6 @@
-# done_check.py ParseInAry_Opt -- captured 2026-08-18T07:10:24Z by scripts/capture_done_check.sh
+# done_check.py ParseInAry_Opt -- captured 2026-08-18T07:14:01Z by scripts/capture_done_check.sh
 
-Run against the committed state at daf48057 ("ParseInAry_Opt: plan.json was missing source_file, translation and harness_required, and done_check CRASHED on it"), with a CLEAN tree, with stdout
+Run against the committed state at 8fa9059e ("ParseInAry_Opt: the close gate re-taken against the library at close -- 5,252,000 / 0"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
