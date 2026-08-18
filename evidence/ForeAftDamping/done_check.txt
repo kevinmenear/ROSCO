@@ -1,6 +1,6 @@
-# done_check.py ForeAftDamping -- captured 2026-08-18T01:32:31Z by scripts/capture_done_check.sh
+# done_check.py ForeAftDamping -- captured 2026-08-18T01:33:41Z by scripts/capture_done_check.sh
 
-Run against the committed state at 079c6a86 ("ForeAftDamping: the done_check, first capture -- 13 of 14, P5 open on this file itself"), with a CLEAN tree, with stdout
+Run against the committed state at a5ce158a ("RUNBOOK target layer: four entries earned by unit #52"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
