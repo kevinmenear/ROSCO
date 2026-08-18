@@ -1,0 +1,59 @@
+# evidence/ForeAftDamping/nomove_census.txt
+# Unit #52 `ForeAftDamping`. WHY 42 OF 7567 CASES SURVIVE THE POST-INTEGRATION
+# RED TEST, measured rather than argued.
+#
+# THE PREDICTION IN run_postintegration_redtest.sh's HEADER WAS THE WHOLE
+# CORPUS, AND IT WAS WRONG BY 42. The run reported:
+#
+#     POST-INTEGRATION RED TEST OK (went red): checked 7567  failed 7525
+#
+# 7525 of 7567. The header predicted `failed == checked` on the reasoning that
+# FA_AccHPFI is written on every case with no guard. That reasoning is right
+# about the WRITE and wrong about the OBSERVATION: deleting
+# `vit_copy_scalars_to_localvariables` makes the Fortran side return the
+# INCOMING LocalVariables, so a case passes iff this unit changed NOTHING in
+# that type -- not merely iff it wrote nothing.
+#
+# HOW IT WAS MEASURED. A probe that copies the whole `localvariables_view_t`
+# before the call and memcmps it after, plus three field-scoped comparisons,
+# inserted into foreaftdamping_test.cpp and rebuilt with
+# `scripts/harness.sh ... --post-integration --no-generate` (corpus kept byte
+# for byte). This needs no perturbed wrapper at all: with the copy-back deleted
+# the Fortran side IS the incoming value, so "the reference did not move it" is
+# the pass condition, and that is a property of the UNPERTURBED run.
+#
+#     cases 7567
+#       whole LocalVariables unchanged      42
+#       FA_AccHPFI unchanged              2458
+#       piP unchanged                     4178
+#       FA_PitCom unchanged               1890     (= the NumBl == 0 count, exactly)
+#
+#     THE 42, AND ALL THREE CONDITIONS HOLD ON EVERY ONE OF THEM:
+#       restart == 1                        42 of 42
+#       NumBl   == 0                        42 of 42
+#       incoming FA_AccHPFI == 0.0          42 of 42
+#
+# So the pass set is exactly `restart AND NumBl == 0 AND FA_AccHPFI_in == 0.0`,
+# and each conjunct kills one of this unit's three LocalVariables effects:
+#
+#   restart          `PIController` returns its `I0`, which this call site passes
+#                    as 0.0, and writes `piP%ITerm(inst)` and `piP%ITermLast(inst)`
+#                    = 0.0 into a `piP` the generator zero-initialises and does
+#                    not vary. The nested type comes back identical.
+#   NumBl == 0       the `DO K = 1,LocalVar%NumBl` loop never runs, so all three
+#                    `FA_PitCom` slots keep the values they arrived with.
+#   FA_AccHPFI == 0  the surviving assignment writes 0.0 over 0.0.
+#
+# `objInst%instPI` is NOT in the pass condition and could not be: `objInst` is a
+# flat type crossed by `C_LOC` rather than through a view struct, so the callee's
+# post-increment reaches the Fortran object whatever the copy-back does. That is
+# also why the red test is scoped to LocalVariables and why a wrapper defect in
+# the objInst path is invisible to it.
+#
+# WHAT THIS DOES AND DOES NOT SAY. It says the red test's 42 passes are a
+# property of the CORPUS -- three inputs at three specific values -- and not a
+# hole in the marshalling: on every case where this unit changes anything at
+# all, the deleted copy-back is caught. It does not say the corpus should not
+# contain those 42; NumBl == 0 is deliberately in the range pin (it is the only
+# input that separates this unit's two statements) and `restart` is half the
+# corpus by construction.
