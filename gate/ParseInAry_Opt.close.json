@@ -26,7 +26,7 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "the CLOSE gate, RE-TAKEN against the library that exists at close. The reset/restore pair was round-tripped after integration as a check that the next unit can extract -- 55 translated .cpp removed on reset, up from 54, so the scripts pick this unit up with no edit -- and restore_integrated rebuilds and installs. The sources are identical (HEAD unchanged, git status clean) and the build is deterministic, so this number was expected to be the same one; it is re-taken rather than argued."
+  "SECOND DISPATCH, re-taken at close. The library under test was rebuilt three times on 2026-08-18 -- reset_to_clean, restore_integrated, and the wrapper red test's revert -- so this run asks whether the build that SHIPS at the end of the dispatch is still the one the first dispatch gated. The translation and the wrapper are byte-identical to that gate's; the corpus change the dispatch made is not read by this layer at all (RUNBOOK, unit #49: the gate runs 27 simulations against the shipped library and never reads the case file)."
  ],
  "perturbed": false,
  "residual_dirt": [],
