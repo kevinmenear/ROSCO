@@ -1,6 +1,6 @@
-# done_check.py ParseInAry_Opt -- captured 2026-08-18T08:00:07Z by scripts/capture_done_check.sh
+# done_check.py ParseInAry_Opt -- captured 2026-08-18T08:01:30Z by scripts/capture_done_check.sh
 
-Run against the committed state at c5ae5a84 ("ParseInAry_Opt: plan.json brought current -- six layers at the second dispatch's numbers, three new evidence files, disposition unchanged at deferred"), with a CLEAN tree, with stdout
+Run against the committed state at 94db4c95 ("ParseInAry_Opt: the seventh name -- e6bc72cb is the first genuinely EQUIVALENT mutant this unit has found, argued and deliberately not folded into the score"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
