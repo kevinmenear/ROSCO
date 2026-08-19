@@ -20,13 +20,13 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "59aa876",
+ "loop_rev": "8c17719",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "CLOSE RUN, third dispatch: the gate re-taken against the library exactly as it ships at the end of this dispatch, after the two perturbations above were reverted and rebuilt. Predicted at 5,252,000 / 0 before it was started; the translation and the wrapper are byte-identical to the second dispatch and only the loop rev moved."
+  "CLOSE RUN, fourth dispatch: the gate re-taken against the library exactly as it ships at the end of this dispatch, after the wrapper red test and both gate perturbations were reverted and rebuilt. Predicted at 5,252,000 / 0 before it was started."
  ],
  "perturbed": false,
  "residual_dirt": [],
