@@ -13165,3 +13165,60 @@ this exact reason. Re-run: 209/26/474, byte-identical to the committed reading.
 
 The three escalations of the fourth dispatch (items 3–5 above) all stand
 unchanged, and item 5 is still what holds this unit below 1.0.
+
+## 2026-08-19 — OPEN FINDING AGAINST UNIT #54 `ParseDbAry_Opt`, raised from #55's fifth dispatch and NOT acted on
+
+The C12 above is not confined to unit #55. **It has already fired on the
+sibling, and the sibling's evidence is committed with the defect in it.** This
+is reported rather than repaired: #54 is a closed unit (`deferred`), its
+artifacts are all at loop `59aa876`, and fixing one file of its evidence without
+re-taking its measurement would leave it less coherent than it is now. The
+Driver's call, not this unit's.
+
+**The probe carries the same defect.** `evidence/ParseDbAry_Opt/run_line_coverage_probe.sh`
+is the file #55's was copied from and it neither deletes nor `make`s
+`parsedbary_opt.hpp`. Across the campaign, exactly two probes touch a derived
+`.hpp`: `run_read_residual_probe.sh`, which already did `rm -f … && cp` and was
+never at risk, and the two coverage probes, of which #55's is now fixed and
+#54's is not.
+
+**And it fired.** `evidence/ParseDbAry_Opt/line_coverage.txt` does not describe
+the translation that ships. Read-only, three ways, all agreeing:
+
+```
+its 43 never-executed rows matched at their stated line, against
+  translations/ROSCO_Helpers/parsedbary_opt.cpp   HEAD, 750 lines   35 / 43
+  the same file at 50b583ab^, 743 lines           BEFORE the repair 42 / 43
+
+its own CONTROL line:  "L519 count=17520  void ParseDbAry_Opt(char* FileLines…"
+  HEAD          L519 is `double* ary_at(CFI_cdesc_t* d, CFI_index_t i) {`
+                and the entry is at L526
+  50b583ab^     L519 IS the entry
+```
+
+**The ordering is what makes it a defect rather than staleness.** `50b583ab`
+made the `if (n > 0)` repair (+7 lines, above the entry). `8a06a569` then says
+"the harness, the stubs, the coverage and the sweep re-taken on the fixed
+translation" and `5cfe798a` committed the coverage — *after* the repair. The
+translation has not changed since. So a coverage file taken after the repair,
+and described as re-taken on the fixed translation, measures the program from
+before it. The only mechanism that does that is the stale derived copy.
+
+**Its control passed for exactly the reason #55's did.** gcov reported 17,520
+for whatever line 519 held in the file it measured, and the control asks only
+whether that number equals the case count.
+
+**What is at stake, stated at its true size.** #54's **18 `unreachable`
+declarations** are derived from that coverage file by its own
+`make_unreachable.py`, so their premise — "gcov reports `#####` for this line
+over the whole corpus" — was evaluated against the wrong program.
+`unreachable_but_killed` is EMPTY in `mutation/ParseDbAry_Opt.json`, which is
+real evidence that the corpus does not refute any of them, and it is not the
+same claim: a declaration can be unrefuted and still underived. Settling it
+costs one clean-tree probe run with the `.hpp` deleted, plus a re-derivation and
+a re-read of `declared_but_killed` — and if the never-executed set moves, #54's
+0.8533 moves with it, in either direction.
+
+Nothing in #55's own evidence depends on this. Its coverage was re-taken with
+the fix and came back byte-identical to what was committed, so its own six
+declarations are derived from the shipped program.
