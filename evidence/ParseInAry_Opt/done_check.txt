@@ -1,6 +1,6 @@
-# done_check.py ParseInAry_Opt -- captured 2026-08-19T07:09:40Z by scripts/capture_done_check.sh
+# done_check.py ParseInAry_Opt -- captured 2026-08-19T07:11:30Z by scripts/capture_done_check.sh
 
-Run against the committed state at bdb0f521 ("State brought current at close: 0.9535, six survivors, five of them measured"), with a CLEAN tree, with stdout
+Run against the committed state at 20120327 ("RUNBOOK target layer: the section this dispatch proved wrong, and four it earned"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
