@@ -1,9 +1,7 @@
 {
  "unit": "ParseInAry_Opt",
  "operators": [
-  "arith_op",
-  "drop_factor",
-  "swap_operands"
+  "index_offset"
  ],
  "operators_offered": [
   "arith_op",
@@ -21,54 +19,69 @@
  ],
  "compared_against": "fortran_reference_on_a_clean_tree",
  "operators_filter": [
-  "arith_op",
-  "drop_factor",
-  "swap_operands"
+  "index_offset"
  ],
  "operators_filter_unmatched": [],
  "mutant_slice": {
   "offset": 0,
-  "limit": 0,
-  "scored": 11,
-  "of": 11
+  "limit": 16,
+  "scored": 16,
+  "of": 31
  },
  "scored_ids": [
-  "d9e35c5a",
-  "6ae5a0a4",
-  "c036e6a1",
-  "d4cbc8ad",
-  "80184bd0",
-  "b82b582f",
-  "e905195c",
-  "3629accc",
-  "13d7d92a",
-  "d63719fb",
-  "804cac95"
+  "b54ac6eb",
+  "85758208",
+  "3226d0dc",
+  "b9434920",
+  "3b12ffe7",
+  "fceee0b1",
+  "cec5624a",
+  "3dfee86c",
+  "85857c57",
+  "14fc62e9",
+  "f448c16f",
+  "0ccde40f",
+  "8fa93551",
+  "58ec3d92",
+  "7fdef51d",
+  "7784f889"
  ],
  "limit_per_operator": 40,
  "capped_operators": [
   "compare_op",
   "const_tweak"
  ],
- "mutants": 10,
- "equivalent_declared": 2,
+ "mutants": 16,
+ "equivalent_declared": 1,
  "unreachable_declared": 0,
  "unreachable": [],
- "nocompile": 1,
+ "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
  "sanitize": true,
- "killed_by_sanitizer": 2,
+ "killed_by_sanitizer": 14,
  "killed_by_sanitizer_ids": [
-  "c036e6a1",
-  "13d7d92a"
+  "85758208",
+  "3226d0dc",
+  "3b12ffe7",
+  "fceee0b1",
+  "cec5624a",
+  "3dfee86c",
+  "85857c57",
+  "14fc62e9",
+  "f448c16f",
+  "0ccde40f",
+  "8fa93551",
+  "58ec3d92",
+  "7fdef51d",
+  "7784f889"
  ],
- "nocompile_ratio": 0.0909,
+ "nocompile_ratio": 0.0,
  "nocompile_refused": false,
- "total": 11,
- "killed": 8,
+ "total": 16,
+ "killed": 15,
  "survived": 0,
- "equivalent": 2,
+ "equivalent": 1,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
  "score": 1.0,

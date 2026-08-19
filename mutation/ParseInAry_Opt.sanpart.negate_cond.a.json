@@ -24,8 +24,8 @@
  "operators_filter_unmatched": [],
  "mutant_slice": {
   "offset": 0,
-  "limit": 0,
-  "scored": 31,
+  "limit": 16,
+  "scored": 16,
   "of": 31
  },
  "scored_ids": [
@@ -44,29 +44,14 @@
   "1374f83c",
   "f0af84b4",
   "c882cdf5",
-  "5baa764c",
-  "7025bae7",
-  "03f79cf0",
-  "1fc42c92",
-  "5831850e",
-  "4ca74dd3",
-  "31c7aef7",
-  "61caf2fd",
-  "62888bdb",
-  "d87cbf9e",
-  "624dab92",
-  "abd0d4c3",
-  "0bc135e3",
-  "d6d80643",
-  "b527f6b6",
-  "3eda97fa"
+  "5baa764c"
  ],
  "limit_per_operator": 40,
  "capped_operators": [
   "compare_op",
   "const_tweak"
  ],
- "mutants": 31,
+ "mutants": 16,
  "equivalent_declared": 0,
  "unreachable_declared": 1,
  "unreachable": [
@@ -88,15 +73,15 @@
  ],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
- "total": 31,
- "killed": 28,
- "survived": 2,
+ "total": 16,
+ "killed": 14,
+ "survived": 1,
  "equivalent": 0,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
  "score": 0.9333,
- "loop_rev": "74c2a32-nogit",
- "gen_rev": "gen-7654789df837",
+ "loop_rev": "6ec37f9-nogit",
+ "gen_rev": "gen-ec01e9810d0e",
  "vit_rev": "3f6e2ce-nogit",
  "survivors": [
   {
@@ -104,12 +89,6 @@
    "operator": "negate_cond",
    "before": "if (is_eol(rec[p]))",
    "after": "if (!(is_eol(rec[p])))"
-  },
-  {
-   "id": "4ca74dd3",
-   "operator": "negate_cond",
-   "before": "if (n > 0)",
-   "after": "if (!(n > 0))"
   }
  ]
 }

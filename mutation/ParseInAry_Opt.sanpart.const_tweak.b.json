@@ -23,32 +23,12 @@
  ],
  "operators_filter_unmatched": [],
  "mutant_slice": {
-  "offset": 0,
-  "limit": 0,
-  "scored": 40,
+  "offset": 20,
+  "limit": 20,
+  "scored": 20,
   "of": 40
  },
  "scored_ids": [
-  "e5ea59db",
-  "8464d14d",
-  "7f5d5d24",
-  "677a74ee",
-  "059308da",
-  "5afd0e14",
-  "b93bad70",
-  "59989a93",
-  "6fd88da6",
-  "ed6a8260",
-  "64509458",
-  "6d43ac1f",
-  "f75d3793",
-  "c8a37018",
-  "5e48838b",
-  "56160d94",
-  "1faf35a6",
-  "fd9d54d0",
-  "54d6e349",
-  "5477861c",
   "33023944",
   "6b5c6a0f",
   "91b70005",
@@ -75,8 +55,8 @@
   "compare_op",
   "const_tweak"
  ],
- "mutants": 40,
- "equivalent_declared": 10,
+ "mutants": 20,
+ "equivalent_declared": 6,
  "unreachable_declared": 1,
  "unreachable": [
   {
@@ -98,40 +78,15 @@
  ],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
- "total": 40,
- "killed": 25,
- "survived": 4,
- "equivalent": 10,
+ "total": 20,
+ "killed": 13,
+ "survived": 0,
+ "equivalent": 6,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.8621,
- "loop_rev": "74c2a32-nogit",
- "gen_rev": "gen-7654789df837",
+ "score": 1.0,
+ "loop_rev": "6ec37f9-nogit",
+ "gen_rev": "gen-ec01e9810d0e",
  "vit_rev": "3f6e2ce-nogit",
- "survivors": [
-  {
-   "id": "0562d216",
-   "operator": "const_tweak",
-   "before": "12",
-   "after": "13"
-  },
-  {
-   "id": "bb16f729",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "72edee9b",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "39d15f1e",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  }
- ]
+ "survivors": []
 }

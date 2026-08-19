@@ -95,45 +95,14 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 40,
- "killed": 24,
- "survived": 5,
+ "killed": 29,
+ "survived": 0,
  "equivalent": 10,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.8276,
- "loop_rev": "74c2a32-nogit",
- "gen_rev": "gen-7654789df837",
+ "score": 1.0,
+ "loop_rev": "6ec37f9-nogit",
+ "gen_rev": "gen-ec01e9810d0e",
  "vit_rev": "3f6e2ce-nogit",
- "survivors": [
-  {
-   "id": "0562d216",
-   "operator": "const_tweak",
-   "before": "12",
-   "after": "13"
-  },
-  {
-   "id": "bb16f729",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "72edee9b",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "39d15f1e",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "373af6ff",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  }
- ]
+ "survivors": []
 }

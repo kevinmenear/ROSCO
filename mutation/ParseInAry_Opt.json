@@ -131,12 +131,12 @@
  "nocompile_ratio": 0.0065,
  "nocompile_refused": false,
  "total": 153,
- "killed": 123,
- "survived": 6,
+ "killed": 128,
+ "survived": 1,
  "equivalent": 17,
  "declared_but_killed": [],
- "score": 0.9535,
- "loop_rev": "74c2a32-nogit",
+ "score": 0.9922,
+ "loop_rev": "6ec37f9-nogit",
  "vit_rev": "3f6e2ce-nogit",
  "merged_from": [
   {
@@ -160,116 +160,158 @@
    "score": 1.0
   },
   {
-   "part": "mutation/ParseInAry_Opt.sanpart.compare_op.json",
+   "part": "mutation/ParseInAry_Opt.sanpart.compare_op.a.json",
    "operators_filter": [
     "compare_op"
    ],
    "mutant_slice": {
     "offset": 0,
-    "limit": 0,
-    "scored": 40,
+    "limit": 20,
+    "scored": 20,
     "of": 40
    },
-   "total": 40,
-   "mutants": 40,
+   "total": 20,
+   "mutants": 20,
    "nocompile": 0,
-   "killed": 35,
+   "killed": 18,
    "survived": 0,
    "score": 1.0
   },
   {
-   "part": "mutation/ParseInAry_Opt.sanpart.const_tweak.json",
+   "part": "mutation/ParseInAry_Opt.sanpart.compare_op.b.json",
+   "operators_filter": [
+    "compare_op"
+   ],
+   "mutant_slice": {
+    "offset": 20,
+    "limit": 20,
+    "scored": 20,
+    "of": 40
+   },
+   "total": 20,
+   "mutants": 20,
+   "nocompile": 0,
+   "killed": 17,
+   "survived": 0,
+   "score": 1.0
+  },
+  {
+   "part": "mutation/ParseInAry_Opt.sanpart.const_tweak.a.json",
    "operators_filter": [
     "const_tweak"
    ],
    "mutant_slice": {
     "offset": 0,
-    "limit": 0,
-    "scored": 40,
+    "limit": 20,
+    "scored": 20,
     "of": 40
    },
-   "total": 40,
-   "mutants": 40,
+   "total": 20,
+   "mutants": 20,
    "nocompile": 0,
-   "killed": 25,
-   "survived": 4,
-   "score": 0.8621
+   "killed": 16,
+   "survived": 0,
+   "score": 1.0
   },
   {
-   "part": "mutation/ParseInAry_Opt.sanpart.negate_cond.json",
+   "part": "mutation/ParseInAry_Opt.sanpart.const_tweak.b.json",
+   "operators_filter": [
+    "const_tweak"
+   ],
+   "mutant_slice": {
+    "offset": 20,
+    "limit": 20,
+    "scored": 20,
+    "of": 40
+   },
+   "total": 20,
+   "mutants": 20,
+   "nocompile": 0,
+   "killed": 13,
+   "survived": 0,
+   "score": 1.0
+  },
+  {
+   "part": "mutation/ParseInAry_Opt.sanpart.negate_cond.a.json",
    "operators_filter": [
     "negate_cond"
    ],
    "mutant_slice": {
     "offset": 0,
-    "limit": 0,
-    "scored": 31,
+    "limit": 16,
+    "scored": 16,
     "of": 31
    },
-   "total": 31,
-   "mutants": 31,
+   "total": 16,
+   "mutants": 16,
    "nocompile": 0,
-   "killed": 28,
-   "survived": 2,
+   "killed": 14,
+   "survived": 1,
    "score": 0.9333
   },
   {
-   "part": "mutation/ParseInAry_Opt.sanpart.index_offset.json",
+   "part": "mutation/ParseInAry_Opt.sanpart.negate_cond.b.json",
+   "operators_filter": [
+    "negate_cond"
+   ],
+   "mutant_slice": {
+    "offset": 16,
+    "limit": 15,
+    "scored": 15,
+    "of": 31
+   },
+   "total": 15,
+   "mutants": 15,
+   "nocompile": 0,
+   "killed": 15,
+   "survived": 0,
+   "score": 1.0
+  },
+  {
+   "part": "mutation/ParseInAry_Opt.sanpart.index_offset.a.json",
    "operators_filter": [
     "index_offset"
    ],
    "mutant_slice": {
     "offset": 0,
-    "limit": 0,
-    "scored": 31,
+    "limit": 16,
+    "scored": 16,
     "of": 31
    },
-   "total": 31,
-   "mutants": 31,
+   "total": 16,
+   "mutants": 16,
    "nocompile": 0,
-   "killed": 27,
+   "killed": 15,
+   "survived": 0,
+   "score": 1.0
+  },
+  {
+   "part": "mutation/ParseInAry_Opt.sanpart.index_offset.b.json",
+   "operators_filter": [
+    "index_offset"
+   ],
+   "mutant_slice": {
+    "offset": 16,
+    "limit": 15,
+    "scored": 15,
+    "of": 31
+   },
+   "total": 15,
+   "mutants": 15,
+   "nocompile": 0,
+   "killed": 12,
    "survived": 0,
    "score": 1.0
   }
  ],
- "merged_why": "153 mutants at ~5s each under -fsanitize=address,undefined is ~765s against the 600s foreground ceiling; five --operator-filtered parts, each in the foreground, each routed through scripts/mutate_guarded.sh",
+ "merged_why": "153 mutants at ~14s each under -fsanitize=address,undefined with a per-case stdout capture is ~2,100s against the 600s foreground ceiling; eight foreground parts, each through scripts/mutate_guarded.sh, the two 40-mutant operators split by --offset into slices of 20",
  "merged_by": "scripts/_mutation_merge.py",
  "survivors": [
-  {
-   "id": "0562d216",
-   "operator": "const_tweak",
-   "before": "12",
-   "after": "13"
-  },
-  {
-   "id": "bb16f729",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "72edee9b",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "39d15f1e",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
   {
    "id": "07b5ee72",
    "operator": "negate_cond",
    "before": "if (is_eol(rec[p]))",
    "after": "if (!(is_eol(rec[p])))"
-  },
-  {
-   "id": "4ca74dd3",
-   "operator": "negate_cond",
-   "before": "if (n > 0)",
-   "after": "if (!(n > 0))"
   }
  ]
 }

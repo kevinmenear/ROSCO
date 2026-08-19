@@ -86,14 +86,14 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 31,
- "killed": 28,
- "survived": 2,
+ "killed": 29,
+ "survived": 1,
  "equivalent": 0,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.9333,
- "loop_rev": "74c2a32-nogit",
- "gen_rev": "gen-7654789df837",
+ "score": 0.9667,
+ "loop_rev": "6ec37f9-nogit",
+ "gen_rev": "gen-ec01e9810d0e",
  "vit_rev": "3f6e2ce-nogit",
  "survivors": [
   {
@@ -101,12 +101,6 @@
    "operator": "negate_cond",
    "before": "if (is_eol(rec[p]))",
    "after": "if (!(is_eol(rec[p])))"
-  },
-  {
-   "id": "4ca74dd3",
-   "operator": "negate_cond",
-   "before": "if (n > 0)",
-   "after": "if (!(n > 0))"
   }
  ]
 }

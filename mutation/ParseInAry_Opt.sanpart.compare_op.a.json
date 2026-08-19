@@ -1,9 +1,7 @@
 {
  "unit": "ParseInAry_Opt",
  "operators": [
-  "arith_op",
-  "drop_factor",
-  "swap_operands"
+  "compare_op"
  ],
  "operators_offered": [
   "arith_op",
@@ -21,52 +19,59 @@
  ],
  "compared_against": "fortran_reference_on_a_clean_tree",
  "operators_filter": [
-  "arith_op",
-  "drop_factor",
-  "swap_operands"
+  "compare_op"
  ],
  "operators_filter_unmatched": [],
  "mutant_slice": {
   "offset": 0,
-  "limit": 0,
-  "scored": 11,
-  "of": 11
+  "limit": 20,
+  "scored": 20,
+  "of": 40
  },
  "scored_ids": [
-  "d9e35c5a",
-  "6ae5a0a4",
-  "c036e6a1",
-  "d4cbc8ad",
-  "80184bd0",
-  "b82b582f",
-  "e905195c",
-  "3629accc",
-  "13d7d92a",
-  "d63719fb",
-  "804cac95"
+  "e1c693a5",
+  "66860b6f",
+  "8a203bc0",
+  "ca2bb319",
+  "3080cda9",
+  "97545434",
+  "ebe1e3f4",
+  "15c78951",
+  "fd77a623",
+  "f37d8413",
+  "2f8001ae",
+  "ad38f36b",
+  "ba05f614",
+  "6d203c33",
+  "08ff2c98",
+  "e6bc72cb",
+  "10028d7c",
+  "51771298",
+  "7d77a31a",
+  "d99e45ef"
  ],
  "limit_per_operator": 40,
  "capped_operators": [
   "compare_op",
   "const_tweak"
  ],
- "mutants": 10,
+ "mutants": 20,
  "equivalent_declared": 2,
  "unreachable_declared": 0,
  "unreachable": [],
- "nocompile": 1,
+ "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
  "sanitize": true,
  "killed_by_sanitizer": 2,
  "killed_by_sanitizer_ids": [
-  "c036e6a1",
-  "13d7d92a"
+  "08ff2c98",
+  "d99e45ef"
  ],
- "nocompile_ratio": 0.0909,
+ "nocompile_ratio": 0.0,
  "nocompile_refused": false,
- "total": 11,
- "killed": 8,
+ "total": 20,
+ "killed": 18,
  "survived": 0,
  "equivalent": 2,
  "declared_but_killed": [],

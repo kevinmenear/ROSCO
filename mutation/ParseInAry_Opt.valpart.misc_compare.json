@@ -1,7 +1,10 @@
 {
  "unit": "ParseInAry_Opt",
  "operators": [
-  "compare_op"
+  "arith_op",
+  "compare_op",
+  "drop_factor",
+  "swap_operands"
  ],
  "operators_offered": [
   "arith_op",
@@ -19,14 +22,17 @@
  ],
  "compared_against": "fortran_reference_on_a_clean_tree",
  "operators_filter": [
-  "compare_op"
+  "arith_op",
+  "compare_op",
+  "drop_factor",
+  "swap_operands"
  ],
  "operators_filter_unmatched": [],
  "mutant_slice": {
   "offset": 0,
   "limit": 0,
-  "scored": 40,
-  "of": 40
+  "scored": 51,
+  "of": 51
  },
  "scored_ids": [
   "e1c693a5",
@@ -68,15 +74,26 @@
   "4655ac21",
   "b2849cc7",
   "a45110fc",
-  "9120d215"
+  "9120d215",
+  "d9e35c5a",
+  "6ae5a0a4",
+  "c036e6a1",
+  "d4cbc8ad",
+  "80184bd0",
+  "b82b582f",
+  "e905195c",
+  "3629accc",
+  "13d7d92a",
+  "d63719fb",
+  "804cac95"
  ],
  "limit_per_operator": 40,
  "capped_operators": [
   "compare_op",
   "const_tweak"
  ],
- "mutants": 40,
- "equivalent_declared": 3,
+ "mutants": 50,
+ "equivalent_declared": 5,
  "unreachable_declared": 2,
  "unreachable": [
   {
@@ -92,33 +109,78 @@
    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
   }
  ],
- "nocompile": 0,
+ "nocompile": 1,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
- "sanitize": true,
- "killed_by_sanitizer": 9,
- "killed_by_sanitizer_ids": [
-  "08ff2c98",
-  "d99e45ef",
-  "da89c70f",
-  "b663872a",
-  "112d63b1",
-  "7aad97cf",
-  "7fd4edf1",
-  "64cfaba1",
-  "356f870c"
- ],
- "nocompile_ratio": 0.0,
+ "sanitize": false,
+ "killed_by_sanitizer": 0,
+ "killed_by_sanitizer_ids": [],
+ "nocompile_ratio": 0.0196,
  "nocompile_refused": false,
- "total": 40,
- "killed": 35,
- "survived": 0,
- "equivalent": 3,
+ "total": 51,
+ "killed": 34,
+ "survived": 9,
+ "equivalent": 5,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 1.0,
- "loop_rev": "74c2a32-nogit",
- "gen_rev": "gen-7654789df837",
+ "score": 0.7907,
+ "loop_rev": "6ec37f9-nogit",
+ "gen_rev": "gen-ec01e9810d0e",
  "vit_rev": "3f6e2ce-nogit",
- "survivors": []
+ "survivors": [
+  {
+   "id": "08ff2c98",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "d99e45ef",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "da89c70f",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "b663872a",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "112d63b1",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "7aad97cf",
+   "operator": "compare_op",
+   "before": ">=",
+   "after": ">"
+  },
+  {
+   "id": "7fd4edf1",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "64cfaba1",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "356f870c",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  }
+ ]
 }
