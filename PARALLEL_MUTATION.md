@@ -28,7 +28,7 @@ every future campaign**. Three consequences that did not apply last time:
 | C | **Mutant identity** — each worker provably scored the mutant it was given | ✅ **done — red-tested** |
 | D | **Watchdog under load** — no false kills from concurrency | ✅ done |
 | E | The sweep proves it still measures the same thing | ✅ **done — 153/153 identical, twice** |
-| F | Turn it on, with a way to turn it off | 🟡 default raised; publish pending |
+| F | Turn it on, with a way to turn it off | 🟡 on; F.6 needs a real dispatch, F.7 open |
 
 ---
 
@@ -396,7 +396,7 @@ sweeps — the in-place mutate/restore held.
 - [x] **F.1** Change the default to 8 only after E passes twice.
 - [x] **F.2** Tests in `translation-loop/tests/`, and every new file named in `PLAN.md` §2.6.
 - [x] **F.3** Full suite green (528 passed / 2 skipped at `6ec37f9` is the current bar).
-- [ ] **F.4** Update `RUNBOOK.md` with the serial fallback and when to reach for it.
+- [x] **F.4** Update `RUNBOOK.md` with the serial fallback and when to reach for it.
 - [ ] **F.5** Publish both instrument repos and verify by `git ls-remote`, per the unit-close
       protocol.
 - [ ] **F.7** **Build the serial path in `/tmp` too.** Phase E measured ~1.9x sitting in the
