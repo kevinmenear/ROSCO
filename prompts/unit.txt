@@ -83,6 +83,35 @@ procedure, and every step exists because a unit of this campaign was lost at it.
    the translation, the harness result, the mutation result, the gate result,
    the evidence. Not one commit at the end.
 
+PARTITION THE SURVIVORS BEFORE YOU TRIAGE THEM. Run this first:
+
+    python3 /workspace/translation-loop/scripts/vit_clusters.py {unit} \
+        --root /workspace/ROSCO-r2 --cpp <the translation>
+
+It groups the survivors by the FUNCTION each one sits in. Work a region at a
+time and build ONE INSTRUMENT PER REGION -- never one per survivor.
+
+Why, measured on this campaign. ParseDbAry_Opt had 22 survivors and they fell
+into two mechanisms: ten in the float-formatting functions, twelve in the
+record scanner. Two instruments answered all 22, roughly an hour each. Per
+survivor that would have been 22 instruments for the same answers. The unit did
+find the right split -- on its THIRD dispatch, after two had written "the PRINT
+record is compared by no layer" and stopped there, correctly and uselessly. The
+partition is free and it is available on dispatch one.
+
+The regions are independent of each other, so their order is yours to choose.
+Take the largest first: it is the one whose instrument amortises furthest.
+
+Note what the partition tells you that the operator column does not.
+`negate_cond` survivors appeared in BOTH of ParseDbAry_Opt's mechanisms, and
+`const_tweak` in three separate regions. The operator is a fact about the edit;
+the region is a fact about what the edit can reach, and only the second
+predicts which instrument will catch it.
+
+The tool REFUSES if any survivor id no longer resolves against the translation.
+That means the file moved since the sweep, and a partition of the ids that still
+match would look complete while silently dropping work. Re-run the sweep.
+
 EVERY MUTANT GETS AN ANSWER, AND THERE ARE NOW THREE OF THEM. The bar is not
 "kill every mutant", it is EXPLAIN every mutant. P12 divides by
 `mutants - equivalent_declared - unreachable_declared`, so an explained mutant
