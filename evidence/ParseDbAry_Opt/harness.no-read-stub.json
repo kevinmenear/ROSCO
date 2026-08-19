@@ -118,6 +118,6 @@
       "got": "2c010000"
     }
   ],
-  "red_test": "the whole list-directed READ deleted",
+  "red_test": "re-taken after the print separator fix",
   "red_test_note": "run with --no-generate, so this is the same case file the green in harness/ParseDbAry_Opt.json was taken on"
 }

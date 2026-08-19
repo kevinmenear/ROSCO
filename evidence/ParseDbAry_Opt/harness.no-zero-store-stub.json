@@ -46,6 +46,6 @@
       "got": "01000000060000000000000001000000000000003e4a06d5e3c385c0d89a4897..."
     }
   ],
-  "red_test": "the measured zero-store rule removed",
+  "red_test": "re-taken after the print separator fix",
   "red_test_note": "run with --no-generate, so this is the same case file the green in harness/ParseDbAry_Opt.json was taken on"
 }

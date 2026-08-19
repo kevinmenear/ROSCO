@@ -67,8 +67,8 @@
   "8bb5f06d",
   "bea19ce7",
   "6238b54e",
-  "fc54d40b",
-  "ec43592b"
+  "b529317d",
+  "fc54d40b"
  ],
  "limit_per_operator": 40,
  "capped_operators": [
@@ -122,12 +122,12 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 40,
- "killed": 28,
- "survived": 7,
+ "killed": 27,
+ "survived": 8,
  "equivalent": 0,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.8,
+ "score": 0.7714,
  "loop_rev": "b9c8c52-nogit",
  "gen_rev": "gen-cf5dcfa09cce",
  "vit_rev": "3f6e2ce-nogit",
@@ -173,6 +173,12 @@
    "operator": "negate_cond",
    "before": "if (d == 0)",
    "after": "if (!(d == 0))"
+  },
+  {
+   "id": "b529317d",
+   "operator": "negate_cond",
+   "before": "if (n > 0)",
+   "after": "if (!(n > 0))"
   }
  ]
 }

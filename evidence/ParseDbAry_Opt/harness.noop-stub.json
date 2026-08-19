@@ -118,6 +118,6 @@
       "got": "0100000006000000000000000100000000000000535b44c93ce081c05efd482c..."
     }
   ],
-  "red_test": "every statement removed",
+  "red_test": "re-taken after the print separator fix",
   "red_test_note": "run with --no-generate, so this is the same case file the green in harness/ParseDbAry_Opt.json was taken on"
 }

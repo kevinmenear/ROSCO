@@ -2,9 +2,9 @@ ParseDbAry_Opt -- line coverage of the SHIPPED translation under the
 16,512-case differential harness corpus, measured by gcov over the
 generated test's own object (the test #includes parsedbary_opt.hpp).
 
-  executable lines RUN      224
-  executable lines NOT RUN  62
-  non-code lines            457
+  executable lines RUN      220
+  executable lines NOT RUN  61
+  non-code lines            462
 
 CONTROL: the entry line's count must equal the case count.
   L519  count=16512  void ParseDbAry_Opt(char* FileLines, int n_FileLines, int len_FileLine
@@ -49,7 +49,6 @@ LINES NEVER EXECUTED:
   L 358  if (p < len && rec[p] == ',') { ++p; }
   L 359  continue;
   L 360  }
-  L 374  return 5010;
   L 433  return std::string(static_cast<std::size_t>(w), '*');
   L 443  out = std::signbit(v) ? "-Infinity" : "Infinity";
   L 444  return true;
