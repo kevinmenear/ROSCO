@@ -20,13 +20,14 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "829625b",
+ "loop_rev": "b9c8c52",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "RE-TAKEN AT CLOSE, second dispatch, and this is the LAST measurement of the dispatch. Four gate runs perturbed rosco/controller/src/parsedbary_opt.cpp before it (two red tests of the unit's own statements, two surviving mutants of the mutation sweep), each reverting and rebuilding. git status is clean and the source is identical, but a revert that is silently a no-op is a failure this campaign has recorded, so the shipped library is measured again here rather than assumed."
+  "RE-TAKEN AT CLOSE, third dispatch, and this is the LAST measurement of the dispatch. Since gate/ParseDbAry_Opt.json was written, five gate runs perturbed rosco/controller/src/parsedbary_opt.cpp (two red tests of the unit's own statements, three surviving or formerly-surviving mutants) and four mutation sweep parts mutated translations/ROSCO_Helpers/parsedbary_opt.cpp in place, each inside a reset/restore cycle. Every one of them reverted and each reported its own green after the revert; this run asks the question once more against the SHIPPED build the unit closes on, so the close does not rest on nine separate revert claims.",
+  "The mutation sweeps were each wrapped in scripts/mutate_guarded.sh, which clears its marker only when the .cpp hashes back to what it was; all four cleared at 6abb3328d6410276adb7e93ac897767e12fe3d77."
  ],
  "perturbed": false,
  "residual_dirt": [],
