@@ -1,0 +1,33 @@
+ParseInAry_Opt -- the twelve cases the no-READ prediction missed, classified
+Run: bash evidence/ParseInAry_Opt/run_read_residual_probe.sh   (clean tree, 17,520-case corpus, loop 59aa876)
+
+harness_partition.txt predicted the READ-deleted stub at 634 -- the two
+`read-failed` cells, 155 + 479 -- and the stub measured 646. On the second
+dispatch's 15,504-case corpus the same prediction was EXACT (146 = 59 + 87), so
+the twelve are something that corpus did not have.
+
+THEY ARE THE POINT OF THE CORPUS CHANGE. All twelve are cases in which the
+REFERENCE's READ SUCCEEDED: its aviFAIL comes back at the 300 the case supplied
+and its ErrMsg is on no error arm at all. Deleting the READ is visible on them
+in `Ary` and in nothing else. Their case indices are 15,396..16,098 -- inside
+R14's block, which is where loop b33a761's NUMERIC LEADS put a record whose
+value a parser can actually read. Until this dispatch every record R14 planted
+in front of the key was LETTERS, so every matched record FAILED the read and the
+failing set was exactly the two error cells.
+
+That is also why `26d402b2` (`list_read_ints`'s final `return 0` -> `return 1`,
+the SUCCESS status) is killed on this corpus and survived on the last one: these
+twelve cases are the only ones in 17,520 on which a successful read is observed.
+
+probe inserted
+646 FAILING case(s) under the no-READ stub
+
+  the REFERENCE's arm on each failing case
+    no-error                 12
+    read-failed             634
+
+  PREDICTED (the two read-failed cells)      634
+  measured on a read-failed arm             634
+  RESIDUAL -- the reference's READ SUCCEEDED 12
+  their returned aviFAIL values              [300]
+  first ten case indices                     [15396, 15414, 15432, 15450, 15720, 15738, 15864, 15882, 16080, 16098]

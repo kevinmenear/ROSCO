@@ -1,0 +1,102 @@
+{
+  "03f79cf0": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:337 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits \"if (p >= len || is_value_terminator(rec[p]) || rec[p] == ';')\" to \"if (!(p >= len || is_value_terminator(rec[p]) || rec[p] == ';'))\" on a line no case runs, so no case can distinguish it."
+  },
+  "328f7798": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:323 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[k]' to '[k + 1]' on a line no case runs, so no case can distinguish it."
+  },
+  "33023944": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it."
+  },
+  "3629accc": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:333 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'q + 1' to 'q - 1' on a line no case runs, so no case can distinguish it."
+  },
+  "4655ac21": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:322 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it."
+  },
+  "4b65a2f1": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it."
+  },
+  "5477861c": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:326 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it."
+  },
+  "54d6e349": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:323 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '10' to '11' on a line no case runs, so no case can distinguish it."
+  },
+  "5baa764c": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:324 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (count > MaxRepeat)' to 'if (!(count > MaxRepeat))' on a line no case runs, so no case can distinguish it."
+  },
+  "6ae5a0a4": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:323 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'count * 10' to 'count' on a line no case runs, so no case can distinguish it."
+  },
+  "7025bae7": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (count <= 0 || count_over || count > MaxRepeat)' to 'if (!(count <= 0 || count_over || count > MaxRepeat))' on a line no case runs, so no case can distinguish it."
+  },
+  "71d3528f": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:298 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '!=' to '==' on a line no case runs, so no case can distinguish it."
+  },
+  "9120d215": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '>' to '>=' on a line no case runs, so no case can distinguish it."
+  },
+  "91b70005": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:333 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it."
+  },
+  "9a98ecd6": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it."
+  },
+  "a45110fc": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<=' to '<' on a line no case runs, so no case can distinguish it."
+  },
+  "b2849cc7": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:324 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '>' to '>=' on a line no case runs, so no case can distinguish it."
+  },
+  "b300704f": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:337 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it."
+  },
+  "b82b582f": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:323 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'count * 10' to 'count / 10' on a line no case runs, so no case can distinguish it."
+  },
+  "d3e0a66b": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:338 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it."
+  },
+  "dbdc6be6": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it."
+  },
+  "e905195c": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:326 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'MaxRepeat + 1' to 'MaxRepeat - 1' on a line no case runs, so no case can distinguish it."
+  },
+  "e96f6152": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:337 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it."
+  },
+  "f0af84b4": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:298 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (first_item || sep != Sep::Blank)' to 'if (!(first_item || sep != Sep::Blank))' on a line no case runs, so no case can distinguish it."
+  },
+  "fd9d54d0": {
+    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt",
+    "reason": "parseinary_opt.cpp:320 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it."
+  }
+}

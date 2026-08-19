@@ -1,0 +1,122 @@
+{
+ "unit": "ParseInAry_Opt",
+ "operators": [
+  "arith_op",
+  "drop_call",
+  "drop_factor",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "arith_op",
+  "drop_call",
+  "drop_factor",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "operators_filter_unmatched": [],
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 0,
+  "scored": 14,
+  "of": 14
+ },
+ "scored_ids": [
+  "d9e35c5a",
+  "6ae5a0a4",
+  "c036e6a1",
+  "d4cbc8ad",
+  "80184bd0",
+  "b82b582f",
+  "e905195c",
+  "3629accc",
+  "13d7d92a",
+  "d63719fb",
+  "804cac95",
+  "b1c839d7",
+  "a61c0a99",
+  "1fd94aa2"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "compare_op",
+  "const_tweak"
+ ],
+ "mutants": 13,
+ "equivalent_declared": 2,
+ "unreachable_declared": 4,
+ "unreachable": [
+  {
+   "id": "6ae5a0a4",
+   "operator": "drop_factor",
+   "reason": "parseinary_opt.cpp:323 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'count * 10' to 'count' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "b82b582f",
+   "operator": "arith_op",
+   "reason": "parseinary_opt.cpp:323 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'count * 10' to 'count / 10' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "e905195c",
+   "operator": "arith_op",
+   "reason": "parseinary_opt.cpp:326 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'MaxRepeat + 1' to 'MaxRepeat - 1' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "3629accc",
+   "operator": "arith_op",
+   "reason": "parseinary_opt.cpp:333 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'q + 1' to 'q - 1' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  }
+ ],
+ "nocompile": 1,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "sanitize": true,
+ "killed_by_sanitizer": 4,
+ "killed_by_sanitizer_ids": [
+  "c036e6a1",
+  "13d7d92a",
+  "d63719fb",
+  "1fd94aa2"
+ ],
+ "nocompile_ratio": 0.0714,
+ "nocompile_refused": false,
+ "total": 14,
+ "killed": 6,
+ "survived": 1,
+ "equivalent": 2,
+ "declared_but_killed": [],
+ "unreachable_but_killed": [],
+ "score": 0.8571,
+ "loop_rev": "59aa876-nogit",
+ "gen_rev": "gen-f38d4ba5fdc8",
+ "vit_rev": "3f6e2ce-nogit",
+ "survivors": [
+  {
+   "id": "b1c839d7",
+   "operator": "drop_call",
+   "before": "std::max(NumWords, 0)",
+   "after": "NumWords"
+  }
+ ]
+}

@@ -1,0 +1,56 @@
+ParseInAry_Opt -- line coverage of the SHIPPED translation under the
+17,520-case differential harness corpus, measured by gcov over the
+generated test's own object (the test #includes parseinary_opt.hpp).
+
+  executable lines RUN      193
+  executable lines NOT RUN  43
+  non-code lines            441
+
+CONTROL: the entry line's count must equal the case count.
+  L445  count=17520  void ParseInAry_Opt(char* FileLines, int n_FileLines, int len_FileLine
+
+LINES NEVER EXECUTED:
+
+  L  91  std::fprintf(stderr,
+  L  94  static_cast<int>(s.size()));
+  L  95  return;
+  L 218  overflow = true;
+  L 228  return false;
+  L 259  crossed_eol = true;
+  L 266  ++p;
+  L 288  ++p;
+  L 298  if (first_item || sep != Sep::Blank) {
+  L 299  return 5010;
+  L 301  ++p;
+  L 302  ++i;
+  L 303  while (p < len && (is_blank(rec[p]) || is_eol(rec[p]))) {
+  L 304  ++p;
+  L 306  sep = Sep::Comma;                   // '1 ;;2' is 5010
+  L 307  continue;
+  L 320  long count = 0;
+  L 321  bool count_over = false;
+  L 322  for (int k = p; k < q; ++k) {
+  L 323  count = count * 10 + (rec[k] - '0');
+  L 324  if (count > MaxRepeat) {
+  L 325  count_over = true;
+  L 326  count = MaxRepeat + 1;
+  L 329  if (count <= 0 || count_over || count > MaxRepeat) {
+  L 330  return 5010;                    // '0*1 2' and '200000001*7'
+  L 332  repeat = count;
+  L 333  p = q + 1;
+  L 337  if (p >= len || is_value_terminator(rec[p]) || rec[p] == ';') {
+  L 338  for (long k = 0; k < repeat && i < n; ++k) {
+  L 339  ++i;
+  L 341  eat_separator();
+  L 342  continue;
+  L 343  }
+  L 400  return std::string(static_cast<std::size_t>(w), '*');
+  L 522  ErrVar->aviFAIL = -1;
+  L 523  std::string msg(RoutineName);
+  L 524  msg += ":Error allocating memory for ";
+  L 525  msg += int2lstr_trimmed(AryLen);
+  L 526  msg += " characters in the ";
+  L 527  msg.append(ftrim(ParamName, len_ParamName));
+  L 528  msg += " array.";
+  L 529  assign_errmsg(ErrVar, msg);
+  L 530  }
