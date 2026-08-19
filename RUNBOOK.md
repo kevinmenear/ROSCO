@@ -8383,6 +8383,133 @@ unit can exhaust the second while barely touching the first.
   units, in `GetWords`, and in anything that parses a record a search routine
   selected.
 
+  **THE PARAGRAPH ABOVE IS CORRECT ABOUT THE SCANNERS AND WRONG ABOUT THE
+  COST, AND THE CORRECTION IS WORTH MORE THAN THE SECTION.** Unit #55, FOURTH
+  dispatch: the record needs no all-blank `ParamName` at all. The search copies
+  `FileLines(I)` into a FIXED-WIDTH local and **the copy truncates**, so a key
+  placed past that width is seen by the SEARCH and is not in the RECORD:
+
+  ```
+  FileLines(I)   <value block, exactly MaxLineLength wide, ending in blanks> KEY
+  Line = FileLines(I)                                 |<-- truncated here
+  the parser is handed                                  <value block> and blanks
+  ```
+
+  `_RECORD_TAILS` was ALREADY relying on that truncation for the other boundary
+  -- its four forms are exactly `MaxLineLength` wide so the key falls off the
+  end. Making the body end in BLANKS rather than inside a value is the same
+  mechanism, one form over. Nine `_BLANK_TAILS` forms took all eleven survivors
+  and the harness stayed green, because a form can be built so that a read which
+  SUCCEEDS assigns every element it consumed.
+
+  **A LEVER PRICED AS "UNREACHABLE WITHOUT PAYING FOR REGION X" MUST NAME THE
+  MECHANISM IT WAS PRICED AGAINST.** This one's mechanism was "the key is always
+  to the right of the last value", which is true of the LINE and false of the
+  RECORD, and stating it is what made the error visible to the next reader. A
+  price with no mechanism is a price nobody can check.
+
+## `||` SHORT-CIRCUITS, SO HALF OF EVERY BLANK SCAN IS A DIFFERENT MUTANT
+
+- **Five record forms killed every `is_blank(rec[p + 1])` and left every
+  `is_eol(rec[p + 1])` alive.** Unit #55, fourth dispatch, four survivors, one
+  per scan.
+
+  ```
+  while (p < len && (is_blank(rec[p]) || is_eol(rec[p])))
+                     ^ evaluated at every        ^ evaluated ONLY where the
+                       character the scan            first is false -- that is,
+                       crosses                       at the character it STOPS on
+  ```
+
+  A record that runs a scan OFF the end reaches the first operand at the
+  boundary and never reaches the second there at all. A record whose last byte
+  is the character the scan stops ON reaches the second. Same source line, same
+  operator, two different records. The `rec[p] == ';'` disjunct of a
+  repeat-count lookahead is the same shape a third way.
+
+  **Ask which OPERAND of a short-circuit a record shape reaches, not just which
+  LINE.**
+
+## AN `unreachable` SET WITH ONE COMMON CAUSE IS A CORPUS GAP WEARING A
+## DECLARATION'S NAME
+
+- **25 declarations became 6 and the score went UP.** Unit #55, fourth dispatch.
+  Nineteen of the twenty-five sat in one region -- the repeat-count block --
+  which no corpus record could enter for one reason: **R14 planted no `*`
+  anywhere in any record.** Seven `_TAIL_VALUES` entries later all nineteen are
+  SCORED, and every one is killed.
+
+  The derivation was right every time: `make_unreachable.py` reads the coverage
+  file and refuses if it does not name the corpus, and the nineteen genuinely
+  sat on lines gcov reported `#####`. **The runbook's existing rule -- re-derive
+  the set, never carry it -- is necessary and is not sufficient.** Re-deriving
+  a declaration answers "is this still true?"; it never asks "why is this true,
+  and is the why one thing?"
+
+  **After deriving an `unreachable` set, group it by REGION and ask what one
+  corpus change would empty the largest group.** A declaration set whose members
+  share a cause is a single missing input reported as N separate facts about the
+  program.
+
+## A MUTANT ID IS AN OCCURRENCE INDEX, SO PRICE A REPAIR BY DIFFING (id -> SITE)
+
+- **Two of eighteen declarations silently re-pointed at sites the corpus kills,
+  and the pre-flight diff said "none lost".** Unit #55, fourth dispatch.
+
+  `cppmutate` identifies a mutant by an occurrence index over IDENTICAL edits.
+  So an edit that adds or removes a `'0' -> '1'` site renumbers every later
+  `'0' -> '1'` mutant, while leaving the id SET almost unchanged:
+
+  ```
+  before   152 mutants        after   153 mutants
+  diff of the id SETS:   1 gained, 0 lost        <- true, and useless
+  diff of (id -> site):  2 declarations re-pointed at DIFFERENT sites
+  ```
+
+  The existing rule (unit #54, the 40-mutant cap) prices a repair by enumerating
+  before and after. **Enumerate (id -> site), not ids.** The cap failure loses a
+  kill and lowers the score; this one moves a declaration onto a live site and
+  RAISES it, which is the more dangerous direction.
+
+  `declared_but_killed` is what caught it, and it is the only thing that did.
+  **Read `declared_but_killed` before reading the score**, on every sweep that
+  follows any edit to the translation. One declaration was repaired by
+  re-deriving it from its site; the other was DROPPED, because the new site had
+  pushed its mutant out of the 40-per-operator cap entirely and a declaration
+  whose mutant is not offered cannot be checked.
+
+## THE REGION NO LAYER COMPARES IS WHERE THE DEFECT IS, AND THREE LAYERS CAN
+## EACH BE INDIVIDUALLY RIGHT TO IGNORE IT
+
+- **A `print_conformance` replay's FIRST baseline was 1 of 34 mismatched.** Unit
+  #55, fourth dispatch, after three dispatches of listing the PRINT record as
+  "what is still not seen" and reasoning about it instead of measuring it.
+
+  ```
+  ref | ... Using default value of []|
+  got | ... Using default value of [ ]|
+  ```
+
+  gfortran writes no separator blank before a CHARACTER item that follows an
+  EMPTY value list. Four dispatches of green evidence could not see it:
+
+  ```
+  differential harness   compares out-parameters      -- right to ignore stdout
+  gate                   compares channels, arm dead  -- right to ignore stdout
+  vit_mutate.py          reads a JSON PAYLOAD out of `./test`'s stdout
+                         PRECISELY BECAUSE the reference may PRINT
+  ```
+
+  **A region that three layers are each individually RIGHT to ignore is a region
+  nothing covers**, and "no layer compares it" is a reason to build the layer,
+  not a reason to keep writing it down.
+
+  **AND THE REPAIR IS PAID FOR OUT OF THE SCORE.** `if (n > 0)` added two
+  mutants in the region the sweep cannot reach and displaced a third declaration
+  out of the cap: 0.9685 -> 0.9535. A correct program at a lower number is the
+  right trade and the number is the honest one -- but say so in the artifact, or
+  the next reader reads a regression.
+
 ## A COPIED RUNNER'S EXIT-STATUS BRANCH IS PART OF WHAT YOU COPIED, AND ADDING A
 ## FAILURE MODE INVERTS IT
 
