@@ -1,6 +1,6 @@
-# done_check.py ParseInAry_Opt -- captured 2026-08-19T04:36:23Z by scripts/capture_done_check.sh
+# done_check.py ParseInAry_Opt -- captured 2026-08-19T04:42:40Z by scripts/capture_done_check.sh
 
-Run against the committed state at 047f02c5 ("RUNBOOK target layer: the two boundaries a record tail does not reach, and a copied runner's exit-status branch"), with a CLEAN tree, with stdout
+Run against the committed state at a7ad16ab ("State brought current on the value-oracle control: the corpus is worth 13 kills and the sanitiser 11"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
