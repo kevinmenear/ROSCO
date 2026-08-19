@@ -100,72 +100,42 @@
  ],
  "mutants": 59,
  "equivalent_declared": 3,
- "unreachable_declared": 11,
+ "unreachable_declared": 6,
  "unreachable": [
-  {
-   "id": "cb9fd797",
-   "operator": "compare_op",
-   "reason": "parsedbary_opt.cpp:234 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "1df32d1d",
-   "operator": "compare_op",
-   "reason": "parsedbary_opt.cpp:234 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "2eee5f51",
-   "operator": "compare_op",
-   "reason": "parsedbary_opt.cpp:239 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '==' to '!=' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "ca00a9b5",
-   "operator": "compare_op",
-   "reason": "parsedbary_opt.cpp:242 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '==' to '!=' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "03a2a772",
-   "operator": "compare_op",
-   "reason": "parsedbary_opt.cpp:242 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '!=' to '==' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
-  },
   {
    "id": "48542e3d",
    "operator": "arith_op",
-   "reason": "parsedbary_opt.cpp:346 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'rec + p' to 'rec - p' on a line no case runs, so no case can distinguish it.",
+   "reason": "parsedbary_opt.cpp:346 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'rec + p' to 'rec - p' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
   },
   {
    "id": "ea525151",
    "operator": "arith_op",
-   "reason": "parsedbary_opt.cpp:346 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'q - p' to 'q + p' on a line no case runs, so no case can distinguish it.",
+   "reason": "parsedbary_opt.cpp:346 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'q - p' to 'q + p' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
   },
   {
    "id": "aad8cf72",
    "operator": "arith_op",
-   "reason": "parsedbary_opt.cpp:351 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'q + 1' to 'q - 1' on a line no case runs, so no case can distinguish it.",
+   "reason": "parsedbary_opt.cpp:351 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'q + 1' to 'q - 1' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
   },
   {
    "id": "7dee2fff",
    "operator": "arith_op",
-   "reason": "parsedbary_opt.cpp:474 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'epos + 1' to 'epos - 1' on a line no case runs, so no case can distinguish it.",
+   "reason": "parsedbary_opt.cpp:474 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'epos + 1' to 'epos - 1' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
   },
   {
    "id": "ce45e93d",
    "operator": "arith_op",
-   "reason": "parsedbary_opt.cpp:475 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'epos + 2' to 'epos - 2' on a line no case runs, so no case can distinguish it.",
+   "reason": "parsedbary_opt.cpp:475 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'epos + 2' to 'epos - 2' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
   },
   {
    "id": "83744180",
    "operator": "arith_op",
-   "reason": "parsedbary_opt.cpp:482 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '3 - edig.size' to '3 + edig.size' on a line no case runs, so no case can distinguish it.",
+   "reason": "parsedbary_opt.cpp:482 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '3 - edig.size' to '3 + edig.size' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
   }
  ],
@@ -173,9 +143,17 @@
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
  "sanitize": true,
- "killed_by_sanitizer": 5,
+ "killed_by_sanitizer": 13,
  "killed_by_sanitizer_ids": [
+  "09fbe682",
+  "cb9fd797",
+  "2763d449",
+  "2f05620e",
+  "56c1dd4d",
+  "a98553ab",
   "47944b58",
+  "f4077220",
+  "28e276aa",
   "19a4f0f6",
   "e0b05cef",
   "39189fa8",
@@ -184,60 +162,18 @@
  "nocompile_ratio": 0.0167,
  "nocompile_refused": false,
  "total": 60,
- "killed": 32,
- "survived": 13,
+ "killed": 46,
+ "survived": 4,
  "equivalent": 3,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.7111,
- "loop_rev": "b9c8c52-nogit",
- "gen_rev": "gen-cf5dcfa09cce",
+ "score": 0.92,
+ "loop_rev": "59aa876-nogit",
+ "gen_rev": "gen-f38d4ba5fdc8",
  "vit_rev": "3f6e2ce-nogit",
  "survivors": [
   {
-   "id": "b5366e74",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "6b5fc8ce",
-   "operator": "compare_op",
-   "before": ">=",
-   "after": ">"
-  },
-  {
-   "id": "76abf5f3",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "09fbe682",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "2763d449",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "2f05620e",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "56c1dd4d",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "a98553ab",
+   "id": "1df32d1d",
    "operator": "compare_op",
    "before": "<",
    "after": "<="
@@ -247,18 +183,6 @@
    "operator": "compare_op",
    "before": "<",
    "after": "<="
-  },
-  {
-   "id": "f4077220",
-   "operator": "arith_op",
-   "before": "p + static_cast",
-   "after": "p - static_cast"
-  },
-  {
-   "id": "28e276aa",
-   "operator": "arith_op",
-   "before": "p + static_cast",
-   "after": "p - static_cast"
   },
   {
    "id": "a867a839",

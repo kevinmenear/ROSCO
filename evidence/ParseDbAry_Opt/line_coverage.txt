@@ -1,39 +1,20 @@
 ParseDbAry_Opt -- line coverage of the SHIPPED translation under the
-16,512-case differential harness corpus, measured by gcov over the
+17,520-case differential harness corpus, measured by gcov over the
 generated test's own object (the test #includes parsedbary_opt.hpp).
 
-  executable lines RUN      220
-  executable lines NOT RUN  61
+  executable lines RUN      239
+  executable lines NOT RUN  42
   non-code lines            462
 
 CONTROL: the entry line's count must equal the case count.
-  L519  count=16512  void ParseDbAry_Opt(char* FileLines, int n_FileLines, int len_FileLine
+  L519  count=17520  void ParseDbAry_Opt(char* FileLines, int n_FileLines, int len_FileLine
 
 LINES NEVER EXECUTED:
 
   L  85  std::fprintf(stderr,
   L  88  static_cast<int>(s.size()));
   L  89  return;
-  L  92  std::fprintf(stderr,
-  L  95  static_cast<int>(s.size()), static_cast<int>(ErrVar->n_ErrMsg_cap));
-  L  96  return;
-  L 176  return false;
-  L 183  return true;
-  L 232  int n = 0;
-  L 233  int q = p;
-  L 234  while (q < len && n < 62 && !is_separator(rec[q])) {
-  L 235  buf[n++] = rec[q++];
-  L 237  buf[n] = '\0';
-  L 238  char* end = nullptr;
-  L 239  std::string word(1, rec[start] == '-' ? '-' : '+');
-  L 240  word += buf;
-  L 241  const double v = std::strtod(word.c_str(), &end);
-  L 242  if (end == nullptr || *end != '\0') {
   L 243  return RealParse::BadNoStore;
-  L 245  out = v;
-  L 246  p = q;
-  L 247  return RealParse::Ok;
-  L 248  }
   L 272  has_exp = true;
   L 277  ++p;
   L 284  return RealParse::BadNoStore;

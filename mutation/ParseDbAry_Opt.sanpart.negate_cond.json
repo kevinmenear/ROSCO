@@ -78,36 +78,30 @@
  ],
  "mutants": 40,
  "equivalent_declared": 0,
- "unreachable_declared": 5,
+ "unreachable_declared": 4,
  "unreachable": [
-  {
-   "id": "0f9388b7",
-   "operator": "negate_cond",
-   "reason": "parsedbary_opt.cpp:242 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits \"if (end == nullptr || *end != '\\\\0')\" to \"if (!(end == nullptr || *end != '\\\\0'))\" on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
-  },
   {
    "id": "1e3dd7a5",
    "operator": "negate_cond",
-   "reason": "parsedbary_opt.cpp:348 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'if (repeat <= 0)' to 'if (!(repeat <= 0))' on a line no case runs, so no case can distinguish it.",
+   "reason": "parsedbary_opt.cpp:348 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (repeat <= 0)' to 'if (!(repeat <= 0))' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
   },
   {
    "id": "8354fa45",
    "operator": "negate_cond",
-   "reason": "parsedbary_opt.cpp:353 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'if (p >= len || is_separator(rec[p]))' to 'if (!(p >= len || is_separator(rec[p])))' on a line no case runs, so no case can distinguish it.",
+   "reason": "parsedbary_opt.cpp:353 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (p >= len || is_separator(rec[p]))' to 'if (!(p >= len || is_separator(rec[p])))' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
   },
   {
    "id": "5aff750f",
    "operator": "negate_cond",
-   "reason": "parsedbary_opt.cpp:358 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits \"if (p < len && rec[p] == ',')\" to \"if (!(p < len && rec[p] == ','))\" on a line no case runs, so no case can distinguish it.",
+   "reason": "parsedbary_opt.cpp:358 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits \"if (p < len && rec[p] == ',')\" to \"if (!(p < len && rec[p] == ','))\" on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
   },
   {
    "id": "6238b54e",
    "operator": "negate_cond",
-   "reason": "parsedbary_opt.cpp:479 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'if (edig.size() > 3)' to 'if (!(edig.size() > 3))' on a line no case runs, so no case can distinguish it.",
+   "reason": "parsedbary_opt.cpp:479 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (edig.size() > 3)' to 'if (!(edig.size() > 3))' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
   }
  ],
@@ -115,29 +109,27 @@
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
  "sanitize": true,
- "killed_by_sanitizer": 1,
+ "killed_by_sanitizer": 5,
  "killed_by_sanitizer_ids": [
+  "b751de71",
+  "5428f2cc",
+  "42a49cb5",
+  "ec529e34",
   "81ed457f"
  ],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 40,
- "killed": 27,
- "survived": 8,
+ "killed": 29,
+ "survived": 7,
  "equivalent": 0,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.7714,
- "loop_rev": "b9c8c52-nogit",
- "gen_rev": "gen-cf5dcfa09cce",
+ "score": 0.8056,
+ "loop_rev": "59aa876-nogit",
+ "gen_rev": "gen-f38d4ba5fdc8",
  "vit_rev": "3f6e2ce-nogit",
  "survivors": [
-  {
-   "id": "5428f2cc",
-   "operator": "negate_cond",
-   "before": "if (p + static_cast<int>(word.size()) > len)",
-   "after": "if (!(p + static_cast<int>(word.size()) > len))"
-  },
   {
    "id": "123a7dde",
    "operator": "negate_cond",

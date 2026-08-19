@@ -1,122 +1,74 @@
 {
- "03a2a772": {
-  "reason": "parsedbary_opt.cpp:242 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '!=' to '==' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "0d6c3ff2": {
-  "reason": "parsedbary_opt.cpp:234 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '[q]' to '[q + 1]' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "0f9388b7": {
-  "reason": "parsedbary_opt.cpp:242 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits \"if (end == nullptr || *end != '\\\\0')\" to \"if (!(end == nullptr || *end != '\\\\0'))\" on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "1beac345": {
-  "reason": "parsedbary_opt.cpp:237 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '[n]' to '[n + 1]' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "1df32d1d": {
-  "reason": "parsedbary_opt.cpp:234 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "1e3dd7a5": {
-  "reason": "parsedbary_opt.cpp:348 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'if (repeat <= 0)' to 'if (!(repeat <= 0))' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "2469ce80": {
-  "reason": "parsedbary_opt.cpp:357 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "2766e582": {
-  "reason": "parsedbary_opt.cpp:239 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "2eee5f51": {
-  "reason": "parsedbary_opt.cpp:239 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '==' to '!=' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "32d10914": {
-  "reason": "parsedbary_opt.cpp:232 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "48542e3d": {
-  "reason": "parsedbary_opt.cpp:346 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'rec + p' to 'rec - p' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "5aff750f": {
-  "reason": "parsedbary_opt.cpp:358 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits \"if (p < len && rec[p] == ',')\" to \"if (!(p < len && rec[p] == ','))\" on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "5b1c8101": {
-  "reason": "parsedbary_opt.cpp:234 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '62' to '63' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "6238b54e": {
-  "reason": "parsedbary_opt.cpp:479 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'if (edig.size() > 3)' to 'if (!(edig.size() > 3))' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "7dee2fff": {
-  "reason": "parsedbary_opt.cpp:474 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'epos + 1' to 'epos - 1' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "8354fa45": {
-  "reason": "parsedbary_opt.cpp:353 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'if (p >= len || is_separator(rec[p]))' to 'if (!(p >= len || is_separator(rec[p])))' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "83744180": {
-  "reason": "parsedbary_opt.cpp:482 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '3 - edig.size' to '3 + edig.size' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "8d6f88d8": {
-  "reason": "parsedbary_opt.cpp:239 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '[start]' to '[start + 1]' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "a7cf9a5e": {
-  "reason": "parsedbary_opt.cpp:358 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "aad8cf72": {
-  "reason": "parsedbary_opt.cpp:351 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'q + 1' to 'q - 1' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "ab289323": {
-  "reason": "parsedbary_opt.cpp:353 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "acc506ca": {
-  "reason": "parsedbary_opt.cpp:348 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "b563bb58": {
-  "reason": "parsedbary_opt.cpp:476 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '[0]' to '[0 + 1]' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "c10feafe": {
-  "reason": "parsedbary_opt.cpp:346 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'q - p' to 'p - q' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "ca00a9b5": {
-  "reason": "parsedbary_opt.cpp:242 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '==' to '!=' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "cb9fd797": {
-  "reason": "parsedbary_opt.cpp:234 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "ce45e93d": {
-  "reason": "parsedbary_opt.cpp:475 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'epos + 2' to 'epos - 2' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "e8fdf285": {
-  "reason": "parsedbary_opt.cpp:351 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "ea525151": {
-  "reason": "parsedbary_opt.cpp:346 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'q - p' to 'q + p' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- },
- "f9fcb3ba": {
-  "reason": "parsedbary_opt.cpp:354 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
-  "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
- }
+  "1e3dd7a5": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:348 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (repeat <= 0)' to 'if (!(repeat <= 0))' on a line no case runs, so no case can distinguish it."
+  },
+  "2469ce80": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:357 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it."
+  },
+  "48542e3d": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:346 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'rec + p' to 'rec - p' on a line no case runs, so no case can distinguish it."
+  },
+  "5aff750f": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:358 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits \"if (p < len && rec[p] == ',')\" to \"if (!(p < len && rec[p] == ','))\" on a line no case runs, so no case can distinguish it."
+  },
+  "6238b54e": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:479 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (edig.size() > 3)' to 'if (!(edig.size() > 3))' on a line no case runs, so no case can distinguish it."
+  },
+  "7dee2fff": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:474 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'epos + 1' to 'epos - 1' on a line no case runs, so no case can distinguish it."
+  },
+  "8354fa45": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:353 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (p >= len || is_separator(rec[p]))' to 'if (!(p >= len || is_separator(rec[p])))' on a line no case runs, so no case can distinguish it."
+  },
+  "83744180": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:482 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '3 - edig.size' to '3 + edig.size' on a line no case runs, so no case can distinguish it."
+  },
+  "a7cf9a5e": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:358 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it."
+  },
+  "aad8cf72": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:351 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'q + 1' to 'q - 1' on a line no case runs, so no case can distinguish it."
+  },
+  "ab289323": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:353 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it."
+  },
+  "acc506ca": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:348 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it."
+  },
+  "b563bb58": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:476 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[0]' to '[0 + 1]' on a line no case runs, so no case can distinguish it."
+  },
+  "c10feafe": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:346 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'q - p' to 'p - q' on a line no case runs, so no case can distinguish it."
+  },
+  "ce45e93d": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:475 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'epos + 2' to 'epos - 2' on a line no case runs, so no case can distinguish it."
+  },
+  "e8fdf285": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:351 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it."
+  },
+  "ea525151": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:346 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'q - p' to 'q + p' on a line no case runs, so no case can distinguish it."
+  },
+  "f9fcb3ba": {
+    "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt",
+    "reason": "parsedbary_opt.cpp:354 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it."
+  }
 }

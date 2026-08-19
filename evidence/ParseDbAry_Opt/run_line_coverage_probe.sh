@@ -75,8 +75,14 @@ for raw in pathlib.Path(src).read_text(errors="replace").splitlines():
     else:
         run += 1
     lines.append((ln, cnt, text))
+# THE CASE COUNT IS READ, NOT TYPED. It was typed once ("16,512-case") and the
+# corpus then moved to 17,520 while this sentence did not -- a file that states
+# the wrong corpus is the file the next dispatch copies its reasoning from.
+import json as _json
+_checked = _json.loads(pathlib.Path(
+    "harness/ParseDbAry_Opt.json").read_text())["checked"]
 body = [f"ParseDbAry_Opt -- line coverage of the SHIPPED translation under the",
-        f"16,512-case differential harness corpus, measured by gcov over the",
+        f"{_checked:,}-case differential harness corpus, measured by gcov over the",
         f"generated test's own object (the test #includes parsedbary_opt.hpp).",
         f"",
         f"  executable lines RUN      {run}",
