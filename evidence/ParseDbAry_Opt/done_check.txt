@@ -1,6 +1,6 @@
-# done_check.py ParseDbAry_Opt -- captured 2026-08-19T01:27:48Z by scripts/capture_done_check.sh
+# done_check.py ParseDbAry_Opt -- captured 2026-08-19T03:18:50Z by scripts/capture_done_check.sh
 
-Run against the committed state at 82a7e1cf ("ParseDbAry_Opt: the kept value-oracle sweep marked as the PRE-FIX artifact it is"), with a CLEAN tree, with stdout
+Run against the committed state at 90fc25d5 ("ParseDbAry_Opt: the close gate run -- 5,252,000 / 0 at loop 59aa876"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -31,9 +31,9 @@ ParseDbAry_Opt: Verdict.INCOMPLETE  (13/14 PASS)
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
 [  ok  ] P9   gate compared and matched          
-[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/ParseDbAry_Opt.json 105/138 = 0.761 < 1.0 -- survivors: compare_op[b5366e74], compare_op[6b5fc8ce], compare_op[76abf5f3], compare_op[09fbe682], compare_op[2763d449], compare_op[2f05620e]
-[  ok  ] P11  post-integration harness re-run    16512 check(s) against the integrated build
+[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/ParseDbAry_Opt.json 128/150 = 0.853 < 1.0 -- survivors: compare_op[1df32d1d], compare_op[a0007207], arith_op[a867a839], arith_op[ae3f319a], swap_operands[9416ffb6], index_offset[1beac345]
+[  ok  ] P11  post-integration harness re-run    17520 check(s) against the integrated build
 [  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
 [  ok  ] P10  evidence reproducible              
-[  ok  ] P14  artifact revisions agree           3 artifact(s) at b9c8c52
+[  ok  ] P14  artifact revisions agree           3 artifact(s) at 59aa876
 
