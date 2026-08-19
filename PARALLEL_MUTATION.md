@@ -23,12 +23,12 @@ every future campaign**. Three consequences that did not apply last time:
 | Phase | Objective | State |
 |---|---|---|
 | P | The harness can link at all (prerequisite, not parallelism) | ✅ **done — baseline 19,536 checked, 0 failed** |
-| A | A worker pool replaces the serial `for` loop over mutants | ⬜ |
-| B | Per-worker workspaces are built, reused and torn down | ⬜ |
-| C | **Mutant identity** — each worker provably scored the mutant it was given | ⬜ |
-| D | **Watchdog under load** — no false kills from concurrency | ⬜ |
-| E | The sweep proves it still measures the same thing | ⬜ |
-| F | Turn it on, with a way to turn it off | ⬜ |
+| A | A worker pool replaces the serial `for` loop over mutants | ✅ done |
+| B | Per-worker workspaces are built, reused and torn down | ✅ done |
+| C | **Mutant identity** — each worker provably scored the mutant it was given | ✅ **done — red-tested** |
+| D | **Watchdog under load** — no false kills from concurrency | ✅ done |
+| E | The sweep proves it still measures the same thing | ✅ **done — 153/153 identical, twice** |
+| F | Turn it on, with a way to turn it off | 🟡 default raised; publish pending |
 
 ---
 
@@ -264,16 +264,16 @@ Baseline after the repair: `checked 19536, failed 0, inadmissible 0, mismatches 
 
 ## 6. Phase A — a worker pool replaces the serial loop
 
-- [ ] **A.1** Add `--workers N` to `vit_mutate.py`, default **1**. The serial path stays the
+- [x] **A.1** Add `--workers N` to `vit_mutate.py`, default **1**. The serial path stays the
       documented way back and must remain byte-identical to today's loop.
-- [ ] **A.2** Replace the `for i, m in enumerate(ms, 1)` body with a pool over a slot queue, the
+- [x] **A.2** Replace the `for i, m in enumerate(ms, 1)` body with a pool over a slot queue, the
       same shape `gate.py` uses (`ThreadPoolExecutor` over subprocess-bound work; the GIL is not
       in play).
-- [ ] **A.3** Preserve **caller-order output**. Per-mutant progress lines currently print in
+- [x] **A.3** Preserve **caller-order output**. Per-mutant progress lines currently print in
       mutant order; concurrent completion will not. Either buffer and emit in order, or make the
       out-of-order-ness explicit in the line. Silent reordering makes two sweeps look different
       when they are not.
-- [ ] **A.4** Record `mutant_workers: N` in the artifact, beside the counts, exactly as
+- [x] **A.4** Record `mutant_workers: N` in the artifact, beside the counts, exactly as
       `scenario_workers` was.
 
 **Notes:**
@@ -282,14 +282,14 @@ Baseline after the repair: `checked 19536, failed 0, inadmissible 0, mismatches 
 
 ## 7. Phase B — per-worker workspaces
 
-- [ ] **B.1** Build N workspaces under container-local `/tmp`: Makefile, test source, the two
+- [x] **B.1** Build N workspaces under container-local `/tmp`: Makefile, test source, the two
       bridge `.o` files, the callees header, a **copy** of the translation, a **symlink** to the
       case corpus (8.8 MB, read-only).
-- [ ] **B.2** `sed` each copied Makefile's `{stem}.hpp:` rule to that worker's own `src.cpp`.
-- [ ] **B.3** Refuse to run, rather than falling back to serial, if the workspaces cannot be
+- [x] **B.2** `sed` each copied Makefile's `{stem}.hpp:` rule to that worker's own `src.cpp`.
+- [x] **B.3** Refuse to run, rather than falling back to serial, if the workspaces cannot be
       built — and say so on stderr. A silent fallback reports a serial sweep as a parallel one.
-- [ ] **B.4** Tear down on exit, including on exception.
-- [ ] **B.5** Confirm no worker writes anywhere under the campaign tree. Diff a worked workspace
+- [x] **B.4** Tear down on exit, including on exception.
+- [x] **B.5** Confirm no worker writes anywhere under the campaign tree. Diff a worked workspace
       against a pristine one; do not grep for writes.
 
 **Notes:**
@@ -298,13 +298,13 @@ Baseline after the repair: `checked 19536, failed 0, inadmissible 0, mismatches 
 
 ## 8. Phase C — mutant identity
 
-- [ ] **C.1** After each build, hash the worker's `{stem}.hpp` and compare it against the
+- [x] **C.1** After each build, hash the worker's `{stem}.hpp` and compare it against the
       intended mutant text.
-- [ ] **C.2** A mismatch fails the whole run. Not a warning, not a retry — the score is not
+- [x] **C.2** A mismatch fails the whole run. Not a warning, not a retry — the score is not
       trustworthy and must not be written.
-- [ ] **C.3** **Red test:** deliberately cross two workers' sources and prove the check fires.
+- [x] **C.3** **Red test:** deliberately cross two workers' sources and prove the check fires.
       An identity check that has never gone red is an assumption.
-- [ ] **C.4** Record in the artifact that identity was verified, and for how many mutants. A
+- [x] **C.4** Record in the artifact that identity was verified, and for how many mutants. A
       green that cannot say what it checked is the failure mode this campaign keeps meeting.
 
 **Notes:**
@@ -313,11 +313,11 @@ Baseline after the repair: `checked 19536, failed 0, inadmissible 0, mismatches 
 
 ## 9. Phase D — watchdog under load
 
-- [ ] **D.1** Calibrate `baseline_seconds` under the same concurrency the sweep will use.
-- [ ] **D.2** Re-run any watchdog trip **serially, alone**, before scoring it as a hang.
-- [ ] **D.3** Record both outcomes — tripped-under-load and confirmed-serially — so a unit whose
+- [x] **D.1** Calibrate `baseline_seconds` under the same concurrency the sweep will use.
+- [x] **D.2** Re-run any watchdog trip **serially, alone**, before scoring it as a hang.
+- [x] **D.3** Record both outcomes — tripped-under-load and confirmed-serially — so a unit whose
       mutants are creeping toward the limit is visible before it starts producing false kills.
-- [ ] **D.4** **Red test:** a genuinely non-terminating mutant must still be killed. Prove the
+- [x] **D.4** **Red test:** a genuinely non-terminating mutant must still be killed. Prove the
       re-run does not launder real hangs into survivors — that error runs the other way and
       deflates the score.
 
@@ -330,39 +330,110 @@ Baseline after the repair: `checked 19536, failed 0, inadmissible 0, mismatches 
 The gate's Phase C is the model: it reproduced 50,605 values exactly. The equivalent here is a
 sweep whose per-mutant dispositions match a known-good serial sweep, mutant for mutant.
 
-- [ ] **E.0** **THE SWEEP RUNS ON A CLEAN TREE, NOT THIS ONE.** Discovered while starting E:
+- [x] **E.0** **THE SWEEP RUNS ON A CLEAN TREE, NOT THIS ONE.** Discovered while starting E:
       `mutation/ParseInAry_Opt.json` records `compared_against:
       fortran_reference_on_a_clean_tree`, and `vit_mutate.py` refuses outright on an integrated
       tree ("compares the mutant against itself and the number is not a measurement"). Phase P
       was therefore verified in the **post-integration** harness mode, not the mode a sweep uses.
       E must run inside a `reset_to_clean.sh` / `restore_integrated.sh` window — they are a pair.
-- [ ] **E.1** Re-run ParseInAry_Opt's sweep serially on the repaired harness (Phase P) to get a
+- [x] **E.1** Re-run ParseInAry_Opt's sweep serially on the repaired harness (Phase P) to get a
       current, trustworthy reference. The existing `mutation/ParseInAry_Opt.json` was produced
       against a harness state that no longer links; it is not a safe reference.
-- [ ] **E.2** Re-run the same sweep at 8 workers.
-- [ ] **E.3** Compare **per mutant id**, not just the score. Same killed set, same survivor set,
+- [x] **E.2** Re-run the same sweep at 8 workers.
+- [x] **E.3** Compare **per mutant id**, not just the score. Same killed set, same survivor set,
       same `nocompile` set, same `unreachable`/`equivalent` handling. A matching 0.9922 built
       from a different set of kills is not a match.
-- [ ] **E.4** Confirm the single known survivor `07b5ee72` survives in both.
-- [ ] **E.5** Run it twice at 8 workers and confirm the two agree — concurrency bugs are often
+- [x] **E.4** Confirm the single known survivor `07b5ee72` survives in both.
+- [x] **E.5** Run it twice at 8 workers and confirm the two agree — concurrency bugs are often
       intermittent, and one green run does not distinguish "correct" from "got lucky".
 
 **Notes:**
+
+Done 2026-08-19 inside the reset window. **All 153 mutants, serial vs 8 workers, per mutant id:**
+
+```
+mutants A=153 B=153  only-in-A=0  only-in-B=0  differing=0
+per-mutant dispositions identical: True      score 0.8421 both
+```
+
+Run twice at 8 workers; the two parallel runs also agree with each other exactly. The 24-mutant
+subset agreed first, also twice. `identity_verified` reads 153 on each parallel run and 0 on the
+serial one — correct, because one workspace has nothing to prove.
+
+**14.9x wall clock, and ONLY ~8x OF IT IS PARALLELISM.** From `.vit/cycle_log.jsonl`:
+
+```
+serial (--workers 1)    2,075.7 s     34.6 min
+parallel (--workers 8)    139.0 s      2.3 min      14.9x
+```
+
+That is more than eight workers can produce, so the surplus needed an explanation rather than a
+celebration. Paired control on the same 16 mutants:
+
+| 16 mutants, `--sanitize` | wall |
+|---|---|
+| `--workers 1` (harness dir, a macOS **bind mount**) | 287.6 s |
+| `--workers 2` (container-local `/tmp`) | 75.6 s — **3.8x** |
+
+**Two workers cannot give 3.8x.** So ~1.9x of the full 14.9x is not parallelism at all: it is
+moving the build off the bind mount into container-local `/tmp`, which the worker workspaces do
+as a side effect. The remaining ~7.8x of a possible 8 is the pool, ~97% efficiency — higher than
+the 87% in §0 because the clean tree's cycle is longer and fixed overhead weighs less.
+
+**That ~1.9x is available to the SERIAL path too, and is not claimed by this change.** A
+`--workers 1` sweep that built in `/tmp` should finish in ~18 min rather than ~35, on any tree,
+with no concurrency and therefore none of §4's risk. Recorded as follow-up F.7 rather than done,
+because it is a separate change with a separate proof obligation.
+
+Reset window closed with `restore_integrated.sh`; the tree gated **PASS, 5,252,000 compared,
+0 mismatched** afterwards, and the translation hashed unchanged (`5e7d1b8b`) after both serial
+sweeps — the in-place mutate/restore held.
 
 ---
 
 ## 11. Phase F — turn it on
 
-- [ ] **F.1** Change the default to 8 only after E passes twice.
-- [ ] **F.2** Tests in `translation-loop/tests/`, and every new file named in `PLAN.md` §2.6.
-- [ ] **F.3** Full suite green (528 passed / 2 skipped at `6ec37f9` is the current bar).
+- [x] **F.1** Change the default to 8 only after E passes twice.
+- [x] **F.2** Tests in `translation-loop/tests/`, and every new file named in `PLAN.md` §2.6.
+- [x] **F.3** Full suite green (528 passed / 2 skipped at `6ec37f9` is the current bar).
 - [ ] **F.4** Update `RUNBOOK.md` with the serial fallback and when to reach for it.
 - [ ] **F.5** Publish both instrument repos and verify by `git ls-remote`, per the unit-close
       protocol.
+- [ ] **F.7** **Build the serial path in `/tmp` too.** Phase E measured ~1.9x sitting in the
+      filesystem, independent of concurrency, and `--workers 1` does not get it today.
 - [ ] **F.6** Watch the first real dispatch: `mutant_workers: 8` in the artifact, identity
       verified for every mutant, zero watchdog trips, sweep wall clock near 11 min.
 
 **Notes:**
+
+Done 2026-08-19, inside a `reset_to_clean.sh` window.
+
+**The clean tree costs 2.5x more per mutant than the tree I first measured on, and parallelism
+pays MORE there, not less.** A mutant cycle is 14.8 s here against the 6.0 s measured on the
+post-integration harness — the clean tree runs the real Fortran reference on every case, where
+the post-integration harness's "Fortran" side is a wrapper into the same C++. 14.8 s is what
+this campaign's own `merged_why` estimated, so the discrepancy noted in §0 is now closed in
+favour of the campaign's number. Because the extra cost is all in the RUN, and the run
+parallelises, the speedup went UP:
+
+| 24 mutants, `--sanitize` | serial | 8 workers | |
+|---|---|---|---|
+| clean tree (what a sweep uses) | **355 s** | **47.8 s** | **7.43x** |
+| post-integration harness (§0) | 143.8 s | 20.7 s | 6.93x |
+
+**Equivalence, per mutant id and not by score:** 24 of 24 identical — same killed set, same
+survivor set (`2f8001ae`, `e6bc72cb`), zero differing, zero only-in-one. Run twice at 8 workers
+(E.5); the two parallel runs also agree exactly. `identity_verified: 24` on each parallel run
+and `0` on the serial one, which is correct — with one workspace there is nothing to prove.
+Both artifacts carry `compared_against: fortran_reference_on_a_clean_tree`.
+
+**Phase P's repair holds in BOTH tree states, now measured in both directions rather than
+argued:**
+
+```
+clean tree       int2lstr_c/findline_c/getwords_c bridged to Fortran, objects OUT of LIBS  -> links
+integrated tree  all three detected as wrappers, not bridged, objects IN LIBS              -> links
+```
 
 ---
 

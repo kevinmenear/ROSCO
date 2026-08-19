@@ -8610,6 +8610,43 @@ unit can exhaust the second while barely touching the first.
   window; that is the reason to make the window short, not the reason to make it
   long.
 
+## A MUTATION SWEEP NOW RUNS EIGHT AT A TIME, AND `--workers 1` IS THE WAY
+## BACK
+
+`vit_mutate.py` defaults to one worker per core, capped at 8, each in its own
+copy of the harness directory under container-local `/tmp`. On ParseInAry_Opt's
+153 mutants under `--sanitize`, measured 2026-08-19 inside a `reset_to_clean.sh`
+window:
+
+```
+--workers 1    2,075.7 s    34.6 min
+--workers 8      139.0 s     2.3 min      14.9x
+```
+
+Both scored **identical per-mutant dispositions** -- same killed set, same 24
+survivors, zero differing -- and the parallel run was repeated to confirm it
+agrees with itself. Score alone would not have shown a difference, so the
+comparison is by mutant id; `scripts/` has no tool for this, it was done ad hoc.
+
+**Only about 8x of the 14.9x is parallelism.** The same 16 mutants take 287.6 s
+at `--workers 1` and 75.6 s at `--workers 2` -- and two workers cannot give
+3.8x. The surplus is the harness directory living on a **macOS bind mount**
+while the worker copies live on the container's own filesystem. Anyone reading
+the 14.9x as a concurrency result will over-predict the next unit.
+
+**Reach for `--workers 1` when:** a sweep reports an `IdentityError` (a worker
+built a translation that is not the mutant it was handed -- the score from that
+run is void, not merely suspect); when a machine has less memory than this one
+(eight concurrent sanitiser builds peaked at 3.7 GB of 7 GB, and a sweep that
+swaps reports only that it was slow); or when a result needs to be reproduced
+against the pre-2026-08-19 path exactly. The serial path is byte-identical to
+what it always was.
+
+**A parallel sweep does not write the translation at all.** Each worker mutates
+its own copy, so the hazard `scripts/mutate_guarded.sh` exists for -- a hard
+kill leaving a live mutant in the .cpp, which has happened on three of three --
+cannot arise. Keep the guard: it still covers `--workers 1`.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
