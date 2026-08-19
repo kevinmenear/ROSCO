@@ -1,0 +1,75 @@
+ParseDbAry_Opt -- line coverage of the SHIPPED translation under the
+16,512-case differential harness corpus, measured by gcov over the
+generated test's own object (the test #includes parsedbary_opt.hpp).
+
+  executable lines RUN      224
+  executable lines NOT RUN  62
+  non-code lines            457
+
+CONTROL: the entry line's count must equal the case count.
+  L519  count=16512  void ParseDbAry_Opt(char* FileLines, int n_FileLines, int len_FileLine
+
+LINES NEVER EXECUTED:
+
+  L  85  std::fprintf(stderr,
+  L  88  static_cast<int>(s.size()));
+  L  89  return;
+  L  92  std::fprintf(stderr,
+  L  95  static_cast<int>(s.size()), static_cast<int>(ErrVar->n_ErrMsg_cap));
+  L  96  return;
+  L 176  return false;
+  L 183  return true;
+  L 232  int n = 0;
+  L 233  int q = p;
+  L 234  while (q < len && n < 62 && !is_separator(rec[q])) {
+  L 235  buf[n++] = rec[q++];
+  L 237  buf[n] = '\0';
+  L 238  char* end = nullptr;
+  L 239  std::string word(1, rec[start] == '-' ? '-' : '+');
+  L 240  word += buf;
+  L 241  const double v = std::strtod(word.c_str(), &end);
+  L 242  if (end == nullptr || *end != '\0') {
+  L 243  return RealParse::BadNoStore;
+  L 245  out = v;
+  L 246  p = q;
+  L 247  return RealParse::Ok;
+  L 248  }
+  L 272  has_exp = true;
+  L 277  ++p;
+  L 284  return RealParse::BadNoStore;
+  L 338  return 5010;
+  L 346  repeat = std::strtol(std::string(rec + p, static_cast<std::size_t>(q - p)).c_str(),
+  L 348  if (repeat <= 0) {
+  L 349  return 5010;
+  L 351  p = q + 1;
+  L 353  if (p >= len || is_separator(rec[p])) {
+  L 354  for (long k = 0; k < repeat && i < n; ++k) {
+  L 355  ++i;
+  L 357  while (p < len && is_blank(rec[p])) { ++p; }
+  L 358  if (p < len && rec[p] == ',') { ++p; }
+  L 359  continue;
+  L 360  }
+  L 374  return 5010;
+  L 433  return std::string(static_cast<std::size_t>(w), '*');
+  L 443  out = std::signbit(v) ? "-Infinity" : "Infinity";
+  L 444  return true;
+  L 454  return field(text, 26);
+  L 468  text += '.';
+  L 473  const std::string mant = s.substr(0, epos);
+  L 474  const char esign = s[epos + 1];
+  L 475  std::string edig = s.substr(epos + 2);
+  L 476  while (edig.size() > 1 && edig[0] == '0') {
+  L 477  edig.erase(0, 1);
+  L 479  if (edig.size() > 3) {
+  L 480  return field(std::string(27, '*'), 26);
+  L 482  edig.insert(0, 3 - edig.size(), '0');
+  L 483  return field(mant + "E" + esign + edig, 26);
+  L 591  ErrVar->aviFAIL = -1;
+  L 592  std::string msg(RoutineName);
+  L 593  msg += ":Error allocating memory for ";
+  L 594  msg += int2lstr_trimmed(AryLen);
+  L 595  msg += " characters in the ";
+  L 596  msg.append(ftrim(ParamName, len_ParamName));
+  L 597  msg += " array.";
+  L 598  assign_errmsg(ErrVar, msg);
+  L 599  }
