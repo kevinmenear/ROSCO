@@ -8111,6 +8111,14 @@ unit can exhaust the second while barely touching the first.
   an R14 `NOT reached`. The artifact had been printing that string for two
   dispatches.
 
+  Run at this dispatch, it leaves one pin of that shape in the file
+  (`ExtController ExtDLL_avrSWAP_n = -1`, in a unit with no R14 row) and finds
+  R14 applied in **three units of sixty-nine** — `FindLine` 144 cases,
+  `ParseDbAry_Opt` 1,224, `ParseInAry_Opt` 216. **The residual exposure is not a
+  pin but a STALE ARTIFACT:** two of the three carry R14 rows drawn before
+  `b33a761`, so their `Reached` lists cannot name the numeric leads and the
+  three tables are not comparable as they stand.
+
   **AND THE SPELLING HAS A SECOND EFFECT THE SIBLING'S ENTRY DOES NOT STATE.**
   Predicted before the change: R14 32 -> 1,088, corpus 13,674 -> 14,730, a strict
   PREFIX. Measured: 1,224, 16,512, and the prefix control REFUSES. `values` takes

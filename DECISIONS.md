@@ -55,6 +55,27 @@ Two things follow, and both are the Driver's rather than a unit's:
    those units. The cheap version is a check over `harness/ranges.toml`: a
    parameter pinned `lo == hi` and NOT carrying `values`, in a unit whose harness
    artifact reports an R14 `NOT reached`, is one grep.
+
+   **THE GREP WAS RUN, AND ITS ANSWER IS SMALLER AND MORE USEFUL THAN "NONE".**
+   After this unit's fix exactly one `lo == hi` pin without `values` is left in
+   the whole file — `ExtController  ExtDLL_avrSWAP_n = -1`, in a unit whose
+   harness artifact has no R14 row at all — so nothing else is losing R14 today.
+   And R14 is applied in **three units of the sixty-nine**, which is what decides
+   how much this class is worth:
+
+   ```
+   FindLine          144 cases   1/2/3 : plant, twin@200, diverge@200
+   ParseDbAry_Opt   1224 cases   1/2/3 : plant + all seven numeric leads
+   ParseInAry_Opt    216 cases   1/2/3 : plant           <- artifact predates b33a761
+   ```
+
+   **The residual exposure is not a pin, it is a STALE ARTIFACT.** Two of the
+   three carry R14 rows drawn before `b33a761`, so their `Reached` lists cannot
+   mention the numeric leads, and a reader comparing the three tables would take
+   this unit for the outlier. Regenerating them belongs to each unit's own
+   dispatch; it is named here so that `216` is not read as a fact about
+   `ParseInAry_Opt`'s corpus rather than about when its corpus was drawn.
+
 2. **A loop-side fix should be measured on every unit it names.** `b33a761`
    named two and measured one.
 
