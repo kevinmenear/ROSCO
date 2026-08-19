@@ -235,7 +235,11 @@ option's one refusal did not fire and the score is a measurement. It bought
 sanitiser kills were mutants the value oracle also killed — the run's own
 control. So the `index_offset` survivors here are **not** invisible
 out-of-bounds differences: `rec[p + 1]` is inside a 2048-byte blank-padded
-record. The unsanitised sweep is kept at `mutation/ParseDbAry_Opt.value-oracle.json`.
+record. The unsanitised sweep is kept at `mutation/ParseDbAry_Opt.value-oracle.json`
+**and it is a PRE-FIX artifact**: it was taken before §5b's separator repair, so
+its 104/185 is against the translation as it stood at `8837a5c2`. It is kept for
+the one comparison it exists to support — value oracle against sanitiser on the
+same translation — and not as a current number.
 
 **THE 30 UNREACHABLE ARE MEASURED, NOT ARGUED.** `run_line_coverage_probe.sh`
 runs gcov over the generated test's own object — the test `#include`s
