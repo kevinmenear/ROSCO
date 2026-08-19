@@ -4,122 +4,145 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-18: unit #54 `ParseDbAry_Opt` is `deferred`. THREE dispatches.
+**As of 2026-08-19: unit #54 `ParseDbAry_Opt` is `deferred`. FOUR dispatches.
 SIX layers; five green and red-tested, and the mutation layer at
-105 / (185 − 17 − 30) = 0.7609 against a threshold of 1.0** — from 0.4162 at the
-second dispatch. Kills first: the corpus bought 27, the sanitiser 2, the 47
-declarations the rest, and a one-line REPAIR gave 1 back to the 40-mutant cap.
+128 / (185 − 17 − 18) = 0.8533 against a threshold of 1.0** — from 0.7609 at the
+third dispatch and 0.4162 at the second. Kills first, declarations after: the
+corpus bought 16, the sanitiser 8, and the 35 declarations the rest.
 
-**THE SIXTH LAYER IS NEW AND IT FOUND A DEFECT ON ITS FIRST RUN.** The PRINT
-record is the one thing this unit produces that nothing in this campaign
-compared. `print_conformance.f90` puts 44 records through the reference's own
-list-directed output and `print_conformance.cpp` replays them through the
-SHIPPED `print_default_warning` by textual include:
+**THE SIX SURVIVORS THE DISPATCH NAMED ARE ALL KILLED, AND NONE WAS DECLARED
+ANYTHING.** Every one was case (b) — a corpus too narrow to expose the
+difference — and every one was closed by fixing the inputs.
 
 ```
-case 38, n = 0
-  ref | ... Using default value of []|
-  got | ... Using default value of [ ]|
+b5366e74  assign_errmsg  `s.size() > cap` -> `>=`     R13's ladder on an arm
+                                                       that assigns a 112-byte
+                                                       message
+6b5fc8ce  lower()        `c >= 'A'` -> `c > 'A'`      a record spelling `nAn`
+76abf5f3  match_word     `p + LEN(w) > len` -> `>=`   a word ENDING at col 2048
+09fbe682  match_word     `k < w.size()` -> `<=`       any record that MATCHES
+2763d449  parse_real     `p < len` -> `<=` (integer)  2048 digits, no padding
+2f05620e  parse_real     `p < len` -> `<=` (the `.`)  likewise
 ```
 
-The separator blank before `]` was unconditional. gfortran writes ONE before a
-CHARACTER item that follows a REAL and NONE between two CHARACTER items — the
-rule the translation's own header already recorded. **No layer could see it**
-and the corpus cannot reach it (R5 varies `Ary`'s extent over 3..8). Fixed at
-`50b583ab`; replay 44 of 44; **every other layer re-taken on the fixed
-translation and no other number moved**.
+**TWO LEVERS, AND THE SECOND IS THE ONE WORTH CARRYING.** The first is the
+sibling `ParseInAry_Opt`'s base-draw pin — `has_AllowDefault = [1, 0]` with
+`AllowDefault = [0, 1]` — which had been sitting one table away in
+`ranges.toml` since the second dispatch. R13's 256-case staging-capacity block
+is taken with every other input at its base draw, and that draw sat on the one
+arm that assigns no message at all, so no case in 16,512 sized the buffer TO a
+message. It now does: 104 cases where the reference sets `aviFAIL` and both
+sides refuse a 112-byte assignment into a 109/110/111-byte buffer.
 
-**9 of the 9 PRINT-region survivors it replayed are killed** (18–43 records
-each), **negative control 0 of 23** outside the region. Nothing is folded into
-the score. **The control failed on its first run and the failure was the
-baseline's**: scored against the REFERENCE, every mutant inherited the
-baseline's own one-record deviation and the control read 23 of 23 — a kill is
-*differs from the unmutated translation*, the distinction `--sanitize` draws
-with its baseline refusal.
+The second is `_RECORD_TAILS` (loop `59aa876`). **Every record this campaign has
+ever generated was a short line blank-padded out to the width of the buffer the
+reference copies it into**, so a scan stopped two thousand characters short of
+the last byte and every `p < len` guard in every parser was taken on the same
+side in every case. R14 now also builds a lead to EXACTLY that width, in four
+forms, so the copy truncates INSIDE the value and the record has no padding at
+all. The width comes from `record_widths_from`, which is R12's detector without
+its "assigned from a `CHARACTER(*)` dummy" discriminator — this unit's
+`CHARACTER(MaxLineLength) :: Line` is filled by a CALLEE, so R12 reports the unit
+N/A, correctly, while the record it parses is 2048 bytes wide.
 
-**0.7681 → 0.7609 IS THE CAP, NOT A REGRESSION.** One `if` adds a `negate_cond`
-site, `negate_cond` is capped at 40, and the new site displaces the last in file
-order: `ec43592b` (`if (ErrVar->aviFAIL < 0)`, KILLED, the unit's outermost
-guard) leaves the enumerated population and `b529317d` (`if (n > 0)`) enters it
-as a survivor the sweep's oracle cannot kill. Predicted by diffing the two
-enumerations before the sweep; every other id unchanged, so the 47 declarations
-carried over by id.
+`_NUMERIC_LEADS` also gains `-inf`, `Infinity` and `nAn`. **Both record shapes
+were priced against the reference BEFORE the generator was touched**, because
+the harness compares `Ary` with `memcmp`: ten IEEE words agree bit for bit
+including the NaN payload (`ieee_word_probe.txt`), and the four tail records
+agree on IOSTAT and on both elements (`record_tail_probe.txt`).
+
+**13,674 → 16,512 → 17,520 cases; R14 32 → 1,224 → 2,232; the READ region from
+103 distinguishing cases to 394 to 646.**
+
+**AND THE THING THE DISPATCH WAS NOT ASKED ABOUT IS THE ONE THAT NEEDS A NEW
+KEY.** Ten of the twenty-two remaining survivors are in the PRINT record. They
+are **not equivalent** — the replay measures every one of them moving 18 to 44
+records of 44 — and **not unreachable** — the corpus runs those lines and so do
+21 of the 27 gate scenarios. The sweep's oracle compares out-parameters with
+`memcmp` and cannot see the stream they write. A mutant with a MEASURED
+difference the scoring instrument cannot see is a third case, and this campaign
+has exactly two keys. Escalated in `DECISIONS.md` as a proposed `killed_by`
+declaration. **It is worth 0.8533 → 0.9333 on this unit alone**, and it is the
+only item on the remaining list worth more than three mutants.
+
+**THE SANITISER'S SHARE QUADRUPLED, 2 KILLS → 8, AND THAT CORRECTS THE THIRD
+DISPATCH.** That dispatch measured `--sanitize` as nearly a null result and
+concluded the `index_offset` and `p <= len` survivors were *not* out-of-bounds
+differences — "`rec[p + 1]` is inside a 2048-byte blank-padded record". True of
+the corpus it had. A `p <= len` that reads `rec[2048]` is out of bounds only
+when a scan REACHES 2048, and until this dispatch no record did. **A sanitiser
+measures what the corpus executes**; the two instruments move together and
+neither is evidence about the other on its own. The value-oracle control was
+re-taken on the new corpus so each step is a subtraction: 104 → 120 (corpus) →
+128 (`--sanitize`) → 128/150 (declarations).
+
+**35 DECLARATIONS, DOWN FROM 47, AND THE FALL IS THE POINT.** 17 EQUIVALENT,
+unchanged, each argued per mutant with the grep that would refute it, and
+`declared_but_killed` is EMPTY on the wider corpus. 18 UNREACHABLE, **down from
+30** — the corpus retired twelve, which is the correct direction, since an
+unreachable declaration is a debt against the corpus and not a credit. They are
+now **re-derived by a script** (`evidence/ParseDbAry_Opt/make_unreachable.py`)
+that reads the coverage file and REFUSES if it does not name this corpus; the
+third dispatch's set was written by hand against a 16,512-case measurement and
+would have produced `unreachable_but_killed` entries, which fail P12 outright.
+
+**THE DECLARATION SPLIT THE THIRD DISPATCH MADE IS WHAT PAID OFF.** It declared
+`0a3516d1` (`p < len` → `p <= len` at `parse_real`'s ENTRY, where the one caller
+has established the precondition) and left five siblings of the same shape
+alive. This dispatch killed three of them. Had they been declared alongside,
+0.7609 would have read higher and nothing would have been learned.
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness (`harness/ParseDbAry_Opt.json`) | **16,512 checked, 0 failed**, against the CLEAN Fortran with all three callee bridges kept. `Ary` **not compared on 5,266** under the `no_oracle_when` entry | **four stubs**, all re-taken: no-op **16,252**; the `.NOT. AllowDefault_` arm **6,079**; the READ **394**; the zero-store rule **4** |
-| mutation (`mutation/ParseDbAry_Opt.json`) | **185 behavioural — 105 KILLED, 17 EQUIVALENT, 30 UNREACHABLE, 33 SURVIVED, 0.7609.** Sanitised, green baseline, clean tree, `declared_but_killed` and `unreachable_but_killed` both empty | the score IS the red test |
-| line coverage of the translation (`evidence/ParseDbAry_Opt/line_coverage.txt`) | **224 executable lines run, 62 never** — the measurement the 30 unreachable declarations rest on | **two controls**: the entry line's count is 16,512 = the case count; and NON-survivors on never-run lines number 1, which is a NOCOMPILE, not a kill |
-| post-integration (`harness/ParseDbAry_Opt.postintegration.json`) | 16,512 checked, 0 failed | the reverse copy deleted from this unit's own wrapper: **13,216**, predicted 13,216 |
-| PRINT-record conformance (`evidence/ParseDbAry_Opt/print_replay.txt`) | **44 records, 0 mismatched** after the fix | 9 of 9 PRINT survivors killed at 18–43 records; negative control 0 of 23 |
-| gate, 27 scenarios (`gate/ParseDbAry_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched, re-taken on the fixed translation and again at close | **four, every count predicted before the run and every one exact**: parsed value + 0.01 **2,236,141**; the `Ary = 0` arm **0**; survivor 48542e3d **0**; survivor ae3f319a **0** |
+| differential harness (`harness/ParseDbAry_Opt.json`) | **17,520 checked, 0 failed**, against the CLEAN Fortran with all three callee bridges kept. `Ary` **not compared on 1,387** under the `no_oracle_when` entry — down from 5,266 of 16,512, because the base draw moved four thousand cases out of the excluded region | **four stubs**, all re-taken: no-op **17,260**; the `.NOT. AllowDefault_` arm **2,209**; the READ **646**; the zero-store rule **4** |
+| mutation (`mutation/ParseDbAry_Opt.json`) | **185 behavioural — 128 KILLED, 17 EQUIVALENT, 18 UNREACHABLE, 22 SURVIVED, 0.8533.** Sanitised, green baseline, clean tree, `declared_but_killed` and `unreachable_but_killed` both empty | the score IS the red test, and the **value-oracle control** re-taken beside it prices each step: 120 → 128 → 0.8533 |
+| line coverage of the translation (`evidence/ParseDbAry_Opt/line_coverage.txt`) | **239 executable lines run, 42 never** (was 224 / 62) — the measurement the 18 unreachable declarations rest on | **two controls**: the entry line's count is 17,520 = the case count; and NON-survivors on never-run lines number 1, which is a NOCOMPILE, not a kill |
+| post-integration (`harness/ParseDbAry_Opt.postintegration.json`) | 17,520 checked, 0 failed | the reverse copy deleted from this unit's own wrapper: **9,841**, PREDICTED 9,841 from the re-taken partition before the run |
+| PRINT-record conformance (`evidence/ParseDbAry_Opt/print_replay.txt`) | **44 records, 0 mismatched** | 10 of 10 PRINT survivors killed at 18–44 records; negative control 0 of 12 |
+| gate, 27 scenarios (`gate/ParseDbAry_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched, re-taken at the new instrument revision and again at close | **six, every count predicted before its run and every one exact**: parsed value + 0.01 **2,236,141**; survivor 2a9e1695 **1,583,216**; the `Ary = 0` arm **0**; 48542e3d **0**; ae3f319a **0**; and the new a0007207 **0** |
 
-**THE RELAUNCH'S PREMISE WAS FALSE, AND THE REASON IS THE FINDING.** This unit
-was cleared to `pending` because loop `b33a761` planted numeric literals in
-R14's words. Re-taken at `b9c8c52` the corpus came back **byte-identical** —
-`64942b97…` both sides — because R14 reported `Reached ['1:plant']` and every
-`k >= 2` shape missed, so the branch the fix appended to was empty here.
+**THE TWO NON-ZERO GATE NUMBERS REPRODUCING TO THE VALUE IS THE CONTROL ON THE
+WHOLE DISPATCH.** The gate never reads the case file and neither the translation
+nor the wrapper moved, so a corpus change that stayed inside the corpus had to
+give back 2,236,141 and 1,583,216 exactly. A different number would have meant
+something other than the corpus had changed. **The eight gate runs are the fixed
+cost of a LOOP-REPO edit**: `revcheck` asks whether all of a unit's artifacts
+name the same instrument revision, so touching `generate.py` re-prices every
+artifact including the ones that cannot see the corpus.
 
-```
-[ParseDbAry_Opt]   UnEc = { lo = 0, hi = 0 }                 <- a plant_int
-[ParseInAry_Opt]   UnEc = { lo = 0, hi = 0, values = [0] }   <- not one
-```
+**ONE NEW GATE RED TEST, FOR THE REGION THIS DISPATCH DID NOT CLOSE.**
+`a0007207` (`p < len` → `p <= len` at the EXPONENT's sign) moves **0 of
+5,252,000**. The tails reach column 2048 in the integer part, in the fraction
+and at a matched IEEE word; they do not reach it inside an exponent, which needs
+a record ending `1E`. The gate's own 22 `DISCON*.IN` files have no line within
+two thousand columns of the boundary — **so both instruments miss the same
+statement**, and neither says so on its own.
 
-**Unit #55 found this a dispatch ago and generalised it in `DECISIONS.md`; the
-line is in this file at :38; and it was applied to the sibling's block only** —
-in a unit whose own `ranges.toml` comment says its pins are "THE SAME TWO PINS
-AS `[ParseDbAry_Opt]` ABOVE, FOR THE SAME REASONS AT THE SAME SITES". `b33a761`
-then cited both units' survivor profiles, measured itself on the sibling (216 →
-1,224) and is worth **zero cases** here. A recorded generalisation did not reach
-the one other unit it was about.
+**AND ONE SURVIVOR IS AN INSTRUMENT GAP THAT NO RECORD CLOSES.** `1beac345`
+writes the NUL terminator one byte late, leaving `buf[n]` as whatever the
+uninitialised `char buf[64]` held. Both indices are INSIDE the array, so
+AddressSanitizer is silent by construction; catching it needs MemorySanitizer,
+and `--sanitize` builds with `address,undefined`.
 
-Restated in the sibling's spelling: **13,674 → 16,512 cases, R14 32 → 1,224, all
-seventeen shapes reached, and the READ region from 103 distinguishing cases
-(0.75%) to 394 (2.4%)**.
+**WHAT WOULD MOVE 0.8533, so the next dispatch need not re-derive it.** Each of
+the 22 survivors names the exact record that would kill it in
+`evidence/ParseDbAry_Opt/mutation_survivors.txt`. In order of size: (1) a sweep
+oracle that reads stdout, worth 10 mutants — or the cheaper `killed_by`
+declaration, which needs no emitter change; (2) four generator forms worth 9 —
+a `.e` lead, a `2*1.5;3.0` lead, a `nan(` payload of 62 characters, and a tail
+form ending `1E`; (3) MemorySanitizer, worth 1; (4) `42edf275`, which is either
+an equivalence somebody will defend or a record nobody has found.
 
-**THE PREDICTION WAS WRITTEN FIRST AND WAS WRONG, AND IT IS KEPT UNREPAIRED.**
-Predicted 1,088 R14 cases, a 14,730-case corpus and a strict PREFIX; measured
-1,224, 16,512, and the prefix control REFUSES. `values` also puts `UnEc` into
-R2's flag set (4 flags → 5, `flag_variants` 16 → 18), and R2 runs *before* R14,
-so later case indices move. Two effects of one keyword, not separable by reading
-the entry.
-
-**THE SANITISER WAS RUN AND IS NEARLY A NULL RESULT — WHICH IS AN ANSWER.** The
-baseline did **not** report under `-fsanitize=address,undefined`, so the option's
-one refusal did not fire. It bought **2** kills of 79 survivors, nothing
-regressed, and 10 of its 12 sanitiser kills were mutants the value oracle also
-killed — the run's own control. The `index_offset` survivors here are therefore
-not invisible out-of-bounds differences: `rec[p + 1]` lands inside a 2048-byte
-blank-padded record. The unsanitised sweep is kept beside it.
-
-**47 DECLARATIONS, AND THE TWO KINDS ARE KEPT APART.** 30 UNREACHABLE, each
-against a gcov-measured never-executed line, one evidence file, one rule. 17
-EQUIVALENT, each argued per mutant in `mutation/ParseDbAry_Opt.equivalences.md`
-with the grep that would refute it. **Two pairs are deliberately split**:
-`lower()`'s `'Z'` bound is declared and its `'A'` bound is not (`'a'` is the
-middle letter of `"nan"`); `std::max`'s argument swap is declared and dropping
-the clamp is not (that holds only while `AryLen = { lo = 0 }` is stated, a fact
-about the domain). **An unreachable declaration is a debt against the corpus,
-not a credit**, and the 30 are now the largest single item on this unit's list of
-what nothing can see.
-
-**THE GATE PAIR MEANS SOMETHING DIFFERENT FROM LAST DISPATCH.** `2a9e1695` — the
-READ survivor whose 1,583,216-value gate run was the argument that the region is
-a corpus gap the gate covers — **is now killed by the harness**, so that run is
-the control on the argument rather than the argument. Its replacement `48542e3d`
-moves 0, predicted from `grep -cE '[0-9][*]' Examples/DISCON*.IN` = 0 over all 22
-files. What is left in the READ region is boundary and rare-form statements the
-gate's own inputs do not contain either: reachable in principle, unreached by
-both instruments.
-
-**WHAT WOULD MOVE 0.7609, so the next dispatch need not re-derive it.** (1) A
-generator that plants `nan`/`inf`, an `r*` repeat, a `;` terminator and a
-four-digit exponent — `_NUMERIC_LEADS` extended the way `b33a761` extended it
-once — which would also retire most of the 30 unreachable. (2) A SWEEP ORACLE
-that reads stdout, for the 10 PRINT mutants: the comparison now exists in
-`print_replay.txt`, what does not exist is `./test` making it, and that is a
-change to the shared harness emitter and therefore the Driver's. (3) A record
-whose last character is a digit, for the five `p <= len` boundaries.
+**PREVIOUSLY, AT THE THIRD DISPATCH (0.4162 → 0.7609).** The relaunch's premise
+was false: this unit was cleared to `pending` because loop `b33a761` planted
+numeric literals in R14's words, and re-taken here the corpus came back
+byte-identical, because `UnEc = { lo = 0, hi = 0 }` made `UnEc` a `plant_int`
+and vetoed every `k >= 2` shape while the sibling's `values = [0]` spelling did
+not. That dispatch also built the PRINT-conformance layer, which found a real
+defect on its first run — `print_default_warning` appended the separator blank
+before `]` unconditionally, so an empty `Ary` printed `[ ]` where the reference
+prints `[]`. Fixed at `50b583ab`. Full account in
+`evidence/ParseDbAry_Opt/README.md` §0b and §5b.
 
 ---
 
