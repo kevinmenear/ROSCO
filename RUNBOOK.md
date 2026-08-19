@@ -8530,6 +8530,86 @@ unit can exhaust the second while barely touching the first.
   the run, and reports the record the mutant died ON — which is
   `baselines[len(got_lines)]`, since the abort stops the output there.
 
+## A RUNNER RESTORES THE FILE IT PERTURBS AND NOT THE FILE THE BUILD MADE FROM
+## IT, AND THE NEXT PROBE READS THE COPY
+
+- **Unit #55, fifth dispatch, C12. The line-coverage probe measured a STUB and
+  its own control passed.** It ran immediately after the four harness stub red
+  tests.
+
+  ```
+  Makefile:88  parseinary_opt.hpp: .../translations/ROSCO_Helpers/parseinary_opt.cpp
+  Makefile:89      cp $< $@
+  run_harness_stub.sh   restores the .cpp   -- it did, hashed back to HEAD
+                        cannot restore the .hpp -- it does not know it exists
+  the probe             make <two .o>; g++ -c parseinary_opt_test.cpp
+                        <- never evaluates the rule that refreshes the copy
+  both mtimes           14:40:11  -- THE SAME SECOND
+  ```
+
+  So a probe that *had* consulted the make rule could still have been told the
+  copy was current. `vit_mutate.py:275` deletes `<stem>.hpp` before every build
+  for exactly this reason; the probe did not, and copied its way into measuring
+  `parseinary_opt.no-minlen-arm-stub.cpp`.
+
+- **THE CONTROL COULD NOT HAVE CAUGHT IT.** The probe's stated control is that
+  the entry line's gcov count equals the case count:
+
+  ```
+  L464  count=19536      PASSED -- on the stub
+  ```
+
+  because a stub that deletes ONE ARM is still entered on all 19,536 cases. **An
+  entry-count control can see a file that was not RUN; it cannot see a file that
+  is the wrong PROGRAM.** Bind the measurement to the file's IDENTITY instead —
+  a hash of the derived copy against its source, printed beside the counts.
+
+  ```
+  executable lines RUN      207   the stub        209   the translation
+  executable lines NOT RUN   26                    26   (the same 26)
+  ```
+
+  The never-executed SET survived, so the six `unreachable` declarations derived
+  from it were unaffected — **luck, not design**. This stub deletes an arm the
+  corpus reaches, so it moved the RUN count and left the zero list alone. A stub
+  deleting an arm the corpus does NOT reach moves the zero list, and the
+  declarations would then be derived from the wrong program with every stated
+  control green. `line_coverage.MEASURED_A_STUB.txt`.
+
+## RE-TAKING TWENTY ARTIFACTS ACROSS AN INSTRUMENT MOVE IS ~25 MINUTES, AND THE
+## RESULT IS A MEASUREMENT RATHER THAN A FORMALITY
+
+- **Unit #55, fifth dispatch, loop `8c17719` -> `74c2a32`.** One code change in
+  the loop (`vit_mutate.py` bracketing itself with telemetry) and nothing in
+  `generate.py`. Unit #53's rule says price it with the corpus hash before and
+  after; the price was zero, and the whole re-take then ran in about 25 minutes
+  of wall clock:
+
+  ```
+  corpus sha256   417c2056...89fc3   BEFORE and AFTER, byte-identical
+  gen_rev         gen-7654789df837   unchanged
+  harness       2 s   19,536 / 0        four stubs   6 s   19,276 / 2,377 / 1,150 / 19
+  coverage      2 s   209/26/474        unreachable  1 s   6 declarations
+  sanitised   726 s   123 killed 0.9535 value oracle 122 s  104 killed 0.8062
+  post-integ    7 s   19,536 / 0 and 11,121   gate x4  148 s
+  ```
+
+  **The twelve mutation artifacts differ from the ones they replace in
+  `loop_rev` AND NOTHING ELSE** — 12 files, 12 insertions, 12 deletions — and so
+  do the three post-integration ones; `line_coverage.txt` and the `unreachable`
+  set have no diff at all. That is the measurement the instrument change needed
+  and could not get any other way: the same 153 mutants, the same 123 kills, the
+  same six survivor ids, from a mutator that now writes telemetry.
+
+- **The clean-tree window was split into three, not one.** Reset -> harness and
+  stubs and coverage -> restore -> COMMIT; reset -> sanitised sweep -> restore
+  -> COMMIT; and so on. `reset_to_clean.sh` and `restore_integrated.sh` are 6
+  seconds each on this tree, so three round trips cost under a minute and every
+  expensive artifact is committed within minutes of existing rather than after
+  an hour in which no commit is possible. The pre-commit hook refuses inside the
+  window; that is the reason to make the window short, not the reason to make it
+  long.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's

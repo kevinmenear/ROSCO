@@ -13032,3 +13032,136 @@ Adding to the two raised in the previous entry:
    second instrument kills" is to leave it in the survivor list, which is honest
    and is also a permanent ceiling below 1.0 for every unit that writes a record
    nothing compares.
+
+## 2026-08-19 — unit #55 `ParseInAry_Opt`, FIFTH dispatch: the instrument moved and nothing else did
+
+The disposition was cleared to re-dispatch this unit against the **parallel
+gate** (`f56cc5f7`), whose own commit message asked for exactly this: "the first
+real dispatch prices it for free." Two things came out of it, and only one of
+them was the thing it was sent for.
+
+### The parallel gate, priced under real dispatch load
+
+The measurement `f56cc5f7` waived — D.3, "measure under real dispatch load" —
+is taken here, because these four runs shared the machine with ten mutation
+parts and three controller rebuilds.
+
+```
+                       serial (recorded)   parallel, this dispatch
+gate                        ~148 s               26 s      5.7x
+red test, parsed value      ~249 s               41 s      6.1x
+negative control, arm        ~249 s              53 s      4.7x
+gate, close run             ~148 s               28 s      5.3x
+```
+
+Faster than the idle-machine figure rather than slower, which is not a
+contradiction: 8 workers against 27 scenarios is bounded by the makespan of the
+longest scenario, and the agent's own work is bursty and mostly not CPU-bound.
+
+**The numbers are what matter, not the seconds.** All three re-taken counts
+reproduced the serial artifacts they replace to the digit:
+
+```
+gate                    5,252,000 values / 351 channels / 0 mismatched
+parsed value + 1        1,857,893          PREDICTED, exact
+the `Ary = 0` arm               0          PREDICTED, exact (negative control)
+close run               5,252,000 / 0
+```
+
+A green gate alone would only have shown that the runner introduces no
+difference. **1,857,893 exactly is what shows it still SEES the differences that
+are there**, and 0 beside it on the same file, same runner and same 27 scenarios
+is what shows the 1,857,893 is not the runner leaking. `inputs_restored` came
+back EMPTY on all four — the per-worker copies mean `Examples/` is never written
+at all, which is strictly better than the restore it replaces.
+
+### Re-taking a unit across an instrument move, priced at zero
+
+`translation-loop` moved `8c17719 → 74c2a32`: one code change, `vit_mutate.py`
+bracketing itself with telemetry, and nothing in `generate.py`. The runbook's
+rule is that a partial move leaves the evidence incoherent — the merge refuses
+two instruments and `revcheck` reports the disagreement across the unit — so a
+gate re-take forces a FULL re-take. It was taken, and the price is one hash:
+
+```
+corpus sha256   417c2056…89fc3   BEFORE and AFTER, byte-identical
+gen_rev         gen-7654789df837 unchanged
+```
+
+Twenty result artifacts re-taken. **The twelve mutation artifacts differ from
+the ones they replace in `loop_rev` AND NOTHING ELSE — 12 files, 12 insertions,
+12 deletions.** So do the three post-integration ones. `line_coverage.txt` and
+`ParseInAry_Opt.unreachable.json` came back byte-identical with no diff at all.
+
+That is a real measurement and not a formality: a mutator that now writes
+telemetry around itself scores the same 153 mutants the same way, kills the same
+123, and leaves the same six survivor ids. 0.9535 sanitised and 0.8062 on the
+value oracle, so `--sanitize` is still worth exactly 19 and still a strict
+superset.
+
+`revcheck --unit` reports all **20** result artifacts at `74c2a32`, clean.
+
+### C12 — a probe measured a stub, and its own control passed
+
+Run immediately after the four harness stub red tests, `run_line_coverage_probe.sh`
+did not measure the shipped translation. **It measured the last stub.**
+
+```
+Makefile:88   parseinary_opt.hpp: …/translations/ROSCO_Helpers/parseinary_opt.cpp
+Makefile:89       cp $< $@
+```
+
+The probe asks make for two object files and then compiles the test with `g++`
+directly, so the one rule that refreshes that copy is never evaluated.
+`run_harness_stub.sh` restores the `.cpp` — it does, and it hashed back to HEAD
+— and it cannot restore a derived copy inside the test directory that it does
+not know exists. Both mtimes landed in the **same second**, so a probe that
+*had* consulted the rule could still have been told the copy was current.
+
+**The control did not see it, and could not have.** The probe's stated control
+is that the entry line's gcov count equals the case count. It read `L464
+count=19536` and passed — because a stub that deletes one arm is still entered
+on every one of the 19,536 cases. An entry-count control can see a file that was
+not RUN. It cannot see a file that is the wrong PROGRAM.
+
+What it said, against what is true:
+
+```
+executable lines RUN      207   the stub          209   the translation
+executable lines NOT RUN   26                      26   (the same 26)
+non-code lines            475                     474
+```
+
+The never-executed SET is the same either way, so the six `unreachable`
+declarations derived from it are unaffected — **which is luck, not design**: the
+arm this particular stub deletes is one the corpus reaches, so it moved the RUN
+count and left the zero list alone. A stub that deleted an arm the corpus does
+NOT reach would have moved the zero list, and the declarations derived from it
+would have been derived from the wrong program with every stated control green.
+
+Kept as `evidence/ParseInAry_Opt/line_coverage.MEASURED_A_STUB.txt` with its
+diagnosis. Fixed by deleting the `.hpp` and naming it on the probe's own `make`
+line — which is what `vit_mutate.py:275` has always done before every build, for
+this exact reason. Re-run: 209/26/474, byte-identical to the committed reading.
+
+### FOR THE METHOD, NOT FOR THIS CAMPAIGN
+
+6. **A runner that restores the artifact under test does not restore its DERIVED
+   copies, and the next probe reads the copy.** The campaign's stub and red-test
+   runners all restore the file they perturb, hash-verified, and that is not
+   enough: any generated intermediate — here a `cp` of the translation into the
+   test directory — survives the restore and is what a later reader opens. The
+   general form is "a restore is scoped to what the restorer knows about", and
+   the cheap defence is for every probe to DELETE its derived inputs and ask the
+   build for them, rather than to trust that the last writer left the right
+   thing.
+7. **An entry-count control cannot distinguish "not run" from "wrong program",
+   and P10 asks it to.** P10's rule is that a pass built from an empty set must
+   name the set and prove it could have been non-empty. This probe's control
+   proves the set is non-empty and says nothing about WHOSE set it is. A control
+   that binds the measurement to the identity of the file — a hash of the `.hpp`
+   against the `.cpp`, printed beside the counts — is one line and would have
+   caught this at the moment it happened rather than in a diff afterwards.
+
+The three escalations of the fourth dispatch (items 3–5 above) all stand
+unchanged, and item 5 is still what holds this unit below 1.0.

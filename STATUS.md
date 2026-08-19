@@ -4,9 +4,68 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-19: unit #55 `ParseInAry_Opt` is `deferred`. FOUR dispatches.
+**As of 2026-08-19: unit #55 `ParseInAry_Opt` is `deferred`. FIVE dispatches.
 EIGHT layers; seven green and red-tested, and the mutation layer at
-123 / (152 − 17 − 6) = 0.9535 against a threshold of 1.0** — from 0.7815 at the
+123 / (152 − 17 − 6) = 0.9535 against a threshold of 1.0.**
+
+**THE FIFTH DISPATCH RE-TOOK ALL TWENTY RESULT ARTIFACTS AT A MOVED INSTRUMENT
+AND EVERY NUMBER REPRODUCED.** It was cleared to price the **parallel gate**
+(`f56cc5f7`); `translation-loop` had moved `8c17719 → 74c2a32` by one change
+(`vit_mutate.py` bracketing itself with telemetry) and nothing in `generate.py`,
+and a gate re-take at the new revision would have split the unit's `loop_rev`.
+Priced with the corpus hash, per unit #53's rule, and the price was **zero**:
+`417c2056…89fc3` before and after, `gen_rev gen-7654789df837` unchanged.
+
+```
+                          fourth dispatch     fifth dispatch
+harness                   19,536 / 0          19,536 / 0
+four stubs                19,276 2,377 1,150 19    identical
+line coverage             209 / 26 / 474      byte-identical, no diff
+unreachable, re-derived   6                   byte-identical, no diff
+mutation, sanitised       123, 0.9535         123, 0.9535, same six ids
+mutation, value oracle    104, 0.8062         104, 0.8062
+post-integration          19,536 / 0          19,536 / 0
+copy-back red test        11,121              11,121   (predicted first)
+gate / red / control      5,252,000 / 0; 1,857,893; 0    identical
+```
+
+**The twelve mutation artifacts differ from the ones they replace in `loop_rev`
+AND NOTHING ELSE — 12 files, 12 insertions, 12 deletions.** So do the three
+post-integration ones. That is a measurement and not bookkeeping: a mutator that
+now writes telemetry scores the same 153 mutants the same way.
+`revcheck --unit` reports all 20 at `74c2a32`, clean.
+
+**THE PARALLEL GATE, PRICED UNDER REAL DISPATCH LOAD** — the D.3 measurement
+`f56cc5f7` waived. Sharing the machine with ten mutation parts and three
+rebuilds: gate 148 s → **26 s**, red test 249 s → **41 s**, negative control
+**53 s**, close run **28 s**. Faster than the idle-machine 5.4x, not slower. All
+four counts reproduce the serial artifacts to the digit, and the pair is the
+argument: **1,857,893** says the runner still sees a difference that is there,
+and **0** on the same file and runner says that 1,857,893 is not the runner
+leaking. `inputs_restored` EMPTY on all four.
+
+**C12 — A PROBE MEASURED A STUB AND ITS OWN CONTROL PASSED.** Run right after
+the four harness stubs, `run_line_coverage_probe.sh` measured
+`parseinary_opt.no-minlen-arm-stub.cpp`: the `.hpp` it reads is a `cp` of the
+translation the Makefile makes, the runner restores the `.cpp` and cannot
+restore a derived copy it does not know about, the probe compiles with `g++`
+directly so the refreshing rule never runs, and **both mtimes landed in the same
+second**. The stated control — entry count == case count — read 19,536 and
+passed, because a stub that deletes one arm is still entered on every case. *An
+entry-count control can see a file that was not RUN; it cannot see a file that is
+the wrong PROGRAM.* 207/26/475 for the stub against 209/26/474 for the
+translation; the never-run SET was unaffected, which is luck rather than design.
+Kept as `line_coverage.MEASURED_A_STUB.txt`; the probe now deletes the `.hpp`
+and asks make for it, as `vit_mutate.py:275` always has.
+
+**WHAT HOLDS THE UNIT BELOW 1.0 IS UNCHANGED AND HAS NOW BEEN MEASURED TWICE.**
+The two escalations below are the whole of it, and neither is work this unit may
+do alone. 0.9535 is a property of the declaration grammar, not of the
+measurement.
+
+---
+
+**The fourth dispatch, which produced the numbers above** — from 0.7815 at the
 third dispatch and 0.4423 at the second. P12 fails on that number and nothing
 else does.
 

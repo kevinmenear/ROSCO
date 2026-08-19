@@ -1007,3 +1007,145 @@ be at the END of their occurrence order and cost nothing; the one insertion was
 in the middle and re-pointed two declarations at sites the corpus kills. **After
 any edit, re-derive each declaration from its SITE and re-read
 `declared_but_killed` before believing the score.**
+
+---
+
+## 11. The fifth dispatch — 2026-08-19 — the instrument moved and nothing else did
+
+The disposition was cleared to re-dispatch this unit **against the parallel
+gate** (`f56cc5f7`), whose own commit message asked for it: "scenario_workers is
+recorded in every artifact, so the first real dispatch prices it for free."
+Nothing about the translation, the corpus or the declarations changed. **The
+number is 0.9535 and it is the same 0.9535**, which is the point of the dispatch
+rather than a disappointment: it was taken on a moved instrument and it did not
+move.
+
+### 11.1 What forced a full re-take, and what it cost
+
+`translation-loop` had moved `8c17719 → 74c2a32` — one code change,
+`vit_mutate.py` bracketing itself with telemetry, and nothing in `generate.py`.
+Running the gate at the new revision would have stamped four artifacts at
+`74c2a32` beside sixteen at `8c17719`, which `revcheck --unit` reports as a
+BASE-SHA SPLIT and P14 refuses. There is no partial move that leaves the
+evidence coherent, so all twenty were re-taken.
+
+Unit #53's rule is to price it with the corpus hash, before and after. **The
+price was zero:**
+
+```
+corpus sha256   417c205656d2dd3aca728380163d1991d871b34ed76e776fd7f8f401d0089fc3
+                BEFORE and AFTER, byte-identical, 8,810,481 bytes
+gen_rev         gen-7654789df837, unchanged
+```
+
+| layer | result | against the fourth dispatch |
+|---|---|---|
+| differential harness | 19,536 checked, **0 failed**, `Ary` excluded on 1,659 = 8.49% | identical; artifact differs in `loop_rev` only |
+| no-op / AllowDefault / READ / minlen stubs | **19,276 / 2,377 / 1,150 / 19** | all four identical |
+| line coverage | 209 run / 26 never / 474 non-code | **byte-identical, no diff at all** |
+| `unreachable` set, re-derived | 6 declarations | **byte-identical, no diff at all** |
+| mutation, sanitised | 123 killed, **0.9535**, same six survivor ids | 12 mutation artifacts: **12 insertions, 12 deletions, all `loop_rev`** |
+| mutation, value oracle | 104 killed, **0.8062** | `--sanitize` still worth exactly 19, still a strict superset |
+| post-integration | 19,536 / 0 | identical |
+| wrapper copy-back red test | **11,121**, predicted before the run off the committed partition | identical |
+| gate ×4 | 5,252,000 / 351 / 0; **1,857,893**; **0**; close 5,252,000 / 0 | identical |
+
+`revcheck --unit` reports all **20** result artifacts at `74c2a32`, clean.
+
+**Twelve artifacts differing in one line each is a measurement, not
+bookkeeping.** A mutator that now writes telemetry around itself scores the same
+153 mutants the same way, kills the same 123 and leaves the same six survivors.
+
+### 11.2 The parallel gate, priced under real dispatch load
+
+`f56cc5f7` waived its own D.3 — measure under real dispatch load — on the
+grounds that a worker pool degenerates to serial under contention, so the
+downside is "less than 5x" rather than "wrong". These four runs shared the
+machine with ten mutation parts and three controller rebuilds:
+
+```
+                       serial (recorded)   parallel, here
+gate                        ~148 s              26 s     5.7x
+red test, parsed value      ~249 s              41 s     6.1x
+negative control             ~249 s             53 s     4.7x
+close run                   ~148 s              28 s     5.3x
+```
+
+Faster than the idle-machine figure, not slower: 8 workers over 27 scenarios is
+bounded by the longest scenario's makespan, and an agent's own work is bursty.
+
+**The seconds are the least interesting part.** All four counts reproduce the
+serial artifacts they replace to the digit, and the pair is what carries the
+argument: 1,857,893 says the parallel runner still SEES a difference that is
+there, and 0 on the same file, the same runner and the same 27 scenarios says
+the 1,857,893 is not the runner leaking. `inputs_restored` came back EMPTY on
+all four — the per-worker copies mean `Examples/` is never written at all.
+
+### 11.3 C12 — a probe measured a stub, and its own control passed
+
+`run_line_coverage_probe.sh`, run immediately after the four harness stubs, did
+not measure the shipped translation. It measured
+`parseinary_opt.no-minlen-arm-stub.cpp` — the last stub that ran.
+
+```
+Makefile:88   parseinary_opt.hpp: .../translations/ROSCO_Helpers/parseinary_opt.cpp
+Makefile:89       cp $< $@
+```
+
+`run_harness_stub.sh` restores the `.cpp`, hash-verified, and it did — the file
+hashed back to HEAD. It cannot restore a derived copy inside the test directory
+that it does not know exists. The probe asks make for two object files and then
+compiles the test with `g++` directly, so the rule that refreshes that copy is
+never evaluated. **Both mtimes landed in the same second**, so even a probe that
+consulted the rule could have been told the copy was current.
+
+**The stated control passed on the stub.** It requires the entry line's gcov
+count to equal the case count; it read `L464 count=19536` and passed, because a
+stub that deletes one arm is still entered on every case. An entry-count control
+can see a file that was not RUN. It cannot see a file that is the wrong PROGRAM.
+
+```
+executable lines RUN      207   the stub        209   the translation
+executable lines NOT RUN   26                    26   (the same 26)
+non-code lines            475                   474
+```
+
+The never-executed SET survived, so the six `unreachable` declarations were
+unaffected — **luck, not design**: this stub deletes an arm the corpus reaches,
+so it moved the RUN count and left the zero list alone. A stub deleting an arm
+the corpus does NOT reach would have moved the zero list, and the declarations
+derived from it would have come from the wrong program with every stated control
+green.
+
+Kept as `line_coverage.MEASURED_A_STUB.txt` with its diagnosis. The probe now
+deletes the `.hpp` and names it on its own `make` line — which is what
+`vit_mutate.py:275` has always done before every build. Re-run: 209/26/474,
+byte-identical to the committed reading.
+
+### 11.4 What was deliberately NOT re-taken, and why
+
+* **`parser_conformance` (113 records) and `print_conformance` (34 records).**
+  Neither reads the corpus, and neither the translation's parser nor gfortran
+  moved. That is the same rule the third and fourth dispatches applied to the
+  parser replay, applied now to both.
+* **`harness_partition.txt` and `read_residual.txt`.** Both are functions of the
+  corpus, and the corpus hashes byte-identical, so their cells cannot have
+  moved. The copy-back red test's prediction was READ out of the committed
+  partition rather than re-measured, and came back exact.
+* **`survivor_record_search`.** Kept and annotated at the fourth dispatch; that
+  has not changed.
+
+### 11.5 What still holds this unit below 1.0 — unchanged, and now measured twice
+
+Both items are escalations and neither is work this unit may do alone.
+
+1. **The `killed_by` declaration kind.** The PRINT replay exists, is committed,
+   is red-tested by its own negative control, and kills all five PRINT
+   survivors — and there is no way to say so in `mutation/<Unit>.json`. Five
+   mutants, **0.9535 → 0.9917**, with no new measurement.
+2. **An oracle for `Ary` on a read that SUCCEEDS with a null item**, worth
+   `07b5ee72` and the six `unreachable` declarations together.
+
+The fifth dispatch adds one piece of evidence for both: the whole stack has now
+been measured at two different instrument revisions and reproduces to the digit.
+**0.9535 is a property of the declaration grammar, not of the measurement.**
