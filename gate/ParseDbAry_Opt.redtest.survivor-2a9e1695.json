@@ -163,7 +163,8 @@
  ],
  "notes": [
   "Mutant 2a9e1695, index_offset, parse_real's fraction-digit loop: rec[p] -> rec[p + 1].",
-  "THIRD DISPATCH, AND ITS STATUS HAS CHANGED. At the second dispatch this was a SURVIVOR of the mutation sweep and this gate run was the argument that the READ region is a CORPUS gap the gate covers. On the 16,512-case corpus it is KILLED by the differential harness -- 2a9e1695 is not in mutation/ParseDbAry_Opt.json's survivor list any more. So this run is no longer an argument; it is the CONTROL on that claim, re-taken at loop b9c8c52 to show the gate still moves on the same statement while the harness has caught up with it. PREDICTED 1,583,216 moved of 4,732,000, with scenarios 19 and 27 failing to run at all."
+  "ITS STATUS CHANGED AT THIS DISPATCH. At the second dispatch it was a SURVIVOR and this run was the argument that the READ region is a CORPUS gap the gate covers. On the 16,512-case corpus the differential harness KILLS it, so the run is now the CONTROL on that argument: the gate still moves the same 1,583,216 on the same statement while the harness has caught up with it.",
+  "Re-taken on the FIXED translation (50b583ab) at loop b9c8c52. PREDICTED 1,583,216 of 4,732,000 with scenarios 19 and 27 failing to run at all under it."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parsedbary_opt.cpp",
