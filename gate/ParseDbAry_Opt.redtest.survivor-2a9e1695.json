@@ -21,7 +21,7 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "b9c8c52",
+ "loop_rev": "59aa876",
  "mismatched": 1583216,
  "mismatched_channels": [
   "scenario_3:bld_pitch 10334/16000",
@@ -162,9 +162,8 @@
   27
  ],
  "notes": [
-  "Mutant 2a9e1695, index_offset, parse_real's fraction-digit loop: rec[p] -> rec[p + 1].",
-  "ITS STATUS CHANGED AT THIS DISPATCH. At the second dispatch it was a SURVIVOR and this run was the argument that the READ region is a CORPUS gap the gate covers. On the 16,512-case corpus the differential harness KILLS it, so the run is now the CONTROL on that argument: the gate still moves the same 1,583,216 on the same statement while the harness has caught up with it.",
-  "Re-taken on the FIXED translation (50b583ab) at loop b9c8c52. PREDICTED 1,583,216 of 4,732,000 with scenarios 19 and 27 failing to run at all under it."
+  "NO LONGER A SURVIVOR, AND THAT IS WHY IT IS KEPT: at the second dispatch this was the READ region's representative and the run was the argument that the region is a corpus gap the gate covers. The 16,512-case corpus killed it and the 17,520-case one still does, so the run is now the CONTROL on that argument -- a mutant the gate moves 1,583,216 values on IS reachable, and the corpus that could not tell it apart was the thing that was wrong.",
+  "PREDICTED 1583216 of 5252000, exactly: the gate never reads the case file and neither the translation nor the wrapper moved this dispatch."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parsedbary_opt.cpp",

@@ -2,17 +2,18 @@
 CONFORMANCE -- the UNMUTATED translation against the reference:
 BASELINE: 44 replayed record(s), 0 mismatched
 
-PRINT-region survivors replayed: 9
-  KILLED by the record comparison: 9
+PRINT-region survivors replayed: 10
+  KILLED by the record comparison: 10
     123a7dde  negate_cond    L432  'if (static_cast<int>(text.size()) > w)' -> 'if (!(static_cast<int>(text.size()) > w))'   43 of 44 record(s) differ
     2af0b6bd  negate_cond    L441  'if (std::isnan(v))' -> 'if (!(std::isnan(v)))'   43 of 44 record(s) differ
     8bb5f06d  negate_cond    L463  'if (decexp >= -1 && decexp <= 16)' -> 'if (!(decexp >= -1 && decexp <= 16))'   40 of 44 record(s) differ
     9416ffb6  swap_operands  L464  '16 - decexp' -> 'decexp - 16'   28 of 44 record(s) differ
     a867a839  arith_op       L461  'epos + 1' -> 'epos - 1'   29 of 44 record(s) differ
     ae3f319a  arith_op       L464  '16 - decexp' -> '16 + decexp'   18 of 44 record(s) differ
+    b529317d  negate_cond    L500  'if (n > 0)' -> 'if (!(n > 0))'   44 of 44 record(s) differ
     bea19ce7  negate_cond    L467  'if (d == 0)' -> 'if (!(d == 0))'   30 of 44 record(s) differ
     c6a83a1d  negate_cond    L453  'if (nonfinite_text(v, text))' -> 'if (!(nonfinite_text(v, text)))'   43 of 44 record(s) differ
     fa4f36de  negate_cond    L442  'if (std::isinf(v))' -> 'if (!(std::isinf(v)))'   42 of 44 record(s) differ
   STILL ALIVE: 0
 
-NEGATIVE CONTROL: 23 survivor(s) OUTSIDE the PRINT region, 0 of them moved a record
+NEGATIVE CONTROL: 12 survivor(s) OUTSIDE the PRINT region, 0 of them moved a record

@@ -21,15 +21,13 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "b9c8c52",
+ "loop_rev": "59aa876",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "THE DEFAULT ARM: Ary = 0, taken when FindLine does not find the parameter and the caller allows a default.",
-  "MOVED 0, AND THAT IS THE EXPECTED ANSWER. The arm RUNS -- coverage records ROSCO_Helpers.f90:945 66 times across 21 of the 27 scenarios -- but only when AryLen is 0, and AryLen at these call sites is F_NumNotchFilts / F_GenSpdNotch_N / F_TwrTopNotch_N, so the arrays that take a default are the notch arrays of a scenario with ZERO notch filters, and both consumers sit behind that same count (prefiltermeasuredsignals.cpp:148 inside a loop bounded by F_GenSpdNotch_N, checkinputs.cpp:329 inside if (CntrPar->F_NumNotchFilts > 0)). The differential harness is the layer that covers the arm: 3,036 alloc=0/other cases.",
-  "Re-taken on the FIXED translation at loop b9c8c52. PREDICTED 0."
+  "PREDICTED 0, and the expectation is here beside the number rather than added afterwards. The Ary = 0 default arm runs 66 times across 21 scenarios but only at AryLen = 0, so it writes no element, and both consumers of the notch arrays sit behind the same zero count. Unchanged from the third dispatch and re-taken only because the instrument revision moved."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parsedbary_opt.cpp",

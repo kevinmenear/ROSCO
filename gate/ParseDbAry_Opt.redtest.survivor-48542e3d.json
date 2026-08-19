@@ -21,16 +21,14 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "b9c8c52",
+ "loop_rev": "59aa876",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "AN ATTACK ON A DECLARED-UNREACHABLE MUTANT, which is what this run is now. 48542e3d (arith_op, rec + p -> rec - p in list_read_reals' repeat-count branch) is one of the 30 mutants this dispatch declares UNREACHABLE against a gcov-measured never-executed line. A declaration is a claim about the corpus, and the cheapest attack on it is the OTHER instrument.",
-  "MOVED 0 of 5,252,000, and the prediction was grounded before the run: the branch is entered only when a record carries <digits>*, and grep -cE '[0-9][*]' over all 22 Examples/DISCON*.IN that the 27 scenarios read returns 0.",
-  "THE ZERO IS ONLY WORTH SOMETHING NEXT TO A NON-ZERO, and the non-zero is in the same file at the same layer: the parsed-value perturbation moves 2,236,141 of the same 5,252,000. So the gate DOES reach this unit's parser hard, and a zero at this statement is about the statement rather than about the instrument.",
-  "Re-taken on the FIXED translation (50b583ab) at loop b9c8c52."
+  "48542e3d IS NO LONGER SCORED AT ALL, and the run is kept as the control it became. At the third dispatch it was a DECLARED-UNREACHABLE mutant in the repeat-count branch and this zero was the evidence that the branch's own statements are unreached by the gate as well as by the corpus. This dispatch re-derived the unreachable set from re-measured coverage and the branch is still never executed, so the same declaration stands on the same statement -- and the perturbation still moves 0. PREDICTED 0 of 5,252,000.",
+  "grep -cE '[0-9][*]' over all 22 Examples/DISCON*.IN returns 0, so no scenario reaches the repeat-count branch. Beside the parsed-value red test's 2,236,141 on the same 5,252,000, the zero is about the STATEMENT and not about the instrument."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parsedbary_opt.cpp",

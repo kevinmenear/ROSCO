@@ -21,7 +21,7 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "b9c8c52",
+ "loop_rev": "59aa876",
  "mismatched": 2236141,
  "mismatched_channels": [
   "scenario_3:bld_pitch 15999/16000",
@@ -169,8 +169,7 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "Every value the list-directed READ transfers is shifted by 0.01. This is the unit's whole product: the arrays it fills are CntrPar's gain schedules, notch frequencies and IPC ramps.",
-  "THIRD DISPATCH, re-taken on the FIXED translation (50b583ab) at loop b9c8c52. PREDICTED 2,236,141 -- the second dispatch's value to the unit, because neither the corpus nor the print separator fix can reach a gate channel."
+  "PREDICTED 2236141 of 5252000, EXACTLY -- the number the third dispatch measured. The gate never reads the case file, and neither the translation nor the wrapper moved this dispatch, so a corpus change that stayed inside the corpus must reproduce this to the value. 43% of every value the campaign compares passes through a value this unit parsed."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parsedbary_opt.cpp",

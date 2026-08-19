@@ -27,14 +27,15 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "THE GATE NEGATIVE CONTROL, and it is STILL a survivor of the sweep after this dispatch quadrupled the parser corpus -- which is what makes it the right one to keep. arith_op inside list_directed_real, the routine that formats a REAL for the PRINT record the default arm writes to unit 6. PREDICTED 0 of 5,252,000.",
-  "AND IT IS KILLED BY THE INSTRUMENT THE THIRD DISPATCH BUILT: evidence/ParseDbAry_Opt/print_replay.txt moves 18 of 44 records under it. So the zero is not the mutant being harmless, it is the gate not reading this stream. The replay was re-taken this dispatch on the new survivor set: 10 of 10 PRINT-region survivors killed, negative control 0 of 12 outside it."
+  "NEW AT THE FOURTH DISPATCH, and it is the region the corpus change did NOT close. a0007207 is `p < len` -> `p <= len` at the exponent's sign, one of two boundary comparisons still alive after the corpus was given records that END INSIDE A VALUE at column 2048. The tail records reach the boundary in the integer part, in the fraction and at a matched IEEE word; they do not reach it INSIDE AN EXPONENT, which needs a record whose last bytes are `1E` or `1E+`.",
+  "PREDICTED 0 of 5,252,000, and the prediction is grounded before the run rather than after it: the gate reads 22 Examples/DISCON*.IN files whose longest line is far short of 2048 columns, so `Line` is blank-padded and no scan in any of the 1,232 calls reaches p == len. Beside the parsed-value red test's 2,236,141 on the same 5,252,000 values, a zero here is about the STATEMENT and not about the instrument.",
+  "SO THE PAIR OF INSTRUMENTS AGREES ON WHAT IS LEFT: the differential corpus now reaches three of the four boundary shapes and the gate's own input files reach none of them. What survives at this statement is unreached by both, which is a fact about every record ROSCO has ever been given rather than about the translation."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parsedbary_opt.cpp",
-  "from": "16 - decexp",
+  "from": "    if (has_exp) {\n        if (p < len && (rec[p] == '+' || rec[p] == '-')) {",
   "replacements": 1,
-  "to": "16 + decexp"
+  "to": "    if (has_exp) {\n        if (p <= len && (rec[p] == '+' || rec[p] == '-')) {"
  },
  "perturbation_broke_scenarios": [],
  "perturbed": true,

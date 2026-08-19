@@ -20,14 +20,11 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "b9c8c52",
+ "loop_rev": "59aa876",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
- "notes": [
-  "Re-taken after the print separator fix (50b583ab): the shipped .cpp moved, so the gate had to move with it. PREDICTED 5,252,000 / 0 -- the fix changes one record on unit 6 when Ary is EMPTY, which no gate channel reads and which no scenario produces (FinalAryLen = max(AryLen, 1) >= 1 on every successful ALLOCATE)."
- ],
  "perturbed": false,
  "residual_dirt": [],
  "scenarios": [
