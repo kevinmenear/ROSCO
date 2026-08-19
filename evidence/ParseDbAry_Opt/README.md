@@ -9,25 +9,35 @@ that line with a Fortran **list-directed READ**. Three callees — `FindLine`
 (#32), `GetWords` (#8), `Int2LStr` (#10) — all already translated. Live in all
 27 scenarios: **1,232 calls**.
 
-**Disposition: `deferred`.** Six layers ran; five are green and red-tested and
-the sixth, mutation, is **0.7609 against a threshold of 1.0**. That is this
-dispatch's honest number and the shortfall is named rather than argued away.
+**Disposition: `deferred`, FOURTH DISPATCH.** Six layers ran; five are green and
+red-tested and the sixth, mutation, is **0.8533 against a threshold of 1.0**.
+That is this dispatch's honest number and the shortfall is named rather than
+argued away.
 
-**AND THE SIXTH LAYER IS NEW AND IT FOUND A DEFECT.** The PRINT record has never
-been compared by anything in this campaign; §5b is the instrument that compares
-it, the one-record disagreement it found in the shipped translation, and the fix.
-Every other layer was then re-taken on the fixed translation.
+**THE SIX SURVIVORS THIS DISPATCH WAS SENT FOR ARE ALL KILLED, AND NONE OF THEM
+WAS DECLARED ANYTHING.** `b5366e74`, `6b5fc8ce`, `76abf5f3`, `09fbe682`,
+`2763d449`, `2f05620e` — every one was case (b), a corpus too narrow to expose
+the difference, and every one was closed by fixing the inputs. §5.
+
+**AND 1.0 IS NOT REACHABLE FROM HERE, WHICH IS THE OTHER HALF OF THE ANSWER.**
+Ten of the twenty-two survivors are in the PRINT record. They are **not**
+equivalent — a second instrument measures every one of them moving between 18
+and 44 records — and **not** unreachable — the corpus runs those lines and so do
+21 of the 27 gate scenarios. They are mutants with a MEASURED difference that
+the scoring instrument cannot see, which is a third case this campaign's
+vocabulary has no key for. Escalated in `DECISIONS.md` as a proposed `killed_by`
+declaration rather than smuggled into the score. §5.
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness (`harness/ParseDbAry_Opt.json`) | **16,512 checked, 0 failed**, 0 inadmissible, against the CLEAN Fortran with all three callee bridges kept. `Ary` **not compared on 5,266** cases (`no_oracle_when`, §4) | **four stubs**, all re-taken on this corpus: no-op **16,252**; the `.NOT. AllowDefault_` arm deleted **6,079**; the READ deleted **394**; the zero-store rule removed **4** |
-| mutation (`mutation/ParseDbAry_Opt.json`) | **189 mutants, 4 nocompile, 185 behavioural — 105 KILLED, 17 EQUIVALENT, 30 UNREACHABLE, 33 SURVIVED, score 0.7609.** Sanitised sweep, green baseline, clean tree. `declared_but_killed` and `unreachable_but_killed` both empty | — the score IS the red test (E4.6). §5 |
-| PRINT-record conformance (`evidence/ParseDbAry_Opt/print_replay.txt`) | **44 records, 0 mismatched** — every record gfortran's own list-directed output, replayed through the SHIPPED `print_default_warning` by textual include. **Its first run was 1 mismatched and that was a real defect** (§5b) | **the 9 PRINT-region survivors it replayed are ALL killed**, 18 to 43 records each; **negative control 0 of 23** survivors outside the region moved a record |
-| post-integration (`harness/ParseDbAry_Opt.postintegration.json`) | 16,512 checked, **0 failed** | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **13,216 of 16,512**, PREDICTED 13,216 from the re-taken partition before the run; reverted, rebuilt, green re-taken at 0 |
-| gate, 27 scenarios (`gate/ParseDbAry_Opt.json`) | 5,252,000 values / 351 channels, **0 mismatched**, re-taken on the fixed translation and again at close | **four**: every parsed value + 0.01 moves **2,236,141** (43%); the `Ary = 0` default arm **0**; the declared-unreachable 48542e3d **0**; the PRINT survivor ae3f319a **0**. §6 |
+| differential harness (`harness/ParseDbAry_Opt.json`) | **17,520 checked, 0 failed**, 0 inadmissible, against the CLEAN Fortran with all three callee bridges kept. `Ary` **not compared on 1,387** cases (`no_oracle_when`, §4) — was 5,266 of 16,512 | **four stubs**, all re-taken on this corpus: no-op **17,260**; the `.NOT. AllowDefault_` arm deleted **2,209**; the READ deleted **646**; the zero-store rule removed **4** |
+| mutation (`mutation/ParseDbAry_Opt.json`) | **189 mutants, 4 nocompile, 185 behavioural — 128 KILLED, 17 EQUIVALENT, 18 UNREACHABLE, 22 SURVIVED, score 0.8533.** Sanitised sweep, green baseline, clean tree. `declared_but_killed` and `unreachable_but_killed` both empty | — the score IS the red test (E4.6), and the **value-oracle control** re-taken beside it says what each step bought: 120 → 128 → 0.8533. §5 |
+| PRINT-record conformance (`evidence/ParseDbAry_Opt/print_replay.txt`) | **44 records, 0 mismatched** — every record gfortran's own list-directed output, replayed through the SHIPPED `print_default_warning` by textual include. **Its first run, at the third dispatch, was 1 mismatched and that was a real defect** (§5b) | **the 10 PRINT-region survivors it replayed are ALL killed**, 18 to 44 records each; **negative control 0 of 12** survivors outside the region moved a record |
+| post-integration (`harness/ParseDbAry_Opt.postintegration.json`) | 17,520 checked, **0 failed** | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **9,841 of 17,520**, PREDICTED 9,841 from the re-taken partition before the run; reverted, rebuilt, green re-taken at 0 |
+| gate, 27 scenarios (`gate/ParseDbAry_Opt.json`) | 5,252,000 values / 351 channels, **0 mismatched**, re-taken at the new instrument revision and again at close | **six**, and the two non-zero ones reproduce the third dispatch's numbers TO THE VALUE, which is the control on this dispatch's whole claim: parsed value + 0.01 moves **2,236,141** (43%); 2a9e1695 **1,583,216**; the `Ary = 0` default arm **0**; 48542e3d **0**; ae3f319a **0**; and the new a0007207 **0**. §6 |
 
-**Every artifact of this unit names one instrument revision** (loop `b9c8c52`,
-`revcheck --unit`). Nothing was left at the second dispatch's `829625b`.
+**Every artifact of this unit names one instrument revision** (loop `59aa876`,
+`revcheck --unit`). Nothing was left at the third dispatch's `b9c8c52`.
 
 **No kernel**, as at both earlier dispatches: the behaviour under test is a
 **parser** and the corpus a KGen window would capture is 1,232 invocations of
@@ -35,7 +45,49 @@ one well-formed input file.
 
 ---
 
-## 0. What this dispatch was for, and the answer it got
+## 0. What THIS dispatch was for, and the answer it got
+
+The driver named six survivors and asked, for each, which of three things it is:
+(a) genuinely equivalent, (b) unreachable by the harness — *fix the inputs, not
+the record* — or (c) a blind spot no rule covers.
+
+**ALL SIX WERE (b), AND ALL SIX ARE DEAD.** None was declared anything. The
+table in §5 gives the input that killed each. Two levers did it: the sibling
+unit's base-draw pin, which had been sitting in `ranges.toml` one table away
+since the second dispatch, and a generator change that builds a lead to the
+width of the buffer the reference copies the record into.
+
+**AND ONE THING THAT WAS NOT ON THE LIST TURNED OUT TO BE (c).** Ten of the
+remaining twenty-two survivors are in the PRINT record. A second instrument
+built at the third dispatch measures every one of them differing from the
+unmutated translation, by 18 to 44 records out of 44 — so they are *not*
+equivalent, in the strongest sense the campaign can say it. The corpus runs
+their lines and 21 of 27 gate scenarios do too — so they are *not* unreachable.
+And the sweep's oracle compares out-parameters with `memcmp`, so it cannot see
+the stream they write. There is no third key. Escalated in `DECISIONS.md`; the
+proposal is a `killed_by` declaration that names the instrument and its artifact,
+which is worth 0.8533 → 0.9333 on this unit alone.
+
+**THE ORDER MATTERED AND IT IS THE DISPATCH INSTRUCTION'S OWN POINT.** Five of
+the six were `p < len` → `p <= len` or a `>`/`>=` boundary, and the cheapest
+thing available was to declare them equivalent — the argument writes itself, the
+score goes up, and nothing is learned. The third dispatch had already resisted
+that once, declaring `0a3516d1` (the same shape at `parse_real`'s entry, where
+the caller has established the precondition) while leaving its five siblings
+alive. This dispatch killed three of those five with a record that ends inside a
+value. A declaration would have buried them.
+
+**WHAT IT COST, so the next dispatch can price it.** A corpus change re-takes
+every layer that reads the corpus; a LOOP-REPO change re-takes everything else
+too, because `revcheck` asks whether all of a unit's artifacts name the same
+instrument revision. That was 4 harness stubs, a coverage probe, a partition
+probe, 4 sanitised mutation parts and their merge, 4 unsanitised parts and
+theirs, 3 post-integration runs, a PRINT replay, and 8 gate runs at ~150–290 s
+each. The gate runs are the fixed cost and they measure nothing new by
+construction — which is exactly why the two non-zero red tests reproducing to
+the value is worth having (§6).
+
+## 0b. What the THIRD dispatch was for, and the answer it got
 
 The relaunch (`e2f5139`) cleared this unit to `pending` for one stated reason:
 the generator had moved under it. Loop `b33a761` plants **numeric literals** in
@@ -163,7 +215,7 @@ old one).
 
 ## 4. C6 — the harness, and the region the reference has no answer for
 
-**16,512 checked, 0 failed, 0 inadmissible.** `harness/ranges.toml` carries
+**17,520 checked, 0 failed, 0 inadmissible.** `harness/ranges.toml` carries
 `Ary = { no_oracle_when = ["alloc_Ary == 0", "ErrVar_aviFAIL >= 0"],
 and_reference = "ErrVar.aviFAIL < 0", … }` — the ninth judgement kind, added for
 this unit at the second dispatch. A case that supplied an unallocated `Ary` and
@@ -171,7 +223,13 @@ an admissible entry status, and whose REFERENCE returned `aviFAIL < 0`, is a
 case in which the reference ALLOCATEd `Ary` and RETURNed on an arm that assigns
 none of it or only a prefix. Those elements are recycled heap.
 
-**On this corpus the exclusion is 5,266 of 16,512** (4,067 of 13,674 before).
+**On this corpus the exclusion is 1,387 of 17,520** — 5,266 of 16,512 before,
+and 4,067 of 13,674 before that. **It FELL, in both share and count, and that is
+the base-draw change**: the excluded region is `alloc = 0` plus a reference that
+returned `aviFAIL < 0`, which is `not-allowed` (1,224) + `read-failed` (59) +
+the 104 whose message assignment the staging capacity refused. `not-allowed` at
+`alloc = 0` went from 5,207 to 1,224 when the two `AllowDefault` flags were
+reordered, so four thousand cases that had NO oracle for `Ary` now have one.
 The condition reads the REFERENCE side and inputs the calls overwrite are
 snapshotted before them, so the excluded set is a property of (corpus ×
 reference) and is identical under every mutant and every stub — which is what
@@ -184,20 +242,22 @@ The partition is re-taken and now has a **script**
 ```
   alloc  arm                  cases   aviFAIL-changed
       0  entered-failed         184         0
-      0  not-allowed           5207      5207
-      0  other                 3036         0
+      0  not-allowed           1224      1224
+      0  other                 7523       104      <- 0 of 3036 last dispatch
       0  read-failed             59        59
-      1  already-alloc         6767      6767
+      1  already-alloc         7094      7094
       1  entered-failed          76         0
-      1  not-allowed            872       872
-      1  read-failed            311       311
-                               16512     13216
+      1  not-allowed            881       881
+      1  read-failed            479       479
+                               17520      9841
 ```
 
-`read-failed` is **370 against the first dispatch's 103** — the READ cell is
-what the corpus change bought. `entered-failed` is a new named cell: cases that
-arrive with `aviFAIL < 0` and never enter the body, which the first dispatch
-folded into `other`.
+`read-failed` totals **538, against 370 and the first dispatch's 103** — the
+READ cell is what the corpus change keeps buying. The **104** in
+`alloc = 0, other` are new and are the point of the base-draw change: the
+reference set `aviFAIL = -1` and its message assignment was refused by R13's
+staging capacity, on both sides alike, so the case passes and the classifier
+sees no arm. Full derivation in `harness_partition.txt`.
 
 **THE CLASSIFIER'S FIRST VERSION GUESSED THE MESSAGE STRINGS** and matched none
 of them, so 8,302 cases came back `other` and both error cells read as EMPTY.
@@ -209,90 +269,156 @@ described in the script rather than quietly replaced.
 live paths. In the shipped program it is harmless — both paths set
 `aviFAIL = -1` and every caller returns on that.
 
-## 5. C6 — mutation: 0.7609, and the 33 that are left
+## 5. C6 — mutation: 0.8533, the six that died, and the 22 that are left
 
 ```
 189 mutants, 4 nocompile, 185 behavioural
-105 KILLED   17 EQUIVALENT   30 UNREACHABLE   33 SURVIVED     0.7609
+128 KILLED   17 EQUIVALENT   18 UNREACHABLE   22 SURVIVED     0.8533
 ```
 
-**Three things moved it, in order of size, and the kills came before the
-declarations.**
+**THE SIX THIS DISPATCH WAS SENT FOR ARE ALL KILLED.** Each was case (b) — the
+harness could not reach it — and each was closed by fixing the inputs, not the
+record. What killed each:
+
+| mutant | edit | the input that kills it |
+|---|---|---|
+| `b5366e74` | `assign_errmsg`: `s.size() > cap` → `>=` | R13's staging-capacity ladder landing on an arm that assigns a **112-byte** message, so one case sizes the buffer TO it |
+| `6b5fc8ce` | `lower()`: `c >= 'A'` → `c > 'A'` | a record spelling **`nAn`** at a value position — `'a'` is the only letter of `inf`/`infinity`/`nan` whose uppercase form the bound can drop |
+| `76abf5f3` | `match_word`: `p + LEN(w) > len` → `>=` | a record ending **`,inf`** on column 2048, so the word ends exactly at `len` |
+| `09fbe682` | `match_word`: `k < w.size()` → `<=` | any record where the match SUCCEEDS |
+| `2763d449` | `parse_real`: `p < len` → `<=`, integer part | a record of **2048 digits**, so the scan reaches `p == len` and the mutant reads `rec[2048]` |
+| `2f05620e` | `parse_real`: `p < len` → `<=`, before the `.` | likewise |
+
+**Two levers produced all six, and both are stated where they can be disputed.**
 
 ```
-the corpus (R14 reaching k=2,3 with numeric leads)   77 -> 104 killed
---sanitize                                          104 -> 106 killed
-30 unreachable + 17 equivalent declarations       0.5730 -> 0.7681
-the print separator fix (the 40-mutant cap)       0.7681 -> 0.7609
+harness/ranges.toml   has_AllowDefault = { values = [1, 0] }
+                      AllowDefault     = { values = [0, 1] }
 ```
-
-**THE SANITISER IS ALMOST A NULL RESULT HERE, AND THAT IS A FINDING.** The
-dispatch's own instruction is to re-run with `--sanitize` when the survivors are
-out-of-bounds reads, and 19 of the 81 were `index_offset` and 16 `compare_op`.
-The baseline did **not** report under `-fsanitize=address,undefined`, so the
-option's one refusal did not fire and the score is a measurement. It bought
-**two** kills (`4d44e6d2`, `f6007814`), nothing regressed, and 10 of the 12
-sanitiser kills were mutants the value oracle also killed — the run's own
-control. So the `index_offset` survivors here are **not** invisible
-out-of-bounds differences: `rec[p + 1]` is inside a 2048-byte blank-padded
-record. The unsanitised sweep is kept at `mutation/ParseDbAry_Opt.value-oracle.json`
-**and it is a PRE-FIX artifact**: it was taken before §5b's separator repair, so
-its 104/185 is against the translation as it stood at `8837a5c2`. It is kept for
-the one comparison it exists to support — value oracle against sanitiser on the
-same translation — and not as a current number.
-
-**THE 30 UNREACHABLE ARE MEASURED, NOT ARGUED.** `run_line_coverage_probe.sh`
-runs gcov over the generated test's own object — the test `#include`s
-`parsedbary_opt.hpp`, so the file measured IS the file the sweep mutates and
-`vit integrate` ships — at `-O0`, because `-O2` line attribution folds and a
-line reported 0 because the optimiser merged it is exactly the false
-`unreachable` this exists to avoid.
+the sibling `ParseInAry_Opt`'s base-draw fix, applied here at last. R13's
+256-case block is taken with every other input at its base draw, and that draw
+sat on the one arm that assigns no message at all. §4's table has the 104 cases
+this bought, and the run's own stderr — `needs 112 bytes, the staging buffer
+holds 109/110/111; the assignment is refused` — is the record of it.
 
 ```
-executable lines RUN      224
-executable lines NOT RUN   62
-CONTROL   the entry line's count is 16,512 = the case count
+loop 59aa876   _NUMERIC_LEADS += -inf, Infinity, nAn
+               _RECORD_TAILS   = digits, frac, word, wordUC, built to EXACTLY
+                                 the width of a fixed-length CHARACTER buffer
+                                 the reference copies the line into
+```
+Twenty new R14 shapes, all reached. The record-tail idea is the one worth
+carrying: every record this campaign has ever generated was a short line
+blank-padded out to a buffer's width, so a scan stopped **two thousand
+characters short of the last byte** and every `p < len` guard was taken on the
+same side in every case. The width comes from `record_widths_from`, which is
+R12's detector without its "assigned from a `CHARACTER(*)` dummy"
+discriminator — this unit's `CHARACTER(MaxLineLength) :: Line` is filled by a
+CALLEE, so R12 reports the unit N/A, correctly, while the record it parses is
+2048 bytes wide.
+
+**BOTH RECORDS WERE PRICED AGAINST THE REFERENCE BEFORE THE GENERATOR WAS
+TOUCHED**, because the harness compares `Ary` with `memcmp` and a planted record
+the two sides disagree about is a red harness that says nothing about the
+mutants it was planted for. `ieee_word_probe.txt`: ten IEEE words, **10 of 10
+agree bit for bit**, NaN payload included. `record_tail_probe.txt`: the four
+tail records, **4 of 4 agree** on IOSTAT and on both elements.
+
+**WHAT MOVED THE NUMBER, KILLS BEFORE DECLARATIONS,** measured against the
+value-oracle control re-taken on the same corpus, so each step is a subtraction:
+
+```
+                                          killed / 185
+third dispatch, value oracle only              104        0.5622
+the corpus (base draw, IEEE words, tails)      120        0.6486
+--sanitize                                     128        0.6919
+17 equivalent + 18 unreachable            128 / 150       0.8533
+```
+
+**THE SANITISER'S SHARE QUADRUPLED, 2 KILLS → 8, AND THAT IS A CORRECTION TO THE
+THIRD DISPATCH'S CONCLUSION.** That dispatch measured `--sanitize` as nearly a
+null result and concluded the `index_offset` and `p <= len` survivors were *not*
+out-of-bounds differences — "`rec[p + 1]` is inside a 2048-byte blank-padded
+record". True of the corpus it had. A `p <= len` that reads `rec[2048]` is out
+of bounds only when a scan REACHES 2048, and until this dispatch no record did.
+A sanitiser measures what the corpus executes; the two instruments move together
+and neither is evidence about the other on its own. The baseline still does not
+report under `-fsanitize=address,undefined`, so the option's one refusal did not
+fire and the score is a measurement.
+
+**THE 18 UNREACHABLE ARE MEASURED, AND THEY ARE NOW RE-DERIVED BY A SCRIPT
+RATHER THAN CARRIED FORWARD.** `run_line_coverage_probe.sh` runs gcov over the
+generated test's own object — the test `#include`s `parsedbary_opt.hpp`, so the
+file measured IS the file the sweep mutates and `vit integrate` ships — at
+`-O0`, because `-O2` line attribution folds and a line reported 0 because the
+optimiser merged it is exactly the false `unreachable` this exists to avoid.
+
+```
+executable lines RUN      239        (was 224)
+executable lines NOT RUN   42        (was  62)
+CONTROL   the entry line's count is 17,520 = the case count
 CONTROL   NON-survivors on never-executed lines: 1, and it is a NOCOMPILE
           (`esign - edig`, char minus std::string), not a kill
 ```
 
-The second control is what makes the first a measurement: a mutant the corpus
-killed on a line it never executed would mean the coverage run measured a
-different program.
+**30 → 18: the corpus retired twelve declarations, which is the correct
+direction** — an unreachable declaration is a debt against the corpus, not a
+credit. `make_unreachable.py` reads the coverage file, REFUSES if it does not
+name this corpus, and re-declares from what gcov measured. It learned two rules
+the expensive way: a mutant already declared EQUIVALENT is not re-declared
+(`vit_mutate.py` refuses both claims on one mutant, and the equivalence is the
+one that survives a corpus later reaching the line — `b76a0c84`, `d764720b`),
+and a mutant that does not COMPILE is not declared at all, because it is already
+out of both sides and declaring it made the merge's arithmetic double-count it
+(186 against 185 behavioural — `120c6e2c`).
 
-**THE 17 EQUIVALENCES ARE ARGUED PER MUTANT, WITH THE GREP THAT WOULD REFUTE
-EACH** (`mutation/ParseDbAry_Opt.equivalences.md`). The largest group is eight
-mutants that change one nonzero IOSTAT into another: `list_read_reals` has one
-call site and the value it returns has one read, `if (ErrStatLcl != 0)`. Then
-four buffer enlargements (and `char tmp[512]` is argued on the FORMAT's maximum
-width, because `sizeof tmp` really is used there); `lower()`'s `'Z'` bound,
-whose three call sites compare against `i n f t y a e d q` and never `'z'`; and
-`p < len` -> `p <= len` at `parse_real`'s entry, where the one caller has
-already established `p < len`.
+The coverage probe's own sentence used to read *16,512-case* while the corpus
+had moved to 17,520; it is now READ from the artifact. A file that states the
+wrong corpus is the file the next dispatch copies its reasoning from.
 
-**The two pairs that are split are the point of doing this per mutant.**
-`lower()`'s `'Z'` bound is declared and its `'A'` bound is NOT — `'a'` is the
-middle letter of `"nan"`. `std::max`'s argument swap is declared and dropping
-the clamp is NOT — the latter holds only while `AryLen = { lo = 0 }` is stated,
-which is a fact about the domain rather than about the program.
+**THE 17 EQUIVALENCES ARE UNCHANGED AND ARE ARGUED PER MUTANT, WITH THE GREP
+THAT WOULD REFUTE EACH** (`mutation/ParseDbAry_Opt.equivalences.md`), and the
+sweep re-checked every one against the wider corpus: `declared_but_killed` is
+**empty**. The largest group is eight mutants that change one nonzero IOSTAT
+into another: `list_read_reals` has one call site and the value it returns has
+one read, `if (ErrStatLcl != 0)`. Then four buffer enlargements; `lower()`'s
+`'Z'` bound, whose three call sites compare against `i n f t y a e d q` and
+never `'z'`; and `p < len` → `p <= len` at `parse_real`'s ENTRY, where the one
+caller has already established `p < len`.
 
-**THE LAST LINE IS THE CAP, NOT A REGRESSION,** and the arithmetic was predicted
-before the sweep. The fix adds one `if`; `negate_cond` is capped at 40; the new
-site displaces the last one in file order. `ec43592b`
-(`if (ErrVar->aviFAIL < 0)`, the unit's outermost guard) leaves the enumerated
-population **and it was killed**, and `b529317d` (`if (n > 0)`) enters it as a
-survivor the sweep's oracle cannot kill. One kill out, one survivor in. It is
-the 40-mutant cap unit #53 escalated, biting on a one-line repair: this
-translation offers 305 mutants and 116 are enumerated by no sweep.
+**That last split is now load-bearing rather than fastidious.** Five other
+`p < len` → `p <= len` mutants were NOT declared at the third dispatch, and this
+dispatch killed three of them with a record that ends inside a value. Had they
+been declared equivalent alongside their sibling, the score would have risen and
+nothing would have been learned — which is exactly what the dispatch instruction
+warns against.
 
-**The 33 that are left are named in `mutation_survivors.txt`**, by region and by
-what each region's survival is a fact ABOUT: 10 in the PRINT record, which the
-sweep's oracle does not read (§5b compares them anyway); 7 in `match_word`, 5 in
-`list_read_reals` and 5 `p <= len` boundaries, which need a different CORPUS;
-5 `rec[p + 1]` reads that land on blank padding; and 1 each in `assign_errmsg`,
-`lower()` and the unit's own body.
+**THE 22 THAT ARE LEFT ARE NAMED IN `mutation_survivors.txt`, EACH WITH THE
+EXACT RECORD THAT WOULD KILL IT.** 10 in the PRINT record (below); 4 in the
+exponent and 3 in `list_read_reals`, which need a record ending inside an
+exponent and a `2*1.5;3.0`; 3 in the IEEE payload buffer, a region that did not
+execute at all until this dispatch; 1 in `match_word`; 1 in the unit's own body.
 
-## 5b. A SIXTH LAYER, BUILT THIS DISPATCH, AND THE DEFECT IT FOUND ON ITS FIRST RUN
+**AND ONE OF THE 22 IS AN INSTRUMENT GAP, NOT A CORPUS GAP, AND IT IS NEW.**
+`1beac345` writes the NUL terminator one byte late, so `buf[n]` keeps whatever
+the uninitialised `char buf[64]` held. Both indices are INSIDE the array, so
+AddressSanitizer is silent by construction; catching it needs MemorySanitizer,
+which reports an uninitialised READ. `--sanitize` builds with
+`address,undefined`. No record kills this one.
+
+**THE TEN PRINT MUTANTS ARE A THIRD CASE AND THEY ARE ESCALATED, NOT DECLARED.**
+They are not equivalent — §5b's replay measures every one of them moving between
+18 and 44 records. They are not unreachable — the corpus runs those lines and 21
+of the 27 gate scenarios do too. And the sweep's oracle compares out-parameters
+with `memcmp`, so it cannot see the stream they write. A mutant with a MEASURED
+difference that the scoring instrument cannot see has no key in this campaign's
+vocabulary, which has exactly two. Raised in `DECISIONS.md` as a proposed
+`killed_by` declaration — naming the instrument and the artifact, the way an
+equivalence names an argument and an unreachable names a coverage file. **It is
+worth 0.8533 → 0.9333 on its own, and it is the only item on the list worth more
+than three mutants.**
+
+## 5b. THE SIXTH LAYER, BUILT AT THE THIRD DISPATCH, RE-TAKEN ON THIS SURVIVOR SET
 
 The PRINT record is the one thing this unit produces that nothing compared. The
 instrument is unit #55's `parser_conformance` shape, one region over:
@@ -344,42 +470,78 @@ reference* — the same distinction `--sanitize` draws with its baseline refusal
 Corrected, the control is **0 of 23** and all **9 of 9** PRINT-region survivors
 die at 18 to 43 records.
 
+**RE-TAKEN THIS DISPATCH, because the survivor set moved.** Baseline **44
+records, 0 mismatched** — the separator fix holds — **10 of 10** PRINT-region
+survivors killed at 18 to 44 records, **negative control 0 of 12**. The tenth is
+`b529317d` (`if (n > 0)`), the fix's own guard, which did not exist when the
+replay first ran and is exactly the statement the replay kills; it now dies on
+44 of 44 records.
+
 **NOTHING IS FOLDED INTO THE SCORE.** A kill by a different instrument on a
 different corpus is not a kill by the sweep, and `mutation/ParseDbAry_Opt.json`
-is untouched by the replay. What it buys is that nine survivors nothing compared
-are now measured — and one real defect.
+is untouched by the replay: 0.8533 is the number with these ten counted as
+survivors. What it buys is that ten survivors nothing compared are now
+measured — and, at the third dispatch, one real defect.
+
+**AND IT IS WHY THE TEN ARE A THIRD CASE RATHER THAN A DECLARATION.** This is
+the layer that makes "not equivalent" a measurement instead of an intuition. The
+campaign has a key for *the programs agree* and a key for *the corpus never
+asks*; it has none for *a second instrument on this same translation kills it,
+and here is the artifact*. §5 and `DECISIONS.md`.
 
 ## 6. C7–C9 — integration and the gate
 
 `vit integrate --apply --reverse-copy`. The flag is required and the wrapper was
 **read** rather than assumed (unit #49's practice).
 
-**5,252,000 values / 351 channels / 27 scenarios, 0 mismatched.** Four
-perturbations, all revert-verified, all four **predicted before the run**:
+**5,252,000 values / 351 channels / 27 scenarios, 0 mismatched.** Every gate
+artifact was re-taken because the instrument revision moved, and every number
+was **predicted before its run**:
 
 ```
 every parsed value + 0.01     2,236,141 of 5,252,000    predicted 2,236,141
-the `Ary = 0` default arm             0 of 5,252,000    predicted 0
 survivor 2a9e1695             1,583,216 of 4,732,000    predicted 1,583,216
+the `Ary = 0` default arm             0 of 5,252,000    predicted 0
 survivor 48542e3d                     0 of 5,252,000    predicted 0
 survivor ae3f319a                     0 of 5,252,000    predicted 0
+survivor a0007207                     0 of 5,252,000    predicted 0   <- new
 ```
 
-**2a9e1695 IS NO LONGER A SURVIVOR.** At the second dispatch it was the READ
+**THE TWO NON-ZERO NUMBERS REPRODUCING TO THE VALUE IS THE CONTROL ON THIS
+DISPATCH'S WHOLE CLAIM.** The gate never reads the case file, and neither the
+translation nor the wrapper moved this dispatch — so a corpus change that stayed
+inside the corpus had to give back 2,236,141 and 1,583,216 exactly. It did. A
+different number here would have meant something other than the corpus had
+changed.
+
+**2a9e1695 IS STILL NOT A SURVIVOR.** At the second dispatch it was the READ
 region's representative and its gate run was the argument that the region is a
-corpus gap the gate covers. The 16,512-case corpus **kills** it, so the run is
-now the control on that argument rather than the argument itself.
+corpus gap the gate covers. The 16,512-case corpus killed it and the
+17,520-case one still does, so the run is the control on that argument rather
+than the argument itself.
 
-Its replacement `48542e3d` (`rec + p` -> `rec - p` in the repeat-count branch)
-moves 0, and the prediction was grounded rather than guessed:
+`48542e3d` (`rec + p` → `rec - p` in the repeat-count branch) moves 0, and the
+prediction was grounded rather than guessed:
 `grep -cE '[0-9][*]' Examples/DISCON*.IN` over all 22 files the 27 scenarios
-read returns 0.
+read returns 0. It is still declared unreachable on re-measured coverage.
 
-**So the pair says something different from last dispatch.** Then: READ = a
-corpus gap the gate covers, PRINT = an instrument gap nothing covers. Now: the
-corpus has killed the mainline parser mutants, and what is left in the READ
-region is boundary and rare-form statements the gate's own input files do not
-contain either — reachable in principle, unreached by both instruments.
+**AND ONE NEW RED TEST, FOR THE REGION THIS DISPATCH DID NOT CLOSE.**
+`a0007207` is `p < len` → `p <= len` at the EXPONENT's sign — one of two
+boundary comparisons still alive after the corpus was given records that end
+inside a value at column 2048. The tails reach that column in the integer part,
+in the fraction and at a matched IEEE word; they do not reach it inside an
+exponent, which needs a record ending `1E`. It moves 0 of 5,252,000, and the
+gate's own 22 `DISCON*.IN` files have no line within two thousand columns of the
+boundary — **so both instruments miss the same statement**, which is a fact
+about every record ROSCO has been given rather than about the translation.
+
+**So the pair says something sharper than last dispatch.** Then: READ = a corpus
+gap the gate covers, PRINT = an instrument gap nothing covers. Now: the corpus
+has killed the mainline parser mutants AND three of the six boundary ones, and
+what is left in the READ region is rare-form and end-of-record statements the
+gate's own input files do not contain either — reachable in principle, unreached
+by both instruments, and each one now named with the record that would reach it
+(`mutation_survivors.txt`).
 
 **The zero on the default arm is expected and the expectation is in the artifact
 beside the number.** The arm *runs* — `ROSCO_Helpers.f90:945`, 66 times across
@@ -387,22 +549,28 @@ beside the number.** The arm *runs* — `ROSCO_Helpers.f90:945`, 66 times across
 sites is `F_NumNotchFilts` / `F_GenSpdNotch_N` / `F_TwrTopNotch_N`, so the arrays
 that take a default are the notch arrays of a scenario with zero notch filters,
 and both consumers sit behind that same count. The differential harness covers
-the arm: the 3,036 `alloc = 0, other` cases.
+the arm: the `alloc = 0, other` cases, 7,523 of them on this corpus.
 
 ## 6b. E4.5 — the post-integration harness, and a pass set predicted in advance
 
-**16,512 checked, 0 failed.** The red test deletes this unit's own
+**17,520 checked, 0 failed.** The red test deletes this unit's own
 `vit_copy_scalars_to_errorvariables`, scoped to its wrapper by line range with
 the edit count asserted at 1.
 
-The pass set is derived from the re-taken partition **before** the run, not
-scaled from the old number: `not-allowed` (5207 + 872), `read-failed` (59 + 311)
-and `already-alloc` (6767) = **13,216** must fail; `other` (3036) and
-`entered-failed` (184 + 76) = 3,296 write no scalar and must pass. `ErrStat` and
-`size_avcMSG` return 0 in all 16,512 and are supplied as 0, so `aviFAIL` alone
-decides the set.
+The pass set is derived from the re-taken partition **before** the run, again
+rather than scaled from the third dispatch's 13,216: `not-allowed`
+(1224 + 881), `read-failed` (59 + 479), `already-alloc` (7094) and the **104**
+cases of `alloc = 0, other` in which the reference changed `aviFAIL` while its
+message assignment was refused = **9,841** must fail; `entered-failed`
+(184 + 76) and the 7,419 of `alloc = 0, other` that write no scalar = 7,679 must
+pass. `ErrStat` and `size_avcMSG` return 0 in all 17,520 and are supplied as 0,
+so `aviFAIL` alone decides the set.
 
-**Measured: 13,216 of 16,512. Exact.** Reverted, rebuilt, green re-taken at 0.
+The 104 are the case the third dispatch's derivation had no cell for, and
+putting them on the correct side of the prediction was the one judgement in it:
+they **write a scalar** and only their MESSAGE was refused, so they fail.
+
+**Measured: 9,841 of 17,520. Exact.** Reverted, rebuilt, green re-taken at 0.
 
 *(The revert-verified green needed a second attempt: the first link ran against a
 `ROSCO_Helpers.f90.o` the rebuild inside the runner had not finished writing,
@@ -427,19 +595,34 @@ itself is right; two spellings of it are not interchangeable.
 
 ## 8. What none of the layers can see
 
-* **`Ary`'s undefined elements**, on the two paths that produce them — 5,266
-  cases, named and counted rather than failing.
-* **Whatever the 33 surviving mutants would have caught**, and now also the 30
+* **`Ary`'s undefined elements**, on the two paths that produce them — **1,387**
+  cases, down from 5,266 and 4,067, named and counted rather than failing. The
+  base-draw change moved four thousand cases out of the excluded region and into
+  the compared one.
+* **Whatever the 22 surviving mutants would have caught**, and also the 18
   declared unreachable: an unreachable declaration is a **debt against the
-  corpus**, not a credit. §5 and `mutation_survivors.txt`.
+  corpus**, not a credit — 30 → 18 this dispatch, re-derived from re-measured
+  coverage rather than carried forward. §5 and `mutation_survivors.txt`, where
+  each of the 22 now names the record that would kill it.
+* **THE RECORD THAT ENDS INSIDE AN EXPONENT.** Three of the four boundary
+  shapes are now in the corpus and this one is not; four survivors sit on it, and
+  the gate run `a0007207` shows the gate's own input files do not contain it
+  either. It is the sharpest thing on this list because it is the one *both*
+  instruments miss and neither one says so on its own.
+* **`buf[n] = '\0'` written one byte late** (`1beac345`). Both indices are inside
+  a 64-byte local, so AddressSanitizer is silent by construction and no corpus
+  can reach it either — it needs MemorySanitizer. An INSTRUMENT gap, and the only
+  one on this list that no record closes.
 * **The `ALLOCATE` failure branch that calls `Int2LStr`** — needs a genuine
   out-of-memory. Translated, unreachable, ungraded.
 * **The `Words_Ary` STAT= branch.** Not translated at all, §2.
 * **The `UnEc` echo record.** Not translated, §7.
-* **The `PRINT` record — NO LONGER TRUE, and §5b is why.** It is now compared,
-  44 records against gfortran's own output, and the comparison found a defect.
-  What is still true is that the SWEEP's oracle does not read it, so its 10
-  mutants survive the score while dying in the replay.
+* **The `PRINT` record's SCORE, though no longer its behaviour.** §5b compares
+  it — 44 records against gfortran's own output — and every one of its 10
+  surviving mutants dies there. What no layer does is COUNT that: the sweep's
+  oracle compares out-parameters, so ten mutants with a measured difference are
+  scored as survivors. That is the third case §5 escalates, and it is 0.8533 →
+  0.9333 of this unit's shortfall.
 * **`AryLen` above 32.** A stated narrowing; the reference is defined to at
   least 100,000 (unit #32's probe).
 
@@ -451,17 +634,27 @@ done_check.txt                           the done-condition at close
 r14_reach_probe.txt                      why the generator change was inert here,
                                          the prediction, and the prediction's error
 run_partition_probe.sh                   the partition, as a repeatable script
-harness_partition.txt                    the 16,512 cases by (alloc_Ary, arm)
+harness_partition.txt                    the 17,520 cases by (alloc_Ary, arm), and
+                                         the 104 the base draw bought
 run_line_coverage_probe.sh               gcov over the shipped translation
-line_coverage.txt                        224 lines run, 62 never, and the two controls
-mutation_survivors.txt                   the 33 that are left, by region
+line_coverage.txt                        239 lines run, 42 never, and the two controls
+make_unreachable.py                      re-derive the unreachable declarations FROM
+                                         that file, and refuse a stale one
+mutation_survivors.txt                   the 22 that are left, by region, each with
+                                         the record that would kill it
+ieee_word_probe.f90 / .cpp / .txt        ten IEEE words, gfortran's READ against the
+                                         shipped parse_real: 10 of 10 bit-identical
+run_ieee_word_probe.sh                   both halves, side by side
+record_tail_probe.f90 / .cpp / .txt      the four records that END INSIDE A VALUE:
+                                         4 of 4 agree on IOSTAT and both elements
+run_record_tail_probe.sh                 both halves, side by side
 print_conformance.f90                    44 records through the reference's own
                                          list-directed OUTPUT
 print_conformance.cpp                    the replay, textually including the
                                          SHIPPED translation
 run_print_conformance.sh                 both sides, the mutants, and the control
-print_replay.txt                         44 / 0 after the fix, 9 of 9 PRINT
-                                         survivors killed, control 0 of 23
+print_replay.txt                         44 / 0, 10 of 10 PRINT survivors killed,
+                                         control 0 of 12
 vit_translate.stdout.txt                 the scaffold prompt, as generated
 fortran_io_probe.f90 / .txt              31 records through the reference's own READ
 fortran_io_probe2.f90 / .txt             20 more, isolating the zero-store rule
@@ -473,7 +666,7 @@ parsedbary_opt.noop-stub.cpp             every statement removed
 parsedbary_opt.no-read-stub.cpp          the list-directed READ deleted
 parsedbary_opt.no-allowdefault-arm-stub.cpp   the .NOT. AllowDefault_ arm deleted
 parsedbary_opt.no-zero-store-stub.cpp    the measured zero-store rule removed
-harness.*-stub.json                      the four red tests, all at 16,512 cases
+harness.*-stub.json                      the four red tests, all at 17,520 cases
 mutation.refusal.txt                     189 mutants, and the FIRST dispatch's refusal
                                          to score them against a red baseline
 run_wrapper_redtest.sh                   perturb the wrapper, prove red, revert, prove green
