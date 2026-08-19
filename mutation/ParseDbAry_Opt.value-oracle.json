@@ -11,6 +11,17 @@
   "swap_callee",
   "swap_operands"
  ],
+ "operator_population": {
+  "compare_op": 40,
+  "arith_op": 20,
+  "swap_operands": 5,
+  "index_offset": 39,
+  "const_tweak": 40,
+  "negate_cond": 40,
+  "drop_call": 2,
+  "swap_call_args": 2,
+  "swap_callee": 1
+ },
  "operators_offered": [
   "arith_op",
   "assoc_reorder",
@@ -25,262 +36,121 @@
   "swap_callee",
   "swap_operands"
  ],
- "compared_against": "fortran_reference_on_a_clean_tree",
- "mutant_slice": {
-  "offset": 0,
-  "limit": 0,
-  "scored": 189,
-  "of": 189
- },
- "scored_ids": [
-  "1ec6562a",
-  "b5366e74",
-  "a3f22888",
-  "d019678d",
-  "a268f791",
-  "f8dd907c",
-  "718d0cd0",
-  "7fdc42e0",
-  "3fc5a9b5",
-  "1d16c90b",
-  "5b7cb807",
-  "6259aa8f",
-  "05d3e1c6",
-  "6b5fc8ce",
-  "5bfdaacf",
-  "76abf5f3",
-  "09fbe682",
-  "ce623018",
-  "0a3516d1",
-  "0fad6303",
-  "b2a73fc7",
-  "cb9fd797",
-  "1df32d1d",
-  "2eee5f51",
-  "ca00a9b5",
-  "03a2a772",
-  "2763d449",
-  "2f05620e",
-  "21532d7d",
-  "56c1dd4d",
-  "85ddd803",
-  "a98553ab",
-  "7699a4e1",
-  "889bb359",
-  "0a7da481",
-  "2e67e6cb",
-  "0f31207c",
-  "a0007207",
-  "a3c545ac",
-  "e9efc13b",
-  "47944b58",
-  "4d01524f",
-  "f4077220",
-  "28e276aa",
-  "19a4f0f6",
-  "96bd6ad5",
-  "e0b05cef",
-  "7f3857d0",
-  "37ba45eb",
-  "48542e3d",
-  "ea525151",
-  "aad8cf72",
-  "a867a839",
-  "ae3f319a",
-  "7dee2fff",
-  "ce45e93d",
-  "83744180",
-  "120c6e2c",
-  "39189fa8",
-  "3461f0b2",
-  "2791fc1f",
-  "f60553a5",
-  "da9ef9ac",
-  "c10feafe",
-  "9416ffb6",
-  "7302f2f5",
-  "89e19caf",
-  "d7fb141b",
-  "d0f864bf",
-  "057b4549",
-  "0d6c3ff2",
-  "1beac345",
-  "8d6f88d8",
-  "af82f401",
-  "244ff7a9",
-  "2a9e1695",
-  "8cc95e66",
-  "69bb4461",
-  "a84574aa",
-  "e2d47adf",
-  "91f2ce24",
-  "6350880c",
-  "5d7ed85b",
-  "a98bafcd",
-  "495cd9fe",
-  "15e82a3e",
-  "bd474795",
-  "fb8c0706",
-  "4d1ccfed",
-  "f0ee2a4d",
-  "a88935b1",
-  "ab289323",
-  "2469ce80",
-  "a7cf9a5e",
-  "6aa7aacf",
-  "6ac870af",
-  "d9fff844",
-  "4d44e6d2",
-  "80b445cc",
-  "fa5926ac",
-  "b563bb58",
-  "f6007814",
-  "b1e31cf4",
-  "472a36fc",
-  "a02628d4",
-  "4c9f1d23",
-  "9ed04542",
-  "cb69b848",
-  "40b1f725",
-  "b42324e8",
-  "1be033e2",
-  "42edf275",
-  "00d622d9",
-  "32d10914",
-  "5b1c8101",
-  "2766e582",
-  "ffd9c6ac",
-  "6a90cdca",
-  "7d8e5de9",
-  "01038e66",
-  "ef8797ad",
-  "4324a8c0",
-  "8498214d",
-  "d078bd37",
-  "cc0f460c",
-  "dd8ac03f",
-  "d04a0070",
-  "32e908a6",
-  "d6d5d557",
-  "cf85bd96",
-  "4ecec426",
-  "b76a0c84",
-  "46efa5a8",
-  "1cc25f2d",
-  "acc506ca",
-  "d764720b",
-  "e8fdf285",
-  "f9fcb3ba",
-  "269b76b7",
-  "81b6a619",
-  "412b5d5b",
-  "49ce3a9d",
-  "1bbaf2d2",
-  "0b0848db",
-  "107c7426",
-  "b751de71",
-  "5428f2cc",
-  "fdcdff90",
-  "b4140c51",
-  "e129dce2",
-  "0f9388b7",
-  "42a49cb5",
-  "d19cee75",
-  "ec529e34",
-  "2a60f075",
-  "506b15d0",
-  "f94044e9",
-  "1b204ba2",
-  "d6189f14",
-  "c47df2db",
-  "bfd9d31a",
-  "9840df22",
-  "81ed457f",
-  "8a06024c",
-  "7bc0e2c9",
-  "3c26f28a",
-  "fb2cd3d9",
-  "1e3dd7a5",
-  "8354fa45",
-  "5aff750f",
-  "8421db5c",
-  "27b25670",
-  "46d73ffe",
-  "f63fd139",
-  "f0543531",
-  "123a7dde",
-  "2af0b6bd",
-  "fa4f36de",
-  "c6a83a1d",
-  "8bb5f06d",
-  "bea19ce7",
-  "6238b54e",
-  "fc54d40b",
-  "ec43592b",
-  "77da7114",
-  "b2bbedf3",
-  "85f40cb7",
-  "dd749c6b",
-  "558a53f0"
- ],
  "limit_per_operator": 40,
  "capped_operators": [
   "compare_op",
   "const_tweak",
   "negate_cond"
  ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "sanitize": false,
+ "killed_by_sanitizer": 0,
+ "killed_by_sanitizer_ids": [],
  "mutants": 185,
  "equivalent_declared": 0,
  "unreachable_declared": 0,
  "unreachable": [],
+ "unreachable_but_killed": [],
  "nocompile": 4,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
- "sanitize": false,
- "killed_by_sanitizer": 0,
- "killed_by_sanitizer_ids": [],
  "nocompile_ratio": 0.0212,
  "nocompile_refused": false,
  "total": 189,
- "killed": 104,
- "survived": 81,
+ "killed": 120,
+ "survived": 65,
  "equivalent": 0,
  "declared_but_killed": [],
- "unreachable_but_killed": [],
- "score": 0.5622,
- "loop_rev": "b9c8c52-nogit",
- "gen_rev": "gen-cf5dcfa09cce",
+ "score": 0.6486,
+ "loop_rev": "59aa876-nogit",
  "vit_rev": "3f6e2ce-nogit",
+ "merged_from": [
+  {
+   "part": "mutation/ParseDbAry_Opt.valpart.compare_arith.json",
+   "operators_filter": [
+    "arith_op",
+    "compare_op"
+   ],
+   "mutant_slice": {
+    "offset": 0,
+    "limit": 0,
+    "scored": 60,
+    "of": 60
+   },
+   "total": 60,
+   "mutants": 59,
+   "nocompile": 1,
+   "killed": 40,
+   "survived": 19,
+   "score": 0.678
+  },
+  {
+   "part": "mutation/ParseDbAry_Opt.valpart.index_swap.json",
+   "operators_filter": [
+    "drop_call",
+    "index_offset",
+    "swap_call_args",
+    "swap_callee",
+    "swap_operands"
+   ],
+   "mutant_slice": {
+    "offset": 0,
+    "limit": 0,
+    "scored": 49,
+    "of": 49
+   },
+   "total": 49,
+   "mutants": 46,
+   "nocompile": 3,
+   "killed": 28,
+   "survived": 18,
+   "score": 0.6087
+  },
+  {
+   "part": "mutation/ParseDbAry_Opt.valpart.const_tweak.json",
+   "operators_filter": [
+    "const_tweak"
+   ],
+   "mutant_slice": {
+    "offset": 0,
+    "limit": 0,
+    "scored": 40,
+    "of": 40
+   },
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 23,
+   "survived": 17,
+   "score": 0.575
+  },
+  {
+   "part": "mutation/ParseDbAry_Opt.valpart.negate_cond.json",
+   "operators_filter": [
+    "negate_cond"
+   ],
+   "mutant_slice": {
+    "offset": 0,
+    "limit": 0,
+    "scored": 40,
+    "of": 40
+   },
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 29,
+   "survived": 11,
+   "score": 0.725
+  }
+ ],
+ "merged_why": "the CONTROL on --sanitize: the same four operator-filtered parts on the same corpus with the sanitiser OFF and NOTHING declared, so the sanitiser's contribution is a subtraction rather than an argument",
+ "merged_by": "scripts/_mutation_merge.py",
  "survivors": [
-  {
-   "id": "b5366e74",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "6b5fc8ce",
-   "operator": "compare_op",
-   "before": ">=",
-   "after": ">"
-  },
   {
    "id": "5bfdaacf",
    "operator": "compare_op",
    "before": "<=",
    "after": "<"
-  },
-  {
-   "id": "76abf5f3",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "09fbe682",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
   },
   {
    "id": "0a3516d1",
@@ -299,24 +169,6 @@
    "operator": "compare_op",
    "before": "<",
    "after": "<="
-  },
-  {
-   "id": "2eee5f51",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
-   "id": "ca00a9b5",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
-   "id": "03a2a772",
-   "operator": "compare_op",
-   "before": "!=",
-   "after": "=="
   },
   {
    "id": "2763d449",
@@ -350,12 +202,6 @@
   },
   {
    "id": "f4077220",
-   "operator": "arith_op",
-   "before": "p + static_cast",
-   "after": "p - static_cast"
-  },
-  {
-   "id": "28e276aa",
    "operator": "arith_op",
    "before": "p + static_cast",
    "after": "p - static_cast"
@@ -433,34 +279,10 @@
    "after": "[Int2LStrLen + 1]"
   },
   {
-   "id": "89e19caf",
-   "operator": "index_offset",
-   "before": "[k]",
-   "after": "[k + 1]"
-  },
-  {
    "id": "057b4549",
    "operator": "index_offset",
    "before": "[64]",
    "after": "[64 + 1]"
-  },
-  {
-   "id": "0d6c3ff2",
-   "operator": "index_offset",
-   "before": "[q]",
-   "after": "[q + 1]"
-  },
-  {
-   "id": "1beac345",
-   "operator": "index_offset",
-   "before": "[n]",
-   "after": "[n + 1]"
-  },
-  {
-   "id": "8d6f88d8",
-   "operator": "index_offset",
-   "before": "[start]",
-   "after": "[start + 1]"
   },
   {
    "id": "e2d47adf",
@@ -517,12 +339,6 @@
    "after": "[p + 1]"
   },
   {
-   "id": "80b445cc",
-   "operator": "index_offset",
-   "before": "[p]",
-   "after": "[p + 1]"
-  },
-  {
    "id": "fa5926ac",
    "operator": "index_offset",
    "before": "[512]",
@@ -539,6 +355,18 @@
    "operator": "index_offset",
    "before": "[i]",
    "after": "[i + 1]"
+  },
+  {
+   "id": "b2bbedf3",
+   "operator": "drop_call",
+   "before": "std::max(NumWords, 0)",
+   "after": "NumWords"
+  },
+  {
+   "id": "dd749c6b",
+   "operator": "swap_call_args",
+   "before": "NumWords, 0",
+   "after": "0, NumWords"
   },
   {
    "id": "4c9f1d23",
@@ -559,22 +387,10 @@
    "after": "65"
   },
   {
-   "id": "32d10914",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
    "id": "5b1c8101",
    "operator": "const_tweak",
    "before": "62",
    "after": "63"
-  },
-  {
-   "id": "2766e582",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
   },
   {
    "id": "7d8e5de9",
@@ -655,18 +471,6 @@
    "after": "5011"
   },
   {
-   "id": "5428f2cc",
-   "operator": "negate_cond",
-   "before": "if (p + static_cast<int>(word.size()) > len)",
-   "after": "if (!(p + static_cast<int>(word.size()) > len))"
-  },
-  {
-   "id": "0f9388b7",
-   "operator": "negate_cond",
-   "before": "if (end == nullptr || *end != '\\0')",
-   "after": "if (!(end == nullptr || *end != '\\0'))"
-  },
-  {
    "id": "1e3dd7a5",
    "operator": "negate_cond",
    "before": "if (repeat <= 0)",
@@ -727,16 +531,10 @@
    "after": "if (!(edig.size() > 3))"
   },
   {
-   "id": "b2bbedf3",
-   "operator": "drop_call",
-   "before": "std::max(NumWords, 0)",
-   "after": "NumWords"
-  },
-  {
-   "id": "dd749c6b",
-   "operator": "swap_call_args",
-   "before": "NumWords, 0",
-   "after": "0, NumWords"
+   "id": "b529317d",
+   "operator": "negate_cond",
+   "before": "if (n > 0)",
+   "after": "if (!(n > 0))"
   }
  ]
 }

@@ -1,0 +1,169 @@
+{
+ "unit": "ParseDbAry_Opt",
+ "operators": [
+  "negate_cond"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "negate_cond"
+ ],
+ "operators_filter_unmatched": [],
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 0,
+  "scored": 40,
+  "of": 40
+ },
+ "scored_ids": [
+  "107c7426",
+  "b751de71",
+  "5428f2cc",
+  "fdcdff90",
+  "b4140c51",
+  "e129dce2",
+  "0f9388b7",
+  "42a49cb5",
+  "d19cee75",
+  "ec529e34",
+  "2a60f075",
+  "506b15d0",
+  "f94044e9",
+  "1b204ba2",
+  "d6189f14",
+  "c47df2db",
+  "bfd9d31a",
+  "9840df22",
+  "81ed457f",
+  "8a06024c",
+  "7bc0e2c9",
+  "3c26f28a",
+  "fb2cd3d9",
+  "1e3dd7a5",
+  "8354fa45",
+  "5aff750f",
+  "8421db5c",
+  "27b25670",
+  "46d73ffe",
+  "f63fd139",
+  "f0543531",
+  "123a7dde",
+  "2af0b6bd",
+  "fa4f36de",
+  "c6a83a1d",
+  "8bb5f06d",
+  "bea19ce7",
+  "6238b54e",
+  "b529317d",
+  "fc54d40b"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "compare_op",
+  "const_tweak",
+  "negate_cond"
+ ],
+ "mutants": 40,
+ "equivalent_declared": 0,
+ "unreachable_declared": 0,
+ "unreachable": [],
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "sanitize": false,
+ "killed_by_sanitizer": 0,
+ "killed_by_sanitizer_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 40,
+ "killed": 29,
+ "survived": 11,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "unreachable_but_killed": [],
+ "score": 0.725,
+ "loop_rev": "59aa876-nogit",
+ "gen_rev": "gen-f38d4ba5fdc8",
+ "vit_rev": "3f6e2ce-nogit",
+ "survivors": [
+  {
+   "id": "1e3dd7a5",
+   "operator": "negate_cond",
+   "before": "if (repeat <= 0)",
+   "after": "if (!(repeat <= 0))"
+  },
+  {
+   "id": "8354fa45",
+   "operator": "negate_cond",
+   "before": "if (p >= len || is_separator(rec[p]))",
+   "after": "if (!(p >= len || is_separator(rec[p])))"
+  },
+  {
+   "id": "5aff750f",
+   "operator": "negate_cond",
+   "before": "if (p < len && rec[p] == ',')",
+   "after": "if (!(p < len && rec[p] == ','))"
+  },
+  {
+   "id": "123a7dde",
+   "operator": "negate_cond",
+   "before": "if (static_cast<int>(text.size()) > w)",
+   "after": "if (!(static_cast<int>(text.size()) > w))"
+  },
+  {
+   "id": "2af0b6bd",
+   "operator": "negate_cond",
+   "before": "if (std::isnan(v))",
+   "after": "if (!(std::isnan(v)))"
+  },
+  {
+   "id": "fa4f36de",
+   "operator": "negate_cond",
+   "before": "if (std::isinf(v))",
+   "after": "if (!(std::isinf(v)))"
+  },
+  {
+   "id": "c6a83a1d",
+   "operator": "negate_cond",
+   "before": "if (nonfinite_text(v, text))",
+   "after": "if (!(nonfinite_text(v, text)))"
+  },
+  {
+   "id": "8bb5f06d",
+   "operator": "negate_cond",
+   "before": "if (decexp >= -1 && decexp <= 16)",
+   "after": "if (!(decexp >= -1 && decexp <= 16))"
+  },
+  {
+   "id": "bea19ce7",
+   "operator": "negate_cond",
+   "before": "if (d == 0)",
+   "after": "if (!(d == 0))"
+  },
+  {
+   "id": "6238b54e",
+   "operator": "negate_cond",
+   "before": "if (edig.size() > 3)",
+   "after": "if (!(edig.size() > 3))"
+  },
+  {
+   "id": "b529317d",
+   "operator": "negate_cond",
+   "before": "if (n > 0)",
+   "after": "if (!(n > 0))"
+  }
+ ]
+}
