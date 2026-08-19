@@ -5,23 +5,8 @@
  "compared": 5252000,
  "comparison_verdict": "FAIL",
  "generated_by": "scripts/gate.py",
- "inputs_restored": [
-  "Examples/DISCON.IN",
-  "Examples/DISCON_awc.IN",
-  "Examples/DISCON_filters.IN",
-  "Examples/DISCON_flap26.IN",
-  "Examples/DISCON_flp.IN",
-  "Examples/DISCON_ipc.IN",
-  "Examples/DISCON_ipc_awc.IN",
-  "Examples/DISCON_ol_cc_stc.IN",
-  "Examples/DISCON_ol_mode1.IN",
-  "Examples/DISCON_ol_mode2.IN",
-  "Examples/DISCON_stress27.IN",
-  "Examples/DISCON_su_sd_tra.IN",
-  "Examples/DISCON_synth.IN",
-  "Examples/DISCON_yaw.IN"
- ],
- "loop_rev": "8c17719",
+ "inputs_restored": [],
+ "loop_rev": "74c2a32",
  "mismatched": 1857893,
  "mismatched_channels": [
   "scenario_3:bld_pitch 10334/16000",
@@ -176,7 +161,7 @@
  "missing_scenarios": [],
  "notes": [
   "every value this unit parses out of an input line arrives at the controller one greater. The ten shipped call sites that reach this member of the ParseAry generic are all INTEGER index arrays of CntrPar, so this moves what the controller indexes with, not a magnitude.",
-  "FOURTH DISPATCH, re-taken a second time after the zero-length-Ary PRINT repair. PREDICTED to reproduce 1,857,893 exactly: the repair changes the record only when n = 0, and the arm that writes it is dead in all 27 scenarios. A different number would have meant the repair changed the shipped program."
+  "FIFTH DISPATCH, re-taken on the PARALLEL scenario path (scenario_workers 8) at loop 74c2a32. PREDICTED before the run to reproduce 1,857,893 EXACTLY: neither the translation nor the wrapper moved since the fourth dispatch, and the only instrument change is vit_mutate.py, which the gate does not use. A different number would mean the parallel runner had changed what is compared."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parseinary_opt.cpp",
@@ -193,6 +178,7 @@
  "revert_scenarios_failed": [],
  "revert_verified": true,
  "reverted": true,
+ "scenario_workers": 8,
  "scenarios": [
   3,
   4,

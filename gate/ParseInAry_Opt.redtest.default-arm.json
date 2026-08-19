@@ -5,30 +5,15 @@
  "compared": 5252000,
  "comparison_verdict": "PASS",
  "generated_by": "scripts/gate.py",
- "inputs_restored": [
-  "Examples/DISCON.IN",
-  "Examples/DISCON_awc.IN",
-  "Examples/DISCON_filters.IN",
-  "Examples/DISCON_flap26.IN",
-  "Examples/DISCON_flp.IN",
-  "Examples/DISCON_ipc.IN",
-  "Examples/DISCON_ipc_awc.IN",
-  "Examples/DISCON_ol_cc_stc.IN",
-  "Examples/DISCON_ol_mode1.IN",
-  "Examples/DISCON_ol_mode2.IN",
-  "Examples/DISCON_stress27.IN",
-  "Examples/DISCON_su_sd_tra.IN",
-  "Examples/DISCON_synth.IN",
-  "Examples/DISCON_yaw.IN"
- ],
- "loop_rev": "8c17719",
+ "inputs_restored": [],
+ "loop_rev": "74c2a32",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "the Ary = 0 default arm, taken when FindLine does not find the parameter and defaults are allowed. PREDICTED TO MOVE ZERO, and the prediction is coverage rather than a guess: coverage/line_coverage.json records ROSCO_Helpers.f90:775 (the FindLine call) 230 times across all 27 scenarios and :806 / :807 with NO COUNTER AT ALL, so FoundLine is TRUE at every one of this units 230 calls.",
-  "FOURTH DISPATCH, re-taken a second time after the zero-length-Ary PRINT repair. It is the NEGATIVE control and the pair of the parsed-value run: the same file, the same build, one perturbation that moves 35 percent of the gate and one that moves nothing."
+  "the Ary = 0 default arm, taken when FindLine does not find the parameter and defaults are allowed. PREDICTED TO MOVE ZERO, and the prediction is coverage rather than a guess: coverage/line_coverage.json records ROSCO_Helpers.f90:775 (the FindLine call) 230 times across all 27 scenarios and :806 / :807 with NO COUNTER AT ALL, so FoundLine is TRUE at every one of this unit s 230 calls.",
+  "FIFTH DISPATCH, re-taken on the PARALLEL scenario path at loop 74c2a32. This run is the NEGATIVE CONTROL for the parsed-value red test taken beside it: the same file, the same runner, the same 27 scenarios, and a perturbation on an arm the gate cannot reach. 1,857,893 next to 0 is what says the parallel runner moves what it should and nothing else. RED_TEST_FAIL is the CORRECT verdict here and is not a failure of the unit."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parseinary_opt.cpp",
@@ -45,6 +30,7 @@
  "revert_scenarios_failed": [],
  "revert_verified": true,
  "reverted": true,
+ "scenario_workers": 8,
  "scenarios": [
   3,
   4,
