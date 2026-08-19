@@ -31,6 +31,23 @@
 #
 #     PREDICTED 13216 failing, 3296 passing.
 #
+# FOURTH DISPATCH, on the 17,520-case corpus, re-derived from the re-taken
+# partition again rather than scaled: `not-allowed` (1224 + 881), `read-failed`
+# (59 + 479), `already-alloc` (7094) and the 104 cases of `alloc = 0, other` in
+# which the reference changed `aviFAIL` while its message assignment was refused
+# by the staging capacity = 9,841 must fail; the rest -- `entered-failed`
+# (184 + 76) and the 7,419 of `alloc = 0, other` that write no scalar -- = 7,679
+# must pass. `ErrStat` and `size_avcMSG` are still 0 both supplied and returned
+# in all 17,520, so `aviFAIL` alone decides the set.
+#
+# THE 104 ARE NEW AND THEY ARE THE POINT OF THE BASE-DRAW CHANGE. R13's ladder
+# now lands on an arm that assigns a message (112 bytes), and the capacities
+# BELOW that length make both sides refuse the assignment -- so the reference
+# returns `aviFAIL = -1` with an ErrMsg the arm classifier does not recognise.
+# They write a scalar, so they belong in the FAILING set.
+#
+#     PREDICTED 9841 failing, 7679 passing.
+#
 # ANCHORED TO THE UNIT, NOT TO THE STRING. That CALL is generated into every
 # wrapper in this file that takes an `ErrorVariables`, so a `str.replace` would
 # perturb a dozen units, measure none of them, and write a red artifact
