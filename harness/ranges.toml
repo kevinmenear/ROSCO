@@ -2769,6 +2769,27 @@ Ary = { no_oracle_when = ["alloc_Ary == 0", "ErrVar_aviFAIL >= 0"], and_referenc
 # so that R6's integer ladder and R7's knobs continue to see a pinned quantity,
 # and the corpus is asserted after regeneration to carry `UnEc = 0` in every
 # case, exactly as before.
+#
+# AND ONE ENTRY ADDED AT THE SIXTH DISPATCH, WHICH IS THE FIRST IN THIS FILE
+# THAT ADDS A COMPARISON RATHER THAN NARROWING ONE. `vit_record` says that the
+# stream this unit WRITES is an output of the call.
+#
+# THE FIVE SURVIVING MUTANTS THAT MADE IT NECESSARY are all in
+# `print_default_warning`, the C++ counterpart of ROSCO_Helpers.f90:807:
+#
+#     PRINT *, "ROSCO Warning: Did not find correct size "//TRIM(ParamName)//
+#              " in input file.  Using default value of [", Ary, "]"
+#
+# That record crosses no dummy argument, so R4 never named it, no `no_oracle`
+# could have excluded it -- it was never in the compared set -- and
+# `vit_mutate.py` reads a JSON payload out of `./test`'s stdout PRECISELY
+# BECAUSE the reference may print, so both sides' records were discarded before
+# the comparison happened. Five dispatches of evidence could not see the region,
+# and when a side instrument was finally built at the fourth (a 34-record replay
+# against gfortran's own runtime) its FIRST run found a real defect in the
+# translation there: `value of [ ]` where the reference writes `value of []`.
+# The stream is not a debug log here; it is the only thing that tells a ROSCO
+# user a default was substituted for a value their input file did not supply.
 # ---------------------------------------------------------------------------
 [ParseInAry_Opt]
 
@@ -2776,4 +2797,5 @@ AryLen = { lo = 0, hi = 32 }
 UnEc = { lo = 0, hi = 0, values = [0] }
 has_AllowDefault = { values = [1, 0] }
 AllowDefault = { values = [0, 1] }
+vit_record = { compare_record = "ROSCO_Helpers.f90:807 PRINTs a warning record naming the parameter and the default array it substituted, and that record is the only thing that tells a user their input file did not supply the value. It crosses no dummy argument, so R4 never named it and no no_oracle could have excluded it -- the exclusion was structural. Five of this unit's six surviving mutants edit it and nothing else, and a 34-record replay built at the fourth dispatch kills all five; this makes the comparison the harness's own. The record's own defect (`value of [ ]` for a zero-length Ary) was found by that replay after four dispatches of evidence could not see the region." }
 Ary = { no_oracle_when = ["alloc_Ary == 0", "ErrVar_aviFAIL >= 0"], and_reference = "ErrVar.aviFAIL < 0", reason = "the reference ALLOCATEd Ary on this call and then RETURNed on an arm that assigns none of it (.NOT. AllowDefault_) or only a prefix (the READ error arm); those elements are recycled heap and a comparison against them decides nothing about either implementation. MEASURED ON THIS UNIT'S OWN CORPUS before this entry was written: 4,067 of 13,674 cases, classified in evidence/ParseInAry_Opt/harness_partition.txt -- 100% of both cells and 0% of the other five, and 0 Ary-failing cases outside the condition. The one-relation form excludes 4,233; the extra 166 arrived already failed and never entered the reference's body." }
