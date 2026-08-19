@@ -2,6 +2,196 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #54 — ParseDbAry_Opt — third dispatch — 2026-08-18
+
+**Disposition `deferred`, on P12 alone: 106 / (185 − 17 − 30) = 0.7681 against a
+threshold of 1.0.** Second dispatch: 77 / 185 = 0.4162 with nothing declared.
+Four other layers green and red-tested; every artifact re-taken at loop
+`b9c8c52`.
+
+### PROPOSED AMENDMENT, for the Driver: a generalisation recorded in DECISIONS.md did not reach the one other unit it was about
+
+This is the sharpest thing the dispatch found and it is not about the
+translation.
+
+The relaunch commit (`e2f5139`) cleared this unit to `pending` for one stated
+reason: loop `b33a761` had planted **numeric literals** in the words before
+R14's key, and its own message cites *this unit's* survivor profile as the
+evidence for doing it. Re-taken here, the corpus came back **byte-identical**:
+
+```
+corpus before   64942b97cc3a4c2ab6631f8a452141b3e02335f8fd1acfdde613320aa77390c7
+corpus after    64942b97cc3a4c2ab6631f8a452141b3e02335f8fd1acfdde613320aa77390c7
+R14             Reached ['1:plant'];  NOT reached every k >= 2 shape
+```
+
+The numeric leads only exist for `k > 1`, and `k > 1` was empty here — because
+of this unit's own range pin:
+
+```
+[ParseDbAry_Opt]   UnEc = { lo = 0, hi = 0 }                 <- a plant_int
+[ParseInAry_Opt]   UnEc = { lo = 0, hi = 0, values = [0] }   <- not one
+```
+
+**Unit #55 found exactly this a dispatch earlier and generalised it in this
+file**: *"any rule that requires ALL of a class of parameters to admit a value is
+silently bounded by the narrowest member of that class"*, with `_admits` named as
+the predicate and `plant_ints` as the class. `STATUS.md:38` carries the line in
+the sibling's table. The two units are the same subroutine with one declaration
+changed, and `harness/ranges.toml`'s comment on `[ParseInAry_Opt]` says its pins
+are *"THE SAME TWO PINS AS `[ParseDbAry_Opt]` ABOVE, FOR THE SAME REASONS AT THE
+SAME SITES"*.
+
+**The repair went into the sibling's block only.** Then the campaign built on top
+of the gap: `b33a761` measured itself on `ParseInAry_Opt` (216 → 1,224 cases) and
+not here, where it is worth zero; and the relaunch was issued on that measurement.
+
+Two things follow, and both are the Driver's rather than a unit's:
+
+1. **A finding written as a generalisation needs a place that is checked, not
+   only a place that is recorded.** `DECISIONS.md` is append-only and "never read
+   end to end" by its own header. A rule of the form *"pin P in unit U also does
+   X"* applies to every unit carrying P, and nothing in this campaign enumerates
+   those units. The cheap version is a check over `harness/ranges.toml`: a
+   parameter pinned `lo == hi` and NOT carrying `values`, in a unit whose harness
+   artifact reports an R14 `NOT reached`, is one grep.
+2. **A loop-side fix should be measured on every unit it names.** `b33a761`
+   named two and measured one.
+
+### THE MECHANISM, AND THE PRICE OF THE SPELLING, WHICH THE SIBLING'S ENTRY DOES NOT STATE
+
+Restating the pin as `values = [0]` changes no admissible value of any input, and
+the corpus grew by 2,838 cases. **The prediction written before the run was
+wrong, and it is kept unrepaired** in
+`evidence/ParseDbAry_Opt/r14_reach_probe.txt`:
+
+```
+predicted   R14 32 -> 1088   corpus 13674 -> 14730   a strict PREFIX
+measured    R14 32 -> 1224   corpus 13674 -> 16512   the prefix control REFUSES
+```
+
+`values` does not only take `UnEc` OUT of `plant_ints`. It puts it INTO R2's flag
+set — a flag is a parameter with a stated value list, the same predicate read the
+other way round — so `flag_variants` went 16 → 18, R14 came out at
+17 × 2 × 2 × 18, and **R2's own block grew ahead of R14**, displacing every later
+case index. The sibling's entry records the `plant_ints` half and not this one.
+So: a pin restated in the spelling that reaches R14 also enters a rule nobody was
+thinking about, and a corpus changed this way is **not** case-for-case comparable
+with the one before it.
+
+### THE SANITISER WAS RUN, IS NEARLY A NULL RESULT, AND THAT IS AN ANSWER
+
+The dispatch prompt's instruction is to re-run with `--sanitize` when the
+survivors are out-of-bounds reads or writes; 19 of the 81 were `index_offset`
+and 16 `compare_op`, mostly `p < len` → `p <= len`, which is the named shape.
+
+```
+baseline under -fsanitize=address,undefined   DID NOT REPORT   (the refusal did not fire)
+value oracle    104 killed of 185
+sanitised       106 killed of 185     strict superset, nothing regressed
+                12 sanitiser kills, 10 of which the value oracle also killed
+```
+
+The two it bought are `4d44e6d2` and `f6007814`. **The rest of the class is not
+out-of-bounds at all**: `rec` is a 2048-byte blank-padded record and `rec[p + 1]`
+is inside the allocation almost everywhere it lands. Both sweeps are on disk —
+`mutation/ParseDbAry_Opt.value-oracle.json` beside the sanitised one — so the
+comparison is a measurement rather than a recollection.
+
+`scripts/_mutation_merge.py` **dropped the flag through the union**, which is the
+same silence it had already been fixed for once with `capped_operators`. Repaired
+additively: `sanitize`, `killed_by_sanitizer` and `killed_by_sanitizer_ids` now
+cross, a union of a sanitised and an unsanitised part is refused, and the
+red test goes 6 of 6 → 9 of 9 with the refusal and its green control.
+
+### 79 SURVIVORS PARTITIONED BY MEASUREMENT, NOT BY ARGUMENT
+
+A survivor has three causes and `mutation/<U>.json` cannot tell them apart. The
+first is decidable, so it was decided: **gcov over the shipped translation**,
+through the generated test's own object — the test `#include`s
+`parsedbary_opt.hpp`, so the file measured IS the file the sweep mutates and
+`vit integrate` ships. `-O0`, because `-O2` attribution folds and a line reported
+0 because the optimiser merged it is the false `unreachable` this exists to
+avoid.
+
+```
+executable lines RUN      224
+executable lines NOT RUN   62
+CONTROL  the entry line's count is 16,512 = the case count
+CONTROL  NON-survivors on never-executed lines: 1 -- and it is a NOCOMPILE
+         (`esign - edig`, char minus std::string), not a kill
+```
+
+The second control is what makes the first a measurement rather than a listing.
+
+**30 UNREACHABLE**, one rule and one evidence file. **17 EQUIVALENT**, argued per
+mutant in `mutation/ParseDbAry_Opt.equivalences.md` with the grep that would
+refute each. Three mutants qualify for both and are declared EQUIVALENT, because
+the stronger claim is available and a mutant held under the weaker one comes back
+the moment the corpus grows.
+
+**The two pairs that are split are the reason this is per mutant rather than per
+line.** `lower()`'s `'Z'` bound is equivalent — its three call sites compare
+against `i n f t y a e d q` and never `'z'` — and its `'A'` bound is NOT, because
+`'a'` is the middle letter of `"nan"`. `std::max`'s argument swap is equivalent
+and dropping the clamp is NOT, because that holds only while
+`AryLen = { lo = 0 }` is stated, which is a fact about the DOMAIN.
+
+**Nothing in the PRINT region is declared.** Those 9 are reached, they change the
+record, and no layer compares it. Calling that an equivalence would be the exact
+shape of a green that established nothing.
+
+### AN UNREACHABLE DECLARATION IS A DEBT AGAINST THE CORPUS, NOT A CREDIT
+
+P12 divides by `mutants − equivalent − unreachable`, so 30 declarations move
+0.5730 to 0.7681 without a single new case being distinguished. That is the
+arithmetic working as intended — an explained mutant should not drag the ratio —
+but the 30 are now the **largest single item** on this unit's list of what
+nothing can see, and the evidence README says so in those words. The corpus
+extension that would retire them is named: `nan`/`inf` words, an `r*` repeat, a
+`;` terminator and a four-digit exponent in `_NUMERIC_LEADS`.
+
+### AND THE SCORE IS OVER 185 OF 305
+
+`harness.cppmutate` caps every operator at 40 and this translation offers 305
+mutants; 116 were never enumerated by any sweep (unit #53's census, this file
+above). `capped_operators` is in the artifact. 0.7681 is a ratio over the 185
+that were offered, not over the 305 that exist.
+
+### THE PARTITION PROBE HAD NO SCRIPT, AND ITS FIRST CLASSIFIER REPORTED AN EMPTY REGION AS ABSENT
+
+`harness_partition.txt` was produced at the first dispatch by "one fprintf in the
+generated test and a `--no-generate` rebuild" — a method that expired with the
+corpus it ran on, and the wrapper red test's predicted pass set is read out of
+that table. It is now `evidence/ParseDbAry_Opt/run_partition_probe.sh`.
+
+Its first classifier **guessed** the reference's message substrings ("Line does
+not contain", "Error parsing"), matched none of them, and reported 8,302 cases as
+`other` with both error cells EMPTY. The substrings are now copied from
+`ROSCO_Helpers.f90` at `54dd134`, and the wrong version is described in the
+script rather than quietly replaced: a partition whose buckets are spelled wrong
+reports the region it cannot see as absent (P10).
+
+Two other things the re-take found: a new `entered-failed` cell (260 cases that
+arrive with `aviFAIL < 0` and never enter the body, which the first dispatch
+folded into `other`), and `alloc = 1, other` being EMPTY as a property of the
+program rather than of the corpus.
+
+### THE GATE PAIR SAYS SOMETHING DIFFERENT NOW, AND THE OLD RUN BECAME ITS CONTROL
+
+`2a9e1695`, the READ survivor whose 1,583,216-value gate run was the second
+dispatch's argument that the region is a corpus gap the gate covers, **is killed
+by the 16,512-case corpus**. The gate run was re-taken anyway and reproduces to
+the value, so it is now the control on the claim rather than the claim.
+
+Its replacement `48542e3d` (`rec + p` → `rec - p` in the repeat-count branch)
+moves 0, and the prediction was grounded before the run rather than guessed:
+`grep -cE '[0-9][*]' Examples/DISCON*.IN` over all 22 files the 27 scenarios read
+returns 0. So the shape of the gap has changed: the corpus has killed the
+mainline parser mutants and what is left in the READ region is boundary and
+rare-form statements the gate's own inputs do not contain either — reachable in
+principle, unreached by both instruments.
+
 ## Unit #53 — IPC — second dispatch — 2026-08-18
 
 ### PROPOSED AMENDMENT, for the Driver: 1,856 mutants were never enumerated, across 15 units

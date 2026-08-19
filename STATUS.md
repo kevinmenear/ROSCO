@@ -4,7 +4,89 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-18: unit #55 `ParseInAry_Opt` is `deferred`. TWO dispatches. Six
+**As of 2026-08-18: unit #54 `ParseDbAry_Opt` is `deferred`. THREE dispatches.
+Five layers; four green and red-tested, and the mutation layer at
+106 / (185 − 17 − 30) = 0.7681 against a threshold of 1.0** — from 0.4162 at the
+second dispatch. Kills first: the corpus bought 27, the sanitiser 2, and the 47
+declarations the rest.
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (`harness/ParseDbAry_Opt.json`) | **16,512 checked, 0 failed**, against the CLEAN Fortran with all three callee bridges kept. `Ary` **not compared on 5,266** under the `no_oracle_when` entry | **four stubs**, all re-taken: no-op **16,252**; the `.NOT. AllowDefault_` arm **6,079**; the READ **394**; the zero-store rule **4** |
+| mutation (`mutation/ParseDbAry_Opt.json`) | **185 behavioural — 106 KILLED, 17 EQUIVALENT, 30 UNREACHABLE, 32 SURVIVED, 0.7681.** Sanitised, green baseline, clean tree, `declared_but_killed` and `unreachable_but_killed` both empty | the score IS the red test |
+| line coverage of the translation (`evidence/ParseDbAry_Opt/line_coverage.txt`) | **224 executable lines run, 62 never** — the measurement the 30 unreachable declarations rest on | **two controls**: the entry line's count is 16,512 = the case count; and NON-survivors on never-run lines number 1, which is a NOCOMPILE, not a kill |
+| post-integration (`harness/ParseDbAry_Opt.postintegration.json`) | 16,512 checked, 0 failed | the reverse copy deleted from this unit's own wrapper: **13,216**, predicted 13,216 |
+| gate, 27 scenarios (`gate/ParseDbAry_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched | **four, every count predicted before the run and every one exact**: parsed value + 0.01 **2,236,141**; the `Ary = 0` arm **0**; survivor 48542e3d **0**; survivor ae3f319a **0** |
+
+**THE RELAUNCH'S PREMISE WAS FALSE, AND THE REASON IS THE FINDING.** This unit
+was cleared to `pending` because loop `b33a761` planted numeric literals in
+R14's words. Re-taken at `b9c8c52` the corpus came back **byte-identical** —
+`64942b97…` both sides — because R14 reported `Reached ['1:plant']` and every
+`k >= 2` shape missed, so the branch the fix appended to was empty here.
+
+```
+[ParseDbAry_Opt]   UnEc = { lo = 0, hi = 0 }                 <- a plant_int
+[ParseInAry_Opt]   UnEc = { lo = 0, hi = 0, values = [0] }   <- not one
+```
+
+**Unit #55 found this a dispatch ago and generalised it in `DECISIONS.md`; the
+line is in this file at :38; and it was applied to the sibling's block only** —
+in a unit whose own `ranges.toml` comment says its pins are "THE SAME TWO PINS
+AS `[ParseDbAry_Opt]` ABOVE, FOR THE SAME REASONS AT THE SAME SITES". `b33a761`
+then cited both units' survivor profiles, measured itself on the sibling (216 →
+1,224) and is worth **zero cases** here. A recorded generalisation did not reach
+the one other unit it was about.
+
+Restated in the sibling's spelling: **13,674 → 16,512 cases, R14 32 → 1,224, all
+seventeen shapes reached, and the READ region from 103 distinguishing cases
+(0.75%) to 394 (2.4%)**.
+
+**THE PREDICTION WAS WRITTEN FIRST AND WAS WRONG, AND IT IS KEPT UNREPAIRED.**
+Predicted 1,088 R14 cases, a 14,730-case corpus and a strict PREFIX; measured
+1,224, 16,512, and the prefix control REFUSES. `values` also puts `UnEc` into
+R2's flag set (4 flags → 5, `flag_variants` 16 → 18), and R2 runs *before* R14,
+so later case indices move. Two effects of one keyword, not separable by reading
+the entry.
+
+**THE SANITISER WAS RUN AND IS NEARLY A NULL RESULT — WHICH IS AN ANSWER.** The
+baseline did **not** report under `-fsanitize=address,undefined`, so the option's
+one refusal did not fire. It bought **2** kills of 79 survivors, nothing
+regressed, and 10 of its 12 sanitiser kills were mutants the value oracle also
+killed — the run's own control. The `index_offset` survivors here are therefore
+not invisible out-of-bounds differences: `rec[p + 1]` lands inside a 2048-byte
+blank-padded record. The unsanitised sweep is kept beside it.
+
+**47 DECLARATIONS, AND THE TWO KINDS ARE KEPT APART.** 30 UNREACHABLE, each
+against a gcov-measured never-executed line, one evidence file, one rule. 17
+EQUIVALENT, each argued per mutant in `mutation/ParseDbAry_Opt.equivalences.md`
+with the grep that would refute it. **Two pairs are deliberately split**:
+`lower()`'s `'Z'` bound is declared and its `'A'` bound is not (`'a'` is the
+middle letter of `"nan"`); `std::max`'s argument swap is declared and dropping
+the clamp is not (that holds only while `AryLen = { lo = 0 }` is stated, a fact
+about the domain). **An unreachable declaration is a debt against the corpus,
+not a credit**, and the 30 are now the largest single item on this unit's list of
+what nothing can see.
+
+**THE GATE PAIR MEANS SOMETHING DIFFERENT FROM LAST DISPATCH.** `2a9e1695` — the
+READ survivor whose 1,583,216-value gate run was the argument that the region is
+a corpus gap the gate covers — **is now killed by the harness**, so that run is
+the control on the argument rather than the argument. Its replacement `48542e3d`
+moves 0, predicted from `grep -cE '[0-9][*]' Examples/DISCON*.IN` = 0 over all 22
+files. What is left in the READ region is boundary and rare-form statements the
+gate's own inputs do not contain either: reachable in principle, unreached by
+both instruments.
+
+**WHAT WOULD MOVE 0.7681, so the next dispatch need not re-derive it.** (1) A
+generator that plants `nan`/`inf`, an `r*` repeat, a `;` terminator and a
+four-digit exponent — `_NUMERIC_LEADS` extended the way `b33a761` extended it
+once — which would also retire most of the 30 unreachable. (2) An instrument
+that compares the two sides' **stdout**, for the 9 PRINT survivors, which no
+corpus can reach. (3) A record whose last character is a digit, for the five
+`p <= len` boundaries.
+
+---
+
+**Previously — unit #55 `ParseInAry_Opt` is `deferred`. TWO dispatches. Six
 layers; five green and red-tested, and the mutation layer at 69 of 156 — still
 below threshold, for a cause that is now measured from three directions and
 whose remedy is a shared generator rule the Driver holds.** The unit is

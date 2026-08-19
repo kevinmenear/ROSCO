@@ -7968,6 +7968,157 @@ unit can exhaust the second while barely touching the first.
   the only thing that shows its MODEL of which cases arrive is right, and it was
   already paid for.
 
+## A ZERO-COVERAGE LINE IS THE CHEAPEST `unreachable`, AND THE CONTROL IS THE
+## KILLED SET RATHER THAN THE SURVIVING ONE
+
+- **Unit #54, third dispatch: 30 of 79 survivors declared in one measurement,
+  0.5730 -> 0.7681.** `--unreachable` wants a claim about the CORPUS, and the
+  strongest such claim is that the mutated LINE never ran.
+
+  `vit test-validate` writes the translation to `<stem>.hpp` and the generated
+  test `#include`s it, so **one gcov run over the test's own object gives
+  per-line counts for the translation itself**. Nothing is copied and nothing is
+  re-implemented: the file measured IS the file the sweep mutates and
+  `vit integrate` ships. `evidence/ParseDbAry_Opt/run_line_coverage_probe.sh` is
+  about forty lines.
+
+  ```
+  g++ -O0 -g --coverage -c <stem>_test.cpp -o cov_test.o
+  g++ --coverage -o cov_test cov_test.o <stem>_bridge.o <stem>_callees.o $LIBS
+  ./cov_test <stem>_cases.bin ; gcov -o . cov_test.o <stem>_test.cpp
+  ```
+
+  **`-O0`, and it is not a preference.** Reachability of a source line does not
+  depend on the optimisation level; the accuracy of gcov's ATTRIBUTION does. A
+  line reported 0 because `-O2` folded it into its neighbour is exactly the false
+  `unreachable` the probe exists to avoid.
+
+  **TWO CONTROLS, AND THE SECOND IS THE ONE THAT MATTERS.**
+
+  ```
+  the entry line's count == the case count          16,512    the probe ran the corpus
+  NON-SURVIVORS on never-executed lines                  1    and it is a NOCOMPILE
+  ```
+
+  The first says the right program ran. The second says the coverage and the
+  sweep agree about that program: a mutant the corpus KILLED on a line it never
+  executed would mean the two runs measured different things. Take it over the
+  killed set, not over the survivors — the survivors are what the declaration is
+  being made about, so counting them proves nothing. Here the single crossing was
+  `esign - edig`, `char` minus `std::string`, which does not compile and is
+  excluded from the score at both ends.
+
+  **THREE ADDITIONAL TRAPS, ALL PAID FOR:**
+
+  * The `<stem>_callees.o` on disk belongs to whichever tree `harness.sh` last
+    ran against — bridges kept on a clean tree, dropped on an integrated one. Let
+    `make` rebuild it or the link dies on `undefined reference to findline_c`.
+  * Ask `make` for `LIBS` (`printf 'include Makefile\n…' > .covmk`); a `sed` over
+    `make -p` returns empty and links a probe that measures nothing.
+  * A declaration is not free. **An unreachable declaration is a DEBT AGAINST THE
+    CORPUS, not a credit** — 30 of them moved this unit's score without a single
+    new case being distinguished, and the evidence README has to say so or the
+    number reads as coverage.
+
+## AN EQUIVALENCE IS DECLARED PER MUTANT, AND THE PROOF IS THAT ITS SIBLING ON
+## THE SAME LINE IS NOT DECLARED
+
+- **Unit #54, third dispatch, 17 equivalences.** The file that carries them
+  (`mutation/<U>.equivalences.md`) is worth writing only if it can be disputed,
+  so every entry ends in the grep that would refute it. Two pairs are what make
+  the set credible:
+
+  ```
+  lower():  `c <= 'Z'` -> `c < 'Z'`     DECLARED   no call site compares against 'z'
+            `c >= 'A'` -> `c > 'A'`     NOT        'a' is the middle letter of "nan"
+  clamp:    std::max(N, 0) -> max(0, N) DECLARED   std::max is symmetric on int
+            std::max(N, 0) -> N         NOT        holds only while AryLen >= 0 is
+                                                   STATED -- a fact about the DOMAIN
+  ```
+
+  A file that declared both halves of either pair would be a file nobody could
+  check. **The useful shapes, in the order they were cheapest to prove:**
+
+  1. **A return value with one reader.** Eight mutants changed one nonzero
+     `IOSTAT` into another; `list_read_reals` has one call site and its result has
+     one read, `if (ErrStatLcl != 0)`. `grep -n ErrStatLcl` is the whole check.
+  2. **A local buffer nothing measures.** Enlarging `char buf[N]` is
+     behaviour-preserving unless the program reads its SIZE or overran it. Read
+     the fill bound and `grep sizeof` — and where `sizeof` IS used
+     (`snprintf(tmp, sizeof tmp, "%.16E", v)`) the argument moves to the FORMAT's
+     maximum width, 25 bytes against 512.
+  3. **A guard the caller already established.** `p < len` -> `p <= len` at a
+     function's entry is equivalent when the one call site is behind
+     `if (p >= len) return`. Walk the path and note every statement that could
+     advance `p` — here one of them (`p = q + 1`) can, and it `continue`s rather
+     than falling through, which is the load-bearing line of the argument.
+  4. **A dead initialiser**, and **a constant sizing a buffer that is written and
+     never read**.
+
+## A SANITISER RUN THAT BUYS ALMOST NOTHING HAS ANSWERED THE QUESTION
+
+- **Unit #54, third dispatch: 2 kills of 79 survivors.** `--sanitize` exists for
+  the class where a value oracle is blind, and the survivor profile here looked
+  exactly like it — 19 `index_offset`, 16 `compare_op` mostly `p < len` ->
+  `p <= len`. It was run, and the result is a fact about the translation rather
+  than a disappointment:
+
+  ```
+  baseline under -fsanitize=address,undefined   DID NOT REPORT
+  value oracle   104 killed / 185
+  sanitised      106 killed / 185     strict superset, nothing regressed
+                 12 sanitiser kills, 10 also killed by the value oracle
+  ```
+
+  **`rec[p + 1]` inside a 2048-byte blank-padded record is not out of bounds.**
+  The class the option exists for is a read past the END of an allocation; a
+  parser that is handed one fixed-width record has no end to run past until the
+  very last byte. Ask what the buffer IS before spending the sweep.
+
+  Two things make the run worth its 900 seconds anyway. The **10 of 12** is a
+  control built into the result: a sanitiser firing where nothing else did on
+  every one of its kills would be measuring the build. And **keep both sweeps** —
+  `mutation/<U>.value-oracle.json` beside the sanitised one — so the comparison
+  is on disk rather than in a commit message.
+
+  `scripts/_mutation_merge.py` dropped `sanitize` through the union, which is the
+  same silence it had already been repaired for once with `capped_operators`. Any
+  field that says WHICH INSTRUMENT produced a part has to cross the merge, and a
+  union of parts that disagree about it must be refused.
+
+## A GENERALISATION RECORDED IN `DECISIONS.md` IS NOT A GENERALISATION APPLIED
+
+- **Units #54 and #55, the identical `UnEc` pin, and 13,674 cases against
+  15,504 for a whole dispatch.**
+
+  ```
+  [ParseDbAry_Opt]   UnEc = { lo = 0, hi = 0 }                 <- an R14 plant_int
+  [ParseInAry_Opt]   UnEc = { lo = 0, hi = 0, values = [0] }   <- not one
+  ```
+
+  Unit #55 found this, fixed its own block, wrote the mechanism into
+  `DECISIONS.md` **with the generalisation attached** — *any rule that requires
+  ALL of a class of parameters to admit a value is silently bounded by the
+  narrowest member of that class* — and put the line in `STATUS.md`. Unit #54,
+  the same subroutine with one declaration changed, kept the unfixed spelling for
+  another dispatch. Then loop `b33a761` cited BOTH units' survivor profiles,
+  measured itself on #55 alone (216 -> 1,224 cases), and was worth **zero** here;
+  and the relaunch was issued on that measurement.
+
+  **The check is one grep and it should be run when a pin's SECOND effect is
+  discovered**, not when the next unit trips over it: a parameter pinned
+  `lo == hi` and NOT carrying `values`, in a unit whose harness artifact reports
+  an R14 `NOT reached`. The artifact had been printing that string for two
+  dispatches.
+
+  **AND THE SPELLING HAS A SECOND EFFECT THE SIBLING'S ENTRY DOES NOT STATE.**
+  Predicted before the change: R14 32 -> 1,088, corpus 13,674 -> 14,730, a strict
+  PREFIX. Measured: 1,224, 16,512, and the prefix control REFUSES. `values` takes
+  the parameter OUT of `plant_ints` and puts it INTO R2's flag set — the same
+  predicate read the other way round — so `flag_variants` went 16 -> 18 AND R2's
+  own block grew ahead of R14, displacing every later case index. Predict both
+  halves, or predict a number that will be wrong.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's

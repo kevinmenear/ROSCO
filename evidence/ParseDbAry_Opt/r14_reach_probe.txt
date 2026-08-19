@@ -61,6 +61,43 @@ refused.
 That is why the loop-side fix could not reach this unit: it appended shapes to a
 `k > 1` branch that this unit's own pin had already emptied.
 
+## 2b. THIS WAS ALREADY KNOWN, AND THAT IS THE MORE USEFUL FINDING
+
+None of §2 is new to the campaign. `DECISIONS.md` records it from unit #55's
+second dispatch, in the unit's own words, together with the generalisation:
+
+> R14 sets EVERY free scalar integer to `k-1` and to `k` in the same case and
+> drops the shape when any one of them falls outside its stated range. This unit
+> pins `UnEc = { lo = 0, hi = 0 }` because the echo WRITE is not translated — a
+> pin about a Fortran unit number, having nothing to do with which word
+> `FindLine` compares — and it therefore admitted `k = 1` alone. **A pin on one
+> parameter deleted two thirds of a rule about another** …
+>
+> **The generalisation is checkable and belongs to the method:** any rule that
+> requires ALL of a class of parameters to admit a value is silently bounded by
+> the narrowest member of that class.
+
+`STATUS.md:38` carries the same line in the sibling's table:
+`UnEc = { lo = 0, hi = 0, values = [0] }  R14 1:plant -> 1:/2:/3:plant`.
+
+**AND IT WAS NOT APPLIED HERE.** The two units are the same subroutine with one
+declaration changed; `harness/ranges.toml`'s own comment on `[ParseInAry_Opt]`
+says its pins are "THE SAME TWO PINS AS `[ParseDbAry_Opt]` ABOVE, FOR THE SAME
+REASONS AT THE SAME SITES". The sibling's repair to one of those two pins went
+into the sibling's block only, and this unit kept a corpus in which the parser
+executes 103 times.
+
+Worse, the campaign then built on top of the gap without noticing it. Loop
+`b33a761` added the numeric leads and cites BOTH units' survivor profiles as its
+evidence; it measured its effect on `ParseInAry_Opt` (216 -> 1,224) and not on
+this one, where it is worth exactly zero cases. And the relaunch commit
+(`e2f5139`) cleared this unit to `pending` for that generator change alone.
+
+So the finding this dispatch actually contributes is not the mechanism. It is
+that a finding recorded as a GENERALISATION, in the state file and in the
+decision log, did not reach the one other unit in the campaign carrying the
+identical pin — and that a loop-side fix aimed at both units landed on one.
+
 ## 3. THE PREDICTION, written before the entry was changed
 
 Add `values = [0]` to `[ParseDbAry_Opt].UnEc` -- the sibling's spelling of the
