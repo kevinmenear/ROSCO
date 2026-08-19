@@ -1,88 +1,108 @@
 ParseInAry_Opt -- EVERY MUTANT ANSWERED, fourth dispatch, loop 8c17719
 ======================================================================
 
-152 mutants, 1 nocompile, 151 behavioural:
+153 mutants, 1 nocompile, 152 behavioural:
 
    123  KILLED by the differential harness (19,536 cases, sanitised sweep)
-    18  declared EQUIVALENT      mutation/ParseInAry_Opt.equivalences.{json,md}
+    17  declared EQUIVALENT      mutation/ParseInAry_Opt.equivalences.{json,md}
      6  declared UNREACHABLE     mutation/ParseInAry_Opt.unreachable.json
-     4  SURVIVED                 every one has a row below
+     6  SURVIVED                 every one has a row below
    ---
-   151      score 123 / (151 - 18 - 6) = 123 / 127 = 0.9685
+   152      score 123 / (152 - 17 - 6) = 123 / 129 = 0.9535
 
 `declared_but_killed` and `unreachable_but_killed` are both EMPTY in
-`mutation/ParseInAry_Opt.json`, which is the check on the 24 declarations.
+`mutation/ParseInAry_Opt.json`, which is the check on the 23 declarations -- and
+on this dispatch it FIRED, twice, and is why the declaration set is 17 and not
+18. See "the repair" below.
 
-WHAT MOVED, AND IT IS THREE SEPARABLE THINGS.
+WHAT MOVED, AND IT IS FOUR SEPARABLE THINGS.
 
     third dispatch    17,520 cases   93 killed   12 eq   25 unr   0.7815
-    fourth dispatch   19,536 cases  123 killed   18 eq    6 unr   0.9685
+    fourth, corpus    19,536 cases  123 killed   18 eq    6 unr   0.9685
+    fourth, at close  19,536 cases  123 killed   17 eq    6 unr   0.9535
 
   * THE CORPUS. Nine blank-tail record forms and ten tail-value forms
-    (`_BLANK_TAILS`, `_TAIL_VALUES` in the loop repo). They are what took the
-    eleven record-bound survivors of REGION A, the three of REGION B, and the
-    nineteen repeat-count mutants that had been carried as `unreachable`.
+    (`_BLANK_TAILS`, `_TAIL_VALUES` in the loop repo). They took the eleven
+    record-bound survivors, the three distinguished by a value, and the nineteen
+    repeat-count mutants that had been carried as `unreachable`.
   * THREE SITES DELETED from the translation rather than declared equivalent:
     `field()`'s `*` overflow fill, `std::max(NumWords, 0)` and the empty
-    `if (DEBUG_PARSING) {}`. Each carried a survivor and each was a comparison
-    no input could make fire either way. 157 mutants -> 152.
+    `if (DEBUG_PARSING) {}`. 157 mutants -> 152.
   * SIX NEW EQUIVALENCE ARGUMENTS, each written with the grep that refutes it
-    and each with an UNDECLARED sibling on the same line that the corpus kills.
+    and four with an UNDECLARED sibling on the same line that the corpus kills.
+  * ONE DEFECT REPAIRED, AND IT COST THREE MUTANTS. A `print_conformance` replay
+    built at this dispatch found the translation writing `value of [ ]` where
+    the reference writes `value of []` for a ZERO-LENGTH `Ary`. The repair adds
+    `if (n > 0)`, which is two new mutants in the region the sweep cannot reach,
+    and it displaced a third declaration out of `const_tweak`'s 40-mutant cap.
+    0.9685 -> 0.9535. A correct program at a lower number.
 
-THE UNREACHABLE SET WENT 25 -> 6, WHICH IS THE PART WORTH READING. Nineteen of
-the twenty-five sat in the repeat-count block, and the third dispatch declared
-them because R14 planted no `*` anywhere in any record. `_TAIL_VALUES` plants
-seven now -- `1*7 8`, `0*1 2*5`, `20*7 8 9`, `200000000*7`, `200000001*7` and
-the two INT limits -- and all nineteen are SCORED. An unreachable declaration is
-a debt against the corpus and not a credit; this pays nineteen of them back.
-
-The six that remain are one region and they are the same region twice: the
-SEMICOLON item (L298-L303) and the NULL REPEAT COUNT (L338). Both are records on
-which the reference's READ RETURNS SUCCESS and leaves an element of a freshly
-ALLOCATEd `Ary` undefined, so a case carrying one turns the differential harness
-RED against recycled heap rather than against a defect -- and no `no_oracle_when`
-can name it, because the entry's reference half must be a relation on a field the
-reference RETURNS and on this path the reference returns exactly what a fully
-successful read returns. That is this unit's escalation, unchanged and still
-open.
+THE UNREACHABLE SET WENT 25 -> 6. Nineteen of the twenty-five sat in the
+repeat-count block, and the third dispatch declared them because R14 planted no
+`*` anywhere in any record. `_TAIL_VALUES` plants seven now and all nineteen are
+SCORED. An unreachable declaration is a debt against the corpus and not a
+credit; this pays nineteen of them back. The six that remain are the SEMICOLON
+item (L298-L303) and the NULL REPEAT COUNT (L338) -- both records on which the
+reference's READ RETURNS SUCCESS and leaves an element of a freshly ALLOCATEd
+`Ary` undefined, so no `no_oracle_when` can name them. This unit's escalation,
+unchanged.
 
 
-THE FOUR SURVIVORS
-==================
+THE SIX SURVIVORS
+=================
 
-REGION C -- THE PRINT RECORD. 3 survivors, and NO LAYER COMPARES IT
--------------------------------------------------------------------
+REGION C -- THE PRINT RECORD. 5 survivors, NO LAYER OF THE SCORE COMPARES IT,
+AND ALL FIVE ARE NOW MEASURED RATHER THAN ARGUED
+-----------------------------------------------------------------------------
 
     0562d216  const_tweak  L418  the field width 12 -> 13
     bb16f729  const_tweak  L423  the record's leading blank, 1 -> 2
     72edee9b  const_tweak  L427  the element loop's start, 0 -> 1
+    39d15f1e  const_tweak  L438  the repaired guard's own constant, 0 -> 1
+    4ca74dd3  negate_cond  L438  `if (n > 0)` negated -- the repair itself
 
 `print_default_warning` writes gfortran's list-directed output for the default
 arm to stdout. R4 compares the return value and six out-parameters with
-`memcmp`; the stream is not one of them. It is not invisible by accident either:
-`vit_mutate.py` reads a JSON PAYLOAD out of `./test`'s stdout precisely because
+`memcmp`; the stream is not one of them. It is not invisible by accident:
+`vit_mutate.py` reads a JSON PAYLOAD out of `./test`'s stdout PRECISELY BECAUSE
 the reference may PRINT, so both sides' records are discarded by the instrument
-before the comparison happens. And the gate cannot see them: this unit's default
-arm is DEAD in all 27 scenarios (`coverage/line_coverage.json`,
+before the comparison happens. And the gate cannot see them either -- this
+unit's default arm is DEAD in all 27 scenarios (`coverage/line_coverage.json`,
 ROSCO_Helpers.f90:806/:807 carry no counter against 230 executions of :775).
 
 They are case (c): **not equivalent** and **not unreachable**. The corpus DOES
-execute all three lines -- none of L418, L423 and L427 appears in
-`line_coverage.txt`'s never-executed list -- so an `unreachable` declaration would be false, and the
-three edits change the record the unit writes, so an equivalence would be false.
-What is missing is an ORACLE for that stream, and building one is a second
-instrument rather than a corpus change: the sibling `ParseDbAry_Opt` built a
-`print_conformance` replay for exactly this and measured its ten PRINT mutants
-moving 18 to 44 records of 44, then escalated a proposed `killed_by` declaration
-kind because a replay's kills are not the differential harness's kills and
-nothing in the artifact can express the difference.
+execute all five lines -- none of L418, L423, L427 or L438 appears in
+`line_coverage.txt`'s never-executed list -- and every one of the five edits
+changes the record the unit writes.
 
-**THE FOURTH DISPATCH DID NOT BUILD IT, and says so rather than folding the
-three into a declaration.** The three were `9381bdef`'s neighbours; `9381bdef`
-itself is gone, because the branch it negated was unreachable in the original
-and the fourth dispatch DELETED it. That is the honest half of this region: the
-part that could be removed was removed, and the part that needs an oracle is
-named and left in the survivor list where P12 counts it.
+**AND THAT LAST CLAIM IS A MEASUREMENT NOW, NOT AN ARGUMENT.**
+`evidence/ParseInAry_Opt/print_replay.txt` replays 34 records taken from the
+reference's own runtime through the SHIPPED `print_default_warning` and builds
+each of the five mutants from a copy:
+
+    0562d216   33 of 34 records differ
+    bb16f729   34 of 34
+    72edee9b   33 of 34
+    39d15f1e   25 of 34
+    4ca74dd3   34 of 34
+    baseline    0 of 34 mismatched against the reference
+
+with the one non-PRINT survivor as the negative control at 0. **Nothing from
+that run is folded into the score**: a kill by a different instrument is not a
+kill by the sweep, and `mutation/ParseInAry_Opt.json` is not touched by it.
+Entering them needs the `killed_by` declaration kind the sibling
+`ParseDbAry_Opt` escalated -- a loop change and an amendment, not this unit's to
+make. Until it exists the five sit in the survivor list where P12 counts them,
+which is the honest place for a mutant a second instrument kills and the
+primary one cannot.
+
+**THE INSTRUMENT PAID FOR ITSELF BEFORE IT SCORED ANYTHING.** Its first run's
+baseline was 1 of 34 MISMATCHED: on a zero-length `Ary` the reference writes
+`value of []` and the translation wrote `value of [ ]`. gfortran emits no
+separator blank before a CHARACTER item that follows an EMPTY value list. Four
+dispatches of evidence could not see it, because the region no layer compares is
+where the defect was. The repair is `if (n > 0)`, and two of the five survivors
+above are its price.
 
 
 REGION E -- ONE MUTANT WHOSE DISTINGUISHING RECORD HAS NO ORACLE
@@ -99,52 +119,49 @@ the shipped program leaves it clear. `crossed_eol` is read at exactly one place:
 298:            if (first_item || sep != Sep::Blank) { return 5010; }
 ```
 
-and L298 is the SEMICOLON guard. So the only records that can separate the two
+and L298 is the SEMICOLON guard. So the only records that separate the two
 programs are records in which a `;` starts an item and was reached across
-blanks -- and on those records the shipped program treats the `;` as LEGAL,
-which is to say as a NULL VALUE. **A null value leaves its element of a freshly
-ALLOCATEd `Ary` undefined while the reference returns IOSTAT 0**, and the two
-sides then differ on recycled heap rather than on anything either implementation
-decided.
+blanks -- and on those the shipped program treats the `;` as LEGAL, that is, as
+a NULL VALUE. **A null value leaves its element of a freshly ALLOCATEd `Ary`
+undefined while the reference returns IOSTAT 0**, and the two sides then differ
+on recycled heap rather than on anything either implementation decided.
 
-The direction matters and closes the search rather than leaving it open. To kill
-the mutant the harness needs the ORIGINAL to return 0 and the mutant to return
-5010 (or the reverse), and:
+The direction closes the search rather than leaving it open:
 
   * original 0 / mutant 5010 requires the `;` to be legal for the original,
     which is the undefined-element case above;
-  * original 5010 / mutant 0 would require the mutant to make a `sep` that is
-    NOT `Blank` become `Blank`, and the negation only ever moves `sep` the other
-    way (`Blank` -> `Eol`) on a record with no end-of-line character in it;
-  * a record carrying a real `\\n` or `\\r` would move it the useful way, and
-    `FileLines` elements come from a file reader that cannot produce one.
+  * original 5010 / mutant 0 would need the mutant to turn a `sep` that is NOT
+    `Blank` into `Blank`, and the negation only moves `sep` the other way on a
+    record with no end-of-line character in it;
+  * a record carrying a real end-of-line would move it the useful way, and
+    `FileLines` elements come from a file reader that cannot produce one;
   * both non-zero is INVISIBLE: `aviFAIL` is `-1` and `ErrMsg` is the same
     parse-error text for `5010` and for `-1` alike, because the message is
-    written from the BRANCH and not from the number. That is the same fact
-    section 1 of `equivalences.md` rests on, used here to show a kill is
-    impossible rather than that a mutant is equivalent.
+    written from the BRANCH and not from the number. That is section 1 of
+    `equivalences.md`'s fact, used here to show a kill is impossible rather than
+    that a mutant is equivalent.
 
 So this is case (c) and it is the SAME (c) as the six `unreachable`
 declarations: an input region the reference is undefined on. It is NOT declared
 equivalent -- the two programs genuinely differ on `0 ;`, and the third
 dispatch's record search measured that difference over 22 records
-(`survivor_record_search.txt`) -- and it is NOT declared unreachable, because L258
-IS executed by this corpus: `line_coverage.txt`'s never-executed list holds
-L259 -- the `crossed_eol = true;` inside the `if` -- and not the `if` itself,
-which is exactly the shape a line-granular claim cannot make. It is left in the survivor list, where it costs the
-score one mutant and says what it costs it for.
+(`survivor_record_search.txt`) -- and it is NOT declared unreachable, because
+L258 IS executed: `line_coverage.txt`'s never-executed list holds L259, the
+`crossed_eol = true;` INSIDE the `if`, and not the `if` itself. That is exactly
+the shape a line-granular claim cannot make.
 
 
-WHAT WOULD MOVE 0.9685 TO 1.0000, PRICED
+WHAT WOULD MOVE 0.9535 TO 1.0000, PRICED
 =========================================
 
-  three PRINT mutants   a print_conformance replay AND a `killed_by`
-                        declaration kind the artifact does not have. The
-                        instrument is the sibling's and is about an hour; the
-                        declaration is a loop change and an amendment.
+  five PRINT mutants    the instrument EXISTS and kills all five. What is
+                        missing is the `killed_by` declaration kind, so that a
+                        kill by a named second instrument can enter the artifact
+                        the way `equivalent` and `unreachable` do. 0.9535 ->
+                        0.9917 with no new measurement at all.
   07b5ee72              an oracle for `Ary` on a read that succeeds with a null
                         item. Same blocker as the six `unreachable`, and the
                         same escalation.
 
-Neither is a corpus gap, which is the difference from the third dispatch: every
-survivor that a RECORD could reach has been reached.
+NEITHER IS A CORPUS GAP, and that is the difference from every earlier dispatch
+of this unit: every survivor a RECORD could reach has been reached.

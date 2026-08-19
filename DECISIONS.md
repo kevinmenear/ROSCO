@@ -12943,3 +12943,92 @@ rather than written into `RUNBOOK.md`:
    Had it named the mechanism it believed forced that route — "the key is always
    to the right of the last value *in the record*" — the error would have been
    visible to a reader who knew `Line` was truncated.
+
+---
+
+## 2026-08-19 — unit #55, same dispatch: the eighth layer, and what it found
+
+### THE REGION NO LAYER COMPARES IS WHERE THE DEFECT WAS, AND IT COST AN HOUR
+
+`STATUS.md` and this unit's plan entry had listed the PRINT record as "what is
+still not seen" for three dispatches, with the reasoning that no layer compares
+it and the arm is dead in the gate. That reasoning was correct and it is also
+what kept a real defect alive. The instrument was built — 34 records from the
+reference's own list-directed PRINT, replayed through the SHIPPED
+`print_default_warning` by textual include — and its **first run's baseline was
+1 of 34 mismatched**:
+
+```
+ref | ... Using default value of []|
+got | ... Using default value of [ ]|
+```
+
+gfortran writes no separator blank before a CHARACTER item that follows an
+**empty** value list. The translation wrote one unconditionally. The sibling
+`ParseDbAry_Opt` guards the same blank with `if (n > 0)` and its replay's
+baseline was 0 of 44, so this was one unit's transcription and not a shared
+misreading of the runtime.
+
+**AND IT IS NOT AN ACCIDENT THAT NO LAYER SAW IT.** The differential harness
+compares out-parameters; the gate compares simulation channels and the arm is
+dead in all 27 scenarios; and `vit_mutate.py` reads a JSON *payload* out of
+`./test`'s stdout **precisely because the reference may PRINT**, so both sides'
+records are discarded by the instrument before any comparison happens. A region
+three separate layers are each individually right to ignore is a region nothing
+covers.
+
+The repair was made rather than filed, and its price is in the score: 0.9535
+against 0.9685. **A correct program at a lower number**, and the number is the
+honest one.
+
+### A MUTANT ID IS AN OCCURRENCE INDEX, AND AN ENUMERATION DIFF CANNOT SEE THAT
+
+The runbook already says to price a repair against the mutant enumeration before
+making it (unit #54, the 40-mutant cap). That was done here, and it was **right
+about the id SET and blind to what mattered**:
+
+```
+before the edit   152 mutants
+after the edit    153 mutants
+diff of the ID SETS:  1 gained (the new `if (n > 0)`), 0 lost
+```
+
+and yet **two of the eighteen declarations then named different sites**.
+`cppmutate` identifies a mutant by an occurrence index over identical edits, so
+inserting `if (n > 0)` — which adds a `'0' -> '1'` site — renumbers every later
+`'0' -> '1'` mutant. `6fb2c552` had been the `ary_size` ternary's else-arm and
+became `d->dim[0]`, which the corpus kills; `e9786fd2` had been
+`FoundLine_l = 0` and became `ErrVar->aviFAIL < 0`, which the corpus also kills.
+
+**`declared_but_killed` caught both**, which is the check doing exactly its job
+and is the reason this dispatch did not close on a false 0.9685. The repair was
+to re-derive every declaration from its SITE: the `ary_size` argument is
+`73975430` now, and the `FoundLine_l` equivalence was **dropped** — not
+retracted, but un-declarable, because the new site pushed its mutant out of
+`const_tweak`'s 40-of-61 sample entirely.
+
+Three deletions earlier in the same dispatch did NOT renumber anything, and the
+asymmetry is the rule: an occurrence index shifts for edits AFTER the change and
+not before it, and all three deleted sites happened to be last in their
+occurrence order.
+
+### FOR THE METHOD, NOT FOR THIS CAMPAIGN
+
+Adding to the two raised in the previous entry:
+
+3. **Price a repair by diffing (id → SITE), not the id SET.** The existing rule
+   catches an enumerated kill lost to the cap and misses a declaration
+   re-pointed by renumbering, which is the more dangerous of the two because it
+   produces a *higher* score rather than a lower one.
+4. **`declared_but_killed` is a first-class result and should be read before the
+   score.** It is currently a field a reader has to know to look at; on this
+   dispatch it was the only thing standing between a correct close and a wrong
+   one.
+5. **A `killed_by` declaration kind is now blocking two units.** The sibling
+   proposed it; this unit has an instrument that exists, is committed, is
+   red-tested by its own negative control, and kills five survivors that the
+   primary instrument structurally cannot reach — and there is no way to say so
+   in `mutation/<Unit>.json`. Without it the campaign's answer to "a mutant a
+   second instrument kills" is to leave it in the survivor list, which is honest
+   and is also a permanent ceiling below 1.0 for every unit that writes a record
+   nothing compares.

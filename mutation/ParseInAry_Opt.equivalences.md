@@ -1,4 +1,4 @@
-# `ParseInAry_Opt` — declared EQUIVALENT, eighteen mutants, one argument each
+# `ParseInAry_Opt` — declared EQUIVALENT, seventeen mutants, one argument each
 
 An equivalence is a claim about the two **PROGRAMS**: the mutated one and the
 shipped one agree on every admissible input, so no corpus can ever tell them
@@ -106,23 +106,23 @@ whose format could produce 32 bytes from an `int32_t`.
 | id | line | edit |
 |---|---|---|
 | `4f1acf76` | 346 | `int32_t value = 0;` → `= 1` |
-| `e9786fd2` | 474 | `int32_t FoundLine_l = 0;` → `= 1` |
 
 `value` is read at exactly one place, L354 `v[i++] = value;`, and the only path
 to L354 runs through `if (!parse_int(rec, len, p, value)) return 5010;` —
 `parse_int` assigns `out` on its single `return true` (L230) and on no other
 path. So the initialiser is dead on the one path that reads the variable.
 
-`FoundLine_l` is passed by address to `findline_c` at L477 and read at L478.
-`FindLine` writes `FoundLine = .FALSE.` unconditionally before any other
-statement that can return (`translations/ROSCO_Helpers/findline.cpp:170`, and
-the clean Fortran it bridges to at `ROSCO_Helpers.f90`), so the initialiser
-cannot be observed either.
+**THE SECOND ROW OF THIS TABLE IS GONE, AND ITS REMOVAL IS NOT A RETRACTION.**
+`int32_t FoundLine_l = 0;` → `= 1` was declared here on the same argument —
+`FoundLine_l` is passed by address to `findline_c` and `FindLine` writes
+`FoundLine = .FALSE.` unconditionally before any statement that can return, so
+the initialiser cannot be observed. The argument still holds. What changed is
+that **the mutant no longer exists**: `cppmutate` caps `const_tweak` at 40 of
+its 61 sites, the zero-length-`Ary` repair added a `'0' → '1'` site at
+`if (n > 0)`, and that pushed `FoundLine_l`'s off the end of the sample. A
+declaration whose mutant is not offered cannot be checked and is not carried.
 
-**REFUTED BY:** a path to L354 that does not pass L347, or an early `return` in
-`FindLine` before its `FoundLine = .FALSE.` — `sed -n '110,175p'
-translations/ROSCO_Helpers/findline.cpp | grep -n 'return\|FoundLine'` reports
-the assignment and no return above it.
+**REFUTED BY:** a path to L354 that does not pass L347.
 
 ## 4. A symmetric call
 
@@ -331,7 +331,7 @@ down rather than left as a survivor.
 
 | id | line | edit |
 |---|---|---|
-| `6fb2c552` | 443 | `return ary_allocated(d) ? d->dim[0].extent : 0;` → `: 1` |
+| `73975430` | 453 | `return ary_allocated(d) ? d->dim[0].extent : 0;` → `: 1` |
 
 `ary_size` has one call site:
 
@@ -358,3 +358,12 @@ ary_size` gives the definition and L528), an input that makes `CFI_allocate`
 fail, or a corpus that kills it. The mutant beside it on the same line —
 `d->dim[0]` → `d->dim[0 + 1]`, reading the descriptor's second dimension of a
 rank-1 array — is **not** declared and the sanitiser kills it.
+
+**AND THIS ROW'S ID CHANGED WITHOUT THE SITE CHANGING, WHICH IS WORTH THE
+WARNING.** It read `6fb2c552` until the zero-length-`Ary` repair. `cppmutate`
+identifies a mutant by an OCCURRENCE INDEX over identical edits, so inserting a
+`'0' → '1'` site earlier in the file renumbers every later one — `6fb2c552` now
+names `d->dim[0]`, the mutant this section says is **not** declared, and the
+corpus kills it. `declared_but_killed` caught it. **Re-derive a declaration from
+its SITE after any edit that adds or removes an identical edit; an enumeration
+diff of the id SET will report "none lost" and be useless.**

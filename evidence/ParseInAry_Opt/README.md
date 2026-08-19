@@ -936,3 +936,74 @@ harness itself rather than by a side instrument.
 
 `AryLen` above 32 remains a stated narrowing against a reference defined to at
 least 100,000.
+
+### 10.8 The instrument that was named as "not built" — and what it found
+
+§10.7 above was written with the PRINT record listed as the one thing still not
+seen. It was then built, in the same dispatch, and **its first run's baseline
+was not green**:
+
+```
+BASELINE: 34 replayed record(s), 1 mismatched
+  case 24
+    ref | ... Using default value of []|
+    got | ... Using default value of [ ]|
+```
+
+gfortran writes **no** separator blank before a CHARACTER item that follows an
+**empty** value list; the translation wrote `rec += ' '` unconditionally. The
+sibling `ParseDbAry_Opt` guards the same blank with `if (n > 0)` and its
+replay's baseline was 0 of 44 — so this was one unit's transcription, not a
+shared misreading of the runtime. **Four dispatches of evidence could not see
+it**, and the reason is structural rather than an oversight: the harness
+compares out-parameters, the gate's arm is dead in all 27 scenarios, and
+`vit_mutate.py` reads a JSON payload out of `./test`'s stdout *precisely
+because* the reference may PRINT.
+
+**The repair was priced before it was made** (RUNBOOK, "a one-line repair can
+lose an enumerated kill to the 40-mutant cap"), and the pricing was *right about
+the id set and blind to what mattered*: the enumeration diff reported "one
+gained, none lost", and two of the eighteen declarations silently re-pointed at
+different sites, because `cppmutate` identifies a mutant by an **occurrence
+index over identical edits** and the repair inserts a `'0' → '1'` site.
+`declared_but_killed` caught both. See §10.9.
+
+**What the repair cost, in full:**
+
+| | |
+|---|---|
+| `4ca74dd3` | the new `if (n > 0)` negated — a PRINT-region survivor |
+| `39d15f1e` | the new guard's own `0` → `1` — a PRINT-region survivor |
+| the `FoundLine_l = 0` equivalence | its mutant pushed out of `const_tweak`'s 40-mutant sample; declaration dropped |
+| | **0.9685 → 0.9535** |
+
+**And the layers that had to reproduce, and did:** the harness green (19,536 /
+0), all four stub red tests (19,276 / 2,377 / 1,150 / 19), the wrapper red test
+(11,121), and all four gate runs (5,252,000 / 0, 1,857,893, 0, and 5,252,000 / 0
+at close). Every one of those is a control saying the repair changed the record
+only where `n == 0`, which no scenario and no harness case reaches.
+
+**All five PRINT survivors are now measured rather than argued** — 25 to 34
+records of 34, with the one non-PRINT survivor as the negative control at 0.
+Nothing from that run enters the score: a kill by a different instrument is not
+a kill by the sweep. What is missing is the `killed_by` declaration kind, and
+with it 0.9535 → 0.9917 **with no new measurement at all**.
+
+### 10.9 A mutant id is an occurrence index, and a declaration file does not know that
+
+The finding is general and is raised in `DECISIONS.md` as a candidate for the
+method:
+
+```
+edit                                  effect on ids
+a DELETION of a site                  ids of identical edits BEFORE it: stable
+                                      ids of identical edits AFTER it:  shift
+an INSERTION of an identical edit     every identical edit AFTER it:    shifts
+diff of the two id SETS               reports "none lost" -- and is useless
+```
+
+Both of this dispatch's edits were of that kind. The three deletions happened to
+be at the END of their occurrence order and cost nothing; the one insertion was
+in the middle and re-pointed two declarations at sites the corpus kills. **After
+any edit, re-derive each declaration from its SITE and re-read
+`declared_but_killed` before believing the score.**

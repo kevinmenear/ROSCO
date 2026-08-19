@@ -5,10 +5,23 @@
 stand*. One copy of every count — do not duplicate them anywhere else.
 
 **As of 2026-08-19: unit #55 `ParseInAry_Opt` is `deferred`. FOUR dispatches.
-SEVEN layers; six green and red-tested, and the mutation layer at
-123 / (151 − 18 − 6) = 0.9685 against a threshold of 1.0** — from 0.7815 at the
+EIGHT layers; seven green and red-tested, and the mutation layer at
+123 / (152 − 17 − 6) = 0.9535 against a threshold of 1.0** — from 0.7815 at the
 third dispatch and 0.4423 at the second. P12 fails on that number and nothing
 else does.
+
+**THE EIGHTH LAYER IS NEW AND IT FOUND A DEFECT ON ITS FIRST RUN.** A
+`print_conformance` replay — 34 records from the reference's own list-directed
+PRINT, through the SHIPPED `print_default_warning` — came back **1 of 34
+mismatched**: on a ZERO-LENGTH `Ary` the reference writes `value of []` and the
+translation wrote `value of [ ]`. gfortran emits no separator blank before a
+CHARACTER item that follows an EMPTY value list. **No layer of this unit's
+evidence could have found it** — the harness compares out-parameters, the gate's
+arm is dead in all 27 scenarios, and `vit_mutate.py` reads a JSON payload out of
+`./test`'s stdout *precisely because* the reference may PRINT. The repair is
+`if (n > 0)`; it costs three mutants (two new ones the sweep cannot reach, and a
+declaration displaced out of `const_tweak`'s 40-mutant cap), so the number went
+**0.9685 → 0.9535**. A correct program at a lower number.
 
 **THE WHOLE OF THE MOVE IS ONE SENTENCE IN THE THIRD DISPATCH'S OWN EVIDENCE
 BEING WRONG.** That dispatch measured a record for eleven of its survivors —
@@ -23,15 +36,19 @@ for the other boundary. The lever was one form over and had been priced as a
 region with no oracle.
 
 ```
-                    second      third       fourth
-corpus              15,504      17,520      19,536
-mutants                156         156         152
-killed                  69          93         123
-equivalent declared      0          12          18
-unreachable declared     -          25           6
-survivors               87          26           4
-score               0.4423      0.7815      0.9685
+                    second      third    fourth/corpus   fourth/close
+corpus              15,504      17,520      19,536          19,536
+mutants                156         156         152             153
+killed                  69          93         123             123
+equivalent declared      0          12          18              17
+unreachable declared     -          25           6               6
+survivors               87          26           4               6
+score               0.4423      0.7815      0.9685          0.9535
 ```
+
+The two fourth-dispatch columns are the same dispatch either side of the PRINT
+repair, kept apart because the difference between them is the price of a fix and
+not a measurement that moved.
 
 **KILLS FIRST, DECLARATIONS AFTER, AND THE UNREACHABLE SET WENT DOWN WHILE THE
 SCORE WENT UP.** Nineteen of the third dispatch's twenty-five `unreachable`
@@ -52,11 +69,17 @@ sanitiser did not, and all nineteen sanitiser-only kills are reads at
 `rec[2048]` — the class the option exists for, and the class this dispatch's
 corpus is what makes reachable at all.
 
-**FOUR SURVIVORS, AND NONE OF THEM IS A CORPUS GAP.** Three are in the PRINT
-record, on a stream no layer compares — and the reason is structural rather than
-an oversight: `vit_mutate.py` reads a JSON *payload* out of `./test`'s stdout
-**precisely because the reference may PRINT**, so both sides' records are
-discarded before the comparison. The fourth, `07b5ee72`, negates the
+**SIX SURVIVORS, NONE OF THEM A CORPUS GAP, AND FIVE OF THEM MEASURED RATHER
+THAN ARGUED.** Five are in the PRINT record, on a stream no layer of the SCORE
+compares — and the reason is structural rather than an oversight:
+`vit_mutate.py` reads a JSON *payload* out of `./test`'s stdout **precisely
+because the reference may PRINT**, so both sides' records are discarded before
+the comparison. The new replay kills all five (25 to 34 records of 34) with the
+one non-PRINT survivor as its negative control at 0; **nothing from that run
+enters the score**, because a kill by a different instrument is not a kill by the
+sweep. What is missing is the `killed_by` declaration kind the sibling already
+proposed, and with it **0.9535 → 0.9917 with no new measurement at all**. The
+sixth, `07b5ee72`, negates the
 end-of-line test inside `eat_separator`; `crossed_eol` is read at exactly one
 place, the SEMICOLON guard, and every record that separates the two programs is
 one on which the reference returns IOSTAT 0 and leaves an element of a freshly
@@ -95,21 +118,22 @@ cheaper lever was not available for any of this dispatch's fourteen record kills
 All **twenty** result artifacts were re-taken at `8c17719`; `revcheck --unit`
 reports them at one revision.
 
-**WHAT WOULD MOVE 0.9685, so the next dispatch need not re-derive it.** Only two
-things are left and NEITHER is a corpus change. (1) A **PRINT-record conformance
-replay** — the sibling's `print_conformance` one region over, about an hour —
-*plus* the `killed_by` declaration kind the sibling already proposed, because a
-replay's kills are not the differential harness's kills and the artifact cannot
-express the difference. Worth three mutants, 0.9685 → 0.9919. (2) An **oracle for
-`Ary` on a read that succeeds with a null item**, which is worth `07b5ee72` and
-the six `unreachable` together and is a `no_oracle_when` the entry's grammar
-cannot currently express. Both are escalations, not work this unit may do alone.
+**WHAT WOULD MOVE 0.9535, so the next dispatch need not re-derive it.** Only two
+things are left, NEITHER is a corpus change, and neither needs a new
+measurement. (1) The **`killed_by` declaration kind**: the PRINT replay exists,
+it is committed, and it kills all five PRINT survivors — there is simply no way
+to say so in `mutation/<Unit>.json`. Worth five mutants, **0.9535 → 0.9917**.
+(2) An **oracle for `Ary` on a read that succeeds with a null item**, worth
+`07b5ee72` and the six `unreachable` together, and a `no_oracle_when` whose
+grammar cannot currently express it. Both are escalations, not work this unit may
+do alone.
 
 | layer | result | red-tested |
 |---|---|---|
 | differential harness (`harness/ParseInAry_Opt.json`) | **19,536 checked, 0 failed**, 0 inadmissible, against the CLEAN Fortran with all three callee bridges kept. `Ary` **not compared on 1,659** = 8.49%, flat against 8.5% across a 2,016-case addition | **four stubs, three predicted first**: no-op **19,276** ✓; the `.NOT. AllowDefault_` arm **2,377** against 2,273; the READ **1,150** against 1,044; the `IF (AryLen < 1)` arm **19**, unchanged. **Both misses classified** — the first is the partition's own 104-case `other` cell (2,273 + 104 = 2,377), the second splits 88 + 18 in `read_residual.txt` |
-| mutation (`mutation/ParseInAry_Opt.json`) | **151 behavioural — 123 KILLED, 18 EQUIVALENT, 6 UNREACHABLE, 4 SURVIVED, 0.9685.** Sanitised, green baseline, clean tree; `declared_but_killed` and `unreachable_but_killed` both empty | the value-oracle control on the SAME corpus and declarations: **104 killed, 0.8189** — `--sanitize` is worth exactly 19, and it is a strict superset |
-| line coverage (`evidence/ParseInAry_Opt/line_coverage.txt`) | **208 executable lines run, 26 never** — the measurement the 6 unreachable declarations are derived FROM | **control**: entry line **19,536** = the case count |
+| mutation (`mutation/ParseInAry_Opt.json`) | **152 behavioural — 123 KILLED, 17 EQUIVALENT, 6 UNREACHABLE, 6 SURVIVED, 0.9535.** Sanitised, green baseline, clean tree; `declared_but_killed` and `unreachable_but_killed` both empty | the value-oracle control on the SAME corpus and declarations: **104 killed, 0.8062** — `--sanitize` is worth exactly 19, and it is a strict superset |
+| PRINT conformance (`evidence/ParseInAry_Opt/print_replay.txt`) | **34 records, 0 mismatched** — the reference's own list-directed PRINT replayed through the SHIPPED `print_default_warning`. Its FIRST run was 1 of 34 and is what found the zero-length-`Ary` defect | all five PRINT survivors move a record, 25 to 34 of 34; negative control (the one survivor outside the region) 0 |
+| line coverage (`evidence/ParseInAry_Opt/line_coverage.txt`) | **209 executable lines run, 26 never** — the measurement the 6 unreachable declarations are derived FROM | **control**: entry line **19,536** = the case count |
 | survivor record search (`survivor_record_search.txt`) | the THIRD dispatch's artifact, kept and **annotated** rather than re-run: its 14 distinguished survivors are all killed by the harness now, and the annotation says which of its sentences was wrong | negative control built into the shape: survivors on lines the search never executes come back `none` |
 | post-integration (`harness/ParseInAry_Opt.postintegration.json`) | 19,536 checked, 0 failed | the reverse copy deleted from this unit's own wrapper: **11,121**, PREDICTED 11,121 as the partition's `aviFAIL-changed` column summed, before the run |
 | gate, 27 scenarios (`gate/ParseInAry_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched, re-taken at close | **two, both predicted to reproduce exactly and both exact**: parsed value + 1 **1,857,893**; the `Ary = 0` arm **0** |
