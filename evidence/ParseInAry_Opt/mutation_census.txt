@@ -1,3 +1,24 @@
+THIS IS THE SECOND DISPATCH'S CENSUS AND IT IS SUPERSEDED. Kept because it is
+the per-mutant console log the 69/156 = 0.4423 in that dispatch's evidence was
+read out of, and a superseded number with no log behind it is not checkable.
+
+The THIRD dispatch re-scored every mutant on the 17,520-case corpus at loop
+59aa876, sanitised, in five --operator-filtered parts. Its per-mutant verdicts
+are in the parts themselves --
+
+    mutation/ParseInAry_Opt.sanpart.{misc,compare_op,const_tweak,negate_cond,index_offset}.json
+
+-- and the union is `mutation/ParseInAry_Opt.json`: 93 killed, 12 equivalent,
+25 unreachable, 26 survived, 93/119 = 0.7815. Every survivor is answered in
+`evidence/ParseInAry_Opt/mutation_survivors.txt`.
+
+Two things below are still true of the current sweep and are why this file is
+worth reading: the mutant IDS are content-addressed and did not move (all 87 of
+this log's survivors resolve in the current enumeration), and the one NOCOMPILE
+is the same one, `804cac95` at [51/157].
+
+===============================================================================
+
 run_if_time_remains: 12661s remain, 900s needed -- starting
 157 mutant(s) from parseinary_opt.cpp
 

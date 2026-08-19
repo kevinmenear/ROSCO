@@ -1,220 +1,182 @@
-ParseInAry_Opt -- the 87 surviving mutants, placed by harness/cppmutate.py's own
-recorded position rather than by a text search, grouped by the region they sit in.
-SECOND DISPATCH, on the corrected corpus of 15,504 cases.
+ParseInAry_Opt -- EVERY MUTANT ANSWERED, third dispatch, loop 59aa876
+=====================================================================
 
-157 mutant(s), 1 did not compile, 156 behavioural;
-69 killed, 87 SURVIVED, score 0.4423 -- BELOW the campaign threshold of 1.0.
-The first dispatch, on 13,674 cases, scored 68 of 156 = 0.4359. ONE verdict moved:
-66860b6f (assign_errmsg, '>' -> '>=') is KILLED, by the one case the corrected
-base draw of R13's staging-capacity block produces. Nothing regressed, and no
-mutant is declared equivalent.
+157 mutants, 1 nocompile, 156 behavioural:
 
-  survived / mutants   region                              first dispatch
-         71 / 112        the list-directed READ              71 / 112
-          8 / 8          the PRINT record                    8 / 8
-          4 / 18         the unit's own body                 4 / 18
-          2 / 4          the constants and the file scope    2 / 4
-          1 / 6          the Ary descriptor helpers          1 / 6
-          1 / 1          int2lstr_trimmed                    1 / 1
-          0 / 6          assign_errmsg                       1 / 6
-          0 / 2          ftrim                               0 / 2
+    93  KILLED by the differential harness (17,520 cases, sanitised sweep)
+    12  declared EQUIVALENT      mutation/ParseInAry_Opt.equivalences.{json,md}
+    25  declared UNREACHABLE     mutation/ParseInAry_Opt.unreachable.json
+    26  SURVIVED                 every one has a row below
+   ---
+   156      score 93 / (156 - 12 - 25) = 93 / 119 = 0.7815
 
---- every survivor, in source order, with the OTHER instrument's verdict ---
-  8464d14d  line   60  [the constants and the file scope]  const_tweak: '200' -> '201'
-      parser replay: unreached
-  b54ac6eb  line  114  [int2lstr_trimmed]  index_offset: '[Int2LStrLen]' -> '[Int2LStrLen + 1]'
-      parser replay: unreached
-  b93bad70  line  194  [the constants and the file scope]  const_tweak: '200000000' -> '200000001'
-      parser replay: KILLED, 1 record(s) of 113
-  2f8001ae  line  202  [the list-directed READ]  compare_op: '<' -> '<='
-      parser replay: unreached
-  ad38f36b  line  202  [the list-directed READ]  compare_op: '==' -> '!='
-      parser replay: KILLED, 60 record(s) of 113
-  ba05f614  line  202  [the list-directed READ]  compare_op: '==' -> '!='
-      parser replay: KILLED, 62 record(s) of 113
-  85758208  line  202  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: KILLED, 3 record(s) of 113
-  3226d0dc  line  202  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: KILLED, 4 record(s) of 113
-  73ad4165  line  202  [the list-directed READ]  negate_cond: "if (p < len && (rec[p] == '+' || rec[p] == '-'))" -> "if (!(p < len && (rec[p] == '+' || rec[p] == '-')))"
-      parser replay: KILLED, 63 record(s) of 113
-  6d203c33  line  203  [the list-directed READ]  compare_op: '==' -> '!='
-      parser replay: KILLED, 5 record(s) of 113
-  b9434920  line  203  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: KILLED, 4 record(s) of 113
-  08ff2c98  line  209  [the list-directed READ]  compare_op: '<' -> '<='
-      parser replay: unreached
-  e6bc72cb  line  217  [the list-directed READ]  compare_op: '>' -> '>='
-      parser replay: unreached
-  51771298  line  227  [the list-directed READ]  compare_op: '>' -> '>='
-      parser replay: KILLED, 1 record(s) of 113
-  7d77a31a  line  227  [the list-directed READ]  compare_op: '<' -> '<='
-      parser replay: KILLED, 1 record(s) of 113
-  d99e45ef  line  248  [the list-directed READ]  compare_op: '<' -> '<='
-      parser replay: unreached
-  3dfee86c  line  248  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: KILLED, 4 record(s) of 113
-  da89c70f  line  257  [the list-directed READ]  compare_op: '<' -> '<='
-      parser replay: unreached
-  85857c57  line  257  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: KILLED, 29 record(s) of 113
-  14fc62e9  line  257  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: KILLED, 3 record(s) of 113
-  f448c16f  line  258  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: KILLED, 1 record(s) of 113
-  07b5ee72  line  258  [the list-directed READ]  negate_cond: 'if (is_eol(rec[p]))' -> 'if (!(is_eol(rec[p])))'
-      parser replay: KILLED, 14 record(s) of 113
-  b663872a  line  263  [the list-directed READ]  compare_op: '<' -> '<='
-      parser replay: unreached
-  ccd4583a  line  263  [the list-directed READ]  compare_op: '==' -> '!='
-      parser replay: KILLED, 38 record(s) of 113
-  0ccde40f  line  263  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: KILLED, 11 record(s) of 113
-  b947b4b0  line  263  [the list-directed READ]  negate_cond: "if (p < len && rec[p] == ',')" -> "if (!(p < len && rec[p] == ','))"
-      parser replay: KILLED, 38 record(s) of 113
-  112d63b1  line  265  [the list-directed READ]  compare_op: '<' -> '<='
-      parser replay: unreached
-  8fa93551  line  265  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: KILLED, 7 record(s) of 113
-  58ec3d92  line  265  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: unreached
-  7560589c  line  274  [the list-directed READ]  compare_op: '<' -> '<='
-      parser replay: KILLED, 43 record(s) of 113
-  7aad97cf  line  275  [the list-directed READ]  compare_op: '>=' -> '>'
-      parser replay: KILLED, 5 record(s) of 113
-  80184bd0  line  276  [the list-directed READ]  arith_op: 'return -1' -> 'return + 1'
-      parser replay: KILLED, 5 record(s) of 113
-  c8a37018  line  276  [the list-directed READ]  const_tweak: '1' -> '2'
-      parser replay: KILLED, 5 record(s) of 113
-  7784f889  line  283  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: KILLED, 12 record(s) of 113
-  7fd4edf1  line  287  [the list-directed READ]  compare_op: '<' -> '<='
-      parser replay: unreached
-  6c2149c9  line  287  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: KILLED, 4 record(s) of 113
-  78f9ef7a  line  287  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: unreached
-  3d58e9ee  line  294  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: KILLED, 12 record(s) of 113
-  71d3528f  line  298  [the list-directed READ]  compare_op: '!=' -> '=='
-      parser replay: KILLED, 19 record(s) of 113
-  f0af84b4  line  298  [the list-directed READ]  negate_cond: 'if (first_item || sep != Sep::Blank)' -> 'if (!(first_item || sep != Sep::Blank))'
-      parser replay: KILLED, 23 record(s) of 113
-  56160d94  line  299  [the list-directed READ]  const_tweak: '5010' -> '5011'
-      parser replay: KILLED, 12 record(s) of 113
-  4b65a2f1  line  303  [the list-directed READ]  compare_op: '<' -> '<='
-      parser replay: unreached
-  dbdc6be6  line  303  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: KILLED, 1 record(s) of 113
-  9a98ecd6  line  303  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: unreached
-  64cfaba1  line  316  [the list-directed READ]  compare_op: '<' -> '<='
-      parser replay: unreached
-  07c406a1  line  316  [the list-directed READ]  index_offset: '[q]' -> '[q + 1]'
-      parser replay: KILLED, 12 record(s) of 113
-  a4bdfbcc  line  319  [the list-directed READ]  compare_op: '>' -> '>='
-      parser replay: unreached
-  356f870c  line  319  [the list-directed READ]  compare_op: '<' -> '<='
-      parser replay: unreached
-  1e691028  line  319  [the list-directed READ]  index_offset: '[q]' -> '[q + 1]'
-      parser replay: KILLED, 12 record(s) of 113
-  fd9d54d0  line  320  [the list-directed READ]  const_tweak: '0' -> '1'
-      parser replay: KILLED, 6 record(s) of 113
-  4655ac21  line  322  [the list-directed READ]  compare_op: '<' -> '<='
-      parser replay: KILLED, 5 record(s) of 113
-  6ae5a0a4  line  323  [the list-directed READ]  drop_factor: 'count * 10' -> 'count'
-      parser replay: KILLED, 4 record(s) of 113
-  b82b582f  line  323  [the list-directed READ]  arith_op: 'count * 10' -> 'count / 10'
-      parser replay: KILLED, 5 record(s) of 113
-  328f7798  line  323  [the list-directed READ]  index_offset: '[k]' -> '[k + 1]'
-      parser replay: KILLED, 12 record(s) of 113
-  54d6e349  line  323  [the list-directed READ]  const_tweak: '10' -> '11'
-      parser replay: KILLED, 2 record(s) of 113
-  b2849cc7  line  324  [the list-directed READ]  compare_op: '>' -> '>='
-      parser replay: KILLED, 1 record(s) of 113
-  5baa764c  line  324  [the list-directed READ]  negate_cond: 'if (count > MaxRepeat)' -> 'if (!(count > MaxRepeat))'
-      parser replay: KILLED, 12 record(s) of 113
-  e905195c  line  326  [the list-directed READ]  arith_op: 'MaxRepeat + 1' -> 'MaxRepeat - 1'
-      parser replay: unreached
-  5477861c  line  326  [the list-directed READ]  const_tweak: '1' -> '2'
-      parser replay: unreached
-  a45110fc  line  329  [the list-directed READ]  compare_op: '<=' -> '<'
-      parser replay: KILLED, 1 record(s) of 113
-  9120d215  line  329  [the list-directed READ]  compare_op: '>' -> '>='
-      parser replay: KILLED, 1 record(s) of 113
-  33023944  line  329  [the list-directed READ]  const_tweak: '0' -> '1'
-      parser replay: KILLED, 1 record(s) of 113
-  7025bae7  line  329  [the list-directed READ]  negate_cond: 'if (count <= 0 || count_over || count > MaxRepeat)' -> 'if (!(count <= 0 || count_over || count > MaxRepeat))'
-      parser replay: KILLED, 17 record(s) of 113
-  6b5c6a0f  line  330  [the list-directed READ]  const_tweak: '5010' -> '5011'
-      parser replay: KILLED, 5 record(s) of 113
-  3629accc  line  333  [the list-directed READ]  arith_op: 'q + 1' -> 'q - 1'
-      parser replay: KILLED, 12 record(s) of 113
-  91b70005  line  333  [the list-directed READ]  const_tweak: '1' -> '2'
-      parser replay: KILLED, 9 record(s) of 113
-  e96f6152  line  337  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: KILLED, 8 record(s) of 113
-  b300704f  line  337  [the list-directed READ]  index_offset: '[p]' -> '[p + 1]'
-      parser replay: unreached
-  03f79cf0  line  337  [the list-directed READ]  negate_cond: "if (p >= len || is_value_terminator(rec[p]) || rec[p] == ';')" -> "if (!(p >= len || is_value_terminator(rec[p]) || rec[p] == ';'))"
-      parser replay: KILLED, 14 record(s) of 113
-  d3e0a66b  line  338  [the list-directed READ]  const_tweak: '0' -> '1'
-      parser replay: KILLED, 4 record(s) of 113
-  4f1acf76  line  346  [the list-directed READ]  const_tweak: '0' -> '1'
-      parser replay: unreached
-  24e73513  line  348  [the list-directed READ]  const_tweak: '5010' -> '5011'
-      parser replay: KILLED, 26 record(s) of 113
-  3683a56a  line  351  [the list-directed READ]  const_tweak: '5010' -> '5011'
-      parser replay: KILLED, 16 record(s) of 113
-  26d402b2  line  358  [the list-directed READ]  const_tweak: '0' -> '1'
-      parser replay: KILLED, 44 record(s) of 113
-  9381bdef  line  399  [the PRINT record]  negate_cond: 'if (static_cast<int>(text.size()) > w)' -> 'if (!(static_cast<int>(text.size()) > w))'
-      parser replay: unreached
-  f5386894  line  407  [the PRINT record]  index_offset: '[32]' -> '[32 + 1]'
-      parser replay: unreached
-  34a3b929  line  407  [the PRINT record]  const_tweak: '32' -> '33'
-      parser replay: unreached
-  0562d216  line  409  [the PRINT record]  const_tweak: '12' -> '13'
-      parser replay: unreached
-  bb16f729  line  414  [the PRINT record]  const_tweak: '1' -> '2'
-      parser replay: unreached
-  72edee9b  line  418  [the PRINT record]  const_tweak: '0' -> '1'
-      parser replay: unreached
-  4cc504a0  line  419  [the PRINT record]  index_offset: '[i]' -> '[i + 1]'
-      parser replay: unreached
-  373af6ff  line  424  [the PRINT record]  const_tweak: '1' -> '2'
-      parser replay: unreached
-  6fb2c552  line  434  [the Ary descriptor helpers]  const_tweak: '0' -> '1'
-      parser replay: unreached
-  e9786fd2  line  474  [the unit's own body]  const_tweak: '0' -> '1'
-      parser replay: unreached
-  b1c839d7  line  587  [the unit's own body]  drop_call: 'std::max(NumWords, 0)' -> 'NumWords'
-      parser replay: unreached
-  a61c0a99  line  587  [the unit's own body]  swap_call_args: 'NumWords, 0' -> '0, NumWords'
-      parser replay: unreached
-  afece932  line  597  [the unit's own body]  negate_cond: 'if (DEBUG_PARSING)' -> 'if (!(DEBUG_PARSING))'
-      parser replay: unreached
+`declared_but_killed` and `unreachable_but_killed` are both EMPTY in
+`mutation/ParseInAry_Opt.json`, which is the check on the 37 declarations.
 
-WHY, and it is a fact about the CORPUS and the INSTRUMENT rather than about the
-translation. Both causes were measured on the first dispatch and neither is
-touched by the second dispatch's corpus correction:
+AND THE 26 SURVIVORS ARE SEARCHED RATHER THAN ARGUED ABOUT.
+`evidence/ParseInAry_Opt/survivor_record_search.txt` builds the shipped
+translation and each of the 22 non-PRINT survivors from copies and runs both
+over 131,298 records -- every string of length 1..3 over a 40-character alphabet
+at the HEAD of a 2048-byte blank-padded record and again at its TAIL, plus 18
+crafted full-width records -- under `-fsanitize=address,undefined`. **14 of 22
+are distinguished: 3 by a VALUE and 11 by an ADDRESS.** Nothing from that run is
+folded into the score: it compares the translation against ITSELF-MUTATED, so it
+says nothing about agreement with the Fortran reference. What it settles is
+which of the three cases each survivor is in.
 
-  * THE LIST-DIRECTED READ IS REACHED BY 146 CASES OF 15,504 -- measured, not
-    estimated: evidence/ParseInAry_Opt/harness.no-read-stub.json deletes the whole
-    parser and moves exactly 146 cases, 0.94% of the corpus. R14 now plants at word
-    1, 2 AND 3 (the first dispatch reached word 1 alone), which is part of why the
-    number rose from 103 of 13,674 -- but every planted word is R14's own alphabet,
-    `aA` and `bB`, so the parser is still only ever asked to fail on a letter or on
-    a blank record. A CORPUS THAT REACHES THE PARSER WITH DIGITS NEEDS A CHANGE TO A
-    SHARED GENERATOR RULE, which unit #54 escalated to the Driver and which no unit
-    may make on its own. 52 of these 71 are killed by the parser replay, which is
-    what says they are a corpus gap rather than an unexamined region.
+The instrument's first run reported all eleven ADDRESS kills as
+`no record distinguishes it`; the wrong artifact is kept, with the reason, at
+`survivor_record_search.MISLABELLED.txt` (C12).
 
-  * THE PRINT RECORD IS COMPARED BY NOTHING. The harness compares out-parameters,
-    the gate compares simulation channels, and this record goes to stdout. All 8 of
-    its mutants survive, and that is the whole of the region. Unit #54's other
-    escalation, still open.
 
-  * assign_errmsg IS NOW 0 OF 6. That region was 1 of 6 and the one was 66860b6f.
-    It is the only region whose count moved, and it moved because a base draw was
-    corrected rather than because anything was declared.
+REGION A -- THE RECORD BOUND. 11 survivors, every one distinguished by an ADDRESS
+================================================================================
+
+    112d63b1  compare_op    L265  `p < len`  -> `p <= len`   eat_separator, after a comma
+    7fd4edf1  compare_op    L287  `p < len`  -> `p <= len`   the null-value scan
+    14fc62e9  index_offset  L257  `rec[p]`   -> `rec[p + 1]` eat_separator's blank scan
+    8fa93551  index_offset  L265  `rec[p]`   -> `rec[p + 1]`
+    58ec3d92  index_offset  L265  `rec[p]`   -> `rec[p + 1]`
+    3dfee86c  index_offset  L248  `rec[p]`   -> `rec[p + 1]` the leading-blank scan
+    6c2149c9  index_offset  L287  `rec[p]`   -> `rec[p + 1]`
+    78f9ef7a  index_offset  L287  `rec[p]`   -> `rec[p + 1]`
+    7784f889  index_offset  L283  `rec[p]`   -> `rec[p + 1]` the `,` test
+    3d58e9ee  index_offset  L294  `rec[p]`   -> `rec[p + 1]` the `;` test
+    1e691028  index_offset  L319  `rec[q]`   -> `rec[q + 1]` the repeat-count `*`
+
+**NOT EQUIVALENT, AND NOT INVISIBLE EITHER -- THE VALUE ORACLE IS THE WRONG
+INSTRUMENT FOR THEM.** Each reads `rec[2048]`, one past the end of the
+`std::vector<char>(2048)` the record lives in. On this allocator the byte that
+follows is very often a blank, so the mutant COMPUTES THE SAME ANSWER and every
+value comparison at every corpus size sees nothing. Under
+`-fsanitize=address,undefined` all eleven abort with a heap-buffer-overflow, and
+the shipped translation runs the same 131,298 records clean.
+
+**THE DISTINGUISHING RECORD IS ALMOST NOTHING: `0` FOLLOWED BY BLANKS TO COLUMN
+2048.** Six of the eleven die on exactly that; the others on `0a`, `0 +` and
+` 3`. The mutation sweep already runs `--sanitize`, so the reason they survive
+the sweep is not the instrument -- it is that no case in the 17,520 hands the
+parser a record with nothing to the right of its last value.
+
+**AND THAT IS A FACT ABOUT HOW A RECORD REACHES THE PARSER, NOT ABOUT THE
+CORPUS'S ALPHABET.** The unit only reads a line `FindLine` matched, and
+`FindLine` matches on word `AryLen + 1` -- so in every record that reaches the
+READ there is a non-blank KEY to the RIGHT of the last value, and every
+separator scan stops on it, thousands of columns short of the boundary.
+`_RECORD_TAILS` (loop 59aa876) does not reach this: its four forms end the
+record inside a VALUE, which is the boundary `parse_int`'s own scan meets and
+not the one `eat_separator` meets.
+
+For the corpus to hand the parser a record ending in blanks, `FindLine` would
+have to match a line whose word `AryLen + 1` is blank -- which needs an
+all-blank `ParamName`, and that is the same input shape as the THIRD
+undefined-`Ary` path this unit escalated in DECISIONS.md. **Escalated, not
+declared:** it is a corpus lever with a known cost, and pricing it is the next
+dispatch's item, not this one's assertion.
+
+
+REGION B -- DISTINGUISHED BY A VALUE. 3 survivors, each with its record
+=======================================================================
+
+    07b5ee72  negate_cond   L258  `if (is_eol(rec[p]))` negated
+              22 records. First: `0 ;` -- shipped returns -1, mutant returns 5010.
+              The semicolon rule reads which separator was crossed, and negating
+              the end-of-line test makes a BLANK look like an end-of-line, which
+              is exactly the `sep != Sep::Blank` half of the guard this unit
+              measured over thirty-one records.
+
+    51771298  compare_op    L227  `v > 2147483647LL` -> `>=`
+              1 record: `2147483647 7`, INT_MAX itself. The shipped parser reads
+              it (-1, then 2147483647); the mutant rejects it (5010). The corpus
+              carries R6's `2147483647` as a scalar INPUT and has never carried
+              it as a RECORD.
+
+    b93bad70  const_tweak   L194  `MaxRepeat` 200000000 -> 200000001
+              1 record: `200000001*7`. The shipped parser returns 5010 and the
+              mutant returns 0 with three 7s -- which is gfortran's own boundary,
+              MEASURED for this unit at `evidence/ParseInAry_Opt/survivor_replay.txt`
+              ('199999999*7' and '200000000*7' give 7 7; '200000001*7' gives 5010)
+              rather than recalled from libgfortran's source.
+
+All three are corpus levers, all three are one record each, and none of them is
+reachable through `FindLine` without the same all-blank-key shape region A needs
+-- except `51771298` and `b93bad70`, whose records are ordinary lines with a key
+after them and which R14 could plant tomorrow as `_NUMERIC_LEADS` entries.
+
+
+REGION C -- THE PRINT RECORD. 4 survivors, and NO LAYER COMPARES IT
+===================================================================
+
+    9381bdef  negate_cond   L399  `if (text.size() > w)` negated  -- the overflow fill
+    0562d216  const_tweak   L409  the field width 12 -> 13
+    bb16f729  const_tweak   L414  the record's leading blank, 1 -> 2
+    72edee9b  const_tweak   L418  the element loop's start, 0 -> 1
+
+`print_default_warning` writes gfortran's list-directed output for the default
+arm to stdout. R4 compares the return value and six out-parameters with
+`memcmp`; the stream is not one of them, and the gate cannot see it either --
+this unit's default arm is DEAD in all 27 scenarios (`ROSCO_Helpers.f90:806/:807`
+carry no counter against 230 executions of `:775`).
+
+They are the sibling's case (c): **not equivalent** and **not unreachable**. The
+sibling MEASURED its ten PRINT survivors moving 18 to 44 records of 44 with a
+`print_conformance` replay and escalated a proposed `killed_by` declaration;
+this unit has not built that instrument, and these four are named here as the
+gap rather than measured. `9381bdef` is the one worth building it for: the
+`if` it negates is UNREACHABLE in the original (a `"%d"` of an `int32_t` is at
+most 11 bytes against a 12-wide field), so the mutant turns a dead branch into
+one taken on every element -- twelve asterisks where a number should be.
+
+
+REGION D -- NOT DISTINGUISHED BY THE SEARCH SPACE. 8 survivors, and four of them
+are the instrument's own NEGATIVE CONTROL
+================================================================================
+
+INSIDE `list_read_ints` / `parse_int` -- the search drives these lines, and 131,298
+records did not separate them:
+
+    2f8001ae  compare_op    L202  `p < len` -> `p <= len`, at parse_int's SIGN test
+              This is the sibling's `0a3516d1` one function over: the ONE caller
+              has already established `p < len` (L275 returns -1 when `p >= len`,
+              and every path that advances `p` between there and here either
+              `continue`s or lands on a non-blank). Argued, and DELIBERATELY NOT
+              DECLARED -- the sibling declared its analogue and then killed three
+              siblings of the same shape on a wider corpus, which is the reason
+              to leave this one alive and countable.
+    e6bc72cb  compare_op    L217  `acc > 4294967296LL` -> `>=`. The bound is a
+              stop-accumulating guard, not a validity test: the validity test is
+              L227 against INT_MAX, and 4294967296 is far above it, so the two
+              spellings can only differ on a value that is already rejected.
+              Argued, not declared, for the same reason.
+    7d77a31a  compare_op    L227  `v < -2147483648LL` -> `<=`. INT_MIN itself. The
+              search's alphabet reaches `-2147483648` only as a 3-character token,
+              so the space does not contain the record that would settle it --
+              a BOUND OF THE SPACE, stated rather than read as equivalence.
+    a4bdfbcc  compare_op    L319  `q > p` -> `q >= p`. `q == p` means no digits
+              were scanned, and the repeat-count block is then entered with an
+              empty count -- which L329's `count <= 0` rejects with the same 5010
+              the terminator check would have produced. Argued, not declared.
+
+OUTSIDE IT -- and these four are the control, not a result:
+
+    8464d14d  const_tweak   L60   MaxParamLength 200 -> 201
+    6fb2c552  const_tweak   L434  ary_size's not-allocated result 0 -> 1
+    b1c839d7  drop_call     L587  `std::max(NumWords, 0)` -> `NumWords`
+    afece932  negate_cond   L597  `if (DEBUG_PARSING)` negated
+
+**The search enters the translation ONLY through `list_read_ints`, so a mutant
+on a line it never executes must come back `NONE`, and all four do.** That is
+the negative control, and it is built into the instrument's shape rather than
+chosen -- the same construction the sibling's PRINT replay uses. Their real
+status is unresolved by this instrument:
+
+  * `8464d14d` is both the allocation width of `Words_Ary` and the `len_Words`
+    the `GetWords` bridge is handed, so the two uses move together and it may
+    well be equivalent. "May well be" is not an argument; left alive.
+  * `6fb2c552` fires only on a descriptor with `base_addr == nullptr` reaching
+    `ary_size`, and the paths that read a size have all allocated by then.
+  * `b1c839d7` is equivalent exactly while `NumWords >= 0`, a fact about the
+    DOMAIN and not about the operator -- which is why its swap-args sibling
+    `a61c0a99` IS declared and this one is not.
+  * `afece932` turns a `constexpr false` debug block on. It writes to a stream
+    no layer compares, so it is region C's case at another address.
