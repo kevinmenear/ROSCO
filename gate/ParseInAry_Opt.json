@@ -5,11 +5,14 @@
  "compared": 5252000,
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "74c2a32",
+ "loop_rev": "6ec37f9",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
+ "notes": [
+  "SIXTH DISPATCH, re-taken at loop 6ec37f9. The only instrument change is the harness's compare_record, which the gate does not use, and neither the translation nor the wrapper moved -- so this run was PREDICTED at 5,252,000 / 0 before it was started, and a different number would have meant something other than the harness had changed."
+ ],
  "perturbed": false,
  "residual_dirt": [],
  "scenario_workers": 8,

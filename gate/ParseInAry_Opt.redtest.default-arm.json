@@ -6,14 +6,14 @@
  "comparison_verdict": "PASS",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "74c2a32",
+ "loop_rev": "6ec37f9",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "the Ary = 0 default arm, taken when FindLine does not find the parameter and defaults are allowed. PREDICTED TO MOVE ZERO, and the prediction is coverage rather than a guess: coverage/line_coverage.json records ROSCO_Helpers.f90:775 (the FindLine call) 230 times across all 27 scenarios and :806 / :807 with NO COUNTER AT ALL, so FoundLine is TRUE at every one of this unit s 230 calls.",
-  "FIFTH DISPATCH, re-taken on the PARALLEL scenario path at loop 74c2a32. This run is the NEGATIVE CONTROL for the parsed-value red test taken beside it: the same file, the same runner, the same 27 scenarios, and a perturbation on an arm the gate cannot reach. 1,857,893 next to 0 is what says the parallel runner moves what it should and nothing else. RED_TEST_FAIL is the CORRECT verdict here and is not a failure of the unit."
+  "the Ary = 0 default arm, taken when FindLine does not find the parameter and defaults are allowed. PREDICTED TO MOVE ZERO, and the prediction is coverage rather than a guess: coverage/line_coverage.json records ROSCO_Helpers.f90:775 (the FindLine call) 230 times across all 27 scenarios and :806 / :807 with NO COUNTER AT ALL, so FoundLine is TRUE at every one of this unit's 230 calls.",
+  "SIXTH DISPATCH, re-taken at loop 6ec37f9. This run is the NEGATIVE CONTROL for the parsed-value red test taken beside it: the same file, the same runner, the same 27 scenarios, and a perturbation on an arm no scenario reaches. 1,857,893 says the runner sees a difference that is there; 0 here says the 1,857,893 is not the runner leaking."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parseinary_opt.cpp",

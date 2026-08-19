@@ -6,7 +6,7 @@
  "comparison_verdict": "FAIL",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "74c2a32",
+ "loop_rev": "6ec37f9",
  "mismatched": 1857893,
  "mismatched_channels": [
   "scenario_3:bld_pitch 10334/16000",
@@ -161,7 +161,7 @@
  "missing_scenarios": [],
  "notes": [
   "every value this unit parses out of an input line arrives at the controller one greater. The ten shipped call sites that reach this member of the ParseAry generic are all INTEGER index arrays of CntrPar, so this moves what the controller indexes with, not a magnitude.",
-  "FIFTH DISPATCH, re-taken on the PARALLEL scenario path (scenario_workers 8) at loop 74c2a32. PREDICTED before the run to reproduce 1,857,893 EXACTLY: neither the translation nor the wrapper moved since the fourth dispatch, and the only instrument change is vit_mutate.py, which the gate does not use. A different number would mean the parallel runner had changed what is compared."
+  "SIXTH DISPATCH, re-taken at loop 6ec37f9 on the parallel scenario path. PREDICTED before the run to reproduce 1,857,893 EXACTLY: the compare_record change is inside the differential harness and the gate does not read it, and nothing else moved."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parseinary_opt.cpp",

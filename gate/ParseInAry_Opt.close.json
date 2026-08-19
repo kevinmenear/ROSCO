@@ -5,14 +5,14 @@
  "compared": 5252000,
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "74c2a32",
+ "loop_rev": "6ec37f9",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "CLOSE RUN, fifth dispatch: the gate re-taken against the library exactly as it ships at the end of this dispatch, after the two gate perturbations and the wrapper copy-back red test were reverted and rebuilt. Predicted at 5,252,000 / 0 before it was started.",
-  "Also the second reading of the PARALLEL scenario runner in this dispatch. The opening run and this one bracket a de-integration, a full reset_to_clean, five sanitised mutation parts, five value-oracle parts and three rebuilds of the controller; both come back 5,252,000 values across 351 channels with 0 mismatched and inputs_restored EMPTY."
+  "CLOSE RUN, sixth dispatch: the gate re-taken against the library exactly as it ships at the end of this dispatch, after the two gate perturbations and the wrapper copy-back red test were reverted and rebuilt. Predicted at 5,252,000 / 0 before it was started.",
+  "It also brackets the whole clean-tree phase: a de-integration, a full reset_to_clean, nine sanitised mutation parts, four value-oracle parts, five harness stub runs and three rebuilds of the controller sit between this run and the opening one, and both come back 5,252,000 values across 351 channels with 0 mismatched."
  ],
  "perturbed": false,
  "residual_dirt": [],
