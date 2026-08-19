@@ -18,11 +18,17 @@
 # THE FAILING SET IS PREDICTED BEFORE THE RUN, which is what makes the number
 # evidence rather than a number. From
 # `evidence/ParseInAry_Opt/harness_partition.txt`, MEASURED ON THIS UNIT'S OWN
-# CORPUS, the cases that reach an arm writing `aviFAIL` are `not-allowed`
-# (1120 + 817), `error, msg refused` (104), `read-failed` (59 + 87) and
-# `already-alloc` (6542) = 8,729; the `no-error` cell (6515) and the
-# `arrived-failed` cells (184 + 76) = 6,775 write no scalar at all and must
-# still pass. 8,729 + 6,775 = 15,504.
+# CORPUS, the prediction is simply that table's `aviFAIL-changed` COLUMN summed:
+# a case fails iff the unit changed a scalar the copy-back is what carries.
+#
+#   fourth dispatch, 19,536 cases   1,322 + 104 + 233 + 7,700 + 951 + 811
+#                                   = 11,121 must FAIL
+#                                   8,415 write no scalar and must PASS
+#                                   MEASURED 11,121, exact
+#
+# The counts are NOT hardcoded here on purpose -- they are read out of the
+# partition each time the corpus moves, and the third dispatch's (9,937 of
+# 17,520) and the second's (15,504) are in this file's git history.
 #
 # SECOND DISPATCH: THE NUMBER MOVED AND THE PREDICTION WAS RE-DERIVED, NOT
 # EDITED TO MATCH. The first dispatch predicted and measured 10,611 of 13,674 on
