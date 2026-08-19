@@ -4,12 +4,9 @@
   "arith_op",
   "compare_op",
   "const_tweak",
-  "drop_call",
   "drop_factor",
   "index_offset",
   "negate_cond",
-  "swap_call_args",
-  "swap_callee",
   "swap_operands"
  ],
  "operator_population": {
@@ -19,10 +16,7 @@
   "swap_operands": 1,
   "index_offset": 31,
   "const_tweak": 40,
-  "negate_cond": 32,
-  "drop_call": 1,
-  "swap_call_args": 1,
-  "swap_callee": 1
+  "negate_cond": 30
  },
  "operators_offered": [
   "arith_op",
@@ -47,158 +41,44 @@
  "sanitize": false,
  "killed_by_sanitizer": 0,
  "killed_by_sanitizer_ids": [],
- "mutants": 156,
- "equivalent_declared": 12,
- "unreachable_declared": 25,
+ "mutants": 151,
+ "equivalent_declared": 18,
+ "unreachable_declared": 6,
  "unreachable": [
-  {
-   "id": "6ae5a0a4",
-   "operator": "drop_factor",
-   "reason": "parseinary_opt.cpp:323 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'count * 10' to 'count' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "b82b582f",
-   "operator": "arith_op",
-   "reason": "parseinary_opt.cpp:323 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'count * 10' to 'count / 10' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "e905195c",
-   "operator": "arith_op",
-   "reason": "parseinary_opt.cpp:326 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'MaxRepeat + 1' to 'MaxRepeat - 1' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "3629accc",
-   "operator": "arith_op",
-   "reason": "parseinary_opt.cpp:333 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'q + 1' to 'q - 1' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
   {
    "id": "71d3528f",
    "operator": "compare_op",
-   "reason": "parseinary_opt.cpp:298 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '!=' to '==' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinary_opt.cpp:298 is NEVER EXECUTED by any of the 19,536 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '!=' to '==' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
   },
   {
    "id": "4b65a2f1",
    "operator": "compare_op",
-   "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "4655ac21",
-   "operator": "compare_op",
-   "reason": "parseinary_opt.cpp:322 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "b2849cc7",
-   "operator": "compare_op",
-   "reason": "parseinary_opt.cpp:324 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '>' to '>=' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "a45110fc",
-   "operator": "compare_op",
-   "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<=' to '<' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "9120d215",
-   "operator": "compare_op",
-   "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '>' to '>=' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "fd9d54d0",
-   "operator": "const_tweak",
-   "reason": "parseinary_opt.cpp:320 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "54d6e349",
-   "operator": "const_tweak",
-   "reason": "parseinary_opt.cpp:323 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '10' to '11' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "5477861c",
-   "operator": "const_tweak",
-   "reason": "parseinary_opt.cpp:326 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "33023944",
-   "operator": "const_tweak",
-   "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "91b70005",
-   "operator": "const_tweak",
-   "reason": "parseinary_opt.cpp:333 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 19,536 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
   },
   {
    "id": "d3e0a66b",
    "operator": "const_tweak",
-   "reason": "parseinary_opt.cpp:338 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinary_opt.cpp:338 is NEVER EXECUTED by any of the 19,536 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
   },
   {
    "id": "f0af84b4",
    "operator": "negate_cond",
-   "reason": "parseinary_opt.cpp:298 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (first_item || sep != Sep::Blank)' to 'if (!(first_item || sep != Sep::Blank))' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "5baa764c",
-   "operator": "negate_cond",
-   "reason": "parseinary_opt.cpp:324 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (count > MaxRepeat)' to 'if (!(count > MaxRepeat))' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "7025bae7",
-   "operator": "negate_cond",
-   "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (count <= 0 || count_over || count > MaxRepeat)' to 'if (!(count <= 0 || count_over || count > MaxRepeat))' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "03f79cf0",
-   "operator": "negate_cond",
-   "reason": "parseinary_opt.cpp:337 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits \"if (p >= len || is_value_terminator(rec[p]) || rec[p] == ';')\" to \"if (!(p >= len || is_value_terminator(rec[p]) || rec[p] == ';'))\" on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinary_opt.cpp:298 is NEVER EXECUTED by any of the 19,536 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (first_item || sep != Sep::Blank)' to 'if (!(first_item || sep != Sep::Blank))' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
   },
   {
    "id": "dbdc6be6",
    "operator": "index_offset",
-   "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 19,536 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
   },
   {
    "id": "9a98ecd6",
    "operator": "index_offset",
-   "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "328f7798",
-   "operator": "index_offset",
-   "reason": "parseinary_opt.cpp:323 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[k]' to '[k + 1]' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "e96f6152",
-   "operator": "index_offset",
-   "reason": "parseinary_opt.cpp:337 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "b300704f",
-   "operator": "index_offset",
-   "reason": "parseinary_opt.cpp:337 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 19,536 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
   }
  ],
@@ -206,39 +86,36 @@
  "nocompile": 1,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
- "nocompile_ratio": 0.0064,
+ "nocompile_ratio": 0.0066,
  "nocompile_refused": false,
- "total": 157,
- "killed": 82,
- "survived": 37,
- "equivalent": 12,
+ "total": 152,
+ "killed": 104,
+ "survived": 23,
+ "equivalent": 18,
  "declared_but_killed": [],
- "score": 0.6891,
- "loop_rev": "59aa876-nogit",
+ "score": 0.8189,
+ "loop_rev": "8c17719-nogit",
  "vit_rev": "3f6e2ce-nogit",
  "merged_from": [
   {
    "part": "mutation/ParseInAry_Opt.valpart.misc.json",
    "operators_filter": [
     "arith_op",
-    "drop_call",
     "drop_factor",
-    "swap_call_args",
-    "swap_callee",
     "swap_operands"
    ],
    "mutant_slice": {
     "offset": 0,
     "limit": 0,
-    "scored": 14,
-    "of": 14
+    "scored": 11,
+    "of": 11
    },
-   "total": 14,
-   "mutants": 13,
+   "total": 11,
+   "mutants": 10,
    "nocompile": 1,
-   "killed": 6,
-   "survived": 1,
-   "score": 0.8571
+   "killed": 8,
+   "survived": 0,
+   "score": 1.0
   },
   {
    "part": "mutation/ParseInAry_Opt.valpart.compare_op.json",
@@ -254,9 +131,9 @@
    "total": 40,
    "mutants": 40,
    "nocompile": 0,
-   "killed": 20,
-   "survived": 14,
-   "score": 0.5882
+   "killed": 26,
+   "survived": 9,
+   "score": 0.7429
   },
   {
    "part": "mutation/ParseInAry_Opt.valpart.const_tweak.json",
@@ -272,9 +149,9 @@
    "total": 40,
    "mutants": 40,
    "nocompile": 0,
-   "killed": 19,
-   "survived": 7,
-   "score": 0.7308
+   "killed": 24,
+   "survived": 4,
+   "score": 0.8571
   },
   {
    "part": "mutation/ParseInAry_Opt.valpart.negate_cond.json",
@@ -284,15 +161,15 @@
    "mutant_slice": {
     "offset": 0,
     "limit": 0,
-    "scored": 32,
-    "of": 32
+    "scored": 30,
+    "of": 30
    },
-   "total": 32,
-   "mutants": 32,
+   "total": 30,
+   "mutants": 30,
    "nocompile": 0,
-   "killed": 25,
-   "survived": 3,
-   "score": 0.8929
+   "killed": 28,
+   "survived": 1,
+   "score": 0.9655
   },
   {
    "part": "mutation/ParseInAry_Opt.valpart.index_offset.json",
@@ -308,46 +185,16 @@
    "total": 31,
    "mutants": 31,
    "nocompile": 0,
-   "killed": 12,
-   "survived": 12,
-   "score": 0.5
+   "killed": 18,
+   "survived": 9,
+   "score": 0.6667
   }
  ],
- "merged_why": "the VALUE-ORACLE control: the identical sweep on the identical 17,520-case corpus with --sanitize OFF, so the sanitiser's contribution to 69 -> 93 is a subtraction rather than a claim. NOT the unit's score artifact -- mutation/ParseInAry_Opt.json is.",
+ "merged_why": "the VALUE-ORACLE CONTROL on the SAME 19,536-case corpus: identical to mutation/ParseInAry_Opt.json in every respect except that --sanitize is absent, so the difference between the two scores is exactly what the sanitiser buys. Five --operator-filtered foreground parts, each through scripts/mutate_guarded.sh",
  "merged_by": "scripts/_mutation_merge.py",
  "survivors": [
   {
-   "id": "b1c839d7",
-   "operator": "drop_call",
-   "before": "std::max(NumWords, 0)",
-   "after": "NumWords"
-  },
-  {
-   "id": "2f8001ae",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
    "id": "08ff2c98",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "e6bc72cb",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "51771298",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "7d77a31a",
    "operator": "compare_op",
    "before": "<",
    "after": "<="
@@ -395,28 +242,10 @@
    "after": "<="
   },
   {
-   "id": "a4bdfbcc",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
    "id": "356f870c",
    "operator": "compare_op",
    "before": "<",
    "after": "<="
-  },
-  {
-   "id": "8464d14d",
-   "operator": "const_tweak",
-   "before": "200",
-   "after": "201"
-  },
-  {
-   "id": "b93bad70",
-   "operator": "const_tweak",
-   "before": "200000000",
-   "after": "200000001"
   },
   {
    "id": "0562d216",
@@ -443,28 +272,10 @@
    "after": "2"
   },
   {
-   "id": "6fb2c552",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
    "id": "07b5ee72",
    "operator": "negate_cond",
    "before": "if (is_eol(rec[p]))",
    "after": "if (!(is_eol(rec[p])))"
-  },
-  {
-   "id": "9381bdef",
-   "operator": "negate_cond",
-   "before": "if (static_cast<int>(text.size()) > w)",
-   "after": "if (!(static_cast<int>(text.size()) > w))"
-  },
-  {
-   "id": "afece932",
-   "operator": "negate_cond",
-   "before": "if (DEBUG_PARSING)",
-   "after": "if (!(DEBUG_PARSING))"
   },
   {
    "id": "3dfee86c",
@@ -485,19 +296,7 @@
    "after": "[p + 1]"
   },
   {
-   "id": "8fa93551",
-   "operator": "index_offset",
-   "before": "[p]",
-   "after": "[p + 1]"
-  },
-  {
    "id": "58ec3d92",
-   "operator": "index_offset",
-   "before": "[p]",
-   "after": "[p + 1]"
-  },
-  {
-   "id": "7784f889",
    "operator": "index_offset",
    "before": "[p]",
    "after": "[p + 1]"
@@ -521,16 +320,10 @@
    "after": "[p + 1]"
   },
   {
-   "id": "07c406a1",
+   "id": "b300704f",
    "operator": "index_offset",
-   "before": "[q]",
-   "after": "[q + 1]"
-  },
-  {
-   "id": "1e691028",
-   "operator": "index_offset",
-   "before": "[q]",
-   "after": "[q + 1]"
+   "before": "[p]",
+   "after": "[p + 1]"
   },
   {
    "id": "4cc504a0",

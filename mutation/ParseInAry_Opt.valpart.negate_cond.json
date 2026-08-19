@@ -25,8 +25,8 @@
  "mutant_slice": {
   "offset": 0,
   "limit": 0,
-  "scored": 32,
-  "of": 32
+  "scored": 30,
+  "of": 30
  },
  "scored_ids": [
   "0cf89023",
@@ -49,7 +49,6 @@
   "03f79cf0",
   "1fc42c92",
   "5831850e",
-  "9381bdef",
   "31c7aef7",
   "61caf2fd",
   "62888bdb",
@@ -59,7 +58,6 @@
   "0bc135e3",
   "d6d80643",
   "b527f6b6",
-  "afece932",
   "3eda97fa"
  ],
  "limit_per_operator": 40,
@@ -67,32 +65,14 @@
   "compare_op",
   "const_tweak"
  ],
- "mutants": 32,
+ "mutants": 30,
  "equivalent_declared": 0,
- "unreachable_declared": 4,
+ "unreachable_declared": 1,
  "unreachable": [
   {
    "id": "f0af84b4",
    "operator": "negate_cond",
-   "reason": "parseinary_opt.cpp:298 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (first_item || sep != Sep::Blank)' to 'if (!(first_item || sep != Sep::Blank))' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "5baa764c",
-   "operator": "negate_cond",
-   "reason": "parseinary_opt.cpp:324 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (count > MaxRepeat)' to 'if (!(count > MaxRepeat))' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "7025bae7",
-   "operator": "negate_cond",
-   "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (count <= 0 || count_over || count > MaxRepeat)' to 'if (!(count <= 0 || count_over || count > MaxRepeat))' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "03f79cf0",
-   "operator": "negate_cond",
-   "reason": "parseinary_opt.cpp:337 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits \"if (p >= len || is_value_terminator(rec[p]) || rec[p] == ';')\" to \"if (!(p >= len || is_value_terminator(rec[p]) || rec[p] == ';'))\" on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinary_opt.cpp:298 is NEVER EXECUTED by any of the 19,536 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (first_item || sep != Sep::Blank)' to 'if (!(first_item || sep != Sep::Blank))' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
   }
  ],
@@ -104,15 +84,15 @@
  "killed_by_sanitizer_ids": [],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
- "total": 32,
- "killed": 25,
- "survived": 3,
+ "total": 30,
+ "killed": 28,
+ "survived": 1,
  "equivalent": 0,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.8929,
- "loop_rev": "59aa876-nogit",
- "gen_rev": "gen-f38d4ba5fdc8",
+ "score": 0.9655,
+ "loop_rev": "8c17719-nogit",
+ "gen_rev": "gen-7654789df837",
  "vit_rev": "3f6e2ce-nogit",
  "survivors": [
   {
@@ -120,18 +100,6 @@
    "operator": "negate_cond",
    "before": "if (is_eol(rec[p]))",
    "after": "if (!(is_eol(rec[p])))"
-  },
-  {
-   "id": "9381bdef",
-   "operator": "negate_cond",
-   "before": "if (static_cast<int>(text.size()) > w)",
-   "after": "if (!(static_cast<int>(text.size()) > w))"
-  },
-  {
-   "id": "afece932",
-   "operator": "negate_cond",
-   "before": "if (DEBUG_PARSING)",
-   "after": "if (!(DEBUG_PARSING))"
   }
  ]
 }

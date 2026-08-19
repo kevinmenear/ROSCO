@@ -68,36 +68,18 @@
  ],
  "mutants": 31,
  "equivalent_declared": 2,
- "unreachable_declared": 5,
+ "unreachable_declared": 2,
  "unreachable": [
   {
    "id": "dbdc6be6",
    "operator": "index_offset",
-   "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 19,536 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
   },
   {
    "id": "9a98ecd6",
    "operator": "index_offset",
-   "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "328f7798",
-   "operator": "index_offset",
-   "reason": "parseinary_opt.cpp:323 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[k]' to '[k + 1]' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "e96f6152",
-   "operator": "index_offset",
-   "reason": "parseinary_opt.cpp:337 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "b300704f",
-   "operator": "index_offset",
-   "reason": "parseinary_opt.cpp:337 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 19,536 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
   }
  ],
@@ -110,14 +92,14 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 31,
- "killed": 12,
- "survived": 12,
+ "killed": 18,
+ "survived": 9,
  "equivalent": 2,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.5,
- "loop_rev": "59aa876-nogit",
- "gen_rev": "gen-f38d4ba5fdc8",
+ "score": 0.6667,
+ "loop_rev": "8c17719-nogit",
+ "gen_rev": "gen-7654789df837",
  "vit_rev": "3f6e2ce-nogit",
  "survivors": [
   {
@@ -139,19 +121,7 @@
    "after": "[p + 1]"
   },
   {
-   "id": "8fa93551",
-   "operator": "index_offset",
-   "before": "[p]",
-   "after": "[p + 1]"
-  },
-  {
    "id": "58ec3d92",
-   "operator": "index_offset",
-   "before": "[p]",
-   "after": "[p + 1]"
-  },
-  {
-   "id": "7784f889",
    "operator": "index_offset",
    "before": "[p]",
    "after": "[p + 1]"
@@ -175,16 +145,10 @@
    "after": "[p + 1]"
   },
   {
-   "id": "07c406a1",
+   "id": "b300704f",
    "operator": "index_offset",
-   "before": "[q]",
-   "after": "[q + 1]"
-  },
-  {
-   "id": "1e691028",
-   "operator": "index_offset",
-   "before": "[q]",
-   "after": "[q + 1]"
+   "before": "[p]",
+   "after": "[p + 1]"
   },
   {
    "id": "4cc504a0",

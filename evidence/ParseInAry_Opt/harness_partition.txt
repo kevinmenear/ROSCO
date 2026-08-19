@@ -1,114 +1,44 @@
 ParseInAry_Opt -- the differential harness partitioned by (alloc_Ary on entry, arm)
-MEASURED ON THE THIRD DISPATCH'S CORPUS (17,520 cases), at loop 59aa876. The
-second dispatch's table (15,504 cases) and the first's (13,674) are in the git
-history of this file.
+MEASURED ON THE FOURTH DISPATCH'S CORPUS (19,536 cases), at loop 8c17719. The
+third dispatch's table (17,520 cases), the second's (15,504) and the first's
+(13,674) are in the git history of this file.
 
-RE-TAKEN BY A SCRIPT THIS TIME. The first two dispatches produced this table
-with "one fprintf in the generated test and a --no-generate rebuild" and left no
-way to repeat it; `evidence/ParseInAry_Opt/run_partition_probe.sh` is that
-sentence executed, copied from the sibling's (P4). The corpus has now moved
-13,674 -> 15,504 -> 17,520, and every red-test prediction below is read out of
-THIS run rather than scaled from the last one.
+RE-TAKEN BY THE SCRIPT, `evidence/ParseInAry_Opt/run_partition_probe.sh`. The
+corpus has now moved 13,674 -> 15,504 -> 17,520 -> 19,536, and every red-test
+prediction below is read out of THIS run rather than scaled from the last one.
 
-HOW: one fprintf in the generated test and a rebuild WITHOUT regenerating the
-corpus -- unit #47's probe. It reads THREE things and all three are properties
-of (corpus x reference):
-  alloc_Ary  the descriptor flag the CASE supplied, read before either call
-  entry      ErrVar%aviFAIL as the CASE supplied it, snapshotted before both
-             calls because both of them overwrite it
-  arm        what the REFERENCE returned, classified off the reference's own
-             ErrMsg with substrings copied from ROSCO_Helpers.f90
-Nothing on the translation's side is read, so the table is identical under
-every mutant and every stub -- which is what makes a mutation score over it a
-measurement.
+WHAT THE TABLE PREDICTED, AND WHAT THE RUNS MEASURED. Three of the four stub red
+tests and the wrapper red test are predicted from these cells BEFORE they are
+run:
 
-17520 cases, 0 failing with the `no_oracle_when` entry APPLIED.
+  the whole unit as a no-op        19,276 = 19,536 - (184 + 76)   PREDICTED, EXACT
+  the .NOT. AllowDefault_ arm       2,273 = 1,322 + 951           MEASURED 2,377
+  the list-directed READ            1,044 =   233 + 811           MEASURED 1,150
+  the IF (AryLen < 1) arm              19, unpredicted and unchanged from the
+                                       third dispatch
+  the deleted scalar copy-back     11,121, the aviFAIL-changed column summed
 
-  alloc  arm                   cases   aviFAIL-changed
-      0  entered-failed          184         0
-      0  not-allowed            1224      1224
-      0  other                  7427       104
-      0  read-failed             155       155
-      1  already-alloc          7094      7094
-      1  entered-failed           76         0
-      1  not-allowed             881       881
-      1  read-failed             479       479
+THE TWO MISSES ARE THE SAME 104-CASE CELL SEEN TWICE, AND IT IS IN THE TABLE.
+`alloc = 0, other` carries 8,259 cases of which 104 CHANGED aviFAIL -- an arm
+that set the flag and whose returned ErrMsg matches none of the classifier's
+substrings, which is what R13's staging-capacity block produces: the bridge
+REFUSES an ErrMsg longer than the buffer the case supplied and the reference
+comes back with the message it arrived with. 2,273 + 104 = 2,377 exactly. The
+READ residual is 106 and is NOT that cell: it is measured separately in
+`read_residual.txt` and splits 88 + 18 rather than 104 + 2.
 
-  cases where the reference CHANGED aviFAIL: 9937 of 17520
+19536 case(s) with a probe record
 
-`other` is the no-error cell plus the 104 cases of `error, msg refused` -- the
-arm where the reference DID set aviFAIL = -1 and the generated bridge would not
-fit the message into the staging buffer. It is a real cell rather than a corner
-because R13 sweeps the staging capacity from below the message length to above
-it, and it is the cell the second dispatch's base-draw correction created:
-`aviFAIL-changed` inside `other` is exactly those 104.
+  alloc  arm                 cases   aviFAIL-changed
+      0  entered-failed         184         0
+      0  not-allowed           1322      1322
+      0  other                 8259       104
+      0  read-failed            233       233
+      1  already-alloc         7700      7700
+      1  entered-failed          76         0
+      1  not-allowed            951       951
+      1  read-failed            811       811
 
-THE STATED EXCLUSION -- alloc_Ary == 0 AND entry aviFAIL >= 0 AND the reference
-returned aviFAIL < 0 -- holds on 1483 of 17520 cases (8.5%), against 1,283 of
-15,504 (8.3%) at the second dispatch and 4,067 of 13,674 (29.7%) at the first.
-The share is flat across the corpus change: the new cases are R14 records, which
-land on arms where `Ary` has an oracle.
-
-AND THE CHECK ON THE EXCLUSION IS THE GREEN ITSELF: 0 failing cases means no
-case OUTSIDE the condition disagrees on Ary. That check is not free here -- see
-DECISIONS.md on the corpus variant that was measured and NOT taken, in which
-exactly one case outside the condition did.
-
-===============================================================================
-PREDICTIONS MADE FROM THIS TABLE, BEFORE THE RUNS THAT TEST THEM
-===============================================================================
-
-Written here before any of the five runs below was started, which is the only
-thing that makes them predictions.
-
-  the unit as a no-op                   17,260 = 17,520 - (184 + 76)
-                                        the cases that ARRIVED already failed
-                                        cannot move, because both sides return
-                                        without entering the body
-  the .NOT. AllowDefault_ arm deleted    2,209 = 1224 + 881 + 104
-  the list-directed READ deleted           634 =  155 + 479
-  the IF (AryLen < 1) arm deleted        NOT PREDICTABLE FROM THIS TABLE. The
-                                        second dispatch measured 19 = 17 + 2 + 0
-                                        over three cells this partition does not
-                                        separate (Ary compared and its extent
-                                        differs; Ary excluded and a zero-item
-                                        READ cannot fail; and the perturbation
-                                        reaching a case INVISIBLY). Stated as
-                                        unpredicted rather than guessed.
-  the wrapper's scalar copy-back deleted 9,937 -- the `aviFAIL-changed` column,
-                                        which is the whole of it: the copy-back
-                                        carries the SCALARS of the view struct
-                                        back into the Fortran type, so a case
-                                        fails iff the unit changed one of them,
-                                        and ErrStat and size_avcMSG are 0 across
-                                        the whole corpus (probe output above).
-
-===============================================================================
-MEASURED
-===============================================================================
-
-  the unit as a no-op                   17,260   PREDICTED 17,260   exact
-  the .NOT. AllowDefault_ arm deleted    2,209   PREDICTED  2,209   exact
-  the list-directed READ deleted           646   PREDICTED    634   MISSED BY 12
-  the IF (AryLen < 1) arm deleted           19   not predicted, and unchanged
-                                                 from the second dispatch's 19
-  the wrapper's scalar copy-back deleted  <taken post-integration; see
-                                           harness/ParseInAry_Opt.postintegration.redtest.json>
-
-THE ONE THAT MISSED IS THE ONE THE CORPUS CHANGE WAS FOR, and the twelve are
-classified rather than explained: `evidence/ParseInAry_Opt/read_residual.txt`
-re-runs the stub with a per-failing-case probe and finds 634 on a `read-failed`
-arm -- the prediction, exactly -- and 12 on NO error arm at all, the reference's
-aviFAIL still at the 300 the case supplied. Those twelve are cases in which the
-reference's READ SUCCEEDED, so deleting the READ is visible in `Ary` and in
-nothing else. Their case indices are 15,396..16,098, inside R14's block: loop
-b33a761's NUMERIC LEADS are the first records this campaign has planted in front
-of a key that a parser can actually READ. Every earlier corpus planted LETTERS,
-every matched record failed, and the failing set was exactly the two error cells
--- which is why the identical prediction was EXACT at the second dispatch (146 =
-59 + 87) and is 12 short here.
-
-The fourth is unchanged at 19. The second dispatch decomposed it as 17 + 2 + 0
-over three cells this partition does not separate; the total not moving across a
-two-thousand-case corpus change is consistent with that decomposition and is not
-a re-derivation of it. Stated as unpredicted, and left so.
+  cases where the reference CHANGED aviFAIL: 11121 of 19536
+  distinct returned ErrStat values: [0]
+  distinct returned size_avcMSG:    [0]

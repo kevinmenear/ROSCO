@@ -76,43 +76,13 @@
   "const_tweak"
  ],
  "mutants": 40,
- "equivalent_declared": 8,
- "unreachable_declared": 6,
+ "equivalent_declared": 11,
+ "unreachable_declared": 1,
  "unreachable": [
-  {
-   "id": "fd9d54d0",
-   "operator": "const_tweak",
-   "reason": "parseinary_opt.cpp:320 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "54d6e349",
-   "operator": "const_tweak",
-   "reason": "parseinary_opt.cpp:323 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '10' to '11' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "5477861c",
-   "operator": "const_tweak",
-   "reason": "parseinary_opt.cpp:326 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "33023944",
-   "operator": "const_tweak",
-   "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "91b70005",
-   "operator": "const_tweak",
-   "reason": "parseinary_opt.cpp:333 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
   {
    "id": "d3e0a66b",
    "operator": "const_tweak",
-   "reason": "parseinary_opt.cpp:338 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinary_opt.cpp:338 is NEVER EXECUTED by any of the 19,536 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
   }
  ],
@@ -125,28 +95,16 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 40,
- "killed": 19,
- "survived": 7,
- "equivalent": 8,
+ "killed": 24,
+ "survived": 4,
+ "equivalent": 11,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.7308,
- "loop_rev": "59aa876-nogit",
- "gen_rev": "gen-f38d4ba5fdc8",
+ "score": 0.8571,
+ "loop_rev": "8c17719-nogit",
+ "gen_rev": "gen-7654789df837",
  "vit_rev": "3f6e2ce-nogit",
  "survivors": [
-  {
-   "id": "8464d14d",
-   "operator": "const_tweak",
-   "before": "200",
-   "after": "201"
-  },
-  {
-   "id": "b93bad70",
-   "operator": "const_tweak",
-   "before": "200000000",
-   "after": "200000001"
-  },
   {
    "id": "0562d216",
    "operator": "const_tweak",
@@ -170,12 +128,6 @@
    "operator": "const_tweak",
    "before": "1",
    "after": "2"
-  },
-  {
-   "id": "6fb2c552",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
   }
  ]
 }

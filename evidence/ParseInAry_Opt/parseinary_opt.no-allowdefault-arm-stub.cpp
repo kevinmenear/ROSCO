@@ -392,13 +392,22 @@ int list_read_ints(const char* rec, int len, int32_t* v, int n) {
 // ---------------------------------------------------------------------------
 
 // Right-justify `text` in a field of `w`. Copied from parsedbary_opt.cpp (P4).
-// The '*' overflow fill that file carries is unreachable for INTEGER(4) in a
-// 12-wide field and is not reproduced; the fill exists in gfortran, but no
-// value of this type can select it.
+//
+// THE '*' OVERFLOW FILL IS NOT REPRODUCED, and the comment above this function
+// said so at the third dispatch while the code still carried the branch. The
+// fill exists in gfortran and no value of this type can select it: the only
+// caller is `list_directed_int`, whose `w` is 12 and whose `text` is
+// `snprintf("%d", int32_t)`, at most the eleven characters of `-2147483648`.
+// A branch no input can take either way is a mutant no input can kill -- unit
+// #55 measured exactly that, `negate_cond 9381bdef` alive on 17,520 cases --
+// and this campaign's answer to a restatement is to DELETE it and write the
+// proof rather than to declare its mutant equivalent (unit #32's `LEN_TRIM`,
+// unit #32's `std::max(WordInd, 0)`, 0.696 -> 1.000).
+//
+// The deletion is safe in the direction that matters: if a caller ever handed
+// this a longer string the expression below would be a huge allocation rather
+// than a wrong record, which is a crash and not a silent divergence.
 std::string field(const std::string& text, int w) {
-    if (static_cast<int>(text.size()) > w) {
-        return std::string(static_cast<std::size_t>(w), '*');
-    }
     return std::string(static_cast<std::size_t>(w) - text.size(), ' ') + text;
 }
 
@@ -536,9 +545,10 @@ void ParseInAry_Opt(char* FileLines, int n_FileLines, int len_FileLines,
     // IF (.NOT. FoundLine) THEN
     if (!FoundLine) {
         // RED TEST -- the .NOT. AllowDefault_ arm deleted. Predicted to fail
-        // 4,811 = 4,006 (alloc=0) + 805 (alloc=1): every case whose reference
-        // ErrMsg carries this arm's message. On the 4,006 `Ary` is excluded and
-        // the failure is on aviFAIL and ErrMsg; on the 805 it is on all three.
+        // 2,273 = 1,322 (alloc=0) + 951 (alloc=1): every case whose reference
+        // ErrMsg carries this arm's message (harness_partition.txt's
+        // `not-allowed` cells). On the 1,322 `Ary` is excluded and the failure
+        // is on aviFAIL and ErrMsg; on the 951 it is on all three.
         if (false) {
             ErrVar->aviFAIL = -1;
             std::string msg(RoutineName);
@@ -586,9 +596,20 @@ void ParseInAry_Opt(char* FileLines, int n_FileLines, int len_FileLines,
         // `ErrStatLcl = 0; if (ErrStatLcl != 0)` would put a comparison in the
         // translation that no input can make either way -- the shape units #1,
         // #4 and #43 each measured as surviving mutants.
+        //
+        // NO `std::max(NumWords, 0)` GUARD, and its removal is unit #32's
+        // measurement carried to the caller that made the same guard. `AryLen`
+        // is `>= 0` over this unit's whole admissible domain -- a STATED range
+        // (`harness/ranges.toml`), resting on `evidence/FindLine/arylen_probe.txt`
+        // where the reference itself aborts below it -- so `NumWords >= 1` in
+        // every case there is and `max(NumWords, 0)` is `NumWords`. The guard's
+        // three mutants were `drop_call b1c839d7` (alive on 17,520 cases),
+        // `swap_call_args a61c0a99` (declared equivalent) and the `0` -> `1`
+        // const tweak; a guard no input can make fire is a restatement, and
+        // this campaign deletes a restatement rather than declaring it.
         const int NumWords = AryLen + 1;
         std::vector<char> Words_Ary(
-            static_cast<std::size_t>(std::max(NumWords, 0))
+            static_cast<std::size_t>(NumWords)
             * static_cast<std::size_t>(MaxParamLength));
 
         // ! Separate line string into AryLen + 1 words, should include variable name
@@ -597,10 +618,12 @@ void ParseInAry_Opt(char* FileLines, int n_FileLines, int len_FileLines,
 
         // ! Debug Output -- IF (DEBUG_PARSING) THEN ... END IF
         // DEBUG_PARSING is `.FALSE.` as a PARAMETER; the block is dead in every
-        // build of this tree and is not translated.
-        if (DEBUG_PARSING) {
-            // intentionally empty; see the constant above
-        }
+        // build of this tree and is not translated. The empty `if` that stood
+        // here until the fourth dispatch was a comparison no input could make
+        // either way -- `negate_cond afece932`, alive on 17,520 cases, and the
+        // same shape this file's own `Words_Ary` STAT= note argues against.
+        // What IS translated is the `GetWords` call ABOVE it, which the
+        // reference makes unconditionally.
 
         // ! Read array
         // READ (Line,*,IOSTAT=ErrStatLcl)  Ary

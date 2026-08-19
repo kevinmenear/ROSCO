@@ -4,7 +4,7 @@
 #
 #   bash evidence/ParseInAry_Opt/run_read_residual_probe.sh    # tree must be CLEAN
 #
-# WHY. `harness_partition.txt` predicted the READ-deleted stub at 634 -- the two
+# WHY. `harness_partition.txt` predicts the READ-deleted stub from its two
 # `read-failed` cells, 155 + 479 -- and the run measured 646. On the second
 # dispatch's corpus the same prediction was EXACT (146 = 59 + 87), so the twelve
 # are something that corpus did not have. The obvious reading is that the new
@@ -83,7 +83,15 @@ print("\n  the REFERENCE's arm on each failing case")
 for k in sorted(tab):
     print(f"    {k:20s} {tab[k]:6d}")
 resid = [r for r in rows if arm(r[2]) == "no-error"]
-print(f"\n  PREDICTED (the two read-failed cells)      634")
+# THE PREDICTION IS A PARAMETER NOW, NOT A LITERAL. It was written `634`
+# for the third dispatch's 17,520-case corpus and is a property of the
+# corpus, so a re-run on a wider one printed a stale number beside a live
+# measurement -- which is the shape this whole file exists to remove. The
+# fourth dispatch's two `read-failed` cells are 233 + 811 = 1,044
+# (evidence/ParseInAry_Opt/harness_partition.txt), and it is passed in.
+import os
+PREDICTED = int(os.environ.get("READ_FAILED_CELLS", "1044"))
+print(f"\n  PREDICTED (the two read-failed cells)      {PREDICTED}")
 print(f"  measured on a read-failed arm             {tab.get('read-failed', 0)}")
 print(f"  RESIDUAL -- the reference's READ SUCCEEDED {len(resid)}")
 print(f"  their returned aviFAIL values              "
