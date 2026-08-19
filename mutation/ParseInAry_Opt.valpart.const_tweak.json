@@ -1,0 +1,181 @@
+{
+ "unit": "ParseInAry_Opt",
+ "operators": [
+  "const_tweak"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "const_tweak"
+ ],
+ "operators_filter_unmatched": [],
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 0,
+  "scored": 40,
+  "of": 40
+ },
+ "scored_ids": [
+  "e5ea59db",
+  "8464d14d",
+  "7f5d5d24",
+  "677a74ee",
+  "059308da",
+  "5afd0e14",
+  "b93bad70",
+  "59989a93",
+  "6fd88da6",
+  "ed6a8260",
+  "64509458",
+  "6d43ac1f",
+  "f75d3793",
+  "c8a37018",
+  "5e48838b",
+  "56160d94",
+  "1faf35a6",
+  "fd9d54d0",
+  "54d6e349",
+  "5477861c",
+  "33023944",
+  "6b5c6a0f",
+  "91b70005",
+  "d3e0a66b",
+  "4f1acf76",
+  "24e73513",
+  "3683a56a",
+  "827158a3",
+  "26d402b2",
+  "34a3b929",
+  "0562d216",
+  "bb16f729",
+  "72edee9b",
+  "373af6ff",
+  "39d15f1e",
+  "6fb2c552",
+  "73975430",
+  "c306f8c6",
+  "1817f659",
+  "e9786fd2"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "compare_op",
+  "const_tweak"
+ ],
+ "mutants": 40,
+ "equivalent_declared": 8,
+ "unreachable_declared": 6,
+ "unreachable": [
+  {
+   "id": "fd9d54d0",
+   "operator": "const_tweak",
+   "reason": "parseinary_opt.cpp:320 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "54d6e349",
+   "operator": "const_tweak",
+   "reason": "parseinary_opt.cpp:323 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '10' to '11' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "5477861c",
+   "operator": "const_tweak",
+   "reason": "parseinary_opt.cpp:326 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "33023944",
+   "operator": "const_tweak",
+   "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "91b70005",
+   "operator": "const_tweak",
+   "reason": "parseinary_opt.cpp:333 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "d3e0a66b",
+   "operator": "const_tweak",
+   "reason": "parseinary_opt.cpp:338 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  }
+ ],
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "sanitize": false,
+ "killed_by_sanitizer": 0,
+ "killed_by_sanitizer_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 40,
+ "killed": 19,
+ "survived": 7,
+ "equivalent": 8,
+ "declared_but_killed": [],
+ "unreachable_but_killed": [],
+ "score": 0.7308,
+ "loop_rev": "59aa876-nogit",
+ "gen_rev": "gen-f38d4ba5fdc8",
+ "vit_rev": "3f6e2ce-nogit",
+ "survivors": [
+  {
+   "id": "8464d14d",
+   "operator": "const_tweak",
+   "before": "200",
+   "after": "201"
+  },
+  {
+   "id": "b93bad70",
+   "operator": "const_tweak",
+   "before": "200000000",
+   "after": "200000001"
+  },
+  {
+   "id": "0562d216",
+   "operator": "const_tweak",
+   "before": "12",
+   "after": "13"
+  },
+  {
+   "id": "bb16f729",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "72edee9b",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "373af6ff",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "6fb2c552",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  }
+ ]
+}

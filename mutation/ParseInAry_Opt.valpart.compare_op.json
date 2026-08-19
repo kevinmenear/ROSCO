@@ -1,0 +1,223 @@
+{
+ "unit": "ParseInAry_Opt",
+ "operators": [
+  "compare_op"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "compare_op"
+ ],
+ "operators_filter_unmatched": [],
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 0,
+  "scored": 40,
+  "of": 40
+ },
+ "scored_ids": [
+  "e1c693a5",
+  "66860b6f",
+  "8a203bc0",
+  "ca2bb319",
+  "3080cda9",
+  "97545434",
+  "ebe1e3f4",
+  "15c78951",
+  "fd77a623",
+  "f37d8413",
+  "2f8001ae",
+  "ad38f36b",
+  "ba05f614",
+  "6d203c33",
+  "08ff2c98",
+  "e6bc72cb",
+  "10028d7c",
+  "51771298",
+  "7d77a31a",
+  "d99e45ef",
+  "da89c70f",
+  "b663872a",
+  "ccd4583a",
+  "112d63b1",
+  "7560589c",
+  "7aad97cf",
+  "22819e82",
+  "3c163b71",
+  "7fd4edf1",
+  "461b138b",
+  "71d3528f",
+  "4b65a2f1",
+  "64cfaba1",
+  "a4bdfbcc",
+  "356f870c",
+  "6b380ae7",
+  "4655ac21",
+  "b2849cc7",
+  "a45110fc",
+  "9120d215"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "compare_op",
+  "const_tweak"
+ ],
+ "mutants": 40,
+ "equivalent_declared": 0,
+ "unreachable_declared": 6,
+ "unreachable": [
+  {
+   "id": "71d3528f",
+   "operator": "compare_op",
+   "reason": "parseinary_opt.cpp:298 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '!=' to '==' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "4b65a2f1",
+   "operator": "compare_op",
+   "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "4655ac21",
+   "operator": "compare_op",
+   "reason": "parseinary_opt.cpp:322 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "b2849cc7",
+   "operator": "compare_op",
+   "reason": "parseinary_opt.cpp:324 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '>' to '>=' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "a45110fc",
+   "operator": "compare_op",
+   "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<=' to '<' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "9120d215",
+   "operator": "compare_op",
+   "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '>' to '>=' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  }
+ ],
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "sanitize": false,
+ "killed_by_sanitizer": 0,
+ "killed_by_sanitizer_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 40,
+ "killed": 20,
+ "survived": 14,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "unreachable_but_killed": [],
+ "score": 0.5882,
+ "loop_rev": "59aa876-nogit",
+ "gen_rev": "gen-f38d4ba5fdc8",
+ "vit_rev": "3f6e2ce-nogit",
+ "survivors": [
+  {
+   "id": "2f8001ae",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "08ff2c98",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "e6bc72cb",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "51771298",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "7d77a31a",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "d99e45ef",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "da89c70f",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "b663872a",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "112d63b1",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "7aad97cf",
+   "operator": "compare_op",
+   "before": ">=",
+   "after": ">"
+  },
+  {
+   "id": "7fd4edf1",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "64cfaba1",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "a4bdfbcc",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "356f870c",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  }
+ ]
+}

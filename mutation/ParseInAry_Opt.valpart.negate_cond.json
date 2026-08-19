@@ -1,0 +1,137 @@
+{
+ "unit": "ParseInAry_Opt",
+ "operators": [
+  "negate_cond"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "negate_cond"
+ ],
+ "operators_filter_unmatched": [],
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 0,
+  "scored": 32,
+  "of": 32
+ },
+ "scored_ids": [
+  "0cf89023",
+  "385a1c9b",
+  "73ad4165",
+  "31d7d97e",
+  "759222c3",
+  "10d59590",
+  "fc6a68aa",
+  "07b5ee72",
+  "b947b4b0",
+  "8ad60160",
+  "0b4ecb4b",
+  "3e083c12",
+  "1374f83c",
+  "f0af84b4",
+  "c882cdf5",
+  "5baa764c",
+  "7025bae7",
+  "03f79cf0",
+  "1fc42c92",
+  "5831850e",
+  "9381bdef",
+  "31c7aef7",
+  "61caf2fd",
+  "62888bdb",
+  "d87cbf9e",
+  "624dab92",
+  "abd0d4c3",
+  "0bc135e3",
+  "d6d80643",
+  "b527f6b6",
+  "afece932",
+  "3eda97fa"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "compare_op",
+  "const_tweak"
+ ],
+ "mutants": 32,
+ "equivalent_declared": 0,
+ "unreachable_declared": 4,
+ "unreachable": [
+  {
+   "id": "f0af84b4",
+   "operator": "negate_cond",
+   "reason": "parseinary_opt.cpp:298 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (first_item || sep != Sep::Blank)' to 'if (!(first_item || sep != Sep::Blank))' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "5baa764c",
+   "operator": "negate_cond",
+   "reason": "parseinary_opt.cpp:324 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (count > MaxRepeat)' to 'if (!(count > MaxRepeat))' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "7025bae7",
+   "operator": "negate_cond",
+   "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (count <= 0 || count_over || count > MaxRepeat)' to 'if (!(count <= 0 || count_over || count > MaxRepeat))' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "03f79cf0",
+   "operator": "negate_cond",
+   "reason": "parseinary_opt.cpp:337 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits \"if (p >= len || is_value_terminator(rec[p]) || rec[p] == ';')\" to \"if (!(p >= len || is_value_terminator(rec[p]) || rec[p] == ';'))\" on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
+  }
+ ],
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "sanitize": false,
+ "killed_by_sanitizer": 0,
+ "killed_by_sanitizer_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 32,
+ "killed": 25,
+ "survived": 3,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "unreachable_but_killed": [],
+ "score": 0.8929,
+ "loop_rev": "59aa876-nogit",
+ "gen_rev": "gen-f38d4ba5fdc8",
+ "vit_rev": "3f6e2ce-nogit",
+ "survivors": [
+  {
+   "id": "07b5ee72",
+   "operator": "negate_cond",
+   "before": "if (is_eol(rec[p]))",
+   "after": "if (!(is_eol(rec[p])))"
+  },
+  {
+   "id": "9381bdef",
+   "operator": "negate_cond",
+   "before": "if (static_cast<int>(text.size()) > w)",
+   "after": "if (!(static_cast<int>(text.size()) > w))"
+  },
+  {
+   "id": "afece932",
+   "operator": "negate_cond",
+   "before": "if (DEBUG_PARSING)",
+   "after": "if (!(DEBUG_PARSING))"
+  }
+ ]
+}
