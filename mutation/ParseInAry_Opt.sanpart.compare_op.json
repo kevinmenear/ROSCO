@@ -76,43 +76,19 @@
   "const_tweak"
  ],
  "mutants": 40,
- "equivalent_declared": 0,
- "unreachable_declared": 6,
+ "equivalent_declared": 3,
+ "unreachable_declared": 2,
  "unreachable": [
   {
    "id": "71d3528f",
    "operator": "compare_op",
-   "reason": "parseinary_opt.cpp:298 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '!=' to '==' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinary_opt.cpp:298 is NEVER EXECUTED by any of the 19,536 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '!=' to '==' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
   },
   {
    "id": "4b65a2f1",
    "operator": "compare_op",
-   "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "4655ac21",
-   "operator": "compare_op",
-   "reason": "parseinary_opt.cpp:322 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "b2849cc7",
-   "operator": "compare_op",
-   "reason": "parseinary_opt.cpp:324 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '>' to '>=' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "a45110fc",
-   "operator": "compare_op",
-   "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<=' to '<' on a line no case runs, so no case can distinguish it.",
-   "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
-  },
-  {
-   "id": "9120d215",
-   "operator": "compare_op",
-   "reason": "parseinary_opt.cpp:329 is NEVER EXECUTED by any of the 17,520 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '>' to '>=' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinary_opt.cpp:303 is NEVER EXECUTED by any of the 19,536 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInAry_Opt/line_coverage.txt"
   }
  ],
@@ -120,70 +96,29 @@
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
  "sanitize": true,
- "killed_by_sanitizer": 7,
+ "killed_by_sanitizer": 9,
  "killed_by_sanitizer_ids": [
   "08ff2c98",
   "d99e45ef",
   "da89c70f",
   "b663872a",
+  "112d63b1",
   "7aad97cf",
+  "7fd4edf1",
   "64cfaba1",
   "356f870c"
  ],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 40,
- "killed": 27,
- "survived": 7,
- "equivalent": 0,
+ "killed": 35,
+ "survived": 0,
+ "equivalent": 3,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.7941,
- "loop_rev": "59aa876-nogit",
- "gen_rev": "gen-f38d4ba5fdc8",
+ "score": 1.0,
+ "loop_rev": "8c17719-nogit",
+ "gen_rev": "gen-7654789df837",
  "vit_rev": "3f6e2ce-nogit",
- "survivors": [
-  {
-   "id": "2f8001ae",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "e6bc72cb",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "51771298",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "7d77a31a",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "112d63b1",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "7fd4edf1",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "a4bdfbcc",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  }
- ]
+ "survivors": []
 }
