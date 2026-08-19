@@ -174,3 +174,28 @@ WHAT IS STILL NOT SEEN
     least 100,000.
   * The `UnEc` echo WRITE, not translated: C++ cannot reach the Fortran unit
     table. Dead in all 27 scenarios and at every one of this unit's 230 calls.
+
+
+TWO CONTROLS ON THIS DISPATCH'S NUMBERS
+=======================================
+
+THE SANITISED SWEEP STILL KILLS EVERYTHING THE VALUE ORACLE DOES. Computed from
+the two committed artifacts rather than asserted:
+
+    sanitised survivors                 1   ['07b5ee72']
+    value-oracle survivors             18   07b5ee72 + 17 others
+    sanitised survivors NOT in the value set   0   <- the superset holds
+    only the sanitiser kills           17       (128 - 111)
+
+`--sanitize` was worth 19 at the fifth dispatch and is worth 17 now. The two it
+lost are not kills lost: they are two mutants the sanitiser used to be the ONLY
+thing to kill, which the record comparison now kills on values as well. The
+value oracle gained 7 and the sanitised sweep 5, and 7 - 5 = 2 is the same two
+seen from the other side.
+
+THE EMITTER CHANGE CANNOT HAVE TOUCHED ANOTHER UNIT.
+`evidence/ParseInAry_Opt/emit_additive_control.{py,txt}` emits one spec through
+emit.py at 74c2a32 and at 6ec37f9 with `compare_record` absent and compares the
+generated C++ byte for byte: 8,414 bytes both, IDENTICAL. And the opposite half,
+because a flag that does nothing would also pass the first: with the flag ON the
+source differs and carries `vit_record.begin()` and `vit_record_nonempty`.
