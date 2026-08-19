@@ -1,93 +1,110 @@
-ParseDbAry_Opt -- the 32 mutants still alive after the third dispatch, by region,
+ParseDbAry_Opt -- the 33 mutants still alive after the third dispatch, by region,
 and what each region's survival is a fact ABOUT.
 
   mutation/ParseDbAry_Opt.json (sanitised, four merged operator-filtered parts):
-  189 mutants, 4 nocompile, 185 behavioural, 106 KILLED, 17 declared EQUIVALENT,
-  30 declared UNREACHABLE, 32 SURVIVED.  score 106 / (185 - 17 - 30) = 0.7681.
+  189 mutants, 4 nocompile, 185 behavioural, 105 KILLED, 17 declared EQUIVALENT,
+  30 declared UNREACHABLE, 33 SURVIVED.  score 105 / (185 - 17 - 30) = 0.7609.
   Second dispatch: 77 / 185 = 0.4162 with nothing declared.
+
+  0.7681 -> 0.7609 across the print separator fix (50b583ab) IS THE 40-MUTANT
+  CAP, not a regression. The fix adds one `if`, negate_cond is capped at 40, and
+  the new site displaces the last one in file order:
+      LOST    ec43592b  `if (ErrVar->aviFAIL < 0)`  -- and it was KILLED
+      GAINED  b529317d  `if (n > 0)`                -- which the sweep's oracle
+                                                       cannot kill, see below
 
 WHERE THEY ARE. Every mutant is placed by the position `harness/cppmutate.py`
 gives it, not by a text search -- several `before` strings occur many times in
 this file and a search would attribute them all to the first.
 
-    survived / behavioural   region
-          1                  assign_errmsg
-         16                  the READ -- lower, match_word, parse_real
-          5                  the READ -- list_read_reals
-          9                  the PRINT record
-          1                  the unit's own body
-        ----
-         32
+    survived   region
+       1       assign_errmsg
+       1       lower()
+      15       the READ -- match_word, parse_real
+       5       the READ -- list_read_reals
+      10       the PRINT record
+       1       the unit's own body
+     ----
+      33
 
 AND WHY, PER REGION. None of these is a claim that the translation is wrong; all
-of them are claims about what this campaign's instruments can see.
+are claims about what an instrument can see.
 
-  THE PRINT RECORD (9) IS COMPARED BY NOTHING, and that is unchanged from the
-  first dispatch and now measured twice over. The differential harness compares
-  out-parameters; the gate compares simulation channels; this record goes to
-  stdout -- the same stdout the harness parses its own JSON out of. The negative
-  control is a gate run: mutant ae3f319a (`16 - decexp` -> `16 + decexp`) moves
-  0 of 5,252,000 values, revert-verified
-  (gate/ParseDbAry_Opt.redtest.survivor-ae3f319a.json). Killing these needs a
-  DIFFERENT INSTRUMENT -- one that compares the two sides' stdout -- not a bigger
-  corpus. They are NOT declared equivalent: they are reached, they change the
-  record, and nothing looks.
+  THE PRINT RECORD (10) IS NOT COMPARED BY THE SWEEP'S ORACLE -- AND IT IS NOW
+  COMPARED BY SOMETHING. The sweep runs `./test`, which compares out-parameters;
+  the gate compares simulation channels; the record goes to stdout. This
+  dispatch built the missing instrument
+  (`evidence/ParseDbAry_Opt/print_conformance.{f90,cpp}`,
+  `run_print_conformance.sh`, `print_replay.txt`): 44 records of gfortran's OWN
+  list-directed output, replayed through the SHIPPED `print_default_warning` by
+  textual include.
 
-  `match_word` (7 of the 16) IS EXECUTED ON EVERY VALUE AND NEVER MATCHES. The
+      9 of the 9 PRINT-region survivors it replayed are KILLED, 18 to 43 records
+      each.  NEGATIVE CONTROL: 0 of the 23 survivors OUTSIDE the region moved a
+      record.  AND ITS FIRST RUN FOUND A REAL DEFECT in the unmutated
+      translation -- the separator blank before `]` was unconditional, so an
+      EMPTY `Ary` printed `[ ]` where the reference prints `[]`. Fixed at
+      50b583ab.
+
+  NOTHING IS FOLDED INTO THE SCORE. A kill by a different instrument on a
+  different corpus is not a kill by this sweep. The tenth PRINT survivor,
+  b529317d (`if (n > 0)`), is the fix's own guard: it did not exist when the
+  replay ran and it is exactly the statement the replay would kill.
+
+  `match_word` (7 of the 15) IS EXECUTED ON EVERY VALUE AND NEVER MATCHES. The
   corpus contains no record spelling `inf`, `infinity` or `nan` at a value
   position, so the function returns false at every call and a mutant that makes
-  it return false differently is invisible. This is a CORPUS fact, which is why
-  none of them is declared equivalent -- the moment a case spells `nan` they
-  become killable. The block they guard IS declared unreachable: lines 232-242
-  are never executed (evidence/ParseDbAry_Opt/line_coverage.txt), and the six
-  mutants inside it are among the 30.
+  it return false differently is invisible. A CORPUS fact, which is why none is
+  declared equivalent: the moment a case spells `nan` they become killable. The
+  block they guard IS declared unreachable -- lines 232-242 never execute.
 
-  `p < len` -> `p <= len` (5 of the 16) NEEDS A RECORD THAT ENDS INSIDE A VALUE.
+  `p < len` -> `p <= len` (5 of the 15) NEEDS A RECORD THAT ENDS INSIDE A VALUE.
   The internal-file record is `Line`'s declared width, MaxLineLength = 2048,
   blank-padded, so a scan reaches `p == len` only if the 2048th character is a
-  digit or a sign. No case supplies one. The sixth instance of the shape,
-  0a3516d1 at parse_real's entry, IS declared equivalent -- there the caller has
-  already established `p < len` (mutation/ParseDbAry_Opt.equivalences.md D), and
-  the difference between that one and these five is the reason the declarations
-  are per mutant rather than per line.
+  digit or a sign. The sixth instance of the shape, 0a3516d1 at parse_real's
+  entry, IS declared equivalent -- there the one caller has already established
+  `p < len` -- and that split is why the declarations are per mutant.
 
-  `rec[p]` -> `rec[p + 1]` (5 more) READS THE NEXT CHARACTER OF A 2048-BYTE
-  BLANK-PADDED RECORD. The sanitised sweep is the instrument for this class and
-  it was run: `--sanitize` killed 2 of them (4d44e6d2, f6007814) and left these,
-  because the read is INSIDE the allocation and lands on the padding. So they
-  are not out-of-bounds; they are reads of a character the corpus makes blank.
+  `rec[p]` -> `rec[p + 1]` READS THE NEXT CHARACTER OF A 2048-BYTE BLANK-PADDED
+  RECORD. The sanitised sweep is the instrument for this class and it was run:
+  `--sanitize` killed 2 of them and left these, because the read is INSIDE the
+  allocation and lands on the padding. They are not out-of-bounds.
 
   THE `list_read_reals` FIVE are the `;` terminator, the repeat-count scan and
   the trailing-comma skip. `grep -cE '[0-9][*]' Examples/DISCON*.IN` over all 22
-  files the 27 scenarios read returns 0, and the gate confirms it: survivor
-  48542e3d in the same branch moves 0 of 5,252,000
-  (gate/ParseDbAry_Opt.redtest.survivor-48542e3d.json). Reachable in principle,
-  unreached by both instruments.
+  files the 27 scenarios read returns 0, and the gate confirms it: 48542e3d, a
+  DECLARED-UNREACHABLE mutant in that same branch, moves 0 of 5,252,000
+  (gate/ParseDbAry_Opt.redtest.survivor-48542e3d.json) while the parsed-value
+  perturbation moves 2,236,141 of the same 5,252,000 -- so the zero is about the
+  statement, not about the instrument.
 
   `b5366e74` (assign_errmsg, `>` -> `>=`) refuses a staged assignment whose
   length exactly equals the capacity. R13 sweeps the staging capacity 0..255
   bytes above what each case supplies, so one case in each block sizes the
-  buffer TO the message -- but the composed-capacity arithmetic of RUNBOOK's
-  unit #48 entry applies here too and this unit has two staged assignments on
-  the path. Not investigated further at this dispatch; named rather than
-  declared.
+  buffer TO the message -- but RUNBOOK's unit #48 entry on COMPOSED staging
+  capacity applies here and this unit has two staged assignments on the path.
+  Not investigated at this dispatch; named rather than declared.
+
+  `6b5fc8ce` (`lower()`'s `'A'` bound) is the sibling of a DECLARED equivalence
+  and is deliberately not one: `'a'` is the middle letter of `"nan"`.
 
   `b2bbedf3` (`std::max(NumWords, 0)` -> `NumWords`) cannot bite while
   `AryLen = { lo = 0, hi = 32 }` is stated, since `NumWords = AryLen + 1 >= 1`.
-  That is a fact about the stated DOMAIN, not about the program, so it is left
-  alive rather than declared -- its sibling `dd749c6b`, which merely swaps
-  `std::max`'s arguments, IS an equivalence and is declared.
+  A fact about the stated DOMAIN, not about the program, so it is left alive --
+  while `dd749c6b`, which merely swaps `std::max`'s arguments, IS declared.
 
 WHAT WOULD MOVE THE NUMBER, so the next dispatch need not re-derive it:
 
   1. A generator that plants records with `nan`/`inf`, an `r*` repeat, a `;`
      terminator and a four-digit exponent. That is `_NUMERIC_LEADS` in
      `harness/generate.py` extended the way loop b33a761 extended it once
-     already, and it would kill most of the 30 declared unreachable as well --
+     already, and it would retire most of the 30 declared unreachable as well --
      which is the correct direction: an unreachable declaration is a debt
      against the corpus, not a credit.
-  2. An instrument that compares the two sides' stdout, for the 9 PRINT mutants.
-     Unit #31 `Debug` built one for the gate; nothing here compares the harness's.
+  2. A sweep oracle that reads stdout, for the 10 PRINT mutants. The comparison
+     already exists in evidence/ParseDbAry_Opt/print_replay.txt; what does not
+     exist is `./test` making it, which is a change to the shared harness
+     emitter and therefore the Driver's.
   3. A record whose last character is a digit, for the five `p <= len`.
 
 --------------------------------------------------------------------------
@@ -95,9 +112,11 @@ WHAT WOULD MOVE THE NUMBER, so the next dispatch need not re-derive it:
   L  91  compare_op     b5366e74  '>' -> '>='
           if (static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap) {
 
-== the READ -- lower, match_word, parse_real
+== helpers
   L 170  compare_op     6b5fc8ce  '>=' -> '>'
           return (c >= 'A' && c <= 'Z') ? static_cast<char>(c + 32) : c;
+
+== the READ -- match_word, parse_real
   L 175  negate_cond    5428f2cc  'if (p + static_cast<int>(word.size()) > len)' -> 'if (!(p + static_cast<int>(word.size()) > len))'
           if (p + static_cast<int>(word.size()) > len) {
   L 175  compare_op     76abf5f3  '>' -> '>='
@@ -160,8 +179,10 @@ WHAT WOULD MOVE THE NUMBER, so the next dispatch need not re-derive it:
           const int d = 16 - decexp;
   L 467  negate_cond    bea19ce7  'if (d == 0)' -> 'if (!(d == 0))'
           if (d == 0) {
+  L 500  negate_cond    b529317d  'if (n > 0)' -> 'if (!(n > 0))'
+          if (n > 0) {
 
 == the unit's own body
-  L 656  drop_call      b2bbedf3  'std::max(NumWords, 0)' -> 'NumWords'
+  L 663  drop_call      b2bbedf3  'std::max(NumWords, 0)' -> 'NumWords'
           static_cast<std::size_t>(std::max(NumWords, 0))
 

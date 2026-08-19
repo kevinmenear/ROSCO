@@ -26,8 +26,8 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "RE-TAKEN AT CLOSE, third dispatch, and this is the LAST measurement of the dispatch. Since gate/ParseDbAry_Opt.json was written, five gate runs perturbed rosco/controller/src/parsedbary_opt.cpp (two red tests of the unit's own statements, three surviving or formerly-surviving mutants) and four mutation sweep parts mutated translations/ROSCO_Helpers/parsedbary_opt.cpp in place, each inside a reset/restore cycle. Every one of them reverted and each reported its own green after the revert; this run asks the question once more against the SHIPPED build the unit closes on, so the close does not rest on nine separate revert claims.",
-  "The mutation sweeps were each wrapped in scripts/mutate_guarded.sh, which clears its marker only when the .cpp hashes back to what it was; all four cleared at 6abb3328d6410276adb7e93ac897767e12fe3d77."
+  "RE-TAKEN AT CLOSE, third dispatch, and this is the LAST measurement of the dispatch. Since gate/ParseDbAry_Opt.json was written, five gate runs perturbed rosco/controller/src/parsedbary_opt.cpp and four mutation sweep parts mutated translations/ROSCO_Helpers/parsedbary_opt.cpp in place, each inside a reset/restore cycle. All four sweeps cleared scripts/mutate_guarded.sh's marker at ab7f2b3e6012c8abfdccffea7156dbc711578112, which is the fixed translation's hash.",
+  "The translation itself moved at 50b583ab -- one separator blank made conditional, the defect evidence/ParseDbAry_Opt/print_replay.txt found -- so this close is over the FIXED build and every layer above was re-taken on it."
  ],
  "perturbed": false,
  "residual_dirt": [],
