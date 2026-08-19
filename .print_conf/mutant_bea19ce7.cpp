@@ -492,7 +492,14 @@ void print_default_warning(std::string_view ParamName, const double* Ary, int n)
     for (int i = 0; i < n; ++i) {
         rec += list_directed_real(Ary[i]);
     }
-    rec += ' ';
+    // ONE separator blank before a CHARACTER item that follows a REAL, and NONE
+    // between two CHARACTER items -- the rule this file's own header records,
+    // measured again in evidence/ParseDbAry_Opt/print_conformance.f90. With
+    // n = 0 the '[' is followed directly by the ']' and the reference writes
+    // `[]`. Unconditional, this line wrote `[ ]`.
+    if (n > 0) {
+        rec += ' ';
+    }
     rec += ']';
     rec += '\n';
     std::fwrite(rec.data(), 1, rec.size(), stdout);

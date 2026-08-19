@@ -1,9 +1,6 @@
 44 reference record(s) from print_conformance.f90
 CONFORMANCE -- the UNMUTATED translation against the reference:
-BASELINE: 44 replayed record(s), 1 mismatched
-  case 38
-    ref | ROSCO Warning: Did not find correct size F_NotchCornerFreq in input file.  Using default value of []|
-    got | ROSCO Warning: Did not find correct size F_NotchCornerFreq in input file.  Using default value of [ ]|
+BASELINE: 44 replayed record(s), 0 mismatched
 
 PRINT-region survivors replayed: 9
   KILLED by the record comparison: 9
