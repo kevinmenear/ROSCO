@@ -4,32 +4,19 @@
  "channels_mismatched": 0,
  "compared": 5252000,
  "generated_by": "scripts/gate.py",
- "inputs_restored": [
-  "Examples/DISCON.IN",
-  "Examples/DISCON_awc.IN",
-  "Examples/DISCON_filters.IN",
-  "Examples/DISCON_flap26.IN",
-  "Examples/DISCON_flp.IN",
-  "Examples/DISCON_ipc.IN",
-  "Examples/DISCON_ipc_awc.IN",
-  "Examples/DISCON_ol_cc_stc.IN",
-  "Examples/DISCON_ol_mode1.IN",
-  "Examples/DISCON_ol_mode2.IN",
-  "Examples/DISCON_stress27.IN",
-  "Examples/DISCON_su_sd_tra.IN",
-  "Examples/DISCON_synth.IN",
-  "Examples/DISCON_yaw.IN"
- ],
- "loop_rev": "8c17719",
+ "inputs_restored": [],
+ "loop_rev": "74c2a32",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "CLOSE RUN, fourth dispatch: the gate re-taken against the library exactly as it ships at the end of this dispatch, after the wrapper red test and both gate perturbations were reverted and rebuilt. Predicted at 5,252,000 / 0 before it was started."
+  "CLOSE RUN, fifth dispatch: the gate re-taken against the library exactly as it ships at the end of this dispatch, after the two gate perturbations and the wrapper copy-back red test were reverted and rebuilt. Predicted at 5,252,000 / 0 before it was started.",
+  "Also the second reading of the PARALLEL scenario runner in this dispatch. The opening run and this one bracket a de-integration, a full reset_to_clean, five sanitised mutation parts, five value-oracle parts and three rebuilds of the controller; both come back 5,252,000 values across 351 channels with 0 mismatched and inputs_restored EMPTY."
  ],
  "perturbed": false,
  "residual_dirt": [],
+ "scenario_workers": 8,
  "scenarios": [
   3,
   4,
