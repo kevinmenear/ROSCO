@@ -1149,3 +1149,127 @@ Both items are escalations and neither is work this unit may do alone.
 The fifth dispatch adds one piece of evidence for both: the whole stack has now
 been measured at two different instrument revisions and reproduces to the digit.
 **0.9535 is a property of the declaration grammar, not of the measurement.**
+
+---
+
+## 12. Sixth dispatch — the record is an output, and five of the six survivors die
+
+**0.9535 → 0.9922 on a corpus that did not move.** `parseinary_opt_cases.bin`
+hashes `417c205656d2dd3aca728380163d1991d871b34ed76e776fd7f8f401d0089fc3`
+before and after, the same 8,810,481 bytes the fifth dispatch scored. The five
+kills are not new inputs. They are an **output that had never been compared**.
+
+### 12.1 §11.5's first item was answered by deleting the question
+
+The fifth dispatch left two things holding this unit below 1.0, and the first
+was a *declaration kind*: the PRINT replay killed all five record mutants and
+`mutation/<Unit>.json` had no way to say so. This dispatch did not add that
+declaration. **It made the harness itself do the killing**, which is strictly
+better — a kill by the instrument the score is a score OF needs no grammar to
+carry it, and no reader has to weigh a second instrument's word.
+
+`harness/ranges.toml`:
+
+```toml
+vit_record = { compare_record = "...why this stream is this unit's contract..." }
+```
+
+`harness/emit.py` then captures fd 1 around **each of the two calls
+separately** — the calls are adjacent, so that is the one place either side's
+writes can be attributed — and compares the two records bytewise as an output
+named `vit_record`. `vit_harness.py` **refuses** to write an artifact in which
+no case wrote a record.
+
+**THE SEPARATION WAS PROBED BEFORE IT WAS WRITTEN, not assumed.** libgfortran
+writes unit 6 straight to fd 1 and flushes each record as it completes it; a
+three-record probe under both the default environment and
+`GFORTRAN_UNBUFFERED_ALL=y` showed each capture holding exactly its own record
+and nothing of the next. `fflush(stdout)` covers the translation's half, which
+goes through C stdio (`std::fwrite`).
+
+**Opt-in, and that is a judgement rather than caution.** Whether a `PRINT` is
+part of a unit's contract or a debug line is not decidable from its source. Here
+it is the contract: ROSCO_Helpers.f90:807 is the only thing that tells a user a
+default was substituted for a value their input file did not supply.
+
+### 12.2 What it measured
+
+| | |
+|---|---|
+| harness | **19,536 checked, 0 failed**, 0 inadmissible, clean tree, three callee bridges kept |
+| the record | **NON-EMPTY on 15,744 cases** — and that, not 19,536, is what the green is worth: two empty records compare equal |
+| red test | the leading blank `1 → 2` (mutant `bb16f729`'s own edit): **15,744 failed**, PREDICTED EXACTLY from the non-empty count before the run |
+| the four standing stubs | **19,276 / 2,377 / 1,150 / 19** — unchanged to the case. The comparison is additive; it moved no existing red |
+| mutation, sanitised | **128 killed of 152 behavioural, 128/129 = 0.9922** (was 123/129). `declared_but_killed` and `unreachable_but_killed` both EMPTY — the oracle got WIDER and refuted none of the 23 declarations |
+| mutation, value oracle | 111 killed, 0.8605 (was 104, 0.8062). `--sanitize` is worth **17** now rather than 19: two of the mutants it used to be the only kill for are record mutants |
+| gate ×4 | 5,252,000 / 0; red test **1,857,893**; negative control **0**; close run 5,252,000 / 0 — every one exact |
+| post-integration | 19,536 / 0; copy-back red test **11,121**, the partition's `aviFAIL-changed` column summed, predicted before the run |
+
+The five that died: `0562d216` (field width 12→13), `bb16f729` (the record's
+leading blank), `72edee9b` (the element loop's start), `39d15f1e` (the repaired
+guard's constant) and `4ca74dd3` (the guard negated). **They were never
+equivalent and never unreachable** — the corpus executed all five lines at every
+dispatch. Nothing could see the stream they write.
+
+The 34-record `print_conformance` replay is kept and is now a **control** rather
+than the evidence: it and the harness agree about all five.
+
+### 12.3 Every artifact re-taken, because the instrument moved
+
+Changing the loop moves `loop_rev`, and an artifact set naming two revisions is
+a base-sha split that `revcheck` reports and P14 refuses. All **23** result
+artifacts were re-taken at `6ec37f9` — 4 gate, 4 harness, 15 mutation. The count
+is 23 rather than the fifth dispatch's 20 because a mutant now costs ~14 s with
+the capture, so the two 40-mutant operators are scored as two `--offset` slices
+each; the merger checks the partition **by mutant id**, not by how it was cut.
+
+Not re-taken, for the fifth dispatch's own reasons: `parser_conformance`,
+`print_conformance`, `harness_partition.txt`, `read_residual.txt`,
+`line_coverage.txt` and `survivor_record_search` — the first two read no corpus,
+and the rest are functions of a corpus that hashes byte-identical.
+
+### 12.4 The one survivor, and why it is (b) rather than (c)
+
+`07b5ee72` — `if (is_eol(rec[p]))` negated inside `eat_separator`'s blank scan.
+The fourth and fifth dispatches recorded it as a blind spot; **that was one arm
+too narrow**, and `evidence/ParseInAry_Opt/null_item_oracle_probe.{f90,txt}` is
+the correction:
+
+```
+ALLOCATE STAT      = 5014        the allocation FAILED -- Ary was already allocated
+after the failure  Ary = 7 8 9   the caller's values, kept
+record             = '1 ; 3 KEYNAME'
+READ IOSTAT        = 0           the reference calls this record LEGAL
+after the READ     Ary = 1 8 3   <- the null item KEPT the caller's own 8
+--- fresh ALLOCATE, same record
+after the READ     Ary = 1 49435 3   <- undefined, and NOT an oracle
+```
+
+On an already-allocated `Ary` the distinguishing record is fully defined on
+every output, so the mutant's 5010 and its different `ErrVar%ErrMsg` are visible
+to the harness as it stands. What is missing is one **record shape**, which only
+`generate.py` can state — and stating it regenerates the corpus, which
+invalidates all 23 artifacts taken today plus the partition, the read residual
+and the line coverage the six `unreachable` declarations are derived from. Begun
+with two hours left, that is the killed sweep this campaign has already paid
+for twice, so it is **named rather than started**:
+`evidence/ParseInAry_Opt/mutation_survivors.txt` carries the four steps in
+order, including the warning that the six `unreachable` declarations must be
+**withdrawn** first (a declaration the corpus reaches is `unreachable_but_killed`
+and P12 fails on it) and that the arithmetic to beat then becomes 135/135.
+
+### 12.5 What is still not seen
+
+1. `Ary`'s undefined elements on a read that SUCCEEDS with a freshly allocated
+   array — 1,659 cases named and excluded, plus the `'/'` terminator path no
+   `no_oracle_when` can name. The `;` fix routes around this rather than closing
+   it.
+2. `AryLen` above 32, a stated narrowing against a reference defined to at least
+   100,000.
+3. The `UnEc` echo WRITE, not translated: C++ cannot reach the Fortran unit
+   table. Dead in all 27 scenarios and at every one of this unit's 230 calls.
+
+**And one item is now closed rather than carried.** "The PRINT record: a stream
+no layer of the score compares" has been in this file's *what is still not seen*
+list since the second dispatch. It is compared, on 15,744 cases, red-tested at
+exactly that number.

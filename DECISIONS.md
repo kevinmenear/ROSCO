@@ -13222,3 +13222,124 @@ a re-read of `declared_but_killed` — and if the never-executed set moves, #54'
 Nothing in #55's own evidence depends on this. Its coverage was re-taken with
 the fix and came back byte-identical to what was committed, so its own six
 declarations are derived from the shipped program.
+
+## 2026-08-19 — unit #55 `ParseInAry_Opt`, SIXTH dispatch: the record is an output, 0.9535 → 0.9922
+
+**Five of the six survivors died on a corpus that did not move.**
+`parseinary_opt_cases.bin` hashes `417c2056…89fc3` before and after the
+dispatch, the same 8,810,481 bytes and 19,536 cases the fifth dispatch scored.
+The five kills are not new inputs; they are an **output that had never been
+compared**.
+
+### The finding, and it is about the method rather than this unit
+
+`R4_compare_all_outputs` compares the return value and the out-parameters — the
+things that cross the signature. A unit whose reference writes a **record** —
+`PRINT *`, `WRITE (*,*)` — has an output that crosses nothing, and the harness
+therefore never named it, could not exclude it with `no_oracle` (it was never in
+the set) and reported a full green over a program that could be wrong on it.
+
+The exclusion was **structural, not a judgement anybody made**, and that is what
+makes it a method finding rather than a unit's blind spot. Three things pointed
+at it for four dispatches and none of them could close it:
+
+* `vit_mutate.py` reads a JSON payload out of `./test`'s stdout **precisely
+  because the reference may PRINT** — the tolerant read that keeps a printing
+  unit scoreable is the same mechanism that discards what it prints.
+* the campaign has met this before: `ExtController` writes five lines per case
+  to unit 6, and `_payload` exists because of it.
+* the region hid a **real defect** for four dispatches — `value of [ ]` where
+  gfortran writes `value of []` on a zero-length `Ary`, found by a side
+  instrument built at the fourth dispatch, on its first run.
+
+### What was built
+
+```toml
+# harness/ranges.toml, per unit, opt-in
+vit_record = { compare_record = "<why this stream is this unit's contract>" }
+```
+
+`harness/emit.py` captures fd 1 around **each of the two adjacent calls
+separately**, which is the one place either side's writes can be attributed, and
+compares the two records bytewise as an output named `vit_record`.
+`scripts/vit_harness.py` **refuses** to write an artifact in which no case wrote
+a record — two empty records compare equal, so that green would measure nothing
+(P10). `translation-loop@6ec37f9`.
+
+**Opt-in is the judgement, and it is stated rather than defaulted.** Whether a
+`PRINT` belongs to a unit's contract or is a debug line is not decidable from the
+source. Here it is the contract: `ROSCO_Helpers.f90:807` is the only thing that
+tells a ROSCO user a default was substituted for a value their input file did not
+supply. A campaign-wide default would have made every unit reproduce every log
+line byte for byte, which is a different and much larger claim.
+
+**The separation was probed before the code was written.** libgfortran writes
+unit 6 straight to fd 1 and flushes each record as it completes it: three
+records, default environment and `GFORTRAN_UNBUFFERED_ALL=y`, each capture
+holding exactly its own record and nothing of the next.
+
+### What it cost and what it bought
+
+| | fifth dispatch | sixth |
+|---|---|---|
+| harness | 19,536 / 0 | 19,536 / 0, the record **non-empty on 15,744** |
+| record red test | — | **15,744**, predicted from that count before the run |
+| the four standing stubs | 19,276 / 2,377 / 1,150 / 19 | identical — the comparison is **additive** |
+| mutation, sanitised | 123, **0.9535**, six survivors | 128, **0.9922**, one |
+| mutation, value oracle | 104, 0.8062 | 111, 0.8605 (`--sanitize` worth 17, was 19) |
+| gate ×4, post-integration ×3 | — | every count reproduced exactly |
+
+`declared_but_killed` and `unreachable_but_killed` are both still EMPTY, and
+that is a stronger statement than last dispatch: **the oracle got wider and
+refuted none of the 23 declarations.**
+
+### THE ESCALATION THE FIFTH DISPATCH RAISED WAS ANSWERED BY DELETING IT
+
+The fifth dispatch asked for a **`killed_by` declaration kind**, so that a kill
+by a named, committed, red-tested second instrument could enter
+`mutation/<Unit>.json` the way `equivalent` and `unreachable` do. Worth five
+mutants and 0.9535 → 0.9917.
+
+**It was not built, and should not be.** Widening the instrument the score is a
+score *of* is strictly better than adding a grammar for other instruments'
+verdicts: it needs no reader to weigh a second tool's word, it re-uses the
+corpus and the red tests that already exist, and — the part that decides it —
+**it applies to the mutants nobody enumerated**. A `killed_by` declaration
+would have entered five ids by hand; the comparison kills the whole region,
+including whatever a later mutation operator finds there. The 34-record replay
+survives as a **control** rather than as evidence: it and the harness agree
+about all five.
+
+**PROPOSED, for the Driver to weigh as a method amendment.** Where a survivor's
+region is invisible to the instrument rather than unreachable by the corpus, the
+first move is to widen the instrument, and a declaration kind that lets another
+instrument's verdict into the artifact is the second. The campaign has now met
+the shape twice (the sibling `ParseDbAry_Opt` raised the same escalation) and it
+resolved the same way both times.
+
+### The one survivor, and a correction to two dispatches
+
+`07b5ee72` was recorded as case (c) — a blind spot — at the fourth and fifth
+dispatches, on the ground that no `no_oracle_when` can name a record on which
+the reference returns success and leaves an element undefined. **That is true of
+the arm the corpus takes and false of the subroutine**, and
+`evidence/ParseInAry_Opt/null_item_oracle_probe.{f90,txt}` measures the other
+arm against gfortran:
+
+```
+ALLOCATE STAT = 5014     the allocation FAILED -- Ary arrived already allocated
+after failure  Ary = 7 8 9    the caller's own values, kept
+'1 ; 3 KEYNAME'   IOSTAT = 0  and  Ary = 1 8 3   <- the null item KEPT the 8
+fresh ALLOCATE    IOSTAT = 0  and  Ary = 1 49435 3  <- undefined, no oracle
+```
+
+So it is **(b), a corpus gap**: one record shape and one base-draw correction,
+no new judgement kind and no new oracle. It was **named rather than started**,
+because a record shape can only be stated in `generate.py`, that regenerates the
+corpus, and a regenerated corpus invalidates all 23 artifacts re-taken today
+plus the partition, the read residual and the line coverage the six
+`unreachable` declarations are derived from — a second full re-take, begun with
+two hours left. The four steps are in
+`evidence/ParseInAry_Opt/mutation_survivors.txt`, including the warning that the
+six declarations must be **withdrawn before** that sweep (P12 fails outright on
+`unreachable_but_killed`), which makes the arithmetic to beat 135/135.
