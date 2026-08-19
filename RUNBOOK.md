@@ -8127,6 +8127,84 @@ unit can exhaust the second while barely touching the first.
   own block grew ahead of R14, displacing every later case index. Predict both
   halves, or predict a number that will be wrong.
 
+## THE REGION NO LAYER COMPARES IS WHERE THE DEFECT IS, AND A SECOND INSTRUMENT
+## FOR IT COSTS AN HOUR
+
+- **Unit #54, third dispatch. Nine survivors "nothing compares" became 9 kills,
+  0 of 23 on the control, and ONE REAL DEFECT — on the instrument's first run.**
+
+  Two dispatches had written "the PRINT record is compared by no layer" and
+  stopped there, correctly and uselessly. The instrument is unit #55's
+  `parser_conformance` shape one region over:
+
+  ```
+  print_conformance.f90   44 records through the reference's OWN list-directed
+                          OUTPUT, item list copied from the .f90, plus the same
+                          cases as raw IEEE doubles
+  print_conformance.cpp   textually #includes the SHIPPED translation and
+                          replays them through its own print_default_warning
+  ```
+
+  ```
+  case 38, n = 0
+    ref | ... Using default value of []|
+    got | ... Using default value of [ ]|
+  ```
+
+  **CHOOSE THE CASES FROM THE SURVIVORS' OWN CONSTANTS.** `decexp` at −1 and 16
+  and every value between, `d == 0`, three- and four-digit exponents, both
+  exponent signs, subnormals, `HUGE`, `TINY`, NaN, both infinities — each is a
+  boundary a surviving mutant edits. The defect came from the case nobody would
+  have chosen for a mutant at all: the EMPTY array, which is there because a
+  conformance set sweeps the shape as well as the values.
+
+  **`-DVIT_TRANSLATION='"<path>"'` IS WHAT MAKES IT A MUTATION INSTRUMENT.** The
+  replay includes a path rather than a fixed file, so a mutated COPY in a scratch
+  directory can be replayed and the tree under test is never written to — no
+  marker, no reset window, no restore.
+
+  **THE KILL CRITERION IS "DIFFERS FROM THE UNMUTATED TRANSLATION", NOT "DIFFERS
+  FROM THE REFERENCE", AND GETTING IT WRONG LOOKS LIKE A BROKEN INSTRUMENT.**
+  Anchored on the reference, every mutant inherited the baseline's own
+  one-record deviation and the negative control read **23 of 23 moved a record**.
+  Re-anchored, it reads 0 of 23. Same distinction `--sanitize` draws when it
+  refuses to score against a baseline that already reports.
+
+  **FOLD NOTHING INTO THE SCORE** (unit #55's rule, unchanged). And expect the
+  repair to COST something: see the entry below.
+
+## A ONE-LINE REPAIR CAN LOSE AN ENUMERATED KILL TO THE 40-MUTANT CAP, AND THE
+## DIFF OF TWO ENUMERATIONS PRICES IT BEFORE THE SWEEP
+
+- **Unit #54, third dispatch: 0.7681 -> 0.7609 while making the translation more
+  correct.**
+
+  ```
+  LOST    ec43592b  negate_cond  `if (ErrVar->aviFAIL < 0)`   -- and it was KILLED
+  GAINED  b529317d  negate_cond  `if (n > 0)`                 -- which the sweep's
+                                                                 oracle cannot kill
+  ```
+
+  Adding one `if` adds a `negate_cond` SITE; `harness.cppmutate` caps every
+  operator at 40; the new site displaces the LAST one in file order, and here the
+  last one was the unit's outermost guard. A repair therefore removed an
+  enumerated kill of the most important comparison in the function.
+
+  **PRICE IT BEFORE THE SWEEP, WITH THE MUTATOR RATHER THAN WITH THE SCORE.**
+
+  ```python
+  A = {m.mid for m in mutants(unit, old)}
+  B = {m.mid for m in mutants(unit, fixed)}
+  A - B, B - A          # lost, gained -- and whether any DECLARED id is in A - B
+  ```
+
+  Two things fall out of that diff and both matter. The score change is
+  predicted instead of explained afterwards. And if no declared id is lost, the
+  equivalence and unreachable declarations **carry over by id** and do not have
+  to be re-derived — which is the difference between a forty-minute re-take and
+  a two-hour one. Regenerate the unreachable REASONS anyway if they name line
+  numbers; the lines move even when the ids do not.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
