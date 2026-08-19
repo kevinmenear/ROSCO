@@ -54,3 +54,27 @@ LINES NEVER EXECUTED:
   L 528  msg += " array.";
   L 529  assign_errmsg(ErrVar, msg);
   L 530  }
+
+===============================================================================
+THE TWO CONTROLS, READ AFTER THE SWEEP RATHER THAN ASSERTED HERE
+===============================================================================
+
+  the entry line's gcov count == the case count       17,520   printed above
+  NON-survivors on never-executed lines                    0
+
+The first says the right program ran. The second says the coverage run and the
+mutation sweep agree about that program: a mutant the corpus KILLED on a line it
+never executed would mean the two measured different things. It is taken over
+the KILLED set, not over the survivors -- the survivors are what the declaration
+is being made about, so counting them proves nothing.
+
+  mutants on never-executed lines                         27
+    declared unreachable                                  25
+    declared EQUIVALENT and therefore not re-declared       2   56160d94, 6b5c6a0f
+    surviving but undeclared                               0
+    killed, or nocompile                                   0   <- the control
+
+`vit_mutate.py` refuses a mutant carrying both claims, and the equivalence is
+the stronger one: it survives a corpus that later reaches the line.
+`mutation/ParseInAry_Opt.json` reports `unreachable_but_killed: []`, which is
+the same control taken at the other end.

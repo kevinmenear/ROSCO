@@ -9,29 +9,39 @@ of that line with a Fortran **list-directed READ**. Three callees — `FindLine`
 (#32), `GetWords` (#8), `Int2LStr` (#10) — all already translated. Live in all
 27 scenarios: **230 calls**.
 
-**Disposition: `deferred`.** Six layers ran. **Five are green and red-tested;
-the sixth, mutation, is far below the campaign's threshold at 69 of 156** — for
-the same reason as the sibling, and this unit measures the reason from a second
-direction that the sibling did not have.
+**Disposition: `deferred`.** Seven layers ran. **Six are green and red-tested;
+the seventh, mutation, is below the campaign's threshold of 1.0 at
+93 / 119 = 0.7815** — and that shortfall is this unit's disposition.
 
-**SECOND DISPATCH, 2026-08-18.** The corpus was corrected at two base draws, one
-survivor died, and two instruments were found to have been reporting something
-other than what they claimed. **§8 is the whole of it**; the numbers in this
-table and below are the second dispatch's, and the first dispatch's are named
-beside them wherever they moved.
+**THIRD DISPATCH, 2026-08-19. §9 IS THE CURRENT STATE AND THE TABLE BELOW IS
+ITS.** The unit was moved onto the instrument the sibling reached at its fourth
+dispatch — loop `2ff3660` → `59aa876`, which is where `--sanitize`, the third
+disposition (`unreachable`) and R14's numeric leads and record tails live — and
+every one of the fourteen result artifacts was re-taken there. 0.4423 → 0.7815.
+§8 remains as the second dispatch wrote it; where a number below moved, both are
+named.
 
 | layer | result | red-tested |
 |---|---|---|
-| parser conformance (`parser_conformance.txt`, `parser_replay.txt`) | **113 records, 0 mismatched.** Every record is gfortran's own answer for that record, emitted as ICHAR codes beside its iostat and every element; `parser_conformance.cpp` textually includes the SHIPPED translation and replays them through its own `list_read_ints` | **three**, each a mistake this parser could plausibly *have*: the sibling's separator set **3**; the semicolon guard's `sep != Sep::Blank` half **8**; the sibling's zero-store rule **26** |
-| differential harness (`harness/ParseInAry_Opt.json`) | **15,504 checked, 0 failed**, 0 inadmissible, against the CLEAN Fortran (was 13,674). `Ary` **not compared on 1,283** cases — 8.3% of the corpus, against 29.7% before: the corrected base draw SHRANK the region the harness cannot judge (§4, §8) | **four stubs, every count predicted from the re-measured partition first and every one exact**: no-op **15,244**; the `.NOT. AllowDefault_` arm deleted **2,041** = 1120 + 817 + 104; the READ deleted **146** = 59 + 87; the `IF (AryLen < 1)` arm deleted **19** = 17 + 2 + 0 |
-| mutation (`mutation/ParseInAry_Opt.json`) | **157 mutants, 1 nocompile, 156 behavioural, 69 killed, 87 survived, score 0.4423** — BELOW the threshold, and the number is real: green baseline, clean tree, `compared_against: fortran_reference_on_a_clean_tree` | — the score IS the red test (E4.6). 79 of the 87 survivors are in two regions: the list-directed READ, which only **146 cases of 15,504** can distinguish anything about, and the PRINT record, which no layer compares. `mutation_survivors.txt`, `named_survivors.txt` |
-| survivor cross-check (`survivor_replay.json`) | **53 of the 87 survivors are KILLED by the parser replay** — 52 in the READ region, 1 outside | the negative control is built in (15 of the 16 survivors outside the parser come back `unreached`) **and it was not enough** — the runner now carries a POSITIVE control too, and §8 is why |
-| post-integration (`harness/ParseInAry_Opt.postintegration.json`) | 15,504 checked, **0 failed** | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **8,729 of 15,504**, RE-PREDICTED from the re-measured partition in the runner's header BEFORE the run; reverted, rebuilt, green re-taken at 0 |
-| gate, 27 scenarios (`gate/ParseInAry_Opt.json`) | 5,252,000 values / 351 channels, **0 mismatched** | **TWO**: every parsed value + 1 moves **1,857,893** (35% of the gate), revert-verified at 0; the `Ary = 0` default arm moves **0**, and the artifact carries the argument for the zero (§6) |
+| parser conformance (`parser_conformance.txt`, `parser_replay.txt`) | **113 records, 0 mismatched.** Every record is gfortran's own answer for that record, emitted as ICHAR codes beside its iostat and every element; `parser_conformance.cpp` textually includes the SHIPPED translation and replays them through its own `list_read_ints`. Not re-taken at the third dispatch: it reads no corpus and the translation did not move | **three**, each a mistake this parser could plausibly *have*: the sibling's separator set **3**; the semicolon guard's `sep != Sep::Blank` half **8**; the sibling's zero-store rule **26** |
+| differential harness (`harness/ParseInAry_Opt.json`) | **17,520 checked, 0 failed**, 0 inadmissible, against the CLEAN Fortran (was 15,504, was 13,674). `Ary` **not compared on 1,483** cases — 8.5%, against 8.3% before: flat across the corpus change, because the new cases are R14 records and they land on arms where `Ary` has an oracle (§9) | **four stubs, three predicted from the re-taken partition BEFORE the runs**: no-op **17,260** ✓; the `.NOT. AllowDefault_` arm **2,209** ✓; the READ **646** against a predicted 634 — and the twelve are MEASURED, not explained (`read_residual.txt`); the `IF (AryLen < 1)` arm **19**, unpredicted and unchanged |
+| mutation (`mutation/ParseInAry_Opt.json`) | **157 mutants, 1 nocompile, 156 behavioural: 93 KILLED, 12 EQUIVALENT, 25 UNREACHABLE, 26 SURVIVED, 93/119 = 0.7815** (was 69/156 = 0.4423). SANITISED, green baseline, clean tree; `declared_but_killed` and `unreachable_but_killed` both EMPTY | — the score IS the red test (E4.6). Every one of the 26 survivors is answered by region in `mutation_survivors.txt`, and 14 of the 22 non-PRINT ones are distinguished by a named record |
+| line coverage of the translation (`line_coverage.txt`) | **193 executable lines run, 43 never** over the 17,520 cases, at `-O0`. The measurement the 25 `unreachable` declarations are DERIVED from, by `make_unreachable.py`, on its first use and against this corpus | **two controls**: the entry line's gcov count is 17,520 = the case count; and NON-survivors on never-run lines number 0 |
+| survivor record search (`survivor_record_search.txt`) | **14 of 22 non-PRINT survivors distinguished over 131,298 records — 3 by a VALUE and 11 by an ADDRESS**, under `-fsanitize=address,undefined`. Six of the eleven die on `0` followed by blanks to column 2048. Nothing folded into the score | the **negative control is built into the shape**: the search enters only through `list_read_ints`, so the four survivors on lines it never executes must return `NONE`, and all four do. Its first run reported the eleven ADDRESS kills as absences — kept as `survivor_record_search.MISLABELLED.txt` (C12) |
+| post-integration (`harness/ParseInAry_Opt.postintegration.json`) | 17,520 checked, **0 failed** | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **9,937 of 17,520**, PREDICTED 9,937 from the re-taken partition before the run; reverted, rebuilt, green re-taken at 0 |
+| gate, 27 scenarios (`gate/ParseInAry_Opt.json`) | 5,252,000 values / 351 channels, **0 mismatched**, and re-taken at close at the same number | **TWO, both re-taken at the new instrument revision and both reproducing to the value**: every parsed value + 1 moves **1,857,893** (35% of the gate), revert-verified at 0; the `Ary = 0` default arm moves **0**, and the artifact carries the argument for the zero (§6) |
 
-**Every artifact of this unit names one instrument revision** — loop `2ff3660`,
-`revcheck --unit`. That revision is one commit newer than the sibling's because
-this unit had to fix the instrument to run at all (§7).
+**THE TWO GATE NUMBERS REPRODUCING EXACTLY IS THE CONTROL ON THE WHOLE THIRD
+DISPATCH.** The gate runs 27 simulations against the shipped library and never
+reads the differential corpus, and neither the translation nor the wrapper
+moved — so a corpus change that stayed inside the corpus had to give back
+1,857,893 and 0 exactly. A different number would have meant that something
+other than the corpus had changed.
+
+**Every artifact of this unit names one instrument revision** — loop `59aa876`,
+`revcheck --unit`, **fourteen result artifacts**, nothing left at `2ff3660`.
+Moving there is what made `--sanitize` and the `unreachable` disposition
+available at all, and it is why the four gate runs had to be re-taken.
 
 **No kernel.** The plan allowed "kernel replay **or** direct-call harness", and
 the direct-call harness is the layer taken — as for units #45 through #54. It is
@@ -526,18 +536,31 @@ parser_conformance.cpp                   the replay -- textually includes the SH
                                          translation so it tests that function, not a copy
 run_parser_replay.sh                     the replay plus its three red tests
 parser_replay.txt                        0 / 113, and 3, 8, 26 under perturbation
-harness_partition.txt                    the 15,504 cases by (alloc_Ary, entry status, arm)
-mutation_census.txt                      the sweep's own stdout, every mutant with its verdict
-mutation_survivors.txt                   the 87 survivors by source region, and the
-                                         cross-instrument result
+harness_partition.txt                    the 17,520 cases by (alloc_Ary, entry status, arm),
+                                         and every red-test prediction read out of it
+run_partition_probe.sh                   that table, executed rather than described
+read_residual.txt                        the twelve cases the no-READ prediction missed,
+                                         classified: 634 read-failed + 12 that SUCCEEDED
+run_read_residual_probe.sh               that classification, reproducible
+line_coverage.txt                        193 lines run, 43 never, and the two controls
+run_line_coverage_probe.sh               gcov over the generated test's own object, -O0
+make_unreachable.py                      the 25 unreachable declarations DERIVED from it
+mutation_census.txt                      the SECOND dispatch's stdout, marked superseded
+mutation_survivors.txt                   all 26 survivors by region, each with the record
+                                         that distinguishes it or the reason none does
+survivor_record_search.cpp               131,298 records through the shipped parser and
+                                         each mutant, under -fsanitize=address,undefined
+run_survivor_record_search.sh            that search, build separated from run
+survivor_record_search.txt               14 of 22 distinguished: 3 by value, 11 by address
+survivor_record_search.MISLABELLED.txt   the first run, which called eleven kills absences
 run_survivor_replay.sh                   every survivor through the parser replay
-survivor_replay.txt / .json              53 of 87 killed, both controls
+survivor_replay.txt / .json              53 of the SECOND dispatch's 87 killed, both controls
 run_harness_stub.sh                      one stub through the harness, --no-generate
 parseinary_opt.noop-stub.cpp             every statement removed
 parseinary_opt.no-allowdefault-arm-stub.cpp   the .NOT. AllowDefault_ arm deleted
 parseinary_opt.no-read-stub.cpp          the list-directed READ deleted
 parseinary_opt.no-minlen-arm-stub.cpp    the IF (AryLen < 1) arm deleted
-harness.*-stub.json                      the four red tests, all at 15,504 cases
+harness.*-stub.json                      the four red tests, all at 17,520 cases
 run_wrapper_redtest.sh                   perturb the wrapper, prove red, revert, prove green
 r13_base_draw_probe.txt                  WHY 66860b6f survived: R13's block wrote 0 messages
 run_base_draw_probe.sh                   that probe, reproducible
@@ -627,3 +650,127 @@ survivors are in the list-directed READ, which the corpus reaches in 146 cases
 of 15,504 because R14's plant alphabet is letters, and closing that needs a
 change to a **shared generator rule** that unit #54 has already put to the
 Driver.
+
+---
+
+## 9. The third dispatch — 2026-08-19
+
+The second dispatch closed at 13 of 14, `INCOMPLETE` on P12 alone, with **87
+survivors and nothing declared**. This dispatch moved the unit onto the
+instrument the sibling had already reached and answered every survivor.
+**0.4423 → 0.7815.**
+
+### 9.1 What the move cost and what it bought
+
+`--sanitize`, the `unreachable` disposition, R14's numeric leads and R14's
+record tails all arrived in the loop repo AFTER this unit's second dispatch.
+None of them was reachable without moving `loop_rev`, and `revcheck` and P14
+require one revision across a unit's artifacts — so **all fourteen result
+artifacts were re-taken**, including four gate runs that cannot see a corpus.
+That is the fixed cost of a loop-repo move, and it is not waste: the two gate
+numbers had to come back exactly, and they did.
+
+```
+                       second dispatch      third dispatch
+corpus                 15,504               17,520
+R14 reached            1:plant 2:plant      1:plant, 2 and 3 with TEN numeric
+                       3:plant              leads each, and 8 record tails at
+                                            widths 200 and 2048
+mutation               69 / 156  = 0.4423   93 / 119 = 0.7815
+  killed                    69                   93
+  equivalent declared        0                   12
+  unreachable declared       -                   25
+  survivors                 87                   26
+```
+
+**Kills first, declarations after, so the two are separable.** 69 → 93 is the
+corpus and the sanitiser together; 93/156 → 93/119 is the 37 declarations. The
+sibling separated the corpus from the sanitiser with a value-oracle control run
+on the same corpus; **that control was NOT re-taken here** and the split between
+those two is therefore unpriced on this unit. Named as a gap rather than
+estimated. What is measured is the sanitiser's floor: **11 of the 26 survivors
+are distinguished ONLY by an address**, and 4 sanitiser kills are visible in the
+`misc` part's log alone.
+
+### 9.2 The twelve cases that made a prediction miss
+
+Three of the four stub red tests were predicted from the re-taken partition
+before their runs; two were exact and the READ was 12 short (634 predicted, 646
+measured). The twelve are classified rather than explained
+(`read_residual.txt`): **634 land on a `read-failed` arm — the prediction,
+exactly — and 12 land on NO error arm at all**, the reference's `aviFAIL` still
+at the 300 the case supplied. Those twelve are cases in which the reference's
+READ SUCCEEDED, so deleting the READ shows up in `Ary` and nowhere else. Their
+case indices are 15,396..16,098, inside R14's block.
+
+**They are the corpus change, arriving as a number.** Every record this campaign
+had ever planted in front of a key was LETTERS, so every matched record FAILED
+the read and the failing set was exactly the two error cells — which is why the
+identical prediction was EXACT at the second dispatch (146 = 59 + 87) and is 12
+short here. It is also why `26d402b2`, `list_read_ints`'s final `return 0`
+changed to `return 1`, is killed on this corpus and survived on the last one:
+those twelve cases are the only ones in 17,520 on which a SUCCESSFUL read is
+observed.
+
+### 9.3 The 37 declarations, and why they are not coverage
+
+**25 UNREACHABLE.** Derived by `make_unreachable.py` from `line_coverage.txt`,
+which the script REFUSES to read unless it names the current corpus. 27 mutants
+sit on lines gcov reports `#####` over all 17,520 cases at `-O0`; 25 are
+declared and 2 are left with the stronger equivalence claim they already carry.
+**An unreachable declaration is a DEBT AGAINST THE CORPUS, not a credit** — it
+moved this unit's score without a single new case being distinguished, and the
+region it covers is one thing: the repeat-count block (`r*`), which no record in
+the corpus reaches because R14 plants no `*`.
+
+**12 EQUIVALENT.** Argued per mutant in `mutation/ParseInAry_Opt.equivalences.md`,
+each ending in the grep that would refute it, and the set is checkable because
+**three lines carry a declared mutant beside an undeclared one**: L276 (a
+nonzero IOSTAT for another, declared, beside the nocompile), L358 (`return 0` →
+`return 1`, the SUCCESS value, NOT declared — the corpus kills it), and L587
+(`std::max` swapped, declared, beside `std::max` dropped, not).
+
+`declared_but_killed` and `unreachable_but_killed` are both EMPTY.
+
+### 9.4 The eleven survivors that are differences at an ADDRESS
+
+`survivor_record_search.txt` runs the shipped translation and each non-PRINT
+survivor over 131,298 records under `-fsanitize=address,undefined`. **14 of 22
+are distinguished — 3 by a value and 11 by an address**, and six of the eleven
+die on a record as simple as `0` followed by blanks to column 2048.
+
+They survive the SANITISED sweep because a sanitiser observes executions and no
+case in 17,520 executes this one: the unit only reads a line `FindLine` matched,
+`FindLine` matches on word `AryLen + 1`, so **every record that reaches the READ
+has a non-blank key to the RIGHT of its last value** and every separator scan
+stops on it. `_RECORD_TAILS` does not reach this — its four forms end the record
+inside a VALUE, which is the boundary `parse_int`'s scan meets, not the one
+`eat_separator` meets. The lever that would reach it needs `FindLine` to match a
+line whose word `AryLen + 1` is blank, i.e. an all-blank `ParamName` — the same
+input shape as the third undefined-`Ary` path this unit already escalated.
+**Named and priced for the next dispatch, not declared here.**
+
+### 9.5 One instrument defect, recorded with the wrong artifact (C12)
+
+The record search's first run reported all eleven ADDRESS kills as
+`DID NOT BUILD OR RUN -- no record in this space distinguishes it`. The runner
+was copied from the sibling's, whose build carries no sanitiser, so `rc != 0`
+there really could only be a build failure; adding the sanitiser made `rc != 0`
+the interesting case and the inherited handler reported the interesting case as
+an absence. **A row saying "no record distinguishes it" about a mutant a record
+kills outright is the exact shape this campaign exists to remove.** The wrong
+artifact is kept unedited at `survivor_record_search.MISLABELLED.txt` with the
+reason on top; the repair separates the build from the run and names the record
+the mutant died ON.
+
+### 9.6 What still cannot be seen
+
+Unchanged from §8 except where the corpus closed it, plus one addition:
+
+* **The PRINT record.** Four survivors, and no layer compares the stream. The
+  sibling built a `print_conformance` replay for exactly this and measured its
+  ten moving 18 to 44 records of 44; **this unit has not built one**. That is
+  the cheapest remaining item on this unit's list after the record lever.
+* **The value-oracle control on this corpus.** Not re-taken, so the corpus's
+  share and the sanitiser's share of 69 → 93 are not separated here.
+* **`AryLen` above 32**, and the three items §8 lists, all unchanged.
