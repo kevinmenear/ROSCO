@@ -1,6 +1,6 @@
-# done_check.py ParseDbAry_Opt -- captured 2026-08-19T00:27:53Z by scripts/capture_done_check.sh
+# done_check.py ParseDbAry_Opt -- captured 2026-08-19T00:30:42Z by scripts/capture_done_check.sh
 
-Run against the committed state at efd1312c ("ParseDbAry_Opt: the close gate, last measurement of the third dispatch -- 5,252,000 / 0"), with a CLEAN tree, with stdout
+Run against the committed state at 7d1278d2 ("The proposed amendment's grep, RUN -- one pin of that shape left, and R14 applied in 3 units of 69"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
