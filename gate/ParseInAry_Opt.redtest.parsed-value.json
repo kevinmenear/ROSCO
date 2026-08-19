@@ -21,7 +21,7 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "2ff3660",
+ "loop_rev": "59aa876",
  "mismatched": 1857893,
  "mismatched_channels": [
   "scenario_3:bld_pitch 10334/16000",
@@ -175,7 +175,8 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "every value this unit parses out of an input line arrives at the controller one greater. The ten shipped call sites that reach this member of the ParseAry generic are all INTEGER index arrays of CntrPar -- F_GenSpdNotch_Ind, F_TwrTopNotch_Ind, PerfTableSize, Ind_BldPitch, AWC_n, AWC_harmonic, CC_GroupIndex, StC_GroupIndex, Ind_CableControl, Ind_StructControl -- so this moves what the controller indexes with, not a magnitude."
+  "every value this unit parses out of an input line arrives at the controller one greater. The ten shipped call sites that reach this member of the ParseAry generic are all INTEGER index arrays of CntrPar -- F_GenSpdNotch_Ind, F_TwrTopNotch_Ind, PerfTableSize, Ind_BldPitch, AWC_n, AWC_harmonic, CC_GroupIndex, StC_GroupIndex, Ind_CableControl, Ind_StructControl -- so this moves what the controller indexes with, not a magnitude.",
+  "THIRD DISPATCH, RE-TAKEN ONLY BECAUSE THE LOOP REV MOVED. The gate runs 27 simulations against the shipped library and never reads the differential corpus, and neither the translation nor the wrapper moved between the second dispatch and this one -- so this run was PREDICTED, before it was started, to reproduce 1,857,893 exactly. A different number would have meant something other than the corpus had changed."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parseinary_opt.cpp",

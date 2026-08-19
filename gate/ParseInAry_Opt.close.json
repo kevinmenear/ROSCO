@@ -20,13 +20,13 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "2ff3660",
+ "loop_rev": "59aa876",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "SECOND DISPATCH, re-taken at close. The library under test was rebuilt three times on 2026-08-18 -- reset_to_clean, restore_integrated, and the wrapper red test's revert -- so this run asks whether the build that SHIPS at the end of the dispatch is still the one the first dispatch gated. The translation and the wrapper are byte-identical to that gate's; the corpus change the dispatch made is not read by this layer at all (RUNBOOK, unit #49: the gate runs 27 simulations against the shipped library and never reads the case file)."
+  "CLOSE RUN, third dispatch: the gate re-taken against the library exactly as it ships at the end of this dispatch, after the two perturbations above were reverted and rebuilt. Predicted at 5,252,000 / 0 before it was started; the translation and the wrapper are byte-identical to the second dispatch and only the loop rev moved."
  ],
  "perturbed": false,
  "residual_dirt": [],
