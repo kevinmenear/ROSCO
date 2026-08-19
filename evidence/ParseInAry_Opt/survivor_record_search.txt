@@ -1,0 +1,89 @@
+ParseInAry_Opt -- a record that distinguishes each surviving mutant
+from the SHIPPED translation, searched rather than argued.
+Built with -fsanitize=address,undefined; the BASELINE ran clean under
+those flags, which is the control that makes a mutant's abort its own.
+
+RECORD SPACE: 131298 records. Every string of length 1..3 over
+  "0123456789+-.eEdDqQnNaAiIfFtTyYxX ,;/*()" at the HEAD of a 2048-byte
+  blank-padded record and again at its TAIL, so the token's last character
+  is the record's last byte; plus 18 crafted full-width records. Three
+  elements are read, each pre-set to the -987654 sentinel, so an element
+  the transfer never reached is visible as itself.
+
+WHAT A ROW MEANS. `differs` names the FIRST record on which the mutant's
+(iostat, element bits) triple differs from the shipped translation's --
+that record is the corpus lever and the mutant is NOT equivalent. `none`
+means no record IN THIS SPACE distinguishes it, which is evidence toward
+equivalence bounded by the space and is not a declaration.
+
+14 of 22 non-PRINT survivors are distinguished by some record in this space (3 by a VALUE, 11 by an ADDRESS -- the sanitiser aborting on a read the shipped translation does not make).
+
+07b5ee72  negate_cond    L 258  'if (is_eol(rec[p]))' -> 'if (!(is_eol(rec[p])))'
+    DIFFERS on 22 record(s). First:
+      HEAD|0 ;|-1|0|-987654|-987654   vs   HEAD|0 ;|5010|0|-987654|-987654
+112d63b1  compare_op     L 265  '<' -> '<='
+    SANITISER ABORT -- distinguished by an ADDRESS, not by a value.
+    The record it died on, and what it did:
+      HEAD|0a|5010|-987654|-987654|-987654   ->   ==1259646==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x51d0000bde80 at pc 0xbd61fb85fa5c bp 0xfffff90c24f0 sp 0xfffff90c24e0
+14fc62e9  index_offset   L 257  '[p]' -> '[p + 1]'
+    SANITISER ABORT -- distinguished by an ADDRESS, not by a value.
+    The record it died on, and what it did:
+      HEAD|0a|5010|-987654|-987654|-987654   ->   ==1259666==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x51d0000bf280 at pc 0xaff7876af008 bp 0xfffffe207a30 sp 0xfffffe207a20
+1e691028  index_offset   L 319  '[q]' -> '[q + 1]'
+    SANITISER ABORT -- distinguished by an ADDRESS, not by a value.
+    The record it died on, and what it did:
+      HEAD|0|-1|0|-987654|-987654   ->   ==1259686==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x51d000081e80 at pc 0xb04e4e04121c bp 0xfffff5d28040 sp 0xfffff5d28030
+2f8001ae  compare_op     L 202  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+3d58e9ee  index_offset   L 294  '[p]' -> '[p + 1]'
+    SANITISER ABORT -- distinguished by an ADDRESS, not by a value.
+    The record it died on, and what it did:
+      HEAD|0|-1|0|-987654|-987654   ->   ==1259736==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x51d000002680 at pc 0xad7fec970b44 bp 0xfffff98f9920 sp 0xfffff98f9910
+3dfee86c  index_offset   L 248  '[p]' -> '[p + 1]'
+    SANITISER ABORT -- distinguished by an ADDRESS, not by a value.
+    The record it died on, and what it did:
+      HEAD|0|-1|0|-987654|-987654   ->   ==1259755==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x51d000002680 at pc 0xb9bb086f0354 bp 0xffffebe73920 sp 0xffffebe73910
+51771298  compare_op     L 227  '>' -> '>='
+    DIFFERS on 1 record(s). First:
+      LONG|head:ovfmax|-1|2147483647|7|-987654   vs   LONG|head:ovfmax|5010|-987654|-987654|-987654
+58ec3d92  index_offset   L 265  '[p]' -> '[p + 1]'
+    SANITISER ABORT -- distinguished by an ADDRESS, not by a value.
+    The record it died on, and what it did:
+      TAIL|0 +|5010|0|-987654|-987654   ->   ==1259796==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x51d001d52280 at pc 0xb4ba0a54fcbc bp 0xffffe8ee6b30 sp 0xffffe8ee6b20
+6c2149c9  index_offset   L 287  '[p]' -> '[p + 1]'
+    SANITISER ABORT -- distinguished by an ADDRESS, not by a value.
+    The record it died on, and what it did:
+      HEAD|0|-1|0|-987654|-987654   ->   ==1259816==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x51d000058080 at pc 0xba3f403e08a8 bp 0xffffdb5ff460 sp 0xffffdb5ff450
+6fb2c552  const_tweak    L 434  '0' -> '1'
+    NONE -- no record in this space distinguishes it
+7784f889  index_offset   L 283  '[p]' -> '[p + 1]'
+    SANITISER ABORT -- distinguished by an ADDRESS, not by a value.
+    The record it died on, and what it did:
+      HEAD|0|-1|0|-987654|-987654   ->   ==1259866==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x51d000002680 at pc 0xbc4a534506bc bp 0xffffd9f16fc0 sp 0xffffd9f16fb0
+78f9ef7a  index_offset   L 287  '[p]' -> '[p + 1]'
+    SANITISER ABORT -- distinguished by an ADDRESS, not by a value.
+    The record it died on, and what it did:
+      TAIL| 3|-1|3|-987654|-987654   ->   ==1259886==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x51d000db2280 at pc 0xb90b41bc09bc bp 0xffffccb27060 sp 0xffffccb27050
+7d77a31a  compare_op     L 227  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+7fd4edf1  compare_op     L 287  '<' -> '<='
+    SANITISER ABORT -- distinguished by an ADDRESS, not by a value.
+    The record it died on, and what it did:
+      HEAD|0|-1|0|-987654|-987654   ->   ==1259927==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x51d000058080 at pc 0xb0b6a9df08a4 bp 0xffffe3c6d9d0 sp 0xffffe3c6d9c0
+8464d14d  const_tweak    L  60  '200' -> '201'
+    NONE -- no record in this space distinguishes it
+8fa93551  index_offset   L 265  '[p]' -> '[p + 1]'
+    SANITISER ABORT -- distinguished by an ADDRESS, not by a value.
+    The record it died on, and what it did:
+      HEAD|0a|5010|-987654|-987654|-987654   ->   ==1259977==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x51d0000bde80 at pc 0xb6e87f63fa60 bp 0xffffc8b87410 sp 0xffffc8b87400
+a4bdfbcc  compare_op     L 319  '>' -> '>='
+    NONE -- no record in this space distinguishes it
+afece932  negate_cond    L 597  'if (DEBUG_PARSING)' -> 'if (!(DEBUG_PARSING))'
+    NONE -- no record in this space distinguishes it
+b1c839d7  drop_call      L 587  'std::max(NumWords, 0)' -> 'NumWords'
+    NONE -- no record in this space distinguishes it
+b93bad70  const_tweak    L 194  '200000000' -> '200000001'
+    DIFFERS on 1 record(s). First:
+      LONG|head:repover|5010|-987654|-987654|-987654   vs   LONG|head:repover|0|7|7|7
+e6bc72cb  compare_op     L 217  '>' -> '>='
+    NONE -- no record in this space distinguishes it

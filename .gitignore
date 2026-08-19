@@ -146,6 +146,13 @@ kgen.log
 .vit_wrapper.log
 model.ini
 .loop-run/
+
+# `evidence/<Unit>/run_survivor_record_search.sh` builds every surviving mutant
+# from a COPY here rather than writing to the tree under test, and leaves the
+# copies and their binaries behind so a row can be re-run by hand. Scratch, like
+# .loop-run/ above -- and untracked scratch is `P2 dirty_tree`, which is one
+# predicate worse than the truth for a unit whose evidence is otherwise clean.
+.record_search/
 translations/*/*_test/
 
 # ExtController oracle fixture: a BUILD PRODUCT of fixtures/bladed_stub/discon_stub.c.

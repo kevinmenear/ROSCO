@@ -1,0 +1,94 @@
+THIS ARTIFACT IS WRONG AND IS KEPT BECAUSE IT IS WRONG (C12).
+
+Eleven rows below read `DID NOT BUILD OR RUN -- no record in this space
+distinguishes it`. Both halves of that sentence are false and they are false in
+opposite directions. The eleven BUILT and RAN; they exited non-zero because
+AddressSanitizer ABORTED them on a heap-buffer-overflow -- which is the
+STRONGEST distinguishing result this instrument can produce, not a failure of
+it. `./s_14fc62e9` prints its records, then
+
+    ==1259563==ERROR: AddressSanitizer: heap-buffer-overflow
+    ==1259563==ABORTING
+
+The runner was copied from `evidence/ParseDbAry_Opt/run_survivor_record_search.sh`
+(P4), whose build carries no sanitiser, so `rc != 0` there really could only be
+a build or a crash and collapsing the two was harmless. Adding
+`-fsanitize=address,undefined` -- the change this unit needed, because ten of
+its survivors differ from the shipped translation ONLY at `rec[2048]` -- made
+`rc != 0` the interesting case, and the inherited handler reported the
+interesting case as an absence. A row that says `no record distinguishes it`
+when a record kills the mutant outright is the exact shape this campaign exists
+to remove: the instrument was reporting its own blind handler as a fact about
+the program.
+
+Kept, unedited below, beside the corrected `survivor_record_search.txt`.
+
+===============================================================================
+
+ParseInAry_Opt -- a record that distinguishes each surviving mutant
+from the SHIPPED translation, searched rather than argued.
+Built with -fsanitize=address,undefined; the BASELINE ran clean under
+those flags, which is the control that makes a mutant's abort its own.
+
+RECORD SPACE: 131298 records. Every string of length 1..3 over
+  "0123456789+-.eEdDqQnNaAiIfFtTyYxX ,;/*()" at the HEAD of a 2048-byte
+  blank-padded record and again at its TAIL, so the token's last character
+  is the record's last byte; plus 18 crafted full-width records. Three
+  elements are read, each pre-set to the -987654 sentinel, so an element
+  the transfer never reached is visible as itself.
+
+WHAT A ROW MEANS. `differs` names the FIRST record on which the mutant's
+(iostat, element bits) triple differs from the shipped translation's --
+that record is the corpus lever and the mutant is NOT equivalent. `none`
+means no record IN THIS SPACE distinguishes it, which is evidence toward
+equivalence bounded by the space and is not a declaration.
+
+3 of 22 non-PRINT survivors are distinguished by some record in this space.
+
+07b5ee72  negate_cond    L 258  'if (is_eol(rec[p]))' -> 'if (!(is_eol(rec[p])))'
+    DIFFERS on 22 record(s). First:
+      HEAD|0 ;|-1|0|-987654|-987654   vs   HEAD|0 ;|5010|0|-987654|-987654
+112d63b1  compare_op     L 265  '<' -> '<='
+    DID NOT BUILD OR RUN -- no record in this space distinguishes it
+14fc62e9  index_offset   L 257  '[p]' -> '[p + 1]'
+    DID NOT BUILD OR RUN -- no record in this space distinguishes it
+1e691028  index_offset   L 319  '[q]' -> '[q + 1]'
+    DID NOT BUILD OR RUN -- no record in this space distinguishes it
+2f8001ae  compare_op     L 202  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+3d58e9ee  index_offset   L 294  '[p]' -> '[p + 1]'
+    DID NOT BUILD OR RUN -- no record in this space distinguishes it
+3dfee86c  index_offset   L 248  '[p]' -> '[p + 1]'
+    DID NOT BUILD OR RUN -- no record in this space distinguishes it
+51771298  compare_op     L 227  '>' -> '>='
+    DIFFERS on 1 record(s). First:
+      LONG|head:ovfmax|-1|2147483647|7|-987654   vs   LONG|head:ovfmax|5010|-987654|-987654|-987654
+58ec3d92  index_offset   L 265  '[p]' -> '[p + 1]'
+    DID NOT BUILD OR RUN -- no record in this space distinguishes it
+6c2149c9  index_offset   L 287  '[p]' -> '[p + 1]'
+    DID NOT BUILD OR RUN -- no record in this space distinguishes it
+6fb2c552  const_tweak    L 434  '0' -> '1'
+    NONE -- no record in this space distinguishes it
+7784f889  index_offset   L 283  '[p]' -> '[p + 1]'
+    DID NOT BUILD OR RUN -- no record in this space distinguishes it
+78f9ef7a  index_offset   L 287  '[p]' -> '[p + 1]'
+    DID NOT BUILD OR RUN -- no record in this space distinguishes it
+7d77a31a  compare_op     L 227  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+7fd4edf1  compare_op     L 287  '<' -> '<='
+    DID NOT BUILD OR RUN -- no record in this space distinguishes it
+8464d14d  const_tweak    L  60  '200' -> '201'
+    NONE -- no record in this space distinguishes it
+8fa93551  index_offset   L 265  '[p]' -> '[p + 1]'
+    DID NOT BUILD OR RUN -- no record in this space distinguishes it
+a4bdfbcc  compare_op     L 319  '>' -> '>='
+    NONE -- no record in this space distinguishes it
+afece932  negate_cond    L 597  'if (DEBUG_PARSING)' -> 'if (!(DEBUG_PARSING))'
+    NONE -- no record in this space distinguishes it
+b1c839d7  drop_call      L 587  'std::max(NumWords, 0)' -> 'NumWords'
+    NONE -- no record in this space distinguishes it
+b93bad70  const_tweak    L 194  '200000000' -> '200000001'
+    DIFFERS on 1 record(s). First:
+      LONG|head:repover|5010|-987654|-987654|-987654   vs   LONG|head:repover|0|7|7|7
+e6bc72cb  compare_op     L 217  '>' -> '>='
+    NONE -- no record in this space distinguishes it
