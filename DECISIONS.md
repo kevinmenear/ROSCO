@@ -12798,3 +12798,148 @@ residual that is *explained* names a guess. The probe is committed
   moving 18 to 44 records of 44; the right disposition for them is the
   `killed_by` declaration the sibling already proposed, not an equivalence.
 
+
+---
+
+## 2026-08-19 — unit #55 `ParseInAry_Opt`, FOURTH dispatch: 0.7815 → 0.9685
+
+### A CLAIM ABOUT WHAT A CORPUS CANNOT REACH IS A CLAIM, AND THIS ONE WAS WRONG
+
+The third dispatch's `survivor_record_search.txt` did everything right: it found
+a record for fourteen of its twenty-two non-PRINT survivors, eleven of them
+sanitiser aborts at `rec[2048]`, and it named the record — `0` followed by
+blanks to column 2048. Then it wrote one sentence too many:
+
+> the unit only reads a line `FindLine` matched, and `FindLine` matches on word
+> `AryLen + 1` — so in every record that reaches the READ there is a non-blank
+> KEY to the RIGHT of the last value
+
+and concluded that reaching the shape needed an all-blank `ParamName`, which is
+this unit's undefined-`Ary` region. It priced the lever, escalated it, and moved
+on. That was the correct *procedure* on a wrong *premise*.
+
+**The premise is true of the LINE and false of the RECORD.** `FindLine` does
+`Line = FileLines(I)` into a `CHARACTER(MaxLineLength)` local, and a Fortran
+CHARACTER assignment **truncates**. A key past column 2048 is seen by `GetWords`
+and is not in the record the parser is handed — and `_RECORD_TAILS`, added at
+that same dispatch, was already relying on exactly that truncation to make a
+record end *inside a value*. Making it end *in blanks* is the same mechanism,
+one form over.
+
+**The general lesson, and it is not about parsers.** When a survivor's lever is
+priced as "unreachable without paying for region X", check whether the
+generator's EXISTING mechanisms already reach it before recording the price. The
+cost of the wrong answer here was a whole dispatch: eleven mutants that could
+have died at the third dispatch were carried, and the dispatch that carried them
+had already built the machinery.
+
+### AN `unreachable` SET THAT SHRINKS IS THE SCORE GOING UP, NOT DOWN
+
+25 → 6 declarations, and the score went `0.7815 → 0.9685`. Nineteen of the
+twenty-five sat in the repeat-count block, which no corpus record could enter
+*because R14 planted no `*` anywhere in any record*. Seven `_TAIL_VALUES` entries
+later — `1*7 8`, `0*1 2*5`, `20*7 8 9`, `200000000*7`, `200000001*7` and the two
+INT limits — all nineteen are **scored**, and every one is killed.
+
+This is the sharpest available demonstration that **an unreachable declaration is
+a debt against the corpus and not a credit**. Declaring them raised the third
+dispatch's number and hid nineteen live mutants behind a coverage measurement
+that was itself correct. `make_unreachable.py` re-derives the set from the
+coverage file every time, which is what made paying the debt back automatic.
+
+### `20*7 8 9` — WHY A PLANTED VALUE IS A LIST OF WORDS AND NOT ONE WORD
+
+`count * 10` → `count` turns a base-ten accumulation into a digit SUM. Against a
+two-element array both fill it identically: 20 and 2 are each ≥ 2. Only a THIRD
+element the original does not reach and the mutant does says which ran. **A
+repeat count is observable only against what FOLLOWS it**, so `_TAIL_VALUES`
+entries are word lists; the same shape gives `0*1 2*5` (the `count <= 0`
+boundary at zero) and `1*7 8` (at one).
+
+### `||` SHORT-CIRCUITS, SO HALF OF EVERY BLANK SCAN IS A DIFFERENT MUTANT
+
+Every scan in a list-directed reader is `is_blank(rec[p]) || is_eol(rec[p])`. The
+**second** operand is evaluated only where the first is false — that is, exactly
+at the character the scan STOPS on. Five record forms that run a scan off the end
+of the buffer killed every `is_blank(rec[p + 1])` mutant and left every
+`is_eol(rec[p + 1])` alive: four survivors, one per scan, plus the `rec[p] == ';'`
+disjunct of the repeat-count lookahead. Four more forms that end the record ON
+the byte each scan stops at killed all four.
+
+**Ask which OPERAND of a short-circuit a record shape reaches, not just which
+LINE.** The two are different mutants at the same source line and the corpus
+needs a different record for each.
+
+### THREE RESTATEMENTS DELETED, AND THE GATE RED TEST IS WHAT MADE IT SAFE
+
+`field()`'s `'*'` overflow fill, `std::max(NumWords, 0)` and the empty
+`if (DEBUG_PARSING) {}` were all sites no input could make fire either way, each
+carrying a survivor. Unit #32's practice is to delete a restatement and write the
+proof rather than declare its mutant equivalent, and this is the second unit to
+apply it.
+
+**The control on all three is the gate red test.** Each is either on the PRINT
+path (dead in all 27 scenarios) or identity-valued, so the parsed-value
+perturbation had to reproduce **1,857,893 of 5,252,000 exactly** — and did. That
+is a stronger use of a reproduced number than the third dispatch could make with
+the same one: there, only the corpus had moved, so the number was a control on
+the corpus; here the **translation** moved too, so it is a control on the
+deletions.
+
+### `field()`'s COMMENT SAID THE BRANCH WAS NOT REPRODUCED WHILE THE BRANCH STOOD
+
+Worth its own line because it is a class. The function carried
+
+```cpp
+// The '*' overflow fill ... is not reproduced; ...
+std::string field(const std::string& text, int w) {
+    if (static_cast<int>(text.size()) > w) { return std::string(w, '*'); }
+```
+
+for three dispatches. Nothing checks a comment against its code, and the mutant
+that negated the branch survived every corpus. **When a survivor sits on a branch
+whose own comment says the branch does not exist, believe the comment and delete
+the code** — or believe the code and fix the comment, but do not leave both.
+
+### A PROBE'S PREDICTION MUST BE A PARAMETER, NOT A LITERAL
+
+`run_read_residual_probe.sh` printed `PREDICTED (the two read-failed cells) 634`
+as a literal, written for the 17,520-case corpus. Re-run on 19,536 it printed
+that stale number beside a live measurement of 1,044 — a probe whose whole
+purpose is to make a residual checkable, reporting a residual of the wrong size.
+It is `READ_FAILED_CELLS` now. **A number a probe PRINTS is an output; a number a
+probe PREDICTS is an input, and inputs go in the interface.**
+
+### WHAT WAS NOT DONE, AND IT IS TWO THINGS
+
+* **No PRINT-record conformance replay.** Three survivors sit in
+  `print_default_warning`, and the reason no layer sees them is structural rather
+  than an oversight: `vit_mutate.py` reads a JSON *payload* out of `./test`'s
+  stdout **precisely because the reference may PRINT**. Both sides' records are
+  discarded before any comparison. The sibling built the instrument and
+  escalated a `killed_by` declaration kind; without that kind the replay's kills
+  cannot enter the artifact, so building it alone would not move the number.
+  Left in the survivor list where P12 counts it.
+* **No oracle for `Ary` on a read that SUCCEEDS with a null item.** This is the
+  unit's standing escalation, now carrying the six remaining `unreachable`
+  declarations AND the fourth survivor `07b5ee72`. A `no_oracle_when`'s reference
+  half must be a relation on a field the reference RETURNS, and on this path the
+  reference returns exactly what a fully successful read returns.
+
+### FOR THE METHOD, NOT FOR THIS CAMPAIGN
+
+Two of the above are candidates for the invariant layer and are raised here
+rather than written into `RUNBOOK.md`:
+
+1. **An `unreachable` declaration should be re-attacked, not just re-derived.**
+   The runbook already says to re-derive the set from its coverage file. It does
+   not say to ask *why* a region has no coverage — and here nineteen declarations
+   shared one cause (`R14 plants no *`) that one generator entry removed.
+   A declaration set with a common cause is a corpus gap wearing a declaration's
+   name.
+2. **A priced-and-not-taken lever should record the mechanism it was priced
+   against.** The third dispatch's price was right about the cost of an
+   all-blank `ParamName` and wrong that the all-blank `ParamName` was needed.
+   Had it named the mechanism it believed forced that route — "the key is always
+   to the right of the last value *in the record*" — the error would have been
+   visible to a reader who knew `Line` was truncated.

@@ -1,21 +1,35 @@
-THIS IS THE SECOND DISPATCH'S CENSUS AND IT IS SUPERSEDED. Kept because it is
-the per-mutant console log the 69/156 = 0.4423 in that dispatch's evidence was
-read out of, and a superseded number with no log behind it is not checkable.
+THIS IS THE SECOND DISPATCH'S CENSUS AND IT IS SUPERSEDED TWICE. Kept because
+it is the per-mutant console log the 69/156 = 0.4423 in that dispatch's evidence
+was read out of, and a superseded number with no log behind it is not checkable.
 
-The THIRD dispatch re-scored every mutant on the 17,520-case corpus at loop
-59aa876, sanitised, in five --operator-filtered parts. Its per-mutant verdicts
+THE FOURTH DISPATCH re-scored every mutant on the 19,536-case corpus at loop
+8c17719, sanitised, in five --operator-filtered parts. Its per-mutant verdicts
 are in the parts themselves --
 
     mutation/ParseInAry_Opt.sanpart.{misc,compare_op,const_tweak,negate_cond,index_offset}.json
 
--- and the union is `mutation/ParseInAry_Opt.json`: 93 killed, 12 equivalent,
-25 unreachable, 26 survived, 93/119 = 0.7815. Every survivor is answered in
+-- and the union is `mutation/ParseInAry_Opt.json`: 123 killed, 18 equivalent,
+6 unreachable, 4 survived, 123/127 = 0.9685. The VALUE-ORACLE control on the
+same corpus and the same declarations is `mutation/ParseInAry_Opt.value-oracle.json`
+at 104/127 = 0.8189, so `--sanitize` is worth exactly 19 kills here. Every
+survivor is answered in `evidence/ParseInAry_Opt/mutation_survivors.txt`.
+
+THE ID SET IS NO LONGER WHOLLY COMPARABLE WITH THIS LOG, and the reason is worth
+knowing: `cppmutate` derives a mutant's id from the unit name and the edit, NOT
+from a file offset, so an id survives an edit ELSEWHERE in the translation --
+but a mutant whose SITE is deleted is simply gone. The fourth dispatch deleted
+three sites, so `b1c839d7` (`std::max(NumWords, 0)` dropped), `9381bdef`
+(`field()`'s `*` fill negated) and `afece932` (`if (DEBUG_PARSING)` negated) do
+not resolve in the current enumeration and every other id in this log does.
+157 mutants -> 152.
+
+The THIRD dispatch's intermediate reading -- 93 killed, 12 equivalent, 25
+unreachable, 26 survived, 93/119 = 0.7815 on a 17,520-case corpus -- is in this
+file's git history and in the git history of
 `evidence/ParseInAry_Opt/mutation_survivors.txt`.
 
-Two things below are still true of the current sweep and are why this file is
-worth reading: the mutant IDS are content-addressed and did not move (all 87 of
-this log's survivors resolve in the current enumeration), and the one NOCOMPILE
-is the same one, `804cac95` at [51/157].
+Two things below are still true of the current sweep: the one NOCOMPILE is the
+same one, `804cac95` at [51/157], and the mutant ids are content-addressed.
 
 ===============================================================================
 

@@ -1,3 +1,31 @@
+THIS IS THE THIRD DISPATCH'S SEARCH, OVER THAT DISPATCH'S 22 NON-PRINT
+SURVIVORS, AND IT IS KEPT BECAUSE ITS FINDING WAS ACTED ON RATHER THAN FILED.
+
+It named, for each surviving mutant, a record that distinguishes it from the
+shipped translation -- 3 by a value and 11 by an ADDRESS -- and its headline
+sentence was that the distinguishing record is "`0` FOLLOWED BY BLANKS TO
+COLUMN 2048", which no case in 17,520 supplied. The fourth dispatch put that
+record shape into the corpus (`_BLANK_TAILS` and `_TAIL_VALUES` in the loop
+repo) and ALL FOURTEEN are now killed by the differential harness itself.
+
+WHAT THIS FILE GOT WRONG, AND IT IS ONE SENTENCE. It concluded that the corpus
+could not produce the shape without an all-blank `ParamName` -- an input whose
+reference leaves an ALLOCATEd array undefined -- because "`FindLine` matches on
+word `AryLen + 1`, so there is always a non-blank KEY to the RIGHT of the last
+value". The premise is true of the LINE and false of the RECORD: `FindLine`
+copies `FileLines(I)` into `CHARACTER(MaxLineLength) :: Line` and the copy
+TRUNCATES, so a key placed past column 2048 is seen by the search and is not in
+the record the parser reads. `_RECORD_TAILS` was already relying on that same
+truncation for the other boundary. The lever was one already-present mechanism
+away and was priced as unreachable.
+
+Three of its ids -- `b1c839d7`, `9381bdef`, `afece932` -- no longer resolve:
+their SITES were deleted from the translation at the fourth dispatch.
+
+The rows below are unedited.
+
+===============================================================================
+
 ParseInAry_Opt -- a record that distinguishes each surviving mutant
 from the SHIPPED translation, searched rather than argued.
 Built with -fsanitize=address,undefined; the BASELINE ran clean under

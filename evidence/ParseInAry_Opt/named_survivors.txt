@@ -1,3 +1,17 @@
+SUPERSEDED. This file answers the SIX IDS THE SECOND DISPATCH'S done_check
+NAMED, one at a time. Four dispatches on, the P12 line names a different six and
+the current answer to EVERY surviving mutant is
+`evidence/ParseInAry_Opt/mutation_survivors.txt`, which has four rows.
+
+Of the six below: `66860b6f` was fixed and stayed fixed; `ad38f36b`, `ba05f614`
+and `6d203c33` are killed by the differential harness on this dispatch's corpus;
+the two PRINT-record entries are still open and are REGION C of the current
+file. Kept because a superseded answer with no record of what it said is not
+checkable, and because its judgement -- "NONE OF THE SIX IS (a)" -- was right
+and is the reason this unit did not close on declarations.
+
+===============================================================================
+
 ParseInAry_Opt -- THE SIX SURVIVORS THE DONE-CONDITION NAMED, ONE AT A TIME
 
 The second dispatch was given six ids by `done_check.py`'s P12 line and asked,

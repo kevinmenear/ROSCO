@@ -785,3 +785,154 @@ Unchanged from §8 except where the corpus closed it, plus one addition:
   four of which are argued in `mutation_survivors.txt` and deliberately left
   undeclared.
 * **`AryLen` above 32**, and the three items §8 lists, all unchanged.
+
+---
+
+## 10. The fourth dispatch — 2026-08-19
+
+**0.7815 → 0.9685, and the whole of it is one sentence in the third dispatch's
+own evidence being wrong.**
+
+### 10.1 The lever the third dispatch priced as unreachable, and why it was not
+
+`survivor_record_search.txt` (third dispatch) searched 131,298 records against
+each of that dispatch's 22 non-PRINT survivors and found a record for fourteen
+of them — eleven of those a **sanitiser abort at `rec[2048]`**, one byte past
+the `std::vector<char>(2048)` the record lives in. Its headline was that the
+distinguishing record is *"`0` FOLLOWED BY BLANKS TO COLUMN 2048"*, and its
+conclusion was that the corpus cannot produce it:
+
+> the unit only reads a line `FindLine` matched, and `FindLine` matches on word
+> `AryLen + 1` — so in every record that reaches the READ there is a non-blank
+> KEY to the RIGHT of the last value
+
+**The premise is true of the LINE and false of the RECORD.** `FindLine` does
+
+```
+Line = FileLines(I)          ! CHARACTER(MaxLineLength) = CHARACTER(len_FileLines)
+```
+
+and a Fortran CHARACTER assignment **truncates** when the source is longer. A
+key placed past column 2048 of the file line is therefore seen by `GetWords`
+and by the search — and is *not in the record the parser is handed*.
+`_RECORD_TAILS`, added at the third dispatch, was already relying on exactly
+that truncation to make a record end **inside a value**. Making it end **in
+blanks** instead is the same mechanism, one form over.
+
+That is the whole corpus change, and it is in the loop repo
+(`harness/generate.py`, commits `887daf7` → `8c17719`):
+
+| addition | what it ends the record with | what it reaches |
+|---|---|---|
+| `_BLANK_TAILS` × 5 | a value, then blanks to the buffer's last byte | every blank scan runs OFF the end |
+| `_BLANK_TAILS` × 4 | a value **ON** the buffer's last byte | every blank scan STOPS on the last byte |
+| `_TAIL_VALUES` × 10 | a whole word at a limit of the item type | the validity tests and the repeat count |
+
+The second group is its own small finding. `||` short-circuits, so the SECOND
+operand of every `is_blank(rec[p]) || is_eol(rec[p])` is evaluated **only at the
+character the scan stops on**. The first five forms killed every
+`is_blank(rec[p + 1])` mutant and left every `is_eol(rec[p + 1])` alive — four
+survivors, one per scan, all found in the same run and all killed by the four
+forms that stop a scan on the last byte.
+
+### 10.2 Three restatements deleted rather than declared
+
+| site | its survivor | why it went |
+|---|---|---|
+| `field()`'s `'*'` overflow fill | `9381bdef` | `snprintf("%d", int32_t)` is at most 11 characters into a 12-wide field. The comment above the function **already said** the fill "is not reproduced" while the branch stood. |
+| `std::max(NumWords, 0)` | `b1c839d7` | `AryLen >= 0` is a STATED range, so `NumWords >= 1`. `FindLine` (unit #32) deleted the identical guard for the identical reason. |
+| `if (DEBUG_PARSING) { }` | `afece932` | an empty block on a `constexpr false` — the shape this file's own `Words_Ary` STAT= note argues against, one block down. |
+
+157 mutants → 152. **The control on all three is the gate red test**: the
+parsed-value perturbation had to reproduce **1,857,893 of 5,252,000 exactly**,
+because every deleted site is either on the PRINT path (dead in all 27
+scenarios) or identity-valued. It did.
+
+### 10.3 The unreachable set, 25 → 6
+
+Nineteen of the third dispatch's twenty-five `unreachable` declarations sat in
+the repeat-count block, which no corpus record could enter *because R14 planted
+no `*` anywhere*. `_TAIL_VALUES` plants seven now — `1*7 8`, `0*1 2*5`,
+`20*7 8 9`, `200000000*7`, `200000001*7`, and the two INT limits — and all
+nineteen are **scored** rather than declared. An `unreachable` declaration is a
+debt against the corpus and not a credit; this pays nineteen of them back and
+the score went UP.
+
+`20*7 8 9` is the one worth naming: `count * 10` → `count` (a digit SUM instead
+of a base-ten accumulation) fills a two-element array identically either way,
+and only a THIRD element that the mutant reaches and the original does not says
+which ran. That is why `_TAIL_VALUES` entries are word LISTS and not one word
+repeated.
+
+The six that remain are the **semicolon item** and the **null repeat count**,
+and they are the same thing twice: records on which the reference's READ returns
+SUCCESS and leaves an element of a freshly `ALLOCATE`d `Ary` undefined. This
+unit's standing escalation, unchanged.
+
+### 10.4 Six new equivalences, each with an undeclared sibling on its own line
+
+`mutation/ParseInAry_Opt.equivalences.md` §6–§11. The checkability rule is the
+sibling's: a declaration is worth reading only next to a mutant on the SAME line
+that is **not** declared and that the corpus kills.
+
+```
+L 217  `acc > 4294967296LL` -> `>=`  DECLARED    a stop-ACCUMULATING guard
+L 227  `v > 2147483647LL`   -> `>=`  NOT         the validity test — KILLED, 1 case
+L 319  `q > p`  -> `q >= p`          DECLARED    both spellings end in the same 5010
+L 319  `q < len` -> `q <= len`       NOT         reads rec[len] — KILLED, sanitiser
+L 326  `MaxRepeat + 1` -> `- 1`      DECLARED    only reached with count_over set
+L 329  `count > MaxRepeat` -> `>=`   NOT         KILLED, 18 cases
+L 443  `: 0` (ary_size) -> `: 1`     DECLARED    needs a FAILED CFI_allocate
+L 443  `d->dim[0]` -> `d->dim[0+1]`  NOT         KILLED, sanitiser
+```
+
+### 10.5 Every layer re-taken, and every prediction stated first
+
+| layer | result | the prediction it had to reproduce |
+|---|---|---|
+| differential harness | **19,536 checked, 0 failed**, clean tree, three callee bridges kept | `Ary` excluded on **1,659** cases, **8.49%** against 8.5% on the 17,520-case corpus — flat, because every new form was built so a SUCCESSFUL read assigns every element it consumed |
+| no-op stub | 19,276 of 19,536 | `19,536 − (184 + 76)` — **exact** |
+| `.NOT. AllowDefault_` stub | 2,377 | predicted 2,273; the miss is the partition's own `alloc = 0, other` cell (104 cases that changed `aviFAIL` with a REFUSED `ErrMsg`), and `2,273 + 104 = 2,377` |
+| no-READ stub | 1,150 | predicted 1,044, and the count **on a read-failed arm is 1,044 exactly**; the 106-case residual splits 88 + 18 in `read_residual.txt` |
+| `IF (AryLen < 1)` stub | 19 | unpredicted, unchanged from the third dispatch |
+| mutation, sanitised | **123 / 127 = 0.9685**, `declared_but_killed` and `unreachable_but_killed` both empty | — |
+| mutation, value oracle | 104 / 127 = 0.8189 on the SAME corpus and declarations | `--sanitize` is worth exactly **19**, and it is a STRICT SUPERSET: the value oracle killed nothing the sanitiser did not |
+| post-integration | 19,536 checked, 0 failed | — |
+| wrapper copy-back red test | **11,121 of 19,536** | the partition's `aviFAIL-changed` column summed: `1,322 + 104 + 233 + 7,700 + 951 + 811` — **exact** |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched, re-taken at close | — |
+| gate red test | 1,857,893 | **exact**, and it is the control on the three deleted sites |
+| gate negative control | 0 | **exact**; the `Ary = 0` default arm is never reached in any scenario |
+
+`revcheck --unit` reports all **20** result artifacts at loop `8c17719`.
+
+### 10.6 The corpus is NOT a strict extension
+
+R14's cases renumber, so nothing here is comparable case-for-case with the
+17,520-case run and no count below is scaled from an earlier one. That is the
+cost of reaching for `generate.py` rather than `ranges.toml`, and it was taken
+knowingly: `ranges.toml` cannot state a record SHAPE, so the `ranges.toml`
+lever was not available for any of this dispatch's fourteen kills.
+
+### 10.7 What is still not seen — and it is now two things, not four
+
+1. **The PRINT record.** Three survivors on a stream no layer compares.
+   `vit_mutate.py` reads a JSON payload out of `./test`'s stdout *precisely
+   because the reference may PRINT*, so both records are discarded before the
+   comparison. The arm is additionally dead in all 27 scenarios. The sibling
+   built a `print_conformance` replay and escalated a `killed_by` declaration
+   kind; **this unit has not built one**, and the three are left in the survivor
+   list where P12 counts them rather than folded into a declaration.
+2. **`Ary`'s undefined elements on a read that SUCCEEDS.** 1,659 cases are named
+   and excluded by `no_oracle_when`; the third path — a `'/'` terminator, a
+   semicolon item or a null repeat count on which the reference returns success
+   and leaves a freshly `ALLOCATE`d element undefined — is unclaimable by any
+   `no_oracle_when` and is what the six `unreachable` declarations and the
+   fourth survivor (`07b5ee72`) both rest on.
+
+Two items from the third dispatch's list are **closed**: the eight non-PRINT
+survivors the record search did not separate are gone (four killed, four
+declared with arguments), and every record-bound survivor is now killed by the
+harness itself rather than by a side instrument.
+
+`AryLen` above 32 remains a stated narrowing against a reference defined to at
+least 100,000.
