@@ -20,14 +20,14 @@
   "Examples/DISCON_synth.IN",
   "Examples/DISCON_yaw.IN"
  ],
- "loop_rev": "b9c8c52",
+ "loop_rev": "59aa876",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "RE-TAKEN AT CLOSE, third dispatch, and this is the LAST measurement of the dispatch. Since gate/ParseDbAry_Opt.json was written, five gate runs perturbed rosco/controller/src/parsedbary_opt.cpp and four mutation sweep parts mutated translations/ROSCO_Helpers/parsedbary_opt.cpp in place, each inside a reset/restore cycle. All four sweeps cleared scripts/mutate_guarded.sh's marker at ab7f2b3e6012c8abfdccffea7156dbc711578112, which is the fixed translation's hash.",
-  "The translation itself moved at 50b583ab -- one separator blank made conditional, the defect evidence/ParseDbAry_Opt/print_replay.txt found -- so this close is over the FIXED build and every layer above was re-taken on it."
+  "THE CLOSE RUN, taken after every artifact of this unit was re-taken at loop 59aa876 and after the last commit that touches the translation or the wrapper. Same number as gate/ParseDbAry_Opt.json: 5,252,000 values / 351 channels / 27 scenarios, 0 mismatched.",
+  "It is not a duplicate of the main run: the main run was taken before the value-oracle re-take opened and closed a second reset window, and reset_to_clean.sh/restore_integrated.sh both rebuild and install libdiscon.so. This asserts that the library the gate measured at close is the one the campaign ships."
  ],
  "perturbed": false,
  "residual_dirt": [],
