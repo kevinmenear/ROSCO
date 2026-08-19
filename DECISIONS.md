@@ -4,10 +4,78 @@ Append-only record of *why*. Never read end to end.
 
 ## Unit #54 — ParseDbAry_Opt — third dispatch — 2026-08-18
 
-**Disposition `deferred`, on P12 alone: 106 / (185 − 17 − 30) = 0.7681 against a
+**Disposition `deferred`, on P12 alone: 105 / (185 − 17 − 30) = 0.7609 against a
 threshold of 1.0.** Second dispatch: 77 / 185 = 0.4162 with nothing declared.
-Four other layers green and red-tested; every artifact re-taken at loop
-`b9c8c52`.
+Five other layers green and red-tested; every artifact re-taken at loop
+`b9c8c52`, and every layer re-taken again on the fixed translation.
+
+### A SIXTH LAYER, AND IT FOUND A DEFECT ON ITS FIRST RUN (C12)
+
+The PRINT record is the one thing this unit produces that nothing in this
+campaign compared, and both earlier dispatches said so and stopped there. Unit
+#55's `parser_conformance` shape applies one region over: 44 records through the
+reference's own list-directed OUTPUT (`print_conformance.f90`, item list copied
+from `ROSCO_Helpers.f90`), replayed through the SHIPPED `print_default_warning`
+by textual include (`print_conformance.cpp`).
+
+```
+case 38, n = 0
+  ref | ... Using default value of []|
+  got | ... Using default value of [ ]|
+```
+
+The separator blank before `]` was unconditional. gfortran writes ONE before a
+CHARACTER item that FOLLOWS A REAL and NONE between two CHARACTER items — the
+rule the translation's own header already records from `fortran_io_probe.txt`.
+With an empty `Ary` the `[` is followed directly by the `]`.
+
+**NO LAYER COULD HAVE SEEN IT, WHICH IS WHY C12'S "PASSED A LAYER IT SHOULD HAVE
+FAILED" DOES NOT QUITE APPLY.** The harness compares out-parameters, the gate
+compares channels, and the corpus cannot reach the shape at all: R5 varies
+`Ary`'s extent over 3..8, so `n = 0` never occurs. The wrong artifact is kept
+anyway, at commit `9a2c39a2`, before the fix at `50b583ab`.
+
+**Is it reachable in the shipped program?** Only through a caller that hands in
+an already-ALLOCATEd zero-extent `Ary` and whose parameter is then not found:
+`FinalAryLen = MAX(AryLen, 1) >= 1` on every successful ALLOCATE, so a fresh
+allocation cannot produce it. ROSCO's callers pass `CntrPar` fields that are
+allocated once. Recorded as a real deviation on an unreachable-looking path
+rather than argued into a non-defect.
+
+**THE CONTROL FAILED ON THE FIRST RUN AND THE FAILURE WAS THE BASELINE'S.**
+Scored against the REFERENCE, every mutant inherited the baseline's own
+one-record deviation, and the negative control read *23 of 23 outside-region
+survivors moved a record* — which looks like a broken instrument and was in fact
+a broken translation showing through a wrongly-anchored comparison. A kill is
+*differs from the UNMUTATED TRANSLATION*, not *differs from the reference*; the
+same distinction `--sanitize` draws with its baseline refusal. Corrected: 0 of
+23, and 9 of 9 PRINT-region survivors die at 18 to 43 records.
+
+**NOTHING IS FOLDED INTO THE SCORE** — unit #55's rule for `parser_conformance`,
+and it holds here: `mutation/ParseDbAry_Opt.json` is untouched by the replay.
+
+### AND THE REPAIR COST ONE ENUMERATED KILL, TO THE 40-MUTANT CAP
+
+Predicted before the sweep by diffing the two enumerations, not discovered in the
+result:
+
+```
+LOST    ec43592b  negate_cond  `if (ErrVar->aviFAIL < 0)`   -- and it was KILLED
+GAINED  b529317d  negate_cond  `if (n > 0)`                 -- which the sweep's
+                                                               oracle cannot kill
+```
+
+One `if` adds a `negate_cond` SITE; `negate_cond` is capped at 40; the new site
+displaces the last one in file order, and the last one is the unit's OUTERMOST
+GUARD. So a one-line repair moved 0.7681 to 0.7609 while making the translation
+more correct, and it removed an enumerated kill of the unit's most important
+comparison. That is unit #53's cap defect arriving through a repair rather than
+through a census — and it is an argument for raising `limit_per_operator`, not
+for leaving the defect.
+
+Every other mutant id is unchanged, so the 17 equivalence and 30 unreachable
+declarations carried over by id; only the unreachable REASONS were regenerated,
+because each names its line and the lines moved.
 
 ### PROPOSED AMENDMENT, for the Driver: a generalisation recorded in DECISIONS.md did not reach the one other unit it was about
 

@@ -5,18 +5,54 @@
 stand*. One copy of every count — do not duplicate them anywhere else.
 
 **As of 2026-08-18: unit #54 `ParseDbAry_Opt` is `deferred`. THREE dispatches.
-Five layers; four green and red-tested, and the mutation layer at
-106 / (185 − 17 − 30) = 0.7681 against a threshold of 1.0** — from 0.4162 at the
-second dispatch. Kills first: the corpus bought 27, the sanitiser 2, and the 47
-declarations the rest.
+SIX layers; five green and red-tested, and the mutation layer at
+105 / (185 − 17 − 30) = 0.7609 against a threshold of 1.0** — from 0.4162 at the
+second dispatch. Kills first: the corpus bought 27, the sanitiser 2, the 47
+declarations the rest, and a one-line REPAIR gave 1 back to the 40-mutant cap.
+
+**THE SIXTH LAYER IS NEW AND IT FOUND A DEFECT ON ITS FIRST RUN.** The PRINT
+record is the one thing this unit produces that nothing in this campaign
+compared. `print_conformance.f90` puts 44 records through the reference's own
+list-directed output and `print_conformance.cpp` replays them through the
+SHIPPED `print_default_warning` by textual include:
+
+```
+case 38, n = 0
+  ref | ... Using default value of []|
+  got | ... Using default value of [ ]|
+```
+
+The separator blank before `]` was unconditional. gfortran writes ONE before a
+CHARACTER item that follows a REAL and NONE between two CHARACTER items — the
+rule the translation's own header already recorded. **No layer could see it**
+and the corpus cannot reach it (R5 varies `Ary`'s extent over 3..8). Fixed at
+`50b583ab`; replay 44 of 44; **every other layer re-taken on the fixed
+translation and no other number moved**.
+
+**9 of the 9 PRINT-region survivors it replayed are killed** (18–43 records
+each), **negative control 0 of 23** outside the region. Nothing is folded into
+the score. **The control failed on its first run and the failure was the
+baseline's**: scored against the REFERENCE, every mutant inherited the
+baseline's own one-record deviation and the control read 23 of 23 — a kill is
+*differs from the unmutated translation*, the distinction `--sanitize` draws
+with its baseline refusal.
+
+**0.7681 → 0.7609 IS THE CAP, NOT A REGRESSION.** One `if` adds a `negate_cond`
+site, `negate_cond` is capped at 40, and the new site displaces the last in file
+order: `ec43592b` (`if (ErrVar->aviFAIL < 0)`, KILLED, the unit's outermost
+guard) leaves the enumerated population and `b529317d` (`if (n > 0)`) enters it
+as a survivor the sweep's oracle cannot kill. Predicted by diffing the two
+enumerations before the sweep; every other id unchanged, so the 47 declarations
+carried over by id.
 
 | layer | result | red-tested |
 |---|---|---|
 | differential harness (`harness/ParseDbAry_Opt.json`) | **16,512 checked, 0 failed**, against the CLEAN Fortran with all three callee bridges kept. `Ary` **not compared on 5,266** under the `no_oracle_when` entry | **four stubs**, all re-taken: no-op **16,252**; the `.NOT. AllowDefault_` arm **6,079**; the READ **394**; the zero-store rule **4** |
-| mutation (`mutation/ParseDbAry_Opt.json`) | **185 behavioural — 106 KILLED, 17 EQUIVALENT, 30 UNREACHABLE, 32 SURVIVED, 0.7681.** Sanitised, green baseline, clean tree, `declared_but_killed` and `unreachable_but_killed` both empty | the score IS the red test |
+| mutation (`mutation/ParseDbAry_Opt.json`) | **185 behavioural — 105 KILLED, 17 EQUIVALENT, 30 UNREACHABLE, 33 SURVIVED, 0.7609.** Sanitised, green baseline, clean tree, `declared_but_killed` and `unreachable_but_killed` both empty | the score IS the red test |
 | line coverage of the translation (`evidence/ParseDbAry_Opt/line_coverage.txt`) | **224 executable lines run, 62 never** — the measurement the 30 unreachable declarations rest on | **two controls**: the entry line's count is 16,512 = the case count; and NON-survivors on never-run lines number 1, which is a NOCOMPILE, not a kill |
 | post-integration (`harness/ParseDbAry_Opt.postintegration.json`) | 16,512 checked, 0 failed | the reverse copy deleted from this unit's own wrapper: **13,216**, predicted 13,216 |
-| gate, 27 scenarios (`gate/ParseDbAry_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched | **four, every count predicted before the run and every one exact**: parsed value + 0.01 **2,236,141**; the `Ary = 0` arm **0**; survivor 48542e3d **0**; survivor ae3f319a **0** |
+| PRINT-record conformance (`evidence/ParseDbAry_Opt/print_replay.txt`) | **44 records, 0 mismatched** after the fix | 9 of 9 PRINT survivors killed at 18–43 records; negative control 0 of 23 |
+| gate, 27 scenarios (`gate/ParseDbAry_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched, re-taken on the fixed translation and again at close | **four, every count predicted before the run and every one exact**: parsed value + 0.01 **2,236,141**; the `Ary = 0` arm **0**; survivor 48542e3d **0**; survivor ae3f319a **0** |
 
 **THE RELAUNCH'S PREMISE WAS FALSE, AND THE REASON IS THE FINDING.** This unit
 was cleared to `pending` because loop `b33a761` planted numeric literals in
@@ -76,13 +112,14 @@ files. What is left in the READ region is boundary and rare-form statements the
 gate's own inputs do not contain either: reachable in principle, unreached by
 both instruments.
 
-**WHAT WOULD MOVE 0.7681, so the next dispatch need not re-derive it.** (1) A
+**WHAT WOULD MOVE 0.7609, so the next dispatch need not re-derive it.** (1) A
 generator that plants `nan`/`inf`, an `r*` repeat, a `;` terminator and a
 four-digit exponent — `_NUMERIC_LEADS` extended the way `b33a761` extended it
-once — which would also retire most of the 30 unreachable. (2) An instrument
-that compares the two sides' **stdout**, for the 9 PRINT survivors, which no
-corpus can reach. (3) A record whose last character is a digit, for the five
-`p <= len` boundaries.
+once — which would also retire most of the 30 unreachable. (2) A SWEEP ORACLE
+that reads stdout, for the 10 PRINT mutants: the comparison now exists in
+`print_replay.txt`, what does not exist is `./test` making it, and that is a
+change to the shared harness emitter and therefore the Driver's. (3) A record
+whose last character is a digit, for the five `p <= len` boundaries.
 
 ---
 
@@ -226,7 +263,8 @@ Fortran list-directed `READ`: the campaign's first parser.
 | differential harness (`harness/ParseDbAry_Opt.json`) | **13,674 checked, 0 failed**, 0 inadmissible, against the CLEAN Fortran with all three callee bridges kept. `Ary` **not compared on 4,067** cases; every other output compared on all 13,674 | **four stubs**, re-taken on this comparison, **all four predicted in advance and all four exact**: no-op **13,448**; the `.NOT. AllowDefault_` arm **4,811** = 4006+805; the READ **103** = 61+42; the zero-store rule **3** |
 | mutation (`mutation/ParseDbAry_Opt.json`) | **189 mutants, 185 behavioural, 77 killed, 108 survived, score 0.416 — BELOW THRESHOLD** | the score IS the red test. 103 of the 108 survivors are in two regions with measured causes (below) |
 | post-integration (`harness/ParseDbAry_Opt.postintegration.json`) | 13,674 checked, 0 failed | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **10,611 of 13,674**, the pass set PREDICTED in the runner's header before the run; reverted, rebuilt, green re-taken at 0 |
-| gate, 27 scenarios (`gate/ParseDbAry_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched | **TWO**: every parsed value + 0.01 moves **2,236,141** (43% of the gate); the `Ary = 0` default arm moves **0**, argued in the artifact. Both reproduced to the value at the second dispatch |
+| PRINT-record conformance (`evidence/ParseDbAry_Opt/print_replay.txt`) | **44 records, 0 mismatched** after the fix | 9 of 9 PRINT survivors killed at 18–43 records; negative control 0 of 23 |
+| gate, 27 scenarios (`gate/ParseDbAry_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched, re-taken on the fixed translation and again at close | **TWO**: every parsed value + 0.01 moves **2,236,141** (43% of the gate); the `Ary = 0` default arm moves **0**, argued in the artifact. Both reproduced to the value at the second dispatch |
 
 **THE RED WAS A PARTITION, AND THE SECOND DISPATCH STATES IT RATHER THAN
 CARRYING IT.** A case failed **if and only if** the reference ALLOCATED `Ary` on
