@@ -51,7 +51,19 @@ rm -f *.gcda *.gcno *.gcov cov_test cov_test.o
 # \`parseinary_opt_callees.f90\` per tree (bridges kept on a clean tree, dropped on
 # an integrated one) and the .o on disk is whichever tree ran last. Linking the
 # stale one gives \`undefined reference to findline_c\`, measured 2026-08-18.
-make parseinary_opt_callees.o parseinary_opt_bridge.o
+# \`parseinary_opt.hpp\` IS ASKED OF MAKE, and that is not decoration. It is a
+# COPY of the translation (Makefile:88-89, \`cp \$< \$@\`) and the probe compiles
+# \`parseinary_opt_test.cpp\` with g++ DIRECTLY, so without naming it here the one
+# rule that refreshes it is never evaluated and whatever the last run left in
+# the test directory is what gets measured. At the fifth dispatch that was the
+# LAST HARNESS STUB: \`run_harness_stub.sh\` restores the .cpp and cannot restore
+# this derived copy, the two mtimes landed in the SAME SECOND, and the probe
+# reported 207/26/475 for a program that is not the shipped one. The probe's own
+# control -- entry count == case count -- passed, because a stub that deletes one
+# arm is still entered on every case. See line_coverage.MEASURED_A_STUB.txt.
+# \`vit_mutate.py:275\` deletes the .hpp before every build for the same reason.
+rm -f parseinary_opt.hpp
+make parseinary_opt.hpp parseinary_opt_callees.o parseinary_opt_bridge.o
 g++ -O0 -g -fPIC -ffp-contract=off -I. --coverage -c parseinary_opt_test.cpp -o cov_test.o
 g++ --coverage -o cov_test cov_test.o parseinary_opt_bridge.o parseinary_opt_callees.o \$LIBS
 ./cov_test parseinary_opt_cases.bin > /dev/null 2>&1 || true

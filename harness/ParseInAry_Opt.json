@@ -1,6 +1,6 @@
 {
  "unit": "ParseInAry_Opt",
- "against": "integrated",
+ "against": "translation",
  "checked": 19536,
  "failed": 0,
  "inadmissible": 0,
@@ -32,7 +32,7 @@
    "reason": "the reference ALLOCATEd Ary on this call and then RETURNed on an arm that assigns none of it (.NOT. AllowDefault_) or only a prefix (the READ error arm); those elements are recycled heap and a comparison against them decides nothing about either implementation. MEASURED ON THIS UNIT'S OWN CORPUS before this entry was written: 4,067 of 13,674 cases, classified in evidence/ParseInAry_Opt/harness_partition.txt -- 100% of both cells and 0% of the other five, and 0 Ary-failing cases outside the condition. The one-relation form excludes 4,233; the extra 166 arrived already failed and never entered the reference's body."
   }
  },
- "loop_rev": "8c17719-nogit",
+ "loop_rev": "74c2a32-nogit",
  "gen_rev": "gen-7654789df837",
  "vit_rev": "3f6e2ce-nogit"
 }

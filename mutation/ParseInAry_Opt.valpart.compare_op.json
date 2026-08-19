@@ -107,7 +107,7 @@
  "declared_but_killed": [],
  "unreachable_but_killed": [],
  "score": 0.7429,
- "loop_rev": "8c17719-nogit",
+ "loop_rev": "74c2a32-nogit",
  "gen_rev": "gen-7654789df837",
  "vit_rev": "3f6e2ce-nogit",
  "survivors": [

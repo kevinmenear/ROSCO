@@ -1,6 +1,6 @@
 {
   "unit": "ParseInAry_Opt",
-  "against": "integrated",
+  "against": "translation",
   "checked": 19536,
   "failed": 1150,
   "inadmissible": 0,
@@ -118,6 +118,6 @@
       "got": "2c010000"
     }
   ],
-  "red_test": "no-read",
+  "red_test": "the list-directed READ deleted",
   "red_test_note": "run with --no-generate, so this is the same case file the green in harness/ParseInAry_Opt.json was taken on"
 }

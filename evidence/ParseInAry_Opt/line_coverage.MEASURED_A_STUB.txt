@@ -1,0 +1,88 @@
+ParseInAry_Opt -- line coverage of the SHIPPED translation under the
+19,536-case differential harness corpus, measured by gcov over the
+generated test's own object (the test #includes parseinary_opt.hpp).
+
+  executable lines RUN      207
+  executable lines NOT RUN  26
+  non-code lines            475
+
+CONTROL: the entry line's count must equal the case count.
+  L464  count=19536  void ParseInAry_Opt(char* FileLines, int n_FileLines, int len_FileLine
+
+LINES NEVER EXECUTED:
+
+  L  91  std::fprintf(stderr,
+  L  94  static_cast<int>(s.size()));
+  L  95  return;
+  L 259  crossed_eol = true;
+  L 298  if (first_item || sep != Sep::Blank) {
+  L 299  return 5010;
+  L 301  ++p;
+  L 302  ++i;
+  L 303  while (p < len && (is_blank(rec[p]) || is_eol(rec[p]))) {
+  L 304  ++p;
+  L 306  sep = Sep::Comma;                   // '1 ;;2' is 5010
+  L 307  continue;
+  L 338  for (long k = 0; k < repeat && i < n; ++k) {
+  L 339  ++i;
+  L 341  eat_separator();
+  L 342  continue;
+  L 343  }
+  L 540  ErrVar->aviFAIL = -1;
+  L 541  std::string msg(RoutineName);
+  L 542  msg += ":Error allocating memory for ";
+  L 543  msg += int2lstr_trimmed(AryLen);
+  L 544  msg += " characters in the ";
+  L 545  msg.append(ftrim(ParamName, len_ParamName));
+  L 546  msg += " array.";
+  L 547  assign_errmsg(ErrVar, msg);
+  L 548  }
+
+-------------------------------------------------------------------------
+C12 -- THIS ARTIFACT IS WRONG AND IS KEPT BECAUSE IT IS WRONG.
+
+Taken at the FIFTH dispatch, 2026-08-19, immediately after the four harness
+stub red tests. It does not measure the shipped translation. It measures
+`parseinary_opt.no-minlen-arm-stub.cpp`, the LAST stub that ran.
+
+HOW. `run_harness_stub.sh` restores `translations/ROSCO_Helpers/parseinary_opt.cpp`
+on the way out -- it does, and the .cpp hashed back to HEAD. It does not, and
+cannot, restore the DERIVED copy the harness makes inside the test directory:
+
+    Makefile:88   parseinary_opt.hpp: .../translations/ROSCO_Helpers/parseinary_opt.cpp
+    Makefile:89       cp $< $@
+
+`run_line_coverage_probe.sh` asks make only for `parseinary_opt_callees.o` and
+`parseinary_opt_bridge.o`, then compiles `parseinary_opt_test.cpp` with g++
+directly -- so the one rule that would have refreshed the .hpp is never
+evaluated, and whatever the last run left there is what gets measured.
+`vit_mutate.py:275` deletes `<stem>.hpp` before every build for exactly this
+reason; the probe did not.
+
+AND THE MTIMES WERE EQUAL TO THE SECOND (both 14:40:11), so even a probe that
+DID consult the make rule could have been told the copy was current. The
+ordering hazard is not fixed by timestamps.
+
+WHY THE CONTROL DID NOT CATCH IT. The probe's stated control is that the entry
+line's gcov count equals the case count. It read
+
+    L464  count=19536
+
+and PASSED -- because a stub that deletes ONE ARM is still entered on every one
+of the 19,536 cases. An entry-count control can see a file that was not run.
+It cannot see a file that is the wrong program.
+
+WHAT IT SAID vs WHAT IS TRUE (evidence/ParseInAry_Opt/line_coverage.txt):
+
+    executable lines RUN      207   <- this file      209   the translation
+    executable lines NOT RUN   26                      26   (the same 26)
+    non-code lines            475                     474
+    the never-run block at    L540-548                L541-549
+
+The never-executed SET is the same either way, so the six `unreachable`
+declarations derived from it are unaffected -- which is luck, not design: the
+arm this stub deletes is one the corpus reaches, so it moved the RUN count and
+not the zero-count list.
+
+FIXED by adding `parseinary_opt.hpp` to the probe's own `make` line, which is
+the rule the Makefile already states. Raised in DECISIONS.md.
