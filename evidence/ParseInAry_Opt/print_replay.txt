@@ -1,0 +1,54 @@
+ParseInAry_Opt -- the PRINT record, measured against the reference's own
+runtime, and the DEFECT that measurement found.
+
+FOURTH DISPATCH, loop 8c17719. 34 records built by `print_conformance.f90`,
+each written by the reference's OWN list-directed PRINT statement (copied from
+ROSCO_Helpers.f90 at 54dd134, not paraphrased) and replayed through the SHIPPED
+`print_default_warning` by textual include.
+
+**THIS RUN IS KEPT AS THE ARTIFACT OF A DEFECT, NOT AS A GREEN.** The baseline
+-- the UNMUTATED translation -- disagrees with the reference on case 24, the
+ZERO-LENGTH array:
+
+    ref | ... Using default value of []|
+    got | ... Using default value of [ ]|
+
+gfortran writes NO separator blank before a CHARACTER item that follows an
+EMPTY value list; the translation writes `rec += ' '` unconditionally. The
+sibling `ParseDbAry_Opt`'s translation guards the same blank with `if (n > 0)`
+and its own replay's baseline is 0 mismatched of 44 -- so this is one unit's
+transcription and not a shared misreading of the runtime.
+
+NO LAYER OF THIS UNIT'S EVIDENCE COULD HAVE FOUND IT. The differential harness
+compares out-parameters; the gate compares simulation channels and the arm is
+dead in all 27 scenarios; and `vit_mutate.py` reads a JSON PAYLOAD out of
+`./test`'s stdout PRECISELY BECAUSE the reference may PRINT, so both sides'
+records are discarded before any comparison happens. The region no layer
+compares is where the defect was.
+
+AND THE THREE SURVIVORS ARE NOW MEASURED RATHER THAN ARGUED. All three PRINT
+mutants move a record -- 33, 33 and 34 of 34 -- so "not equivalent" is a
+measurement here and not a claim. NOTHING FROM THIS RUN IS FOLDED INTO THE
+SCORE: a kill by a different instrument is not a kill by the sweep, and
+`mutation/ParseInAry_Opt.json` is not touched by this script. Entering them
+needs the `killed_by` declaration kind the sibling escalated.
+
+THE NEGATIVE CONTROL IS BUILT INTO THE SHAPE: the replay enters the translation
+only through `print_default_warning`, so the one surviving mutant OUTSIDE the
+PRINT region must move nothing, and it does not.
+
+34 reference record(s) from print_conformance.f90
+CONFORMANCE -- the UNMUTATED translation against the reference:
+BASELINE: 34 replayed record(s), 1 mismatched
+  case 24
+    ref | ROSCO Warning: Did not find correct size PerfTableSize in input file.  Using default value of []|
+    got | ROSCO Warning: Did not find correct size PerfTableSize in input file.  Using default value of [ ]|
+
+PRINT-region survivors replayed: 3
+  KILLED by the record comparison: 3
+    0562d216  const_tweak    L418  '12' -> '13'   33 of 34 record(s) differ
+    72edee9b  const_tweak    L427  '0' -> '1'   33 of 34 record(s) differ
+    bb16f729  const_tweak    L423  '1' -> '2'   34 of 34 record(s) differ
+  STILL ALIVE: 0
+
+NEGATIVE CONTROL: 1 survivor(s) OUTSIDE the PRINT region, 0 of them moved a record
