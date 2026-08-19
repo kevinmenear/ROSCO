@@ -1,0 +1,11 @@
+ on entry           Ary =           7           8           9
+ ALLOCATE STAT      =        5014  (non-zero: the allocation FAILED)
+ after the failure  Ary =           7           8           9  ALLOCATED = T
+ record             = '1 ; 3 KEYNAME'
+ READ IOSTAT        =           0  (0: the reference calls this record LEGAL)
+ after the READ     Ary =           1           8           3
+ --- fresh ALLOCATE, same record
+ READ IOSTAT        =           0
+ after the READ     Ary =           1       49435           3  <- element 2 is UNDEFINED, not an oracle
+ --- the comma form, for comparison
+ READ IOSTAT        =        5010   Ary =           1           3           9
