@@ -1,188 +1,210 @@
-ParseDbAry_Opt -- the 33 mutants still alive after the third dispatch, by region,
+ParseDbAry_Opt -- the 22 mutants still alive after the FOURTH dispatch, by region,
 and what each region's survival is a fact ABOUT.
 
   mutation/ParseDbAry_Opt.json (sanitised, four merged operator-filtered parts):
-  189 mutants, 4 nocompile, 185 behavioural, 105 KILLED, 17 declared EQUIVALENT,
-  30 declared UNREACHABLE, 33 SURVIVED.  score 105 / (185 - 17 - 30) = 0.7609.
-  Second dispatch: 77 / 185 = 0.4162 with nothing declared.
+  189 mutants, 4 nocompile, 185 behavioural, 128 KILLED, 17 declared EQUIVALENT,
+  18 declared UNREACHABLE, 22 SURVIVED.  score 128 / (185 - 17 - 18) = 0.8533.
 
-  0.7681 -> 0.7609 across the print separator fix (50b583ab) IS THE 40-MUTANT
-  CAP, not a regression. The fix adds one `if`, negate_cond is capped at 40, and
-  the new site displaces the last one in file order:
-      LOST    ec43592b  `if (ErrVar->aviFAIL < 0)`  -- and it was KILLED
-      GAINED  b529317d  `if (n > 0)`                -- which the sweep's oracle
-                                                       cannot kill, see below
+    second dispatch    77 / 185 = 0.4162   nothing declared
+    third dispatch    105 / 138 = 0.7609   17 equivalent, 30 unreachable
+    fourth dispatch   128 / 150 = 0.8533   17 equivalent, 18 unreachable
 
-WHERE THEY ARE. Every mutant is placed by the position `harness/cppmutate.py`
+  `declared_but_killed` and `unreachable_but_killed` are both EMPTY.
+
+THE SIX THIS DISPATCH WAS SENT FOR ARE ALL KILLED, and none of them was declared
+anything. The corpus was fixed, not the record:
+
+    b5366e74  assign_errmsg  `s.size() > cap` -> `>=`      R13's ladder now lands
+                                                           on an arm that assigns
+                                                           a 112-byte message
+    6b5fc8ce  lower()        `c >= 'A'` -> `c > 'A'`       `nAn` at a value
+    76abf5f3  match_word     `p + LEN(w) > len` -> `>=`    a word ENDING at 2048
+    09fbe682  match_word     `k < w.size()` -> `<=`        a word that MATCHES
+    2763d449  parse_real     `p < len` -> `<=` (integer)   digits to the last byte
+    2f05620e  parse_real     `p < len` -> `<=` (before .)  likewise
+
+WHAT MOVED IT, KILLS BEFORE DECLARATIONS, measured with the value oracle so each
+step is a subtraction rather than an argument:
+
+    corpus 16,512 -> 17,520 (base draw + IEEE words + record tails)
+                                        value oracle   104 -> 120 killed
+    --sanitize                                         120 -> 128 killed
+    17 equivalent + 18 unreachable            0.6919 -> 0.8533
+
+  AND THE SANITISER'S SHARE QUADRUPLED, 2 kills -> 8, WHICH IS A FINDING ABOUT
+  THE THIRD DISPATCH'S CONCLUSION RATHER THAN ABOUT THE OPTION. That dispatch
+  measured --sanitize as nearly a null result and concluded the index_offset and
+  `p <= len` survivors were NOT out-of-bounds differences -- "rec[p + 1] is
+  inside a 2048-byte blank-padded record". True of the corpus it had. A
+  `p <= len` reading `rec[2048]` is out of bounds only when a scan REACHES 2048,
+  and until this dispatch no record did. A sanitiser measures what the corpus
+  executes; the two instruments move together and neither is evidence on its own.
+
+WHERE THE 22 ARE. Every mutant is placed by the position `harness/cppmutate.py`
 gives it, not by a text search -- several `before` strings occur many times in
 this file and a search would attribute them all to the first.
 
     survived   region
-       1       assign_errmsg
-       1       lower()
-      15       the READ -- match_word, parse_real
-       5       the READ -- list_read_reals
+       1       the READ -- match_word
+       3       the READ -- the IEEE payload buffer     <- NEW: reached for the
+       4       the READ -- the exponent                   first time this
+       3       the READ -- list_read_reals                dispatch
       10       the PRINT record
        1       the unit's own body
      ----
-      33
+      22
 
 AND WHY, PER REGION. None of these is a claim that the translation is wrong; all
-are claims about what an instrument can see.
+are claims about what an instrument can see. **Each one names the record that
+would kill it**, so the next dispatch does not re-derive them.
 
-  THE PRINT RECORD (10) IS NOT COMPARED BY THE SWEEP'S ORACLE -- AND IT IS NOW
-  COMPARED BY SOMETHING. The sweep runs `./test`, which compares out-parameters;
-  the gate compares simulation channels; the record goes to stdout. This
-  dispatch built the missing instrument
-  (`evidence/ParseDbAry_Opt/print_conformance.{f90,cpp}`,
-  `run_print_conformance.sh`, `print_replay.txt`): 44 records of gfortran's OWN
-  list-directed output, replayed through the SHIPPED `print_default_warning` by
-  textual include.
+  THE PRINT RECORD (10) IS THE ONE THAT NEEDS A NEW KEY, AND IT IS ESCALATED
+  RATHER THAN DECLARED. The sweep runs `./test`, which compares out-parameters
+  with memcmp; the gate compares simulation channels; this record goes to
+  stdout, which neither reads. So these ten are:
 
-      9 of the 9 PRINT-region survivors it replayed are KILLED, 18 to 43 records
-      each.  NEGATIVE CONTROL: 0 of the 23 survivors OUTSIDE the region moved a
-      record.  AND ITS FIRST RUN FOUND A REAL DEFECT in the unmutated
-      translation -- the separator blank before `]` was unconditional, so an
-      EMPTY `Ary` printed `[ ]` where the reference prints `[]`. Fixed at
-      50b583ab.
+      NOT equivalent   -- evidence/ParseDbAry_Opt/print_replay.txt replays 44
+                          records of gfortran's OWN list-directed output through
+                          the SHIPPED print_default_warning and every one of the
+                          ten moves between 18 and 44 records. They are
+                          behaviourally different programs, measured.
+      NOT unreachable  -- the corpus runs those lines; the default arm executes
+                          66 times across 21 gate scenarios as well.
+      NOT killable by this sweep -- its oracle does not read the stream.
 
-  NOTHING IS FOLDED INTO THE SCORE. A kill by a different instrument on a
-  different corpus is not a kill by this sweep. The tenth PRINT survivor,
-  b529317d (`if (n > 0)`), is the fix's own guard: it did not exist when the
-  replay ran and it is exactly the statement the replay would kill.
+    A mutant with a MEASURED difference that the scoring instrument cannot see
+    is a third case, and this campaign's vocabulary has two. Raised in
+    DECISIONS.md as a proposed `killed_by` declaration -- an explained mutant
+    naming the instrument and the artifact that killed it, the way an
+    equivalence names an argument and an unreachable names a coverage file.
+    NOTHING IS FOLDED INTO THE SCORE HERE: mutation/ParseDbAry_Opt.json is
+    untouched by the replay, and 0.8533 is the number with these ten counted as
+    survivors.
 
-  `match_word` (7 of the 15) IS EXECUTED ON EVERY VALUE AND NEVER MATCHES. The
-  corpus contains no record spelling `inf`, `infinity` or `nan` at a value
-  position, so the function returns false at every call and a mutant that makes
-  it return false differently is invisible. A CORPUS fact, which is why none is
-  declared equivalent: the moment a case spells `nan` they become killable. The
-  block they guard IS declared unreachable -- lines 232-242 never execute.
+    NEGATIVE CONTROL, and it is built into the instrument's shape rather than
+    chosen: 0 of the 12 survivors OUTSIDE the region moved a record. The replay
+    enters the translation only through print_default_warning.
 
-  `p < len` -> `p <= len` (5 of the 15) NEEDS A RECORD THAT ENDS INSIDE A VALUE.
-  The internal-file record is `Line`'s declared width, MaxLineLength = 2048,
-  blank-padded, so a scan reaches `p == len` only if the 2048th character is a
-  digit or a sign. The sixth instance of the shape, 0a3516d1 at parse_real's
-  entry, IS declared equivalent -- there the one caller has already established
-  `p < len` -- and that split is why the declarations are per mutant.
+  `match_word`'s FIRST INDEX (1): 42edf275, `k = 0` -> `k = 1`, which skips
+  comparing the word's first character.
 
-  `rec[p]` -> `rec[p + 1]` READS THE NEXT CHARACTER OF A 2048-BYTE BLANK-PADDED
-  RECORD. The sanitised sweep is the instrument for this class and it was run:
-  `--sanitize` killed 2 of them and left these, because the read is INSIDE the
-  allocation and lands on the padding. They are not out-of-bounds.
+    ARGUED EQUIVALENT AND DELIBERATELY NOT DECLARED. The mutant matches a strict
+    superset: records whose characters 1.. spell `an` / `nf` / `nfinity` but
+    whose character 0 does not spell `n` / `i`. On every such record the branch
+    collects `buf` beginning with that character and calls
+    `strtod("±" + buf)`, which cannot consume a field containing `a` or `n` at
+    position 1, so it returns BadNoStore. The ORIGINAL, having not matched,
+    scans the same field as a number and either fails the same way or parses a
+    prefix and stops at a non-separator, which the caller turns into the same
+    5010 with nothing stored. Same IOSTAT, same untouched element.
 
-  THE `list_read_reals` FIVE are the `;` terminator, the repeat-count scan and
-  the trailing-comma skip. `grep -cE '[0-9][*]' Examples/DISCON*.IN` over all 22
-  files the 27 scenarios read returns 0, and the gate confirms it: 48542e3d, a
-  DECLARED-UNREACHABLE mutant in that same branch, moves 0 of 5,252,000
-  (gate/ParseDbAry_Opt.redtest.survivor-48542e3d.json) while the parsed-value
-  perturbation moves 2,236,141 of the same 5,252,000 -- so the zero is about the
-  statement, not about the instrument.
+    NOT DECLARED because that is an argument and not a sweep: it rests on "no
+    complete numeric field contains `a` or `n`", which is true of strtod and is
+    the sort of claim a payload spelling (`nan(...)`) exists to break. It sits
+    beside the two splits the third dispatch made for the same reason --
+    lower()'s 'A' bound was not declared while its 'Z' bound was.
 
-  `b5366e74` (assign_errmsg, `>` -> `>=`) refuses a staged assignment whose
-  length exactly equals the capacity. R13 sweeps the staging capacity 0..255
-  bytes above what each case supplies, so one case in each block sizes the
-  buffer TO the message -- but RUNBOOK's unit #48 entry on COMPOSED staging
-  capacity applies here and this unit has two staged assignments on the path.
-  Not investigated at this dispatch; named rather than declared.
+  THE IEEE PAYLOAD BUFFER (3) IS A REGION THAT DID NOT EXECUTE UNTIL THIS
+  DISPATCH, and its three survivors are the boundary of a buffer, not of a
+  record.
 
-  `6b5fc8ce` (`lower()`'s `'A'` bound) is the sibling of a DECLARED equivalence
-  and is deliberately not one: `'a'` is the middle letter of `"nan"`.
+    1df32d1d  L234  `n < 62` -> `n <= 62`   the payload LENGTH bound
+    5b1c8101  L234  `62` -> `63`            the same bound from the other side
+    1beac345  L237  `buf[n]` -> `buf[n + 1]`
 
-  `b2bbedf3` (`std::max(NumWords, 0)` -> `NumWords`) cannot bite while
-  `AryLen = { lo = 0, hi = 32 }` is stated, since `NumWords = AryLen + 1 >= 1`.
-  A fact about the stated DOMAIN, not about the program, so it is left alive --
-  while `dd749c6b`, which merely swaps `std::max`'s arguments, IS declared.
+    THE RECORD THAT KILLS THE FIRST TWO: an IEEE word with a 62-character
+    payload -- `nan(` + 58 characters + `)`. The corpus spells `inf`, `Infinity`
+    and `nAn`, which are 3, 8 and 3 characters, so `n` never approaches 62.
 
-WHAT WOULD MOVE THE NUMBER, so the next dispatch need not re-derive it:
+    1beac345 IS AN INSTRUMENT GAP AND NOT A CORPUS GAP, and it is a new one.
+    Writing the NUL one byte late leaves `buf[n]` holding whatever the
+    uninitialised `char buf[64]` held, and both indices are INSIDE the array --
+    so AddressSanitizer is silent by construction. Catching it needs
+    MemorySanitizer, which reports an uninitialised READ; `--sanitize` builds
+    with address,undefined. Naming it as MSan rather than as "a wider corpus" is
+    the point: no record kills this one.
 
-  1. A generator that plants records with `nan`/`inf`, an `r*` repeat, a `;`
-     terminator and a four-digit exponent. That is `_NUMERIC_LEADS` in
-     `harness/generate.py` extended the way loop b33a761 extended it once
-     already, and it would retire most of the 30 declared unreachable as well --
-     which is the correct direction: an unreachable declaration is a debt
-     against the corpus, not a credit.
-  2. A sweep oracle that reads stdout, for the 10 PRINT mutants. The comparison
-     already exists in evidence/ParseDbAry_Opt/print_replay.txt; what does not
-     exist is `./test` making it, which is a change to the shared harness
-     emitter and therefore the Driver's.
-  3. A record whose last character is a digit, for the five `p <= len`.
+  THE EXPONENT (4). Three of the four need a record that ends INSIDE AN
+  EXPONENT, which is the one boundary shape `_RECORD_TAILS` does not build.
 
---------------------------------------------------------------------------
-== assign_errmsg / int2lstr_trimmed
-  L  91  compare_op     b5366e74  '>' -> '>='
-          if (static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap) {
+    a0007207  L276  `p < len` -> `p <= len`     needs a record ending `…1E`
+    e2d47adf  L276  `rec[p]` -> `rec[p + 1]`    needs `…1E` and a sign at 2048
+    91f2ce24  L276  `rec[p]` -> `rec[p + 1]`    likewise, the `-` half
+    7d8e5de9  L279  `int edigits = 0` -> `1`    needs `.e` before a separator
 
-== helpers
-  L 170  compare_op     6b5fc8ce  '>=' -> '>'
-          return (c >= 'A' && c <= 'Z') ? static_cast<char>(c + 32) : c;
+    THE FOURTH IS THE INTERESTING ONE AND IT IS CHEAP. With `edigits` starting
+    at 1 the malformed-exponent rejection never fires, and on almost every
+    record that changes nothing -- the reconstructed text still ends in a letter
+    or a sign and `strtod` still refuses it. It changes the ANSWER on exactly one
+    shape: a field with a decimal point, NO mantissa digits and a malformed
+    exponent (`.e` then a separator). There the original returns BadNoStore and
+    stores nothing, while the mutant falls through to `if (digits == 0)` and
+    returns BadStoreZero, which STORES 0.0 into the element. The reference's own
+    behaviour on that shape is measured -- `-.e ` is iostat 5010 and NOT stored,
+    `.e1 1.0` is 5010 and STORED 0.0 (fortran_io_probe2.txt) -- so a corpus with
+    a `.e` lead has an oracle for it.
 
-== the READ -- match_word, parse_real
-  L 175  negate_cond    5428f2cc  'if (p + static_cast<int>(word.size()) > len)' -> 'if (!(p + static_cast<int>(word.size()) > len))'
-          if (p + static_cast<int>(word.size()) > len) {
-  L 175  compare_op     76abf5f3  '>' -> '>='
-          if (p + static_cast<int>(word.size()) > len) {
-  L 175  arith_op       f4077220  'p + static_cast' -> 'p - static_cast'
-          if (p + static_cast<int>(word.size()) > len) {
-  L 178  compare_op     09fbe682  '<' -> '<='
-          for (std::size_t k = 0; k < word.size(); ++k) {
-  L 178  const_tweak    42edf275  '0' -> '1'
-          for (std::size_t k = 0; k < word.size(); ++k) {
-  L 179  arith_op       28e276aa  'p + static_cast' -> 'p - static_cast'
-          if (lower(rec[p + static_cast<int>(k)]) != word[k]) {
-  L 179  index_offset   89e19caf  '[k]' -> '[k + 1]'
-          if (lower(rec[p + static_cast<int>(k)]) != word[k]) {
-  L 252  compare_op     2763d449  '<' -> '<='
-          while (p < len && is_digit(rec[p])) { ++p; ++digits; }
-  L 253  compare_op     2f05620e  '<' -> '<='
-          if (p < len && rec[p] == '.') {
-  L 256  compare_op     56c1dd4d  '<' -> '<='
-          while (p < len && is_digit(rec[p])) { ++p; ++digits; }
-  L 266  compare_op     a98553ab  '<' -> '<='
-          if (p < len) {
-  L 276  index_offset   91f2ce24  '[p]' -> '[p + 1]'
-          if (p < len && (rec[p] == '+' || rec[p] == '-')) {
-  L 276  compare_op     a0007207  '<' -> '<='
-          if (p < len && (rec[p] == '+' || rec[p] == '-')) {
-  L 276  index_offset   e2d47adf  '[p]' -> '[p + 1]'
-          if (p < len && (rec[p] == '+' || rec[p] == '-')) {
-  L 279  const_tweak    7d8e5de9  '0' -> '1'
-          int edigits = 0;
+    a0007207 WAS RUN THROUGH THE GATE THIS DISPATCH: 0 of 5,252,000
+    (gate/ParseDbAry_Opt.redtest.survivor-a0007207.json). The gate reads 22
+    Examples/DISCON*.IN files whose longest line is nowhere near 2048 columns,
+    so both instruments miss the same statement. Beside the parsed-value red
+    test's 2,236,141 on the same 5,252,000 values, that zero is about the
+    STATEMENT and not about the instrument.
 
-== the READ -- list_read_reals
-  L 337  index_offset   4d1ccfed  '[p]' -> '[p + 1]'
-          if (rec[p] == ';') {
-  L 344  index_offset   f0ee2a4d  '[q]' -> '[q + 1]'
-          while (q < len && is_digit(rec[q])) { ++q; }
-  L 345  index_offset   a88935b1  '[q]' -> '[q + 1]'
-          if (q > p && q < len && rec[q] == '*') {
-  L 347  const_tweak    1cc25f2d  '10' -> '11'
-          nullptr, 10);
-  L 386  index_offset   80b445cc  '[p]' -> '[p + 1]'
-          if (p < len && rec[p] == ',') { ++p; }
+  `list_read_reals` (3): the `;` terminator, the repeat-count scan and its
+  radix.
 
-== the PRINT record
-  L 432  negate_cond    123a7dde  'if (static_cast<int>(text.size()) > w)' -> 'if (!(static_cast<int>(text.size()) > w))'
-          if (static_cast<int>(text.size()) > w) {
-  L 441  negate_cond    2af0b6bd  'if (std::isnan(v))' -> 'if (!(std::isnan(v)))'
-          if (std::isnan(v)) { out = "NaN"; return true; }
-  L 442  negate_cond    fa4f36de  'if (std::isinf(v))' -> 'if (!(std::isinf(v)))'
-          if (std::isinf(v)) {
-  L 453  negate_cond    c6a83a1d  'if (nonfinite_text(v, text))' -> 'if (!(nonfinite_text(v, text)))'
-          if (nonfinite_text(v, text)) {
-  L 461  arith_op       a867a839  'epos + 1' -> 'epos - 1'
-          const int decexp = std::atoi(s.c_str() + epos + 1);
-  L 463  negate_cond    8bb5f06d  'if (decexp >= -1 && decexp <= 16)' -> 'if (!(decexp >= -1 && decexp <= 16))'
-          if (decexp >= -1 && decexp <= 16) {
-  L 464  swap_operands  9416ffb6  '16 - decexp' -> 'decexp - 16'
-          const int d = 16 - decexp;
-  L 464  arith_op       ae3f319a  '16 - decexp' -> '16 + decexp'
-          const int d = 16 - decexp;
-  L 467  negate_cond    bea19ce7  'if (d == 0)' -> 'if (!(d == 0))'
-          if (d == 0) {
-  L 500  negate_cond    b529317d  'if (n > 0)' -> 'if (!(n > 0))'
-          if (n > 0) {
+    4d1ccfed  L337  `rec[p]` -> `rec[p + 1]`  at `if (rec[p] == ';')`
+    a88935b1  L345  `rec[q]` -> `rec[q + 1]`  at the repeat-count `*`
+    1cc25f2d  L347  `10` -> `11`              strtol's base
 
-== the unit's own body
-  L 663  drop_call      b2bbedf3  'std::max(NumWords, 0)' -> 'NumWords'
-          static_cast<std::size_t>(std::max(NumWords, 0))
+    ONE RECORD KILLS ALL THREE: `2*1.5;3.0` -- a repeat count, and a `;`
+    terminator, with a repeat whose digits differ between base 10 and base 11.
+    `grep -cE '[0-9][*]' Examples/DISCON*.IN` over all 22 files the 27 scenarios
+    read returns 0, and the gate confirms the branch is unreached from that side
+    too: 48542e3d, a declared-unreachable mutant in the same branch, moves 0 of
+    5,252,000 while the parsed-value perturbation moves 2,236,141 of the same
+    5,252,000.
 
+  THE UNIT'S OWN BODY (1): b2bbedf3, `std::max(NumWords, 0)` -> `NumWords`.
+  Cannot bite while `AryLen = { lo = 0, hi = 32 }` is stated, since
+  `NumWords = AryLen + 1 >= 1`. A fact about the stated DOMAIN and not about the
+  program, so it is left alive -- while `dd749c6b`, which merely swaps
+  `std::max`'s arguments, IS declared equivalent. Unchanged from the third
+  dispatch, and unchanged for the same reason.
+
+WHAT WOULD MOVE THE NUMBER, in the order a dispatch should take it. Each line
+names the exact input, so none of this has to be re-derived:
+
+  1. A SWEEP ORACLE THAT READS STDOUT, for the 10 PRINT mutants -- 0.8533 ->
+     0.9333 on its own, and it is the only item on this list worth more than
+     three mutants. The comparison already exists and is green
+     (print_replay.txt); what does not exist is `./test` making it. That is a
+     change to the shared harness emitter. The cheaper half-step, which needs no
+     emitter change, is the `killed_by` declaration in DECISIONS.md.
+
+  2. THREE `_NUMERIC_LEADS` AND ONE `_RECORD_TAILS` FORM, all in the loop repo
+     beside the ones this dispatch added:
+
+        `.e`                     a point with a malformed exponent   7d8e5de9
+        `2*1.5;3.0`              repeat count, `;`, base-10 digits   4d1ccfed,
+                                                                     a88935b1,
+                                                                     1cc25f2d
+        `nan(` + 58 chars + `)`  a 62-character payload              1df32d1d,
+                                                                     5b1c8101
+        tail form `"0"*(N-2) + "1E"`   a record ending inside an
+                                       exponent                      a0007207,
+                                                                     and with a
+                                                                     sign, e2d47adf
+                                                                     and 91f2ce24
+
+     Worth 9 mutants, 0.8533 -> 0.9133 if all nine die. Every one of them costs a
+     full re-take of every layer that reads the corpus AND -- because they are
+     loop-repo edits -- of all eight gate runs, which is what makes them a
+     dispatch's worth of work rather than an afternoon's.
+
+  3. MemorySanitizer for 1beac345. No corpus reaches it and AddressSanitizer
+     cannot see it; this is the only survivor on the list that is neither.
+
+  4. 42edf275 is either an equivalence somebody is willing to defend or a record
+     nobody has found. The argument is above; refuting it needs one record.
