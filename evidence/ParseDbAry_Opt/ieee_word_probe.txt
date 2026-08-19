@@ -1,0 +1,19 @@
+IEEE-word probe -- gfortran's list-directed READ against the shipped
+translation's parse_real/list_read_reals, ten words, 64 bits each.
+
+THE QUESTION: the differential harness compares `Ary` with memcmp, so a
+corpus record spelling `nan` is only safe to plant if both sides produce
+the SAME bit pattern. Asked before the corpus was changed.
+
+10 of 10 word(s) agree bit for bit.
+
+  inf          ref iostat=0      bits=7FF0000000000000   got iostat=0      bits=7FF0000000000000   SAME
+  -inf         ref iostat=0      bits=FFF0000000000000   got iostat=0      bits=FFF0000000000000   SAME
+  INF          ref iostat=0      bits=7FF0000000000000   got iostat=0      bits=7FF0000000000000   SAME
+  Infinity     ref iostat=0      bits=7FF0000000000000   got iostat=0      bits=7FF0000000000000   SAME
+  -Infinity    ref iostat=0      bits=FFF0000000000000   got iostat=0      bits=FFF0000000000000   SAME
+  nan          ref iostat=0      bits=7FF8000000000000   got iostat=0      bits=7FF8000000000000   SAME
+  nAn          ref iostat=0      bits=7FF8000000000000   got iostat=0      bits=7FF8000000000000   SAME
+  NAN          ref iostat=0      bits=7FF8000000000000   got iostat=0      bits=7FF8000000000000   SAME
+  -nan         ref iostat=0      bits=FFF8000000000000   got iostat=0      bits=FFF8000000000000   SAME
+  NaN          ref iostat=0      bits=7FF8000000000000   got iostat=0      bits=7FF8000000000000   SAME

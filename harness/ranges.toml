@@ -2644,11 +2644,42 @@ ErrVar_ErrMsg = { staging_capacity_excludes = [11, 34], reason = "IPC prefixes '
 # its length and `size_avcMSG` -- and the call is still made on both sides. The
 # count lands in the artifact beside `checked`, and `vit_harness.py` refuses to
 # write an artifact whose stated exclusion excluded nothing.
+#
+# A FOURTH ENTRY, ADDED AT THE THIRD RE-DISPATCH, AND IT IS THE SIBLING'S,
+# MEASURED THERE AND COPIED HERE BECAUSE THE ARM IS THE SAME ARM.
+#
+# `has_AllowDefault = { values = [1, 0] }` WITH `AllowDefault = { values =
+# [0, 1] }`, WHICH ARE ONE ENTRY IN TWO LINES: present, and false. R13's
+# 256-case staging-capacity block is taken "with every other input at its base
+# draw", and this unit's base draw -- like `[ParseInAry_Opt]`'s before its own
+# second dispatch -- landed on the arm that ASSIGNS NO `ErrMsg` AT ALL:
+# `has_AllowDefault = 0` means the default is ALLOWED, so a call that finds no
+# line writes `Ary = 0`, prints, and returns with `aviFAIL` untouched. Across
+# all 16,512 cases there was therefore no case in which the LENGTH of an
+# assigned `ErrVar%ErrMsg` equals the staging capacity -- the one thing R13's
+# ladder exists to produce, and the one input that can tell `s.size() > cap`
+# from `s.size() >= cap`. Survivor `b5366e74` (`assign_errmsg`, `>` -> `>=`) is
+# that mutant, and on the sibling the identical mutant (`66860b6f`) was KILLED
+# by exactly these two lines and was the only verdict that moved.
+#
+# Only the flags REORDER; neither value is removed, so both arms are still
+# crossed and nothing is narrowed. `flag_variants` rotates a flag's values by
+# the case index, so this moves the BASE DRAW -- the cases R13, R6 and R14 take
+# with everything else at rest -- and not the crossed population.
+#
+# THE OTHER ARM THAT WRITES A MESSAGE IS NOT TAKEN, for the reason the sibling
+# records: `alloc_Ary = { values = [1, 0] }` reaches the already-ALLOCATED arm
+# and would do the same job, and on the sibling it produced one failing case
+# whose record begins `/` -- a THIRD undefined-`Ary` path that no
+# `no_oracle_when` can name. The `AllowDefault` pair reaches the same rule with
+# no such case, so it is the one taken here too.
 # ---------------------------------------------------------------------------
 [ParseDbAry_Opt]
 
 AryLen = { lo = 0, hi = 32 }
 UnEc = { lo = 0, hi = 0, values = [0] }
+has_AllowDefault = { values = [1, 0] }
+AllowDefault = { values = [0, 1] }
 Ary = { no_oracle_when = ["alloc_Ary == 0", "ErrVar_aviFAIL >= 0"], and_reference = "ErrVar.aviFAIL < 0", reason = "the reference ALLOCATEd Ary on this call and then RETURNed on an arm that assigns none of it (.NOT. AllowDefault_) or only a prefix (the READ error arm); those elements are recycled heap and a comparison against them decides nothing about either implementation. 4,067 of 13,674 cases, classified in evidence/ParseDbAry_Opt/harness_partition.txt: 100% of both cells and 0% of the other five." }
 
 # ---------------------------------------------------------------------------

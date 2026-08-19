@@ -1,0 +1,15 @@
+Record-tail probe -- the four records that end INSIDE a value, gfortran's
+list-directed READ against the shipped translation's list_read_reals.
+Two elements read; the sentinel is -987.654 (bits C08ED4A3D70A3D71), so an
+element the transfer never reached is visible as itself.
+
+4 of 4 record(s) agree on IOSTAT and on both elements.
+
+  tail:digits  ref iostat=-1   b1=3FF0000000000000 b2=C08EDD3B645A1CAC
+               got iostat=-1   b1=3FF0000000000000 b2=C08EDD3B645A1CAC   SAME
+  tail:frac    ref iostat=-1   b1=3FF0000000000000 b2=C08EDD3B645A1CAC
+               got iostat=-1   b1=3FF0000000000000 b2=C08EDD3B645A1CAC   SAME
+  tail:inf     ref iostat=0    b1=0000000000000000 b2=7FF0000000000000
+               got iostat=0    b1=0000000000000000 b2=7FF0000000000000   SAME
+  tail:nan     ref iostat=0    b1=0000000000000000 b2=7FF8000000000000
+               got iostat=0    b1=0000000000000000 b2=7FF8000000000000   SAME
