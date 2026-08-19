@@ -28,8 +28,8 @@
  "missing_scenarios": [],
  "notes": [
   "THE DEFAULT ARM: Ary = 0, taken when FindLine does not find the parameter and the caller allows a default.",
-  "MOVED 0, AND THAT IS THE EXPECTED ANSWER, not a silent one. The arm RUNS: coverage records ROSCO_Helpers.f90:945 66 times across 21 of the 27 scenarios. It is reached only when AryLen is 0, and AryLen at these call sites is F_NumNotchFilts / F_GenSpdNotch_N / F_TwrTopNotch_N, so the arrays that take a default are the notch arrays of a scenario with ZERO notch filters -- and both consumers sit behind that same count (prefiltermeasuredsignals.cpp:148 inside a loop bounded by F_GenSpdNotch_N, checkinputs.cpp:329 inside if (CntrPar->F_NumNotchFilts > 0)). Zero iterations and a false guard.",
-  "THIRD DISPATCH re-take at loop b9c8c52. The differential harness is the layer that covers this arm, and the corpus change moved its cell: 3,003 alloc=0/other cases at the second dispatch, 3,036 at this one. PREDICTED 0 again."
+  "MOVED 0, AND THAT IS THE EXPECTED ANSWER. The arm RUNS -- coverage records ROSCO_Helpers.f90:945 66 times across 21 of the 27 scenarios -- but only when AryLen is 0, and AryLen at these call sites is F_NumNotchFilts / F_GenSpdNotch_N / F_TwrTopNotch_N, so the arrays that take a default are the notch arrays of a scenario with ZERO notch filters, and both consumers sit behind that same count (prefiltermeasuredsignals.cpp:148 inside a loop bounded by F_GenSpdNotch_N, checkinputs.cpp:329 inside if (CntrPar->F_NumNotchFilts > 0)). The differential harness is the layer that covers the arm: 3,036 alloc=0/other cases.",
+  "Re-taken on the FIXED translation at loop b9c8c52. PREDICTED 0."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parsedbary_opt.cpp",

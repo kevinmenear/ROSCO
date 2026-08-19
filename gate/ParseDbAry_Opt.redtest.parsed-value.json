@@ -170,7 +170,7 @@
  "missing_scenarios": [],
  "notes": [
   "Every value the list-directed READ transfers is shifted by 0.01. This is the unit's whole product: the arrays it fills are CntrPar's gain schedules, notch frequencies and IPC ramps.",
-  "RE-TAKEN at the THIRD dispatch, at loop b9c8c52, on the 16,512-case corpus. The gate does not read the case file, so this number is not expected to move; it is re-taken because a unit whose artifacts name two instrument revisions is not commensurable with itself (revcheck, P14). PREDICTED before the run: 2,236,141, the second dispatch's value, exactly."
+  "THIRD DISPATCH, re-taken on the FIXED translation (50b583ab) at loop b9c8c52. PREDICTED 2,236,141 -- the second dispatch's value to the unit, because neither the corpus nor the print separator fix can reach a gate channel."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parsedbary_opt.cpp",
