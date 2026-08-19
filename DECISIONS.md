@@ -12679,3 +12679,120 @@ would have meant something other than the corpus had changed. But it is a fixed
 cost of ~30 minutes that a dispatch must have in hand *before* it edits the loop
 repo, and the guard script cannot know it. Choose the `ranges.toml` lever first
 when both are available; this dispatch needed both.
+
+---
+
+## Unit #55 — ParseInAry_Opt — third dispatch — 2026-08-19
+
+**Disposition `deferred`, on P12 alone: 93 / (156 − 12 − 25) = 0.7815 against a
+threshold of 1.0.** Second dispatch: 69 / 156 = 0.4423 with nothing declared.
+Six other layers green and red-tested; all fourteen result artifacts re-taken at
+loop `2ff3660` → `59aa876`.
+
+### A SANITISED SWEEP AND A SANITISED SEARCH DISAGREED, AND THE DISAGREEMENT IS THE ANSWER
+
+*Method-level. Raised here for the Driver rather than written into the runbook's
+invariant layer.*
+
+Eleven of this unit's twenty-six survivors are `p < len` → `p <= len` and
+`rec[p]` → `rec[p + 1]` in the parser's separator scans. The mutation sweep ran
+with `--sanitize` and **they survived it**. A separate search — the same mutants,
+the same flags, 131,298 records — **aborts every one of them** with a
+heap-buffer-overflow, while the shipped translation runs the same records clean.
+
+Both runs are correct and the pair is the finding: **a sanitiser reports on
+executions, so `--sanitize` measures the CORPUS exactly as much as a value
+oracle does.** The campaign already knew the weaker half of this (unit #54: the
+same option bought 2 kills on one corpus and 8 on a wider one). The stronger
+statement is that `--sanitize` returning nothing for a class it was built for is
+**not** evidence that the class is absent, and the cheap way to tell the two
+apart is to drive the function DIRECTLY over a record space instead of through
+the corpus. That costs about fifteen minutes and it converted eleven "unknown"
+survivors into eleven "the corpus cannot reach this, and here is the record that
+does".
+
+### THE CALLER'S SEARCH KEY IS WHAT KEEPS A PARSER'S END-OF-RECORD GUARD UNREACHED
+
+*Method-level, and it generalises to at least six units of this campaign.*
+
+RUNBOOK records unit #54's finding: every record this campaign generates is a
+short line blank-padded out to a buffer width, so no scan reaches the last byte,
+so `p < len` → `p <= len` is a mutant no corpus distinguishes. `_RECORD_TAILS`
+(loop `59aa876`) fixed that by building a lead to EXACTLY the buffer width — and
+on this unit it killed the guards inside `parse_int` and left every guard inside
+`eat_separator` alive.
+
+The reason is structural rather than accidental. **A record built to end inside a
+VALUE reaches the value scanner's boundary and not the separator scanner's**, and
+a record that would reach the separator scanner's boundary is one with *nothing
+to the right of its last value* — which the unit can never be handed, because it
+only ever reads a line `FindLine` matched, and `FindLine` matches on word
+`AryLen + 1`. **The search key is always to the right, so every separator scan
+stops on it.**
+
+The shape recurs in the four sibling `Parse*_Opt` units, in `GetWords` and in
+anything else that parses a record a search routine selected. The corresponding
+generator rule would be a tail form whose *last* word is the key, or a record
+with the key at word 1 and `AryLen = 0`; on this unit the only way the current
+generator can produce one is an all-blank `ParamName` matching a line with fewer
+words than `AryLen + 1` — which is the same input shape as the **third
+undefined-`Ary` path** this unit escalated at its second dispatch, and so carries
+that path's cost. **Priced and named, not taken**: the harness must stay green or
+the whole mutation layer goes with it.
+
+### ADDING A FAILURE MODE TO AN INSTRUMENT INVERTS EVERY PLACE THAT CLASSIFIES ITS EXIT STATUS (C12)
+
+*Method-level.*
+
+The record search was copied character for character from unit #54's, with the
+build changed to carry `-fsanitize=address,undefined`. That runner does
+
+```
+g++ ... && ./s_<tag>          # one shell
+rc != 0  ->  "DID NOT BUILD OR RUN -- no record in this space distinguishes it"
+```
+
+With no sanitiser, a build failure and a crash really are one case and
+collapsing them is harmless. With one, `rc != 0` is the **most informative
+result the instrument can produce**, and the inherited handler printed it as an
+absence — eleven rows reading *no record distinguishes it* about mutants a
+record kills outright. That is the exact inversion this campaign exists to
+remove, and it arrived through a P4 copy that was otherwise correct.
+
+The wrong artifact is kept unedited at
+`evidence/ParseInAry_Opt/survivor_record_search.MISLABELLED.txt` with the reason
+on top. **The rule: when you add a failure MODE to a copied instrument, re-read
+every branch that reads its exit status before you read its output.** A copy is
+only safe while the copied thing's failure vocabulary is unchanged.
+
+### A PREDICTION THAT MISSES IS WORTH MORE THAN ONE THAT MATCHES, IF THE RESIDUAL IS CLASSIFIED
+
+Three of four stub red tests were predicted from the re-taken partition before
+their runs. Two were exact. The third predicted 634 and measured 646 — and the
+twelve were run down rather than reasoned about: one `fprintf` beside the
+harness's own verdict, printing the reference's returned `aviFAIL` and `ErrMsg`
+per failing case, classified with the partition probe's own arm function.
+**634 on a `read-failed` arm, exactly the prediction, and 12 on no error arm at
+all.**
+
+Those twelve are the corpus change arriving as a number: they are the only cases
+in 17,520 on which the reference's READ SUCCEEDS and is observed, they sit at
+case index 15,396..16,098 inside R14's block, and they are why `26d402b2`
+(`list_read_ints`'s `return 0` → `return 1`) is killed on this corpus and
+survived on the last. A residual that is *classified* names the mechanism; a
+residual that is *explained* names a guess. The probe is committed
+(`run_read_residual_probe.sh`) because the corpus will move again.
+
+### WHAT WAS NOT DONE, AND WHY IT IS NAMED RATHER THAN ESTIMATED
+
+* **The value-oracle control was not re-taken on this corpus.** The sibling runs
+  the sweep twice — once with the value oracle, once sanitised — so `69 → 93`
+  splits into a corpus share and a sanitiser share. It costs about fifteen
+  minutes of sweep and buys no score. Not taken here; the split is therefore
+  unpriced on this unit and is written down as unpriced.
+* **No PRINT-record conformance replay.** Four survivors sit in
+  `print_default_warning`, whose stream no layer compares and which is dead in
+  all 27 gate scenarios. The sibling built the instrument and measured its ten
+  moving 18 to 44 records of 44; the right disposition for them is the
+  `killed_by` declaration the sibling already proposed, not an equivalence.
+
