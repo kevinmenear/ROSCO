@@ -22,7 +22,7 @@ every future campaign**. Three consequences that did not apply last time:
 
 | Phase | Objective | State |
 |---|---|---|
-| P | The harness can link at all (prerequisite, not parallelism) | ⬜ blocked — see §5 |
+| P | The harness can link at all (prerequisite, not parallelism) | ✅ **done — baseline 19,536 checked, 0 failed** |
 | A | A worker pool replaces the serial `for` loop over mutants | ⬜ |
 | B | Per-worker workspaces are built, reused and torn down | ⬜ |
 | C | **Mutant identity** — each worker provably scored the mutant it was given | ⬜ |
@@ -222,17 +222,43 @@ Consequence if left: every mutant returns `nocompile`, and `vit_mutate.py`'s `no
 guard refuses to score rather than reporting a false number. It fails loudly, which is correct —
 but it fails.
 
-- [ ] **P.1** Regenerate the harness `Makefile` via `vit test-validate`, not by hand-editing
+- [x] **P.1** Regenerate the harness `Makefile` via `vit test-validate`, not by hand-editing
       `LIBS`. A hand-patched list goes stale again at the next integration, which is how it got
       here.
-- [ ] **P.2** Confirm the regenerated `LIBS` contains `findline.cpp.o`, `getwords.cpp.o`,
+- [x] **P.2** Confirm the regenerated `LIBS` contains `findline.cpp.o`, `getwords.cpp.o`,
       `int2lstr.cpp.o` and still excludes `parseinary_opt.cpp.o`.
-- [ ] **P.3** Link and run one unmutated baseline cycle; it must be green before any sweep.
-- [ ] **P.4** Ask whether other pending units' harnesses are stale the same way — this is a
+- [x] **P.3** Link and run one unmutated baseline cycle; it must be green before any sweep.
+- [x] **P.4** Ask whether other pending units' harnesses are stale the same way — this is a
       generic consequence of integrating a callee after a harness was generated, not a
       ParseInAry_Opt quirk.
 
 **Notes:**
+
+Done 2026-08-19. It was not one defect but three, each hidden behind the one before it.
+
+1. **Regeneration without `--force` is safe.** `parseinary_opt_test.cpp` — 20 KB of hand-written
+   harness, and **untracked by git, so there is no way back if it is lost** — hashed identical
+   after the run. Only the `Makefile` changed. It was backed up first regardless.
+2. **`vit test-validate` globbed the unit's own object into LIBS**, colliding with the definition
+   the harness includes from the header. Under a sweep that is worse than a link error: the
+   production object holds the UNMUTATED translation. Fixed in
+   `vit/test_validate.py::_parse_link_libraries`, which now takes an exclusion set.
+3. **The regenerated callee bridges recursed.** With FindLine, GetWords and Int2LStr integrated,
+   their Fortran bodies are wrappers calling `<name>_c`, so a Fortran-backed bridge of the same
+   name closes a loop: `bridge -> wrapper -> bridge`. It did not link wrong, it **SIGSEGV'd on a
+   blown stack with empty stdout** — which reads exactly like "the harness produced nothing".
+   `generate_callee_bridges` now detects the cycle *from the wrapper itself* rather than from
+   `vit.yaml`'s `status:` field, because the wrapper is what actually closes the loop and a
+   config field can disagree with the tree. Such a callee is left to its production object.
+
+Regenerating drops the campaign's `LIBS += .../vit_integration_shim.o` line, which `harness.sh`
+appends idempotently; it has to be re-appended after any regeneration of an integrated unit.
+
+P.4: 26 harness directories have callee bridges; **0 would recurse today**. They were generated
+before their callees were integrated, so the defect only bites on regeneration — which is
+precisely what the VIT fix now prevents for every future one.
+
+Baseline after the repair: `checked 19536, failed 0, inadmissible 0, mismatches 0`.
 
 ---
 
@@ -304,6 +330,12 @@ but it fails.
 The gate's Phase C is the model: it reproduced 50,605 values exactly. The equivalent here is a
 sweep whose per-mutant dispositions match a known-good serial sweep, mutant for mutant.
 
+- [ ] **E.0** **THE SWEEP RUNS ON A CLEAN TREE, NOT THIS ONE.** Discovered while starting E:
+      `mutation/ParseInAry_Opt.json` records `compared_against:
+      fortran_reference_on_a_clean_tree`, and `vit_mutate.py` refuses outright on an integrated
+      tree ("compares the mutant against itself and the number is not a measurement"). Phase P
+      was therefore verified in the **post-integration** harness mode, not the mode a sweep uses.
+      E must run inside a `reset_to_clean.sh` / `restore_integrated.sh` window — they are a pair.
 - [ ] **E.1** Re-run ParseInAry_Opt's sweep serially on the repaired harness (Phase P) to get a
       current, trustworthy reference. The existing `mutation/ParseInAry_Opt.json` was produced
       against a harness state that no longer links; it is not a safe reference.
