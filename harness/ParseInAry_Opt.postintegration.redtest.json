@@ -119,7 +119,7 @@
   }
  ],
  "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
- "loop_rev": "8c17719",
+ "loop_rev": "74c2a32",
  "vit_rev": "3f6e2ce",
  "red_test": {
   "perturbation": "this unit's own vit_copy_scalars_to_errorvariables deleted from its own wrapper, so every write to the scalar ErrVar%aviFAIL is dropped",
