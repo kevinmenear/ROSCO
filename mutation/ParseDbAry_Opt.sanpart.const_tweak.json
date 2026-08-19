@@ -77,9 +77,46 @@
   "negate_cond"
  ],
  "mutants": 40,
- "equivalent_declared": 0,
- "unreachable_declared": 0,
- "unreachable": [],
+ "equivalent_declared": 10,
+ "unreachable_declared": 6,
+ "unreachable": [
+  {
+   "id": "32d10914",
+   "operator": "const_tweak",
+   "reason": "parsedbary_opt.cpp:232 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "5b1c8101",
+   "operator": "const_tweak",
+   "reason": "parsedbary_opt.cpp:234 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '62' to '63' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "2766e582",
+   "operator": "const_tweak",
+   "reason": "parsedbary_opt.cpp:239 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "acc506ca",
+   "operator": "const_tweak",
+   "reason": "parsedbary_opt.cpp:348 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "e8fdf285",
+   "operator": "const_tweak",
+   "reason": "parsedbary_opt.cpp:351 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "f9fcb3ba",
+   "operator": "const_tweak",
+   "reason": "parsedbary_opt.cpp:354 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  }
+ ],
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
@@ -90,50 +127,20 @@
  "nocompile_refused": false,
  "total": 40,
  "killed": 21,
- "survived": 19,
- "equivalent": 0,
+ "survived": 3,
+ "equivalent": 10,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.525,
+ "score": 0.875,
  "loop_rev": "b9c8c52-nogit",
  "gen_rev": "gen-cf5dcfa09cce",
  "vit_rev": "3f6e2ce-nogit",
  "survivors": [
   {
-   "id": "4c9f1d23",
-   "operator": "const_tweak",
-   "before": "200",
-   "after": "201"
-  },
-  {
    "id": "42edf275",
    "operator": "const_tweak",
    "before": "0",
    "after": "1"
-  },
-  {
-   "id": "00d622d9",
-   "operator": "const_tweak",
-   "before": "64",
-   "after": "65"
-  },
-  {
-   "id": "32d10914",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "5b1c8101",
-   "operator": "const_tweak",
-   "before": "62",
-   "after": "63"
-  },
-  {
-   "id": "2766e582",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
   },
   {
    "id": "7d8e5de9",
@@ -142,76 +149,10 @@
    "after": "1"
   },
   {
-   "id": "cf85bd96",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "b76a0c84",
-   "operator": "const_tweak",
-   "before": "5010",
-   "after": "5011"
-  },
-  {
    "id": "1cc25f2d",
    "operator": "const_tweak",
    "before": "10",
    "after": "11"
-  },
-  {
-   "id": "acc506ca",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "d764720b",
-   "operator": "const_tweak",
-   "before": "5010",
-   "after": "5011"
-  },
-  {
-   "id": "e8fdf285",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "f9fcb3ba",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "269b76b7",
-   "operator": "const_tweak",
-   "before": "0.0",
-   "after": "1.0"
-  },
-  {
-   "id": "81b6a619",
-   "operator": "const_tweak",
-   "before": "5010",
-   "after": "5011"
-  },
-  {
-   "id": "412b5d5b",
-   "operator": "const_tweak",
-   "before": "5010",
-   "after": "5011"
-  },
-  {
-   "id": "49ce3a9d",
-   "operator": "const_tweak",
-   "before": "5010",
-   "after": "5011"
-  },
-  {
-   "id": "1bbaf2d2",
-   "operator": "const_tweak",
-   "before": "5010",
-   "after": "5011"
   }
  ]
 }

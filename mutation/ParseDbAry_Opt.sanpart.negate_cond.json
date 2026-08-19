@@ -78,8 +78,39 @@
  ],
  "mutants": 40,
  "equivalent_declared": 0,
- "unreachable_declared": 0,
- "unreachable": [],
+ "unreachable_declared": 5,
+ "unreachable": [
+  {
+   "id": "0f9388b7",
+   "operator": "negate_cond",
+   "reason": "parsedbary_opt.cpp:242 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits \"if (end == nullptr || *end != '\\\\0')\" to \"if (!(end == nullptr || *end != '\\\\0'))\" on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "1e3dd7a5",
+   "operator": "negate_cond",
+   "reason": "parsedbary_opt.cpp:348 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'if (repeat <= 0)' to 'if (!(repeat <= 0))' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "8354fa45",
+   "operator": "negate_cond",
+   "reason": "parsedbary_opt.cpp:353 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'if (p >= len || is_separator(rec[p]))' to 'if (!(p >= len || is_separator(rec[p])))' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "5aff750f",
+   "operator": "negate_cond",
+   "reason": "parsedbary_opt.cpp:358 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits \"if (p < len && rec[p] == ',')\" to \"if (!(p < len && rec[p] == ','))\" on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "6238b54e",
+   "operator": "negate_cond",
+   "reason": "parsedbary_opt.cpp:479 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'if (edig.size() > 3)' to 'if (!(edig.size() > 3))' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  }
+ ],
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
@@ -92,11 +123,11 @@
  "nocompile_refused": false,
  "total": 40,
  "killed": 28,
- "survived": 12,
+ "survived": 7,
  "equivalent": 0,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.7,
+ "score": 0.8,
  "loop_rev": "b9c8c52-nogit",
  "gen_rev": "gen-cf5dcfa09cce",
  "vit_rev": "3f6e2ce-nogit",
@@ -106,30 +137,6 @@
    "operator": "negate_cond",
    "before": "if (p + static_cast<int>(word.size()) > len)",
    "after": "if (!(p + static_cast<int>(word.size()) > len))"
-  },
-  {
-   "id": "0f9388b7",
-   "operator": "negate_cond",
-   "before": "if (end == nullptr || *end != '\\0')",
-   "after": "if (!(end == nullptr || *end != '\\0'))"
-  },
-  {
-   "id": "1e3dd7a5",
-   "operator": "negate_cond",
-   "before": "if (repeat <= 0)",
-   "after": "if (!(repeat <= 0))"
-  },
-  {
-   "id": "8354fa45",
-   "operator": "negate_cond",
-   "before": "if (p >= len || is_separator(rec[p]))",
-   "after": "if (!(p >= len || is_separator(rec[p])))"
-  },
-  {
-   "id": "5aff750f",
-   "operator": "negate_cond",
-   "before": "if (p < len && rec[p] == ',')",
-   "after": "if (!(p < len && rec[p] == ','))"
   },
   {
    "id": "123a7dde",
@@ -166,12 +173,6 @@
    "operator": "negate_cond",
    "before": "if (d == 0)",
    "after": "if (!(d == 0))"
-  },
-  {
-   "id": "6238b54e",
-   "operator": "negate_cond",
-   "before": "if (edig.size() > 3)",
-   "after": "if (!(edig.size() > 3))"
   }
  ]
 }

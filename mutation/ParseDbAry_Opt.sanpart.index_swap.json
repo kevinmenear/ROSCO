@@ -94,9 +94,58 @@
   "negate_cond"
  ],
  "mutants": 46,
- "equivalent_declared": 0,
- "unreachable_declared": 0,
- "unreachable": [],
+ "equivalent_declared": 4,
+ "unreachable_declared": 8,
+ "unreachable": [
+  {
+   "id": "c10feafe",
+   "operator": "swap_operands",
+   "reason": "parsedbary_opt.cpp:346 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits 'q - p' to 'p - q' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "0d6c3ff2",
+   "operator": "index_offset",
+   "reason": "parsedbary_opt.cpp:234 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '[q]' to '[q + 1]' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "1beac345",
+   "operator": "index_offset",
+   "reason": "parsedbary_opt.cpp:237 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '[n]' to '[n + 1]' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "8d6f88d8",
+   "operator": "index_offset",
+   "reason": "parsedbary_opt.cpp:239 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '[start]' to '[start + 1]' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "ab289323",
+   "operator": "index_offset",
+   "reason": "parsedbary_opt.cpp:353 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "2469ce80",
+   "operator": "index_offset",
+   "reason": "parsedbary_opt.cpp:357 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "a7cf9a5e",
+   "operator": "index_offset",
+   "reason": "parsedbary_opt.cpp:358 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  },
+  {
+   "id": "b563bb58",
+   "operator": "index_offset",
+   "reason": "parsedbary_opt.cpp:476 is NEVER EXECUTED by any of the 16,512 cases -- gcov reports ##### for that line over the whole corpus. The mutant edits '[0]' to '[0 + 1]' on a line no case runs, so no case can distinguish it.",
+   "evidence": "evidence/ParseDbAry_Opt/line_coverage.txt"
+  }
+ ],
  "nocompile": 3,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
@@ -114,21 +163,15 @@
  "nocompile_refused": false,
  "total": 49,
  "killed": 25,
- "survived": 21,
- "equivalent": 0,
+ "survived": 9,
+ "equivalent": 4,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.5435,
+ "score": 0.7353,
  "loop_rev": "b9c8c52-nogit",
  "gen_rev": "gen-cf5dcfa09cce",
  "vit_rev": "3f6e2ce-nogit",
  "survivors": [
-  {
-   "id": "c10feafe",
-   "operator": "swap_operands",
-   "before": "q - p",
-   "after": "p - q"
-  },
   {
    "id": "9416ffb6",
    "operator": "swap_operands",
@@ -136,40 +179,10 @@
    "after": "decexp - 16"
   },
   {
-   "id": "7302f2f5",
-   "operator": "index_offset",
-   "before": "[Int2LStrLen]",
-   "after": "[Int2LStrLen + 1]"
-  },
-  {
    "id": "89e19caf",
    "operator": "index_offset",
    "before": "[k]",
    "after": "[k + 1]"
-  },
-  {
-   "id": "057b4549",
-   "operator": "index_offset",
-   "before": "[64]",
-   "after": "[64 + 1]"
-  },
-  {
-   "id": "0d6c3ff2",
-   "operator": "index_offset",
-   "before": "[q]",
-   "after": "[q + 1]"
-  },
-  {
-   "id": "1beac345",
-   "operator": "index_offset",
-   "before": "[n]",
-   "after": "[n + 1]"
-  },
-  {
-   "id": "8d6f88d8",
-   "operator": "index_offset",
-   "before": "[start]",
-   "after": "[start + 1]"
   },
   {
    "id": "e2d47adf",
@@ -202,52 +215,16 @@
    "after": "[q + 1]"
   },
   {
-   "id": "ab289323",
-   "operator": "index_offset",
-   "before": "[p]",
-   "after": "[p + 1]"
-  },
-  {
-   "id": "2469ce80",
-   "operator": "index_offset",
-   "before": "[p]",
-   "after": "[p + 1]"
-  },
-  {
-   "id": "a7cf9a5e",
-   "operator": "index_offset",
-   "before": "[p]",
-   "after": "[p + 1]"
-  },
-  {
    "id": "80b445cc",
    "operator": "index_offset",
    "before": "[p]",
    "after": "[p + 1]"
   },
   {
-   "id": "fa5926ac",
-   "operator": "index_offset",
-   "before": "[512]",
-   "after": "[512 + 1]"
-  },
-  {
-   "id": "b563bb58",
-   "operator": "index_offset",
-   "before": "[0]",
-   "after": "[0 + 1]"
-  },
-  {
    "id": "b2bbedf3",
    "operator": "drop_call",
    "before": "std::max(NumWords, 0)",
    "after": "NumWords"
-  },
-  {
-   "id": "dd749c6b",
-   "operator": "swap_call_args",
-   "before": "NumWords, 0",
-   "after": "0, NumWords"
   }
  ]
 }
