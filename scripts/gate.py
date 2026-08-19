@@ -36,10 +36,12 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import queue as _queue
 import shutil
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -82,15 +84,100 @@ def build_and_install() -> bool:
     return rc == 0
 
 
-def run_scenarios(scenarios: list[int], out_container: str) -> list[int]:
-    """Run each scenario in its own process. Returns those that failed."""
+WORKER_ROOT = "/tmp/vit_gate_workers"
+
+# Measured on this machine, 2026-08-19, from a full 27-scenario run. A SCHEDULING
+# HINT AND NOTHING ELSE: it decides what starts first, never what is compared, so
+# a wrong entry costs seconds and cannot change a result. Serial total 141 s.
+_SECONDS = {1: 22.0, 7: 13.2, 27: 11.4, 3: 10.0, 8: 6.0, 5: 6.0, 11: 6.0, 18: 6.0}
+_MEAN_SECONDS = 5.2
+
+
+def _build_workspaces(n: int) -> bool:
+    """One isolated `Examples/` per worker, in container-local scratch.
+
+    THE COPY IS THE ISOLATION. `vit_sim.py` derives its working directory from
+    its own location, so a worker running out of its own copy writes its own
+    `DISCON*.IN` and its own `vit_sim<N>.RO.dbg` and never touches the campaign's
+    `Examples/` at all. That is strictly better than snapshot-and-restore: there
+    is no window in which a crash leaves `DISCON.IN` modified, which is the
+    incident `.gitignore` records -- "a crashed probe reconfigure[d] the gate
+    where no clean-tree check could see it".
+
+    Copied: `vit_sim.py` and `*.IN`, because a scenario rewrites them.
+    Symlinked: `Tune_Cases`, `Test_Cases`, `examples_out`, because it only reads
+    them. Hard links do not work -- `/workspace` is a bind mount and `/tmp` is
+    overlay, so they are cross-device. Measured: 8 workspaces, 411 MB, seconds.
+    """
+    return dexec(f"""
+        set -e
+        rm -rf {WORKER_ROOT}; mkdir -p {WORKER_ROOT}
+        for i in $(seq 1 {n}); do
+          D={WORKER_ROOT}/W$i
+          mkdir -p $D/Examples
+          cp {WORKDIR}/Examples/vit_sim.py $D/Examples/
+          cp {WORKDIR}/Examples/*.IN $D/Examples/ 2>/dev/null || true
+          for ro in Tune_Cases Test_Cases examples_out; do
+            ln -s {WORKDIR}/Examples/$ro $D/Examples/$ro
+          done
+          ln -s {WORKDIR}/rosco $D/rosco
+        done
+    """) == 0
+
+
+def run_scenarios(scenarios: list[int], out_container: str,
+                  workers: int = 1) -> list[int]:
+    """Run each scenario in its own process. Returns those that failed.
+
+    `workers=1` is the ORIGINAL SERIAL PATH, unchanged, so "the default behaves
+    exactly as before" is true by inspection rather than by argument.
+
+    Each scenario is its own process either way -- the DLL holds Fortran SAVE
+    state that `dlclose()` does not reliably release (see SCENARIO_ORDER), which
+    is also precisely why concurrent scenarios are independent of each other.
+
+    Measured 2026-08-19: 27 scenarios, 141 s serial, 28.6 s across 8 workers --
+    4.93x, with all 27 outputs bit-identical to `baseline_arrays` across
+    5,252,000 values, every scenario run exactly once.
+    """
+    if workers <= 1:
+        failed = []
+        for s in scenarios:
+            rc = dexec(f"cd {WORKDIR}/Examples && python3 vit_sim.py "
+                       f"--scenario {s} --output-dir {out_container}")
+            if rc != 0:
+                failed.append(s)
+        return failed
+
+    if not _build_workspaces(workers):
+        print(f"gate.py: could not build {workers} worker workspace(s) under "
+              f"{WORKER_ROOT}; refusing to report a partial run", file=sys.stderr)
+        return list(scenarios)          # every scenario counts as failed
+
+    slots: _queue.Queue = _queue.Queue()
+    for i in range(1, workers + 1):
+        slots.put(i)
+
+    def run_one(s: int) -> tuple[int, int]:
+        w = slots.get()
+        try:
+            rc = dexec(f"cd {WORKER_ROOT}/W{w}/Examples && python3 vit_sim.py "
+                       f"--scenario {s} --output-dir {out_container}")
+        finally:
+            slots.put(w)
+        return s, rc
+
+    # LONGEST FIRST. Scenario 1 is 22 s of a 141 s total, so it sets the floor;
+    # started last it adds its whole length to the makespan. Measured 28.6 s
+    # without this against a theoretical 22 s.
+    order = sorted(scenarios, key=lambda s: -_SECONDS.get(s, _MEAN_SECONDS))
     failed = []
-    for s in scenarios:
-        rc = dexec(f"cd {WORKDIR}/Examples && python3 vit_sim.py "
-                   f"--scenario {s} --output-dir {out_container}")
-        if rc != 0:
-            failed.append(s)
-    return failed
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        for s, rc in ex.map(run_one, order):
+            if rc != 0:
+                failed.append(s)
+    dexec(f"rm -rf {WORKER_ROOT}")
+    return [s for s in scenarios if s in set(failed)]   # caller's order
 
 
 def elementwise_bits(a: np.ndarray) -> np.ndarray:
@@ -256,14 +343,14 @@ def residual_dirt() -> list[str]:
     return [ln for ln in r.stdout.splitlines() if ln.strip()]
 
 
-def gate_once(scenarios: list[int], work: Path) -> dict:
+def gate_once(scenarios: list[int], work: Path, workers: int = 1) -> dict:
     """Run the scenarios and compare. No build, no perturbation."""
     if work.exists():
         shutil.rmtree(work)
     work.mkdir(parents=True)
     snap = snapshot_inputs()
     try:
-        failed = run_scenarios(scenarios, f"{WORKDIR}/{work.name}")
+        failed = run_scenarios(scenarios, f"{WORKDIR}/{work.name}", workers)
     finally:
         restored = restore_inputs(snap)
     res = compare(ROOT / "baseline_arrays", work, scenarios)
@@ -296,6 +383,14 @@ def main(argv=None) -> int:
                          "`mismatched` read as strong evidence to whoever opens "
                          "the file later; the reason they are not belongs in the "
                          "same file, not only in a report elsewhere.")
+    ap.add_argument("--workers", type=int, default=8, metavar="N",
+                    help="Run scenarios N-at-a-time, each in its own copy of "
+                         "Examples/ under /tmp. N=1 is the original serial path, "
+                         "unchanged, and is the way back if this ever misbehaves. "
+                         "Measured 2026-08-19 through this script: a plain gate "
+                         "27.2 s against ~142 s serial, and the ActiveWakeControl "
+                         "D2R red test reproduced its recorded 50,605 of 5,252,000 "
+                         "exactly, in 55.5 s against 249 s.")
     ap.add_argument("--out", default=None)
     a = ap.parse_args(argv)
 
@@ -316,7 +411,8 @@ def main(argv=None) -> int:
 
     payload: dict = {"unit": a.unit, "unit_of_count": "values",
                      "generated_by": "scripts/gate.py",
-                     "baseline": "baseline_arrays", "perturbed": perturbing}
+                     "baseline": "baseline_arrays", "perturbed": perturbing,
+                     "scenario_workers": a.workers}
     # Recorded beside the counts, deliberately. A gate that compares 5,252,000
     # values and matches on all of them looks identical whether the unit under
     # test ran or not -- and for a unit dead at every call site in all 27
@@ -327,7 +423,7 @@ def main(argv=None) -> int:
         payload["notes"] = list(a.note)
     try:
         if not perturbing:
-            payload.update(gate_once(scenarios, work))
+            payload.update(gate_once(scenarios, work, a.workers))
         else:
             target = ROOT / a.perturb_file
             if not target.is_file():
@@ -346,7 +442,7 @@ def main(argv=None) -> int:
                     print("PERTURBED BUILD FAILED -- no red test was performed", file=sys.stderr)
                     payload["build_failed"] = True
                     return 2
-                payload.update(gate_once(scenarios, work))
+                payload.update(gate_once(scenarios, work, a.workers))
             finally:
                 # Unconditional. A perturbation left in the tree is a corrupted
                 # campaign, and the failure mode is silent.
@@ -356,7 +452,7 @@ def main(argv=None) -> int:
             payload["revert_build_ok"] = restored
             # RUNBOOK.md's lesson: a red is only attributable to the
             # perturbation if green comes back when it is removed.
-            after = gate_once(scenarios, ROOT / ".gate_revert")
+            after = gate_once(scenarios, ROOT / ".gate_revert", a.workers)
             payload["revert_compared"] = after["compared"]
             payload["revert_mismatched"] = after["mismatched"]
             payload["revert_verified"] = (after["mismatched"] == 0 and after["compared"] > 0)

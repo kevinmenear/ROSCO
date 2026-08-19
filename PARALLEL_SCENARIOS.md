@@ -14,10 +14,10 @@ ROSCO-specific; nothing here belongs in `translation-loop`.
 
 | Phase | Objective | State |
 |---|---|---|
-| A | A worker pool replaces the serial loop in `run_scenarios` | ☐ not started |
-| B | Workspaces are built, reused and torn down safely | ☐ not started |
-| C | The gate proves it still measures the same thing | ☐ not started |
-| D | Turn it on, with a way to turn it off | ☐ not started |
+| A | A worker pool replaces the serial loop in `run_scenarios` | ✅ done |
+| B | Workspaces are built, reused and torn down safely | ✅ done |
+| C | The gate proves it still measures the same thing | ✅ **done — 50,605 reproduced exactly** |
+| D | Turn it on, with a way to turn it off | ✅ done (D.3 waived, see below) |
 
 ---
 
@@ -104,17 +104,17 @@ has three call sites (plain, perturbed, revert). Nothing else runs a scenario.
 
 ### Tasks
 
-- [ ] **A.1 — Replace the loop with a bounded pool**
-  - [ ] Width is a parameter, defaulting to the container's CPU count (8 today)
-  - [ ] Preserve the return contract exactly: the list of scenarios that exited non-zero
-  - [ ] Each scenario stays its own process — the DLL holds Fortran `SAVE` state that
+- [x] **A.1 — Replace the loop with a bounded pool**
+  - [x] Width is a parameter, defaulting to the container's CPU count (8 today)
+  - [x] Preserve the return contract exactly: the list of scenarios that exited non-zero
+  - [x] Each scenario stays its own process — the DLL holds Fortran `SAVE` state that
         `dlclose()` does not reliably release (`gate.py:52`), so this is required, not incidental
-- [ ] **A.2 — Longest-first ordering**
-  - [ ] Start s1 (22 s) first; measured makespan should fall from 28.6 s toward ~22 s
-  - [ ] `SCENARIO_ORDER`'s intent survives: 3/4/5 lead because they historically break first, and
+- [x] **A.2 — Longest-first ordering**
+  - [x] Start s1 (22 s) first; measured makespan should fall from 28.6 s toward ~22 s
+  - [x] `SCENARIO_ORDER`'s intent survives: 3/4/5 lead because they historically break first, and
         with 8 workers they are all in the first wave anyway
-- [ ] **A.3 — Failure attribution**
-  - [ ] A worker that dies must not silently drop its scenario — an unrun scenario is a missing
+- [x] **A.3 — Failure attribution**
+  - [x] A worker that dies must not silently drop its scenario — an unrun scenario is a missing
         `.npz`, which `compare()` already reports, but the failure list must still name it
 
 **Done when:** a gate run reproduces its serial result and its wall clock is recorded against the
@@ -133,16 +133,16 @@ has three call sites (plain, perturbed, revert). Nothing else runs a scenario.
 
 ### Tasks
 
-- [ ] **B.1 — Build**
-  - [ ] Container-local (`/tmp`), never inside the campaign tree
-  - [ ] `vit_sim.py` and `*.IN` copied; `Tune_Cases`, `Test_Cases`, `examples_out` symlinked
-  - [ ] Rebuild per gate run — measured at seconds, and it removes every staleness question
-- [ ] **B.2 — Prove the isolation**
-  - [ ] After a full gate run, `Examples/*.IN` are byte-identical to before — **not restored,
+- [x] **B.1 — Build**
+  - [x] Container-local (`/tmp`), never inside the campaign tree
+  - [x] `vit_sim.py` and `*.IN` copied; `Tune_Cases`, `Test_Cases`, `examples_out` symlinked
+  - [x] Rebuild per gate run — measured at seconds, and it removes every staleness question
+- [x] **B.2 — Prove the isolation**
+  - [x] After a full gate run, `Examples/*.IN` are byte-identical to before — **not restored,
         untouched.** `snapshot_inputs`'s `restored` list must come back empty.
-  - [ ] `residual_dirt()` still clean
-- [ ] **B.3 — Teardown**
-  - [ ] Removed on exit; a killed run leaves scratch behind, which costs disk rather than
+  - [x] `residual_dirt()` still clean
+- [x] **B.3 — Teardown**
+  - [x] Removed on exit; a killed run leaves scratch behind, which costs disk rather than
         correctness
 
 **Done when:** a gate run leaves the campaign's `Examples/` bit-identical to how it found it.
@@ -160,14 +160,14 @@ has three call sites (plain, perturbed, revert). Nothing else runs a scenario.
 
 ### Tasks
 
-- [ ] **C.1 — Same verdict on the same input**
-  - [ ] A plain gate run: parallel and serial produce identical `compared` and `mismatched`
-- [ ] **C.2 — It can still go red**
-  - [ ] Re-run an existing red test (`gate/*.redtest.*.json`) under the pool and reproduce its
+- [x] **C.1 — Same verdict on the same input**
+  - [x] A plain gate run: parallel and serial produce identical `compared` and `mismatched`
+- [x] **C.2 — It can still go red**
+  - [x] Re-run an existing red test (`gate/*.redtest.*.json`) under the pool and reproduce its
         recorded mismatch count **to the value**
-  - [ ] A green that cannot go red is not a measurement (P10)
-- [ ] **C.3 — Concurrency does not change a value**
-  - [ ] Already established once: 27/27 bit-identical, 5,252,000 values. Re-establish through
+  - [x] A green that cannot go red is not a measurement (P10)
+- [x] **C.3 — Concurrency does not change a value**
+  - [x] Already established once: 27/27 bit-identical, 5,252,000 values. Re-establish through
         `gate.py` itself rather than the bench harness.
 
 **Done when:** one red test and one green run reproduce their recorded numbers exactly.
@@ -184,9 +184,9 @@ has three call sites (plain, perturbed, revert). Nothing else runs a scenario.
 
 ### Tasks
 
-- [ ] **D.1 — `--workers N`, default 8, `--workers 1` = today's behaviour exactly**
-- [ ] **D.2 — Record the width in the gate artifact**, so a result says how it was produced
-- [ ] **D.3 — Measure under real load**, not on an idle machine (see Risks)
+- [x] **D.1 — `--workers N`, default 8, `--workers 1` = today's behaviour exactly**
+- [x] **D.2 — Record the width in the gate artifact**, so a result says how it was produced
+- [~] **D.3 — Measure under real load** — WAIVED by the operator, not on an idle machine (see Risks)
 
 **Done when:** a real dispatch's gate time is recorded and compared against the 59.2 min baseline.
 
@@ -225,3 +225,43 @@ has three call sites (plain, perturbed, revert). Nothing else runs a scenario.
   redeclaration it would force is a cost with no benefit here.
 - **The agent's own time.** It is 50-94% of a dispatch and nothing here touches it. This plan
   addresses the 34% that is gate, and takes about 26% off the total.
+
+
+---
+
+## Results — implemented 2026-08-19
+
+Measured **through `gate.py` itself**, not through a bench harness.
+
+| run | serial | 8 workers | speedup |
+|---|---|---|---|
+| plain gate | 148 s | **27.2 s** | **5.4×** |
+| `ActiveWakeControl` D2R red test | 249 s (recorded) | **55.5 s** | **4.5×** |
+
+**C.2 — the acceptance gate, reproduced to the digit.** Every field of the recorded serial
+artifact matched:
+
+| field | recorded (serial) | now (8 workers) |
+|---|---|---|
+| compared | 5,252,000 | 5,252,000 |
+| **mismatched** | **50,605** | **50,605** |
+| revert_compared | 5,252,000 | 5,252,000 |
+| revert_mismatched | 0 | 0 |
+| revert_verified | true | true |
+| scenarios_failed | [] | [] |
+
+The gate still goes red on the same perturbation by the same amount, and comes back green on
+revert. That is the whole claim.
+
+**B.2 — the isolation, demonstrated rather than argued.** `Examples/DISCON.IN` and
+`DISCON_awc.IN` are **byte-identical** before and after, and `inputs_restored` came back **empty**
+— nothing was written, so nothing needed restoring. `residual_dirt` empty. Worker scratch removed.
+
+**`--workers 1` is the original code.** `diff` of the serial branch against the pre-change loop
+differs by exactly one line: the `if workers <= 1:` guard. The fallback was run and passed
+(148 s, 5,252,000 compared, 0 mismatched).
+
+**D.3 waived by the operator** on the reasoning that a pool degenerates to serial under
+contention, so the downside is "less than 5×", not "wrong". The correctness half (Phase C) was
+**not** waived and is what the 50,605 establishes. The recorded `scenario_workers` field means any
+future artifact says how it was produced, so the first real dispatch will price it for free.
