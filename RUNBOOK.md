@@ -8205,6 +8205,129 @@ unit can exhaust the second while barely touching the first.
   a two-hour one. Regenerate the unreachable REASONS anyway if they name line
   numbers; the lines move even when the ids do not.
 
+## EVERY RECORD THIS CAMPAIGN GENERATES ENDS IN BLANK PADDING, SO NO PARSER'S
+## END-OF-RECORD GUARD HAS EVER BEEN TAKEN ON BOTH SIDES
+
+- **`p < len` -> `p <= len` was a mutant no corpus in this campaign could
+  distinguish, and it was five of one unit's survivors.** Unit #54, fourth
+  dispatch.
+
+  ```
+  R14 plants     `<value> <value> <key>` padded out to the element's width
+  the reference  Line = FileLines(I)        CHARACTER(MaxLineLength) = 2048
+                 -> a short line is BLANK-FILLED out to 2048
+  every scan     stops in the padding, ~2000 characters short of `len`
+  ```
+
+  So `p == len` never happens, `p < len` and `p <= len` agree on every case, and
+  six survivors sat there through three dispatches on a translation scored six
+  ways. The repair is a lead built to EXACTLY the buffer's width so the copy
+  TRUNCATES rather than pads (`_RECORD_TAILS`, loop `59aa876`); three of the six
+  died on the first sweep after it.
+
+  **Ask it as a question about the reference rather than as a rule about a
+  generator: does any case make the reference's own input END where its buffer
+  ends?** For a parser, a formatter or a tokeniser the answer has been no for
+  this whole campaign, and the shape recurs in the four sibling `Parse*_Opt`
+  units and in `GetWords`.
+
+  **The width detector is R12's minus its discriminator, and R12 being right is
+  what hides it.** `narrowing_widths_from` asks "does the reference TRUNCATE
+  something?" and requires the local to be assigned from a `CHARACTER(*)` dummy.
+  This unit's `CHARACTER(MaxLineLength) :: Line` is filled by a CALLEE, so R12
+  reports the unit **N/A** — correctly — while the record it parses is 2048
+  bytes wide. `record_widths_from` drops the discriminator on purpose: a scratch
+  buffer is a false positive for R12 and a harmless extra case here.
+
+## A NULL RESULT FROM `--sanitize` IS A FACT ABOUT THE CORPUS, NOT ABOUT THE
+## PROGRAM, AND THE VALUE ORACLE IS WHAT SEPARATES THEM
+
+- **The same option bought 2 kills on one corpus and 8 on a wider one, with the
+  translation unchanged.** Unit #54, third and fourth dispatches.
+
+  ```
+  third dispatch   16,512 cases, records blank-padded    --sanitize  +2
+                   conclusion recorded: "the index_offset survivors are NOT
+                   invisible out-of-bounds differences: rec[p + 1] is inside a
+                   2048-byte blank-padded record"
+  fourth dispatch  17,520 cases, records ending at 2048  --sanitize  +8
+  ```
+
+  The conclusion was true of the corpus it was measured on and false as a claim
+  about the program. A `p <= len` that reads `rec[2048]` is out of bounds only
+  when a scan REACHES 2048. **A sanitiser observes executions; it reports
+  nothing about executions that do not happen** — P9, one instrument over.
+
+  **Re-take the value oracle on the SAME corpus so the sanitiser's contribution
+  is a subtraction rather than a claim.** Four unfiltered-of-declarations parts,
+  merged the same way: `104 -> 120` is the corpus, `120 -> 128` is the option,
+  `128/150` is the declarations. Costs about fifteen minutes and it is the only
+  thing that tells the three apart.
+
+## RE-DERIVE AN `unreachable` SET FROM ITS COVERAGE FILE; CARRYING ONE FORWARD
+## FAILS P12 OUTRIGHT
+
+- **Twelve of thirty declarations became false the moment the corpus widened.**
+  Unit #54, fourth dispatch.
+  `evidence/ParseDbAry_Opt/make_unreachable.py` reads `line_coverage.txt`,
+  **refuses if that file does not name the current corpus**, re-checks the
+  entry-line control, and writes the declarations. 30 -> 18.
+
+  Two rules a hand-written set hides, both found by a refusal rather than by
+  reading:
+
+  ```
+  REFUSED: b76a0c84, d764720b declared BOTH equivalent and unreachable.
+  _mutation_merge: REFUSING -- 128 + 22 + 17 + 19 != 185 behavioural
+  ```
+
+  A mutant already declared EQUIVALENT is not re-declared — the equivalence is
+  the claim that survives a corpus later reaching the line. A mutant that does
+  not COMPILE is not declared at all — it is already out of both sides, and
+  declaring it double-counts it.
+
+## PRICE A PLANTED RECORD AGAINST THE REFERENCE BEFORE TOUCHING THE GENERATOR
+
+- **The harness compares `Ary` with `memcmp`, so a NaN with the wrong payload
+  fails every planted case and the sweep cannot run at all.** Unit #54, fourth
+  dispatch, two probes and about ten minutes.
+
+  ```
+  ieee_word_probe    10 words   10 of 10 bit-identical, NaN payload included
+  record_tail_probe   4 records  4 of 4 agree on IOSTAT and on BOTH elements
+  ```
+
+  `vit_mutate.py` refuses a non-green baseline, so a corpus that turns the
+  harness red costs the whole mutation layer, not one case. Both probes use unit
+  #55's textual-include shape, so they exercise the SHIPPED function.
+
+  **And choose the planted VALUE so the probe answers one question.** The tail
+  records are `"0"*2047 + "1"` and `"1." + "0"*2045 + "5"` rather than 2048 nines
+  — the value is 1.0 either way, so what is under test is the SCAN reaching the
+  boundary and not the runtime's behaviour at HUGE, which is a different question
+  with a different answer.
+
+## A `generate.py` EDIT RE-PRICES THE GATE; A `ranges.toml` EDIT DOES NOT
+
+- **~30 minutes of gate runs that measure nothing new, and a dispatch must have
+  them in hand before it edits the loop repo.** Unit #54, fourth dispatch, and
+  it is the exception to this runbook's own "a corpus change re-takes every
+  layer that reads the corpus, and exactly those".
+
+  ```
+  ranges.toml change   loop_rev unchanged   gate artifacts stay valid
+  generate.py change   loop_rev moves       revcheck + P14 demand every artifact
+                                            at one revision -> 8 gate runs here
+  ```
+
+  It is not waste. The gate never reads the case file, so the two non-zero red
+  tests had to give back **2,236,141 and 1,583,216 exactly**, and they did —
+  which is the control saying that what changed was the corpus and nothing else.
+  But it is a fixed cost the guard script cannot see. **Reach for the
+  `ranges.toml` lever first when both are available**; this dispatch needed both,
+  and the `ranges.toml` half alone would have killed one of the six.
+
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
