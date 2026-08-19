@@ -25,8 +25,8 @@
  "mutant_slice": {
   "offset": 0,
   "limit": 0,
-  "scored": 30,
-  "of": 30
+  "scored": 31,
+  "of": 31
  },
  "scored_ids": [
   "0cf89023",
@@ -49,6 +49,7 @@
   "03f79cf0",
   "1fc42c92",
   "5831850e",
+  "4ca74dd3",
   "31c7aef7",
   "61caf2fd",
   "62888bdb",
@@ -65,7 +66,7 @@
   "compare_op",
   "const_tweak"
  ],
- "mutants": 30,
+ "mutants": 31,
  "equivalent_declared": 0,
  "unreachable_declared": 1,
  "unreachable": [
@@ -84,13 +85,13 @@
  "killed_by_sanitizer_ids": [],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
- "total": 30,
+ "total": 31,
  "killed": 28,
- "survived": 1,
+ "survived": 2,
  "equivalent": 0,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.9655,
+ "score": 0.9333,
  "loop_rev": "8c17719-nogit",
  "gen_rev": "gen-7654789df837",
  "vit_rev": "3f6e2ce-nogit",
@@ -100,6 +101,12 @@
    "operator": "negate_cond",
    "before": "if (is_eol(rec[p]))",
    "after": "if (!(is_eol(rec[p])))"
+  },
+  {
+   "id": "4ca74dd3",
+   "operator": "negate_cond",
+   "before": "if (n > 0)",
+   "after": "if (!(n > 0))"
   }
  ]
 }

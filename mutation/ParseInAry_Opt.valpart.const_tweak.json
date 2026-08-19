@@ -62,8 +62,8 @@
   "0562d216",
   "bb16f729",
   "72edee9b",
-  "373af6ff",
   "39d15f1e",
+  "373af6ff",
   "6fb2c552",
   "73975430",
   "c306f8c6",
@@ -76,7 +76,7 @@
   "const_tweak"
  ],
  "mutants": 40,
- "equivalent_declared": 11,
+ "equivalent_declared": 10,
  "unreachable_declared": 1,
  "unreachable": [
   {
@@ -96,11 +96,11 @@
  "nocompile_refused": false,
  "total": 40,
  "killed": 24,
- "survived": 4,
- "equivalent": 11,
+ "survived": 5,
+ "equivalent": 10,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.8571,
+ "score": 0.8276,
  "loop_rev": "8c17719-nogit",
  "gen_rev": "gen-7654789df837",
  "vit_rev": "3f6e2ce-nogit",
@@ -119,6 +119,12 @@
   },
   {
    "id": "72edee9b",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "39d15f1e",
    "operator": "const_tweak",
    "before": "0",
    "after": "1"

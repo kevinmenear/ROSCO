@@ -2,12 +2,12 @@ ParseInAry_Opt -- line coverage of the SHIPPED translation under the
 19,536-case differential harness corpus, measured by gcov over the
 generated test's own object (the test #includes parseinary_opt.hpp).
 
-  executable lines RUN      208
+  executable lines RUN      209
   executable lines NOT RUN  26
-  non-code lines            465
+  non-code lines            474
 
 CONTROL: the entry line's count must equal the case count.
-  L454  count=19536  void ParseInAry_Opt(char* FileLines, int n_FileLines, int len_FileLine
+  L464  count=19536  void ParseInAry_Opt(char* FileLines, int n_FileLines, int len_FileLine
 
 LINES NEVER EXECUTED:
 
@@ -28,12 +28,12 @@ LINES NEVER EXECUTED:
   L 341  eat_separator();
   L 342  continue;
   L 343  }
-  L 531  ErrVar->aviFAIL = -1;
-  L 532  std::string msg(RoutineName);
-  L 533  msg += ":Error allocating memory for ";
-  L 534  msg += int2lstr_trimmed(AryLen);
-  L 535  msg += " characters in the ";
-  L 536  msg.append(ftrim(ParamName, len_ParamName));
-  L 537  msg += " array.";
-  L 538  assign_errmsg(ErrVar, msg);
-  L 539  }
+  L 541  ErrVar->aviFAIL = -1;
+  L 542  std::string msg(RoutineName);
+  L 543  msg += ":Error allocating memory for ";
+  L 544  msg += int2lstr_trimmed(AryLen);
+  L 545  msg += " characters in the ";
+  L 546  msg.append(ftrim(ParamName, len_ParamName));
+  L 547  msg += " array.";
+  L 548  assign_errmsg(ErrVar, msg);
+  L 549  }

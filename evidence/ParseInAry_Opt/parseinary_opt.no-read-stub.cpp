@@ -427,7 +427,17 @@ void print_default_warning(std::string_view ParamName, const int32_t* Ary, int n
     for (int i = 0; i < n; ++i) {
         rec += list_directed_int(Ary[i]);
     }
-    rec += ' ';
+    // ONE SEPARATOR BLANK BEFORE THE CLOSING CHARACTER ITEM, AND ONLY WHEN A
+    // VALUE PRECEDES IT. gfortran writes the blank between an INTEGER item and
+    // a CHARACTER item that follows it; with an EMPTY value list the two
+    // CHARACTER items are adjacent and it writes none. MEASURED, not recalled:
+    // `evidence/ParseInAry_Opt/print_replay.txt` case 24 is a zero-length Ary
+    // and the reference's record ends `value of []`, not `value of [ ]`. The
+    // unconditional blank stood for four dispatches because no layer of this
+    // unit's evidence compares the record.
+    if (n > 0) {
+        rec += ' ';
+    }
     rec += ']';
     rec += '\n';
     std::fwrite(rec.data(), 1, rec.size(), stdout);
@@ -627,12 +637,9 @@ void ParseInAry_Opt(char* FileLines, int n_FileLines, int len_FileLines,
             values[static_cast<std::size_t>(i)] = *ary_at(Ary, i);
         }
         // RED TEST -- the list-directed READ deleted. Predicted to fail 1,044
-        // = 233 (alloc=0) + 811 (alloc=1): every case whose reference ErrMsg
-        // carries the parse-error arm. 1,044 of 19,536 is the number of cases
-        // that can distinguish anything about this parser through aviFAIL and
-        // ErrMsg alone -- and the residual above it is the cases whose READ
-        // SUCCEEDS, where deleting it is visible in `Ary` instead. That
-        // residual is measured, not assumed: run_read_residual_probe.sh.
+        // = 233 (alloc=0) + 811 (alloc=1) on a read-failed arm, and the residual
+        // above that is MEASURED rather than assumed: run_read_residual_probe.sh
+        // splits it 88 (the reference's READ SUCCEEDED) + 18 (already-alloc).
         ErrStatLcl = 0;
         (void)list_read_ints;
         for (int i = 0; i < n; ++i) {

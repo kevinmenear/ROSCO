@@ -16,7 +16,7 @@
   "swap_operands": 1,
   "index_offset": 31,
   "const_tweak": 40,
-  "negate_cond": 30
+  "negate_cond": 31
  },
  "operators_offered": [
   "arith_op",
@@ -41,8 +41,8 @@
  "sanitize": false,
  "killed_by_sanitizer": 0,
  "killed_by_sanitizer_ids": [],
- "mutants": 151,
- "equivalent_declared": 18,
+ "mutants": 152,
+ "equivalent_declared": 17,
  "unreachable_declared": 6,
  "unreachable": [
   {
@@ -86,14 +86,14 @@
  "nocompile": 1,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
- "nocompile_ratio": 0.0066,
+ "nocompile_ratio": 0.0065,
  "nocompile_refused": false,
- "total": 152,
+ "total": 153,
  "killed": 104,
- "survived": 23,
- "equivalent": 18,
+ "survived": 25,
+ "equivalent": 17,
  "declared_but_killed": [],
- "score": 0.8189,
+ "score": 0.8062,
  "loop_rev": "8c17719-nogit",
  "vit_rev": "3f6e2ce-nogit",
  "merged_from": [
@@ -150,8 +150,8 @@
    "mutants": 40,
    "nocompile": 0,
    "killed": 24,
-   "survived": 4,
-   "score": 0.8571
+   "survived": 5,
+   "score": 0.8276
   },
   {
    "part": "mutation/ParseInAry_Opt.valpart.negate_cond.json",
@@ -161,15 +161,15 @@
    "mutant_slice": {
     "offset": 0,
     "limit": 0,
-    "scored": 30,
-    "of": 30
+    "scored": 31,
+    "of": 31
    },
-   "total": 30,
-   "mutants": 30,
+   "total": 31,
+   "mutants": 31,
    "nocompile": 0,
    "killed": 28,
-   "survived": 1,
-   "score": 0.9655
+   "survived": 2,
+   "score": 0.9333
   },
   {
    "part": "mutation/ParseInAry_Opt.valpart.index_offset.json",
@@ -190,7 +190,7 @@
    "score": 0.6667
   }
  ],
- "merged_why": "the VALUE-ORACLE CONTROL on the SAME 19,536-case corpus: identical to mutation/ParseInAry_Opt.json in every respect except that --sanitize is absent, so the difference between the two scores is exactly what the sanitiser buys. Five --operator-filtered foreground parts, each through scripts/mutate_guarded.sh",
+ "merged_why": "the VALUE-ORACLE CONTROL on the SAME 19,536-case corpus and the SAME declarations: identical to mutation/ParseInAry_Opt.json in every respect except that --sanitize is absent, so the difference between the two scores is exactly what the sanitiser buys. Five --operator-filtered foreground parts, each through scripts/mutate_guarded.sh",
  "merged_by": "scripts/_mutation_merge.py",
  "survivors": [
   {
@@ -266,6 +266,12 @@
    "after": "1"
   },
   {
+   "id": "39d15f1e",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
    "id": "373af6ff",
    "operator": "const_tweak",
    "before": "1",
@@ -276,6 +282,12 @@
    "operator": "negate_cond",
    "before": "if (is_eol(rec[p]))",
    "after": "if (!(is_eol(rec[p])))"
+  },
+  {
+   "id": "4ca74dd3",
+   "operator": "negate_cond",
+   "before": "if (n > 0)",
+   "after": "if (!(n > 0))"
   },
   {
    "id": "3dfee86c",

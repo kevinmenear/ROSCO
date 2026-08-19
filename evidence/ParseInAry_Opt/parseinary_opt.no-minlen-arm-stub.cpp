@@ -427,7 +427,17 @@ void print_default_warning(std::string_view ParamName, const int32_t* Ary, int n
     for (int i = 0; i < n; ++i) {
         rec += list_directed_int(Ary[i]);
     }
-    rec += ' ';
+    // ONE SEPARATOR BLANK BEFORE THE CLOSING CHARACTER ITEM, AND ONLY WHEN A
+    // VALUE PRECEDES IT. gfortran writes the blank between an INTEGER item and
+    // a CHARACTER item that follows it; with an EMPTY value list the two
+    // CHARACTER items are adjacent and it writes none. MEASURED, not recalled:
+    // `evidence/ParseInAry_Opt/print_replay.txt` case 24 is a zero-length Ary
+    // and the reference's record ends `value of []`, not `value of [ ]`. The
+    // unconditional blank stood for four dispatches because no layer of this
+    // unit's evidence compares the record.
+    if (n > 0) {
+        rec += ' ';
+    }
     rec += ']';
     rec += '\n';
     std::fwrite(rec.data(), 1, rec.size(), stdout);
@@ -494,9 +504,8 @@ void ParseInAry_Opt(char* FileLines, int n_FileLines, int len_FileLines,
     // ! Minimum array length
     // IF (AryLen < 1) THEN ; FinalAryLen = 1 ; ELSE ; FinalAryLen = AryLen ; ENDIF
     // RED TEST -- the minimum-array-length arm deleted, so a zero AryLen
-    // allocates a zero-extent array. NOT PREDICTED: on the third dispatch's
-    // corpus it moved 19, and the count is a function of how many cases draw
-    // AryLen = 0, which no cell of the partition reports directly.
+    // allocates a zero-extent array. NOT PREDICTED: the count is a function of
+    // how many cases draw AryLen = 0, which no cell of the partition reports.
     int FinalAryLen;
     FinalAryLen = AryLen;
 

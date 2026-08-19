@@ -427,7 +427,17 @@ void print_default_warning(std::string_view ParamName, const int32_t* Ary, int n
     for (int i = 0; i < n; ++i) {
         rec += list_directed_int(Ary[i]);
     }
-    rec += ' ';
+    // ONE SEPARATOR BLANK BEFORE THE CLOSING CHARACTER ITEM, AND ONLY WHEN A
+    // VALUE PRECEDES IT. gfortran writes the blank between an INTEGER item and
+    // a CHARACTER item that follows it; with an EMPTY value list the two
+    // CHARACTER items are adjacent and it writes none. MEASURED, not recalled:
+    // `evidence/ParseInAry_Opt/print_replay.txt` case 24 is a zero-length Ary
+    // and the reference's record ends `value of []`, not `value of [ ]`. The
+    // unconditional blank stood for four dispatches because no layer of this
+    // unit's evidence compares the record.
+    if (n > 0) {
+        rec += ' ';
+    }
     rec += ']';
     rec += '\n';
     std::fwrite(rec.data(), 1, rec.size(), stdout);
@@ -545,10 +555,9 @@ void ParseInAry_Opt(char* FileLines, int n_FileLines, int len_FileLines,
     // IF (.NOT. FoundLine) THEN
     if (!FoundLine) {
         // RED TEST -- the .NOT. AllowDefault_ arm deleted. Predicted to fail
-        // 2,273 = 1,322 (alloc=0) + 951 (alloc=1): every case whose reference
-        // ErrMsg carries this arm's message (harness_partition.txt's
-        // `not-allowed` cells). On the 1,322 `Ary` is excluded and the failure
-        // is on aviFAIL and ErrMsg; on the 951 it is on all three.
+        // 2,273 = 1,322 (alloc=0) + 951 (alloc=1), plus the partition's own
+        // `alloc = 0, other` cell of 104 -- 2,377 measured at the fourth
+        // dispatch, and the arithmetic is in harness_partition.txt.
         if (false) {
             ErrVar->aviFAIL = -1;
             std::string msg(RoutineName);

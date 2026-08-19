@@ -16,7 +16,7 @@
   "swap_operands": 1,
   "index_offset": 31,
   "const_tweak": 40,
-  "negate_cond": 30
+  "negate_cond": 31
  },
  "operators_offered": [
   "arith_op",
@@ -53,8 +53,8 @@
   "64cfaba1",
   "356f870c",
   "373af6ff",
-  "39d15f1e",
-  "73975430",
+  "6fb2c552",
+  "c306f8c6",
   "385a1c9b",
   "8ad60160",
   "85758208",
@@ -83,8 +83,8 @@
   "70ad68f4",
   "1a84d123"
  ],
- "mutants": 151,
- "equivalent_declared": 18,
+ "mutants": 152,
+ "equivalent_declared": 17,
  "unreachable_declared": 6,
  "unreachable": [
   {
@@ -128,14 +128,14 @@
  "nocompile": 1,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
- "nocompile_ratio": 0.0066,
+ "nocompile_ratio": 0.0065,
  "nocompile_refused": false,
- "total": 152,
+ "total": 153,
  "killed": 123,
- "survived": 4,
- "equivalent": 18,
+ "survived": 6,
+ "equivalent": 17,
  "declared_but_killed": [],
- "score": 0.9685,
+ "score": 0.9535,
  "loop_rev": "8c17719-nogit",
  "vit_rev": "3f6e2ce-nogit",
  "merged_from": [
@@ -192,8 +192,8 @@
    "mutants": 40,
    "nocompile": 0,
    "killed": 25,
-   "survived": 3,
-   "score": 0.8929
+   "survived": 4,
+   "score": 0.8621
   },
   {
    "part": "mutation/ParseInAry_Opt.sanpart.negate_cond.json",
@@ -203,15 +203,15 @@
    "mutant_slice": {
     "offset": 0,
     "limit": 0,
-    "scored": 30,
-    "of": 30
+    "scored": 31,
+    "of": 31
    },
-   "total": 30,
-   "mutants": 30,
+   "total": 31,
+   "mutants": 31,
    "nocompile": 0,
    "killed": 28,
-   "survived": 1,
-   "score": 0.9655
+   "survived": 2,
+   "score": 0.9333
   },
   {
    "part": "mutation/ParseInAry_Opt.sanpart.index_offset.json",
@@ -232,7 +232,7 @@
    "score": 1.0
   }
  ],
- "merged_why": "152 mutants at ~5s each under -fsanitize=address,undefined is ~760s against the 600s foreground ceiling; five --operator-filtered parts, each in the foreground, each routed through scripts/mutate_guarded.sh",
+ "merged_why": "153 mutants at ~5s each under -fsanitize=address,undefined is ~765s against the 600s foreground ceiling; five --operator-filtered parts, each in the foreground, each routed through scripts/mutate_guarded.sh",
  "merged_by": "scripts/_mutation_merge.py",
  "survivors": [
   {
@@ -254,10 +254,22 @@
    "after": "1"
   },
   {
+   "id": "39d15f1e",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
    "id": "07b5ee72",
    "operator": "negate_cond",
    "before": "if (is_eol(rec[p]))",
    "after": "if (!(is_eol(rec[p])))"
+  },
+  {
+   "id": "4ca74dd3",
+   "operator": "negate_cond",
+   "before": "if (n > 0)",
+   "after": "if (!(n > 0))"
   }
  ]
 }
