@@ -12490,3 +12490,192 @@ when a value comparison cannot. Two dispatches were spent on that sweep and
 neither finished it. **A sweep taken after the close can only lower the unit's
 state, never raise it** — there is no survivor for it to explain — and it opens
 the de-integration and in-place-mutation windows to do so. Not re-taken here.
+
+## Unit #54 `ParseDbAry_Opt`, fourth dispatch — 0.7609 → 0.8533, six named survivors dead, and one case the vocabulary has no key for
+
+**THE ESCALATION FIRST, BECAUSE IT IS THE ONE THAT IS NOT A LOCAL DECISION.**
+
+`vit_mutate.py` has two ways to explain a surviving mutant, and P12 divides by
+`mutants - equivalent_declared - unreachable_declared`, so an explained mutant
+leaves the ratio instead of dragging it down:
+
+```
+--equivalences   the two programs agree on every admissible input.
+                 A claim about the PROGRAMS.
+--unreachable    the corpus cannot reach it, and here is the coverage.
+                 A claim about the CORPUS.
+```
+
+**THERE IS A THIRD CASE AND THIS UNIT HAS TEN OF IT.** The ten surviving
+`PRINT`-region mutants are:
+
+* **not equivalent.** `evidence/ParseDbAry_Opt/print_replay.txt` replays 44
+  records of gfortran's own list-directed output through the SHIPPED
+  `print_default_warning` and every one of the ten moves between 18 and 44
+  records. That is not an argument that they might differ; it is a measurement
+  that they do.
+* **not unreachable.** The corpus executes those lines — `line_coverage.txt` —
+  and so do 21 of the 27 gate scenarios, 66 times.
+* **not killable by the scoring instrument.** The sweep runs `./test`, whose
+  oracle compares out-parameters with `memcmp`. The record goes to stdout.
+
+So the honest report is *a mutant with a measured difference that the scoring
+instrument cannot see*, and there is no key for it. The three things a dispatch
+can do today are all wrong: declare them equivalent (false, and the campaign's
+own instruction says declaring survivors equivalent raises the score without
+improving anything), declare them unreachable (false, and P12 fails the unit
+outright if the corpus later kills one), or leave them as bare survivors, which
+is what this dispatch did — 0.8533 is the number **with these ten counted as
+survivors**.
+
+**PROPOSED: a third declaration, `--killed-by`.** Same shape as `--unreachable`
+— a JSON object keyed by mutant id, both fields required and the evidence path
+required to EXIST before a mutant is built:
+
+```json
+{"<id>": {"instrument": "<what killed it, and what it compares>",
+          "evidence":   "<path to the artifact that shows the difference>"}}
+```
+
+and the same refusal discipline: the artifact records `killed_by_declared`
+separately from `killed`, so a reader can subtract it, and a unit whose score
+rests on it says so. **The cost of NOT having it is not the number** — it is
+that the only way to move these ten is a change to the shared harness emitter
+(making `./test` capture and compare each side's stdout per case), which is a
+much larger change than the declaration and is the Driver's either way.
+
+**WHY THIS IS DIFFERENT FROM "JUST FIX THE ORACLE".** It would be, if the second
+instrument were always cheaper to fold in than to build. Here it is the other
+way round: `print_conformance.{f90,cpp}` compares the reference's OWN output
+against the shipped translation on 44 records chosen ON the boundaries the
+mutants edit, which is a better comparison for this region than a per-case
+stdout diff over 17,520 arbitrary records would be. The right end state is
+probably both — the emitter change for units that log, and the declaration for
+units where a purpose-built instrument is the better oracle.
+
+---
+
+**A GENERALISATION THAT IS THE METHOD'S AND NOT THIS TARGET'S: every record this
+campaign generates ends in blank padding, so no parser's end-of-record guard is
+ever taken on both sides.**
+
+`R14`'s plant fills a `CHARACTER` array element with words and pads the rest
+with blanks, and `_extent_plan` sizes the element to what the plant needs. The
+reference then copies that element into a fixed-width buffer — here
+`CHARACTER(MaxLineLength) :: Line`, 2048 bytes — and the copy PADS. So every
+scan over a record stops in the padding, thousands of characters short of the
+buffer's last byte, and `p < len` versus `p <= len` is a distinction no case in
+any corpus this generator has produced can make. Measured on this unit: five
+`p < len` → `p <= len` survivors and one `p + LEN(word) > len` → `>=`, against
+16,512 cases, on a translation the campaign had otherwise scored six ways.
+
+The fix is `_RECORD_TAILS` in `harness/generate.py` (loop `59aa876`): at k = 2,
+build the lead to EXACTLY the buffer's width so the copy TRUNCATES inside the
+value. Three of the six died immediately. **The part that generalises is the
+question**, not the four forms: *does any case make the reference's own input
+end where its buffer ends?* For a parser, a formatter, a tokeniser or anything
+that walks a record, the answer has been no for this whole campaign.
+
+**AND THE DETECTOR IS R12's, MINUS ITS DISCRIMINATOR, WHICH IS ALSO GENERAL.**
+`narrowing_widths_from` asks "does the reference TRUNCATE something?" and so
+requires the local to be assigned from a `CHARACTER(*)` dummy; its docstring
+records that the broad form fired four times and every one was an ordinary
+scratch buffer. `record_widths_from` asks "how wide is a buffer a RECORD can end
+inside?", and there a scratch buffer is not a false positive — a width nothing
+copies into just produces cases that reach no boundary. `ParseDbAry_Opt` is the
+instance that separates them: R12 reports the unit **N/A** — correctly, because
+`Line` is filled by a CALLEE and not by an assignment in this body — while the
+record it parses is 2048 bytes wide and every mutant at that boundary survived.
+**Two rules can want the same declaration list for opposite reasons, and the
+narrower one being right does not make the broader one wrong.**
+
+---
+
+**A SANITISER MEASURES WHAT THE CORPUS EXECUTES, AND A NULL RESULT FROM ONE IS
+NOT A FACT ABOUT THE PROGRAM.**
+
+The third dispatch ran `--sanitize`, got 2 extra kills out of 79 survivors, and
+concluded — reasonably, and in writing — that this unit's `index_offset` and
+`p <= len` survivors were **not** out-of-bounds differences: "`rec[p + 1]` is
+inside a 2048-byte blank-padded record". That was true of the corpus it had. On
+a corpus whose records END at the buffer's last byte the same option buys **8**
+kills, because a `p <= len` that reads `rec[2048]` is out of bounds only when a
+scan actually reaches 2048.
+
+**The general form: an instrument that observes a property of an execution
+reports nothing about executions that do not happen.** `--sanitize` and the
+corpus are not independent measurements of a translation; they compose. A
+dispatch that reads a weak sanitiser result as evidence about the PROGRAM has
+made the same move as one that reads a green harness as evidence about an
+unexercised arm — which is P9, one instrument over. The way to keep it honest is
+the one this dispatch used: re-take the **value oracle** on the same corpus, so
+the sanitiser's contribution is a subtraction (120 → 128) rather than a claim.
+
+---
+
+**AN UNREACHABLE DECLARATION SET IS A FUNCTION OF A COVERAGE FILE, SO IT SHOULD
+BE COMPUTED FROM ONE RATHER THAN CARRIED FORWARD.**
+
+The third dispatch wrote 30 declarations by hand against a 16,512-case coverage
+measurement. The moment this dispatch widened the corpus, twelve of those lines
+executed — and a declared-unreachable mutant the corpus then kills fails P12
+outright, correctly and expensively. `evidence/ParseDbAry_Opt/make_unreachable.py`
+re-derives the set from `line_coverage.txt`, **REFUSES if that file does not name
+the current corpus**, and re-checks the entry-line control. 30 → 18.
+
+Two rules fell out of it that a hand-written set hides:
+
+* **A mutant already declared EQUIVALENT is not also declared unreachable.**
+  `vit_mutate.py` refuses both claims on one mutant — "they are different
+  claims; pick the one you can defend" — and the equivalence is the one that
+  survives a corpus later reaching the line.
+* **A mutant that does not COMPILE is not declared at all.** It is already
+  excluded from both sides of the ratio, and declaring it makes the merge's
+  arithmetic double-count it: `_mutation_merge` refused with
+  `128 + 22 + 17 + 19 != 185 behavioural`. The refusal is right and the message
+  names the arithmetic, which is what made it a two-minute diagnosis.
+
+---
+
+**A RECORD PLANTED IN A CORPUS SHOULD BE PRICED AGAINST THE REFERENCE BEFORE THE
+GENERATOR IS TOUCHED, NOT AFTER THE HARNESS GOES RED.**
+
+The differential harness compares with `memcmp` — deliberately, so `-0.0` and
+`+0.0` differ and a NaN differs from itself. That makes planting a record that
+spells `nan` a bet: if gfortran's runtime and the translation's `strtod` produce
+different NaN payloads, every planted case fails, for a reason that has nothing
+to do with the mutants the record was planted for, and the sweep cannot run at
+all because `vit_mutate.py` refuses a non-green baseline.
+
+Two probes, about ten minutes together, answered it first:
+`ieee_word_probe.{f90,cpp}` (ten words, 10 of 10 bit-identical, NaN payload
+included) and `record_tail_probe.{f90,cpp}` (the four tail records, 4 of 4
+agreeing on IOSTAT and on both elements). Both use the textual-include shape unit
+#55 established, so they exercise the SHIPPED function and not a copy.
+
+**The rule: a corpus change that could make the REFERENCE do something new is a
+measurement to take, not a risk to accept.** The leading zeros in the tail forms
+are part of it — they make the value 1.0 or 0.0 rather than an overflow, so what
+the corpus tests is the SCAN reaching the boundary and not the runtime's
+behaviour at HUGE, which is a separate question with a separate answer.
+
+---
+
+**A LOOP-REPO EDIT RE-PRICES EVERY ARTIFACT, INCLUDING THE ONES THAT CANNOT SEE
+THE CORPUS, AND THAT IS THE COST TO BUDGET.**
+
+RUNBOOK already records that a corpus change re-takes every layer that reads the
+corpus "and exactly those — what did NOT: the gate". That is true of a
+`ranges.toml` change and **false of a `generate.py` change**, because `revcheck`
+and P14 ask whether all of a unit's artifacts name the same `loop_rev`. Touching
+the loop repo moved this unit's from `b9c8c52` to `59aa876` and made eight gate
+runs mandatory — about 30 minutes of wall clock measuring, by construction,
+nothing new.
+
+It is not waste, and this dispatch is why: the two non-zero gate red tests had to
+reproduce **2,236,141 and 1,583,216 exactly**, and they did. That is the control
+on the whole claim — the gate never reads the case file, so a different number
+would have meant something other than the corpus had changed. But it is a fixed
+cost of ~30 minutes that a dispatch must have in hand *before* it edits the loop
+repo, and the guard script cannot know it. Choose the `ranges.toml` lever first
+when both are available; this dispatch needed both.
