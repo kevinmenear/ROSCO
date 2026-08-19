@@ -427,7 +427,17 @@ void print_default_warning(std::string_view ParamName, const int32_t* Ary, int n
     for (int i = 0; i < n; ++i) {
         rec += list_directed_int(Ary[i]);
     }
-    rec += ' ';
+    // ONE SEPARATOR BLANK BEFORE THE CLOSING CHARACTER ITEM, AND ONLY WHEN A
+    // VALUE PRECEDES IT. gfortran writes the blank between an INTEGER item and
+    // a CHARACTER item that follows it; with an EMPTY value list the two
+    // CHARACTER items are adjacent and it writes none. MEASURED, not recalled:
+    // `evidence/ParseInAry_Opt/print_replay.txt` case 24 is a zero-length Ary
+    // and the reference's record ends `value of []`, not `value of [ ]`. The
+    // unconditional blank stood for four dispatches because no layer of this
+    // unit's evidence compares the record.
+    if (n > 0) {
+        rec += ' ';
+    }
     rec += ']';
     rec += '\n';
     std::fwrite(rec.data(), 1, rec.size(), stdout);

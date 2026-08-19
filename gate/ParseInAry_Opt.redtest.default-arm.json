@@ -27,8 +27,8 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "the Ary = 0 default arm, taken when FindLine does not find the parameter and defaults are allowed. PREDICTED TO MOVE ZERO, and the prediction is coverage rather than a guess: line_coverage.json records ROSCO_Helpers.f90:775 (the FindLine call) 230 times across all 27 scenarios and :806 / :807 (the Ary = 0 assignment and the PRINT beside it) with NO COUNTER AT ALL. FoundLine is TRUE at every one of this units 230 calls in every scenario, so the arm never runs and no perturbation of it can move a channel.",
-  "FOURTH DISPATCH. It is a NEGATIVE control and it is the pair of the parsed-value run above: the same file, the same build, one perturbation that moves 35 percent of the gate and one that moves nothing. The layer that covers this arm is the differential harness, where the no-allowdefault-arm stub moves thousands of cases."
+  "the Ary = 0 default arm, taken when FindLine does not find the parameter and defaults are allowed. PREDICTED TO MOVE ZERO, and the prediction is coverage rather than a guess: coverage/line_coverage.json records ROSCO_Helpers.f90:775 (the FindLine call) 230 times across all 27 scenarios and :806 / :807 with NO COUNTER AT ALL, so FoundLine is TRUE at every one of this units 230 calls.",
+  "FOURTH DISPATCH, re-taken a second time after the zero-length-Ary PRINT repair. It is the NEGATIVE control and the pair of the parsed-value run: the same file, the same build, one perturbation that moves 35 percent of the gate and one that moves nothing."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parseinary_opt.cpp",

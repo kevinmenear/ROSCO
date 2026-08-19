@@ -175,8 +175,8 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "every value this unit parses out of an input line arrives at the controller one greater. The ten shipped call sites that reach this member of the ParseAry generic are all INTEGER index arrays of CntrPar -- F_GenSpdNotch_Ind, F_TwrTopNotch_Ind, PerfTableSize, Ind_BldPitch, AWC_n, AWC_harmonic, CC_GroupIndex, StC_GroupIndex, Ind_CableControl, Ind_StructControl -- so this moves what the controller indexes with, not a magnitude.",
-  "FOURTH DISPATCH. The corpus changed and the TRANSLATION changed -- three restatement sites deleted -- so this run was PREDICTED, before it was started, to reproduce 1,857,893 exactly ANYWAY: every deleted site is either on the PRINT path, which coverage records as dead in all 27 scenarios, or identity-valued (std::max(NumWords, 0) with NumWords >= 1). A different number would have meant one of those deletions changed the shipped program."
+  "every value this unit parses out of an input line arrives at the controller one greater. The ten shipped call sites that reach this member of the ParseAry generic are all INTEGER index arrays of CntrPar, so this moves what the controller indexes with, not a magnitude.",
+  "FOURTH DISPATCH, re-taken a second time after the zero-length-Ary PRINT repair. PREDICTED to reproduce 1,857,893 exactly: the repair changes the record only when n = 0, and the arm that writes it is dead in all 27 scenarios. A different number would have meant the repair changed the shipped program."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parseinary_opt.cpp",

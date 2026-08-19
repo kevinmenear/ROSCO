@@ -424,7 +424,7 @@ void print_default_warning(std::string_view ParamName, const int32_t* Ary, int n
     rec += "ROSCO Warning: Did not find correct size ";
     rec.append(ParamName);
     rec += " in input file.  Using default value of [";
-    for (int i = 1; i < n; ++i) {
+    for (int i = 0; i < n; ++i) {
         rec += list_directed_int(Ary[i]);
     }
     // ONE SEPARATOR BLANK BEFORE THE CLOSING CHARACTER ITEM, AND ONLY WHEN A
@@ -435,7 +435,7 @@ void print_default_warning(std::string_view ParamName, const int32_t* Ary, int n
     // and the reference's record ends `value of []`, not `value of [ ]`. The
     // unconditional blank stood for four dispatches because no layer of this
     // unit's evidence compares the record.
-    if (n > 0) {
+    if (n > 1) {
         rec += ' ';
     }
     rec += ']';
