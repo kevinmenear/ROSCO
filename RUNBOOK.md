@@ -8328,6 +8328,81 @@ unit can exhaust the second while barely touching the first.
   and the `ranges.toml` half alone would have killed one of the six.
 
 
+## A SANITISED SWEEP THAT SURVIVES AND A SANITISED SEARCH THAT ABORTS ARE THE
+## SAME OPTION MEASURED ON TWO CORPORA
+
+- **Eleven mutants survived `vit_mutate.py --sanitize` and abort under
+  AddressSanitizer the moment they are driven directly.** Unit #55, third
+  dispatch.
+
+  ```
+  sanitised sweep, 17,520 cases          11 SURVIVED
+  sanitised search, 131,298 records      11 ABORT, heap-buffer-overflow
+  the shipped translation, same records  clean          <- the control
+  ```
+
+  Both runs are right. `--sanitize` reports on EXECUTIONS, so it measures the
+  corpus exactly as much as a value oracle does — the campaign had the weaker
+  half of this already (the same option bought 2 kills on one corpus and 8 on a
+  wider one) and the strong form is: **a null `--sanitize` result is never
+  evidence that the out-of-bounds class is absent.**
+
+  **The cheap discriminator is to drive the function directly rather than
+  through the corpus**, which on this unit was one `-DVIT_TRANSLATION` build per
+  mutant, fourteen seconds each including the compile, and it converted eleven
+  unknown survivors into eleven with a named distinguishing record. Add
+  `-fsanitize=address,undefined` to the SEARCH as well as to the sweep, and take
+  the baseline's clean run over the same space as the control: a shipped
+  translation that reported would make every mutant "differ" by inheriting it.
+
+## `_RECORD_TAILS` REACHES THE VALUE SCANNER'S BOUNDARY AND NOT THE SEPARATOR
+## SCANNER'S, AND THE CALLER'S SEARCH KEY IS WHY
+
+- **Loop `59aa876` killed the `p < len` guards inside `parse_int` and left every
+  one inside `eat_separator` alive.** Unit #55, third dispatch, eleven survivors.
+
+  ```
+  _RECORD_TAILS   a lead built to EXACTLY the buffer width
+                  -> the record ends inside a VALUE
+  parse_int       scans the value            reaches the boundary   KILLED
+  eat_separator   scans the blanks AFTER it  never reaches it       ALIVE
+  the record that would  `0` + blanks to column 2048 -- nothing to the RIGHT
+  ```
+
+  It is structural, not accidental: the unit reads only a line `FindLine`
+  matched, and `FindLine` matches on word `AryLen + 1`, so **there is always a
+  non-blank KEY to the right of the last value and every separator scan stops on
+  it**, thousands of columns short. The generator cannot produce the record
+  without an all-blank `ParamName` matching a line with fewer words than
+  `AryLen + 1` — which is this unit's third undefined-`Ary` path and carries its
+  cost, so it is priced rather than taken (the harness must stay green or the
+  whole mutation layer goes with it).
+
+  **Ask which SCANNER a tail form's boundary belongs to before assuming a record
+  shape covers a parser.** The shape recurs in the four sibling `Parse*_Opt`
+  units, in `GetWords`, and in anything that parses a record a search routine
+  selected.
+
+## A COPIED RUNNER'S EXIT-STATUS BRANCH IS PART OF WHAT YOU COPIED, AND ADDING A
+## FAILURE MODE INVERTS IT
+
+- **Eleven kills printed as `no record in this space distinguishes it`.** Unit
+  #55, third dispatch, C12, `survivor_record_search.MISLABELLED.txt`.
+
+  ```
+  the sibling's runner   g++ ... && ./s_<tag>       one shell
+                         rc != 0 -> "DID NOT BUILD OR RUN"
+  with no sanitiser      a build failure and a crash are one case   harmless
+  with one               rc != 0 is the MOST informative result     inverted
+  ```
+
+  The copy was correct in every other respect (P4) and the defect arrived
+  through the one line the new flag changed the meaning of. **When you add a
+  failure MODE to a copied instrument, re-read every branch that classifies its
+  exit status BEFORE you read its output.** The repair separates the build from
+  the run, and reports the record the mutant died ON — which is
+  `baselines[len(got_lines)]`, since the abort stops the output there.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
