@@ -1,11 +1,11 @@
 {
  "unit": "ParseInAry_Opt",
  "against": "integrated",
- "checked": 15504,
+ "checked": 17520,
  "failed": 0,
  "inadmissible": 0,
  "no_oracle_when_skipped": {
-  "Ary": 1283
+  "Ary": 1483
  },
  "rule_coverage": [
   "  applied  R5_non_degenerate_shape    6 varied extent(s) at [3, 4, 5, 6, 7, 8] and [3, 4, 5, 6, 7, 8], NO index parameter identified, array elements distinct",
@@ -16,12 +16,12 @@
   "  N/A      R11_one_at_a_time          no admissible baseline supplied -- there is no case here in which exactly one predicate is away from admissible, so a unit that writes one output from many sites is observable only at the last site that writes it",
   "  N/A      R12_narrowing_width        no CHARACTER local is narrower than a dummy assigned into it -- the reference truncates nothing, so there is no boundary for this rule to reach",
   "  applied  R13_staging_capacity       256 case(s) sweeping the stated staging capacity of every deferred-length CHARACTER output from 0 to 255 bytes above what the case supplies, every other input at its base draw -- so the output has one length across the block and exactly one case sizes the buffer TO it, one a byte short and one a byte long. A capacity a case does not state is `emit.ALLOC_HEADROOM`, which is what every case outside this block still carries",
-  "  applied  R14_planted_word           216 case(s) planting a free scalar CHARACTER input as word [1, 2, 3] of ONE element of a CHARACTER ARRAY input -- the element FIRST and LAST, so a search that skips the first is distinguishable; every free scalar integer at k-1 and at k, so whichever offset the reference uses to pick its word is hit; the key case-INVERTED against the word, so an uppercasing pass dropped on either side breaks the match; every other element and every other word a decoy that no key spells. Reached ['1:plant', '2:plant', '3:plant']",
+  "  applied  R14_planted_word           2232 case(s) planting a free scalar CHARACTER input as word [1, 2, 3] of ONE element of a CHARACTER ARRAY input -- the element FIRST and LAST, so a search that skips the first is distinguishable; every free scalar integer at k-1 and at k, so whichever offset the reference uses to pick its word is hit; the key case-INVERTED against the word, so an uppercasing pass dropped on either side breaks the match; every other element and every other word a decoy that no key spells. The words BEFORE the key are also planted as numeric literals (0, -1, +2, 3.5, 6E1, 7D1, 8Q1, -inf, Infinity, nAn) at every k > 1, so a parser reading a value from the head of the record is handed a digit rather than a letter and does not stop at character one. And at k = 2 the lead is also built to EXACTLY the record width(s) [200, 2048] -- the declared width of a fixed-length CHARACTER buffer the reference copies the line into -- in the form(s) digits, frac, word, wordUC, so the copy truncates INSIDE the value and a scan over the record reaches the buffer's last byte instead of stopping in blank padding. Reached ['1:plant', '2:num:dec', '2:num:expD', '2:num:expE', '2:num:expQ', '2:num:inf', '2:num:infinity', '2:num:nan', '2:num:neg', '2:num:plus', '2:num:zero', '2:plant', '2:tail:digits@200', '2:tail:digits@2048', '2:tail:frac@200', '2:tail:frac@2048', '2:tail:word@200', '2:tail:word@2048', '2:tail:wordUC@200', '2:tail:wordUC@2048', '3:num:dec', '3:num:expD', '3:num:expE', '3:num:expQ', '3:num:inf', '3:num:infinity', '3:num:nan', '3:num:neg', '3:num:plus', '3:num:zero', '3:plant']",
   "  applied  R1_direct_call             the unit is called directly; no scenario can fail to reach it",
   "  applied  R4_compare_all_outputs     return value + 6 out-parameter(s): Ary, ErrVar_size_avcMSG, ErrVar_aviFAIL, ErrVar_ErrStat, ErrVar_ErrMsg_n, ErrVar_ErrMsg -- Ary: COMPARED ONLY WHERE THE REFERENCE HAS AN ORACLE (no_oracle_when; the excluded count is in the artifact)"
  ],
  "mismatches": [],
  "measures": "the integration wrapper's marshalling ONLY. After integration the Fortran body IS the translation, so no harness against this build can compare arithmetic; both sides run the same code, and a failure means the wrapper corrupted an argument or an output on the way through. The arithmetic is covered by the pre-integration harness, the kernel and the gate.",
- "loop_rev": "2ff3660",
+ "loop_rev": "59aa876",
  "vit_rev": "3f6e2ce"
 }

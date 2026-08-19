@@ -30,6 +30,25 @@
 # changed which arm the base draw takes, so both the corpus and the partition
 # moved. The number above comes from the re-measured table, before this run.
 #
+# THIRD DISPATCH, 17,520 CASES AT LOOP 59aa876, AND THE PREDICTION IS RE-DERIVED
+# A THIRD TIME. `run_partition_probe.sh` now measures the table instead of a
+# sentence describing how to, and it reports the `aviFAIL-changed` column
+# directly -- which IS this prediction, because the copy-back carries the
+# SCALARS of the view struct back and `ErrStat` and `size_avcMSG` come back 0 on
+# all 17,520 cases:
+#
+#     not-allowed        1224 +  881
+#     read-failed         155 +  479
+#     already-alloc              7094
+#     error, msg refused          104
+#                        ------------
+#     PREDICTED                  9,937 must FAIL
+#     the rest                   7,583 write no scalar and must PASS
+#                        ------------
+#                               17,520
+#
+# Predicted before this run, from `evidence/ParseInAry_Opt/harness_partition.txt`.
+#
 # ANCHORED TO THE UNIT, NOT TO THE STRING. That CALL is generated into every
 # wrapper in this file that takes an `ErrorVariables`, so a `str.replace` would
 # perturb a dozen units, measure none of them, and write a red artifact
