@@ -1,6 +1,6 @@
-# done_check.py ParseDbAry_Opt -- captured 2026-08-19T03:18:50Z by scripts/capture_done_check.sh
+# done_check.py ParseDbAry_Opt -- captured 2026-08-19T03:24:34Z by scripts/capture_done_check.sh
 
-Run against the committed state at 90fc25d5 ("ParseDbAry_Opt: the close gate run -- 5,252,000 / 0 at loop 59aa876"), with a CLEAN tree, with stdout
+Run against the committed state at 71de62c8 ("ParseDbAry_Opt: the twelve non-PRINT survivors SEARCHED rather than argued about -- six fall to a short record"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
