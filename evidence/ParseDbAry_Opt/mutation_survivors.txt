@@ -85,6 +85,78 @@ would kill it**, so the next dispatch does not re-derive them.
     chosen: 0 of the 12 survivors OUTSIDE the region moved a record. The replay
     enters the translation only through print_default_warning.
 
+A SEARCH WAS RUN OVER THE TWELVE NON-PRINT SURVIVORS, AND IT REPLACES SIX OF
+THE ARGUMENTS BELOW WITH A RECORD. `run_survivor_record_search.sh` builds the
+shipped translation and each mutant from copies and runs both over **131,293
+records** -- every string of length 1..3 over a 40-character alphabet at the
+HEAD of a 2048-byte blank-padded record and again at its TAIL, plus 13 crafted
+full-width records -- comparing (IOSTAT, three element bit patterns).
+
+    6 of 12 are DISTINGUISHED, and every one of the six by a SHORT HEAD RECORD
+    that any `_NUMERIC_LEADS` entry would put in the corpus:
+
+      1beac345   `nan`     34 record(s)
+      4d1ccfed   `0;`     946
+      7d8e5de9   `.+`     170
+      91f2ce24   `0-0`    220
+      e2d47adf   `0+0`    221
+      a88935b1   `1*`     600
+
+    6 of 12 are NOT distinguished by any record in that space:
+      1cc25f2d, 1df32d1d, 42edf275, 5b1c8101, a0007207, b2bbedf3
+
+THE SEARCH IS NOT A DECLARATION AND NOTHING IS FOLDED INTO THE SCORE. It compares
+the translation against ITSELF-MUTATED, so it says nothing about whether either
+agrees with the Fortran reference -- that is the differential harness's job. What
+it settles is which of the three cases each survivor is in, which is exactly the
+question a mutation score cannot answer: `differs` ends the argument and names
+the lever; `none` is evidence toward equivalence BOUNDED BY THE SPACE, printed
+rather than implied.
+
+AND IT CORRECTED ONE CLAIM IN THIS FILE. `1beac345` is described below as an
+INSTRUMENT gap that "no record kills" and that "needs MemorySanitizer". **That is
+wrong, and the sentence is LEFT STANDING where it is so the correction is
+readable rather than invisible.** The record `nan` at the head of a record distinguishes
+it outright -- IOSTAT -1 with NaN in element 0 against 5010 with nothing stored.
+What is true is subtler and is the reason the sweep did not kill it: writing the
+NUL one byte late leaves `buf[n]` holding uninitialised stack, so whether the
+difference MANIFESTS depends on what that byte happens to be in a given build.
+The corpus **does** contain `nAn` at a value position after this dispatch and the
+mutant still survived, so in the sweep's build that byte was 0. A mutant whose
+observable behaviour depends on uninitialised memory is a fourth thing again --
+neither equivalent, nor unreached, nor reliably killable -- and MemorySanitizer
+is the instrument that would report it every time rather than by luck.
+
+WHAT THE SIX `none` ROWS MEAN, one at a time:
+
+  42edf275   the strongest of them. 131,293 records, including every 1..3
+             character token at both ends, and nothing distinguishes it. That is
+             the argument below turned into a measurement, and it is still NOT a
+             declaration: the space contains no `nan(` payload and no token
+             longer than three characters at the head.
+  b2bbedf3   consistent with the domain argument below -- the search drives
+             `list_read_reals` and this mutant is in the unit's body, which the
+             search does not enter. `none` here carries no weight and is
+             reported rather than suppressed.
+  a0007207   consistent with what it is: `p <= len` reading `rec[2048]` is an
+             out-of-bounds READ with no value difference unless the byte past
+             the record happens to be `+` or `-`. The crafted `tail:expE` record
+             is in the space and does not distinguish it. It needs that record
+             UNDER `--sanitize`, which is a corpus lever AND an instrument
+             setting together.
+  1cc25f2d   `strtol` base 10 -> 11 differs only on a MULTI-DIGIT repeat count:
+             `12*` is twelve repeats in base 10 and thirteen in base 11, while
+             the crafted `2*1.5;3.0` is two in both. The lever is a two-digit
+             repeat, and the search found it because the space's tokens are at
+             most three characters.
+  1df32d1d   `n < 62` -> `n <= 62`, and the crafted 62-character `nan(` payload
+             does NOT distinguish it: at n = 62 the next character is a blank,
+             which is a separator, so the loop stops on the same condition
+             either way. It needs a payload of 62 or more characters followed by
+             a NON-separator, and whether any such record makes the two
+             `strtod` calls disagree is an open question rather than a lever.
+  5b1c8101   the same bound from the other side, and the same answer.
+
   `match_word`'s FIRST INDEX (1): 42edf275, `k = 0` -> `k = 1`, which skips
   comparing the word's first character.
 
@@ -176,6 +248,16 @@ would kill it**, so the next dispatch does not re-derive them.
 WHAT WOULD MOVE THE NUMBER, in the order a dispatch should take it. Each line
 names the exact input, so none of this has to be re-derived:
 
+  0. SIX `_NUMERIC_LEADS` ENTRIES, WORTH SIX MUTANTS, AND THE RECORDS ARE
+     MEASURED RATHER THAN GUESSED: `nan`, `0;`, `.+`, `0-0`, `0+0`, `1*`. Every
+     one is a one-token lead in the shared alphabet, every one is a record the
+     search proved distinguishes its mutant from the shipped translation, and
+     together they are 0.8533 -> 0.8933. This is now the CHEAPEST item on the
+     list and it did not exist before the search was run. (`1beac345`'s `nan`
+     lead is already in the corpus and did not kill it -- see the correction
+     above; it needs MemorySanitizer to be killed reliably rather than by which
+     byte the stack happened to hold.)
+
   1. A SWEEP ORACLE THAT READS STDOUT, for the 10 PRINT mutants -- 0.8533 ->
      0.9333 on its own, and it is the only item on this list worth more than
      three mutants. The comparison already exists and is green
@@ -186,11 +268,19 @@ names the exact input, so none of this has to be re-derived:
   2. THREE `_NUMERIC_LEADS` AND ONE `_RECORD_TAILS` FORM, all in the loop repo
      beside the ones this dispatch added:
 
-        `.e`                     a point with a malformed exponent   7d8e5de9
-        `2*1.5;3.0`              repeat count, `;`, base-10 digits   4d1ccfed,
-                                                                     a88935b1,
-                                                                     1cc25f2d
-        `nan(` + 58 chars + `)`  a 62-character payload              1df32d1d,
+        `.+`                     a malformed letterless exponent     7d8e5de9
+                                 (MEASURED; `.e` was the guess and it
+                                 is the same shape one character over)
+        `0;`                     a `;` terminator                    4d1ccfed
+        `1*`                     a repeat count                      a88935b1
+        `12*1.5`                 a TWO-DIGIT repeat count, which is
+                                 what separates base 10 from base 11 1cc25f2d
+        `0-0` and `0+0`          a sign inside the exponent          91f2ce24,
+                                                                     e2d47adf
+        a 62+ character payload
+        before a NON-separator   OPEN -- the 62-character form was
+                                 crafted and does NOT distinguish
+                                 them                                1df32d1d,
                                                                      5b1c8101
         tail form `"0"*(N-2) + "1E"`   a record ending inside an
                                        exponent                      a0007207,
@@ -203,8 +293,10 @@ names the exact input, so none of this has to be re-derived:
      loop-repo edits -- of all eight gate runs, which is what makes them a
      dispatch's worth of work rather than an afternoon's.
 
-  3. MemorySanitizer for 1beac345. No corpus reaches it and AddressSanitizer
-     cannot see it; this is the only survivor on the list that is neither.
+  3. MemorySanitizer for 1beac345. A record reaches it and the corpus already
+     HAS one; what decides whether the difference shows is an uninitialised
+     stack byte, so AddressSanitizer is silent and the value oracle is a coin
+     toss. MSan reports it every time.
 
   4. 42edf275 is either an equivalence somebody is willing to defend or a record
      nobody has found. The argument is above; refuting it needs one record.

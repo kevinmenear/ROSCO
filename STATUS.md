@@ -124,14 +124,35 @@ uninitialised `char buf[64]` held. Both indices are INSIDE the array, so
 AddressSanitizer is silent by construction; catching it needs MemorySanitizer,
 and `--sanitize` builds with `address,undefined`.
 
+**THE TWELVE NON-PRINT SURVIVORS WERE SEARCHED, NOT ARGUED ABOUT.**
+`run_survivor_record_search.sh` runs the shipped translation and each mutant,
+built from copies, over **131,293 records** — every 1..3 character token over a
+40-character alphabet at the HEAD of a 2048-byte record and again at its TAIL,
+plus 13 crafted full-width records — comparing IOSTAT and three element bit
+patterns. **Six of twelve are distinguished, every one by a short head record**:
+`nan`, `0;`, `.+`, `0-0`, `0+0`, `1*`. Nothing is folded into the score; what it
+settles is which of the three cases each survivor is in, which is the one
+question a mutation score cannot answer.
+
+It also **corrected this campaign's own write-up**: `1beac345` was recorded as an
+instrument gap that "no record kills". The record `nan` distinguishes it. What is
+true is that writing the NUL one byte late leaves `buf[n]` holding uninitialised
+stack, so whether the difference manifests depends on that byte — the corpus DOES
+carry `nAn` and the mutant still survived, so in the sweep's build it was 0. A
+mutant whose behaviour depends on uninitialised memory is a fourth thing again,
+and MSan is what reports it every time rather than by luck.
+
 **WHAT WOULD MOVE 0.8533, so the next dispatch need not re-derive it.** Each of
 the 22 survivors names the exact record that would kill it in
-`evidence/ParseDbAry_Opt/mutation_survivors.txt`. In order of size: (1) a sweep
-oracle that reads stdout, worth 10 mutants — or the cheaper `killed_by`
-declaration, which needs no emitter change; (2) four generator forms worth 9 —
-a `.e` lead, a `2*1.5;3.0` lead, a `nan(` payload of 62 characters, and a tail
-form ending `1E`; (3) MemorySanitizer, worth 1; (4) `42edf275`, which is either
-an equivalence somebody will defend or a record nobody has found.
+`evidence/ParseDbAry_Opt/mutation_survivors.txt`. In order of cost: (0) **six
+one-token `_NUMERIC_LEADS` entries — `nan`, `0;`, `.+`, `0-0`, `0+0`, `1*` —
+worth six mutants, 0.8533 → 0.8933, and every record MEASURED rather than
+guessed**; (1) a sweep oracle that reads stdout, worth 10 — or the cheaper
+`killed_by` declaration, which needs no emitter change; (2) a `12*1.5` two-digit
+repeat and a tail form ending `1E` under `--sanitize`, worth 2; (3)
+MemorySanitizer, worth 1; (4) `42edf275`, which 131,293 records failed to
+distinguish and which is now either an equivalence somebody will defend or a
+record nobody has found.
 
 **PREVIOUSLY, AT THE THIRD DISPATCH (0.4162 → 0.7609).** The relaunch's premise
 was false: this unit was cleared to `pending` because loop `b33a761` planted

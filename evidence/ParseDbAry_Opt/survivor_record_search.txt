@@ -1,0 +1,48 @@
+ParseDbAry_Opt -- a record that distinguishes each surviving mutant
+from the SHIPPED translation, searched rather than argued.
+
+RECORD SPACE: 131293 records. Every string of length 1..3 over
+  "0123456789+-.eEdDqQnNaAiIfFtTyYxX ,;/*()" at the HEAD of a 2048-byte
+  blank-padded record and again at its TAIL, so the token's last character
+  is the record's last byte; plus 13 crafted full-width records. Three
+  elements are read, each pre-set to the -987.654 sentinel, so an element
+  the transfer never reached is visible as itself.
+
+WHAT A ROW MEANS. `differs` names the FIRST record on which the mutant's
+(iostat, element bits) triple differs from the shipped translation's --
+that record is the corpus lever and the mutant is NOT equivalent. `none`
+means no record IN THIS SPACE distinguishes it, which is evidence toward
+equivalence bounded by the space and is not a declaration.
+
+6 of 12 non-PRINT survivors are distinguished by some record in this space.
+
+1beac345  index_offset   L 237  '[n]' -> '[n + 1]'
+    DIFFERS on 34 record(s). First:
+      HEAD|nan|-1|7FF8000000000000|C08EDD3B645A1CAC|C08EDD3B645A1CAC   vs   HEAD|nan|5010|C08EDD3B645A1CAC|C08EDD3B645A1CAC|C08EDD3B645A1CAC
+1cc25f2d  const_tweak    L 347  '10' -> '11'
+    NONE -- no record in this space distinguishes it
+1df32d1d  compare_op     L 234  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+42edf275  const_tweak    L 178  '0' -> '1'
+    NONE -- no record in this space distinguishes it
+4d1ccfed  index_offset   L 337  '[p]' -> '[p + 1]'
+    DIFFERS on 946 record(s). First:
+      HEAD|0;|5010|0000000000000000|C08EDD3B645A1CAC|C08EDD3B645A1CAC   vs   HEAD|0;|5010|C08EDD3B645A1CAC|C08EDD3B645A1CAC|C08EDD3B645A1CAC
+5b1c8101  const_tweak    L 234  '62' -> '63'
+    NONE -- no record in this space distinguishes it
+7d8e5de9  const_tweak    L 279  '0' -> '1'
+    DIFFERS on 170 record(s). First:
+      HEAD|.+|5010|C08EDD3B645A1CAC|C08EDD3B645A1CAC|C08EDD3B645A1CAC   vs   HEAD|.+|5010|0000000000000000|C08EDD3B645A1CAC|C08EDD3B645A1CAC
+91f2ce24  index_offset   L 276  '[p]' -> '[p + 1]'
+    DIFFERS on 220 record(s). First:
+      HEAD|0-0|-1|0000000000000000|C08EDD3B645A1CAC|C08EDD3B645A1CAC   vs   HEAD|0-0|5010|C08EDD3B645A1CAC|C08EDD3B645A1CAC|C08EDD3B645A1CAC
+a0007207  compare_op     L 276  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+a88935b1  index_offset   L 345  '[q]' -> '[q + 1]'
+    DIFFERS on 600 record(s). First:
+      HEAD|1*|-1|C08EDD3B645A1CAC|C08EDD3B645A1CAC|C08EDD3B645A1CAC   vs   HEAD|1*|5010|C08EDD3B645A1CAC|C08EDD3B645A1CAC|C08EDD3B645A1CAC
+b2bbedf3  drop_call      L 663  'std::max(NumWords, 0)' -> 'NumWords'
+    NONE -- no record in this space distinguishes it
+e2d47adf  index_offset   L 276  '[p]' -> '[p + 1]'
+    DIFFERS on 221 record(s). First:
+      HEAD|0+0|-1|0000000000000000|C08EDD3B645A1CAC|C08EDD3B645A1CAC   vs   HEAD|0+0|5010|C08EDD3B645A1CAC|C08EDD3B645A1CAC|C08EDD3B645A1CAC

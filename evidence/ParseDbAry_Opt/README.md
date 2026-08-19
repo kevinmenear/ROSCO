@@ -399,12 +399,38 @@ exponent and 3 in `list_read_reals`, which need a record ending inside an
 exponent and a `2*1.5;3.0`; 3 in the IEEE payload buffer, a region that did not
 execute at all until this dispatch; 1 in `match_word`; 1 in the unit's own body.
 
-**AND ONE OF THE 22 IS AN INSTRUMENT GAP, NOT A CORPUS GAP, AND IT IS NEW.**
-`1beac345` writes the NUL terminator one byte late, so `buf[n]` keeps whatever
-the uninitialised `char buf[64]` held. Both indices are INSIDE the array, so
-AddressSanitizer is silent by construction; catching it needs MemorySanitizer,
-which reports an uninitialised READ. `--sanitize` builds with
-`address,undefined`. No record kills this one.
+**AND THE TWELVE NON-PRINT SURVIVORS WERE THEN SEARCHED RATHER THAN ARGUED
+ABOUT.** `run_survivor_record_search.sh` builds the shipped translation and each
+mutant from copies and runs both over **131,293 records** — every string of
+length 1..3 over a 40-character alphabet at the HEAD of a 2048-byte blank-padded
+record and again at its TAIL, plus 13 crafted full-width records — comparing
+IOSTAT and three element bit patterns. **Six of the twelve are distinguished, and
+every one by a SHORT head record**: `nan` (1beac345), `0;` (4d1ccfed), `.+`
+(7d8e5de9), `0-0` (91f2ce24), `0+0` (e2d47adf), `1*` (a88935b1). Six are not:
+1cc25f2d, 1df32d1d, 42edf275, 5b1c8101, a0007207, b2bbedf3.
+
+Nothing is folded into the score — it compares the translation against
+itself-mutated, so it says nothing about agreement with the reference. What it
+settles is **which of the three cases each survivor is in**, which is the one
+question a mutation score cannot answer. `differs` ends the argument and names
+the lever; `none` is evidence toward equivalence *bounded by the space*, which is
+printed rather than implied. **It makes six one-token `_NUMERIC_LEADS` entries the
+cheapest remaining item on this unit's list** — 0.8533 → 0.8933 — and none of them
+had to be guessed.
+
+**AND IT CORRECTED A CLAIM THIS FILE MADE.** `1beac345` was written up as an
+instrument gap that "no record kills" and that "needs MemorySanitizer". The
+record `nan` at the head distinguishes it outright — IOSTAT −1 with NaN in
+element 0 against 5010 with nothing stored. What is true is subtler, and it is
+the reason the sweep did not kill it: writing the NUL one byte late leaves
+`buf[n]` holding uninitialised stack, so whether the difference MANIFESTS depends
+on what that byte is in a given build. The corpus **does** contain `nAn` at a
+value position after this dispatch and the mutant still survived, so in the
+sweep's build that byte was 0. A mutant whose observable behaviour depends on
+uninitialised memory is a fourth thing again — neither equivalent, nor unreached,
+nor reliably killable — and MemorySanitizer is the instrument that reports it
+every time rather than by luck. The wrong sentence is left standing in
+`mutation_survivors.txt` beside the correction.
 
 **THE TEN PRINT MUTANTS ARE A THIRD CASE AND THEY ARE ESCALATED, NOT DECLARED.**
 They are not equivalent — §5b's replay measures every one of them moving between
@@ -653,6 +679,11 @@ print_conformance.f90                    44 records through the reference's own
 print_conformance.cpp                    the replay, textually including the
                                          SHIPPED translation
 run_print_conformance.sh                 both sides, the mutants, and the control
+survivor_record_search.cpp               131,293 records through the shipped parser
+                                         and through each surviving mutant
+run_survivor_record_search.sh            build both from copies and diff
+survivor_record_search.txt               6 of 12 non-PRINT survivors distinguished,
+                                         each by a short head record
 print_replay.txt                         44 / 0, 10 of 10 PRINT survivors killed,
                                          control 0 of 12
 vit_translate.stdout.txt                 the scaffold prompt, as generated
