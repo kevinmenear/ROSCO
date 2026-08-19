@@ -3324,7 +3324,7 @@
    "source_file": "rosco/controller/src/ROSCO_Helpers.f90",
    "translation": "translations/ROSCO_Helpers/parseinary_opt.cpp",
    "harness_required": true,
-   "disposition": "deferred",
+   "disposition": null,
    "evidence": [
     "evidence/ParseInAry_Opt/README.md",
     "evidence/ParseInAry_Opt/done_check.txt",
