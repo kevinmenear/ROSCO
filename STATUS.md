@@ -28,11 +28,19 @@ survivors               87                  26
 score               0.4423              0.7815
 ```
 
-**KILLS FIRST, DECLARATIONS AFTER — AND THE SPLIT INSIDE THE KILLS IS NOT
-PRICED HERE.** 69 → 93 is the corpus and the sanitiser together; 93/156 → 93/119
-is the 37 declarations. The sibling separated corpus from sanitiser with a
-value-oracle sweep re-taken on the same corpus; **that control was not re-taken
-on this unit**, and saying so is cheaper than estimating it.
+**KILLS FIRST, DECLARATIONS AFTER, AND EVERY STEP IS A SUBTRACTION.** The
+value-oracle control was re-taken on the same 17,520-case corpus, so the three
+levers separate instead of being asserted:
+
+```
+15,504 cases, value oracle        69 killed      the second dispatch
+17,520 cases, value oracle        82 killed      the CORPUS is worth 13
+17,520 cases, sanitised           93 killed      --sanitize is worth 11
+12 equivalent + 25 unreachable    93/119         the DECLARATIONS
+```
+
+**Strict superset, nothing regressed**, and all eleven sanitiser-only kills are
+record-bound reads — the class the option exists for. Both sweeps are on disk.
 
 **EVERY ONE OF THE 26 SURVIVORS IS ANSWERED, AND ELEVEN OF THEM ARE DIFFERENCES
 AT AN ADDRESS.** `survivor_record_search.txt` runs the shipped translation and
@@ -84,8 +92,9 @@ undefined-`Ary` region and which must be priced before the generator is touched.
 ordinary lines with a key after them, no new region. (2) A **PRINT-record
 conformance replay**, the sibling's `print_conformance` one region over — four
 survivors, and it needs the `killed_by` declaration the sibling already proposed
-rather than an equivalence. (3) The value-oracle control, which buys no score at
-all and prices what the last two levers bought.
+rather than an equivalence. (3) Nothing else on
+this unit's list is worth more than two mutants. The value-oracle control that
+would have been (3) is done: 82 against 93.
 
 | layer | result | red-tested |
 |---|---|---|

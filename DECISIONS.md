@@ -12785,11 +12785,13 @@ residual that is *explained* names a guess. The probe is committed
 
 ### WHAT WAS NOT DONE, AND WHY IT IS NAMED RATHER THAN ESTIMATED
 
-* **The value-oracle control was not re-taken on this corpus.** The sibling runs
-  the sweep twice — once with the value oracle, once sanitised — so `69 → 93`
-  splits into a corpus share and a sanitiser share. It costs about fifteen
-  minutes of sweep and buys no score. Not taken here; the split is therefore
-  unpriced on this unit and is written down as unpriced.
+* **The value-oracle control WAS re-taken**, after this section first recorded
+  it as not. Fifteen minutes of sweep, no score, and it turns `69 → 93` into two
+  measurements: the corpus is worth **13** (69 → 82 with the value oracle on
+  both corpora) and `--sanitize` is worth **11** (82 → 93 on the same corpus).
+  Strict superset, nothing regressed, and all eleven sanitiser-only kills are
+  record-bound reads. The sibling's rule holds on this unit too: **keep both
+  sweeps on disk**, so the comparison is an artifact rather than a claim.
 * **No PRINT-record conformance replay.** Four survivors sit in
   `print_default_warning`, whose stream no layer compares and which is dead in
   all 27 gate scenarios. The sibling built the instrument and measured its ten

@@ -27,7 +27,7 @@ named.
 | differential harness (`harness/ParseInAry_Opt.json`) | **17,520 checked, 0 failed**, 0 inadmissible, against the CLEAN Fortran (was 15,504, was 13,674). `Ary` **not compared on 1,483** cases — 8.5%, against 8.3% before: flat across the corpus change, because the new cases are R14 records and they land on arms where `Ary` has an oracle (§9) | **four stubs, three predicted from the re-taken partition BEFORE the runs**: no-op **17,260** ✓; the `.NOT. AllowDefault_` arm **2,209** ✓; the READ **646** against a predicted 634 — and the twelve are MEASURED, not explained (`read_residual.txt`); the `IF (AryLen < 1)` arm **19**, unpredicted and unchanged |
 | mutation (`mutation/ParseInAry_Opt.json`) | **157 mutants, 1 nocompile, 156 behavioural: 93 KILLED, 12 EQUIVALENT, 25 UNREACHABLE, 26 SURVIVED, 93/119 = 0.7815** (was 69/156 = 0.4423). SANITISED, green baseline, clean tree; `declared_but_killed` and `unreachable_but_killed` both EMPTY | — the score IS the red test (E4.6). Every one of the 26 survivors is answered by region in `mutation_survivors.txt`, and 14 of the 22 non-PRINT ones are distinguished by a named record |
 | line coverage of the translation (`line_coverage.txt`) | **193 executable lines run, 43 never** over the 17,520 cases, at `-O0`. The measurement the 25 `unreachable` declarations are DERIVED from, by `make_unreachable.py`, on its first use and against this corpus | **two controls**: the entry line's gcov count is 17,520 = the case count; and NON-survivors on never-run lines number 0 |
-| survivor record search (`survivor_record_search.txt`) | **14 of 22 non-PRINT survivors distinguished over 131,298 records — 3 by a VALUE and 11 by an ADDRESS**, under `-fsanitize=address,undefined`. Six of the eleven die on `0` followed by blanks to column 2048. Nothing folded into the score | the **negative control is built into the shape**: the search enters only through `list_read_ints`, so the four survivors on lines it never executes must return `NONE`, and all four do. Its first run reported the eleven ADDRESS kills as absences — kept as `survivor_record_search.MISLABELLED.txt` (C12) |
+| survivor record search (`survivor_record_search.txt`) | **14 of 22 non-PRINT survivors distinguished over 131,298 records — 3 by a VALUE and 11 by an ADDRESS**, under `-fsanitize=address,undefined`. Six of the eleven die on `0` followed by blanks to column 2048. Nothing folded into the score. The eleven are the SAME class the value-oracle control prices at 11 kills | the **negative control is built into the shape**: the search enters only through `list_read_ints`, so the four survivors on lines it never executes must return `NONE`, and all four do. Its first run reported the eleven ADDRESS kills as absences — kept as `survivor_record_search.MISLABELLED.txt` (C12) |
 | post-integration (`harness/ParseInAry_Opt.postintegration.json`) | 17,520 checked, **0 failed** | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **9,937 of 17,520**, PREDICTED 9,937 from the re-taken partition before the run; reverted, rebuilt, green re-taken at 0 |
 | gate, 27 scenarios (`gate/ParseInAry_Opt.json`) | 5,252,000 values / 351 channels, **0 mismatched**, and re-taken at close at the same number | **TWO, both re-taken at the new instrument revision and both reproducing to the value**: every parsed value + 1 moves **1,857,893** (35% of the gate), revert-verified at 0; the `Ary = 0` default arm moves **0**, and the artifact carries the argument for the zero (§6) |
 
@@ -683,14 +683,23 @@ mutation               69 / 156  = 0.4423   93 / 119 = 0.7815
   survivors                 87                   26
 ```
 
-**Kills first, declarations after, so the two are separable.** 69 → 93 is the
-corpus and the sanitiser together; 93/156 → 93/119 is the 37 declarations. The
-sibling separated the corpus from the sanitiser with a value-oracle control run
-on the same corpus; **that control was NOT re-taken here** and the split between
-those two is therefore unpriced on this unit. Named as a gap rather than
-estimated. What is measured is the sanitiser's floor: **11 of the 26 survivors
-are distinguished ONLY by an address**, and 4 sanitiser kills are visible in the
-`misc` part's log alone.
+**Kills first, declarations after, and each step is a subtraction rather than a
+claim.** The value-oracle control was re-taken on the SAME corpus
+(`mutation/ParseInAry_Opt.value-oracle.json`), so the three levers separate:
+
+```
+15,504 cases, value oracle        69 killed      the second dispatch
+17,520 cases, value oracle        82 killed      the CORPUS is worth 13
+17,520 cases, sanitised           93 killed      --sanitize is worth 11
+12 equivalent + 25 unreachable    93/119         the DECLARATIONS
+```
+
+**Strict superset, nothing regressed**: the value oracle killed nothing the
+sanitiser did not, and the eleven — `07c406a1`, `08ff2c98`, `356f870c`,
+`373af6ff`, `4cc504a0`, `64cfaba1`, `7aad97cf`, `b663872a`, `d99e45ef`,
+`da89c70f`, `f448c16f` — are every one a record-bound read, which is the class
+the option exists for. Both sweeps are kept side by side on disk so the
+comparison is an artifact and not a sentence.
 
 ### 9.2 The twelve cases that made a prediction miss
 
@@ -771,6 +780,8 @@ Unchanged from §8 except where the corpus closed it, plus one addition:
   sibling built a `print_conformance` replay for exactly this and measured its
   ten moving 18 to 44 records of 44; **this unit has not built one**. That is
   the cheapest remaining item on this unit's list after the record lever.
-* **The value-oracle control on this corpus.** Not re-taken, so the corpus's
-  share and the sanitiser's share of 69 → 93 are not separated here.
+* **The eight non-PRINT survivors the record search did not separate**, four of
+  which are the search's own negative control (it never executes their lines) and
+  four of which are argued in `mutation_survivors.txt` and deliberately left
+  undeclared.
 * **`AryLen` above 32**, and the three items §8 lists, all unchanged.
