@@ -106,6 +106,19 @@ IMPLICIT NONE
         END SUBROUTINE refspeedexclusion_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of ComputeVariablesSetpoints
+    INTERFACE
+        SUBROUTINE computevariablessetpoints_c(CntrPar, LocalVar, objInst, DebugVar, ErrVar) BIND(C, NAME='computevariablessetpoints_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: objInst
+            TYPE(C_PTR), VALUE :: DebugVar
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE computevariablessetpoints_c
+    END INTERFACE
+
 CONTAINS
 
     SUBROUTINE PowerControlSetpoints(CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -137,111 +150,29 @@ CONTAINS
 ! -----------------------------------------------------------------------------------
     ! Calculate setpoints for primary control actions    
     SUBROUTINE ComputeVariablesSetpoints(CntrPar, LocalVar, objInst, DebugVar, ErrVar)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : ControlParameters, LocalVariables, ObjectInstances, DebugVariables, ErrorVariables
-        USE Constants
-        ! Allocate variables
-        TYPE(ControlParameters),    INTENT(INOUT)       :: CntrPar
-        TYPE(LocalVariables),       INTENT(INOUT)       :: LocalVar
-        TYPE(ObjectInstances),      INTENT(INOUT)       :: objInst
-        TYPE(DebugVariables),       INTENT(INOUT)       :: DebugVar
-        TYPE(ErrorVariables),       INTENT(INOUT)       :: ErrVar
-
-
-        !   Change pitch reference speed
-        LocalVar%PC_RefSpd_PRC = CntrPar%PC_RefSpd * LocalVar%PRC_R_Speed
-        
-        ! Lookup table for speed setpoint (PRC_Mode 1)
-        IF (CntrPar%PRC_Mode == 1) THEN
-            LocalVar%PRC_WSE_F = LPFilter(LocalVar%WE_Vw, LocalVar%DT,CntrPar%PRC_LPF_Freq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF) 
-            LocalVar%PC_RefSpd_PRC = interp1d(CntrPar%PRC_WindSpeeds,CntrPar%PRC_GenSpeeds,LocalVar%PRC_WSE_F,ErrVar)
-        ENDIF
-
-        ! Implement setpoint smoothing
-        IF (LocalVar%SS_DelOmegaF < 0) THEN
-            LocalVar%PC_RefSpd_SS = LocalVar%PC_RefSpd_PRC - LocalVar%SS_DelOmegaF
-        ELSE
-            LocalVar%PC_RefSpd_SS = LocalVar%PC_RefSpd_PRC
-        ENDIF
-
-        ! Compute error for pitch controller
-        LocalVar%PC_RefSpd = LocalVar%PC_RefSpd_SS        
-        LocalVar%PC_SpdErr = LocalVar%PC_RefSpd - LocalVar%GenSpeedF            ! Speed error
-        LocalVar%PC_PwrErr = CntrPar%VS_RtPwr - LocalVar%VS_GenPwr             ! Power error, unused
-
-        ! ----- Torque controller reference errors -----
-        ! Define VS reference generator speed [rad/s]
-        IF (CntrPar%VS_ControlMode == VS_Mode_WSE_TSR) THEN
-            ! Use unfiltered wind speed estimate, then filter below
-            LocalVar%VS_RefSpd_TSR = (CntrPar%VS_TSRopt * LocalVar%WE_Vw / CntrPar%WE_BladeRadius) * CntrPar%WE_GearboxRatio
-
-        ELSEIF (CntrPar%VS_ControlMode == VS_Mode_Power_TSR) THEN ! Genspeed reference that doesn't depend on wind speed estimate (https://doi.org/10.2172/1259805)
-            LocalVar%VS_RefSpd_TSR = (MAX(LocalVar%VS_GenPwr, 0.0)/(CntrPar%VS_GenEff/100.0)/CntrPar%VS_Rgn2K)**(1./3.)
-
-        ELSEIF (CntrPar%VS_ControlMode == VS_Mode_Torque_TSR) THEN ! Non-WSE TSR tracking based on square-root of torque
-            LocalVar%VS_RefSpd_TSR = (MAX(LocalVar%GenTq, 0.0)/CntrPar%VS_Rgn2K)**(1./2.)
-
-        ELSE ! Generate constant speed reference if K*Omega^2 in use or torque control disabled
-            LocalVar%VS_RefSpd_TSR = CntrPar%VS_RefSpd
-        ENDIF 
-
-        ! Region 3 FBP reference logic, triggers if Region-2 reference speed is higher than rated
-        ! DBS: Alternatively, each of these alternative reference modes could identify Region 3 using their reference-deriving signal, e.g. if WE_Vw > rated speed (accessible in ROSCO?) or GenTq > VS_RtTq
-        IF (LocalVar%VS_RefSpd_TSR > CntrPar%VS_RefSpd) THEN
-            IF (CntrPar%VS_FBP == VS_FBP_WSE_Ref) THEN ! Use WSE to look up speed reference in Region 3
-                LocalVar%VS_RefSpd_TSR = interp1d(CntrPar%VS_FBP_U, CntrPar%VS_FBP_Omega, LocalVar%WE_Vw, ErrVar)
-
-            ELSEIF (CntrPar%VS_FBP == VS_FBP_Torque_Ref) THEN ! Use torque to look up speed reference in Region 3
-                LocalVar%VS_RefSpd_TSR = interp1d(CntrPar%VS_FBP_Tau, CntrPar%VS_FBP_Omega, LocalVar%GenTq, ErrVar)
-
-            ENDIF
-        ENDIF
-
-        ! Change VS Ref speed based on R_Speed
-        LocalVar%VS_RefSpd = LocalVar%VS_RefSpd_TSR * LocalVar%PRC_R_Speed
-
-
-        ! Filter reference signal
-        LocalVar%VS_RefSpd = LPFilter(LocalVar%VS_RefSpd_TSR, LocalVar%DT, CntrPar%F_VSRefSpdCornerFreq, LocalVar%FP, LocalVar%iStatus, LocalVar%restart, objInst%instLPF)
-
-
-        ! Exclude reference speeds specified by user
-        IF (CntrPar%TRA_Mode > 0) THEN
-            CALL RefSpeedExclusion(LocalVar, CntrPar, objInst, DebugVar)
-        END IF
-
-        ! Saturate torque reference speed below rated speed if using pitch control in Region 3
-        IF (CntrPar%VS_FBP == VS_FBP_Variable_Pitch) THEN
-            LocalVar%VS_RefSpd = saturate(LocalVar%VS_RefSpd, CntrPar%VS_MinOMSpd, CntrPar%VS_RefSpd * LocalVar%PRC_R_Speed)
-        END IF
-
-        ! Simple lookup table for generator speed (PRC_Mode 1)
-        IF (CntrPar%PRC_Mode == 1) THEN
-            LocalVar%VS_RefSpd = interp1d(CntrPar%PRC_WindSpeeds,CntrPar%PRC_GenSpeeds,LocalVar%PRC_WSE_F,ErrVar)
-        ENDIF
-
-        ! Implement setpoint smoothing
-        IF (LocalVar%SS_DelOmegaF > 0) THEN
-            LocalVar%VS_RefSpd = LocalVar%VS_RefSpd - LocalVar%SS_DelOmegaF
-        ENDIF
-
-        ! Force minimum rotor speed
-        LocalVar%VS_RefSpd = max(LocalVar%VS_RefSpd, CntrPar%VS_MinOmSpd)
-
-        ! Compute speed error from reference
-        LocalVar%VS_SpdErr = LocalVar%VS_RefSpd - LocalVar%GenSpeedF
-
-        ! Define transition region setpoint errors
-        LocalVar%VS_SpdErrAr = LocalVar%VS_RefSpd - LocalVar%GenSpeedF               ! Current speed error - Region 2.5 PI-control (Above Rated)
-        LocalVar%VS_SpdErrBr = CntrPar%VS_MinOMSpd - LocalVar%GenSpeedF     ! Current speed error - Region 1.5 PI-control (Below Rated)
-        
-        ! Region 3 minimum pitch angle for state machine
-        LocalVar%VS_Rgn3Pitch = LocalVar%PC_MinPit + CntrPar%PC_Switch
-
-        ! Debug Vars
-        DebugVar%VS_RefSpd = LocalVar%VS_RefSpd
-        DebugVar%PC_RefSpd = LocalVar%PC_RefSpd
-
-
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
+        IMPLICIT NONE
+        TYPE(CONTROLPARAMETERS), INTENT(INOUT), TARGET :: CntrPar
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(OBJECTINSTANCES), INTENT(INOUT), TARGET :: objInst
+        TYPE(DEBUGVARIABLES), INTENT(INOUT), TARGET :: DebugVar
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        CALL computevariablessetpoints_c(C_LOC(CntrPar_view), C_LOC(LocalVar_view), C_LOC(objInst), C_LOC(DebugVar), C_LOC(ErrVar_view))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_controlparameters(CntrPar_view, CntrPar)
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
     END SUBROUTINE ComputeVariablesSetpoints
 !-------------------------------------------------------------------------------------------------------------------------------
     SUBROUTINE StateMachine(CntrPar, LocalVar)

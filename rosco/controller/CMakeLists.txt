@@ -146,6 +146,7 @@ set(SOURCES
     src/refspeedexclusion.cpp
     src/variablespeedcontrol.cpp
     src/writerestartfile.cpp
+    src/computevariablessetpoints.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

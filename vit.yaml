@@ -278,6 +278,10 @@ translations:
     status: integrated
     cpp_file: translations/ROSCO_IO/writerestartfile.cpp
     verification: simulation
+  ComputeVariablesSetpoints:
+    status: integrated
+    cpp_file: translations/ControllerBlocks/computevariablessetpoints.cpp
+    verification: simulation
 types:
   ControlParameters:
     strategy: view
