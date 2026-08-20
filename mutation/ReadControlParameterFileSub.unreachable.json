@@ -1,0 +1,142 @@
+{
+ "053fd9c4": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "assign_errmsg and errmsg_trim are NOT CALLED by any of the 63 cases: census sites 5, 6, 7 and 8 all report 0 evaluations. The unit has exactly two callers of them -- the `Cannot open file <echo>` arm (site 13: 1 evaluation, 0 true) and the closing `RoutineName//':'//TRIM(ErrMsg)` block, which is reached only when aviFAIL is negative at the END and every path that sets it negative hits one of the unit's own early RETURNs first (the plan's RT6, independently confirmed by the probe red test's 36-of-37 count). Parse errors set ErrMsg inside the CALLEES, not here."
+ },
+ "0d556ac9": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "assign_errmsg and errmsg_trim are NOT CALLED by any of the 63 cases: census sites 5, 6, 7 and 8 all report 0 evaluations. The unit has exactly two callers of them -- the `Cannot open file <echo>` arm (site 13: 1 evaluation, 0 true) and the closing `RoutineName//':'//TRIM(ErrMsg)` block, which is reached only when aviFAIL is negative at the END and every path that sets it negative hits one of the unit's own early RETURNs first (the plan's RT6, independently confirmed by the probe red test's 36-of-37 count). Parse errors set ErrMsg inside the CALLEES, not here."
+ },
+ "0f63c6b3": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "assign_errmsg and errmsg_trim are NOT CALLED by any of the 63 cases: census sites 5, 6, 7 and 8 all report 0 evaluations. The unit has exactly two callers of them -- the `Cannot open file <echo>` arm (site 13: 1 evaluation, 0 true) and the closing `RoutineName//':'//TRIM(ErrMsg)` block, which is reached only when aviFAIL is negative at the END and every path that sets it negative hits one of the unit's own early RETURNs first (the plan's RT6, independently confirmed by the probe red test's 36-of-37 count). Parse errors set ErrMsg inside the CALLEES, not here."
+ },
+ "26c265e9": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "fassign's `n > 0` and `n > 1` differ only for a source of exactly one character. Site 16 counts those: 0 of 15,594 calls."
+ },
+ "2ee34a73": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "assign_errmsg and errmsg_trim are NOT CALLED by any of the 63 cases: census sites 5, 6, 7 and 8 all report 0 evaluations. The unit has exactly two callers of them -- the `Cannot open file <echo>` arm (site 13: 1 evaluation, 0 true) and the closing `RoutineName//':'//TRIM(ErrMsg)` block, which is reached only when aviFAIL is negative at the END and every path that sets it negative hits one of the unit's own early RETURNs first (the plan's RT6, independently confirmed by the probe red test's 36-of-37 count). Parse errors set ErrMsg inside the CALLEES, not here."
+ },
+ "38f4adf2": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "assign_errmsg and errmsg_trim are NOT CALLED by any of the 63 cases: census sites 5, 6, 7 and 8 all report 0 evaluations. The unit has exactly two callers of them -- the `Cannot open file <echo>` arm (site 13: 1 evaluation, 0 true) and the closing `RoutineName//':'//TRIM(ErrMsg)` block, which is reached only when aviFAIL is negative at the END and every path that sets it negative hits one of the unit's own early RETURNs first (the plan's RT6, independently confirmed by the probe red test's 36-of-37 count). Parse errors set ErrMsg inside the CALLEES, not here."
+ },
+ "4555590d": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "The `if (base != nullptr)` arm of establish() -- the one that fills a CFI descriptor for an ALREADY-ALLOCATED array field -- is evaluated 3,183 times and is true 0 times (census site 9). The probe empties CntrPar between cases because the reference requires every ALLOCATABLE unallocated on entry (ParseAry reports `array was already allocated` otherwise), so no case can arrive with one allocated. All nine mutants are inside that arm."
+ },
+ "49a0fabd": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "The `if (base != nullptr)` arm of establish() -- the one that fills a CFI descriptor for an ALREADY-ALLOCATED array field -- is evaluated 3,183 times and is true 0 times (census site 9). The probe empties CntrPar between cases because the reference requires every ALLOCATABLE unallocated on entry (ParseAry reports `array was already allocated` otherwise), so no case can arrive with one allocated. All nine mutants are inside that arm."
+ },
+ "4b9987ce": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "assign_errmsg and errmsg_trim are NOT CALLED by any of the 63 cases: census sites 5, 6, 7 and 8 all report 0 evaluations. The unit has exactly two callers of them -- the `Cannot open file <echo>` arm (site 13: 1 evaluation, 0 true) and the closing `RoutineName//':'//TRIM(ErrMsg)` block, which is reached only when aviFAIL is negative at the END and every path that sets it negative hits one of the unit's own early RETURNs first (the plan's RT6, independently confirmed by the probe red test's 36-of-37 count). Parse errors set ErrMsg inside the CALLEES, not here."
+ },
+ "695d8151": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "The `if (base != nullptr)` arm of establish() -- the one that fills a CFI descriptor for an ALREADY-ALLOCATED array field -- is evaluated 3,183 times and is true 0 times (census site 9). The probe empties CntrPar between cases because the reference requires every ALLOCATABLE unallocated on entry (ParseAry reports `array was already allocated` otherwise), so no case can arrive with one allocated. All nine mutants are inside that arm."
+ },
+ "731a6a07": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "EchoFilename_LEN 128 -> 129 changes where <RootName>.RO.echo truncates. The longest input path is 67 characters, so the echo name is at most 75 (corpus widths block)."
+ },
+ "764bfb17": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "The `if (base != nullptr)` arm of establish() -- the one that fills a CFI descriptor for an ALREADY-ALLOCATED array field -- is evaluated 3,183 times and is true 0 times (census site 9). The probe empties CntrPar between cases because the reference requires every ALLOCATABLE unallocated on entry (ParseAry reports `array was already allocated` otherwise), so no case can arrive with one allocated. All nine mutants are inside that arm."
+ },
+ "8005d02f": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "The `if (base != nullptr)` arm of establish() -- the one that fills a CFI descriptor for an ALREADY-ALLOCATED array field -- is evaluated 3,183 times and is true 0 times (census site 9). The probe empties CntrPar between cases because the reference requires every ALLOCATABLE unallocated on entry (ParseAry reports `array was already allocated` otherwise), so no case can arrive with one allocated. All nine mutants are inside that arm."
+ },
+ "805abaed": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "The `if (base != nullptr)` arm of establish() -- the one that fills a CFI descriptor for an ALREADY-ALLOCATED array field -- is evaluated 3,183 times and is true 0 times (census site 9). The probe empties CntrPar between cases because the reference requires every ALLOCATABLE unallocated on entry (ParseAry reports `array was already allocated` otherwise), so no case can arrive with one allocated. All nine mutants are inside that arm."
+ },
+ "86dc7559": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "assign_errmsg and errmsg_trim are NOT CALLED by any of the 63 cases: census sites 5, 6, 7 and 8 all report 0 evaluations. The unit has exactly two callers of them -- the `Cannot open file <echo>` arm (site 13: 1 evaluation, 0 true) and the closing `RoutineName//':'//TRIM(ErrMsg)` block, which is reached only when aviFAIL is negative at the END and every path that sets it negative hits one of the unit's own early RETURNs first (the plan's RT6, independently confirmed by the probe red test's 36-of-37 count). Parse errors set ErrMsg inside the CALLEES, not here."
+ },
+ "8a8c4e4d": {
+  "evidence": "evidence/ReadControlParameterFileSub/corpus_facts.txt",
+  "reason": "`(F_GenSpdNotch_N == 0)` is evaluated only inside `IF (F_GenSpdNotch_N > 0)`, so it is FALSE wherever it runs and the mutant is TRUE -- allowed instead of required. It decides only for a file with N > 0 and no F_GenSpdNotch_Ind line; corpus_facts lists all 21 files with N > 0 and every one carries the line."
+ },
+ "8c902400": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "assign_errmsg and errmsg_trim are NOT CALLED by any of the 63 cases: census sites 5, 6, 7 and 8 all report 0 evaluations. The unit has exactly two callers of them -- the `Cannot open file <echo>` arm (site 13: 1 evaluation, 0 true) and the closing `RoutineName//':'//TRIM(ErrMsg)` block, which is reached only when aviFAIL is negative at the END and every path that sets it negative hits one of the unit's own early RETURNs first (the plan's RT6, independently confirmed by the probe red test's 36-of-37 count). Parse errors set ErrMsg inside the CALLEES, not here."
+ },
+ "8d2cf1af": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "PriPath_LEN 1024 -> 1025 changes where GetPath's result truncates. The longest input path the probe passes is 67 characters (corpus widths block)."
+ },
+ "90f86b06": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "OL_String_LEN 1024 -> 1025 changes where the open-loop channel string truncates. The longest OL_String the corpus produces is 57 characters -- the `ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3 GenTq YawRate Cable1 StC1` line the probe prints, 98 characters including its 41-character prefix."
+ },
+ "92bdcceb": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "ftrim's `n > 0` guard decides only for an ALL-BLANK argument, and site 15 counts ftrim calls that returned an empty view: 0 of 163. `n >= 0` would then read s[-1] and `n > 1` would return one blank instead of none; neither can happen on an input that never trims to empty."
+ },
+ "95fe8ae1": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "MaxLineLength 2048 -> 2049 changes the width FileLines truncates a record to. The corpus's longest record is 875 bytes over 15,609 records (corpus widths block), so no record reaches either width and the two programs see the same FileLines."
+ },
+ "977ffe3c": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "ftrim's `n > 0` guard decides only for an ALL-BLANK argument, and site 15 counts ftrim calls that returned an empty view: 0 of 163. `n >= 0` would then read s[-1] and `n > 1` would return one blank instead of none; neither can happen on an input that never trims to empty."
+ },
+ "9a3771b3": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "assign_errmsg and errmsg_trim are NOT CALLED by any of the 63 cases: census sites 5, 6, 7 and 8 all report 0 evaluations. The unit has exactly two callers of them -- the `Cannot open file <echo>` arm (site 13: 1 evaluation, 0 true) and the closing `RoutineName//':'//TRIM(ErrMsg)` block, which is reached only when aviFAIL is negative at the END and every path that sets it negative hits one of the unit's own early RETURNs first (the plan's RT6, independently confirmed by the probe red test's 36-of-37 count). Parse errors set ErrMsg inside the CALLEES, not here."
+ },
+ "a516ae11": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "assign_errmsg and errmsg_trim are NOT CALLED by any of the 63 cases: census sites 5, 6, 7 and 8 all report 0 evaluations. The unit has exactly two callers of them -- the `Cannot open file <echo>` arm (site 13: 1 evaluation, 0 true) and the closing `RoutineName//':'//TRIM(ErrMsg)` block, which is reached only when aviFAIL is negative at the END and every path that sets it negative hits one of the unit's own early RETURNs first (the plan's RT6, independently confirmed by the probe red test's 36-of-37 count). Parse errors set ErrMsg inside the CALLEES, not here."
+ },
+ "b5f3c0b1": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "The `if (base != nullptr)` arm of establish() -- the one that fills a CFI descriptor for an ALREADY-ALLOCATED array field -- is evaluated 3,183 times and is true 0 times (census site 9). The probe empties CntrPar between cases because the reference requires every ALLOCATABLE unallocated on entry (ParseAry reports `array was already allocated` otherwise), so no case can arrive with one allocated. All nine mutants are inside that arm."
+ },
+ "bac58b04": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "assign_errmsg and errmsg_trim are NOT CALLED by any of the 63 cases: census sites 5, 6, 7 and 8 all report 0 evaluations. The unit has exactly two callers of them -- the `Cannot open file <echo>` arm (site 13: 1 evaluation, 0 true) and the closing `RoutineName//':'//TRIM(ErrMsg)` block, which is reached only when aviFAIL is negative at the END and every path that sets it negative hits one of the unit's own early RETURNs first (the plan's RT6, independently confirmed by the probe red test's 36-of-37 count). Parse errors set ErrMsg inside the CALLEES, not here."
+ },
+ "bb4c75b6": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "assign_errmsg and errmsg_trim are NOT CALLED by any of the 63 cases: census sites 5, 6, 7 and 8 all report 0 evaluations. The unit has exactly two callers of them -- the `Cannot open file <echo>` arm (site 13: 1 evaluation, 0 true) and the closing `RoutineName//':'//TRIM(ErrMsg)` block, which is reached only when aviFAIL is negative at the END and every path that sets it negative hits one of the unit's own early RETURNs first (the plan's RT6, independently confirmed by the probe red test's 36-of-37 count). Parse errors set ErrMsg inside the CALLEES, not here."
+ },
+ "bf876a89": {
+  "evidence": "evidence/ReadControlParameterFileSub/corpus_facts.txt",
+  "reason": "The literal is ParseInput's has_AllowDefault at the Echo call. Absent AllowDefault means ALLOWED (translations/ROSCO_Helpers/parseinput_int_opt.cpp:455), so passing an explicit .FALSE. makes Echo REQUIRED -- which decides only for a file with no Echo line, and corpus_facts counts 0 of 63."
+ },
+ "c15d4328": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "The `if (base != nullptr)` arm of establish() -- the one that fills a CFI descriptor for an ALREADY-ALLOCATED array field -- is evaluated 3,183 times and is true 0 times (census site 9). The probe empties CntrPar between cases because the reference requires every ALLOCATABLE unallocated on entry (ParseAry reports `array was already allocated` otherwise), so no case can arrive with one allocated. All nine mutants are inside that arm."
+ },
+ "cad91b36": {
+  "evidence": "evidence/ReadControlParameterFileSub/corpus_facts.txt",
+  "reason": "std::_Exit(2) -> _Exit(3) is the abort the translation takes when fopen on the input file fails, matching the Fortran runtime's own message and status. The reference aborts the PROCESS on the same input, so a case that reached it would take the probe down and produce no comparison at all -- unreachable by the shape of the instrument, not by the file list. corpus_facts reports 0 corpus files that do not exist."
+ },
+ "d1ff17ab": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "The `if (base != nullptr)` arm of establish() -- the one that fills a CFI descriptor for an ALREADY-ALLOCATED array field -- is evaluated 3,183 times and is true 0 times (census site 9). The probe empties CntrPar between cases because the reference requires every ALLOCATABLE unallocated on entry (ParseAry reports `array was already allocated` otherwise), so no case can arrive with one allocated. All nine mutants are inside that arm."
+ },
+ "d3ed5ecb": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "ErrVar%aviFAIL = 1 -> 2 sits in the `the echo file could not be opened` arm. Census site 13: 1 evaluation (echo1.IN), 0 true."
+ },
+ "dbc3dfcc": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "assign_errmsg and errmsg_trim are NOT CALLED by any of the 63 cases: census sites 5, 6, 7 and 8 all report 0 evaluations. The unit has exactly two callers of them -- the `Cannot open file <echo>` arm (site 13: 1 evaluation, 0 true) and the closing `RoutineName//':'//TRIM(ErrMsg)` block, which is reached only when aviFAIL is negative at the END and every path that sets it negative hits one of the unit's own early RETURNs first (the plan's RT6, independently confirmed by the probe red test's 36-of-37 count). Parse errors set ErrMsg inside the CALLEES, not here."
+ },
+ "f7aa6c27": {
+  "evidence": "evidence/ReadControlParameterFileSub/site_census.txt",
+  "reason": "assign_errmsg and errmsg_trim are NOT CALLED by any of the 63 cases: census sites 5, 6, 7 and 8 all report 0 evaluations. The unit has exactly two callers of them -- the `Cannot open file <echo>` arm (site 13: 1 evaluation, 0 true) and the closing `RoutineName//':'//TRIM(ErrMsg)` block, which is reached only when aviFAIL is negative at the END and every path that sets it negative hits one of the unit's own early RETURNs first (the plan's RT6, independently confirmed by the probe red test's 36-of-37 count). Parse errors set ErrMsg inside the CALLEES, not here."
+ },
+ "fdfd4622": {
+  "evidence": "evidence/ReadControlParameterFileSub/corpus_facts.txt",
+  "reason": "`(VS_ControlMode < 2)` and `(VS_ControlMode <= 2)` differ only AT 2, and then only if F_VSRefSpdCornerFreq is missing. corpus_facts: 27 files have VS_ControlMode == 2 and all 27 carry the line."
+ }
+}

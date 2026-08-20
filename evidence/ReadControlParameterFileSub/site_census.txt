@@ -1,0 +1,27 @@
+# site_census.py -- captured 2026-08-20T23:40:07Z, 63-case corpus
+
+corpus: 63 case(s)   cases 63   FIELD (translation) 0   COPYBK (the view cannot express unallocated) 1036
+site     evals      true   what it is
+  15       163         0   ftrim RETURNED AN EMPTY view -- the only input on which `n > 0` decides anything, and the one a `n >= 0` mutant would read s[-1] on
+   1     91208     91045   ftrim's trailing-blank loop; `true` is one more blank trimmed. `n > 0` decides only for an ALL-BLANK argument, which is `evals - true` per call
+   2     15594     15594   fassign's truncation choice: true means the source FITS
+   3     15594     14019   fassign's copy guard
+  16     15594         0   fassign called with a source of exactly ONE character -- the only input on which `n > 0` and `n > 1` differ
+  17     15594         0   fassign called with a source EXACTLY as long as the destination -- the only input on which `<` and `<=` differ at either of the two sites
+   4     15594     15594   fassign's blank fill: true means there is a tail to blank
+   5         0         0   assign_errmsg: the message buffer has never been allocated
+   6         0         0   assign_errmsg: the message does not fit, so the buffer is reallocated
+   7         0         0   assign_errmsg: there is a tail past the message to clear
+   8         0         0   errmsg_view: nothing to read back
+   9      3183         0   establish(): the array field is ALREADY allocated on entry -- the arm whose callee message is `array was already allocated`
+  10     15546       247   read_records: a CR stripped at a \n boundary (FIRST site, inside the loop)
+  14         2         0   read_records: a CR stripped at the unterminated last record (SECOND site)
+  11        63         2   read_records: the file's last line has no trailing newline
+  12        63         1   the echo arm
+  13         1         0   the echo file could not be opened
+
+corpus widths: 63 file(s), 15609 record(s)
+  longest record               875   vs MaxLineLength 2048
+  longest input path            67   vs PriPath_LEN 1024 / EchoFilename_LEN 128
+
+A site with 0 evaluations is one NO case reaches. A site with N evaluations and 0 or N true is one the corpus holds constant -- reached, but not deciding.

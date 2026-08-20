@@ -1,0 +1,38 @@
+# corpus_facts.py -- captured 2026-08-20T23:40:07Z, 63-case corpus
+
+corpus: 63 file(s)
+
+[bf876a89]  files with NO `Echo` line: 0  []
+            The literal is ParseInput's has_AllowDefault at the Echo call. Absent AllowDefault means ALLOWED (parseinput_int_opt.cpp:455), so passing an explicit .FALSE. makes Echo REQUIRED -- which only decides for a file that does not have one. `drop(base, "Echo")` would close it.
+
+[fdfd4622]  files with VS_ControlMode == 2: 27  ['DISCON_awc.IN', 'DISCON_ccoff.IN', 'DISCON_chkp36.IN', 'DISCON_chkp37.IN', 'DISCON_chkp38.IN', 'DISCON_chkp39.IN', 'DISCON_chkp40.IN', 'DISCON_chkp41.IN', 'DISCON_filters.IN', 'DISCON_flap26.IN', 'DISCON_flp.IN', 'DISCON_group2.IN', 'DISCON_ipc.IN', 'DISCON_ipc_awc.IN', 'DISCON_loglevel0.IN', 'DISCON_loglevel2.IN', 'DISCON_loglevel3.IN', 'DISCON_ol_cc_stc.IN', 'DISCON_ol_mode1.IN', 'DISCON_ol_mode2.IN', 'DISCON_stress27.IN', 'DISCON_su_sd_tra.IN', 'DISCON_synth.IN', 'DISCON_synth3.IN', 'DISCON_synth3hi.IN', 'DISCON_twoinit.IN', 'DISCON_yaw.IN']
+            of those, files with NO F_VSRefSpdCornerFreq line: 0  []
+            `(VS_ControlMode < 2)` and `<=` differ only AT 2, and only when the guarded line is missing. VS_ControlMode = 2 plus `drop(base, "F_VSRefSpdCornerFreq")` would close it.
+
+[8a8c4e4d]  files with F_GenSpdNotch_N > 0: 21
+              DISCON_ccoff.IN              N=1    F_GenSpdNotch_Ind present: True
+              DISCON_chkp36.IN             N=1    F_GenSpdNotch_Ind present: True
+              DISCON_chkp37.IN             N=1    F_GenSpdNotch_Ind present: True
+              DISCON_chkp38.IN             N=1    F_GenSpdNotch_Ind present: True
+              DISCON_chkp39.IN             N=1    F_GenSpdNotch_Ind present: True
+              DISCON_chkp40.IN             N=1    F_GenSpdNotch_Ind present: True
+              DISCON_chkp41.IN             N=1    F_GenSpdNotch_Ind present: True
+              DISCON_filters.IN            N=1    F_GenSpdNotch_Ind present: True
+              DISCON_flap26.IN             N=1    F_GenSpdNotch_Ind present: True
+              DISCON_group2.IN             N=1    F_GenSpdNotch_Ind present: True
+              DISCON_ipc.IN                N=1    F_GenSpdNotch_Ind present: True
+              DISCON_ipc_awc.IN            N=1    F_GenSpdNotch_Ind present: True
+              DISCON_loglevel0.IN          N=1    F_GenSpdNotch_Ind present: True
+              DISCON_loglevel2.IN          N=1    F_GenSpdNotch_Ind present: True
+              DISCON_loglevel3.IN          N=1    F_GenSpdNotch_Ind present: True
+              DISCON_stress27.IN           N=1    F_GenSpdNotch_Ind present: True
+              DISCON_synth.IN              N=1    F_GenSpdNotch_Ind present: True
+              DISCON_synth3.IN             N=1    F_GenSpdNotch_Ind present: True
+              DISCON_synth3hi.IN           N=1    F_GenSpdNotch_Ind present: True
+              DISCON_twoinit.IN            N=1    F_GenSpdNotch_Ind present: True
+              notch2.IN                    N=1    F_GenSpdNotch_Ind present: True
+            The call sits inside `IF (F_GenSpdNotch_N > 0)`, so the predicate `(N == 0)` is FALSE wherever it is evaluated and the mutant `(N /= 0)` is TRUE -- allowed instead of required. It decides only for a file with N > 0 and no F_GenSpdNotch_Ind line, and every file with N > 0 has one. `notch2.IN` minus F_GenSpdNotch_Ind would close it.
+
+[cad91b36]  corpus files that do not exist: 0
+            The mutated `std::_Exit(2)` is the arm the translation takes when fopen fails, matching the Fortran runtime's own abort. A case that reached it would take the PROBE PROCESS down with it (the reference aborts too, by construction), so no corpus that also produces a comparison can contain one. This is unreachable by the shape of the instrument, not by an accident of the file list.
+

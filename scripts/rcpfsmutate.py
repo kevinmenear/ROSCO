@@ -138,29 +138,42 @@ def dexec(script: str, timeout: float | None = None,
 # the driver's own compile are worth hoisting, and nothing about them depends
 # on the mutant.
 
-SETUP = f"""
+def setup(san: str) -> str:
+    return f"""
 set -e
 cd {WORKDIR}
 mkdir -p {MUTDIR}
 python3 scripts/_integration_shim.py ReadControlParameterFileSub \\
     -f rosco/controller/src/ReadSetParameters.f90 > {MUTDIR}/shim.cpp
-g++ -std=c++17 -O2 -fPIC -ffp-contract=off -I rosco/controller/src \\
+g++ -std=c++17 -O2 -fPIC -ffp-contract=off {san} -I rosco/controller/src \\
     -c {MUTDIR}/shim.cpp -o {MUTDIR}/shim.o
 gfortran -fdefault-real-8 -fdefault-double-8 -ffp-contract=off \\
     -I rosco/controller/build/ftnmods -c {PROBE_F90} -o {MUTDIR}/probe.o \\
     -J {MUTDIR}
 """
 
-COMPILE = f"""
+
+def compile_cmd(san: str) -> str:
+    return f"""
 set -e
 cd {WORKDIR}
-g++ -std=c++17 -O2 -fPIC -ffp-contract=off -I rosco/controller/src \\
+g++ -std=c++17 -O2 -fPIC -ffp-contract=off {san} -I rosco/controller/src \\
     -include rosco/controller/src/vit_translated.h \\
     -c {MUTDIR}/unit.cpp -o {MUTDIR}/rcpfs.o
-gfortran -fdefault-real-8 -fdefault-double-8 -ffp-contract=off \\
+gfortran -fdefault-real-8 -fdefault-double-8 -ffp-contract=off {san} \\
     -o {MUTDIR}/probe {MUTDIR}/probe.o {MUTDIR}/rcpfs.o {MUTDIR}/shim.o \\
     -L rosco/controller/build -ldiscon -lstdc++
 """
+
+
+# `-fsanitize=address,undefined` reaches the class no value comparison can: a
+# mutant whose only difference is at an address the program does not own.
+# `detect_leaks=0` because libdiscon's Fortran side allocates and does not free,
+# which is not this unit's business; `halt_on_error=0` for UBSan so a run reports
+# every site rather than the first.
+SAN_FLAGS = "-fsanitize=address,undefined -fno-omit-frame-pointer -g"
+SAN_ENV = ("ASAN_OPTIONS=detect_leaks=0:abort_on_error=0 "
+           "UBSAN_OPTIONS=print_stacktrace=0 ")
 
 # The echo files are a by-product of the Echo=1 case and are removed by the run
 # that made them, exactly as run_probe.sh does: left behind they dirty the tree
@@ -186,7 +199,7 @@ gfortran -fdefault-real-8 -fdefault-double-8 -ffp-contract=off \\
 RUN = f"""
 cd {WORKDIR}/Examples
 find . {CORPUS} -maxdepth 1 -name '*.RO.echo*' -delete
-LD_LIBRARY_PATH={WORKDIR}/rosco/controller/build {MUTDIR}/probe \\
+env $VIT_SAN_ENV LD_LIBRARY_PATH={WORKDIR}/rosco/controller/build {MUTDIR}/probe \\
     DISCON*.IN {CORPUS}/*.IN 2>&1
 echo "PROBE_EXIT=$?"
 find . {CORPUS} -maxdepth 1 -name '*.RO.echo*' -print0 | sort -z | while IFS= read -r -d '' e; do
@@ -204,7 +217,21 @@ def signature(out: str) -> dict:
     WHICH channel moved rather than only that something did."""
     keep, field, copyback, echo = [], None, None, []
     exit_code = None
+    san = set()
     for line in out.splitlines():
+        # A SANITISER REPORT IS A CHANNEL OF ITS OWN, normalised to its KIND:
+        # the addresses and the pc list differ run to run and would make the
+        # text channel a second clock.
+        if "runtime error:" in line:
+            san.add(line.split("runtime error:", 1)[1].strip()[:60])
+            continue
+        if "AddressSanitizer" in line or "UndefinedBehaviorSanitizer" in line:
+            san.add(line.split("ERROR:", 1)[-1].strip()[:60] if "ERROR:" in line
+                    else line.strip()[:60])
+            continue
+    for line in out.splitlines():
+        if "runtime error:" in line or "Sanitizer" in line:
+            continue
         if line.startswith("PROBE_EXIT="):
             exit_code = int(line.split("=", 1)[1])
             continue
@@ -221,7 +248,7 @@ def signature(out: str) -> dict:
             field = int(parts[parts.index("(translation)") + 1])
             copyback = int(parts[-1])
     return {"text": "\n".join(keep), "field": field, "copyback": copyback,
-            "echo": sorted(echo), "exit": exit_code}
+            "echo": sorted(echo), "exit": exit_code, "san": sorted(san)}
 
 
 def summarise(args, results, capped, uncapped, base, equivalent,
@@ -288,7 +315,10 @@ def summarise(args, results, capped, uncapped, base, equivalent,
             "ErrVar%aviFAIL and ErrVar%ErrMsg, over 37 files. Four channels: "
             "FIELD, COPYBK, the program's whole stdout, and the bytes of the "
             "Echo=1 arm's .RO.echo."),
-        "channels_compared": ["field", "copyback", "stdout", "echo"],
+        "channels_compared": (["field", "copyback", "stdout", "echo"]
+                              + (["sanitizer"] if args.sanitize else [])),
+        "sanitize": bool(args.sanitize),
+        "only": args.only,
         "baseline": {k: v for k, v in base.items() if k != "text"},
         "survivors": survivors,
         "results": results,
@@ -309,6 +339,19 @@ def main() -> int:
     ap.add_argument("--case-timeout", type=float, default=120.0)
     ap.add_argument("--slice", default=None, help="i/n, in the mutator's own order")
     ap.add_argument("--limit-per-operator", type=int, default=40)
+    ap.add_argument("--only", default=None,
+                    help="comma-separated mutant ids -- re-take exactly these. "
+                         "The population fields still describe the WHOLE "
+                         "enumeration, so an artifact from a --only run cannot "
+                         "be read as a full sweep.")
+    ap.add_argument("--sanitize", action="store_true",
+                    help="build every mutant with -fsanitize=address,undefined. "
+                         "Reaches the class no value comparison can: a mutant "
+                         "whose only difference is at an address the program "
+                         "does not own. REFUSES if the unmutated build already "
+                         "reports -- that is a finding about the translation or "
+                         "the harness, and routing around it would score every "
+                         "mutant against the original's own defect.")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
@@ -358,6 +401,23 @@ def main() -> int:
                 return 2
             unreachable[int(k)] = {"reason": v["reason"], "evidence": v["evidence"]}
 
+    if args.only:
+        want_ids = {x.strip() for x in args.only.split(",") if x.strip()}
+        before = len(ms)
+        ms = [m for m in ms if m.mid in want_ids]
+        missing = want_ids - {m.mid for m in ms}
+        if missing:
+            print(f"--only names {len(missing)} id(s) this enumeration does not "
+                  f"contain: {sorted(missing)}", file=sys.stderr)
+            return 2
+        print(f"NOTE: --only -- scoring {len(ms)} of {before}. The other "
+              f"{before - len(ms)} are NOT run here.")
+
+    san = SAN_FLAGS if args.sanitize else ""
+    SETUP, COMPILE = setup(san), compile_cmd(san)
+    global RUN
+    RUN = RUN.replace("$VIT_SAN_ENV", SAN_ENV if args.sanitize else "")
+
     rc, out = dexec(SETUP, timeout=300)
     if rc != 0:
         print(f"probe setup failed:\n{out}", file=sys.stderr)
@@ -375,6 +435,13 @@ def main() -> int:
     base = signature(out)
     base["cases"] = sum(1 for l in base["text"].splitlines()
                         if l.startswith("  ok ") or l.startswith("  FAIL "))
+    # A SANITISER BASELINE THAT REPORTS ON THE UNMUTATED TRANSLATION IS A
+    # FINDING, NOT AN OBSTACLE: every mutant would then die of the original's
+    # own defect and the score would be about that.
+    if args.sanitize and base["san"]:
+        print("THE UNMUTATED TRANSLATION REPORTS UNDER THE SANITISERS -- "
+              "refusing to score.\n  " + "\n  ".join(base["san"]), file=sys.stderr)
+        return 2
     if base["field"] != 0 or base["exit"] != 0 or base["cases"] == 0 or not base["echo"]:
         print(f"BASELINE IS NOT GREEN (field={base['field']} exit={base['exit']} "
               f"cases={base['cases']} echo={base['echo']}) -- refusing", file=sys.stderr)
@@ -396,7 +463,7 @@ def main() -> int:
                 outcome, killed, why = "hang", True, ["hang"]
             else:
                 outcome = "ok"
-                why = [c for c in ("field", "copyback", "echo", "exit")
+                why = [c for c in ("field", "copyback", "echo", "exit", "san")
                        if sig.get(c) != base[c]]
                 if sig["text"] != base["text"] and "stdout" not in why:
                     why.append("stdout")
@@ -405,7 +472,7 @@ def main() -> int:
                         "before": m.before, "after": m.after,
                         "outcome": outcome, "killed": killed, "channels": why,
                         "field": sig.get("field"), "copyback": sig.get("copyback"),
-                        "exit": sig.get("exit")})
+                        "exit": sig.get("exit"), "san": sig.get("san")})
         print(f"  [{i}/{len(ms)}] {m.operator} {m.mid} "
               f"{'KILLED' if killed else 'SURVIVED'} ({outcome}, "
               f"field={sig.get('field')} copyback={sig.get('copyback')} "
