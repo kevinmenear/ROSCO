@@ -35,7 +35,7 @@
 PROGRAM record_form_probe
     IMPLICIT NONE
     INTEGER, PARAMETER :: MaxParamLength = 200
-    INTEGER, PARAMETER :: NFORM = 37
+    INTEGER, PARAMETER :: NFORM = 40
     CHARACTER(MaxParamLength) :: Words(2)
     CHARACTER(16)  :: label
     CHARACTER(260) :: lead
@@ -138,6 +138,22 @@ CONTAINS
         CASE (35); lab = 'repnull1'; txt = '1*';            neigh = 'Aa'; ln = 2
         CASE (36); lab = 'repnull3'; txt = '3*';            neigh = 'Aa'; ln = 2
         CASE (37); lab = 'junkend';  txt = '7x';            neigh = 'Aa'; ln = 2
+        ! --- THE THREE FORMS THE SECOND ROUND OF SURVIVORS NAMED.
+        !     `0*/` is a zero repeat count terminated by a slash: the count is
+        !     rejected, and the only thing that can make the rejection visible
+        !     to the UNIT is whether what follows turns it into a SUCCESS.
+        !     `repstar` is a full-width lead whose digit run ends on the
+        !     record's last byte behind a legal repeat count, paired with a
+        !     `'*'` neighbour -- the byte the repeat lookahead's own bound
+        !     tests. `over1` is a lead of 201 characters whose LAST character
+        !     is significant: truncated at 200 it is 2147483647 and read at 201
+        !     it overflows, which is the only shape that can observe the buffer
+        !     WIDTH constant for an INTEGER item.
+        CASE (38); lab = 'repzslash'; txt = '0*/';           neigh = 'Aa'; ln = 3
+        CASE (39); lab = 'repstar';  txt = REPEAT('0', 189)//'3*123456789'
+                   neigh = '*7'; ln = 200
+        CASE (40); lab = 'over1';    txt = REPEAT('0', 190)//'21474836470'
+                   neigh = 'Aa'; ln = 201
         END SELECT
     END SUBROUTINE form
 

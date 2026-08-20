@@ -97,6 +97,10 @@ int main() {
         {"repnull1", "1*", "Aa"},
         {"repnull3", "3*", "Aa"},
         {"junkend", "7x", "Aa"},
+        // The three forms the second round of survivors named.
+        {"repzslash", "0*/", "Aa"},
+        {"repstar", zeros(189) + "3*123456789", "*7"},
+        {"over1", zeros(190) + "21474836470", "Aa"},
     };
     for (const Form& f : forms) {
         // `CHARACTER(MaxParamLength) :: Words(2)` -- ONE 400-byte object. The
