@@ -5,6 +5,7 @@
     "index_offset"
   ],
   "compared_against": "fortran_reference_chkp_archive",
+  "declared_but_killed": [],
   "equivalences": {
     "092db87d": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_char_array (line 207), which performs 1 of the 307 writes and never the last one.",
     "0c79c900": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_char_array (line 207), which performs 1 of the 307 writes and never the last one.",
@@ -387,7 +388,92 @@
   ],
   "total": 105,
   "unit": "WriteRestartFile",
-  "unreachable": {
+  "unreachable": [
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "id": "1e348222",
+      "reason": "the mutant writes LocalVar%FA_PitCom(3) where the reference writes LocalVar%FA_PitCom(2); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.hand.txt",
+      "id": "29564c50",
+      "reason": "the ErrMsg capacity refusal boundary: the two predicates differ only when the message length EQUALS n_ErrMsg_cap, and the capacity is LEN(ErrMsg)+4096 >= 4096 while the longest message this unit can build is 38+128+12 = 178"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.hand.txt",
+      "id": "33e6f4b8",
+      "reason": "reached only when ftrim's `len` is NEGATIVE; its two call sites pass SIZE(avcOUTNAME), which cannot be negative, and the literal INFILE_LEN. At len == 0 the two agree, which is why the two sibling mutants at this site are declared EQUIVALENT instead"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "id": "46e3e675",
+      "reason": "the mutant writes LocalVar%FA_PitCom(2) where the reference writes LocalVar%FA_PitCom(1); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "id": "543cfa0e",
+      "reason": "the mutant writes LocalVar%IPC_KI(2) where the reference writes LocalVar%IPC_KI(1); the two are byte-identical in all 195 reference checkpoints (VARIES), so no case in this corpus can distinguish them"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "id": "5e555d11",
+      "reason": "the mutant writes LocalVar%CC_DesiredL(5) where the reference writes LocalVar%CC_DesiredL(4); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "id": "6207a3e1",
+      "reason": "the mutant writes LocalVar%IPC_KP(2) where the reference writes LocalVar%IPC_KP(1); the two are byte-identical in all 195 reference checkpoints (VARIES), so no case in this corpus can distinguish them"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.hand.txt",
+      "id": "7cb6d9d1",
+      "reason": "reached only when a LOGICAL written by this unit is .TRUE.; both WriteThisStep and restart are const-zero across all 195 reference checkpoints, so the .TRUE. representation is compared zero times"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.hand.txt",
+      "id": "818543b1",
+      "reason": "the I0.0 zero case: differs when NINT(Time/DT) is 0 or 1, and the corpus's 195 checkpoints carry indices 40 through 21560"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "id": "cf4cc996",
+      "reason": "the mutant writes LocalVar%PC_PitComT_IPC(2) where the reference writes LocalVar%PC_PitComT_IPC(1); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "id": "da5d44aa",
+      "reason": "the mutant writes LocalVar%CC_DesiredL(7) where the reference writes LocalVar%CC_DesiredL(6); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "id": "db84aaab",
+      "reason": "the mutant writes LocalVar%AzBuffer(2) where the reference writes LocalVar%AzBuffer(1); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "id": "e7314f4a",
+      "reason": "the mutant writes LocalVar%PC_PitComT_IPC(3) where the reference writes LocalVar%PC_PitComT_IPC(2); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "id": "ef1bbd99",
+      "reason": "the mutant writes LocalVar%CC_DesiredL(6) where the reference writes LocalVar%CC_DesiredL(5); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.hand.txt",
+      "id": "f3829a51",
+      "reason": "InFile's CHARACTER(128) truncation width: differs only when the composed name is exactly 128 characters, and the longest any scenario composes is 38"
+    },
+    {
+      "evidence": "evidence/WriteRestartFile/unreachable.hand.txt",
+      "id": "f54f20fa",
+      "reason": "wr_char_array's early return differs only at n == 1, an ACC_INFILE of extent one; the extent is 45 in all 195 reference checkpoints"
+    }
+  ],
+  "unreachable_but_killed": [],
+  "unreachable_declared": 16,
+  "unreachable_file": "mutation/WriteRestartFile.unreachable.json",
+  "unreachable_map": {
     "1e348222": {
       "evidence": "evidence/WriteRestartFile/unreachable.txt",
       "reason": "the mutant writes LocalVar%FA_PitCom(3) where the reference writes LocalVar%FA_PitCom(2); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
@@ -453,8 +539,6 @@
       "reason": "wr_char_array's early return differs only at n == 1, an ACC_INFILE of extent one; the extent is 45 in all 195 reference checkpoints"
     }
   },
-  "unreachable_declared": 16,
-  "unreachable_file": "mutation/WriteRestartFile.unreachable.json",
   "vit_rev": "d3a1e12",
   "why_split": "105 mutants at ~16 s each (one rebuild of libdiscon.so plus six simulations) is 28 minutes; the Bash tool's foreground ceiling is 600 s, so the two 40-mutant operators are split in half and the four small ones share a call"
 }

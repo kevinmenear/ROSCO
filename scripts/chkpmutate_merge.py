@@ -257,8 +257,23 @@ def main() -> int:
         "survivors": survivors,
         "survivors_declared_equivalent": survivors_equiv,
         "survivors_declared_unreachable": survivors_unreach,
-        "unreachable": unreachable,
+        # A LIST OF {id, reason, evidence}, NOT A MAP. loop/done.py's P12 reads
+        # `unreachable` as a list and checks `len(detail) == unreachable_declared`
+        # and that every entry carries a non-empty reason and evidence path: "the
+        # count is only meaningful with the reasons and evidence paths behind
+        # it". The declaration FILE is a map because an id is its natural key;
+        # the artifact is a list because that is the shape the predicate reads.
+        # Measured, not assumed: emitted as a map, done_check returned
+        # `mutation_unreachable_unevidenced` at 12 of 14 with 16 entries sitting
+        # in the file.
+        "unreachable": [{"id": k, **v} for k, v in sorted(unreachable.items())],
+        "unreachable_map": unreachable,
         "unreachable_file": a.unreachable,
+        # Empty by construction -- the loop above REFUSES a declaration the sweep
+        # killed, so this can only ever be []. P12 reads it and an absent key
+        # would read as "not checked".
+        "unreachable_but_killed": [],
+        "declared_but_killed": [],
         # Named, with the reason, IN the artifact: an equivalence that lives
         # only in prose is a number nobody can check.
         "equivalences": declared,
