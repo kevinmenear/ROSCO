@@ -1,0 +1,107 @@
+ParseInput_Int_Opt -- corpus round 4, PREDICTED BEFORE THE RUN
+==============================================================================
+
+Written and committed BEFORE `harness.sh` regenerated anything. The campaign's
+rule, and the reason for it: a red test or a corpus change whose count can be
+predicted exactly is one that can be WRONG, and this unit's first dispatch
+already had one prediction refuted (round 2's `ab7420d6` form). A number written
+down afterwards cannot be refuted by its own run.
+
+THE CHANGE
+------------------------------------------------------------------------------
+
+loop `8fa5440`, four entries, all four priced against gfortran first
+(`record_form_probe.txt`, 47 of 47 agree on (IOSTAT, value)):
+
+    _NEIGHBOUR_TAILS   ("eolfull", lambda n: "\r" * n, "/7")
+                       ("lffull",  lambda n: "\n" * n, "/7")
+    _NEIGHBOUR_VALUES  ("eollead", "\r7")
+                       ("lflead",  "\n7")
+
+WHAT EACH IS FOR, at the level of the one character that does the work
+------------------------------------------------------------------------------
+
+`e8cf2d25`  `:261`  `is_eol(rec[p])` -> `is_eol(rec[p + 1])`
+
+    The leading scan is `is_blank(rec[p]) || is_eol(rec[p])` and `||`
+    short-circuits, so the mutated operand is evaluated ONLY at the character
+    the scan stops on. Every record in the 12,199-case corpus begins with a
+    digit, a sign or a letter, and the byte after it is another such -- so both
+    spellings read "not an end-of-line" and agree.
+
+    `eollead` = CR then `7`. Original: crosses the CR, parses 7, status 0.
+    Mutant: at p = 0 `is_blank(CR)` is false and `is_eol('7')` is false, so the
+    scan does not run; the item loop then meets the CR, which is not `/`, not
+    `,` and not `;`, and `parse_int` finds no digits -> 5010.
+    PREDICTED: status 0 with Variable = 7 against 5010 with `aviFAIL = -1` and
+    an ErrMsg. The unit sees all three.
+
+`4f89b00b`  `:288`  `p >= len` -> `p > len`
+
+    `p == len` at the top of the item loop happens only when the leading scan
+    consumed all 200 bytes -- every byte a blank or an end-of-line. A record of
+    all blanks is not a WORD, so no word splitter produces one; a record of all
+    CRs is a word, because CR is not in `GetWords`' separator set.
+
+    `eolfull` = 200 bytes of CR with `/7` as word two, so record byte 201 is a
+    `/`. Original: `200 >= 200` -> END, status -1. Mutant: `200 > 200` is false,
+    so it reads `rec[200]` = `/` and returns 0 with the item untouched.
+    PREDICTED: -1 against 0, which the reference's `ErrStatLcl /= 0` sees.
+
+    THE NEIGHBOUR IS THE DESIGN. With any other byte there both spellings end
+    non-zero (5010 against -1) and a caller reading only `/= 0` cannot tell
+    them apart. This is the same shape as round 2's `repzeroslash`.
+
+THE NUMBERS
+------------------------------------------------------------------------------
+
+    mutants                     143 behavioural, unchanged (the translation
+                                does not move, so `cppmutate`'s population and
+                                every id are the same)
+    killed                       96  ->  98
+    survived                      2  ->   0
+    equivalent_declared          37  ->  37   (unchanged)
+    unreachable_declared          8  ->   8   (unchanged, re-derived)
+    score            96/98 = 0.9796  ->  98/98 = 1.0000
+
+    AND THE SURVIVOR SET DIFFERS BY EXACTLY `4f89b00b` AND `e8cf2d25`.
+    A round that kills a third, or one of the two, is a different finding and
+    is to be reported as one.
+
+THE CONTROLS, which is what makes this a prediction rather than a hope
+------------------------------------------------------------------------------
+
+1.  `declared_but_killed` MUST STAY EMPTY, and one declaration has something at
+    stake in this round.
+
+    `26bfb57b` (`:261`, `p < len` -> `p <= len`) is declared EQUIVALENT in
+    family 7 on the argument: "reaching `p == len` requires all 200 bytes blank
+    or end-of-line; the mutant may then advance to `p == len + 1` and stops;
+    the only consumer is `if (p >= len) return -1` and 200 and 201 both satisfy
+    it." Until this round NO record reached the premise. `eolfull` reaches it.
+
+    PREDICTED: still equivalent. At `p == 200` the mutant evaluates
+    `is_blank(rec[200]) || is_eol(rec[200])` -- byte 201 is `/`, so the scan
+    stops at 200 exactly as the original does, and the two are identical on
+    this record as well. If it is KILLED, P12 fails outright and the finding is
+    that family 7's argument was corpus-bound.
+
+2.  `unreachable_but_killed` MUST STAY EMPTY. All 8 declarations sit on `:300`,
+    `:311` and `:316` -- the comma and semicolon branches. No record added here
+    contains a comma or a semicolon, so those lines must still report `#####`
+    in the re-taken `line_coverage.txt` and `make_unreachable.py` must re-derive
+    the same 8 ids.
+
+3.  THE CASE COUNT MOVES, and it is not a strict extension. The `n:` block runs
+    once per plant index, so new cases from an earlier index displace what a
+    later one emits -- the additive control failed for the same reason in
+    rounds 1 to 3 and is reported, not claimed. Every layer that reads the
+    corpus is therefore re-taken on the new one: the clean-tree harness green,
+    its four stub red tests, both mutation sweeps, the line coverage, and the
+    post-integration green with its red test and revert. The GATE is not
+    re-taken -- it runs 27 simulations against the shipped library and never
+    reads the case file, and neither the translation nor the wrapper moves.
+
+4.  THE FOUR STUB RED TESTS must each still be non-zero and must each still be
+    strictly below the new case count. Their exact numbers move with the corpus
+    and are re-predicted in `redtest_predictions.txt` rather than here.
