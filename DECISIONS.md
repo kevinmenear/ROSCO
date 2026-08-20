@@ -13818,3 +13818,176 @@ block advanced `turn` for the second key. Moving it to its own pass over
 **`b[:len(a)] == a` on the two case files is a one-line control and it caught
 this immediately.** Any rule that appends to a corpus should be checked with it;
 "appended after every other rule" is an intention, not a measurement.
+
+## Unit #57 — ParseInput_Int_Opt — first dispatch — 2026-08-19
+
+**Disposition `deferred`, on P12 alone: 93 / (143 − 37 − 8) = 0.949 against a
+threshold of 1.0, with five open survivors.** Seven other layers green and
+red-tested; every artifact at loop `343f843`, `revcheck --unit` clean.
+
+### THE SPLIT: ONE UNIT, TWO SIBLINGS, AND THE DISCRIMINATOR WAS DECIDED FIRST
+
+This unit is `ParseInput_Dbl_Opt` (#56) with one declaration changed. The
+decision made BEFORE any code was written, and stated so it could be checked
+rather than trusted:
+
+* the CALLER half — constants, `ftrim`, `int2lstr_trimmed`, the subroutine body
+  — copied from `parseinput_dbl_opt.cpp`;
+* the ITEM half — the whole list-directed INTEGER reader and the INTEGER output
+  field — copied from `parseinary_opt.cpp` (#55), which MEASURED both against
+  gfortran for an `INTEGER(4)` item.
+
+That is the RUNBOOK's own **item TYPE against record GRAMMAR** rule, applied in
+advance instead of after a failure. Unit #55 broke by copying unit #54's
+separator set — an item-typed rule — and unit #56 held by reusing measured
+grammar. Nothing item-typed here comes from the REAL sibling: not the separator
+set (`;` terminates a REAL and not an INTEGER), not the store-then-fail path
+(the INTEGER reader has none).
+
+**And the copy is CHECKED rather than asserted.** `check_p4_blocks.py`
+re-extracts six blocks from their source files and byte-compares them — 6,656
+bytes, all identical — and NAMES the one place the copy differs (a doc comment
+saying `Ary` in #55 and `Variable` here) instead of hiding it inside a block.
+P4 says copy and hash-verify; a script is what makes that a claim a reader can
+re-run.
+
+### THE RECORD-FORM PROBE FOUND NOTHING, AND THAT IS ALSO A RESULT
+
+Unit #56's rule is to price every candidate corpus record against the reference
+before touching the generator, and on that unit it found two defects in the
+translation on its first run. Here: **37 of 37 agree on (IOSTAT, value)**, and
+the PRINT record probe **6 of 6 byte-identical**, both first run.
+
+The reason to record a null result is that it is what makes the LATER corpus
+change cheap and safe. Five new record forms were added to R14 during this
+dispatch, and all five were already priced when the decision to add them was
+made.
+
+### A GATE RED TEST WHOSE PREDICTION WAS FALSIFIED, AND THAT IS THE FINDING
+
+The RUNBOOK records that this family's gate answer is set by the FAILURE CLASS
+and not by the site, on two numbers each measured twice across three units. So
+the parsed-value red test was predicted, before the run, at **1,857,893 of
+5,252,000 across 147 of 351 channels**.
+
+    MEASURED   370,646 of 728,000, 22 channels, scenarios 19, 20 and 27 only
+
+**An INTEGER control parameter is a MODE, not a gain.** Adding one to every
+value this unit parses does not perturb a trajectory — it selects a different
+controller path, and 23 of the 27 scenarios then produce no comparable output
+at all. So the family rule SURVIVES and this is a THIRD class:
+
+    every parsed value is wrong        1,857,893 / 5,252,000   147 ch  (REAL)
+    the parse FAILS, aviFAIL = -1      1,583,216 / 4,732,000   131 ch
+    every parsed MODE is wrong           370,646 /   728,000    22 ch  (INTEGER)
+
+The two earlier runs both perturbed a REAL, so neither could tell "the failure
+class" from "the item type". This one perturbs an INTEGER at the same kind of
+site and lands somewhere else, which settles it.
+
+**The general point is about the practice, not about ROSCO.** A red test whose
+count can be predicted exactly is one that can be WRONG, and this is the first
+time in this campaign that a stated prediction was refuted by its own run. The
+refutation is worth more than the four exact hits beside it, and it exists only
+because the number was written down first.
+
+### A CORPUS CHANGE PRICED, PREDICTED, AND CONTROLLED
+
+The survivor record search named FOUR of the first sweep's 54 survivors as
+corpus gaps with an ADMISSIBLE record. R14's `_NEIGHBOUR_VALUES` gained seven
+single-word entries (loop `343f843`): the INTEGER type's two limits and the two
+just past them, a null repeat at count ONE, a null repeat at count three as its
+control, and a value followed by exactly one non-terminator.
+
+**`_TAIL_VALUES` already carried the limits** — unit #55 added them — but only
+as word LISTS planted at `k = 3`, which a unit whose search matches on word TWO
+never sees. That is precisely the gap `_NEIGHBOUR_VALUES` was created to close
+for the repeat-count ceiling, and the limits had simply not been carried through
+it. A generator block added for one unit does not automatically carry every
+value a later unit needs, and the way to find out is a survivor, not a reading.
+
+The sweep then killed **exactly those four and nothing else** — 89 → 93, and the
+survivor set differs by those four ids alone. That is the control: a change that
+killed a fifth, or three of the four, would have been a different finding.
+
+**THE ADDITIVE CONTROL FAILED, AND IS REPORTED RATHER THAN CLAIMED.** The old
+case file is NOT a byte-prefix of the new one. Unit #56 restored that property
+by moving its new block to its own pass; no such repair exists here, because the
+entries were added to a tuple consumed inside the `n:` block R14 appends after
+EVERY plant index, so new cases from the `k = 1` block displace what `k = 2` and
+`k = 3` emit. There is no ordering of that tuple that makes the change a suffix.
+
+So this is a DIFFERENT corpus rather than an extended one, and every layer that
+reads the corpus was re-taken on it. **The rule that generalises: a corpus
+extension is a byte-prefix extension only when the new cases are emitted after
+every existing case, and a rule that runs once per plant index cannot satisfy
+that. Take the control anyway — it is one line — and when it fails, say which
+of the two you have.**
+
+### A DEFECT IN AN INHERITED SCRIPT, WITH ITS WRONG BEHAVIOUR (C12)
+
+`make_unreachable.py` — copied through four units — parsed its coverage file
+with `^  L\s*(\d+)\s` over the WHOLE file. The file's own CONTROL line has that
+shape:
+
+    CONTROL: the entry line's count must equal the case count.
+      L445  count=12059  void ParseInput_Int_Opt(char* FileLines, ...
+
+so the unit's ENTRY LINE, the one line that provably runs on every case, was in
+the never-executed set every one of those four units derived its `unreachable`
+declarations from. It cost nothing on any of them **only because `cppmutate`
+offers no mutant on an entry line** — luck, not design. A signature carrying a
+literal (a default argument, an array bound) would have had the campaign declare
+a live mutant UNREACHABLE with the coverage file's own control as its evidence.
+
+Repaired here to split on the `LINES NEVER EXECUTED:` heading, and to REFUSE if
+that heading is absent rather than silently parse the whole file again.
+
+### THE DECISION THIS DISPATCH RAISES RATHER THAN TAKES: `is_eol` IN A SHARED READER
+
+Two of the five open survivors are the same gap. `list_read_ints` accepts CR and
+LF as blanks, and:
+
+* in unit #55 that is right and REACHABLE — its record is the 2048-byte `Line`,
+  which can hold a line terminator;
+* in this unit it is unreachable — the record is `Words(1)`, a `GetWords` word,
+  and no corpus this campaign generates contains a CR or an LF byte anywhere.
+
+The campaign's usual answer to a branch no input can take is to DELETE it and
+write the proof (unit #32's `LEN_TRIM`, unit #55's `negate_cond 9381bdef`). That
+answer is NOT available here, because the code is a byte-for-byte P4 copy of
+unit #55's, where the branch is live — deleting it would break the copy, break
+`check_p4_blocks.py`, and dissolve the shared measurement the two units' readers
+rest on.
+
+**So the choice is between three things and it belongs to the Driver, not to
+this unit:** add `CHAR(10)`/`CHAR(13)` to R6's character corpus (which touches
+every CHARACTER-input unit in the campaign); accept the two survivors as a
+permanent property of the shared reader and declare them with that reason; or
+split the reader so each unit carries only the separator set its record can
+contain, at the cost of the P4 relationship that makes them checkable against
+one another.
+
+**The general shape, which is what makes it worth raising:** a P4 copy inherits
+its source's REACHABILITY as well as its bytes, and reachability is a property
+of the CALLER. This campaign already knows that a P4 copy inherits its source's
+DATE (unit #56, twice). This is the same rule for a different attribute, and it
+is the first time the copy relationship has BLOCKED a repair rather than
+transmitted a defect.
+
+### PROCEDURE
+
+Two mutation sweeps of record and two scored, all four foreground under
+`mutate_guarded.sh` and routed through `run_if_time_remains.sh` with an explicit
+`timeout: 600000`; nothing backgrounded except once by the Bash tool's own 120 s
+ceiling, which is harness-tracked and returned a complete result. Five reset
+windows, each opened and closed inside one command, every commit taken outside
+them. Fourteen commits, one per expensive artifact.
+
+One transient worth a line: the first `noop` stub run returned
+`no JSON from ./test` with no other diagnostic and wrote no artifact; re-run
+alone on the same inputs it produced 11,832, the predicted number. The runner
+re-runs `./test` in a SECOND `docker exec` to capture the JSON payload, and the
+campaign already records a bind-mount write/read race on objects a `docker exec`
+chain wrote moments earlier. It is LOUD — no artifact — so the cost is one
+retry.
