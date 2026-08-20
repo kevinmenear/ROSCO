@@ -97,3 +97,40 @@ on those cases -- the same shape unit #56 measured for its REAL item and
 refused to buy with a range pin, because a pin is global to the unit and would
 delete R6's integer ladder from this unit's only free scalar. Measured here
 rather than inherited; the mutation survivors are read against it.
+
+
+================================================================================
+MEASURED, 2026-08-19, all four on the same corpus with `--no-generate`
+================================================================================
+
+    stub                    predicted            measured   verdict
+    noop                    11,664 exactly         11,664   EXACT
+    no-print                 8,927 exactly          8,927   EXACT
+    no-allowdefault-arm     [1,807, 2,568]          1,899   =>  A =  92
+    no-read                 [  169,   930]            838   =>  B = 669
+
+    CONTROL   A + B = 92 + 669 = 761                        EXACT
+
+The two brackets resolved the cell the partition probe could not split, and the
+identity holds to the case. So the corpus reaches the READ on
+
+    184 (read-ok) + 669 (read-failed) = 853 of 11,863 cases  (7.2%)
+
+which is the number every mutation survivor is read against, and it is measured
+rather than derived from a guess about which arm the refused messages belong to.
+
+`no-print` equals `record_nonempty` in `harness/ParseInput_Int_Opt.json` exactly,
+from a different code path -- the harness counts non-empty captured records, the
+partition counts the arm the reference took, and the stub counts cases whose
+comparison moved. Three routes, one number.
+
+AND THE ONE THAT IS WORTH SAYING PLAINLY: without the `vit_record` entry in
+`harness/ranges.toml`, `no-print` would have moved ZERO. Unit #55 spent four
+dispatches unable to see its PRINT record and a purpose-built side instrument
+found a real defect there on its first run. This unit's record is inside the
+primary layer from the first run and is red-tested at 8,927.
+
+A = 92 is the same number unit #56 measured for the same cell on its own corpus,
+which is a coincidence rather than a control -- the two corpora differ in size
+and the two refused cells differ (761 here, 211 there). It is recorded so the
+next reader does not mistake it for one.
