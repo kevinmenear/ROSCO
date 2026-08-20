@@ -71,6 +71,25 @@ moved the population. Also: the echo record on unit `UnEc`, which no layer sees;
 `list_directed_real`'s E-form, dead in the PROGRAM rather than the corpus; and
 two held parameters of seventeen. `evidence/.../mutation_survivors.txt` §D.
 
+**STANDING ESCALATION FOR THE DRIVER: THE SAME `n < 62` DEFECT IS LIVE IN UNIT
+#54's TRANSLATION, AND IT IS NOT THIS DISPATCH'S TO FIX.**
+`translations/ROSCO_Helpers/parsedbary_opt.cpp:231-234` carries the identical
+`char buf[64]` and `while (q < len && n < 62 && !is_separator(rec[q]))` — this
+unit's parser was a P4 copy of it. Verified by grep, not assumed. **It is worse
+there:** `ParseDbAry_Opt` reads from `Line`, a 2048-byte record, so an IEEE word
+of 63 characters or more is reachable without the leading-zero repeat count this
+unit needs. `parseinary_opt.cpp` (#55) reads INTEGERs and has no IEEE-word
+branch, so it is not affected.
+
+Not fixed here, and the reason is a rule rather than the clock: editing another
+unit's translation invalidates every layer of that unit's evidence without
+re-taking any of it, and #54 is closed at its own numbers. The repair, the
+30-form pricing probe and the payload sweep are all in
+`evidence/ParseInput_Dbl_Opt/` and carry across unchanged; what #54 needs is a
+dispatch, not a patch. **A P4 copy inherits its source's DATE as well as its
+bytes**, and this is the second time that has cost this family a defect — the
+missing repeat-count ceiling was the first.
+
 **THE SIBLING'S SIXTH-DISPATCH INSTRUMENT WAS TAKEN AT THE FIRST.**
 `vit_record = { compare_record = ... }` went into `harness/ranges.toml` before
 the corpus was generated. Unit #55 spent four dispatches unable to see its PRINT
