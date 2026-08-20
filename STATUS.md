@@ -4,6 +4,113 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-20: unit #59 `RefSpeedExclusion` is `integrated`. FIRST
+dispatch. SEVEN layers, all green and red-tested, and the mutation layer at
+32 / (35 - 3) = 1.0000 sanitised and 33 / (36 - 3) = 1.0000 with the sanitiser
+off, against a threshold of 1.0. ZERO open survivors, no operator capped.**
+
+Tower-resonance avoidance for the torque controller's speed reference: divide to
+the low-speed shaft, hold the reference outside a user-named band, rate-limit it
+through `ratelimit` (unit #43, CALLED not inlined), multiply back. Seven compared
+outputs, one of which -- `LocalVar%VS_RefSpd` -- is read on the first line and
+written on the last.
+
+**THE FINDING IS THAT A GREEN HARNESS ON A CORPUS THAT COMPUTES NaN LOOKS
+EXACTLY LIKE A GREEN HARNESS.**
+
+    HARNESS PASS: checked 3967  failed 0  inadmissible 0     <- at the first run
+    CntrPar%WE_GearboxRatio == 0.0    3027 of 3967           <- the FIRST statement
+      of those, VS_RefSpd == 0 too    2667                      divides by it
+    CntrPar%TRA_ExclBand    == -600   2863                   <- the band is EMPTY
+    the in-band arm                     55 of 3967  (1.4%)
+
+`_base` puts an unstated real at `lo + (hi-lo)*frac` of the +/-1e3 default, and
+for these three parameters that lands on the degenerate region -- unit #47's
+`AWC_Mode = -600` met on REALS rather than on a mode selector. Three quarters of
+the corpus divided by zero, every comparison below answered FALSE on both sides
+identically, and nothing in the harness's own report says so. **The mutation
+score is what exposed it and one `fprintf` over the inputs is what named it**
+(`evidence/RefSpeedExclusion/inputs_census.txt`, fifteen seconds).
+
+**NO WIDENING COULD HAVE KILLED THE FIVE SURVIVORS, AND THAT IS WHY THE PIN IS
+INSTRUMENTAL AS WELL AS PHYSICAL.**
+
+    a6584ecf  '>' -> '>='   the band's LOWER edge      needs LSS == Excl - Band/2
+    b7b6ea0c  '<' -> '<='   the band's UPPER edge      needs LSS == Excl + Band/2
+    2316abdc  '>' -> '>='   the snap direction         needs LSS == Excl
+    b7564827  '2' -> '3'    the lower half-band width  needs LSS in a Band/6 window
+    c47a891c  '2' -> '3'    the upper half-band width  same, mirrored
+
+Three of the five need an exact IEEE equality between a QUOTIENT of two free
+reals and a SUM of two more. `harness/ranges.toml` has no relational entry over
+the reals -- `implied_by` derives a 0/1 flag from a scalar test -- so the
+coincidence has to be CONSTRUCTED. Three `values` pins do it: the domain half is
+the reference's own documentation (`Gearbox ratio [>=1]`, a rotor SPEED, the SIZE
+of a band) and all 22 shipped `Examples/DISCON*.IN`; the instrumental half is
+that `1.0`, `1.0` and `2.0` put the two edges and the centre on `VS_RefSpd`'s own
+R6 ladder rungs `0.0`, `2.0` and `1.0`. Said plainly in the entry, with the cost.
+
+    in-band arm      55 of 3,967 (1.4%)  ->  4,752 of 13,777 (34.5%)
+    mutation         28/36 = 0.7778      ->  33/36 = 0.9167, NOTHING DECLARED
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness (`harness/RefSpeedExclusion.json`) | **13,777 checked, 0 failed, 0 inadmissible, GREEN AT THE FIRST RUN** -- on the repaired corpus and on the first one alike. R4 compares the return value plus 195 out-parameters, `LocalVar%rlP` among them, bytewise | **five stubs, four EXACT against point predictions written before the runs**: 13,777 / 4,752 / 22 / 1,088. Arithmetic control 2,992 + 6,033 + 3,907 + 22 + 823 = 13,777 |
+| corpus repair (`inputs_census.txt`, `harness/ranges.toml`) | the census above, and the three pins | the control is the MUTATION SET, not the case count: five survivors alive before, all five dead after, nothing declared |
+| mutation, sanitised (`mutation/RefSpeedExclusion.json`) | **35 mutants, 1 nocompile, 32 killed, 3 equivalent, 0 open. 32/32 = 1.0000.** `--workers 8`. `declared_but_killed`, `unreachable_but_killed` and `capped_operators` all EMPTY; `identity_verified` 36 of 36 | the score IS the red test (E4.6). TWO undeclared sweeps committed either side of the corpus repair |
+| mutation, VALUE ORACLE (`mutation/RefSpeedExclusion.value-oracle.json`) | **36 mutants, 0 nocompile, 33 killed, 3 equivalent. 33/33 = 1.0000** -- the same (empty) survivor SET | the control is the SURVIVOR SET, not the count. `killed_by_sanitizer` is 0 and the clean build did not report |
+| arm partition (`arm_partition.txt`) | all five arms non-empty on both corpora | **a cross-instrument identity nobody designed**: `845` (restart AND in-band), counted from the INPUTS, is the exact kill count of BOTH `negate_cond` mutants at L96 and L113, counted from the OUTPUTS |
+| gate, 27 scenarios (`gate/RefSpeedExclusion.json`) | 5,252,000 values / 351 channels, 0 mismatched | **three, one of them a NEGATIVE CONTROL**: the return path **30,051**, the in-band arm **29,895**, both scenario 9 only and both revert-verified at 0; a 1.0e30 write on the zero-coverage snap line moved **0**, predicted exactly |
+| post-integration (`harness/RefSpeedExclusion.postintegration.json`) | 13,777 checked, 0 failed | the copy-back deleted from this unit's own wrapper: **13,777 of 13,777, PREDICTED 13,777 BEFORE THE RUN** from a pre-integration stub; reverted, rebuilt, green re-taken at 0 |
+
+**THE WRAPPER RED TEST'S PREDICTION IS A CROSS-CONFIGURATION IDENTITY, AND IT IS
+THE PART WORTH COPYING.** `objInst%instRL` is the ONE output of this unit that
+does not travel through `vit_copy_scalars_to_localvariables` -- it crosses as a
+plain `objectinstances_t*` by `C_LOC`. So a PRE-integration stub whose body is
+deleted except for the `instRL` increment fails on exactly the cases in which the
+unit changes something inside `LocalVar`, which is exactly the set the
+POST-integration copy-back deletion must move. One 15-second run
+(`harness.view-noop-stub.json`, 13,777 of 13,777) turned the post-integration
+prediction from a bracket into a point.
+
+**THE ONE REFUTATION, AND WHY BOTH NUMBERS ARE RIGHT.** `no-restart-init` was
+predicted at 845 and measured 814. The 31 are cases whose incoming
+`TRA_LastRefSpd` is ALREADY the snap value they would be given -- all of them
+`had=0 snap=0`, because at `TRA_ExclSpeed = 1.0, TRA_ExclBand = 2.0` the lower
+snap is exactly `1.0 - 1.0`. The mutation sweep's `negate_cond` at the same site
+kills **845**, not 814, and that is not a disagreement: negating the test sends
+the case down the `TRA_LastRefSpd = VS_RefSpeed_LSS` branch, and `LSS` can never
+equal the snap because the band is an OPEN interval. Deleting the block leaves
+the case's own value, which can. Two perturbations of one statement, two failing
+sets, and the difference between them is exactly the 31.
+
+**WHAT 1.0000 DOES NOT COVER.** The gate reaches this unit through ONE scenario
+of 27 -- `TRA_Mode` is 0 in 21 of the 22 shipped DISCON files; the two
+snap-to-edge statements are DEAD IN THE PROGRAM (0 hits in all 27 scenarios) and
+only the differential harness reaches them, at 22 and 823 cases; the three pinned
+parameters have left R6's real-magnitude ladder, so the DIVISOR's extremes are
+gone (the dividend keeps its full ladder); the upper snap arm is 22 cases of
+13,777; and one mutant of the 36 was never built under the sanitiser, so the
+PRIMARY artifact's denominator is 32 and not 33. `evidence/RefSpeedExclusion/mutation_survivors.txt`.
+
+**A `.gitignore` GLOB SILENTLY DROPPED AN EVIDENCE FILE.**
+`refspeedexclusion.localvar-noop-stub.cpp` matches `.gitignore:64`'s `*local*`;
+`git add -A evidence/...` added nothing and reported success, and only
+`git commit` saying "nothing to commit" showed it. Renamed to `view-noop`. The
+predicate that would have caught it is the done-condition's P5, one layer after
+the commit that thought it had recorded the file.
+
+**Procedure.** Four mutation sweeps, every one foreground under
+`mutate_guarded.sh` and routed through the clock; the pair that exceeded the Bash
+tool's 600 s ceiling was moved to the HARNESS-TRACKED background by the tool
+itself and reported back -- nothing was launched with `&`, nothing was polled
+with `sleep`. Eight reset windows, each opened and closed inside ONE command,
+every commit taken outside them. Twenty-one commits, one per expensive artifact.
+`revcheck`: 12 result artifacts, all naming `b3ad414`, clean.
+
+---
+
+
 **As of 2026-08-20: unit #58 `ParseInput_Str_Opt` is `integrated`. FIRST
 dispatch. NINE layers, all green and red-tested, and the mutation layer at
 39 / (50 - 5 - 6) = 1.0000 against a threshold of 1.0. ZERO open survivors, and
@@ -5462,12 +5569,18 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-57 attempted / **51 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+59 attempted / **53 integrated** / 0 integrated_unexercised / 0 out_of_scope /
 **5 deferred** (unit #29 `CheckInputs`, unit #31 `Debug`, unit #32 `FindLine`,
 unit #54 `ParseDbAry_Opt`, unit #55 `ParseInAry_Opt`) /
 **1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 12 remain. 51 + 5 + 1 + 12 = 69.
+69 units in `plan.json`; 10 remain. 53 + 5 + 1 + 10 = 69.
+
+RECOUNTED at unit #59 from `plan.json`, not incremented. It was **one unit
+stale** — it read `57 / 51 integrated / 12 remain`, missing unit #58
+`ParseInput_Str_Opt`. The eleventh time, and the first time it was only one unit
+behind rather than two or more; unit #59's own move is in the number above and
+is not the reason it was wrong.
 
 RECOUNTED at unit #57's second dispatch from `plan.json` with the one command
 below, not incremented. It was **two units stale** — it read

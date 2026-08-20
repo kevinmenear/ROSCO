@@ -9440,3 +9440,140 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   rather than an accident of this unit's inputs should name the rule. The price
   of closing it is also stated once, in DECISIONS.md, rather than re-derived per
   unit: a `generate.py` edit re-prices the gate for every unit already scored.
+
+## A CORPUS THAT DIVIDES BY ZERO IS GREEN, AND `_base` PUTS AN UNSTATED REAL
+## THERE ON PURPOSE
+
+- **Unit #59, and it is unit #47's `AWC_Mode = -600` on a REAL rather than on a
+  mode selector.** The difference is what makes it invisible.
+
+  ```
+  HARNESS PASS: checked 3967  failed 0  inadmissible 0     <- at the first run
+  CntrPar%WE_GearboxRatio == 0.0    3027 of 3967
+    of those, VS_RefSpd == 0 too    2667                   -> 0.0/0.0 = NaN
+  CntrPar%TRA_ExclBand    == -600   2863                   -> the band is EMPTY
+  the in-band arm                     55 of 3967  (1.4%)
+  ```
+
+  `generate._base` is `lo + (hi - lo) * frac`, `frac` from
+  `(0.5, 0.35, 0.65, 0.2, 0.8)[i % 5]`, so on the +/-1e3 default the parameters
+  of one predicate land at `0.0`, `0.0`, `300.0` and `-600.0`. A mode selector at
+  -600 falls off an `IF`/`ELSEIF` chain and the unit does nothing, which the
+  unit's own no-op red test shows immediately. **A DIVISOR at 0.0 makes the unit
+  COMPUTE, and compute identically on both sides**, so every red test is red,
+  every green is green, and the harness's report says only
+  `UNCONSTRAINED: 9 varied parameter(s) on the +/-1e3 default` -- which names the
+  parameters and not the values they were given.
+
+  **The mutation score is what exposes it and one `fprintf` is what names it.**
+  Patch a census of the reference's first arithmetic statement's operands in
+  before the call, run `harness.sh --no-generate` so the corpus stays byte for
+  byte, aggregate with `sort | uniq -c`, strip the `fprintf`. Fifteen seconds.
+  **Do it for any unit whose first statement divides**, before reading a green as
+  evidence.
+
+## `harness/ranges.toml` HAS NO RELATION OVER THE REALS, AND THE LEVER THAT
+## SUBSTITUTES IS CHOOSING THE CONSTANTS
+
+- **Unit #59. Five mutants that no WIDENING can reach.**
+
+  ```
+  a6584ecf  '>' -> '>='   the band's LOWER edge      needs LSS == Excl - Band/2
+  b7b6ea0c  '<' -> '<='   the band's UPPER edge      needs LSS == Excl + Band/2
+  2316abdc  '>' -> '>='   the snap direction         needs LSS == Excl
+  b7564827  '2' -> '3'    the lower half-band width  needs LSS in a Band/6 window
+  c47a891c  '2' -> '3'    the upper half-band width  same, mirrored
+  ```
+
+  `LSS` is `VS_RefSpd / WE_GearboxRatio`, so three of the five need an exact IEEE
+  equality between a QUOTIENT of two free reals and a SUM of two more. The
+  generator fills parameters independently; the probability is zero by
+  construction, not small. `implied_by` (the SEVENTH kind of entry) compares one
+  parameter against one INTEGER literal and writes a 0/1 flag -- it cannot say
+  this.
+
+  **What works is to choose the stated constants so the coincidence EXISTS.**
+  Pin the configuration parameters with `values` whose first entries put the
+  compared thresholds on rungs the free parameter's own R6 ladder already
+  contains -- read the ladder out of the census rather than guessing it:
+
+  ```
+  CntrPar_WE_GearboxRatio = { values = [1.0, 97.0] }   -> LSS IS VS_RefSpd at 1.0
+  CntrPar_TRA_ExclSpeed   = { values = [1.0, 0.8]  }
+  CntrPar_TRA_ExclBand    = { values = [2.0, 0.1]  }   -> edges 0.0 and 2.0, centre 1.0
+                                                          all three ARE ladder rungs
+  in-band arm  55/3967 (1.4%) -> 4752/13777 (34.5%)
+  mutation     0.7778 -> 0.9167, NOTHING DECLARED
+  ```
+
+  **SAY WHICH HALF IS PHYSICAL AND WHICH IS INSTRUMENTAL, IN THE ENTRY.** The
+  domain half here is the reference's own documentation (`Gearbox ratio [>=1]`, a
+  rotor SPEED, the SIZE of a band) and the 22 shipped `Examples/DISCON*.IN`; the
+  instrumental half is the CHOICE of 1.0, 1.0 and 2.0 and their ORDER. An entry
+  that states only the physical half reads as a domain claim and is really a
+  measurement design.
+
+  **AND STATE WHAT LEAVES.** A parameter with stated `values` or a stated range
+  leaves R6's real-magnitude ladder entirely -- subnormal, flush-to-zero,
+  overflow and negative zero all go. Pin the DIVISOR and keep the DIVIDEND free
+  where you have the choice, so the magnitudes are still swept through one
+  operand.
+
+## A STUB THAT DELETES AND A MUTANT THAT NEGATES THE SAME PREDICATE ARE
+## DIFFERENT INSTRUMENTS, AND THE GAP IS A NUMBER WORTH HAVING
+
+- **Unit #59.** The `IF (LocalVar%restart)` block deleted fails **814**; the
+  `negate_cond` mutant on the test inside it kills **845**. Both are right.
+
+  ```
+  negate   -> the arm computes TRA_LastRefSpd = LSS, and LSS can NEVER equal the
+              snap value: the band is an OPEN interval and LSS is strictly inside
+  delete   -> the slot keeps the case's own incoming value, which CAN equal it
+  845 - 814 = 31 cases, all `had=0 snap=0`
+  ```
+
+  **So do not reconcile a stub count against a mutant count on the same
+  statement.** The difference is the set of cases whose incoming state already
+  equals the answer, it is a property of the CORPUS, and one `fprintf` measures
+  it exactly. Where a prediction is taken from one instrument and checked against
+  the other, predict the gap too.
+
+## THE POST-INTEGRATION COPY-BACK RED TEST'S FAILING SET IS ONE PRE-INTEGRATION
+## STUB AWAY
+
+- **Unit #59, and it generalises to every unit integrated with
+  `--reverse-copy`.** The wrapper's `vit_copy_scalars_to_<type>` carries every
+  output EXCEPT the ones passed by `C_LOC` with no view. Here that is exactly
+  one: `objInst%instRL`.
+
+  ```
+  evidence/<U>/<stem>.view-noop-stub.cpp    the body deleted, instRL advanced by hand
+    pre-integration  13,777 of 13,777       = the cases that change something in LocalVar
+  the copy-back deleted from the wrapper
+    post-integration 13,777 of 13,777       PREDICTED, not observed-then-explained
+  ```
+
+  The two failing sets are the same set by construction, so a 15-second
+  pre-integration run turns the post-integration prediction from a bracket into
+  a point. **Build the stub by taking the unit's existing no-op and reproducing
+  by hand only the outputs that do NOT travel through the copy-back** -- read the
+  emitted wrapper for which those are, which is the same read unit #51 already
+  requires.
+
+## `git add` ON AN IGNORED PATH IS SILENT, SO CHECK `git status`, NOT THE EXIT
+## CODE
+
+- **Unit #59.** `evidence/RefSpeedExclusion/refspeedexclusion.localvar-noop-stub.cpp`
+  matches `.gitignore:64`'s `*local*`.
+
+  ```
+  git add -A evidence/RefSpeedExclusion     exit 0, no output, nothing staged
+  git commit -m ...                         "nothing to commit, working tree clean"
+  ```
+
+  Visible only because the two were chained `add && commit`; as separate calls
+  the `add` reports success and the file is never committed. The done-condition's
+  P5 (`unresolved_evidence`) catches it one layer later, once `plan.json` names
+  the file. **Run `git status --porcelain` after staging an evidence directory**,
+  and treat a name containing `local`, `test`, `build` or `Makefile` in this tree
+  as ignored until shown otherwise.

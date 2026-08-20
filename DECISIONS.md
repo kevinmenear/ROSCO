@@ -2,6 +2,152 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #59 — RefSpeedExclusion — 2026-08-20
+
+**Disposition `integrated`.** Seven layers, all green and red-tested. Mutation
+32 / (35 − 3) = 1.0000 sanitised and 33 / (36 − 3) = 1.0000 on the value oracle,
+same empty survivor set.
+
+### A GREEN DIFFERENTIAL HARNESS ON A CORPUS THAT COMPUTES NaN IS
+### INDISTINGUISHABLE FROM A GREEN DIFFERENTIAL HARNESS
+
+The first corpus passed **3,967 of 3,967 at the first run**. It was also, in
+3,027 of those cases, evaluating `LocalVar%VS_RefSpd / CntrPar%WE_GearboxRatio`
+with the divisor at exactly `0.0` — 2,667 of them with the dividend at 0.0 too,
+so the unit's first statement produced NaN and every comparison under it answered
+FALSE on both sides identically. In a further 2,863 cases `TRA_ExclBand` was
+`-600.0`, which makes `(ExclSpeed + 300, ExclSpeed − 300)` an EMPTY interval. The
+arm the unit exists for held **55 cases of 3,967**.
+
+None of that is visible in anything the harness prints. Its report says
+
+    UNCONSTRAINED: 9 varied parameter(s) on the +/-1e3 default: CntrPar_TRA_ExclBand,
+      CntrPar_TRA_ExclSpeed, CntrPar_TRA_RateLimit, CntrPar_WE_GearboxRatio, ...
+
+which names the parameters and not the values `_base` gives them. `_base` is
+`lo + (hi − lo) * frac` with `frac` drawn from `(0.5, 0.35, 0.65, 0.2, 0.8)` by
+the parameter's index, so on the ±1e3 default the four inputs of this unit's
+band predicate sit at `0.0`, `0.0`, `300.0` and `−600.0`. **This is unit #47's
+`AWC_Mode = −600` finding met on REALS rather than on a mode selector**, and the
+difference matters: a mode selector at −600 falls off an `IF`/`ELSEIF` chain and
+the unit does nothing, which a no-op red test shows immediately; a DIVISOR at 0.0
+makes the unit compute, and compute identically on both sides, forever.
+
+**What exposed it was the mutation score** (0.7778, with five survivors all
+sitting on the exclusion band's edges), and **what named it was one `fprintf`
+over the inputs** — `evidence/RefSpeedExclusion/inputs_census.txt`, fifteen
+seconds, `--no-generate` so the corpus stayed byte-identical to the scored one.
+
+**PROPOSED AS A METHOD AMENDMENT** (invariant layer untouched): P9 says coverage
+is not visibility. The sharper form this unit measured is that **a green
+differential result is not evidence at all until the corpus has been shown to
+COMPUTE** — and the cheapest general check is to census the inputs of the
+reference's first arithmetic statement for the annihilating value (0 for a
+divisor, 0 for a multiplicative gain, an inverted pair for an interval). It
+costs one `fprintf` and it should probably be a rule rather than a habit.
+
+### `harness/ranges.toml` HAS NO WAY TO STATE A RELATION OVER THE REALS, AND
+### THREE MUTANTS OF THIS UNIT NEED ONE
+
+Five mutants survived the first sweep:
+
+    a6584ecf  '>' -> '>='   the band's LOWER edge      needs LSS == Excl - Band/2
+    b7b6ea0c  '<' -> '<='   the band's UPPER edge      needs LSS == Excl + Band/2
+    2316abdc  '>' -> '>='   the snap direction         needs LSS == Excl
+    b7564827  '2' -> '3'    the lower half-band width  needs LSS in a Band/6 window
+    c47a891c  '2' -> '3'    the upper half-band width  same, mirrored
+
+where `LSS` is `VS_RefSpd / WE_GearboxRatio`. The first three need an **exact
+IEEE equality between a quotient of two independently drawn free reals and a sum
+of two more**. No widening of any single parameter produces that: the generator
+fills each parameter independently, and the probability that four free draws
+satisfy an exact equality is zero by construction rather than small.
+
+The file's only relational entry is `implied_by` (unit #50), which derives a
+**0/1 flag** from a scalar test — `_IMPLIED_OPS` compares one parameter against
+one integer literal and writes 1 or 0 into another. It cannot express
+`d == a/b ± c/2`.
+
+**What was done instead, and it is the reason the pin's comment says
+"instrumental" out loud.** Three `values` pins fix `WE_GearboxRatio`,
+`TRA_ExclSpeed` and `TRA_ExclBand` at small enumerations whose FIRST entries make
+the three compared quantities `0.0`, `1.0` and `2.0` — three values `VS_RefSpd`'s
+own R6 ladder already contains exactly. The coincidence is CONSTRUCTED by
+choosing the constants rather than found by widening. All five mutants died with
+nothing declared, and the in-band arm went from 55 of 3,967 to **4,752 of
+13,777**.
+
+**THE PRICE, AND IT IS REAL.** A parameter with a stated range or stated values
+leaves R6's real-magnitude ladder, so the subnormal / flush-to-zero / overflow
+rungs and negative zero are gone from all three. A defect that shows only at an
+extreme magnitude of the DIVISOR, or of the band, has nothing in this campaign to
+disagree with. The dividend (`VS_RefSpd`) and `TRA_RateLimit` keep their full
+ladders, so the arithmetic is still swept from 5e-324 to 1e300 — through one
+operand rather than through both.
+
+**WHAT WOULD CLOSE IT PROPERLY.** An eighth kind of entry in
+`harness/ranges.toml`: a REAL relation, `{ equals = "<expr over other
+parameters>", cases = N }`, applied after every stage the way `implied_by` is,
+that rewrites N cases to satisfy an exact equality between free reals and reports
+the count. It is the same shape as `implied_by` with a real-valued right-hand
+side and an arity greater than two. The number that would justify it is three
+mutants on THIS unit, and the shape generalises to every unit whose predicate
+compares a derived quantity against a threshold built from other inputs — which
+in this file is at least `SetpointSmoother`, `Shutdown` and `Startup`. Not
+proposed as a change here: this unit closed at 1.0000 without it, and X3 says a
+verification default is not changed mid-run.
+
+### TWO PERTURBATIONS OF ONE STATEMENT CAN HAVE DIFFERENT FAILING SETS, AND THE
+### DIFFERENCE IS A MEASUREMENT RATHER THAN A DISAGREEMENT
+
+`no-restart-init` — the whole `IF (LocalVar%restart)` block deleted — was
+predicted at 845 (restart AND in-band) and measured **814**. The mutation
+sweep's `negate_cond` at the same site kills **845**.
+
+Both are right. Negating the test sends the in-band restart cases down
+`TRA_LastRefSpd = VS_RefSpeed_LSS`, and `LSS` can never equal the snap value
+because the band is an OPEN interval and `LSS` is strictly inside it. DELETING
+the block leaves the case's own incoming value, which CAN equal the snap — and
+does, on exactly 31 cases, all of them `had=0 snap=0` (at
+`TRA_ExclSpeed = 1.0, TRA_ExclBand = 2.0` the lower snap is `1.0 − 1.0`).
+
+**The rule: a stub that DELETES and a mutant that NEGATES the same predicate are
+different instruments.** Where a prediction is taken from one and checked against
+the other, the gap is the set of cases whose incoming state already equals the
+answer — which is a property of the corpus worth having a number for, not an
+inconsistency to reconcile.
+
+### A CROSS-CONFIGURATION IDENTITY MAKES THE POST-INTEGRATION PREDICTION A POINT
+
+`objInst%instRL` is the only output of this unit that does NOT travel through
+`vit_copy_scalars_to_localvariables`: it crosses as a plain `objectinstances_t*`
+by `C_LOC`, with no view and no copy-back. So a PRE-integration stub whose body
+is deleted except for the `instRL` increment fails on exactly the cases in which
+the unit changes something inside `LocalVar` — which is exactly the set the
+POST-integration copy-back deletion must move. One 15-second run gave 13,777 of
+13,777; the wrapper red test then moved 13,777 of 13,777.
+
+Worth carrying to any unit whose wrapper carries a `--reverse-copy`: the
+prediction for that red test is a pre-integration stub away, and the stub is the
+existing no-op with the non-view outputs reproduced by hand.
+
+### A `.gitignore` GLOB DROPPED AN EVIDENCE FILE AND `git add` REPORTED SUCCESS
+
+`evidence/RefSpeedExclusion/refspeedexclusion.localvar-noop-stub.cpp` matches
+`.gitignore:64`'s `*local*`. `git add -A evidence/RefSpeedExclusion` added
+nothing, exited 0, and printed nothing; only the `git commit` chained after it,
+saying "nothing to commit, working tree clean", made it visible — and only
+because the chain was `add && commit` rather than two separate calls.
+
+Renamed to `view-noop`. Not proposed as a script change: the done-condition's P5
+(`unresolved_evidence`) catches exactly this, one layer later, and it caught the
+file's absence when `plan.json` named it. What is worth writing down is that
+**`git add` on an ignored path is silent**, so a `git status --porcelain` after
+staging is the check, not the `add`'s exit code.
+
+---
+
+
 ## Unit #54 — ParseDbAry_Opt — third dispatch — 2026-08-18
 
 **Disposition `deferred`, on P12 alone: 105 / (185 − 17 − 30) = 0.7609 against a
