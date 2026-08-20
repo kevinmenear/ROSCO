@@ -1,0 +1,166 @@
+VariableSpeedControl -- THE DIFFERENTIAL HARNESS COULD NOT BE BUILT, AND THE
+WALL IS TWO NUMBERS RATHER THAN AN OPINION
+================================================================================
+Unit #60, first dispatch, 2026-08-20. Measured in `vit-dev`, 7.736 GiB, 8 CPUs,
+on the CLEAN tree (54dd134), against `translations/Controllers/variablespeedcontrol.cpp`
+at 6af9b04e.
+
+THE FIRST RUN, AND WHAT IT SAID
+--------------------------------------------------------------------------------
+    bash scripts/harness.sh VariableSpeedControl Controllers variablespeedcontrol \
+         rosco/controller/src/Controllers.f90 --out harness/VariableSpeedControl.json
+
+    harness.sh: VIT wrote the per-unit layout directly; no move needed
+    harness.sh: added vit_integration_shim.o to LIBS
+    harness.sh: 6 bridge(s) kept in ...variablespeedcontrol_callees.f90
+    run_if_time_remains: exit 137 after 68s
+
+Exit 137 is SIGKILL. Steps 1, 2 and 2e all succeeded -- the Makefile, the
+Fortran bridge and all six callee bridges were written -- and the kill is inside
+`vit_harness.py`'s step 3. Nothing else is printed, and no artifact is written:
+an OOM-killed generator does not report its own size, which is why the two
+probes below exist.
+
+WHAT THE PLAN SAYS, BEFORE ANY GENERATION (`--no-build --dump-plan`, 0 seconds)
+--------------------------------------------------------------------------------
+    VariableSpeedControl: 481 C parameter(s), 99 extent(s), 455 output(s)
+    VariableSpeedControl: 224 parameter(s) varied, 257 held at an inert value
+      CntrPar: reads 22 field(s)
+      ErrVar:    read WHOLE (passed to a callee) -- every field varied
+      LocalVar:  read WHOLE (passed to a callee) -- every field varied
+      avrSWAP:   read WHOLE (passed to a callee) -- every field varied
+      objInst:   read WHOLE (passed to a callee) -- every field varied
+      UNCONSTRAINED: 160 varied parameter(s) on the +/-1e3 default
+      note: avrSWAP: assumed-size array, 3000 element(s) from vit.yaml
+      10 predicate knob(s)
+
+224 varied is FOUR TIMES the largest corpus this campaign has generated. The
+three Controllers.f90 units either side of it, from the same `--dump-plan`:
+
+    FlapControl      476 C parameter(s)   21 varied, 455 held,  3 knobs   9,721 cases
+    CableControl     481 C parameter(s)   31 varied, 450 held,  4 knobs   7,640 cases
+    IPC              505 C parameter(s)   55 varied, 450 held,  6 knobs  83,754 cases
+    VariableSpeedControl                 224 varied, 257 held, 10 knobs   ????? cases
+
+THE CAUSE IS ONE LINE OF THE REFERENCE, AND IT IS A REAL READ
+--------------------------------------------------------------------------------
+`harness/statevary.py::read_set` marks an argument read WHOLE when the body
+mentions it as a bare word -- "it was handed to a callee, and what the callee
+touches is not visible here". This unit does that with `LocalVar`:
+
+    Controllers.f90:346
+      LocalVar%GenTqAz = PIDController(LocalVar%AzError, CntrPar%RP_Gains(1),
+          ..., LocalVar%piP, LocalVar%restart, objInst, LocalVar)
+
+`objInst` and `LocalVar` are both passed whole, and `ErrVar` is passed whole to
+`interp1d` and to `unwrap`. That is not an over-reading of the source: those are
+the arguments the reference hands over. `LocalVar` alone expands to 179 C
+parameters, which is where 224 - 55 comes from.
+
+PROBE 1 -- HOW MANY CASES (`probe_corpus_count.py`, 92 seconds)
+--------------------------------------------------------------------------------
+    DONE cases=143261
+
+Per rule, from the same run:
+
+    R6_reference_literals   21038 value(s) from 25 literal(s), each under every
+                            declared value of 2 flag(s); 1353 integer value(s);
+                            4422 real magnitude(s) across the scalar reals whose
+                            range is DEFAULTED rather than declared; 5360 of
+                            those re-run with every OTHER defaulted scalar real
+                            pinned to an isolating 0.0 or 1e300; 1340 re-run
+                            unpinned; 134 at NEGATIVE ZERO; 512 knob pair
+                            combinations (SUBSAMPLED from 679, and the full
+                            cross product is 4,423,680); 1026 relational cases
+                            on one predicate; 92 + 144 character values
+    R5_non_degenerate_shape  8 varied extent(s); 26 FIXED by the type, one of
+                            them 3000; 65 HELD
+    R2_flag_values          4 value(s) across 2 flag(s)
+    R13_staging_capacity    256 case(s)
+    R3_no_dead_signal       160 real value(s), none zero in every case
+    R4_compare_all_outputs  return value + 455 out-parameter(s)
+
+The three sub-counts that scale with the DEFAULTED-scalar-real set -- 4422, 5360
+and 1340 -- are 78% of R6's non-literal values, and that set is 160 parameters
+because `LocalVar` is read whole.
+
+PROBE 2 -- HOW MANY BYTES PER CASE (`probe_corpus_size.py`, 16 seconds)
+--------------------------------------------------------------------------------
+Run under `ulimit -v 5500000` so the failure is a `MemoryError` with a traceback
+rather than a SIGKILL with nothing:
+
+    cases     2000  maxrss      398 MB
+    cases     4000  maxrss      775 MB
+    cases     6000  maxrss     1151 MB
+    ...
+    cases    28000  maxrss     5294 MB
+    MemoryError after 28296 _case_impl calls
+
+    File "harness/generate.py", line 2150, in generate
+      cases.append(_case(sig, ex0, rng, {p.name: v, **fv}, held=held))
+
+The slope is FLAT over fourteen points: (5294 - 398) MB / 26,000 cases =
+**188 KB per case**, and the intercept is 21 MB. It is not a leak and it is not
+a spike; it is what one case of this signature costs.
+
+Where the 188 KB is: `_case_impl` fills every array-valued parameter per case
+(`harness/generate.py:1885`, `_fill_array`). `avrSWAP` is 3,000 doubles, and a
+Python list of 3,000 distinct floats is 3000 x (8 byte pointer + 32 byte float
+object) = 120 KB -- 64% of the total. The other ~68 KB is the remaining 480
+parameters, most of them arrays at extent 3 to 12.
+
+THE ARITHMETIC, AND WHY MORE MEMORY IS NOT THE ANSWER
+--------------------------------------------------------------------------------
+    generation      143,261 cases x 188 KB  =  27.0 GB      VM has 7.736 GiB
+    fits in the VM   7.7 GB / 188 KB        =  ~41,000 cases  (29% of the corpus)
+
+Even granting unlimited memory for the generation, the two layers downstream do
+not fit the campaign's own shape:
+
+    emit            IPC's 83,754 cases wrote an 860 MB case file with no
+                    avrSWAP. This signature carries ~4,500 doubles per case, so
+                    143,261 cases is ~5.2 GB on disk -- and `harness/emit.py`
+                    has a MEASURED SIGKILL ceiling between 84,754 and 95,310
+                    cases in this same VM (STATUS.md, unit #53).
+    mutation        `vit_mutate.py` rebuilds and re-runs the WHOLE corpus per
+                    mutant. RefSpeedExclusion: 36 mutants over 13,777 cases.
+                    143,261 cases is 10x that corpus at 3x the per-case width.
+
+So the wall is not "the VM is small". It is that this unit's signature makes the
+campaign's generated corpus an order of magnitude larger than any it has run,
+and the differential-harness and mutation layers are both priced per case.
+
+WHAT WOULD MOVE IT, PRICED, AND NOT DONE HERE
+--------------------------------------------------------------------------------
+1. STATED RANGES. `statevary.constrain` sets `bounds_source = stated:<name>` for
+   any parameter named in `harness/ranges.toml`, and `Signature.defaulted` is
+   what R6's three big sub-counts iterate over. Naming the 160 unconstrained
+   parameters would cut the count in roughly that proportion. REFUSED HERE, and
+   the reason is the file's own rule: every entry NARROWS the domain and must
+   carry the measurement or the source line that forces it. 160 entries written
+   in one dispatch to make a number smaller would be 160 judgements nobody made.
+   What is worth writing is the handful this unit's own arithmetic needs -- and
+   that is a corpus DESIGN, which wants its own dispatch.
+
+2. A REPRESENTATION FIX IN `_case_impl`. Storing a real array fill as
+   `array.array('d')` instead of a list of float objects is the same doubles at
+   8 bytes each: 188 KB -> ~68 KB, a 2.8x cut, with a decisive positive control
+   available (regenerate FlapControl's corpus and require the `.bin` to be
+   BYTE-IDENTICAL). It does not close the gap alone -- 143,261 x 68 KB is still
+   9.7 GB -- and it touches the generator that produced every other unit's
+   evidence, so it is a change that wants its own measurement, not a change made
+   in passing while a unit is open (X2 says fix the tool you control; it does
+   not say fix it inside another unit's dispatch).
+
+3. A NARROWER READ SET. `PIDController` is unit #34 and its translation states
+   exactly which `LocalVar` fields it touches, so the whole-argument
+   over-approximation could in principle be replaced by a transitive read set.
+   That is a change to how EVERY unit's corpus is chosen (X3), and it would make
+   this unit's evidence incomparable with the 59 before it.
+
+WHAT THIS UNIT HAS INSTEAD, AND WHAT IT DOES NOT COVER
+--------------------------------------------------------------------------------
+See `evidence/VariableSpeedControl/README.md`. The gate is the layer that does
+not read a case file, and it is the one this dispatch took. The differential
+harness, the post-integration harness and the mutation score are NOT taken, and
+the unit is `deferred` for exactly that reason rather than closed.
