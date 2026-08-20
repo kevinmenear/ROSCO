@@ -282,6 +282,10 @@ translations:
     status: integrated
     cpp_file: translations/ControllerBlocks/computevariablessetpoints.cpp
     verification: simulation
+  PitchControl:
+    status: integrated
+    cpp_file: translations/Controllers/pitchcontrol.cpp
+    verification: simulation
 types:
   ControlParameters:
     strategy: view

@@ -147,6 +147,7 @@ set(SOURCES
     src/variablespeedcontrol.cpp
     src/writerestartfile.cpp
     src/computevariablessetpoints.cpp
+    src/pitchcontrol.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

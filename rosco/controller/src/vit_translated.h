@@ -91,6 +91,7 @@ void refspeedexclusion_c(localvariables_view_t* LocalVar, controlparameters_view
 void variablespeedcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst, errorvariables_view_t* ErrVar);
 void writerestartfile_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_view_t* ErrVar, objectinstances_t* objInst, char* RootName, int size_avcOUTNAME);
 void computevariablessetpoints_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_view_t* ErrVar);
+void pitchcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_view_t* ErrVar);
 
 #ifdef __cplusplus
 }
