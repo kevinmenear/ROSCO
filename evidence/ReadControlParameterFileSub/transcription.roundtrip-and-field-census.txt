@@ -1,0 +1,47 @@
+Two checks that need no instrument, run 2026-08-20 after the translation
+compiled. Neither is a verification: check 1 says the file still holds
+what the generator emits, check 2 says no field the reference writes is
+absent from the translation. Both are NECESSARY and neither is
+sufficient -- nothing here compares a VALUE.
+
+=== 1. TRANSCRIBER ROUND-TRIP ================================================
+    re-run the generator; is its output still present verbatim?
+    generated block: 280 lines
+    present in translations/ReadSetParameters/readcontrolparameterfilesub.cpp: YES
+
+=== 2. FIELD CENSUS ==========================================================
+    CntrPar fields the REFERENCE writes:      211
+    of those, NAMED in the translation:       211
+    MISSING from the translation:               0 
+
+    named in the translation, not WRITTEN by the reference: 0
+      (none)
+
+    THE FIRST RUN OF THIS CENSUS REPORTED 2 MISSING -- n_DT_Out and
+    n_DT_ZMQ -- and the translation writes both. The probe folded every
+    `n_<x>` to `<x>`, which is right for the ~50 extent fields the view
+    carries beside each ALLOCATABLE and WRONG for the two fields whose
+    own names begin with `n_`. `fold()` above now folds only against the
+    view's ALLOCATABLE list. Left recorded rather than quietly fixed:
+    the probe was the thing that was wrong, and a census that reports 2
+    of 211 missing is indistinguishable from a translation with a hole.
+
+=== 3. NEGATIVE CONTROL for check 2 ==========================================
+    delete one parse call from a COPY of the translation and re-run the
+    census. A census that cannot go red is not a measurement.
+    drop the PS_WindSpeeds      call ->  MISSING 1  ['ps_windspeeds']
+    drop the ZMQ_UpdatePeriod   call ->  MISSING 0  []
+    drop the SD_StagePitch      call ->  MISSING 1  ['sd_stagepitch']
+
+    AND THE CONTROL FOUND THE CENSUS'S LIMIT, which is why it was run.
+    Dropping ZMQ_UpdatePeriod's parse call does NOT go red: the field is
+    NAMED again further down, in
+
+        CntrPar->n_DT_ZMQ = lround(CntrPar->ZMQ_UpdatePeriod / LocalVar->DT);
+
+    so check 2 is a census of fields NAMED, not of fields WRITTEN, and any
+    field the translation also READS masks its own missing write. Two of three
+    perturbations moved it; the third is the shape it cannot see. "211 of 211"
+    is therefore an upper bound on a necessary condition, and it is worth
+    exactly that -- it would have caught a whole parse call transcribed onto
+    the wrong field, and it would not have caught this one going missing.
