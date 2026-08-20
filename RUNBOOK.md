@@ -8971,6 +8971,128 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   passes is a claim about the PROGRAMS only if every call site is enumerated** —
   and for a `static` function in an anonymous namespace that is a `grep`.
 
+## A STATED GATE PREDICTION WAS REFUTED BY ITS OWN RUN, AND THAT IS THE FIRST
+## TIME IN THIS CAMPAIGN -- WHICH IS WHY THE PRACTICE IS WORTH THE COST
+
+- **Unit #57, and the refutation is worth more than the four exact predictions
+  beside it.**
+
+  ```
+  PREDICTED  1,857,893 of 5,252,000   147 of 351 channels, all 27 alive
+  MEASURED     370,646 of   728,000    22 channels, scenarios 19, 20, 27 only
+  ```
+
+  The section above ("THE GATE'S ANSWER TO A PERTURBATION IS SET BY THE FAILURE
+  CLASS AND NOT BY THE SITE") is right and this run does not contradict it. What
+  it adds is a THIRD class, and the reason the first two could not have found
+  it: both of them perturbed a REAL.
+
+  ```
+  every parsed value is wrong        1,857,893 / 5,252,000   147 ch   REAL
+  the parse FAILS, aviFAIL = -1      1,583,216 / 4,732,000   131 ch
+  every parsed MODE is wrong           370,646 /   728,000    22 ch   INTEGER
+  ```
+
+  **An INTEGER control parameter is a MODE, not a gain.** `+1` on every value a
+  unit parses does not perturb a trajectory -- it selects a different controller
+  path, and 23 of the 27 scenarios then produce no comparable output at all, so
+  the COMPARED count collapses as well as the mismatched one.
+
+  **Predict the compared count too, not only the mismatched count.** A red test
+  that moves fewer values because fewer values exist is a different measurement
+  from one that moves fewer values because less diverged, and only the pair
+  tells them apart.
+
+  And the general point, which is about the practice rather than about ROSCO: a
+  red test whose count can be predicted exactly is one that can be WRONG. Four
+  units have now written the number down first; this is the first time one of
+  them was refuted, and the refutation is the only reason the item-type/failure-
+  class distinction is now settled rather than assumed.
+
+## A P4 COPY INHERITS ITS SOURCE'S REACHABILITY AS WELL AS ITS BYTES, AND THAT
+## CAN BLOCK A REPAIR RATHER THAN TRANSMIT A DEFECT
+
+- **Unit #57, two open survivors, and no repair this campaign already has a rule
+  for.**
+
+  ```
+  list_read_ints    is_blank(c) || is_eol(c)        the leading scan
+  unit #55          record = Line, 2048 bytes       is_eol REACHABLE
+  unit #57          record = Words(1), a GetWords word   is_eol UNREACHABLE
+  ```
+
+  A branch no input can take is a mutant no input can kill, and this campaign's
+  answer has been to DELETE the restatement and write the proof (unit #32's
+  `LEN_TRIM`, unit #43's `cols > 0` guard, unit #55's `negate_cond 9381bdef`).
+  **That answer is not available to a P4 copy whose SOURCE can take the branch.**
+  Deleting it here would break `check_p4_blocks.py`, break the byte relationship
+  with unit #55, and dissolve the shared measurement the two readers rest on --
+  113 records through gfortran's own READ, which is what makes either of them
+  checkable.
+
+  The campaign already knows a P4 copy inherits its source's DATE (unit #56, the
+  `n < 62` truncation and the missing repeat-count ceiling, twice). Reachability
+  is the same rule for a different attribute, and it points the other way: the
+  date problem is a defect arriving through the copy, and this one is a repair
+  blocked by it.
+
+  **Before copying a parser, a formatter or a tokeniser between two units, ask
+  which of its predicates the NEW caller's record can satisfy** -- and if the
+  answer is "fewer than the old one's", say so in the copy's own comment, so the
+  survivors it will produce are already explained when the sweep finds them.
+  The three ways out are all campaign-level (widen the character corpus for
+  every unit; declare the survivors with that reason; or split the reader and
+  give up the P4 relationship) and none of them belongs to the unit that meets
+  it.
+
+## A CORPUS EXTENSION IS A BYTE-PREFIX EXTENSION ONLY WHEN THE NEW CASES COME
+## LAST, AND A RULE THAT RUNS ONCE PER PLANT INDEX CANNOT SATISFY THAT
+
+- **Unit #57.** Unit #56's rule -- take `b[:len(a)] == a` on every
+  corpus-extending change -- was taken, and it FAILED:
+
+  ```
+  old case file  6,022,734 bytes
+  new case file  6,044,700 bytes
+  b[:len(a)] == a          False
+  ```
+
+  Unit #56 repaired the same failure by moving its new block to its own pass.
+  **No such repair exists when the entries are added to a tuple R14 consumes
+  inside a block it appends after EVERY plant index**: new cases from the `k = 1`
+  block displace everything `k = 2` and `k = 3` emit after it, whatever order the
+  tuple is in.
+
+  So the control is still worth taking -- it is one line and it answers
+  immediately -- but its answer is not always repairable. **When it fails, say
+  which of the two you have**: an extended corpus, on which an unchanged layer's
+  old number is still about the same cases; or a DIFFERENT corpus, on which
+  every layer that reads it must be re-taken and nothing carries over except the
+  mutant IDs, which are a function of the translation.
+
+## A COVERAGE FILE'S OWN CONTROL LINE LOOKS LIKE A NEVER-RUN LINE, AND FOUR
+## UNITS DERIVED THEIR `unreachable` SETS THROUGH IT
+
+- **Unit #57, C12, `evidence/ParseInput_Int_Opt/make_unreachable.py`.**
+
+  ```
+  the parser      re.finditer(r"^  L\s*(\d+)\s", <the WHOLE file>)
+  the file        CONTROL: the entry line's count must equal the case count.
+                    L445  count=12059  void ParseInput_Int_Opt(char* FileLines, ...
+  ```
+
+  So the unit's ENTRY LINE -- the one line that provably runs on every case --
+  was in the never-executed set on every unit that copied this script. It cost
+  nothing on any of them **only because `cppmutate` offers no mutant on an entry
+  line**. A signature carrying a literal (a default argument, an array bound,
+  a `= 0` on a defaulted parameter) would have had a LIVE mutant declared
+  UNREACHABLE, with the coverage file's own control standing as its evidence.
+
+  Repaired by splitting on the `LINES NEVER EXECUTED:` heading and refusing if
+  that heading is absent. **A parser that reads a file this campaign also writes
+  should be anchored to that file's structure, not to a line shape** -- the
+  shape is shared with the header, and the header is where the controls live.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
