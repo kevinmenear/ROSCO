@@ -1,0 +1,94 @@
+VariableSpeedControl -- THE THREE GATE PERTURBATIONS, PREDICTED BEFORE THE RUNS
+================================================================================
+Unit #60. Written at 33ae8066, BEFORE any of the three was executed. Every
+prediction below is read off `coverage/line_coverage.json` against the clean
+source `Controllers.f90` at 54dd134, lines 212-365 -- not off the arm structure
+and not off a hit count alone (unit #48's correction).
+
+THE GREEN THESE CERTIFY
+    gate/VariableSpeedControl.json   5,252,000 values / 351 channels /
+                                     27 scenarios, 0 mismatched
+
+THE UNIT'S SCENARIO SET, MEASURED
+    Controllers.f90:236 (the first executable statement)
+        407,976 hits in 23 scenarios: 1-9, 11, 12, 15-23, 25, 26, 27
+        ABSENT from 10, 13, 14 and 24.
+    So no perturbation anywhere in this unit can move a value in those four,
+    and every prediction below is a subset of the 23.
+
+--------------------------------------------------------------------------------
+RT1 -- THE RETURN PATH.  `gate/VariableSpeedControl.redtest.return_path.json`
+
+    rosco/controller/src/variablespeedcontrol.cpp:623
+      from  avrSWAP[47 - 1] = static_cast<float>(std::fmax(0.0, LocalVar->VS_LastGenTrq));
+      to    avrSWAP[47 - 1] = static_cast<float>(std::fmax(0.0, LocalVar->VS_LastGenTrq) + 1.0);
+
+ADDITIVE, NOT MULTIPLICATIVE, and the reason is unit #46's: `MAX(0.0, x)` is
+exactly 0.0 whenever the demanded torque is non-positive, and a scale through an
+exact zero is a no-op. `+ 1.0` moves every call including those.
+
+`avrSWAP(47)` is the one value this procedure exists to produce -- the demanded
+generator torque -- so this is the widest channel the unit has, and it feeds the
+drivetrain, hence `gen_speed` and `gen_power` as well as `gen_torque`.
+
+    PREDICTED  NON-ZERO, and LARGE.
+    PREDICTED  scenario set EXACTLY the 23 above; NOTHING in 10, 13, 14, 24.
+    The scenario set is the checkable half; the value count is not predicted to
+    a number, and saying so is the point (unit #59: the scenario count is a
+    separate prediction from the value count).
+
+--------------------------------------------------------------------------------
+RT2 -- THE K*OMEGA^2 REGION-2 ARM.  `gate/VariableSpeedControl.redtest.komega_region2.json`
+
+    rosco/controller/src/variablespeedcontrol.cpp:372
+      from  LocalVar->GenTq = LocalVar->VS_KOmega2_GenTq;
+      to    LocalVar->GenTq = LocalVar->VS_KOmega2_GenTq * 2.0;
+
+    Controllers.f90:281, the Region 2 assignment inside the K*Omega^2 law
+        15,987 hits, SCENARIO 12 ONLY
+    reached through Controllers.f90:272 (`ELSEIF VS_ControlMode == VS_Mode_KOmega`)
+        15,999 hits, SCENARIO 12 ONLY
+
+Scenario 12 is the only one of the 27 shipped configurations that sets
+`VS_ControlMode = 1`; the other 22 that reach the unit take the tip-speed-ratio
+PI arm (Controllers.f90:264, 391,977 hits in 22 scenarios).
+
+    PREDICTED  NON-ZERO.
+    PREDICTED  scenario set EXACTLY {12}, and empty everywhere else -- which is
+               a stronger statement than "it goes red", because 22 of the 23
+               scenarios that DO call this unit must stay at zero.
+
+MULTIPLICATIVE here on purpose. `VS_KOmega2_GenTq` is `VS_Rgn2K * GenSpeedF *
+GenSpeedF` and scenario 12 is a running turbine, so the factor is non-zero on
+essentially every one of the 15,987 calls; an additive perturbation would be
+indistinguishable in shape from RT1's.
+
+--------------------------------------------------------------------------------
+RT3 -- THE NEGATIVE CONTROL.  `gate/VariableSpeedControl.redtest.dead_arm_control.json`
+
+    rosco/controller/src/variablespeedcontrol.cpp:376
+      from  LocalVar->GenTq = CntrPar->VS_RtTq;
+      to    LocalVar->GenTq = 1.0e30;
+
+    Controllers.f90:285, the Region 3 CONSTANT-TORQUE arm
+        ABSENT from coverage: 0 hits in ALL 27 scenarios.
+
+Four of the seven `VS_State` arms are dead in the program -- Region 2.5,
+Region 3 constant torque, Region 3 constant power and Region 3 fixed blade pitch
+(Controllers.f90:282-296, all absent) -- because the only scenario that enters
+the K*Omega^2 law at all, scenario 12, holds `VS_State` at 1 or 2 (12 hits and
+15,987 hits at :279 and :281, which sum to :272's 15,999).
+
+    PREDICTED  EXACTLY 0 of 5,252,000.
+
+1.0e30 is chosen so that the prediction has no hiding place: if any scenario
+reached this statement the torque would leave every plausible range and the
+mismatch count would be enormous. A zero here is what separates "the gate sees
+this unit" (RT1, RT2) from "the gate sees the edit".
+
+--------------------------------------------------------------------------------
+ALL THREE ARE REVERT-VERIFIED by `scripts/gate.py` itself: it restores the file,
+rebuilds, re-runs, and records `revert_verified` / `revert_mismatched`. A red
+that does not come back green is a tree that was left dirty, not a measurement.
+
+RESULTS ARE APPENDED BELOW AFTER EACH RUN.
