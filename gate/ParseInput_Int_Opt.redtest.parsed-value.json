@@ -6,7 +6,7 @@
  "comparison_verdict": "FAIL",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "343f843",
+ "loop_rev": "8f9d72f",
  "mismatched": 370646,
  "mismatched_channels": [
   "scenario_19:bld_pitch 15999/16000",
@@ -61,8 +61,8 @@
  ],
  "notes": [
   "PREDICTED, before the run, from the RUNBOOK family rule that this gate answer is set by the failure class and not by the site: 1,857,893 of 5,252,000 across 147 of 351 channels, all 27 scenarios alive -- the number ParseInAry_Opt and ParseInput_Dbl_Opt both measured for the same edit.",
-  "THE PREDICTION IS FALSIFIED, AND THAT IS THE FINDING. An INTEGER control parameter is a MODE, not a gain. Adding one to every value this unit parses selects a different controller path in every scenario, and most of them then produce no comparable output at all: 728,000 values compared against 5,252,000 in the green run, with mismatches in scenarios 19, 20 and 27 only. This is a THIRD failure class beside the two the RUNBOOK records (every parsed value wrong -> 1,857,893 / 5,252,000 / 147 ch; the parse fails -> 1,583,216 / 4,732,000 / 131 ch), and it says the family rule is about the failure class and NOT about the item type -- which is exactly the reading the prediction was written to be able to refute.",
-  "The red test still does what a red test must: the perturbation moved 370,646 values and the revert moved 0 of 5,252,000."
+  "THE PREDICTION IS FALSIFIED, AND THAT IS THE FINDING. An INTEGER control parameter is a MODE, not a gain. Adding one to every value this unit parses selects a different controller path in every scenario, and most of them then produce no comparable output at all: 728,000 values compared against 5,252,000 in the green run, with mismatches in scenarios 19, 20 and 27 only. This is a THIRD failure class beside the two the RUNBOOK records (every parsed value wrong -> 1,857,893 / 5,252,000 / 147 ch; the parse fails -> 1,583,216 / 4,732,000 / 131 ch), and it says the family rule is about the failure class and NOT about the item type -- which is exactly the reading the prediction was written to be able to refute. PREDICT THE COMPARED COUNT TOO: a red test that moves fewer values because fewer values EXIST is a different measurement from one that moves fewer because less diverged.",
+  "RE-TAKEN at loop 8f9d72f after three R14 entries widened the corpus. The gate never reads the case file, so this number had to come back at 370,646 of 728,000 exactly, as it did at the first run -- which is the control saying what changed was the corpus and nothing the shipped controller does."
  ],
  "perturbation": {
   "file": "rosco/controller/src/parseinput_int_opt.cpp",
