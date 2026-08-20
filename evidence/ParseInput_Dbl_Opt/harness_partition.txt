@@ -1,18 +1,18 @@
-harness partition -- 11562 case(s), corpus translations/ROSCO_Helpers/parseinput_dbl_opt_test/parseinput_dbl_opt_cases.bin
+harness partition -- 13802 case(s), corpus translations/ROSCO_Helpers/parseinput_dbl_opt_test/parseinput_dbl_opt_cases.bin
 
 arm                            cases  scalar-changed   record  Variable moved  Variable IN /= 0
-default-warned                  9148               0     9148             962               962
-not-allowed                     1845            1845        0               0               166
-error, msg refused               211             211        0               0                 0
+default-warned                 10108               0    10108            1442              1442
+not-allowed                     2005            2005        0               0               246
+error, msg refused               771             771        0              14               280
+read-ok                          734               0        0             719               280
 pre-failed                       184               0        0               0                37
-read-ok                          174               0        0             159                 0
-TOTAL                          11562            2056     9148            1121              1165
+TOTAL                          13802            2776    10108            2175              2285
 
 PREDICTIONS READ OFF THIS TABLE, each stated before its run:
   post-integration wrapper red test (the reverse copy deleted):
-      the `scalar-changed` column summed = 2056 must FAIL
-      the rest, 9506, write no scalar and must PASS
-  the PRINT deleted:  the `record` column summed = 9148 must FAIL
+      the `scalar-changed` column summed = 2776 must FAIL
+      the rest, 11026, write no scalar and must PASS
+  the PRINT deleted:  the `record` column summed = 10108 must FAIL
   the READ deleted:   read-failed cases move a scalar and a message; read-ok cases move Variable
 
 AND THE COLUMN THAT IS NOT A PREDICTION BUT A CORPUS MEASUREMENT:
