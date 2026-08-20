@@ -1,6 +1,6 @@
-# done_check.py ReadControlParameterFileSub -- captured 2026-08-20T23:53:59Z by scripts/capture_done_check.sh
+# done_check.py ReadControlParameterFileSub -- captured 2026-08-20T23:55:35Z by scripts/capture_done_check.sh
 
-Run against the committed state at 2224620a ("ReadControlParameterFileSub: state current -- disposition `integrated`, on four layers and two red tests"), with a CLEAN tree, with stdout
+Run against the committed state at 06518889 ("ReadControlParameterFileSub: six target-layer entries earned by this unit"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
