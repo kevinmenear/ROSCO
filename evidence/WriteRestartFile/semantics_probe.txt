@@ -1,0 +1,63 @@
+PREDICTIONS, STATED BEFORE THE RUNS.
+  A  wr_log writes 2 for .TRUE.   -> BIN 2 of 12 bytes (offsets 0 and 8); TXT 0 of 16
+  B  i0d0's `n == 0` case removed -> BIN 0; TXT exactly 1 of 16 (the I0.0(0) record)
+  C  INFILE_LEN 128 -> 129        -> BIN 0; TXT exactly 5 of 16 (root = 120..124,
+                                     whose composed length i+9 is 129..133 and so
+                                     is cut at 128 on one side and 129 on the other;
+                                     root = 119 composes exactly 128 and is cut by
+                                     neither)
+
+--------------------------------------------------------------------------
+GREEN (bash evidence/WriteRestartFile/semantics_probe.sh)
+
+  the bytes gfortran wrote for .TRUE. / .FALSE. / .TRUE.
+      1   0   0   0   0   0   0   0   1   0   0   0
+  bin bytes: 12   text records: 16
+  BIN IDENTICAL
+  TXT IDENTICAL
+
+  Twelve bytes for three default LOGICALs is FOUR BYTES EACH, and .TRUE. is
+  the int32 value 1. That is precisely what `wr_log` writes and precisely what
+  the corpus never checks: both logicals this unit writes are .FALSE. in all
+  195 checkpoints, so the corpus compares the .FALSE. half 390 times and the
+  .TRUE. half zero times. The claim is now MEASURED rather than inherited from
+  the gfortran ABI.
+
+RESULTS OF THE THREE RED TESTS, three for three.
+
+  label        perturbation                        BIN bytes   TXT records
+  ------------------------------------------------------------------------
+  logicaltrue  wr_log writes 2 for .TRUE.              2 of 12      0 of 16
+  i0d0zero     i0d0's `n == 0` case removed            0            1 of 16
+  infilelen    INFILE_LEN 128 -> 129                   0            5 of 16
+
+  logicaltrue  PREDICTED 2 bytes at offsets 0 and 8 and no text change. GOT
+               exactly that -- the two .TRUE. records and nothing else.
+  i0d0zero     PREDICTED exactly one text record, the `I0.0(0)` line, and no
+               byte change. GOT exactly that. `%d` would print "0"; the
+               standard prints BLANKS for a zero value with d == 0, so a
+               checkpoint at Time == 0 is named `<RootName>.RO.chkp`.
+  infilelen    PREDICTED exactly five, root = 120..124: those compose 129..133
+               characters and are cut at 128 on one side and 129 on the other,
+               while root = 119 composes exactly 128 and is cut by neither. GOT
+               exactly five.
+
+WHAT THIS DOES AND DOES NOT CLOSE. It answers "is the translation right about
+these three Fortran semantics" -- yes, at 12 bytes and 16 records, red-tested
+three ways. It does NOT make the CORPUS reach them: `mutation/
+WriteRestartFile.unreachable.json` still declares 7cb6d9d1, 818543b1 and
+f3829a51 unreachable, and that declaration is still true. The two statements are
+about different things and both are worth having; the declaration says the sweep
+cannot discriminate, this says the discrimination would go the right way.
+
+A BIND-MOUNT RACE REPRODUCED HERE, on a path this campaign had not met it on.
+`sed -i.bak` unlinks and recreates the file, and the container read the gap:
+
+    semantics_probe.cpp:10:10: fatal error: writerestartfile.cpp:
+        No such file or directory
+
+on red tests B and C, while the file sat on the host restored and hashing
+correctly. It is the RUNBOOK's units #23/#30 rule met through `sed` rather than
+`cp`. The runner now proves the content from INSIDE the container before
+compiling and retries; the retry fires on attempt 1 every time, which is the
+measurement that the race is real and not a one-off.

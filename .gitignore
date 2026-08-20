@@ -193,3 +193,14 @@ fixtures/bladed_stub/*.so
 !evidence/**/*build*.txt
 !evidence/**/*build*.json
 !evidence/**/*build*.md
+
+# Probe binaries and their outputs, added at unit #61. `evidence/Debug/` already
+# commits only the .f90, .cpp, .sh and the .txt report for its `fmt_probe`, and
+# leaves `fmt_probe_c`, `fmt_probe_f` and the two `.out` files untracked; this
+# names the same rule for `semantics_probe` rather than relying on nobody
+# `git add -A`-ing them. The SOURCES and the REPORT are the evidence; the
+# binaries are rebuilt by the .sh in two seconds.
+evidence/*/semantics_probe_c
+evidence/*/semantics_probe_f
+evidence/*/semantics_probe.[cf].bin
+evidence/*/semantics_probe.[cf].txt
