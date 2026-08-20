@@ -58,6 +58,13 @@ _build
 *.dbg
 *.vtp
 
+# ROSCO checkpoint files, added at unit #61 (`WriteRestartFile`). Same reason
+# `*.dbg` is here and the same consequence: the bytes are a MEASUREMENT, not a
+# source. 195 of them at 460,813 bytes each is 90 MB per archive, and
+# `scripts/chkpcheck.py` commits the per-file md5 in `_manifest.json` instead --
+# which is exactly what `evidence/Debug/dbg/*/_manifest.json` already does.
+*.RO.chkp
+
 # ROSCO files
 *.85
 *.i90

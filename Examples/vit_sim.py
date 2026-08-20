@@ -2307,6 +2307,266 @@ def run_scenario_34(turbine, controller, cp_filename, output_dir=None):
 
 
 # ---------------------------------------------------------------------------
+# CHECKPOINT SCENARIOS 36-38, added at unit #61 (`WriteRestartFile`), BY
+# ADDITION and outside `scenario_order` (X3, P5).
+#
+# WHY THEY HAVE TO EXIST AT ALL. `WriteRestartFile` is called from
+# `DISCON.F90:101`, behind `LocalVar%iStatus == -8`. `coverage/line_coverage.json`
+# has NO entry for any line of the routine and none for DISCON.F90:101 -- the
+# 27 gate scenarios never set that status, so the unit is not merely
+# unobserved by the gate, it is never CALLED. Its output is a file
+# (`<RootName><n_t_global>.RO.chkp`, unformatted stream), so the oracle has to
+# be the bytes of that file, and the bytes only exist if something asks for
+# them.
+#
+# `ROSCO_ci.ControllerInterface.call_controller` puts `turbine_state['iStatus']`
+# straight into `avrSWAP(1)`, so a driver that owns its own loop can ask. These
+# three do, at a set of steps chosen so each checkpoint sees a DIFFERENT
+# `LocalVar`.
+#
+# WHAT EACH ONE IS FOR. The unit writes ~250 fields one after another, so what
+# discriminates a mutant that shifts an index or swaps two writes is whether
+# ADJACENT fields hold DIFFERENT values. A configuration in which a whole
+# block is zero cannot tell `CC_DesiredL(3)` from `CC_DesiredL(4)`.
+#
+#   36  below rated, every mode `_DEBUG_BASE_PATCHES` turns on, plus
+#       `Ext_Interface = 1` with all eighteen platform channels driven to
+#       distinct time-varying values -- without it PtfmTDX..PtfmRAZ are
+#       eighteen consecutive zeros
+#   37  above rated, IPC and AWC on so `IPC_*`, `axis*` and the three
+#       COMPLEX(DbKi) `AWC_complexangle` accumulators are non-zero, a
+#       HALVED timestep so `NINT(Time/DT)` names different files, and a
+#       RootName carrying trailing blanks so TRIM's loop body executes
+#   38  shutdown enabled, so `SD_Trigger`, `SD_Stage`, `SD_*F` and `GenTq_SD`
+#       leave zero, and a longer name
+# ---------------------------------------------------------------------------
+
+_CHKP_BASE_PATCHES = dict(_DEBUG_BASE_PATCHES)
+_CHKP_BASE_PATCHES.update({'LoggingLevel': 1, 'Ext_Interface': 1})
+
+
+def _chkp_drive(turbine, controller, cp_filename, output_dir,
+                number, discon_name, sim_name, ws0, dt=0.025, tlen=50,
+                chkp_every=50, extra_patches=None, t0=0.0):
+    """`_synthetic_drive`'s loop, asking for a checkpoint every `chkp_every`
+    steps.
+
+    Factored from `_synthetic_drive` rather than calling it: that function
+    hard-codes `iStatus` to 1, and the whole point here is the step at which it
+    is -8. The aerodynamics, the state integration and the injected avrSWAP
+    channels are the same, so the two drives stay comparable."""
+    param_filename = os.path.join(this_dir, discon_name)
+    patches = dict(_CHKP_BASE_PATCHES)
+    patches.update(extra_patches or {})
+    write_discon(turbine, controller, cp_filename, param_filename, patches=patches)
+
+    controller_int = ROSCO_ci.ControllerInterface(
+        lib_name, param_filename=param_filename, sim_name=sim_name
+    )
+
+    # `t0` shifts the simulation clock. Two of ROSCO's control blocks --
+    # `CableControl`'s and `StructuralControl`'s `StC_Mode == 1` arms -- write
+    # their setpoints only `IF (LocalVar%Time > 500)`, so a 40-second run
+    # starting at zero leaves `CC_DesiredL` and `StC_Input` at zero and 24 of
+    # the checkpoint's items with nothing in them to compare.
+    t = np.arange(t0, t0 + tlen, dt)
+    ws = np.ones_like(t) * ws0
+
+    deg2rad = np.pi / 180.0
+    R = turbine.rotor_radius
+    GBRatio = turbine.Ng
+    rpm2RadSec = 2.0 * np.pi / 60.0
+
+    bld_pitch = np.zeros_like(t)
+    rot_speed = np.ones_like(t) * 4.0 * rpm2RadSec
+    gen_speed = rot_speed * GBRatio
+    gen_torque = np.zeros_like(t)
+    gen_power = np.zeros_like(t)
+    nac_yaw = np.zeros_like(t)
+    nac_yawrate = np.zeros_like(t)
+    extra = {name: np.zeros_like(t) for name in EXTRA_AVRSWAP}
+    n_chkp = 0
+
+    for i, ti in enumerate(t):
+        if i == 0:
+            continue
+
+        ws_i = ws[i]
+        tsr = rot_speed[i-1] * R / ws_i
+        cp = turbine.Cp.interp_surface(bld_pitch[i-1], tsr)
+        aero_torque = 0.5 * turbine.rho * (np.pi * R**3) * (cp / tsr) * ws_i**2
+        rot_speed[i] = rot_speed[i-1] + (dt / turbine.J) * (
+            aero_torque - GBRatio * gen_torque[i-1] / (turbine.GBoxEff / 100)
+        )
+        gen_speed[i] = rot_speed[i] * GBRatio
+
+        nac_vane_rad = 20.0 * np.sin(2 * np.pi * ti / 50.0) * deg2rad
+        nac_heading_rad = 350.0 * deg2rad
+        azimuth_rad = (rot_speed[i] * ti) % (2 * np.pi)
+        fa_acc_tt = 0.5 * np.sin(2 * np.pi * ti / 3.0)
+        nac_imu_fa_racc = 0.3 * np.sin(2 * np.pi * ti / 3.0)
+        if rot_speed[i] > 0.1:
+            t_rotor = 2 * np.pi / rot_speed[i]
+        else:
+            t_rotor = 100.0
+        rootMOOP = [
+            1000.0 * np.sin(2 * np.pi * ti / t_rotor + k * 2 * np.pi / 3)
+            for k in range(3)
+        ]
+
+        turbine_state = {}
+        # THE ONE LINE THIS SCENARIO EXISTS FOR.
+        want_chkp = (i % chkp_every == 0)
+        if i >= len(t) - 1:
+            turbine_state['iStatus'] = -1
+        elif want_chkp:
+            turbine_state['iStatus'] = -8
+            n_chkp += 1
+        else:
+            turbine_state['iStatus'] = 1
+        turbine_state['t'] = ti
+        turbine_state['dt'] = dt
+        turbine_state['ws'] = ws_i
+        turbine_state['bld_pitch'] = bld_pitch[i-1]
+        turbine_state['gen_torque'] = gen_torque[i-1]
+        turbine_state['gen_speed'] = gen_speed[i]
+        turbine_state['gen_eff'] = turbine.GenEff / 100
+        turbine_state['rot_speed'] = rot_speed[i]
+        turbine_state['Yaw_fromNorth'] = nac_yaw[i-1]
+        turbine_state['Y_MeasErr'] = nac_vane_rad
+        turbine_state['FA_Acc_TT'] = fa_acc_tt
+        turbine_state['NacIMU_FA_RAcc'] = nac_imu_fa_racc
+
+        controller_int.avrSWAP[23] = nac_vane_rad
+        controller_int.avrSWAP[36] = nac_heading_rad
+        controller_int.avrSWAP[59] = azimuth_rad
+        controller_int.avrSWAP[29] = rootMOOP[0]
+        controller_int.avrSWAP[30] = rootMOOP[1]
+        controller_int.avrSWAP[31] = rootMOOP[2]
+        # The extended-Bladed platform block. Eighteen DISTINCT signals: a
+        # shared sinusoid scaled by the channel's own index, so no two of the
+        # eighteen ever hold the same value and an index shift into a
+        # neighbour is visible in every checkpoint.
+        for k in range(18):
+            controller_int.avrSWAP[1000 + k] = (
+                (k + 1) * 0.37 * np.sin(2 * np.pi * ti / (7.0 + k)) + 0.011 * (k + 1)
+            )
+
+        gen_torque[i], bld_pitch[i], nac_yawrate[i] = controller_int.call_controller(turbine_state)
+        gen_power[i] = gen_speed[i] * gen_torque[i] * turbine.GenEff / 100
+        nac_yaw[i] = nac_yaw[i-1] + nac_yawrate[i] * dt
+        for name, idx in EXTRA_AVRSWAP.items():
+            extra[name][i] = controller_int.avrSWAP[idx]
+
+    controller_int.kill_discon()
+    print(f"  checkpoints requested: {n_chkp}")
+    result = {
+        'gen_torque': gen_torque, 'bld_pitch': bld_pitch,
+        'gen_speed': gen_speed, 'gen_power': gen_power,
+        'nac_yaw': nac_yaw,
+    }
+    result.update(extra)
+    save_and_print_results(result, number, output_dir)
+
+
+def run_scenario_36(turbine, controller, cp_filename, output_dir=None):
+    """Below rated, every base mode on, extended interface driven."""
+    print("=" * 60)
+    print("Scenario 36: checkpoint drive below rated (iStatus = -8)")
+    print("=" * 60)
+    _chkp_drive(turbine, controller, cp_filename, output_dir,
+                number=36, discon_name='DISCON_chkp36.IN',
+                sim_name='vit_chkp36', ws0=9)
+    print("Scenario 36: PASSED (checkpoint drive below rated)")
+
+
+def run_scenario_37(turbine, controller, cp_filename, output_dir=None):
+    """Above rated, IPC and AWC on, halved timestep, padded RootName."""
+    print("=" * 60)
+    print("Scenario 37: checkpoint drive above rated, IPC+AWC, dt/2")
+    print("=" * 60)
+    _chkp_drive(turbine, controller, cp_filename, output_dir,
+                number=37, discon_name='DISCON_chkp37.IN',
+                sim_name='vit_chkp37  ', ws0=16, dt=0.0125, tlen=25,
+                chkp_every=50,
+                # Flp_Mode = 0 is REQUIRED, not incidental: CheckInputs refuses
+                # `IPC_ControlMode and Flp_Mode > 0` together and the run then
+                # produces no checkpoint at all. Measured, not assumed.
+                extra_patches={'IPC_ControlMode': 1,
+                               'IPC_KP': '0.1 0.1', 'IPC_KI': '0.01 0.01',
+                               'Flp_Mode': 0,
+                               'AWC_Mode': 1,
+                               'AWC_NumModes': 1, 'AWC_n': '1',
+                               'AWC_harmonic': '1',
+                               'AWC_freq': '0.05', 'AWC_amp': '1.0',
+                               'AWC_clockangle': '0.0',
+                               'AWC_CntrGains': '0.0100 0.0050'})
+    print("Scenario 37: PASSED (checkpoint drive above rated)")
+
+
+def run_scenario_38(turbine, controller, cp_filename, output_dir=None):
+    """Shutdown enabled, so the SD_* block leaves zero."""
+    print("=" * 60)
+    print("Scenario 38: checkpoint drive with SD_Mode = 1")
+    print("=" * 60)
+    _chkp_drive(turbine, controller, cp_filename, output_dir,
+                number=38, discon_name='DISCON_chkp38.IN',
+                sim_name='vit_chkp38', ws0=12, tlen=40, chkp_every=40,
+                extra_patches={'SD_Mode': 1, 'SD_TimeActivate': 0.0,
+                               'SD_EnableTime': 1, 'SD_Time': 20.0})
+    print("Scenario 38: PASSED (checkpoint drive with shutdown)")
+
+
+def run_scenario_39(turbine, controller, cp_filename, output_dir=None):
+    """Cable and structural control setpoints, reached by starting at t = 500.
+
+    ADDED after the first census of 36-38 rather than in anticipation of it:
+    `chkplayout.py --census` reported 116 of the 307 written items constant and
+    ZERO across all 117 checkpoints, and 63 of those were the three twelve-wide
+    cable blocks and `StC_Input`. An index shift inside a block of zeros is a
+    mutant no comparison of written bytes can kill, so the corpus is what has
+    to move, not the record."""
+    print("=" * 60)
+    print("Scenario 39: checkpoint drive, open-loop cable + structural")
+    print("=" * 60)
+    _chkp_drive(turbine, controller, cp_filename, output_dir,
+                number=39, discon_name='DISCON_chkp39.IN',
+                sim_name='vit_chkp39', ws0=9, tlen=40, chkp_every=40,
+                t0=500.0,
+                extra_patches={
+                    'CC_Mode': 1, 'CC_Group_N': 3,
+                    'CC_GroupIndex': '2601 2603 2605', 'CC_ActTau': 20.0,
+                    'StC_Mode': 1, 'StC_Group_N': 3,
+                    'StC_GroupIndex': '2801 2802 2803',
+                })
+    print("Scenario 39: PASSED (cable + structural setpoints, t > 500)")
+
+
+def run_scenario_40(turbine, controller, cp_filename, output_dir=None):
+    """AWC_Mode = 4 with IPC, which is the only path that drives `resP`.
+
+    `ResController`'s four `resP%res_*` arrays are 32,768 of the checkpoint's
+    460,813 bytes and they are zero in 36-39. AWC_Mode = 4 is the campaign's
+    own ResController scenario (unit #39, `vit_sim.py` scenario 5)."""
+    print("=" * 60)
+    print("Scenario 40: checkpoint drive, AWC_Mode=4 (ResController)")
+    print("=" * 60)
+    _chkp_drive(turbine, controller, cp_filename, output_dir,
+                number=40, discon_name='DISCON_chkp40.IN',
+                sim_name='vit_chkp40', ws0=11, tlen=40, chkp_every=40,
+                extra_patches={'Flp_Mode': 0,
+                               'IPC_ControlMode': 1,
+                               'IPC_KP': '0.1 0.1', 'IPC_KI': '0.01 0.01',
+                               'AWC_Mode': 4,
+                               'AWC_NumModes': 1, 'AWC_n': '1',
+                               'AWC_harmonic': '1',
+                               'AWC_freq': '0.05', 'AWC_amp': '2.0',
+                               'AWC_clockangle': '0.0',
+                               'AWC_CntrGains': '0.0100 0.0050'})
+    print("Scenario 40: PASSED (AWC_Mode=4 ResController)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
@@ -2346,6 +2606,9 @@ def main():
         # ADDED AFTER the second dispatch's sweep, so it is not in that
         # score's corpus. See run_scenario_35's docstring.
         35: run_scenario_35,
+        # ADDED at unit #61 (`WriteRestartFile`). Also outside scenario_order.
+        36: run_scenario_36, 37: run_scenario_37, 38: run_scenario_38,
+        39: run_scenario_39, 40: run_scenario_40,
     }
 
     if args.benchmark > 0:

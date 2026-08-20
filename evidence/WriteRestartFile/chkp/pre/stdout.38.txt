@@ -1,0 +1,53 @@
+                                                                               
+------------------------------------------------------------------------------
+Running ROSCO-2.10.1
+A wind turbine controller framework for public use in the scientific field    
+Developed in collaboration: National Renewable Energy Laboratory              
+                            Delft University of Technology, The Netherlands   
+------------------------------------------------------------------------------
+ 
+***************************************************************************************************************************************
+ROSCO Warning: The wind speed estimator is used, but an input (pitch, rotor speed, or torque) has left the bounds of normal operation.
+The filtered hub-height wind speed will be used instead. This warning will not persist even though the condition may.
+Check WE_Op in the ROSCO .dbg file to see if the WSE is enabled (1) or disabled (0).
+***************************************************************************************************************************************
+Generator speed:    9.5 RPM, Pitch angle:   0.0 deg, Power:     0.0 kW, Est. wind Speed:  10.0 m/s
+Generator speed: 1029.6 RPM, Pitch angle:   1.7 deg, Power:     0.0 kW, Est. wind Speed:  10.6 m/s
+Generator speed: 1172.1 RPM, Pitch angle:   7.6 deg, Power:  3467.6 kW, Est. wind Speed:  12.0 m/s
+Generator speed:  861.1 RPM, Pitch angle:  20.0 deg, Power:   842.7 kW, Est. wind Speed:  11.6 m/s
+ 
+***************************************************************************************************************************************
+ROSCO Warning: The wind speed estimator is used, but an input (pitch, rotor speed, or torque) has left the bounds of normal operation.
+The filtered hub-height wind speed will be used instead. This warning will not persist even though the condition may.
+Check WE_Op in the ROSCO .dbg file to see if the WSE is enabled (1) or disabled (0).
+***************************************************************************************************************************************
+Loading FAST model: NREL-5MW.fst 
+Loading rotor performace data from text file: /workspace/ROSCO-r2/Examples/Test_Cases/NREL-5MW/Cp_Ct_Cq.NREL5MW.txt
+Loading rotor performace data from text file: /workspace/ROSCO-r2/Examples/Tune_Cases/../Test_Cases/NREL-5MW/Cp_Ct_Cq.NREL5MW.txt
+-----------------------------------------------------------------------------
+   Tuning a reference wind turbine controller using NREL's ROSCO toolbox    
+-----------------------------------------------------------------------------
+============================================================
+Scenario 38: checkpoint drive with SD_Mode = 1
+============================================================
+Writing new controller parameter file parameter file: /workspace/ROSCO-r2/Examples/DISCON_chkp38.IN.
+Shutting down /workspace/ROSCO-r2/rosco/lib/libdiscon.so
+  checkpoints requested: 39
+  scenario_38 bld_pitch: md5=259b7d766f1353db0bc547a74a105654 n=1600
+  scenario_38 bld_pitch_2: md5=259b7d766f1353db0bc547a74a105654 n=1600
+  scenario_38 bld_pitch_3: md5=259b7d766f1353db0bc547a74a105654 n=1600
+  scenario_38 cc_actuated_dl: md5=430077b0065cb075748316c2bc3cb8c5 n=1600
+  scenario_38 cc_actuated_l: md5=430077b0065cb075748316c2bc3cb8c5 n=1600
+  scenario_38 flp_angle_1: md5=430077b0065cb075748316c2bc3cb8c5 n=1600
+  scenario_38 flp_angle_2: md5=430077b0065cb075748316c2bc3cb8c5 n=1600
+  scenario_38 flp_angle_3: md5=430077b0065cb075748316c2bc3cb8c5 n=1600
+  scenario_38 gen_power: md5=c7a9953e94b1a8e6f6249b603bc570e6 n=1600
+  scenario_38 gen_speed: md5=39dcf5566f7620bd1d7ac1585b0ec729 n=1600
+  scenario_38 gen_torque: md5=be5a89dfd1c1da7303d3283f94525b3e n=1600
+  scenario_38 nac_yaw: md5=1b40598bd4696fe27dad0e2e15b0cf12 n=1600
+  scenario_38 stc_input: md5=430077b0065cb075748316c2bc3cb8c5 n=1600
+Scenario 38: PASSED (checkpoint drive with shutdown)
+
+============================================================
+All scenarios complete.
+============================================================
