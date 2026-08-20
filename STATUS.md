@@ -4,6 +4,115 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-20: unit #58 `ParseInput_Str_Opt` is `integrated`. FIRST
+dispatch. NINE layers, all green and red-tested, and the mutation layer at
+39 / (50 - 5 - 6) = 1.0000 against a threshold of 1.0. ZERO open survivors, and
+no operator capped.**
+
+The CHARACTER member of the `ParseInput` generic interface: find the line whose
+SECOND word is `VarName`, copy that line's FIRST word into a `CHARACTER(*)`,
+`INTENT(INOUT)` dummy. 168 calls across the 27 scenarios, six call sites x 28
+reads of the input file.
+
+**THE ONE LINE THAT DIFFERS FROM #57 DELETES THE NUMBER READER RATHER THAN
+SWAPPING IT.**
+
+    READ (Words(1),*   ,IOSTAT=ErrStatLcl) Variable     <- #55, #56, #57
+    READ (Words(1),'(A)',IOSTAT=ErrStatLcl) Variable    <- HERE
+
+An `A` edit descriptor with no field width takes `w = LEN(item)` and a short
+internal record is blank-padded, so the transfer always happens, fills the whole
+item, and **IOSTAT is 0 on every input**. Measured twice rather than argued: 144
+of 144 (form, length) pairs against gfortran's own runtime
+(`evidence/ParseInput_Str_Opt/record_form_probe.txt`) and 0 cases in the
+`read-failed` arm over 14,116 (`harness_partition.txt`). `IF (ErrStatLcl /= 0)`
+and everything it guards -- including the only call site of `int2lstr_trimmed`,
+and therefore the only consumer of `Int2LStrLen` -- are dead IN THE PROGRAM, and
+carry four of the six `unreachable` declarations.
+
+It also removes an ambiguity the siblings paid for: `not-allowed` is the only arm
+that assigns `ErrVar%ErrMsg`, so R13's short-capacity cell holds exactly one arm
+and every stub prediction is a POINT rather than a bracket. Unit #57 needed the
+identity `A + B = 901` for the cell this unit does not have.
+
+**THE FIRST SWEEP BOUGHT A REPAIR RATHER THAN THREE DECLARATIONS.** `char_assign`
+was first written the obvious way -- `std::min` + `memcpy` + `memset` -- and left
+exactly three mutants alive:
+
+    8b83f1b6  min(len_dst, len_src) -> min(len_src, len_dst)
+    dac6e85c  'if (n > 0)'          -> 'if (n >= 0)'
+    1db4dd8f  'if (len_dst > n)'    -> 'if (len_dst >= n)'
+
+All three are behaviour-preserving and all three were declarable. **Unit #32's
+`findline.cpp` already carries a comment naming exactly these three at
+`GetWords`' version of the same expression, together with the repair**: one loop
+bounded by the destination, whose only surviving predicate `i <= len_src` changes
+an ANSWER at the truncation boundary this unit's corpus straddles on both sides
+(`Variable = 'unused'` truncates on the 808 cases with `LEN(Variable) < 6` and
+pads on the other 13,308). The block was taken byte for byte and every layer that
+reads the translation was re-taken on it. Unit #7's rule: delete the SITE that
+admits an undeclarable mutant.
+
+| layer | result | red-tested |
+|---|---|---|
+| record-form pricing (`evidence/.../record_form_probe.{f90,cpp,txt}`) | **144 of 144** (form, length) pairs agree with gfortran's own `'(A)'` READ on (IOSTAT, LEN_TRIM, hash, prefix), IOSTAT 0 on every one | the item is pre-set to `'~'` on both sides, so an untouched item is distinguishable from one filled with blanks. `blankrecN` puts 200 non-blank bytes in `Words(2)` and none reach an item of length 1024 -- the row that catches a translation reading the 400-byte object instead of the 200-byte record |
+| PRINT-record pricing (`evidence/.../print_record_probe.{f90,cpp,txt}`) | **9 of 9** byte-identical at item lengths 0, 1, 5, 6, 7, 256 and 1024 | the layout is TWO ADJACENT CHARACTER ITEMS, which no sibling has, so it turns on the one libgfortran rule none of them exercised: a CHARACTER after a CHARACTER takes NO separator when DELIM=NONE. Derived from `list_formatted_write_scalar`, then priced |
+| differential harness (`harness/ParseInput_Str_Opt.json`) | **14,116 checked, 0 failed, 0 inadmissible AT THE FIRST RUN**, clean tree, three callee bridges kept. R4 compares the return value plus 6 out-parameters **plus the stdout RECORD on 10,595 cases**. **No `no_oracle` entry** | **four stubs, all four POINT predictions and all four EXACT**: no-op **13,866**; the PRINT **10,595**, equal to `record_nonempty` exactly and from a different code path; the `.NOT. AllowDefault_` arm **2,214**; the READ **1,057**. Arithmetic control: 10,595 + 2,214 + 1,057 = 13,866, three separate runs partitioning the fourth's failing set |
+| mutation (`mutation/ParseInput_Str_Opt.json`) | **50 mutants, 0 nocompile, 39 killed, 5 equivalent, 6 unreachable, 0 open. 39/39 = 1.0000.** Sanitised, `--workers 8`, 77 s. `declared_but_killed`, `unreachable_but_killed` and `capped_operators` all EMPTY | the score IS the red test (E4.6). TWO undeclared sweeps committed either side of the `char_assign` repair: 52/38 = 0.731 and 50/39 = 0.780 |
+| mutation, VALUE ORACLE (`mutation/ParseInput_Str_Opt.value-oracle.json`) | **39/39 = 1.0000 with `--sanitize` off** -- the same (empty) survivor SET | the control is the SURVIVOR SET, not the count |
+| line coverage of the translation (`evidence/.../line_coverage.txt`) | 61 executable lines run, 25 never, at `-O0` | entry-line count **14,116** = the case count; `make_unreachable.py` refuses a stale coverage file AND now refuses a site-keyed declaration whose site stopped matching |
+| boundary probe (`evidence/.../boundary_probe.txt`) | the two width mutants measured AT THEIR SITE -- `GetWords` called a second and third time per case, with the line one byte longer and the elements one byte wider: **0 of 13,926 differ either way** | **the probe refuted two sentences written into it before it ran**, and both corrections are in the file |
+| gate, 27 scenarios (`gate/ParseInput_Str_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched | **two, as a pair**: the parsed value redirected to a VALID substitute rotor table moves **1,447,771 of 5,252,000** across 117 channels, revert-verified at 0; the default arm moves **0**, predicted exactly |
+| post-integration (`harness/ParseInput_Str_Opt.postintegration.json`) | 14,116 checked, 0 failed | the reverse copy deleted from this unit's own wrapper: **2,214**, PREDICTED 2,214 from the partition before the run; reverted, rebuilt, green re-taken at 0 |
+
+**THE GATE RED TEST IS THIS UNIT'S OWN DESIGN, AND THE REASON IS ITS OUTPUTS.**
+All six shipped values are file names or a socket address --  `PerfFileName`,
+`OL_Filename`, `DLL_FileName`, `DLL_InFile`, `DLL_ProcName`, `ZMQ_CommAddress` --
+and `WE_Mode` is 2 in all 22 `Examples/DISCON*.IN`. So corrupting a parsed value
+does not give a different ANSWER, it gives NO answer: `ReadCpFile` fails to open
+and the scenario dies. That is unit #24's `PathIsRelative` shape, and it leaves
+`mismatched` at 0, which `loop/done.py`'s P12 reads as a blind gate. The
+perturbation is therefore a **valid substitute table** --
+`Examples/Test_Cases/BAR_10/Cp_Ct_Cq.BAR_10.txt`, same 36 x 26 x 1 grid,
+different numbers in every cell.
+
+**HALF OF THAT PREDICTION IS REFUTED, and it is the finding of the pair: 22
+scenarios of 27, not 27.** The five that did not move -- 10, 13, 14, 17, 24 --
+are alive; `gen_torque` and `gen_speed` vary in every one of their baselines.
+Three run open-loop DISCON files, one patches `WE_Mode: 1` (the I&I estimator,
+which does not read the Cp surface), and the fifth, scenario 13, is recorded as
+NOT pinned down rather than given a sentence that reads like a proof. **The
+parsed value reaches the gate's 13 channels through ONE runtime consumer, the
+WE_Mode = 2 EKF's rotor-performance surface, and only where the outputs are not
+prescribed.**
+
+**ONE DECLARATION IS A CORPUS CLAIM A WIDER CORPUS WOULD OVERTURN, AND IT IS SAID
+PLAINLY.** `739190c8` (`MaxParamLength` 200 -> 201) is unobservable only because
+the corpus's `LEN(Variable)` ladder is `{1, 2, 6, 7, 11}` -- `generate.py` builds
+a free string extent's lengths as `sorted({1, 2, ex0, ex0 + 5})` -- while every
+shipped caller passes 1024 or 256. The boundary probe's own column refutes the
+obvious second reason: the 201st byte of `Words(1)` is non-blank on 28 cases, so
+the corpus DOES carry long enough words. One cause, and it is the ladder.
+DECISIONS.md carries what closing it would cost.
+
+**WHAT 1.0000 DOES NOT COVER.** The echo record on unit `UnEc`, measured dead and
+this time in its strongest form (`:348` runs 168 times over the 27 scenarios and
+`:349` is evaluated 168 times and true NONE of them, so `UnEc` is PRESENT at every
+single call); the `LEN(Variable)` gap above; the five scenarios the gate cannot
+see this unit through at all; and the three mutants DELETED in the `char_assign`
+repair, which make this unit's 50-mutant denominator incommensurable with the 52
+of its own first sweep. `evidence/ParseInput_Str_Opt/mutation_survivors.txt`.
+
+**Procedure.** Two scored mutation sweeps plus two undeclared probes, all four
+foreground under `mutate_guarded.sh` and routed through the clock with an
+explicit `timeout: 600000`; nothing backgrounded, nothing polled. Six reset
+windows, each opened and closed inside ONE command, every commit taken outside
+them. Sixteen commits, one per expensive artifact. `revcheck`: nine result
+artifacts, all naming `b3ad414`, clean.
+
+---
+
+
 **As of 2026-08-20: unit #57 `ParseInput_Int_Opt` is `integrated`. SECOND
 dispatch. EIGHT layers, all green and red-tested, and the mutation layer at
 98 / (143 - 37 - 8) = 1.0000 against a threshold of 1.0. ZERO open survivors.**

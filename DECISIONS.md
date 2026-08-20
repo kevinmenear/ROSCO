@@ -14254,3 +14254,179 @@ commit taken outside them. Sixteen commits, one per expensive artifact. The
 `no JSON from ./test` transient the first dispatch recorded as a pattern did not
 recur — the first stub of the batch was simply run twice and discarded, which is
 what that entry recommends.
+
+## Unit #58 — ParseInput_Str_Opt — first dispatch — 2026-08-20
+
+**Disposition `integrated`.** Nine layers, all green and red-tested, mutation
+39 / (50 − 5 − 6) = 1.0000 with zero open survivors on both the sanitised sweep
+and the value oracle, and no operator capped.
+
+### A FAMILY MEMBER WHOSE ONE CHANGED LINE DELETES THE READER
+
+`ParseInput_Str_Opt` is `ParseInput_Int_Opt` (#57) with one declaration changed,
+and the campaign's habit at this point is to splice the item half out of a
+sibling. That habit does not apply here, and seeing that is the whole of the
+translation decision:
+
+    READ (Words(1),*   ,IOSTAT=ErrStatLcl) Variable     <- #55, #56, #57
+    READ (Words(1),'(A)',IOSTAT=ErrStatLcl) Variable    <- HERE
+
+The second is not list-directed input. One `A` edit descriptor with no field
+width takes `w = LEN(item)` (F2018 13.7.4.1), and a short internal record is
+blank-padded because `PAD='YES'` is the default an internal file cannot override
+(12.6.4.5.3). So the statement is Fortran's own CHARACTER assignment and has no
+failure mode — 200 lines of number parser, three separator sets, a repeat-count
+ceiling and an IEEE-word matcher all vanish, and what replaces them is one loop.
+
+**The claim that it cannot fail is a claim about the PROGRAM, so it is measured
+twice.** `record_form_probe` runs the reference's own READ over sixteen record
+forms crossed with nine item lengths — 144 pairs, IOSTAT 0 on all of them, with
+the item pre-set to `'~'` so an untouched slot is distinguishable from one filled
+with blanks. And `harness_partition.txt` reports the `read-failed` arm at 0 cases
+of 14,116 on the corpus. Two instruments, one answer.
+
+**What that buys, beyond the deletion.** `not-allowed` becomes the ONLY arm that
+assigns `ErrVar%ErrMsg`, so R13's short-capacity cell — the one unit #57 could
+not split without the identity `A + B = 901` — holds exactly one arm here. Every
+stub prediction is a POINT, and all four were exact: 13,866 / 10,595 / 2,214 /
+1,057, with 10,595 + 2,214 + 1,057 = 13,866 as an arithmetic control across three
+separate runs.
+
+### THE FIRST SWEEP BOUGHT A REPAIR, AND THE REPAIR WAS ALREADY WRITTEN DOWN
+
+`char_assign` was first written the obvious way:
+
+```cpp
+const int n = std::min(len_dst, len_src);
+if (n > 0)        std::memcpy(dst, src, n);
+if (len_dst > n)  std::memset(dst + n, ' ', len_dst - n);
+```
+
+and the undeclared sweep left three mutants alive — the swapped `min` arguments,
+`n > 0` → `n >= 0`, and `len_dst > n` → `>=`. All three are behaviour-preserving
+(`min` is commutative; a zero-length `memcpy`/`memset` is a no-op) and all three
+were one equivalence argument each away from a 1.000.
+
+**Unit #32's `findline.cpp` names exactly those three, at `GetWords`' version of
+the same expression, and carries the repair beside them**: one loop bounded by
+the destination, `dst[i-1] = (i <= len_src) ? src[i-1] : ' '`. It has no `min` to
+swap and no zero-length guard to widen, its protection is the loop's own bound,
+and its one surviving predicate changes an ANSWER at the truncation boundary —
+which this unit's corpus straddles, because `Variable = 'unused'` truncates on
+the 808 cases with `LEN(Variable) < 6` and pads on the other 13,308.
+
+The block was taken byte for byte (`check_p4_blocks.py`, three blocks, 490 bytes,
+all identical) and every layer that reads the translation was re-taken on it:
+both record probes, the harness, the four stubs, the line coverage, the sweep.
+
+**The rule this instance sharpens.** The campaign's P4 practice is to copy a
+block from the sibling that shares the SITE. Here the sibling that shares the
+site (#57) has no such block at all — its item is an INTEGER — and the block came
+from a unit three layers down the call graph that had met the same C++ SHAPE.
+Before writing a helper whose job is a Fortran language rule (a CHARACTER
+assignment, a TRIM, an uppercase fold), grep the campaign for that rule rather
+than for the unit: **the thing worth copying is the form somebody already
+measured, and it is not always in the neighbouring unit.**
+
+### A GATE RED TEST WHOSE PERTURBATION HAD TO BE A VALID FILE
+
+This unit's six shipped outputs are all file names or a socket address, and
+`WE_Mode` is 2 in all 22 `Examples/DISCON*.IN`, so `PerfFileName` is opened in
+every scenario. The campaign's usual gate perturbation — move the parsed value —
+therefore does not produce a different answer, it produces NO answer:
+`ReadCpFile` fails to open and the scenario dies in the Fortran runtime. That is
+unit #24's `PathIsRelative` shape, and `gate.py` already carries
+`perturbation_broke_scenarios` for it — but `mismatched` stays 0, and
+`loop/done.py`'s P12 reads a 0 as "the gate cannot see this unit", which would
+fail the unit outright.
+
+**So the perturbation is a SUBSTITUTE, not a corruption.**
+`Examples/Test_Cases/BAR_10/Cp_Ct_Cq.BAR_10.txt` has the same 36 × 26 × 1 grid as
+the NREL-5MW table the scenarios use and different numbers in every cell: it
+loads, so nothing dies, and it is a different rotor, so the controller moves.
+1,447,771 of 5,252,000 across 117 channels, `perturbation_broke_scenarios` empty,
+revert-verified at 0. The negative control beside it — the default arm's `'unused'`
+→ `'XXXXXX'` — moved exactly 0, predicted from a gcov counter that does not
+exist.
+
+**The general rule, and it is worth having: when a unit's output is a NAME rather
+than a VALUE, the gate red test's perturbation must be another admissible NAME.**
+Anything else measures the file system, not the unit.
+
+**AND HALF THE PREDICTION WAS REFUTED.** 22 of 27 scenarios mismatched, not 27.
+The five that did not move (10, 13, 14, 17, 24) are all alive — `gen_torque` and
+`gen_speed` vary in every one of their baselines. Three run open-loop DISCON
+files, so pitch and torque are prescribed; scenario 17 patches `WE_Mode: 1`, the
+I&I estimator, which does not read the Cp surface. Scenario 13 patches
+`VS_FBP: 1` with `PC_ControlMode: 0`, and **this dispatch did not pin its
+mechanism down to a statement** — that is recorded as an open reading in
+`gate.redtest_predictions.txt` rather than given a sentence a later unit would
+copy.
+
+What the refutation establishes is worth more than the prediction would have
+been: **this unit's parsed value reaches the gate's 13 channels through exactly
+one runtime consumer, the WE_Mode = 2 EKF's rotor-performance surface**, and only
+where the outputs are not prescribed. The 168-hit count suggests a much wider
+channel than that.
+
+### RAISED FOR THE DRIVER: A `LEN(Variable)` LADDER THAT NO ENTRY THIS CAMPAIGN OWNS CAN REACH THE SHIPPED RANGE OF
+
+One of this unit's six `unreachable` declarations is a corpus claim rather than a
+program claim, and it is stated plainly rather than blended into the others.
+
+`739190c8` is `constexpr int MaxParamLength = 200` → `201`. That constant reaches
+`char_assign(Variable, len_Variable, Words1, len_src)` as `len_src`, and is used
+there only in `i <= len_src` over `i = 1 .. len_Variable`. The two spellings can
+differ only at `i = 201`, so the mutant needs `LEN(Variable) >= 201`.
+
+    corpus LEN(Variable)   {1: 194, 2: 614, 6: 12503, 7: 1, 11: 614}
+    shipped callers        1024  (PerfFileName, OL_Filename, DLL_FileName,
+                                  DLL_InFile, DLL_ProcName)
+                            256  (ZMQ_CommAddress)
+
+`harness/generate.py` builds a free string extent's lengths as
+`sorted({1, 2, ex0, ex0 + 5})` with `ex0 = 6`, so the ladder cannot exceed 11 for
+any unit. The obvious second reason a reader would reach for — that no record has
+a first word of 201 characters — is REFUTED by the probe's own column: the 201st
+byte of `Words(1)` is non-blank on 28 of 13,926 cases. There is one cause and it
+is the ladder.
+
+**What closing it would cost, so the Driver can price it.** `ranges.toml` cannot
+state a CHARACTER parameter's length (unit #49's enumeration), and
+`baseline.<Unit>.json` can state an extent but only for the R11 baseline states,
+which this unit has none of. The lever is `generate.py`'s length ladder itself,
+and the RUNBOOK already records that **a `generate.py` edit re-prices the gate**
+— every unit already scored would have to be re-taken. One mutant on one unit
+does not justify that. What might: the ladder's top rung is `ex0 + 5 = 11` for
+every string in the campaign, while ROSCO's own CHARACTER parameters are 200,
+256, 1024 and 2048 wide, so **every buffer-width mutant in every remaining unit
+is in the same position as this one**. Units #64 (`ReadControlParameterFileSub`)
+and #66/#67 (`ReadCpFile`, `ReadRestartFile`) are string-heavy and will meet it.
+The number that would justify the change is the count of such mutants across
+those three units, and it is not measurable before they are translated.
+
+### A PROBE THAT REFUTED ITS OWN PROSE BEFORE IT WAS COMMITTED
+
+`run_boundary_probe.sh` was written with its conclusion already in its report
+text — that `Line`'s byte 2048 is always a blank, so the word scan stops there.
+The run printed the distribution beside the conclusion and the distribution said
+otherwise: byte 2048 is a blank on 851 of 13,926 cases, NUL on 12,809 (the
+`FindLine`-found-nothing cases, where the C++ vector's own zero fill is what is
+there) and something else on the rest. The real mechanism is TRUNCATION —
+`GetWords` writes each word into a 200-byte element — so only a word ENDING at
+2048 and SHORTER than 200 could tell the two widths apart.
+
+The report was rewritten and re-run. **The RUNBOOK's rule that an evidence file's
+wrong mechanism is what the next unit copies is why this cost one re-run rather
+than a later unit's dispatch**, and the practice that caught it is printing the
+DISTRIBUTION next to the conclusion rather than a boolean.
+
+### PROCEDURE
+
+Four mutation sweeps (two undeclared probes, two scored), all foreground under
+`mutate_guarded.sh` and routed through `run_if_time_remains.sh` with an explicit
+`timeout: 600000`; nothing backgrounded, nothing polled, no orphan. Six reset
+windows, each opened and closed inside ONE command so a kill cannot leave the
+tree de-integrated, every commit taken outside them. Sixteen commits, one per
+expensive artifact. `revcheck`: nine result artifacts, all naming `b3ad414`,
+clean.

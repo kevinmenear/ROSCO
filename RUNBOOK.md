@@ -9302,3 +9302,141 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
 
   One command, before the commit. An instrument move is supposed to cost one
   hash, not one paragraph of reasoning.
+
+## THE BLOCK WORTH COPYING IS THE ONE SOMEBODY MEASURED, AND IT IS NOT ALWAYS IN
+## THE NEIGHBOURING UNIT
+
+- **Unit #58, and it cost one sweep to find what was already written down.**
+  `char_assign` was written the obvious way and its first sweep left three
+  mutants alive:
+
+  ```
+  8b83f1b6  min(len_dst, len_src) -> min(len_src, len_dst)   SURVIVED
+  dac6e85c  'if (n > 0)'          -> 'if (n >= 0)'           SURVIVED
+  1db4dd8f  'if (len_dst > n)'    -> 'if (len_dst >= n)'     SURVIVED
+  ```
+
+  `min` is commutative and a zero-length `memcpy`/`memset` is a no-op, so all
+  three are behaviour-preserving and all three were one paragraph away from a
+  1.000. `findline.cpp` (unit #32) names exactly those three at `GetWords`'
+  version of the same expression, and carries the repair beside them: one loop
+  bounded by the destination, whose only surviving predicate changes an ANSWER
+  at the truncation boundary.
+
+- **The P4 habit is to copy from the unit that shares the SITE, and that is what
+  missed it.** The sibling that shares the site here is `ParseInput_Int_Opt`,
+  whose item is an INTEGER and which has no such block at all. The block came
+  from a unit three layers down the call graph that had met the same C++ SHAPE.
+
+  **Before writing a helper whose job is a Fortran LANGUAGE RULE -- a CHARACTER
+  assignment, a TRIM, an uppercase fold, an array copy -- grep the campaign for
+  that rule rather than for the unit.** `grep -l 'void char_assign' translations/`
+  is one command. Three of this campaign's translations carry that function and
+  only one of them carries the form that was measured.
+
+## WHEN A UNIT'S OUTPUT IS A NAME RATHER THAN A VALUE, THE GATE RED TEST'S
+## PERTURBATION MUST BE ANOTHER ADMISSIBLE NAME
+
+- **Unit #58.** All six of this unit's shipped outputs are file names or a socket
+  address, and `WE_Mode` is 2 in all 22 `Examples/DISCON*.IN`, so `PerfFileName`
+  is opened in every scenario. The campaign's usual perturbation -- move the
+  parsed value -- does not produce a different answer:
+
+  ```
+  corrupt the value   -> ReadCpFile cannot open  -> the scenario DIES
+                         mismatched 0, perturbation_broke_scenarios non-empty
+                         loop/done.py P12 reads a 0 as "the gate cannot see it"
+                         and FAILS the unit
+  ```
+
+  That is unit #24's `PathIsRelative` shape met from the other end: there the
+  measurement was the finding, here it would have been a failed close.
+
+  The perturbation used instead is a **valid substitute file**:
+  `Examples/Test_Cases/BAR_10/Cp_Ct_Cq.BAR_10.txt` has the same 36 x 26 x 1 grid
+  as the NREL-5MW table and different numbers in every cell.
+
+  ```
+  parsed value -> BAR_10's table   1,447,771 of 5,252,000, 117 channels
+                                   perturbation_broke_scenarios EMPTY
+                                   revert-verified 0 of 5,252,000
+  ```
+
+- **The check before the run is a `head -8` of both files.** Same pitch vector,
+  same TSR vector, same wind-speed vector means the reader will not fail; a
+  different turbine name in line 1 means the numbers differ. Two seconds, and it
+  is what separates "a different answer" from "no answer".
+
+## A RED TEST'S SCENARIO COUNT IS A SEPARATE PREDICTION FROM ITS VALUE COUNT, AND
+## THE CHEAP CONTROL IS WHICH BASELINE CHANNELS VARY
+
+- **Unit #58 predicted 27 of 27 scenarios and measured 22, with the value half of
+  the same prediction right.** The five that did not move are not dead scenarios:
+
+  ```
+  scenario 10  gen_torque varies, gen_speed varies    DISCON_ol_mode2.IN
+  scenario 13  gen_torque varies, gen_speed varies    VS_FBP=1, PC_ControlMode=0
+  scenario 14  gen_torque varies, gen_speed varies    DISCON_ol_mode1.IN
+  scenario 17  five channels vary                     vit_sim.py patches WE_Mode: 1
+  scenario 24  gen_torque varies, gen_speed varies    DISCON_ol_cc_stc.IN
+  ```
+
+  Four lines of numpy over `baseline_arrays/scenario_<n>.npz` separates "the
+  scenario produces nothing to move" from "the perturbation does not reach it",
+  and only the second is a fact about the unit. Here it is the second, and the
+  conclusion is sharper than the prediction would have been: **the parsed value
+  reaches the 13 gate channels through ONE runtime consumer, the WE_Mode = 2
+  EKF's rotor-performance surface, and only where the outputs are not
+  prescribed.**
+
+- **One of the five was left UNRESOLVED on purpose.** Scenario 13's mechanism is
+  consistent with fixed-pitch plus a table-free torque law and is not proved by
+  the measurement, so `gate.redtest_predictions.txt` says so in those words. A
+  sentence that reads like a proof is what the next unit copies.
+
+## PRINT THE DISTRIBUTION NEXT TO THE CONCLUSION, NOT A BOOLEAN
+
+- **Unit #58's boundary probe refuted two sentences that had been written into
+  its own report before it ran**, and it could only do that because the report
+  printed the value distribution beside the claim.
+
+  ```
+  written:  "Line's byte 2048 is a BLANK on every case"
+  measured: {0: 12809, 32: 851, 10: 14, 13: 14, 45: 14, 48: 14, 49: 112, ...}
+
+  written:  "no record has a first word of 201 characters or more"
+  measured: the 201st byte of Words(1) is NON-BLANK on 28 of 13,926
+  ```
+
+  Both claims were the OBVIOUS reason the mutant survives and both are false; the
+  real mechanism is truncation into the 200-byte element for the first, and the
+  corpus's `LEN(Variable)` ladder alone for the second. A probe that had printed
+  `differs: 0 of 13,926` would have agreed with the conclusion and taught nothing.
+
+- **The rule.** When a probe exists to justify a DECLARATION, print the raw
+  distribution of whatever the declaration's argument turns on. It costs one
+  `collections.Counter`, and it is the only thing that can contradict the
+  sentence the same session is about to write.
+
+## A DECLARATION WHOSE CAUSE IS THE GENERATOR'S OWN LADDER IS A CAMPAIGN-WIDE GAP
+## WEARING ONE UNIT'S NAME
+
+- **Unit #58.** `739190c8` (`MaxParamLength` 200 -> 201) is unobservable for
+  exactly one reason:
+
+  ```
+  corpus LEN(Variable)   {1: 194, 2: 614, 6: 12503, 7: 1, 11: 614}
+  shipped callers        1024 (five of them) and 256
+  generate.py            lengths = sorted({1, 2, ex0, ex0 + 5}),  ex0 = 6
+  ```
+
+  The ladder tops out at 11 for EVERY string in EVERY unit, while ROSCO's own
+  CHARACTER parameters are 200, 256, 1024 and 2048 wide. So this is not one
+  unit's corpus gap: every buffer-width mutant in every remaining string-handling
+  unit is in the same position, and #64, #66 and #67 will meet it.
+
+- **Say which it is when the declaration is written.** `unreachable` is a claim
+  about the CORPUS, and a corpus claim whose cause is a rule in `generate.py`
+  rather than an accident of this unit's inputs should name the rule. The price
+  of closing it is also stated once, in DECISIONS.md, rather than re-derived per
+  unit: a `generate.py` edit re-prices the gate for every unit already scored.
