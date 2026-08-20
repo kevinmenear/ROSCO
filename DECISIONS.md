@@ -13468,3 +13468,46 @@ change is a `limit_per_operator=0` in `population_from_cppmutate`, and it belong
 to the loop repo and to a dispatch that can re-take every unit's denominator at
 once, because a score over 273 and a score over 181 are two fractions with
 different denominators (unit #53's finding).
+
+### A CONTROL RUN TO CONFIRM A FIELD REFUTED THE READING OF IT, AND THE SETS
+### DISAGREED WHERE THE COUNTS DID NOT
+
+`mutation/<Unit>.json` carries `killed_by_sanitizer`, and the obvious reading —
+"the mutants only `--sanitize` can kill" — is wrong. It counts the mutants whose
+kill the sanitiser REPORTED. On unit #56 the sanitised sweep killed 110 with
+`killed_by_sanitizer: 5`, so the value-oracle sweep was predicted at 105. **It
+killed 110.**
+
+    sanitised      110 of 177   0.8271   killed_by_sanitizer 5
+    value oracle   110 of 177   0.8271
+
+**And the two disagree by exactly one mutant EACH WAY**, which is why the totals
+match and why a score-only comparison would have called them identical — unit
+#48's rule about comparing failing sets rather than counts, met from the other
+side:
+
+* `5a8abaea` (`list_read_reals:337`, `v[i]` → `v[i+1]`) is killed sanitised and
+  survives the value oracle. The caller passes `&value`, ONE double, so `v[1]`
+  writes one past the object into the caller's own stack frame; no comparison of
+  the OUTPUTS can see it. Genuinely sanitiser-only.
+* `b03a94c5` (`parse_real:198`, `buf[n]` → `buf[n+1]`) survives sanitised and is
+  killed by the value oracle. The edit leaves `buf[n]` UNINITIALISED, so the
+  string handed to `strtod` ends wherever the stack garbage holds a zero — and
+  the plain build's garbage differs from the correct string while the ASan
+  build's does not. **Its kill is a property of the BUILD, not of the program.**
+  Neither run is wrong and neither should be preferred.
+
+**The union is 111 of 133 = 0.8346 and no artifact can carry it.**
+`vit_mutate.py` scores one instrument per run; the RUNBOOK already records that
+the honest score of two instruments is a union the tool cannot express. The
+scored artifact stays the SANITISED one, because that is what units #54 and #55
+score and changing a verification default mid-run is X3.
+
+**The general point, and it is why this is in DECISIONS rather than only in the
+evidence.** A control run to confirm a number is worth taking even when the
+number is already in the artifact — this one cost 53 seconds and corrected a
+sentence that would otherwise have been copied into the next unit's evidence.
+And a mutant whose only difference is in UNINITIALISED memory is a third kind
+of survivor that neither `equivalent` nor `unreachable` fits: its verdict is not
+a property of the corpus or of the programs, but of the build, and the only
+honest treatment is to report both runs.

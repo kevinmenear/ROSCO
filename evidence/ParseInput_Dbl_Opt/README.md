@@ -21,6 +21,7 @@ the seventh, mutation, is below the campaign's threshold of 1.0 at
 | mutation (`mutation/ParseInput_Dbl_Opt.json`) | **181 mutants, 4 nocompile, 177 behavioural: 110 KILLED, 25 EQUIVALENT, 19 UNREACHABLE, 23 SURVIVED, 110/133 = 0.8271.** SANITISED, green baseline, clean tree, `--workers 8`, 121 s. `declared_but_killed` and `unreachable_but_killed` both EMPTY | — the score IS the red test (E4.6). All 23 survivors are answered in `mutation_survivors.txt`, **16 of them by a named record** |
 | line coverage of the translation (`line_coverage.txt`) | **200 executable lines run, 38 never** over the 11,562 cases, at `-O0`. The measurement all 19 `unreachable` declarations are DERIVED from, by `make_unreachable.py` | **three controls**: the entry line's gcov count is 11,562 = the case count; NON-survivors on never-run lines that are not nocompile number **0**; and the four nocompile ids were measured independently and the count matches the sweep's own `nocompile: 4` |
 | survivor record search (`survivor_record_search.txt`) | **16 of 23 open survivors distinguished over 131,312 records — all 16 by a VALUE, 0 by an ADDRESS.** Nothing folded into the score | the **negative control is built into the shape**: the search takes the record length as a literal `200`, so `479d0b11` — the mutant of the constant `MaxParamLength` itself — cannot be reached and must come back `NONE`. It does |
+| mutation, VALUE ORACLE (`mutation/ParseInput_Dbl_Opt.value-oracle.json`) | **110 of 177, 0.8271 — the same number**, and the same corpus and declarations. Run as a control on `killed_by_sanitizer: 5`, and it REFUTED the reading of that field | the control is the SURVIVOR SET, not the count: the two runs disagree by exactly one mutant each way, which is why the totals match. §5b |
 | post-integration (`harness/ParseInput_Dbl_Opt.postintegration.json`) | 11,562 checked, **0 failed** | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **2,056 of 11,562**, PREDICTED 2,056 from the partition before the run; reverted, rebuilt, green re-taken at 0 |
 | gate, 27 scenarios (`gate/ParseInput_Dbl_Opt.json`) | 5,252,000 values / 351 channels, **0 mismatched**, 28 s | **TWO, both predicted**: every parsed value + 1.0 moves **1,857,893** across 147 channels, revert-verified at 0; the default arm moves **0**, and the artifact carries the argument (§6) |
 
@@ -298,6 +299,31 @@ file, and the differential corpus is the only instrument that misses them.
 `Examples/DISCON.IN` gives `VS_ArSatTq` as `4.30935e+04`, and four such scalars
 are read by this unit.
 
+## 5b. The value-oracle control, and what it refuted
+
+`mutation/ParseInput_Dbl_Opt.value-oracle.json` is the same sweep without
+`--sanitize`. It was run to confirm a number already in the scored artifact —
+`killed_by_sanitizer: 5`, read as "five mutants only the sanitiser can kill",
+which predicts 105 — **and it refuted that reading**: the value oracle killed
+110 too. The field counts the mutants whose kill the sanitiser REPORTED, not
+the mutants only it can reach.
+
+**The two runs disagree by exactly one mutant EACH WAY**, which is why the
+totals match and why a score-only comparison would have called them identical
+(unit #48's rule: compare failing sets, not counts).
+
+| id | site | sanitised | value oracle | why |
+|---|---|---|---|---|
+| `5a8abaea` | `list_read_reals:337`, `v[i]` → `v[i+1]` | KILLED | survived | the caller passes `&value`, ONE double, so `v[1]` writes one past the object into the caller's stack frame. Nothing a comparison of the OUTPUTS can see — genuinely sanitiser-only |
+| `b03a94c5` | `parse_real:198`, `buf[n]` → `buf[n+1]` | survived | KILLED | the edit leaves `buf[n]` UNINITIALISED, so the string handed to `strtod` ends wherever the stack garbage holds a zero. The plain build's garbage differs from the correct string and the ASan build's does not. **Its kill is a property of the BUILD, not of the program**, and neither run is wrong |
+
+**The union is 111 of 133 = 0.8346 and no artifact can carry it.**
+`vit_mutate.py` scores one instrument per run and has no union; the RUNBOOK
+already records that gap. The scored artifact stays the sanitised one, because
+that is what both siblings score and changing a verification default mid-run is
+X3. The union is stated here rather than written into a file that would claim a
+tool computed it.
+
 ## 6. C7–C9 — integration and the gate
 
 `vit integrate … --apply --reverse-copy`. **`--reverse-copy` was decided by
@@ -392,6 +418,7 @@ Four things, and each is named with what would close it.
 | file | what it is |
 |---|---|
 | `README.md` | this |
+| `value_oracle_prediction.txt` | the prediction the value-oracle run refuted, and what it measured |
 | `done_check.txt` | the close, captured out of tree by `scripts/capture_done_check.sh` |
 | `vit_translate.stdout.txt` | C4, the scaffold and the prompt |
 | `harness_partition.txt` | the arm partition every prediction is read out of |
