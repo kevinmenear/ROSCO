@@ -1,6 +1,6 @@
-# done_check.py ParseInput_Int_Opt -- captured 2026-08-20T04:27:52Z by scripts/capture_done_check.sh
+# done_check.py ParseInput_Int_Opt -- captured 2026-08-20T05:19:07Z by scripts/capture_done_check.sh
 
-Run against the committed state at a8073032 ("ParseInput_Int_Opt: STATUS, DECISIONS, plan.json and two more target-layer entries at the final numbers"), with a CLEAN tree, with stdout
+Run against the committed state at d9d55e4a ("RUNBOOK target layer: five entries earned by unit #57's second dispatch"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -16,11 +16,11 @@ Reproduce the reading below with no redirection:
 
     python3 scripts/done_check.py ParseInput_Int_Opt
 
-done_check exited 1 (0 only when COMPLETE).
+done_check exited 0 (0 only when COMPLETE).
 
 baseline (inferred): 06d558b  -- the commit before a0ef8b6 touched translations/ROSCO_Helpers/parseinput_int_opt.cpp
 
-ParseInput_Int_Opt: Verdict.INCOMPLETE  (13/14 PASS)
+ParseInput_Int_Opt: Verdict.COMPLETE  (14/14 PASS)
 
 [  ok  ] P1   commits exist                      
 [  ok  ] P2   clean tree                         
@@ -31,9 +31,9 @@ ParseInput_Int_Opt: Verdict.INCOMPLETE  (13/14 PASS)
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
 [  ok  ] P9   gate compared and matched          
-[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/ParseInput_Int_Opt.json 96/98 = 0.980 < 1.0 -- survivors: compare_op[4f89b00b], index_offset[e8cf2d25]
-[  ok  ] P11  post-integration harness re-run    12199 check(s) against the integrated build
+[  ok  ] P12  mutation score for this unit       98/98 mutant(s) killed, 37 declared equivalent, 8 declared unreachable
+[  ok  ] P11  post-integration harness re-run    12367 check(s) against the integrated build
 [  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
 [  ok  ] P10  evidence reproducible              
-[  ok  ] P14  artifact revisions agree           3 artifact(s) at 8f9d72f
+[  ok  ] P14  artifact revisions agree           3 artifact(s) at b3ad414
 
