@@ -6,14 +6,14 @@
  "comparison_verdict": "PASS",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "8f9d72f",
+ "loop_rev": "b3ad414",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
   "PREDICTED EXACTLY 0, before the run, and the zero is the result rather than a failure. coverage/line_coverage.json gives ROSCO_Helpers.f90:154 (IF (.NOT. FoundLine)) 1,680 hits across the 27 scenarios and gives lines 155-162, the WHOLE not-found arm, NO COUNTER AT ALL. Every Examples/DISCON*.IN supplies every INTEGER parameter this unit asks for, so FoundLine is TRUE at all 1,680 calls and no scenario can reach the statement this perturbs.",
-  "WHICH LAYER DOES COVER IT: the differential harness reaches the arm on 9,071 of 12,199 cases, and evidence/ParseInput_Int_Opt/harness.no-print-stub.json red-tests the record it writes at exactly 9,071. The arm is not unverified; it is verified somewhere else.",
+  "WHICH LAYER DOES COVER IT: the differential harness reaches the arm on 9,143 of 12,367 cases, and evidence/ParseInput_Int_Opt/harness.no-print-stub.json red-tests the record it writes at exactly 9,143. The arm is not unverified; it is verified somewhere else.",
   "The zero is only worth something NEXT TO the non-zero on the same build. The positive control is gate/ParseInput_Int_Opt.redtest.parsed-value.json, 370,646 moved, run as a PAIR with this one."
  ],
  "perturbation": {
@@ -63,7 +63,7 @@
  ],
  "scenarios_failed": [],
  "shape_mismatches": [],
- "unit": "ParseInput_Int_Opt.redtest.default-arm",
+ "unit": "ParseInput_Int_Opt",
  "unit_of_count": "values",
  "verdict": "RED_TEST_FAIL",
  "vit_rev": "d6759d9",
