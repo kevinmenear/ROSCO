@@ -67,6 +67,23 @@ non-zero status is invisible to every layer, and to the program.
 this family is a family and not a bucket: the discriminator is
 zero-versus-non-zero, and the corpus can see it.
 
+**AND THE TWO ON `:289` NOW HAVE THEIR SITE EXECUTED, which at the first
+dispatch they did not.** `return -1` at `:289` is reached only when the leading
+scan consumed the WHOLE record — every byte a blank or an end-of-line — and no
+record in any corpus or in the record search could produce that: a record of all
+blanks is not a word. The second dispatch's `eolfull` record is one, and the
+search's EOLADM block now reports both:
+
+    972ae933  :289  EOLADM|full:allcr|-1|-987654  vs  EOLADM|full:allcr|1|-987654
+    27b68fda  :289  EOLADM|full:allcr|-1|-987654  vs  EOLADM|full:allcr|-2|-987654
+
+Both differences are one NON-ZERO status against another, which is precisely
+what this family claims and precisely what `ErrStatLcl /= 0` cannot see. The
+sweep agrees from the other side: the corpus contains that record and
+`declared_but_killed` is EMPTY. An equivalence whose site had never run was an
+argument; it is now an argument with its site executed and its difference
+measured.
+
 ## Family 2 — `n == 1`: everything after the single item's transfer is dead (13)
 
 `7d03c743` `461972fc` `a2131605` `f665d4be` `f8d17fd5`
