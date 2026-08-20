@@ -4,22 +4,21 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-20: unit #62 `ComputeVariablesSetpoints` is `deferred`. FIRST
-dispatch, and it does NOT close: mutation **0.8354** against a threshold of
-1.0, with 13 open survivors. Everything else is green and red-tested — a
-22,776-case differential harness at 0 failed before AND after integration, the
+**As of 2026-08-20: unit #62 `ComputeVariablesSetpoints` is `integrated`. FIRST
+dispatch, and it CLOSES: mutation **1.0000** with **ZERO OPEN SURVIVORS**, a
+22,397-case differential harness at 0 failed before AND after integration, the
 27-scenario gate at 5,252,000 values / 0 mismatched, four gate red tests
 including a NEGATIVE CONTROL and a REFUTED PREDICTION, and a post-integration
-copy-back red test that moved every case.**
+copy-back red test that moved every case on three successive corpora.**
 
 | layer | result |
 |---|---|
-| differential harness, clean tree | **22,776 checked, 0 failed, 0 inadmissible**; 480 out-parameters compared |
-| mutation, four sweeps | **66 of 79 scoreable, 0.8354**; 2 equivalent, 0 unreachable, **13 OPEN** |
-| post-integration | **22,776 checked, 0 failed** (E4.5) |
+| differential harness, clean tree | **22,397 checked, 0 failed, 0 inadmissible**; 480 out-parameters compared |
+| mutation, six sweeps | **71 of 71, 1.0000**; 6 equivalent, 4 unreachable, **0 OPEN**, 0 nocompile |
+| post-integration | **22,397 checked, 0 failed** (E4.5) |
 | gate, 27 scenarios | 5,252,000 values / 351 channels, **0 mismatched** |
 | gate red tests | **728,340 / 0 / 0 / 1,977,826** — and both zeros are explained |
-| wrapper copy-back red test | **22,776 of 22,776 — every case** |
+| wrapper copy-back red test | **22,397 of 22,397 — every case** |
 
 **THE HARNESS WENT RED TWICE AND BOTH REDS ARE FINDINGS.** One is in the
 translation and one is in the reference.
@@ -93,8 +92,8 @@ unit's principal output reaches no gate channel. Two zeros, two different
 causes — RT3's arm is never EXECUTED, RT2's runs 15,999 times and is
 ANNIHILATED — and only the pair (RT4, RT2) separates them.
 
-**THE CORPUS REPAIR IS A CENSUS AND EIGHT PINS, AND THE SCORE MOVED
-0.7161 → 0.8354.** `evidence/ComputeVariablesSetpoints/inputs_census.txt`, one
+**THE CORPUS REPAIR IS A CENSUS AND TEN PINS, AND THE SCORE MOVED
+0.7161 → 1.0000.** `evidence/ComputeVariablesSetpoints/inputs_census.txt`, one
 `fprintf` over the scored corpus:
 
     VS_Mode_Power_TSR arm    1,152 cases   VS_Rgn2K == 0.0 on ALL of them
@@ -124,18 +123,44 @@ could not be reproduced from `cppmutate._mid`, this translation has four `0.0`
 literals and two of them survived, and declaring the wrong site is a false
 equivalence that P12 fails outright.
 
-**THE DONE-CONDITION READS 12 OF 14, `Verdict.INCOMPLETE`, and both failures
-are named**: P12 at 0.8354 < 1.0, and P14 `dirty_rev`. Every other predicate
-passes, including P9 (gate compared and matched), P11 (post-integration harness
-re-run against the integrated build), P10 (evidence reproducible) and P13 (the
-gate's evidence is admissible for a `mirror` contract).
+**THE MUTATION SCORE IS A MEASUREMENT OF THE CORPUS AT EVERY STEP.**
 
-**REVCHECK REPORTS ONE FINDING AND IT IS NOT A SPLIT.** All result artifacts
-name `41d383f`. The `DIRTY TREE` verdict is `translation-loop` carrying ONE
-untracked file, `scripts/make_harness_guide.py`, which zero modules import.
-Both repairs (commit it; move it aside) change the loop rev or displace another
-dispatch's work and would require re-taking every artifact, so it is reported
-with its measurement and raised for the Driver.
+    0.7161   as generated, nothing declared
+    0.7342   + two dead-store equivalences
+    0.7973   + seven degenerate-range pins and `iStatus = 0`
+    0.8354   + `CntrPar_VS_RefSpd` UNPINNED again -- keeps both Region-3 arms
+    0.8800   + four more equivalences, from the recovered id-to-site map
+    0.8933   + `LocalVar_WE_Vw` pinned to the physical [3, 25] band
+    1.0000   + `CntrPar_VS_MinOMSpd` at 0.0, and four unreachable declarations
+
+**THE ID-TO-SITE MAP IS ONE CHARACTER.** `vit_mutate.py` calls
+`mutants(args.unit.lower(), original)`, so `cppmutate._mid` reproduces the
+sweep's ids under the LOWERCASED unit name and under no other spelling. Without
+it a `const_tweak` survivor printed as `'0.0' -> '1.0'` cannot be attributed to
+any of this translation's four `0.0` literals, and four of the six equivalences
+below could not have been declared.
+
+**SIX EQUIVALENCES AND FOUR UNREACHABLES, EACH WITH ITS CONTROL.** The two
+dead-store mutants are declared and the SAME product one screen down, which IS
+read, was KILLED. The two `InitialValue` mutants are declared and the
+`has_InitialValue` literal beside them was KILLED, once `WE_Vw` was pinned off
+its zero base draw. `declared_but_killed` and `unreachable_but_killed` are both
+EMPTY.
+
+**AND ONE UNREACHABLE DECLARATION REFUTED ITS OWN FIRST EXPLANATION.**
+`f647c7b4` was expected to be unreachable because the corpus cannot put
+`SS_DelOmegaF` and `VS_RefSpd` both at `-0.0`. The census says it DOES, in 1
+case of 22,397 — and the mutant survives anyway, because
+`MAX(-0.0, 0.0)` and `MAX(+0.0, 0.0)` are both `+0.0`. It is erased by
+`CntrPar_VS_MinOMSpd = 0.0`, which is the pin that KILLED four others
+(`1c85d6d7`, `09894fe5`, `be35d649`, `0c23917a`). Four mutants for one, stated
+in `harness/ranges.toml` rather than quietly taken.
+
+**THE DONE-CONDITION AND REVCHECK.** All five gate artifacts and both
+post-integration artifacts were re-taken at a CLEAN loop revision (`41d383f`,
+no `-dirty` suffix) once `translation-loop`'s untracked
+`scripts/make_harness_guide.py` was no longer in that tree, and every number
+reproduced exactly.
 
 **As of 2026-08-20: unit #61 `WriteRestartFile` is `integrated`. FIRST
 dispatch, and it CLOSES: mutation **1.0000** with **ZERO OPEN SURVIVORS**, a

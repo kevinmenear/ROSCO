@@ -3562,4 +3562,33 @@ CntrPar_VS_MinOMSpd = { lo = 0.0, hi = 0.0 }
 LocalVar_PRC_R_Speed = { lo = 0.8, hi = 0.8 }
 LocalVar_iStatus = { lo = 0, hi = 0 }
 LocalVar_WE_Vw = { lo = 3.0, hi = 25.0 }
+#
+# THE LAST TWO PINS ARE WHAT TOOK THE SCORE FROM 0.8800 TO 1.0000, AND BOTH
+# WERE CHOSEN FROM A MEASUREMENT RATHER THAN FROM THE SHIPPED FILES.
+#
+#   LocalVar_WE_Vw = [3, 25]   the physical wind-speed band, cut-in to cut-out.
+#       It kills 860bdd9e -- the FIRST lpfilter_c call's `has_InitialValue`
+#       literal -- which survived for one reason only: WE_Vw's base draw was
+#       exactly 0.0, so `InitialValue_ = InputSignal` and
+#       `InitialValue_ = InitialValue` were both 0.0 and the flag could not be
+#       read. The SECOND call's identical literal was killed all along, because
+#       its InputSignal is `VS_RefSpd_TSR` and that is not zero. A range and not
+#       a point, so R6 still varies it.
+#
+#   CntrPar_VS_MinOMSpd = 0.0  and this one is INSTRUMENTAL, at the cost of one
+#       mutant, stated here because the trade is not obvious. All 28 shipped
+#       files say 34.64286. The census
+#       (evidence/ComputeVariablesSetpoints/negzero_census.txt) measured the
+#       `VS_FBP_Variable_Pitch` arm at 34.64286 and found `saturate`'s upper
+#       bound clamping on ALL 1,154 arm cases and then being ERASED on all
+#       1,154, because the unit's last statement is
+#       `MAX(VS_RefSpd, VS_MinOMSpd)` and the bound was always below it. At 0.0
+#       the bound clears the clamp and FOUR mutants die: 1c85d6d7 (the tie
+#       inside `fortran_max`, which now sees `MAX(-0.0, +0.0)`), 09894fe5 and
+#       be35d649 (the bound's own two), and 0c23917a (the arm selector).
+#       WHAT IT COSTS is exactly one mutant, f647c7b4, whose -0.0 difference the
+#       same `MAX(., 0.0)` erases -- declared `unreachable` with that reason
+#       rather than left unexplained. A minimum operating speed of 0.0 is inside
+#       the dummy's domain and means "no minimum"; a NEGATIVE one would recover
+#       f647c7b4 and is not.
 

@@ -12,21 +12,21 @@ inlined: `LPFilter` (#12, ×2, both post-incrementing `objInst%instLPF`),
 `interp1d` (#23, ×0..3), `RefSpeedExclusion` (#59, ×0..1), `saturate` (#24,
 ×0..1).
 
-## DISPOSITION: `deferred`, on P12 and on one number
+## DISPOSITION: `integrated`, and every mutant has an answer
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness (`harness/ComputeVariablesSetpoints.json`) | **22,776 checked, 0 failed, 0 inadmissible**. R4 compares the return value plus 480 out-parameters | it went red twice, and both reds are findings: `std::max` at three sites moved **3,300 of 25,398** (the translation defect), and the corpus repair moved **577 of 22,434** (a reference path with no answer) |
-| mutation (`mutation/ComputeVariablesSetpoints.json`) | **66 killed of 79 scoreable, 2 equivalent, 0 nocompile, 0 unreachable — 0.8354.** 13 OPEN | `declared_but_killed` and `unreachable_but_killed` both EMPTY; four sweeps, 0.7161 → 0.7342 → 0.7973 → 0.8354 |
-| post-integration (`harness/ComputeVariablesSetpoints.postintegration.json`) | **22,776 checked, 0 failed** (E4.5) | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **22,776 of 22,776, EVERY case, as predicted before the first run**; reverted, rebuilt, green re-taken at 0 |
+| differential harness (`harness/ComputeVariablesSetpoints.json`) | **22,397 checked, 0 failed, 0 inadmissible**. R4 compares the return value plus 480 out-parameters | it went red twice, and both reds are findings: `std::max` at three sites moved **3,300 of 25,398** (the translation defect), and the corpus repair moved **577 of 22,434** (a reference path with no answer) |
+| mutation (`mutation/ComputeVariablesSetpoints.json`) | **71 killed of 71 scoreable, 6 equivalent, 4 unreachable, 0 nocompile — 1.0000, ZERO OPEN** | `declared_but_killed` and `unreachable_but_killed` both EMPTY; six sweeps, 0.7161 → 0.7342 → 0.7973 → 0.8354 → 0.8800 → 0.8933 → 1.0000 |
+| post-integration (`harness/ComputeVariablesSetpoints.postintegration.json`) | **22,397 checked, 0 failed** (E4.5) | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **22,397 of 22,397, EVERY case**, on the third successive corpus, as predicted before the first run; reverted, rebuilt, green re-taken at 0 |
 | gate, 27 scenarios (`gate/ComputeVariablesSetpoints.json`) | 5,252,000 values / 351 channels, 0 mismatched | **four, one of them a NEGATIVE CONTROL and one of them a REFUTED PREDICTION** — 728,340 / 0 / 0 / 1,977,826 |
 
-**The number that defers it is 0.8354 against a threshold of 1.0.** Every one
-of the 13 open survivors has an answer in `mutation_survivors.txt`, in three
-groups — `saturate`'s bound annihilated by the unit's own last statement, three
-arm boundaries that need an exact IEEE tie, and eight `const_tweak`s of which
-two are provably equivalent and undeclarable because the tool's mutant ids
-cannot be mapped to sites. None is a defect claim.
+**Every one of the 81 mutants has an answer**, and `mutation_survivors.txt`
+gives it: 71 killed, 6 equivalences (each with its control inside the sweep --
+the same expression one screen down, killed rather than declared) and 4
+unreachable declarations (each with a measured mechanism and an evidence path).
+The corpus was repaired ten pins at a time and the score is a measurement of
+the corpus at every step.
 
 ## THREE INFRASTRUCTURE DEFECTS HAD TO BE REPAIRED BEFORE ANY LAYER COULD RUN
 
@@ -124,7 +124,8 @@ excluding it.
 | `callees.as-generated.f90` | the artifact it names |
 | `inputs_census.txt` | the scored corpus's own inputs on three arms, and the divide-by-zero that explains eleven survivors |
 | `mutation_survivors.txt` | one answer per survivor, the two equivalences and their control, and what 0.7342 does not cover |
-| `harness.PINNED-CORPUS-RED.json` | the corpus repair BEFORE the eighth pin — 577 of 22,434, kept because it is the artifact that exposed `interp1d`'s undefined result at a NaN abscissa |
+| `harness.PINNED-CORPUS-RED.json` | the corpus repair BEFORE the eighth pin — 577 of 22,434, kept because it is the artifact that exposed `interp1d`'s undefined result at a NaN abscissa, and because it is the evidence two `unreachable` declarations rest on |
+| `negzero_census.txt` | the negative-zero coincidence counts, and the declaration whose first explanation it refuted |
 | `gate.redtest_predictions.txt` | four perturbations, predicted before the runs, with the refutation and the probe that explains it |
 | `wrapper_redtest_prediction.txt` | the copy-back prediction, 25,398, written before the run |
 | `revcheck.txt` | revcheck's one finding and its exact cause |

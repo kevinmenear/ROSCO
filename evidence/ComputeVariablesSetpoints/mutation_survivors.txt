@@ -1,31 +1,49 @@
-MUTATION SURVIVORS -- ONE ANSWER PER SURVIVOR, AND WHAT THE SCORE DOES NOT
-COVER.
+MUTATION: 1.0000, ZERO OPEN SURVIVORS -- ONE ANSWER PER MUTANT, AND EACH ANSWER
+IS CHECKABLE WITHOUT RE-DERIVING IT.
 
 `vit_mutate.py`, six token operators plus the call operators, run under
-`scripts/mutate_guarded.sh` on the CLEAN tree against the same 22,776-case
+`scripts/mutate_guarded.sh` on the CLEAN tree against the same 22,397-case
 corpus the green in `harness/ComputeVariablesSetpoints.json` was taken on.
 
-    66 killed of 79 scoreable, 2 declared equivalent, 0 nocompile.  0.8354
+    81 mutants, 0 nocompile
+    71 killed of 71 scoreable          score 1.0000
+     6 declared EQUIVALENT  (a claim about the PROGRAMS)
+     4 declared UNREACHABLE (a claim about the CORPUS, each with evidence)
+     0 open
+
     declared_but_killed  EMPTY        unreachable_but_killed  EMPTY
 
-FOUR SWEEPS, AND THE SCORE IS A MEASUREMENT OF THE CORPUS RATHER THAN OF THE
-TRANSLATION AT EVERY STEP:
+SIX SWEEPS, AND EVERY STEP IS A MEASUREMENT OF THE CORPUS RATHER THAN OF THE
+TRANSLATION:
 
-    0.7161   the corpus as generated, nothing declared
+    0.7161   as generated, nothing declared
     0.7342   + the two dead-store equivalences
     0.7973   + seven degenerate-range pins and `iStatus = 0`
-    0.8354   + `CntrPar_VS_RefSpd` UNPINNED again        <- committed
+    0.8354   + `CntrPar_VS_RefSpd` UNPINNED again -- keeps both Region-3 arms
+    0.8800   + four more equivalences, from the recovered id-to-site map
+    0.8933   + `LocalVar_WE_Vw` pinned to the physical [3, 25] band
+    1.0000   + `CntrPar_VS_MinOMSpd` at 0.0, and four unreachable declarations
 
-The last step is the one worth reading: pinning `VS_RefSpd` to the shipped
-122.90967 makes `saturate`'s upper bound observable and DESTROYS both Region-3
-`VS_FBP` lookups, because R6's RELATIONAL PAIR block requires both sides of
-`VS_RefSpd_TSR > VS_RefSpd` to be varied and disappears when either is pinned.
-Two mutants either way; the version that keeps the two ARMS is committed.
+===============================================================================
+THE ID-TO-SITE MAP, WHICH IS WHAT MADE THE LAST HALF POSSIBLE
 
-TWO DECLARED EQUIVALENT, AND THE DECLARATION HAS ITS CONTROL INSIDE THE SWEEP.
+`vit_mutate.py` calls `mutants(args.unit.lower(), original)`. So
+`cppmutate._mid` reproduces the sweep's ids under the LOWERCASED unit name and
+not under the plan's spelling -- `_mid('ComputeVariablesSetpoints', ...)`
+reproduces nothing, `_mid('computevariablessetpoints', ...)` reproduces all 81.
+One character, and without it a `const_tweak` survivor printed as
+`'0.0' -> '1.0'` cannot be attributed to any of this translation's four `0.0`
+literals. Recover the map with:
 
-  312f3565  drop_factor  'VS_RefSpd_TSR * PRC_R_Speed' -> 'VS_RefSpd_TSR'
-  f8e46a25  arith_op     'VS_RefSpd_TSR * PRC_R_Speed' -> 'VS_RefSpd_TSR / PRC_R_Speed'
+    from harness.cppmutate import mutants
+    for m in mutants(unit.lower(), open(cpp).read()):
+        print(m.mid, m.operator, m.before, '->', m.after, 'L%d' % m.line)
+
+===============================================================================
+SIX EQUIVALENCES -- CLAIMS ABOUT THE PROGRAMS
+
+  312f3565  L293  drop_factor  'VS_RefSpd_TSR * PRC_R_Speed' -> 'VS_RefSpd_TSR'
+  f8e46a25  L293  arith_op     the same expression, '*' -> '/'
 
 Both sit on the reference's own DEAD STORE, clean source
 `ControllerBlocks.f90:148`:
@@ -35,86 +53,83 @@ Both sit on the reference's own DEAD STORE, clean source
 
 The second statement OVERWRITES the first and reads `VS_RefSpd_TSR`, not
 `VS_RefSpd`; there is no statement between them and `LPFilter`'s seven actual
-arguments do not include `VS_RefSpd`. No admissible input can make either
-mutant change an output: a claim about the PROGRAMS.
+arguments do not include `VS_RefSpd`.
 
-**THE CONTROL IS THAT THE SAME PRODUCT ONE SCREEN DOWN IS NOT DECLARED.**
-`CntrPar%VS_RefSpd * LocalVar%PRC_R_Speed` is `saturate`'s upper bound at
-`:162` and it IS read, so `09894fe5` and `be35d649` stay OPEN below. Two
-identical edits to two identical expressions, one pair declared and one pair
-not, and the difference is dataflow rather than judgement.
+**THE CONTROL IS INSIDE THE SWEEP.** The SAME product one screen down is
+`saturate`'s upper bound at `:162`, it IS read, and its two mutants
+(`09894fe5`, `be35d649`) are NOT declared -- they were KILLED, once the corpus
+could reach them. Two identical edits to two identical expressions, one pair
+declared and one pair killed, and the difference is dataflow.
 
-THIRTEEN OPEN. THREE GROUPS, AND NONE OF THEM IS A DEFECT CLAIM.
+  c303585e  L122  const_tweak  first  lpfilter_c `InitialValue` 0.0 -> 1.0
+  642f565d  L271  const_tweak  second lpfilter_c `InitialValue` 0.0 -> 1.0
 
---- (a) `saturate`'s upper bound, ANNIHILATED BY THE UNIT'S OWN LAST STATEMENT
+The literal beside each is `has_InitialValue = 0`, and BOTH crossing paths
+branch on it: the generated Fortran bridge calls `LPFilter` WITHOUT the
+optional argument (`bridge_result = REAL(LPFilter(..., inst), C_DOUBLE)`), and
+the integrated `lpfilter.cpp` passes the flag through to the same test. The
+value is never read on either path.
 
-  09894fe5  drop_factor  'CntrPar->VS_RefSpd * PRC_R_Speed' -> 'CntrPar->VS_RefSpd'
-  be35d649  arith_op     the same expression, '*' -> '/'
+**THE CONTROL, again inside the sweep**: the neighbouring `has_InitialValue`
+literal itself (`860bdd9e`, L122) is NOT declared -- it was killed, by pinning
+`WE_Vw` off zero -- and the second call's copy of it was killed all along.
 
-`saturate(x, VS_MinOMSpd, VS_RefSpd*PRC_R_Speed)` returns at most the bound,
-and the unit's LAST statement is `MAX(VS_RefSpd, VS_MinOMSpd)` -- so whenever
-the bound is below `VS_MinOMSpd` the clamp lifts the answer back and the bound
-cannot be read. With `VS_RefSpd` free its base draw is -600 and the bound is
--480, below the pinned `VS_MinOMSpd` of 34.64. Counted from the other side:
-`negate_cond` on that arm's own `if` moved 35 of 25,398 cases on the first
-corpus.
+  9b32d4a5  L122  const_tweak  first  `restart ? 1 : 0` -> `? 2 : 0`
+  30056504  L270  const_tweak  second `restart ? 1 : 0` -> `? 2 : 0`
 
-TWO REPAIRS WERE PRICED AND BOTH COST MORE THAN THEY BUY:
-  * pin `CntrPar_VS_RefSpd = 122.90967` -- kills these two, LOSES both
-    Region-3 `VS_FBP` arms (0.797 against 0.835), because the relational pair
-    block needs both sides varied;
-  * pin `LocalVar_PRC_R_Speed = -0.8` so the bound is positive at the base
-    draw -- measured, and the survivor set is IDENTICAL. It bought nothing, so
-    the physical +0.8 is committed.
+`LPFilter`'s `reset` is a Fortran `LOGICAL(4)`. The generated bridge converts
+with `(reset /= 0)` and the integrated C++ tests `(reset != 0)`, so 1 and 2 are
+the same `.TRUE.` on both paths.
 
---- (b) three `compare_op` boundary mutants, each needing an exact tie
+===============================================================================
+FOUR UNREACHABLE -- CLAIMS ABOUT THE CORPUS, MEASURED
 
-  1c85d6d7  '>'  -> '>='
-  f977278e  '<'  -> '<='
-  f647c7b4  '>'  -> '>='
+Full reasons and evidence are in `mutation/ComputeVariablesSetpoints.unreachable.json`
+and the measurement is `evidence/ComputeVariablesSetpoints/negzero_census.txt`.
 
-The `<` is `LocalVar%SS_DelOmegaF < 0`, whose two arms are
-`PC_RefSpd_PRC - SS_DelOmegaF` and `PC_RefSpd_PRC`. At `SS_DelOmegaF == 0`
-those agree for every finite value AND for a NaN, because `x - 0.0 == x`
-including the sign of the zero. **The only input that separates them is
-`SS_DelOmegaF == -0.0` with `PC_RefSpd_PRC == -0.0`**, where the mutated arm
-computes `-0.0 - (-0.0) = +0.0`. R6 carries a negative-zero rung per scalar and
-this needs TWO parameters at negative zero simultaneously; the generator moves
-one at a time. NOT declared equivalent, because it is not -- it is a corpus
-that cannot reach a real difference.
+  f977278e  L145  `IF (SS_DelOmegaF < 0)` -> `<= 0`
+      The two arms are `PC_RefSpd_PRC - SS_DelOmegaF` and `PC_RefSpd_PRC`,
+      equal for every finite value AND for a NaN, because `x - 0.0 == x`
+      including the sign of the zero. The ONLY discriminating input is BOTH
+      `SS_DelOmegaF` and `PC_RefSpd_PRC` at `-0.0`. MEASURED: 2 cases have the
+      first, 2 have the second, and **0 have both**. That is `generate.py`'s
+      rule and not this corpus's luck -- R6 sets 40 scalar reals to negative
+      zero ONE PER CASE, everything else at its base draw.
 
---- (c) eight `const_tweak` survivors, and the id-to-site map is what is missing
+  f647c7b4  L327  `IF (SS_DelOmegaF > 0)` -> `>= 0`
+      **AND THIS ONE REFUTED ITS OWN FIRST EXPLANATION.** The coincidence it
+      needs IS in the corpus -- 1 case of 22,397 has `SS_DelOmegaF` and
+      `VS_RefSpd` both at -0.0. It survives anyway because the unit's LAST
+      statement erases the difference: the mutant computes
+      `-0.0 - (-0.0) = +0.0`, and `MAX(-0.0, 0.0)` and `MAX(+0.0, 0.0)` are
+      both `+0.0`. It is erased by `CntrPar_VS_MinOMSpd = 0.0`, which is the
+      pin that KILLED four others. A negative minimum operating speed would
+      recover it and is outside what the reference's own documentation admits.
+      Four mutants for one, stated rather than quietly taken.
 
-  0c23917a '0'->'1'   9b32d4a5 '1'->'2'   c3c9ad10 '0'->'1'   860bdd9e '0'->'1'
-  c303585e '0.0'->'1.0'   30056504 '1'->'2'   b1377f87 '0'->'1'   642f565d '0.0'->'1.0'
+  c3c9ad10  L122  first  `restart ? 1 : 0` -> `? 1 : 1`
+  b1377f87  L270  second `restart ? 1 : 0` -> `? 1 : 1`
+      These force `LPFilter`'s `reset` true. Its guard is
+      `IF ((iStatus == 0) .OR. reset)`, and `iStatus` is **0 on all 22,397
+      cases** (measured), so the left operand is already true and `reset` never
+      decides. `iStatus` is pinned because WITHOUT it the reference has no
+      answer on this unit's `PRC_Mode == 1` path -- `interp1d` never assigns
+      its own result at a NaN abscissa, and the harness fails 577 of 22,434
+      (`harness.PINNED-CORPUS-RED.json`). So the only inputs that discriminate
+      these two are inputs on which the reference is undefined.
 
-TWO OF THESE ARE ALMOST CERTAINLY EQUIVALENT AND ARE DELIBERATELY NOT DECLARED.
-This translation has four `0.0` literals: the `InitialValue` argument of each of
-the two `lpfilter_c` calls, and the second argument of each
-`fortran_max(x, 0.0)`. `LPFilter`'s eighth dummy is OPTIONAL and the
-`has_InitialValue` flag beside it is the literal `0`, so the bridge never reads
-the value and no input can make those two mutants change an output.
+===============================================================================
+WHAT 1.0000 STILL DOES NOT COVER, STATED PLAINLY
 
-**DECLARING WITHOUT THE MAP WOULD BE A FALSE EQUIVALENCE, AND P12 FAILS A UNIT
-OUTRIGHT FOR ONE.** What blocks the map is concrete and reproducible:
-`cppmutate._mid(unit, operator, before, after, occurrence)` recomputed by hand
-does NOT reproduce any of the sweep's ids --
-`_mid('ComputeVariablesSetpoints','compare_op','<','<=',k)` gives `b512bf09`,
-`b424866a`, `38d46d45` … for k = 0, 1, 2 while the sweep's is `f977278e` -- so
-`vit_mutate.py` is not deriving its ids the way that function's signature
-suggests. A PARTIAL workaround was used here and is worth writing down: zip the
-ordered `[n/81] … SURVIVED` lines from the sweep's own stdout against the
-ordered `SURVIVOR <id>` summary, after removing the declared-equivalent lines.
-It recovers every survivor whose printed text names an expression; it does not
-recover the `const_tweak` family, whose lines print only the literal.
-Reconciling the two is an instrument fix that pays on every later unit.
-
-WHAT 0.8354 DOES NOT COVER, STATED PLAINLY:
-
-  * `saturate`'s upper bound -- and the GATE cannot see it either (35 of
-    25,398 for its own predicate). No instrument in this campaign currently
-    discriminates that statement.
-  * three arm boundaries that need an exact IEEE tie, one of them needing two
-    negative zeros at once.
-  * two `lpfilter_c` arguments that are provably unread, undeclared only
-    because the tool cannot tell them from two that are not.
+  * The four declarations above are the CORPUS's limits, not the program's.
+    Two of them (`c3c9ad10`, `b1377f87`) would be reachable on a corpus that
+    could tell an undefined `interp1d` result from a defined one; the campaign
+    has no `no_oracle_when` entry for that today and this unit did not add one.
+  * `81` is the mutant population `cppmutate` offers on this translation. The
+    sweep's own closing line says it: "no surviving mutant among those tried --
+    which is not the same as no blind spot."
+  * The GATE is blind to four of this unit's statements outright (both
+    alternative torque-control laws and both Region-3 `VS_FBP` lookups have
+    zero hits in all 27 scenarios) and to a fifth arm through one scenario
+    only. Only the differential harness reaches them, and it now does so on a
+    corpus that no longer divides by zero there.

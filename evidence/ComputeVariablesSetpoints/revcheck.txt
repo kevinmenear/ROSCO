@@ -84,3 +84,25 @@ dispatch. The next dispatch of this unit will have to re-take the harness and
 the mutation artifacts anyway, to score the corpus repair; the right moment to
 make the rev exact is then, and the campaign-level question in DECISIONS.md
 should be answered first.
+
+
+===============================================================================
+RESOLVED, AND NOT BY THIS UNIT.
+
+Later in the same dispatch `translation-loop`'s working tree came back CLEAN --
+`scripts/make_harness_guide.py` is no longer there, removed by something
+outside this session while it ran. So the third repair became free: every
+host-run artifact was RE-TAKEN with the instrument tree clean, and all five
+gate artifacts and both post-integration artifacts now carry `41d383f` with no
+suffix.
+
+    green            5,252,000 / 0            (first take 5,252,000 / 0)
+    pc_spderr          728,340                 (first take   728,340)
+    else_arm                 0                 (first take         0)
+    dead_power_tsr           0                 (first take         0)
+    vs_refspd_forced 1,977,826                 (first take 1,977,826)
+
+Every number identical, and the re-taken artifacts carry the ORIGINAL `notes`
+as well as a line saying they are a re-take -- unit #57's rule that a re-take
+must say at least what it overwrote. The two `-nogit` stamps that remain are
+the container, which carries no `git`; P14 does not read those as dirty.
