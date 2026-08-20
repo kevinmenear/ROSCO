@@ -6,7 +6,7 @@
  "comparison_verdict": "FAIL",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "b3ad414",
+ "loop_rev": "6731f14",
  "mismatched": 1552676,
  "mismatched_channels": [
   "scenario_3:bld_pitch 10274/16000",
@@ -135,9 +135,6 @@
  ],
  "missing_channels": [],
  "missing_scenarios": [],
- "notes": [
-  "RT1, the return path: 1.0 added to the demanded generator torque avrSWAP(47), the one value this procedure exists to produce. ADDITIVE because MAX(0.0,x) is an exact zero wherever the demand is non-positive and a scale through an exact zero is a no-op. Predicted NON-ZERO and LARGE, scenario set exactly the 23 that reach Controllers.f90:236."
- ],
  "perturbation": {
   "file": "rosco/controller/src/variablespeedcontrol.cpp",
   "from": "avrSWAP[47 - 1] = static_cast<float>(std::fmax(0.0, LocalVar->VS_LastGenTrq));",
@@ -188,6 +185,6 @@
  "unit": "VariableSpeedControl",
  "unit_of_count": "values",
  "verdict": "RED_TEST_PASS",
- "vit_rev": "d6759d9",
+ "vit_rev": "d3a1e12",
  "went_red": true
 }

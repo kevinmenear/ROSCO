@@ -6,7 +6,7 @@
  "comparison_verdict": "FAIL",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "b3ad414",
+ "loop_rev": "6731f14",
  "mismatched": 49659,
  "mismatched_channels": [
   "scenario_12:bld_pitch 560/16000",
@@ -18,9 +18,6 @@
  ],
  "missing_channels": [],
  "missing_scenarios": [],
- "notes": [
-  "RT2, the K*Omega^2 Region 2 arm doubled. Controllers.f90:281, 15,987 hits, SCENARIO 12 ONLY -- the one shipped configuration with VS_ControlMode = 1; the other 22 callers take the tip-speed-ratio PI arm at :264. Predicted NON-ZERO with scenario set EXACTLY {12}, which requires the 22 other callers to stay at zero."
- ],
  "perturbation": {
   "file": "rosco/controller/src/variablespeedcontrol.cpp",
   "from": "LocalVar->GenTq = LocalVar->VS_KOmega2_GenTq;",
@@ -71,6 +68,6 @@
  "unit": "VariableSpeedControl",
  "unit_of_count": "values",
  "verdict": "RED_TEST_PASS",
- "vit_rev": "d6759d9",
+ "vit_rev": "d3a1e12",
  "went_red": true
 }

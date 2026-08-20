@@ -5,7 +5,7 @@
  "compared": 5252000,
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "b3ad414",
+ "loop_rev": "6731f14",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
@@ -47,5 +47,5 @@
  "unit": "VariableSpeedControl",
  "unit_of_count": "values",
  "verdict": "PASS",
- "vit_rev": "d6759d9"
+ "vit_rev": "d3a1e12"
 }

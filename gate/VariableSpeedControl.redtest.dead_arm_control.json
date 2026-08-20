@@ -6,14 +6,11 @@
  "comparison_verdict": "PASS",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "b3ad414",
+ "loop_rev": "6731f14",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
- "notes": [
-  "RT3, a NEGATIVE CONTROL. Controllers.f90:285, the Region 3 CONSTANT-TORQUE arm, is ABSENT from coverage -- 0 hits in all 27 scenarios -- because scenario 12, the only caller of the K*Omega^2 law, holds VS_State at 1 or 2 (12 + 15,987 = 15,999, the arm entry count). 1.0e30 is chosen so the prediction has no hiding place. PREDICTED EXACTLY 0 of 5,252,000: this separates the gate seeing the UNIT from the gate seeing the EDIT."
- ],
  "perturbation": {
   "file": "rosco/controller/src/variablespeedcontrol.cpp",
   "from": "LocalVar->GenTq = CntrPar->VS_RtTq;",
@@ -64,6 +61,6 @@
  "unit": "VariableSpeedControl",
  "unit_of_count": "values",
  "verdict": "RED_TEST_FAIL",
- "vit_rev": "d6759d9",
+ "vit_rev": "d3a1e12",
  "went_red": false
 }

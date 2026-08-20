@@ -160,3 +160,30 @@ WHAT NO GATE PERTURBATION HERE CAN REACH, from the same coverage file:
 That is the region the differential harness exists to cover, and this dispatch
 could not build one -- see `corpus_wall.txt`. It is why this unit is `deferred`
 and not `integrated`.
+
+================================================================================
+RESULTS -- RE-TAKEN at loop 6731f14 / vit d3a1e12, 2026-08-20, second dispatch
+================================================================================
+The instruments moved in this dispatch (an opt-in read-set entry point and a
+write-only hold in the loop; two generated-code fixes in VIT), and `revcheck`
+reported a BASE-SHA SPLIT between these four artifacts and the eight harness and
+mutation ones. Unit #53's rule is that there is no partial instrument move that
+leaves the evidence coherent, so all four were re-run, character for character
+out of the perturbations recorded above.
+
+NEITHER THE TRANSLATION NOR THE WRAPPER MOVED -- the .cpp is blob
+85ad734d354f61875e9a1a295ac15265f4cc6b30 in both dispatches -- so the numbers
+were EXPECTED to be identical, and identical is what makes the re-take worth
+recording rather than a formality:
+
+    green    5,252,000 values / 351 channels / 27 scenarios, 0 mismatched
+    RT1      moved  1,552,676 of 5,252,000; after revert 0     (first take: 1,552,676)
+    RT2      moved     49,659 of 5,252,000; after revert 0     (first take:    49,659)
+    RT3      moved          0 of 5,252,000; after revert 0     (first take:         0)
+
+RT3's artifact verdict is RED_TEST_FAIL, which is the tool's contract for a
+perturbation that moves nothing and is the INTENDED result for a negative
+control -- the same reading the first take's results section records.
+
+`revcheck VariableSpeedControl` after this: 12 result artifacts, all at
+6731f14, clean.
