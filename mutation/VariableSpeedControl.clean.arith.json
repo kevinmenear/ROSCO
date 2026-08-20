@@ -1,0 +1,183 @@
+{
+ "unit": "VariableSpeedControl",
+ "operators": [
+  "arith_op",
+  "drop_factor",
+  "index_offset",
+  "swap_operands"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "arith_op",
+  "drop_factor",
+  "index_offset",
+  "swap_operands"
+ ],
+ "operators_filter_unmatched": [],
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 0,
+  "scored": 48,
+  "of": 48
+ },
+ "scored_ids": [
+  "8d971af0",
+  "2a2f2ec4",
+  "fc3c15b3",
+  "e22d436f",
+  "e293a874",
+  "457936e2",
+  "586f861b",
+  "0c9c7758",
+  "63c65b2a",
+  "99268f5b",
+  "537b4a84",
+  "60b16646",
+  "edc61018",
+  "c5842ee1",
+  "d2b5f5d1",
+  "899e45eb",
+  "f31103b0",
+  "a15c5b13",
+  "a6a086a1",
+  "718a2447",
+  "162e0166",
+  "7dc86c85",
+  "c5d77b94",
+  "b1e58e32",
+  "f415b9d1",
+  "b0651a6e",
+  "f555400e",
+  "9f1bdb66",
+  "ee6c454d",
+  "e54f9290",
+  "1054d557",
+  "55aa7b72",
+  "5d9bea1a",
+  "2bcdc8a8",
+  "91975fcb",
+  "a6d6553a",
+  "57630dd2",
+  "63fe0aba",
+  "8481f734",
+  "3bab24c9",
+  "a58f2230",
+  "845ad768",
+  "4a68bd15",
+  "fda51720",
+  "9d4f5ebe",
+  "71b10160",
+  "f5f7a6d9",
+  "a8ecdf1c"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "const_tweak"
+ ],
+ "mutants": 48,
+ "equivalent_declared": 0,
+ "unreachable_declared": 0,
+ "unreachable": [],
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "sanitize": false,
+ "mutant_workers": 8,
+ "identity_verified": 48,
+ "killed_by_sanitizer": 0,
+ "killed_by_sanitizer_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 48,
+ "killed": 37,
+ "survived": 11,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "unreachable_but_killed": [],
+ "score": 0.7708,
+ "loop_rev": "078f4ff-nogit",
+ "gen_rev": "gen-e01a73f480c3",
+ "vit_rev": "d3a1e12-nogit",
+ "survivors": [
+  {
+   "id": "e22d436f",
+   "operator": "drop_factor",
+   "before": "LocalVar->SD_MaxTorqueRate * LocalVar->DT",
+   "after": "LocalVar->SD_MaxTorqueRate"
+  },
+  {
+   "id": "60b16646",
+   "operator": "arith_op",
+   "before": "1 - 1",
+   "after": "1 + 1"
+  },
+  {
+   "id": "edc61018",
+   "operator": "arith_op",
+   "before": "2 - 1",
+   "after": "2 + 1"
+  },
+  {
+   "id": "ee6c454d",
+   "operator": "swap_operands",
+   "before": "2 - 1",
+   "after": "1 - 2"
+  },
+  {
+   "id": "63fe0aba",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "3bab24c9",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "845ad768",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "4a68bd15",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "fda51720",
+   "operator": "index_offset",
+   "before": "[2]",
+   "after": "[2 + 1]"
+  },
+  {
+   "id": "9d4f5ebe",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "f5f7a6d9",
+   "operator": "index_offset",
+   "before": "[2]",
+   "after": "[2 + 1]"
+  }
+ ]
+}

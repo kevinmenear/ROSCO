@@ -1,0 +1,181 @@
+{
+ "unit": "VariableSpeedControl",
+ "operators": [
+  "compare_op",
+  "negate_cond"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "compare_op",
+  "negate_cond"
+ ],
+ "operators_filter_unmatched": [],
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 0,
+  "scored": 50,
+  "of": 50
+ },
+ "scored_ids": [
+  "f0398568",
+  "1136a412",
+  "95e7abc4",
+  "df69f96a",
+  "9e383f66",
+  "6e74c383",
+  "bc2ea9b6",
+  "daf0e09f",
+  "779464ef",
+  "09de6fb0",
+  "2c24cf5b",
+  "07f60860",
+  "7225c17b",
+  "32cf7e50",
+  "8da61f7a",
+  "1d4d861c",
+  "67b69c98",
+  "7523df68",
+  "f43fd3c7",
+  "b60aabb7",
+  "211aa337",
+  "9ea78843",
+  "7f705e94",
+  "234fbfc5",
+  "b65b4882",
+  "a1a45329",
+  "919453af",
+  "9bf47b7d",
+  "0003befc",
+  "8e88f0fb",
+  "86eaf04f",
+  "c4e134a5",
+  "83d6bacc",
+  "58bbc776",
+  "c8fb2b71",
+  "c6788a35",
+  "6bff5b2c",
+  "8deeeba0",
+  "a74d5d02",
+  "2bf073bd",
+  "f9d844b5",
+  "8bfb213a",
+  "f99ff37d",
+  "b8aebfea",
+  "b11f2bf0",
+  "b4a00f74",
+  "9fe3580e",
+  "acecc824",
+  "ae9cf54e",
+  "52e40535"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "const_tweak"
+ ],
+ "mutants": 50,
+ "equivalent_declared": 0,
+ "unreachable_declared": 0,
+ "unreachable": [],
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "sanitize": false,
+ "mutant_workers": 8,
+ "identity_verified": 50,
+ "killed_by_sanitizer": 0,
+ "killed_by_sanitizer_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 50,
+ "killed": 39,
+ "survived": 11,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "unreachable_but_killed": [],
+ "score": 0.78,
+ "loop_rev": "078f4ff-nogit",
+ "gen_rev": "gen-e01a73f480c3",
+ "vit_rev": "d3a1e12-nogit",
+ "survivors": [
+  {
+   "id": "1136a412",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "95e7abc4",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "2c24cf5b",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "1d4d861c",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "67b69c98",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "7523df68",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "f43fd3c7",
+   "operator": "compare_op",
+   "before": "==",
+   "after": "!="
+  },
+  {
+   "id": "c6788a35",
+   "operator": "negate_cond",
+   "before": "if (LocalVar->VS_State == VS_State_Region_1_5)",
+   "after": "if (!(LocalVar->VS_State == VS_State_Region_1_5))"
+  },
+  {
+   "id": "f9d844b5",
+   "operator": "negate_cond",
+   "before": "if (LocalVar->VS_State == VS_State_Region_3_FBP)",
+   "after": "if (!(LocalVar->VS_State == VS_State_Region_3_FBP))"
+  },
+  {
+   "id": "8bfb213a",
+   "operator": "negate_cond",
+   "before": "if (CntrPar->VS_FBP == VS_FBP_Power_Overspeed)",
+   "after": "if (!(CntrPar->VS_FBP == VS_FBP_Power_Overspeed))"
+  },
+  {
+   "id": "f99ff37d",
+   "operator": "negate_cond",
+   "before": "if ((CntrPar->VS_FBP == VS_FBP_WSE_Ref) ||\n                       (CntrPar->VS_FBP == VS_FBP_Torque_Ref))",
+   "after": "if (!((CntrPar->VS_FBP == VS_FBP_WSE_Ref) ||\n                       (CntrPar->VS_FBP == VS_FBP_Torque_Ref)))"
+  }
+ ]
+}

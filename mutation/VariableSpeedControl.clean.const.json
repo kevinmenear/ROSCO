@@ -1,0 +1,229 @@
+{
+ "unit": "VariableSpeedControl",
+ "operators": [
+  "const_tweak"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "const_tweak"
+ ],
+ "operators_filter_unmatched": [],
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 0,
+  "scored": 40,
+  "of": 40
+ },
+ "scored_ids": [
+  "b72bcb6d",
+  "0d754804",
+  "85f63c53",
+  "086be23b",
+  "8c92bcd9",
+  "0eab0ee2",
+  "823cc53d",
+  "7e152743",
+  "f3d163e2",
+  "3d77d10f",
+  "b68c9bbc",
+  "341a9389",
+  "3a8f66fe",
+  "dcde2380",
+  "c5f20bec",
+  "29d20aae",
+  "8f9cb4dd",
+  "c3fc66df",
+  "ae0feb16",
+  "53cfa169",
+  "6d20ffca",
+  "ad8d8c20",
+  "6f89209c",
+  "4b912d99",
+  "209afb7d",
+  "ce3895f5",
+  "fe507275",
+  "2d591004",
+  "a3456895",
+  "2bb9c178",
+  "c3eb1c98",
+  "a2f179fa",
+  "e577c80e",
+  "1fc34a82",
+  "a19f6d33",
+  "5b84164b",
+  "cdf8538e",
+  "93d5395e",
+  "7c3b9250",
+  "5b536651"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "const_tweak"
+ ],
+ "mutants": 40,
+ "equivalent_declared": 0,
+ "unreachable_declared": 0,
+ "unreachable": [],
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "sanitize": false,
+ "mutant_workers": 8,
+ "identity_verified": 40,
+ "killed_by_sanitizer": 0,
+ "killed_by_sanitizer_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 40,
+ "killed": 19,
+ "survived": 21,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "unreachable_but_killed": [],
+ "score": 0.475,
+ "loop_rev": "078f4ff-nogit",
+ "gen_rev": "gen-e01a73f480c3",
+ "vit_rev": "d3a1e12-nogit",
+ "survivors": [
+  {
+   "id": "823cc53d",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "7e152743",
+   "operator": "const_tweak",
+   "before": "2",
+   "after": "3"
+  },
+  {
+   "id": "f3d163e2",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "3d77d10f",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "b68c9bbc",
+   "operator": "const_tweak",
+   "before": "2",
+   "after": "3"
+  },
+  {
+   "id": "341a9389",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "3a8f66fe",
+   "operator": "const_tweak",
+   "before": "4",
+   "after": "5"
+  },
+  {
+   "id": "dcde2380",
+   "operator": "const_tweak",
+   "before": "5",
+   "after": "6"
+  },
+  {
+   "id": "c5f20bec",
+   "operator": "const_tweak",
+   "before": "6",
+   "after": "7"
+  },
+  {
+   "id": "29d20aae",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "8f9cb4dd",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "ad8d8c20",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "6f89209c",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "ce3895f5",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "fe507275",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "2d591004",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "2bb9c178",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "c3eb1c98",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "a2f179fa",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "cdf8538e",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "5b536651",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  }
+ ]
+}

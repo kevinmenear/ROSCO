@@ -3132,3 +3132,106 @@ objInst_instRL = { lo = 1, hi = 1000 }
 CntrPar_WE_GearboxRatio = { values = [1.0, 97.0] }
 CntrPar_TRA_ExclSpeed = { values = [1.0, 0.8] }
 CntrPar_TRA_ExclBand = { values = [2.0, 0.1] }
+
+# ---------------------------------------------------------------------------
+# VariableSpeedControl
+#
+# TWO TIES, AND THEY ARE `interp1d`'s TIE ONE CALLER UP. Unit #60, second
+# dispatch. Not a narrowing chosen to make a number smaller: the first generated
+# run of this unit's harness produced NO JSON AT ALL and printed
+#
+#     At line 119 of file rosco/controller/src/Functions.f90
+#     Fortran runtime error: End of record
+#
+# which is `interp1d`'s own size-mismatch abort, verbatim, at the same line the
+# `[interp1d]` block above records and for the same reason: the reference
+# assigns a 38-character literal into a `CHARACTER(:), ALLOCATABLE` ErrMsg,
+# REALLOCATING it to 38, and then formats 53 characters into that record. The
+# measurement is `evidence/interp1d/reference.size-mismatch-aborts.txt`; nothing
+# new was needed here beyond running it one caller up.
+#
+# This unit calls `interp1d` twice, and both calls pass `CntrPar%OL_Breakpoints`
+# as `xData`:
+#
+#     Controllers.f90:326  interp1d(CntrPar%OL_Breakpoints, CntrPar%OL_GenTq,   ...)
+#     Controllers.f90:344  interp1d(CntrPar%OL_Breakpoints, CntrPar%OL_Azimuth, ...)
+#
+# `_extent_plan` makes extents PAIRWISE DISTINCT on purpose, so without these
+# two lines `SIZE(xData) /= SIZE(yData)` on essentially every case that enters
+# the open-loop block, and the oracle dies before it answers. Same shape as
+# `[CheckInputs]`'s `CntrPar_OL_StructControl_cols`, which ties an extent to
+# this same breakpoint count for this same reason.
+#
+# THE COST, STATED: the size-mismatch branch inside `interp1d` and every site in
+# it are unreachable from this unit, and so is any defect that needs the
+# breakpoint vector and the value vector to have DIFFERENT lengths. What is not
+# given up: both interpolation calls themselves, the strictly-increasing scan,
+# `interp1d`'s RoutineName prefix, and this unit's own prefix at
+# `Controllers.f90:362` -- all of which need only aviFAIL < 0, which the
+# `ErrVar_aviFAIL` knob reaches without any extent disagreeing.
+[VariableSpeedControl]
+CntrPar_OL_GenTq_n = { same_as = "CntrPar_OL_Breakpoints_n" }
+CntrPar_OL_Azimuth_n = { same_as = "CntrPar_OL_Breakpoints_n" }
+
+# THREE COUNTER PINS -- THIS FILE'S OLDEST JUDGEMENT, MET A FOURTEENTH TIME, AND
+# MEASURED HERE RATHER THAN INHERITED. The first generated run of this unit's
+# harness SIGSEGVed inside the C++ side at case 12782, and one `fprintf` of the
+# case's own inputs named the cause:
+#
+#     CASE 12782 A instPI=-600 instRL=99999 instLPF=300 VS_CM=-600 SD_Trig=0
+#
+# `objInst%instRL` at 99,999 subscripts `rlP%LastSignal`, `REAL(DbKi),
+# DIMENSION(1024)` (ROSCO_Types.f90:288), inside `ratelimit` -- which this unit
+# calls on EVERY invocation, on the line after the saturation. Neither the
+# reference nor the translation bounds-checks it, deliberately (unit #43), so
+# the REFERENCE has no defined behaviour there either. `instPI` at -600 is the
+# same field one array over, and `instLPF` reaches `LPFilter` through
+# `PIDController`.
+#
+# THE ARITHMETIC, PER COUNTER, from this unit's own call list:
+#
+#     instPI    2   the K*Omega^2 arm issues PIController twice (GenArTq, then
+#                   GenBrTq); the TSR arm issues it once
+#               +1  PIDController, in the open-loop azimuth block
+#                   -> 1024 - 3 = 1021 is the largest subscript that stays in
+#     instRL    1   ratelimit, unconditional     -> 1023
+#     instLPF   1   LPFilter, inside PIDController -> 1023
+#
+# 1000 is used for all three, as the fourteen units before this one do, because
+# a bound differing by 21 buys nothing measurable and commensurability with
+# their corpora is worth more.
+#
+# THE COST, STATED: all three leave R6's integer ladder, so the decade
+# boundaries and the two 32-bit extremes are gone from them -- every one of those
+# values is one at which the reference reads and writes outside its own object.
+# What is genuinely lost is the LAST SLOT of each array: a translation that
+# subscripted `ITerm[inst]` instead of `[inst-1]` at 1024 has nothing here to
+# disagree with. That defect would be in `PIController` (unit #33), `ratelimit`
+# (unit #43) or `LPFilter` (unit #40), each of which is CALLED rather than
+# inlined, so both sides of this comparison reach one implementation of it.
+objInst_instPI = { lo = 1, hi = 1000 }
+objInst_instRL = { lo = 1, hi = 1000 }
+objInst_instLPF = { lo = 1, hi = 1000 }
+
+# ONE EXTENT PIN, AND IT IS `[IPC]`'s ARGUMENT ON A DIFFERENT ARRAY. The
+# open-loop azimuth block reads
+#
+#     PIDController(..., CntrPar%RP_Gains(1), CntrPar%RP_Gains(2),
+#                        CntrPar%RP_Gains(3), CntrPar%RP_Gains(4), ...)
+#
+# with no ALLOCATED test and no bound check, and ROSCO's own reader allocates it
+# at exactly 4:
+#
+#     ReadSetParameters.f90:604  ParseAry(..., 'RP_Gains', CntrPar%RP_Gains, 4, ...)
+#
+# R5's extent plan is `3 + bump + i`, so its BASE draw is 3 -- one element short
+# of element 4, an out-of-bounds read in the REFERENCE. The two sides then read
+# out of different allocations and the comparison adjudicates adjacent memory
+# rather than this unit's arithmetic. The plan's own notes already say the
+# indices are not exercised by R5 (`CntrPar_RP_Gains[0..3]: subscript not
+# traceable to a parameter`), so extents 4, 5 and 6 are ONE input as far as this
+# procedure is concerned.
+#
+# THE COST, STATED: `RP_Gains` leaves R5's downward extent sweep. Nothing
+# observable goes with it -- the unit reads elements 1 to 4 and nothing else.
+CntrPar_RP_Gains_n = { lo = 4, hi = 6 }

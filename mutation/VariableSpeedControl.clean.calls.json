@@ -1,0 +1,142 @@
+{
+ "unit": "VariableSpeedControl",
+ "operators": [
+  "drop_call",
+  "swap_call_args",
+  "swap_callee"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "drop_call",
+  "swap_call_args",
+  "swap_callee"
+ ],
+ "operators_filter_unmatched": [],
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 0,
+  "scored": 15,
+  "of": 15
+ },
+ "scored_ids": [
+  "9419da38",
+  "027a9b2e",
+  "04127c63",
+  "e28946f5",
+  "ff08532c",
+  "2493ee2f",
+  "d289aa77",
+  "20e491e3",
+  "6cbad479",
+  "b23621ba",
+  "bd040218",
+  "4fc6a505",
+  "196872a3",
+  "c2ee8bc8",
+  "4e4165ab"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "const_tweak"
+ ],
+ "mutants": 15,
+ "equivalent_declared": 0,
+ "unreachable_declared": 0,
+ "unreachable": [],
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "sanitize": false,
+ "mutant_workers": 8,
+ "identity_verified": 15,
+ "killed_by_sanitizer": 0,
+ "killed_by_sanitizer_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 15,
+ "killed": 5,
+ "survived": 10,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "unreachable_but_killed": [],
+ "score": 0.3333,
+ "loop_rev": "078f4ff-nogit",
+ "gen_rev": "gen-e01a73f480c3",
+ "vit_rev": "d3a1e12-nogit",
+ "survivors": [
+  {
+   "id": "9419da38",
+   "operator": "drop_call",
+   "before": "std::fmin(LocalVar->VS_ConstPwr_GenTq, CntrPar->VS_MaxTq)",
+   "after": "LocalVar->VS_ConstPwr_GenTq"
+  },
+  {
+   "id": "027a9b2e",
+   "operator": "drop_call",
+   "before": "std::fmin(LocalVar->VS_ConstPwr_GenTq, LocalVar->GenTq)",
+   "after": "LocalVar->VS_ConstPwr_GenTq"
+  },
+  {
+   "id": "04127c63",
+   "operator": "drop_call",
+   "before": "std::fmin(LocalVar->VS_ConstPwr_GenTq, LocalVar->VS_KOmega2_GenTq)",
+   "after": "LocalVar->VS_ConstPwr_GenTq"
+  },
+  {
+   "id": "2493ee2f",
+   "operator": "swap_call_args",
+   "before": "LocalVar->VS_ConstPwr_GenTq, CntrPar->VS_MaxTq",
+   "after": "CntrPar->VS_MaxTq, LocalVar->VS_ConstPwr_GenTq"
+  },
+  {
+   "id": "d289aa77",
+   "operator": "swap_call_args",
+   "before": "LocalVar->VS_ConstPwr_GenTq, LocalVar->GenTq",
+   "after": "LocalVar->GenTq, LocalVar->VS_ConstPwr_GenTq"
+  },
+  {
+   "id": "20e491e3",
+   "operator": "swap_call_args",
+   "before": "LocalVar->VS_ConstPwr_GenTq, LocalVar->VS_KOmega2_GenTq",
+   "after": "LocalVar->VS_KOmega2_GenTq, LocalVar->VS_ConstPwr_GenTq"
+  },
+  {
+   "id": "6cbad479",
+   "operator": "swap_call_args",
+   "before": "CntrPar->VS_MaxTq, LocalVar->VS_MaxTq",
+   "after": "LocalVar->VS_MaxTq, CntrPar->VS_MaxTq"
+  },
+  {
+   "id": "b23621ba",
+   "operator": "swap_call_args",
+   "before": "0.0, LocalVar->VS_LastGenTrq",
+   "after": "LocalVar->VS_LastGenTrq, 0.0"
+  },
+  {
+   "id": "4fc6a505",
+   "operator": "swap_callee",
+   "before": "fmin",
+   "after": "fmax"
+  },
+  {
+   "id": "196872a3",
+   "operator": "swap_callee",
+   "before": "fmin",
+   "after": "fmax"
+  }
+ ]
+}
