@@ -110,3 +110,40 @@ WHAT A REFUTATION WOULD MEAN
                           `VS_RefSpd/WE_GearboxRatio` on some follow case -- a
                           real narrowing of what that statement is tested by, and
                           the count is the size of it.
+
+MEASURED OUTCOME -- 2026-08-20, all five run on the SAME 3,967-case corpus
+--------------------------------------------------------------------------
+
+    stub                 predicted   measured
+    -------------------------------------------
+    noop                      3967       3967   EXACT
+    no-band-arm                 55         55   EXACT
+    no-restart-init             29         29   EXACT
+    snap-down-only              16         16   EXACT
+    no-save                   1958       1828   REFUTED, short by 130
+
+FOUR OF FIVE EXACT. THE FIFTH IS THE ONE THE PREDICTION SAID WOULD BE SHORT AND
+FOR THE REASON IT NAMED, and that is measured rather than argued. A second
+one-`fprintf` probe over the same corpus, reading only the inputs:
+
+    follow_norestart cases                                      1958
+    of those, TRA_LastRefSpd BIT-EQUAL to VS_RefSpd/WE_GearboxRatio  130
+    1958 - 130                                                  1828
+
+and every one of the 130 is `had=0 lss=0` -- the R6 ladder's zero rungs, where
+`VS_RefSpd` is 0.0 and the case's own `TRA_LastRefSpd` is 0.0 too, so the save
+statement stores the value that is already there.
+
+WHAT THAT COSTS, STATED. The save statement is exercised by 1,828 cases and not
+by 1,958; the 130 are cases in which the corpus cannot tell the save from its
+absence. It is not a gap that a pin closes -- `TRA_LastRefSpd` and `VS_RefSpd`
+are both free reals and the coincidence is the generator putting both ladders'
+zero rung in the same case. 1,828 discriminating cases on one statement is not
+a thin margin, and the number is recorded so the mutation layer's survivors on
+that line are read against 1,828 rather than against 3,967.
+
+THE ARITHMETIC CONTROL HOLDS ON THE OTHER FOUR:
+
+    3967 = 1958 + 1954 + 26 + 29        the noop's count against the partition
+      55 -   29 = 26                    hold_norestart, from two separate runs
+      16 +   13 = 29                    the two snap edges summing to the block
