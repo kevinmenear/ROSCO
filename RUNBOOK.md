@@ -9173,3 +9173,132 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
    COMPLETE, the unit is not finished no matter what the work looked like; fix
    what it names and amend. Unit #2 recorded `integrated` at 10 of 13 because
    this step did not exist.
+
+## A COPIED BLOCK'S BRANCH THAT IS "REACHABLE THERE AND NOT HERE" IS A CLAIM
+## ABOUT TWO CALLERS, AND IT IS ONE PROBE
+
+- **Unit #57, first dispatch, deferred on it; second dispatch, one probe.** Two
+  mutation survivors sat on `is_eol` inside a reader that is a byte-for-byte P4
+  copy of unit #55's. The first dispatch reasoned that the branch is live in
+  unit #55, whose record is a 2048-byte `Line`, and dead here, whose record is a
+  200-byte `GetWords` word; concluded that the campaign's usual repair (delete
+  the branch, write the proof) was BLOCKED by the copy relationship; and raised
+  **"a P4 copy inherits its source's REACHABILITY as well as its bytes"** as a
+  decision for the Driver, with three expensive options.
+
+  **Both records come from the same array.** `FindLine`'s `Line` is an
+  `INTENT(OUT)` copy of an element of `FileLines`, and `Words` is that same
+  element split. So the question is not about two records, it is about ONE
+  caller — and a caller is measurable:
+
+  ```
+  5 lines written through STREAM access  ->  7 records read back
+  '2' CR 'crMID' LF   ->  TWO records, '2' and 'crMID'
+  CR '4 crLEAD' LF    ->  an EMPTY record, then '4 crLEAD'
+  '3 dosB' CR LF      ->  '3 dosB', the CR stripped
+  ```
+
+  libgfortran treats a bare CR as a record terminator. Neither unit's record can
+  hold one, the asymmetry never existed, and `is_eol` is in the reader because
+  gfortran's INTERNAL list-directed READ treats CR and LF as separators — a
+  property of the RUNTIME both units transcribe. The escalation was withdrawn
+  and the two survivors were killed by four ordinary R14 records.
+
+- **The rule.** Before raising a P4 relationship as the obstacle, write the
+  probe that measures the CALLER. Give each record a unique marker so the
+  written-to-read mapping is read off the output: the first run of this probe
+  labelled its rows by loop index and a runtime that split one line into two
+  silently relabelled every row after it. The P4 link is what makes two units'
+  measurements checkable against each other; it is almost never what blocks a
+  repair.
+
+## A RECORD BYTE IS DATA AND IT REACHES A SOURCE FILE
+
+- **Unit #57, second dispatch (C12), fixed in `translation-loop@b3ad414`.**
+  `harness/emit.py::_cesc` returns the BODY of a C string literal that `printf`
+  writes straight into the artifact's JSON, and it escaped `\` and `"` and
+  nothing else. R14's coverage detail NAMES every value it plants, so the first
+  corpus entry carrying `CHAR(10)` ended the literal one line early:
+
+  ```
+  parseinput_int_opt_test.cpp:247:4: error: 'which' was not declared in this scope
+  ```
+
+  — in a generated file, hundreds of lines from the tuple entry that caused it,
+  with no mention of a record, of R14 or of a corpus. Nothing said the escaping
+  was "sufficient for printable ASCII" and nothing checked it; it simply had
+  never been handed anything else.
+
+- **Before adding a corpus entry whose bytes are not printable ASCII, ask which
+  generated TEXT the generator puts them in.** The case file is binary and does
+  not care. The coverage detail, the `--red-test` string, a `--note` and a
+  label all end up inside a C literal, a JSON string or a shell argument.
+  `\n`, `\r`, `\t` get short spellings and other C0 controls go out as
+  `\uXXXX` — JSON's escape, not C's `\x`, which is maximal-munch besides.
+
+## WHEN A CORPUS ROUND ADDS A RECORD CLASS, ASK WHICH *DECLARED* MUTANTS IT REACHES
+
+- **Unit #57, second dispatch.** The round was designed to kill two survivors and
+  it did. The free question is what else the new class touches, and the answer
+  came back as two DECLARED EQUIVALENCES whose site the corpus had never
+  executed:
+
+  ```
+  972ae933  :289  return -1 -> return +1   EOLADM|full:allcr|-1  vs  |1
+  27b68fda  :289  return -1 -> return -2   EOLADM|full:allcr|-1  vs  |-2
+  ```
+
+  Reaching `return -1` at the top of the item loop needs a record whose every
+  byte is a blank or an end-of-line, and **a record of all blanks is not a
+  WORD** — so no word-splitter corpus and no record-search alphabet had ever run
+  the line. Both differences turned out to be one non-zero IOSTAT against
+  another, which is what the family claims and what `ErrStatLcl /= 0` cannot
+  see, so the declarations held — and they are now measurements rather than
+  arguments.
+
+  Take it from BOTH instruments: the sweep says `declared_but_killed` is empty,
+  and the record search says which record reaches the site and what the
+  difference there is. The first is a verdict; the second is the reason.
+
+## THE CORPUS'S ADMISSIBILITY BAR IS THE UNIT'S DUMMY DOMAIN, NOT ITS SHIPPED
+## CALLER'S RANGE — AND IT IS WORTH SAYING WHICH
+
+- **Unit #57, second dispatch.** The campaign has always built to the first bar:
+  a 200-digit word, `nan(aaa…)` and `200000001*7` are all legal corpus records
+  and no shipped `DISCON.IN` contains any of them. The four end-of-line records
+  are the first entries where the difference was visible, because the shipped
+  reader demonstrably CANNOT produce them, and the campaign had never had to
+  write the bar down.
+
+  What makes a record admissible here: the dummy's declared type holds the
+  value, and the unit's own internal path carries it to the site
+  (`GetWords` splits on `' ,!;''"'//Tab`, so a run containing a CR reaches
+  `Words(1)` whole). What does NOT decide it: whether a shipped input file
+  produces it.
+
+- **State the shipped caller's range anyway, in the same evidence file.** It is
+  cheap, it is what a reader will ask, and on this unit it also turned up the
+  honest edge: `ReadControlParameterFileSub` ALLOCATEs one MORE element than the
+  file has lines (its counting loop increments before the READ that fails) and
+  the last READ leaves it unassigned, while `FindLine` loops over
+  `1, SIZE(FileLines)`. So "no shipped input can contain that byte" would have
+  been false, and a claim built on it would have been wrong for a reason nobody
+  would have re-derived.
+
+## A RE-TAKE IS ONLY A RE-TAKE IF WHAT IT WRITES SAYS AT LEAST WHAT IT OVERWROTE
+
+- **Unit #57, second dispatch.** The gate's default-arm red test was re-run to
+  pick up the new instrument revision. Its verdict and both counts reproduced
+  exactly — and the artifact came back with ONE `--note` where the one it
+  replaced had THREE, because the re-run was assembled from the artifact's
+  `perturbation` field and a fresh sentence rather than from its `notes`.
+  Nothing failed; the file simply said less than before.
+
+  ```
+  python3 -c "import json,subprocess; old=json.loads(subprocess.run(
+      ['git','show','HEAD:<artifact>'],capture_output=True,text=True).stdout);
+      new=json.load(open('<artifact>')); print(old['notes']); print(new['notes'])"
+  ```
+
+  One command, before the commit. An instrument move is supposed to cost one
+  hash, not one paragraph of reasoning.
