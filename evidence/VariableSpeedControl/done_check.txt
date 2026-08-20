@@ -1,6 +1,6 @@
-# done_check.py VariableSpeedControl -- captured 2026-08-20T11:00:05Z by scripts/capture_done_check.sh
+# done_check.py VariableSpeedControl -- captured 2026-08-20T11:01:49Z by scripts/capture_done_check.sh
 
-Run against the committed state at b7553077 ("VariableSpeedControl: state and evidence corrected -- the gate split is repaired, not reported"), with a CLEAN tree, with stdout
+Run against the committed state at ce146fcc ("VariableSpeedControl: done_check at the final head -- 13 of 14, and two more target-layer entries"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
