@@ -1,6 +1,6 @@
-# done_check.py ParseInput_Dbl_Opt -- captured 2026-08-20T01:11:05Z by scripts/capture_done_check.sh
+# done_check.py ParseInput_Dbl_Opt -- captured 2026-08-20T01:15:39Z by scripts/capture_done_check.sh
 
-Run against the committed state at e1eddd0c ("ParseInput_Dbl_Opt: the second cross-unit gate control, and the stale numbers brought current"), with a CLEAN tree, with stdout
+Run against the committed state at 2d9d04a9 ("RUNBOOK target layer: a second instrument's blind spot is in the constant it holds, not in the space it enumerates"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
