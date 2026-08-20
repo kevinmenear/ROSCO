@@ -1,0 +1,81 @@
+RED TESTS FOR THE STANDALONE DIFFERENTIAL PROBE
+===============================================
+
+X4: never take a green result at face value on first use. The baseline is
+
+    cases 28   FIELD (translation) 0   COPYBK 428
+
+and a green that cannot go red is not a measurement. Each prediction below was
+WRITTEN BEFORE ITS RUN; the runs follow.
+
+  RT1  delete the `* R2D` from `CntrPar->Y_Rate = CntrPar->Y_Rate * R2D`
+       PREDICT  FIELD 28, one per case, all of them Y_Rate, COPYBK 428.
+       BASIS    `grep -h Y_Rate Examples/DISCON*.IN | awk '{print $1}' |
+                 sort | uniq -c`  ->  28 files, all at 0.00870. 0.00870*R2D
+                is not 0.00870, and nothing else in this unit reads Y_Rate,
+                so the difference cannot propagate to a second field.
+
+  RT2  `VS_Rgn2K * (VS_MinOMSpd * VS_MinOMSpd)`  ->
+       `(VS_Rgn2K * VS_MinOMSpd) * VS_MinOMSpd`
+       PREDICT  UNKNOWN, and that is the point of running it. This is the
+                `exponent-grouping` shape the campaign's check exists for, and
+                whether a 28-point corpus of REAL inputs can tell the two
+                groupings apart is not derivable from the inputs -- it is a
+                question about where the rounding falls. Stated as unknown
+                rather than guessed, so the run cannot be read as confirming
+                a number nobody committed to.
+
+  RT3  `NumLines = records.size() + 1`  ->  `+ 0`, i.e. drop the PHANTOM last
+       record the reference's count-then-read loop produces
+       PREDICT  FIELD 0. The reference's loop increments before the READ, so
+                the record after the last line is one it never assigns; this
+                translation blank-fills it, and FindLine matches no parameter
+                name inside an all-blank record. If this goes RED the header's
+                stated divergence is reachable after all, which would be worth
+                more than the green.
+
+RESULTS
+=======
+
+  BASELINE   cases 28   FIELD  0   COPYBK 428
+  RT1        cases 28   FIELD 28   COPYBK 428   <- PREDICTED 28, all Y_Rate
+  RT2        cases 28   FIELD  0   COPYBK 428
+  RT3        cases 28   FIELD  0   COPYBK 428   <- PREDICTED 0
+
+RT1 CONFIRMED TO THE VALUE. 28 differing field-reports, one per case, every
+one of them `Y_Rate value differs`, and COPYBK did not move. The instrument
+compares values, reports the field, and can go red.
+
+RT2 IS THE MEASUREMENT, AND IT SAYS THIS CORPUS CANNOT SEE THE GROUPING.
+`a * (x*x)` and `(a*x) * x` are indistinguishable over all 28 real DISCON.IN
+files. That is consistent with the campaign's own margin at unit #48 --
+`assoc_reorder` on `0.5 * (rho*area)` was killed by ONE case in 1131 -- and 28
+points is two orders of magnitude below that. So the parenthesisation in
+`VS_MinOMTq` and `VS_MaxOMTq` is transcribed from the Fortran and is NOT
+verified by anything here. Recorded rather than left implicit: a reader who
+sees "28 of 28, 213 of 213 identical" would otherwise take the grouping to have
+been tested.
+
+RT3 CONFIRMED. The phantom record the reference's count-then-read loop produces
+is invisible to this corpus, so the header's stated divergence (blanks where
+the reference has whatever ALLOCATE returned) is not reachable through any of
+the 28 files. It remains a divergence; it is now a divergence with a number
+beside it.
+
+WHAT THE PROBE STILL CANNOT SEE, stated so the green is not read as more than
+it is:
+
+  the corpus varies nothing    28 real files are 28 points. No R2 flag ladder,
+                               no R5 shape pair, no R6 literal corpus, no R11
+                               admissible state walks them. RT2 is what that
+                               costs, measured.
+  the ECHO file                CntrPar%Echo is 0 in all 28, so the OPEN, the
+                               five header records and the `Cannot open file`
+                               arm are all unexecuted.
+  the ERROR paths              every one of the 28 files parses cleanly:
+                               ErrVar%aviFAIL is 0 on both sides in all 28, so
+                               the RoutineName prefix at the end and every
+                               early `return` are unexecuted.
+  it cannot be mutation-scored `vit_mutate.py` drives the harness's case file
+                               and its ./test, neither of which exists here.
+                               P12 has no number for this unit.

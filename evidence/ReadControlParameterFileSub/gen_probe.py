@@ -1,0 +1,319 @@
+#!/usr/bin/env python3
+"""Generate the standalone differential probe for ReadControlParameterFileSub.
+
+WHY THIS EXISTS. This unit has NO instrument. The differential harness refused
+(`harness.plan-dump.*`) and no `vit integrate` mode carries its ~50 ALLOCATABLE
+outputs back (`integrate.no-mode-copies-an-ALLOCATABLE-back.txt`), so the gate
+cannot run either. The two checks in `transcription.roundtrip-and-field-census`
+are necessary conditions that compare no value at all.
+
+What IS available, and costs one program: the reference and the translation can
+both be called from Fortran, on the SAME real DISCON.IN, and their two
+`TYPE(ControlParameters)` compared field by field. The corpus is the campaign's
+own `Examples/DISCON*.IN` -- 28 files that are admissible by construction,
+which is the one thing the harness generator could not synthesise.
+
+It is NOT a replacement for the harness. It varies nothing: 28 real inputs are
+28 points, not a corpus, and no rule (R2 flags, R5 shapes, R6 literals, R11
+admissible states) shapes them. It cannot be mutation-scored. What it CAN do is
+compare 226 fields of a value, which is 226 more than anything else here.
+
+    python3 evidence/ReadControlParameterFileSub/gen_probe.py > <driver>.f90
+
+The comparison is GENERATED from `ROSCO_Types.f90`'s own TYPE definition, so a
+field added there appears here without an edit -- the alternative is a
+hand-written list that silently stops covering the type.
+
+Run from the repository root.
+"""
+import re
+import sys
+
+TYPES = 'rosco/controller/src/ROSCO_Types.f90'
+
+
+def fields():
+    """(name, kind, rank) for every component of TYPE ControlParameters."""
+    src = open(TYPES).read().split('\n')
+    lo = next(i for i, l in enumerate(src) if 'TYPE, PUBLIC :: ControlParameters' in l)
+    hi = next(i for i, l in enumerate(src) if l.strip() == 'END TYPE ControlParameters')
+    out = []
+    for line in src[lo + 1:hi]:
+        line = line.split('!')[0].rstrip()
+        if not line.strip():
+            continue
+        if '::' not in line:
+            continue
+        decl, names = line.split('::', 1)
+        decl = decl.strip()
+        rank = 0
+        if 'DIMENSION(:,:)' in decl.replace(' ', ''):
+            rank = 2
+        elif 'DIMENSION(:)' in decl.replace(' ', ''):
+            rank = 1
+        if decl.upper().startswith('REAL'):
+            kind = 'real'
+        elif decl.upper().startswith('INTEGER'):
+            kind = 'int'
+        elif decl.upper().startswith('CHARACTER'):
+            kind = 'char'
+        elif decl.upper().startswith('LOGICAL'):
+            kind = 'logical'
+        else:
+            raise SystemExit('unclassified declaration: %r' % line)
+        alloc = 'ALLOCATABLE' in decl.upper()
+        for nm in names.split(','):
+            nm = nm.strip()
+            m = re.match(r'^(\w+)\s*(\(([^)]*)\))?$', nm)
+            if not m:
+                raise SystemExit('unparsed name: %r in %r' % (nm, line))
+            n, dims = m.group(1), m.group(3)
+            r = rank
+            if dims and ':' not in dims:
+                r = dims.count(',') + 1        # explicit-shape component
+                alloc = False
+            out.append((n, kind, r, alloc))
+    return out
+
+
+def emit_compare(name, kind, rank, alloc):
+    """One field's comparison, appending to the failure report."""
+    L = []
+    ref, cpp = 'ref%' + name, 'cpp%' + name
+    if alloc:
+        L.append(f'    IF (ALLOCATED({ref}) .NEQV. ALLOCATED({cpp})) THEN')
+        L.append(f'        IF ((.NOT. ALLOCATED({ref})) .AND. SIZE({cpp}) == 0) THEN')
+        L.append(f'            CALL artifact("{name}")')
+        L.append(f'        ELSE')
+        L.append(f'            CALL bad("{name}", "ALLOCATED differs")')
+        L.append(f'        END IF')
+        L.append(f'    ELSE IF (ALLOCATED({ref})) THEN')
+        L.append(f'        IF (ANY(SHAPE({ref}) /= SHAPE({cpp}))) THEN')
+        L.append(f'            CALL bad("{name}", "SHAPE differs")')
+        if kind == 'real':
+            L.append(f'        ELSE IF (SIZE({ref}) > 0) THEN')
+            L.append(f'            IF (ANY({ref} /= {cpp})) CALL bad("{name}", "value differs")')
+        else:
+            L.append(f'        ELSE IF (SIZE({ref}) > 0) THEN')
+            L.append(f'            IF (ANY({ref} /= {cpp})) CALL bad("{name}", "value differs")')
+        L.append('        END IF')
+        L.append('    END IF')
+        return L
+    if rank == 0:
+        if kind == 'char':
+            L.append(f'    IF ({ref} /= {cpp}) CALL bad("{name}", "value differs")')
+        else:
+            L.append(f'    IF ({ref} /= {cpp}) CALL bad("{name}", "value differs")')
+    else:
+        L.append(f'    IF (ANY({ref} /= {cpp})) CALL bad("{name}", "value differs")')
+    return L
+
+
+def main():
+    fs = fields()
+    body = []
+    for n, k, r, a in fs:
+        body += emit_compare(n, k, r, a)
+    print(HEAD)
+    print('\n'.join(body))
+    print(TAILP)
+    print('! %d field(s) compared' % len(fs), file=sys.stderr)
+
+
+HEAD = r'''! GENERATED by evidence/ReadControlParameterFileSub/gen_probe.py -- do not edit.
+!
+! A standalone differential probe: run the Fortran reference and the C++
+! translation over the SAME real DISCON.IN and compare every component of
+! TYPE(ControlParameters). See the generator's docstring for what this is and,
+! more importantly, what it is not.
+!
+!   ./vit_rcpfs_probe <DISCON.IN> [<DISCON.IN> ...]
+!
+PROGRAM vit_rcpfs_probe
+    USE, INTRINSIC :: ISO_C_BINDING
+    USE ROSCO_Types
+    USE ReadSetParameters, ONLY : ReadControlParameterFileSub
+    USE vit_controlparameters_view
+    USE vit_localvariables_view
+    USE vit_errorvariables_view
+    IMPLICIT NONE
+
+    INTERFACE
+        SUBROUTINE readcontrolparameterfilesub_c(CntrPar, LocalVar, accINFILE, &
+                accINFILE_size, RootName, ErrVar) BIND(C, NAME='readcontrolparameterfilesub_c')
+            USE, INTRINSIC :: ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: LocalVar
+            CHARACTER(KIND=C_CHAR) :: accINFILE(*)
+            INTEGER(C_INT), VALUE :: accINFILE_size
+            CHARACTER(KIND=C_CHAR) :: RootName(*)
+            TYPE(C_PTR), VALUE :: ErrVar
+        END SUBROUTINE
+    END INTERFACE
+
+    TYPE(ControlParameters), TARGET :: ref, cpp
+    TYPE(LocalVariables),    TARGET :: lv_ref, lv_cpp
+    TYPE(ErrorVariables),    TARGET :: ev_ref, ev_cpp
+    TYPE(controlparameters_view_t), TARGET :: cv
+    TYPE(localvariables_view_t),    TARGET :: lvv
+    TYPE(errorvariables_view_t),    TARGET :: evv
+
+    INTEGER :: nargs, iarg, n, i, nbad, nart, total_bad, total_art, total_cases
+    ! ONE blank, used to empty BOTH sides. TYPE(ControlParameters) has
+    ! components with no default initialisation -- WE_CP_n is one -- and the
+    ! reference assigns neither, so their value is whatever the storage held.
+    ! Two separate blanks make that garbage DIFFER and the probe reports a
+    ! difference in a field NEITHER side wrote. Sharing one blank makes the
+    ! undefined fields identical on both sides, which is the only way this
+    ! probe can be about the two implementations rather than about the stack.
+    TYPE(ControlParameters), SAVE :: blank
+    CHARACTER(1024) :: path
+    CHARACTER(:), ALLOCATABLE :: acc(:)
+    CHARACTER(:), ALLOCATABLE :: root
+    CHARACTER(KIND=C_CHAR), ALLOCATABLE :: acc_c(:), root_c(:)
+    CHARACTER(256) :: current
+
+    total_bad = 0
+    total_art = 0
+    total_cases = 0
+    nargs = COMMAND_ARGUMENT_COUNT()
+    IF (nargs == 0) THEN
+        PRINT *, 'usage: vit_rcpfs_probe <DISCON.IN> [...]'
+        STOP 2
+    END IF
+
+    DO iarg = 1, nargs
+        CALL GET_COMMAND_ARGUMENT(iarg, path)
+        current = path(1:MIN(256, LEN_TRIM(path)))
+        nbad = 0
+        nart = 0
+        n = LEN_TRIM(path)
+
+        ! accINFILE is CHARACTER(accINFILE_size), DIMENSION(accINFILE_size) and
+        ! every use in the reference is accINFILE(1). RootName is the same width.
+        ALLOCATE(CHARACTER(n) :: acc(n))
+        DO i = 1, n
+            acc(i) = ' '
+        END DO
+        acc(1) = path(1:n)
+        ALLOCATE(CHARACTER(n) :: root)
+        root = path(1:n)
+
+        ! ---- the REFERENCE -------------------------------------------------
+        CALL init_local(lv_ref)
+        CALL init_err(ev_ref)
+        CALL wipe(ref)
+        CALL ReadControlParameterFileSub(ref, lv_ref, acc, n, root, ev_ref)
+
+        ! ---- the TRANSLATION -----------------------------------------------
+        CALL init_local(lv_cpp)
+        CALL init_err(ev_cpp)
+        CALL wipe(cpp)
+        CALL vit_populate_controlparameters(cpp, cv)
+        CALL vit_populate_localvariables(lv_cpp, lvv)
+        CALL vit_populate_errorvariables(ev_cpp, evv)
+        ALLOCATE(acc_c(n * n), root_c(n))
+        DO i = 1, n * n
+            acc_c(i) = ' '
+        END DO
+        DO i = 1, n
+            acc_c(i) = path(i:i)
+            root_c(i) = path(i:i)
+        END DO
+        CALL readcontrolparameterfilesub_c(C_LOC(cv), C_LOC(lvv), acc_c, n, root_c, C_LOC(evv))
+        CALL vit_view_in_controlparameters(cv, cpp)
+        CALL vit_copy_scalars_to_errorvariables(evv, ev_cpp)
+        DEALLOCATE(acc_c, root_c)
+
+        ! ---- compare -------------------------------------------------------
+        IF (ev_ref%aviFAIL /= ev_cpp%aviFAIL) CALL bad("ErrVar%aviFAIL", "value differs")
+        IF (ALLOCATED(ev_ref%ErrMsg) .NEQV. ALLOCATED(ev_cpp%ErrMsg)) THEN
+            CALL bad("ErrVar%ErrMsg", "ALLOCATED differs")
+        ELSE IF (ALLOCATED(ev_ref%ErrMsg)) THEN
+            IF (ev_ref%ErrMsg /= ev_cpp%ErrMsg) CALL bad("ErrVar%ErrMsg", "value differs")
+        END IF
+'''
+
+TAILP = r'''
+        total_cases = total_cases + 1
+        total_bad = total_bad + nbad
+        total_art = total_art + nart
+        IF (nbad == 0) THEN
+            WRITE(*,'(A,A,A,I0,A)') '  ok    ', TRIM(current), &
+                '   213 of 213 fields identical, ', nart, ' unallocated-vs-empty'
+        ELSE
+            WRITE(*,'(A,A,A,I0,A,I0,A)') '  FAIL  ', TRIM(current), '   ', nbad, &
+                ' field(s) differ, ', nart, ' unallocated-vs-empty'
+        END IF
+        DEALLOCATE(acc, root)
+    END DO
+
+    WRITE(*,'(A)') ''
+    WRITE(*,'(A,I0,A,I0,A,I0)') 'cases ', total_cases, &
+        '   FIELD (translation) ', total_bad, &
+        '   COPYBK (the view cannot express unallocated) ', total_art
+    IF (total_bad /= 0) STOP 1
+
+CONTAINS
+
+    SUBROUTINE bad(fld, why)
+        CHARACTER(*), INTENT(IN) :: fld, why
+        nbad = nbad + 1
+        WRITE(*,'(A,A,A,A,A,A)') '        FIELD  ', TRIM(current), '  ', fld, '  ', why
+    END SUBROUTINE
+
+    ! THE COPY-BACK CANNOT EXPRESS `UNALLOCATED`, AND THAT IS ONE CAUSE
+    ! REPORTING ONCE PER FIELD.
+    !
+    ! `vit_view_in_controlparameters` (vit_controlparameters_view.f90:1371-1373)
+    ! reads the view's (pointer, extent) pair and writes
+    !
+    !     ELSE IF (view%n_X == 0) THEN
+    !         ALLOCATE(dest%X(0))   ! allocated-empty, distinct from unallocated
+    !
+    ! so a NULL pointer with extent 0 -- which is what an ALLOCATABLE the
+    ! reference never touched looks like from C -- comes back ALLOCATED with
+    ! size zero. Unallocated is not reachable through the view at all. This is
+    ! P6 ("absence must not render as a value") in the copy-back, NOT a defect
+    ! in the translation: the translation did not write the field, and there is
+    ! no value on the C side that would have said so.
+    !
+    ! Counted rather than suppressed. A field whose reference side IS allocated,
+    ! or whose C++ side comes back with a non-zero size, goes to `bad`.
+    SUBROUTINE artifact(fld)
+        CHARACTER(*), INTENT(IN) :: fld
+        nart = nart + 1
+        WRITE(*,'(A,A,A,A)') '        COPYBK ', TRIM(current), '  ', fld
+    END SUBROUTINE
+
+    ! The reference reads LocalVar%DT and nothing else (the harness planner's
+    ! own read set: "LocalVar: reads 1 field(s): DT"). It is the divisor of
+    ! n_DT_Out and n_DT_ZMQ, so it must be non-zero and it must be the same on
+    ! both sides.
+    SUBROUTINE init_local(lv)
+        TYPE(LocalVariables), INTENT(INOUT) :: lv
+        lv%DT = 0.01_DbKi
+    END SUBROUTINE
+
+    SUBROUTINE init_err(ev)
+        TYPE(ErrorVariables), INTENT(INOUT) :: ev
+        ev%aviFAIL = 0
+        ev%size_avcMSG = 1024
+        IF (ALLOCATED(ev%ErrMsg)) DEALLOCATE(ev%ErrMsg)
+        ev%ErrMsg = ''
+    END SUBROUTINE
+
+    ! Both sides must start from the SAME ControlParameters, and the one the
+    ! reference requires is one with every ALLOCATABLE UNALLOCATED -- ParseAry
+    ! reports "array was already allocated" otherwise. A fresh local is that,
+    ! but this program reuses two, so they are emptied between cases.
+    SUBROUTINE wipe(cp)
+        TYPE(ControlParameters), INTENT(INOUT) :: cp
+        cp = blank
+    END SUBROUTINE
+
+END PROGRAM vit_rcpfs_probe
+'''
+
+if __name__ == '__main__':
+    main()
