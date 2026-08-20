@@ -1,0 +1,169 @@
+ParseInput_Str_Opt -- `READ (Words(1),'(A)',IOSTAT=e) Variable`, taken by
+gfortran's own runtime and by the SHIPPED translation's `read_a_edit`, out
+of the same 400-byte `CHARACTER(200) :: Words(2)` object.
+
+Sixteen record forms crossed with nine item lengths. The item is pre-set to
+'~' in every byte on both sides, so an UNTOUCHED item is distinguishable
+from one the READ filled with blanks -- which is the only way a failing
+READ could be told from a successful one that stored nothing.
+
+`h=` is a rolling 31-multiplier hash over ALL len bytes, so the comparison
+is over the whole item and not over the 24-byte prefix it prints.
+
+Forms tagged `fn:` are admissible to the FUNCTION and not to the UNIT --
+`GetWords` splits on blank, comma, semicolon, '!', quote and tab, so no
+input to this unit can put one in `Words(1)`. They are measured anyway and
+tagged, because unit #56 twice read a function-only record as a corpus
+lever.
+
+144 of 144 (form, length) pairs agree on (IOSTAT, LEN_TRIM, hash, prefix).
+
+IOSTAT non-zero on 0 of 144 pairs in the REFERENCE.
+  Zero here is the measurement the translation's dead-arm claim rests on:
+  `IF (ErrStatLcl /= 0)` and its whole message block cannot be entered by
+  any input, which is a property of the PROGRAM and not of the corpus.
+
+  blankrec   L=1     ref iostat=0   lentrim=0     h=32            got iostat=0   lentrim=0     h=32           SAME
+  blankrec   L=5     ref iostat=0   lentrim=0     h=30537760      got iostat=0   lentrim=0     h=30537760     SAME
+  blankrec   L=6     ref iostat=0   lentrim=0     h=946670592     got iostat=0   lentrim=0     h=946670592    SAME
+  blankrec   L=7     ref iostat=0   lentrim=0     h=1429500973    got iostat=0   lentrim=0     h=1429500973   SAME
+  blankrec   L=199   ref iostat=0   lentrim=0     h=906750893     got iostat=0   lentrim=0     h=906750893    SAME
+  blankrec   L=200   ref iostat=0   lentrim=0     h=191990304     got iostat=0   lentrim=0     h=191990304    SAME
+  blankrec   L=201   ref iostat=0   lentrim=0     h=1656732162    got iostat=0   lentrim=0     h=1656732162   SAME
+  blankrec   L=256   ref iostat=0   lentrim=0     h=641560353     got iostat=0   lentrim=0     h=641560353    SAME
+  blankrec   L=1024  ref iostat=0   lentrim=0     h=48602443      got iostat=0   lentrim=0     h=48602443     SAME
+  blankrecN  L=1     ref iostat=0   lentrim=0     h=32            got iostat=0   lentrim=0     h=32           SAME
+  blankrecN  L=5     ref iostat=0   lentrim=0     h=30537760      got iostat=0   lentrim=0     h=30537760     SAME
+  blankrecN  L=6     ref iostat=0   lentrim=0     h=946670592     got iostat=0   lentrim=0     h=946670592    SAME
+  blankrecN  L=7     ref iostat=0   lentrim=0     h=1429500973    got iostat=0   lentrim=0     h=1429500973   SAME
+  blankrecN  L=199   ref iostat=0   lentrim=0     h=906750893     got iostat=0   lentrim=0     h=906750893    SAME
+  blankrecN  L=200   ref iostat=0   lentrim=0     h=191990304     got iostat=0   lentrim=0     h=191990304    SAME
+  blankrecN  L=201   ref iostat=0   lentrim=0     h=1656732162    got iostat=0   lentrim=0     h=1656732162   SAME
+  blankrecN  L=256   ref iostat=0   lentrim=0     h=641560353     got iostat=0   lentrim=0     h=641560353    SAME
+  blankrecN  L=1024  ref iostat=0   lentrim=0     h=48602443      got iostat=0   lentrim=0     h=48602443     SAME
+  cr         L=1     ref iostat=0   lentrim=1     h=97            got iostat=0   lentrim=1     h=97           SAME
+  cr         L=5     ref iostat=0   lentrim=5     h=92516717      got iostat=0   lentrim=5     h=92516717     SAME
+  cr         L=6     ref iostat=0   lentrim=5     h=720534612     got iostat=0   lentrim=5     h=720534612    SAME
+  cr         L=7     ref iostat=0   lentrim=5     h=861736534     got iostat=0   lentrim=5     h=861736534    SAME
+  cr         L=199   ref iostat=0   lentrim=5     h=1177451461    got iostat=0   lentrim=5     h=1177451461   SAME
+  cr         L=200   ref iostat=0   lentrim=5     h=2141256971    got iostat=0   lentrim=5     h=2141256971   SAME
+  cr         L=201   ref iostat=0   lentrim=5     h=1954456723    got iostat=0   lentrim=5     h=1954456723   SAME
+  cr         L=256   ref iostat=0   lentrim=5     h=2012007355    got iostat=0   lentrim=5     h=2012007355   SAME
+  cr         L=1024  ref iostat=0   lentrim=5     h=1964810294    got iostat=0   lentrim=5     h=1964810294   SAME
+  digits     L=1     ref iostat=0   lentrim=1     h=49            got iostat=0   lentrim=1     h=49           SAME
+  digits     L=5     ref iostat=0   lentrim=5     h=46792755      got iostat=0   lentrim=5     h=46792755     SAME
+  digits     L=6     ref iostat=0   lentrim=5     h=1450575437    got iostat=0   lentrim=5     h=1450575437   SAME
+  digits     L=7     ref iostat=0   lentrim=5     h=2018165639    got iostat=0   lentrim=5     h=2018165639   SAME
+  digits     L=199   ref iostat=0   lentrim=5     h=571436909     got iostat=0   lentrim=5     h=571436909    SAME
+  digits     L=200   ref iostat=0   lentrim=5     h=534675035     got iostat=0   lentrim=5     h=534675035    SAME
+  digits     L=201   ref iostat=0   lentrim=5     h=1542540588    got iostat=0   lentrim=5     h=1542540588   SAME
+  digits     L=256   ref iostat=0   lentrim=5     h=105611120     got iostat=0   lentrim=5     h=105611120    SAME
+  digits     L=1024  ref iostat=0   lentrim=5     h=831742033     got iostat=0   lentrim=5     h=831742033    SAME
+  fn:lead    L=1     ref iostat=0   lentrim=0     h=32            got iostat=0   lentrim=0     h=32           SAME
+  fn:lead    L=5     ref iostat=0   lentrim=4     h=30540488      got iostat=0   lentrim=4     h=30540488     SAME
+  fn:lead    L=6     ref iostat=0   lentrim=4     h=946755160     got iostat=0   lentrim=4     h=946755160    SAME
+  fn:lead    L=7     ref iostat=0   lentrim=4     h=1432122581    got iostat=0   lentrim=4     h=1432122581   SAME
+  fn:lead    L=199   ref iostat=0   lentrim=4     h=1552109897    got iostat=0   lentrim=4     h=1552109897   SAME
+  fn:lead    L=200   ref iostat=0   lentrim=4     h=870766605     got iostat=0   lentrim=4     h=870766605    SAME
+  fn:lead    L=201   ref iostat=0   lentrim=4     h=1223961023    got iostat=0   lentrim=4     h=1223961023   SAME
+  fn:lead    L=256   ref iostat=0   lentrim=4     h=1540399940    got iostat=0   lentrim=4     h=1540399940   SAME
+  fn:lead    L=1024  ref iostat=0   lentrim=4     h=270552951     got iostat=0   lentrim=4     h=270552951    SAME
+  fn:tab     L=1     ref iostat=0   lentrim=1     h=97            got iostat=0   lentrim=1     h=97           SAME
+  fn:tab     L=5     ref iostat=0   lentrim=3     h=89944858      got iostat=0   lentrim=3     h=89944858     SAME
+  fn:tab     L=6     ref iostat=0   lentrim=3     h=640806983     got iostat=0   lentrim=3     h=640806983    SAME
+  fn:tab     L=7     ref iostat=0   lentrim=3     h=537663682     got iostat=0   lentrim=3     h=537663682    SAME
+  fn:tab     L=199   ref iostat=0   lentrim=3     h=1234338210    got iostat=0   lentrim=3     h=1234338210   SAME
+  fn:tab     L=200   ref iostat=0   lentrim=3     h=1757262543    got iostat=0   lentrim=3     h=1757262543   SAME
+  fn:tab     L=201   ref iostat=0   lentrim=3     h=788047690     got iostat=0   lentrim=3     h=788047690    SAME
+  fn:tab     L=256   ref iostat=0   lentrim=3     h=1003660086    got iostat=0   lentrim=3     h=1003660086   SAME
+  fn:tab     L=1024  ref iostat=0   lentrim=3     h=605081511     got iostat=0   lentrim=3     h=605081511    SAME
+  full       L=1     ref iostat=0   lentrim=1     h=90            got iostat=0   lentrim=1     h=90           SAME
+  full       L=5     ref iostat=0   lentrim=5     h=85887450      got iostat=0   lentrim=5     h=85887450     SAME
+  full       L=6     ref iostat=0   lentrim=6     h=515027393     got iostat=0   lentrim=6     h=515027393    SAME
+  full       L=7     ref iostat=0   lentrim=7     h=933463744     got iostat=0   lentrim=7     h=933463744    SAME
+  full       L=199   ref iostat=0   lentrim=199   h=1610712791    got iostat=0   lentrim=199   h=1610712791   SAME
+  full       L=200   ref iostat=0   lentrim=200   h=539972730     got iostat=0   lentrim=200   h=539972730    SAME
+  full       L=201   ref iostat=0   lentrim=200   h=1706769133    got iostat=0   lentrim=200   h=1706769133   SAME
+  full       L=256   ref iostat=0   lentrim=200   h=593675125     got iostat=0   lentrim=200   h=593675125    SAME
+  full       L=1024  ref iostat=0   lentrim=200   h=928803029     got iostat=0   lentrim=200   h=928803029    SAME
+  full199    L=1     ref iostat=0   lentrim=1     h=89            got iostat=0   lentrim=1     h=89           SAME
+  full199    L=5     ref iostat=0   lentrim=5     h=84933145      got iostat=0   lentrim=5     h=84933145     SAME
+  full199    L=6     ref iostat=0   lentrim=6     h=485443937     got iostat=0   lentrim=6     h=485443937    SAME
+  full199    L=7     ref iostat=0   lentrim=7     h=16376607      got iostat=0   lentrim=7     h=16376607     SAME
+  full199    L=199   ref iostat=0   lentrim=199   h=709961594     got iostat=0   lentrim=199   h=709961594    SAME
+  full199    L=200   ref iostat=0   lentrim=199   h=533972976     got iostat=0   lentrim=199   h=533972976    SAME
+  full199    L=201   ref iostat=0   lentrim=199   h=1520776759    got iostat=0   lentrim=199   h=1520776759   SAME
+  full199    L=256   ref iostat=0   lentrim=199   h=541079757     got iostat=0   lentrim=199   h=541079757    SAME
+  full199    L=1024  ref iostat=0   lentrim=199   h=232945771     got iostat=0   lentrim=199   h=232945771    SAME
+  fullcr     L=1     ref iostat=0   lentrim=1     h=13            got iostat=0   lentrim=1     h=13           SAME
+  fullcr     L=5     ref iostat=0   lentrim=5     h=12405965      got iostat=0   lentrim=5     h=12405965     SAME
+  fullcr     L=6     ref iostat=0   lentrim=6     h=384584928     got iostat=0   lentrim=6     h=384584928    SAME
+  fullcr     L=7     ref iostat=0   lentrim=7     h=1184714546    got iostat=0   lentrim=7     h=1184714546   SAME
+  fullcr     L=199   ref iostat=0   lentrim=199   h=972347326     got iostat=0   lentrim=199   h=972347326    SAME
+  fullcr     L=200   ref iostat=0   lentrim=200   h=77996061      got iostat=0   lentrim=200   h=77996061     SAME
+  fullcr     L=201   ref iostat=0   lentrim=200   h=270394276     got iostat=0   lentrim=200   h=270394276    SAME
+  fullcr     L=256   ref iostat=0   lentrim=200   h=286991092     got iostat=0   lentrim=200   h=286991092    SAME
+  fullcr     L=1024  ref iostat=0   lentrim=200   h=1685591038    got iostat=0   lentrim=200   h=1685591038   SAME
+  fullnul    L=1     ref iostat=0   lentrim=1     h=0             got iostat=0   lentrim=1     h=0            SAME
+  fullnul    L=5     ref iostat=0   lentrim=5     h=0             got iostat=0   lentrim=5     h=0            SAME
+  fullnul    L=6     ref iostat=0   lentrim=6     h=0             got iostat=0   lentrim=6     h=0            SAME
+  fullnul    L=7     ref iostat=0   lentrim=7     h=0             got iostat=0   lentrim=7     h=0            SAME
+  fullnul    L=199   ref iostat=0   lentrim=199   h=0             got iostat=0   lentrim=199   h=0            SAME
+  fullnul    L=200   ref iostat=0   lentrim=200   h=0             got iostat=0   lentrim=200   h=0            SAME
+  fullnul    L=201   ref iostat=0   lentrim=200   h=32            got iostat=0   lentrim=200   h=32           SAME
+  fullnul    L=256   ref iostat=0   lentrim=200   h=1852798353    got iostat=0   lentrim=200   h=1852798353   SAME
+  fullnul    L=1024  ref iostat=0   lentrim=200   h=1562355860    got iostat=0   lentrim=200   h=1562355860   SAME
+  lf         L=1     ref iostat=0   lentrim=1     h=97            got iostat=0   lentrim=1     h=97           SAME
+  lf         L=5     ref iostat=0   lentrim=5     h=92513834      got iostat=0   lentrim=5     h=92513834     SAME
+  lf         L=6     ref iostat=0   lentrim=5     h=720445239     got iostat=0   lentrim=5     h=720445239    SAME
+  lf         L=7     ref iostat=0   lentrim=5     h=858965971     got iostat=0   lentrim=5     h=858965971    SAME
+  lf         L=199   ref iostat=0   lentrim=5     h=983488797     got iostat=0   lentrim=5     h=983488797    SAME
+  lf         L=200   ref iostat=0   lentrim=5     h=423381681     got iostat=0   lentrim=5     h=423381681    SAME
+  lf         L=201   ref iostat=0   lentrim=5     h=239930261     got iostat=0   lentrim=5     h=239930261    SAME
+  lf         L=256   ref iostat=0   lentrim=5     h=696048988     got iostat=0   lentrim=5     h=696048988    SAME
+  lf         L=1024  ref iostat=0   lentrim=5     h=266055566     got iostat=0   lentrim=5     h=266055566    SAME
+  nul        L=1     ref iostat=0   lentrim=1     h=97            got iostat=0   lentrim=1     h=97           SAME
+  nul        L=5     ref iostat=0   lentrim=5     h=92504224      got iostat=0   lentrim=5     h=92504224     SAME
+  nul        L=6     ref iostat=0   lentrim=5     h=720147329     got iostat=0   lentrim=5     h=720147329    SAME
+  nul        L=7     ref iostat=0   lentrim=5     h=849730761     got iostat=0   lentrim=5     h=849730761    SAME
+  nul        L=199   ref iostat=0   lentrim=5     h=1052774466    got iostat=0   lentrim=5     h=1052774466   SAME
+  nul        L=200   ref iostat=0   lentrim=5     h=423753773     got iostat=0   lentrim=5     h=423753773    SAME
+  nul        L=201   ref iostat=0   lentrim=5     h=251465113     got iostat=0   lentrim=5     h=251465113    SAME
+  nul        L=256   ref iostat=0   lentrim=5     h=604488392     got iostat=0   lentrim=5     h=604488392    SAME
+  nul        L=1024  ref iostat=0   lentrim=5     h=1045990747    got iostat=0   lentrim=5     h=1045990747   SAME
+  path       L=1     ref iostat=0   lentrim=1     h=67            got iostat=0   lentrim=1     h=67           SAME
+  path       L=5     ref iostat=0   lentrim=5     h=65305987      got iostat=0   lentrim=5     h=65305987     SAME
+  path       L=6     ref iostat=0   lentrim=6     h=2024485692    got iostat=0   lentrim=6     h=2024485692   SAME
+  path       L=7     ref iostat=0   lentrim=7     h=482030756     got iostat=0   lentrim=7     h=482030756    SAME
+  path       L=199   ref iostat=0   lentrim=12    h=23645315      got iostat=0   lentrim=12    h=23645315     SAME
+  path       L=200   ref iostat=0   lentrim=12    h=733004797     got iostat=0   lentrim=12    h=733004797    SAME
+  path       L=201   ref iostat=0   lentrim=12    h=1248312269    got iostat=0   lentrim=12    h=1248312269   SAME
+  path       L=256   ref iostat=0   lentrim=12    h=1262839618    got iostat=0   lentrim=12    h=1262839618   SAME
+  path       L=1024  ref iostat=0   lentrim=12    h=1872250469    got iostat=0   lentrim=12    h=1872250469   SAME
+  plain      L=1     ref iostat=0   lentrim=1     h=117           got iostat=0   lentrim=1     h=117          SAME
+  plain      L=5     ref iostat=0   lentrim=5     h=111445070     got iostat=0   lentrim=5     h=111445070    SAME
+  plain      L=6     ref iostat=0   lentrim=6     h=1307313623    got iostat=0   lentrim=6     h=1307313623   SAME
+  plain      L=7     ref iostat=0   lentrim=6     h=1872016699    got iostat=0   lentrim=6     h=1872016699   SAME
+  plain      L=199   ref iostat=0   lentrim=6     h=1384062241    got iostat=0   lentrim=6     h=1384062241   SAME
+  plain      L=200   ref iostat=0   lentrim=6     h=2103740210    got iostat=0   lentrim=6     h=2103740210   SAME
+  plain      L=201   ref iostat=0   lentrim=6     h=791437132     got iostat=0   lentrim=6     h=791437132    SAME
+  plain      L=256   ref iostat=0   lentrim=6     h=310541954     got iostat=0   lentrim=6     h=310541954    SAME
+  plain      L=1024  ref iostat=0   lentrim=6     h=804341246     got iostat=0   lentrim=6     h=804341246    SAME
+  slash      L=1     ref iostat=0   lentrim=1     h=97            got iostat=0   lentrim=1     h=97           SAME
+  slash      L=5     ref iostat=0   lentrim=3     h=91076916      got iostat=0   lentrim=3     h=91076916     SAME
+  slash      L=6     ref iostat=0   lentrim=3     h=675900781     got iostat=0   lentrim=3     h=675900781    SAME
+  slash      L=7     ref iostat=0   lentrim=3     h=1625571420    got iostat=0   lentrim=3     h=1625571420   SAME
+  slash      L=199   ref iostat=0   lentrim=3     h=803427531     got iostat=0   lentrim=3     h=803427531    SAME
+  slash      L=200   ref iostat=0   lentrim=3     h=1283933376    got iostat=0   lentrim=3     h=1283933376   SAME
+  slash      L=201   ref iostat=0   lentrim=3     h=1147229042    got iostat=0   lentrim=3     h=1147229042   SAME
+  slash      L=256   ref iostat=0   lentrim=3     h=193086601     got iostat=0   lentrim=3     h=193086601    SAME
+  slash      L=1024  ref iostat=0   lentrim=3     h=1929507469    got iostat=0   lentrim=3     h=1929507469   SAME
+  star       L=1     ref iostat=0   lentrim=1     h=51            got iostat=0   lentrim=1     h=51           SAME
+  star       L=5     ref iostat=0   lentrim=3     h=48404672      got iostat=0   lentrim=3     h=48404672     SAME
+  star       L=6     ref iostat=0   lentrim=3     h=1500544864    got iostat=0   lentrim=3     h=1500544864   SAME
+  star       L=7     ref iostat=0   lentrim=3     h=1419734229    got iostat=0   lentrim=3     h=1419734229   SAME
+  star       L=199   ref iostat=0   lentrim=3     h=1798847367    got iostat=0   lentrim=3     h=1798847367   SAME
+  star       L=200   ref iostat=0   lentrim=3     h=2077177234    got iostat=0   lentrim=3     h=2077177234   SAME
+  star       L=201   ref iostat=0   lentrim=3     h=2115468523    got iostat=0   lentrim=3     h=2115468523   SAME
+  star       L=256   ref iostat=0   lentrim=3     h=2078805782    got iostat=0   lentrim=3     h=2078805782   SAME
+  star       L=1024  ref iostat=0   lentrim=3     h=833065841     got iostat=0   lentrim=3     h=833065841    SAME

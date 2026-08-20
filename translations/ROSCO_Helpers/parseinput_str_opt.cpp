@@ -366,7 +366,7 @@ void ParseInput_Str_Opt(char* FileLines, int n_FileLines, int len_FileLines,
         // translation's own line coverage, re-derived every run.
         //
         // The message says "INTEGER" for a CHARACTER item. That is the
-        // reference's text, verbatim, at ROSCO_Helpers.f90:342 (clean).
+        // reference's text, verbatim, at ROSCO_Helpers.f90:341 (clean).
         if (ErrStatLcl != 0) {
             ErrVar->aviFAIL = -1;
             std::string msg(1, NewLine);

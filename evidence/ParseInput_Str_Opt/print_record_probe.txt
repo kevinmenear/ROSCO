@@ -1,0 +1,40 @@
+ParseInput_Str_Opt -- the PRINT record, gfortran's own against the SHIPPED
+translation's `print_default_warning`.
+
+`PRINT *, "ROSCO Warning: Did not find "//TRIM(VarName)//" in input file.
+  Using default value of ", TRIM(Variable)` -- TWO ADJACENT CHARACTER
+ITEMS, a layout no unit in this family has had. The derivation under test:
+one leading blank starts the record (written once, for the first item), and
+a CHARACTER item that FOLLOWS a CHARACTER item takes NO separator, because
+libgfortran's list_formatted_write_scalar writes one only when
+`type != BT_CHARACTER || !char_flag || delim_status != DELIM_NONE` and
+DELIM_NONE is the default for list-directed output.
+
+`Variable = 'unused'` is the statement immediately above, so the second
+item is the six-byte literal TRUNCATED to LEN(Variable). The lengths
+straddle six and include zero.
+
+Trailing blanks are significant here and are shown escaped; a record whose
+only difference is a trailing blank is exactly what a separator rule gets
+wrong.
+
+9 of 9 records byte-identical.
+
+  case 1  SAME  len ref=87 got=87
+      ref | ROSCO Warning: Did not find PerfFileName in input file.  Using default value of unused|
+  case 2  SAME  len ref=90 got=90
+      ref | ROSCO Warning: Did not find ZMQ_CommAddress in input file.  Using default value of unused|
+  case 3  SAME  len ref=76 got=76
+      ref | ROSCO Warning: Did not find X in input file.  Using default value of unused|
+  case 4  SAME  len ref=75 got=75
+      ref | ROSCO Warning: Did not find X in input file.  Using default value of unuse|
+  case 5  SAME  len ref=71 got=71
+      ref | ROSCO Warning: Did not find X in input file.  Using default value of u|
+  case 6  SAME  len ref=70 got=70
+      ref | ROSCO Warning: Did not find X in input file.  Using default value of |
+  case 7  SAME  len ref=75 got=75
+      ref | ROSCO Warning: Did not find  in input file.  Using default value of unused|
+  case 8  SAME  len ref=135 got=135
+      ref | ROSCO Warning: Did not find ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ in input file.  Using default value of unused|
+  case 9  SAME  len ref=87 got=87
+      ref | ROSCO Warning: Did not find DLL_ProcName in input file.  Using default value of unused|
