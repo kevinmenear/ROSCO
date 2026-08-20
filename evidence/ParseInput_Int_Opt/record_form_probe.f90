@@ -35,7 +35,7 @@
 PROGRAM record_form_probe
     IMPLICIT NONE
     INTEGER, PARAMETER :: MaxParamLength = 200
-    INTEGER, PARAMETER :: NFORM = 34
+    INTEGER, PARAMETER :: NFORM = 37
     CHARACTER(MaxParamLength) :: Words(2)
     CHARACTER(16)  :: label
     CHARACTER(260) :: lead
@@ -128,6 +128,16 @@ CONTAINS
                    neigh = '*7'; ln = 200
         CASE (34); lab = 'nbslash';  txt = REPEAT('0', 190)//'2147483647'
                    neigh = '/7'; ln = 200
+        ! --- THE THREE FORMS THE MUTATION SEARCH NAMED, priced BEFORE they are
+        !     planted. `1*` is the repeat-with-no-value at count ONE, which is
+        !     the only count that distinguishes the null-fill loop's `k = 0`
+        !     from `k = 1`; `3*` is the same block at a count above one, which
+        !     does NOT distinguish it and is here as the control; `7x` is a
+        !     legal integer followed by exactly ONE non-terminator, which is
+        !     what the value-terminator test's own `rec[p]` reads.
+        CASE (35); lab = 'repnull1'; txt = '1*';            neigh = 'Aa'; ln = 2
+        CASE (36); lab = 'repnull3'; txt = '3*';            neigh = 'Aa'; ln = 2
+        CASE (37); lab = 'junkend';  txt = '7x';            neigh = 'Aa'; ln = 2
         END SELECT
     END SUBROUTINE form
 

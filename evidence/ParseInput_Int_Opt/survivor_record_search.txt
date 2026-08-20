@@ -1,0 +1,141 @@
+ParseInput_Int_Opt -- a record that distinguishes each surviving mutant
+from the SHIPPED translation, searched rather than argued.
+Built with -fsanitize=address,undefined; the BASELINE ran clean under
+those flags. The sanitiser is a GUARD here rather than the instrument:
+byte 201 of Words is Words(2)(1:1), so a read one past the record is
+inside the allocation and the difference it makes is a VALUE.
+
+RECORD SPACE: 51590 records. Every string of length 1..3 over
+  "0123456789+-.eEdDqQnNaAiIfFtTyYxX ,;/*()" at the HEAD of a 200-byte
+  blank-padded record and again at its TAIL, so the token's last character
+  is the record's last byte; plus 32 crafted full-width records. ONE
+  element is read -- the reference transfers one -- pre-set to the
+  -987.654 sentinel and printed as bits, so a stored 0.0 is
+  distinguishable from an untouched slot. The record lives in the first
+  200 bytes of a 400-byte object whose second half holds a parameter
+  name, which is what Words(1) and Words(2) are.
+
+WHAT A ROW MEANS. `differs` names the FIRST record on which the mutant's
+(iostat, element bits) triple differs from the shipped translation's --
+that record is the corpus lever and the mutant is NOT equivalent. `none`
+means no record IN THIS SPACE distinguishes it, which is evidence toward
+equivalence bounded by the space and is not a declaration.
+
+12 of 52 non-PRINT survivors are distinguished by some record in this space (12 by a VALUE, 0 by an ADDRESS -- the sanitiser aborting on a read the shipped translation does not make).
+
+08ce3b56  const_tweak    L 351  '0' -> '1'
+    DIFFERS on 2 record(s). First:
+      HEAD|1*|0|-987654   vs   HEAD|1*|-1|-987654
+0902d9ce  index_offset   L 276  '[p]' -> '[p + 1]'
+    NONE -- no record in this space distinguishes it
+10e4743a  index_offset   L 278  '[p]' -> '[p + 1]'
+    NONE -- no record in this space distinguishes it
+16c1de04  compare_op     L 311  '!=' -> '=='
+    NONE -- no record in this space distinguishes it
+17de888e  index_offset   L 363  '[p]' -> '[p + 1]'
+    DIFFERS on 4972 record(s). First:
+      HEAD|0+|5010|-987654   vs   HEAD|0+|0|0
+22d97f58  const_tweak    L 477  '0' -> '1'
+    NONE -- no record in this space distinguishes it
+26bfb57b  compare_op     L 261  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+27a6fe82  index_offset   L 350  '[p]' -> '[p + 1]'
+    DIFFERS on 1 record(s). First:
+      FUNCONLY|full:repsemi|0|-987654   vs   FUNCONLY|full:repsemi|5010|-987654
+27b68fda  const_tweak    L 289  '1' -> '2'
+    NONE -- no record in this space distinguishes it
+2c7e84d1  negate_cond    L 311  'if (first_item || sep != Sep::Blank)' -> 'if (!(first_item || sep != Sep::Blank))'
+    DIFFERS on 1 record(s). First:
+      FUNCONLY|head:semifirst|5010|-987654   vs   FUNCONLY|head:semifirst|0|-987654
+305dbe05  index_offset   L 316  '[p]' -> '[p + 1]'
+    NONE -- no record in this space distinguishes it
+31376350  compare_op     L 215  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+33e905e4  const_tweak    L 364  '5010' -> '5011'
+    DIFFERS on 11770 record(s). First:
+      HEAD|0+|5010|-987654   vs   HEAD|0+|5011|-987654
+3545d5d7  compare_op     L 342  '<=' -> '<'
+    DIFFERS on 16 record(s). First:
+      HEAD|0*|5010|-987654   vs   HEAD|0*|-1|-987654
+400277bd  index_offset   L 307  '[p]' -> '[p + 1]'
+    NONE -- no record in this space distinguishes it
+461972fc  index_offset   L 270  '[p]' -> '[p + 1]'
+    NONE -- no record in this space distinguishes it
+4f89b00b  compare_op     L 288  '>=' -> '>'
+    NONE -- no record in this space distinguishes it
+5002a20d  const_tweak    L  81  '200' -> '201'
+    NONE -- no record in this space distinguishes it
+516d7765  index_offset   L 300  '[p]' -> '[p + 1]'
+    NONE -- no record in this space distinguishes it
+5a181633  compare_op     L 276  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+5db2df45  const_tweak    L 474  '0' -> '1'
+    NONE -- no record in this space distinguishes it
+6713e5fa  compare_op     L 278  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+715eaff6  const_tweak    L 312  '5010' -> '5011'
+    DIFFERS on 1 record(s). First:
+      FUNCONLY|head:semifirst|5010|-987654   vs   FUNCONLY|head:semifirst|5011|-987654
+75fadd11  compare_op     L 329  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+7b2897c8  index_offset   L 296  '[p]' -> '[p + 1]'
+    DIFFERS on 2383 record(s). First:
+      FUNCONLY:sep|0,0|0|0   vs   FUNCONLY:sep|0,0|0|-987654
+7d03c743  compare_op     L 270  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+938cc91c  compare_op     L 276  '==' -> '!='
+    NONE -- no record in this space distinguishes it
+94933624  compare_op     L 332  '>' -> '>='
+    NONE -- no record in this space distinguishes it
+965f5b6e  index_offset   L 138  '[Int2LStrLen]' -> '[Int2LStrLen + 1]'
+    NONE -- no record in this space distinguishes it
+972ae933  arith_op       L 289  'return -1' -> 'return + 1'
+    NONE -- no record in this space distinguishes it
+9a30c578  negate_cond    L 525  'if (DEBUG_PARSING)' -> 'if (!(DEBUG_PARSING))'
+    NONE -- no record in this space distinguishes it
+9b309eac  const_tweak    L 343  '5010' -> '5011'
+    DIFFERS on 43 record(s). First:
+      HEAD|0*|5010|-987654   vs   HEAD|0*|5011|-987654
+9c013be2  index_offset   L 316  '[p]' -> '[p + 1]'
+    NONE -- no record in this space distinguishes it
+9e4b76b0  compare_op     L 240  '<' -> '<='
+    DIFFERS on 1 record(s). First:
+      WORDADM|w:imin|0|-2147483648   vs   WORDADM|w:imin|5010|-987654
+9fd036b6  compare_op     L 230  '>' -> '>='
+    NONE -- no record in this space distinguishes it
+a2131605  index_offset   L 270  '[p]' -> '[p + 1]'
+    NONE -- no record in this space distinguishes it
+ab7420d6  compare_op     L 332  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+ad55bdab  const_tweak    L 339  '1' -> '2'
+    NONE -- no record in this space distinguishes it
+bd37f11a  compare_op     L 300  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+c7d7da2a  const_tweak    L 361  '5010' -> '5011'
+    DIFFERS on 34837 record(s). First:
+      HEAD|+|5010|-987654   vs   HEAD|+|5011|-987654
+cb35366f  compare_op     L 240  '>' -> '>='
+    DIFFERS on 2 record(s). First:
+      FULLADM|full:intmax|0|2147483647   vs   FULLADM|full:intmax|5010|-987654
+d65a5424  compare_op     L 316  '<' -> '<='
+    NONE -- no record in this space distinguishes it
+d841f125  const_tweak    L 475  '0' -> '1'
+    NONE -- no record in this space distinguishes it
+dc1aa80d  index_offset   L 300  '[p]' -> '[p + 1]'
+    NONE -- no record in this space distinguishes it
+e589ae82  const_tweak    L 327  '1' -> '2'
+    NONE -- no record in this space distinguishes it
+e8cf2d25  index_offset   L 261  '[p]' -> '[p + 1]'
+    NONE -- no record in this space distinguishes it
+ed5b251a  index_offset   L 278  '[p]' -> '[p + 1]'
+    NONE -- no record in this space distinguishes it
+ef24c75c  arith_op       L 339  'MaxRepeat + 1' -> 'MaxRepeat - 1'
+    NONE -- no record in this space distinguishes it
+f1bbee38  negate_cond    L 276  "if (p < len && rec[p] == ',')" -> "if (!(p < len && rec[p] == ','))"
+    NONE -- no record in this space distinguishes it
+f45f53d4  const_tweak    L 359  '0' -> '1'
+    NONE -- no record in this space distinguishes it
+f665d4be  index_offset   L 271  '[p]' -> '[p + 1]'
+    NONE -- no record in this space distinguishes it
+f8d17fd5  negate_cond    L 271  'if (is_eol(rec[p]))' -> 'if (!(is_eol(rec[p])))'
+    NONE -- no record in this space distinguishes it

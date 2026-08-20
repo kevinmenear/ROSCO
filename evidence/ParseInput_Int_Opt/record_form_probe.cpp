@@ -93,6 +93,10 @@ int main() {
         {"nbsign", zeros(190) + "2147483647", "-7"},
         {"nbstar", zeros(197) + "3*7", "*7"},
         {"nbslash", zeros(190) + "2147483647", "/7"},
+        // The three forms the mutation search named, priced before planting.
+        {"repnull1", "1*", "Aa"},
+        {"repnull3", "3*", "Aa"},
+        {"junkend", "7x", "Aa"},
     };
     for (const Form& f : forms) {
         // `CHARACTER(MaxParamLength) :: Words(2)` -- ONE 400-byte object. The

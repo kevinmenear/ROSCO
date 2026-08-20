@@ -134,3 +134,71 @@ A = 92 is the same number unit #56 measured for the same cell on its own corpus,
 which is a coincidence rather than a control -- the two corpora differ in size
 and the two refused cells differ (761 here, 211 there). It is recorded so the
 next reader does not mistake it for one.
+
+
+================================================================================
+RE-TAKEN ON THE WIDENED CORPUS, loop 343f843, 12,059 cases
+================================================================================
+
+Four mutation survivors named an ADMISSIBLE record the corpus did not contain
+(`evidence/ParseInput_Int_Opt/survivor_record_search.txt`), so R14's
+`_NEIGHBOUR_VALUES` gained seven single-word entries and every layer that reads
+the corpus was re-taken. The partition moved:
+
+    arm                          cases   scalar-changed   record   Var moved
+    default-warned                9011                0     9011         273
+    not-allowed                   1821             1821        0           0
+    error, msg refused             803              803        0           0
+    read-ok                        240                0        0         197
+    pre-failed                     184                0        0           0
+    TOTAL                       12,059             2624     9011         470
+
+PREDICTED FROM IT, BEFORE THE RUNS, and measured:
+
+    stub                    predicted            measured   verdict
+    noop                    11,832 exactly         11,832   EXACT
+                            (12,059 - 184 pre-failed - 43 read-ok that
+                             moved nothing)
+    no-print                 9,011 exactly          9,011   EXACT
+    no-allowdefault-arm     [1,821, 2,624]          1,913   =>  A =  92
+    no-read                 [  197, 1,000]            908   =>  B = 711
+
+    CONTROL   A + B = 92 + 711 = 803                        EXACT
+
+The identity holds on the second corpus as it did on the first, and `A` is 92
+both times while `B` moved from 669 to 711 -- which is what a corpus that added
+records reaching the READ should do, and is the only column it should move.
+
+The corpus now reaches the READ on 240 + 711 = 951 of 12,059 cases (7.9%),
+against 853 of 11,863 (7.2%).
+
+THE ADDITIVE CONTROL FAILED, AND IT IS REPORTED RATHER THAN CLAIMED.
+
+    old case file  6,022,734 bytes
+    new case file  6,044,700 bytes
+    old is a PREFIX of new:  False
+
+Unit #56's rule is to take `b[:len(a)] == a` on every corpus-extending change,
+and it is taken here. It does NOT hold, and the reason is structural rather than
+a slip: the entries were added to `_NEIGHBOUR_VALUES`, which is consumed inside
+the `n:` block that R14 appends after EVERY plant index, so new cases from the
+k = 1 block displace everything the k = 2 and k = 3 blocks emit after it. There
+is no ordering of that tuple that makes the change a suffix append.
+
+So this is a DIFFERENT corpus, not an extended one, and every layer that reads
+the corpus was re-taken on it -- harness, partition, all four stubs, line
+coverage, both mutation sweeps. Nothing carries over from the 11,863-case run
+except the mutant IDs, which are a function of the translation and not of the
+corpus.
+
+AND ONE TRANSIENT, recorded because the next reader will meet it. The first
+attempt at the `noop` stub in the batch above returned
+`run_harness_stub: no JSON from ./test -- artifact NOT written`, with no other
+diagnostic; re-run alone it produced 11,832, the predicted number, on the same
+inputs. `run_harness_stub.sh` builds through `harness.sh` and then re-runs
+`./test` in a SECOND `docker exec` to capture the JSON payload, and the campaign
+already records a bind-mount write/read race on objects that a `docker exec`
+chain wrote moments earlier (unit #47, `vit_integration_shim.o` with no
+symbols). The failure is LOUD -- no artifact is written -- so the cost is one
+retry, and it is written down rather than left for the next dispatch to
+rediscover.
