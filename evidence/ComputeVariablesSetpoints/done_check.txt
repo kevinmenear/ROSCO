@@ -1,6 +1,6 @@
-# done_check.py ComputeVariablesSetpoints -- captured 2026-08-20T15:30:29Z by scripts/capture_done_check.sh
+# done_check.py ComputeVariablesSetpoints -- captured 2026-08-20T15:30:36Z by scripts/capture_done_check.sh
 
-Run against the committed state at fbcfc66f ("ComputeVariablesSetpoints: state current -- disposition `integrated`, mutation 1.0000, zero open survivors"), with a CLEAN tree, with stdout
+Run against the committed state at 9ac567a9 ("ComputeVariablesSetpoints: done_check captured -- COMPLETE, 14 of 14"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
