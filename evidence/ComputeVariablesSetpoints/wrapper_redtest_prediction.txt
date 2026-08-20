@@ -1,0 +1,29 @@
+POST-INTEGRATION COPY-BACK RED TEST -- THE PREDICTION, WRITTEN AND COMMITTED
+BEFORE THE RUN.
+
+The perturbation deletes ONE line from THIS unit's own wrapper in
+rosco/controller/src/ControllerBlocks.f90:
+
+    CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+
+and nothing else. The other two copy-backs (controlparameters, errorvariables)
+stay, and so does every other unit's wrapper.
+
+WHAT IT TESTS: the post-integration green above is taken through the wrapper,
+so it is a statement about the wrapper as much as about the translation. If
+the copy-back were absent the C++ answers would never reach the Fortran
+LocalVar, and a green that survives that is a green that was not measuring the
+integration at all.
+
+PREDICTED: 25,398 of 25,398 -- EVERY case.
+
+The reasoning is a property of the unit rather than of the corpus: five
+`LocalVar%...` scalars are assigned unconditionally on every path
+(`PC_RefSpd_PRC`, `PC_RefSpd_SS`, `PC_RefSpd`, `PC_SpdErr`, `PC_PwrErr`,
+and eight more below them), all of them are in R4's compared out-parameter
+list, and the incoming case value would have to coincide with the computed one
+on ALL of them simultaneously for a case to pass. `DebugVar` and `objInst`
+cross by `C_LOC` with no view and are NOT affected -- so a failing count SHORT
+of 25,398 would name cases whose LocalVar writes are all fixed points, which is
+a fact about the corpus and would be reported as such rather than explained
+away.
