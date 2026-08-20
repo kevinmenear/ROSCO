@@ -2453,6 +2453,21 @@ def _chkp_drive(turbine, controller, cp_filename, output_dir,
             )
 
         gen_torque[i], bld_pitch[i], nac_yawrate[i] = controller_int.call_controller(turbine_state)
+        # THE UNIT'S SECOND OUTPUT, AND NOTHING IN THIS CAMPAIGN HAD READ IT.
+        #
+        # `WriteRestartFile` writes `ErrVar%aviFAIL = 1` and an `ErrVar%ErrMsg`
+        # on both of its failure arms. DISCON's own `print *, TRIM(ErrMsg)` is
+        # guarded by `aviFAIL < 0`, so a POSITIVE aviFAIL never reaches stdout
+        # -- but DISCON copies the message into `avcMSG` unconditionally, and
+        # `ControllerInterface` holds that buffer. Printing it here makes
+        # `ErrVar` a compared output instead of a write nobody reads, which is
+        # `Debug`'s fourth-stream finding arriving one unit later.
+        #
+        # Printed only on checkpoint steps: those are the calls that reach the
+        # unit, and one line per step would be 2,000 per scenario.
+        if want_chkp:
+            print("  chkp i=%d aviFAIL=%d avcMSG=%r"
+                  % (i, controller_int.aviFAIL.value, controller_int.avcMSG.value))
         gen_power[i] = gen_speed[i] * gen_torque[i] * turbine.GenEff / 100
         nac_yaw[i] = nac_yaw[i-1] + nac_yawrate[i] * dt
         for name, idx in EXTRA_AVRSWAP.items():
@@ -2566,6 +2581,28 @@ def run_scenario_40(turbine, controller, cp_filename, output_dir=None):
     print("Scenario 40: PASSED (AWC_Mode=4 ResController)")
 
 
+def run_scenario_41(turbine, controller, cp_filename, output_dir=None):
+    """A RootName whose DIRECTORY DOES NOT EXIST, so the OPEN fails.
+
+    The unit's `IF (ErrStat /= 0)` arm -- `aviFAIL = 1` and 'ROSCO_IO: Cannot
+    open checkpoint file ... for writing' -- is the only branch it has besides
+    the writes, and no scenario that succeeds can reach it. `gfortran`'s OPEN
+    and `fopen` both fail on a path under a missing directory, so both sides
+    take the arm and the message crosses out through `avcMSG`.
+
+    It writes NO checkpoint by construction, which is itself part of what the
+    oracle compares: a translation that opened the file anyway would produce a
+    file the reference does not have."""
+    print("=" * 60)
+    print("Scenario 41: checkpoint OPEN fails (missing directory)")
+    print("=" * 60)
+    _chkp_drive(turbine, controller, cp_filename, output_dir,
+                number=41, discon_name='DISCON_chkp41.IN',
+                sim_name='vit_chkp41_nodir/vit_chkp41', ws0=9,
+                tlen=10, chkp_every=40)
+    print("Scenario 41: PASSED (OPEN failure arm)")
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -2608,7 +2645,7 @@ def main():
         35: run_scenario_35,
         # ADDED at unit #61 (`WriteRestartFile`). Also outside scenario_order.
         36: run_scenario_36, 37: run_scenario_37, 38: run_scenario_38,
-        39: run_scenario_39, 40: run_scenario_40,
+        39: run_scenario_39, 40: run_scenario_40, 41: run_scenario_41,
     }
 
     if args.benchmark > 0:

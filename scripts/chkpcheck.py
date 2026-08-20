@@ -73,7 +73,7 @@ WORKDIR = f"/workspace/{ROOT.name}"
 
 # The checkpoint scenarios. NOT `scenario_order`: 36-38 are registered outside
 # it, so no gate run and no committed baseline is touched by their existence.
-SCENARIO_ORDER = [36, 37, 38, 39, 40]
+SCENARIO_ORDER = [36, 37, 38, 39, 40, 41]
 
 ARCHIVE = ROOT / "evidence" / "WriteRestartFile" / "chkp"
 
@@ -231,9 +231,51 @@ def compare(a_label: str, b_label: str, out: Path | None) -> int:
                      "a": da[first:first + 16].hex(),
                      "b": db[first:first + 16].hex()})
 
+    # THE SECOND STREAM, AND IT IS THE UNIT'S OTHER OUTPUT.
+    #
+    # `WriteRestartFile` writes `ErrVar%aviFAIL` and `ErrVar%ErrMsg` on both of
+    # its failure arms, and nothing here read them: DISCON's own `print` of the
+    # message is guarded by `aviFAIL < 0` and this unit sets 1. DISCON copies it
+    # into `avcMSG` regardless, `_chkp_drive` prints that buffer on every
+    # checkpoint step, and this compares the driver's stdout as bytes.
+    #
+    # Added after the first sweep, which is the honest order: eleven of the
+    # first twenty-two mutants survived and every one of them was in an error
+    # path with no oracle. `Debug`'s fourth stream, one unit later.
+    outs_a = {p.name for p in A.glob("stdout.*.txt")}
+    outs_b = {p.name for p in B.glob("stdout.*.txt")}
+    rep["stdout_only_in_a"] = sorted(outs_a - outs_b)
+    rep["stdout_only_in_b"] = sorted(outs_b - outs_a)
+    rep["stdout_scenarios_compared"] = 0
+    rep["stdout_bytes_compared"] = 0
+    rep["stdout_records_compared"] = 0
+    rep["stdout_records_mismatched"] = 0
+    for name in sorted(outs_a & outs_b):
+        ra = (A / name).read_bytes().split(b"\n")
+        rb = (B / name).read_bytes().split(b"\n")
+        rep["stdout_scenarios_compared"] += 1
+        for i in range(max(len(ra), len(rb))):
+            la = ra[i] if i < len(ra) else None
+            lb = rb[i] if i < len(rb) else None
+            if la is None or lb is None:
+                rep["stdout_records_mismatched"] += 1
+                continue
+            rep["stdout_records_compared"] += 1
+            rep["stdout_bytes_compared"] += len(la)
+            if la != lb:
+                rep["stdout_records_mismatched"] += 1
+                if len(rep["mismatches"]) < MAX_DIFFS:
+                    rep["mismatches"].append(
+                        {"file": name, "record": i + 1, "stream": "stdout",
+                         "a": la[:160].decode("latin-1"),
+                         "b": lb[:160].decode("latin-1")})
+
     rep["verdict"] = ("IDENTICAL" if (rep["bytes_mismatched"] == 0
                                       and not rep["only_in_a"] and not rep["only_in_b"]
-                                      and rep["files_compared"] > 0)
+                                      and rep["files_compared"] > 0
+                                      and rep["stdout_records_mismatched"] == 0
+                                      and not rep["stdout_only_in_a"]
+                                      and not rep["stdout_only_in_b"])
                       else "MISMATCH")
     text = json.dumps(rep, indent=2, sort_keys=True)
     if out:
@@ -244,6 +286,10 @@ def compare(a_label: str, b_label: str, out: Path | None) -> int:
     print(f"\n{rep['verdict']}: {rep['files_compared']} file(s), "
           f"{rep['bytes_compared']} bytes, {rep['bytes_mismatched']} mismatched "
           f"in {rep['files_mismatched']} file(s)")
+    print(f"  stdout: {rep['stdout_scenarios_compared']} scenario(s), "
+          f"{rep['stdout_records_compared']} records, "
+          f"{rep['stdout_bytes_compared']} bytes, "
+          f"{rep['stdout_records_mismatched']} mismatched")
     if rep["files_compared"] == 0:
         print("compared NOTHING -- refusing", file=sys.stderr)
         return 2
