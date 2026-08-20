@@ -283,6 +283,21 @@ named record from the 131,312-record search, 6 as bounded-by-the-space NONEs
 left undeclared on purpose, and 1 the search's own negative control. 22 of the
 23 are behind the single 2.5% gate above.
 
+**AND TWO OF THEM ARE KILLED BY THE OTHER INSTRUMENT.** `9e00d730` and
+`b8766137` (`parse_real:247`, the exponent's sign) were run through the
+27-scenario gate character for character out of the mutation artifact, as a
+PAIR with a negative control at the same operator:
+
+    9e00d730   1,583,216 of 4,732,000, 131 channels, scenarios 19 and 27 BROKE
+    8d81269b           0 of 5,252,000                       -- the control
+
+Both predicted before the runs (`gate.survivor_predictions.txt`). Neither is
+folded into the score and neither is a declaration; what the pair buys is that
+two survivors are mutants this campaign's own gate kills on the shipped input
+file, and the differential corpus is the only instrument that misses them.
+`Examples/DISCON.IN` gives `VS_ArSatTq` as `4.30935e+04`, and four such scalars
+are read by this unit.
+
 ## 6. C7–C9 — integration and the gate
 
 `vit integrate … --apply --reverse-copy`. **`--reverse-copy` was decided by

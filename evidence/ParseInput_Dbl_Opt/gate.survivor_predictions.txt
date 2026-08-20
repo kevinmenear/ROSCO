@@ -1,0 +1,43 @@
+TWO OPEN MUTATION SURVIVORS PUT THROUGH THE GATE -- one expected to move it,
+one expected not to, and both PREDICTED BEFORE THE RUNS.
+
+WHY. A mutation survivor is not necessarily beyond this campaign's reach; it is
+beyond the reach of the instrument that scored it. RUNBOOK: "before declaring a
+mutation survivor equivalent, ask whether the OTHER instrument can reach it --
+one gate run replaces the argument." Neither run changes the mutation score,
+and neither is a declaration.
+
+THE PAIR IS CHOSEN SO THAT ONE IS A NEGATIVE CONTROL. A zero on its own says
+nothing -- it cannot be told from a gate that does not reach the unit at all --
+and the two runs are on the same build of the same file.
+
+1. 9e00d730  parse_real:247   rec[p] -> rec[p + 1]   (also b8766137, same line)
+
+   The exponent's SIGN. `IF (has_exp)` then `IF (p < len && (rec[p] == '+' ||
+   rec[p] == '-')) ++p` is what consumes the '-' of `4.30935e+04` before the
+   exponent digits are counted. Reading rec[p+1] instead leaves the sign
+   unconsumed, `edigits` comes back 0, and `parse_real` returns BadNoStore ->
+   IOSTAT 5010 -> `ErrVar%aviFAIL = -1`.
+
+   Examples/DISCON.IN has 22 first-word values with a signed exponent, and the
+   scalar ones -- VS_ArSatTq 4.30935e+04, VS_MaxRat 4.00000e+04, VS_MaxTq
+   4.74029e+04, VS_MinTq 0.00000e+00 -- are read by THIS unit.
+
+   PREDICTED: the gate SEES it. Either a large mismatch or
+   `perturbation_broke_scenarios` non-empty, because a parse failure sets
+   aviFAIL = -1 and ROSCO reports a fatal error. Both are the gate seeing it;
+   a zero would not be.
+
+2. 8d81269b  list_read_reals:308   rec[p] -> rec[p + 1]   -- THE CONTROL
+
+   The semicolon test. Every value this unit parses in the shipped
+   configuration begins with a digit, a '-' or a '.', so `rec[p]` is never ';'
+   -- and neither is `rec[p+1]`, the second character of the same well-formed
+   number.
+
+   PREDICTED: EXACTLY 0 of 5,252,000.
+
+The pair together says which of the two zeros a reader is looking at: run 1
+non-zero and run 2 zero means the gate reaches this function and cannot
+discriminate the semicolon test. Run 1 zero would have meant something else
+entirely.

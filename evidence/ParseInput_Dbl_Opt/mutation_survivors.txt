@@ -73,13 +73,21 @@ contained the record would kill the mutant.
 
   72653030  index_offset  L232  rec[p] -> rec[p+1]      310 records
   c28ed6fb  index_offset  L232  rec[p] -> rec[p+1]      308 records
+            HEAD|0+0|0|0.0   vs   HEAD|0+0|5010|<sentinel>
+            The DETECTION of gfortran's LETTERLESS exponent -- `1.5+2` is
+            150.0 -- which is the one spelling of a real that has no C
+            counterpart. R14 plants `+2` as a numeric lead, so the corpus has
+            the FORM; what it does not have is a matched line whose first word
+            carries it.
+
   9e00d730  index_offset  L237  rec[p] -> rec[p+1]      221 records
   b8766137  index_offset  L237  rec[p] -> rec[p+1]      220 records
             HEAD|0+0|0|0.0   vs   HEAD|0+0|5010|<sentinel>
-            gfortran's LETTERLESS exponent -- `1.5+2` is 150.0 -- which is the
-            one spelling of a real that has no C counterpart. R14 plants
-            `+2` as a numeric lead, so the corpus has the FORM; what it does
-            not have is a matched line whose first word carries it.
+            The CONSUMPTION of the exponent's sign, which both spellings reach:
+            `1.5e+2` gets here through the letter branch and `1.5+2` through
+            the letterless one. These two are the pair section A2 runs through
+            the gate, and the gate kills them -- `Examples/DISCON.IN` gives
+            `VS_ArSatTq` as `4.30935e+04`.
 
   b03a94c5  index_offset  L198  buf[n] -> buf[n+1]       36 records
             HEAD|nan|0|NaN   vs   HEAD|nan|5010|<sentinel>
@@ -99,6 +107,38 @@ contained the record would kill the mutant.
             distinguishes each. This is the thinnest margin in the file and it
             is worth stating: a search one rung narrower reports both as
             equivalences.
+
+
+A2. AND TWO OF THEM ARE KILLED BY THE OTHER INSTRUMENT -- THE GATE
+-------------------------------------------------------------------
+A survivor is beyond the reach of the instrument that SCORED it, which is not
+the same as beyond this campaign's reach. Two of section A's mutants were run
+through the 27-scenario gate, character for character out of the mutation
+artifact, as a PAIR -- one predicted to move it and one predicted not to,
+because a zero on its own cannot be told from a gate that does not reach the
+unit. Predictions in `gate.survivor_predictions.txt`, written before the runs.
+
+  9e00d730 / b8766137   parse_real:247   rec[p] -> rec[p+1]
+      gate/ParseInput_Dbl_Opt.survivor.9e00d730.json
+      1,583,216 of 4,732,000 compared, 131 of 351 channels, and scenarios 19
+      and 27 BROKE OUTRIGHT -- which is why the compared count is 4,732,000
+      rather than 5,252,000. Predicted: "a large mismatch or broken scenarios,
+      because a parse failure sets aviFAIL = -1".
+      The site is the exponent's SIGN. `Examples/DISCON.IN` gives VS_ArSatTq as
+      `4.30935e+04`, and four such scalars are read by this unit; not consuming
+      the '+' leaves `edigits` at 0 and the parse fails.
+
+  8d81269b              list_read_reals:308   rec[p] -> rec[p+1]   THE CONTROL
+      gate/ParseInput_Dbl_Opt.survivor.8d81269b.json
+      0 of 5,252,000. Predicted EXACTLY 0: every value this unit parses in the
+      shipped configuration begins with a digit, a '-' or a '.', so neither
+      `rec[p]` nor `rec[p+1]` is ever a semicolon.
+
+NEITHER IS FOLDED INTO THE SCORE and neither is a declaration. What the pair
+buys is that `9e00d730` and `b8766137` are no longer "survived": they are
+mutants THIS CAMPAIGN'S OWN GATE kills, on the shipped input file, and the
+differential corpus is the only instrument that misses them. That is a
+statement about the corpus, made by an instrument that does not read it.
 
 
 B. NOT DISTINGUISHED BY ANY OF THE 131,312 RECORDS -- 6
