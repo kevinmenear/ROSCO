@@ -8764,6 +8764,40 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   the `perturbation` block in each artifact: the four `from`/`to` strings are
   four different statements in three different files.
 
+## A SECOND INSTRUMENT'S BLIND SPOT IS IN THE CONSTANT IT HOLDS, NOT IN THE
+## SPACE IT ENUMERATES
+
+- **Unit #56, and it cost 74 seconds to find and would have cost five wrong
+  equivalences to miss.**
+
+  ```
+  survivor_record_search.cpp   131,312 records enumerated
+                               Words(2) HELD at "PC_KP"
+  six survivors                NONE -- "no record in this space distinguishes it"
+
+  five of the six              p < len -> p <= len, which at p == len read
+                               rec[200] == Words(2)(1:1) == 'P'
+                               not a digit, not '.', not a sign, not e/d/q
+
+  the SAME 131,312 records, Words(2) = "7E+9"
+    f13a04da  L213   1,587 records differ
+    26cb52f1  L217     397 records differ
+  ```
+
+  The space was fine. The instrument was holding a parameter the unit's own
+  corpus varies: `Words(2)` is whatever `VarName` was, and a harness `VarName`
+  may begin with a digit where a Fortran parameter name may not.
+
+  **Before reading a `NONE` as evidence toward equivalence, list what the
+  instrument HELD and ask of each one whether the corpus varies it.** Make the
+  held constants `#ifndef`-overridable when you write the search, so re-asking
+  costs a `-D` rather than an edit; the default keeps the committed artifact
+  reproducible.
+
+  The three that stayed `NONE` under both are the same operator at predicates
+  the record space has no record ENDING at -- a gap in the SHAPES, which is a
+  different repair and is named as such.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
