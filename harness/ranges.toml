@@ -3592,3 +3592,136 @@ LocalVar_WE_Vw = { lo = 3.0, hi = 25.0 }
 #       the dummy's domain and means "no minimum"; a NEGATIVE one would recover
 #       f647c7b4 and is not.
 
+
+# ---------------------------------------------------------------------------
+# PitchControl
+#
+# TWENTY-THREE PINS, AND ALL BUT ONE OF THEM ARE THE ADMISSIBILITY CLAIMS THIS
+# CAMPAIGN HAS ALREADY EARNED FOR THIS UNIT'S CALLEES, COPIED RATHER THAN
+# RE-DERIVED (P4). PitchControl calls eleven translated units and its corpus has
+# to satisfy the domain of the whole call tree, not just of its own body: a
+# parameter this unit merely forwards is still a parameter whose bad draw kills
+# the REFERENCE two frames down.
+#
+# So the derivation is a union, and each line below names the table it came
+# from. Where a callee's own table also carries a MEASUREMENT-DESIGN pin (a
+# `values` list chosen to deepen one arm, a range chosen to move a base draw),
+# that pin is NOT copied: it was a judgement about the callee's corpus, and
+# repeating it here would narrow this unit's domain for a reason that is not
+# about this unit.
+#
+# --- 1. THE SEVEN interp1d EXTENT TIES, AND THE REFERENCE *DIES* WITHOUT THEM.
+#
+# `[interp1d]` above records it: on `SIZE(xData) .NE. SIZE(yData)` the callee
+# assigns a 38-character message and then formats 53 characters into it --
+# "Fortran runtime error: End of record", exit 2, before any case completes.
+# `_extent_plan` makes extents PAIRWISE DISTINCT on purpose, so the very first
+# case would do it. This unit has SEVEN interp1d call sites over four distinct
+# (xData, yData) pairs plus three more on the open-loop arm:
+#
+#     :62-65   PC_GS_angles  x  PC_GS_KP / KI / KD / TF
+#     :128     OL_Breakpoints x OL_BldPitch1
+#     :132     OL_Breakpoints x OL_BldPitch2
+#     :136     OL_Breakpoints x OL_BldPitch3
+#
+# ROSCO's own reader allocates all five PC_GS_* arrays at `PC_GS_n` and all the
+# OL_* series at the breakpoint count, so the tie is the shipped invariant as
+# well as the survivable one.
+[PitchControl]
+CntrPar_PC_GS_KP_n = { same_as = "CntrPar_PC_GS_angles_n" }
+CntrPar_PC_GS_KI_n = { same_as = "CntrPar_PC_GS_angles_n" }
+CntrPar_PC_GS_KD_n = { same_as = "CntrPar_PC_GS_angles_n" }
+CntrPar_PC_GS_TF_n = { same_as = "CntrPar_PC_GS_angles_n" }
+CntrPar_OL_BldPitch1_n = { same_as = "CntrPar_OL_Breakpoints_n" }
+CntrPar_OL_BldPitch2_n = { same_as = "CntrPar_OL_Breakpoints_n" }
+CntrPar_OL_BldPitch3_n = { same_as = "CntrPar_OL_Breakpoints_n" }
+#
+# TWO MORE TIES REACHED THROUGH CALLEES, copied from `[PitchSaturation]` (unit
+# #38) and `[FloatingFeedback]` (unit #51) unchanged -- both callees interpolate
+# with interp1d and both die the same way. The capital `N` in
+# `CntrPar_PS_BldPitchMin_N` is the generator's spelling of that field's extent
+# and is copied byte for byte; a name matching no extent is a hard error, which
+# is the check that this was not typed from memory.
+CntrPar_PS_WindSpeeds_n = { same_as = "CntrPar_PS_BldPitchMin_N" }
+CntrPar_Fl_Kp_n = { same_as = "CntrPar_Fl_U_n" }
+#
+# --- 2. THE ALLOCATABLE EXTENTS THE REFERENCE SUBSCRIPTS WITH NO BOUND CHECK.
+#
+# `CntrPar%Ind_BldPitch(1..3)` at :127, :131 and :135, and
+# `CntrPar%PF_Offsets(K)` / `%PF_TimeStuck(K)` under `DO K = 1,LocalVar%NumBl`
+# at :186-188 and :192-194. Nothing tests ALLOCATED and nothing bounds the
+# subscript, so an extent below 3 is an out-of-bounds read in the REFERENCE.
+# ROSCO's reader allocates all three at 3.
+#
+# A RANGE AND NOT A POINT, deliberately: `{ lo = 3, hi = 3 }` on an ALLOCATABLE
+# extent removes that array from the harness's comparison entirely (unit #56),
+# and these are inputs whose values still have to reach the body.
+CntrPar_Ind_BldPitch_n = { lo = 3, hi = 4 }
+CntrPar_PF_Offsets_n = { lo = 3, hi = 4 }
+CntrPar_PF_TimeStuck_n = { lo = 3, hi = 4 }
+#
+# FOUR MORE REACHED THROUGH `IPC`, copied from `[IPC]` (unit #52) unchanged.
+# That unit's note records the reader allocating each at exactly 2 with the
+# body subscripting 1 and 2 unguarded.
+CntrPar_IPC_Vramp_n = { lo = 2, hi = 3 }
+CntrPar_IPC_KP_n = { lo = 2, hi = 3 }
+CntrPar_IPC_KI_n = { lo = 2, hi = 3 }
+CntrPar_IPC_aziOffset_n = { lo = 2, hi = 3 }
+#
+# AND ONE REACHED THROUGH `ActiveWakeControl`, copied from `[ActiveWakeControl]`
+# (unit #47) unchanged: `DO Imode = 1, CntrPar%AWC_NumModes` subscripts six
+# ALLOCATABLE arrays inside that callee.
+CntrPar_AWC_NumModes = { lo = 1, hi = 2 }
+#
+# --- 3. THE FIVE objInst COUNTERS.
+#
+# Every one is a 1-based subscript into a `DIMENSION(1024)` member of
+# `LocalVar%FP` / `%piP` / `%rlP` / `%resP`, and every filter, rate limiter and
+# PI controller ends with `inst = inst + 1`. `[PreFilterMeasuredSignals]` (unit
+# #34) states the mechanism and measured the reference at SIGSEGV at both 32-bit
+# extremes; `[VariableSpeedControl]` and `[ComputeVariablesSetpoints]` carry the
+# same bound. What this unit advances, counted from its own body plus its
+# callees' bodies:
+#
+#     instRL    1 + NumBl + NumBl                    <=  7   (ratelimit)
+#     instLPF   NumBl (PA_Mode 1) + IPC's 1 + NumBl  <=  7
+#     instSecLPF NumBl (PA_Mode 2) + IPC's 1         <=  4
+#     instPI    1 + IPC <=11 + ForeAft 1 + Fl 2 + AWC <=4   <= 19
+#     instRes   AWC's 1                              <=  1
+#
+# 1000 leaves 24 slots above the worst of them, so no case can reach 1024 by
+# advancing a counter, and the pin is one number rather than five.
+objInst_instPI = { lo = 1, hi = 1000 }
+objInst_instRL = { lo = 1, hi = 1000 }
+objInst_instLPF = { lo = 1, hi = 1000 }
+objInst_instSecLPF = { lo = 1, hi = 1000 }
+objInst_instRes = { lo = 1, hi = 1000 }
+#
+# --- 4. `LocalVar_NumBl`, AND IT IS A `values` LIST RATHER THAN A RANGE.
+#
+# FIVE unguarded `DO K = 1,LocalVar%NumBl` loops here (:107, :153, :164, :177,
+# :186/:192) subscript EIGHT fixed-size `DIMENSION(3)` fields -- PitCom,
+# PitCom_SD, PitComAct, FA_PitCom, IPC_PitComF, ZMQ_PitOffset, BlPitch -- plus
+# the three ALLOCATABLE ones above. Nothing tests NumBl against 3, so a NumBl
+# above 3 is a WRITE past a fixed-size field in the reference itself. That is
+# the bound.
+#
+# `values` AND NOT `{ lo = 0, hi = 3 }`, and the reason is unit #49's
+# measurement rather than a preference: a bounds pin drops the parameter out of
+# R6's ladder and leaves it at its base draw, which put 98.7% of `[IPC]`'s
+# corpus at `NumBl == 1`. This unit's entire subject is the per-blade
+# distribution and its three `avrSWAP` outputs read elements 1, 2 AND 3
+# unconditionally, so a corpus that runs one blade in 98.7% of cases is a
+# corpus that never compares two of the three published values against a
+# written slot. 3 is FIRST because it is the value all 27 scenarios run and
+# because `values[0]` is the base every case not reached by a flag variant
+# carries; 0 is kept because it is the only value that deletes all five loops
+# while the three unconditional `avrSWAP` reads still happen.
+#
+# THE COST, STATED: NumBl leaves R6's integer ladder, so the decade boundaries
+# and the two 32-bit extremes are no longer swept through it -- and every one of
+# those is a value at which the reference writes out of bounds. Nothing
+# observable is lost. The other cost is TIME: a flag with four values re-runs
+# R6's blocks under each, which is the corpus-size multiplier unit #47 priced at
+# ~35 -> ~50 minutes on a sweep.
+LocalVar_NumBl = { values = [3, 0, 1, 2] }
