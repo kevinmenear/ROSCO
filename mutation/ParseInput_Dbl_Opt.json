@@ -1,0 +1,657 @@
+{
+ "unit": "ParseInput_Dbl_Opt",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_operands"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 0,
+  "scored": 181,
+  "of": 181
+ },
+ "scored_ids": [
+  "153d7a86",
+  "6cb57253",
+  "b5f7611b",
+  "1e3a7d41",
+  "6a920449",
+  "5a22312d",
+  "d34c0bf9",
+  "518e28a3",
+  "b55c8226",
+  "7b06ca5a",
+  "a5f3222a",
+  "d75e2482",
+  "e4113a36",
+  "e6d3600e",
+  "10118ab3",
+  "52112be9",
+  "f808364d",
+  "95ea76e2",
+  "8475def2",
+  "ce74acca",
+  "da2542c2",
+  "71dee475",
+  "97c42adb",
+  "1a0d3f26",
+  "3a649202",
+  "50acddf4",
+  "f13a04da",
+  "4198da25",
+  "3c808b3b",
+  "26cb52f1",
+  "3ed1f01a",
+  "209527b9",
+  "389a90ce",
+  "3802c675",
+  "58bfce0e",
+  "ed218687",
+  "41c0c882",
+  "eba1c07e",
+  "bc0c14bc",
+  "92cac082",
+  "c5e9c0ad",
+  "a3b94b1c",
+  "575c6151",
+  "e2deb594",
+  "ec2c7596",
+  "2a6d08a0",
+  "e8f0af08",
+  "f2c4abe0",
+  "60b5717a",
+  "b4813e56",
+  "c3e3bb3c",
+  "6c0a14b6",
+  "47d7f309",
+  "27d9c8af",
+  "b3600517",
+  "276cc90e",
+  "720a57c6",
+  "4577325a",
+  "6bd5e0ce",
+  "b9bf6efa",
+  "21bc215a",
+  "e6323aa7",
+  "b1978e73",
+  "c09407e0",
+  "4635cbb2",
+  "a0e28dba",
+  "ad5ce5a0",
+  "44f8fb11",
+  "21592b9e",
+  "b03a94c5",
+  "6424806e",
+  "f7b6af8f",
+  "ac1a2693",
+  "c3136525",
+  "11e11a43",
+  "72653030",
+  "c28ed6fb",
+  "9e00d730",
+  "b8766137",
+  "f47d731c",
+  "2ea6fa71",
+  "b1f484c5",
+  "d8e50753",
+  "2bcdf85b",
+  "4cbc3c66",
+  "8d98f0ac",
+  "8d81269b",
+  "5cb7425d",
+  "32baae1c",
+  "e742c375",
+  "4ed6f308",
+  "a868c389",
+  "5fed96af",
+  "5a8abaea",
+  "bb9efe39",
+  "8c4c86d0",
+  "70cae959",
+  "965d4416",
+  "4608a22a",
+  "4065524f",
+  "479d0b11",
+  "0617e4a6",
+  "c0461046",
+  "d732c04e",
+  "e0a33011",
+  "7f140050",
+  "8e796788",
+  "85dacdff",
+  "3a7477eb",
+  "4c451ef0",
+  "55989439",
+  "d7f942e4",
+  "473e3db6",
+  "c06ced0a",
+  "c1dd55f9",
+  "32aded61",
+  "6fcc0c12",
+  "2801e333",
+  "f88c33d3",
+  "6b86cae4",
+  "63242b0d",
+  "8caeca67",
+  "1fd9b110",
+  "c06fbc22",
+  "0bf7868b",
+  "0bbf8eb0",
+  "e97b4153",
+  "99f9997a",
+  "4a9b3707",
+  "ea396111",
+  "c62206c9",
+  "2cd50aab",
+  "f6e6c8b4",
+  "d95b5244",
+  "9762906a",
+  "2068cffd",
+  "8bb3596d",
+  "5da57481",
+  "927a1fcf",
+  "6882fee4",
+  "cecb591b",
+  "f8a22a2b",
+  "bef9d5cc",
+  "8d452dc7",
+  "48b16591",
+  "2f859d49",
+  "fddf8458",
+  "1efd815d",
+  "2588edef",
+  "1859e403",
+  "b07eb234",
+  "33a7d967",
+  "9919f4e4",
+  "9beb5a14",
+  "abdaba4c",
+  "0fc5318f",
+  "157ba9a5",
+  "4731f0ba",
+  "96b773cb",
+  "89fbdae2",
+  "139ff398",
+  "328ff3b6",
+  "2450ec18",
+  "367cea0c",
+  "d2da3b55",
+  "a08af5c7",
+  "d822e509",
+  "6a6668b2",
+  "48188743",
+  "ffd9ba9f",
+  "c643ffb7",
+  "2d4ea3e9",
+  "b0ebbc65",
+  "b71c3247",
+  "97850f8c",
+  "7f0e5207",
+  "57e5b976",
+  "191490b3",
+  "64c82ee1",
+  "1d7e7c3a",
+  "e3437dc1"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "compare_op",
+  "const_tweak",
+  "negate_cond"
+ ],
+ "mutants": 177,
+ "equivalent_declared": 0,
+ "unreachable_declared": 0,
+ "unreachable": [],
+ "nocompile": 4,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "sanitize": true,
+ "mutant_workers": 8,
+ "identity_verified": 181,
+ "killed_by_sanitizer": 5,
+ "killed_by_sanitizer_ids": [
+  "c5e9c0ad",
+  "e2deb594",
+  "e8f0af08",
+  "5a8abaea",
+  "cecb591b"
+ ],
+ "nocompile_ratio": 0.0221,
+ "nocompile_refused": false,
+ "total": 181,
+ "killed": 110,
+ "survived": 67,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "unreachable_but_killed": [],
+ "score": 0.6215,
+ "loop_rev": "10afabe-nogit",
+ "gen_rev": "gen-ec01e9810d0e",
+ "vit_rev": "d6759d9-nogit",
+ "survivors": [
+  {
+   "id": "10118ab3",
+   "operator": "compare_op",
+   "before": "<=",
+   "after": "<"
+  },
+  {
+   "id": "52112be9",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "8475def2",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "71dee475",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "97c42adb",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "f13a04da",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "4198da25",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "26cb52f1",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "209527b9",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "eba1c07e",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "575c6151",
+   "operator": "arith_op",
+   "before": "p + static_cast",
+   "after": "p - static_cast"
+  },
+  {
+   "id": "ec2c7596",
+   "operator": "arith_op",
+   "before": "rec + start",
+   "after": "rec - start"
+  },
+  {
+   "id": "2a6d08a0",
+   "operator": "arith_op",
+   "before": "exp_start - start",
+   "after": "exp_start + start"
+  },
+  {
+   "id": "60b5717a",
+   "operator": "arith_op",
+   "before": "return -1",
+   "after": "return + 1"
+  },
+  {
+   "id": "b4813e56",
+   "operator": "arith_op",
+   "before": "rec + p",
+   "after": "rec - p"
+  },
+  {
+   "id": "c3e3bb3c",
+   "operator": "arith_op",
+   "before": "q - p",
+   "after": "q + p"
+  },
+  {
+   "id": "6c0a14b6",
+   "operator": "arith_op",
+   "before": "q + 1",
+   "after": "q - 1"
+  },
+  {
+   "id": "47d7f309",
+   "operator": "arith_op",
+   "before": "epos + 1",
+   "after": "epos - 1"
+  },
+  {
+   "id": "27d9c8af",
+   "operator": "arith_op",
+   "before": "16 - decexp",
+   "after": "16 + decexp"
+  },
+  {
+   "id": "b3600517",
+   "operator": "arith_op",
+   "before": "epos + 1",
+   "after": "epos - 1"
+  },
+  {
+   "id": "276cc90e",
+   "operator": "arith_op",
+   "before": "epos + 2",
+   "after": "epos - 2"
+  },
+  {
+   "id": "720a57c6",
+   "operator": "arith_op",
+   "before": "3 - edig.size",
+   "after": "3 + edig.size"
+  },
+  {
+   "id": "e6323aa7",
+   "operator": "swap_operands",
+   "before": "q - p",
+   "after": "p - q"
+  },
+  {
+   "id": "c09407e0",
+   "operator": "index_offset",
+   "before": "[Int2LStrLen]",
+   "after": "[Int2LStrLen + 1]"
+  },
+  {
+   "id": "44f8fb11",
+   "operator": "index_offset",
+   "before": "[64]",
+   "after": "[64 + 1]"
+  },
+  {
+   "id": "b03a94c5",
+   "operator": "index_offset",
+   "before": "[n]",
+   "after": "[n + 1]"
+  },
+  {
+   "id": "72653030",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "c28ed6fb",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "9e00d730",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "b8766137",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "4cbc3c66",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "8d81269b",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "5cb7425d",
+   "operator": "index_offset",
+   "before": "[q]",
+   "after": "[q + 1]"
+  },
+  {
+   "id": "32baae1c",
+   "operator": "index_offset",
+   "before": "[q]",
+   "after": "[q + 1]"
+  },
+  {
+   "id": "e742c375",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "4ed6f308",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "a868c389",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "5fed96af",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "8c4c86d0",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "70cae959",
+   "operator": "index_offset",
+   "before": "[p]",
+   "after": "[p + 1]"
+  },
+  {
+   "id": "965d4416",
+   "operator": "index_offset",
+   "before": "[512]",
+   "after": "[512 + 1]"
+  },
+  {
+   "id": "4608a22a",
+   "operator": "index_offset",
+   "before": "[0]",
+   "after": "[0 + 1]"
+  },
+  {
+   "id": "479d0b11",
+   "operator": "const_tweak",
+   "before": "200",
+   "after": "201"
+  },
+  {
+   "id": "8e796788",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "85dacdff",
+   "operator": "const_tweak",
+   "before": "64",
+   "after": "65"
+  },
+  {
+   "id": "4c451ef0",
+   "operator": "const_tweak",
+   "before": "62",
+   "after": "63"
+  },
+  {
+   "id": "d7f942e4",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "c06ced0a",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "0bf7868b",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "e97b4153",
+   "operator": "const_tweak",
+   "before": "5010",
+   "after": "5011"
+  },
+  {
+   "id": "99f9997a",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "4a9b3707",
+   "operator": "const_tweak",
+   "before": "10",
+   "after": "11"
+  },
+  {
+   "id": "ea396111",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "c62206c9",
+   "operator": "const_tweak",
+   "before": "5010",
+   "after": "5011"
+  },
+  {
+   "id": "2cd50aab",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "f6e6c8b4",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "d95b5244",
+   "operator": "const_tweak",
+   "before": "0.0",
+   "after": "1.0"
+  },
+  {
+   "id": "9762906a",
+   "operator": "const_tweak",
+   "before": "5010",
+   "after": "5011"
+  },
+  {
+   "id": "2068cffd",
+   "operator": "const_tweak",
+   "before": "5010",
+   "after": "5011"
+  },
+  {
+   "id": "8bb3596d",
+   "operator": "const_tweak",
+   "before": "5010",
+   "after": "5011"
+  },
+  {
+   "id": "5da57481",
+   "operator": "const_tweak",
+   "before": "5010",
+   "after": "5011"
+  },
+  {
+   "id": "2450ec18",
+   "operator": "negate_cond",
+   "before": "if (repeat <= 0)",
+   "after": "if (!(repeat <= 0))"
+  },
+  {
+   "id": "367cea0c",
+   "operator": "negate_cond",
+   "before": "if (p >= len || is_separator(rec[p]))",
+   "after": "if (!(p >= len || is_separator(rec[p])))"
+  },
+  {
+   "id": "d2da3b55",
+   "operator": "negate_cond",
+   "before": "if (p < len && rec[p] == ',')",
+   "after": "if (!(p < len && rec[p] == ','))"
+  },
+  {
+   "id": "6a6668b2",
+   "operator": "negate_cond",
+   "before": "if (p < len && !is_separator(rec[p]))",
+   "after": "if (!(p < len && !is_separator(rec[p])))"
+  },
+  {
+   "id": "ffd9ba9f",
+   "operator": "negate_cond",
+   "before": "if (p < len && rec[p] == ',')",
+   "after": "if (!(p < len && rec[p] == ','))"
+  },
+  {
+   "id": "57e5b976",
+   "operator": "negate_cond",
+   "before": "if (edig.size() > 3)",
+   "after": "if (!(edig.size() > 3))"
+  }
+ ]
+}
