@@ -62,3 +62,44 @@ it evidence about the instrument rather than a formality.
    MEASURED
    --------
    (filled in after the runs)
+   MEASURED, 2026-08-19, both on the same build, run as a pair
+   -----------------------------------------------------------
+
+       parsed-value   PREDICTED 1,857,893 of 5,252,000, 147 of 351 channels,
+                                all 27 scenarios alive
+                      MEASURED    370,646 of   728,000,  22 channels,
+                                mismatches in scenarios 19, 20 and 27 only
+                      revert-verified 0 of 5,252,000
+
+       default-arm    PREDICTED 0 of 5,252,000        MEASURED 0   EXACT
+                      revert-verified 0 of 5,252,000
+
+   THE FIRST PREDICTION IS FALSIFIED, AND THAT IS WORTH MORE THAN A HIT.
+
+   An INTEGER control parameter is a MODE, not a gain. Adding one to every value
+   this unit parses does not perturb a trajectory -- it selects a different
+   controller path in every scenario, and 23 of the 27 then produce no
+   comparable output at all. The gate compared 728,000 values against the green
+   run's 5,252,000.
+
+   So the family rule -- "the gate's answer is set by the FAILURE CLASS, not by
+   the site" -- survives, and this is a THIRD class beside the two the RUNBOOK
+   records:
+
+       every parsed value is wrong        1,857,893 / 5,252,000   147 ch  (REAL)
+       the parse FAILS, aviFAIL = -1      1,583,216 / 4,732,000   131 ch
+       every parsed MODE is wrong           370,646 /   728,000    22 ch  (INTEGER)
+
+   The distinction the first two could not make is between "the failure class"
+   and "the item type", because both of those runs perturbed a REAL. This one
+   perturbs an INTEGER at the same kind of site and lands somewhere else, which
+   settles it: the class is about what goes wrong DOWNSTREAM, and for this unit
+   what goes wrong downstream is a mode.
+
+   Writing the prediction down is what made this visible. A red test that cannot
+   be wrong is not evidence about the instrument; this one could be wrong, was,
+   and the being-wrong is the measurement.
+
+   THE SECOND IS EXACT, and it is a zero that was predicted rather than hoped
+   for. Both artifacts carry their prediction in a `--note`, so a reader who
+   opens the zero finds the expectation beside the number.
