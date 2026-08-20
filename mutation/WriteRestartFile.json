@@ -1,0 +1,460 @@
+{
+  "campaign_rev": "fe75bf6c",
+  "capped_operators": [
+    "const_tweak",
+    "index_offset"
+  ],
+  "compared_against": "fortran_reference_chkp_archive",
+  "equivalences": {
+    "092db87d": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_char_array (line 207), which performs 1 of the 307 writes and never the last one.",
+    "0c79c900": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_char_array (line 207), which performs 1 of the 307 writes and never the last one.",
+    "111eaca9": "`len < 0 ? 0 : len` -> `len <= 0 ? 0 : len` and -> `len < 1 ? 0 : len` are the same edit twice: both differ from the original only at len == 0, and at len == 0 the original already yields 0. Identical on every int. (The THIRD mutant at this site, 33e6f4b8, changes the `0` RESULT rather than the boundary and is NOT equivalent -- it is declared unreachable.)",
+    "3633473b": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: the `int stat = 0` INITIALISER (line 169). It is read only after the 307 writes have all run, and on the fopen-failure arm `Un.stat` is never read at all, so the initial value reaches no comparison.",
+    "4480fae4": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_dbl_array (line 193), which performs 59 of the 307 writes and never the last one.",
+    "461a7bfd": "`char buf[32]` -> `[33]` / `[32 + 1]`. The buffer is written only by `snprintf(buf, sizeof(buf), \"%ld\", n)`, whose longest possible output is 20 digits plus a sign plus a NUL = 22 bytes. Both widths hold every value of `long`, and `sizeof(buf)` moves with the declaration, so the string produced is identical for every input. The buffer is a local; its size reaches no output.",
+    "4e023777": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_cpx (line 188), which performs 3 of the 307 writes and never the last one.",
+    "54a6e66f": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_dbl (line 173), which performs 218 of the 307 writes and never the last one.",
+    "648b0396": "`n <= 0` -> `n < 0` in wr_char_array differs only at n == 0. There the original returns early having written nothing and set stat = 0; the mutant calls `fwrite(p, 1, 0, u.f)`, which by the C standard writes nothing and returns 0, so `0 == 0` sets stat = 0 as well. `p` cannot be null on that path -- the `p == nullptr` disjunct short-circuits first. Identical on every input.",
+    "7ed00397": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_dbl (line 173), which performs 218 of the 307 writes and never the last one.",
+    "7fb31ba4": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_char_array (line 207), which performs 1 of the 307 writes and never the last one.",
+    "8810378d": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_char_array's early-return assignment (line 204), on the same dead store.",
+    "98e64d18": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_dbl_array (line 193), which performs 59 of the 307 writes and never the last one.",
+    "9cb81ca4": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_log (line 184), which performs 2 of the 307 writes and never the last one.",
+    "9ce5dc9d": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_cpx (line 188), which performs 3 of the 307 writes and never the last one.",
+    "a3f002b9": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_dbl_array (line 193), which performs 59 of the 307 writes and never the last one.",
+    "a6d0416b": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_dbl (line 173), which performs 218 of the 307 writes and never the last one.",
+    "a8b2cb39": "`ErrStat` is used only as `ErrStat != 0`, so every non-zero value selects the same branch and no observable distinguishes -1 from -2. Site: the fopen-failure value (line 246), `(Un.f == nullptr) ? -1 : 0`.",
+    "af6f3fc1": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_log (line 184), which performs 2 of the 307 writes and never the last one.",
+    "c9d52c36": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_cpx (line 188), which performs 3 of the 307 writes and never the last one.",
+    "cfcf5bd9": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_cpx (line 188), which performs 3 of the 307 writes and never the last one.",
+    "d52b5888": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_log (line 184), which performs 2 of the 307 writes and never the last one.",
+    "d70c11a2": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_dbl (line 173), which performs 218 of the 307 writes and never the last one.",
+    "d9a3be72": "`len < 0 ? 0 : len` -> `len <= 0 ? 0 : len` and -> `len < 1 ? 0 : len` are the same edit twice: both differ from the original only at len == 0, and at len == 0 the original already yields 0. Identical on every int. (The THIRD mutant at this site, 33e6f4b8, changes the `0` RESULT rather than the boundary and is NOT equivalent -- it is declared unreachable.)",
+    "eac9d138": "`char buf[32]` -> `[33]` / `[32 + 1]`. The buffer is written only by `snprintf(buf, sizeof(buf), \"%ld\", n)`, whose longest possible output is 20 digits plus a sign plus a NUL = 22 bytes. Both widths hold every value of `long`, and `sizeof(buf)` moves with the declaration, so the string produced is identical for every input. The buffer is a local; its size reaches no output.",
+    "edbf85da": "`ErrStat` is used only as `ErrStat != 0`, so every non-zero value selects the same branch and no observable distinguishes -1 from -2. Site: wr_int's failure value (line 178).",
+    "fcdd492f": "`Stream::stat` is READ EXACTLY ONCE, at `ErrStat = Un.stat` (writerestartfile.cpp:576), after all 307 writes have run; the LAST of those writes is `wr_int(Un, objInst->instRL)`. Every assignment to `u.stat` from a helper other than `wr_int` is therefore overwritten before any read, on every path -- a dead store. Mutating its value or its predicate cannot change any observable. Site: wr_log (line 184), which performs 2 of the 307 writes and never the last one."
+  },
+  "equivalences_file": "mutation/WriteRestartFile.equivalences.json",
+  "equivalent_declared": 27,
+  "killed": 62,
+  "limit_per_operator": 40,
+  "loop_rev": "41d383f",
+  "merged_from": [
+    "mutation/WriteRestartFile.swap_arith_negate.json",
+    "mutation/WriteRestartFile.compare_op.json",
+    "mutation/WriteRestartFile.index_offset.0.json",
+    "mutation/WriteRestartFile.index_offset.1.json",
+    "mutation/WriteRestartFile.const_tweak.0.json",
+    "mutation/WriteRestartFile.const_tweak.1.json"
+  ],
+  "mutants": 105,
+  "nocompile": 0,
+  "nocompile_ratio": 0.0,
+  "nocompile_refused": false,
+  "operator_population": {
+    "arith_op": 2,
+    "compare_op": 16,
+    "const_tweak": 40,
+    "index_offset": 40,
+    "negate_cond": 6,
+    "swap_operands": 1
+  },
+  "operators": [
+    "arith_op",
+    "compare_op",
+    "const_tweak",
+    "index_offset",
+    "negate_cond",
+    "swap_operands"
+  ],
+  "oracle": "byte identity of every *.RO.chkp the checkpoint scenarios write, against a committed archive produced by a build whose WriteRestartFile was Fortran",
+  "reference_archive": "pre",
+  "scenarios": [
+    36,
+    37,
+    38,
+    39,
+    40,
+    41
+  ],
+  "score": 1.0,
+  "survived": 43,
+  "survivors": [],
+  "survivors_declared_equivalent": [
+    {
+      "after": "<=",
+      "before": "<",
+      "id": "d9a3be72",
+      "line": 135,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "7ed00397",
+      "line": 173,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "9cb81ca4",
+      "line": 184,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "9ce5dc9d",
+      "line": 188,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "98e64d18",
+      "line": 193,
+      "operator": "compare_op"
+    },
+    {
+      "after": "<",
+      "before": "<=",
+      "id": "648b0396",
+      "line": 203,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "0c79c900",
+      "line": 207,
+      "operator": "compare_op"
+    },
+    {
+      "after": "[32 + 1]",
+      "before": "[32]",
+      "id": "461a7bfd",
+      "line": 146,
+      "operator": "index_offset"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "111eaca9",
+      "line": 135,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "d70c11a2",
+      "line": 173,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "d52b5888",
+      "line": 184,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "4e023777",
+      "line": 188,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "4480fae4",
+      "line": 193,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "7fb31ba4",
+      "line": 207,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "33",
+      "before": "32",
+      "id": "eac9d138",
+      "line": 146,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "3633473b",
+      "line": 169,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "54a6e66f",
+      "line": 173,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "a6d0416b",
+      "line": 173,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "edbf85da",
+      "line": 178,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "fcdd492f",
+      "line": 184,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "af6f3fc1",
+      "line": 184,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "c9d52c36",
+      "line": 188,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "cfcf5bd9",
+      "line": 188,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "a3f002b9",
+      "line": 193,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "8810378d",
+      "line": 204,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "092db87d",
+      "line": 207,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "a8b2cb39",
+      "line": 246,
+      "operator": "const_tweak"
+    }
+  ],
+  "survivors_declared_unreachable": [
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "29564c50",
+      "line": 118,
+      "operator": "compare_op"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "id": "db84aaab",
+      "line": 287,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "id": "46e3e675",
+      "line": 296,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "id": "cf4cc996",
+      "line": 326,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[4 + 1]",
+      "before": "[4]",
+      "id": "ef1bbd99",
+      "line": 423,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[1 + 1]",
+      "before": "[1]",
+      "id": "1e348222",
+      "line": 297,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[1 + 1]",
+      "before": "[1]",
+      "id": "e7314f4a",
+      "line": 327,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "id": "543cfa0e",
+      "line": 341,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "id": "6207a3e1",
+      "line": 343,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[3 + 1]",
+      "before": "[3]",
+      "id": "5e555d11",
+      "line": 422,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[5 + 1]",
+      "before": "[5]",
+      "id": "da5d44aa",
+      "line": 424,
+      "operator": "index_offset"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "818543b1",
+      "line": 143,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "129",
+      "before": "128",
+      "id": "f3829a51",
+      "line": 153,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "7cb6d9d1",
+      "line": 183,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "f54f20fa",
+      "line": 203,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "33e6f4b8",
+      "line": 135,
+      "operator": "const_tweak"
+    }
+  ],
+  "total": 105,
+  "unit": "WriteRestartFile",
+  "unreachable": {
+    "1e348222": {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "reason": "the mutant writes LocalVar%FA_PitCom(3) where the reference writes LocalVar%FA_PitCom(2); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    "29564c50": {
+      "evidence": "evidence/WriteRestartFile/unreachable.hand.txt",
+      "reason": "the ErrMsg capacity refusal boundary: the two predicates differ only when the message length EQUALS n_ErrMsg_cap, and the capacity is LEN(ErrMsg)+4096 >= 4096 while the longest message this unit can build is 38+128+12 = 178"
+    },
+    "33e6f4b8": {
+      "evidence": "evidence/WriteRestartFile/unreachable.hand.txt",
+      "reason": "reached only when ftrim's `len` is NEGATIVE; its two call sites pass SIZE(avcOUTNAME), which cannot be negative, and the literal INFILE_LEN. At len == 0 the two agree, which is why the two sibling mutants at this site are declared EQUIVALENT instead"
+    },
+    "46e3e675": {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "reason": "the mutant writes LocalVar%FA_PitCom(2) where the reference writes LocalVar%FA_PitCom(1); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    "543cfa0e": {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "reason": "the mutant writes LocalVar%IPC_KI(2) where the reference writes LocalVar%IPC_KI(1); the two are byte-identical in all 195 reference checkpoints (VARIES), so no case in this corpus can distinguish them"
+    },
+    "5e555d11": {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "reason": "the mutant writes LocalVar%CC_DesiredL(5) where the reference writes LocalVar%CC_DesiredL(4); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    "6207a3e1": {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "reason": "the mutant writes LocalVar%IPC_KP(2) where the reference writes LocalVar%IPC_KP(1); the two are byte-identical in all 195 reference checkpoints (VARIES), so no case in this corpus can distinguish them"
+    },
+    "7cb6d9d1": {
+      "evidence": "evidence/WriteRestartFile/unreachable.hand.txt",
+      "reason": "reached only when a LOGICAL written by this unit is .TRUE.; both WriteThisStep and restart are const-zero across all 195 reference checkpoints, so the .TRUE. representation is compared zero times"
+    },
+    "818543b1": {
+      "evidence": "evidence/WriteRestartFile/unreachable.hand.txt",
+      "reason": "the I0.0 zero case: differs when NINT(Time/DT) is 0 or 1, and the corpus's 195 checkpoints carry indices 40 through 21560"
+    },
+    "cf4cc996": {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "reason": "the mutant writes LocalVar%PC_PitComT_IPC(2) where the reference writes LocalVar%PC_PitComT_IPC(1); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    "da5d44aa": {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "reason": "the mutant writes LocalVar%CC_DesiredL(7) where the reference writes LocalVar%CC_DesiredL(6); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    "db84aaab": {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "reason": "the mutant writes LocalVar%AzBuffer(2) where the reference writes LocalVar%AzBuffer(1); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    "e7314f4a": {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "reason": "the mutant writes LocalVar%PC_PitComT_IPC(3) where the reference writes LocalVar%PC_PitComT_IPC(2); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    "ef1bbd99": {
+      "evidence": "evidence/WriteRestartFile/unreachable.txt",
+      "reason": "the mutant writes LocalVar%CC_DesiredL(6) where the reference writes LocalVar%CC_DesiredL(5); the two are byte-identical in all 195 reference checkpoints (const-zero), so no case in this corpus can distinguish them"
+    },
+    "f3829a51": {
+      "evidence": "evidence/WriteRestartFile/unreachable.hand.txt",
+      "reason": "InFile's CHARACTER(128) truncation width: differs only when the composed name is exactly 128 characters, and the longest any scenario composes is 38"
+    },
+    "f54f20fa": {
+      "evidence": "evidence/WriteRestartFile/unreachable.hand.txt",
+      "reason": "wr_char_array's early return differs only at n == 1, an ACC_INFILE of extent one; the extent is 45 in all 195 reference checkpoints"
+    }
+  },
+  "unreachable_declared": 16,
+  "unreachable_file": "mutation/WriteRestartFile.unreachable.json",
+  "vit_rev": "d3a1e12",
+  "why_split": "105 mutants at ~16 s each (one rebuild of libdiscon.so plus six simulations) is 28 minutes; the Bash tool's foreground ceiling is 600 s, so the two 40-mutant operators are split in half and the four small ones share a call"
+}

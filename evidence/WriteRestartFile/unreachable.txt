@@ -1,0 +1,16 @@
+index_offset survivors declared UNREACHABLE, derived from 195 reference checkpoints in evidence/WriteRestartFile/chkp/pre
+
+  mutant   item                          off      off+8   differ
+  461a7bfd  NOT A DATA SITE -- char buf[32];
+  db84aaab LocalVar%AzBuffer(1)             236     244   0 of 195   [const-zero]
+  46e3e675 LocalVar%FA_PitCom(1)            304     312   0 of 195   [const-zero]
+  cf4cc996 LocalVar%PC_PitComT_IPC(1)       544     552   0 of 195   [const-zero]
+  ef1bbd99 LocalVar%CC_DesiredL(5)         1288    1296   0 of 195   [const-zero]
+  1e348222 LocalVar%FA_PitCom(2)            312     320   0 of 195   [const-zero]
+  e7314f4a LocalVar%PC_PitComT_IPC(2)       552     560   0 of 195   [const-zero]
+  543cfa0e LocalVar%IPC_KI(1)               664     672   0 of 195   [VARIES]
+  6207a3e1 LocalVar%IPC_KP(1)               680     688   0 of 195   [VARIES]
+  5e555d11 LocalVar%CC_DesiredL(4)         1280    1288   0 of 195   [const-zero]
+  da5d44aa LocalVar%CC_DesiredL(6)         1296    1304   0 of 195   [const-zero]
+
+All 10 pair(s) are byte-identical in every reference checkpoint. Each is a statement about the CORPUS: the same edit one field over, on rootMOOP, moves 195 of 195 files (evidence/WriteRestartFile/chkp_redtest.txt, the `moop`/`zmqpit` pair).

@@ -1,0 +1,67 @@
+SIX SURVIVORS DECLARED UNREACHABLE BY HAND, beside the ten
+scripts/chkp_unreachable.py derives.
+
+RUNBOOK: "A SCRIPT THAT RE-DERIVES A DECLARATION SET IS NOT PROOF AGAINST A HAND
+EXCEPTION BESIDE IT." These six are the hand exception, and they are here rather
+than folded into the script so that a reader counts them: 16 declared
+unreachable = 10 derived + 6 written down.
+
+Each is a claim about the CORPUS. The measured fact is given with the command
+that produces it.
+
+1. 29564c50   L118  `s.size() > ErrVar->n_ErrMsg_cap`  ->  `>=`
+   Differs only when the message length EQUALS the staging capacity.
+     capacity  vit_errorvariables_view.f90:35  VIT_DEFERRED_CHAR_HEADROOM = 4096
+               :67 / :74  the buffer is LEN(src%ErrMsg) + 4096, or 4096
+     message   "ROSCO_IO: Cannot open checkpoint file " (38)
+               + InFile (at most INFILE_LEN = 128)
+               + " for writing" (12)                     = at most 178
+   178 < 4096 on every call, so both predicates are FALSE on every input this
+   corpus supplies, and the capacity refusal is never taken. NOT declared
+   equivalent: `n_ErrMsg_cap` is a dummy field, and a caller that passed a
+   capacity of exactly 178 would separate the two. The one caller in the shipped
+   program is the wrapper `vit integrate` wrote in ROSCO_IO.f90, which populates
+   it from the view generator above.
+
+2. 33e6f4b8   L135  `len < 0 ? 0 : len`  ->  `len < 0 ? 1 : len`
+   Reached only when `len` is NEGATIVE. `ftrim`'s two call sites pass
+   `size_avcOUTNAME` -- Fortran `SIZE(avcOUTNAME)`, which cannot be negative --
+   and the literal `INFILE_LEN`. At len == 0 the two agree (both 0), which is
+   why the sibling mutants at the same site (111eaca9, d9a3be72) are declared
+   EQUIVALENT and this one is not.
+
+3. f54f20fa   L203  `n <= 0`  ->  `n <= 1`
+   Differs only at n == 1: an `ACC_INFILE` of extent one, i.e. a DISCON input
+   filename one character long. The extent is 45 in every reference checkpoint:
+     evidence/WriteRestartFile/layout.txt  "ACC_INFILE extent read from the
+     file: 45", and all 195 files lay out at the same total length.
+
+4. 7cb6d9d1   L183  `v ? 1 : 0`  ->  `v ? 2 : 0`
+   Reached only when a LOGICAL written by this unit is .TRUE. Both of them --
+   `LocalVar%WriteThisStep` at offset 28 and `LocalVar%restart` at offset 1737 --
+   are `const-zero` across all 195 reference checkpoints:
+     grep -E 'WriteThisStep|LocalVar%restart$' evidence/WriteRestartFile/layout.txt
+   THIS IS THE ONE WORTH SAYING OUT LOUD: gfortran writes 1 for a default
+   .TRUE., the translation writes 1, and NO CASE IN THIS CORPUS CHECKS THAT.
+   The `.FALSE.` half is compared 390 times (two fields x 195 files); the
+   `.TRUE.` half is compared zero times. It is carried into STATUS.md as a
+   named gap rather than buried here.
+
+5. 818543b1   L143  `if (n == 0)`  ->  `if (n == 1)`   (the I0.0 zero case)
+   Differs when NINT(Time/DT) is 0 or 1. The 195 reference checkpoints carry
+   indices 40 through 21560:
+     ls evidence/WriteRestartFile/chkp/pre/*.RO.chkp | sed -E 's/.*chkp[0-9]{2}//;s/\.RO\.chkp//'
+   A checkpoint at step 0 or 1 is admissible in the shipped program and this
+   corpus does not ask for one. Reaching it costs a scenario that requests a
+   checkpoint at i == 1, which re-takes every layer that reads the corpus.
+
+6. f3829a51   L153  `INFILE_LEN = 128`  ->  `129`
+   Differs only when the composed name is EXACTLY 128 characters, which is the
+   width at which `CHARACTER(128) :: InFile` starts truncating. The longest name
+   any scenario composes is 38 characters (scenario 41's
+   `vit_chkp41_nodir/vit_chkp41400.RO.chkp`); the longest actually written is 23.
+   Same shape as 5: reachable by a corpus with a ~110-character RootName, and
+   not by this one.
+
+NONE OF THE SIX IS A SURVIVOR THE CORPUS THEN KILLED -- if it were, the merge
+refuses (see scripts/chkpmutate_merge.py) and P12 fails the unit outright.
