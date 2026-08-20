@@ -1,0 +1,211 @@
+{
+ "unit": "ParseInput_Str_Opt",
+ "operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 0,
+  "scored": 52,
+  "of": 52
+ },
+ "scored_ids": [
+  "5a1796bc",
+  "a181078a",
+  "dac6e85c",
+  "1db4dd8f",
+  "ac0270ec",
+  "a940da7a",
+  "b45d25cd",
+  "e283125c",
+  "8e9145ac",
+  "cf34be07",
+  "ec07fd26",
+  "a2c34bdf",
+  "17d3deae",
+  "a2b9964b",
+  "4d525138",
+  "739190c8",
+  "7c36d46e",
+  "580e7372",
+  "406205f6",
+  "152c3c4c",
+  "9df9054d",
+  "0689925d",
+  "58fea4b0",
+  "d125a89b",
+  "a81a4e6a",
+  "5247dc31",
+  "9c1c4ec7",
+  "af4a0269",
+  "920580ba",
+  "b78ced53",
+  "59187809",
+  "1a28cd30",
+  "3c51517a",
+  "b2f9461d",
+  "e63d8d9d",
+  "d58d007d",
+  "79728ba9",
+  "a554ca3b",
+  "f5a26cf5",
+  "7678aa20",
+  "2e016d63",
+  "172d69be",
+  "fcee12bc",
+  "2ab3de85",
+  "674bd59b",
+  "7dfc1b08",
+  "ef22930a",
+  "9986b2cd",
+  "98421a91",
+  "3b23b326",
+  "8b83f1b6",
+  "c7d14e4a"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [],
+ "mutants": 52,
+ "equivalent_declared": 0,
+ "unreachable_declared": 0,
+ "unreachable": [],
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "sanitize": true,
+ "mutant_workers": 8,
+ "identity_verified": 52,
+ "killed_by_sanitizer": 9,
+ "killed_by_sanitizer_ids": [
+  "cf34be07",
+  "ec07fd26",
+  "a2c34bdf",
+  "17d3deae",
+  "d125a89b",
+  "3c51517a",
+  "7678aa20",
+  "3b23b326",
+  "c7d14e4a"
+ ],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 52,
+ "killed": 38,
+ "survived": 14,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "unreachable_but_killed": [],
+ "score": 0.7308,
+ "loop_rev": "b3ad414-nogit",
+ "gen_rev": "gen-abcc33e68d7c",
+ "vit_rev": "d6759d9-nogit",
+ "survivors": [
+  {
+   "id": "dac6e85c",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "1db4dd8f",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "a2b9964b",
+   "operator": "index_offset",
+   "before": "[Int2LStrLen]",
+   "after": "[Int2LStrLen + 1]"
+  },
+  {
+   "id": "4d525138",
+   "operator": "const_tweak",
+   "before": "2048",
+   "after": "2049"
+  },
+  {
+   "id": "739190c8",
+   "operator": "const_tweak",
+   "before": "200",
+   "after": "201"
+  },
+  {
+   "id": "7c36d46e",
+   "operator": "const_tweak",
+   "before": "11",
+   "after": "12"
+  },
+  {
+   "id": "9c1c4ec7",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "af4a0269",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "b78ced53",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "1a28cd30",
+   "operator": "const_tweak",
+   "before": "2",
+   "after": "3"
+  },
+  {
+   "id": "79728ba9",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "a554ca3b",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "ef22930a",
+   "operator": "negate_cond",
+   "before": "if (DEBUG_PARSING)",
+   "after": "if (!(DEBUG_PARSING))"
+  },
+  {
+   "id": "8b83f1b6",
+   "operator": "swap_call_args",
+   "before": "len_dst, len_src",
+   "after": "len_src, len_dst"
+  }
+ ]
+}
