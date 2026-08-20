@@ -3873,13 +3873,38 @@
         "DISCON"
       ],
       "dependency_depth": 3,
-      "verification": "kernel replay or direct-call harness; bit-identical",
+      "verification": "REVISED AT THE UNIT (C1). plan.json proposed 'kernel replay or direct-call harness; bit-identical'. The direct-call differential harness is what ran; kernel replay was not attempted. WHAT RAN, all four layers: (1) harness/PitchControl.json, 37,162 checked / 0 failed, against the CLEAN Fortran reference; (2) harness/PitchControl.postintegration.json, 37,162 / 0 against the INTEGRATED build (E4.5), with harness/PitchControl.postintegration.redtest.json failing 37,162 of 37,162 when this unit's own copy-back is deleted from its wrapper -- so the green measures the integration and not only the translation; (3) gate/PitchControl.json, 5,252,000 values / 351 channels / 27 scenarios / 0 mismatched, with FIVE red tests, every one reverting to 0; (4) mutation/PitchControl.json, 164 of 200 killed = 0.820, BELOW the 1.0 threshold with 36 survivors OPEN and none declared. THE CORPUS ITSELF TOOK A CORRECTION AT THIS UNIT and it is the reusable part: an R13 staging_capacity_excludes window measured PRE-integration does not transfer to the post-integration run, because the two chains gate in different places. The pre-integration chain goes through the scaffold's Fortran callee bridges (shortest first write 'interp1d:' + 29 = 38); the integrated chain goes through the translated C++ callees, each with its own assign_errmsg gate ('IPC:' is FOUR bytes, so 4 + 29 = 33). The window was pinned at [38, 114] from the pre-integration probe, the post-integration harness went red on exactly the five rungs between, and [33, 114] takes both to 0 failed -- predicted before the run, 82 ladder cases dropped and corpus 37,167 -> 37,162, measured exactly.",
       "why": "every input and output crosses the signature",
       "bridge_feasible": {
         "value": "unknown",
         "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
       },
-      "observability": null
+      "observability": "THE GATE SEES 22 OF THE 23 SCENARIOS THAT CALL THIS UNIT, MEASURED, AND THE 23rd IS AN OPEN QUESTION RATHER THAN A RESULT. Perturbing the always-run published output (avrSWAP[41] *= 1.000001) moved 1,300,588 of 5,252,000 across scenarios {1,2,3,4,5,6,7,8,9,11,12,15,16,17,18,19,20,21,22,25,26,27} -- every calling scenario except 23 (gate/PitchControl.redtest1.json). Scenario 23 is NOT a non-caller: RT4 killed it along with 22 others by forcing the open-loop block on, so it executes this routine and a 1e-6 perturbation of the blade-1 pitch demand moves none of its channels. Priced at one ~70 s probe forcing avrSWAP[41] to a constant far outside its range, and NOT taken. THE GATE SEPARATES ARMS: PA_Damping *= 1.000001 moved exactly {20, 27}, the only two scenarios with PA_Mode == 2, and nothing else (redtest2). THE IPC SATURATION ARM IS OUTSIDE THE GATE ENTIRELY: 'if (false && CntrPar->IPC_SatMode == 1)' moved 0 of 5,252,000 with all 27 scenarios alive (redtest5). The guard INVERSION that was predicted to establish this instead moved 177,425, because inverting a dead arm's guard makes it run rather than leaving it dead -- redtest3 is that refutation, kept. THE CORPUS'S PRINCIPAL BLINDNESS IS NAMED AND UNCLOSED: NO CASE RUNS THREE BLADES. LocalVar_NumBl had to be pinned as a lo/hi range because a 'values' list OOM-killed the generator, which drops it out of R6's ladder. Every 'K - 1' in this unit is inside 'for (K = 1; K <= NumBl; ++K)', and 'K - 1 -> 1 - K' IS THE IDENTITY at K == 1 -- which is 10 of the 36 mutation survivors, with 6 more being index_offset on DIMENSION(3) arrays, the class only --sanitize reaches. See evidence/PitchControl/mutation_survivors.txt.",
+      "disposition": "integrated",
+      "source_file": "rosco/controller/src/Controllers.f90",
+      "translation": "translations/Controllers/pitchcontrol.cpp",
+      "harness_required": true,
+      "evidence": [
+        "evidence/PitchControl/corpus_ceiling.txt",
+        "evidence/PitchControl/r13_window_probe.txt",
+        "evidence/PitchControl/gate.redtest_predictions.txt",
+        "evidence/PitchControl/gate.redtests.txt",
+        "evidence/PitchControl/wrapper_redtest_prediction.txt",
+        "evidence/PitchControl/mutation_survivors.txt",
+        "evidence/PitchControl/revcheck.txt",
+        "evidence/PitchControl/done_check.txt",
+        "harness/PitchControl.json",
+        "harness/PitchControl.postintegration.json",
+        "harness/PitchControl.postintegration.redtest.json",
+        "mutation/PitchControl.json",
+        "gate/PitchControl.json",
+        "gate/PitchControl.redtest1.json",
+        "gate/PitchControl.redtest2.json",
+        "gate/PitchControl.redtest3.json",
+        "gate/PitchControl.redtest4.json",
+        "gate/PitchControl.redtest5.json",
+        "translations/Controllers/pitchcontrol.cpp"
+      ]
     },
     {
       "order": 64,

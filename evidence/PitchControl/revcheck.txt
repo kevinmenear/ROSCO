@@ -1,0 +1,22 @@
+revcheck PitchControl: examined 1 unit, scanned 10 result artifact(s)
+    8f1b9cc            gate/PitchControl.json
+    8f1b9cc            gate/PitchControl.redtest1.json
+    8f1b9cc            gate/PitchControl.redtest2.json
+    8f1b9cc            gate/PitchControl.redtest3.json
+    8f1b9cc            gate/PitchControl.redtest4.json
+    8f1b9cc            gate/PitchControl.redtest5.json
+    8f1b9cc-nogit      harness/PitchControl.json
+    8f1b9cc            harness/PitchControl.postintegration.json
+    8f1b9cc            harness/PitchControl.postintegration.redtest.json
+    8f1b9cc-nogit      mutation/PitchControl.json
+  clean
+
+Taken 2026-08-20, host, after the last result artifact was written and before
+the disposition was set. Ten result artifacts, all naming loop 8f1b9cc.
+
+THE TWO `-nogit` STAMPS ARE NOT A SPLIT AND revcheck SAYS SO: it normalises
+the suffix, and the SHAs agree. The suffix means the stamping process could
+not run `git` at all -- both were run INSIDE the vit-dev container, which has
+no git. That is weaker than `-dirty` and reads as stronger, since revcheck's
+third question looks for `-dirty` specifically. Raised as an
+invalidating_finding rather than closed over here.

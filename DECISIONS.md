@@ -15444,3 +15444,104 @@ the translation restored to `85ad734d…` and cleared its marker. No orphan, no
 mutant left behind, and the sanitiser result is a NAMED GAP rather than a
 silence. Four reset windows, each closed before a commit. Ten commits, one per
 expensive artifact.
+
+## UNIT #63 -- PitchControl
+
+### A PRE-INTEGRATION R13 WINDOW IS A CLAIM ABOUT A CHAIN THE POST-INTEGRATION RUN DOES NOT HAVE
+
+This is the method-level lesson of the unit, and it is offered as a candidate
+amendment rather than made: the invariant layer is not edited here.
+
+    pre-integration    checked 37167  failed 0
+    post-integration   checked 37167  failed 5    cases 36992..36996
+
+Nothing about the translation changed between those two runs. The
+pre-integration harness links the scaffold's Fortran callee BRIDGES, one
+capacity gate each, so the shortest first write on that path is `interp1d:` +
+29 = 38. After integration the callees are the translated C++ interp1d / sigma
+/ IPC, each with its own `assign_errmsg` gate, and `IPC:` is FOUR bytes -- so
+composition starts writing at 33. The window was pinned at [38, 114] from the
+pre-integration probe and the true window is [33, 114].
+
+**The asymmetry is what makes it a method question.** The window is DERIVED on
+the cheap side and SPENT on the expensive one: widening it changes the corpus,
+and the corpus is what the mutation score was already taken against. Here that
+cost 5 cases of 37,167 and a mutation re-take this dispatch could not afford.
+A unit whose window is wrong by more would pay more.
+
+**The candidate amendment, not taken:** derive `staging_capacity_excludes` from
+the POST-integration chain, or require the R13 probe to be re-taken after
+integration before the pre-integration corpus is treated as final. Either
+reorders the cycle (C6 before C7 today), which is why it is the Driver's call.
+The cheap half is available immediately and is not an amendment: the
+post-integration harness should be run BEFORE the mutation sweep, not after,
+so a window correction costs a corpus regeneration and not a re-scored unit.
+
+### A GUARD INVERSION IS NOT A NEGATIVE CONTROL FOR A DEAD ARM
+
+Written into the campaign's red-test practice at cost. RT3 perturbed
+`IPC_SatMode == 1` to `!= 1` and predicted EXACTLY 0 on the grounds that the
+block "is dead in BOTH directions". It moved 177,425 values, because inverting
+a dead arm's guard does not leave it dead -- it makes the arm run on every call
+where the original condition was false, which is all of them.
+
+The prediction also said a non-zero "would mean the coverage data is wrong
+about this line". IT WOULD NOT, and that inference is the dangerous half: it
+would have indicted `coverage/line_coverage.json` for a defect that was in the
+perturbation. RT5 is the control that works and it is RUNBOOK's existing
+perturb-toward-ABSENCE instrument, recorded there for `Conv2UC`:
+
+    if (false && CntrPar->IPC_SatMode == 1)     0 of 5,252,000, 0 broken
+
+**The rule that generalises:** for a DEAD arm, perturb toward absence; for a
+LIVE arm, perturb toward a wrong value. An inversion is the wrong instrument
+for the first and a weak one for the second.
+
+### A NEGATIVE CONTROL CAN BE "CONFIRMED" BY A NUMBER THAT MEASURED NOTHING, AND `gate.py` IS WHAT CAUGHT IT
+
+RT4 predicted EXACTLY 0 and measured 0 -- over 468,000 values, not 5,252,000,
+because forcing `OL_Mode > -1000000` turned the open-loop override on and the
+three `interp1d` calls then read tables no scenario allocated. Twenty-three of
+27 scenarios DIED. `mismatched` counts VALUES, so `0` renders identically
+whether the denominator is 5,252,000 or 468,000.
+
+`scripts/gate.py`'s `perturbation_broke_scenarios` is the only thing between
+that and a recorded green, and it printed the diagnosis unprompted. It is worth
+more than the red test it invalidated, and it is the strongest argument in this
+campaign for the general shape: **a check that reports its own denominator.**
+
+### THE SURVIVORS ARE UNEXPLAINED AND THE SCORE IS 0.820, STATED PLAINLY
+
+36 of 200 survive; none is declared equivalent or unreachable. Ten sit on a
+corpus gap `harness/ranges.toml` named BEFORE the sweep ran (no case runs three
+blades, so `K - 1 -> 1 - K` is the identity at K == 1) and six more are
+`index_offset` on `DIMENSION(3)` arrays, the class only `--sanitize` reaches
+and the class whose score is not reproducible.
+
+**Declaring them was available and was refused.** P12 fails a unit outright
+when a declared-unreachable mutant is killed, so a declaration is a claim about
+what was PROVED. Nothing here was proved -- the shapes are consistent with the
+hypothesis and untested. `evidence/PitchControl/mutation_survivors.txt` carries
+the classification and prices the re-take. The re-take is required in any case:
+the corpus changed underneath the score.
+
+### A SURVIVOR LIST WITH NO LINE NUMBERS CANNOT BE ARGUED WITH
+
+`mutation/<Unit>.json` records `id`, `operator`, `before`, `after`. It does not
+record WHERE. Twelve of this unit's survivors are `const_tweak` on the literals
+`1`, `0` and `3`, and whether a given `1` is a blade index, an instance counter
+or a genuine constant decides which of the three dispositions it can take. The
+translation has ~20 sites matching `K - 1` alone. The mutator already knows
+where it cut. Raised as a `default_change_proposed`.
+
+### PROCEDURE
+
+The dispatch opened onto a mutation sweep the PREVIOUS dispatch had backgrounded
+and orphaned -- still running in the container with 8 workers, 1h29m in total.
+It was ADOPTED rather than restarted: blocked on in the foreground through the
+harness's own tracked background mechanism (which re-invokes, unlike a bare
+`docker exec &`), and its `mutate_guarded` marker cleared only after the .cpp
+hashed back to its intended value. Two reset windows, each closed before a
+commit. Nine commits, one per expensive artifact. Three findings raised, one of
+them a CORRECTION to a finding filed twenty minutes earlier whose verdict claim
+`revcheck` refuted.
