@@ -13343,3 +13343,128 @@ two hours left. The four steps are in
 `evidence/ParseInAry_Opt/mutation_survivors.txt`, including the warning that the
 six declarations must be **withdrawn before** that sweep (P12 fails outright on
 `unreachable_but_killed`), which makes the arithmetic to beat 135/135.
+
+## Unit #56 — ParseInput_Dbl_Opt — first dispatch — 2026-08-19
+
+**Disposition `deferred`, on P12 alone: 110 / (177 − 25 − 19) = 0.8271 against a
+threshold of 1.0.** Six other layers green and red-tested. Every artifact at
+loop `10afabe`.
+
+### THE SIBLING'S SIXTH-DISPATCH INSTRUMENT WAS TAKEN AT THE FIRST
+
+`vit_record = { compare_record = … }` — the entry unit #55 added at its sixth
+dispatch, after four dispatches in which nothing compared the PRINT record and
+a purpose-built 34-record side instrument found a real defect there on its
+first run — was written into `harness/ranges.toml` for this unit **before the
+corpus was generated**. It cost one paragraph and it bought:
+
+* 9,148 of 11,562 cases carrying a compared record on the first run, agreeing
+  byte for byte with gfortran's own;
+* a red test (`no-print`) that moves **exactly** those 9,148 and nothing else —
+  the sharpest shape a red test can have, the cell whose only oracle it is;
+* zero PRINT-region survivors. All 23 open mutants are in the parser.
+
+That is the whole point of an earned target layer: the sibling paid six
+dispatches for it and this unit paid a paragraph.
+
+### THE PRINT RECORD'S LAYOUT WAS DERIVED, NOT MEASURED, AND THAT WAS RIGHT
+
+Unit #54 measured gfortran's list-directed OUTPUT rules — one leading blank
+starts the record, a CHARACTER item is written raw, NO separator between a
+CHARACTER and a REAL that follows it, a 26-byte real field. This unit's record
+is a shape neither sibling has (a CHARACTER item followed by ONE scalar REAL,
+with nothing after it), and the layout was written from those rules rather than
+re-probed. **9,148 records of gfortran's own runtime agreed on the first run.**
+
+The reason to record this is that it is the opposite of the campaign's usual
+finding. `ParseInAry_Opt` §3 records that copying the sibling's SEPARATOR SET
+was a defect on three of 113 records — the item TYPE changed and the rule with
+it. Here the item type did NOT change (`REAL(DbKi)` both sides) and the derived
+layout held. **The discriminator is whether the rule is about the item type or
+about the record grammar**, and it is worth one sentence in the runbook rather
+than being rediscovered.
+
+### `--sanitize` BOUGHT 5 KILLS HERE AND 41 ON THE SIBLING, AND ONE DECLARATION
+### IS WHY
+
+The sibling's record is `Line`, a 2048-byte `std::vector<char>`, and
+`MaxLineLength` is exactly its size — so `rec[p]` → `rec[p+1]` reads one byte
+PAST the allocation and AddressSanitizer sees it. **This unit's record is
+`Words(1)`, the first 200 bytes of the 400-byte
+`CHARACTER(MaxParamLength) :: Words(2)` object, and byte 201 IS `Words(2)(1:1)`
+— the first character of the parameter name `FindLine` just matched.** The same
+edit reads a letter, inside the allocation, and no sanitiser can reach it.
+
+**Before pricing a sanitised sweep, ask what FOLLOWS the buffer in the
+reference's own storage association.** A record that is a whole object has a
+sanitiser boundary; a record that is one element of an array does not. The
+repair here is not a sanitiser flag but a second half in the search buffer:
+`evidence/ParseInput_Dbl_Opt/survivor_record_search.cpp` puts a real parameter
+name at byte 201 and turns the class into VALUE differences — 16 of 23
+survivors distinguished, all by a value, none by an address.
+
+### THE CORPUS LEVER THAT WAS MEASURED AND REFUSED, WITH THE PRICE
+
+Three of the 23 open survivors (`6a6668b2`, `d7f942e4`, `c06ced0a`) differ from
+the shipped translation ONLY in whether a transferred `0.0` is stored into
+`Variable`. `evidence/ParseInput_Dbl_Opt/harness_partition.txt` measures why
+they cannot be seen:
+
+    arm                        cases   Variable IN /= 0
+    read-ok                      174                  0
+    error, msg refused           211                  0
+
+**All 293 cases that reach the READ enter with `Variable == 0.0` exactly.** That
+is not chance: `harness/generate.py::_base` draws an unconstrained real at
+`lo + (hi - lo) * 0.5`, which on the ±1e3 default is exactly 0.0 — the one value
+at which "stored" and "not stored" agree.
+
+The lever is a stated range for `Variable` that is not symmetric about zero,
+e.g. `{ lo = -1e3, hi = 3e3 }`, which is a WIDENING rather than a narrowing (a
+`REAL(DbKi)` INOUT admits every finite double, so any stated range is a
+restriction and this one restricts less than the default). **It was refused on
+price, and the price is exact:** stating any range moves `Variable` out of
+`Signature.defaulted`, and R6's real ladder is applied "across the scalar real
+parameter(s) whose range is **defaulted** rather than declared". `Variable` is
+this unit's ONLY scalar real, so the pin deletes all **33 magnitudes** — the
+subnormal, flush-to-zero and overflow thresholds and a decade inside each
+region — to buy three mutants.
+
+**Escalated as a proposed generator change rather than taken:** the base draw
+and the ladder membership are decided by the SAME field (`bounds_source`), and
+they are two different judgements. A `base = <value>` key, or a `bounds_source`
+that records "stated, and still defaulted for the ladders", would let a
+campaign move the draw without giving up the ladder. Neither exists, and
+inventing one mid-campaign is X3.
+
+### THE 1,857,893 IS A CROSS-UNIT CONTROL NOBODY DESIGNED
+
+`ParseInAry_Opt`'s parsed-value gate red test moved **1,857,893 of 5,252,000
+across 147 of 351 channels**. This unit's — a different unit, a different item
+type, a different statement — moved **1,857,893 across 147**.
+
+That is not a copied number and it is not a coincidence: it says the gate's
+count for *any parsed control parameter is one greater* is set by WHEN each
+scenario first diverges and by which scenarios run long enough to be compared,
+not by which parameter moved. **Two independent runs agreeing to the value is a
+control on the gate's own determinism that neither unit could have produced
+alone**, and it is worth looking for whenever two units perturb the same class
+of quantity.
+
+### THE OPERATOR CAP IS THIS UNIT'S LARGEST UNSTATED NUMBER, AND THE MERGE
+### CANNOT EXPRESS THE FIX
+
+`cppmutate` offers 40 mutants per operator; this translation has 273 sites
+(`compare_op` 86, `const_tweak` 81, `negate_cond` 45). **92 mutants were never
+enumerated and their survival is UNKNOWN, not none** (P6).
+
+`vit_mutate.py --offset/--limit` can address the tail, and
+`scripts/_mutation_merge.py` checks a partition by ID rather than by count — but
+it asks `harness.cppmutate.mutants(unit, src)` for the population at the DEFAULT
+cap of 40, so a part scoring `compare_op` mutants 41..86 would be refused as
+naming ids the population does not contain. **The merge cannot express a
+full-population sweep today.** Named here rather than worked around; the one-line
+change is a `limit_per_operator=0` in `population_from_cppmutate`, and it belongs
+to the loop repo and to a dispatch that can re-take every unit's denominator at
+once, because a score over 273 and a score over 181 are two fractions with
+different denominators (unit #53's finding).

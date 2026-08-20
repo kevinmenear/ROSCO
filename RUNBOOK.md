@@ -8647,6 +8647,88 @@ its own copy, so the hazard `scripts/mutate_guarded.sh` exists for -- a hard
 kill leaving a live mutant in the .cpp, which has happened on three of three --
 cannot arise. Keep the guard: it still covers `--workers 1`.
 
+## BEFORE PRICING A SANITISED SWEEP, ASK WHAT FOLLOWS THE BUFFER IN THE
+## REFERENCE'S OWN STORAGE ASSOCIATION
+
+- **Unit #56, and it is the same operator on the same shape as unit #55's,
+  measured to opposite effect.**
+
+  ```
+  ParseInAry_Opt   READ (Line,*)      Line    CHARACTER(MaxLineLength)  2048
+                   rec = Line.data(), len = 2048, vector size 2048
+                   rec[p] -> rec[p+1] at p = 2047  ->  ONE PAST THE ALLOCATION
+                   --sanitize killed 41
+
+  ParseInput_Dbl_Opt  READ (Words(1),*)  Words  CHARACTER(MaxParamLength)(2)
+                   rec = Words.data(), len = 200, vector size 400
+                   rec[200] IS Words(2)(1:1)   ->  INSIDE the allocation
+                   --sanitize killed 5
+  ```
+
+  Twenty of unit #56's twenty-three open survivors are `rec[p]` -> `rec[p+1]`
+  or `p < len` -> `p <= len`. The RUNBOOK already says that class wants
+  `--sanitize`; what it did not say is that the flag only reaches it when the
+  record IS a whole allocation. A record that is one ELEMENT of a Fortran
+  array, or a substring, has a live neighbour rather than a redzone, and the
+  sanitiser is correct to say nothing.
+
+  **The repair is not a flag.** It is to give the SEARCH buffer the neighbour
+  the reference has: `evidence/ParseInput_Dbl_Opt/survivor_record_search.cpp`
+  allocates 400 bytes, puts the record in the first 200 and a real parameter
+  name in the second 200 -- which is exactly `Words(1)` and `Words(2)` -- and
+  16 of 23 survivors then differ by a VALUE, none by an address. Read the
+  DECLARATION, not the C++, to decide which case you are in: `Words(2)` and
+  `Line` are the same `std::vector<char>` in the translation.
+
+## A DERIVED RECORD LAYOUT HELD WHERE A COPIED SEPARATOR SET DID NOT, AND THE
+## DISCRIMINATOR IS ITEM TYPE AGAINST RECORD GRAMMAR
+
+- **Units #55 and #56, one rule each way.**
+
+  ```
+  #55  copied ParseDbAry_Opt's list-directed INPUT separator set
+       ';' belongs for REAL and not for INTEGER      WRONG on 3 of 113 records
+
+  #56  derived its list-directed OUTPUT record from ParseDbAry_Opt's measured
+       rules, for a shape neither sibling has (a CHARACTER item then ONE
+       scalar REAL, nothing after)                   RIGHT on 9,148 of 9,148
+  ```
+
+  Both are "the sibling's answer, reused". The one that broke is about the
+  **item type**, which is the declaration that changed; the one that held is
+  about the **record grammar** -- where the leading blank goes, whether a
+  separator appears between two items, how wide a field is -- which the item
+  type does not touch. **Before reusing a sibling's I/O rule, ask which of the
+  two it is**, and expect to re-measure only the first. The check costs
+  nothing when `vit_record = { compare_record = ... }` is on: the reference's
+  own record is the oracle on every case that writes one.
+
+## A PARTITION CELL THAT CANNOT BE SPLIT IS TWO BRACKETS WHOSE EXCESSES MUST
+## SUM, AND THAT IS STRONGER THAN TWO POINT PREDICTIONS
+
+- **Unit #56.** `harness_partition.txt` classifies by the arm the reference
+  took, read off the reference's own returned message. One cell resisted:
+  R13's short-capacity block makes the staging buffer refuse the message, so
+  the `.NOT. AllowDefault_` arm and the READ-error arm both come back as
+  `aviFAIL = -1` with the message the case arrived with, and neither writes a
+  record.
+
+  ```
+  error, msg refused   211 cases, split (A, B) unknown, A + B = 211
+
+  no-allowdefault-arm  PREDICTED [1845, 2056]   MEASURED 1937  ->  A =  92
+  no-read              PREDICTED [ 159,  370]   MEASURED  278  ->  B = 119
+  CONTROL              A + B = 211                              exact
+  ```
+
+  Two point predictions would each have been a guess about the split. Two
+  brackets are not: the interval is derivable from the table, and the SUM is a
+  number the table fixes before either run. **When a partition cannot resolve a
+  cell, predict brackets and state the identity their excesses must satisfy** --
+  it costs nothing, it is falsifiable, and it resolves the cell for free. Unit
+  #47's rule that two arm-scoped counts summing to a shared one is an
+  arithmetic control, run in the other direction.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
