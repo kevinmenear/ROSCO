@@ -4,11 +4,12 @@ Append-only record of *why*. Never read end to end.
 
 ## Unit #62 — ComputeVariablesSetpoints — 2026-08-20
 
-**Disposition `deferred`.** Translated, integrated, gate green at 5,252,000
-values with four red tests, differential harness green at 22,776 before AND
-after integration with a copy-back red test that moved every case — and
-mutation **0.8354** against a threshold of 1.0, with 13 open survivors. It
-defers on P12 and on nothing else.
+**Disposition `integrated`.** Translated, integrated, gate green at 5,252,000
+values with four red tests, differential harness green at 22,397 before AND
+after integration with a copy-back red test that moved every case, and mutation
+**1.0000 with ZERO open survivors** — 71 killed of 71 scoreable, 6 declared
+equivalent, 4 declared unreachable, `declared_but_killed` and
+`unreachable_but_killed` both EMPTY.
 
 ### AN `INTENT(IN)` VIEW ARGUMENT IS A CALLEE-BRIDGE PATH NOBODY HAD TAKEN
 
@@ -188,50 +189,108 @@ the bound is positive at the base draw and clears the unit's final `MAX`. Same
 0.8354, IDENTICAL survivor set. It bought nothing, so the physical +0.8 is what
 is committed and the probe is recorded rather than the sign.
 
+### THE MUTANT ID-TO-SITE MAP IS ONE CHARACTER, AND IT WAS WORTH HALF THE SCORE
+
+`vit_mutate.py` calls `mutants(args.unit.lower(), original)`. So
+`cppmutate._mid` reproduces the sweep's ids under the LOWERCASED unit name and
+under no other spelling: `_mid('ComputeVariablesSetpoints','compare_op','<',
+'<=',k)` reproduces nothing, `_mid('computevariablessetpoints',...)` reproduces
+all 81. Until that was found, a `const_tweak` survivor printed as
+`'0.0' -> '1.0'` could not be attributed to any of this translation's four
+`0.0` literals, and the dispatch was one paragraph from closing `deferred` at
+0.7342 with two provable equivalences left undeclared because declaring the
+wrong site fails P12 outright.
+
+**The habit, which is cheaper than the search that found it:** when a tool's
+ids will not reproduce, read the tool's own CALL to the id-generating function
+before reading the function. One line of `grep -n 'mutants('`.
+
+A PARTIAL workaround was used before that and is worth keeping for any tool
+whose ids cannot be reproduced at all: zip the ordered
+`[n/81] ... SURVIVED` lines from the sweep's own stdout against the ordered
+`SURVIVOR <id>` summary, after removing the declared-equivalent lines. It
+recovers every survivor whose printed text names an expression.
+
+### TEN PINS, AND THE SCORE IS A MEASUREMENT OF THE CORPUS AT EVERY STEP
+
+    0.7161   as generated, nothing declared
+    0.7342   + two dead-store equivalences
+    0.7973   + seven degenerate-range pins and iStatus = 0
+    0.8354   + CntrPar_VS_RefSpd UNPINNED again -- keeps both Region-3 arms
+    0.8800   + four more equivalences, from the recovered id-to-site map
+    0.8933   + LocalVar_WE_Vw pinned to the physical [3, 25] band
+    1.0000   + CntrPar_VS_MinOMSpd at 0.0, and four unreachable declarations
+
+`LocalVar_WE_Vw` killed exactly one mutant, and the mutant says why the pin was
+needed: the FIRST `lpfilter_c` call's `has_InitialValue` literal survived only
+because `WE_Vw`'s base draw was exactly `0.0`, so `InitialValue_ = InputSignal`
+and `InitialValue_ = InitialValue` were both `0.0`. The SECOND call's identical
+literal had been dying all along, because its `InputSignal` is
+`VS_RefSpd_TSR`. **An identical literal at two call sites, one killed and one
+not, is the corpus telling you which input it is holding constant.**
+
+### A PIN THAT KILLS FOUR AND BLINDS ONE IS A TRADE, AND IT HAS TO BE STATED
+
+`CntrPar_VS_MinOMSpd = { lo = 0.0, hi = 0.0 }` is instrumental: all 28 shipped
+files say 34.64286. The census measured `saturate`'s upper bound CLAMPING on
+all 1,154 cases of the `VS_FBP_Variable_Pitch` arm and then being ERASED on all
+1,154, because the unit's last statement is `MAX(VS_RefSpd, VS_MinOMSpd)` and
+the bound was always below it. At 0.0 the bound clears the clamp and four
+mutants die: the tie inside `fortran_max`, the bound's own two, and the arm
+selector.
+
+**AND IT BLINDS ONE, WHICH IS HOW THE TRADE WAS FOUND.** `f647c7b4` was going
+to be declared unreachable on the argument that the corpus cannot put
+`SS_DelOmegaF` and `VS_RefSpd` both at `-0.0`. The census, run to support that
+argument, REFUTED it: 1 case of 22,397 has exactly that. The mutant survives
+because `MAX(-0.0, 0.0)` and `MAX(+0.0, 0.0)` are both `+0.0` — erased by the
+pin that killed the other four. The declaration stands with the right reason
+instead of the flattering one, and `harness/ranges.toml` records the price.
+
+**This is the second time in this unit that writing the argument down before
+the measurement was what refuted it** — the gate's `else_arm` prediction was
+the first. Neither refutation cost anything except the run that produced it.
+
 ### RAISED FOR THE DRIVER
 
-1. **`vit_mutate.py`'s mutant ids cannot be reproduced from
-   `cppmutate._mid`.** `_mid('ComputeVariablesSetpoints', 'compare_op', '<',
-   '<=', k)` gives `b512bf09`, `b424866a`, `38d46d45` … for k = 0, 1, 2 while
-   the sweep's id is `f977278e`. Without the map, a `const_tweak` survivor
-   printed as `'0.0' -> '1.0'` cannot be attributed to a site, and this unit
-   therefore leaves TWO almost-certainly-equivalent mutants undeclared rather
-   than risk a false equivalence (which P12 fails outright). It is an
-   instrument fix that pays on every unit, not just this one. A workaround was
-   used here and it is worth writing down: zip the ordered
-   `[n/81] … SURVIVED` lines from the sweep's own stdout against the ordered
-   `SURVIVOR <id>` summary, after removing the declared-equivalent lines. That
-   recovers 12 of 21; it does not recover the `const_tweak` family, whose lines
-   print only the literal.
-
-2. **`translation-loop` has been carrying one untracked file,
-   `scripts/make_harness_guide.py`, since before this dispatch**, so every
-   result artifact this campaign now writes is stamped `<rev>-dirty`. Zero
-   modules import it, so it cannot have influenced any measurement, and all
-   nine of this unit's artifacts agree on `41d383f`. Both repairs — commit it,
-   or move it aside — change the loop rev or displace another dispatch's work,
-   and either would require re-taking all nine artifacts (~20 minutes). It is a
-   campaign-level call.
-
-3. **No rule bounds an `objInst` counter, and every unit that calls a filter or
+1. **No rule bounds an `objInst` counter, and every unit that calls a filter or
    a controller needs one.** `[RefSpeedExclusion]` pins `objInst_instRL` by
    hand and `[ComputeVariablesSetpoints]` now pins `instLPF` and `instRL` by
    hand. The bound is not a judgement: it is `DIMENSION(1024)` in
    `ROSCO_Types.f90`, readable from the declaration. A generator rule that
    bounds an integer parameter used as a subscript into a fixed-size member by
    that member's declared extent would remove a whole class of silent
-   reference-side memory corruption, and it would have saved this dispatch
+   REFERENCE-SIDE memory corruption, and it would have saved this dispatch
    about forty minutes.
+
+2. **`interp1d` has no answer at a NaN abscissa, and this is the FIRST unit to
+   reach it — but it is not the last.** All three of its branches test `xq`
+   with `<=` or `>=`, so a NaN falls through every one and the function result
+   is never assigned. Eleven of this campaign's units call `interp1d`. This one
+   removed the class by pinning `iStatus` so the upstream `LPFilter` cannot
+   manufacture the NaN; a unit whose NaN comes from somewhere else will need
+   the `no_oracle_when` entry the campaign has a slot for and no example of.
+   Worth fixing upstream: ROSCO's own `interp1d` returning an unassigned
+   function value is a defect in the reference, not only in the corpus.
+
+3. **`translation-loop` was carrying one untracked file,
+   `scripts/make_harness_guide.py`, when this dispatch began**, which stamped
+   every result artifact `<rev>-dirty` and cost P14. It was gone from that tree
+   by the time the final artifacts were taken — removed by something outside
+   this session — so every host-run artifact was re-taken at a clean `41d383f`
+   and every number reproduced exactly. Recorded because the SAME condition
+   will recur: an untracked file in the instrument repo silently hedges every
+   stamp the campaign writes, and nothing warns.
 
 ### PROCEDURE
 
-Three reset windows, each closed with `restore_integrated.sh` before any commit,
+Five reset windows, each closed with `restore_integrated.sh` before any commit,
 and the regenerated `vit_controlparameters_view.f90` re-applied by hand after
 each restore (the restore takes it back to HEAD, which the RUNBOOK records).
-Four scored mutation sweeps, every one foreground under `mutate_guarded.sh` and
-routed through `run_if_time_remains.sh`; every one restored the translation to
-`9db124ea…` and cleared its marker. Sixteen commits, one per expensive
-artifact, and the red-test predictions committed before their runs in both the
+Six scored mutation sweeps and four probe sweeps, every one foreground under
+`mutate_guarded.sh` and routed through `run_if_time_remains.sh`; every one
+restored the translation to `9db124ea…` and cleared its marker. Twenty commits,
+one per expensive artifact, and the red-test predictions committed before their runs in both the
 gate and the post-integration cases.
 
 **Four mutation sweeps and one forced re-take.** Reverting the seven trial pins

@@ -9476,6 +9476,82 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   unit's own final `MAX` — and measured IDENTICAL, so the physical value is
   what is committed and the probe is what is recorded.
 
+## WHEN A TOOL'S IDS WILL NOT REPRODUCE, READ THE TOOL'S CALL BEFORE READING THE
+## FUNCTION
+
+- **Unit #62, and it was worth half the mutation score.** `vit_mutate.py`
+  reports a survivor as `(id, operator, before, after)`. A `const_tweak`
+  printed as `'0.0' -> '1.0'` names no site, and this translation has FOUR
+  `0.0` literals — two of them provably unread (an `InitialValue` beside a
+  `has_InitialValue = 0`) and two on a statement the corpus could not test.
+  Declaring the wrong one is a false equivalence and P12 fails a unit outright
+  for one.
+
+  ```
+  cppmutate._mid('ComputeVariablesSetpoints', 'compare_op', '<', '<=', k)
+      b512bf09  b424866a  38d46d45 ...       reproduces NOTHING
+  vit_mutate.py:570   ms = mutants(args.unit.lower(), original)
+  cppmutate._mid('computevariablessetpoints', ...)   reproduces ALL 81
+  ```
+
+- **The rule.** One `grep -n 'mutants('` on the caller, before any reading of
+  the id function. And the fallback for a tool whose ids cannot be reproduced
+  at all: zip the ordered `[n/N] … SURVIVED` lines from the sweep's own stdout
+  against the ordered `SURVIVOR <id>` summary, after removing the
+  declared-equivalent lines — that recovers every survivor whose printed text
+  names an expression, which is everything except the constant operators.
+
+## AN IDENTICAL LITERAL AT TWO CALL SITES, ONE KILLED AND ONE NOT, NAMES THE
+## INPUT THE CORPUS IS HOLDING CONSTANT
+
+- **Unit #62.** Two `lpfilter_c` calls, each with the same
+  `..., &objInst->instLPF, 0, 0.0)` tail. The SECOND call's `has_InitialValue`
+  literal died in every sweep; the FIRST call's survived every sweep. The
+  difference is the InputSignal: `LPFilter` sets `InitialValue_ = InputSignal`
+  and overrides it only when the flag is set, so the flag is unobservable
+  exactly when `InputSignal` is already the value it would be overridden with.
+
+  ```
+  second call   InputSignal = VS_RefSpd_TSR   not zero   -> KILLED throughout
+  first  call   InputSignal = WE_Vw           base 0.0   -> SURVIVED
+  LocalVar_WE_Vw = { lo = 3.0, hi = 25.0 }               -> KILLED
+  ```
+
+- **The rule.** Two copies of one expression that score differently is the
+  cheapest corpus diagnostic there is, and it costs no run — it is already in
+  the sweep. Read the survivor list for PAIRS before reading it for shapes.
+  (The same asymmetry is what makes an equivalence declaration checkable: this
+  unit declares the dead store's two mutants and NOT the identical product one
+  screen down, which was killed.)
+
+## A PIN THAT KILLS FOUR AND BLINDS ONE IS A TRADE, AND THE CENSUS THAT
+## JUSTIFIES IT WILL SOMETIMES REFUTE IT
+
+- **Unit #62.** `CntrPar_VS_MinOMSpd` pinned at `0.0` rather than the shipped
+  `34.64286` kills four mutants, because the census had measured `saturate`'s
+  upper bound clamping on all 1,154 cases of its arm and then being ERASED on
+  all 1,154 by the unit's own final `MAX(VS_RefSpd, VS_MinOMSpd)`.
+
+- **AND IT BLINDS ONE, WHICH IS HOW THE TRADE WAS FOUND AT ALL.** A fifth
+  mutant was about to be declared unreachable on the argument that the corpus
+  cannot put two parameters at `-0.0` in the same case. The census run to
+  SUPPORT that argument refuted it:
+
+  ```
+  SS_DelOmegaF == -0.0            2 of 22,397
+  VS_RefSpd    == -0.0        7,852 of 22,397
+  BOTH in the same case           1        <- the argument was wrong
+  ```
+
+  The mutant survives because `MAX(-0.0, 0.0)` and `MAX(+0.0, 0.0)` are both
+  `+0.0` — erased by the pin that killed the other four. The declaration stands
+  with the right reason instead of the flattering one.
+
+- **The rule, and it is P10's shape for declarations:** run the census that
+  supports an `unreachable` declaration even when the argument seems airtight,
+  and PRINT THE COUNT THE ARGUMENT TURNS ON. A declaration whose stated reason
+  is false is worse than an open survivor, because nobody re-derives it.
+
 ## A CORPUS REPAIR THAT GOES RED IS NOT A FAILED REPAIR, AND THE RED IS USUALLY
 ## THE MORE INTERESTING HALF
 
