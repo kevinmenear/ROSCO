@@ -1,6 +1,6 @@
-# done_check.py ReadControlParameterFileSub -- captured 2026-08-20T21:55:27Z by scripts/capture_done_check.sh
+# done_check.py ReadControlParameterFileSub -- captured 2026-08-20T23:53:59Z by scripts/capture_done_check.sh
 
-Run against the committed state at 608c1e25 ("ReadControlParameterFileSub: four target-layer entries earned by this unit"), with a CLEAN tree, with stdout
+Run against the committed state at 2224620a ("ReadControlParameterFileSub: state current -- disposition `integrated`, on four layers and two red tests"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -16,11 +16,11 @@ Reproduce the reading below with no redirection:
 
     python3 scripts/done_check.py ReadControlParameterFileSub
 
-done_check exited 1 (0 only when COMPLETE).
+done_check exited 0 (0 only when COMPLETE).
 
 baseline (inferred): 4b3fa21  -- the commit before cf25af8 touched translations/ReadSetParameters/readcontrolparameterfilesub.cpp
 
-ReadControlParameterFileSub: Verdict.INCOMPLETE  (9/14 PASS)
+ReadControlParameterFileSub: Verdict.COMPLETE  (14/14 PASS)
 
 [  ok  ] P1   commits exist                      
 [  ok  ] P2   clean tree                         
@@ -30,10 +30,10 @@ ReadControlParameterFileSub: Verdict.INCOMPLETE  (9/14 PASS)
 [  ok  ] P6   functional commit                  
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
-[ FAIL ] P9   gate compared and matched          gate_unproven:no gate/ReadControlParameterFileSub.json
-[ FAIL ] P12  mutation score for this unit       mutation_missing:no mutation/ReadControlParameterFileSub.json
-[ FAIL ] P11  post-integration harness re-run    harness_not_rerun:no harness/ReadControlParameterFileSub.postintegration.json
-[ FAIL ] P13  evidence matches the contract      respecify_unscored:mutation_missing:no mutation/ReadControlParameterFileSub.json -- a reimplementation closes on a mutation score, not on the gate
+[  ok  ] P9   gate compared and matched          
+[  ok  ] P12  mutation score for this unit       155/155 mutant(s) killed, 17 declared equivalent, 35 declared unreachable
+[  ok  ] P11  post-integration harness re-run    13545 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      respecify: closed on a mutation score (the gate agreed, but did not decide)
 [  ok  ] P10  evidence reproducible              
-[ n/e  ] P14  artifact revisions agree           no configured artifact was readable at this commit
+[  ok  ] P14  artifact revisions agree           3 artifact(s) at 8e04515
 
