@@ -9,7 +9,7 @@ line's FIRST word into a **`CHARACTER(*), INTENT(INOUT)`** dummy with a Fortran
 `Int2LStr` (#10) — all already translated. Live in all 27 scenarios: **168 calls
 in total**, six call sites × 28 reads of the input file.
 
-**Disposition: `integrated`.** Eight layers ran, all eight green and red-tested,
+**Disposition: `integrated`.** Nine layers ran, all nine green and red-tested,
 and the mutation layer is at **39 / (50 − 5 − 6) = 1.0000** against a threshold
 of 1.0, with **no open survivors**, on the sanitised sweep and on the value
 oracle alike. First dispatch.
@@ -274,8 +274,18 @@ corrections are in the file rather than smoothed away:
 That cause is the corpus's `LEN(Variable)` ladder, `{1, 2, 6, 7, 11}`. **It is a
 claim about the CORPUS and not about the PROGRAM**, and the distance is large:
 every shipped caller passes 1024 or 256, so a corpus drawing the length from the
-shipped range would kill `739190c8` on records it already has. Raised in
-DECISIONS.md with the number that would justify the `generate.py` change.
+shipped range would kill `739190c8` on records it already has.
+
+**It was attacked before it was declared.** `lenvariable_levers.txt` enumerates
+the four levers this campaign owns — `ranges.toml`'s `lo`/`hi`, `same_as` and
+`text`, and a `baseline.<Unit>.json` state — each read out of the generator's
+source, and shows that none can put `LEN(Variable) >= 201` and a 201-character
+first word in the SAME case. The nearest miss is instructive: a baseline state
+CAN name the extent (unit #49's second-dispatch correction) and CANNOT name the
+string's bytes, and `_baseline_state` says so in its own comment. The only lever
+that reaches it is `generate.py`'s length ladder, which re-prices the gate for
+every unit already scored. Raised in DECISIONS.md with the number that would
+justify it.
 
 ## 6. C7–C9 — integration and the gate
 
@@ -368,6 +378,7 @@ written a red artifact indistinguishable from the right one (unit #26).
 | `run_harness_stub.sh` | runs one stub, hash-verified inside the container, `--no-generate` |
 | `line_coverage.txt`, `run_line_coverage_probe.sh` | gcov of the shipped translation under the corpus |
 | `parseinput_str_opt.boundary-probe.cpp`, `run_boundary_probe.sh`, `boundary_probe.txt` | the two width mutants measured at their site, and the two sentences the measurement refuted |
+| `lenvariable_levers.txt` | the four levers that could have KILLED `739190c8` instead of declaring it, each read out of the generator's source, and why none reaches it |
 | `make_unreachable.py` | derives the 6 `unreachable` declarations, refuses a stale coverage file, and refuses a site key that stopped matching |
 | `nocompile_ids.json` | empty, and the control is the sweep's own `nocompile: 0` |
 | `sweep_probe0.json`, `sweep_probe1.json` | the two undeclared sweeps, either side of the `char_assign` repair |

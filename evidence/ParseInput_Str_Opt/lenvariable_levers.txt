@@ -1,0 +1,120 @@
+ParseInput_Str_Opt -- could `739190c8` have been KILLED instead of declared?
+=============================================================================
+
+The campaign's own preference is to fix the inputs rather than the record: a
+mutation survivor is usually a narrow corpus, not a wrong translation. This file
+answers that question for the one declaration in this unit that is a claim about
+the CORPUS rather than about the PROGRAM, and it answers it by ENUMERATING the
+levers rather than by saying none was found (P10: naming the set is the other
+half of a claim built from an empty one).
+
+WHAT THE KILL WOULD NEED
+------------------------
+
+    739190c8   constexpr int MaxParamLength = 200  ->  201
+
+The constant reaches `char_assign(Variable, len_Variable, Words1, len_src)` as
+`len_src`, and is used there only in `i <= len_src` over `i = 1 .. len_Variable`.
+200 and 201 differ at exactly one index, `i = 201`. So a killing case needs BOTH
+of the following, IN THE SAME CASE:
+
+    (a)  LEN(Variable) >= 201
+    (b)  the 201st byte of Words(1) non-blank, i.e. a first word of >= 201
+         characters
+
+MEASURED, `boundary_probe.txt`: the corpus supplies (b) on 28 of 13,926 cases and
+(a) on none. `LEN(Variable)` over the corpus is `{1: 194, 2: 614, 6: 12503,
+7: 1, 11: 614}`.
+
+THE FOUR LEVERS THIS CAMPAIGN OWNS, EACH READ OUT OF THE SOURCE
+----------------------------------------------------------------
+
+1. `harness/ranges.toml` -- `lo` / `hi` / `values` on `len_Variable`
+
+   NOT APPLIED. `statevary.constrain` matches by parameter name across
+   `sig.params`, so the entry WOULD be recorded on the extent -- and
+   `generate._extent_plan` never reads `lo` or `hi`. It builds free extents
+   arithmetically:
+
+       sizes = [3 + bump + i for i in range(len(free))]
+
+   and only `fixed_extent` (a property of the TYPE), `held` (the state plan) and
+   `same_as` move that. This unit has six free extents, so `len_Variable` lands
+   at 6 and R6's string ladder is `sorted({1, 2, 6, 6 + 5})`.
+
+   This is unit #49's shape exactly -- "a judgement made, filed, and not
+   applied" -- and it is the reason to read `--dump-plan` rather than believe a
+   pin. Here the pin is not merely unread: there is no code path that could read
+   it.
+
+2. `harness/ranges.toml` -- `same_as`
+
+   Ties one extent to ANOTHER EXTENT OF THIS UNIT. All six of them come from the
+   same `3 + i` ladder, so the largest value any tie can produce is 8. It cannot
+   reach 201, and `_extent_plan` refuses a tie onto a fixed extent besides.
+
+3. `harness/ranges.toml` -- `text = "..."`
+
+   Pins a CHARACTER parameter's CONTENT, in EVERY case, and says nothing about a
+   length. It could in principle supply (b) for `FileLines` -- and it destroys
+   R6's character ladder rather than extending it, which is the entry's own
+   warning and which would turn other mutants into survivors to close this one.
+   It still does not supply (a).
+
+4. `harness/baseline.<Unit>.json` -- a state that names an extent
+
+   THE ONE LEVER THAT REACHES HALF THE PROBLEM, and unit #49's second dispatch is
+   what established it: a baseline state CAN name an extent, output extents
+   included, and `_case_impl` folds the override into `extents` before it fills
+   anything. So `len_Variable = 1024` is expressible and (a) is satisfiable.
+
+   (b) IS NOT, and the generator says so in its own comment.
+   `generate._baseline_state`:
+
+       if p.kind == "char[]":
+           # A string is left to the corpus: R6's character ladder owns it, and
+           # a unit whose admissibility depends on the BYTES of a string is one
+           # this convention would have to be extended for -- loudly, not by
+           # defaulting it to blanks here.
+           continue
+
+   A state can say a string's LENGTH and cannot say its BYTES. R11's cases would
+   therefore carry `LEN(Variable) = 1024` with `FileLines` drawn from R6's
+   ladder, whose strings are 1, 2, 8 and 13 characters long -- and the 28 cases
+   that DO carry a first word of 201 characters or more come from R14, at the
+   base draw, where `LEN(Variable)` is 6. The two halves never meet.
+
+   This unit also has no admissible baseline (`R11_one_at_a_time` reports
+   `no admissible baseline supplied`), so supplying one is a further judgement
+   about what "one predicate away from admissible" means for a parser -- and it
+   would not kill the mutant even if it were right.
+
+THE ONLY LEVER THAT REACHES IT, AND WHAT IT COSTS
+--------------------------------------------------
+
+`generate.py`'s own ladder:
+
+    lengths = ([ex0[ln]] if sig.by_name(ln).fixed_extent is not None
+               else sorted({1, 2, ex0[ln], ex0[ln] + 5}))
+
+Widening that top rung would put a long `LEN(Variable)` on the SAME cases R14
+already gives a 201-character first word, and `739190c8` would die on records the
+corpus already has.
+
+The RUNBOOK records the price: **a `generate.py` edit re-prices the gate**, and
+every unit already scored would have to be re-taken. One mutant on one unit does
+not justify that. What might: the ladder's top rung is `ex0 + 5` -- at most 11 --
+for EVERY string in EVERY unit of this campaign, while ROSCO's own CHARACTER
+parameters are 200, 256, 1024 and 2048 wide. Every buffer-width mutant in every
+remaining string-handling unit is in the same position as this one. Raised in
+DECISIONS.md with the units that will meet it.
+
+WHAT THIS FILE IS NOT
+---------------------
+
+It is not an argument that the mutant is equivalent. The two programs DO differ,
+on an input the unit's dummy admits and its shipped callers supply routinely
+(1024 and 256 are the lengths every real call passes). The declaration is
+`unreachable` -- a statement about this corpus -- and this file is the evidence
+that the statement is a corpus fact somebody tried to remove rather than a corner
+nobody looked at.

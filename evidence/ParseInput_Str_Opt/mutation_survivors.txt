@@ -113,8 +113,19 @@ corrections are in the file rather than smoothed away:
     would reach for is refuted by its own column, and ONE cause is left.
 
 That one cause is the corpus's `LEN(Variable)` ladder: `{1, 2, 6, 7, 11}`.
-`generate.py` builds a free string extent's lengths as
-`sorted({1, 2, ex0, ex0 + 5})`, and `char_assign` can only differ at `i = 201`.
+AND IT WAS ATTACKED BEFORE IT WAS DECLARED: `lenvariable_levers.txt` enumerates
+the four levers this campaign owns, each read out of the generator's source, and
+shows that none of them can put `LEN(Variable) >= 201` and a 201-character first
+word in the SAME case. `ranges.toml`'s `lo`/`hi` is recorded on the extent and
+never read (`_extent_plan` builds free extents as `3 + bump + i`); `same_as` can
+only reach 8; `text` says a string's content and not a length; and a
+`baseline.<Unit>.json` state can say a string's LENGTH but explicitly not its
+BYTES -- `_baseline_state` `continue`s on `p.kind == "char[]"` with a comment
+saying why.
+
+The only lever that reaches it is `generate.py`'s ladder itself, which builds a
+free string extent's lengths as `sorted({1, 2, ex0, ex0 + 5})` with `ex0 = 6`
+here, while `char_assign` can only differ at `i = 201`.
 **It is a claim about the CORPUS and not about the PROGRAM**, and the distance
 is large: every shipped caller passes 1024 or 256. A corpus drawing the length
 from the shipped range would kill `739190c8` on records it already has. Closing
