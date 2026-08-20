@@ -189,3 +189,19 @@ not assumed:
 So "IDENTICAL over all 149 bytes" is a real byte-level check of this unit's own
 list-directed formatting -- RT5 and RT4 both move it -- and it says NOTHING
 about the ~193 records that are missing from BOTH sides on this tree.
+
+RT1 RE-RUN AT 37 CASES, AND ITS COUNT IS NOW DERIVABLE
+======================================================
+
+  harness/ReadControlParameterFileSub.probe.redtest.json   failed 36
+
+36, not 37, and the one case that stays green is the explanation rather than a
+hole: `missing_required.IN`. Its parse fails, `IF (ErrVar%aviFAIL < 0) RETURN`
+fires, and the reference returns BEFORE
+
+    CntrPar%Y_Rate = CntrPar%Y_Rate * R2D
+
+so the perturbed statement never executes there. 36 = 37 - 1, the 1 is named,
+and the arithmetic is an independent confirmation of the early-return behaviour
+RT6 inferred from the surviving ErrMsg. Two red tests, from opposite
+directions, agreeing about where this unit stops.

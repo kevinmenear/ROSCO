@@ -1,0 +1,21 @@
+{
+ "unit": "ReadControlParameterFileSub",
+ "against": "the clean Fortran reference, in the same process",
+ "instrument": "standalone differential probe -- NOT the campaign's generated harness, which REFUSED this unit (evidence/ReadControlParameterFileSub/harness.plan-dump.the-file-is-neither-supplied-nor-compared.txt). One Fortran program calls the reference and the translation on the SAME real DISCON.IN and compares all 213 components of TYPE(ControlParameters) -- the comparison generated from the type definition itself -- plus ErrVar%aviFAIL and ErrVar%ErrMsg. The C++ side reaches its Fortran type through vit_view_in_controlparameters, the copy-back routine `vit integrate` never emits a call to.",
+ "cases": 37,
+ "fields_per_case": 215,
+ "checked": 7955,
+ "failed": 36,
+ "failed_counts": "differing FIELD reports, not cases",
+ "copyback_unallocated_vs_empty": 586,
+ "echo_bytes_identical": 149,
+ "cannot_see": "THE CORPUS VARIES NOTHING. 37 real DISCON.IN files are 37 points, not a corpus: no R2 flag ladder, no R5 shape pair, no R6 literal corpus and no R11 admissible state shapes them. RT2 measures what that costs -- a*(x*x) and (a*x)*x are indistinguishable over all 37, so the parenthesisation in VS_MinOMTq/VS_MaxOMTq is transcribed and untested. AND IT CANNOT BE MUTATION-SCORED: vit_mutate.py drives the generated harness's case file and its ./test, neither of which exists here, so P12 has no number for this unit. The echo comparison is 149 bytes and not 149 of ~15,000, because the ~193 per-parameter records belong to the Parse*_Opt callees and those five units are integrated and emit none.",
+ "loop_rev": "8f1b9cc",
+ "vit_rev": "426eef9",
+ "red_test": {
+  "perturbation": "RT1: s/CntrPar->Y_Rate = CntrPar->Y_Rate \\* R2D;/CntrPar->Y_Rate = CntrPar->Y_Rate;/",
+  "result": "36 of 7955 case(s) failed",
+  "why": "a harness whose green was never observed going red cannot be told from one that cannot fail"
+ },
+ "red_test_label": "RT1"
+}

@@ -24,10 +24,22 @@ CPP="translations/ReadSetParameters/readcontrolparameterfilesub.cpp"
 
 SEDX=""
 LABEL="baseline"
-if [ "${1-}" = "--red-test" ]; then
-    SEDX="${2:?--red-test needs a sed -E expression}"
-    LABEL="${3:?--red-test needs a label}"
-fi
+OUT=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --red-test) SEDX="${2:?--red-test needs a sed -E expression}"
+                    LABEL="${3:?--red-test needs a label}"; shift 2 ;;
+        # --out writes a RESULT ARTIFACT, not just a log. `revcheck` and the
+        # done-condition read JSON under harness/, mutation/ and gate/ and ask
+        # which instrument produced it; a probe whose only output is text is a
+        # measurement nothing can check the provenance of. Stamped with
+        # loop_rev and vit_rev by the campaign's own _harness_stamp.py rather
+        # than by a second reading of the same two repositories.
+        --out)      OUT="${2:?--out needs a path}"; shift ;;
+        *) echo "run_probe: unknown argument $1" >&2; exit 2 ;;
+    esac
+    shift
+done
 
 # The driver is GENERATED from ROSCO_Types.f90's own TYPE definition, every run,
 # so a component added there is compared without an edit here.
@@ -47,6 +59,7 @@ if [ -n "$SEDX" ]; then
         bash -lc 'cat > /tmp/probe/red.sed'
 fi
 
+RUNLOG="$(mktemp)"
 docker exec "$CONTAINER" bash -lc "
 set -e
 cd $WORK
@@ -97,5 +110,17 @@ for e in \$C/*_REF.RO.echo; do
         || echo \"  echo   DIFFERS inside the translation-written prefix\"
 done
 rm -f \$C/*.RO.echo
-"
+" | tee "$RUNLOG"
 echo "run_probe: $LABEL"
+
+if [ -n "$OUT" ]; then
+    python3 "$ROOT/evidence/ReadControlParameterFileSub/probe_artifact.py" \
+        "$RUNLOG" "$OUT" "$LABEL" "$SEDX"
+    if [ -n "$SEDX" ]; then
+        python3 "$ROOT/scripts/_harness_stamp.py" "$OUT" --pre \
+            --red-test "$LABEL: $SEDX"
+    else
+        python3 "$ROOT/scripts/_harness_stamp.py" "$OUT" --pre
+    fi
+fi
+rm -f "$RUNLOG"
