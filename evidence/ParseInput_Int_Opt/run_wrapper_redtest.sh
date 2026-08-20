@@ -20,17 +20,21 @@
 # a case fails iff the reference changed a scalar the copy-back is what
 # carries. That is the partition's `scalar-changed` column summed.
 #
-#   not-allowed                 1821
-#   error, msg refused           803
+#   not-allowed                 1843
+#   error, msg refused           901
 #                        ------------
-#   PREDICTED                   2,624 must FAIL
-#   the rest                    9,435 write no scalar and must PASS
+#   PREDICTED                   2,744 must FAIL
+#   the rest                    9,623 write no scalar and must PASS
 #                        ------------
-#                              12,059
+#                              12,367
 #
-# The two arms that write no scalar are `default-warned` (9,011 cases -- it
+# The two arms that write no scalar are `default-warned` (9,143 cases -- it
 # writes `Variable` and a stdout record, and neither crosses the view struct)
-# and `read-ok` (240). `pre-failed` (184) writes nothing at all.
+# and `read-ok` (296). `pre-failed` (184) writes nothing at all.
+#
+# MEASURED at the round-4 corpus: 2,744 failed, exactly. The table above has
+# been re-read from the partition at every corpus this unit has had (2,568 ->
+# 2,624 -> 2,676 -> 2,744) and the run has matched it every time.
 #
 # The count is NOT hardcoded on purpose -- it is read out of the partition each
 # time the corpus moves, exactly as the sibling does.
