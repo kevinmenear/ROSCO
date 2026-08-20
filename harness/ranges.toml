@@ -3050,3 +3050,85 @@ vit_record = { compare_record = "ROSCO_Helpers.f90:325 (clean baseline 54dd134) 
 [RefSpeedExclusion]
 
 objInst_instRL = { lo = 1, hi = 1000 }
+
+# THREE MORE PINS, ADDED AFTER THE FIRST MUTATION SWEEP, AND THE FIRST OF THEM
+# IS A DEFECT IN THE CORPUS RATHER THAN A JUDGEMENT ABOUT THE PROGRAM.
+#
+# `evidence/RefSpeedExclusion/inputs_census.txt` -- one `fprintf` over the
+# scored 3,967-case corpus, reading only the inputs:
+#
+#     CntrPar%WE_GearboxRatio == 0.0   in 3027 of 3967 cases   (76%)
+#     of those, VS_RefSpd == 0.0 too   in 2667
+#     CntrPar%TRA_ExclBand    == -600.0 in 2863                 (72%)
+#     CntrPar%TRA_ExclSpeed   ==  300.0 in 2863
+#
+# The unit's FIRST statement is `VS_RefSpd / WE_GearboxRatio`, so three quarters
+# of the corpus divided by zero -- 2,667 cases computing 0.0/0.0 = NaN and 360
+# computing an infinity -- and every comparison below then answers FALSE on both
+# sides, identically. That is not a red harness; it is a corpus that agrees about
+# nothing. And `TRA_ExclBand = -600` makes the exclusion interval
+# `(ExclSpeed + 300, ExclSpeed - 300)` -- EMPTY, in 2,863 further cases. This is
+# unit #47's `AWC_Mode = -600` finding met on a REAL rather than a mode selector:
+# `_base` puts an unstated parameter at `lo + (hi-lo)*frac` of the +/-1e3
+# default, and for these three that lands on the degenerate region.
+#
+# THE DOMAIN CLAIMS, from the shipped input files and the reference's own
+# documentation of each name (`Examples/DISCON*.IN`, 22 files):
+#
+#     97.0     ! WE_GearboxRatio  - Gearbox ratio [>=1],  [-]        22 of 22
+#     0.00000  ! TRA_ExclSpeed    - Rotor speed for exclusion [LSS, rad/s]   21
+#     0.8      ! TRA_ExclSpeed                                                1
+#     0.00000  ! TRA_ExclBand     - Size of the ... exclusion band [LSS, rad/s]  21
+#     0.1      ! TRA_ExclBand                                                 1
+#     0/1      ! TRA_Mode         - 0 = no tower resonance avoidance          21/1
+#
+# `[>=1]` is the reference's own bracket, not an inference. A rotor speed and the
+# SIZE of a band are both non-negative by what they are. The 21 files that carry
+# 0.0 have `TRA_Mode = 0` and never call this unit at all, so the ONE live
+# shipped configuration in this repository is `(TRA_ExclSpeed, TRA_ExclBand) =
+# (0.8, 0.1)` with `WE_GearboxRatio = 97.0`, and all three of those values are
+# in the lists below.
+#
+# `values` AND NOT `lo`/`hi`, AND THE REASON IS UNIT #40's TABLE. A range leaves
+# the parameter at ONE value (`_base`) in every case that no flag variant
+# reaches; `values` makes it a flag, so R6's ladders re-run under every one of
+# them. Here that matters because the band's EDGES are where this unit's
+# predicates live, and an edge is only reachable when `TRA_ExclSpeed`,
+# `TRA_ExclBand` and `WE_GearboxRatio` line up with a rung of `VS_RefSpd`'s own
+# ladder.
+#
+# THE FIRST ENTRY OF EACH LIST IS INSTRUMENTAL AND IT IS SAID PLAINLY. 1.0, 2.0
+# and 1.0 are not values any shipped file carries. They are chosen so that, at
+# `WE_GearboxRatio = 1`, `VS_RefSpd/WE_GearboxRatio` IS `VS_RefSpd`, and the
+# three quantities this unit compares it against --
+#
+#     TRA_ExclSpeed - TRA_ExclBand/2  =  0.0
+#     TRA_ExclSpeed                   =  1.0
+#     TRA_ExclSpeed + TRA_ExclBand/2  =  2.0
+#
+# -- are three values `VS_RefSpd`'s R6 ladder already contains exactly
+# (`evidence/RefSpeedExclusion/inputs_census.txt` lists all 194 of its rungs).
+# Five mutants of the first sweep survived on precisely these three equalities
+# and on the two `/ 2` literals, and no per-parameter WIDENING reaches them: the
+# kill needs an exact IEEE coincidence between a quotient of two free reals and
+# a sum of two more, which `harness/ranges.toml` has no relational entry for
+# (`implied_by` derives a 0/1 flag from a scalar test and cannot state this).
+# Choosing the constants so the coincidence exists is the lever that does.
+#
+# THE COST, STATED, AND IT IS NOT SMALL. All three leave R6's real-magnitude
+# ladder -- the subnormal, flush-to-zero and overflow thresholds and the decade
+# inside each region are gone from `TRA_ExclSpeed`, `TRA_ExclBand` and
+# `WE_GearboxRatio`, and so is negative zero on them. A defect that shows only at
+# an extreme magnitude of one of those three has nothing here to disagree with.
+# What keeps that from being blindness about the ARITHMETIC is that `VS_RefSpd`
+# and `TRA_RateLimit` keep their full ladders, so every quotient, product and
+# comparison in the unit is still swept from 5e-324 to 1e300 through the
+# dividend. What is genuinely gone is the divisor's own extremes.
+#
+# AND THE NEGATIVES ARE GONE, WHICH IS THE POINT: a negative `TRA_ExclBand`
+# inverts the interval and a negative `WE_GearboxRatio` flips the sign of every
+# comparison. Both are outside the domain the reference documents, and both were
+# the majority of the corpus.
+CntrPar_WE_GearboxRatio = { values = [1.0, 97.0] }
+CntrPar_TRA_ExclSpeed = { values = [1.0, 0.8] }
+CntrPar_TRA_ExclBand = { values = [2.0, 0.1] }
