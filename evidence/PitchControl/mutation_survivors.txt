@@ -1,0 +1,113 @@
+PitchControl -- THE 36 SURVIVORS, CLASSIFIED, AND WHAT WOULD MOVE EACH CLASS
+=============================================================================
+
+    mutants 200   killed 164   survived 36   nocompile 0   score 0.820
+    threshold 1.0, so this unit does NOT meet P12 and closes below it.
+
+NOTHING BELOW IS DECLARED EQUIVALENT OR UNREACHABLE. Every classification
+here is a HYPOTHESIS with a price attached. loop/done.py's P12 fails a unit
+outright when a declared-unreachable mutant is killed by the corpus, so the
+rule is to declare what was proved and not what is suspected -- and none of
+these has been proved. This file exists so the next dispatch does not have to
+re-derive the shape.
+
+  operator        n   shape
+  -------------   -   -----------------------------------------------
+  const_tweak    12   1->2 (8), 0->1 (3), 3->4 (1)
+  compare_op     11   > -> >= (10), >= -> > (1)
+  index_offset    6   [0]->[0+1] (3), [1]->[1+1] (2), [2]->[2+1] (1)
+  swap_operands   4   K - 1  ->  1 - K
+  arith_op        3   K - 1  ->  K + 1 (2); PC_PitComT + FA_PitCom -> - (1)
+
+THE ARTIFACT CARRIES NO LINE NUMBERS, which is why this is by shape and not
+by site. `mutation/<Unit>.json` records `id`, `operator`, `before`, `after`
+and nothing that locates the mutant in the file. That is a real limit on any
+survivor analysis and it is raised in .loop-run/findings.jsonl.
+
+CLASS 1 -- THE BLADE LOOP, 10 of 36, AND THE GAP WAS NAMED BEFORE THE SWEEP
+----------------------------------------------------------------------------
+Every `K - 1` in this unit sits inside
+
+    for (int K = 1; K <= LocalVar->NumBl; ++K)
+
+and `harness/ranges.toml` states, from a measurement taken BEFORE the sweep:
+
+    NO CASE IN THIS CORPUS RUNS THREE BLADES
+
+because `LocalVar_NumBl` had to become a `lo/hi` range rather than a `values`
+list -- the list OOM-killed the generator -- which drops it out of R6's ladder
+and leaves R7's predicate knob offering [0, 1, 2].
+
+    K - 1  ->  1 - K     IS THE IDENTITY at K == 1.
+    K - 1  ->  K + 1     differs at every K.
+
+So the four `1 - K` survivors are the exact shape a one-blade corpus cannot
+discriminate, and at K == 2 the same mutant indexes [-1] -- a read and a write
+the program does not own, which is the class the prompt says no value
+comparison reaches and `--sanitize` does.
+
+THIS IS A PREDICTION AND NOT A RESULT. It is consistent with all four, and it
+has not been tested.
+
+CLASS 2 -- index_offset, 6 of 36, THE SANITISER CLASS BY NAME
+--------------------------------------------------------------
+`[0]->[1]`, `[1]->[2]`, `[2]->[3]` on `LocalVar->PitCom`, `PitCom_SD` and
+`PitComAct`, all `DIMENSION(3)`. `[2]->[3]` is out of bounds outright. The
+others move a write to a blade a one-blade case never reads back.
+
+The prompt names this class explicitly: three identical runs over one such
+mutant scored 0.983, 1.000, 0.983, and the 1.000 is the run that measured
+least. So the six are not merely unexplained -- they are the shape whose
+SCORE IS NOT REPRODUCIBLE, and a re-take that does not use `--sanitize` will
+not settle them however long it runs.
+
+CLASS 3 -- compare_op, 11 of 36
+--------------------------------
+Ten `>` -> `>=` and one `>=` -> `>`: boundary mutants, alive because no case
+lands exactly ON the compared value. R6 draws decade boundaries and
+representable extremes, not the crossing point of each predicate. Unit #48's
+entry in RUNBOOK is the precedent in the other direction -- a margin of ONE
+case in 1131 -- so these are the class where a corpus one rung narrower
+reports a real difference as an equivalence.
+
+CLASS 4 -- const_tweak, 12 of 36
+---------------------------------
+`1->2` eight times, `0->1` three times, `3->4` once. Without line numbers
+these cannot be separated into literals that are blade indices (and so belong
+to class 1), literals that are instance counters, and literals that are
+genuine constants. The `3->4` is almost certainly one of the two hardcoded
+`3`s the translation's own comment at line 494 explains -- "the reference
+writes 3 literally -- 3 for the copies, `NumBl` for the loop" -- which is
+again the NumBl ceiling.
+
+WHAT TO DO NEXT, PRICED
+------------------------
+  1. THE CORPUS HAS ALREADY CHANGED. This score was taken over 37,167 cases;
+     the harness now runs 37,162 (the [33, 114] window correction). The five
+     dropped cases are green pre-integration, so the score is a measurement
+     over a strict SUPERSET -- but it is not a measurement of the corpus in
+     the tree, and P12 should be re-taken for that reason alone.
+
+  2. RE-TAKE WITH `--sanitize`.               ~1h29m plus sanitiser overhead
+     It is the only instrument that reaches classes 1 and 2, which are 16 of
+     the 36. Run it as `--operator`-filtered parts through
+     scripts/_mutation_merge.py so no part exceeds one foreground command,
+     and every part under scripts/mutate_guarded.sh.
+
+  3. A SANITISER BASELINE THAT REPORTS ON THE UNMUTATED TRANSLATION IS A
+     FINDING, NOT AN OBSTACLE, and `--sanitize` refuses to score through one.
+     Given class 2's shape, budget for that outcome.
+
+  4. GETTING NumBl TO 3 IS THE ONE CHANGE THAT WOULD MOVE THE MOST MUTANTS
+     and it is blocked on generator memory, not on judgement.
+     DECISIONS.md already prices the lever: `harness/generate.py`'s per-case
+     representation, `array.array('d')` instead of a list of float objects,
+     188 KB -> ~68 KB per case, with a decisive positive control available
+     (regenerate a sibling's corpus and require the .bin byte-identical).
+     That is its own dispatch because it re-prices every unit already scored.
+
+  5. ONLY THEN declare. Anything provable equivalent after that is provable
+     with reasons that can be disputed; anything provable unreachable needs
+     an evidence path that EXISTS, and `coverage/line_coverage.json` cannot
+     carry it -- it stores only non-zero hit counts, so "never ran" and
+     "never instrumented" are the same empty dict.
