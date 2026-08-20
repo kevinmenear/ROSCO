@@ -1,0 +1,142 @@
+RefSpeedExclusion -- ONE ANSWER PER SURVIVOR, and what 1.000 does not cover
+===========================================================================
+
+    36 mutants, 28 killed,  8 survivors   mutation/RefSpeedExclusion.undeclared.json
+                                          nothing declared, FIRST corpus (3,967)
+                                          score 0.7778
+    36 mutants, 33 killed,  3 survivors   mutation/RefSpeedExclusion.undeclared2.json
+                                          nothing declared, SECOND corpus (13,777)
+                                          score 0.9167
+    36 mutants, 33 killed,  0 open        mutation/RefSpeedExclusion.value-oracle.json
+                                          3 equivalent, 33/33 = 1.0000
+    35 mutants, 32 killed,  0 open        mutation/RefSpeedExclusion.json  (PRIMARY)
+                                          3 equivalent, 1 nocompile, 32/32 = 1.0000
+                                          --sanitize
+
+All four sweeps are committed. `declared_but_killed` and `unreachable_but_killed`
+are EMPTY in every one of them, `capped_operators` is `[]` (no operator reached
+cppmutate's 40-per-operator cap, confirmed by `scripts/mutation_cap_audit.py`,
+which does not list this translation), and `identity_verified` is 36 of 36 in
+all four -- every worker built the mutant it was handed.
+
+A. THE FIVE THAT WERE KILLED BY REPAIRING THE CORPUS, NOT DECLARED
+------------------------------------------------------------------
+
+    a6584ecf  compare_op    '>'  -> '>='   L69   the band's LOWER edge
+    b7b6ea0c  compare_op    '<'  -> '<='   L70   the band's UPPER edge
+    2316abdc  compare_op    '>'  -> '>='   L113  the snap direction, at the centre
+    b7564827  const_tweak   '2'  -> '3'    L69   the lower half-band's width
+    c47a891c  const_tweak   '2'  -> '3'    L70   the upper half-band's width
+
+Every one of these needs an input at or just inside a band EDGE, and the first
+corpus had none -- not because the edges are unreachable but because the corpus
+was not computing anything. `inputs_census.txt`, one `fprintf` over the scored
+3,967 cases:
+
+    CntrPar%WE_GearboxRatio == 0.0    3027 of 3967   the unit's first statement
+                                                     is `VS_RefSpd / that`
+      of those, VS_RefSpd == 0 too    2667           -> 0.0/0.0 = NaN
+    CntrPar%TRA_ExclBand    == -600   2863           -> the band is EMPTY
+    the in-band arm                     55 of 3967   1.4%
+
+`_base` puts an unstated real at `lo + (hi-lo)*frac` of the +/-1e3 default, and
+for these three parameters that lands on the degenerate region. Three quarters
+of the corpus divided by zero, every comparison below answered FALSE on both
+sides, and the harness was GREEN throughout -- which is what a corpus that
+agrees about nothing looks like.
+
+The repair is three `values` pins in `harness/ranges.toml`, justified from the
+reference's own documentation (`Gearbox ratio [>=1]`, a rotor SPEED, the SIZE of
+a band) and from all 22 shipped `Examples/DISCON*.IN`, with the instrumental
+half of the choice said plainly in the entry: `1.0`, `1.0` and `2.0` are picked
+so that at `WE_GearboxRatio = 1` the three quantities the unit compares
+`VS_RefSpd` against are `0.0`, `1.0` and `2.0` -- three rungs `VS_RefSpd`'s own
+R6 ladder already contains exactly.
+
+    in-band arm      55 of 3,967 (1.4%)  ->  4,752 of 13,777 (34.5%)
+    all five mutants alive              ->  all five dead, nothing declared
+
+WHY A WIDENING COULD NOT HAVE DONE IT. Three of the five need an exact IEEE
+equality between a quotient of two free reals and a sum of two more. No range in
+`harness/ranges.toml` states a relation over the reals -- `implied_by` derives a
+0/1 flag from a scalar test and is the file's only relational entry -- so the
+coincidence has to be CONSTRUCTED by choosing the constants, which is what the
+pins do. That is the finding this unit contributes, and it is written into
+DECISIONS.md as well as into the pin's own comment.
+
+B. THE THREE DECLARED EQUIVALENT
+---------------------------------
+
+Reasons in full in `mutation/RefSpeedExclusion.equivalences.json`. Each is a
+claim about the PROGRAMS, and each has a killed sibling on the same expression:
+
+    fa704b00  '>' -> '>=' at `if (LocalVar->FA_Hist > 0)`, L96, INSIDE the
+              restart block. FA_Hist is 0 or 1 here, so `>= 0` is always true;
+              on FA_Hist == 0 the mutant writes a snap value into
+              TRA_LastRefSpd that is READ BY NOTHING before the unconditional
+              `TRA_LastRefSpd = VS_RefSpd_TRA` overwrites it with the same value
+              the reference has.
+              CONTROL: 22e92983, the same operator on the same text at L134,
+              killed on 2,810 of 13,777.
+
+    1a7bfcb8  '1' -> '2' in `LocalVar->restart ? 1 : 0`. `ratelimit` tests its
+              `reset` for TRUTH in both configurations -- `(reset /= 0)` in the
+              generated bridge, `reset != 0` in the integrated C++.
+              CONTROL: 502c4a4d, the FALSE arm of the same ternary, killed.
+
+    96d44142  '0.0' -> '1.0' at the `ResetValue` VALUE slot, whose PRESENCE flag
+              is 0 at this call site, so the slot is never read.
+              CONTROL: 0f7554dc, the presence flag three characters away,
+              killed.
+
+C. WHAT 1.0000 DOES NOT COVER
+------------------------------
+
+1. **The 27-scenario gate reaches this unit through ONE scenario.** `TRA_Mode`
+   is 0 in 21 of the 22 shipped `Examples/DISCON*.IN`, and the call site is
+   under `IF (CntrPar%TRA_Mode > 0)`, so 26 scenarios never enter the unit at
+   all. Both positive gate perturbations moved only scenario 9's channels
+   (30,051 and 29,895 of 5,252,000, three channels each). Whatever this unit
+   does under a different tuning of the exclusion band, no gate scenario in this
+   repository exercises it.
+
+2. **The two snap-to-edge statements are DEAD IN THE PROGRAM.**
+   `ControllerBlocks.f90:793` and `:795` have zero hits in all 27 scenarios: the
+   one restart call scenario 9 makes arrives with `FA_Hist == 0`. The
+   differential harness is the only instrument that reaches them, at 22 and 823
+   cases, and `gate/RefSpeedExclusion.redtest.dead_snap_control.json` measures
+   the gate's blindness to them directly -- a 1.0e30 write on :793 moved 0 of
+   5,252,000.
+
+3. **`WE_GearboxRatio`, `TRA_ExclSpeed` and `TRA_ExclBand` have left R6's
+   real-magnitude ladder.** The pins that repaired the corpus took the subnormal,
+   flush-to-zero and overflow rungs and negative zero off those three. A defect
+   that shows only at an extreme magnitude of the DIVISOR or of the band has
+   nothing here to disagree with. `VS_RefSpd` and `TRA_RateLimit` keep their full
+   ladders, so the arithmetic is still swept from 5e-324 to 1e300 through the
+   dividend.
+
+4. **`WE_GearboxRatio` can no longer be zero or negative**, and the reference's
+   behaviour there (NaN, or an inverted band) is now outside the tested domain by
+   construction. That is a deliberate narrowing and it is the price of (A).
+
+5. **The upper snap arm is 22 cases of 13,777.** It is the thinnest cell in the
+   partition. One mutant (`3bd34bbe`) is killed on it and one stub measures it at
+   exactly 22, so it is not empty -- but it is one order of magnitude thinner
+   than its mirror at 823, for the arithmetic reason recorded in
+   `arm_partition.txt`.
+
+6. **One mutant of the 36 was never built under the sanitiser.** The primary
+   sweep records `nocompile: 1`; the value-oracle sweep built and killed all 36.
+   The union covers every mutant -- 33 killed by value, 3 declared -- but the
+   PRIMARY artifact's denominator is 32 and not 33, and that is stated here
+   rather than left to be inferred from two files.
+
+7. **`--sanitize` bought nothing, and that is an answer rather than a
+   disappointment.** `killed_by_sanitizer` is 0 and the survivor SET is identical
+   with the sanitiser on and off. This translation contains no array subscript
+   and no pointer arithmetic of its own -- the only indexing in the call chain is
+   `rlP%LastSignal(inst)` inside `ratelimit`, which is unit #43's code and is the
+   same implementation on both sides of every comparison here. The clean build
+   did not report under `-fsanitize=address,undefined`, which is the check that
+   would have been a finding.
