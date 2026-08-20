@@ -1,0 +1,24 @@
+ ROSCO Warning: Did not find PC_KP in input file.  Using default value of            0
+ ROSCO Warning: Did not find X in input file.  Using default value of            0
+ ROSCO Warning: Did not find  in input file.  Using default value of            0
+ ROSCO Warning: Did not find WE_Mode in input file.  Using default value of  -2147483648
+ ROSCO Warning: Did not find A in input file.  Using default value of   2147483647
+ ROSCO Warning: Did not find ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ in input file.  Using default value of            7
+
+The six records above are gfortran's own, from `print_record_probe.f90`. The
+SHIPPED translation's `print_default_warning`, driven over the same six cases by
+`print_record_probe.cpp`, produced a byte-identical file: 6 of 6 IDENTICAL.
+
+WHAT IS UNDER TEST is a record layout NEITHER sibling has -- unit #55 writes
+CHARACTER, an array of integers, then a CHARACTER; unit #56 writes CHARACTER
+then one REAL. This unit writes a CHARACTER item and ONE INTEGER with nothing
+after it, so the layout is DERIVED from unit #55's measured grammar rules (one
+leading blank starts the record; a CHARACTER item is written raw; there is NO
+separator between a CHARACTER item and an INTEGER that follows it; an INTEGER is
+a self-contained 12-byte field with no trailing blanks) and checked here rather
+than assumed. Case 4 is `-2147483648`, the widest value of the type at 11
+characters, which is the one that would show a wrong field width.
+
+The record is ALSO compared inside the primary layer on every case that reaches
+the arm (`harness/ranges.toml`, `vit_record = { compare_record = ... }`), so
+this probe is the cheap pre-corpus price and the harness is the oracle.

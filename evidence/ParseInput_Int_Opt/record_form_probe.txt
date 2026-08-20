@@ -1,0 +1,49 @@
+ParseInput_Int_Opt -- every record form this unit's corpus can contain,
+read by gfortran's own list-directed READ and by the SHIPPED translation's
+`list_read_ints`, out of the same 400-byte `CHARACTER(200) :: Words(2)`.
+
+The item is pre-set to -987654 on both sides, so an UNTOUCHED slot is
+distinguishable from a stored value -- which is the whole difference
+between the two failure kinds the INTEGER reader has.
+
+Every form is a WORD `GetWords` could produce: no blank, comma, semicolon,
+quote, '!' or tab, left-justified into a blank-padded 200-byte element.
+Forms admissible to the FUNCTION and not to the UNIT are excluded on
+purpose -- unit #56 recorded two survivors misread for exactly that reason.
+
+34 of 34 form(s) agree on (IOSTAT, value).
+
+  plain      ref iostat=0      value=42             got iostat=0      value=42             SAME
+  signed     ref iostat=0      value=42             got iostat=0      value=42             SAME
+  neg        ref iostat=0      value=-42            got iostat=0      value=-42            SAME
+  imax       ref iostat=0      value=2147483647     got iostat=0      value=2147483647     SAME
+  imaxp1     ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
+  imin       ref iostat=0      value=-2147483648    got iostat=0      value=-2147483648    SAME
+  iminm1     ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
+  zeros      ref iostat=0      value=42             got iostat=0      value=42             SAME
+  zerosbig   ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
+  realpt     ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
+  realexp    ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
+  trailing   ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
+  signonly   ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
+  dot        ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
+  word       ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
+  slash      ref iostat=0      value=-987654        got iostat=0      value=-987654        SAME
+  slashaft   ref iostat=0      value=7              got iostat=0      value=7              SAME
+  slashpre   ref iostat=0      value=-987654        got iostat=0      value=-987654        SAME
+  rep        ref iostat=0      value=7              got iostat=0      value=7              SAME
+  repone     ref iostat=0      value=7              got iostat=0      value=7              SAME
+  repzero    ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
+  repnull    ref iostat=0      value=-987654        got iostat=0      value=-987654        SAME
+  repceil0   ref iostat=0      value=7              got iostat=0      value=7              SAME
+  repceil    ref iostat=0      value=7              got iostat=0      value=7              SAME
+  repover    ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
+  repwide    ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
+  tailmax    ref iostat=0      value=2147483647     got iostat=0      value=2147483647     SAME
+  tailover   ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
+  tailrep    ref iostat=0      value=7              got iostat=0      value=7              SAME
+  tailstar   ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
+  nbdigit    ref iostat=0      value=2147483647     got iostat=0      value=2147483647     SAME
+  nbsign     ref iostat=0      value=2147483647     got iostat=0      value=2147483647     SAME
+  nbstar     ref iostat=0      value=7              got iostat=0      value=7              SAME
+  nbslash    ref iostat=0      value=2147483647     got iostat=0      value=2147483647     SAME

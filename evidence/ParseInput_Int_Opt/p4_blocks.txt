@@ -1,0 +1,12 @@
+P4 block check -- unit #57 ParseInput_Int_Opt
+  target  translations/ROSCO_Helpers/parseinput_int_opt.cpp
+
+  block                        bytes  sha256[:16]        source
+  ftrim                          168  89564d05f913d9f8   parseinput_dbl_opt.cpp  IDENTICAL
+  int2lstr_trimmed               144  6cb662f2ae533715   parseinput_dbl_opt.cpp  IDENTICAL
+  Sep .. parse_int              2190  ffb3a56566ae326f   parseinary_opt.cpp  IDENTICAL
+  list_read_ints                3855  22159e5560106f6b   parseinary_opt.cpp  IDENTICAL
+  field                          133  c5e8e5ad99ffde8e   parseinary_opt.cpp  IDENTICAL
+  list_directed_int              166  8e0ef600d4b6b948   parseinary_opt.cpp  IDENTICAL
+
+  6 blocks, 6656 bytes copied and hash-verified
