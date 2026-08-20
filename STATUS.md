@@ -5353,12 +5353,21 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-55 attempted / **48 integrated** / 0 integrated_unexercised / 0 out_of_scope /
-**6 deferred** (unit #29 `CheckInputs`, unit #31 `Debug`, unit #32 `FindLine`,
-unit #53 `IPC`, unit #54 `ParseDbAry_Opt`, unit #55 `ParseInAry_Opt`) /
+57 attempted / **51 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+**5 deferred** (unit #29 `CheckInputs`, unit #31 `Debug`, unit #32 `FindLine`,
+unit #54 `ParseDbAry_Opt`, unit #55 `ParseInAry_Opt`) /
 **1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 14 remain. 48 + 6 + 1 + 14 = 69.
+69 units in `plan.json`; 12 remain. 51 + 5 + 1 + 12 = 69.
+
+RECOUNTED at unit #57's second dispatch from `plan.json` with the one command
+below, not incremented. It was **two units stale** — it read
+`55 / 48 integrated / 6 deferred / 14 remain`, so neither unit #53 `IPC`'s move
+out of `deferred` (it closed `integrated` at 99/99 = 1.000) nor unit #56
+`ParseInput_Dbl_Opt` was in it. The TENTH time, and the tenth time the unit
+that fixed it was not the only unit that broke it. This dispatch's own move --
+#57 from `deferred` to `integrated` -- is in the number above and is not the
+reason it was wrong.
 
 RECOUNTED at unit #55 from `plan.json` with the one command below, not
 incremented. It was **two units stale** — it read `53 / 4 deferred / 16 remain`,

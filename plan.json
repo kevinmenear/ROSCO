@@ -3521,16 +3521,18 @@
         "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
       },
       "observability": null,
-      "disposition": "deferred",
+      "disposition": "integrated",
       "evidence": [
         "evidence/ParseInput_Int_Opt/README.md",
         "translations/ROSCO_Helpers/parseinput_int_opt.cpp",
         "evidence/ParseInput_Int_Opt/p4_blocks.txt",
         "evidence/ParseInput_Int_Opt/record_form_probe.txt",
+        "evidence/ParseInput_Int_Opt/eol_admissibility_probe.txt",
         "evidence/ParseInput_Int_Opt/print_record_probe.txt",
         "harness/ParseInput_Int_Opt.json",
         "evidence/ParseInput_Int_Opt/harness_partition.txt",
         "evidence/ParseInput_Int_Opt/redtest_predictions.txt",
+        "evidence/ParseInput_Int_Opt/corpus_round4_predictions.txt",
         "evidence/ParseInput_Int_Opt/harness.noop-stub.json",
         "evidence/ParseInput_Int_Opt/harness.no-print-stub.json",
         "evidence/ParseInput_Int_Opt/harness.no-allowdefault-arm-stub.json",
@@ -3552,7 +3554,7 @@
         "harness/ParseInput_Int_Opt.postintegration.revert-verified.json",
         "evidence/ParseInput_Int_Opt/done_check.txt"
       ],
-      "disposition_note": "Integrated and gated: gate 5,252,000 values / 351 channels / 27 scenarios, 0 mismatched, with two revert-verified red tests; differential harness 12,199 / 0 pre- and post-integration, four stub red tests, two predicted exactly and two as brackets whose excesses sum to 845 exactly. DEFERRED on P12 alone: the mutation score is 96 / (143 - 37 - 8) = 0.9796 against a threshold of 1.0, with TWO open survivors that are ONE gap -- `is_eol` accepts CR and LF, which is live in unit #55's 2048-byte Line record and unreachable in this unit's GetWords word. The campaign's usual repair (delete the branch no input can take, write the proof) is blocked by the P4 relationship: the reader is a byte-for-byte copy of unit #55's. Three options in DECISIONS.md; none is this unit's to take.",
+      "disposition_note": "Integrated and gated at mutation 98 / (143 - 37 - 8) = 1.0000, ZERO open survivors, on both the sanitised sweep and the value oracle, with declared_but_killed and unreachable_but_killed both empty. Gate 5,252,000 values / 351 channels / 27 scenarios, 0 mismatched, with two revert-verified red tests reproducing the first dispatch exactly. Differential harness 12,367 / 0 pre- and post-integration; four stub red tests, all four predicted EXACTLY (12,140 / 9,143 / 1,935 / 1,062) with the arm-attribution identity A + B = 901 holding to the case on a fourth corpus; wrapper red test 2,744, predicted. THE TWO SURVIVORS THE FIRST DISPATCH DEFERRED ON ARE KILLED, NOT DECLARED. They were one gap -- no corpus this campaign had generated contained a CR or an LF byte, so the second disjunct of every `is_blank(rec[p]) || is_eol(rec[p])` scan had only ever been evaluated on one side -- closed by four R14 records (loop 8fa5440, plus the emit._cesc repair in b3ad414 that the first record byte in a coverage detail forced). The first dispatch's premise, that `is_eol` is reachable in unit #55's 2048-byte Line and not in this unit's GetWords word, is FALSE and the probe that shows it is evidence/ParseInput_Int_Opt/eol_admissibility_probe.txt: libgfortran treats a bare CR as a record terminator, so neither unit's record can hold one through the shipped READ, and `is_eol` is there because gfortran's INTERNAL list-directed READ treats both bytes as separators. No P4 reachability question arises and the decision raised for the Driver is withdrawn.",
       "source_file": "rosco/controller/src/ROSCO_Helpers.f90",
       "translation": "translations/ROSCO_Helpers/parseinput_int_opt.cpp",
       "harness_required": true
