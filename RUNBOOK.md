@@ -10499,3 +10499,154 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   NO-OP on a green artifact — it assumes `vit_harness.py` stamped it — so a
   green probe artifact must fill `loop_rev`/`vit_rev` itself; the first one
   written here came back with `loop_rev: None`.
+
+## A ROSCO OUTPUT FILE'S HEADER IS A WALL CLOCK, AND AN ORACLE OVER IT SCORES
+## 1.000 ON THE TIME OF DAY
+
+- **Unit #64, second dispatch, caught by a control and not by a baseline.**
+
+  ```
+  run at 18:10:17   echo_CPP.RO.echo  md5 136f51d7...
+  run at 18:10:18   echo_CPP.RO.echo  md5 a8f58664...
+  first sweep       207 of 207 KILLED, score 1.000
+                    96 of the 207 name `echo` as their ONLY channel
+  ```
+
+  Line 2 of every `.RO.echo` and `.RO.dbg` is ` Generated on 20-Aug-2026 at
+  18:10:17 using ROSCO-2.10.1`, written through `CurDate`/`CurTime`. A mutation
+  driver that digests such a file and compares against a BASELINE digest is
+  comparing clocks: no mutant has to differ from the translation to die.
+
+  **A green baseline cannot catch this**, because the baseline is taken inside
+  the same run as the mutants. What catches it is one control — *two unmutated
+  runs across a second boundary, compared in every channel* — and it costs six
+  seconds. Run it before believing any new file-valued oracle.
+
+  The campaign's two existing file oracles are safe by two separate accidents
+  rather than by a shared guard: `dbgcheck.py` carries the header's regex
+  (line 66) and `WriteRestartFile`'s `.RO.chkp` is an unformatted stream with
+  no header at all. Mask the DIGITS of that one line rather than dropping the
+  line, so a mutant that changes the header's FORMAT still moves the digest.
+  Wrong artifact kept at `evidence/ReadControlParameterFileSub/
+  mutation.the-echo-channel-was-a-clock.json` (C12).
+
+  Second half of the same lesson: **the SET of output files is a channel too.**
+  The first sweep left 23 untracked `.RO.echo` files behind — in `Examples/`,
+  which the oracle was not looking at, and under names with trailing blanks —
+  written by mutants that perturbed the Echo flag or the RootName. A mutant
+  that writes a file the reference does not is a kill, and a sweep that leaves
+  files behind also dirties the tree `capture_done_check.sh` refuses on.
+
+## A UNIT WHOSE HARNESS REFUSED CAN STILL BE MUTATION-SCORED, AND THE DRIVER IS
+## ITS OWN PROBE
+
+- **Unit #64.** `vit_mutate.py` drives `<stem>_cases.bin` and `./test`, both
+  produced by the generated harness. When the harness refuses, the campaign's
+  answer is not "no P12": it is `dbgmutate.py`, `chkpmutate.py` and now
+  `scripts/rcpfsmutate.py`, each driving the instrument the unit does have.
+
+  ```
+  probe build + 63 cases            ~2.2 s      <- the whole oracle
+  213 mutants, value channels        750 s      three foreground --slice calls
+  54 survivors, -fsanitize=a,u       700 s      two foreground --only calls
+  chkpmutate's per-mutant cost      ~40 s       library rebuild + 5 simulations
+  ```
+
+  A probe that links only the unit's object, a shim and a driver is an order of
+  magnitude cheaper per mutant than anything that rebuilds `libdiscon.so`, and
+  that is what makes an exhaustive sweep affordable. Two consequences worth
+  copying: the mutant goes into the container **over stdin**, so the tracked
+  translation is never written and a hard kill cannot leave a mutant behind;
+  and the reference side is the FORTRAN inside the already-built library, so
+  the driver must refuse if the unit has since been integrated — `grep` the
+  reference file for the `_c` wrapper before scoring.
+
+## `vit integrate --copy-arrays` EXISTS NOW, AND IT NAMES ITS ARGUMENT BECAUSE
+## THE COPY-BACK DEALLOCATES FIRST
+
+- **Unit #64, vit@`29c2b71`.** The blocker that closed this unit `blocked` on
+  its first dispatch was one missing call. `vit_view_in_<type>(view, dest)` is
+  generated into every view module, is correct, and was called by no wrapper
+  VIT emitted; `--copy-arrays ARG[,ARG...]` emits it.
+
+  ```
+  IF (ALLOCATED(dest%X)) DEALLOCATE(dest%X)      <- every component, first
+  CALL C_F_POINTER(view%X, p, [n]) ; dest%X = p
+  ```
+
+  For a component the C side REPLACED, `view%X` is C-owned and this is right.
+  For one the unit never touched, `view%X` is still `C_LOC(dest%X)` from the
+  populate step — so the DEALLOCATE frees exactly what the C_F_POINTER then
+  reads. Emitting it for every view-typed INOUT argument would have done that
+  to this unit's `LocalVar` and `ErrVar`. **Which argument the unit PRODUCES is
+  a judgement the tool cannot make, so the flag asks for it.**
+
+  Opt-in rather than folded into `--reverse-copy` (X3), and the tool still says
+  nothing when a unit needs it — raised as a `default_change_proposed`.
+
+## A POST-INTEGRATION HARNESS IS RED-TESTED IN THE WRAPPER, NOT IN THE
+## TRANSLATION
+
+- **Unit #64.** After integration both sides run the same C++, so the only
+  thing a post-integration run can measure is marshalling — which means the
+  perturbation that proves it can go red has to be in the WRAPPER.
+
+  ```
+  delete `CALL vit_view_in_controlparameters(CntrPar_view, CntrPar)`, rebuild
+  predicted  3248 = 68 ALLOCATABLE components x 63 cases - 1036 both-unallocated
+  measured   3248
+  ```
+
+  The perturbed state is not hypothetical: it is exactly what `--reverse-copy`
+  alone produces, so the red test doubles as the measurement of what the new
+  flag buys. A second reading came free and was not designed for: post-
+  integration `COPYBK` is 0 where every pre-integration run reports 1,036,
+  because the copy-back turns an unallocated component into an allocated-empty
+  one. **When a red test's perturbation is "the tool's previous behaviour", the
+  red number IS the feature's value.**
+
+## A HOT RECORD BOUNDARY CAN DECIDE NOTHING, BECAUSE EVERY RECORD ENDS IN A
+## COMMENT
+
+- **Unit #64, and it is the corpus lesson worth carrying.**
+
+  ```
+  site 10  read_records CR strip   15,546 evaluations, 247 true
+  3dc20a1c `== '\r'` -> `!= '\r'`  SURVIVED  (pops the last char of EVERY record)
+  name_at_eol.IN: `1.570000000000      ! PC_MaxPit`   <- KILLED it
+  ```
+
+  Every line of every real `DISCON.IN` ends inside a trailing description, so
+  losing a record's last character loses a character of prose. The parser finds
+  a VarName as a SUBSTRING, so even a trailing `\r` left in place is invisible.
+  One file whose parameter line stops immediately after the name turns the
+  whole class of record-boundary mutants into kills — three of them, plus the
+  final-record flush when the same file also ends without a newline.
+
+  Generalisation: **when a site is hot and its mutants survive, ask what the
+  bytes AROUND the interesting byte are in every corpus file.** A count of
+  evaluations says the site runs; it does not say the input varies where the
+  site looks.
+
+## AN `unreachable` IS MEASURED PER SITE, BY A COUNTER, AND THE TWO ANSWERS IT
+## SEPARATES ARE DIFFERENT FINDINGS
+
+- **Unit #64.** `coverage/line_coverage.json` stores only non-zero hit counts,
+  so it cannot carry an `unreachable` claim at all. A census can, and it costs
+  one instrumented build:
+
+  ```
+  if (COND)  ->  if (VITCNT(k, COND))       evaluations AND true outcomes
+  site  5-8   assign_errmsg / errmsg_trim        0 evaluations   -> 14 mutants
+  site  9     establish(), already-allocated  3,183 / 0 true     ->  9 mutants
+  site 15     ftrim returned an empty view    163 calls / 0      ->  2 mutants
+  site 16     fassign with a 1-char source    15,594 / 0         ->  1 mutant
+  ```
+
+  `0 evaluations` (no case reaches the line) and `N evaluations, 0 true` (every
+  case holds it constant) are different findings about the corpus, and a
+  declaration that does not say which is a declaration nobody can attack. The
+  companion is a `corpus_facts.py` that measures the claims about the INPUT
+  FILES and, for each, **names the file that would refute it** — an unreachable
+  set with one common cause is a corpus gap wearing a declaration's name, and
+  the way to tell them apart is to say what would close it.
