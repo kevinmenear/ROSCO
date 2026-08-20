@@ -1,19 +1,46 @@
 ParseInput_Int_Opt -- a record that distinguishes each surviving mutant
 from the SHIPPED translation, searched rather than argued.
+
+THE LIST IT IS RUN OVER IS THE UNDECLARED SWEEP'S -- all 54 survivors of
+evidence/ParseInput_Int_Opt/sweep_probe0.json, before any equivalence or
+unreachable declaration was made -- and NOT the five that are still open in
+mutation/ParseInput_Int_Opt.json. That is deliberate: 37 of those 54 are now
+DECLARED EQUIVALENT, and the rows below are the measurement each of those
+declarations rests on. A declaration whose evidence file did not cover it
+would be an argument with nothing under it.
+
+Four of the 54 -- 08ce3b56, 17de888e, 9e4b76b0, cb35366f -- are KILLED in
+the scored artifact. Their rows are the reason: each named an ADMISSIBLE
+record the corpus did not contain, R14 gained it, and the sweep then killed
+exactly those four and nothing else.
 Built with -fsanitize=address,undefined; the BASELINE ran clean under
 those flags. The sanitiser is a GUARD here rather than the instrument:
 byte 201 of Words is Words(2)(1:1), so a read one past the record is
 inside the allocation and the difference it makes is a VALUE.
 
-RECORD SPACE: 51590 records. Every string of length 1..3 over
-  "0123456789+-.eEdDqQnNaAiIfFtTyYxX ,;/*()" at the HEAD of a 200-byte
-  blank-padded record and again at its TAIL, so the token's last character
-  is the record's last byte; plus 32 crafted full-width records. ONE
-  element is read -- the reference transfers one -- pre-set to the
-  -987.654 sentinel and printed as bits, so a stored 0.0 is
-  distinguishable from an untouched slot. The record lives in the first
-  200 bytes of a 400-byte object whose second half holds a parameter
-  name, which is what Words(1) and Words(2) are.
+RECORD SPACE: 51590 records, IN TWO PARTS, and the split is the
+point rather than a decoration -- unit #56 twice read a `differs` on a
+record `GetWords` cannot produce as a corpus lever.
+
+  ADMISSIBLE TO THE UNIT (tags HEAD, FULLADM, WORDADM). `GetWords` splits
+  on ' ,!;''" and TAB and copies the word LEFT-JUSTIFIED into a
+  blank-padded 200-byte element, so every record of this unit is
+  <word><blanks> with no interior blank, no comma and no semicolon
+  anywhere. Every string of length 1..3 over
+  "0123456789+-.eEdDqQnNaAiIfFtTyYxX/*" at the HEAD, plus 23 crafted
+  full-width 200-byte words and 29 named short words.
+
+  FUNCTION-ONLY (tag FUNCONLY). Right-justified tokens, and tokens
+  containing a blank, a comma or a semicolon. A difference here is a fact
+  about `list_read_ints` and NOT a corpus lever, because no input to
+  ParseInput_Int_Opt can put such a record in Words(1).
+
+ONE element is read -- the reference transfers one -- pre-set to the
+-987654 sentinel and printed as a decimal, so an UNTOUCHED slot is
+distinguishable from a stored value. That matters more here than on the
+REAL sibling: the INTEGER reader stores NOTHING on any failure. The record
+lives in the first 200 bytes of a 400-byte object whose second half holds a
+parameter name, which is what Words(1) and Words(2) are.
 
 WHAT A ROW MEANS. `differs` names the FIRST record on which the mutant's
 (iostat, element bits) triple differs from the shipped translation's --
