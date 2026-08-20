@@ -1,0 +1,46 @@
+VariableSpeedControl -- THE POST-INTEGRATION RED TEST, PREDICTED BEFORE IT WAS
+RUN
+================================================================================
+Unit #60, second dispatch, 2026-08-20. Written and COMMITTED before the red run,
+so the prediction is falsifiable rather than a reading of the result.
+
+THE PERTURBATION. One line deleted from this unit's own integration wrapper,
+`rosco/controller/src/Controllers.f90:429`:
+
+    CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+
+The wrapper has three copy-backs -- `CntrPar`, `LocalVar`, `ErrVar` -- and this
+is the one that carries every scalar the unit writes. `avrSWAP` does NOT go
+through it: it crosses directly as an assumed-size REAL(4) array, so the
+demanded generator torque at element 47 is written by the C++ either way, and
+`ErrVar%ErrMsg` has its own copy-back on the line below.
+
+WHY IT IS THE RIGHT LINE TO CUT. The differential harness compares 455
+out-parameters, and this deletion removes exactly one class of them from the
+program while leaving the unit's arithmetic, its callees and its `avrSWAP` write
+untouched. A red test that broke the build, or that moved every output, would
+not tell the two apart.
+
+THE PREDICTION, STATED AS A COUNT AND A SET.
+
+  * FAILED CASES: 46,836 of 46,836 -- every case. The unit's first two
+    statements are unconditional assignments to `LocalVar%VS_KOmega2_GenTq` and
+    `LocalVar%VS_ConstPwr_GenTq`, so there is no input on which the LocalVar
+    view comes back equal to what went in. The empty pass set, at the SAME case
+    count as the green (unit #26's rule).
+
+  * THE MISMATCHED OUTPUTS: `LocalVar.*` only. `avrSWAP` must stay IDENTICAL,
+    because it does not cross through the deleted call, and `CntrPar.*` and
+    `ErrVar.*` must stay identical because their own copy-backs are untouched.
+    If `avrSWAP` moves, the perturbation reached something it was not aimed at
+    and the test says nothing about the copy-back.
+
+  * AFTER THE REVERT: 46,836 checked, 0 failed, on a rebuilt library -- the same
+    numbers as `harness/VariableSpeedControl.postintegration.json`. A red test
+    whose revert is not verified has changed the tree rather than probed it.
+
+WHAT A DIFFERENT ANSWER WOULD MEAN. Fewer than 46,836 failures would mean some
+case does not observe the LocalVar scalars at all, which would be a statement
+about the corpus worth having. Zero failures would mean the post-integration
+harness is not reading the wrapper's outputs -- it would invalidate the green
+above it, not just this run.
