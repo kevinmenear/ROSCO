@@ -1,0 +1,43 @@
+WriteRestartFile is NEVER CALLED by the 27 gate scenarios, and this is the
+file that says so. Derived from coverage/line_coverage.json, which was
+generated from a clean build over all 27 scenarios (E2.3).
+
+  lines of rosco/controller/src/ROSCO_IO.f90 with ANY hit, in 29..367
+  (the routine's own extent in the clean source): 0
+
+  DISCON.F90, the region around the ONLY call site:
+    96  408000     CALL PreFilterMeasuredSignals(CntrPar, LocalVar, DebugVar, objInst, ErrVar)
+    97  ABSENT     ENDIF
+    98  ABSENT     
+    99  444000     IF (((LocalVar%iStatus >= 0) .OR. (LocalVar%iStatus <= -8)) .AND. (ErrVar%aviFAI
+    100  407976     IF ((LocalVar%iStatus == -8) .AND. (ErrVar%aviFAIL >= 0))  THEN ! Write restart 
+    101  ABSENT     CALL WriteRestartFile(LocalVar, CntrPar, ErrVar, objInst, RootName, SIZE(avcOUTN
+    102  ABSENT     ENDIF
+    103  407976     IF (CntrPar%ZMQ_Mode > 0) THEN
+    104  ABSENT     CALL UpdateZeroMQ(LocalVar, CntrPar, ErrVar)
+
+  DISCON.F90:99 is the enclosing guard and runs 444,000 times.
+  DISCON.F90:100 is `IF ((LocalVar%iStatus == -8) ...)` and runs 407,976
+  times. DISCON.F90:101 -- the CALL -- is ABSENT from the coverage file,
+  which for gcov means the line never executed.
+
+WHAT FOLLOWS. The gate compares baseline_arrays/scenario_N.npz, built from
+the avrSWAP channels the controller RETURNS. A unit that is never called
+contributes nothing to them, so gate/WriteRestartFile.json's 5,252,000
+values and 0 mismatched are TRUE and say nothing about this translation.
+This is a stronger statement than unit #31's `Debug`, where the gate ran
+the unit 408,000 times and read a different output stream.
+
+MEASURED, NOT INFERRED: gate/WriteRestartFile.redtest.json perturbs this
+unit and moves 0 of 5,252,000; gate/WriteRestartFile.control-
+variablespeedcontrol.json perturbs a DIFFERENT unit on the SAME BUILD and
+moves 1,552,676 -- reproducing unit #60's recorded count for that exact
+edit to the value.
+
+THE READING'S OWN CONTROL, because "ABSENT" is what a never-executed line and a
+non-executable line look like alike (RUNBOOK: a coverage file's own control line
+looks like a never-run line). In the SAME nine lines above, DISCON.F90:96 is
+also a CALL statement and it carries 408,000. So a CALL that runs appears in
+this file with a count; :101 does not appear, and :100 -- the `iStatus == -8`
+test immediately above it -- runs 407,976 times and is therefore FALSE on all
+407,976. The two facts agree.

@@ -1,0 +1,56 @@
+{
+  "against": "integrated",
+  "assembled_from": [
+    "evidence/WriteRestartFile/chkp.json"
+  ],
+  "bytes_compared": 89858535,
+  "campaign_rev": "9a792c96",
+  "checked": 706,
+  "failed": 0,
+  "files_compared": 195,
+  "generated_by": "scripts/chkpcheck.py (compare), summarised into this file",
+  "inadmissible": 0,
+  "instrument": "NOT the generated differential harness, and for a reason one step past unit #31's. `vit test-validate` compares a unit's MAPPED OUTPUTS: this unit assigns nothing in CntrPar or objInst and writes ErrVar only on its two I/O-failure arms, so the comparison set would be nearly empty. And both sides of such a harness would OPEN THE SAME PATH -- the filename is a function of the inputs -- so the second call would overwrite the first and the comparison would be of one program against itself. What is checked here is the unit's actual contract: the bytes of the checkpoint file it writes, and the ErrVar it hands back.",
+  "loop_rev": "41d383f",
+  "measures": "TWO STREAMS. CAN see: every one of the 460,813 bytes of every checkpoint, at the exact offset, with NO exemption -- an unformatted STREAM write emits no record marker, no header and no wall clock, so unlike unit #31 there is no line this instrument declines to compare; the SET of files written, which is how a perturbed filename dies; and ErrVar%aviFAIL and ErrVar%ErrMsg, which reach the driver through avcMSG and are printed on every checkpoint step. CANNOT see: any item whose neighbours hold the same value in every checkpoint -- 96 of the 307 written items are constant and ZERO across the corpus (evidence/WriteRestartFile/layout.txt), and 10 of the unit's 16 declared-unreachable mutants are exactly that; the .TRUE. representation of a default LOGICAL, because both logicals this unit writes are .FALSE. in all 195 checkpoints; a checkpoint index of 0 or 1, which is the only input that separates `I0.0` from `%d`; and a RootName long enough to reach CHARACTER(128)'s truncation. Each is named against the mutant that measures it in mutation/WriteRestartFile.unreachable.json.",
+  "red_tested": [
+    {
+      "bytes_mismatched": 467542,
+      "files_mismatched": 195,
+      "label": "logwidth",
+      "predicted": "195 files, length 460,807 against 460,813, first diff at offset 29",
+      "stdout_records_mismatched": 0,
+      "what": "wr_log writes one byte instead of four"
+    },
+    {
+      "bytes_mismatched": 891,
+      "files_mismatched": 195,
+      "label": "moop",
+      "predicted": "195 files, counted from the reference archive before the run",
+      "stdout_records_mismatched": 0,
+      "what": "LocalVar->rootMOOP[0] -> [1]"
+    },
+    {
+      "bytes_mismatched": 0,
+      "files_mismatched": 0,
+      "label": "zmqpit",
+      "predicted": "0, counted: the two are byte-equal in 195 of 195 reference checkpoints",
+      "stdout_records_mismatched": 0,
+      "what": "LocalVar->ZMQ_PitOffset[0] -> [1] -- THE NEGATIVE CONTROL"
+    },
+    {
+      "bytes_mismatched": 0,
+      "files_mismatched": 0,
+      "label": "avifail",
+      "predicted": "0 files and exactly 9 stdout records, scenario 41 having 9 checkpoint steps",
+      "stdout_records_mismatched": 9,
+      "what": "the Cannot-open arm sets aviFAIL = 2 -- THE SECOND STREAM'S OWN RED TEST"
+    }
+  ],
+  "red_tested_note": "Four perturbations, four counts stated BEFORE the run, four exact. The pair (moop, zmqpit) is the one that matters: the SAME edit -- an index shifted by one on a three-wide REAL(DbKi) field -- on the same build in the same run, 195 and 0. The zero is a measurement of the CORPUS, not of the instrument. The `avifail` row is why the stdout stream exists: it moves 0 files and 9 records, so without that stream the perturbation is invisible. And the mutation sweep is this instrument read as a red test 62 more times: 62 distinct wrong versions of the unit, each rebuilt into libdiscon.so and re-run over the six-scenario corpus, each moving at least one compared byte or record. mutation/WriteRestartFile.json.",
+  "stdout_bytes_compared": 131291,
+  "stdout_records_compared": 511,
+  "stdout_scenarios_compared": 6,
+  "unit_of_count": "checkpoint files + driver stdout records",
+  "vit_rev": "d3a1e12-dirty"
+}
