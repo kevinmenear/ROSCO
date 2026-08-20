@@ -2799,3 +2799,66 @@ has_AllowDefault = { values = [1, 0] }
 AllowDefault = { values = [0, 1] }
 vit_record = { compare_record = "ROSCO_Helpers.f90:807 PRINTs a warning record naming the parameter and the default array it substituted, and that record is the only thing that tells a user their input file did not supply the value. It crosses no dummy argument, so R4 never named it and no no_oracle could have excluded it -- the exclusion was structural. Five of this unit's six surviving mutants edit it and nothing else, and a 34-record replay built at the fourth dispatch kills all five; this makes the comparison the harness's own. The record's own defect (`value of [ ]` for a zero-length Ary) was found by that replay after four dispatches of evidence could not see the region." }
 Ary = { no_oracle_when = ["alloc_Ary == 0", "ErrVar_aviFAIL >= 0"], and_reference = "ErrVar.aviFAIL < 0", reason = "the reference ALLOCATEd Ary on this call and then RETURNed on an arm that assigns none of it (.NOT. AllowDefault_) or only a prefix (the READ error arm); those elements are recycled heap and a comparison against them decides nothing about either implementation. MEASURED ON THIS UNIT'S OWN CORPUS before this entry was written: 4,067 of 13,674 cases, classified in evidence/ParseInAry_Opt/harness_partition.txt -- 100% of both cells and 0% of the other five, and 0 Ary-failing cases outside the condition. The one-relation form excludes 4,233; the extra 166 arrived already failed and never entered the reference's body." }
+
+# ---------------------------------------------------------------------------
+# ParseInput_Dbl_Opt                                                 unit #56
+#
+# THE SCALAR MEMBER OF THE SAME GENERIC INTERFACE as `[ParseDbAry_Opt]` and
+# `[ParseInAry_Opt]` above. Two of the three entries below are those blocks'
+# word for word and the reasoning is not restated; what IS restated is the part
+# that had to be re-measured on THIS unit, because a reason copied without its
+# measurement is the shape unit #54 recorded as dangerous.
+#
+# WHAT THIS UNIT DOES NOT NEED, and it is the interesting half: there is no
+# `AryLen` (this member of the interface takes none, and `FindLine` is called
+# with its OPTIONAL argument absent, so the callee compares the SECOND word),
+# and there is NO `no_oracle` entry. `Variable` is a scalar `REAL(DbKi),
+# INTENT(INOUT)`, so it is DEFINED on entry on every path; the three ways
+# gfortran's list-directed READ leaves an item untransferred -- an END
+# condition, a null value, a `/` terminator -- leave it holding the CALLER's
+# value rather than the recycled heap that forced `Ary = { no_oracle_when =
+# ... }` on both siblings. Every one of this unit's outputs has an oracle on
+# every case.
+#
+# `UnEc = { lo = 0, hi = 0, values = [0] }` -- the echo WRITE is NOT
+# TRANSLATED, because `UnEc` is a Fortran UNIT NUMBER and C++ cannot reach the
+# Fortran runtime's unit table; the only record this side could write is one to
+# `fort.<UnEc>`, a different file. Unit #54's family decision, in DECISIONS.md,
+# and this is the THIRD of the five units carrying the identical statement.
+# `values = [0]` sits BESIDE the bounds and not instead of them, for unit #55's
+# reason: a parameter that states `values` is excluded from R14's `plant_ints`,
+# so the pin no longer deletes two thirds of that rule, while R6's integer
+# ladder and R7's knobs continue to see a pinned quantity.
+#
+# AND THIS UNIT'S OWN MEASUREMENT OF THE ARM. `coverage/line_coverage.json`
+# records ROSCO_Helpers.f90:268 (`IF (PRESENT(UnEc))`) 73 times per scenario in
+# 26 of the 27 scenarios and 146 in scenario 1, and :269 (`IF (UnEc > 0)
+# WRITE`) 71 -- so `UnEc` is PRESENT at 71 of the 73 calls and greater than
+# zero at none of them. That is a stronger reading than either sibling's: the
+# guard is not merely dead, it is EVALUATED 71 times per scenario and false
+# every time.
+#
+# `has_AllowDefault = { values = [1, 0] }` WITH `AllowDefault = { values =
+# [0, 1] }` -- one entry in two lines, present and false. Unit #55's base-draw
+# correction, taken up front here rather than after a survivor named it,
+# because it is not a narrowing: `flag_variants` rotates a flag's values by the
+# case index, so this moves only the BASE DRAW -- the cases R13, R6 and R14
+# take with everything else at rest -- and removes nothing from the crossed
+# population. Without it this unit's base draw lands on the arm that assigns NO
+# `ErrVar%ErrMsg` at all, and R13's 256-case staging-capacity ladder, which is
+# the only rule that can tell `s.size() > cap` from `s.size() >= cap`, would be
+# taken on cases that write no message. CHECKED ON THIS UNIT'S OWN CORPUS
+# rather than inherited: evidence/ParseInput_Dbl_Opt/r13_base_draw_probe.txt.
+#
+# `vit_record` -- the stream this unit WRITES is an output of the call. Same
+# statement unit #55 added at its sixth dispatch, and the same argument: the
+# record crosses no dummy argument, so R4 never named it and no `no_oracle`
+# could have excluded it; the exclusion was STRUCTURAL. It is taken here at the
+# FIRST dispatch, which is the whole point of the sibling having paid for it.
+# ---------------------------------------------------------------------------
+[ParseInput_Dbl_Opt]
+
+UnEc = { lo = 0, hi = 0, values = [0] }
+has_AllowDefault = { values = [1, 0] }
+AllowDefault = { values = [0, 1] }
+vit_record = { compare_record = "ROSCO_Helpers.f90:243 (clean) PRINTs a warning record naming the variable and the default value it substituted -- `PRINT *, \"ROSCO Warning: Did not find \"//TRIM(VarName)//\" in input file.  Using default value of \", Variable`. It is the only thing that tells a ROSCO user their input file did not supply the value, and it crosses no dummy argument, so R4 never named it and no no_oracle could have excluded it: the exclusion was structural rather than a judgement anybody made. Unit #55 measured what that costs -- five of its six surviving mutants edited its own record and nothing else -- and this unit takes the comparison at its first dispatch instead of at its sixth. The record is two items, a CHARACTER expression and one REAL(8), so it also exercises the CHARACTER-then-REAL separator rule that no array record can reach." }
