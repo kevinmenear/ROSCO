@@ -124,7 +124,8 @@ command went through `run_if_time_remains.sh` with an estimate and an explicit
 Bash `timeout`. TWO reset windows -- one for the harness attempt, one for the
 extraction, the latter opened and closed inside ONE command so a kill could not
 leave the campaign de-integrated -- and every commit taken outside them.
-Fourteen commits, one per expensive artifact. The last act before the hand-off
+One commit per expensive artifact; `git log 4d38a547..HEAD --oneline` is the
+count, so it cannot go stale. The last act before the hand-off
 was to re-run the gate on the tree being handed over: it rewrote
 `gate/VariableSpeedControl.json` BYTE-IDENTICALLY, so the committed artifact is
 reproducible from this tree.

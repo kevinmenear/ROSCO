@@ -1,6 +1,6 @@
-# done_check.py VariableSpeedControl -- captured 2026-08-20T08:38:46Z by scripts/capture_done_check.sh
+# done_check.py VariableSpeedControl -- captured 2026-08-20T08:40:26Z by scripts/capture_done_check.sh
 
-Run against the committed state at 90f4f069 ("VariableSpeedControl: state brought current for the kernel layer"), with a CLEAN tree, with stdout
+Run against the committed state at 577efeb2 ("VariableSpeedControl: correct two procedure counts in the state files"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
