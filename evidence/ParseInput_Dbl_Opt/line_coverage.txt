@@ -1,5 +1,5 @@
 ParseInput_Dbl_Opt -- line coverage of the SHIPPED translation under the
-13,298-case differential harness corpus, measured by gcov over the
+13,802-case differential harness corpus, measured by gcov over the
 generated test's own object (the test #includes parseinput_dbl_opt.hpp).
 
   executable lines RUN      215
@@ -7,7 +7,7 @@ generated test's own object (the test #includes parseinput_dbl_opt.hpp).
   non-code lines            407
 
 CONTROL: the entry line's count must equal the case count.
-  L506  count=13298  void ParseInput_Dbl_Opt(char* FileLines, int n_FileLines, int len_File
+  L506  count=13802  void ParseInput_Dbl_Opt(char* FileLines, int n_FileLines, int len_File
 
 LINES NEVER EXECUTED:
 

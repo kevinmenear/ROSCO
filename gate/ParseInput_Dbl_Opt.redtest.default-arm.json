@@ -6,14 +6,11 @@
  "comparison_verdict": "PASS",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "10afabe",
+ "loop_rev": "18fd7f2",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
- "notes": [
-  "the DEFAULT arm: the value substituted when FindLine does not find the parameter. PREDICTED EXACTLY 0 of 5,252,000 before the run, from coverage/line_coverage.json -- ROSCO_Helpers.f90:236 (IF (.NOT. FoundLine)) has 73 hits per scenario and :239-:243, the whole not-found arm, has NO counter at all. DISCON.IN supplies every parameter this unit asks for, so FoundLine is TRUE at all 73 calls. The control on the same build is the parsed-value red test, which moves 1,857,893."
- ],
  "perturbation": {
   "file": "rosco/controller/src/parseinput_dbl_opt.cpp",
   "from": "*Variable = 0;",

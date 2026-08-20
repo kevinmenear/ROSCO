@@ -224,61 +224,61 @@
   "negate_cond"
  ],
  "mutants": 179,
- "equivalent_declared": 20,
+ "equivalent_declared": 26,
  "unreachable_declared": 9,
  "unreachable": [
   {
    "id": "b3600517",
    "operator": "arith_op",
-   "reason": "parseinput_dbl_opt.cpp:478 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'epos + 1' to 'epos - 1' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_dbl_opt.cpp:478 is NEVER EXECUTED by any of the 13,802 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'epos + 1' to 'epos - 1' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt"
   },
   {
    "id": "276cc90e",
    "operator": "arith_op",
-   "reason": "parseinput_dbl_opt.cpp:479 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'epos + 2' to 'epos - 2' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_dbl_opt.cpp:479 is NEVER EXECUTED by any of the 13,802 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'epos + 2' to 'epos - 2' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt"
   },
   {
    "id": "720a57c6",
    "operator": "arith_op",
-   "reason": "parseinput_dbl_opt.cpp:486 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '3 - edig.size' to '3 + edig.size' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_dbl_opt.cpp:486 is NEVER EXECUTED by any of the 13,802 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '3 - edig.size' to '3 + edig.size' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt"
   },
   {
    "id": "4ed6f308",
    "operator": "index_offset",
-   "reason": "parseinput_dbl_opt.cpp:369 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_dbl_opt.cpp:369 is NEVER EXECUTED by any of the 13,802 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt"
   },
   {
    "id": "a868c389",
    "operator": "index_offset",
-   "reason": "parseinput_dbl_opt.cpp:370 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_dbl_opt.cpp:370 is NEVER EXECUTED by any of the 13,802 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt"
   },
   {
    "id": "4608a22a",
    "operator": "index_offset",
-   "reason": "parseinput_dbl_opt.cpp:480 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[0]' to '[0 + 1]' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_dbl_opt.cpp:480 is NEVER EXECUTED by any of the 13,802 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[0]' to '[0 + 1]' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt"
   },
   {
    "id": "f6e6c8b4",
    "operator": "const_tweak",
-   "reason": "parseinput_dbl_opt.cpp:366 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_dbl_opt.cpp:366 is NEVER EXECUTED by any of the 13,802 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt"
   },
   {
    "id": "d2da3b55",
    "operator": "negate_cond",
-   "reason": "parseinput_dbl_opt.cpp:370 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits \"if (p < len && rec[p] == ',')\" to \"if (!(p < len && rec[p] == ','))\" on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_dbl_opt.cpp:370 is NEVER EXECUTED by any of the 13,802 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits \"if (p < len && rec[p] == ',')\" to \"if (!(p < len && rec[p] == ','))\" on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt"
   },
   {
    "id": "57e5b976",
    "operator": "negate_cond",
-   "reason": "parseinput_dbl_opt.cpp:483 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (edig.size() > 3)' to 'if (!(edig.size() > 3))' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_dbl_opt.cpp:483 is NEVER EXECUTED by any of the 13,802 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (edig.size() > 3)' to 'if (!(edig.size() > 3))' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt"
   }
  ],
@@ -288,95 +288,30 @@
  "sanitize": true,
  "mutant_workers": 8,
  "identity_verified": 183,
- "killed_by_sanitizer": 8,
+ "killed_by_sanitizer": 10,
  "killed_by_sanitizer_ids": [
   "c5e9c0ad",
   "e2deb594",
   "b4813e56",
   "c3e3bb3c",
   "ec2c7596",
+  "2a6d08a0",
   "e8f0af08",
+  "f2c4abe0",
   "5a8abaea",
   "cecb591b"
  ],
  "nocompile_ratio": 0.0219,
  "nocompile_refused": false,
  "total": 183,
- "killed": 139,
- "survived": 11,
- "equivalent": 20,
+ "killed": 144,
+ "survived": 0,
+ "equivalent": 26,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.9267,
- "loop_rev": "18fd7f2-nogit",
- "gen_rev": "gen-3ce53f6a20b5",
+ "score": 1.0,
+ "loop_rev": "cc32476-nogit",
+ "gen_rev": "gen-c52c6a5ae482",
  "vit_rev": "d6759d9-nogit",
- "survivors": [
-  {
-   "id": "f13a04da",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "4198da25",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "209527b9",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "eba1c07e",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
-  },
-  {
-   "id": "575c6151",
-   "operator": "arith_op",
-   "before": "p + static_cast",
-   "after": "p - static_cast"
-  },
-  {
-   "id": "9c669e12",
-   "operator": "arith_op",
-   "before": "MaxRepeat + 1",
-   "after": "MaxRepeat - 1"
-  },
-  {
-   "id": "479d0b11",
-   "operator": "const_tweak",
-   "before": "200",
-   "after": "201"
-  },
-  {
-   "id": "8e796788",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "2cd50aab",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "ea396111",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "c62206c9",
-   "operator": "const_tweak",
-   "before": "5010",
-   "after": "5011"
-  }
- ]
+ "survivors": []
 }

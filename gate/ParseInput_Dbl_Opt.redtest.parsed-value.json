@@ -6,7 +6,7 @@
  "comparison_verdict": "FAIL",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "10afabe",
+ "loop_rev": "18fd7f2",
  "mismatched": 1857893,
  "mismatched_channels": [
   "scenario_3:bld_pitch 10334/16000",
@@ -159,9 +159,6 @@
  ],
  "missing_channels": [],
  "missing_scenarios": [],
- "notes": [
-  "every REAL(DbKi) control parameter this unit parses out of DISCON.IN arrives at the controller one greater -- gains, time constants, setpoints. PREDICTED > 1,000,000 of 5,252,000 and > 100 of 351 channels before the run."
- ],
  "perturbation": {
   "file": "rosco/controller/src/parseinput_dbl_opt.cpp",
   "from": "*Variable = value;",

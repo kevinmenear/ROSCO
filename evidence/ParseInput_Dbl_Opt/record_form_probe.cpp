@@ -77,6 +77,11 @@ int main() {
         {"repceil", "200000000*7", "Aa"},
         {"repover", "200000001*7", "Aa"},
         {"repzeros", std::string(195, '0') + "3*nan", "Aa"},
+        {"fracsig", std::string(185, '0') + "3*1.23456789012", "7E"},
+        {"expsig", std::string(193, '0') + "3*1.5e2", "7E"},
+        {"pointend", std::string(189, '0') + "200000000*-", ".7"},
+        {"over", "1" + std::string(199, '0') + "1", "7E"},
+        {"repone", "1*7", "Aa"},
     };
     for (const Form& f : forms) {
         // `CHARACTER(MaxParamLength) :: Words(2)` -- ONE 400-byte object. The

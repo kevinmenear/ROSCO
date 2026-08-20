@@ -32,7 +32,7 @@ PROGRAM record_form_probe
     INTEGER :: ios, i, n
     INTEGER(8) :: bits
 
-    DO i = 1, 25
+    DO i = 1, 30
         CALL form(i, label, lead, nb, n)
         Words(1) = lead(1:n)
         Words(2) = nb
@@ -98,6 +98,20 @@ CONTAINS
         ! live once the ceiling above rejects a wide count.
         CASE (25); lab = 'repzeros'; txt = REPEAT('0', 195)//'3*nan'
                    neigh = 'Aa'; ln = 200
+        ! Five more that use a repeat count behind leading zeros to move the
+        ! VALUE's start, so the value ENDS on the record's last byte with its
+        ! last digits still significant to a double. A 200-digit run cannot do
+        ! that: its trailing digits are past a double's precision, which is why
+        ! the plain `frac` tail leaves the fraction scan's guard alive.
+        CASE (26); lab = 'fracsig';  txt = REPEAT('0', 185)//'3*1.23456789012'
+                   neigh = '7E'; ln = 200
+        CASE (27); lab = 'expsig';   txt = REPEAT('0', 193)//'3*1.5e2'
+                   neigh = '7E'; ln = 200
+        CASE (28); lab = 'pointend'; txt = REPEAT('0', 189)//'200000000*-'
+                   neigh = '.7'; ln = 200
+        CASE (29); lab = 'over';     txt = '1'//REPEAT('0', 199)//'1'
+                   neigh = '7E'; ln = 201
+        CASE (30); lab = 'repone';   txt = '1*7'; neigh = 'Aa'; ln = 3
         END SELECT
     END SUBROUTINE form
 
