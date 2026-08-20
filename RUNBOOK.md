@@ -9787,3 +9787,57 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   **When a harness goes red on a NESTED callee-state block and the unit's own
   arithmetic is green, look at the bridge's argument list before the
   translation** — a member and its parent in the same call is the shape.
+
+## A LAYER NEARLY WRITTEN OFF ON A COST INHERITED FROM ANOTHER UNIT, AND THE
+## CHECK WAS ONE RUN
+
+- **Unit #60, second dispatch.** `revcheck` reported a BASE-SHA SPLIT the moment
+  this dispatch's harness and mutation artifacts moved to a new loop revision:
+  the four `gate/` artifacts were still where the FIRST dispatch took them. The
+  plan was to leave it as a stated gap, priced from IPC's `~290 s each` — four
+  runs plus three perturbations and rebuilds, half an hour that was not there.
+
+  ```
+  python3 scripts/gate.py VariableSpeedControl          29 s
+  the whole re-take, green + three red tests            under 4 minutes
+  RT1 1,552,676   RT2 49,659   RT3 0    every number identical to the first take
+  ```
+
+  **A gate run's cost is per SCENARIO SET and per CHANNEL COUNT, not per
+  campaign**, and IPC's number was never this unit's. Before deciding a layer is
+  unaffordable, RUN THE CHEAPEST INSTANCE OF IT ONCE — here that was the green,
+  and it cost 29 seconds to find out that the estimate was an order of magnitude
+  wrong in the direction that mattered.
+
+  The other half of why the re-take was possible at all: the three
+  perturbations were recoverable CHARACTER FOR CHARACTER out of
+  `evidence/<Unit>/gate.redtest_predictions.txt`, because that file records the
+  `from` / `to` literals rather than a description of them. The gate artifacts
+  themselves record only `perturbed: true`. **Write the literals into the
+  predictions file** — a red test you cannot re-run is a red test that expires
+  the next time either instrument moves.
+
+## A MUTATION PART'S KILL COUNT IS NOT REPRODUCIBLE TO THE MUTANT, AND THE
+## MERGED SCORE IS
+
+- **Unit #60, second dispatch, measured by accident while re-taking the sweep
+  across an instrument move.** Same corpus, same translation blob, same
+  declarations, two runs:
+
+  ```
+  part 2 (compare_op, negate_cond)   41 of 50   then   40 of 50
+  part 4 (const_tweak)               25 of 35   then   26 of 35
+  merged                            112 of 153  then  112 of 153   score 0.7943
+  ```
+
+  Nothing that dispatch reported rests on the flicker — the merged total, the
+  score and both declared sets were stable — but a score is supposed to be a
+  MEASUREMENT, and a run-to-run difference of one mutant in a part is a property
+  of this harness that no artifact previously recorded. The candidate cause is
+  state that outlives a case: `vit_direct_localvariables` is a module `SAVE` and
+  the callee bridges carry `piP` / `rlP` across cases, which is unit #47's
+  `SAVE`-local finding one level up. **Not diagnosed.**
+
+  **Do not close a unit on a score within one mutant of the threshold without
+  settling this first** — and when re-taking a sweep, compare the MERGED total
+  rather than the parts, because the parts are what move.
