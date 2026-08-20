@@ -1,6 +1,6 @@
-# done_check.py WriteRestartFile -- captured 2026-08-20T12:51:53Z by scripts/capture_done_check.sh
+# done_check.py WriteRestartFile -- captured 2026-08-20T12:52:26Z by scripts/capture_done_check.sh
 
-Run against the committed state at 861c33eb ("WriteRestartFile: P12 reads `unreachable` as a LIST, and the count alone failed the close"), with a CLEAN tree, with stdout
+Run against the committed state at cd964d7f ("WriteRestartFile: done_check captured -- COMPLETE, 14 of 14"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
