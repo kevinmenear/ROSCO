@@ -2,8 +2,10 @@
  "unit": "VariableSpeedControl",
  "operators": [
   "drop_call",
+  "drop_factor",
   "swap_call_args",
-  "swap_callee"
+  "swap_callee",
+  "swap_operands"
  ],
  "operators_offered": [
   "arith_op",
@@ -22,17 +24,35 @@
  "compared_against": "fortran_reference_on_a_clean_tree",
  "operators_filter": [
   "drop_call",
+  "drop_factor",
   "swap_call_args",
-  "swap_callee"
+  "swap_callee",
+  "swap_operands"
  ],
  "operators_filter_unmatched": [],
  "mutant_slice": {
   "offset": 0,
   "limit": 0,
-  "scored": 15,
-  "of": 15
+  "scored": 31,
+  "of": 31
  },
  "scored_ids": [
+  "8d971af0",
+  "2a2f2ec4",
+  "fc3c15b3",
+  "e22d436f",
+  "e293a874",
+  "457936e2",
+  "f555400e",
+  "9f1bdb66",
+  "ee6c454d",
+  "e54f9290",
+  "1054d557",
+  "55aa7b72",
+  "5d9bea1a",
+  "2bcdc8a8",
+  "91975fcb",
+  "a6d6553a",
   "9419da38",
   "027a9b2e",
   "04127c63",
@@ -53,29 +73,54 @@
  "capped_operators": [
   "const_tweak"
  ],
- "mutants": 15,
+ "mutants": 31,
  "equivalent_declared": 0,
- "unreachable_declared": 0,
- "unreachable": [],
+ "unreachable_declared": 4,
+ "unreachable": [
+  {
+   "id": "ee6c454d",
+   "operator": "swap_operands",
+   "reason": "swap_operands at variablespeedcontrol.cpp:519 -- LocalVar->AzBuffer[2 - 1] becomes AzBuffer[1 - 2], which is index -1. Same statement group as 60b16646, same ol2_init = 0 of 46,836, same caveat about the sanitiser.",
+   "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+  },
+  {
+   "id": "04127c63",
+   "operator": "drop_call",
+   "reason": "drop_call at variablespeedcontrol.cpp:374 -- std::fmin(LocalVar->VS_ConstPwr_GenTq, LocalVar->VS_KOmega2_GenTq) replaced by its first argument. The STATEMENT is the body of `if (CntrPar->VS_FBP == VS_FBP_Power_Overspeed)` nested inside `else if (LocalVar->VS_State == VS_State_Region_3_FBP)` inside `else if (CntrPar->VS_ControlMode == VS_Mode_KOmega)`. probe_arm_reach.py counts that conjunction as st6_fbp1 = 0 of 46,836 cases: no case of this corpus executes the statement at all, so no mutation of it can be told from the original. The conjunction needs three predicate-knob quantities to line up at once (VS_ControlMode == 1, VS_State == 6, VS_FBP == 1) and R7's knob block is ALL PAIRS ONLY -- 512 of 679 pair combinations, subsampled -- so a triple is not something this corpus is built to contain. POSITIVE CONTROL: the same probe reports ol = 50 and ol2 = 14 at a comparable nesting depth, and two arith_op mutants inside ol2 (f31103b0, a15c5b13 at :541) are KILLED, so a zero here is not the probe failing to count.",
+   "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+  },
+  {
+   "id": "20e491e3",
+   "operator": "swap_call_args",
+   "reason": "swap_call_args at variablespeedcontrol.cpp:374 -- the two arguments of the same std::fmin exchanged. Same statement, same st6_fbp1 = 0 of 46,836, same argument as 04127c63. Not declared as an equivalence even though fmin is symmetric on every pair that does not compare equal with different bits, because the claim that can be MEASURED here is the one about the corpus.",
+   "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+  },
+  {
+   "id": "196872a3",
+   "operator": "swap_callee",
+   "reason": "swap_callee at variablespeedcontrol.cpp:374 -- fmin -> fmax at the same statement. st6_fbp1 = 0 of 46,836. This one would NOT be an equivalence anywhere: fmin and fmax differ on almost every pair, so its survival is entirely a statement about which cases reach the line, and the count is zero.",
+   "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+  }
+ ],
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
  "sanitize": false,
  "mutant_workers": 8,
- "identity_verified": 15,
+ "identity_verified": 31,
  "killed_by_sanitizer": 0,
  "killed_by_sanitizer_ids": [],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
- "total": 15,
- "killed": 5,
- "survived": 10,
+ "total": 31,
+ "killed": 20,
+ "survived": 7,
  "equivalent": 0,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.3333,
+ "score": 0.7407,
  "loop_rev": "078f4ff-nogit",
- "gen_rev": "gen-e01a73f480c3",
+ "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "d3a1e12-nogit",
  "survivors": [
   {
@@ -91,12 +136,6 @@
    "after": "LocalVar->VS_ConstPwr_GenTq"
   },
   {
-   "id": "04127c63",
-   "operator": "drop_call",
-   "before": "std::fmin(LocalVar->VS_ConstPwr_GenTq, LocalVar->VS_KOmega2_GenTq)",
-   "after": "LocalVar->VS_ConstPwr_GenTq"
-  },
-  {
    "id": "2493ee2f",
    "operator": "swap_call_args",
    "before": "LocalVar->VS_ConstPwr_GenTq, CntrPar->VS_MaxTq",
@@ -107,12 +146,6 @@
    "operator": "swap_call_args",
    "before": "LocalVar->VS_ConstPwr_GenTq, LocalVar->GenTq",
    "after": "LocalVar->GenTq, LocalVar->VS_ConstPwr_GenTq"
-  },
-  {
-   "id": "20e491e3",
-   "operator": "swap_call_args",
-   "before": "LocalVar->VS_ConstPwr_GenTq, LocalVar->VS_KOmega2_GenTq",
-   "after": "LocalVar->VS_KOmega2_GenTq, LocalVar->VS_ConstPwr_GenTq"
   },
   {
    "id": "6cbad479",
@@ -128,12 +161,6 @@
   },
   {
    "id": "4fc6a505",
-   "operator": "swap_callee",
-   "before": "fmin",
-   "after": "fmax"
-  },
-  {
-   "id": "196872a3",
    "operator": "swap_callee",
    "before": "fmin",
    "after": "fmax"

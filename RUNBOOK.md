@@ -9684,3 +9684,106 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   reading the kernel's green**, and pair the layer with a gate red test aimed at
   the same statement. The two layers' blind spots here are exact complements,
   which is the argument for taking both rather than the cheaper one.
+
+## A WHOLE-ARGUMENT READ MARK CAN COST THE LAYER RATHER THAN CASES, AND THE
+## LEVER IS THE CALLEE'S OWN BODY
+
+- **Unit #60, second dispatch.** `harness/statevary.py`'s docstring says the
+  over-approximation is deliberate and that it "costs cases". Here it cost the
+  differential harness, the post-integration harness and the mutation score at
+  once.
+
+  ```
+  Controllers.f90:346  PIDController(..., LocalVar%piP, LocalVar%restart, objInst, LocalVar)
+  read_set             LocalVar read WHOLE  -> 179 C parameters varied
+                       224 varied, against IPC's 55, the campaign's previous largest
+  generation           143,261 cases x 188 KB = 27.0 GB   VM has 7.736 GiB
+  PIDController's body reads LocalVar%FP and LocalVar%iStatus. Nothing else.
+  ```
+
+  `vit_harness.py --transitive-read-set <source>` (loop `078f4ff`) replaces a
+  resolvable WHOLE mark with the union of the unit's own qualified fields and
+  its callees', to a fixed point, derived from the reference. 224 -> 67 varied,
+  143,261 -> 20,704 cases, all ten predicate knobs kept.
+
+  **It is OPT-IN and that is the whole compatibility argument** — a corpus is an
+  instrument, and `plan` is untouched, so a run that does not ask for it reaches
+  byte-for-byte the corpus it reached before. **It REFUSES rather than guesses:**
+  an unresolvable bare pass stays WHOLE and the reason is printed. Before
+  reaching for it, check that the callee is in a source you can name; the first
+  version refused everything because it counted the DECLARATION line as an
+  unresolved bare use.
+
+## `{ lo = N, hi = N }` COLLAPSES R7'S PREDICATE KNOB; `values` DOES NOT
+
+- **Unit #60, second dispatch, and it cost two generations.** Unit #49 measured
+  that a stated `values` list does NOT bound the knob — "the knobs draw from the
+  reference's own literals and are not filtered by the declaration" — and the
+  obvious reading is that a `lo`/`hi` pin does not either.
+
+  ```
+  CntrPar_VS_FBP = { lo = 0, hi = 0 }        ->  PREDICATE KNOB: CntrPar_VS_FBP at [0.0]
+  LocalVar_VS_State = { lo = 2, hi = 2 }     ->  PREDICATE KNOB: LocalVar_VS_State at [2.0]
+  ```
+
+  A bounds pin DELETES every other arm rather than leaving it to the knob. So
+  the two entries answer different questions and only one of them can move a
+  BASE DRAW safely: **`values` moves the base draw and keeps the knob; `lo`/`hi`
+  moves the base draw and takes the knob with it.** Read the run's own
+  `PREDICATE KNOB:` lines after any pin on a quantity the reference's predicates
+  test — they are printed before a case is generated and they are the check.
+
+## THE FLAG CROSSING HAS A MEMORY CEILING, AND A WRITE-ONLY ARGUMENT IS THE
+## CHEAPEST WAY TO RAISE IT
+
+- **Unit #60, second dispatch, measured in six steps rather than reasoned
+  about.** `flag_variants` emits one variant per declared value of every flag,
+  so the corpus is proportional to the SUM of the flags' arities, and generation
+  is a Python list of case dicts that runs out before anything downstream does.
+
+  ```
+  arity sum   cases      result
+      2       20,704     generated
+      3       28,890     generated
+      4       38,068     SIGKILL exit 137 at 45 s      <- avrSWAP VARIED
+      5       46,836     generated                     <- avrSWAP HELD
+      7       64,741     SIGKILL exit 137 at 53 s
+     11      100,962     SIGKILL exit 137 at 71 s
+  ```
+
+  A VARIED array of 3,000 doubles is 3,000 distinct Python floats, ~120 KB of
+  the ~150 KB a case costs; HELD it is 3,000 references to one 0.0. `avrSWAP` is
+  held because the reference never READS it — `avrSWAP(47) = MAX(...)` is its
+  only mention — which `statevary.write_only` now detects and reports. A held
+  argument still crosses at full extent and is still COMPARED as an output.
+
+  **Before spending the ceiling on more parameters, ask which of the ones you
+  have are write-only.** And price a new flag before declaring it: each further
+  declared value cost about 9,200 cases here, and the OOM reports nothing.
+
+## A CALLEE THAT TAKES BOTH A VIEW TYPE AND ONE OF ITS MEMBERS LOSES THE
+## REFERENCE'S ALIASING ACROSS THE BRIDGE
+
+- **Unit #60, second dispatch, and the differential harness is the only
+  instrument that could reach it.** Fixed in VIT at `d3a1e12`.
+
+  ```
+  Controllers.f90:346  PIDController(..., LocalVar%piP, ..., objInst, LocalVar)
+                       one piece of storage in Fortran; two across the bridge
+  6 of 20,704 cases, all LocalVar.piP, at the slot objInst%instPI names
+    piP[199]  (ITerm)      got 0  ref 1200
+    piP[1223] (ITermLast)  got 0  ref 1200
+    piP[4295] (ELast)      got 0  ref nan
+  ```
+
+  `got` is the value the member held BEFORE the call: the member arrives as a
+  C_PTR into the CALLER'S view struct, the view type is copied into a Fortran
+  object, and the post-call copy-back writes the stale copy over the callee's
+  answer. **The same clobber is in the SHIPPED integration path**, one branch
+  over (`vit_populate_<t>` instead of `vit_view_out_<t>`), on an arm no
+  simulation scenario reaches — so no gate could have found it. The repair is
+  one assignment per aliased member between the call and the re-sync.
+
+  **When a harness goes red on a NESTED callee-state block and the unit's own
+  arithmetic is green, look at the bridge's argument list before the
+  translation** — a member and its parent in the same call is the shape.

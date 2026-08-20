@@ -47,9 +47,46 @@
  "killed_by_sanitizer": 0,
  "killed_by_sanitizer_ids": [],
  "mutants": 153,
- "equivalent_declared": 0,
- "unreachable_declared": 0,
- "unreachable": [],
+ "equivalent_declared": 6,
+ "unreachable_declared": 6,
+ "unreachable": [
+  {
+   "id": "ee6c454d",
+   "operator": "swap_operands",
+   "reason": "swap_operands at variablespeedcontrol.cpp:519 -- LocalVar->AzBuffer[2 - 1] becomes AzBuffer[1 - 2], which is index -1. Same statement group as 60b16646, same ol2_init = 0 of 46,836, same caveat about the sanitiser.",
+   "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+  },
+  {
+   "id": "04127c63",
+   "operator": "drop_call",
+   "reason": "drop_call at variablespeedcontrol.cpp:374 -- std::fmin(LocalVar->VS_ConstPwr_GenTq, LocalVar->VS_KOmega2_GenTq) replaced by its first argument. The STATEMENT is the body of `if (CntrPar->VS_FBP == VS_FBP_Power_Overspeed)` nested inside `else if (LocalVar->VS_State == VS_State_Region_3_FBP)` inside `else if (CntrPar->VS_ControlMode == VS_Mode_KOmega)`. probe_arm_reach.py counts that conjunction as st6_fbp1 = 0 of 46,836 cases: no case of this corpus executes the statement at all, so no mutation of it can be told from the original. The conjunction needs three predicate-knob quantities to line up at once (VS_ControlMode == 1, VS_State == 6, VS_FBP == 1) and R7's knob block is ALL PAIRS ONLY -- 512 of 679 pair combinations, subsampled -- so a triple is not something this corpus is built to contain. POSITIVE CONTROL: the same probe reports ol = 50 and ol2 = 14 at a comparable nesting depth, and two arith_op mutants inside ol2 (f31103b0, a15c5b13 at :541) are KILLED, so a zero here is not the probe failing to count.",
+   "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+  },
+  {
+   "id": "20e491e3",
+   "operator": "swap_call_args",
+   "reason": "swap_call_args at variablespeedcontrol.cpp:374 -- the two arguments of the same std::fmin exchanged. Same statement, same st6_fbp1 = 0 of 46,836, same argument as 04127c63. Not declared as an equivalence even though fmin is symmetric on every pair that does not compare equal with different bits, because the claim that can be MEASURED here is the one about the corpus.",
+   "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+  },
+  {
+   "id": "196872a3",
+   "operator": "swap_callee",
+   "reason": "swap_callee at variablespeedcontrol.cpp:374 -- fmin -> fmax at the same statement. st6_fbp1 = 0 of 46,836. This one would NOT be an equivalence anywhere: fmin and fmax differ on almost every pair, so its survival is entirely a statement about which cases reach the line, and the count is zero.",
+   "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+  },
+  {
+   "id": "60b16646",
+   "operator": "arith_op",
+   "reason": "arith_op at variablespeedcontrol.cpp:518 -- LocalVar->AzBuffer[1 - 1] = LocalVar->Azimuth becomes AzBuffer[1 + 1], which is one past the end of a two-element array. The statement is the body of `if (LocalVar->iStatus == 0)` inside `if (CntrPar->OL_Mode == 2)` inside `if ((CntrPar->OL_Mode > 0) && (CntrPar->Ind_GenTq > 0))`. probe_arm_reach.py counts that conjunction as ol2_init = 0 of 46,836, against ol = 50 and ol2 = 14 for the two enclosing guards -- so the block IS reached and it is the initialisation arm inside it that no case enters. That arm needs OL_Mode == 2, Ind_GenTq > 0 and iStatus == 0 together, three knob quantities against an all-pairs block. NOTE, because it is the honest caveat: this mutant is an OUT-OF-BOUNDS WRITE, and the campaign's own rule is that such a mutant wants a --sanitize sweep rather than a value comparison. That sweep was STARTED in this dispatch and stopped at 1,089 s to protect the closing sequence, so what is claimed here is the corpus count and not a sanitiser result.",
+   "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+  },
+  {
+   "id": "edc61018",
+   "operator": "arith_op",
+   "reason": "arith_op at variablespeedcontrol.cpp:519 -- LocalVar->AzBuffer[2 - 1] becomes AzBuffer[2 + 1], two past the end. Same statement group as 60b16646, same ol2_init = 0 of 46,836, same caveat about the sanitiser.",
+   "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+  }
+ ],
  "unreachable_but_killed": [],
  "nocompile": 0,
  "killed_by_timeout": 0,
@@ -57,11 +94,11 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 153,
- "killed": 100,
- "survived": 53,
- "equivalent": 0,
+ "killed": 112,
+ "survived": 29,
+ "equivalent": 6,
  "declared_but_killed": [],
- "score": 0.6536,
+ "score": 0.7943,
  "loop_rev": "078f4ff-nogit",
  "vit_rev": "d3a1e12-nogit",
  "merged_from": [
@@ -69,21 +106,23 @@
    "part": "mutation/VariableSpeedControl.clean.calls.json",
    "operators_filter": [
     "drop_call",
+    "drop_factor",
     "swap_call_args",
-    "swap_callee"
+    "swap_callee",
+    "swap_operands"
    ],
    "mutant_slice": {
     "offset": 0,
     "limit": 0,
-    "scored": 15,
-    "of": 15
+    "scored": 31,
+    "of": 31
    },
-   "total": 15,
-   "mutants": 15,
+   "total": 31,
+   "mutants": 31,
    "nocompile": 0,
-   "killed": 5,
-   "survived": 10,
-   "score": 0.3333
+   "killed": 20,
+   "survived": 7,
+   "score": 0.7407
   },
   {
    "part": "mutation/VariableSpeedControl.clean.compare.json",
@@ -100,30 +139,28 @@
    "total": 50,
    "mutants": 50,
    "nocompile": 0,
-   "killed": 39,
-   "survived": 11,
-   "score": 0.78
+   "killed": 41,
+   "survived": 9,
+   "score": 0.82
   },
   {
    "part": "mutation/VariableSpeedControl.clean.arith.json",
    "operators_filter": [
     "arith_op",
-    "drop_factor",
-    "index_offset",
-    "swap_operands"
+    "index_offset"
    ],
    "mutant_slice": {
     "offset": 0,
     "limit": 0,
-    "scored": 48,
-    "of": 48
+    "scored": 32,
+    "of": 32
    },
-   "total": 48,
-   "mutants": 48,
+   "total": 32,
+   "mutants": 32,
    "nocompile": 0,
-   "killed": 37,
-   "survived": 11,
-   "score": 0.7708
+   "killed": 26,
+   "survived": 3,
+   "score": 0.8966
   },
   {
    "part": "mutation/VariableSpeedControl.clean.const.json",
@@ -139,12 +176,12 @@
    "total": 40,
    "mutants": 40,
    "nocompile": 0,
-   "killed": 19,
-   "survived": 21,
-   "score": 0.475
+   "killed": 25,
+   "survived": 10,
+   "score": 0.7143
   }
  ],
- "merged_why": "153 mutants over a 20,704-case corpus at ~2.6 s each is one sweep of about seven minutes, but the dispatch's foreground ceiling is 600 s and const_tweak alone is 40 mutants; four operator-filtered parts, each foreground under mutate_guarded.sh",
+ "merged_why": "153 mutants over a 46,836-case corpus is about twelve minutes in one process and the dispatch's foreground ceiling is 600 s; four operator-filtered parts, each foreground under mutate_guarded.sh, each carrying the same equivalence and unreachable declarations",
  "merged_by": "scripts/_mutation_merge.py",
  "survivors": [
   {
@@ -160,12 +197,6 @@
    "after": "LocalVar->VS_ConstPwr_GenTq"
   },
   {
-   "id": "04127c63",
-   "operator": "drop_call",
-   "before": "std::fmin(LocalVar->VS_ConstPwr_GenTq, LocalVar->VS_KOmega2_GenTq)",
-   "after": "LocalVar->VS_ConstPwr_GenTq"
-  },
-  {
    "id": "2493ee2f",
    "operator": "swap_call_args",
    "before": "LocalVar->VS_ConstPwr_GenTq, CntrPar->VS_MaxTq",
@@ -176,12 +207,6 @@
    "operator": "swap_call_args",
    "before": "LocalVar->VS_ConstPwr_GenTq, LocalVar->GenTq",
    "after": "LocalVar->GenTq, LocalVar->VS_ConstPwr_GenTq"
-  },
-  {
-   "id": "20e491e3",
-   "operator": "swap_call_args",
-   "before": "LocalVar->VS_ConstPwr_GenTq, LocalVar->VS_KOmega2_GenTq",
-   "after": "LocalVar->VS_KOmega2_GenTq, LocalVar->VS_ConstPwr_GenTq"
   },
   {
    "id": "6cbad479",
@@ -202,25 +227,13 @@
    "after": "fmax"
   },
   {
-   "id": "196872a3",
-   "operator": "swap_callee",
-   "before": "fmin",
-   "after": "fmax"
-  },
-  {
    "id": "1136a412",
    "operator": "compare_op",
    "before": ">",
    "after": ">="
   },
   {
-   "id": "95e7abc4",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "2c24cf5b",
+   "id": "779464ef",
    "operator": "compare_op",
    "before": "==",
    "after": "!="
@@ -238,22 +251,16 @@
    "after": "!="
   },
   {
-   "id": "7523df68",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
    "id": "f43fd3c7",
    "operator": "compare_op",
    "before": "==",
    "after": "!="
   },
   {
-   "id": "c6788a35",
+   "id": "58bbc776",
    "operator": "negate_cond",
-   "before": "if (LocalVar->VS_State == VS_State_Region_1_5)",
-   "after": "if (!(LocalVar->VS_State == VS_State_Region_1_5))"
+   "before": "if (CntrPar->VS_FBP == VS_FBP_Power_Overspeed)",
+   "after": "if (!(CntrPar->VS_FBP == VS_FBP_Power_Overspeed))"
   },
   {
    "id": "f9d844b5",
@@ -274,58 +281,10 @@
    "after": "if (!((CntrPar->VS_FBP == VS_FBP_WSE_Ref) ||\n                       (CntrPar->VS_FBP == VS_FBP_Torque_Ref)))"
   },
   {
-   "id": "e22d436f",
-   "operator": "drop_factor",
-   "before": "LocalVar->SD_MaxTorqueRate * LocalVar->DT",
-   "after": "LocalVar->SD_MaxTorqueRate"
-  },
-  {
-   "id": "60b16646",
-   "operator": "arith_op",
-   "before": "1 - 1",
-   "after": "1 + 1"
-  },
-  {
-   "id": "edc61018",
-   "operator": "arith_op",
-   "before": "2 - 1",
-   "after": "2 + 1"
-  },
-  {
-   "id": "ee6c454d",
-   "operator": "swap_operands",
-   "before": "2 - 1",
-   "after": "1 - 2"
-  },
-  {
    "id": "63fe0aba",
    "operator": "index_offset",
    "before": "[0]",
    "after": "[0 + 1]"
-  },
-  {
-   "id": "3bab24c9",
-   "operator": "index_offset",
-   "before": "[0]",
-   "after": "[0 + 1]"
-  },
-  {
-   "id": "845ad768",
-   "operator": "index_offset",
-   "before": "[0]",
-   "after": "[0 + 1]"
-  },
-  {
-   "id": "4a68bd15",
-   "operator": "index_offset",
-   "before": "[0]",
-   "after": "[0 + 1]"
-  },
-  {
-   "id": "fda51720",
-   "operator": "index_offset",
-   "before": "[2]",
-   "after": "[2 + 1]"
   },
   {
    "id": "9d4f5ebe",
@@ -356,18 +315,6 @@
    "operator": "const_tweak",
    "before": "3",
    "after": "4"
-  },
-  {
-   "id": "3d77d10f",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "b68c9bbc",
-   "operator": "const_tweak",
-   "before": "2",
-   "after": "3"
   },
   {
    "id": "341a9389",
@@ -410,60 +357,6 @@
    "operator": "const_tweak",
    "before": "0",
    "after": "1"
-  },
-  {
-   "id": "6f89209c",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "ce3895f5",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "fe507275",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "2d591004",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "2bb9c178",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "c3eb1c98",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "a2f179fa",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "cdf8538e",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "5b536651",
-   "operator": "const_tweak",
-   "before": "0.0",
-   "after": "1.0"
   }
  ]
 }

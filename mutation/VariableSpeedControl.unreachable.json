@@ -1,0 +1,26 @@
+{
+ "04127c63": {
+  "reason": "drop_call at variablespeedcontrol.cpp:374 -- std::fmin(LocalVar->VS_ConstPwr_GenTq, LocalVar->VS_KOmega2_GenTq) replaced by its first argument. The STATEMENT is the body of `if (CntrPar->VS_FBP == VS_FBP_Power_Overspeed)` nested inside `else if (LocalVar->VS_State == VS_State_Region_3_FBP)` inside `else if (CntrPar->VS_ControlMode == VS_Mode_KOmega)`. probe_arm_reach.py counts that conjunction as st6_fbp1 = 0 of 46,836 cases: no case of this corpus executes the statement at all, so no mutation of it can be told from the original. The conjunction needs three predicate-knob quantities to line up at once (VS_ControlMode == 1, VS_State == 6, VS_FBP == 1) and R7's knob block is ALL PAIRS ONLY -- 512 of 679 pair combinations, subsampled -- so a triple is not something this corpus is built to contain. POSITIVE CONTROL: the same probe reports ol = 50 and ol2 = 14 at a comparable nesting depth, and two arith_op mutants inside ol2 (f31103b0, a15c5b13 at :541) are KILLED, so a zero here is not the probe failing to count.",
+  "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+ },
+ "20e491e3": {
+  "reason": "swap_call_args at variablespeedcontrol.cpp:374 -- the two arguments of the same std::fmin exchanged. Same statement, same st6_fbp1 = 0 of 46,836, same argument as 04127c63. Not declared as an equivalence even though fmin is symmetric on every pair that does not compare equal with different bits, because the claim that can be MEASURED here is the one about the corpus.",
+  "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+ },
+ "196872a3": {
+  "reason": "swap_callee at variablespeedcontrol.cpp:374 -- fmin -> fmax at the same statement. st6_fbp1 = 0 of 46,836. This one would NOT be an equivalence anywhere: fmin and fmax differ on almost every pair, so its survival is entirely a statement about which cases reach the line, and the count is zero.",
+  "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+ },
+ "60b16646": {
+  "reason": "arith_op at variablespeedcontrol.cpp:518 -- LocalVar->AzBuffer[1 - 1] = LocalVar->Azimuth becomes AzBuffer[1 + 1], which is one past the end of a two-element array. The statement is the body of `if (LocalVar->iStatus == 0)` inside `if (CntrPar->OL_Mode == 2)` inside `if ((CntrPar->OL_Mode > 0) && (CntrPar->Ind_GenTq > 0))`. probe_arm_reach.py counts that conjunction as ol2_init = 0 of 46,836, against ol = 50 and ol2 = 14 for the two enclosing guards -- so the block IS reached and it is the initialisation arm inside it that no case enters. That arm needs OL_Mode == 2, Ind_GenTq > 0 and iStatus == 0 together, three knob quantities against an all-pairs block. NOTE, because it is the honest caveat: this mutant is an OUT-OF-BOUNDS WRITE, and the campaign's own rule is that such a mutant wants a --sanitize sweep rather than a value comparison. That sweep was STARTED in this dispatch and stopped at 1,089 s to protect the closing sequence, so what is claimed here is the corpus count and not a sanitiser result.",
+  "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+ },
+ "edc61018": {
+  "reason": "arith_op at variablespeedcontrol.cpp:519 -- LocalVar->AzBuffer[2 - 1] becomes AzBuffer[2 + 1], two past the end. Same statement group as 60b16646, same ol2_init = 0 of 46,836, same caveat about the sanitiser.",
+  "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+ },
+ "ee6c454d": {
+  "reason": "swap_operands at variablespeedcontrol.cpp:519 -- LocalVar->AzBuffer[2 - 1] becomes AzBuffer[1 - 2], which is index -1. Same statement group as 60b16646, same ol2_init = 0 of 46,836, same caveat about the sanitiser.",
+  "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+ }
+}

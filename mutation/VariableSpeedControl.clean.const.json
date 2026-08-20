@@ -75,7 +75,7 @@
   "const_tweak"
  ],
  "mutants": 40,
- "equivalent_declared": 0,
+ "equivalent_declared": 5,
  "unreachable_declared": 0,
  "unreachable": [],
  "nocompile": 0,
@@ -89,14 +89,14 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 40,
- "killed": 19,
- "survived": 21,
- "equivalent": 0,
+ "killed": 25,
+ "survived": 10,
+ "equivalent": 5,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.475,
+ "score": 0.7143,
  "loop_rev": "078f4ff-nogit",
- "gen_rev": "gen-e01a73f480c3",
+ "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "d3a1e12-nogit",
  "survivors": [
   {
@@ -116,18 +116,6 @@
    "operator": "const_tweak",
    "before": "3",
    "after": "4"
-  },
-  {
-   "id": "3d77d10f",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "b68c9bbc",
-   "operator": "const_tweak",
-   "before": "2",
-   "after": "3"
   },
   {
    "id": "341a9389",
@@ -170,60 +158,6 @@
    "operator": "const_tweak",
    "before": "0",
    "after": "1"
-  },
-  {
-   "id": "6f89209c",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "ce3895f5",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "fe507275",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "2d591004",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "2bb9c178",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "c3eb1c98",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "a2f179fa",
-   "operator": "const_tweak",
-   "before": "0",
-   "after": "1"
-  },
-  {
-   "id": "cdf8538e",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
-   "id": "5b536651",
-   "operator": "const_tweak",
-   "before": "0.0",
-   "after": "1.0"
   }
  ]
 }

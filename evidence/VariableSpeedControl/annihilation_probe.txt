@@ -1,0 +1,119 @@
+VariableSpeedControl -- WHY THE FIRST MUTATION SWEEP SCORED 0.6536, IN FOUR
+COUNTS RATHER THAN A READING OF THE SURVIVOR LIST
+================================================================================
+Unit #60, second dispatch, 2026-08-20. Measured in `vit-dev` on the CLEAN tree,
+against the 20,704-case corpus scored at `mutation/VariableSpeedControl.json`
+before the four pins below were added.
+
+THE QUESTION. The first sweep's survivors were not a cluster: they were EVERY
+ARM of the unit at once -- three `fmin` calls dropped, the `VS_State` machine
+negated, both `VS_FBP` guards negated, the enum constants tweaked. A survivor
+list that shape is not a statement about the translation; it is a statement
+about the corpus, and the cheapest way to find out which is to count.
+
+THE PROBE. Eleven lines patched into the generated
+`variablespeedcontrol_test.cpp`, right after the two calls, counting per case
+and printing once at the last case. It reads only the case's own inputs and the
+outputs both sides already produce, so it needs no clean tree of its own
+(unit #47's rule). Rebuilt with `make test`, run over the same
+`variablespeedcontrol_cases.bin` the sweep scored, and STRIPPED afterwards.
+
+    { static long c_km=0,c_reset=0,c_satinv=0,c_rlinv=0,c_rlsat=0,c_live=0,c_n=0;
+      double lo=CntrPar_a.VS_MinTq, hi=std::fmin(CntrPar_a.VS_MaxTq, LocalVar_a.VS_MaxTq);
+      bool satinv=!(lo<=hi); bool reset=(LocalVar_a.restart!=0);
+      bool rlinv=!(CntrPar_a.VS_MaxRat>0.0);
+      c_n++; if(CntrPar_a.VS_ControlMode==1)c_km++; if(reset)c_reset++;
+      if(satinv)c_satinv++; if(rlinv)c_rlinv++;
+      if(!reset&&!rlinv)c_rlsat++;
+      if(!satinv&&reset)c_live++;
+      if(c_n==20704) fprintf(stderr,"PROBE n=%ld km=%ld reset=%ld satinv=%ld "
+                                    "rlinv=%ld rl_ratepath=%ld live=%ld\n",
+                             c_n,c_km,c_reset,c_satinv,c_rlinv,c_rlsat,c_live); }
+
+WHAT IT SAID, VERBATIM
+--------------------------------------------------------------------------------
+    PROBE n=20704 km=102 reset=9688 satinv=15635 rlinv=18999 rl_ratepath=852 live=2050
+
+    VS_ControlMode == 1, the K*Omega^2 arm                      102 of 20,704
+    VS_MinTq > MIN(CntrPar%VS_MaxTq, LocalVar%VS_MaxTq)      15,635 of 20,704
+    VS_MaxRat <= 0                                          18,999 of 20,704
+    neither saturation inverted, and restart true            2,050 of 20,704
+
+HOW TO READ IT. `saturate(x, lo, hi)` is `fmin(fmax(x, lo), hi)`, so an INVERTED
+pair returns `hi` for EVERY x -- the output stops depending on its input, and
+every arm above it becomes unobservable. This unit ends in two of them in a row:
+
+    Controllers.f90:355  GenTq = saturate(GenTq, VS_MinTq, MIN(VS_MaxTq, LocalVar%VS_MaxTq))
+    Controllers.f90:358  GenTq = ratelimit(GenTq, -VS_MaxRat, VS_MaxRat, DT, ...)
+
+and `ratelimit` is `saturate` one level down:
+
+    rate = (inputSignal - rlP%LastSignal(inst))/DT
+    rate = saturate(rate, minRate, maxRate)          ! minRate = -VS_MaxRat
+    ratelimit = rlP%LastSignal(inst) + rate*DT
+
+With `VS_MaxRat < 0` the pair is `(-VS_MaxRat, VS_MaxRat)` = (positive,
+negative), inverted, and the answer is `LastSignal + VS_MaxRat*DT` for every
+input signal. 92% of the corpus was in that state and 75% in the other, so a
+mutant at any site ABOVE those two lines had, at best, a quarter of the corpus
+in which its difference could survive to an output -- and the K*Omega^2 machine,
+where most of them live, had 102 cases.
+
+WHAT WAS DONE WITH IT. Four entries in `harness/ranges.toml`, all four written
+against the 22 shipped `Examples/*.IN` rather than against this number:
+
+    CntrPar_VS_MaxRat      { lo = 0, hi = 1e3 }     22/22 set 4.00000e+04
+    CntrPar_VS_MinTq       { lo = -1e3, hi = 0 }    22/22 set 0.00000e+00
+    CntrPar_VS_MaxTq       { lo = 0, hi = 1e3 }     22/22 set 4.74029e+04
+    CntrPar_VS_ControlMode { values = [1] }         1/22 set 1, 21/22 set 2
+
+The shipped comment for `VS_MaxRat` states its domain in words -- "Maximum
+torque rate (IN ABSOLUTE VALUE) in torque controller, [Nm/s]" -- so `lo = 0` is
+the documented domain and not a narrowing chosen to move a number.
+
+A FINDING THAT COST TWO GENERATIONS AND IS NOT IN THE RUNBOOK YET
+--------------------------------------------------------------------------------
+`{ lo = N, hi = N }` ON A PREDICATE-KNOB QUANTITY COLLAPSES R7'S KNOB TO THAT
+ONE VALUE. Unit #49 measured that a stated `values` list does NOT bound the
+knob ("the knobs draw from the reference's own literals and are not filtered by
+the declaration"), and the obvious reading is that a `lo`/`hi` pin does not
+either. It does. Measured, from the run's own plan report:
+
+    CntrPar_VS_FBP = { lo = 0, hi = 0 }
+    CntrPar_VS_ControlMode = { lo = 1, hi = 1 }
+    LocalVar_VS_State = { lo = 2, hi = 2 }
+      ->  PREDICATE KNOB: CntrPar_VS_FBP at [0.0]
+          PREDICATE KNOB: CntrPar_VS_ControlMode at [1.0]
+          PREDICATE KNOB: LocalVar_VS_State at [2.0]
+
+which DELETES every other arm rather than merely leaving it at a base draw --
+the opposite of what was wanted. `values` is the only entry that moves a base
+draw without deleting the knob, and its price is the flag crossing.
+
+AND THE FLAG CROSSING HAS A CEILING IN THIS VM, MEASURED IN FOUR STEPS
+--------------------------------------------------------------------------------
+`flag_variants` returns one variant per declared value of every flag, so the
+corpus is proportional to the SUM of the flags' arities. With `LocalVar_restart`
+(arity 2) already a flag, each further declared value costs about 9,200 cases.
+Generation is a Python list of case dicts and it is what runs out:
+
+    arity sum   cases      result
+        2       20,704     generated, 0 failed
+        3       28,890     generated, 0 failed
+        4       38,068     SIGKILL (exit 137) at 45 s   <- before avrSWAP was held
+        5       46,836     generated, 0 failed          <- after avrSWAP was held
+        7       64,741     SIGKILL (exit 137) at 53 s
+       11      100,962     SIGKILL (exit 137) at 71 s
+
+`avrSWAP` being HELD is what moved the ceiling between rows 3 and 4: it is 3,000
+doubles, and a VARIED array is 3,000 distinct Python floats (~120 KB of the
+~150 KB a case costs) while a held one is 3,000 references to a single 0.0. It
+is held because the reference never READS it -- `avrSWAP(47) = MAX(...)` is the
+only mention in the whole unit -- which `harness/statevary.write_only` now
+detects and reports (`loop@078f4ff`, opt-in with the transitive read set).
+
+SO THE CORPUS THAT WAS SCORED carries `VS_ControlMode` at 1, `VS_FBP` at 0 and
+`VS_State` at 2 in every non-knob case, and the arms that need a DIFFERENT value
+of any of those three are reachable only through R7's knob block. That is where
+this unit's surviving mutants are, and it is stated per mutant in
+`mutation/VariableSpeedControl.unreachable.json` rather than left as a summary.

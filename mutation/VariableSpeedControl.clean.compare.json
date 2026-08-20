@@ -101,14 +101,14 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 50,
- "killed": 39,
- "survived": 11,
+ "killed": 41,
+ "survived": 9,
  "equivalent": 0,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.78,
+ "score": 0.82,
  "loop_rev": "078f4ff-nogit",
- "gen_rev": "gen-e01a73f480c3",
+ "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "d3a1e12-nogit",
  "survivors": [
   {
@@ -118,13 +118,7 @@
    "after": ">="
   },
   {
-   "id": "95e7abc4",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "2c24cf5b",
+   "id": "779464ef",
    "operator": "compare_op",
    "before": "==",
    "after": "!="
@@ -142,22 +136,16 @@
    "after": "!="
   },
   {
-   "id": "7523df68",
-   "operator": "compare_op",
-   "before": "==",
-   "after": "!="
-  },
-  {
    "id": "f43fd3c7",
    "operator": "compare_op",
    "before": "==",
    "after": "!="
   },
   {
-   "id": "c6788a35",
+   "id": "58bbc776",
    "operator": "negate_cond",
-   "before": "if (LocalVar->VS_State == VS_State_Region_1_5)",
-   "after": "if (!(LocalVar->VS_State == VS_State_Region_1_5))"
+   "before": "if (CntrPar->VS_FBP == VS_FBP_Power_Overspeed)",
+   "after": "if (!(CntrPar->VS_FBP == VS_FBP_Power_Overspeed))"
   },
   {
    "id": "f9d844b5",

@@ -2,9 +2,7 @@
  "unit": "VariableSpeedControl",
  "operators": [
   "arith_op",
-  "drop_factor",
-  "index_offset",
-  "swap_operands"
+  "index_offset"
  ],
  "operators_offered": [
   "arith_op",
@@ -23,24 +21,16 @@
  "compared_against": "fortran_reference_on_a_clean_tree",
  "operators_filter": [
   "arith_op",
-  "drop_factor",
-  "index_offset",
-  "swap_operands"
+  "index_offset"
  ],
  "operators_filter_unmatched": [],
  "mutant_slice": {
   "offset": 0,
   "limit": 0,
-  "scored": 48,
-  "of": 48
+  "scored": 32,
+  "of": 32
  },
  "scored_ids": [
-  "8d971af0",
-  "2a2f2ec4",
-  "fc3c15b3",
-  "e22d436f",
-  "e293a874",
-  "457936e2",
   "586f861b",
   "0c9c7758",
   "63c65b2a",
@@ -61,16 +51,6 @@
   "b1e58e32",
   "f415b9d1",
   "b0651a6e",
-  "f555400e",
-  "9f1bdb66",
-  "ee6c454d",
-  "e54f9290",
-  "1054d557",
-  "55aa7b72",
-  "5d9bea1a",
-  "2bcdc8a8",
-  "91975fcb",
-  "a6d6553a",
   "57630dd2",
   "63fe0aba",
   "8481f734",
@@ -88,84 +68,49 @@
  "capped_operators": [
   "const_tweak"
  ],
- "mutants": 48,
- "equivalent_declared": 0,
- "unreachable_declared": 0,
- "unreachable": [],
+ "mutants": 32,
+ "equivalent_declared": 1,
+ "unreachable_declared": 2,
+ "unreachable": [
+  {
+   "id": "60b16646",
+   "operator": "arith_op",
+   "reason": "arith_op at variablespeedcontrol.cpp:518 -- LocalVar->AzBuffer[1 - 1] = LocalVar->Azimuth becomes AzBuffer[1 + 1], which is one past the end of a two-element array. The statement is the body of `if (LocalVar->iStatus == 0)` inside `if (CntrPar->OL_Mode == 2)` inside `if ((CntrPar->OL_Mode > 0) && (CntrPar->Ind_GenTq > 0))`. probe_arm_reach.py counts that conjunction as ol2_init = 0 of 46,836, against ol = 50 and ol2 = 14 for the two enclosing guards -- so the block IS reached and it is the initialisation arm inside it that no case enters. That arm needs OL_Mode == 2, Ind_GenTq > 0 and iStatus == 0 together, three knob quantities against an all-pairs block. NOTE, because it is the honest caveat: this mutant is an OUT-OF-BOUNDS WRITE, and the campaign's own rule is that such a mutant wants a --sanitize sweep rather than a value comparison. That sweep was STARTED in this dispatch and stopped at 1,089 s to protect the closing sequence, so what is claimed here is the corpus count and not a sanitiser result.",
+   "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+  },
+  {
+   "id": "edc61018",
+   "operator": "arith_op",
+   "reason": "arith_op at variablespeedcontrol.cpp:519 -- LocalVar->AzBuffer[2 - 1] becomes AzBuffer[2 + 1], two past the end. Same statement group as 60b16646, same ol2_init = 0 of 46,836, same caveat about the sanitiser.",
+   "evidence": "evidence/VariableSpeedControl/arm_reach.txt"
+  }
+ ],
  "nocompile": 0,
  "killed_by_timeout": 0,
  "killed_by_timeout_ids": [],
  "sanitize": false,
  "mutant_workers": 8,
- "identity_verified": 48,
+ "identity_verified": 32,
  "killed_by_sanitizer": 0,
  "killed_by_sanitizer_ids": [],
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
- "total": 48,
- "killed": 37,
- "survived": 11,
- "equivalent": 0,
+ "total": 32,
+ "killed": 26,
+ "survived": 3,
+ "equivalent": 1,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.7708,
+ "score": 0.8966,
  "loop_rev": "078f4ff-nogit",
- "gen_rev": "gen-e01a73f480c3",
+ "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "d3a1e12-nogit",
  "survivors": [
-  {
-   "id": "e22d436f",
-   "operator": "drop_factor",
-   "before": "LocalVar->SD_MaxTorqueRate * LocalVar->DT",
-   "after": "LocalVar->SD_MaxTorqueRate"
-  },
-  {
-   "id": "60b16646",
-   "operator": "arith_op",
-   "before": "1 - 1",
-   "after": "1 + 1"
-  },
-  {
-   "id": "edc61018",
-   "operator": "arith_op",
-   "before": "2 - 1",
-   "after": "2 + 1"
-  },
-  {
-   "id": "ee6c454d",
-   "operator": "swap_operands",
-   "before": "2 - 1",
-   "after": "1 - 2"
-  },
   {
    "id": "63fe0aba",
    "operator": "index_offset",
    "before": "[0]",
    "after": "[0 + 1]"
-  },
-  {
-   "id": "3bab24c9",
-   "operator": "index_offset",
-   "before": "[0]",
-   "after": "[0 + 1]"
-  },
-  {
-   "id": "845ad768",
-   "operator": "index_offset",
-   "before": "[0]",
-   "after": "[0 + 1]"
-  },
-  {
-   "id": "4a68bd15",
-   "operator": "index_offset",
-   "before": "[0]",
-   "after": "[0 + 1]"
-  },
-  {
-   "id": "fda51720",
-   "operator": "index_offset",
-   "before": "[2]",
-   "after": "[2 + 1]"
   },
   {
    "id": "9d4f5ebe",

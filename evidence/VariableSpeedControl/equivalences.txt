@@ -1,0 +1,102 @@
+VariableSpeedControl -- SIX DECLARED EQUIVALENCES, AND EACH ONE IS A CLAIM ABOUT
+THE TWO PROGRAMS RATHER THAN ABOUT THIS CORPUS
+================================================================================
+Unit #60, second dispatch, 2026-08-20. Declared in
+`mutation/VariableSpeedControl.equivalences.json`; the ids are
+`harness/cppmutate.py`'s, over `translations/Controllers/variablespeedcontrol.cpp`
+at blob 85ad734d354f61875e9a1a295ac15265f4cc6b30.
+
+THE TEST AN ENTRY HERE HAS TO PASS: the mutant and the original must agree on
+EVERY admissible input, for a reason that can be read off the source rather than
+counted off a corpus. An argument of the form "no case reaches it" belongs in
+`mutation/VariableSpeedControl.unreachable.json`, where it is checked harder.
+
+AND THE CONTROL THAT MAKES EACH ONE FALSIFIABLE, which is the shape unit #55's
+runbook entry asks for: every one of these has a SIBLING at the same site that is
+NOT declared, and the sibling is killed. If the argument below were really "this
+site is not observable", the sibling would survive too.
+
+--------------------------------------------------------------------------------
+1. FOUR MUTANTS OF `LocalVar->restart ? 1 : 0` -> `? 2 : 0`
+   6f89209c  variablespeedcontrol.cpp:290   picontroller_c, the TSR arm
+   fe507275  variablespeedcontrol.cpp:327   picontroller_c, GenArTq
+   c3eb1c98  variablespeedcontrol.cpp:331   picontroller_c, GenBrTq
+   cdf8538e  variablespeedcontrol.cpp:455   ratelimit_c
+
+The `reset` dummy crosses the bridge as a C integer and the generated Fortran
+converts it BACK to a LOGICAL with a comparison against zero, not with a bit
+copy:
+
+    variablespeedcontrol_callees.h    int32_t reset
+    variablespeedcontrol_callees.f90  ratelimit(inputSignal, minRate, maxRate,
+                                                DT, (reset /= 0), rlP_f, inst)
+
+`(2 /= 0)` and `(1 /= 0)` are both `.TRUE.`, so the mutant hands the callee the
+same LOGICAL on every input. Nothing else in the translation reads the value.
+
+This is the reason the translation writes the conversion explicitly rather than
+letting a `bool` widen -- the comment at :285 says so -- and the mutant is a
+witness that the explicit form is not load-bearing at the VALUE 1 in particular.
+
+CONTROL: the FALSE arm of the same conditional is a separate mutant at each of
+the four sites (`? 1 : 0` -> `? 1 : 1`, const_tweak on the `0`), and all four are
+KILLED. So the corpus does reach these calls with `restart` false and does
+observe which LOGICAL the callee gets; what it cannot observe is WHICH non-zero
+integer encodes true, because the bridge normalises it.
+
+--------------------------------------------------------------------------------
+2. 5b536651  variablespeedcontrol.cpp:456   `0, 0.0)` -> `0, 1.0)`
+
+The last two arguments of `ratelimit_c` are the OPTIONAL `ResetValue`'s presence
+flag and its value. `ratelimit`'s reference declares
+
+    REAL(DbKi), OPTIONAL, INTENT(IN) :: ResetValue
+
+and this call site does not pass it, so the translation passes `0` for the flag.
+The generated bridge branches on the flag and calls the reference with a
+DIFFERENT ARGUMENT LIST, so the value slot is not merely ignored -- it is never
+named:
+
+    IF (has_ResetValue /= 0) THEN
+        bridge_result = REAL(ratelimit(..., inst, ResetValue), C_DOUBLE)
+    ELSE
+        bridge_result = REAL(ratelimit(..., inst), C_DOUBLE)
+    END IF
+
+The mutant changes the value slot and leaves the flag at 0, so the ELSE branch
+is taken on every input and the reference sees the same call.
+
+CONTROL: the PRESENCE FLAG at the same site is its own const_tweak mutant
+(`0, 0.0` -> `1, 0.0`) and it is KILLED -- with the flag set, `ratelimit` takes
+its `PRESENT(ResetValue)` branch and returns `ResetValue_` on a reset. So the
+corpus reaches this call, and reaches it with `reset` true; it is the value slot
+alone that no input can make visible.
+
+--------------------------------------------------------------------------------
+3. fda51720  variablespeedcontrol.cpp:539   `double AzBuffer_unwrapped[2]`
+                                            -> `double AzBuffer_unwrapped[3]`
+
+`index_offset` fired on a DECLARATION rather than on a subscript. The local is
+written by
+
+    unwrap_c(LocalVar->AzBuffer, 2, ErrVar, AzBuffer_unwrapped);
+
+which writes exactly 2 elements (the length is passed as a literal 2, and
+`SIZE(x)` is 2 because `REAL(DbKi) :: AzBuffer(2)`), and read by the two lines
+below it at [0] and [1]. Enlarging the array to 3 adds one element that is never
+written and never read; its storage is stack the function owns either way.
+
+This is the one mutant of this unit whose original is the SMALLER program: a
+buffer-size mutant that grows the buffer cannot change behaviour unless the code
+reads past the old end, and the two reads are literal.
+
+CONTROL, AND IT IS THE STRONGEST ONE IN THIS FILE: the line immediately below
+carries two arith_op mutants on the same `1 - 1` shape,
+
+    variablespeedcontrol.cpp:541   LocalVar->AzBuffer[1 - 1] = AzBuffer_unwrapped[1 - 1];
+      f31103b0  '1 - 1' -> '1 + 1'   KILLED
+      a15c5b13  '1 - 1' -> '1 + 1'   KILLED
+
+so the `OL_Mode == 2` block this declaration sits in IS reached by this corpus
+and IS observable in it. The declaration is not surviving because the block is
+dead; it is surviving because a larger stack array is the same program.

@@ -1,0 +1,75 @@
+VariableSpeedControl -- HOW MANY CASES OF THE SCORED CORPUS REACH EACH ARM
+================================================================================
+Unit #60, second dispatch, 2026-08-20. Measured in `vit-dev` on the CLEAN tree,
+over the SAME `variablespeedcontrol_cases.bin` that
+`mutation/VariableSpeedControl.json` scored (46,836 cases, generated with
+`--transitive-read-set` and the ten `[VariableSpeedControl]` entries in
+`harness/ranges.toml`).
+
+Produced by `evidence/VariableSpeedControl/probe_arm_reach.py`, which patches a
+counter block into the generated test, rebuilds, runs and STRIPS itself. It
+reads only the case's own INPUT parameters, so it is a statement about the
+questions the corpus asks and not about either side's answers -- which is what
+makes it admissible evidence for a claim about the CORPUS.
+
+    bash scripts/harness.sh VariableSpeedControl Controllers variablespeedcontrol \
+         rosco/controller/src/Controllers.f90 --no-generate
+    python3 evidence/VariableSpeedControl/probe_arm_reach.py --patch
+    docker exec vit-dev bash -lc "cd .../variablespeedcontrol_test && \
+        rm -f variablespeedcontrol_test.o test && make test && \
+        ./test variablespeedcontrol_cases.bin >/dev/null 2>/tmp/arm.err"
+    python3 evidence/VariableSpeedControl/probe_arm_reach.py --strip
+
+THE RUN, VERBATIM
+--------------------------------------------------------------------------------
+    ARMPROBE n=46836 tsr=154 tsr_fbp1=4 kom=45860 st1=0 st6=2 st6_fbp1=0
+             st6_fbp23=0 fbp0_cp1=127 ol=50 ol2=14 ol2_init=0 errmsg=3146
+
+    counter     guard the reference writes                     cases   of 46,836
+    ---------   -------------------------------------------   -----   ---------
+    tsr         VS_ControlMode in {2,3,4}      :253-255           154
+    tsr_fbp1    tsr .AND. VS_FBP == 1          :267                 4
+    kom         VS_ControlMode == 1            :271             45,860
+    st1         kom .AND. VS_State == 1        :277                 0
+    st6         kom .AND. VS_State == 6        :285                 2
+    st6_fbp1    st6 .AND. VS_FBP == 1          :287                 0
+    st6_fbp23   st6 .AND. VS_FBP in {2,3}      :293                 0
+    fbp0_cp1    VS_FBP == 0 .AND. VS_ConstPower == 1  :241-242     127
+    ol          OL_Mode > 0 .AND. Ind_GenTq > 0 :322                50
+    ol2         ol .AND. OL_Mode == 2          :331                 14
+    ol2_init    ol2 .AND. iStatus == 0         :335                 0
+    errmsg      aviFAIL < 0                    :361              3,146
+
+THE POSITIVE CONTROL IS IN THE TABLE AND IT IS NOT A ZERO. `ol` and `ol2` are
+50 and 14, and `mutation/VariableSpeedControl.json` records two arith_op mutants
+INSIDE `ol2` -- `variablespeedcontrol.cpp:541`, `f31103b0` and `a15c5b13` -- as
+KILLED. So the probe is not reporting zeros because it counts nothing: the
+open-loop block is reached, is observable, and does kill mutants. What is zero
+is one level deeper.
+
+WHY THE BIG NUMBER IS `kom` AND NOT `tsr`. `harness/ranges.toml` states
+`CntrPar_VS_ControlMode = { values = [1] }`, so the BASE DRAW of every non-knob
+case is the K*Omega^2 mode; modes 2, 3 and 4 are reached only inside R7's
+predicate-knob block, which is 512 cases of the corpus. That is a deliberate
+choice and its price is exactly the 154. See `annihilation_probe.txt` for why
+the base draw had to be moved at all, and for the measured generation ceiling
+that stopped it being moved for `VS_FBP`, `VS_ConstPower` and `VS_State` too.
+
+WHAT THE ZEROS ARE USED FOR, AND WHAT THEY ARE NOT
+--------------------------------------------------------------------------------
+`st6_fbp1 = 0` and `ol2_init = 0` are the two counters that carry a declaration
+in `mutation/VariableSpeedControl.unreachable.json`, and both are used ONLY for
+mutants whose STATEMENT sits inside the corresponding guard -- a statement no
+case executes cannot be told from any other statement there.
+
+They are NOT used for mutants that sit ON a guard. `negate_cond` and
+`compare_op` at `:287` are evaluated on all 2 `st6` cases whatever `VS_FBP`
+holds, so "the body is never entered" is not a reason those mutants cannot be
+observed; it is a reason to expect them to be observable and they are not. Those
+stay OPEN and are named in `evidence/VariableSpeedControl/README.md` rather than
+declared, because the honest word for them is "the corpus reaches this and
+cannot discriminate it", and this campaign has no key for that.
+
+Nor are `st1 = 0` and `st6 = 2` used at all: no surviving mutant's statement is
+inside the Region 1.5 arm, and the Region_3_FBP arm at `:285` is entered twice,
+which is not zero.

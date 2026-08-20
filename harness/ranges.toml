@@ -3235,3 +3235,94 @@ objInst_instLPF = { lo = 1, hi = 1000 }
 # THE COST, STATED: `RP_Gains` leaves R5's downward extent sweep. Nothing
 # observable goes with it -- the unit reads elements 1 to 4 and nothing else.
 CntrPar_RP_Gains_n = { lo = 4, hi = 6 }
+
+# FOUR MORE PINS, ADDED AFTER THE FIRST MUTATION SWEEP SCORED 0.6536, AND THEY
+# ARE A DEFECT IN THE CORPUS RATHER THAN A JUDGEMENT ABOUT THE PROGRAM. The
+# survivor list was not a list of weak spots: it was every arm of the unit at
+# once -- `fmin` dropped, `VS_State` arms negated, `VS_FBP` arms negated. One
+# probe over the scored corpus (`evidence/VariableSpeedControl/annihilation_probe.txt`)
+# said why, in four counts out of 20,704 cases:
+#
+#     VS_ControlMode == 1 (the K*Omega^2 arm)               102
+#     VS_MinTq > MIN(VS_MaxTq, LocalVar%VS_MaxTq)        15,635
+#     VS_MaxRat <= 0                                     18,999
+#     neither saturation inverted, and restart true       2,050
+#
+# `saturate(x, lo, hi)` is `fmin(fmax(x, lo), hi)`, so an INVERTED pair returns
+# `hi` for every x -- the output stops depending on its input and every arm
+# ABOVE it becomes unobservable. This unit ends in two of them in a row.
+#
+#   * `ratelimit(GenTq, -VS_MaxRat, VS_MaxRat, ...)` inverts whenever
+#     `VS_MaxRat < 0`, which was 92% of the corpus. All 22 `Examples/*.IN` set it
+#     to 4.00000e+04 and the shipped comment says what its domain is in words:
+#     "Maximum torque rate (IN ABSOLUTE VALUE) in torque controller, [Nm/s]".
+#     A negative absolute value is not a configuration ROSCO can be run in.
+#   * `saturate(GenTq, VS_MinTq, MIN(CntrPar%VS_MaxTq, LocalVar%VS_MaxTq))`
+#     inverts whenever the minimum exceeds the maximum, which was 75%. All 22
+#     files set `VS_MinTq = 0.00000e+00` and `VS_MaxTq = 4.74029e+04`; the two
+#     bounds below keep MinTq <= 0 <= CntrPar%VS_MaxTq without pinning either to
+#     a value, so the pair is admissible by construction and both still sweep a
+#     full decade ladder on their own side of zero.
+#
+# This is `[IPC]`'s `IPC_IntSat` argument met twice in one unit: the same
+# `saturate` call, the same inverted pair, the same "no mutant at any site above
+# it is observable".
+#
+# AND THE BASE DRAW OF `VS_ControlMode`, WHICH IS THE OTHER HALF. It is a
+# PREDICATE KNOB, so R7 reaches modes 0..5 in its own 512 pair combinations --
+# and nowhere else, because `_base` draws every OTHER case from the +/-1e3
+# default, which equals no mode at all and falls to the `ELSE` that assigns
+# `GenTq = 0`. 102 of 20,704 cases entered the K*Omega^2 arm and the rest of the
+# corpus was measuring a constant. Stating `values` moves the BASE DRAW (unit
+# #49's finding: `_case_impl` takes `values[0]`) and adds the flag crossing, so
+# every ladder rung is now tried under both of the two modes the shipped files
+# use -- 1 in one file and 2 in the other twenty-one.
+#
+# THE COST, STATED, AND IT IS PAID IN THREE PLACES. `VS_MaxRat`, `VS_MinTq` and
+# `VS_MaxTq` leave R6's real-magnitude ladder on the excluded side of zero:
+# nothing here can catch a defect that needs a NEGATIVE rate limit or an
+# inverted torque pair, and both are states the shipped configuration cannot
+# reach. `VS_ControlMode` leaves R6's integer ladder, so the decade boundaries
+# and the two 32-bit extremes are gone from it -- R7's knob still carries 0..5,
+# which is every value the reference's own predicates name. And the corpus
+# roughly doubles, because the flag crossing is the sum of the flags' arities.
+CntrPar_VS_MaxRat = { lo = 0, hi = 1e3 }
+CntrPar_VS_MinTq = { lo = -1e3, hi = 0 }
+CntrPar_VS_MaxTq = { lo = 0, hi = 1e3 }
+CntrPar_VS_ControlMode = { values = [1] }
+
+# THREE MORE BASE DRAWS, AND THEY ARE THE SAME FINDING AS `VS_ControlMode`'s.
+# `VS_FBP`, `VS_ConstPower` and `VS_State` are PREDICATE KNOBS: R7 reaches the
+# values the reference's own predicates name, in its 512 pair combinations, and
+# NOWHERE ELSE -- every other case draws them from the +/-1e3 default, which
+# equals no mode at all. So the corpus entered the `VS_FBP == VS_FBP_Variable_Pitch`
+# arm, the `VS_ConstPower == VS_Mode_ConstPwr` arm and all seven `VS_State` arms
+# only inside that block, and the `fmin` mutants at
+# `LocalVar%VS_MaxTq = min(VS_ConstPwr_GenTq, CntrPar%VS_MaxTq)` had almost no
+# case that reached the statement at all.
+#
+# `lo == hi` and NOT `values`, deliberately: `_bounds` allows a pinned SCALAR
+# ("it is how a degenerate input domain is reproduced deliberately") and `_base`
+# then returns exactly that value, while a `values` list would ALSO make the
+# parameter a FLAG and multiply the corpus by the sum of the flags' arities. The
+# corpus is already at the generation ceiling this VM has -- 38,068 cases was
+# SIGKILLed, 28,890 was not -- so the flag crossing is not available here and
+# the base draw is what is bought.
+#
+# THE VALUES ARE THE SHIPPED ONES, counted rather than chosen: all 22
+# `Examples/*.IN` set `VS_FBP = 0` and `VS_ConstPower = 1`, which is also what
+# this unit's own observability note records from gcov (VS_FBP is 0 and
+# VS_ConstPower is 1 on every one of the 407,976 calls in 23 scenarios).
+# `VS_State` is not a configuration but a runtime state `StateMachine` assigns
+# from the enumeration 0..7; 2 is Region 2, the arm gcov records 15,987 hits for
+# at Controllers.f90:272.
+#
+# THE COST, STATED, AND IT IS THE LARGEST IN THIS BLOCK: outside R7's knob cases
+# this corpus now takes ONE arm of each of the three. The `VS_FBP` overspeed and
+# reference-tracking arms, the constant-torque `VS_ConstPower` arm and six of the
+# seven `VS_State` arms are reachable only through the knob block, which is 512
+# cases of 20,704 -- so a mutant confined to one of them has thin coverage
+# against it, and that is where this unit's surviving mutants are.
+CntrPar_VS_FBP = { values = [0] }
+# CntrPar_VS_ConstPower: NOT stated -- see the corpus-ceiling note below.
+LocalVar_VS_State = { values = [2] }
