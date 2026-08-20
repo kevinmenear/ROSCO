@@ -103,3 +103,21 @@ it evidence about the instrument rather than a formality.
    THE SECOND IS EXACT, and it is a zero that was predicted rather than hoped
    for. Both artifacts carry their prediction in a `--note`, so a reader who
    opens the zero finds the expectation beside the number.
+
+
+   RE-TAKEN AT loop 8f9d72f, AND ALL THREE NUMBERS REPRODUCE EXACTLY
+   -----------------------------------------------------------------
+
+   Three R14 entries widened the corpus across two further rounds, so every
+   artifact had to be re-taken at one revision (P14). The gate NEVER reads the
+   case file, so these three had to give back what the first run measured --
+   and they did:
+
+       gate           5,252,000 / 351 channels / 27 scenarios, 0 mismatched
+       parsed-value     370,646 of 728,000, 22 channels, revert-verified 0
+       default-arm            0 of 5,252,000,            revert-verified 0
+
+   That is the control saying what changed between the two runs was the CORPUS
+   and nothing the shipped controller does. It is the same control unit #56
+   used, run the other way round: there the number had to survive two edits to
+   the translation, here it has to survive three edits to the generator.

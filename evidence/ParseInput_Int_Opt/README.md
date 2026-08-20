@@ -9,8 +9,8 @@ READ**. Three callees — `FindLine` (#32), `GetWords` (#8), `Int2LStr` (#10) �
 all already translated. Live in all 27 scenarios: **1,680 calls in total**.
 
 **Disposition: `deferred`.** Eight layers ran; seven are green and red-tested,
-and the mutation layer is at **93 / (143 − 37 − 8) = 0.949** against a threshold
-of 1.0, with **five open survivors**, each answered.
+and the mutation layer is at **96 / (143 − 37 − 8) = 0.9796** against a threshold
+of 1.0, with **two open survivors**, which are one gap.
 
 ## 0. What this unit IS, and where each half came from
 
@@ -41,14 +41,14 @@ followed by ONE INTEGER with nothing after it — and it is DERIVED from unit
 
 | layer | result | red-tested |
 |---|---|---|
-| record-form pricing (`record_form_probe.{f90,cpp,txt}`) | **37 of 37** candidate corpus records agree with gfortran's own list-directed READ on (IOSTAT, value), out of the same `CHARACTER(200) :: Words(2)` storage the unit reads from. First run, no defect found | the item is pre-set to `-987654` on both sides, so an UNTOUCHED slot is distinguishable from a stored value — which is the whole content of the INTEGER reader's failure mode |
+| record-form pricing (`record_form_probe.{f90,cpp,txt}`) | **41 of 41** candidate corpus records agree with gfortran's own list-directed READ on (IOSTAT, value), out of the same `CHARACTER(200) :: Words(2)` storage the unit reads from. First run, no defect found | the item is pre-set to `-987654` on both sides, so an UNTOUCHED slot is distinguishable from a stored value — which is the whole content of the INTEGER reader's failure mode |
 | PRINT-record pricing (`print_record_probe.{f90,cpp,txt}`) | **6 of 6** records byte-identical to gfortran's, including `-2147483648`, the widest value of the type | the derivation is unit #55's measured grammar with no separator between a CHARACTER item and a following INTEGER; a wrong field width would show on case 4 |
-| differential harness (`harness/ParseInput_Int_Opt.json`) | **12,059 checked, 0 failed, 0 inadmissible**, clean tree, three callee bridges kept. R4 compares 6 out-parameters **plus the stdout RECORD on 9,011 cases**. **No `no_oracle` entry** | **four stubs**: no-op **11,832** (predicted exactly); the PRINT **9,011**, equal to `record_nonempty` in the artifact EXACTLY and from a different code path; the `.NOT. AllowDefault_` arm **1,913**; the READ **908**. The last two were predicted as BRACKETS whose excesses must sum to 803 — and they do, exactly |
-| mutation (`mutation/ParseInput_Int_Opt.json`) | **144 mutants, 1 nocompile, 143 behavioural: 93 killed, 37 equivalent, 8 unreachable, 5 open. 93/98 = 0.949.** Sanitised, green baseline, `--workers 8`, 100 s. `declared_but_killed` and `unreachable_but_killed` both EMPTY | the score IS the red test (E4.6). The corpus change killed **exactly the four mutants the record search named** and nothing else, 89 → 93 |
-| mutation, VALUE ORACLE (`mutation/ParseInput_Int_Opt.value-oracle.json`) | **93/98 = 0.949 with `--sanitize` off** — the same survivor SET, so the score does not rest on the sanitiser | the control is the SURVIVOR SET, not the count. `killed_by_sanitizer: 3` are killed by value as well |
-| line coverage of the translation (`line_coverage.txt`) | 164 executable lines run, 22 never, at `-O0`. All 8 `unreachable` declarations derive from it, re-derived every run | entry-line count **12,059** = the case count; `make_unreachable.py` REFUSES if the coverage file does not name the current corpus |
+| differential harness (`harness/ParseInput_Int_Opt.json`) | **12,199 checked, 0 failed, 0 inadmissible**, clean tree, three callee bridges kept. R4 compares 6 out-parameters **plus the stdout RECORD on 9,071 cases**. **No `no_oracle` entry** | **four stubs**: no-op **11,972** (predicted exactly); the PRINT **9,071**, equal to `record_nonempty` in the artifact EXACTLY and from a different code path; the `.NOT. AllowDefault_` arm **1,923**; the READ **978**. The last two were predicted as BRACKETS whose excesses must sum to 845 — and they do, exactly. The identity has now held on THREE corpora |
+| mutation (`mutation/ParseInput_Int_Opt.json`) | **144 mutants, 1 nocompile, 143 behavioural: 96 killed, 37 equivalent, 8 unreachable, 2 open. 96/98 = 0.9796.** Sanitised, green baseline, `--workers 8`, ~100 s. `declared_but_killed` and `unreachable_but_killed` both EMPTY | the score IS the red test (E4.6). Three corpus rounds, each PREDICTED: 89 → 93 (four named, four killed, nothing else), 93 → 95 (three named, two killed — the third prediction refuted), 95 → 96 on the corrected form |
+| mutation, VALUE ORACLE (`mutation/ParseInput_Int_Opt.value-oracle.json`) | **96/98 = 0.9796 with `--sanitize` off** — the same survivor SET, so the score does not rest on the sanitiser | the control is the SURVIVOR SET, not the count. `killed_by_sanitizer: 3` are killed by value as well |
+| line coverage of the translation (`line_coverage.txt`) | 164 executable lines run, 22 never, at `-O0`. All 8 `unreachable` declarations derive from it, re-derived every run | entry-line count **12,199** = the case count; `make_unreachable.py` REFUSES if the coverage file does not name the current corpus |
 | gate, 27 scenarios (`gate/ParseInput_Int_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched | **two, run as a pair**: every parsed value + 1 moves **370,646 of 728,000** — the prediction was 1,857,893 of 5,252,000 and it is FALSIFIED, which is the finding (§5); the default arm moves **0**, predicted exactly |
-| post-integration (`harness/ParseInput_Int_Opt.postintegration.json`) | 12,059 checked, 0 failed | the reverse copy deleted from this unit's own wrapper: **2,624**, PREDICTED 2,624 from the partition before the run; reverted, rebuilt, green re-taken at 0 |
+| post-integration (`harness/ParseInput_Int_Opt.postintegration.json`) | 12,199 checked, 0 failed | the reverse copy deleted from this unit's own wrapper: **2,676**, PREDICTED 2,676 from the partition before the run; reverted, rebuilt, green re-taken at 0 |
 
 ## 1. C1 — what the plan said, and the half of it that is false
 
@@ -199,11 +199,13 @@ against: **951 of 12,059 cases (7.9%) reach the READ**.
 cases the record comparison is the only oracle for. Without the `vit_record`
 entry the same stub would have moved **zero**.
 
-## 5. C6 — mutation, and what the corpus change bought
+## 5. C6 — mutation, and what three corpus rounds bought
 
-    89 of 143, 54 survivors      the first sweep, nothing declared, 11,863 cases
-    93 of 143,  50 survivors     after the corpus change,           12,059 cases
-    93 of  98                    after 37 equivalent + 8 unreachable   = 0.949
+    89 of 143, 54 survivors   the first sweep, nothing declared, 11,863 cases
+    93 of 143, 50 survivors   round 1, loop 343f843,            12,059 cases
+    95 of 143, 48 survivors   round 2, loop 581925d,            12,199 cases
+    96 of 143, 47 survivors   round 3, loop 8f9d72f,            12,199 cases
+    96 of  98                 after 37 equivalent + 8 unreachable    = 0.9796
 
 **THE SURVIVOR RECORD SEARCH IS WHAT MADE THE CORPUS CHANGE A PREDICTION RATHER
 THAN A HOPE.** `survivor_record_search.{cpp,txt}` drives `list_read_ints`
@@ -213,11 +215,23 @@ comma, no semicolon) and records only the **function** can be handed. Unit #56
 read a `differs` on a function-only record as a corpus lever twice; the tag
 exists because of that.
 
-Four survivors named an ADMISSIBLE record. R14's `_NEIGHBOUR_VALUES` gained
-seven single-word entries (loop `343f843`), all five new forms priced against
-gfortran first, and the sweep then killed **exactly those four and nothing
-else**. A change that killed a fifth, or three of the four, would have been a
-different finding.
+FIVE survivors named an ADMISSIBLE record, and three rounds of R14 entries
+closed them. Every round was PREDICTED, every new form was priced against
+gfortran first, and **the second prediction was refuted** — which produced the
+rule that matters most in this section:
+
+    round 1  four named, four killed, nothing else moved        89 -> 93
+    round 2  three named, TWO killed                            93 -> 95
+    round 3  the third, on a corrected form                     95 -> 96
+
+The form written for `ab7420d6` in round 2 was a full-width lead carrying a
+repeat count of its own, paired with a `'*'` neighbour, and it could not reach
+the bound it was aimed at: **a lookahead that scans for a token STOPS AT that
+token**, so the star the record carried is exactly what kept the digit scan from
+running to the record's last byte. The scan reaches `len` only on a record with
+NO star in it, and the mutant that reads one past the end then finds its star in
+the NEIGHBOUR. Corrected, priced, and killed. The rule is now in `generate.py`'s
+own comment and in the RUNBOOK.
 
 **THE ADDITIVE CONTROL FAILED AND IS REPORTED RATHER THAN CLAIMED.** The old
 case file is not a prefix of the new one, and the reason is structural: entries
@@ -246,11 +260,14 @@ never-executed set. It cost nothing here or on the sibling only because
 `cppmutate` offers no mutant on either entry line. Repaired to split on the
 `LINES NEVER EXECUTED:` heading, and to refuse if that heading is absent.
 
-**All five open survivors are answered** in `mutation_survivors.txt`: two are
-corpus gaps with a named record and the exact generator entry that closes each,
-two are the same `is_eol` gap seen twice (reachable in unit #55, whose reader
-this is a byte-for-byte P4 copy of, and unreachable here), and one is the
-search's own negative control.
+**The two open survivors are ONE gap**, answered in `mutation_survivors.txt`:
+`is_eol` accepts CR and LF, which is live in unit #55's 2048-byte `Line` record
+and unreachable in this unit's `GetWords` word, and no corpus this campaign
+generates contains either byte. The campaign's usual repair — delete the branch
+no input can take and write the proof — is BLOCKED by the P4 relationship
+itself, because the reader is a byte-for-byte copy of unit #55's, where the
+branch is live. Three options, none of them this unit's to take; DECISIONS.md
+names them.
 
 ## 6. C7–C9 — integration and the gate
 
@@ -272,6 +289,11 @@ is the control that the regeneration was a no-op.
 
     default-arm    *Variable = 0  ->  *Variable = 12345
                    PREDICTED EXACTLY 0     MEASURED 0
+
+All three were re-taken at loop `8f9d72f` after the corpus rounds and gave back
+the same values to the digit. The gate never reads the case file, so that is the
+control saying what changed was the CORPUS and nothing the shipped controller
+does.
 
 The RUNBOOK records that this family's gate answer is set by the FAILURE CLASS
 and not by the site, on two numbers each measured twice. **An INTEGER control
@@ -295,9 +317,9 @@ arm, has NO COUNTER AT ALL. Both artifacts carry their prediction in a `--note`.
 
 ## 6b. E4.5 — the post-integration harness
 
-    post-integration          12,059 checked, 0 failed
-    the reverse copy deleted   2,624 of 12,059   PREDICTED 2,624, exact
-    reverted, rebuilt, green  12,059 checked, 0 failed
+    post-integration          12,199 checked, 0 failed
+    the reverse copy deleted   2,676 of 12,199   PREDICTED 2,676, exact
+    reverted, rebuilt, green  12,199 checked, 0 failed
 
 The prediction is the partition's `scalar-changed` column summed. The
 perturbation is ANCHORED TO THIS UNIT'S OWN WRAPPER — that CALL is generated
@@ -320,11 +342,14 @@ written a red artifact indistinguishable from the right one (unit #26).
 
 3. **`is_eol` in the copied reader.** Reachable in unit #55, where the record is
    the 2048-byte `Line`; not reachable here, where the record is a `GetWords`
-   word. Two open survivors live there and the honest repair is a decision about
-   the SHARED reader, raised in DECISIONS.md rather than taken from this unit.
+   word. The two open survivors and three never-executed lines share this one
+   cause, and the honest repair is a decision about the SHARED reader, raised in
+   DECISIONS.md rather than taken from this unit. **A P4 copy inherits its
+   source's REACHABILITY as well as its bytes** — the first time in this
+   campaign that the copy relationship has BLOCKED a repair rather than
+   transmitted a defect.
 
-4. **The five open mutants**, each of which names the record or the argument
-   that would settle it (`mutation_survivors.txt`).
+4. **The two open mutants**, which are item 3 seen from the other side.
 
 ## Files
 
