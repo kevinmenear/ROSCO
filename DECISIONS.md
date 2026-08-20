@@ -2,6 +2,144 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #60 — VariableSpeedControl — 2026-08-20
+
+**Disposition `deferred`.** Translation written and integrated, gate green at
+5,252,000 values and red-tested three ways. No differential harness, no mutation
+score, no post-integration harness — and one measurement is the reason for all
+three.
+
+### A UNIT'S CORPUS SIZE IS SET BY WHICH ARGUMENTS IT HANDS TO A CALLEE
+
+The first generating run died at `exit 137 after 68s` — SIGKILL, no count, no
+traceback, no artifact. `--no-build --dump-plan` costs zero seconds and had the
+answer waiting:
+
+    VariableSpeedControl  224 parameter(s) varied, 257 held, 10 knob(s)
+    FlapControl            21 varied      CableControl  31 varied
+    IPC                    55 varied      <- the campaign's previous largest
+
+    LocalVar: read WHOLE (passed to a callee) -- every field varied
+
+The line that does it is `Controllers.f90:346`:
+
+    LocalVar%GenTqAz = PIDController(LocalVar%AzError, ..., objInst, LocalVar)
+
+`harness/statevary.py::read_set` marks a bare argument read WHOLE, deliberately —
+its own docstring says over-approximating the read set costs cases and
+under-approximating it costs coverage silently. That is right, and here it costs
+179 varied parameters for one bare `LocalVar` **in a block that is dead in all 27
+scenarios**. 160 of the 224 are on the ±1e3 default, and R6's three largest
+sub-counts (4,422 real magnitudes, 5,360 isolating re-runs, 1,340 unpinned
+re-runs) iterate exactly the defaulted set.
+
+**The `N parameter(s) varied` line is the price of the harness, and it is
+available before any generation runs.** Read it first for any unit that passes a
+whole derived type to a callee.
+
+### AN OOM-KILLED GENERATOR REPORTS NOTHING, AND `ulimit -v` IS WHAT TURNS THAT
+### INTO A MEASUREMENT
+
+`exit 137` is all the kernel's OOM killer leaves. Under an address-space cap the
+same run raises `MemoryError`, with the traceback and the count in hand:
+
+    ulimit -v 5500000
+    cases  2000  maxrss   398 MB          <- 14 points, a FLAT slope
+    ...
+    cases 28000  maxrss  5294 MB
+    MemoryError after 28296 _case_impl calls
+      File "harness/generate.py", line 2150, in generate
+
+    (5294 - 398) MB / 26,000 cases  =  188 KB per case
+
+and the COUNT comes from a second probe that collapses each array value AFTER
+the fill has run — so the rng stream, the rule sequence and therefore the count
+are exactly a real run's, while the retained memory per case is ~200 bytes:
+
+    DONE cases=143261
+
+    143,261 x 188 KB  =  27.0 GB   against a 7.736 GiB VM
+    7.7 GB / 188 KB   =  ~41,000 cases fit — 29% of the corpus
+
+Two probes, about two minutes, and "it does not work" became two numbers and an
+arithmetic. Both are committed and both are runnable
+(`evidence/VariableSpeedControl/probe_corpus_{count,size}.py`).
+
+### MORE MEMORY IS NOT THE ANSWER, AND SAYING SO IS PART OF THE FINDING
+
+Granting the generation unlimited memory leaves two layers that are priced per
+case. `harness/emit.py` has a MEASURED SIGKILL ceiling between 84,754 and 95,310
+cases in this same VM (unit #53), and this signature carries ~4,500 doubles per
+case, so 143,261 cases is ~5.2 GB on disk. `vit_mutate.py` rebuilds and re-runs
+the WHOLE corpus per mutant; this corpus is 10× RefSpeedExclusion's at 3× the
+per-case width.
+
+### THREE LEVERS, PRICED, ALL THREE REFUSED WITH THE REASON
+
+1. **Stated ranges.** `statevary.constrain` sets `bounds_source = stated:<name>`
+   for any parameter named in `harness/ranges.toml`, and `Signature.defaulted`
+   is what R6's three big sub-counts iterate. Naming the 160 unconstrained
+   parameters would cut the count in roughly that proportion. **Refused on the
+   file's own rule**: every entry NARROWS the domain and must carry the
+   measurement or the source line that forces it. 160 entries written to make a
+   number smaller would be 160 judgements nobody made — and the corpus DESIGN
+   this unit needs is its own dispatch's work, not a side effect of wanting a
+   smaller number.
+
+2. **`array.array('d')` instead of a list of float objects in `_case_impl`.**
+   The same doubles at 8 bytes each: 188 KB → ~68 KB, and a decisive positive
+   control exists (regenerate FlapControl's corpus, require the `.bin`
+   byte-identical). **Refused because it does not close the gap alone** —
+   143,261 × 68 KB is still 9.7 GB — and because it touches the generator that
+   produced every other unit's evidence. X2 says fix the tool you control; it
+   does not say fix it in passing while another unit is open.
+
+3. **A transitive read set through `PIDController`.** Unit #34's translation
+   states exactly which `LocalVar` fields it touches. **Refused as X3**: it
+   changes how EVERY unit's corpus is chosen and would make this unit's evidence
+   incomparable with the 59 before it.
+
+### `integrated_unexercised` WAS CONSIDERED AND REJECTED
+
+This campaign reserves that word for units NO SCENARIO REACHES. Coverage records
+`DISCON.F90:117` — the single, unguarded call — in 23 of the 27 scenarios,
+407,976 times. The word for a unit that is reached, integrated and gate-green
+but whose P12 is absent is `deferred`, which is what `CheckInputs` (unit #29)
+carries for the same shape of reason.
+
+### THE GATE'S RED TESTS ARE WORTH MORE WHEN THEY ARE ALL THERE IS
+
+With no second instrument, "is the gate seeing the unit or seeing the edit" is
+the whole of this unit's credibility, so all three predictions were committed
+(`ee831e63`) before any of them ran (`c2b647c9`).
+
+    RT1  +1.0 on avrSWAP(47)          1,552,676 of 5,252,000
+         ADDITIVE, because MAX(0.0,x) is an exact zero wherever the demand is
+         non-positive and a scale through an exact zero is a no-op (unit #46).
+         scenario set EXACTLY the predicted 23; nothing in 10, 13, 14, 24.
+    RT2  K*Omega^2 Region-2 arm x2       49,659 of 5,252,000
+         scenario set EXACTLY {12} -- and the half of that prediction which
+         could have failed is that the other 22 scenarios which DO call this
+         unit stayed at zero. gen_power/gen_speed/gen_torque moved
+         15,991 / 15,998 / 15,990 of 16,000 against the arm's own 15,987
+         coverage hits.
+    RT3  NEGATIVE CONTROL, 1.0e30 into the Region 3 constant-torque arm
+         (0 hits in all 27)                    0 of 5,252,000, predicted exactly
+
+All three revert-verified by `gate.py` itself: restored, rebuilt, re-run, 0 of
+5,252,000. `gate.py` stamps RT3 `RED_TEST_FAIL` because its contract is that a
+perturbation moves something; for a negative control that string is the result,
+which is the same reading unit #59 recorded.
+
+### PROCEDURE
+
+No mutation sweep was started, so `mutate_guarded.sh` was never needed — and the
+reason is stated rather than left to be inferred: there was no corpus to sweep.
+Nothing was backgrounded and nothing was polled; every long command went through
+`scripts/run_if_time_remains.sh` with an estimate and an explicit Bash
+`timeout`. Two reset windows, each opened and closed inside a short sequence,
+every commit taken outside them.
+
 ## Unit #59 — RefSpeedExclusion — 2026-08-20
 
 **Disposition `integrated`.** Seven layers, all green and red-tested. Mutation

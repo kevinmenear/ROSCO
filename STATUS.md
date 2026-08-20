@@ -4,6 +4,96 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-20: unit #60 `VariableSpeedControl` is `deferred`. FIRST
+dispatch. The translation is written, `vit check`-clean, integrated with
+`--reverse-copy` and shipping; the gate is green at 5,252,000 values / 351
+channels / 27 scenarios and RED-TESTED THREE WAYS, one of them a negative
+control, with every prediction written before its run. THERE IS NO
+DIFFERENTIAL HARNESS AND THEREFORE NO MUTATION SCORE, and that is one
+measurement rather than a judgement.**
+
+The generator-torque controller, `Controllers.f90:212-365`: three control laws,
+the shutdown ramp, a saturation, a rate limit, an open-loop override, and
+`avrSWAP(47)`. Six callees, all six already translated and all six CALLED
+(`PIController`, `saturate`, `ratelimit`, `interp1d`, `unwrap`, `PIDController`).
+
+**THE FINDING IS THAT A UNIT'S CORPUS SIZE IS SET BY WHICH ARGUMENTS IT HANDS
+TO A CALLEE, NOT BY HOW BIG ITS BODY IS.**
+
+    harness.sh ... --out harness/VariableSpeedControl.json
+      run_if_time_remains: exit 137 after 68s        <- SIGKILL, and nothing else
+
+    --no-build --dump-plan, ZERO seconds, before any generation:
+      224 parameter(s) varied, 257 held    <- FlapControl 21, CableControl 31,
+      LocalVar: read WHOLE (passed to a callee)          IPC 55
+      UNCONSTRAINED: 160 varied parameter(s) on the +/-1e3 default
+
+    Controllers.f90:346
+      LocalVar%GenTqAz = PIDController(..., objInst, LocalVar)   <- the bare
+                                                                    LocalVar
+
+`harness/statevary.py::read_set` marks a bare argument read WHOLE — "what the
+callee touches is not visible here" — so `LocalVar`'s 179 C parameters are all
+varied. **The call is inside a block that is DEAD in all 27 scenarios**, and it
+still sets the price of the harness.
+
+**AN OOM-KILLED GENERATOR REPORTS NOTHING, AND `ulimit -v` IS WHAT TURNS THAT
+INTO A MEASUREMENT.** Two probes, about two minutes:
+
+    probe_corpus_count.py   143,261 cases   (array values collapsed AFTER the
+                                             fill, so the rng stream and the
+                                             COUNT are a real run's)
+    probe_corpus_size.py    188 KB/case     (a FLAT slope over 14 points,
+                                             398 MB at 2,000 -> 5,294 MB at
+                                             28,000, then MemoryError with a
+                                             traceback instead of a SIGKILL)
+    ----------------------------------------
+    143,261 x 188 KB     =  27.0 GB   against a 7.736 GiB VM
+    7.7 GB / 188 KB      =  ~41,000 cases fit, 29% of the corpus
+
+**AND MORE MEMORY IS NOT THE ANSWER.** At 143,261 cases `harness/emit.py` would
+write ~5.2 GB and it has a MEASURED SIGKILL ceiling between 84,754 and 95,310
+cases in this same VM (unit #53); `vit_mutate.py` re-runs the WHOLE corpus per
+mutant, and this is 10x RefSpeedExclusion's corpus at 3x the per-case width.
+Three levers were priced and all three refused with the reason in
+`evidence/VariableSpeedControl/corpus_wall.txt`; the shortest of them is that
+`harness/ranges.toml`'s own header requires a measurement or a source line per
+entry, and 160 entries written to make a number smaller would be 160 judgements
+nobody made.
+
+| layer | result | red-tested |
+|---|---|---|
+| translation (`translations/Controllers/variablespeedcontrol.cpp`) | transcribed statement for statement; `vit check` 15 checks, no known-shape defects | — |
+| integration (`--reverse-copy`) | the wrapper was READ before it was believed: three copy-backs, the `localvariables` one carries this unit's thirteen scalar writes; `avrSWAP` crosses directly as `REAL(4)` assumed-size | the gate below is taken against this build |
+| gate, 27 scenarios (`gate/VariableSpeedControl.json`) | **5,252,000 values / 351 channels, 0 mismatched** | **three, one a NEGATIVE CONTROL**: the return path **1,552,676** across EXACTLY the predicted 23 scenarios; the K\*Omega² Region-2 arm **49,659** across EXACTLY `{12}`; a 1.0e30 write on a zero-coverage arm **0**, predicted exactly. All three revert-verified at 0 |
+| differential harness | **NOT TAKEN** | — |
+| mutation score | **NOT TAKEN** — needs the corpus | — |
+| post-integration harness | **NOT TAKEN** — needs the corpus | — |
+
+**THE RED TESTS ARE WORTH MORE HERE BECAUSE THEY ARE ALL THERE IS.** With no
+second instrument, "is the gate seeing the unit or seeing the edit" is the whole
+of this unit's credibility. RT2 named the scenario set `{12}` before the run and
+measured exactly `{12}` — which required the other 22 scenarios that DO call the
+unit to stay at zero — and its three `gen_*` counts (15,990 / 15,991 / 15,998 of
+16,000) sit against the arm's own 15,987 coverage hits. RT3 moved 0 with a
+1.0e30 write one statement away.
+
+**WHAT IS NOT COVERED, AS A LIST OF LINES RATHER THAN A HEDGE.** Ten arms are
+dead in all 27 scenarios: `Controllers.f90:245`, `:249`, `:268`, `:283`, `:285`,
+`:287`, `:288-296`, `:300`, `:324-347`, `:362`. Three guards are tested on every
+call and never true (`:267`, `:322`, `:361`). The open-loop block is this unit's
+ONLY call to `interp1d`, `unwrap` and `PIDController`, so **three of the six
+callees are never reached by any instrument this unit has**.
+`integrated_unexercised` was considered and rejected: this campaign reserves that
+word for units NO SCENARIO REACHES, and 23 of 27 call this one 407,976 times.
+
+**Procedure.** No mutation sweep was started, so `mutate_guarded.sh` was never
+needed; nothing was backgrounded and nothing was polled. Two reset windows, each
+opened and closed inside a short sequence, every commit taken outside them.
+Seven commits, one per expensive artifact.
+
+---
+
 **As of 2026-08-20: unit #59 `RefSpeedExclusion` is `integrated`. FIRST
 dispatch. SEVEN layers, all green and red-tested, and the mutation layer at
 32 / (35 - 3) = 1.0000 sanitised and 33 / (36 - 3) = 1.0000 with the sanitiser
@@ -5569,12 +5659,17 @@ post-integration harness 3610 of 3610.
 
 ## Counts
 
-59 attempted / **53 integrated** / 0 integrated_unexercised / 0 out_of_scope /
-**5 deferred** (unit #29 `CheckInputs`, unit #31 `Debug`, unit #32 `FindLine`,
-unit #54 `ParseDbAry_Opt`, unit #55 `ParseInAry_Opt`) /
-**1 blocked** (unit #17 `Read_OL_Input`).
+60 attempted / **53 integrated** / 0 integrated_unexercised / 0 out_of_scope /
+**6 deferred** (unit #29 `CheckInputs`, unit #31 `Debug`, unit #32 `FindLine`,
+unit #54 `ParseDbAry_Opt`, unit #55 `ParseInAry_Opt`, unit #60
+`VariableSpeedControl`) / **1 blocked** (unit #17 `Read_OL_Input`).
 
-69 units in `plan.json`; 10 remain. 53 + 5 + 1 + 10 = 69.
+69 units in `plan.json`; 9 remain. 53 + 6 + 1 + 9 = 69.
+
+RECOUNTED at unit #60 from `plan.json`, not incremented. It was CORRECT for the
+first time in twelve recounts -- it read `59 / 53 integrated / 5 deferred / 10
+remain` and unit #59 had left it current. The only edit is this unit's own move
+into `deferred`, which is why this paragraph does not say what was missing.
 
 RECOUNTED at unit #59 from `plan.json`, not incremented. It was **one unit
 stale** — it read `57 / 51 integrated / 12 remain`, missing unit #58
