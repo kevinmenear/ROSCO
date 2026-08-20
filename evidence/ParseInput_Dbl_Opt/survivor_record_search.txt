@@ -1,3 +1,43 @@
+SUPERSEDED, AND KEPT FOR TWO REASONS -- ONE OF WHICH IS A DEFECT IN THIS
+INSTRUMENT THAT THE SECOND DISPATCH FOUND.
+
+1. ITS SUBJECT IS GONE. This searched a record space for a record distinguishing
+   each of the 21 open mutation survivors. There are none: the second dispatch
+   closed the unit at 144 / 144. The mutant ids below no longer denote the same
+   sites either -- two repairs to the translation renumbered them, and a mutant
+   id is an occurrence index.
+
+2. PART OF ITS RECORD SPACE IS INADMISSIBLE TO THE UNIT, and no row says so.
+   The space is "every string of length 1..3 ... at the HEAD of a 200-byte
+   blank-padded record and again at its TAIL, so the token's last character is
+   the record's last byte". **The unit can never be handed a TAIL record.**
+   `GetWords` writes `Words(IW) = Line(Ch+1:Ch+NextWhite-1)` -- a word
+   LEFT-JUSTIFIED in a blank-padded `CHARACTER(200)` -- so a record whose
+   non-blank token sits at bytes 197-199 does not exist for this unit. Rows
+   reported as `TAIL|...` therefore name records admissible to
+   `list_read_reals` (the FUNCTION) and not to `ParseInput_Dbl_Opt` (the UNIT).
+
+   THIS IS THE SAME CLASS OF ERROR THE FIRST DISPATCH ALREADY CORRECTED ONCE,
+   and missed the second instance of. Section 6 of
+   `mutation/ParseInput_Dbl_Opt.equivalences.md` records that two rows here were
+   misfiled as corpus levers because `GetWords`' separator set means no byte of
+   `Words` is ever a comma or a semicolon. The separator set was checked; the
+   JUSTIFICATION was not. Both are properties of the same callee.
+
+   The general form, and it is what belongs in a runbook rather than here: **a
+   search that drives an internal function directly has a wider input space than
+   the unit does, and the filter is the CALLEE that stands between them --
+   every property of it, not the one that came to mind.**
+
+   Where it mattered: `71dee475` (`q < len` -> `q <= len` in the IEEE-word copy
+   loop) is reported below as distinguished by `TAIL|nan|...`, which the unit
+   cannot be handed. It was closed for a different reason -- the repair that
+   removed the `n < 62` bound made `q` able to reach `len` at all, and the
+   `repword` corpus form then killed it.
+
+The original bytes follow unedited.
+========================================================================
+
 ParseInput_Dbl_Opt -- a record that distinguishes each surviving mutant
 from the SHIPPED translation, searched rather than argued.
 Built with -fsanitize=address,undefined; the BASELINE ran clean under

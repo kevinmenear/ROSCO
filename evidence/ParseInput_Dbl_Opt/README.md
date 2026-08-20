@@ -9,21 +9,38 @@ READ**. Three callees — `FindLine` (#32), `GetWords` (#8), `Int2LStr` (#10) �
 all already translated. Live in all 27 scenarios: **73 calls per scenario**
 (146 in scenario 1), 2,044 calls in total.
 
-**Disposition: `deferred`.** Seven layers ran. **Six are green and red-tested;
-the seventh, mutation, is below the campaign's threshold of 1.0 at
-110 / 131 = 0.8397** — and that shortfall is this unit's disposition.
+**Disposition: `integrated`.** Eight layers ran; all eight are green and
+red-tested, and the mutation layer is at the campaign's threshold.
 
-**FIRST DISPATCH.** Every number below was taken at loop `10afabe`.
+**SECOND DISPATCH, 2026-08-19.** The first dispatch closed `deferred` on P12
+alone at 110 / 131 = 0.8397 with 21 open survivors. This one closes at
+**144 / 144 = 1.000** — and the way it got there is the substance, because it
+was not twenty-one arguments. **Two of the survivors were mutants of a constant
+that was WRONG**, and pricing the record that would have killed them found the
+defect instead. Everything below was re-taken at loop `cc32476`; `revcheck`
+reports one revision across all eleven result artifacts.
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness (`harness/ParseInput_Dbl_Opt.json`) | **11,562 checked, 0 failed, 0 inadmissible**, against the CLEAN Fortran with all three callee bridges kept. R4 compares the return value plus 6 out-parameters — `Variable`, `ErrVar_size_avcMSG`, `ErrVar_aviFAIL`, `ErrVar_ErrStat`, `ErrVar_ErrMsg_n`, `ErrVar_ErrMsg` — **plus the stdout RECORD, on 9,148 cases**. 15 parameters varied, 2 held. **No `no_oracle` entry**: §4 | **four stubs, two predicted EXACTLY and two as brackets whose excesses had to sum**: no-op **11,363** ✓ exact; the PRINT **9,148** ✓ exact; the `.NOT. AllowDefault_` arm **1,937** in a predicted [1845, 2056]; the READ **278** in a predicted [159, 370]; and (1937−1845) + (278−159) = **211**, exact |
-| mutation (`mutation/ParseInput_Dbl_Opt.json`) | **181 mutants, 4 nocompile, 177 behavioural: 110 KILLED, 27 EQUIVALENT, 19 UNREACHABLE, 21 SURVIVED, 110/131 = 0.8397.** SANITISED, green baseline, clean tree, `--workers 8`, 121 s. `declared_but_killed` and `unreachable_but_killed` both EMPTY | — the score IS the red test (E4.6). All 21 survivors are answered in `mutation_survivors.txt`, **16 of them by a named record** |
-| line coverage of the translation (`line_coverage.txt`) | **200 executable lines run, 38 never** over the 11,562 cases, at `-O0`. The measurement all 19 `unreachable` declarations are DERIVED from, by `make_unreachable.py` | **three controls**: the entry line's gcov count is 11,562 = the case count; NON-survivors on never-run lines that are not nocompile number **0**; and the four nocompile ids were measured independently and the count matches the sweep's own `nocompile: 4` |
-| survivor record search (`survivor_record_search.txt`, `words2_probe.txt`) | **16 of the 21 open survivors distinguished over 131,312 records, all by a VALUE and none by an ADDRESS.** 16 of the then-23 at the default `Words(2)`; two of those were afterwards found equivalent AT THE UNIT (§5c), and two more were found by re-running the six `NONE`s with a digit-leading `Words(2)` — the search's own blind spot.** Nothing folded into the score | the **negative control is built into the shape**: the search takes the record length as a literal `200`, so `479d0b11` — the mutant of the constant `MaxParamLength` itself — cannot be reached and must come back `NONE`. It does |
-| mutation, VALUE ORACLE (`mutation/ParseInput_Dbl_Opt.value-oracle.json`) | **110 of 177, 0.8397 — the same number**, and the same corpus and declarations. Run as a control on `killed_by_sanitizer: 5`, and it REFUTED the reading of that field | the control is the SURVIVOR SET, not the count: the two runs disagree by exactly one mutant each way, which is why the totals match. §5b |
-| post-integration (`harness/ParseInput_Dbl_Opt.postintegration.json`) | 11,562 checked, **0 failed** | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **2,056 of 11,562**, PREDICTED 2,056 from the partition before the run; reverted, rebuilt, green re-taken at 0 |
-| gate, 27 scenarios (`gate/ParseInput_Dbl_Opt.json`) | 5,252,000 values / 351 channels, **0 mismatched**, 28 s | **TWO, both predicted**: every parsed value + 1.0 moves **1,857,893** across 147 channels, revert-verified at 0; the default arm moves **0**, and the artifact carries the argument (§6) |
+| **the two defects** (`record_form_probe.{f90,cpp,txt}`, `nan_payload_probe.{f90,cpp}`) | **`parse_real` truncated any IEEE word past 62 characters**, so `nan(<58 chars>)` — which gfortran reads as a NaN — was rejected by the C++ with the item untouched, on **138 of the 197 payload lengths a 200-byte record can carry**. And **`list_read_reals` had no repeat-count ceiling**: `std::strtol` saturates at `LONG_MAX`, so `200000001*7` and `999…9*7` were accepted where the reference rejects them | the wrong artifact is kept unedited at `record_form_probe.FIRST.txt` (C12), captured before either fix. All **30** planted record forms now agree with gfortran on (IOSTAT, bits) |
+| differential harness (`harness/ParseInput_Dbl_Opt.json`) | **13,802 checked, 0 failed, 0 inadmissible** (was 11,562), against the CLEAN Fortran with all three callee bridges kept. R4 compares the return value plus 6 out-parameters **plus the stdout RECORD, on 10,108 cases**. No `no_oracle` entry | **four stubs**: no-op **13,603**; the PRINT **10,108**, which equals `record_nonempty` in the artifact EXACTLY, from a different code path; the `.NOT. AllowDefault_` arm **2,097**; the READ **1,398** (was 278 — the corpus now reaches the READ five times as often) |
+| mutation (`mutation/ParseInput_Dbl_Opt.json`) | **183 mutants, 4 nocompile, 179 behavioural: 144 KILLED, 26 EQUIVALENT, 9 UNREACHABLE, 0 SURVIVED. 144 / 144 = 1.000.** SANITISED, green baseline, clean tree, `--workers 8`, 124 s. `declared_but_killed` and `unreachable_but_killed` both EMPTY | — the score IS the red test (E4.6), and both refusals FIRED during this dispatch before they were satisfied: two declared equivalences were killed and one declared-unreachable was refuted. §5 |
+| mutation, VALUE ORACLE (`mutation/ParseInput_Dbl_Opt.value-oracle.json`) | **144 / 144 = 1.000 on the same corpus with `--sanitize` off** — the same survivor set (empty), so the score does not rest on the sanitiser. `killed_by_sanitizer: 10` in the sanitised run are all killed by VALUE as well | the control is the survivor SET, not the count |
+| line coverage of the translation (`line_coverage.txt`) | **215 executable lines run, 28 never** (was 200/38) over the 13,802 cases, at `-O0`. The measurement all 9 `unreachable` declarations are DERIVED from, by `make_unreachable.py`, which REFUSES if the file does not name the current corpus | the entry line's gcov count is **13,802** = the case count |
+| gate, 27 scenarios (`gate/ParseInput_Dbl_Opt.json`) | 5,252,000 values / 351 channels, **0 mismatched** | **TWO**: every parsed value + 1.0 moves **1,857,893** — *the same number the first dispatch measured, across both repairs and a corpus change*, which is the control saying the repairs touch nothing `Examples/DISCON.IN` contains; and the default arm moves **0**, with the argument in §6 |
+| gate, two DECLARED EQUIVALENCES (`gate/ParseInput_Dbl_Opt.equivalence.*.json`) | the two whose arguments are the longest chains — `8e796788` and `575c6151`, both in `match_word` — put through all 27 scenarios: **0 of 5,252,000 each, both predicted before the runs** (`gate.equivalence_predictions.txt`) | a non-zero would have REFUTED a declaration this dispatch made. The positive control is the 1,857,893 above, on the same build |
+| post-integration (`harness/ParseInput_Dbl_Opt.postintegration.json`) | 13,802 checked, **0 failed** | the reverse copy deleted from this unit's own wrapper: **2,776 of 13,802**, PREDICTED 2,776 from the re-taken partition before the run; reverted, rebuilt, green re-taken at 0 |
+
+**WHAT 1.000 DOES NOT COVER**, and the list did not get shorter:
+`evidence/ParseInput_Dbl_Opt/mutation_survivors.txt` §D. The largest item is
+that **95 of this unit's 278 mutants were never enumerated**, at `cppmutate`'s
+40-per-operator cap — re-measured this dispatch, because the repairs moved the
+population. A ratio over what was offered is not a ratio over what exists.
+
+**EVERYTHING BELOW THIS LINE IS THE FIRST DISPATCH'S TEXT** and its numbers are
+the 11,562-case corpus's, except where a section says otherwise. It is kept
+because its reasoning is what the second dispatch tested — including the places
+where that reasoning turned out to be wrong, which are marked.
 
 **No kernel.** The plan allowed "kernel replay **or** direct-call harness", and
 the direct-call harness is the layer taken — as for units #45 through #55. It is
