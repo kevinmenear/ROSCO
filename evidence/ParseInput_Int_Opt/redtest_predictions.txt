@@ -1,0 +1,99 @@
+ParseInput_Int_Opt -- the four harness stub predictions, WRITTEN BEFORE THE RUNS
+================================================================================
+
+A red test whose number can be predicted exactly is one that can be WRONG, and a
+red test that cannot be wrong is not evidence about the instrument (RUNBOOK, the
+Parse* family's gate rule, run here on the differential harness instead).
+
+Every number below is read off `harness_partition.txt`, which classifies all
+11,863 cases by the arm the REFERENCE took -- read off the reference's own
+returned message and its own returned `aviFAIL`, not off the translation.
+
+    arm                          cases   scalar-changed   record   Var moved
+    default-warned                8927                0     8927         273
+    not-allowed                   1807             1807        0           0
+    error, msg refused             761              761        0           0
+    pre-failed                     184                0        0           0
+    read-ok                        184                0        0         169
+    TOTAL                       11,863             2568     8927         442
+
+THE CELL THE PROBE COULD NOT SPLIT, and the identity that resolves it for free.
+R13's short-capacity block sizes `ErrVar%ErrMsg`'s staging buffer below the
+message on 761 cases, so the message the reference returns is the one the case
+ARRIVED with. Both the `.NOT. AllowDefault_` arm and the READ-error arm land
+there -- both set `aviFAIL = -1`, neither writes a record -- and nothing in the
+returned state separates them. Write
+
+    A = the `.NOT. AllowDefault_` cases inside that cell
+    B = the READ-error cases inside that cell
+    A + B = 761                                     <- fixed by the table
+
+Two point predictions would each be a guess about the split. Two BRACKETS are
+not: the interval is derivable, and the SUM is a number the table fixes before
+either run (unit #56's rule, and unit #47's arm-attribution control run the
+other way round).
+
+
+1. noop-stub -- the whole body deleted
+   PREDICTED EXACTLY 11,664
+
+   11,863 minus the cases on which the reference itself changes nothing the
+   harness compares:
+       184  pre-failed  -- `aviFAIL < 0` on entry, the reference RETURNs at the
+                          top and so does the stub
+        15  read-ok cases in which `Variable` did NOT move (184 - 169) and no
+            record was written
+   A number BELOW this would mean the harness cannot see an output the reference
+   writes. A number ABOVE it would mean the partition is wrong.
+
+
+2. no-print-stub -- the PRINT deleted, `Variable = 0` above it untouched
+   PREDICTED EXACTLY 8,927
+
+   The `record` column, and it must equal `record_nonempty` in
+   `harness/ParseInput_Int_Opt.json` -- which is 8,927, computed by a DIFFERENT
+   code path (the harness counts non-empty captured records; the partition
+   counts the arm the reference took). Two independent routes to one number.
+
+   This is the sharpest of the four: without `vit_record = { compare_record }`
+   in `harness/ranges.toml` the same stub would move ZERO.
+
+
+3. no-allowdefault-arm-stub -- the `.NOT. AllowDefault_` arm deleted
+   PREDICTED IN [1,807, 2,568]   =>  A = measured - 1,807
+
+   Lower bound: the 1,807 cases whose returned message the probe could read.
+   Upper bound: those plus the whole refused cell.
+
+
+4. no-read-stub -- the list-directed READ deleted, status forced to 0
+   PREDICTED IN [169, 930]       =>  B = measured - 169
+
+   Lower bound: the 169 read-ok cases on which the READ moved `Variable`. The
+   15 read-ok cases where it did not are invisible to this stub by construction.
+   Upper bound: those plus the whole refused cell.
+
+   THE INTEGER READER MAKES ONE HALF OF THIS EXACT WHERE THE REAL ONE DOES NOT.
+   `list_read_ints` stores NOTHING on any failure -- measured over the fourteen
+   5010 rows of `record_form_probe.txt`, every one of which leaves the item at
+   its -987654 sentinel -- so a READ-error case moves `aviFAIL` and the message
+   and never `Variable`. Unit #56's REAL reader has a store-then-fail path and
+   could not say that.
+
+
+   CONTROL, stated before either run and checkable afterwards:
+
+       (measured #3 - 1,807) + (measured #4 - 169) = 761
+
+   If the two excesses do not sum to 761 the arm attribution is wrong, and that
+   is a finding about the partition rather than about either stub.
+
+
+AND ONE NUMBER THAT IS NOT A PREDICTION. `Variable IN /= 0` is 360 of 11,863,
+and 0 of the 184 read-ok cases and 0 of the 761 refused-message cases. So every
+case that reaches the READ and succeeds arrives with `Variable == 0`. A mutant
+whose only effect is to store 0 where the reference stores nothing is invisible
+on those cases -- the same shape unit #56 measured for its REAL item and
+refused to buy with a range pin, because a pin is global to the unit and would
+delete R6's integer ladder from this unit's only free scalar. Measured here
+rather than inherited; the mutation survivors are read against it.
