@@ -11,7 +11,6 @@
 
 #include "vit_types.h"
 
-#include <algorithm>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -175,23 +174,49 @@ std::string int2lstr_trimmed(int Num) {
 // THE ITEM HALF -- this unit's own, and the whole of it.
 // ---------------------------------------------------------------------------
 
-// A Fortran CHARACTER assignment `dst = src`: copy the leftmost `len_dst` bytes
-// of `src` and blank-fill whatever is left. Fortran 2018 10.2.1.3(10). This is
-// the ONE rule both statements below need, so it is written once:
+// A Fortran CHARACTER assignment `dst = src`: transfer min(LEN(src), LEN(dst))
+// bytes and BLANK-FILL the remainder of dst, truncating silently when src is
+// the longer. Fortran 2018 10.2.1.3(10). This is the ONE rule both statements
+// below need, so it is written once:
 //
 //     Variable = 'unused'                    <- src is the 6-byte literal
 //     READ (Words(1),'(A)') Variable         <- src is the 200-byte record
 //
 // and the second is that statement, for the reason set out at the top of the
-// file. `dst` and `src` never overlap here (`Variable` is a dummy of the
-// caller's, `Words` is this frame's local), so `memcpy` is right.
+// file.
+//
+// COPIED BYTE FOR BYTE from `translations/ROSCO_Helpers/findline.cpp` (P4,
+// unit #32), and the reason to copy THAT form rather than write the obvious
+// one is a MEASUREMENT that unit already paid for. The obvious form is
+//
+//     const int n = std::min(len_dst, len_src);
+//     if (n > 0)        std::memcpy(dst, src, n);
+//     if (len_dst > n)  std::memset(dst + n, ' ', len_dst - n);
+//
+// and it was this unit's first draft. Its first sweep left THREE of its
+// mutants alive, which are the three unit #32's comment names at `GetWords`'
+// version of the same expression:
+//
+//     8b83f1b6  min(len_dst, len_src) -> min(len_src, len_dst)   SURVIVED
+//     dac6e85c  'if (n > 0)'          -> 'if (n >= 0)'           SURVIVED
+//     1db4dd8f  'if (len_dst > n)'    -> 'if (len_dst >= n)'     SURVIVED
+//
+// -- `min` is commutative, and a `memcpy`/`memset` of zero bytes is a no-op, so
+// all three are behaviour-preserving and could only ever be DECLARED. Unit #7's
+// rule settles what to do with a mutant no value comparison can reach: delete
+// the SITE that admits it rather than argue about it. The loop below has no
+// `min` to swap and no zero-length guard to widen; its protection is the loop's
+// own bound, and its one surviving predicate, `i <= len_src`, changes an ANSWER
+// at exactly the truncation boundary -- which this unit's corpus straddles,
+// because `Variable = 'unused'` truncates at every `len_Variable < 6` and pads
+// at every one above it (808 cases of 14,116 on the first side,
+// `evidence/ParseInput_Str_Opt/harness_partition.txt`).
+//
+// It is also the safer program: `dst` cannot be left by a loop that counts to
+// `len_dst`.
 void char_assign(char* dst, int len_dst, const char* src, int len_src) {
-    const int n = std::min(len_dst, len_src);
-    if (n > 0) {
-        std::memcpy(dst, src, static_cast<std::size_t>(n));
-    }
-    if (len_dst > n) {
-        std::memset(dst + n, ' ', static_cast<std::size_t>(len_dst - n));
+    for (int i = 1; i <= len_dst; ++i) {
+        dst[i - 1] = (i <= len_src) ? src[i - 1] : ' ';
     }
 }
 
