@@ -247,6 +247,27 @@ MODULE ROSCO_Helpers
         END SUBROUTINE parseinput_dbl_opt_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of ParseInput_Int_Opt
+    INTERFACE
+        SUBROUTINE parseinput_int_opt_c(FileLines, n_FileLines, len_FileLines, VarName, len_VarName, Variable, FileName, len_FileName, ErrVar, has_AllowDefault, AllowDefault, has_UnEc, UnEc) BIND(C, NAME='parseinput_int_opt_c')
+            USE ISO_C_BINDING
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: FileLines(*)
+            INTEGER(C_INT), VALUE :: n_FileLines
+            INTEGER(C_INT), VALUE :: len_FileLines
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: VarName(*)
+            INTEGER(C_INT), VALUE :: len_VarName
+            INTEGER(C_INT), INTENT(INOUT) :: Variable
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: FileName(*)
+            INTEGER(C_INT), VALUE :: len_FileName
+            TYPE(C_PTR), VALUE :: ErrVar
+            INTEGER(C_INT), VALUE :: has_AllowDefault
+            INTEGER(C_INT), VALUE :: AllowDefault
+            INTEGER(C_INT), VALUE :: has_UnEc
+            INTEGER(C_INT), VALUE :: UnEc
+        END SUBROUTINE parseinput_int_opt_c
+    END INTERFACE
+
 CONTAINS
 
     !=======================================================================
@@ -315,84 +336,63 @@ CONTAINS
 
     !=======================================================================
     ! Parse integer input: read line, check that variable name is in line, handle errors
-    subroutine ParseInput_Int_Opt(FileLines, VarName, Variable, FileName, ErrVar, AllowDefault, UnEc)
+    SUBROUTINE ParseInput_Int_Opt(FileLines, VarName, Variable, FileName, ErrVar, AllowDefault, UnEc)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : ErrorVariables
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
+        IMPLICIT NONE
+        INTEGER(4), INTENT(INOUT) :: Variable
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        LOGICAL, INTENT(IN), OPTIONAL :: AllowDefault
+        INTEGER(4), INTENT(IN), OPTIONAL :: UnEc
+        CHARACTER(*), INTENT(IN) :: FileLines(:)
+        CHARACTER(*), INTENT(IN) :: VarName
+        CHARACTER(*), INTENT(IN) :: FileName
+        CHARACTER(KIND=C_CHAR) :: FileLines_c((LEN(FileLines)) * (SIZE(FileLines)))
+        INTEGER :: vit_i_FileLines, vit_j_FileLines
+        CHARACTER(KIND=C_CHAR) :: VarName_c(LEN(VarName))
+        INTEGER :: vit_i_VarName
+        CHARACTER(KIND=C_CHAR) :: FileName_c(LEN(FileName))
+        INTEGER :: vit_i_FileName
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
 
-        CHARACTER(*),           INTENT(IN   ), DIMENSION(:) :: FileLines   ! Input file unit
-        CHARACTER(*),           INTENT(IN   )               :: VarName   ! Input file unit
-        CHARACTER(*),           INTENT(IN   )               :: FileName   ! Input file unit
-        TYPE(ErrorVariables),   INTENT(INOUT)               :: ErrVar   ! Current line of input
-        INTEGER(IntKi),         INTENT(INOUT)               :: Variable   ! Variable
-        Integer(IntKi), OPTIONAL, INTENT(IN   )               :: UnEc   ! Variable
+        ! Local variables for OPTIONAL args
+        INTEGER(C_INT) :: has_AllowDefault_flag
+        INTEGER(C_INT) :: AllowDefault_val
+        INTEGER(C_INT) :: has_UnEc_flag
+        INTEGER(C_INT) :: UnEc_val
 
-
-        ! Flag (usually control mode) specifying whether default is allowed, 0 - yes, nonzero - no
-        LOGICAL, OPTIONAL,      INTENT(IN   )        :: AllowDefault   
-        
-        INTEGER(IntKi)                          :: CurLine   ! Current line of input
-        CHARACTER(MaxParamLength)               :: Words       (2)               ! The two "words" parsed from the line
-        CHARACTER(MaxParamLength)               :: VarNameUC
-        CHARACTER(MaxLineLength)                :: Line
-        INTEGER(IntKi)                          :: ErrStatLcl           ! Error status local to this routine.
-        INTEGER(IntKi)                          :: I, VarLineIndex                    ! Line indexer
-        LOGICAL                                 :: AllowDefault_, FoundLine
-        CHARACTER(*), PARAMETER                 :: RoutineName = 'ParseInput_Int_Opt'
-
-
-        ! Figure out if we allow default
-        AllowDefault_ = .TRUE.
-        if (PRESENT(AllowDefault)) AllowDefault_ = AllowDefault    
-
-        ! If we've already failed, don't read anything
-        IF (ErrVar%aviFAIL >= 0) THEN
-
-            CALL FindLine(FileLines, VarName, FoundLine, Line, CurLine)
-
-            ! Separate line again
-            CALL GetWords ( Line, Words, 2 )  
-
-            ! PRINT *, "Line: ", Line
-
-            ! Print warning with default
-            IF (.NOT. FoundLine) THEN
-                IF (.NOT. AllowDefault_) THEN
-                    ErrVar%aviFAIL = -1
-                    ErrVar%ErrMsg = RoutineName//':Missing or default values are not allowed for '//TRIM( VarName )//'. Please check control modes.'
-                    RETURN
-                ENDIF
-
-                Variable = 0     ! Default of integer inputs is 0 for now
-                PRINT *, "ROSCO Warning: Did not find "//TRIM( VarName )//" in input file.  Using default value of ", Variable
-            ENDIF
-
-            ! Debugging: show what's being read, turn into Echo later
-            IF (DEBUG_PARSING) THEN
-                print *, 'Read: '//TRIM(Words(1))//' and '//TRIM(Words(2)),' on line ', CurLine
-            END IF
-
-            ! IF We haven't failed already
-            IF (ErrVar%aviFAIL >= 0 .AND. FoundLine) THEN        
-
-                ! Read the variable
-                READ (Words(1),*,IOSTAT=ErrStatLcl)  Variable
-                IF ( ErrStatLcl /= 0 )  THEN
-                    ErrVar%aviFAIL  = -1
-                    ErrVar%ErrMsg   =  NewLine//' >> A fatal error occurred when parsing data from "' &
-                        //TRIM( FileName )//'".'//NewLine//  &
-                        ' >> The variable "'//TRIM( Words(2) )//'" was not assigned valid INTEGER value on line #' &
-                        //TRIM( Int2LStr( CurLine ) )//'.'//NewLine//&
-                        ' >> The text being parsed was :'//NewLine//'    "'//TRIM( Line )//'"'
-                ENDIF
-
-            ENDIF   
-
-            IF ( PRESENT(UnEc))  THEN
-                IF ( UnEc > 0 )  WRITE (UnEc,*)  CurLine, Tab, VarName, Tab, Variable
-            END IF
-
+        has_AllowDefault_flag = 0
+        AllowDefault_val = 0
+        IF (PRESENT(AllowDefault)) THEN
+            has_AllowDefault_flag = 1
+            AllowDefault_val = MERGE(1_C_INT, 0_C_INT, AllowDefault)
         END IF
-
-    END subroutine ParseInput_Int_Opt
+        has_UnEc_flag = 0
+        UnEc_val = 0
+        IF (PRESENT(UnEc)) THEN
+            has_UnEc_flag = 1
+            UnEc_val = INT(UnEc, C_INT)
+        END IF
+        ! Populate view structs from Fortran types
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        ! Convert CHARACTER args to C_CHAR arrays
+        DO vit_j_FileLines = 1, SIZE(FileLines)
+            DO vit_i_FileLines = 1, LEN(FileLines)
+                FileLines_c((vit_j_FileLines - 1) * (LEN(FileLines)) + vit_i_FileLines) = &
+                    FileLines(vit_j_FileLines)(vit_i_FileLines:vit_i_FileLines)
+            END DO
+        END DO
+        DO vit_i_VarName = 1, LEN(VarName)
+            VarName_c(vit_i_VarName) = VarName(vit_i_VarName:vit_i_VarName)
+        END DO
+        DO vit_i_FileName = 1, LEN(FileName)
+            FileName_c(vit_i_FileName) = FileName(vit_i_FileName:vit_i_FileName)
+        END DO
+        CALL parseinput_int_opt_c(FileLines_c, SIZE(FileLines), LEN(FileLines), VarName_c, LEN(VarName), Variable, FileName_c, LEN(FileName), C_LOC(ErrVar_view), has_AllowDefault_flag, AllowDefault_val, has_UnEc_flag, UnEc_val)
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
+    END SUBROUTINE ParseInput_Int_Opt
 
      !=======================================================================
     ! Parse integer input: read line, check that variable name is in line, handle errors

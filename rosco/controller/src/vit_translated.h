@@ -85,6 +85,7 @@ void ipc_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, o
 void parsedbary_opt_c(char* FileLines, int n_FileLines, int len_FileLines, char* ParamName, int len_ParamName, CFI_cdesc_t* Ary, int AryLen, char* FileName, int len_FileName, errorvariables_view_t* ErrVar, int has_AllowDefault, int32_t AllowDefault, int has_UnEc, int UnEc);
 void parseinary_opt_c(char* FileLines, int n_FileLines, int len_FileLines, char* ParamName, int len_ParamName, CFI_cdesc_t* Ary, int AryLen, char* FileName, int len_FileName, errorvariables_view_t* ErrVar, int has_AllowDefault, int32_t AllowDefault, int has_UnEc, int UnEc);
 void parseinput_dbl_opt_c(char* FileLines, int n_FileLines, int len_FileLines, char* VarName, int len_VarName, double* Variable, char* FileName, int len_FileName, errorvariables_view_t* ErrVar, int has_AllowDefault, int32_t AllowDefault, int has_UnEc, int UnEc);
+void parseinput_int_opt_c(char* FileLines, int n_FileLines, int len_FileLines, char* VarName, int len_VarName, int* Variable, char* FileName, int len_FileName, errorvariables_view_t* ErrVar, int has_AllowDefault, int32_t AllowDefault, int has_UnEc, int UnEc);
 
 #ifdef __cplusplus
 }
