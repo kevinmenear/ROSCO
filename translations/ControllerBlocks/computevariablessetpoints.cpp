@@ -57,10 +57,31 @@
 
 #include "vit_types.h"
 
-#include <algorithm>
 #include <cmath>
 
 namespace {
+
+// gfortran's two-argument `MAX` for REAL(8), TRANSCRIBED FROM WHAT IT DOES.
+//
+// NOT `std::max`, which is `(a < b) ? b : a` and therefore returns the FIRST
+// operand both at a NaN and at a tie. gfortran lowers the MAX intrinsic to a
+// MAX_EXPR, which on x86-64 is `maxsd`, and `maxsd`'s own definition returns
+// the SECOND operand in exactly those two cases -- when either input is a NaN,
+// and when the two are equal (which for `+0.0` against `-0.0` is a visible
+// difference, since they are equal and differently signed).
+//
+// MEASURED on this unit's own corpus, and it is the only defect the harness
+// found in this translation: with `std::max` at the three sites below,
+// 3,300 of 25,398 cases failed, in two shapes and nothing else --
+//
+//     case   3  LocalVar.VS_RefSpd    ref -1000.0   got nan
+//     case 132  LocalVar.VS_RefSpd    ref     0.0   got -0.0
+//
+// -- the first being `MAX(NaN, VS_MinOmSpd)` and the second `MAX(-0.0, +0.0)`.
+// Written as the conditional rather than as `std::fmax`: `fmax` agrees at the
+// NaN and is only *recommended* (not required) to prefer `+0.0` at the tie,
+// while `(a > b) ? a : b` is decided by the language and reproduces both.
+inline double fortran_max(double a, double b) { return (a > b) ? a : b; }
 
 // Constants.f90:42-46 and :53-56. Copied as the reference declares them; the
 // Fortran compares `VS_ControlMode` and `VS_FBP` against these NAMES, so the
@@ -164,18 +185,15 @@ void ComputeVariablesSetpoints(controlparameters_view_t* CntrPar, localvariables
         // gfortran emit a libm `pow` call (the check registry's rule about
         // `x**3.0`), so this is `std::pow` and not a hand-rolled cube root.
         //
-        // `MAX` is `std::max` and not `std::fmax`: gfortran lowers the MAX
-        // intrinsic to a MAX_EXPR, which is `(a < b) ? b : a` in the operand
-        // order written, and that is exactly `std::max`. `std::fmax` is a libm
-        // call that PREFERS THE NON-NaN OPERAND, which differs from the
-        // reference at a NaN input -- and a NaN input is on R6's own ladder, so
-        // this corpus reaches the difference.
+        // `MAX` is `fortran_max`, the helper at the top of this file, and NOT
+        // `std::max`. The difference is measured rather than assumed and it is
+        // this unit's one translation defect: see that helper's note.
         //
         // Both divisions are transcribed as divisions in the reference's order:
         // `a / b / c` is `(a / b) / c`, which rounds differently from
         // `a / (b * c)`.
         LocalVar->VS_RefSpd_TSR =
-            std::pow(std::max(LocalVar->VS_GenPwr, 0.0) / (CntrPar->VS_GenEff / 100.0) /
+            std::pow(fortran_max(LocalVar->VS_GenPwr, 0.0) / (CntrPar->VS_GenEff / 100.0) /
                          CntrPar->VS_Rgn2K,
                      1. / 3.);
 
@@ -190,7 +208,7 @@ void ComputeVariablesSetpoints(controlparameters_view_t* CntrPar, localvariables
         // which this build does not set. Transcribing it as a square root would
         // be the algebra rather than the shape.
         LocalVar->VS_RefSpd_TSR =
-            std::pow(std::max(LocalVar->GenTq, 0.0) / CntrPar->VS_Rgn2K, 1. / 2.);
+            std::pow(fortran_max(LocalVar->GenTq, 0.0) / CntrPar->VS_Rgn2K, 1. / 2.);
 
     // ELSE ! Generate constant speed reference if K*Omega^2 in use or torque
     //      ! control disabled
@@ -316,7 +334,7 @@ void ComputeVariablesSetpoints(controlparameters_view_t* CntrPar, localvariables
     // `VS_MinOmSpd` and `VS_MinOMSpd` are the same field: Fortran identifiers
     // are case-insensitive and the reference spells it both ways within four
     // lines. The C view struct has one spelling, `VS_MinOMSpd`.
-    LocalVar->VS_RefSpd = std::max(LocalVar->VS_RefSpd, CntrPar->VS_MinOMSpd);
+    LocalVar->VS_RefSpd = fortran_max(LocalVar->VS_RefSpd, CntrPar->VS_MinOMSpd);
 
     // ! Compute speed error from reference
     // LocalVar%VS_SpdErr = LocalVar%VS_RefSpd - LocalVar%GenSpeedF

@@ -1,0 +1,52 @@
+A CALLEE BRIDGE'S INTENT(IN) VIEW-TYPE ARGUMENT IS READ FROM A `POINTER, SAVE`
+THAT ONLY AN INTEGRATION WRAPPER SETS -- AND THE C_PTR IT DECLARES FOR THAT
+ARGUMENT IS NEVER USED.
+
+Recorded BEFORE the fix (C12). The generator is
+`vit/test_validate.py::generate_callee_bridges` at vit `<rev below>`; the
+artifact it produced is `evidence/ComputeVariablesSetpoints/callees.as-generated.f90`.
+
+WHAT HAPPENED. `vit test-validate` generated four callee bridges for this unit.
+`refspeedexclusion_c` declares all four of the callee's dummies as C pointers:
+
+    TYPE(C_PTR), VALUE :: LocalVar
+    TYPE(C_PTR), VALUE :: CntrPar      <- declared, and NEVER converted
+    TYPE(C_PTR), VALUE :: objInst
+    TYPE(C_PTR), VALUE :: DebugVar
+
+`LocalVar`, `objInst` and `DebugVar` are `INTENT(INOUT)` in `RefSpeedExclusion`
+and each is converted from its own C_PTR. `CntrPar` is `INTENT(IN)`, and for
+that one the bridge reaches for the module stash instead:
+
+    CALL RefSpeedExclusion(vit_original_localvariables,
+                           vit_original_controlparameters, objInst_f, DebugVar_f)
+
+`vit_original_controlparameters` is a `TYPE(ControlParameters), POINTER, SAVE`
+in `vit_controlparameters_view.f90` whose only setter is an integration wrapper.
+The differential harness calls the translation DIRECTLY -- there is no wrapper,
+so nothing sets it. The INOUT arguments have a fallback for exactly this
+(`vit_direct_LocalVar = .NOT. ASSOCIATED(...)`, then `vit_direct_localvariables`
+and `vit_view_in_localvariables`); the INTENT(IN) one has none.
+
+MEASURED, not inferred. One `WRITE` into the generated bridge, one rebuild:
+
+    PROBE refspeedexclusion_c: ASSOCIATED(vit_original_controlparameters) = F
+    Segmentation fault (core dumped)                     rc = 139
+
+and with no probe the run gives NOTHING at all -- the harness prints its JSON
+after the loop, so a SIGSEGV produces an empty stdout and `harness produced no
+JSON`, which reads as a build or emitter problem. That is unit #45's failure
+signature (`translations/Functions/interp2d`), one INTENT over: there the NULL
+stash was the bridge's OWN view argument and the repair was to point the stash
+at a local; here the argument the bridge should be reading is already in its own
+dummy list and is simply dropped.
+
+WHY IT HAS NOT BEEN SEEN BEFORE. It needs a callee that takes a view type
+`INTENT(IN)`. This campaign's 61 closed units call `interp1d`, `saturate`,
+`LPFilter`, `PIController`, `ratelimit`, `unwrap` and `AddToList` -- whose only
+derived-type dummies are INOUT (`ErrVar`) or not view types at all.
+`RefSpeedExclusion` (unit #59) is the first translated callee with an
+`INTENT(IN)` view dummy, and unit #62 is the first unit to CALL it.
+
+THE FIX IS IN THE GENERATOR, NOT HERE (X2). See DECISIONS.md and the commit
+that follows this file.

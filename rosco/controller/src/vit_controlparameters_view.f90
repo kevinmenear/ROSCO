@@ -4,7 +4,8 @@
 
 MODULE vit_controlparameters_view
     USE ISO_C_BINDING
-    USE ROSCO_Types, ONLY: ControlParameters
+    USE ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+    USE ROSCO_Types, ONLY: ControlParameters, IntKi, DbKi
     IMPLICIT NONE
     PRIVATE
     PUBLIC :: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters, vit_original_controlparameters
@@ -1120,21 +1121,75 @@ CONTAINS
         TYPE(controlparameters_view_t), INTENT(IN) :: view
         TYPE(ControlParameters), INTENT(INOUT) :: dest
         INTEGER :: i
+        INTEGER(IntKi), POINTER :: vit_ap_f_genspdnotch_ind(:)
+        INTEGER(IntKi), POINTER :: vit_ap_f_twrtopnotch_ind(:)
+        REAL(DbKi), POINTER :: vit_ap_f_notchfreqs(:)
+        REAL(DbKi), POINTER :: vit_ap_f_notchbetanum(:)
+        REAL(DbKi), POINTER :: vit_ap_f_notchbetaden(:)
+        REAL(DbKi), POINTER :: vit_ap_f_flcornerfreq(:)
+        REAL(DbKi), POINTER :: vit_ap_f_flpcornerfreq(:)
+        REAL(DbKi), POINTER :: vit_ap_ipc_vramp(:)
+        REAL(DbKi), POINTER :: vit_ap_ipc_kp(:)
+        REAL(DbKi), POINTER :: vit_ap_ipc_ki(:)
+        REAL(DbKi), POINTER :: vit_ap_ipc_azioffset(:)
+        REAL(DbKi), POINTER :: vit_ap_pc_gs_angles(:)
+        REAL(DbKi), POINTER :: vit_ap_pc_gs_kp(:)
+        REAL(DbKi), POINTER :: vit_ap_pc_gs_ki(:)
+        REAL(DbKi), POINTER :: vit_ap_pc_gs_kd(:)
+        REAL(DbKi), POINTER :: vit_ap_pc_gs_tf(:)
+        REAL(DbKi), POINTER :: vit_ap_vs_kp(:)
+        REAL(DbKi), POINTER :: vit_ap_vs_ki(:)
+        REAL(DbKi), POINTER :: vit_ap_vs_fbp_u(:)
+        REAL(DbKi), POINTER :: vit_ap_vs_fbp_omega(:)
+        REAL(DbKi), POINTER :: vit_ap_vs_fbp_tau(:)
+        REAL(DbKi), POINTER :: vit_ap_prc_windspeeds(:)
+        REAL(DbKi), POINTER :: vit_ap_prc_genspeeds(:)
+        REAL(DbKi), POINTER :: vit_ap_prc_pitch_table(:)
+        REAL(DbKi), POINTER :: vit_ap_prc_r_table(:)
+        REAL(DbKi), POINTER :: vit_ap_we_cp(:)
+        INTEGER(IntKi), POINTER :: vit_ap_perftablesize(:)
+        REAL(DbKi), POINTER :: vit_ap_we_fopoles_v(:)
+        REAL(DbKi), POINTER :: vit_ap_we_fopoles(:)
+        REAL(DbKi), POINTER :: vit_ap_y_errthresh(:)
+        REAL(DbKi), POINTER :: vit_ap_ps_windspeeds(:)
+        REAL(DbKi), POINTER :: vit_ap_ps_bldpitchmin(:)
+        REAL(DbKi), POINTER :: vit_ap_su_loadstages(:)
+        REAL(DbKi), POINTER :: vit_ap_su_loadrampduration(:)
+        REAL(DbKi), POINTER :: vit_ap_su_loadholdduration(:)
+        REAL(DbKi), POINTER :: vit_ap_sd_maxtorquerate(:)
+        REAL(DbKi), POINTER :: vit_ap_sd_maxpitchrate(:)
+        REAL(DbKi), POINTER :: vit_ap_sd_stagepitch(:)
+        REAL(DbKi), POINTER :: vit_ap_sd_stagetime(:)
+        REAL(DbKi), POINTER :: vit_ap_fl_kp(:)
+        REAL(DbKi), POINTER :: vit_ap_fl_u(:)
+        INTEGER(IntKi), POINTER :: vit_ap_ind_bldpitch(:)
+        REAL(DbKi), POINTER :: vit_ap_rp_gains(:)
+        INTEGER(IntKi), POINTER :: vit_ap_ind_cablecontrol(:)
+        INTEGER(IntKi), POINTER :: vit_ap_ind_structcontrol(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_breakpoints(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_bldpitch1(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_bldpitch2(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_bldpitch3(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_gentq(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_yawrate(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_azimuth(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_r_speed(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_r_torque(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_r_pitch(:)
+        INTEGER(IntKi), POINTER :: vit_ap_awc_n(:)
+        INTEGER(IntKi), POINTER :: vit_ap_awc_harmonic(:)
+        REAL(DbKi), POINTER :: vit_ap_awc_freq(:)
+        REAL(DbKi), POINTER :: vit_ap_awc_amp(:)
+        REAL(DbKi), POINTER :: vit_ap_awc_clockangle(:)
+        REAL(DbKi), POINTER :: vit_ap_awc_cntrgains(:)
+        REAL(DbKi), POINTER :: vit_ap_pf_offsets(:)
+        REAL(DbKi), POINTER :: vit_ap_pf_timestuck(:)
+        INTEGER(IntKi), POINTER :: vit_ap_cc_groupindex(:)
+        INTEGER(IntKi), POINTER :: vit_ap_stc_groupindex(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_cablecontrol(:,:)
+        REAL(DbKi), POINTER :: vit_ap_ol_structcontrol(:,:)
+        REAL(DbKi), POINTER :: vit_ap_ol_channels(:,:)
 
-        ! The direct-caller conversion is not measured on these field(s):
-        !  F_GenSpdNotch_Ind, F_TwrTopNotch_Ind, F_NotchFreqs, F_NotchBetaNum, F_NotchBetaDen, 
-        !  F_FlCornerFreq, F_FlpCornerFreq, IPC_Vramp, IPC_KP, IPC_KI, IPC_aziOffset, PC_GS_angles, 
-        !  PC_GS_KP, PC_GS_KI, PC_GS_KD, PC_GS_TF, VS_KP, VS_KI, VS_FBP_U, VS_FBP_Omega, 
-        !  VS_FBP_Tau, PRC_WindSpeeds, PRC_GenSpeeds, PRC_Pitch_Table, PRC_R_Table, WE_CP, 
-        !  PerfTableSize, WE_FOPoles_v, WE_FOPoles, Y_ErrThresh, PS_WindSpeeds, PS_BldPitchMin, 
-        !  SU_LoadStages, SU_LoadRampDuration, SU_LoadHoldDuration, SD_MaxTorqueRate, 
-        !  SD_MaxPitchRate, SD_StagePitch, SD_StageTime, Fl_Kp, Fl_U, Ind_BldPitch, RP_Gains, 
-        !  Ind_CableControl, Ind_StructControl, OL_Breakpoints, OL_BldPitch1, OL_BldPitch2, 
-        !  OL_BldPitch3, OL_CableControl, OL_StructControl, OL_GenTq, OL_YawRate, OL_Azimuth, 
-        !  OL_R_Speed, OL_R_Torque, OL_R_Pitch, OL_Channels, AWC_n, AWC_harmonic, AWC_freq, 
-        !  AWC_amp, AWC_clockangle, AWC_CntrGains, PF_Offsets, PF_TimeStuck, CC_GroupIndex, 
-        !  StC_GroupIndex
-        ERROR STOP 'VIT: vit_view_in_controlparameters: an unmeasured field kind; see the comment above'
         dest%ZMQ_ID = INT(view%ZMQ_ID, C_INT)
         dest%LoggingLevel = INT(view%LoggingLevel, C_INT)
         dest%Echo = INT(view%Echo, C_INT)
@@ -1292,6 +1347,556 @@ CONTAINS
         dest%PC_RtTq99 = REAL(view%PC_RtTq99, C_DOUBLE)
         dest%VS_MaxOMTq = REAL(view%VS_MaxOMTq, C_DOUBLE)
         dest%VS_MinOMTq = REAL(view%VS_MinOMTq, C_DOUBLE)
+        IF (ALLOCATED(dest%F_GenSpdNotch_Ind)) DEALLOCATE(dest%F_GenSpdNotch_Ind)
+        IF (C_ASSOCIATED(view%F_GenSpdNotch_Ind) .AND. view%n_F_GenSpdNotch_Ind > 0) THEN
+            CALL C_F_POINTER(view%F_GenSpdNotch_Ind, vit_ap_f_genspdnotch_ind, [INT(view%n_F_GenSpdNotch_Ind)])
+            ALLOCATE(dest%F_GenSpdNotch_Ind(view%n_F_GenSpdNotch_Ind))
+            dest%F_GenSpdNotch_Ind = vit_ap_f_genspdnotch_ind
+        ELSE IF (view%n_F_GenSpdNotch_Ind == 0) THEN
+            ALLOCATE(dest%F_GenSpdNotch_Ind(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%F_TwrTopNotch_Ind)) DEALLOCATE(dest%F_TwrTopNotch_Ind)
+        IF (C_ASSOCIATED(view%F_TwrTopNotch_Ind) .AND. view%n_F_TwrTopNotch_Ind > 0) THEN
+            CALL C_F_POINTER(view%F_TwrTopNotch_Ind, vit_ap_f_twrtopnotch_ind, [INT(view%n_F_TwrTopNotch_Ind)])
+            ALLOCATE(dest%F_TwrTopNotch_Ind(view%n_F_TwrTopNotch_Ind))
+            dest%F_TwrTopNotch_Ind = vit_ap_f_twrtopnotch_ind
+        ELSE IF (view%n_F_TwrTopNotch_Ind == 0) THEN
+            ALLOCATE(dest%F_TwrTopNotch_Ind(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%F_NotchFreqs)) DEALLOCATE(dest%F_NotchFreqs)
+        IF (C_ASSOCIATED(view%F_NotchFreqs) .AND. view%n_F_NotchFreqs > 0) THEN
+            CALL C_F_POINTER(view%F_NotchFreqs, vit_ap_f_notchfreqs, [INT(view%n_F_NotchFreqs)])
+            ALLOCATE(dest%F_NotchFreqs(view%n_F_NotchFreqs))
+            dest%F_NotchFreqs = vit_ap_f_notchfreqs
+        ELSE IF (view%n_F_NotchFreqs == 0) THEN
+            ALLOCATE(dest%F_NotchFreqs(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%F_NotchBetaNum)) DEALLOCATE(dest%F_NotchBetaNum)
+        IF (C_ASSOCIATED(view%F_NotchBetaNum) .AND. view%n_F_NotchBetaNum > 0) THEN
+            CALL C_F_POINTER(view%F_NotchBetaNum, vit_ap_f_notchbetanum, [INT(view%n_F_NotchBetaNum)])
+            ALLOCATE(dest%F_NotchBetaNum(view%n_F_NotchBetaNum))
+            dest%F_NotchBetaNum = vit_ap_f_notchbetanum
+        ELSE IF (view%n_F_NotchBetaNum == 0) THEN
+            ALLOCATE(dest%F_NotchBetaNum(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%F_NotchBetaDen)) DEALLOCATE(dest%F_NotchBetaDen)
+        IF (C_ASSOCIATED(view%F_NotchBetaDen) .AND. view%n_F_NotchBetaDen > 0) THEN
+            CALL C_F_POINTER(view%F_NotchBetaDen, vit_ap_f_notchbetaden, [INT(view%n_F_NotchBetaDen)])
+            ALLOCATE(dest%F_NotchBetaDen(view%n_F_NotchBetaDen))
+            dest%F_NotchBetaDen = vit_ap_f_notchbetaden
+        ELSE IF (view%n_F_NotchBetaDen == 0) THEN
+            ALLOCATE(dest%F_NotchBetaDen(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%F_FlCornerFreq)) DEALLOCATE(dest%F_FlCornerFreq)
+        IF (C_ASSOCIATED(view%F_FlCornerFreq) .AND. view%n_F_FlCornerFreq > 0) THEN
+            CALL C_F_POINTER(view%F_FlCornerFreq, vit_ap_f_flcornerfreq, [INT(view%n_F_FlCornerFreq)])
+            ALLOCATE(dest%F_FlCornerFreq(view%n_F_FlCornerFreq))
+            dest%F_FlCornerFreq = vit_ap_f_flcornerfreq
+        ELSE IF (view%n_F_FlCornerFreq == 0) THEN
+            ALLOCATE(dest%F_FlCornerFreq(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%F_FlpCornerFreq)) DEALLOCATE(dest%F_FlpCornerFreq)
+        IF (C_ASSOCIATED(view%F_FlpCornerFreq) .AND. view%n_F_FlpCornerFreq > 0) THEN
+            CALL C_F_POINTER(view%F_FlpCornerFreq, vit_ap_f_flpcornerfreq, [INT(view%n_F_FlpCornerFreq)])
+            ALLOCATE(dest%F_FlpCornerFreq(view%n_F_FlpCornerFreq))
+            dest%F_FlpCornerFreq = vit_ap_f_flpcornerfreq
+        ELSE IF (view%n_F_FlpCornerFreq == 0) THEN
+            ALLOCATE(dest%F_FlpCornerFreq(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%IPC_Vramp)) DEALLOCATE(dest%IPC_Vramp)
+        IF (C_ASSOCIATED(view%IPC_Vramp) .AND. view%n_IPC_Vramp > 0) THEN
+            CALL C_F_POINTER(view%IPC_Vramp, vit_ap_ipc_vramp, [INT(view%n_IPC_Vramp)])
+            ALLOCATE(dest%IPC_Vramp(view%n_IPC_Vramp))
+            dest%IPC_Vramp = vit_ap_ipc_vramp
+        ELSE IF (view%n_IPC_Vramp == 0) THEN
+            ALLOCATE(dest%IPC_Vramp(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%IPC_KP)) DEALLOCATE(dest%IPC_KP)
+        IF (C_ASSOCIATED(view%IPC_KP) .AND. view%n_IPC_KP > 0) THEN
+            CALL C_F_POINTER(view%IPC_KP, vit_ap_ipc_kp, [INT(view%n_IPC_KP)])
+            ALLOCATE(dest%IPC_KP(view%n_IPC_KP))
+            dest%IPC_KP = vit_ap_ipc_kp
+        ELSE IF (view%n_IPC_KP == 0) THEN
+            ALLOCATE(dest%IPC_KP(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%IPC_KI)) DEALLOCATE(dest%IPC_KI)
+        IF (C_ASSOCIATED(view%IPC_KI) .AND. view%n_IPC_KI > 0) THEN
+            CALL C_F_POINTER(view%IPC_KI, vit_ap_ipc_ki, [INT(view%n_IPC_KI)])
+            ALLOCATE(dest%IPC_KI(view%n_IPC_KI))
+            dest%IPC_KI = vit_ap_ipc_ki
+        ELSE IF (view%n_IPC_KI == 0) THEN
+            ALLOCATE(dest%IPC_KI(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%IPC_aziOffset)) DEALLOCATE(dest%IPC_aziOffset)
+        IF (C_ASSOCIATED(view%IPC_aziOffset) .AND. view%n_IPC_aziOffset > 0) THEN
+            CALL C_F_POINTER(view%IPC_aziOffset, vit_ap_ipc_azioffset, [INT(view%n_IPC_aziOffset)])
+            ALLOCATE(dest%IPC_aziOffset(view%n_IPC_aziOffset))
+            dest%IPC_aziOffset = vit_ap_ipc_azioffset
+        ELSE IF (view%n_IPC_aziOffset == 0) THEN
+            ALLOCATE(dest%IPC_aziOffset(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%PC_GS_angles)) DEALLOCATE(dest%PC_GS_angles)
+        IF (C_ASSOCIATED(view%PC_GS_angles) .AND. view%n_PC_GS_angles > 0) THEN
+            CALL C_F_POINTER(view%PC_GS_angles, vit_ap_pc_gs_angles, [INT(view%n_PC_GS_angles)])
+            ALLOCATE(dest%PC_GS_angles(view%n_PC_GS_angles))
+            dest%PC_GS_angles = vit_ap_pc_gs_angles
+        ELSE IF (view%n_PC_GS_angles == 0) THEN
+            ALLOCATE(dest%PC_GS_angles(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%PC_GS_KP)) DEALLOCATE(dest%PC_GS_KP)
+        IF (C_ASSOCIATED(view%PC_GS_KP) .AND. view%n_PC_GS_KP > 0) THEN
+            CALL C_F_POINTER(view%PC_GS_KP, vit_ap_pc_gs_kp, [INT(view%n_PC_GS_KP)])
+            ALLOCATE(dest%PC_GS_KP(view%n_PC_GS_KP))
+            dest%PC_GS_KP = vit_ap_pc_gs_kp
+        ELSE IF (view%n_PC_GS_KP == 0) THEN
+            ALLOCATE(dest%PC_GS_KP(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%PC_GS_KI)) DEALLOCATE(dest%PC_GS_KI)
+        IF (C_ASSOCIATED(view%PC_GS_KI) .AND. view%n_PC_GS_KI > 0) THEN
+            CALL C_F_POINTER(view%PC_GS_KI, vit_ap_pc_gs_ki, [INT(view%n_PC_GS_KI)])
+            ALLOCATE(dest%PC_GS_KI(view%n_PC_GS_KI))
+            dest%PC_GS_KI = vit_ap_pc_gs_ki
+        ELSE IF (view%n_PC_GS_KI == 0) THEN
+            ALLOCATE(dest%PC_GS_KI(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%PC_GS_KD)) DEALLOCATE(dest%PC_GS_KD)
+        IF (C_ASSOCIATED(view%PC_GS_KD) .AND. view%n_PC_GS_KD > 0) THEN
+            CALL C_F_POINTER(view%PC_GS_KD, vit_ap_pc_gs_kd, [INT(view%n_PC_GS_KD)])
+            ALLOCATE(dest%PC_GS_KD(view%n_PC_GS_KD))
+            dest%PC_GS_KD = vit_ap_pc_gs_kd
+        ELSE IF (view%n_PC_GS_KD == 0) THEN
+            ALLOCATE(dest%PC_GS_KD(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%PC_GS_TF)) DEALLOCATE(dest%PC_GS_TF)
+        IF (C_ASSOCIATED(view%PC_GS_TF) .AND. view%n_PC_GS_TF > 0) THEN
+            CALL C_F_POINTER(view%PC_GS_TF, vit_ap_pc_gs_tf, [INT(view%n_PC_GS_TF)])
+            ALLOCATE(dest%PC_GS_TF(view%n_PC_GS_TF))
+            dest%PC_GS_TF = vit_ap_pc_gs_tf
+        ELSE IF (view%n_PC_GS_TF == 0) THEN
+            ALLOCATE(dest%PC_GS_TF(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%VS_KP)) DEALLOCATE(dest%VS_KP)
+        IF (C_ASSOCIATED(view%VS_KP) .AND. view%n_VS_KP > 0) THEN
+            CALL C_F_POINTER(view%VS_KP, vit_ap_vs_kp, [INT(view%n_VS_KP)])
+            ALLOCATE(dest%VS_KP(view%n_VS_KP))
+            dest%VS_KP = vit_ap_vs_kp
+        ELSE IF (view%n_VS_KP == 0) THEN
+            ALLOCATE(dest%VS_KP(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%VS_KI)) DEALLOCATE(dest%VS_KI)
+        IF (C_ASSOCIATED(view%VS_KI) .AND. view%n_VS_KI > 0) THEN
+            CALL C_F_POINTER(view%VS_KI, vit_ap_vs_ki, [INT(view%n_VS_KI)])
+            ALLOCATE(dest%VS_KI(view%n_VS_KI))
+            dest%VS_KI = vit_ap_vs_ki
+        ELSE IF (view%n_VS_KI == 0) THEN
+            ALLOCATE(dest%VS_KI(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%VS_FBP_U)) DEALLOCATE(dest%VS_FBP_U)
+        IF (C_ASSOCIATED(view%VS_FBP_U) .AND. view%n_VS_FBP_U > 0) THEN
+            CALL C_F_POINTER(view%VS_FBP_U, vit_ap_vs_fbp_u, [INT(view%n_VS_FBP_U)])
+            ALLOCATE(dest%VS_FBP_U(view%n_VS_FBP_U))
+            dest%VS_FBP_U = vit_ap_vs_fbp_u
+        ELSE IF (view%n_VS_FBP_U == 0) THEN
+            ALLOCATE(dest%VS_FBP_U(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%VS_FBP_Omega)) DEALLOCATE(dest%VS_FBP_Omega)
+        IF (C_ASSOCIATED(view%VS_FBP_Omega) .AND. view%n_VS_FBP_Omega > 0) THEN
+            CALL C_F_POINTER(view%VS_FBP_Omega, vit_ap_vs_fbp_omega, [INT(view%n_VS_FBP_Omega)])
+            ALLOCATE(dest%VS_FBP_Omega(view%n_VS_FBP_Omega))
+            dest%VS_FBP_Omega = vit_ap_vs_fbp_omega
+        ELSE IF (view%n_VS_FBP_Omega == 0) THEN
+            ALLOCATE(dest%VS_FBP_Omega(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%VS_FBP_Tau)) DEALLOCATE(dest%VS_FBP_Tau)
+        IF (C_ASSOCIATED(view%VS_FBP_Tau) .AND. view%n_VS_FBP_Tau > 0) THEN
+            CALL C_F_POINTER(view%VS_FBP_Tau, vit_ap_vs_fbp_tau, [INT(view%n_VS_FBP_Tau)])
+            ALLOCATE(dest%VS_FBP_Tau(view%n_VS_FBP_Tau))
+            dest%VS_FBP_Tau = vit_ap_vs_fbp_tau
+        ELSE IF (view%n_VS_FBP_Tau == 0) THEN
+            ALLOCATE(dest%VS_FBP_Tau(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%PRC_WindSpeeds)) DEALLOCATE(dest%PRC_WindSpeeds)
+        IF (C_ASSOCIATED(view%PRC_WindSpeeds) .AND. view%n_PRC_WindSpeeds > 0) THEN
+            CALL C_F_POINTER(view%PRC_WindSpeeds, vit_ap_prc_windspeeds, [INT(view%n_PRC_WindSpeeds)])
+            ALLOCATE(dest%PRC_WindSpeeds(view%n_PRC_WindSpeeds))
+            dest%PRC_WindSpeeds = vit_ap_prc_windspeeds
+        ELSE IF (view%n_PRC_WindSpeeds == 0) THEN
+            ALLOCATE(dest%PRC_WindSpeeds(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%PRC_GenSpeeds)) DEALLOCATE(dest%PRC_GenSpeeds)
+        IF (C_ASSOCIATED(view%PRC_GenSpeeds) .AND. view%n_PRC_GenSpeeds > 0) THEN
+            CALL C_F_POINTER(view%PRC_GenSpeeds, vit_ap_prc_genspeeds, [INT(view%n_PRC_GenSpeeds)])
+            ALLOCATE(dest%PRC_GenSpeeds(view%n_PRC_GenSpeeds))
+            dest%PRC_GenSpeeds = vit_ap_prc_genspeeds
+        ELSE IF (view%n_PRC_GenSpeeds == 0) THEN
+            ALLOCATE(dest%PRC_GenSpeeds(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%PRC_Pitch_Table)) DEALLOCATE(dest%PRC_Pitch_Table)
+        IF (C_ASSOCIATED(view%PRC_Pitch_Table) .AND. view%n_PRC_Pitch_Table > 0) THEN
+            CALL C_F_POINTER(view%PRC_Pitch_Table, vit_ap_prc_pitch_table, [INT(view%n_PRC_Pitch_Table)])
+            ALLOCATE(dest%PRC_Pitch_Table(view%n_PRC_Pitch_Table))
+            dest%PRC_Pitch_Table = vit_ap_prc_pitch_table
+        ELSE IF (view%n_PRC_Pitch_Table == 0) THEN
+            ALLOCATE(dest%PRC_Pitch_Table(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%PRC_R_Table)) DEALLOCATE(dest%PRC_R_Table)
+        IF (C_ASSOCIATED(view%PRC_R_Table) .AND. view%n_PRC_R_Table > 0) THEN
+            CALL C_F_POINTER(view%PRC_R_Table, vit_ap_prc_r_table, [INT(view%n_PRC_R_Table)])
+            ALLOCATE(dest%PRC_R_Table(view%n_PRC_R_Table))
+            dest%PRC_R_Table = vit_ap_prc_r_table
+        ELSE IF (view%n_PRC_R_Table == 0) THEN
+            ALLOCATE(dest%PRC_R_Table(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%WE_CP)) DEALLOCATE(dest%WE_CP)
+        IF (C_ASSOCIATED(view%WE_CP) .AND. view%n_WE_CP > 0) THEN
+            CALL C_F_POINTER(view%WE_CP, vit_ap_we_cp, [INT(view%n_WE_CP)])
+            ALLOCATE(dest%WE_CP(view%n_WE_CP))
+            dest%WE_CP = vit_ap_we_cp
+        ELSE IF (view%n_WE_CP == 0) THEN
+            ALLOCATE(dest%WE_CP(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%PerfTableSize)) DEALLOCATE(dest%PerfTableSize)
+        IF (C_ASSOCIATED(view%PerfTableSize) .AND. view%n_PerfTableSize > 0) THEN
+            CALL C_F_POINTER(view%PerfTableSize, vit_ap_perftablesize, [INT(view%n_PerfTableSize)])
+            ALLOCATE(dest%PerfTableSize(view%n_PerfTableSize))
+            dest%PerfTableSize = vit_ap_perftablesize
+        ELSE IF (view%n_PerfTableSize == 0) THEN
+            ALLOCATE(dest%PerfTableSize(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%WE_FOPoles_v)) DEALLOCATE(dest%WE_FOPoles_v)
+        IF (C_ASSOCIATED(view%WE_FOPoles_v) .AND. view%n_WE_FOPoles_v > 0) THEN
+            CALL C_F_POINTER(view%WE_FOPoles_v, vit_ap_we_fopoles_v, [INT(view%n_WE_FOPoles_v)])
+            ALLOCATE(dest%WE_FOPoles_v(view%n_WE_FOPoles_v))
+            dest%WE_FOPoles_v = vit_ap_we_fopoles_v
+        ELSE IF (view%n_WE_FOPoles_v == 0) THEN
+            ALLOCATE(dest%WE_FOPoles_v(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%WE_FOPoles)) DEALLOCATE(dest%WE_FOPoles)
+        IF (C_ASSOCIATED(view%WE_FOPoles) .AND. view%n_WE_FOPoles > 0) THEN
+            CALL C_F_POINTER(view%WE_FOPoles, vit_ap_we_fopoles, [INT(view%n_WE_FOPoles)])
+            ALLOCATE(dest%WE_FOPoles(view%n_WE_FOPoles))
+            dest%WE_FOPoles = vit_ap_we_fopoles
+        ELSE IF (view%n_WE_FOPoles == 0) THEN
+            ALLOCATE(dest%WE_FOPoles(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%Y_ErrThresh)) DEALLOCATE(dest%Y_ErrThresh)
+        IF (C_ASSOCIATED(view%Y_ErrThresh) .AND. view%n_Y_ErrThresh > 0) THEN
+            CALL C_F_POINTER(view%Y_ErrThresh, vit_ap_y_errthresh, [INT(view%n_Y_ErrThresh)])
+            ALLOCATE(dest%Y_ErrThresh(view%n_Y_ErrThresh))
+            dest%Y_ErrThresh = vit_ap_y_errthresh
+        ELSE IF (view%n_Y_ErrThresh == 0) THEN
+            ALLOCATE(dest%Y_ErrThresh(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%PS_WindSpeeds)) DEALLOCATE(dest%PS_WindSpeeds)
+        IF (C_ASSOCIATED(view%PS_WindSpeeds) .AND. view%n_PS_WindSpeeds > 0) THEN
+            CALL C_F_POINTER(view%PS_WindSpeeds, vit_ap_ps_windspeeds, [INT(view%n_PS_WindSpeeds)])
+            ALLOCATE(dest%PS_WindSpeeds(view%n_PS_WindSpeeds))
+            dest%PS_WindSpeeds = vit_ap_ps_windspeeds
+        ELSE IF (view%n_PS_WindSpeeds == 0) THEN
+            ALLOCATE(dest%PS_WindSpeeds(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%PS_BldPitchMin)) DEALLOCATE(dest%PS_BldPitchMin)
+        IF (C_ASSOCIATED(view%PS_BldPitchMin) .AND. view%n_PS_BldPitchMin > 0) THEN
+            CALL C_F_POINTER(view%PS_BldPitchMin, vit_ap_ps_bldpitchmin, [INT(view%n_PS_BldPitchMin)])
+            ALLOCATE(dest%PS_BldPitchMin(view%n_PS_BldPitchMin))
+            dest%PS_BldPitchMin = vit_ap_ps_bldpitchmin
+        ELSE IF (view%n_PS_BldPitchMin == 0) THEN
+            ALLOCATE(dest%PS_BldPitchMin(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%SU_LoadStages)) DEALLOCATE(dest%SU_LoadStages)
+        IF (C_ASSOCIATED(view%SU_LoadStages) .AND. view%n_SU_LoadStages > 0) THEN
+            CALL C_F_POINTER(view%SU_LoadStages, vit_ap_su_loadstages, [INT(view%n_SU_LoadStages)])
+            ALLOCATE(dest%SU_LoadStages(view%n_SU_LoadStages))
+            dest%SU_LoadStages = vit_ap_su_loadstages
+        ELSE IF (view%n_SU_LoadStages == 0) THEN
+            ALLOCATE(dest%SU_LoadStages(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%SU_LoadRampDuration)) DEALLOCATE(dest%SU_LoadRampDuration)
+        IF (C_ASSOCIATED(view%SU_LoadRampDuration) .AND. view%n_SU_LoadRampDuration > 0) THEN
+            CALL C_F_POINTER(view%SU_LoadRampDuration, vit_ap_su_loadrampduration, [INT(view%n_SU_LoadRampDuration)])
+            ALLOCATE(dest%SU_LoadRampDuration(view%n_SU_LoadRampDuration))
+            dest%SU_LoadRampDuration = vit_ap_su_loadrampduration
+        ELSE IF (view%n_SU_LoadRampDuration == 0) THEN
+            ALLOCATE(dest%SU_LoadRampDuration(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%SU_LoadHoldDuration)) DEALLOCATE(dest%SU_LoadHoldDuration)
+        IF (C_ASSOCIATED(view%SU_LoadHoldDuration) .AND. view%n_SU_LoadHoldDuration > 0) THEN
+            CALL C_F_POINTER(view%SU_LoadHoldDuration, vit_ap_su_loadholdduration, [INT(view%n_SU_LoadHoldDuration)])
+            ALLOCATE(dest%SU_LoadHoldDuration(view%n_SU_LoadHoldDuration))
+            dest%SU_LoadHoldDuration = vit_ap_su_loadholdduration
+        ELSE IF (view%n_SU_LoadHoldDuration == 0) THEN
+            ALLOCATE(dest%SU_LoadHoldDuration(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%SD_MaxTorqueRate)) DEALLOCATE(dest%SD_MaxTorqueRate)
+        IF (C_ASSOCIATED(view%SD_MaxTorqueRate) .AND. view%n_SD_MaxTorqueRate > 0) THEN
+            CALL C_F_POINTER(view%SD_MaxTorqueRate, vit_ap_sd_maxtorquerate, [INT(view%n_SD_MaxTorqueRate)])
+            ALLOCATE(dest%SD_MaxTorqueRate(view%n_SD_MaxTorqueRate))
+            dest%SD_MaxTorqueRate = vit_ap_sd_maxtorquerate
+        ELSE IF (view%n_SD_MaxTorqueRate == 0) THEN
+            ALLOCATE(dest%SD_MaxTorqueRate(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%SD_MaxPitchRate)) DEALLOCATE(dest%SD_MaxPitchRate)
+        IF (C_ASSOCIATED(view%SD_MaxPitchRate) .AND. view%n_SD_MaxPitchRate > 0) THEN
+            CALL C_F_POINTER(view%SD_MaxPitchRate, vit_ap_sd_maxpitchrate, [INT(view%n_SD_MaxPitchRate)])
+            ALLOCATE(dest%SD_MaxPitchRate(view%n_SD_MaxPitchRate))
+            dest%SD_MaxPitchRate = vit_ap_sd_maxpitchrate
+        ELSE IF (view%n_SD_MaxPitchRate == 0) THEN
+            ALLOCATE(dest%SD_MaxPitchRate(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%SD_StagePitch)) DEALLOCATE(dest%SD_StagePitch)
+        IF (C_ASSOCIATED(view%SD_StagePitch) .AND. view%n_SD_StagePitch > 0) THEN
+            CALL C_F_POINTER(view%SD_StagePitch, vit_ap_sd_stagepitch, [INT(view%n_SD_StagePitch)])
+            ALLOCATE(dest%SD_StagePitch(view%n_SD_StagePitch))
+            dest%SD_StagePitch = vit_ap_sd_stagepitch
+        ELSE IF (view%n_SD_StagePitch == 0) THEN
+            ALLOCATE(dest%SD_StagePitch(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%SD_StageTime)) DEALLOCATE(dest%SD_StageTime)
+        IF (C_ASSOCIATED(view%SD_StageTime) .AND. view%n_SD_StageTime > 0) THEN
+            CALL C_F_POINTER(view%SD_StageTime, vit_ap_sd_stagetime, [INT(view%n_SD_StageTime)])
+            ALLOCATE(dest%SD_StageTime(view%n_SD_StageTime))
+            dest%SD_StageTime = vit_ap_sd_stagetime
+        ELSE IF (view%n_SD_StageTime == 0) THEN
+            ALLOCATE(dest%SD_StageTime(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%Fl_Kp)) DEALLOCATE(dest%Fl_Kp)
+        IF (C_ASSOCIATED(view%Fl_Kp) .AND. view%n_Fl_Kp > 0) THEN
+            CALL C_F_POINTER(view%Fl_Kp, vit_ap_fl_kp, [INT(view%n_Fl_Kp)])
+            ALLOCATE(dest%Fl_Kp(view%n_Fl_Kp))
+            dest%Fl_Kp = vit_ap_fl_kp
+        ELSE IF (view%n_Fl_Kp == 0) THEN
+            ALLOCATE(dest%Fl_Kp(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%Fl_U)) DEALLOCATE(dest%Fl_U)
+        IF (C_ASSOCIATED(view%Fl_U) .AND. view%n_Fl_U > 0) THEN
+            CALL C_F_POINTER(view%Fl_U, vit_ap_fl_u, [INT(view%n_Fl_U)])
+            ALLOCATE(dest%Fl_U(view%n_Fl_U))
+            dest%Fl_U = vit_ap_fl_u
+        ELSE IF (view%n_Fl_U == 0) THEN
+            ALLOCATE(dest%Fl_U(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%Ind_BldPitch)) DEALLOCATE(dest%Ind_BldPitch)
+        IF (C_ASSOCIATED(view%Ind_BldPitch) .AND. view%n_Ind_BldPitch > 0) THEN
+            CALL C_F_POINTER(view%Ind_BldPitch, vit_ap_ind_bldpitch, [INT(view%n_Ind_BldPitch)])
+            ALLOCATE(dest%Ind_BldPitch(view%n_Ind_BldPitch))
+            dest%Ind_BldPitch = vit_ap_ind_bldpitch
+        ELSE IF (view%n_Ind_BldPitch == 0) THEN
+            ALLOCATE(dest%Ind_BldPitch(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%RP_Gains)) DEALLOCATE(dest%RP_Gains)
+        IF (C_ASSOCIATED(view%RP_Gains) .AND. view%n_RP_Gains > 0) THEN
+            CALL C_F_POINTER(view%RP_Gains, vit_ap_rp_gains, [INT(view%n_RP_Gains)])
+            ALLOCATE(dest%RP_Gains(view%n_RP_Gains))
+            dest%RP_Gains = vit_ap_rp_gains
+        ELSE IF (view%n_RP_Gains == 0) THEN
+            ALLOCATE(dest%RP_Gains(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%Ind_CableControl)) DEALLOCATE(dest%Ind_CableControl)
+        IF (C_ASSOCIATED(view%Ind_CableControl) .AND. view%n_Ind_CableControl > 0) THEN
+            CALL C_F_POINTER(view%Ind_CableControl, vit_ap_ind_cablecontrol, [INT(view%n_Ind_CableControl)])
+            ALLOCATE(dest%Ind_CableControl(view%n_Ind_CableControl))
+            dest%Ind_CableControl = vit_ap_ind_cablecontrol
+        ELSE IF (view%n_Ind_CableControl == 0) THEN
+            ALLOCATE(dest%Ind_CableControl(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%Ind_StructControl)) DEALLOCATE(dest%Ind_StructControl)
+        IF (C_ASSOCIATED(view%Ind_StructControl) .AND. view%n_Ind_StructControl > 0) THEN
+            CALL C_F_POINTER(view%Ind_StructControl, vit_ap_ind_structcontrol, [INT(view%n_Ind_StructControl)])
+            ALLOCATE(dest%Ind_StructControl(view%n_Ind_StructControl))
+            dest%Ind_StructControl = vit_ap_ind_structcontrol
+        ELSE IF (view%n_Ind_StructControl == 0) THEN
+            ALLOCATE(dest%Ind_StructControl(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%OL_Breakpoints)) DEALLOCATE(dest%OL_Breakpoints)
+        IF (C_ASSOCIATED(view%OL_Breakpoints) .AND. view%n_OL_Breakpoints > 0) THEN
+            CALL C_F_POINTER(view%OL_Breakpoints, vit_ap_ol_breakpoints, [INT(view%n_OL_Breakpoints)])
+            ALLOCATE(dest%OL_Breakpoints(view%n_OL_Breakpoints))
+            dest%OL_Breakpoints = vit_ap_ol_breakpoints
+        ELSE IF (view%n_OL_Breakpoints == 0) THEN
+            ALLOCATE(dest%OL_Breakpoints(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%OL_BldPitch1)) DEALLOCATE(dest%OL_BldPitch1)
+        IF (C_ASSOCIATED(view%OL_BldPitch1) .AND. view%n_OL_BldPitch1 > 0) THEN
+            CALL C_F_POINTER(view%OL_BldPitch1, vit_ap_ol_bldpitch1, [INT(view%n_OL_BldPitch1)])
+            ALLOCATE(dest%OL_BldPitch1(view%n_OL_BldPitch1))
+            dest%OL_BldPitch1 = vit_ap_ol_bldpitch1
+        ELSE IF (view%n_OL_BldPitch1 == 0) THEN
+            ALLOCATE(dest%OL_BldPitch1(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%OL_BldPitch2)) DEALLOCATE(dest%OL_BldPitch2)
+        IF (C_ASSOCIATED(view%OL_BldPitch2) .AND. view%n_OL_BldPitch2 > 0) THEN
+            CALL C_F_POINTER(view%OL_BldPitch2, vit_ap_ol_bldpitch2, [INT(view%n_OL_BldPitch2)])
+            ALLOCATE(dest%OL_BldPitch2(view%n_OL_BldPitch2))
+            dest%OL_BldPitch2 = vit_ap_ol_bldpitch2
+        ELSE IF (view%n_OL_BldPitch2 == 0) THEN
+            ALLOCATE(dest%OL_BldPitch2(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%OL_BldPitch3)) DEALLOCATE(dest%OL_BldPitch3)
+        IF (C_ASSOCIATED(view%OL_BldPitch3) .AND. view%n_OL_BldPitch3 > 0) THEN
+            CALL C_F_POINTER(view%OL_BldPitch3, vit_ap_ol_bldpitch3, [INT(view%n_OL_BldPitch3)])
+            ALLOCATE(dest%OL_BldPitch3(view%n_OL_BldPitch3))
+            dest%OL_BldPitch3 = vit_ap_ol_bldpitch3
+        ELSE IF (view%n_OL_BldPitch3 == 0) THEN
+            ALLOCATE(dest%OL_BldPitch3(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%OL_GenTq)) DEALLOCATE(dest%OL_GenTq)
+        IF (C_ASSOCIATED(view%OL_GenTq) .AND. view%n_OL_GenTq > 0) THEN
+            CALL C_F_POINTER(view%OL_GenTq, vit_ap_ol_gentq, [INT(view%n_OL_GenTq)])
+            ALLOCATE(dest%OL_GenTq(view%n_OL_GenTq))
+            dest%OL_GenTq = vit_ap_ol_gentq
+        ELSE IF (view%n_OL_GenTq == 0) THEN
+            ALLOCATE(dest%OL_GenTq(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%OL_YawRate)) DEALLOCATE(dest%OL_YawRate)
+        IF (C_ASSOCIATED(view%OL_YawRate) .AND. view%n_OL_YawRate > 0) THEN
+            CALL C_F_POINTER(view%OL_YawRate, vit_ap_ol_yawrate, [INT(view%n_OL_YawRate)])
+            ALLOCATE(dest%OL_YawRate(view%n_OL_YawRate))
+            dest%OL_YawRate = vit_ap_ol_yawrate
+        ELSE IF (view%n_OL_YawRate == 0) THEN
+            ALLOCATE(dest%OL_YawRate(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%OL_Azimuth)) DEALLOCATE(dest%OL_Azimuth)
+        IF (C_ASSOCIATED(view%OL_Azimuth) .AND. view%n_OL_Azimuth > 0) THEN
+            CALL C_F_POINTER(view%OL_Azimuth, vit_ap_ol_azimuth, [INT(view%n_OL_Azimuth)])
+            ALLOCATE(dest%OL_Azimuth(view%n_OL_Azimuth))
+            dest%OL_Azimuth = vit_ap_ol_azimuth
+        ELSE IF (view%n_OL_Azimuth == 0) THEN
+            ALLOCATE(dest%OL_Azimuth(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%OL_R_Speed)) DEALLOCATE(dest%OL_R_Speed)
+        IF (C_ASSOCIATED(view%OL_R_Speed) .AND. view%n_OL_R_Speed > 0) THEN
+            CALL C_F_POINTER(view%OL_R_Speed, vit_ap_ol_r_speed, [INT(view%n_OL_R_Speed)])
+            ALLOCATE(dest%OL_R_Speed(view%n_OL_R_Speed))
+            dest%OL_R_Speed = vit_ap_ol_r_speed
+        ELSE IF (view%n_OL_R_Speed == 0) THEN
+            ALLOCATE(dest%OL_R_Speed(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%OL_R_Torque)) DEALLOCATE(dest%OL_R_Torque)
+        IF (C_ASSOCIATED(view%OL_R_Torque) .AND. view%n_OL_R_Torque > 0) THEN
+            CALL C_F_POINTER(view%OL_R_Torque, vit_ap_ol_r_torque, [INT(view%n_OL_R_Torque)])
+            ALLOCATE(dest%OL_R_Torque(view%n_OL_R_Torque))
+            dest%OL_R_Torque = vit_ap_ol_r_torque
+        ELSE IF (view%n_OL_R_Torque == 0) THEN
+            ALLOCATE(dest%OL_R_Torque(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%OL_R_Pitch)) DEALLOCATE(dest%OL_R_Pitch)
+        IF (C_ASSOCIATED(view%OL_R_Pitch) .AND. view%n_OL_R_Pitch > 0) THEN
+            CALL C_F_POINTER(view%OL_R_Pitch, vit_ap_ol_r_pitch, [INT(view%n_OL_R_Pitch)])
+            ALLOCATE(dest%OL_R_Pitch(view%n_OL_R_Pitch))
+            dest%OL_R_Pitch = vit_ap_ol_r_pitch
+        ELSE IF (view%n_OL_R_Pitch == 0) THEN
+            ALLOCATE(dest%OL_R_Pitch(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%AWC_n)) DEALLOCATE(dest%AWC_n)
+        IF (C_ASSOCIATED(view%AWC_n) .AND. view%n_AWC_n > 0) THEN
+            CALL C_F_POINTER(view%AWC_n, vit_ap_awc_n, [INT(view%n_AWC_n)])
+            ALLOCATE(dest%AWC_n(view%n_AWC_n))
+            dest%AWC_n = vit_ap_awc_n
+        ELSE IF (view%n_AWC_n == 0) THEN
+            ALLOCATE(dest%AWC_n(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%AWC_harmonic)) DEALLOCATE(dest%AWC_harmonic)
+        IF (C_ASSOCIATED(view%AWC_harmonic) .AND. view%n_AWC_harmonic > 0) THEN
+            CALL C_F_POINTER(view%AWC_harmonic, vit_ap_awc_harmonic, [INT(view%n_AWC_harmonic)])
+            ALLOCATE(dest%AWC_harmonic(view%n_AWC_harmonic))
+            dest%AWC_harmonic = vit_ap_awc_harmonic
+        ELSE IF (view%n_AWC_harmonic == 0) THEN
+            ALLOCATE(dest%AWC_harmonic(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%AWC_freq)) DEALLOCATE(dest%AWC_freq)
+        IF (C_ASSOCIATED(view%AWC_freq) .AND. view%n_AWC_freq > 0) THEN
+            CALL C_F_POINTER(view%AWC_freq, vit_ap_awc_freq, [INT(view%n_AWC_freq)])
+            ALLOCATE(dest%AWC_freq(view%n_AWC_freq))
+            dest%AWC_freq = vit_ap_awc_freq
+        ELSE IF (view%n_AWC_freq == 0) THEN
+            ALLOCATE(dest%AWC_freq(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%AWC_amp)) DEALLOCATE(dest%AWC_amp)
+        IF (C_ASSOCIATED(view%AWC_amp) .AND. view%n_AWC_amp > 0) THEN
+            CALL C_F_POINTER(view%AWC_amp, vit_ap_awc_amp, [INT(view%n_AWC_amp)])
+            ALLOCATE(dest%AWC_amp(view%n_AWC_amp))
+            dest%AWC_amp = vit_ap_awc_amp
+        ELSE IF (view%n_AWC_amp == 0) THEN
+            ALLOCATE(dest%AWC_amp(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%AWC_clockangle)) DEALLOCATE(dest%AWC_clockangle)
+        IF (C_ASSOCIATED(view%AWC_clockangle) .AND. view%n_AWC_clockangle > 0) THEN
+            CALL C_F_POINTER(view%AWC_clockangle, vit_ap_awc_clockangle, [INT(view%n_AWC_clockangle)])
+            ALLOCATE(dest%AWC_clockangle(view%n_AWC_clockangle))
+            dest%AWC_clockangle = vit_ap_awc_clockangle
+        ELSE IF (view%n_AWC_clockangle == 0) THEN
+            ALLOCATE(dest%AWC_clockangle(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%AWC_CntrGains)) DEALLOCATE(dest%AWC_CntrGains)
+        IF (C_ASSOCIATED(view%AWC_CntrGains) .AND. view%n_AWC_CntrGains > 0) THEN
+            CALL C_F_POINTER(view%AWC_CntrGains, vit_ap_awc_cntrgains, [INT(view%n_AWC_CntrGains)])
+            ALLOCATE(dest%AWC_CntrGains(view%n_AWC_CntrGains))
+            dest%AWC_CntrGains = vit_ap_awc_cntrgains
+        ELSE IF (view%n_AWC_CntrGains == 0) THEN
+            ALLOCATE(dest%AWC_CntrGains(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%PF_Offsets)) DEALLOCATE(dest%PF_Offsets)
+        IF (C_ASSOCIATED(view%PF_Offsets) .AND. view%n_PF_Offsets > 0) THEN
+            CALL C_F_POINTER(view%PF_Offsets, vit_ap_pf_offsets, [INT(view%n_PF_Offsets)])
+            ALLOCATE(dest%PF_Offsets(view%n_PF_Offsets))
+            dest%PF_Offsets = vit_ap_pf_offsets
+        ELSE IF (view%n_PF_Offsets == 0) THEN
+            ALLOCATE(dest%PF_Offsets(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%PF_TimeStuck)) DEALLOCATE(dest%PF_TimeStuck)
+        IF (C_ASSOCIATED(view%PF_TimeStuck) .AND. view%n_PF_TimeStuck > 0) THEN
+            CALL C_F_POINTER(view%PF_TimeStuck, vit_ap_pf_timestuck, [INT(view%n_PF_TimeStuck)])
+            ALLOCATE(dest%PF_TimeStuck(view%n_PF_TimeStuck))
+            dest%PF_TimeStuck = vit_ap_pf_timestuck
+        ELSE IF (view%n_PF_TimeStuck == 0) THEN
+            ALLOCATE(dest%PF_TimeStuck(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%CC_GroupIndex)) DEALLOCATE(dest%CC_GroupIndex)
+        IF (C_ASSOCIATED(view%CC_GroupIndex) .AND. view%n_CC_GroupIndex > 0) THEN
+            CALL C_F_POINTER(view%CC_GroupIndex, vit_ap_cc_groupindex, [INT(view%n_CC_GroupIndex)])
+            ALLOCATE(dest%CC_GroupIndex(view%n_CC_GroupIndex))
+            dest%CC_GroupIndex = vit_ap_cc_groupindex
+        ELSE IF (view%n_CC_GroupIndex == 0) THEN
+            ALLOCATE(dest%CC_GroupIndex(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%StC_GroupIndex)) DEALLOCATE(dest%StC_GroupIndex)
+        IF (C_ASSOCIATED(view%StC_GroupIndex) .AND. view%n_StC_GroupIndex > 0) THEN
+            CALL C_F_POINTER(view%StC_GroupIndex, vit_ap_stc_groupindex, [INT(view%n_StC_GroupIndex)])
+            ALLOCATE(dest%StC_GroupIndex(view%n_StC_GroupIndex))
+            dest%StC_GroupIndex = vit_ap_stc_groupindex
+        ELSE IF (view%n_StC_GroupIndex == 0) THEN
+            ALLOCATE(dest%StC_GroupIndex(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%OL_CableControl)) DEALLOCATE(dest%OL_CableControl)
+        IF (C_ASSOCIATED(view%OL_CableControl) .AND. view%n_OL_CableControl_rows > 0 &
+                .AND. view%n_OL_CableControl_cols > 0) THEN
+            CALL C_F_POINTER(view%OL_CableControl, vit_ap_ol_cablecontrol, &
+                [INT(view%n_OL_CableControl_rows), INT(view%n_OL_CableControl_cols)])
+            ALLOCATE(dest%OL_CableControl(view%n_OL_CableControl_rows, view%n_OL_CableControl_cols))
+            dest%OL_CableControl = vit_ap_ol_cablecontrol
+        ELSE IF (view%n_OL_CableControl_rows == 0 .AND. view%n_OL_CableControl_cols == 0) THEN
+            ALLOCATE(dest%OL_CableControl(0, 0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%OL_StructControl)) DEALLOCATE(dest%OL_StructControl)
+        IF (C_ASSOCIATED(view%OL_StructControl) .AND. view%n_OL_StructControl_rows > 0 &
+                .AND. view%n_OL_StructControl_cols > 0) THEN
+            CALL C_F_POINTER(view%OL_StructControl, vit_ap_ol_structcontrol, &
+                [INT(view%n_OL_StructControl_rows), INT(view%n_OL_StructControl_cols)])
+            ALLOCATE(dest%OL_StructControl(view%n_OL_StructControl_rows, view%n_OL_StructControl_cols))
+            dest%OL_StructControl = vit_ap_ol_structcontrol
+        ELSE IF (view%n_OL_StructControl_rows == 0 .AND. view%n_OL_StructControl_cols == 0) THEN
+            ALLOCATE(dest%OL_StructControl(0, 0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%OL_Channels)) DEALLOCATE(dest%OL_Channels)
+        IF (C_ASSOCIATED(view%OL_Channels) .AND. view%n_OL_Channels_rows > 0 &
+                .AND. view%n_OL_Channels_cols > 0) THEN
+            CALL C_F_POINTER(view%OL_Channels, vit_ap_ol_channels, &
+                [INT(view%n_OL_Channels_rows), INT(view%n_OL_Channels_cols)])
+            ALLOCATE(dest%OL_Channels(view%n_OL_Channels_rows, view%n_OL_Channels_cols))
+            dest%OL_Channels = vit_ap_ol_channels
+        ELSE IF (view%n_OL_Channels_rows == 0 .AND. view%n_OL_Channels_cols == 0) THEN
+            ALLOCATE(dest%OL_Channels(0, 0))   ! allocated-empty, distinct from unallocated
+        END IF
 
     END SUBROUTINE vit_view_in_controlparameters
 
@@ -1300,21 +1905,75 @@ CONTAINS
         ! leaving its pointer and capacity exactly as it supplied them.
         TYPE(ControlParameters), INTENT(IN) :: src
         TYPE(controlparameters_view_t), INTENT(INOUT) :: view
+        INTEGER(IntKi), POINTER :: vit_ap_f_genspdnotch_ind(:)
+        INTEGER(IntKi), POINTER :: vit_ap_f_twrtopnotch_ind(:)
+        REAL(DbKi), POINTER :: vit_ap_f_notchfreqs(:)
+        REAL(DbKi), POINTER :: vit_ap_f_notchbetanum(:)
+        REAL(DbKi), POINTER :: vit_ap_f_notchbetaden(:)
+        REAL(DbKi), POINTER :: vit_ap_f_flcornerfreq(:)
+        REAL(DbKi), POINTER :: vit_ap_f_flpcornerfreq(:)
+        REAL(DbKi), POINTER :: vit_ap_ipc_vramp(:)
+        REAL(DbKi), POINTER :: vit_ap_ipc_kp(:)
+        REAL(DbKi), POINTER :: vit_ap_ipc_ki(:)
+        REAL(DbKi), POINTER :: vit_ap_ipc_azioffset(:)
+        REAL(DbKi), POINTER :: vit_ap_pc_gs_angles(:)
+        REAL(DbKi), POINTER :: vit_ap_pc_gs_kp(:)
+        REAL(DbKi), POINTER :: vit_ap_pc_gs_ki(:)
+        REAL(DbKi), POINTER :: vit_ap_pc_gs_kd(:)
+        REAL(DbKi), POINTER :: vit_ap_pc_gs_tf(:)
+        REAL(DbKi), POINTER :: vit_ap_vs_kp(:)
+        REAL(DbKi), POINTER :: vit_ap_vs_ki(:)
+        REAL(DbKi), POINTER :: vit_ap_vs_fbp_u(:)
+        REAL(DbKi), POINTER :: vit_ap_vs_fbp_omega(:)
+        REAL(DbKi), POINTER :: vit_ap_vs_fbp_tau(:)
+        REAL(DbKi), POINTER :: vit_ap_prc_windspeeds(:)
+        REAL(DbKi), POINTER :: vit_ap_prc_genspeeds(:)
+        REAL(DbKi), POINTER :: vit_ap_prc_pitch_table(:)
+        REAL(DbKi), POINTER :: vit_ap_prc_r_table(:)
+        REAL(DbKi), POINTER :: vit_ap_we_cp(:)
+        INTEGER(IntKi), POINTER :: vit_ap_perftablesize(:)
+        REAL(DbKi), POINTER :: vit_ap_we_fopoles_v(:)
+        REAL(DbKi), POINTER :: vit_ap_we_fopoles(:)
+        REAL(DbKi), POINTER :: vit_ap_y_errthresh(:)
+        REAL(DbKi), POINTER :: vit_ap_ps_windspeeds(:)
+        REAL(DbKi), POINTER :: vit_ap_ps_bldpitchmin(:)
+        REAL(DbKi), POINTER :: vit_ap_su_loadstages(:)
+        REAL(DbKi), POINTER :: vit_ap_su_loadrampduration(:)
+        REAL(DbKi), POINTER :: vit_ap_su_loadholdduration(:)
+        REAL(DbKi), POINTER :: vit_ap_sd_maxtorquerate(:)
+        REAL(DbKi), POINTER :: vit_ap_sd_maxpitchrate(:)
+        REAL(DbKi), POINTER :: vit_ap_sd_stagepitch(:)
+        REAL(DbKi), POINTER :: vit_ap_sd_stagetime(:)
+        REAL(DbKi), POINTER :: vit_ap_fl_kp(:)
+        REAL(DbKi), POINTER :: vit_ap_fl_u(:)
+        INTEGER(IntKi), POINTER :: vit_ap_ind_bldpitch(:)
+        REAL(DbKi), POINTER :: vit_ap_rp_gains(:)
+        INTEGER(IntKi), POINTER :: vit_ap_ind_cablecontrol(:)
+        INTEGER(IntKi), POINTER :: vit_ap_ind_structcontrol(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_breakpoints(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_bldpitch1(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_bldpitch2(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_bldpitch3(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_gentq(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_yawrate(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_azimuth(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_r_speed(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_r_torque(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_r_pitch(:)
+        INTEGER(IntKi), POINTER :: vit_ap_awc_n(:)
+        INTEGER(IntKi), POINTER :: vit_ap_awc_harmonic(:)
+        REAL(DbKi), POINTER :: vit_ap_awc_freq(:)
+        REAL(DbKi), POINTER :: vit_ap_awc_amp(:)
+        REAL(DbKi), POINTER :: vit_ap_awc_clockangle(:)
+        REAL(DbKi), POINTER :: vit_ap_awc_cntrgains(:)
+        REAL(DbKi), POINTER :: vit_ap_pf_offsets(:)
+        REAL(DbKi), POINTER :: vit_ap_pf_timestuck(:)
+        INTEGER(IntKi), POINTER :: vit_ap_cc_groupindex(:)
+        INTEGER(IntKi), POINTER :: vit_ap_stc_groupindex(:)
+        REAL(DbKi), POINTER :: vit_ap_ol_cablecontrol(:,:)
+        REAL(DbKi), POINTER :: vit_ap_ol_structcontrol(:,:)
+        REAL(DbKi), POINTER :: vit_ap_ol_channels(:,:)
 
-        ! The direct-caller conversion is not measured on these field(s):
-        !  F_GenSpdNotch_Ind, F_TwrTopNotch_Ind, F_NotchFreqs, F_NotchBetaNum, F_NotchBetaDen, 
-        !  F_FlCornerFreq, F_FlpCornerFreq, IPC_Vramp, IPC_KP, IPC_KI, IPC_aziOffset, PC_GS_angles, 
-        !  PC_GS_KP, PC_GS_KI, PC_GS_KD, PC_GS_TF, VS_KP, VS_KI, VS_FBP_U, VS_FBP_Omega, 
-        !  VS_FBP_Tau, PRC_WindSpeeds, PRC_GenSpeeds, PRC_Pitch_Table, PRC_R_Table, WE_CP, 
-        !  PerfTableSize, WE_FOPoles_v, WE_FOPoles, Y_ErrThresh, PS_WindSpeeds, PS_BldPitchMin, 
-        !  SU_LoadStages, SU_LoadRampDuration, SU_LoadHoldDuration, SD_MaxTorqueRate, 
-        !  SD_MaxPitchRate, SD_StagePitch, SD_StageTime, Fl_Kp, Fl_U, Ind_BldPitch, RP_Gains, 
-        !  Ind_CableControl, Ind_StructControl, OL_Breakpoints, OL_BldPitch1, OL_BldPitch2, 
-        !  OL_BldPitch3, OL_CableControl, OL_StructControl, OL_GenTq, OL_YawRate, OL_Azimuth, 
-        !  OL_R_Speed, OL_R_Torque, OL_R_Pitch, OL_Channels, AWC_n, AWC_harmonic, AWC_freq, 
-        !  AWC_amp, AWC_clockangle, AWC_CntrGains, PF_Offsets, PF_TimeStuck, CC_GroupIndex, 
-        !  StC_GroupIndex
-        ERROR STOP 'VIT: vit_view_out_controlparameters: an unmeasured field kind; see the comment above'
         view%ZMQ_ID = INT(src%ZMQ_ID, C_INT)
         view%LoggingLevel = INT(src%LoggingLevel, C_INT)
         view%Echo = INT(src%Echo, C_INT)
@@ -1460,6 +2119,905 @@ CONTAINS
         view%PC_RtTq99 = REAL(src%PC_RtTq99, C_DOUBLE)
         view%VS_MaxOMTq = REAL(src%VS_MaxOMTq, C_DOUBLE)
         view%VS_MinOMTq = REAL(src%VS_MinOMTq, C_DOUBLE)
+        IF (C_ASSOCIATED(view%F_GenSpdNotch_Ind) .AND. view%n_F_GenSpdNotch_Ind > 0) THEN
+            IF (ALLOCATED(src%F_GenSpdNotch_Ind)) THEN
+                IF (SIZE(src%F_GenSpdNotch_Ind) == view%n_F_GenSpdNotch_Ind) THEN
+                    CALL C_F_POINTER(view%F_GenSpdNotch_Ind, vit_ap_f_genspdnotch_ind, [INT(view%n_F_GenSpdNotch_Ind)])
+                    vit_ap_f_genspdnotch_ind = src%F_GenSpdNotch_Ind
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%F_GenSpdNotch_Ind came back at ', SIZE(src%F_GenSpdNotch_Ind), &
+                        ' element(s) against the ', view%n_F_GenSpdNotch_Ind, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%F_TwrTopNotch_Ind) .AND. view%n_F_TwrTopNotch_Ind > 0) THEN
+            IF (ALLOCATED(src%F_TwrTopNotch_Ind)) THEN
+                IF (SIZE(src%F_TwrTopNotch_Ind) == view%n_F_TwrTopNotch_Ind) THEN
+                    CALL C_F_POINTER(view%F_TwrTopNotch_Ind, vit_ap_f_twrtopnotch_ind, [INT(view%n_F_TwrTopNotch_Ind)])
+                    vit_ap_f_twrtopnotch_ind = src%F_TwrTopNotch_Ind
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%F_TwrTopNotch_Ind came back at ', SIZE(src%F_TwrTopNotch_Ind), &
+                        ' element(s) against the ', view%n_F_TwrTopNotch_Ind, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%F_NotchFreqs) .AND. view%n_F_NotchFreqs > 0) THEN
+            IF (ALLOCATED(src%F_NotchFreqs)) THEN
+                IF (SIZE(src%F_NotchFreqs) == view%n_F_NotchFreqs) THEN
+                    CALL C_F_POINTER(view%F_NotchFreqs, vit_ap_f_notchfreqs, [INT(view%n_F_NotchFreqs)])
+                    vit_ap_f_notchfreqs = src%F_NotchFreqs
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%F_NotchFreqs came back at ', SIZE(src%F_NotchFreqs), &
+                        ' element(s) against the ', view%n_F_NotchFreqs, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%F_NotchBetaNum) .AND. view%n_F_NotchBetaNum > 0) THEN
+            IF (ALLOCATED(src%F_NotchBetaNum)) THEN
+                IF (SIZE(src%F_NotchBetaNum) == view%n_F_NotchBetaNum) THEN
+                    CALL C_F_POINTER(view%F_NotchBetaNum, vit_ap_f_notchbetanum, [INT(view%n_F_NotchBetaNum)])
+                    vit_ap_f_notchbetanum = src%F_NotchBetaNum
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%F_NotchBetaNum came back at ', SIZE(src%F_NotchBetaNum), &
+                        ' element(s) against the ', view%n_F_NotchBetaNum, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%F_NotchBetaDen) .AND. view%n_F_NotchBetaDen > 0) THEN
+            IF (ALLOCATED(src%F_NotchBetaDen)) THEN
+                IF (SIZE(src%F_NotchBetaDen) == view%n_F_NotchBetaDen) THEN
+                    CALL C_F_POINTER(view%F_NotchBetaDen, vit_ap_f_notchbetaden, [INT(view%n_F_NotchBetaDen)])
+                    vit_ap_f_notchbetaden = src%F_NotchBetaDen
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%F_NotchBetaDen came back at ', SIZE(src%F_NotchBetaDen), &
+                        ' element(s) against the ', view%n_F_NotchBetaDen, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%F_FlCornerFreq) .AND. view%n_F_FlCornerFreq > 0) THEN
+            IF (ALLOCATED(src%F_FlCornerFreq)) THEN
+                IF (SIZE(src%F_FlCornerFreq) == view%n_F_FlCornerFreq) THEN
+                    CALL C_F_POINTER(view%F_FlCornerFreq, vit_ap_f_flcornerfreq, [INT(view%n_F_FlCornerFreq)])
+                    vit_ap_f_flcornerfreq = src%F_FlCornerFreq
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%F_FlCornerFreq came back at ', SIZE(src%F_FlCornerFreq), &
+                        ' element(s) against the ', view%n_F_FlCornerFreq, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%F_FlpCornerFreq) .AND. view%n_F_FlpCornerFreq > 0) THEN
+            IF (ALLOCATED(src%F_FlpCornerFreq)) THEN
+                IF (SIZE(src%F_FlpCornerFreq) == view%n_F_FlpCornerFreq) THEN
+                    CALL C_F_POINTER(view%F_FlpCornerFreq, vit_ap_f_flpcornerfreq, [INT(view%n_F_FlpCornerFreq)])
+                    vit_ap_f_flpcornerfreq = src%F_FlpCornerFreq
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%F_FlpCornerFreq came back at ', SIZE(src%F_FlpCornerFreq), &
+                        ' element(s) against the ', view%n_F_FlpCornerFreq, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%IPC_Vramp) .AND. view%n_IPC_Vramp > 0) THEN
+            IF (ALLOCATED(src%IPC_Vramp)) THEN
+                IF (SIZE(src%IPC_Vramp) == view%n_IPC_Vramp) THEN
+                    CALL C_F_POINTER(view%IPC_Vramp, vit_ap_ipc_vramp, [INT(view%n_IPC_Vramp)])
+                    vit_ap_ipc_vramp = src%IPC_Vramp
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%IPC_Vramp came back at ', SIZE(src%IPC_Vramp), &
+                        ' element(s) against the ', view%n_IPC_Vramp, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%IPC_KP) .AND. view%n_IPC_KP > 0) THEN
+            IF (ALLOCATED(src%IPC_KP)) THEN
+                IF (SIZE(src%IPC_KP) == view%n_IPC_KP) THEN
+                    CALL C_F_POINTER(view%IPC_KP, vit_ap_ipc_kp, [INT(view%n_IPC_KP)])
+                    vit_ap_ipc_kp = src%IPC_KP
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%IPC_KP came back at ', SIZE(src%IPC_KP), &
+                        ' element(s) against the ', view%n_IPC_KP, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%IPC_KI) .AND. view%n_IPC_KI > 0) THEN
+            IF (ALLOCATED(src%IPC_KI)) THEN
+                IF (SIZE(src%IPC_KI) == view%n_IPC_KI) THEN
+                    CALL C_F_POINTER(view%IPC_KI, vit_ap_ipc_ki, [INT(view%n_IPC_KI)])
+                    vit_ap_ipc_ki = src%IPC_KI
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%IPC_KI came back at ', SIZE(src%IPC_KI), &
+                        ' element(s) against the ', view%n_IPC_KI, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%IPC_aziOffset) .AND. view%n_IPC_aziOffset > 0) THEN
+            IF (ALLOCATED(src%IPC_aziOffset)) THEN
+                IF (SIZE(src%IPC_aziOffset) == view%n_IPC_aziOffset) THEN
+                    CALL C_F_POINTER(view%IPC_aziOffset, vit_ap_ipc_azioffset, [INT(view%n_IPC_aziOffset)])
+                    vit_ap_ipc_azioffset = src%IPC_aziOffset
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%IPC_aziOffset came back at ', SIZE(src%IPC_aziOffset), &
+                        ' element(s) against the ', view%n_IPC_aziOffset, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%PC_GS_angles) .AND. view%n_PC_GS_angles > 0) THEN
+            IF (ALLOCATED(src%PC_GS_angles)) THEN
+                IF (SIZE(src%PC_GS_angles) == view%n_PC_GS_angles) THEN
+                    CALL C_F_POINTER(view%PC_GS_angles, vit_ap_pc_gs_angles, [INT(view%n_PC_GS_angles)])
+                    vit_ap_pc_gs_angles = src%PC_GS_angles
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%PC_GS_angles came back at ', SIZE(src%PC_GS_angles), &
+                        ' element(s) against the ', view%n_PC_GS_angles, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%PC_GS_KP) .AND. view%n_PC_GS_KP > 0) THEN
+            IF (ALLOCATED(src%PC_GS_KP)) THEN
+                IF (SIZE(src%PC_GS_KP) == view%n_PC_GS_KP) THEN
+                    CALL C_F_POINTER(view%PC_GS_KP, vit_ap_pc_gs_kp, [INT(view%n_PC_GS_KP)])
+                    vit_ap_pc_gs_kp = src%PC_GS_KP
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%PC_GS_KP came back at ', SIZE(src%PC_GS_KP), &
+                        ' element(s) against the ', view%n_PC_GS_KP, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%PC_GS_KI) .AND. view%n_PC_GS_KI > 0) THEN
+            IF (ALLOCATED(src%PC_GS_KI)) THEN
+                IF (SIZE(src%PC_GS_KI) == view%n_PC_GS_KI) THEN
+                    CALL C_F_POINTER(view%PC_GS_KI, vit_ap_pc_gs_ki, [INT(view%n_PC_GS_KI)])
+                    vit_ap_pc_gs_ki = src%PC_GS_KI
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%PC_GS_KI came back at ', SIZE(src%PC_GS_KI), &
+                        ' element(s) against the ', view%n_PC_GS_KI, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%PC_GS_KD) .AND. view%n_PC_GS_KD > 0) THEN
+            IF (ALLOCATED(src%PC_GS_KD)) THEN
+                IF (SIZE(src%PC_GS_KD) == view%n_PC_GS_KD) THEN
+                    CALL C_F_POINTER(view%PC_GS_KD, vit_ap_pc_gs_kd, [INT(view%n_PC_GS_KD)])
+                    vit_ap_pc_gs_kd = src%PC_GS_KD
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%PC_GS_KD came back at ', SIZE(src%PC_GS_KD), &
+                        ' element(s) against the ', view%n_PC_GS_KD, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%PC_GS_TF) .AND. view%n_PC_GS_TF > 0) THEN
+            IF (ALLOCATED(src%PC_GS_TF)) THEN
+                IF (SIZE(src%PC_GS_TF) == view%n_PC_GS_TF) THEN
+                    CALL C_F_POINTER(view%PC_GS_TF, vit_ap_pc_gs_tf, [INT(view%n_PC_GS_TF)])
+                    vit_ap_pc_gs_tf = src%PC_GS_TF
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%PC_GS_TF came back at ', SIZE(src%PC_GS_TF), &
+                        ' element(s) against the ', view%n_PC_GS_TF, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%VS_KP) .AND. view%n_VS_KP > 0) THEN
+            IF (ALLOCATED(src%VS_KP)) THEN
+                IF (SIZE(src%VS_KP) == view%n_VS_KP) THEN
+                    CALL C_F_POINTER(view%VS_KP, vit_ap_vs_kp, [INT(view%n_VS_KP)])
+                    vit_ap_vs_kp = src%VS_KP
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%VS_KP came back at ', SIZE(src%VS_KP), &
+                        ' element(s) against the ', view%n_VS_KP, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%VS_KI) .AND. view%n_VS_KI > 0) THEN
+            IF (ALLOCATED(src%VS_KI)) THEN
+                IF (SIZE(src%VS_KI) == view%n_VS_KI) THEN
+                    CALL C_F_POINTER(view%VS_KI, vit_ap_vs_ki, [INT(view%n_VS_KI)])
+                    vit_ap_vs_ki = src%VS_KI
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%VS_KI came back at ', SIZE(src%VS_KI), &
+                        ' element(s) against the ', view%n_VS_KI, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%VS_FBP_U) .AND. view%n_VS_FBP_U > 0) THEN
+            IF (ALLOCATED(src%VS_FBP_U)) THEN
+                IF (SIZE(src%VS_FBP_U) == view%n_VS_FBP_U) THEN
+                    CALL C_F_POINTER(view%VS_FBP_U, vit_ap_vs_fbp_u, [INT(view%n_VS_FBP_U)])
+                    vit_ap_vs_fbp_u = src%VS_FBP_U
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%VS_FBP_U came back at ', SIZE(src%VS_FBP_U), &
+                        ' element(s) against the ', view%n_VS_FBP_U, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%VS_FBP_Omega) .AND. view%n_VS_FBP_Omega > 0) THEN
+            IF (ALLOCATED(src%VS_FBP_Omega)) THEN
+                IF (SIZE(src%VS_FBP_Omega) == view%n_VS_FBP_Omega) THEN
+                    CALL C_F_POINTER(view%VS_FBP_Omega, vit_ap_vs_fbp_omega, [INT(view%n_VS_FBP_Omega)])
+                    vit_ap_vs_fbp_omega = src%VS_FBP_Omega
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%VS_FBP_Omega came back at ', SIZE(src%VS_FBP_Omega), &
+                        ' element(s) against the ', view%n_VS_FBP_Omega, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%VS_FBP_Tau) .AND. view%n_VS_FBP_Tau > 0) THEN
+            IF (ALLOCATED(src%VS_FBP_Tau)) THEN
+                IF (SIZE(src%VS_FBP_Tau) == view%n_VS_FBP_Tau) THEN
+                    CALL C_F_POINTER(view%VS_FBP_Tau, vit_ap_vs_fbp_tau, [INT(view%n_VS_FBP_Tau)])
+                    vit_ap_vs_fbp_tau = src%VS_FBP_Tau
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%VS_FBP_Tau came back at ', SIZE(src%VS_FBP_Tau), &
+                        ' element(s) against the ', view%n_VS_FBP_Tau, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%PRC_WindSpeeds) .AND. view%n_PRC_WindSpeeds > 0) THEN
+            IF (ALLOCATED(src%PRC_WindSpeeds)) THEN
+                IF (SIZE(src%PRC_WindSpeeds) == view%n_PRC_WindSpeeds) THEN
+                    CALL C_F_POINTER(view%PRC_WindSpeeds, vit_ap_prc_windspeeds, [INT(view%n_PRC_WindSpeeds)])
+                    vit_ap_prc_windspeeds = src%PRC_WindSpeeds
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%PRC_WindSpeeds came back at ', SIZE(src%PRC_WindSpeeds), &
+                        ' element(s) against the ', view%n_PRC_WindSpeeds, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%PRC_GenSpeeds) .AND. view%n_PRC_GenSpeeds > 0) THEN
+            IF (ALLOCATED(src%PRC_GenSpeeds)) THEN
+                IF (SIZE(src%PRC_GenSpeeds) == view%n_PRC_GenSpeeds) THEN
+                    CALL C_F_POINTER(view%PRC_GenSpeeds, vit_ap_prc_genspeeds, [INT(view%n_PRC_GenSpeeds)])
+                    vit_ap_prc_genspeeds = src%PRC_GenSpeeds
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%PRC_GenSpeeds came back at ', SIZE(src%PRC_GenSpeeds), &
+                        ' element(s) against the ', view%n_PRC_GenSpeeds, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%PRC_Pitch_Table) .AND. view%n_PRC_Pitch_Table > 0) THEN
+            IF (ALLOCATED(src%PRC_Pitch_Table)) THEN
+                IF (SIZE(src%PRC_Pitch_Table) == view%n_PRC_Pitch_Table) THEN
+                    CALL C_F_POINTER(view%PRC_Pitch_Table, vit_ap_prc_pitch_table, [INT(view%n_PRC_Pitch_Table)])
+                    vit_ap_prc_pitch_table = src%PRC_Pitch_Table
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%PRC_Pitch_Table came back at ', SIZE(src%PRC_Pitch_Table), &
+                        ' element(s) against the ', view%n_PRC_Pitch_Table, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%PRC_R_Table) .AND. view%n_PRC_R_Table > 0) THEN
+            IF (ALLOCATED(src%PRC_R_Table)) THEN
+                IF (SIZE(src%PRC_R_Table) == view%n_PRC_R_Table) THEN
+                    CALL C_F_POINTER(view%PRC_R_Table, vit_ap_prc_r_table, [INT(view%n_PRC_R_Table)])
+                    vit_ap_prc_r_table = src%PRC_R_Table
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%PRC_R_Table came back at ', SIZE(src%PRC_R_Table), &
+                        ' element(s) against the ', view%n_PRC_R_Table, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%WE_CP) .AND. view%n_WE_CP > 0) THEN
+            IF (ALLOCATED(src%WE_CP)) THEN
+                IF (SIZE(src%WE_CP) == view%n_WE_CP) THEN
+                    CALL C_F_POINTER(view%WE_CP, vit_ap_we_cp, [INT(view%n_WE_CP)])
+                    vit_ap_we_cp = src%WE_CP
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%WE_CP came back at ', SIZE(src%WE_CP), &
+                        ' element(s) against the ', view%n_WE_CP, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%PerfTableSize) .AND. view%n_PerfTableSize > 0) THEN
+            IF (ALLOCATED(src%PerfTableSize)) THEN
+                IF (SIZE(src%PerfTableSize) == view%n_PerfTableSize) THEN
+                    CALL C_F_POINTER(view%PerfTableSize, vit_ap_perftablesize, [INT(view%n_PerfTableSize)])
+                    vit_ap_perftablesize = src%PerfTableSize
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%PerfTableSize came back at ', SIZE(src%PerfTableSize), &
+                        ' element(s) against the ', view%n_PerfTableSize, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%WE_FOPoles_v) .AND. view%n_WE_FOPoles_v > 0) THEN
+            IF (ALLOCATED(src%WE_FOPoles_v)) THEN
+                IF (SIZE(src%WE_FOPoles_v) == view%n_WE_FOPoles_v) THEN
+                    CALL C_F_POINTER(view%WE_FOPoles_v, vit_ap_we_fopoles_v, [INT(view%n_WE_FOPoles_v)])
+                    vit_ap_we_fopoles_v = src%WE_FOPoles_v
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%WE_FOPoles_v came back at ', SIZE(src%WE_FOPoles_v), &
+                        ' element(s) against the ', view%n_WE_FOPoles_v, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%WE_FOPoles) .AND. view%n_WE_FOPoles > 0) THEN
+            IF (ALLOCATED(src%WE_FOPoles)) THEN
+                IF (SIZE(src%WE_FOPoles) == view%n_WE_FOPoles) THEN
+                    CALL C_F_POINTER(view%WE_FOPoles, vit_ap_we_fopoles, [INT(view%n_WE_FOPoles)])
+                    vit_ap_we_fopoles = src%WE_FOPoles
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%WE_FOPoles came back at ', SIZE(src%WE_FOPoles), &
+                        ' element(s) against the ', view%n_WE_FOPoles, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%Y_ErrThresh) .AND. view%n_Y_ErrThresh > 0) THEN
+            IF (ALLOCATED(src%Y_ErrThresh)) THEN
+                IF (SIZE(src%Y_ErrThresh) == view%n_Y_ErrThresh) THEN
+                    CALL C_F_POINTER(view%Y_ErrThresh, vit_ap_y_errthresh, [INT(view%n_Y_ErrThresh)])
+                    vit_ap_y_errthresh = src%Y_ErrThresh
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%Y_ErrThresh came back at ', SIZE(src%Y_ErrThresh), &
+                        ' element(s) against the ', view%n_Y_ErrThresh, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%PS_WindSpeeds) .AND. view%n_PS_WindSpeeds > 0) THEN
+            IF (ALLOCATED(src%PS_WindSpeeds)) THEN
+                IF (SIZE(src%PS_WindSpeeds) == view%n_PS_WindSpeeds) THEN
+                    CALL C_F_POINTER(view%PS_WindSpeeds, vit_ap_ps_windspeeds, [INT(view%n_PS_WindSpeeds)])
+                    vit_ap_ps_windspeeds = src%PS_WindSpeeds
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%PS_WindSpeeds came back at ', SIZE(src%PS_WindSpeeds), &
+                        ' element(s) against the ', view%n_PS_WindSpeeds, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%PS_BldPitchMin) .AND. view%n_PS_BldPitchMin > 0) THEN
+            IF (ALLOCATED(src%PS_BldPitchMin)) THEN
+                IF (SIZE(src%PS_BldPitchMin) == view%n_PS_BldPitchMin) THEN
+                    CALL C_F_POINTER(view%PS_BldPitchMin, vit_ap_ps_bldpitchmin, [INT(view%n_PS_BldPitchMin)])
+                    vit_ap_ps_bldpitchmin = src%PS_BldPitchMin
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%PS_BldPitchMin came back at ', SIZE(src%PS_BldPitchMin), &
+                        ' element(s) against the ', view%n_PS_BldPitchMin, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%SU_LoadStages) .AND. view%n_SU_LoadStages > 0) THEN
+            IF (ALLOCATED(src%SU_LoadStages)) THEN
+                IF (SIZE(src%SU_LoadStages) == view%n_SU_LoadStages) THEN
+                    CALL C_F_POINTER(view%SU_LoadStages, vit_ap_su_loadstages, [INT(view%n_SU_LoadStages)])
+                    vit_ap_su_loadstages = src%SU_LoadStages
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%SU_LoadStages came back at ', SIZE(src%SU_LoadStages), &
+                        ' element(s) against the ', view%n_SU_LoadStages, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%SU_LoadRampDuration) .AND. view%n_SU_LoadRampDuration > 0) THEN
+            IF (ALLOCATED(src%SU_LoadRampDuration)) THEN
+                IF (SIZE(src%SU_LoadRampDuration) == view%n_SU_LoadRampDuration) THEN
+                    CALL C_F_POINTER(view%SU_LoadRampDuration, vit_ap_su_loadrampduration, [INT(view%n_SU_LoadRampDuration)])
+                    vit_ap_su_loadrampduration = src%SU_LoadRampDuration
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%SU_LoadRampDuration came back at ', SIZE(src%SU_LoadRampDuration), &
+                        ' element(s) against the ', view%n_SU_LoadRampDuration, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%SU_LoadHoldDuration) .AND. view%n_SU_LoadHoldDuration > 0) THEN
+            IF (ALLOCATED(src%SU_LoadHoldDuration)) THEN
+                IF (SIZE(src%SU_LoadHoldDuration) == view%n_SU_LoadHoldDuration) THEN
+                    CALL C_F_POINTER(view%SU_LoadHoldDuration, vit_ap_su_loadholdduration, [INT(view%n_SU_LoadHoldDuration)])
+                    vit_ap_su_loadholdduration = src%SU_LoadHoldDuration
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%SU_LoadHoldDuration came back at ', SIZE(src%SU_LoadHoldDuration), &
+                        ' element(s) against the ', view%n_SU_LoadHoldDuration, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%SD_MaxTorqueRate) .AND. view%n_SD_MaxTorqueRate > 0) THEN
+            IF (ALLOCATED(src%SD_MaxTorqueRate)) THEN
+                IF (SIZE(src%SD_MaxTorqueRate) == view%n_SD_MaxTorqueRate) THEN
+                    CALL C_F_POINTER(view%SD_MaxTorqueRate, vit_ap_sd_maxtorquerate, [INT(view%n_SD_MaxTorqueRate)])
+                    vit_ap_sd_maxtorquerate = src%SD_MaxTorqueRate
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%SD_MaxTorqueRate came back at ', SIZE(src%SD_MaxTorqueRate), &
+                        ' element(s) against the ', view%n_SD_MaxTorqueRate, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%SD_MaxPitchRate) .AND. view%n_SD_MaxPitchRate > 0) THEN
+            IF (ALLOCATED(src%SD_MaxPitchRate)) THEN
+                IF (SIZE(src%SD_MaxPitchRate) == view%n_SD_MaxPitchRate) THEN
+                    CALL C_F_POINTER(view%SD_MaxPitchRate, vit_ap_sd_maxpitchrate, [INT(view%n_SD_MaxPitchRate)])
+                    vit_ap_sd_maxpitchrate = src%SD_MaxPitchRate
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%SD_MaxPitchRate came back at ', SIZE(src%SD_MaxPitchRate), &
+                        ' element(s) against the ', view%n_SD_MaxPitchRate, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%SD_StagePitch) .AND. view%n_SD_StagePitch > 0) THEN
+            IF (ALLOCATED(src%SD_StagePitch)) THEN
+                IF (SIZE(src%SD_StagePitch) == view%n_SD_StagePitch) THEN
+                    CALL C_F_POINTER(view%SD_StagePitch, vit_ap_sd_stagepitch, [INT(view%n_SD_StagePitch)])
+                    vit_ap_sd_stagepitch = src%SD_StagePitch
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%SD_StagePitch came back at ', SIZE(src%SD_StagePitch), &
+                        ' element(s) against the ', view%n_SD_StagePitch, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%SD_StageTime) .AND. view%n_SD_StageTime > 0) THEN
+            IF (ALLOCATED(src%SD_StageTime)) THEN
+                IF (SIZE(src%SD_StageTime) == view%n_SD_StageTime) THEN
+                    CALL C_F_POINTER(view%SD_StageTime, vit_ap_sd_stagetime, [INT(view%n_SD_StageTime)])
+                    vit_ap_sd_stagetime = src%SD_StageTime
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%SD_StageTime came back at ', SIZE(src%SD_StageTime), &
+                        ' element(s) against the ', view%n_SD_StageTime, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%Fl_Kp) .AND. view%n_Fl_Kp > 0) THEN
+            IF (ALLOCATED(src%Fl_Kp)) THEN
+                IF (SIZE(src%Fl_Kp) == view%n_Fl_Kp) THEN
+                    CALL C_F_POINTER(view%Fl_Kp, vit_ap_fl_kp, [INT(view%n_Fl_Kp)])
+                    vit_ap_fl_kp = src%Fl_Kp
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%Fl_Kp came back at ', SIZE(src%Fl_Kp), &
+                        ' element(s) against the ', view%n_Fl_Kp, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%Fl_U) .AND. view%n_Fl_U > 0) THEN
+            IF (ALLOCATED(src%Fl_U)) THEN
+                IF (SIZE(src%Fl_U) == view%n_Fl_U) THEN
+                    CALL C_F_POINTER(view%Fl_U, vit_ap_fl_u, [INT(view%n_Fl_U)])
+                    vit_ap_fl_u = src%Fl_U
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%Fl_U came back at ', SIZE(src%Fl_U), &
+                        ' element(s) against the ', view%n_Fl_U, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%Ind_BldPitch) .AND. view%n_Ind_BldPitch > 0) THEN
+            IF (ALLOCATED(src%Ind_BldPitch)) THEN
+                IF (SIZE(src%Ind_BldPitch) == view%n_Ind_BldPitch) THEN
+                    CALL C_F_POINTER(view%Ind_BldPitch, vit_ap_ind_bldpitch, [INT(view%n_Ind_BldPitch)])
+                    vit_ap_ind_bldpitch = src%Ind_BldPitch
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%Ind_BldPitch came back at ', SIZE(src%Ind_BldPitch), &
+                        ' element(s) against the ', view%n_Ind_BldPitch, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%RP_Gains) .AND. view%n_RP_Gains > 0) THEN
+            IF (ALLOCATED(src%RP_Gains)) THEN
+                IF (SIZE(src%RP_Gains) == view%n_RP_Gains) THEN
+                    CALL C_F_POINTER(view%RP_Gains, vit_ap_rp_gains, [INT(view%n_RP_Gains)])
+                    vit_ap_rp_gains = src%RP_Gains
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%RP_Gains came back at ', SIZE(src%RP_Gains), &
+                        ' element(s) against the ', view%n_RP_Gains, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%Ind_CableControl) .AND. view%n_Ind_CableControl > 0) THEN
+            IF (ALLOCATED(src%Ind_CableControl)) THEN
+                IF (SIZE(src%Ind_CableControl) == view%n_Ind_CableControl) THEN
+                    CALL C_F_POINTER(view%Ind_CableControl, vit_ap_ind_cablecontrol, [INT(view%n_Ind_CableControl)])
+                    vit_ap_ind_cablecontrol = src%Ind_CableControl
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%Ind_CableControl came back at ', SIZE(src%Ind_CableControl), &
+                        ' element(s) against the ', view%n_Ind_CableControl, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%Ind_StructControl) .AND. view%n_Ind_StructControl > 0) THEN
+            IF (ALLOCATED(src%Ind_StructControl)) THEN
+                IF (SIZE(src%Ind_StructControl) == view%n_Ind_StructControl) THEN
+                    CALL C_F_POINTER(view%Ind_StructControl, vit_ap_ind_structcontrol, [INT(view%n_Ind_StructControl)])
+                    vit_ap_ind_structcontrol = src%Ind_StructControl
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%Ind_StructControl came back at ', SIZE(src%Ind_StructControl), &
+                        ' element(s) against the ', view%n_Ind_StructControl, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%OL_Breakpoints) .AND. view%n_OL_Breakpoints > 0) THEN
+            IF (ALLOCATED(src%OL_Breakpoints)) THEN
+                IF (SIZE(src%OL_Breakpoints) == view%n_OL_Breakpoints) THEN
+                    CALL C_F_POINTER(view%OL_Breakpoints, vit_ap_ol_breakpoints, [INT(view%n_OL_Breakpoints)])
+                    vit_ap_ol_breakpoints = src%OL_Breakpoints
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%OL_Breakpoints came back at ', SIZE(src%OL_Breakpoints), &
+                        ' element(s) against the ', view%n_OL_Breakpoints, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%OL_BldPitch1) .AND. view%n_OL_BldPitch1 > 0) THEN
+            IF (ALLOCATED(src%OL_BldPitch1)) THEN
+                IF (SIZE(src%OL_BldPitch1) == view%n_OL_BldPitch1) THEN
+                    CALL C_F_POINTER(view%OL_BldPitch1, vit_ap_ol_bldpitch1, [INT(view%n_OL_BldPitch1)])
+                    vit_ap_ol_bldpitch1 = src%OL_BldPitch1
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%OL_BldPitch1 came back at ', SIZE(src%OL_BldPitch1), &
+                        ' element(s) against the ', view%n_OL_BldPitch1, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%OL_BldPitch2) .AND. view%n_OL_BldPitch2 > 0) THEN
+            IF (ALLOCATED(src%OL_BldPitch2)) THEN
+                IF (SIZE(src%OL_BldPitch2) == view%n_OL_BldPitch2) THEN
+                    CALL C_F_POINTER(view%OL_BldPitch2, vit_ap_ol_bldpitch2, [INT(view%n_OL_BldPitch2)])
+                    vit_ap_ol_bldpitch2 = src%OL_BldPitch2
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%OL_BldPitch2 came back at ', SIZE(src%OL_BldPitch2), &
+                        ' element(s) against the ', view%n_OL_BldPitch2, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%OL_BldPitch3) .AND. view%n_OL_BldPitch3 > 0) THEN
+            IF (ALLOCATED(src%OL_BldPitch3)) THEN
+                IF (SIZE(src%OL_BldPitch3) == view%n_OL_BldPitch3) THEN
+                    CALL C_F_POINTER(view%OL_BldPitch3, vit_ap_ol_bldpitch3, [INT(view%n_OL_BldPitch3)])
+                    vit_ap_ol_bldpitch3 = src%OL_BldPitch3
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%OL_BldPitch3 came back at ', SIZE(src%OL_BldPitch3), &
+                        ' element(s) against the ', view%n_OL_BldPitch3, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%OL_GenTq) .AND. view%n_OL_GenTq > 0) THEN
+            IF (ALLOCATED(src%OL_GenTq)) THEN
+                IF (SIZE(src%OL_GenTq) == view%n_OL_GenTq) THEN
+                    CALL C_F_POINTER(view%OL_GenTq, vit_ap_ol_gentq, [INT(view%n_OL_GenTq)])
+                    vit_ap_ol_gentq = src%OL_GenTq
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%OL_GenTq came back at ', SIZE(src%OL_GenTq), &
+                        ' element(s) against the ', view%n_OL_GenTq, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%OL_YawRate) .AND. view%n_OL_YawRate > 0) THEN
+            IF (ALLOCATED(src%OL_YawRate)) THEN
+                IF (SIZE(src%OL_YawRate) == view%n_OL_YawRate) THEN
+                    CALL C_F_POINTER(view%OL_YawRate, vit_ap_ol_yawrate, [INT(view%n_OL_YawRate)])
+                    vit_ap_ol_yawrate = src%OL_YawRate
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%OL_YawRate came back at ', SIZE(src%OL_YawRate), &
+                        ' element(s) against the ', view%n_OL_YawRate, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%OL_Azimuth) .AND. view%n_OL_Azimuth > 0) THEN
+            IF (ALLOCATED(src%OL_Azimuth)) THEN
+                IF (SIZE(src%OL_Azimuth) == view%n_OL_Azimuth) THEN
+                    CALL C_F_POINTER(view%OL_Azimuth, vit_ap_ol_azimuth, [INT(view%n_OL_Azimuth)])
+                    vit_ap_ol_azimuth = src%OL_Azimuth
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%OL_Azimuth came back at ', SIZE(src%OL_Azimuth), &
+                        ' element(s) against the ', view%n_OL_Azimuth, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%OL_R_Speed) .AND. view%n_OL_R_Speed > 0) THEN
+            IF (ALLOCATED(src%OL_R_Speed)) THEN
+                IF (SIZE(src%OL_R_Speed) == view%n_OL_R_Speed) THEN
+                    CALL C_F_POINTER(view%OL_R_Speed, vit_ap_ol_r_speed, [INT(view%n_OL_R_Speed)])
+                    vit_ap_ol_r_speed = src%OL_R_Speed
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%OL_R_Speed came back at ', SIZE(src%OL_R_Speed), &
+                        ' element(s) against the ', view%n_OL_R_Speed, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%OL_R_Torque) .AND. view%n_OL_R_Torque > 0) THEN
+            IF (ALLOCATED(src%OL_R_Torque)) THEN
+                IF (SIZE(src%OL_R_Torque) == view%n_OL_R_Torque) THEN
+                    CALL C_F_POINTER(view%OL_R_Torque, vit_ap_ol_r_torque, [INT(view%n_OL_R_Torque)])
+                    vit_ap_ol_r_torque = src%OL_R_Torque
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%OL_R_Torque came back at ', SIZE(src%OL_R_Torque), &
+                        ' element(s) against the ', view%n_OL_R_Torque, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%OL_R_Pitch) .AND. view%n_OL_R_Pitch > 0) THEN
+            IF (ALLOCATED(src%OL_R_Pitch)) THEN
+                IF (SIZE(src%OL_R_Pitch) == view%n_OL_R_Pitch) THEN
+                    CALL C_F_POINTER(view%OL_R_Pitch, vit_ap_ol_r_pitch, [INT(view%n_OL_R_Pitch)])
+                    vit_ap_ol_r_pitch = src%OL_R_Pitch
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%OL_R_Pitch came back at ', SIZE(src%OL_R_Pitch), &
+                        ' element(s) against the ', view%n_OL_R_Pitch, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%AWC_n) .AND. view%n_AWC_n > 0) THEN
+            IF (ALLOCATED(src%AWC_n)) THEN
+                IF (SIZE(src%AWC_n) == view%n_AWC_n) THEN
+                    CALL C_F_POINTER(view%AWC_n, vit_ap_awc_n, [INT(view%n_AWC_n)])
+                    vit_ap_awc_n = src%AWC_n
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%AWC_n came back at ', SIZE(src%AWC_n), &
+                        ' element(s) against the ', view%n_AWC_n, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%AWC_harmonic) .AND. view%n_AWC_harmonic > 0) THEN
+            IF (ALLOCATED(src%AWC_harmonic)) THEN
+                IF (SIZE(src%AWC_harmonic) == view%n_AWC_harmonic) THEN
+                    CALL C_F_POINTER(view%AWC_harmonic, vit_ap_awc_harmonic, [INT(view%n_AWC_harmonic)])
+                    vit_ap_awc_harmonic = src%AWC_harmonic
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%AWC_harmonic came back at ', SIZE(src%AWC_harmonic), &
+                        ' element(s) against the ', view%n_AWC_harmonic, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%AWC_freq) .AND. view%n_AWC_freq > 0) THEN
+            IF (ALLOCATED(src%AWC_freq)) THEN
+                IF (SIZE(src%AWC_freq) == view%n_AWC_freq) THEN
+                    CALL C_F_POINTER(view%AWC_freq, vit_ap_awc_freq, [INT(view%n_AWC_freq)])
+                    vit_ap_awc_freq = src%AWC_freq
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%AWC_freq came back at ', SIZE(src%AWC_freq), &
+                        ' element(s) against the ', view%n_AWC_freq, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%AWC_amp) .AND. view%n_AWC_amp > 0) THEN
+            IF (ALLOCATED(src%AWC_amp)) THEN
+                IF (SIZE(src%AWC_amp) == view%n_AWC_amp) THEN
+                    CALL C_F_POINTER(view%AWC_amp, vit_ap_awc_amp, [INT(view%n_AWC_amp)])
+                    vit_ap_awc_amp = src%AWC_amp
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%AWC_amp came back at ', SIZE(src%AWC_amp), &
+                        ' element(s) against the ', view%n_AWC_amp, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%AWC_clockangle) .AND. view%n_AWC_clockangle > 0) THEN
+            IF (ALLOCATED(src%AWC_clockangle)) THEN
+                IF (SIZE(src%AWC_clockangle) == view%n_AWC_clockangle) THEN
+                    CALL C_F_POINTER(view%AWC_clockangle, vit_ap_awc_clockangle, [INT(view%n_AWC_clockangle)])
+                    vit_ap_awc_clockangle = src%AWC_clockangle
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%AWC_clockangle came back at ', SIZE(src%AWC_clockangle), &
+                        ' element(s) against the ', view%n_AWC_clockangle, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%AWC_CntrGains) .AND. view%n_AWC_CntrGains > 0) THEN
+            IF (ALLOCATED(src%AWC_CntrGains)) THEN
+                IF (SIZE(src%AWC_CntrGains) == view%n_AWC_CntrGains) THEN
+                    CALL C_F_POINTER(view%AWC_CntrGains, vit_ap_awc_cntrgains, [INT(view%n_AWC_CntrGains)])
+                    vit_ap_awc_cntrgains = src%AWC_CntrGains
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%AWC_CntrGains came back at ', SIZE(src%AWC_CntrGains), &
+                        ' element(s) against the ', view%n_AWC_CntrGains, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%PF_Offsets) .AND. view%n_PF_Offsets > 0) THEN
+            IF (ALLOCATED(src%PF_Offsets)) THEN
+                IF (SIZE(src%PF_Offsets) == view%n_PF_Offsets) THEN
+                    CALL C_F_POINTER(view%PF_Offsets, vit_ap_pf_offsets, [INT(view%n_PF_Offsets)])
+                    vit_ap_pf_offsets = src%PF_Offsets
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%PF_Offsets came back at ', SIZE(src%PF_Offsets), &
+                        ' element(s) against the ', view%n_PF_Offsets, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%PF_TimeStuck) .AND. view%n_PF_TimeStuck > 0) THEN
+            IF (ALLOCATED(src%PF_TimeStuck)) THEN
+                IF (SIZE(src%PF_TimeStuck) == view%n_PF_TimeStuck) THEN
+                    CALL C_F_POINTER(view%PF_TimeStuck, vit_ap_pf_timestuck, [INT(view%n_PF_TimeStuck)])
+                    vit_ap_pf_timestuck = src%PF_TimeStuck
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%PF_TimeStuck came back at ', SIZE(src%PF_TimeStuck), &
+                        ' element(s) against the ', view%n_PF_TimeStuck, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%CC_GroupIndex) .AND. view%n_CC_GroupIndex > 0) THEN
+            IF (ALLOCATED(src%CC_GroupIndex)) THEN
+                IF (SIZE(src%CC_GroupIndex) == view%n_CC_GroupIndex) THEN
+                    CALL C_F_POINTER(view%CC_GroupIndex, vit_ap_cc_groupindex, [INT(view%n_CC_GroupIndex)])
+                    vit_ap_cc_groupindex = src%CC_GroupIndex
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%CC_GroupIndex came back at ', SIZE(src%CC_GroupIndex), &
+                        ' element(s) against the ', view%n_CC_GroupIndex, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%StC_GroupIndex) .AND. view%n_StC_GroupIndex > 0) THEN
+            IF (ALLOCATED(src%StC_GroupIndex)) THEN
+                IF (SIZE(src%StC_GroupIndex) == view%n_StC_GroupIndex) THEN
+                    CALL C_F_POINTER(view%StC_GroupIndex, vit_ap_stc_groupindex, [INT(view%n_StC_GroupIndex)])
+                    vit_ap_stc_groupindex = src%StC_GroupIndex
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%StC_GroupIndex came back at ', SIZE(src%StC_GroupIndex), &
+                        ' element(s) against the ', view%n_StC_GroupIndex, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%OL_CableControl) .AND. view%n_OL_CableControl_rows > 0 &
+                .AND. view%n_OL_CableControl_cols > 0) THEN
+            IF (ALLOCATED(src%OL_CableControl)) THEN
+                IF (SIZE(src%OL_CableControl, 1) == view%n_OL_CableControl_rows .AND. &
+                    SIZE(src%OL_CableControl, 2) == view%n_OL_CableControl_cols) THEN
+                    CALL C_F_POINTER(view%OL_CableControl, vit_ap_ol_cablecontrol, &
+                        [INT(view%n_OL_CableControl_rows), INT(view%n_OL_CableControl_cols)])
+                    vit_ap_ol_cablecontrol = src%OL_CableControl
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%OL_CableControl came back at ', SIZE(src%OL_CableControl, 1), &
+                        ' x ', SIZE(src%OL_CableControl, 2), &
+                        ' against the ', view%n_OL_CableControl_rows, &
+                        ' x ', view%n_OL_CableControl_cols, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%OL_StructControl) .AND. view%n_OL_StructControl_rows > 0 &
+                .AND. view%n_OL_StructControl_cols > 0) THEN
+            IF (ALLOCATED(src%OL_StructControl)) THEN
+                IF (SIZE(src%OL_StructControl, 1) == view%n_OL_StructControl_rows .AND. &
+                    SIZE(src%OL_StructControl, 2) == view%n_OL_StructControl_cols) THEN
+                    CALL C_F_POINTER(view%OL_StructControl, vit_ap_ol_structcontrol, &
+                        [INT(view%n_OL_StructControl_rows), INT(view%n_OL_StructControl_cols)])
+                    vit_ap_ol_structcontrol = src%OL_StructControl
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%OL_StructControl came back at ', SIZE(src%OL_StructControl, 1), &
+                        ' x ', SIZE(src%OL_StructControl, 2), &
+                        ' against the ', view%n_OL_StructControl_rows, &
+                        ' x ', view%n_OL_StructControl_cols, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%OL_Channels) .AND. view%n_OL_Channels_rows > 0 &
+                .AND. view%n_OL_Channels_cols > 0) THEN
+            IF (ALLOCATED(src%OL_Channels)) THEN
+                IF (SIZE(src%OL_Channels, 1) == view%n_OL_Channels_rows .AND. &
+                    SIZE(src%OL_Channels, 2) == view%n_OL_Channels_cols) THEN
+                    CALL C_F_POINTER(view%OL_Channels, vit_ap_ol_channels, &
+                        [INT(view%n_OL_Channels_rows), INT(view%n_OL_Channels_cols)])
+                    vit_ap_ol_channels = src%OL_Channels
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A,I0,A,I0,A)') &
+                        'VIT: ControlParameters%OL_Channels came back at ', SIZE(src%OL_Channels, 1), &
+                        ' x ', SIZE(src%OL_Channels, 2), &
+                        ' against the ', view%n_OL_Channels_rows, &
+                        ' x ', view%n_OL_Channels_cols, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
 
     END SUBROUTINE vit_view_out_controlparameters
 

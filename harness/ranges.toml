@@ -3326,3 +3326,95 @@ CntrPar_VS_ControlMode = { values = [1] }
 CntrPar_VS_FBP = { values = [0] }
 # CntrPar_VS_ConstPower: NOT stated -- see the corpus-ceiling note below.
 LocalVar_VS_State = { values = [2] }
+
+# ---------------------------------------------------------------------------
+# ComputeVariablesSetpoints (unit #62)
+#
+# THREE EXTENT TIES, AND THEY ARE PowerControlSetpoints' FOUR ONE FAMILY OVER.
+# This unit calls `interp1d` at three sites in two families and the generator
+# draws every extent independently:
+#
+#     interp1d(PRC_WindSpeeds, PRC_GenSpeeds, PRC_WSE_F)   the PRC_Mode arm, x2
+#     interp1d(VS_FBP_U,       VS_FBP_Omega,  WE_Vw)       Region-3, VS_FBP == 2
+#     interp1d(VS_FBP_Tau,     VS_FBP_Omega,  GenTq)       Region-3, VS_FBP == 3
+#
+# WITHOUT THEM THE RUN DOES NOT COMPLETE AT ALL, which is a harder failure than
+# the one PowerControlSetpoints measured. `interp1d`'s size-mismatch arm writes
+# a 51-character record into an `ErrVar%ErrMsg` it has just allocated to 40:
+#
+#     At line 119 of file rosco/controller/src/Functions.f90
+#     Fortran runtime error: End of record          <- rc 2, no JSON, no cases
+#
+# So there is no untied artifact to keep beside this one; the untied corpus has
+# no green and no red, it has an abort. (PowerControlSetpoints' untied run
+# REPORTED 3596/0 through the translation's own diagnostic and PitchSaturation's
+# failed 136 of 1292 -- the same defect landing in three different places,
+# which is what an out-of-bounds read does.)
+#
+# THE SOURCE LINES THAT FORCE IT, one per family, and in both the arrays are
+# allocated from ONE number:
+#
+#   ReadSetParameters.f90:499-502
+#     CALL ParseInput(..., 'PRC_n',          CntrPar%PRC_n, ...)
+#     CALL ParseAry(  ..., 'PRC_WindSpeeds', CntrPar%PRC_WindSpeeds, CntrPar%PRC_n, ...)
+#     CALL ParseAry(  ..., 'PRC_GenSpeeds',  CntrPar%PRC_GenSpeeds,  CntrPar%PRC_n, ...)
+#
+#   ReadSetParameters.f90:480-483
+#     CALL ParseInput(..., 'VS_FBP_n',     CntrPar%VS_FBP_n, ...)
+#     CALL ParseAry(  ..., 'VS_FBP_U',     CntrPar%VS_FBP_U,     CntrPar%VS_FBP_n, ...)
+#     CALL ParseAry(  ..., 'VS_FBP_Omega', CntrPar%VS_FBP_Omega, CntrPar%VS_FBP_n, ...)
+#     CALL ParseAry(  ..., 'VS_FBP_Tau',   CntrPar%VS_FBP_Tau,   CntrPar%VS_FBP_n, ...)
+#
+# A case where any of these differ is not a program state ROSCO can reach.
+#
+# THE COST, STATED, and it is PowerControlSetpoints' cost twice: with each
+# family's extents tied, nothing in this harness can distinguish a translation
+# that passes `n_PRC_WindSpeeds` as interp1d's xData extent from one that passes
+# `n_PRC_GenSpeeds`, nor `n_VS_FBP_U` from `n_VS_FBP_Omega` from `n_VS_FBP_Tau`.
+# The gate cannot separate them either -- its arrays come from one DISCON.IN --
+# so this is a gap and not a trade.
+#
+# THE TIE IS TO THE SYNTHESISED xData EXTENT, not to `PRC_n` or `VS_FBP_n`, for
+# the reason PowerControlSetpoints' entry gives: neither name matches any
+# `_EXTENT_FIELD_PATTERNS` spelling, so the generator runs the 32-bit decade
+# ladder over it and tying an ALLOCATION to it would ask for 2^31 doubles.
+#
+# TWO MORE PINS, AND THEY ARE `[RefSpeedExclusion]`'s ONE PIN PLUS ITS TWIN.
+# `objInst` counters are 1-based SUBSCRIPTS into `DIMENSION(1024)` members of
+# `FilterParameters` and `rlParams`, and nothing in the type or in the harness
+# bounds them, so the +/-1e3 default puts them outside the array and the
+# reference writes past it. That is a WILD WRITE inside the Fortran reference,
+# not a wrong answer, and it lands wherever the harness happens to have put the
+# next thing:
+#
+#     PROBE pre-cpp  n_WE_CP a=3 b=3
+#     PROBE post-cpp n_WE_CP a=3 b=2021761243   <- case 19, changed by the CALL
+#     Error allocating 16174089944 bytes: Cannot allocate memory
+#     VIT bridge: LocalVar%ACC_INFILE came back with -1842632209 element(s)
+#
+# 2,021,761,243 is not a corpus draw -- the C++ side read `WE_CP_n = 3` from the
+# case file and the value changed DURING the call. Three probes located it: the
+# case index in the harness loop, the extent inside the generated bridge, and
+# the pair either side of the C++ call. Case 19 has `TRA_Mode = -757`,
+# `PRC_Mode = 956`, `VS_ControlMode = 109` and `VS_FBP = 109`, so the ONLY
+# callee it reaches is `LPFilter` -- which indexes `LocalVar%FP%lpf1_*(inst)`.
+#
+# THE BOUND IS THE DECLARED EXTENT, and 1000 is `[RefSpeedExclusion]`'s own
+# number for the same shape one counter over (`ROSCO_Types.f90:239-260` for
+# `FilterParameters`, `:287-289` for `rlParams`, both `DIMENSION(1024)`). The
+# headroom matters here: this unit calls `LPFilter` TWICE on the `PRC_Mode == 1`
+# path and each call post-increments, so the subscript actually used can be
+# `instLPF + 1`.
+#
+# THE COST, STATED: R6's integer ladder leaves both counters, so a translation
+# that passed the counter without the reference's post-increment is still
+# distinguished (the counter is a compared output), but one that mis-indexed
+# beyond 1000 is not -- and neither is the reference's own absent bounds check,
+# which is an upstream defect this corpus now stays away from rather than
+# reports.
+[ComputeVariablesSetpoints]
+objInst_instLPF = { lo = 1, hi = 1000 }
+objInst_instRL = { lo = 1, hi = 1000 }
+CntrPar_PRC_GenSpeeds_n = { same_as = "CntrPar_PRC_WindSpeeds_n" }
+CntrPar_VS_FBP_Omega_n = { same_as = "CntrPar_VS_FBP_U_n" }
+CntrPar_VS_FBP_Tau_n = { same_as = "CntrPar_VS_FBP_U_n" }
