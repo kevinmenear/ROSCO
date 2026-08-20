@@ -147,3 +147,44 @@ THE ARITHMETIC CONTROL HOLDS ON THE OTHER FOUR:
     3967 = 1958 + 1954 + 26 + 29        the noop's count against the partition
       55 -   29 = 26                    hold_norestart, from two separate runs
       16 +   13 = 29                    the two snap edges summing to the block
+
+
+===============================================================================
+RE-TAKEN ON THE SECOND CORPUS (13,777 cases) -- PREDICTIONS BEFORE THE RUNS
+===============================================================================
+
+Everything above is about the FIRST corpus (3,967 cases) and is kept: its five
+runs are `harness.*-stub.corpus3967.json`, and its `no-save` refutation is why
+the `bitsame` column exists in the partition at all. The corpus was then
+repaired (three `values` pins in harness/ranges.toml), which re-takes every
+layer that reads it -- these five among them.
+
+Read off `arm_partition.txt`'s second table. Point predictions, same reasoning
+as above, the counts changed:
+
+    noop               13777   every case: `objInst%instRL` is advanced by the
+                               callee on every path and is a compared output.
+    no-band-arm         4752   the in-band cell; `FA_Hist` itself differs.
+    no-restart-init      845   restart AND in-band only. On the 6,033
+                               `restart_follow` cases the block writes
+                               `VS_RefSpeed_LSS` and the two statements below it
+                               write the same value again, so deleting it moves
+                               nothing there.
+    snap-down-only        22   `restart_snap_up`. Both declared `TRA_ExclBand`
+                               values are positive, so no in-band case has a
+                               zero-width band and the two edges never coincide.
+    no-save             1088   `follow_norestart` MINUS the cases that arrive
+                               holding their own quotient. Taken from the
+                               partition's `bitsame` column rather than
+                               predicted as 2,992 and then explained: the first
+                               corpus refuted the naive form at 1958 -> 1828 and
+                               the correction is carried forward, which is what
+                               a refutation is for.
+
+ARITHMETIC CONTROLS
+
+    2992 + 6033 + 3907 + 22 + 823 = 13777        the noop against the partition
+    no-band-arm (4752) - no-restart-init (845) = 3907 = hold_norestart
+    snap-down-only (22) + 823 = 845 = no-restart-init
+    no-restart-init (845) = the mutation sweep's negate_cond kill count on BOTH
+                            L96 and L113 -- an identity across two instruments

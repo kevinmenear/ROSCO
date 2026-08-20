@@ -72,3 +72,52 @@ the two snap-to-edge statements are DEAD -- 0 of 11,999 calls across all 27
 scenarios. The differential harness is the only instrument in this campaign that
 reaches them, at 16 and 13 cases. That asymmetry is the reason the stub
 predictions below are stated per arm.
+
+
+===============================================================================
+THE SECOND CORPUS -- 13,777 cases, after the three `values` pins
+===============================================================================
+
+Re-taken 2026-08-20 by the same probe on the corpus
+`harness/RefSpeedExclusion.json` was re-generated onto. Everything above is
+about the FIRST corpus and is kept: it is the evidence that forced the pins.
+
+    class              cases   restart   FA_Hist   TRA_LastRefSpd == LSS?
+    -------------------------------------------------------------------
+    restart_follow      6033      yes       0       4434 yes / 1599 no
+    hold_norestart      3907      no        1       3030 yes /  877 no
+    follow_norestart    2992      no        0       1904 yes / 1088 no
+    restart_snap_dn      823      yes       1        606 yes /  217 no
+    restart_snap_up       22      yes       1          0 yes /   22 no
+    -------------------------------------------------------------------
+    total              13777
+
+    in the exclusion band (FA_Hist = 1)      4752  =  3907 + 22 + 823
+    outside it          (FA_Hist = 0)        9025  =  6033 + 2992
+    restart true                             6878  =  6033 + 22 + 823
+    restart AND in band                       845  =    22 + 823
+
+WHAT THE PINS BOUGHT, IN ONE NUMBER: the band arm went from **55 cases of 3,967
+(1.4%)** to **4,752 of 13,777 (34.5%)**. The corpus grew 3.5x and the arm this
+unit exists for grew 86x, because the old corpus spent three quarters of itself
+dividing by zero and another two thirds of the remainder on an inverted band.
+
+A CROSS-INSTRUMENT CONTROL, AND IT IS FREE. `845` is the count of cases with
+`restart` true AND `FA_Hist > 0`, computed here from the inputs. The mutation
+sweep computed the same number twice from the OUTPUTS, on two different
+statements:
+
+    negate_cond  'if (LocalVar->FA_Hist > 0)'            killed 845 / 13777   L96
+    negate_cond  'if (VS_RefSpeed_LSS > TRA_ExclSpeed)'  killed 845 / 13777   L113
+
+Both of those sites are reachable exactly on that cell, and both agree with the
+input-side count to the case. Two instruments, one number.
+
+THE SNAP ARMS ARE STILL LOPSIDED -- 22 upper against 823 lower -- and the reason
+is arithmetic rather than luck: `TRA_ExclSpeed` is 1.0 or 0.8 and the band is
+2.0 or 0.1 wide, so the in-band region above the centre is `[1.0, 2.0)` at the
+wide setting while the region below it reaches down to 0.0 and contains most of
+`VS_RefSpd`'s ladder -- every rung below 1.0, and there are many. 22 is thin and
+it is stated rather than smoothed: the `snap-down-only` stub below measures the
+upper arm at exactly that, and one mutant of the sweep (`3bd34bbe`, the `+` on
+the upper snap) is killed on it.
