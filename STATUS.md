@@ -4,6 +4,132 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-20: unit #61 `WriteRestartFile` is `integrated`. FIRST
+dispatch, and it CLOSES: mutation **1.0000** with **ZERO OPEN SURVIVORS**, a
+195-file / 89,858,535-byte checkpoint oracle at 0 mismatched on the integrated
+build, a second stream of 511 driver-stdout records at 0 mismatched, and four
+red tests whose counts were all stated before the run and all exact — one of
+them a NEGATIVE CONTROL at 0.**
+
+| layer | result |
+|---|---|
+| checkpoint identity, 6 scenarios, integrated build | 195 files, **89,858,535 bytes, 0 mismatched** |
+| driver stdout identity, 6 scenarios | **511 records / 131,291 bytes, 0 mismatched** |
+| post-integration total | **706 checks, 0 failed** (`harness/WriteRestartFile.postintegration.json`) |
+| mutation, six parts merged | **62 of 62, 1.0000**; 105 behavioural, 0 nocompile, 27 equivalent, 16 unreachable, **0 open** |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, 0 mismatched — **and it decides nothing** |
+| gate red test | **0** of 5,252,000; same-build control **1,552,676** |
+
+**THE GATE IS BLIND BY CONSTRUCTION AND THIS IS STRONGER THAN unit #31's.**
+`Debug` is called 408,000 times and the gate reads a different output stream.
+This unit is called **zero** times: `DISCON.F90:101` sits behind
+`LocalVar%iStatus == -8` and `coverage/line_coverage.json` has no entry for it,
+while `DISCON.F90:96` — a `CALL` two lines up — carries 408,000 and
+`DISCON.F90:100`, the `iStatus == -8` test immediately above the call, runs
+407,976 times and is false on all of them. Measured rather than inferred:
+perturbing this unit moves 0 of 5,252,000 while perturbing `VariableSpeedControl`
+on the SAME BUILD moves 1,552,676, reproducing unit #60's recorded count for
+that exact edit to the value.
+
+**SO THE CORPUS HAD TO BE BUILT BEFORE THE REFERENCE COULD BE MEASURED AT ALL.**
+Six scenarios (36–41) drive `iStatus = -8` on a schedule, registered outside
+`scenario_order` so no gate run and no committed baseline moves (P5, X3). And it
+was widened twice against a MEASURED number: `scripts/chkplayout.py --census`
+said 116 of the 307 written items were constant and ZERO across the corpus —
+scenario 39 (`t0 = 500`, which is what makes `CableControl` and
+`StructuralControl` write their setpoints) and scenario 40 (`AWC_Mode = 4`, the
+only path that drives `resP`) took it to 96. Doing that BEFORE the sweep is the
+saving: each of the 96 is a potential `unreachable` declaration, and a
+declaration costs an argument while a scenario costs two seconds.
+
+**THE SECOND STREAM IS THE FINDING, AND IT IS unit #31's WITH THE GUARD MOVED.**
+The first sweep of `compare_op` + `negate_cond` scored **8 of 22** and all
+eleven survivors were in an error path the file oracle cannot see. The unit's
+other output was there and nobody had read it: it sets `ErrVar%aviFAIL = 1` and
+an `ErrVar%ErrMsg`, DISCON's own `print` of the message is guarded by
+`aviFAIL < 0`, and **two lines below that guard DISCON copies the message into
+`avcMSG` unconditionally**, where `ControllerInterface` holds it. Printing it
+from the driver and adding scenario 41 (a RootName under a directory that does
+not exist, so both sides take the `Cannot open` arm) re-scored the same 22
+mutants at **17 killed instead of 8**. The question to ask of any unit that
+writes an error field is not "does the caller print it" but "does the caller
+COPY it anywhere a driver can read".
+
+    aviFAIL=1 avcMSG='ROSCO_IO: Cannot open checkpoint file
+                      vit_chkp41_nodir/vit_chkp4140.RO.chkp for writing'
+
+**NOTHING IN A CHECKPOINT IS EXEMPT FROM COMPARISON**, which `Debug` could not
+say. An unformatted STREAM write emits no record marker, no header and no wall
+clock, so all 460,813 bytes of every file are compared — and the layout is
+DERIVED from the reference's own 307 `WRITE` statements and checked against a
+real checkpoint (`LAYOUT CHECK: PASS`, 307 items predicting 460,813 bytes
+against a file of exactly 460,813).
+
+**FOUR RED TESTS, FOUR PREDICTIONS, FOUR EXACT, TWO OF THEM OFFSETS.**
+
+    logwidth  wr_log writes 1 byte not 4   195 files  467,542 B   0 stdout
+    moop      rootMOOP[0] -> [1]           195 files      891 B   0 stdout
+    zmqpit    ZMQ_PitOffset[0] -> [1]        0 files        0 B   0 stdout   <- NEGATIVE CONTROL
+    avifail   Cannot-open sets aviFAIL=2     0 files        0 B   9 stdout
+
+`logwidth` was predicted to shorten each file by six bytes and first differ at
+offset 29; it gives 460,807 against 460,813, first difference at 29. **The pair
+`(moop, zmqpit)` is load-bearing**: the same edit — an index shifted by one on a
+three-wide `REAL(DbKi)` field — on the same build in the same run, 195 and 0. The
+zero is the CORPUS. `avifail` is why the second stream exists: 0 files, 9
+records.
+
+**MUTATION 62 OF 62 WITH EVERY SURVIVOR ANSWERED.** 27 equivalent, 16
+unreachable, 0 open. 20 of the 27 equivalences rest on one dead-store fact —
+`Stream::stat` is read exactly once, after all 307 writes, and the last write is
+`wr_int` — and **that argument has its own control inside the sweep**: `wr_dbl`
+performs 218 of the 307 writes and never the last one, and all four of its
+mutants survived, while `wr_int`'s predicate mutant was KILLED. **Ten of the 16
+`unreachable` declarations are DERIVED**, not asserted:
+`scripts/chkp_unreachable.py` resolves each mutated site against the layout and
+counts the reference checkpoints in which the two fields differ — 0 of 195 on
+all ten, and it refuses on any pair that differs. Two of the ten sit on fields
+the census calls `VARIES`. The other six are hand-written and COUNTED as such.
+
+**NAMED GAPS, each against the mutant that measures it.** The `.TRUE.`
+representation of a default `LOGICAL` is compared **zero** times — both logicals
+this unit writes are `.FALSE.` in all 195 checkpoints, so the `.FALSE.` half is
+compared 390 times and the `.TRUE.` half not at all; the translation writes 1
+and gfortran writes 1, and nothing here tests that agreement. A checkpoint index
+of 0 or 1, the only input separating `I0.0` from `%d` (the standard renders zero
+with `d == 0` as BLANKS, so such a checkpoint is named `<RootName>.RO.chkp` with
+no number); the corpus runs 40 to 21,560. And a RootName long enough to reach
+`CHARACTER(128)`'s truncation; the longest composed is 38. All three are
+closable by a corpus and not by an argument, and each re-takes every layer that
+reads the corpus.
+
+**TWO REGENERATED VIEW MODULES WERE REVERTED, ON PURPOSE.** `vit integrate`
+rewrote `vit_localvariables_view.f90` (the case of the type name only) and
+`vit_controlparameters_view.f90` (**+1498 lines**: the ALLOCATABLE copy-back its
+committed header says it does NOT do). This unit never assigns `CntrPar`, and
+taking them would change a routine every other integrated unit's wrapper calls —
+X3's question, not this unit's. Raised in DECISIONS.md as a campaign-level
+choice with its price (one gate run plus a re-price of every affected unit).
+
+**C1 CORRECTIONS TO plan.json.** `absorbs: []` → `[GetNewUnit]`, for the same
+reason unit #31 records it for `Debug`. `depends_on: [Debug]` → `[GetNewUnit]`:
+this unit does not call `Debug` at all; they share a file.
+
+**Procedure.** Six mutation sweep parts, every one foreground under
+`mutate_guarded.sh` and routed through `run_if_time_remains.sh` with an explicit
+Bash `timeout: 600000`; the two 40-mutant operators split in half to stay under
+the tool's 600 s ceiling. The marker cleared on all six and on both red-test
+batches. ONE de-integration window — `ROSCO_IO.f90` alone reverted to
+`8de59313`, rebuilt, `pre` captured, restored, rebuilt — inside a single
+command, with nothing committed in between. `revcheck`: 13 result artifacts, all
+at loop `41d383f`, clean. `harness/WriteRestartFile.postintegration.json`
+carries `vit_rev: d3a1e12-dirty` because `vit/vit/view_populator.py` was
+modified at 08:44 during this dispatch by nothing this dispatch ran; P14 and
+`revcheck` both read `loop_rev` only, and the stamp is left honest rather than
+re-taken. One commit per expensive artifact.
+
+---
+
 **As of 2026-08-20: unit #60 `VariableSpeedControl` is `deferred`. SECOND
 dispatch. THE TWO MISSING LAYERS NOW EXIST — a 46,836-case differential harness
 (0 failed, clean tree AND post-integration, red-tested at 46,836 of 46,836) and

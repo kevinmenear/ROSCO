@@ -2,6 +2,165 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #61 — WriteRestartFile — 2026-08-20
+
+**Disposition `integrated`.** Translated, integrated, byte-identical to the
+Fortran over 195 checkpoint files and 89,858,535 bytes, mutation score
+**1.0000** with **zero open survivors**, gate PASS at 5,252,000 values and
+provably blind.
+
+### THE UNIT IS NEVER CALLED, SO THE CORPUS HAD TO BE BUILT FIRST
+
+`DISCON.F90:101` sits behind `LocalVar%iStatus == -8`.
+`coverage/line_coverage.json` has no entry for it, and no entry for any line of
+the routine. This is a step past unit #31's `Debug`, which the gate ran 408,000
+times while reading a different output stream: here there is nothing to read
+because there is nothing to run.
+
+    DISCON.F90:96   408,000   CALL PreFilterMeasuredSignals(...)   <- a CALL that runs
+    DISCON.F90:99   444,000   IF (((iStatus >= 0) .OR. (iStatus <= -8)) ...)
+    DISCON.F90:100  407,976   IF ((iStatus == -8) ...)             <- false 407,976 times
+    DISCON.F90:101  ABSENT    CALL WriteRestartFile(...)
+
+So the first work of the unit was six scenarios (36-41) that ask for a
+checkpoint, added BY ADDITION outside `scenario_order` (P5, X3) so that no gate
+run and no committed baseline moves. `ROSCO_ci.call_controller` puts
+`turbine_state['iStatus']` straight into `avrSWAP(1)`, so a driver that owns its
+own loop can ask.
+
+### THE CORPUS WAS WIDENED TWICE AGAINST A MEASURED NUMBER
+
+`scripts/chkplayout.py --census` reports, per written item, whether its bytes
+ever vary across the reference archive. The first census said **116 of the 307
+items are constant and ZERO**, and an index shift between two zeros is a mutant
+no comparison of written bytes can kill. Two scenarios took that to 96:
+
+    39   t0 = 500      CableControl and StructuralControl write their setpoints
+                       only `IF (LocalVar%Time > 500)`, so a 40-second run
+                       starting at zero leaves 24 items at zero
+    40   AWC_Mode = 4  the only path that drives `resP`, which is 32,768 of the
+                       checkpoint's 460,813 bytes
+
+**Doing this before the sweep rather than after it is the whole saving.** Each
+of the 96 remaining is a potential `unreachable` declaration, and a declaration
+costs an argument while a scenario costs two seconds.
+
+### THE SECOND STREAM, AND WHY IT ARRIVED LATE ENOUGH TO BE A FINDING
+
+The first sweep of `compare_op` + `negate_cond` scored **8 of 22**, and all
+eleven survivors were in an error path: `assign_errmsg`'s two refusals, the six
+`fwrite` success tests, the final `ErrStat /= 0` check. A file oracle cannot see
+any of them, because a mutant that flips a write's success test writes the same
+bytes.
+
+**The unit's other output was there and nobody had read it.** It sets
+`ErrVar%aviFAIL = 1` and an `ErrVar%ErrMsg` on both failure arms. DISCON's own
+
+    IF (ErrVar%aviFAIL < 0) THEN
+        ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
+        print * , TRIM(ErrVar%ErrMsg)
+    ENDIF
+    ErrMsg = ADJUSTL(TRIM(ErrVar%ErrMsg))
+    avcMSG = TRANSFER(ErrMsg//C_NULL_CHAR, avcMSG, ...)
+
+prints only for a NEGATIVE aviFAIL — and this unit sets 1. But the two lines
+below the guard copy the message into `avcMSG` unconditionally, and
+`ControllerInterface` holds that buffer in Python. Printing it from the driver
+made `ErrVar` a compared output. Re-scored over both streams the same 22 mutants
+gave **17 killed instead of 8**.
+
+**GENERALISATION, and it is unit #31's rule with the guard moved.** `Debug`'s
+finding was "a unit can have a stream nobody compares". This one is sharper:
+**a unit's output can be routed past its own reporting guard and still leave the
+program**. The question to ask of any unit that writes an error field is not
+"does the caller print it" but "does the caller COPY it anywhere a driver can
+read". Raised as a proposed method amendment.
+
+### `--reverse-copy` WAS DECIDED BY READING THE WRAPPER, AND IT WAS LOAD-BEARING
+
+`grep -c vit_copy_scalars_to_` over the emitted wrapper: **2 with the flag, 0
+without**. Without it the wrapper has no copy-back at all and this unit's only
+outputs die in the view struct. Unit #51's rule, applied before any artifact was
+taken against the wrapper.
+
+### TWO REGENERATED VIEW MODULES WERE REVERTED, ON PURPOSE
+
+`vit integrate` rewrote `vit_localvariables_view.f90` (the case of the type name
+only) and `vit_controlparameters_view.f90` (**+1498 lines**: the ALLOCATABLE
+copy-back its committed header says it does NOT do). This unit needs neither —
+it never assigns `CntrPar` — and taking them would change a routine every other
+integrated unit's wrapper calls. That is X3's question, not this unit's. The
+regenerated files are kept out of the tree and the decision is here rather than
+in a commit message alone. **Worth raising at the campaign level**: the newer
+generator is presumably a fix, and adopting it is one gate run plus a re-price
+of every unit whose wrapper calls that routine.
+
+### AN EQUIVALENCE FAMILY THAT IS ONE DEAD-STORE FACT, WITH ITS OWN CONTROL
+
+20 of the 27 declared equivalences rest on a single sentence:
+
+> `Stream::stat` is READ EXACTLY ONCE, at `writerestartfile.cpp:576`, after all
+> 307 writes; the last write is `wr_int(Un, objInst->instRL)`. Every assignment
+> to `u.stat` from a helper other than `wr_int` is overwritten before any read,
+> on every path.
+
+**The control on that argument is in the sweep itself.** `wr_dbl` performs 218
+of the 307 writes and never the last one, and all four of its mutants survived;
+`wr_int` performs the last one, and its predicate mutant was **KILLED**. An
+equivalence argument whose sibling one line over is NOT equivalent is an
+argument that has been tested (RUNBOOK, unit #57's shape).
+
+### TEN OF THE SIXTEEN `unreachable` DECLARATIONS ARE DERIVED, SIX ARE NOT
+
+`scripts/chkp_unreachable.py` reads the mutated site out of the survivor record,
+resolves both fields against `layout.txt`, and counts the reference checkpoints
+in which they differ. All ten report **0 of 195**, and it REFUSES on any pair
+that differs anywhere. Two of the ten sit on fields the census calls `VARIES` —
+`IPC_KI(1)` and `IPC_KP(1)` move between scenarios and still equal their
+neighbours in every file — which a constant-zero argument would have missed.
+
+The other six are hand-written and **counted as such** in
+`evidence/WriteRestartFile/unreachable.hand.txt`, because a script that
+re-derives a set is not proof against a hand exception beside it.
+
+### A NAMED GAP THAT IS NOT A DECLARATION'S FAULT
+
+**The `.TRUE.` representation of a default `LOGICAL` is compared zero times.**
+Both logicals this unit writes are `.FALSE.` in all 195 checkpoints, so the
+`.FALSE.` half is compared 390 times and the `.TRUE.` half not at all. The
+translation writes 1 and gfortran writes 1; that agreement is a claim about the
+gfortran ABI, and nothing here tests it. Closing it needs a scenario in which
+`WriteThisStep` or `restart` is true at an `iStatus == -8` call, which re-takes
+every layer that reads the corpus. Same shape as the checkpoint index of 0 or 1
+(the only input that separates `I0.0` from `%d`) and a RootName long enough to
+reach `CHARACTER(128)`'s truncation.
+
+### AN OBSERVATION ABOUT THE INSTRUMENT TREE, NOT ABOUT THIS UNIT
+
+`vit/vit/view_populator.py` was modified at 08:44 on 2026-08-20, DURING this
+dispatch and by nothing this dispatch ran, so
+`harness/WriteRestartFile.postintegration.json` carries `vit_rev:
+d3a1e12-dirty` while every other artifact carries `d3a1e12`. P14 and
+`scripts/revcheck.py` both read `loop_rev` only, and all thirteen of this unit's
+result artifacts are at `41d383f`, clean. Recorded rather than papered over: the
+stamp is honest about the tree it was taken against.
+
+### PROCEDURE
+
+Six mutation sweep parts, every one foreground under `mutate_guarded.sh` and
+routed through `run_if_time_remains.sh` with an explicit `timeout: 600000`; each
+under the tool's 600 s ceiling by design, `index_offset` and `const_tweak` split
+into halves to keep them there. The marker cleared on all six and on both red
+test batches. One de-integration window — `ROSCO_IO.f90` alone reverted to
+`8de59313`, rebuilt, `pre` captured, restored, rebuilt — inside a single
+command, with nothing committed in between. Eleven commits, one per expensive
+artifact.
+
+**AND ONE COMMIT MESSAGE RAN ITS OWN PROSE.** Backticks inside a double-quoted
+`git commit -m` executed three sentences of the message and lost them. The
+RUNBOOK already records this for `--note`; it is the same shell rule and it
+applies to every quoted argument. Use `git commit -F`.
+
 ## Unit #60 — VariableSpeedControl — 2026-08-20
 
 **Disposition `deferred`.** Translation written and integrated, gate green at

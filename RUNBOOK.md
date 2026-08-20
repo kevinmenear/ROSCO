@@ -9150,6 +9150,114 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   fourth time; the second run overwrites the first's artifact with the same
   numbers.
 
+## A UNIT'S ERROR FIELD CAN LEAVE THE PROGRAM PAST ITS OWN REPORTING GUARD, AND
+## THE DRIVER ALREADY HOLDS THE BUFFER
+
+- **Unit #61, and it turned 9 survivors into kills for the cost of one `print`.**
+
+  ```fortran
+  IF (ErrVar%aviFAIL < 0) THEN                 ! <- the guard everyone reads
+      ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
+      print * , TRIM(ErrVar%ErrMsg)
+  ENDIF
+  ErrMsg = ADJUSTL(TRIM(ErrVar%ErrMsg))        ! <- and the two lines nobody does
+  avcMSG = TRANSFER(ErrMsg//C_NULL_CHAR, avcMSG, SIZE(avcMSG))
+  ```
+
+  `WriteRestartFile` sets `aviFAIL = 1`, so DISCON never prints its message --
+  and copies it into `avcMSG` anyway, which `ROSCO_ci.ControllerInterface` holds
+  as `create_string_buffer(1000)` and a scenario can print in one line. The
+  unit's first sweep scored **8 of 22** with every survivor in an error path;
+  with the stream added it scored 17 of the same 22.
+
+  **The question is not "does the caller print it", it is "does the caller COPY
+  it anywhere a driver can reach".** Unit #31's rule was that a unit can have a
+  stream nobody compares; this is the same rule with the guard moved one
+  statement. `grep -n avcMSG rosco/controller/src/DISCON.F90` is the whole check.
+
+## AN UNFORMATTED STREAM FILE'S LAYOUT IS DERIVABLE FROM THE REFERENCE, AND THE
+## DERIVATION IS ITS OWN CONTROL
+
+- **Unit #61.** `OPEN(..., FORM='UNFORMATTED', ACCESS='STREAM')` emits the
+  datum's storage bytes and nothing else -- no record marker, no length prefix,
+  no padding. So the file is the concatenation of the `WRITE` list, and
+  `scripts/chkplayout.py` reads the 307 statements out of the Fortran, resolves
+  each against `ROSCO_Types.f90`, and predicts a total:
+
+  ```
+  items (WRITE statements): 307
+  predicted total bytes:  460813
+  vit_chkp36100.RO.chkp:  460813 bytes
+  LAYOUT CHECK: PASS
+  ```
+
+  **The match is the control on the whole model** -- element widths, the default
+  `LOGICAL` at 4 bytes, `COMPLEX(DbKi)` at 16, the 1024-wide filter arrays
+  written whole. One wrong width and the total is wrong. It cost about ten
+  minutes and it paid for itself three times: the layout is what makes a
+  per-item census possible, what makes an `unreachable` declaration derivable,
+  and what let a red test predict `first difference at offset 29` rather than
+  "it should go red".
+
+  Note what the widths are NOT: the view struct's. `LOGICAL(C_BOOL)` crosses as
+  `int8_t` and the reference writes FOUR bytes; taking the view's width shortens
+  the file by 3 per field and shifts everything after it.
+
+## CENSUS THE CORPUS BEFORE THE SWEEP, NOT AFTER IT
+
+- **Unit #61.** For a unit that copies fields to a stream, a mutant that shifts
+  an index dies exactly when the two neighbouring items differ. So the number
+  that prices the sweep is available BEFORE it runs:
+
+  ```
+  CENSUS over 117 reference checkpoints
+    VARIES 155   constant NON-zero 36   constant ZERO 116
+  ```
+
+  116 potential `unreachable` declarations, each costing an argument. Two
+  scenarios -- one starting the clock at `t0 = 500` so `CableControl` and
+  `StructuralControl` write their setpoints, one at `AWC_Mode = 4` for `resP` --
+  took it to 96 for about four minutes of work. **An `unreachable` declaration
+  is what you write when the corpus cannot be moved; the census tells you
+  whether that is true while it is still cheap to act on.**
+
+## A DEAD-STORE EQUIVALENCE FAMILY HAS ITS CONTROL INSIDE THE SWEEP
+
+- **Unit #61, 20 declarations on one sentence.** `Stream::stat` is written by
+  seven helpers and READ ONCE, after all 307 writes; the last write is
+  `wr_int(Un, objInst->instRL)`. Every assignment to it from another helper is
+  overwritten before any read.
+
+  ```
+  wr_dbl   218 of 307 writes, never the last   4 mutants, ALL SURVIVED
+  wr_int    24 of 307 writes, INCLUDING the last  predicate mutant KILLED
+  ```
+
+  **An equivalence argument whose sibling one line over is NOT equivalent is an
+  argument that has been tested.** The asymmetry is free -- it is in the sweep
+  already -- and it is worth more than the prose, because a reader can check it
+  without re-deriving the dataflow. Where the prose is still needed is the
+  count: `grep -c u.stat` is 7 against one `Un.stat` read.
+
+## TWO REGENERATED VIEW MODULES ARE A CAMPAIGN-LEVEL CHOICE, NOT A UNIT'S
+
+- **Unit #61.** `vit integrate --reverse-copy` rewrote
+  `vit_controlparameters_view.f90` with **+1498 lines**: the ALLOCATABLE
+  copy-back the committed version's own header says it does NOT do.
+
+  ```
+  Created: rosco/controller/src/vit_controlparameters_view.f90
+  git diff --stat   1522 +++++++++++++++++++-
+  ```
+
+  `vit_copy_scalars_to_controlparameters` is called by every wrapper written
+  with `--reverse-copy`, so adopting it changes units already closed. The unit
+  that triggered it never assigns `CntrPar` and needs none of it. **Revert the
+  regenerated module, keep the wrapper, and raise the adoption with its price**
+  -- one gate run plus a re-price of every unit whose wrapper calls the routine.
+  Reverting is not working around a tool bug (X2): the tool is presumably right
+  and the question is X3's, about changing a shared routine mid-run.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's

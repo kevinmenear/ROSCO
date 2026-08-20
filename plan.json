@@ -3747,22 +3747,50 @@
       "order": 61,
       "name": "WriteRestartFile",
       "contract": "respecify",
-      "absorbs": [],
+      "absorbs": [
+        "GetNewUnit"
+      ],
       "depends_on": [
-        "Debug"
+        "GetNewUnit"
       ],
       "permanent_bridges": [],
       "reached_by": [
         "DISCON"
       ],
       "dependency_depth": 2,
-      "verification": "generated harness + mutation score (P13); the gate cannot decide",
+      "verification": "REVISED AT THE UNIT (C1). plan.json proposed 'generated harness + mutation score (P13); the gate cannot decide'. The second clause is right and STRONGER than it reads -- the gate does not merely fail to observe this unit, it never CALLS it: coverage/line_coverage.json has no hit on DISCON.F90:101, the only call site, which sits behind LocalVar%iStatus == -8 (evidence/WriteRestartFile/gate.blind-by-construction.txt). The first clause is not achievable as written: `vit test-validate` compares a unit's MAPPED OUTPUTS and this one assigns nothing in CntrPar or objInst and writes ErrVar only on its two I/O-failure arms; worse, both sides of such a harness would OPEN THE SAME PATH -- the filename is a function of the inputs -- so the second call would overwrite the first and the comparison would be of one program against itself. What replaced it is scripts/chkpcheck.py: byte identity of every *.RO.chkp the checkpoint scenarios write, between a build whose WriteRestartFile is Fortran and one whose WriteRestartFile is C++ with nothing else changed, PLUS the driver's stdout, which carries ErrVar%aviFAIL and ErrVar%ErrMsg out through avcMSG. And scripts/chkpmutate.py, which scores mutants against that same oracle. THE SECOND STREAM WAS ADDED AFTER THE FIRST SWEEP, because eleven of the first twenty-two mutants survived and every one of them was in an error path the file stream cannot see.",
       "why": "performs external I/O on Un that it opens and closes itself, so its contract is (data in) -> (data out): reimplement idiomatically and verify by comparing outputs",
       "bridge_feasible": {
-        "value": "unknown",
-        "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
+        "value": "not asked",
+        "basis": "The matrix's five blocking features (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write) are about crossing this unit's I/O into C. The unit was RESPECIFIED instead, which is what its contract says to do: the C++ opens its own FILE* and the Fortran unit number never crosses. No callee crosses either -- the one call, GetNewUnit, is ABSORBED."
       },
-      "observability": null
+      "observability": "THE GATE IS BLIND BY CONSTRUCTION AND THE STATEMENT IS STRONGER THAN unit #31's. `Debug` is called 408,000 times across 23 scenarios and the gate reads a different output stream; this unit is called ZERO times. DISCON.F90:101 is ABSENT from coverage/line_coverage.json while DISCON.F90:96, a CALL two lines up, carries 408,000 and DISCON.F90:100 -- the `iStatus == -8` test immediately above the call -- runs 407,976 times and is false on all of them. MEASURED, not inferred: perturbing this unit moves 0 of 5,252,000 gate values (gate/WriteRestartFile.redtest.json) while perturbing VariableSpeedControl on the SAME BUILD moves 1,552,676, reproducing unit #60's recorded count for that exact edit to the value (gate/WriteRestartFile.control-variablespeedcontrol.json). THE KERNEL CANNOT EXIST for two reasons at once: KGen needs a live call site, and there is none in any scenario; and this unit's output is bytes on a stream, which KGen neither captures nor replays. WHAT DOES COMPARE IT is scripts/chkpcheck.py over two streams: 195 checkpoint files / 89,858,535 bytes and 6 driver stdout streams / 511 records / 131,291 bytes, 0 mismatched on both, across six checkpoint scenarios added by ADDITION outside scenario_order. NOTHING IN A CHECKPOINT IS EXEMPT FROM COMPARISON -- an unformatted STREAM write emits no record marker, no header and no wall clock, so unlike `Debug` there is no line this instrument declines to compare, and the 460,813-byte layout is DERIVED from the reference's own 307 WRITE statements and checked against a real checkpoint (evidence/WriteRestartFile/layout.txt). FOUR RED TESTS, FOUR COUNTS STATED BEFORE THE RUN, FOUR EXACT, one of them a NEGATIVE CONTROL: logwidth 195 files (460,807 against 460,813, first difference at offset 29), moop 195 files, zmqpit 0, avifail 0 files and exactly 9 stdout records. The (moop, zmqpit) pair is the same edit -- an index shifted by one on a three-wide REAL(DbKi) field -- on the same build, 195 and 0, so the zero is a measurement of the CORPUS. MUTATION 62 of 62, 1.0000, ZERO OPEN SURVIVORS: 105 behavioural mutants, 0 nocompile, 62 killed, 27 declared EQUIVALENT and 16 declared UNREACHABLE with 10 of the 16 DERIVED from the reference archive by scripts/chkp_unreachable.py. The equivalence that carries 20 of the 27 is one dead-store fact: Stream::stat is read exactly once, after all 307 writes, and the last write is wr_int -- so any assignment to u.stat from another helper is overwritten before any read. wr_dbl performs 218 of the 307 writes and never the last one, which is why its four mutants are equivalent and wr_int's predicate mutant was KILLED. WHAT THIS UNIT'S EVIDENCE CANNOT SEE, each named against the mutant that measures it: 96 of the 307 written items are constant and ZERO across the corpus, so an index shift between two of them is invisible; the .TRUE. representation of a default LOGICAL, because both logicals this unit writes are .FALSE. in all 195 checkpoints; a checkpoint index of 0 or 1, which is the only input that separates `I0.0` from `%d`; and a RootName long enough to reach CHARACTER(128)'s truncation.",
+      "disposition": "integrated",
+      "source_file": "rosco/controller/src/ROSCO_IO.f90",
+      "translation": "translations/ROSCO_IO/writerestartfile.cpp",
+      "harness_required": true,
+      "evidence": [
+        "evidence/WriteRestartFile/README.md",
+        "evidence/WriteRestartFile/chkp.json",
+        "evidence/WriteRestartFile/chkp_redtest.txt",
+        "evidence/WriteRestartFile/chkp.redtest.logwidth.json",
+        "evidence/WriteRestartFile/chkp.redtest.moop.json",
+        "evidence/WriteRestartFile/chkp.redtest.zmqpit.json",
+        "evidence/WriteRestartFile/chkp.redtest.avifail.json",
+        "evidence/WriteRestartFile/layout.txt",
+        "evidence/WriteRestartFile/unreachable.txt",
+        "evidence/WriteRestartFile/unreachable.hand.txt",
+        "evidence/WriteRestartFile/gate.blind-by-construction.txt",
+        "evidence/WriteRestartFile/chkp/pre/_manifest.json",
+        "evidence/WriteRestartFile/chkp/post/_manifest.json",
+        "harness/WriteRestartFile.postintegration.json",
+        "mutation/WriteRestartFile.json",
+        "mutation/WriteRestartFile.equivalences.json",
+        "mutation/WriteRestartFile.unreachable.json",
+        "gate/WriteRestartFile.json",
+        "gate/WriteRestartFile.redtest.json",
+        "gate/WriteRestartFile.control-variablespeedcontrol.json"
+      ]
     },
     {
       "order": 62,
