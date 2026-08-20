@@ -266,6 +266,14 @@ translations:
     status: integrated
     cpp_file: translations/Controllers/variablespeedcontrol.cpp
     verification: simulation
+    cases_passed: 60
+    kernel_dir: kernel/VariableSpeedControl
+    red_test: not_constructed
+    red_test_detail: "NOT CONSTRUCTED \u2014 no by-value floating-point parameter\
+      \ and no floating-point result: every input arrives behind a pointer or inside\
+      \ a derived type, and perturbing one of those could change what BOTH implementations\
+      \ compute. The kernel's discriminating power is therefore UNMEASURED for this\
+      \ function"
 types:
   ControlParameters:
     strategy: view
