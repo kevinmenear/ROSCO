@@ -262,6 +262,10 @@ translations:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/parseinput_str_opt.cpp
     verification: simulation
+  VariableSpeedControl:
+    status: integrated
+    cpp_file: translations/Controllers/variablespeedcontrol.cpp
+    verification: simulation
 types:
   ControlParameters:
     strategy: view
