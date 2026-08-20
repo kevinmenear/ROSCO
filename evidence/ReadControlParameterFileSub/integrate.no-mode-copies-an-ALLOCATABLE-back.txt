@@ -1,0 +1,51 @@
+vit integrate has three modes. None carries this unit's ~50 ALLOCATABLE
+CntrPar outputs back into the Fortran type. Captured 2026-08-20 from
+`vit integrate ... ` (no --apply) in vit-dev, at scaffold state.
+
+=== 1. DEFAULT: nothing is copied back at all ===================
+        CALL readcontrolparameterfilesub_c(C_LOC(CntrPar_view), C_LOC(LocalVar_view), accINFILE_c, accINFILE_size, RootName_c, C_LOC(ErrVar_view))
+    END SUBROUTINE ReadControlParameterFileSub
+
+=== 2. --reverse-copy: SCALARS ONLY ============================
+        CALL readcontrolparameterfilesub_c(C_LOC(CntrPar_view), C_LOC(LocalVar_view), accINFILE_c, accINFILE_size, RootName_c, C_LOC(ErrVar_view))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_controlparameters(CntrPar_view, CntrPar)
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
+    END SUBROUTINE ReadControlParameterFileSub
+
+=== 3. --reverse-copy --auto-allocate: same tail =================
+        CALL readcontrolparameterfilesub_c(C_LOC(CntrPar_view), C_LOC(LocalVar_view), accINFILE_c, accINFILE_size, RootName_c, C_LOC(ErrVar_view))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_controlparameters(CntrPar_view, CntrPar)
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
+    END SUBROUTINE ReadControlParameterFileSub
+
+
+=== AND WHAT MODE 3 PUTS ABOVE THE CALL, which decides it =======
+
+    CALL ParseInput(FileLines, 'ZMQ_ID', CntrPar%ZMQ_ID, accINFILE(1), ErrVar, .TRUE., UnEc=UnEc)
+        IF (ErrStat2 /= 0) THEN
+            CALL SetErrStat(ErrID_Fatal, "Error in ParseInput.", ErrStat, ErrMsg, RoutineName)
+            RETURN
+        END IF
+
+`--auto-allocate` re-emits the WHOLE 193-call parse block into the wrapper,
+ahead of the C++ call, wrapped in error checks over five names that do not
+exist in that scope (ErrStat2, SetErrStat, ErrID_Fatal, ErrStat, ErrMsg) --
+and then still copies back only scalars. It does not compile, and if it did it
+would run the reference's body and the translation's body one after the other.
+
+=== THE ROUTINE THAT WOULD DO IT EXISTS AND NOTHING CALLS IT ====
+
+rosco/controller/src/vit_controlparameters_view.f90:1119
+    SUBROUTINE vit_view_in_controlparameters(view, dest)
+...
+:1368   CALL C_F_POINTER(view%F_NotchFreqs, vit_ap_f_notchfreqs, [INT(view%n_F_NotchFreqs)])
+:1369   ALLOCATE(dest%F_NotchFreqs(view%n_F_NotchFreqs))
+:1370   dest%F_NotchFreqs = vit_ap_f_notchfreqs
+
+    $ grep -rn "vit_view_in_controlparameters" rosco/controller/src/*.f90 \
+          | grep -v "vit_.*_view.f90"
+    (no output -- no wrapper VIT emits has ever called it)
