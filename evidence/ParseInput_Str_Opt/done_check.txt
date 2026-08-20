@@ -1,0 +1,39 @@
+# done_check.py ParseInput_Str_Opt -- captured 2026-08-20T06:17:42Z by scripts/capture_done_check.sh
+
+Run against the committed state at 8034da11 ("STATUS, DECISIONS, RUNBOOK target layer and plan.json: unit #58 ParseInput_Str_Opt integrated at 39/39 = 1.000"), with a CLEAN tree, with stdout
+going to a file outside the repository. The run is reproduced below verbatim.
+
+ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
+target before the subprocess runs, so
+
+    python3 scripts/done_check.py ParseInput_Str_Opt > evidence/ParseInput_Str_Opt/done_check.txt
+
+always sees a modified tracked file and reports `P2 clean tree: dirty_tree`,
+one predicate worse than the truth. That is why this file is captured out of
+tree and moved in, and why it is written by a script rather than by hand: the
+header was added once at 48b9ae3 and a plain re-capture at 73d3521 removed it.
+Reproduce the reading below with no redirection:
+
+    python3 scripts/done_check.py ParseInput_Str_Opt
+
+done_check exited 1 (0 only when COMPLETE).
+
+baseline (inferred): 59173ba  -- the commit before c545929 touched translations/ROSCO_Helpers/parseinput_str_opt.cpp
+
+ParseInput_Str_Opt: Verdict.INCOMPLETE  (13/14 PASS)
+
+[  ok  ] P1   commits exist                      
+[  ok  ] P2   clean tree                         
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[ FAIL ] P5   evidence resolves                  unresolved_evidence:evidence/ParseInput_Str_Opt/done_check.txt
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[  ok  ] P9   gate compared and matched          
+[  ok  ] P12  mutation score for this unit       39/39 mutant(s) killed, 5 declared equivalent, 6 declared unreachable
+[  ok  ] P11  post-integration harness re-run    14116 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible              
+[  ok  ] P14  artifact revisions agree           4 artifact(s) at b3ad414
+
