@@ -15545,3 +15545,131 @@ hashed back to its intended value. Two reset windows, each closed before a
 commit. Nine commits, one per expensive artifact. Three findings raised, one of
 them a CORRECTION to a finding filed twenty minutes earlier whose verdict claim
 `revcheck` refuted.
+
+## 2026-08-20 17:46 — ReadControlParameterFileSub: two instruments refused, so the unit built a third
+
+`plan.json` proposed *"generated harness + mutation score (P13); the gate cannot
+decide"*. Both halves are refuted, each for a reason the other did not predict,
+and the unit closes `blocked` on the substrate with a value comparison it made
+itself.
+
+### The generated harness refuses, and `file_params_from` is why
+
+`vit_harness.py --dump-plan`, run before a line of C++ was written:
+
+```
+UNOBSERVABLE [character-arg] accINFILE:  ... neither supplied nor compared
+UNOBSERVABLE [character-arg] RootName:   ... neither supplied nor compared
+291 parameter(s) varied, 180 held        <- every varied one is a CntrPar field
+                                            this unit OVERWRITES from the file
+```
+
+and no `R8_file_contents` row at all. `file_params_from`
+(`scripts/vit_harness.py:384`) matches `FILE\s*=\s*([A-Za-z_]\w*)\s*[,)]` — a
+BARE dummy — and the reference writes `file=accINFILE(1)`, a dummy's array
+ELEMENT. That is the RUNBOOK's own P10 entry instantiated with a name: *"its
+notion of a filename is a bare dummy while the reachable ones are an array
+element, a derived-type field and two locals."* This unit is one of the five.
+
+Repairing R8's regex would not be enough, and the second reason is cheaper to
+state than to find: `build_c_params` emits no `len_accINFILE`, so R8 has no way
+to put a fixture path INTO a case. And a third, measured rather than reasoned —
+the reference's `OPEN` carries no `IOSTAT=`, so R8's `absent` fixture shape does
+not report, it TERMINATES the process (`EXIT=2`).
+
+### Integration refuses too, and it takes the gate with it
+
+All three `vit integrate` modes, at scaffold state:
+
+```
+DEFAULT                         no copy-back at all
+--reverse-copy                  vit_copy_scalars_to_controlparameters -- SCALARS
+--reverse-copy --auto-allocate  same tail; the head re-emits the whole 193-call
+                                parse block into the wrapper against five names
+                                undeclared in that scope. It does not compile.
+```
+
+Every one of this unit's ~50 ALLOCATABLE `CntrPar` outputs arrives
+UNALLOCATED, so the view carries `C_NULL_PTR` and there is no caller buffer to
+write through. A scalars-only copy-back drops all fifty. Meanwhile
+`vit_controlparameters_view.f90:1119` defines
+`vit_view_in_controlparameters(view, dest)`, which does exactly the required
+per-field `ALLOCATE`-and-copy — and no wrapper VIT emits has ever called it.
+**The mechanism exists, is generated, and is unreachable from the tool that
+generates it.** Both raised as `invalidating_finding`.
+
+Not worked around. Changing `vit integrate` mid-campaign moves `vit_rev` under
+every artifact this unit and its successors produce, which is the `BASE-SHA
+SPLIT` `revcheck` exists to catch; that is a campaign-level choice and not a
+unit's (the same argument as the two regenerated view modules).
+
+### So the unit built the instrument that WAS available
+
+`evidence/ReadControlParameterFileSub/gen_probe.py` generates a Fortran driver
+from `ROSCO_Types.f90`'s own `TYPE(ControlParameters)` — 213 components — that
+calls the reference and the translation on the SAME real DISCON.IN and compares
+every one, plus `ErrVar%aviFAIL` and `ErrVar%ErrMsg`. The C++ side reaches its
+Fortran type through `vit_view_in_controlparameters`, i.e. through the routine
+`vit integrate` will not call. The corpus is 28 shipped `Examples/DISCON*.IN`
+plus 9 derived (`derive_corpus.py`, one edited value column each).
+
+```
+cases 37   FIELD (translation) 0   COPYBK 586
+echo   ref 149 bytes  cpp 149 bytes  IDENTICAL over all 149
+```
+
+Five red tests confirmed to the value (RT1 predicted 28 and got 28, all
+`Y_Rate`; RT4 char 13; RT5 char 1 and 144-vs-149; RT7 one field on one case;
+RT8 two fields on one case). Two greens that are measurements rather than
+coverage:
+
+- **RT2 — a 37-case corpus of real inputs cannot see `a*(x*x)` vs `(a*x)*x`.**
+  Unit #48 measured `assoc_reorder` dying to ONE case in 1131. The
+  parenthesisation in `VS_MinOMTq`/`VS_MaxOMTq` is transcribed and untested.
+- **RT6 — the final `RoutineName//':'//TRIM(ErrMsg)` never executes.** Every
+  path that sets `aviFAIL` negative hits one of the unit's own
+  `IF (aviFAIL < 0) RETURN`s first. The probe's ERR print shows the surviving
+  message still carrying `ParseInput_Dbl_Opt:`.
+
+### What this probe is NOT, said here because "0 of 37" reads like more
+
+It varies nothing — 37 points, no R2/R5/R6/R11 rule shapes them; RT2 is what
+that costs, measured. It cannot be mutation-scored: `vit_mutate.py` drives the
+harness's case file and `./test`, neither of which exists here, so **P12 has no
+number for this unit**. And the echo comparison is 149 bytes and not 149 of
+~15,000: on a clean tree the reference would write ~193 more records through
+the `Parse*_Opt` callees, and those five units are integrated and emit nothing
+to `UnEc`. Counted from the artifacts, not recalled — `WRITE(UnEc` went 4 → 1
+(a comment) across their integration.
+
+### C12: the red-test runner reported the BASELINE under a red test's name
+
+RT5 and RT6 were run once and both came back green. `run_probe.sh` interpolated
+the `sed` expression into the double-quoted `docker exec bash -lc` string, and
+every useful red test here matches a C++ character literal and therefore
+contains a SINGLE QUOTE: the quoting closed early, `if [ -n '...' ]` lost its
+bracket, the perturbation block was skipped entirely, and the unperturbed run
+was reported. **The committed prediction is the only thing that caught it** —
+RT1 and RT4 matched theirs, RT5 and RT6 did not, and that is why they were
+looked at. This is the campaign's `--note` backtick lesson arriving through a
+second door: it is not about backticks, it is about *any* argument that reaches
+a `docker exec` through a shell string. The expression now goes over stdin into
+a file and `sed -E -f` reads it. The "changed NOTHING" guard was never at fault
+— it never ran — and is now controlled (exit 3 on an expression matching
+nothing). Wrong results left standing in `probe.redtests.txt` beside the fix.
+
+### C1: `absorbs` is wrong on this unit, and a grep said the opposite first
+
+`plan.json` records `absorbs: [ParseDbAry, ParseInAry, ParseInput_Dbl,
+ParseInput_Int, ParseInput_Str]`. Measured: all five EXIST, all five take the
+`(Un, CurLine, ...)` unit-number signature, and **this unit calls none of
+them** — all 140 `CALL ParseInput(` sites in the codebase pass `FileLines` and
+resolve to the `_Opt` forms. `ParseDbAry`/`ParseInAry` have two call sites, both
+in `ReadCpFile` (order 66); `ParseInput_Str`/`_Dbl`/`_Int` have **zero call
+sites anywhere**, and none of the five appears in `plan.json`'s `excluded`.
+
+The first version of this paragraph said the three did not exist at all, because
+`grep "SUBROUTINE ParseInput_Str"` returned nothing — they are declared
+`subroutine` in lower case. P10 again, and the campaign's own rule about it:
+a claim about what the source contains is a measurement and needs a command
+behind it, run case-insensitively.
