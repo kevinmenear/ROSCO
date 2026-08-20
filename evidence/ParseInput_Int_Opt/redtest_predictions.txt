@@ -255,3 +255,82 @@ earlier (unit #47, `vit_integration_shim.o` with no symbols).
 It is LOUD -- no artifact is written and the runner exits 1 -- so the cost is
 one retry, and the batch above simply runs the first stub twice. Written down
 rather than left for the next dispatch to rediscover a fourth time.
+
+
+================================================================================
+RE-TAKEN A FOURTH TIME, loop b3ad414, 12,367 cases -- PREDICTED BEFORE THE RUNS
+================================================================================
+
+The two mutation survivors this unit was re-dispatched for are ONE gap: no
+corpus this campaign had generated contained a CR or an LF byte, so both
+disjuncts of every `is_blank(rec[p]) || is_eol(rec[p])` scan were only ever
+evaluated on one side. Four R14 entries close it (`eolfull`, `lffull`,
+`eollead`, `lflead`; loop `8fa5440`, plus the `_cesc` repair in `b3ad414` that
+a record byte in a coverage detail forced). Every corpus-reading layer is
+re-taken; the reasoning for each number below is unchanged from the three
+sections above and is not restated.
+
+    arm                          cases   scalar-changed   record   Var moved
+    default-warned                9143                0     9143         273
+    not-allowed                   1843             1843        0           0
+    error, msg refused             901              901        0           0
+    read-ok                        296                0        0         253
+    pre-failed                     184                0        0           0
+    TOTAL                       12,367             2744     9143         526
+
+    stub                    predicted
+    noop                    12,140 exactly
+                            (12,367 - 184 pre-failed - 43 read-ok that
+                             moved nothing)
+    no-print                 9,143 exactly, and it must equal
+                             `record_nonempty` in harness/ParseInput_Int_Opt.json
+                             -- which is 9,143, from a different code path
+    no-allowdefault-arm     [1,843, 2,744]   and the POINT prediction is 1,935
+    no-read                 [  253, 1,154]   and the POINT prediction is 1,062
+
+    CONTROL   A + B = 901, the refused cell the partition cannot split
+
+AND THE POINT PREDICTIONS ARE NEW HERE, which is the only thing in this section
+that is not a repeat. `A` -- the `.NOT. AllowDefault_` cases inside the refused
+cell -- has measured **92 on all three previous corpora** (11,863, 12,059,
+12,199) while `B` moved 669 -> 711 -> 753 with every record that reaches the
+READ. So `A = 92` is no longer a bracket, it is a hypothesis with three
+observations behind it, and it is worth stating as a number that can be wrong:
+
+    PREDICTED  A = 92  =>  no-allowdefault-arm = 1,843 + 92 = 1,935
+    PREDICTED  B = 809  =>  no-read            =   253 + 809 = 1,062
+                            (B = 901 - 92, forced by the control)
+
+    => the corpus reaches the READ on 296 + 809 = 1,105 of 12,367 (8.9%),
+       against 1,021 of 12,199 (8.4%).
+
+If `A` is not 92 the bracket still holds and the control still decides the
+split; what would be refuted is the claim that `A` is a property of the
+`.NOT. AllowDefault_` arm's own shape rather than of the corpus. Either outcome
+is a measurement.
+
+AND THE POST-INTEGRATION WRAPPER RED TEST, from the same table:
+
+    the reverse copy deleted:  2,744 must FAIL, the other 9,623 must PASS
+
+THE ADDITIVE CONTROL, taken again and expected to FAIL again for the structural
+reason recorded above: entries added to `_NEIGHBOUR_TAILS` and
+`_NEIGHBOUR_VALUES` are consumed inside the `n:` block R14 appends after every
+plant index, so no ordering makes the change a suffix. This is a DIFFERENT
+corpus rather than an extended one, and that is why every layer above is being
+re-taken rather than carried.
+
+THE GATE IS RE-TAKEN TOO, AND FOR A DIFFERENT REASON THAN THE CORPUS. It never
+reads the case file and neither the translation nor the wrapper moved, so its
+three numbers are predicted to reproduce EXACTLY:
+
+    gate                       5,252,000 values / 351 channels / 27 scenarios, 0 mismatched
+    redtest parsed-value         370,646 of 728,000, 22 channels, scenarios 19, 20, 27
+    redtest default-arm                0 of 5,252,000
+
+What forces the re-take is `revcheck`: the loop repository moved from `8f9d72f`
+to `b3ad414`, every re-taken artifact is stamped with the new revision, and a
+unit whose artifacts name two instruments is a split whatever each one says
+(RUNBOOK, "re-taking a unit across an instrument move is priced by one hash" --
+there is no partial move that leaves the evidence coherent). A gate result that
+reproduces to the value is the cheapest possible price for that.
