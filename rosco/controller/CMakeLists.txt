@@ -140,6 +140,7 @@ set(SOURCES
     src/ipc.cpp
     src/parsedbary_opt.cpp
     src/parseinary_opt.cpp
+    src/parseinput_dbl_opt.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")

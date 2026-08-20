@@ -250,6 +250,10 @@ translations:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/parseinary_opt.cpp
     verification: simulation
+  ParseInput_Dbl_Opt:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/parseinput_dbl_opt.cpp
+    verification: simulation
 types:
   ControlParameters:
     strategy: view
