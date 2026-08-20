@@ -189,16 +189,33 @@ RealParse parse_real(const char* rec, int len, int& p, double& out) {
     // 'nan' may carry a parenthesised payload, which strtod also parses.
     if (match_word(rec, len, p, "infinity") || match_word(rec, len, p, "inf")
         || match_word(rec, len, p, "nan")) {   // NOLINT
-        char buf[64];
-        int n = 0;
+        // THE WORD IS BOUNDED BY THE RECORD AND BY NOTHING ELSE. It used to be
+        // copied into a `char buf[64]` under `n < 62`, which is the sibling's
+        // code and is WRONG: `nan` may carry a parenthesised payload, and a
+        // field of 63 characters or more was then handed to `strtod` with its
+        // closing parenthesis cut off, so the conversion failed and the item
+        // was left untouched. gfortran's own reader has no such bound.
+        //
+        // MEASURED BOTH WAYS before the repair, over every payload length a
+        // 200-byte record can carry
+        // (`evidence/ParseInput_Dbl_Opt/nan_payload_probe.{f90,cpp}`):
+        //
+        //   word length <=  62   both sides agree                    58 lengths
+        //   word length  63..200 ref iostat=0 NaN, C++ iostat=5010  138 lengths
+        //   word length     201  truncated by `Words(1)` itself; both fail
+        //
+        // The two surviving mutants of `62` -- `n <= 62` and `n < 63` -- were
+        // mutants that made the translation LESS wrong, which is why no corpus
+        // killed them. The same code is in `parsedbary_opt.cpp` and
+        // `parseinary_opt.cpp`, where the record is 2048 bytes; escalated in
+        // DECISIONS.md rather than edited from this unit.
         int q = p;
-        while (q < len && n < 62 && !is_separator(rec[q])) {
-            buf[n++] = rec[q++];
+        while (q < len && !is_separator(rec[q])) {
+            ++q;
         }
-        buf[n] = '\0';
         char* end = nullptr;
         std::string word(1, rec[start] == '-' ? '-' : '+');
-        word += buf;
+        word.append(rec + p, static_cast<std::size_t>(q - p));
         const double v = std::strtod(word.c_str(), &end);
         if (end == nullptr || *end != '\0') {
             return RealParse::BadNoStore;
