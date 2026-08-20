@@ -1,0 +1,57 @@
+RefSpeedExclusion -- the three gate perturbations, PREDICTED BEFORE THE RUNS
+============================================================================
+
+The gate compares 5,252,000 values across 351 channels and 27 scenarios and
+reports 0 mismatched (gate/RefSpeedExclusion.json). That number constrains
+nothing until a perturbation is shown to move it, and this unit's coverage says
+in advance how MUCH it can move: `coverage/line_coverage.json`, clean baseline
+54dd134, ControllerBlocks.f90 --
+
+    763  SUBROUTINE RefSpeedExclusion    11,999 hits, SCENARIO 9 ONLY
+    783      FA_Hist = 1                  3,625   scenario 9
+    785      FA_Hist = 0                  8,374   scenario 9
+    791      IF (FA_Hist > 0)                 1   the restart call
+    793          TRA_LastRefSpd = Excl + Band/2   NO HIT, ANY SCENARIO
+    795          TRA_LastRefSpd = Excl - Band/2   NO HIT, ANY SCENARIO
+    798          TRA_LastRefSpd = LSS             1   scenario 9
+
+Twenty-six of the 27 scenarios never call this unit at all -- `CntrPar%TRA_Mode`
+is 0 in 21 of the 22 shipped `Examples/DISCON*.IN` and the unit is called under
+`IF (CntrPar%TRA_Mode > 0)`. So the largest failing set ANY perturbation of this
+unit can produce is scenario 9's own channels, and every prediction below is
+bounded by that before it is bounded by anything else.
+
+RT1 -- THE RETURN PATH.   `LocalVar->VS_RefSpd_RL * CntrPar->WE_GearboxRatio`
+                          scaled by 1.0000001.
+  PREDICT: NON-ZERO, and confined to scenario 9. This statement runs on all
+  11,999 calls and writes `LocalVar%VS_RefSpd`, which the torque controller
+  reads as its speed set point, so the perturbation reaches `gen_torque` and
+  `gen_speed` through the closed loop. Predicted mismatched scenario set: {9}.
+
+RT2 -- THE IN-BAND ARM.   `LocalVar->FA_Hist = 1;` becomes `= 0;`.
+  PREDICT: NON-ZERO, and confined to scenario 9, and STRICTLY SMALLER than RT1's
+  count is not claimed -- the arm feeds the same channels through the same loop,
+  and a feedback loop does not preserve orderings of that kind. What IS claimed
+  is the arm: this perturbation is reachable only on the 3,625 in-band calls,
+  where it replaces the HELD reference with the followed one. Predicted
+  mismatched scenario set: {9}.
+
+RT3 -- THE NEGATIVE CONTROL, AND IT IS PREDICTED AT EXACTLY ZERO.
+  `LocalVar->TRA_LastRefSpd = CntrPar->TRA_ExclSpeed + CntrPar->TRA_ExclBand / 2;`
+  becomes `= 1.0e30;`.
+  PREDICT: **0 of 5,252,000**, because ControllerBlocks.f90:793 has NO HIT in any
+  of the 27 scenarios. The one restart call scenario 9 makes arrives with
+  `FA_Hist == 0` and takes the ELSE arm at :798. A perturbation the size of 1e30
+  on a statement the program never executes must move nothing, and if it moves
+  anything the coverage file is wrong about this unit.
+
+WHY A NEGATIVE CONTROL AT ALL. RT1 and RT2 both going red proves the gate can
+see this unit. It does not prove the gate is measuring THIS unit's statements
+rather than the rebuild -- a perturbation that moved values by existing would be
+indistinguishable. RT3 is the same file, the same build, the same 27 scenarios,
+and a perturbation two orders of magnitude larger than either of the others; a
+zero there is what separates "the gate sees the unit" from "the gate sees the
+edit". This is the campaign's rule from unit #52 (RUN ONE SURVIVOR PER REGION
+THROUGH THE GATE, AND MAKE ONE OF THEM A NEGATIVE CONTROL), applied to the two
+statements the differential harness reaches at 22 and 823 cases and the gate
+reaches at none.
