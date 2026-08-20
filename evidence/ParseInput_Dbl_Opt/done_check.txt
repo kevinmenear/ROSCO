@@ -1,6 +1,6 @@
-# done_check.py ParseInput_Dbl_Opt -- captured 2026-08-20T01:08:54Z by scripts/capture_done_check.sh
+# done_check.py ParseInput_Dbl_Opt -- captured 2026-08-20T01:11:05Z by scripts/capture_done_check.sh
 
-Run against the committed state at a78fc434 ("ParseInput_Dbl_Opt: 0.8271 -> 0.8397, and both instruments re-taken on the same denominator"), with a CLEAN tree, with stdout
+Run against the committed state at e1eddd0c ("ParseInput_Dbl_Opt: the second cross-unit gate control, and the stale numbers brought current"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
