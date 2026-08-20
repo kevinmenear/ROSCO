@@ -1,5 +1,5 @@
 ParseInput_Int_Opt -- line coverage of the SHIPPED translation under the
-12,059-case differential harness corpus, measured by gcov over the
+12,199-case differential harness corpus, measured by gcov over the
 generated test's own object (the test #includes parseinput_int_opt.hpp).
 
   executable lines RUN      164
@@ -7,7 +7,7 @@ generated test's own object (the test #includes parseinput_int_opt.hpp).
   non-code lines            407
 
 CONTROL: the entry line's count must equal the case count.
-  L445  count=12059  void ParseInput_Int_Opt(char* FileLines, int n_FileLines, int len_File
+  L445  count=12199  void ParseInput_Int_Opt(char* FileLines, int n_FileLines, int len_File
 
 LINES NEVER EXECUTED:
 

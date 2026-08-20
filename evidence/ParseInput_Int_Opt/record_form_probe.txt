@@ -11,7 +11,7 @@ quote, '!' or tab, left-justified into a blank-padded 200-byte element.
 Forms admissible to the FUNCTION and not to the UNIT are excluded on
 purpose -- unit #56 recorded two survivors misread for exactly that reason.
 
-40 of 40 form(s) agree on (IOSTAT, value).
+41 of 41 form(s) agree on (IOSTAT, value).
 
   plain      ref iostat=0      value=42             got iostat=0      value=42             SAME
   signed     ref iostat=0      value=42             got iostat=0      value=42             SAME
@@ -53,3 +53,4 @@ purpose -- unit #56 recorded two survivors misread for exactly that reason.
   repzslash  ref iostat=5010   value=-987654        got iostat=5010   value=-987654        SAME
   repstar    ref iostat=0      value=123456789      got iostat=0      value=123456789      SAME
   over1      ref iostat=0      value=2147483647     got iostat=0      value=2147483647     SAME
+  digstar    ref iostat=0      value=1              got iostat=0      value=1              SAME

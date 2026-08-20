@@ -101,6 +101,10 @@ int main() {
         {"repzslash", "0*/", "Aa"},
         {"repstar", zeros(189) + "3*123456789", "*7"},
         {"over1", zeros(190) + "21474836470", "Aa"},
+        // The correction to `repstar`: a record with NO star, so the repeat
+        // lookahead's digit scan reaches the record's last byte, paired with a
+        // star NEIGHBOUR.
+        {"digstar", zeros(199) + "1", "*7"},
     };
     for (const Form& f : forms) {
         // `CHARACTER(MaxParamLength) :: Words(2)` -- ONE 400-byte object. The

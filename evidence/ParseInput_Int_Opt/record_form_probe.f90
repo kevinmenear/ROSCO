@@ -35,7 +35,7 @@
 PROGRAM record_form_probe
     IMPLICIT NONE
     INTEGER, PARAMETER :: MaxParamLength = 200
-    INTEGER, PARAMETER :: NFORM = 40
+    INTEGER, PARAMETER :: NFORM = 41
     CHARACTER(MaxParamLength) :: Words(2)
     CHARACTER(16)  :: label
     CHARACTER(260) :: lead
@@ -154,6 +154,16 @@ CONTAINS
                    neigh = '*7'; ln = 200
         CASE (40); lab = 'over1';    txt = REPEAT('0', 190)//'21474836470'
                    neigh = 'Aa'; ln = 201
+        ! --- AND THE CORRECTION TO `repstar`, which is the finding rather than
+        !     the form. A repeat-count LOOKAHEAD scans digits and then asks
+        !     whether the character it stopped on is a `*`; a record that
+        !     CONTAINS a `*` stops that scan AT the star, so it can never reach
+        !     the record's last byte. The scan reaches the boundary only on a
+        !     record with no star in it at all -- and the mutant that reads one
+        !     past the end then finds its star in the NEIGHBOUR. The digit run
+        !     must also be a LEGAL count, which leading zeros give for free.
+        CASE (41); lab = 'digstar';  txt = REPEAT('0', 199)//'1'
+                   neigh = '*7'; ln = 200
         END SELECT
     END SUBROUTINE form
 
