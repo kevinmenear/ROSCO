@@ -1,14 +1,14 @@
 # `ParseInput_Dbl_Opt` — declared equivalences, with the argument for each
 
-Twenty-five mutants of `translations/ROSCO_Helpers/parseinput_dbl_opt.cpp` are
+Twenty-seven mutants of `translations/ROSCO_Helpers/parseinput_dbl_opt.cpp` are
 declared `equivalent` in `mutation/ParseInput_Dbl_Opt.equivalences.json`. An
 equivalence is a claim about the **programs** — that they agree on every
 admissible input — and not about the corpus, so each one is written out here
 where it can be disputed rather than left as an id in a list.
 
-Five families. Every one of them turns on a fact about **this unit's single
-call site into the parser**, and those facts are stated first because four of
-the five families rest on them:
+Six families. Five of them turn on a fact about **this unit's single call site
+into the parser**, and those facts are stated first; the sixth (§6, added after
+the first sweep) turns on what `GetWords` can put in the buffer at all.
 
     ParseInput_Dbl_Opt calls   list_read_reals(Words1, MaxParamLength, &value, 1)
 
@@ -165,6 +165,56 @@ measurement supports directly.
 **The disputable half.** `nonfinite_text`'s `isnan` at 395 is NOT declared even
 though `+0.0` is neither NaN nor infinite: line 395 RUNS on every record, and
 its mutant is killed.
+
+## 6. The GetWords family — 2 mutants, and they were misfiled first
+
+**ADDED AFTER THE FIRST SWEEP AND AFTER `mutation_survivors.txt` had already
+called them corpus levers, which was wrong.** Recorded here as a correction
+rather than a silent edit (C12): §A of that file says of every row "a corpus
+that contained the record would kill the mutant", and for these two **no corpus
+can contain the record.**
+
+`rec` is `Words`, and every byte of it is written by `GetWords`, whose
+separator set is a literal in the reference:
+
+```fortran
+NextWhite = SCAN( Line(Ch+1:) , ' ,!;''"'//Tab )
+Words(IW) = Line(Ch+1:Ch+NextWhite-1)
+```
+
+So a word is a run of characters containing **none** of space, comma, `!`,
+semicolon, `'`, `"` or tab; `GetWords` blank-fills all `NumWords` elements
+before it writes anything; and the translation passes it a 400-byte buffer with
+`len_Words = 200, NumWords = 2`, so all 400 bytes are its output. **No byte of
+`rec[0..399]` is ever a comma or a semicolon.**
+
+| id | line | edit | why the two programs agree |
+|---|---|---|---|
+| `4cbc3c66` | 290 | `rec[p] == ','` → `rec[p + 1] == ','` | neither byte is ever a comma. `p <= 199` here (the `p >= len` return is above it) so `p + 1 <= 200 < 400` and the read is in bounds |
+| `8d81269b` | 298 | `rec[p] == ';'` → `rec[p + 1] == ';'` | the same, for the semicolon |
+
+**The disputable half is the strongest in this file, because it is a KILL.**
+Each of these two lines carries a `negate_cond` sibling —
+`96b773cb` at 290 and `139ff398` at 298 — and **both were KILLED**. So the line
+is executed, the branch is observable, and the equivalence is a claim about the
+VALUE at that site rather than about reachability. Neither sibling is declared.
+
+**And the second instrument DISTINGUISHES them, which is not a contradiction.**
+`evidence/ParseInput_Dbl_Opt/survivor_record_search.txt` reports `4cbc3c66`
+differing on 6,391 records and `8d81269b` on 924, because the search feeds
+`list_read_reals` directly with records containing commas and semicolons.
+**Those records are admissible inputs to the FUNCTION and not to the UNIT**:
+`ParseInput_Dbl_Opt` cannot be handed one, because `GetWords` sits between its
+inputs and that buffer. The gate agrees, and it agrees on the one that was
+actually asked: `8d81269b` was run through all 27 scenarios and moved
+**0 of 5,252,000** (`gate/ParseInput_Dbl_Opt.survivor.8d81269b.json`), against a
+sibling perturbation on the same build that moved 1,583,216.
+
+**The general shape, and it is why this section exists.** A search that drives
+an internal function directly has a WIDER input space than the unit does, and
+for a survivor whose site sits behind a callee that filter is the whole answer.
+Ask what the callee can produce before reading a search's `differs` as a corpus
+lever.
 
 ---
 
