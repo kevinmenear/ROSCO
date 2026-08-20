@@ -4,39 +4,87 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-19: unit #56 `ParseInput_Dbl_Opt` is `deferred`. FIRST
-dispatch. SEVEN layers; six green and red-tested, and the mutation layer at
-110 / (177 - 27 - 19) = 0.8397 against a threshold of 1.0. 21 open survivors,
-every one of them answered and 16 of them by a named record.**
+**As of 2026-08-19: unit #56 `ParseInput_Dbl_Opt` is `integrated`. SECOND
+dispatch. EIGHT layers, all green and red-tested, and the mutation layer at
+144 / (179 - 26 - 9) = 1.000 against a threshold of 1.0. Zero open survivors.**
+
+**THE FIRST DISPATCH CLOSED `deferred` AT 110 / 131 = 0.8397 WITH 21 OPEN
+SURVIVORS, AND WHAT CLOSED THEM WAS NOT TWENTY-ONE ARGUMENTS. Two of the 21
+were mutants of a constant that was WRONG.** Pricing the record that would have
+killed them — the runbook's own rule, applied before touching the generator —
+found a defect in the translation instead, and a second one beside it. Both are
+recorded with their wrong artifact before the fix (C12).
+
+* **`parse_real` truncated any IEEE word past 62 characters.** `nan` may carry a
+  parenthesised payload; a field of 63 characters or more was handed to `strtod`
+  with its closing parenthesis cut off. The reference reads a NaN, the C++
+  returned 5010 with the item untouched, on **138 of the 197 payload lengths a
+  200-byte record can carry**. The two survivors were `n < 62` -> `n <= 62` and
+  `n < 62` -> `n < 63` — both of which make the translation LESS wrong, which is
+  why no corpus had killed them.
+* **`list_read_reals` had no repeat-count ceiling.** `std::strtol` saturates at
+  `LONG_MAX`, so `200000001*7` and `9…9*7` were accepted where the reference
+  rejects them. The sibling `parseinary_opt.cpp` has the ceiling, measured for an
+  INTEGER item; this unit's parser was copied from `parsedbary_opt.cpp`, which
+  predates it. Re-measured here for a REAL item: the same constant, 200000000.
 
 The scalar member of the `ParseInput` generic interface: find the line whose
 SECOND word is `VarName`, read one `REAL(DbKi)` out of that line's FIRST word
-with a list-directed READ. 2,044 calls across all 27 scenarios. Six blocks of
-the parser are copied byte for byte from `parsedbary_opt.cpp` and hash-verified,
-8,771 bytes (P4); the table of hashes is in the evidence README.
+with a list-directed READ. 2,044 calls across all 27 scenarios.
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness (`harness/ParseInput_Dbl_Opt.json`) | **11,562 checked, 0 failed, 0 inadmissible**, clean tree, three callee bridges kept. R4 compares 6 out-parameters **plus the stdout RECORD on 9,148 cases**. **No `no_oracle` entry** -- `Variable` is a scalar INOUT, so every output has an oracle on every case, where both `Ary` siblings had to exclude 1,283-4,067 | **four stubs**: no-op **11,363** (predicted exactly), the PRINT **9,148** (exactly), the `.NOT. AllowDefault_` arm **1,937** in a predicted [1845, 2056], the READ **278** in [159, 370] -- and the two excesses SUM to 211, exactly |
-| mutation (`mutation/ParseInput_Dbl_Opt.json`) | **181 mutants, 4 nocompile, 177 behavioural: 110 killed, 27 equivalent, 19 unreachable, 21 open. 110/131 = 0.8397.** Sanitised, green baseline, `--workers 8`, **121 s**. `declared_but_killed` and `unreachable_but_killed` both EMPTY | the score IS the red test (E4.6) |
-| line coverage of the translation (`evidence/.../line_coverage.txt`) | 200 executable lines run, 38 never, at -O0. All 19 `unreachable` declarations derive from it | **three controls**: entry-line count 11,562 = case count; non-survivors on never-run lines that are not nocompile = 0; the nocompile ids measured independently and the count matching the sweep's own 4 |
-| survivor record search (`evidence/.../survivor_record_search.txt`, `words2_probe.txt`) | **16 of the 21 open survivors distinguished over 131,312 records, all by a VALUE and none by an ADDRESS** -- and TWO of them only after the search's OWN blind spot was fixed: it put a Fortran parameter name in `Words(2)`, and `rec[200]` is that name's first character. A harness `VarName` may begin with a digit; re-running the six NONEs with `7E+9` separated two more | the negative control is built into the shape: the search takes the record length as a literal 200, so the mutant OF that constant cannot be reached and must come back NONE. It does |
-| mutation, VALUE ORACLE (`mutation/ParseInput_Dbl_Opt.value-oracle.json`) | **110 of 177, 0.8397 -- the same number** | the control is the SURVIVOR SET, not the count: the two runs disagree by exactly one mutant each way. Union 111/131 = 0.8473, which no artifact can carry |
-| post-integration (`harness/ParseInput_Dbl_Opt.postintegration.json`) | 11,562 checked, 0 failed | the reverse copy deleted from this unit's own wrapper: **2,056**, PREDICTED 2,056 exactly; reverted, rebuilt, green re-taken at 0 |
-| gate, 27 scenarios (`gate/ParseInput_Dbl_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched, 28 s | **two**: every parsed value + 1.0 moves **1,857,893** across 147 channels, revert-verified 0; the default arm moves **0**, predicted from coverage before the run |
+| record-form pricing (`evidence/.../record_form_probe.{f90,cpp,txt}`) | **30 of 30** candidate corpus records agree with gfortran's own list-directed READ on (IOSTAT, bits), out of the same `CHARACTER(200) :: Words(2)` storage the unit reads from. Both defects above surfaced here as a `DIFFERS` row | the wrong artifact is kept unedited at `record_form_probe.FIRST.txt`, captured before either fix; `nan_payload_probe.{f90,cpp}` sweeps all 197 payload lengths and locates the boundary at word length 63 |
+| differential harness (`harness/ParseInput_Dbl_Opt.json`) | **13,802 checked, 0 failed, 0 inadmissible** (was 11,562), clean tree, three callee bridges kept. R4 compares 6 out-parameters **plus the stdout RECORD on 10,108 cases**. **No `no_oracle` entry** | **four stubs**: no-op **13,603**; the PRINT **10,108**, equal to `record_nonempty` in the artifact EXACTLY and from a different code path; the `.NOT. AllowDefault_` arm **2,097**; the READ **1,398** (was 278 — the corpus now reaches the READ five times as often) |
+| mutation (`mutation/ParseInput_Dbl_Opt.json`) | **183 mutants, 4 nocompile, 179 behavioural: 144 killed, 26 equivalent, 9 unreachable, 0 open. 144/144 = 1.000.** Sanitised, green baseline, `--workers 8`, **124 s**. `declared_but_killed` and `unreachable_but_killed` both EMPTY | the score IS the red test (E4.6), and **both refusals FIRED during this dispatch before they were satisfied**: two declared equivalences were killed by the widened corpus, and one declared-unreachable was refuted |
+| line coverage of the translation (`evidence/.../line_coverage.txt`) | 215 executable lines run, 28 never, at -O0 (was 200/38). All 9 `unreachable` declarations derive from it, re-derived every run | entry-line count **13,802** = case count; `make_unreachable.py` REFUSES if the coverage file does not name the current corpus |
+| mutation, VALUE ORACLE (`mutation/ParseInput_Dbl_Opt.value-oracle.json`) | **144 / 144 = 1.000 with `--sanitize` off** — the same empty survivor set, so the score does not rest on the sanitiser | the control is the SURVIVOR SET, not the count. `killed_by_sanitizer: 10` in the sanitised run are all killed by VALUE as well |
+| post-integration (`harness/ParseInput_Dbl_Opt.postintegration.json`) | 13,802 checked, 0 failed | the reverse copy deleted from this unit's own wrapper: **2,776**, PREDICTED 2,776 from the re-taken partition before the run; reverted, rebuilt, green re-taken at 0 |
+| gate, 27 scenarios (`gate/ParseInput_Dbl_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched | **two**: every parsed value + 1.0 moves **1,857,893** — *the same number the first dispatch measured*, across two edits to `parse_real` and 2,240 new cases, which is the control saying the repairs touch nothing `Examples/DISCON.IN` contains; the default arm moves **0**, with the argument in the artifact |
+| gate, two DECLARED EQUIVALENCES (`gate/ParseInput_Dbl_Opt.equivalence.*.json`) | the two whose arguments are the longest chains, `8e796788` and `575c6151`, both in `match_word`: **0 of 5,252,000 each, both predicted before the runs** | a non-zero would have REFUTED a declaration this dispatch made. The positive control is the 1,857,893 above, on the same build |
+
+**THE CORPUS GAP WAS ONE GAP, NOT TWENTY-ONE, AND IT WAS NOT THE BOUNDARY.**
+`_RECORD_TAILS` already built records ending at the buffer's last byte and this
+unit's corpus already had them. What was constant was the byte AT the boundary:
+the record is `Words(1)` of `CHARACTER(MaxParamLength) :: Words(2)`, one
+contiguous 400-byte object, so byte 201 is the search key — and R14 has always
+planted that key as `'Aa'`. `'A'` is not a digit, not a `.`, not a sign and not
+an exponent letter. `_NEIGHBOUR_TAILS` pairs each full-width lead with a
+neighbour whose first character IS what that scan tests, and three further
+forms use a legal repeat count behind leading zeros to move the VALUE's start
+near the record's end — the only way a fraction's last digits are significant to
+a `double`, and the only way a word matcher's own bound is reached at all.
+
+**AND FOUR EQUIVALENCE DECLARATIONS WERE WITHDRAWN, ON A PREMISE THAT WAS
+FALSE.** `"p == 0 whenever parse_real is entered"` carried five of them.
+`list_read_reals` reaches `parse_real` from TWO sites and the second is the
+repeat-count fall-through: `3*7` enters at `p == 2`. No corpus had ever put a
+`*` in a matched line, so nothing contradicted it for three dispatches. Two were
+killed outright by the new corpus, two more withdrawn in the same edit — the
+corpus then killed one of those too — and the last is re-declared on an argument
+that does not use the premise.
+
+**WHAT 1.000 DOES NOT COVER, and the list did not get shorter.** The largest
+item is that **95 of this unit's 278 mutants were never enumerated**, at
+`cppmutate`'s 40-per-operator cap, re-measured this dispatch because the repairs
+moved the population. Also: the echo record on unit `UnEc`, which no layer sees;
+`list_directed_real`'s E-form, dead in the PROGRAM rather than the corpus; and
+two held parameters of seventeen. `evidence/.../mutation_survivors.txt` §D.
 
 **THE SIBLING'S SIXTH-DISPATCH INSTRUMENT WAS TAKEN AT THE FIRST.**
 `vit_record = { compare_record = ... }` went into `harness/ranges.toml` before
 the corpus was generated. Unit #55 spent four dispatches unable to see its PRINT
 record and a purpose-built side instrument found a real defect there on its
 first run; here the comparison is inside the primary layer, 9,148 records agreed
-with gfortran's own on the first run, and **there are zero PRINT-region
-survivors**. All 21 open mutants are in the list-directed READ.
+with gfortran's own on the first run, and **there were zero PRINT-region
+survivors** at either dispatch. Every open mutant was in the list-directed READ.
 
-**THE ONE NUMBER THAT EXPLAINS THE SHORTFALL. 293 of 11,562 cases (2.5%) reach
-the READ at all**, because `FoundLine` requires `FindLine` to match the SECOND
-word of some line and only R14's planted-word cases do. 20 of the 21 survivors
-are behind that single gate. The other is the mutant of `MaxParamLength`.
+**THE ONE NUMBER THAT EXPLAINED THE FIRST DISPATCH'S SHORTFALL, and what it is
+now. 293 of 11,562 cases (2.5%) reached the READ at all**, because `FoundLine`
+requires `FindLine` to match the SECOND word of some line and only R14's
+planted-word cases do. 20 of the 21 survivors were behind that single gate. On
+the 13,802-case corpus it is **1,505 of 13,802 (10.9%)**, read off the two READ
+arms of `harness_partition.txt`, and the no-read stub moves 1,398 against 278.
 
 **AND TWO SURVIVORS NO CORPUS COULD HAVE KILLED, found after the sweep and
 recorded as a correction rather than a silent edit.** `GetWords` splits on
@@ -46,6 +94,15 @@ either way. The record search reports them differing on 6,391 and 924 records
 because it drives `list_read_reals` DIRECTLY: **its records are admissible to
 the FUNCTION and not to the UNIT.** Ask what the callee can produce before
 reading a search's `differs` as a corpus lever.
+
+**AND THE SECOND DISPATCH FOUND THE SECOND INSTANCE OF THAT SAME MISTAKE IN THE
+SAME INSTRUMENT.** `GetWords` also LEFT-JUSTIFIES — `Words(IW) =
+Line(Ch+1:Ch+NextWhite-1)` into a blank-padded `CHARACTER(200)` — so **no TAIL
+record is admissible to the unit either**, and half the search's space is rows
+only the FUNCTION can be handed. The separator set was checked; the
+justification was not, and both are properties of the same callee. The file is
+annotated rather than deleted. **Enumerate the callee's properties, not the one
+that comes to mind.**
 
 **`--sanitize` BOUGHT 5 KILLS HERE AND 41 ON THE SIBLING, AND ONE DECLARATION IS
 WHY.** The sibling's record is `Line`, a 2048-byte vector whose size IS

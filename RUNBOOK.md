@@ -8830,6 +8830,147 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   The behaviour before the fix is kept at
   `evidence/_scripts/restore_integrated.clean-tree-refusal.txt` (C12).
 
+## A MUTANT THAT WIDENS A BOUND AND SURVIVES HAS TWO EXPLANATIONS, AND ONLY
+## ONE OF THEM IS A CORPUS GAP
+
+- **Unit #56, second dispatch. Two survivors were mutants of a constant that was
+  WRONG, and the previous dispatch had filed them as the thinnest corpus margin
+  in the file.**
+
+  ```
+  n < 62  ->  n <= 62      SURVIVED, "1 record in 131,312 distinguishes it"
+  n < 62  ->  n <  63      SURVIVED, "the thinnest margin in the file"
+
+  char buf[64]; while (q < len && n < 62 && !is_separator(rec[q])) ...
+  nan(<58 a's>)   ref iostat=0 NaN      got iostat=5010, item untouched
+  ```
+
+  `nan` may carry a parenthesised payload and gfortran's reader has no bound;
+  the field was handed to `strtod` with its closing parenthesis cut off. Both
+  mutants make the translation **less wrong** — each copies one more character
+  — so the corpus that distinguishes them is the corpus that exposes the
+  original, and "the corpus is narrow" and "the bound is too tight" predict the
+  same observation.
+
+  **When a survivor WIDENS a bound (`<` -> `<=`, `N` -> `N+1` on a capacity,
+  `>` -> `>=` on a rejection), probe the reference AT the bound before writing
+  it up as a corpus gap.** One probe. Found twice in one dispatch: the second
+  was `list_read_reals` having no repeat-count ceiling at all, because
+  `std::strtol` saturates at `LONG_MAX`.
+
+## PRICING A PLANTED RECORD IS A DEFECT DETECTOR, NOT A SAFETY CHECK
+
+- **Unit #56.** This runbook already records unit #54's rule — price a record
+  against the reference before touching the generator — as a way of not turning
+  the harness red for an irrelevant reason. It is worth more than that.
+
+  ```
+  evidence/<Unit>/record_form_probe.{f90,cpp}   the same records, both sides,
+                                                out of the same storage
+  18 of 18 agree   <- the first run, and the 18th was a DIFFERS
+  ```
+
+  Both of this unit's defects appeared as a `DIFFERS` row **before anything was
+  planted and before any sweep ran**. Cost: one `.f90`, one `.cpp`, one runner,
+  about a second per run. **A corpus rule stated as concrete inputs can be
+  executed against the reference directly, and that is a cheaper oracle than the
+  corpus it is about to become.**
+
+## THE BYTE PAST A FULL-WIDTH RECORD IS AN INPUT, AND R14 HELD IT CONSTANT
+
+- **Unit #56.** `_RECORD_TAILS` reaches the boundary; it does not choose what is
+  AT the boundary.
+
+  ```
+  READ (Words(1),*)   CHARACTER(MaxParamLength) :: Words(2)   ONE 400-byte object
+  byte 201 IS Words(2)(1:1) = the search key = _plant_word(0) = 'Aa'
+  'A' is not a digit, not '.', not a sign, not e/d/q
+  -> seven `p < len` -> `p <= len` mutants survived a corpus that HAD 200-byte records
+  ```
+
+  `_NEIGHBOUR_TAILS` pairs each full-width lead with a neighbour whose first
+  character is what that scan tests. Two sub-findings that do not follow from
+  the first:
+
+  * **A 200-digit tail cannot discriminate a FRACTION scan.** Digit 201 is ~180
+    places past a binary64, so the mutant reads one more digit and computes the
+    same `double`. Use a legal repeat count behind leading zeros to move the
+    VALUE's start near the record's end instead — the digits are then all
+    significant, and it is also the only way to reach a word matcher's own
+    `p + LEN(word) > len` bound, which no left-justified record can.
+  * **A tail built to exactly `N` cannot observe the buffer WIDTH constant.** The
+    reference blank-pads to its own width, so the extra byte is a blank either
+    way. `MaxParamLength` 200 -> 201 survived every corpus this campaign has
+    generated. It needs a lead of `N + 1` whose last character is significant.
+
+## BEFORE PRICING A JUDGEMENT IN `ranges.toml`, ASK WHETHER THE RULE CAN SUPPLY
+## THE VALUE ITSELF
+
+- **Unit #56, and the first dispatch priced the wrong lever and refused it.**
+
+  ```
+  all 293 cases that reach the READ enter with Variable == 0.0 EXACTLY
+  _base draws an unconstrained real at lo + (hi - lo) * 0.5   -> 0.0 on +/-1e3
+  priced as: "any range for Variable deletes R6's 33-magnitude ladder"   REFUSED
+  ```
+
+  The draw only had to move inside **R14's own block**. `_PLANT_REAL_SENTINEL`
+  adds one variant at -987.654 to the new shapes; `Variable IN /= 0` on the two
+  arms that reach the READ went from 0 and 0 to **280 and 280**, and R6's ladder
+  is untouched. **A pin is global to the unit; a rule's variant is local to the
+  rule.**
+
+## A COUNT-VERIFIED APPEND IS ONE LINE, AND "APPENDED AFTER EVERY OTHER RULE" IS
+## AN INTENTION RATHER THAN A MEASUREMENT
+
+- **Unit #56.** The new R14 block was written inside the existing
+  `for A: for S:` pass and the case file moved at byte **2,254,112** — 1.3 MB
+  inside data nothing should have touched — because `flag_variants` is driven by
+  a shared `turn` counter and this unit has TWO free scalar CHARACTER inputs, so
+  the block advanced `turn` for the second key.
+
+  ```python
+  b[:len(a)] == a        # the two case files, old and new
+  ```
+
+  Moving the block to its own pass over `(array, key)` restored it. Take the
+  control on every corpus-extending change; it costs one line and it named the
+  cause immediately.
+
+## A SCRIPT THAT RE-DERIVES A DECLARATION SET IS NOT PROOF AGAINST A HAND
+## EXCEPTION BESIDE IT
+
+- **Unit #56.** `make_unreachable.py` re-derives the whole `unreachable` set from
+  the coverage file every run and refuses if the file does not name the current
+  corpus. It carried **one** exception by mutant ID.
+
+  ```
+  CONTINUATION = {"4a9b3707": "the `10` in std::strtol(..., nullptr, 10) ..."}
+  <the repair deletes the strtol call>
+  4a9b3707 re-points onto `count = count * 10 + (rec[k] - '0')`   <- a LIVE line
+  REFUTED: 1 mutant(s) declared UNREACHABLE were killed on this run: 4a9b3707
+  ```
+
+  Delete such an exception rather than re-key it when the site it names is gone,
+  and key it by `(operator, before, after, source line)` if it is ever needed
+  again. **A derivation and an exception to it are different kinds of thing.**
+
+## AN EQUIVALENCE PREMISE OF THE FORM "THE CALLER ONLY EVER PASSES X" NEEDS THE
+## CALL SITES ENUMERATED
+
+- **Unit #56, and it cost four declarations, two of them killed by the corpus.**
+
+  ```
+  "p == 0 whenever parse_real is entered"   <- carried FIVE declarations
+  list_read_reals reaches parse_real from TWO places, and the second is the
+  repeat-count fall-through:  p = q + 1.   `3*7` enters at p == 2.
+  ```
+
+  Nothing contradicted it for three dispatches because no record in any corpus
+  had a `*` in a line the search key matched. **A premise about what a caller
+  passes is a claim about the PROGRAMS only if every call site is enumerated** —
+  and for a `static` function in an anonymous namespace that is a `grep`.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
