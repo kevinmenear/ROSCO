@@ -14792,3 +14792,134 @@ windows, each opened and closed inside ONE command so a kill cannot leave the
 tree de-integrated, every commit taken outside them. Sixteen commits, one per
 expensive artifact. `revcheck`: nine result artifacts, all naming `b3ad414`,
 clean.
+
+## Unit #60 — VariableSpeedControl — second dispatch — 2026-08-20
+
+The Driver re-dispatched this unit for exactly two unmet conditions —
+`P12:mutation_missing` and `P11:harness_not_rerun` — and both now have an
+artifact. The unit still does not close: **0.7943 against a threshold of 1.0**.
+
+### THE LEVER THE FIRST DISPATCH PRICED AND REFUSED, TAKEN
+
+`corpus_wall.txt` priced three levers and refused all three, the third
+(a transitive read set) on X3: "that is a change to how EVERY unit's corpus is
+chosen, and it would make this unit's evidence incomparable with the 59 before
+it."
+
+**That objection is answered by making it OPT-IN, and the answer is checkable
+rather than argued.** `harness/statevary.plan` is untouched; `plan_transitive`
+is a second entry point reached only through `vit_harness.py
+--transitive-read-set`, so a run that does not ask for it reaches byte-for-byte
+the corpus it reached before. What the unit's own evidence then rests on is a
+DIFFERENT derivation from the other 59, and that is stated rather than hidden:
+`LocalVar` is read whole only because it is handed to `PIDController`, and the
+callee's own body — the reference, which is the one artifact a differential
+harness may take as given — reads `LocalVar%FP` and `LocalVar%iStatus`.
+
+    224 varied -> 67      143,261 cases -> 20,704     all ten knobs kept
+
+It REFUSES rather than guesses: an unresolvable bare pass stays WHOLE and the
+reason is printed. The first version refused everything, because it counted the
+DECLARATION line as an unresolved bare use.
+
+### THE SURVIVOR LIST WAS ABOUT THE CORPUS AND ONE PROBE SAID SO
+
+The first sweep over that corpus scored 0.6536 and its survivors were not a
+cluster — they were every arm of the unit at once. Eleven lines patched into the
+generated test, over the same case file the sweep scored:
+
+    PROBE n=20704 km=102 reset=9688 satinv=15635 rlinv=18999 live=2050
+
+`saturate(x, lo, hi)` is `fmin(fmax(x, lo), hi)`, so an INVERTED pair returns
+`hi` for every x and the output stops depending on its input. This unit ends in
+two of them in a row and 75% / 92% of the corpus was in that state. Seven pins
+followed, all seven written against the 22 shipped `Examples/*.IN` rather than
+against the survivor list.
+
+### TWO FINDINGS THAT COST GENERATIONS
+
+**`{ lo = N, hi = N }` on a predicate-knob quantity COLLAPSES R7's knob.** Unit
+#49 measured that a stated `values` list does not; the obvious reading is that a
+bounds pin does not either, and it is wrong. `VS_FBP = { lo = 0, hi = 0 }`
+printed `PREDICATE KNOB: CntrPar_VS_FBP at [0.0]` — every other arm deleted
+rather than left to the knob. The two entries answer different questions and
+only `values` can move a BASE DRAW safely.
+
+**The flag crossing has a measured generation ceiling and `avrSWAP` is what
+raised it.** Six steps, 20,704 through 100,962 cases, three SIGKILLs. A VARIED
+array of 3,000 doubles is 3,000 distinct Python floats; HELD it is 3,000
+references to one 0.0. `statevary.write_only` detects an argument every one of
+whose executable mentions is a subscripted assignment TARGET — which `avrSWAP`
+is, in this unit and in every other ROSCO controller — and holds it as an INPUT
+while it stays COMPARED as an output.
+
+### TWO VIT DEFECTS, BOTH FIXED, AND THE SECOND IS IN THE SHIPPED LIBRARY
+
+`vit_view_in_localvariables` was an `ERROR STOP` on six field kinds. And the
+callee bridge dropped the reference's own ALIASING:
+`PIDController(..., LocalVar%piP, ..., LocalVar)` is one piece of storage in
+Fortran and two across the bridge, so the post-call copy-back wrote a stale
+`piP` over the callee's answer — 6 of 20,704 cases, all at the slot
+`objInst%instPI` names. **The same clobber is in the shipped integration path**,
+one branch over, on an arm no simulation scenario reaches. No gate could have
+found it; the differential harness is the only instrument that reaches it, which
+is the argument for P11 existing at all.
+
+### OPEN FINDING: THE PER-PART MUTATION KILL COUNT IS NOT REPRODUCIBLE
+
+Re-taking the sweep at a new loop revision, with the same corpus, the same
+translation blob and the same declarations, moved two parts by one mutant each:
+
+    part 2 (compare_op, negate_cond)   41 of 50   then   40 of 50
+    part 4 (const_tweak)               25 of 35   then   26 of 35
+    merged                            112 of 153  then  112 of 153   score 0.7943
+
+The merged total and the score are stable and the declared sets were never
+refuted, so nothing this dispatch reports rests on the flicker. But a mutation
+score is supposed to be a measurement, and a run-to-run difference of one mutant
+in a part is a property of this harness that no artifact previously recorded.
+The candidate cause is state that outlives a case: `vit_direct_localvariables`
+is a module `SAVE` and the bridges carry `piP` / `rlP` across cases, which is
+unit #47's `SAVE`-local finding one level up. **Not diagnosed here.** What it
+would cost to settle: two runs of one part with the case order and the harness's
+own SAVE initialisation instrumented, about ten minutes, and it is worth taking
+before any unit is closed on a score within one mutant of the threshold.
+
+### OPEN FINDING: WHAT WOULD MOVE THE 29 SURVIVORS, PRICED
+
+Every open survivor is at a site the corpus reaches and cannot discriminate, and
+the four counts in `arm_reach.txt` are the whole explanation: 127, 154, 4 and 2
+cases of 46,836 for the four conjunctions they live behind. **One more declared
+flag value would move all of them and it is 9,200 cases past where the generator
+dies.** So the lever is `harness/generate.py`'s per-case REPRESENTATION — a
+real array fill stored as `array.array('d')` instead of a list of float objects
+is 188 KB -> ~68 KB with a decisive positive control available (regenerate a
+sibling's corpus and require the `.bin` byte-identical). The first dispatch
+priced that as lever 2 and refused it as a change made in passing. It is still
+the right change and it still wants its own dispatch, because it re-prices every
+unit already scored.
+
+### THE GATE SPLIT, REPORTED RATHER THAN REPAIRED
+
+`revcheck` reports one finding: the eight harness and mutation artifacts are at
+loop `6731f14`, the four `gate/` artifacts at `b3ad414`. They were not re-run.
+The gate never reads a case file and neither the translation blob
+(`85ad734d354f61875e9a1a295ac15265f4cc6b30`) nor the wrapper moved in this
+dispatch, so its numbers cannot have changed — but unit #53's rule is that
+there is no partial instrument move that leaves the evidence coherent, and this
+is a partial move. Re-taking it is four gate runs plus three source
+perturbations whose literals are recorded in prose rather than in the artifacts,
+which is why it was not attempted in the clock that remained.
+
+### PROCEDURE
+
+Nine mutation sweep parts (five scored, four re-taken), every one foreground
+under `mutate_guarded.sh` and routed through `run_if_time_remains.sh` with an
+explicit `timeout: 600000`. One sweep — the `--sanitize` pass over the
+out-of-bounds class — exceeded the 600 s ceiling, was moved to background
+tracking by the tool, and was STOPPED at 1,089 s by signalling the container-side
+process so that `mutate_guarded.sh`'s own restore check still ran: it reported
+the translation restored to `85ad734d…` and cleared its marker. No orphan, no
+mutant left behind, and the sanitiser result is a NAMED GAP rather than a
+silence. Four reset windows, each closed before a commit. Ten commits, one per
+expensive artifact.

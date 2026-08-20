@@ -4,13 +4,57 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-20: unit #60 `VariableSpeedControl` is `deferred`. FIRST
-dispatch. The translation is written, `vit check`-clean, integrated with
-`--reverse-copy` and shipping; the gate is green at 5,252,000 values / 351
-channels / 27 scenarios and RED-TESTED THREE WAYS, one of them a negative
-control, with every prediction written before its run. THERE IS NO
-DIFFERENTIAL HARNESS AND THEREFORE NO MUTATION SCORE, and that is one
-measurement rather than a judgement.**
+**As of 2026-08-20: unit #60 `VariableSpeedControl` is `deferred`. SECOND
+dispatch. THE TWO MISSING LAYERS NOW EXIST — a 46,836-case differential harness
+(0 failed, clean tree AND post-integration, red-tested at 46,836 of 46,836) and
+a mutation score of 0.7943 (112 killed of 153, 0 nocompile, 6 equivalent, 6
+unreachable, `declared_but_killed` and `unreachable_but_killed` both EMPTY).
+THE UNIT STILL DOES NOT CLOSE AND THE NUMBER IS P12's: 0.7943 against a
+threshold of 1.0, with 29 survivors OPEN. The gate is unchanged from the first
+dispatch — 5,252,000 values / 351 channels / 27 scenarios, red-tested three
+ways with a negative control — and is the one finding `revcheck` still reports,
+because it was not re-taken across the instrument move.**
+
+| layer | result |
+|---|---|
+| differential harness, clean tree | 46,836 checked, **0 failed**, 0 inadmissible |
+| mutation, four parts merged | 112 of 153, **0.7943**, 29 open |
+| post-integration | 46,836 checked, **0 failed**; red test 46,836 of 46,836, `LocalVar.*` only, `avrSWAP` unmoved, revert-verified at 0 |
+| gate, 27 scenarios | 5,252,000 values, 0 mismatched (first dispatch, loop `b3ad414`) |
+
+**WHAT MADE IT POSSIBLE.** `vit_harness.py --transitive-read-set` (loop
+`078f4ff`), OPT-IN so no other unit's corpus moves: `LocalVar` is read WHOLE
+only because it is handed to `PIDController`, which reads `%FP` and `%iStatus`
+and nothing else. 224 varied → 67; 143,261 cases → 20,704. Then seven
+`harness/ranges.toml` pins, all written against the 22 shipped `Examples/*.IN`,
+because `annihilation_probe.txt` showed the corpus was measuring a CONSTANT —
+`saturate` and `ratelimit` both sat on INVERTED bound pairs in 75% and 92% of
+cases, which annihilates every arm above them. And a `write_only` hold on
+`avrSWAP` (loop `6731f14`) that raised the generator's memory ceiling far
+enough to afford one mode flag.
+
+**TWO VIT DEFECTS THE LAYER FOUND, both fixed at vit `d3a1e12`.**
+`vit_view_in_localvariables` was an `ERROR STOP` on six field kinds; and the
+callee bridge dropped the reference's own ALIASING —
+`PIDController(..., LocalVar%piP, ..., LocalVar)` is one storage in Fortran and
+two across the bridge, so a stale `piP` was written over the callee's answer.
+**The second is in the SHIPPED library**, on an arm no simulation scenario
+reaches, so no gate could have found it.
+
+**WHY 29 SURVIVE, PRICED.** `arm_reach.txt`: the four conjunctions they live
+behind are reached 127, 154, 4 and 2 times of 46,836. One more declared flag
+value would move them and it is 9,200 cases past where the generator SIGKILLs.
+The lever is `generate.py`'s per-case representation, and it re-prices every
+unit already scored — raised in DECISIONS.md, not taken here.
+
+**A NAMED GAP:** the `--sanitize` sweep over the out-of-bounds class was started
+and stopped at 1,089 s to protect the closing sequence. Three of the six
+declared-unreachable mutants are out-of-bounds writes whose declaration rests on
+a corpus count rather than on a sanitiser result, and the entries say so.
+
+---
+
+**FIRST DISPATCH, KEPT:**
 
 The generator-torque controller, `Controllers.f90:212-365`: three control laws,
 the shutdown ramp, a saturation, a rate limit, an open-loop override, and

@@ -17,6 +17,107 @@ Six callees, all six already translated and all six CALLED rather than inlined:
 post-increment an `objInst` counter, so the ORDER of the calls decides which
 `piP` / `rlP` slot each one owns.
 
+## DISPOSITION AFTER THE SECOND DISPATCH (2026-08-20): the two missing layers EXIST
+
+The first dispatch closed `deferred` on one measurement -- the differential
+harness could not be built. It can now, and both of the conditions the Driver
+re-dispatched this unit for are met:
+
+| layer | result | red-tested |
+|---|---|---|
+| differential harness, clean tree (`harness/VariableSpeedControl.json`) | **46,836 checked, 0 failed, 0 inadmissible** | the post-integration copy-back, below |
+| mutation (`mutation/VariableSpeedControl.json`, four parts merged) | **112 killed of 153, score 0.7943**, 0 nocompile, 6 equivalent, 6 unreachable, **29 OPEN** | `declared_but_killed` and `unreachable_but_killed` both EMPTY |
+| post-integration (`harness/VariableSpeedControl.postintegration.json`) | **46,836 checked, 0 failed** | the copy-back deleted from this unit's own wrapper: **46,836 of 46,836**, `LocalVar.*` only, `avrSWAP` unmoved; reverted, rebuilt, green re-taken at 0 |
+| gate, 27 scenarios (`gate/VariableSpeedControl.json`) | 5,252,000 values / 351 channels, 0 mismatched | three ways, from the FIRST dispatch, at loop `b3ad414` |
+
+**THE UNIT STILL DOES NOT CLOSE, and the number is P12's.** 0.7943 against a
+threshold of 1.0. The 29 open survivors are named below; none of them is a
+defect claim.
+
+## WHAT MADE THE HARNESS POSSIBLE, AND WHAT IT COST
+
+The wall the first dispatch measured was real: 224 varied parameters, 143,261
+cases at 188 KB, 27.0 GB against a 7.736 GiB VM (`corpus_wall.txt`). Three
+levers were priced there. **The one taken is the third, done as an OPT-IN so
+that no other unit's corpus moves**: `vit_harness.py --transitive-read-set`
+(loop `078f4ff`). `LocalVar` is read WHOLE only because it is handed to
+`PIDController`, and `PIDController` reads `LocalVar%FP` and `LocalVar%iStatus`
+and nothing else, which is derivable from the reference one file over.
+
+    224 varied -> 67          143,261 cases -> 20,704
+    all ten predicate knobs kept; refuses to narrow anything it cannot resolve
+
+That was necessary and not sufficient: the first sweep over it scored 0.6536 and
+its survivor list was every arm of the unit at once. `annihilation_probe.txt`
+says why in four counts -- the corpus was measuring a CONSTANT, because
+`saturate` and `ratelimit` both sat on inverted bound pairs in 75% and 92% of
+cases. Seven more `harness/ranges.toml` entries, every one written against the
+22 shipped `Examples/*.IN`, plus a `write_only` hold on `avrSWAP` that raised
+the generator's memory ceiling, took it to 46,836 cases and 0.7516 before any
+declaration.
+
+## TWO DEFECTS THE LAYER FOUND, BOTH IN VIT AND BOTH FIXED
+
+Neither is in a translation, and neither could have been found by any layer this
+unit already had.
+
+1. **`vit_view_in_localvariables` was an `ERROR STOP`** on six field kinds, so
+   the run died before case 0. The nested `TYPE()` conversions it refused are
+   the ones `vit_copy_scalars_to_<t>` has emitted since the reverse copier
+   existed; rank-1 ALLOCATABLE arrays are new. Fixed at vit `d3a1e12`.
+
+2. **The callee bridge dropped the reference's own ALIASING.**
+   `PIDController(..., LocalVar%piP, ..., LocalVar)` is one piece of storage in
+   Fortran and two across the bridge, so the post-call copy-back wrote a stale
+   `piP` over the callee's answer. 6 of 20,704 cases, all `LocalVar.piP`, at
+   exactly the slot `objInst%instPI` names:
+
+       piP[199]  (ITerm)      got 0  ref 1200
+       piP[1223] (ITermLast)  got 0  ref 1200
+       piP[4295] (ELast)      got 0  ref nan
+
+   **The same clobber is in the SHIPPED integration path**, one branch over, on
+   an arm no simulation scenario reaches -- so the gate could not have found it
+   and did not. Fixed in the same commit.
+
+## THE 29 OPEN SURVIVORS, AND WHY THEY ARE NOT A DEFECT CLAIM
+
+Every one sits at a site the corpus REACHES and cannot discriminate. The cause
+is one number, measured in `annihilation_probe.txt`: the generator SIGKILLs
+between 46,836 and 64,741 cases in this VM, and the flag crossing is the sum of
+the flags' arities, so `CntrPar_VS_FBP`, `CntrPar_VS_ConstPower` and
+`LocalVar_VS_State` could not be given a real base draw as well as
+`VS_ControlMode`. `arm_reach.txt` prices that exactly:
+
+    fbp0_cp1  VS_FBP == 0 .AND. VS_ConstPower == 1     127 of 46,836
+    tsr       VS_ControlMode in {2,3,4}                154 of 46,836
+    tsr_fbp1  tsr .AND. VS_FBP == 1                      4 of 46,836
+    st6       VS_ControlMode == 1 .AND. VS_State == 6    2 of 46,836
+
+Three `fmin` calls at `:240`, `:302` and `:438`, five `swap_call_args`, two
+`swap_callee`, five `compare_op`, three `negate_cond` and eleven `const_tweak`
+live behind those four counts. **What would move them is one more declared flag
+value, and that is 9,200 cases past where the generator dies** -- so the lever
+is `harness/generate.py`'s per-case representation, which re-prices every unit
+already scored, and it is raised in DECISIONS.md rather than taken here.
+
+## AND ONE FINDING AGAINST THIS UNIT'S OWN EVIDENCE, REPORTED RATHER THAN CLOSED
+
+`revcheck` reports a BASE-SHA SPLIT: the eight harness and mutation artifacts
+are at loop `6731f14` and the four `gate/` artifacts are at `b3ad414`, where the
+first dispatch took them. They were NOT re-run here. The argument for leaving
+them is that the gate is the one layer whose input did not move -- it runs 27
+simulations against the shipped library, never reads a case file, and neither
+`translations/Controllers/variablespeedcontrol.cpp` (blob
+`85ad734d354f61875e9a1a295ac15265f4cc6b30`) nor the integration wrapper changed
+in this dispatch. The argument against is that it is still a split and P14 asks
+about revisions rather than about inputs. It is a stated gap, not a repaired
+one.
+
+---
+
+## THE FIRST DISPATCH'S RECORD, KEPT
+
 ## DISPOSITION: `deferred`, and the reason is one measurement
 
 **The differential harness could not be built, so there is no mutation score,
