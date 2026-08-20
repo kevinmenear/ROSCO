@@ -28,7 +28,7 @@ re-dispatched this unit for are met:
 | differential harness, clean tree (`harness/VariableSpeedControl.json`) | **46,836 checked, 0 failed, 0 inadmissible** | the post-integration copy-back, below |
 | mutation (`mutation/VariableSpeedControl.json`, four parts merged) | **112 killed of 153, score 0.7943**, 0 nocompile, 6 equivalent, 6 unreachable, **29 OPEN** | `declared_but_killed` and `unreachable_but_killed` both EMPTY |
 | post-integration (`harness/VariableSpeedControl.postintegration.json`) | **46,836 checked, 0 failed** | the copy-back deleted from this unit's own wrapper: **46,836 of 46,836**, `LocalVar.*` only, `avrSWAP` unmoved; reverted, rebuilt, green re-taken at 0 |
-| gate, 27 scenarios (`gate/VariableSpeedControl.json`) | 5,252,000 values / 351 channels, 0 mismatched | three ways, from the FIRST dispatch, at loop `b3ad414` |
+| gate, 27 scenarios (`gate/VariableSpeedControl.json`) | 5,252,000 values / 351 channels, 0 mismatched | three ways, RE-TAKEN in this dispatch, every number identical to the first |
 
 **THE UNIT STILL DOES NOT CLOSE, and the number is P12's.** 0.7943 against a
 threshold of 1.0. The 29 open survivors are named below; none of them is a
@@ -101,18 +101,24 @@ value, and that is 9,200 cases past where the generator dies** -- so the lever
 is `harness/generate.py`'s per-case representation, which re-prices every unit
 already scored, and it is raised in DECISIONS.md rather than taken here.
 
-## AND ONE FINDING AGAINST THIS UNIT'S OWN EVIDENCE, REPORTED RATHER THAN CLOSED
+## THE ONE FINDING AGAINST THIS UNIT'S OWN EVIDENCE, AND IT IS NOW CLOSED
 
-`revcheck` reports a BASE-SHA SPLIT: the eight harness and mutation artifacts
-are at loop `6731f14` and the four `gate/` artifacts are at `b3ad414`, where the
-first dispatch took them. They were NOT re-run here. The argument for leaving
-them is that the gate is the one layer whose input did not move -- it runs 27
-simulations against the shipped library, never reads a case file, and neither
-`translations/Controllers/variablespeedcontrol.cpp` (blob
-`85ad734d354f61875e9a1a295ac15265f4cc6b30`) nor the integration wrapper changed
-in this dispatch. The argument against is that it is still a split and P14 asks
-about revisions rather than about inputs. It is a stated gap, not a repaired
-one.
+`revcheck` reported a BASE-SHA SPLIT the moment the eight harness and mutation
+artifacts moved to loop `6731f14`: the four `gate/` artifacts were still at
+`b3ad414`, where the first dispatch took them. Unit #53's rule is that there is
+no partial instrument move that leaves the evidence coherent, so all four were
+re-run out of the perturbations recorded in `gate.redtest_predictions.txt`:
+
+    green    5,252,000 values / 351 channels / 27 scenarios, 0 mismatched
+    RT1      1,552,676 of 5,252,000, revert 0     (first take 1,552,676)
+    RT2         49,659 of 5,252,000, revert 0     (first take    49,659)
+    RT3 (-ve)        0 of 5,252,000, revert 0     (first take         0)
+
+Every number identical, which is what a re-take that did not touch the
+translation should produce -- the `.cpp` is blob
+`85ad734d354f61875e9a1a295ac15265f4cc6b30` in both dispatches and the gate never
+reads a case file. `revcheck VariableSpeedControl` now reports 12 result
+artifacts, all at `6731f14`, CLEAN.
 
 ---
 

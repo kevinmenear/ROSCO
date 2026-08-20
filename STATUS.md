@@ -10,17 +10,18 @@ dispatch. THE TWO MISSING LAYERS NOW EXIST — a 46,836-case differential harnes
 a mutation score of 0.7943 (112 killed of 153, 0 nocompile, 6 equivalent, 6
 unreachable, `declared_but_killed` and `unreachable_but_killed` both EMPTY).
 THE UNIT STILL DOES NOT CLOSE AND THE NUMBER IS P12's: 0.7943 against a
-threshold of 1.0, with 29 survivors OPEN. The gate is unchanged from the first
-dispatch — 5,252,000 values / 351 channels / 27 scenarios, red-tested three
-ways with a negative control — and is the one finding `revcheck` still reports,
-because it was not re-taken across the instrument move.**
+threshold of 1.0, with 29 survivors OPEN. The gate was RE-TAKEN across
+this dispatch's instrument move and every number is identical to the first
+dispatch — 5,252,000 values / 351 channels / 27 scenarios, 0 mismatched,
+red-tested three ways with a negative control at exactly 0. `revcheck` reports
+12 result artifacts, all at loop `6731f14`, CLEAN.**
 
 | layer | result |
 |---|---|
 | differential harness, clean tree | 46,836 checked, **0 failed**, 0 inadmissible |
 | mutation, four parts merged | 112 of 153, **0.7943**, 29 open |
 | post-integration | 46,836 checked, **0 failed**; red test 46,836 of 46,836, `LocalVar.*` only, `avrSWAP` unmoved, revert-verified at 0 |
-| gate, 27 scenarios | 5,252,000 values, 0 mismatched (first dispatch, loop `b3ad414`) |
+| gate, 27 scenarios | 5,252,000 values, **0 mismatched**; RT1 1,552,676, RT2 49,659, RT3 (negative control) 0, all revert-verified — re-taken at loop `6731f14` |
 
 **WHAT MADE IT POSSIBLE.** `vit_harness.py --transitive-read-set` (loop
 `078f4ff`), OPT-IN so no other unit's corpus moves: `LocalVar` is read WHOLE

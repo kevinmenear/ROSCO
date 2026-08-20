@@ -14899,17 +14899,30 @@ priced that as lever 2 and refused it as a change made in passing. It is still
 the right change and it still wants its own dispatch, because it re-prices every
 unit already scored.
 
-### THE GATE SPLIT, REPORTED RATHER THAN REPAIRED
+### THE GATE SPLIT, REPAIRED, AND THE COST WAS MISPRICED BY AN ORDER OF MAGNITUDE
 
-`revcheck` reports one finding: the eight harness and mutation artifacts are at
-loop `6731f14`, the four `gate/` artifacts at `b3ad414`. They were not re-run.
-The gate never reads a case file and neither the translation blob
-(`85ad734d354f61875e9a1a295ac15265f4cc6b30`) nor the wrapper moved in this
-dispatch, so its numbers cannot have changed — but unit #53's rule is that
-there is no partial instrument move that leaves the evidence coherent, and this
-is a partial move. Re-taking it is four gate runs plus three source
-perturbations whose literals are recorded in prose rather than in the artifacts,
-which is why it was not attempted in the clock that remained.
+`revcheck` reported one finding once the eight harness and mutation artifacts
+moved to loop `6731f14`: the four `gate/` artifacts were still at `b3ad414`.
+The plan was to leave it as a stated gap, on the reasoning that the gate never
+reads a case file and neither the translation blob
+(`85ad734d354f61875e9a1a295ac15265f4cc6b30`) nor the wrapper had moved.
+
+**That was the wrong call and one measurement corrected it.** The gate had been
+priced from IPC's `~290 s each`; this unit's takes **29 seconds**, so the whole
+re-take — green plus three red tests, each with its own rebuild, perturbation
+and revert — cost under four minutes. The perturbations were recoverable
+character for character from `gate.redtest_predictions.txt`, which is why that
+file records the `from`/`to` literals rather than a description of them.
+
+    green    5,252,000 values / 351 channels / 27 scenarios, 0 mismatched
+    RT1      1,552,676 of 5,252,000, revert 0     (first take 1,552,676)
+    RT2         49,659 of 5,252,000, revert 0     (first take    49,659)
+    RT3 (-ve)        0 of 5,252,000, revert 0     (first take         0)
+
+Every number identical. `revcheck`: 12 result artifacts, all at `6731f14`,
+clean. **The lesson is not about the gate, it is about the ESTIMATE** — a layer
+was nearly written off as unaffordable on a cost inherited from a different
+unit, and the check was one run.
 
 ### PROCEDURE
 
