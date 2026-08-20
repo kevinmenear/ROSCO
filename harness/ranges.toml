@@ -3787,4 +3787,50 @@ LocalVar_NumBl = { lo = 0, hi = 3 }
 # drops exactly 77 of the 256 ladder cases, takes the corpus from 37,244 to
 # 37,167, and takes the harness to 0 failed. If it drops a different number,
 # the window is not what this arithmetic says it is.
-ErrVar_ErrMsg = { staging_capacity_excludes = [38, 114], reason = "PitchControl composes the deferred-length ErrMsg through up to eleven staged assignments -- four interp1d bridges, IPC and its four sigma calls, and its own 13-byte 'PitchControl:' prefix -- where the reference chain is Fortran throughout and gates the staging buffer ONCE, in the generated bridge, on the final 115-byte value. Inside [38, 115) the reference holds the 29-byte entry value and the translation holds a partial composition of 38 to 102 bytes, and the reference's own 115-byte answer is a value neither side can carry: the case has no oracle. Measured at cases 36997..37073, k = 9..85 of the ladder, 77 cases, in evidence/PitchControl/r13_window_probe.txt." }
+#
+# --- 6. THE WINDOW WAS MEASURED ON THE WRONG CHAIN, AND THE LOWER BOUND MOVED
+# 38 -> 33. Found by the POST-INTEGRATION harness, which went RED where the
+# pre-integration one was green:
+#
+#     pre-integration    checked 37167  failed 0
+#     post-integration   checked 37167  failed 5   <- cases 36992..36996
+#
+# and the five are k = 4..8, cap 33..37 -- CONTIGUOUS, immediately below the
+# excluded window's floor, on `ErrVar.ErrMsg` and `ErrVar.n_ErrMsg` and nothing
+# else. Nothing about the translation changed between the two runs. THE CHAINS
+# ARE DIFFERENT:
+#
+#   pre    C++ PitchControl -> the scaffold's Fortran callee BRIDGES, one
+#          capacity gate each, and the shortest first write on that path is
+#          `interp1d:` + 29 = 38.
+#   post   C++ PitchControl -> the INTEGRATED C++ interp1d / sigma / IPC, each
+#          with its own `assign_errmsg` gate. `IPC:` is FOUR bytes, so the
+#          first write that fits is 4 + 29 = 33.
+#
+#     case 36991  k=3  cap 32   'IPC:'+29 = 33 > 32, nothing fits    PASS
+#     case 36992  k=4  cap 33   got 33 = 'IPC:' + 29        ref 29    FAIL
+#     case 36994  k=6  cap 35   got 35 = 'sigma:' + 29      ref 29    FAIL
+#     case 36997  k=9  cap 38   inside the old window, excluded
+#
+# The upper bound does NOT move: every case at cap >= 115 passes in both runs,
+# so the composed length is 115 on both chains and only the FLOOR was a
+# property of the bridges rather than of the unit.
+#
+# WHAT THIS COSTS, STATED AND NOT ABSORBED. Widening to [33, 114] drops five
+# more ladder cases, 37,167 -> 37,162. `mutation/PitchControl.json` was scored
+# against the 37,167-case corpus, which is a strict SUPERSET containing five
+# extra cases that are green pre-integration; the score is a measurement on
+# more cases than the harness now runs, not fewer, and it has NOT been re-taken
+# -- that sweep is 1h29m and the dispatch did not have it. Named here rather
+# than left for a reader to notice.
+#
+# THE GENERAL FORM IS A FINDING ABOUT THE INSTRUMENT, not about this unit: an
+# R13 window pinned from a pre-integration probe is a claim about a chain the
+# post-integration run does not have, and nothing warns. Raised in
+# .loop-run/findings.jsonl.
+#
+# THE PREDICTION, WRITTEN BEFORE THE RUN THAT TESTS IT: [33, 114] drops exactly
+# 82 of the 256 ladder cases, takes the corpus to 37,162, and takes BOTH
+# harnesses to 0 failed. If the post-integration run fails anywhere other than
+# these five rungs, the floor is not what this arithmetic says it is.
+ErrVar_ErrMsg = { staging_capacity_excludes = [33, 114], reason = "PitchControl composes the deferred-length ErrMsg through up to eleven staged assignments -- four interp1d bridges, IPC and its four sigma calls, and its own 13-byte 'PitchControl:' prefix -- where the reference chain is Fortran throughout and gates the staging buffer ONCE, in the generated bridge, on the final 115-byte value. Inside [38, 115) the reference holds the 29-byte entry value and the translation holds a partial composition of 38 to 102 bytes, and the reference's own 115-byte answer is a value neither side can carry: the case has no oracle. Measured at cases 36997..37073, k = 9..85 of the ladder, 77 cases, in evidence/PitchControl/r13_window_probe.txt. THE FLOOR WAS THEN CORRECTED 38 -> 33 by the post-integration harness: the integrated chain gates inside each translated callee rather than in the generated bridges, so the shortest write that fits is 'IPC:' + 29 = 33 and not 'interp1d:' + 29 = 38. See section 6 of the comment above; the pre-integration arithmetic is kept because it is correct about the chain it measured." }
