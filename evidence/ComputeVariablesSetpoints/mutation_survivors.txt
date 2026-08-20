@@ -1,0 +1,121 @@
+MUTATION SURVIVORS -- ONE ANSWER PER SURVIVOR, AND WHAT THE SCORE DOES NOT
+COVER.
+
+The sweep is `vit_mutate.py`, six operators plus the call operators, run under
+`scripts/mutate_guarded.sh` on the CLEAN tree against the same 25,398-case
+corpus the green in harness/ComputeVariablesSetpoints.json was taken on.
+
+TWO DECLARED EQUIVALENT, and the declaration has its CONTROL INSIDE THE SWEEP.
+
+  312f3565  drop_factor  'VS_RefSpd_TSR * PRC_R_Speed' -> 'VS_RefSpd_TSR'
+  f8e46a25  arith_op     'VS_RefSpd_TSR * PRC_R_Speed' -> 'VS_RefSpd_TSR / PRC_R_Speed'
+
+Both sit on the reference's own DEAD STORE, clean source ControllerBlocks.f90
+line 148:
+
+    LocalVar%VS_RefSpd = LocalVar%VS_RefSpd_TSR * LocalVar%PRC_R_Speed
+    LocalVar%VS_RefSpd = LPFilter(LocalVar%VS_RefSpd_TSR, ...)
+
+The second statement OVERWRITES the first and reads `VS_RefSpd_TSR`, not
+`VS_RefSpd`; there is no statement between them, and `LPFilter`'s seven actual
+arguments do not include `VS_RefSpd`. So no admissible input can make either
+mutant change an output: this is a claim about the PROGRAMS.
+
+THE CONTROL IS THAT THE SAME PRODUCT ONE SCREEN DOWN IS **NOT** DECLARED.
+`CntrPar%VS_RefSpd * LocalVar%PRC_R_Speed` is `saturate`'s upper bound at line
+162 and it IS read, so its two mutants (09894fe5 drop_factor, be35d649
+arith_op) stay OPEN below. Two identical edits to two identical expressions,
+one pair declared and one pair not, and the difference is dataflow rather than
+judgement.
+
+TWENTY-ONE OPEN, AND THE CENSUS EXPLAINS ELEVEN OF THEM EXACTLY.
+
+`evidence/ComputeVariablesSetpoints/inputs_census.txt` measured the scored
+corpus and found that BOTH alternative torque-law arms divide by zero on every
+one of the 1,152 cases that reach them, and that the `VS_FBP` saturate arm's
+answer is annihilated by the unit's own final clamp. The eleven survivors on
+those three statements are a CORPUS GAP with a measured cause, not equivalences
+and not defect claims:
+
+  d17318eb  arith_op        'VS_GenEff / 100.0'  -> '* 100.0'
+  3941a7ef  arith_op        '1. / 3.'            -> '1. * 3.'
+  288700cf  arith_op        '1. / 2.'            -> '1. * 2.'
+  63464abe  swap_operands   'VS_GenEff / 100.0'  -> '100.0 / VS_GenEff'
+  43311afe  swap_operands   '1. / 3.'            -> '3. / 1.'
+  a61a0d36  swap_operands   '1. / 2.'            -> '2. / 1.'
+  8723e9ee  const_tweak     '100.0'              -> '101.0'
+  bf394e2f  drop_call       std::pow(...)  the Power_TSR law
+  16ed209f  drop_call       std::pow(...)  the Torque_TSR law
+  35d6a957  swap_call_args  the Torque_TSR law's pow arguments
+  09894fe5  drop_factor     'CntrPar%VS_RefSpd * PRC_R_Speed' (saturate's bound)
+  be35d649  arith_op        the same expression, '*' -> '/'
+
+THE REPAIR WAS BUILT AND IT WENT RED, WHICH IS WHY THEY ARE STILL OPEN. Seven
+degenerate-range pins in `harness/ranges.toml` (commented out there, with the
+whole argument kept) put `VS_Rgn2K` at 2.31055, `VS_GenEff` at 94.4,
+`VS_GenPwr` and `GenTq` at 0.5, `VS_MinOMSpd` at 34.64286, `VS_RefSpd` at
+122.90967 and `PRC_R_Speed` at 0.8 -- all but two of them the value all 28
+shipped `Examples/*.IN` carry. The corpus generated (22,434 cases) and the
+harness FAILED 577 of them, on four outputs and nothing else, with
+`ref 122.90967  got 34.64286` on every recorded mismatch
+(`harness.PINNED-CORPUS-RED.json`).
+
+A red on a narrowed corpus is either a translation defect the wider corpus
+cannot reach or a reference path with no oracle. THIS DISPATCH DID NOT SETTLE
+WHICH, and it is recorded rather than closed over. What three probes did
+establish, on case 9370:
+
+    the C++ LPFilter returns NaN, the following interp1d returns 0.0, and the
+        final MAX gives 34.64286 = VS_MinOMSpd
+    the reference gives 122.90967 = exactly CntrPar%VS_RefSpd, which is the
+        value LPFilter returns on its RESET path
+    iStatus is -300 and restart is 0 on that case, so NEITHER side should be
+        taking the reset path
+    LocalVar%PRC_WSE_F and LocalVar%PC_RefSpd_PRC -- the outputs of the SAME
+        two callees one block earlier, on the same case -- agree exactly
+
+THE REMAINING NINE, and none of them has a measured cause yet:
+
+  f977278e  [ 3] compare_op   '<'   -> '<='
+  f647c7b4  [13] compare_op   '>'   -> '>='
+  0c23917a  [47] const_tweak  '0'   -> '1'
+  9b32d4a5  [51] const_tweak  '1'   -> '2'
+  860bdd9e  [53] const_tweak  '0'   -> '1'
+  c303585e  [54] const_tweak  '0.0' -> '1.0'
+  87986316  [56] const_tweak  '0.0' -> '1.0'
+  30056504  [59] const_tweak  '1'   -> '2'
+  642f565d  [62] const_tweak  '0.0' -> '1.0'
+
+The bracketed number is the mutant's position in the sweep's own ordered
+output, recovered by zipping the `[n/81] ... SURVIVED` lines against the
+`SURVIVOR <id>` summary after removing the two declared-equivalent lines --
+which is what makes the twelve entries above attributable to a statement at
+all. It does NOT resolve the `const_tweak` family, because those lines print
+only the literal.
+
+TWO OF THE THREE `0.0 -> 1.0` ARE ALMOST CERTAINLY EQUIVALENT AND ARE NOT
+DECLARED. This translation has four `0.0` literals: the `InitialValue`
+argument of each of the two `lpfilter_c` calls, and the second argument of
+each `fortran_max(x, 0.0)`. `LPFilter`'s eighth dummy is OPTIONAL and the
+`has_InitialValue` flag beside it is the literal `0`, so the bridge never
+reads the value -- no admissible input can make those two mutants change an
+output. The two `fortran_max` ones are the opposite: the census has already
+shown that statement to be untested.
+
+DECLARING WITHOUT THE MAP WOULD BE A FALSE EQUIVALENCE, and P12 fails a unit
+outright for one, so they stay open. What blocks the map is a concrete,
+reproducible thing rather than a judgement: `cppmutate._mid(unit, operator,
+before, after, occurrence)` recomputed by hand does NOT reproduce any of the
+sweep's ids -- `_mid('ComputeVariablesSetpoints','compare_op','<','<=',k)`
+gives b512bf09, b424866a, 38d46d45 ... for k = 0, 1, 2 while the sweep's is
+f977278e -- so `vit_mutate.py` is not deriving its ids from
+`cppmutate.mutants()` in the way the function's own signature suggests.
+Reconciling those two is one afternoon and it closes at least two mutants
+here and, being an instrument fix, on every later unit as well.
+
+WHAT 0.734 DOES NOT COVER, stated plainly: every mutant in the two alternative
+torque-control laws, and the `saturate` upper bound. Those are the SAME four
+statements the gate cannot see either (zero hits in all 27 scenarios for the
+two control laws; 35 of 25,398 for the saturate arm's own predicate), so this
+unit currently has NO instrument that discriminates them. That is the honest
+shape of this dispatch's result and it is why the disposition is `deferred`.

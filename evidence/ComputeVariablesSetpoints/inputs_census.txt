@@ -1,0 +1,54 @@
+INPUTS CENSUS -- the scored 25,398-case corpus, BEFORE the seven pins.
+
+One fprintf into <stem>_test.cpp right before the C++ call, run under
+`harness.sh --no-generate` so the case file is byte-for-byte the one the green
+in harness/ComputeVariablesSetpoints.json was taken on, then stripped again.
+Unit #47's probe; unit #59's question ("do it for any unit whose first
+statement divides").
+
+WHAT IT ANSWERS: the first mutation sweep scored 58 of 81 = 0.716 and eleven
+of the twenty-three survivors sat on two statements. This says why.
+
+VS_ControlMode, the arm selector: 86 distinct values over 25398 cases
+  the base draw -300 carries 18362 cases; the four named arms carry 1156/1152/1152/1152 (0/2/3/4)
+
+VS_Mode_Power_TSR arm  (VS_ControlMode == 3)
+  1152 cases
+    LocalVar%VS_GenPwr     600 x1152
+    CntrPar%VS_GenEff      600 x1152
+    CntrPar%VS_Rgn2K       0 x1152
+
+VS_Mode_Torque_TSR arm (VS_ControlMode == 4)
+  1152 cases
+    LocalVar%GenTq         0 x1152
+    CntrPar%VS_Rgn2K       0 x1152
+
+VS_FBP_Variable_Pitch arm (VS_FBP == 0)
+  1154 cases
+    CntrPar%VS_RefSpd      -600 x578  1 x576
+    CntrPar%VS_MinOMSpd    600 x1154
+    LocalVar%PRC_R_Speed   -600 x1154
+
+THE TWO CONTROL LAWS DIVIDE BY ZERO ON EVERY CASE THAT REACHES THEM.
+
+    (MAX(VS_GenPwr,0) / (VS_GenEff/100) / VS_Rgn2K) ** (1/3)
+        VS_Rgn2K is 0.0 on 1152 of 1152      -> +/-Inf, then Inf**(1/3)
+    (MAX(GenTq,0) / VS_Rgn2K) ** (1/2)
+        GenTq is 0.0 AND VS_Rgn2K is 0.0 on 1152 of 1152   -> 0.0/0.0 = NaN
+
+A NaN or an Inf is insensitive to the exponent, to the /100.0, to whether
+`std::pow` is called at all and to the second argument of `MAX`. That is
+exactly the eleven survivors on those two statements.
+
+AND THE THIRD ARM IS ANNIHILATED RATHER THAN DEGENERATE. `saturate`'s upper
+bound is `VS_RefSpd * PRC_R_Speed`, at most 360000 or -600 here, and the
+unit's LAST statement is `MAX(VS_RefSpd, VS_MinOMSpd)` with VS_MinOMSpd at
+600.0 on every one of the 1,154 cases -- so any saturate result below 600 is
+lifted straight back. `negate_cond` on that arm's own `if` moved only 35 of
+25,398 cases, which is the same fact counted from the other side.
+
+WHAT WAS DONE WITH IT: harness/ranges.toml, seven `values` pins, with the
+physical half counted from the 28 shipped Examples/*.IN and the instrumental
+half (0.8 rather than 1.0; 0.5 rather than a shipped-scale value) stated as a
+measurement design. The CONTROL for the repair is the SURVIVOR SET either
+side, not the case count.

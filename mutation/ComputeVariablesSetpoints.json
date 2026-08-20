@@ -117,7 +117,7 @@
  "limit_per_operator": 40,
  "capped_operators": [],
  "mutants": 81,
- "equivalent_declared": 0,
+ "equivalent_declared": 2,
  "unreachable_declared": 0,
  "unreachable": [],
  "nocompile": 0,
@@ -132,14 +132,14 @@
  "nocompile_refused": false,
  "total": 81,
  "killed": 58,
- "survived": 23,
- "equivalent": 0,
+ "survived": 21,
+ "equivalent": 2,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.716,
+ "score": 0.7342,
  "loop_rev": "41d383f-nogit",
  "gen_rev": "gen-9e9b6297bc69",
- "vit_rev": "f21ec92-nogit",
+ "vit_rev": "426eef9-nogit",
  "survivors": [
   {
    "id": "f977278e",
@@ -152,12 +152,6 @@
    "operator": "compare_op",
    "before": ">",
    "after": ">="
-  },
-  {
-   "id": "312f3565",
-   "operator": "drop_factor",
-   "before": "LocalVar->VS_RefSpd_TSR * LocalVar->PRC_R_Speed",
-   "after": "LocalVar->VS_RefSpd_TSR"
   },
   {
    "id": "09894fe5",
@@ -182,12 +176,6 @@
    "operator": "arith_op",
    "before": "1. / 2.",
    "after": "1. * 2."
-  },
-  {
-   "id": "f8e46a25",
-   "operator": "arith_op",
-   "before": "LocalVar->VS_RefSpd_TSR * LocalVar->PRC_R_Speed",
-   "after": "LocalVar->VS_RefSpd_TSR / LocalVar->PRC_R_Speed"
   },
   {
    "id": "be35d649",
