@@ -4,113 +4,116 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
-**As of 2026-08-20: unit #57 `ParseInput_Int_Opt` is `deferred`. FIRST dispatch.
-EIGHT layers; seven green and red-tested, and the mutation layer at
-96 / (143 - 37 - 8) = 0.9796 against a threshold of 1.0. TWO open survivors,
-and they are ONE gap.**
+**As of 2026-08-20: unit #57 `ParseInput_Int_Opt` is `integrated`. SECOND
+dispatch. EIGHT layers, all green and red-tested, and the mutation layer at
+98 / (143 - 37 - 8) = 1.0000 against a threshold of 1.0. ZERO open survivors.**
 
 The INTEGER member of the `ParseInput` generic interface: find the line whose
 SECOND word is `VarName`, read one `INTEGER(IntKi)` out of that line's FIRST
 word with a list-directed READ. 1,680 calls across all 27 scenarios.
 
-**IT IS `ParseInput_Dbl_Opt` WITH ONE DECLARATION CHANGED, AND THE SPLIT WAS
-DECIDED BEFORE ANY CODE WAS WRITTEN.** The CALLER half is copied from
-`parseinput_dbl_opt.cpp` (#56) and the ITEM half -- the whole list-directed
-INTEGER reader and the INTEGER output field -- from `parseinary_opt.cpp` (#55),
-which measured both against gfortran for an `INTEGER(4)` item. That is the
-runbook's own item-TYPE-against-record-GRAMMAR rule applied in advance rather
-than after a failure, and `check_p4_blocks.py` re-extracts all six blocks --
-6,656 bytes -- and byte-compares them, naming the one place the copy differs
-instead of hiding it inside a block.
+**THE FIRST DISPATCH CLOSED `deferred` AT 96 / 98 = 0.9796 WITH TWO OPEN
+SURVIVORS AND RAISED THEM AS A DECISION FOR THE DRIVER. THE GAP WAS REAL AND
+THE READING OF IT WAS WRONG, AND THE CORRECTION IS THE FINDING.**
+
+Both survivors turn on one byte. `is_eol` accepts CR and LF, every scan in the
+reader is `is_blank(rec[p]) || is_eol(rec[p])`, `||` short-circuits, and no
+corpus this campaign had ever generated contained either byte -- so the second
+disjunct had only ever been evaluated where the first was false at a digit, a
+sign or a letter.
+
+    e8cf2d25  :261  is_eol(rec[p]) -> is_eol(rec[p + 1])   the leading scan
+    4f89b00b  :288  p >= len -> p > len                     the item loop's top
+
+The first dispatch recorded this as `is_eol` being live in unit #55, whose
+record is the 2048-byte `Line`, and unreachable here, whose record is a
+`GetWords` word -- and raised the general shape, **a P4 copy inherits its
+source's REACHABILITY as well as its bytes**, as the first time the copy
+relationship had BLOCKED a repair. On that reading the only moves were to widen
+R6's character corpus for the whole campaign, to invent a judgement kind, or to
+split the shared reader.
+
+**THERE IS NO ASYMMETRY.** Unit #55's `Line` comes from the same `FileLines`,
+and one probe bounds both the same way
+(`evidence/ParseInput_Int_Opt/eol_admissibility_probe.txt`): libgfortran treats
+a bare CR as a RECORD TERMINATOR and strips a CR that precedes the LF, so five
+written lines come back as SEVEN records and no end-of-line byte can enter
+`FileLines` through `ReadControlParameterFileSub`'s `READ (u,'(A)')` at all.
+`is_eol` is in the reader because gfortran's INTERNAL list-directed READ treats
+both bytes as separators -- a property of the RUNTIME both units transcribe,
+not of where their bytes came from. So the repair is an ordinary corpus
+widening, and it belongs to this unit rather than to the Driver.
+
+**FOUR R14 RECORDS, ALL FOUR PRICED AGAINST GFORTRAN FIRST (47 of 47 agreeing
+on (IOSTAT, value)), AND THE ROUND PREDICTED BEFORE IT RAN.** `eollead` is a CR
+then a digit: it separates `is_eol(rec[p])` from `is_eol(rec[p + 1])` in one
+character. `eolfull` is 200 bytes of CR with a `/` neighbour -- the only shape
+that makes the LEADING scan reach the record's last byte, because a record of
+all blanks is not a WORD and so no word splitter produces one, and the `/` is
+the one neighbour byte that turns the mutant's extra read into a SUCCESS where
+the original returns END. CR and LF both, because `is_eol` is a disjunction.
 
 | layer | result | red-tested |
 |---|---|---|
-| record-form pricing (`evidence/.../record_form_probe.{f90,cpp,txt}`) | **37 of 37** candidate corpus records agree with gfortran's own list-directed READ on (IOSTAT, value), out of the same `CHARACTER(200) :: Words(2)` storage. First run, no defect found | the item is pre-set to `-987654` on both sides, so an UNTOUCHED slot is distinguishable from a stored value -- the whole content of the INTEGER reader's failure mode |
+| record-form pricing (`evidence/.../record_form_probe.{f90,cpp,txt}`) | **47 of 47** candidate corpus records agree with gfortran's own list-directed READ on (IOSTAT, value), out of the same `CHARACTER(200) :: Words(2)` storage. Six of them carry a CR or an LF | the item is pre-set to `-987654` on both sides, so an UNTOUCHED slot is distinguishable from a stored value -- the whole content of the INTEGER reader's failure mode |
 | PRINT-record pricing (`evidence/.../print_record_probe.{f90,cpp,txt}`) | **6 of 6** records byte-identical, including `-2147483648` | the layout is neither sibling's (CHARACTER then ONE INTEGER, nothing after) and is DERIVED from unit #55's measured grammar, then priced |
-| differential harness (`harness/ParseInput_Int_Opt.json`) | **12,199 checked, 0 failed, 0 inadmissible**, clean tree, three callee bridges kept. R4 compares 6 out-parameters **plus the stdout RECORD on 9,071 cases**. **No `no_oracle` entry** | **four stubs**: no-op **11,972** and the PRINT **9,071**, both predicted EXACTLY; the `.NOT. AllowDefault_` arm **1,923** and the READ **978**, predicted as BRACKETS whose excesses must sum to **845** -- and they do, exactly. The identity has held on THREE corpora, with `A` = 92 on all three |
-| mutation (`mutation/ParseInput_Int_Opt.json`) | **144 mutants, 1 nocompile, 143 behavioural: 96 killed, 37 equivalent, 8 unreachable, 2 open. 96/98 = 0.9796.** Sanitised, green baseline, `--workers 8`, ~100 s. `declared_but_killed` and `unreachable_but_killed` both EMPTY | the score IS the red test (E4.6). THREE corpus rounds, each predicted: 89 -> 93 (four named, four killed, nothing else), 93 -> 95 (three named, TWO killed), 95 -> 96 on the corrected form |
-| mutation, VALUE ORACLE (`mutation/ParseInput_Int_Opt.value-oracle.json`) | **96/98 = 0.9796 with `--sanitize` off** -- the same survivor SET, so the score does not rest on the sanitiser | the control is the survivor SET, not the count. `killed_by_sanitizer: 3` are killed by value as well |
-| line coverage of the translation (`evidence/.../line_coverage.txt`) | 164 executable lines run, 22 never, at `-O0`. All 8 `unreachable` declarations derive from it, re-derived every run | entry-line count **12,199** = the case count; `make_unreachable.py` REFUSES if the coverage file does not name the current corpus |
-| gate, 27 scenarios (`gate/ParseInput_Int_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched | **two, as a pair**: every parsed value + 1 moves **370,646 of 728,000** -- PREDICTED 1,857,893 of 5,252,000 and FALSIFIED, which is the finding; the default arm moves **0**, predicted exactly. Both revert-verified |
-| post-integration (`harness/ParseInput_Int_Opt.postintegration.json`) | 12,199 checked, 0 failed | the reverse copy deleted from this unit's own wrapper: **2,676**, PREDICTED 2,676 before the run; reverted, rebuilt, green re-taken at 0 |
+| end-of-line admissibility (`evidence/.../eol_admissibility_probe.{f90,txt}`) | **five lines written, SEVEN records read**: a bare CR terminates a record and a CR before LF is stripped, so no end-of-line byte reaches `FileLines` through the shipped caller's READ | each record carries a unique leading digit, so the written-to-read mapping is read off the output rather than assumed -- the first run of the probe was ambiguous for exactly that reason |
+| differential harness (`harness/ParseInput_Int_Opt.json`) | **12,367 checked, 0 failed, 0 inadmissible**, clean tree, three callee bridges kept. R4 compares 6 out-parameters **plus the stdout RECORD on 9,143 cases**. **No `no_oracle` entry** | **four stubs, all four EXACT**: no-op **12,140**, the PRINT **9,143**, the `.NOT. AllowDefault_` arm **1,935**, the READ **1,062**. The last two were POINT predictions this time -- `A` had measured 92 on three previous corpora -- and the identity `A + B = 901` holds to the case. Four corpora, `A` = 92 on all four |
+| mutation (`mutation/ParseInput_Int_Opt.json`) | **144 mutants, 1 nocompile, 143 behavioural: 98 killed, 37 equivalent, 8 unreachable, 0 open. 98/98 = 1.0000.** Sanitised, green baseline, `--workers 8`, 101 s. `declared_but_killed` and `unreachable_but_killed` both EMPTY | the score IS the red test (E4.6). FOUR corpus rounds, each predicted: 89 -> 93, 93 -> 95 (the third prediction refuted), 95 -> 96 on the corrected form, 96 -> 98 on the four end-of-line records |
+| mutation, VALUE ORACLE (`mutation/ParseInput_Int_Opt.value-oracle.json`) | **98/98 = 1.0000 with `--sanitize` off** -- the same (empty) survivor SET, so the score does not rest on the sanitiser | the control is the survivor SET, not the count. `killed_by_sanitizer: 3` are killed by value as well |
+| line coverage of the translation (`evidence/.../line_coverage.txt`) | 164 executable lines run, 22 never, at `-O0`. All 8 `unreachable` declarations derive from it, re-derived every run | entry-line count **12,367** = the case count; re-derived at round 4 to the SAME eight ids, because no end-of-line record contains a comma or a semicolon |
+| gate, 27 scenarios (`gate/ParseInput_Int_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched | **two, as a pair**: every parsed value + 1 moves **370,646 of 728,000**; the default arm moves **0**. Both revert-verified, both reproducing the first dispatch's numbers exactly |
+| post-integration (`harness/ParseInput_Int_Opt.postintegration.json`) | 12,367 checked, 0 failed | the reverse copy deleted from this unit's own wrapper: **2,744**, PREDICTED 2,744 before the run; reverted, rebuilt, green re-taken at 0 |
 
-**A GATE RED TEST'S PREDICTION WAS REFUTED BY ITS OWN RUN, FOR THE FIRST TIME IN
-THIS CAMPAIGN, AND IT IS WORTH MORE THAN THE FOUR EXACT HITS BESIDE IT.** The
-runbook's family rule -- the gate's answer is set by the FAILURE CLASS and not
-by the site -- predicted 1,857,893 of 5,252,000 across 147 channels. The run
-gave 370,646 of 728,000 across 22, with 23 of the 27 scenarios producing no
-comparable output at all. **An INTEGER control parameter is a MODE, not a gain.**
-So the rule survives and this is a THIRD class:
+**THE CONTROL THAT HAD SOMETHING AT STAKE.** `26bfb57b` (`:261`,
+`p < len` -> `p <= len`) is declared EQUIVALENT on the argument that reaching
+`p == len` needs a record whose every byte is a blank or an end-of-line and
+that `p >= len` is true at 200 and at 201 alike. Until round 4 no record reached
+that premise; `eolfull` does. It was predicted to survive and it did. Had it
+been killed, `declared_but_killed` would have been non-empty and P12 would have
+failed the unit outright.
 
-    every parsed value is wrong        1,857,893 / 5,252,000   147 ch  (REAL)
-    the parse FAILS, aviFAIL = -1      1,583,216 / 4,732,000   131 ch
-    every parsed MODE is wrong           370,646 /   728,000    22 ch  (INTEGER)
+**A RECORD SPACE THAT COULD NOT CONTAIN THE BYTE ITS OWN CONCLUSION TURNED ON.**
+The first dispatch's `survivor_record_search` -- 51,590 records, the measurement
+all 37 equivalences rest on -- had no CR or LF in its alphabet, and said so. An
+EOLADM block was APPENDED (P5, so no existing row moves) taking it to **59,108
+records**, and 16 of 52 non-PRINT survivors are now distinguished against 12.
+Two of the four new rows are declared-equivalent mutants at `:289`, a site the
+old space could NEVER execute; their differences are one non-zero IOSTAT against
+another, which is what family 1 claims and what `ErrStatLcl /= 0` cannot see. A
+block added to close a gap turned two arguments into two measurements.
 
-The two earlier runs both perturbed a REAL and so could not tell "the failure
-class" from "the item type". This one settles it -- and only because the number
-was written down before the run.
+**A TOOL DEFECT THE FIRST RECORD BYTE FOUND (C12), fixed in the loop repo
+(`b3ad414`) rather than worked around (X2).** `emit._cesc` returns the body of a
+C string literal that `printf` writes straight into the artifact's JSON, and it
+escaped only `\` and `"`. That was sufficient for exactly as long as every
+string reaching it was printable ASCII -- which nothing said and nothing
+checked. R14's coverage detail names every value it plants, so the CR/LF entries
+put a raw newline in a C literal and the compiler reported
+`parseinput_int_opt_test.cpp:247:4: error: 'which' was not declared in this
+scope`, hundreds of lines from the tuple entry that caused it and with no
+mention of a record or of R14. **A record byte is DATA and it reaches a source
+file.** The one case still wrong -- a literal backslash -- is named in the
+docstring and deliberately NOT changed (X3).
 
-**THE CORPUS CHANGES WERE PREDICTIONS, NOT HOPES, AND THE ONE THAT FAILED IS
-THE MOST USEFUL OF THE THREE.** The survivor record search -- 51,590 records,
-split into records ADMISSIBLE to the unit and records only the FUNCTION can be
-handed, because unit #56 misread that distinction twice -- named FIVE survivors
-as corpus gaps with a named record. Three rounds of R14 entries closed them,
-every new form priced against gfortran first (41 of 41 agreeing):
+**WHAT 1.0000 DOES NOT COVER.** The mutants the 40-per-operator cap never
+enumerated (`compare_op` and `const_tweak` are both capped); the echo record on
+unit `UnEc`, measured dead (`:186` runs 1,680 times across the 27 scenarios and
+`:187` never fires); the comma and semicolon branches of the reader, 22 lines
+carrying all 8 `unreachable` declarations, whose cause is the PROGRAM rather
+than the corpus (`GetWords` splits on both characters, so no input can put
+either in the record); and the distance between what the unit's DUMMY admits and
+what its shipped CALLER produces, which this dispatch measured for the first
+time and which the four new records deliberately cross.
+`evidence/ParseInput_Int_Opt/mutation_survivors.txt` §C.
 
-    round 1, loop 343f843   four named, four killed, nothing else   89 -> 93
-    round 2, loop 581925d   three named, TWO killed                 93 -> 95
-    round 3, loop 8f9d72f   the third, on a corrected form          95 -> 96
-
-The round-2 form written for `ab7420d6` was a full-width lead carrying a repeat
-count of its own with a `'*'` neighbour, and it could not reach the bound it was
-aimed at: **a lookahead that scans for a token STOPS AT that token**, so the
-star the record carried is exactly what kept the digit scan from running to the
-record's last byte. The scan reaches `len` only on a record with NO star in it,
-and the mutant that reads one past the end then finds its star in the NEIGHBOUR.
-
-`_TAIL_VALUES` already carried the INTEGER limits; it carries them as word LISTS
-at `k = 3`, which a unit whose search matches on word TWO never sees.
-
-**THE ADDITIVE CONTROL FAILED AND IS REPORTED RATHER THAN CLAIMED.** The old
-case file is not a byte-prefix of the new one, and no ordering of the tuple
-makes it one: the entries are emitted inside the `n:` block R14 appends after
-EVERY plant index. This is a different corpus, and every layer that reads it was
-re-taken on it.
-
-**A DEFECT IN AN INHERITED SCRIPT, FIXED WITH ITS REASON (C12).**
-`make_unreachable.py`'s coverage parser put the unit's own ENTRY LINE in the
-never-executed set, on four units, because the coverage file's own CONTROL line
-has the same shape as a never-run line. It cost nothing only because `cppmutate`
-offers no mutant on an entry line -- luck, not design.
-
-**THE DECISION RAISED FOR THE DRIVER RATHER THAN TAKEN: `is_eol` IN A SHARED
-READER.** Two of the five open survivors are one gap. `list_read_ints` accepts
-CR and LF as blanks; that is live in unit #55, whose record is the 2048-byte
-`Line`, and unreachable here, whose record is a `GetWords` word. The campaign's
-usual repair -- delete the branch no input can take and write the proof -- is
-BLOCKED by the P4 relationship: the reader is a byte-for-byte copy, and deleting
-the branch would dissolve the shared measurement the two units rest on. **A P4
-copy inherits its source's REACHABILITY as well as its bytes**, and this is the
-first time the copy relationship has blocked a repair rather than transmitted a
-defect. DECISIONS.md names the three options.
-
-**WHAT 0.9796 DOES NOT COVER.** The two open survivors, which are the `is_eol`
-gap above and nothing else, answered in
-`evidence/ParseInput_Int_Opt/mutation_survivors.txt`. Also the mutants the
-40-per-operator cap never enumerated (`compare_op` and `const_tweak` are both
-capped), and the echo record on unit `UnEc`, measured dead: `:186` runs 1,680
-times across the 27 scenarios and `:187` never fires.
-
-**Procedure.** Six mutation sweeps, all foreground under `mutate_guarded.sh`
+**Procedure.** Two mutation sweeps, both foreground under `mutate_guarded.sh`
 and routed through the clock with an explicit `timeout: 600000`; nothing
-backgrounded except once by the Bash tool's own 120 s ceiling, which is
-harness-tracked. Eight reset windows, each opened and closed inside one command,
-every commit taken outside them. Twenty-two commits, one per expensive artifact.
-
-One transient is now a PATTERN and is written down rather than left to be
-rediscovered: `run_harness_stub.sh` returns `no JSON from ./test` on the FIRST
-stub of a batch, three for three, never on a later one and never on a re-run.
-It is loud -- no artifact -- so the cost is one retry.
+backgrounded, nothing polled. Five reset windows, each opened and closed inside
+one command, every commit taken outside them. Every corpus-reading layer
+re-taken because the corpus moved, AND the gate re-taken because the loop
+repository moved from `8f9d72f` to `b3ad414` -- `revcheck` accepts no partial
+instrument move, and all nine result artifacts now name one revision.
 
 ---
 
