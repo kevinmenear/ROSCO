@@ -13599,3 +13599,222 @@ constant the harness around it fixes. Before reading a `NONE` as evidence
 toward equivalence, list what the instrument HELD and ask, for each one,
 whether the unit's own corpus varies it. Here the held constant was a string
 literal five characters long, and it was worth two mutants.
+
+---
+
+## 2026-08-19 — unit #56 `ParseInput_Dbl_Opt`, SECOND dispatch: 0.8397 → 1.000, and two defects
+
+**Disposition `integrated`.** 110 / 131 = 0.8397 with 21 open survivors →
+**144 / 144 = 1.000** with none. All eleven result artifacts re-taken at loop
+`b9c8c52`…`cc32476`; `revcheck` clean.
+
+### A SURVIVING MUTANT OF A CONSTANT IS A REASON TO ASK WHETHER THE CONSTANT IS RIGHT
+
+*Method-level. Raised here for the Driver rather than written into the
+invariant layer.*
+
+Two of the 21 survivors were `n < 62` → `n <= 62` and `n < 62` → `n < 63` at
+the same site: the bound on the loop that copies an IEEE word into
+`char buf[64]` before `strtod` sees it. The previous dispatch answered them the
+way this campaign answers survivors — it found the record that distinguishes
+each (one record in 131,312, "the thinnest margin in the file") and filed them
+as corpus gaps.
+
+They were not corpus gaps. **`62` is wrong.** `nan` may carry a parenthesised
+payload; gfortran's reader has no such bound; a word of 63 characters or more
+was handed to `strtod` with its closing parenthesis cut off and rejected. The
+reference reads a NaN, the translation returns 5010 with the item untouched, on
+**138 of the 197 payload lengths a 200-byte record can carry**
+(`evidence/ParseInput_Dbl_Opt/nan_payload_probe.{f90,cpp}`).
+
+The two mutants survived because **both make the translation less wrong**:
+`n <= 62` and `n < 63` each copy one more character than the shipped code, and
+the corpus that could tell them apart is the corpus that exposes the original.
+
+**The rule the campaign can use.** A mutant that *widens* a bound — `<` → `<=`,
+`N` → `N+1` on a capacity, `>` → `>=` on a rejection — is a mutant that makes
+the program MORE permissive. When one of those survives, the two hypotheses
+"the corpus is narrow" and "the bound is too tight" predict the same
+observation, and only the second is a defect. Distinguishing them costs one
+probe against the reference at the bound.
+
+Found the same dispatch, the same way, on a second bound: `list_read_reals` had
+no repeat-count ceiling at all, because `std::strtol` saturates at `LONG_MAX`
+and an overflowing count came back positive. `200000001*7` and `9…9*7` were
+accepted where the reference rejects them. The sibling `parseinary_opt.cpp` has
+the ceiling, measured for an INTEGER item; this unit's `parse_real` family was
+copied from `parsedbary_opt.cpp` (#54), which predates it. **A P4 copy inherits
+its source's date as well as its bytes.**
+
+### PRICING A RECORD AGAINST THE REFERENCE IS A DEFECT DETECTOR, NOT A SAFETY CHECK
+
+RUNBOOK already carries unit #54's rule: a corpus change that could make the
+reference do something new is a measurement to take, not a risk to accept. It is
+written as a way to avoid turning the harness red for an irrelevant reason.
+
+**It is worth more than that.** `run_record_form_probe.sh` prices every form the
+generator is about to plant by reading it with gfortran and with the shipped
+translation out of the same storage, and reports `(IOSTAT, bits)` on both sides.
+Both defects above appeared as a `DIFFERS` row **before anything was planted and
+before any sweep ran** — the first on the very first run, the second on a form
+added to settle an equivalence argument. Total cost of the instrument: one
+`.f90`, one `.cpp`, one runner, and about a second per run.
+
+The generalisation: **a corpus rule stated as a set of concrete inputs can be
+executed against the reference directly, and that is a cheaper oracle than the
+corpus it is about to become.** Any generator entry that names a literal input
+can be priced this way.
+
+### A FACT ABOUT WHERE A CORPUS ENTERS A FUNCTION IS NOT A FACT ABOUT THE FUNCTION
+
+`mutation/ParseInput_Dbl_Opt.equivalences.md` opened with four "facts about this
+unit's single call site into the parser", and five equivalence declarations
+rested on the third:
+
+> `p == 0` whenever `parse_real` is entered. `GetWords` left-justifies, and
+> `list_read_reals` skips leading blanks, so the only position at which it can
+> reach `parse_real` is 0.
+
+The left-justification half is true and is load-bearing elsewhere in the same
+file. The conclusion is false: `list_read_reals` reaches `parse_real` from
+**two** sites, and the second is the repeat-count fall-through, where
+`p == q + 1`. `3*7` enters at `p == 2`.
+
+Nothing contradicted it for three dispatches because **no record in any corpus
+this generator had produced put a `*` in a line the search key matched** — the
+`_TAIL_VALUES` repeat forms are planted at k = 3, and this unit's `FindLine` is
+called without `AryLen`, so it matches word 2 and nothing else. The moment one
+`3*7` reached the parser, `vit_mutate.py` reported two of the five in
+`declared_but_killed`. Two more were withdrawn in the same edit; the corpus then
+killed one of those too, which is the confirmation that withdrawing it was
+right, and the last is re-declared on an argument that does not use the premise.
+
+**The general form.** An equivalence declaration is a claim about the programs.
+A premise of the form "the caller only ever passes X" is a claim about the
+programs *only if every call site is enumerated*. Count the call sites; the
+function being `static` in an anonymous namespace makes that a `grep`, and it is
+the grep that was not run.
+
+### A SCRIPT THAT RE-DERIVES A SET IS NOT PROOF AGAINST A CONSTANT BESIDE IT
+
+`make_unreachable.py` exists because the sibling lost twelve declarations to a
+widened corpus, and it re-derives the whole set from `line_coverage.txt` on
+every run, refusing if the coverage file does not name the current corpus. Its
+docstring warns about carrying declarations forward by hand.
+
+It carried **one** forward by hand: a `CONTINUATION` exception naming
+`4a9b3707`, the `10` in `std::strtol(..., nullptr, 10)`, which sat on a gcov
+`-` line under a `#####` statement that the coverage rule could not see. Sound
+when written. The repeat-count repair **deleted the `strtol` call**, `4a9b3707`
+re-pointed onto `count = count * 10 + …` — a line the corpus runs — and the
+hand exception declared a live mutant unreachable. `vit_mutate.py` refuted it.
+
+The exception is deleted rather than re-keyed, because the site it named no
+longer exists. **A derivation and an exception to it are different kinds of
+thing, and a file that automates the first can still be wrong in the second.**
+If a continuation exception is ever needed again it must be keyed by
+`(operator, before, after, source line)`, the way `remap_declarations.py` keys a
+declaration.
+
+### THE BYTE PAST A RECORD IS AN INPUT, AND WHOSE IT IS DEPENDS ON THE DECLARATION
+
+`_RECORD_TAILS` (loop `59aa876`) already made records END at the buffer's last
+byte, and this unit's corpus already had them — `2:tail:digits@200` was in the
+previous dispatch's `Reached` list. Seven `p < len` → `p <= len` mutants
+survived anyway.
+
+The boundary was reached; the byte AT the boundary was a constant. The record is
+`Words(1)`, one element of `CHARACTER(MaxParamLength) :: Words(2)`, so byte 201
+is `Words(2)(1:1)` — and R14 has always planted the key as `'Aa'`. `'A'` is not
+a digit, not a `.`, not a sign and not an exponent letter, so every scanner
+guard took the same branch either way. `_NEIGHBOUR_TAILS` pairs each full-width
+lead with a neighbour whose first character IS what that scan tests.
+
+**Two sub-findings worth their own lines:**
+
+* **A 200-digit tail cannot discriminate a FRACTION scan**, because digit 201 of
+  a decimal fraction is ~180 places past what a binary64 holds: the mutant reads
+  one more digit and computes the same `double`. The fix is a repeat count
+  behind leading zeros — legal, small, and long — which moves the VALUE's start
+  near the record's end so its digits are all significant. That one trick
+  (`repword`, `fracsig`, `expsig`, `pointend`) closed four guards and reached
+  `match_word`'s own bound, which no left-justified record can.
+* **A tail built to exactly `N` cannot observe the buffer WIDTH constant**, because
+  the reference blank-pads to its own width and the extra byte is a blank either
+  way. `MaxParamLength` 200 → 201 survived every corpus this campaign generated,
+  including one with 200-character records. It needs a lead of `N + 1` whose last
+  character is significant (`_NEIGHBOUR_OVERFLOW`).
+
+### AN `INTENT(INOUT)` SCALAR AT THE MIDPOINT OF ITS DEFAULT RANGE IS A HELD INPUT
+
+R14 sets every free scalar INTEGER to `k - 1` and `k`. It left every REAL at its
+base draw, and `_base` draws an unconstrained real at `lo + (hi - lo) * 0.5`,
+which on the ±1e3 default is **exactly 0.0**. An `INOUT` scalar real is the ITEM
+a list-directed READ transfers into, and "the item kept the value it had" is one
+of that READ's three outcomes — so a corpus in which the item always arrives at
+0.0 cannot tell "kept" from "stored 0.0". Four mutants were invisible for that
+one reason, and the previous dispatch priced the fix as "stating any range for
+`Variable` deletes R6's 33-magnitude ladder" and refused it.
+
+**That price was for the wrong lever.** `ranges.toml` was the wrong place: the
+draw only needs to move inside R14's own block. `_PLANT_REAL_SENTINEL` adds one
+variant at -987.654 to the new shapes. Measured in `harness_partition.txt`, on
+the two arms that reach the READ: `Variable IN /= 0` went from **0 and 0** to
+**280 and 280**. The R6 ladder is untouched.
+
+**The general form, and it is the one worth carrying:** before pricing a
+judgement in `ranges.toml`, ask whether the rule whose cases need the value can
+supply it itself. A pin is global to the unit; a rule's variant is local to the
+rule.
+
+### A SEARCH'S INPUT SPACE IS FILTERED BY EVERY PROPERTY OF THE CALLEE, NOT ONE
+
+`survivor_record_search.cpp` drives `list_read_reals` directly over 131,312
+records, half of them with the token at the record's TAIL. The first dispatch
+already corrected this instrument once: `GetWords`' separator set means no byte
+of `Words` is ever a comma or a semicolon, so two rows it reported as corpus
+levers were equivalences at the unit.
+
+It missed the second instance of the same thing. `GetWords` also
+**LEFT-JUSTIFIES**: `Words(IW) = Line(Ch+1:Ch+NextWhite-1)` into a blank-padded
+`CHARACTER(200)`. So no TAIL record is admissible to the unit at all, and every
+`TAIL|…` row names a record only the FUNCTION can be handed. The separator set
+was checked; the justification was not — and both are properties of the same
+callee.
+
+**The rule: when a search drives an internal function, enumerate the callee's
+properties, not the one that comes to mind.** The file is annotated rather than
+deleted (`survivor_record_search.txt`).
+
+### PROCEDURE, AND THE TWO NUMBERS THAT MADE THE REPAIRS CHECKABLE
+
+Four sweeps, every one foreground under `mutate_guarded.sh` and routed through
+`run_if_time_remains.sh` with `timeout: 600000`; nothing backgrounded except
+once by the tool's own 120 s ceiling, which is harness-tracked. Three reset
+windows, each closed before its commit. Nine commits, one per expensive
+artifact.
+
+Both repairs were priced before their sweeps by diffing `(id -> site)`, not ids
+(RUNBOOK, unit #55): the first moved **25 ids onto different sites** while the id
+set moved by 4 and 5, and dropped two declared equivalences whose sites ceased
+to exist; the second dropped one more to the 40-per-operator cap.
+
+And the control that says the repairs changed nothing the shipped controller
+does: the gate's parsed-value red test had to give back **1,857,893 of
+5,252,000 exactly**, as it did at the first dispatch, across two edits to
+`parse_real` and a corpus that grew by 2,240 cases. The gate never reads the
+case file, so a different number would have meant something other than the
+corpus and the unreachable half of the parser had changed.
+
+### THE CORPUS IS A STRICT BYTE-PREFIX EXTENSION, AND THE FIRST ATTEMPT WAS NOT
+
+The neighbour block was written inside R14's existing `for A: for S:` pass. The
+case file then differed from the old one at byte **2,254,112** — 1.3 MB inside
+data that should have been untouched — because `flag_variants` is driven by a
+shared `turn` counter and this unit has TWO free scalar CHARACTER inputs, so the
+block advanced `turn` for the second key. Moving it to its own pass over
+`(array, key)` restored the property.
+
+**`b[:len(a)] == a` on the two case files is a one-line control and it caught
+this immediately.** Any rule that appends to a corpus should be checked with it;
+"appended after every other rule" is an intention, not a measurement.
