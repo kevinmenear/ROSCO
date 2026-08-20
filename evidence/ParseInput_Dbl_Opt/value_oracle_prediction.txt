@@ -45,3 +45,19 @@ would then claim a tool computed it.
 WHAT THIS CONTROL WAS WORTH. It was run to confirm a number that was already
 in the artifact, and it refuted the reading of that number instead. A
 score-only comparison would have reported the two runs as identical.
+
+--------------------------------------------------------------------------
+RE-TAKEN 2026-08-20, after the two GetWords equivalences were declared, so
+that both artifacts share a denominator. Everything above reproduced:
+
+  sanitised      110 of 177   0.8397   27 equivalent, 19 unreachable, 21 open
+  value oracle   110 of 177   0.8397   27 equivalent, 19 unreachable, 21 open
+
+  only-value-oracle survivor : 5a8abaea   (sanitiser-only, as before)
+  only-sanitised survivor    : b03a94c5   (build-dependent, as before)
+
+  union 111 of 131 = 0.8473
+
+`declared_but_killed` and `unreachable_but_killed` are empty in BOTH, which is
+the check on the two new declarations: a wider oracle was run over them and
+refuted neither.

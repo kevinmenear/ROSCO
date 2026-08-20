@@ -6,8 +6,8 @@ stand*. One copy of every count — do not duplicate them anywhere else.
 
 **As of 2026-08-19: unit #56 `ParseInput_Dbl_Opt` is `deferred`. FIRST
 dispatch. SEVEN layers; six green and red-tested, and the mutation layer at
-110 / (177 - 25 - 19) = 0.8271 against a threshold of 1.0. 23 open survivors,
-every one of them answered and 16 of them by a named record.**
+110 / (177 - 27 - 19) = 0.8397 against a threshold of 1.0. 21 open survivors,
+every one of them answered and 14 of them by a named record.**
 
 The scalar member of the `ParseInput` generic interface: find the line whose
 SECOND word is `VarName`, read one `REAL(DbKi)` out of that line's FIRST word
@@ -18,10 +18,10 @@ the parser are copied byte for byte from `parsedbary_opt.cpp` and hash-verified,
 | layer | result | red-tested |
 |---|---|---|
 | differential harness (`harness/ParseInput_Dbl_Opt.json`) | **11,562 checked, 0 failed, 0 inadmissible**, clean tree, three callee bridges kept. R4 compares 6 out-parameters **plus the stdout RECORD on 9,148 cases**. **No `no_oracle` entry** -- `Variable` is a scalar INOUT, so every output has an oracle on every case, where both `Ary` siblings had to exclude 1,283-4,067 | **four stubs**: no-op **11,363** (predicted exactly), the PRINT **9,148** (exactly), the `.NOT. AllowDefault_` arm **1,937** in a predicted [1845, 2056], the READ **278** in [159, 370] -- and the two excesses SUM to 211, exactly |
-| mutation (`mutation/ParseInput_Dbl_Opt.json`) | **181 mutants, 4 nocompile, 177 behavioural: 110 killed, 25 equivalent, 19 unreachable, 23 open. 110/133 = 0.8271.** Sanitised, green baseline, `--workers 8`, **121 s**. `declared_but_killed` and `unreachable_but_killed` both EMPTY | the score IS the red test (E4.6) |
+| mutation (`mutation/ParseInput_Dbl_Opt.json`) | **181 mutants, 4 nocompile, 177 behavioural: 110 killed, 27 equivalent, 19 unreachable, 21 open. 110/131 = 0.8397.** Sanitised, green baseline, `--workers 8`, **121 s**. `declared_but_killed` and `unreachable_but_killed` both EMPTY | the score IS the red test (E4.6) |
 | line coverage of the translation (`evidence/.../line_coverage.txt`) | 200 executable lines run, 38 never, at -O0. All 19 `unreachable` declarations derive from it | **three controls**: entry-line count 11,562 = case count; non-survivors on never-run lines that are not nocompile = 0; the nocompile ids measured independently and the count matching the sweep's own 4 |
-| survivor record search (`evidence/.../survivor_record_search.txt`) | **16 of 23 open survivors distinguished over 131,312 records, all 16 by a VALUE** | the negative control is built into the shape: the search takes the record length as a literal 200, so the mutant OF that constant cannot be reached and must come back NONE. It does |
-| mutation, VALUE ORACLE (`mutation/ParseInput_Dbl_Opt.value-oracle.json`) | **110 of 177, 0.8271 -- the same number** | the control is the SURVIVOR SET, not the count: the two runs disagree by exactly one mutant each way. Union 111/133 = 0.8346, which no artifact can carry |
+| survivor record search (`evidence/.../survivor_record_search.txt`) | **16 of the then-23 distinguished over 131,312 records, all by a VALUE; 14 of the 21 stand after two were found equivalent at the unit** | the negative control is built into the shape: the search takes the record length as a literal 200, so the mutant OF that constant cannot be reached and must come back NONE. It does |
+| mutation, VALUE ORACLE (`mutation/ParseInput_Dbl_Opt.value-oracle.json`) | **110 of 177, 0.8271 -- the same number** | the control is the SURVIVOR SET, not the count: the two runs disagree by exactly one mutant each way. Union 111/131 = 0.8473, which no artifact can carry |
 | post-integration (`harness/ParseInput_Dbl_Opt.postintegration.json`) | 11,562 checked, 0 failed | the reverse copy deleted from this unit's own wrapper: **2,056**, PREDICTED 2,056 exactly; reverted, rebuilt, green re-taken at 0 |
 | gate, 27 scenarios (`gate/ParseInput_Dbl_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched, 28 s | **two**: every parsed value + 1.0 moves **1,857,893** across 147 channels, revert-verified 0; the default arm moves **0**, predicted from coverage before the run |
 
@@ -31,12 +31,21 @@ the corpus was generated. Unit #55 spent four dispatches unable to see its PRINT
 record and a purpose-built side instrument found a real defect there on its
 first run; here the comparison is inside the primary layer, 9,148 records agreed
 with gfortran's own on the first run, and **there are zero PRINT-region
-survivors**. All 23 open mutants are in the list-directed READ.
+survivors**. All 21 open mutants are in the list-directed READ.
 
 **THE ONE NUMBER THAT EXPLAINS THE SHORTFALL. 293 of 11,562 cases (2.5%) reach
 the READ at all**, because `FoundLine` requires `FindLine` to match the SECOND
-word of some line and only R14's planted-word cases do. 22 of the 23 survivors
+word of some line and only R14's planted-word cases do. 20 of the 21 survivors
 are behind that single gate. The other is the mutant of `MaxParamLength`.
+
+**AND TWO SURVIVORS NO CORPUS COULD HAVE KILLED, found after the sweep and
+recorded as a correction rather than a silent edit.** `GetWords` splits on
+`' ,!;''"'` and tab, so no byte of the 400-byte `Words` object is ever a comma
+or a semicolon and the two mutants that test for them take the same branch
+either way. The record search reports them differing on 6,391 and 924 records
+because it drives `list_read_reals` DIRECTLY: **its records are admissible to
+the FUNCTION and not to the UNIT.** Ask what the callee can produce before
+reading a search's `differs` as a corpus lever.
 
 **`--sanitize` BOUGHT 5 KILLS HERE AND 41 ON THE SIBLING, AND ONE DECLARATION IS
 WHY.** The sibling's record is `Line`, a 2048-byte vector whose size IS
