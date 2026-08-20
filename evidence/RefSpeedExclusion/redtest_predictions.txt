@@ -188,3 +188,44 @@ ARITHMETIC CONTROLS
     snap-down-only (22) + 823 = 845 = no-restart-init
     no-restart-init (845) = the mutation sweep's negate_cond kill count on BOTH
                             L96 and L113 -- an identity across two instruments
+
+MEASURED OUTCOME ON THE SECOND CORPUS -- 2026-08-20, all five on 13,777 cases
+-----------------------------------------------------------------------------
+
+    stub                 predicted   measured
+    -------------------------------------------
+    noop                     13777      13777   EXACT
+    no-band-arm               4752       4752   EXACT
+    no-restart-init            845        814   REFUTED, short by 31
+    snap-down-only              22         22   EXACT
+    no-save                   1088       1088   EXACT
+
+FOUR OF FIVE EXACT, AND THE FIFTH IS SHORT FOR THE REASON THE PREDICTION'S OWN
+REFUTATION CLAUSE NAMED -- "a snap case arrives already holding its own snap
+value". Measured with one more `fprintf` over the same corpus, reading inputs
+only:
+
+    restart AND in-band cases                                   845
+    of those, TRA_LastRefSpd BIT-EQUAL to the snap it would get   31
+    845 - 31                                                    814
+
+and all 31 are `had=0 snap=0`: at `TRA_ExclSpeed = 1.0, TRA_ExclBand = 2.0` the
+LOWER snap is exactly `1.0 - 1.0 = 0.0`, and `TRA_LastRefSpd`'s own ladder puts
+0.0 in the same case. The pin that made the band edge reachable is the same pin
+that makes this coincidence possible; the two are one fact.
+
+WHY 845 AND 814 ARE BOTH RIGHT, ON DIFFERENT PERTURBATIONS. The mutation sweep's
+`negate_cond` at the same site kills 845 -- not 814 -- because NEGATING the test
+sends the in-band restart cases down the `TRA_LastRefSpd = VS_RefSpeed_LSS`
+branch, and `LSS` can never equal the snap value (the band is an OPEN interval,
+so `LSS` is strictly inside it and the snap is on its edge). DELETING the block
+instead leaves the case's own incoming value, which CAN equal the snap. Two
+perturbations of one statement, two different failing sets, and the difference
+between them is exactly the 31 coincidences. That is the arithmetic control the
+pair buys, and it was not designed in.
+
+THE OTHER CONTROLS HOLD:
+
+    2992 + 6033 + 3907 + 22 + 823 = 13777        the noop against the partition
+    no-band-arm (4752) - 3907 (hold_norestart) = 845 = the negate-count cell
+    snap-down-only (22) + 823 = 845
