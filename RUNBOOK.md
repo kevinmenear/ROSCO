@@ -10399,3 +10399,103 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   **Do not close a unit on a score within one mutant of the threshold without
   settling this first** — and when re-taking a sweep, compare the MERGED total
   rather than the parts, because the parts are what move.
+
+## WHEN BOTH CAMPAIGN INSTRUMENTS REFUSE, THE ADMISSIBLE CORPUS MAY ALREADY BE
+## IN THE REPOSITORY, AND THE PROBE IS ONE GENERATED PROGRAM
+
+- **Unit #64, `ReadControlParameterFileSub`.** The generated harness refused
+  (`file_params_from` matches a BARE dummy; the reference writes
+  `file=accINFILE(1)`) and integration refused (no `vit integrate` mode copies
+  an ALLOCATABLE view field back), so the unit had nothing — no harness, no
+  mutation score, no gate. What it did have:
+
+  ```
+  Examples/DISCON*.IN                 28 files, admissible BY CONSTRUCTION
+  ROSCO_Types.f90 TYPE(ControlParameters)   213 components
+  vit_view_in_<type>(view, dest)      already generated, already correct
+  ```
+
+  One Fortran driver, GENERATED from the type definition, calling the reference
+  and the translation in the same process and comparing all 213 — plus 9 files
+  derived at the corpus's own named gaps — reached **37 cases, 0 differing
+  fields**, red-tested five ways. About an hour.
+
+  **Generate the comparison from the TYPE, never hand-write the field list.** A
+  hand-written list stops covering the type the moment a component is added, and
+  nothing fails when it does.
+
+  What the shape cannot do, and it must be said next to the number: it varies
+  nothing (37 real inputs are 37 points, and a `assoc_reorder`-class difference
+  is invisible at that size — measured), and **it cannot be mutation-scored**,
+  because `vit_mutate.py` drives the generated harness's case file and `./test`.
+  A unit closed this way has no P12 number and `plan.json` must say so.
+
+## AN ARGUMENT THAT REACHES `docker exec` THROUGH A SHELL STRING IS A QUOTING
+## HAZARD, AND BACKTICKS ARE ONLY THE FIRST DOOR
+
+- **Unit #64, twice in one dispatch, and the second one cost two red tests.**
+  The campaign already records backticks running inside a double-quoted
+  `--note`. The same file hit it again in a COMMENT (`` `echo1.IN` `` ran as a
+  host command), and then hit the more dangerous form:
+
+  ```
+  docker exec ... bash -lc "... if [ -n '$SEDX' ]; then sed -E -i '$SEDX' ...
+  $ run_probe.sh --red-test "s/msg \+= ':';/msg += ';';/"
+  bash: line 6: [: missing `]'
+  cases 33   FIELD 0            <- the BASELINE, under a red test's name
+  ```
+
+  Every useful red test on a C++ translation matches a character literal and so
+  contains a SINGLE QUOTE. The quoting closed early, the perturbation block was
+  skipped, and a green was reported for a run that perturbed nothing — which is
+  indistinguishable from a confirmed baseline.
+
+  **Send the argument over stdin into a file and have the tool read the file**
+  (`sed -E -f`). Do not escape it; do not quote it more carefully. And the
+  "changed NOTHING" guard is not the defence — here it never ran. **The
+  committed prediction is the defence**: RT1 predicted 28 and got 28, RT5 and
+  RT6 predicted red and got green, and that mismatch is the only thing that
+  looked at them.
+
+## `vit integrate` HAS THREE MODES AND NONE COPIES AN ALLOCATABLE VIEW FIELD
+## BACK — WHILE THE ROUTINE THAT DOES IS GENERATED BESIDE IT
+
+- **Unit #64.** Measured at scaffold state, before any C++ was written, which is
+  what made it cheap:
+
+  ```
+  DEFAULT                         no copy-back at all
+  --reverse-copy                  vit_copy_scalars_to_<type>   SCALARS ONLY
+  --reverse-copy --auto-allocate  same tail; the head re-emits the unit's WHOLE
+                                  body into the wrapper against five undeclared
+                                  names. It does not compile.
+  ```
+
+  An ALLOCATABLE the caller has not allocated is `C_NULL_PTR` in the view, so
+  there is no buffer to write through and a scalars-only copy-back drops every
+  array output. `vit_view_in_<type>(view, dest)` — in the generated view module,
+  doing exactly the per-field `ALLOCATE`-and-copy — is called by **no wrapper
+  VIT emits**, and a standalone probe drove it correctly over 37 cases.
+
+  **Read the emitted wrapper before writing the translation, not after.** Two
+  `vit integrate` runs with no `--apply` cost a minute and decide whether the
+  gate is available at all — which decides the whole dispatch's shape.
+
+## A UNIT WHOSE INSTRUMENT IS NOT ONE OF THE FOUR CANONICAL ONES IS INVISIBLE
+## TO P14 AND VISIBLE TO `revcheck`
+
+- **Unit #64.** `done_check`'s P14 reads `CORE` — `mutation/{n}.json`,
+  `harness/{n}.json`, `harness/{n}.postintegration.json`, `gate/{n}.json`,
+  `gate/{n}.redtest.json` — and reported `n/e: no configured artifact was
+  readable at this commit`, which reads exactly like a unit with no artifacts.
+  The unit had two, `harness/{n}.probe.json` and `harness/{n}.probe.redtest.json`,
+  both stamped, and `revcheck --unit` (which globs `harness/{n}.*`) scanned both
+  and reported `clean`.
+
+  **Do not rename the artifact to satisfy P14.** `harness/{n}.json` is the
+  GENERATED harness's name, and putting a probe result there asserts that the
+  harness ran. Emit `{n}.probe.json`, stamp it with `_harness_stamp.py`'s own
+  `_rev`, and take the `n/e`. Note also that `_harness_stamp.py --pre` is a
+  NO-OP on a green artifact — it assumes `vit_harness.py` stamped it — so a
+  green probe artifact must fill `loop_rev`/`vit_rev` itself; the first one
+  written here came back with `loop_rev: None`.
