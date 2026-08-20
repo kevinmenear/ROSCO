@@ -349,6 +349,130 @@ This layer is expected to change constantly. The invariant layer above is not �
 editing it changes `invariant_hash`, which the Driver reads as a proposed
 amendment to the method itself.
 
+## When the INSTRUMENTS are wrong, report it -- there is now a channel
+
+Not everything you find is about your unit. If a tool answers confidently and
+wrongly, if a default should move, or if the substrate under you is broken,
+that is the Driver's to fix and yours to REPORT. Append one JSON object per
+line to `.loop-run/findings.jsonl`:
+
+```json
+{"kind": "invalidating_finding", "summary": "one line, required",
+ "detail": "optional", "evidence": "optional path"}
+```
+
+Yours to raise: `invalidating_finding`, `default_change_proposed`,
+`blocked_substrate`. The Driver promotes them into typed escalations at your
+close. Verdict kinds are not yours, and a refused kind is reported rather than
+dropped -- a wrong `kind` is noise, never silence.
+
+**This exists because it did not.** Every escalation in the loop came from the
+Driver's own observations; a unit had no CLI, no API and no mention in its
+prompt. Fifteen tool defects accumulated as prose in `STATUS.md`, a file no
+tooling reads, while `invalidating_finding` and `default_change_proposed` --
+the two kinds designed for exactly this -- had fired zero times in 131
+escalations. Loop `b959b24`.
+
+One of those is worth knowing before you declare anything unreachable:
+`coverage/line_coverage.json` stores only NON-ZERO hit counts, so *never ran*
+and *never instrumented* are the same empty dict. A declared-`unreachable`
+mutant the corpus then kills fails the unit outright, so that artifact cannot
+carry the claim on its own.
+
+## Lessons migrated from `STATUS.md`'s `Open` list (2026-08-20)
+
+`STATUS.md` was deleted: a *state* file that had become a 7,169-line log,
+whose `Open` list was a defect backlog written as prose in a file no tooling
+read. The 32 defects went to `.loop-run/findings.jsonl`, which the Driver now
+promotes into escalations. These seven are not defects -- they are rules that
+outlive the unit that learned them. The original is archived at
+`~/Backups/vit-replication/status-archive/`.
+
+### TWO RED TESTS WITH THE SAME FAILURE COUNT ON THE SAME CORPUS ARE NOT ONE
+
+TWO RED TESTS WITH THE SAME FAILURE COUNT ON THE SAME CORPUS ARE NOT ONE
+MEASUREMENT, AND THERE IS NO CHECK FOR IT.** Unit #27, found by getting it
+wrong: `harness/wrap_180.redtest.json` and
+`harness/wrap_180.postintegration.redtest.json` both report **130 of 136** and
+are blind to **different six cases, overlapping in two**
+(`evidence/wrap_180/the_six_insensitive_cases.{py,txt}`). The wrong explanation
+is left standing in `ad9f755`'s commit message beside the correction (C12).
+
+Unit #26's `redtest_corpus_skew.py` catches the *across-corpora* form of this
+and reports `0 SKEWED` here, correctly — both runs are 136 of 136. The
+same-corpus form is invisible to it and to everything else, because a red-test
+artifact records a COUNT and not the set of cases that failed. **A candidate
+addition, not taken here:** have the harness emit the failing case INDICES into
+the artifact, at which point two red tests can be compared as sets for free.
+That changes the artifact schema every scored unit writes (X3), so it is the
+Driver's call.
+
+### A mutation score can FLAP between runs of the identical command. Unit #8:
+
+A mutation score can FLAP between runs of the identical command.** Unit #8:
+0.983, 1.000, 0.983 over the same translation and the same 1370 cases, because
+the deciding mutant differs from the original only past the end of a buffer.
+The scoring defect is closed (a declaration is now about the MUTANT, not about
+one run) but the general hazard is not: **a mutation score is not reproducible
+wherever a mutant's only observable difference is undefined behaviour, and the
+run that reads 1.000 is the one that measured least.** Any unit whose score was
+taken once, with survivors of that shape, has a number nobody has repeated.
+
+### The differential harness generator has been blind three ways at once, and
+
+The differential harness generator has been blind three ways at once, and
+the verdict never said so.** Closed in the loop repo (`0e92a72`) — see the unit
+#7 block above — but kept open here as a standing warning about the SHAPE:
+a harness green is a claim about the cases that were generated, and only the
+mutation survivors say which cases those were. Every one of the three gaps was
+found by asking why a mutant lived, never by reading a `checked N failed 0`.
+
+### A unit can be the IDENTITY on the whole exercised domain, and then the gate's
+
+A unit can be the IDENTITY on the whole exercised domain, and then the gate's
+standard no-op perturbation is not a wrong implementation.** New at unit #7.
+`GetRoot` strips a file extension and every scenario hands it a name with no
+`'.'`, so all 444,000 calls fall through to `RootName = GivenFil`. A no-op
+returns the caller's own bytes, which through the aliased call site IS the
+right answer. The red test has to perturb the unit to a WRONG value. The same
+property makes the KERNEL a mirror rather than a comparison, so the kernel's
+liveness test also has to be a wrong-constant stub rather than a no-op.
+
+### A unit's kernel can be STRUCTURALLY one case, and no configuration reaches
+
+A unit's kernel can be STRUCTURALLY one case, and no configuration reaches
+it.** `GetPath`'s call site runs once per process. Unit #2's answer to a
+vacuous window — widen it — does not apply, and `vit.yaml`'s `invocation` is
+irrelevant for any unit called once during initialisation. The check that
+works is the constant stub: a translation that reads NO input and writes the
+captured answer. If it passes, the kernel is a lookup table. This belongs
+beside the existing all-zero-window recipe in RUNBOOK, and it is there.
+
+### A hot line is not an observable line, and nothing in the campaign's coverage
+
+A hot line is not an observable line, and nothing in the campaign's coverage
+data can say which is which.** `Conv2UC` runs 1.3M times and no gate
+perturbation of it moves any output, because its result is only ever compared
+against another of its own results. The verification ledger (E5.2) needs a
+column for this that is distinct from both "unexercised" and "argument held
+constant" — it is a *consumer* property, not a producer one, and neither
+coverage nor the gate's own red test in its usual form can detect it. The
+general instrument found here is to perturb toward ABSENCE (`if (false && …)`)
+rather than toward a different answer; see DECISIONS.md for the candidate
+method amendment this suggests, which is flagged and not made.
+
+### A translation's mutation score can be raised by REMOVING restatements, and
+
+A translation's mutation score can be raised by REMOVING restatements, and
+that is not gaming it.** Two survivors here were a `malloc(isize+1)` and a
+`memcpy(..., isize+1)` restating a quantity the allocation already fixed;
+perturbing either produced a memory error no value comparison can see. Naming
+it once (`nsize`) left one site, and that site decides the extent the caller
+sees. Two others survive genuinely and are DECLARED equivalent with reasons
+(`mutation/AddToList.equivalences.json`). The distinction — removed vs
+declared — is the thing to preserve: declaring the first pair away would have
+recorded a blindness as a property of the mutants.
+
 ## Commands
 
 Each entry below was RUN, in the `vit-dev` container, on 2026-08-10, and records

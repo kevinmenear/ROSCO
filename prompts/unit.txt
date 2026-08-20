@@ -157,6 +157,29 @@ WHY EACH STEP, measured on this campaign rather than inherited:
               the timeout while STARTING a sweep it could not finish, which is
               why step 2 now asks the clock and step 3 raises a marker.
 
+6. WHEN THE INSTRUMENTS ARE WRONG, REPORT IT -- do not work around it in
+   silence and do not park it in a document. If a tool answers confidently and
+   wrongly, if a default should move, or if the substrate under you is broken,
+   that is the Driver's to fix and yours to say. Append one JSON object per
+   line to `.loop-run/findings.jsonl`:
+
+       {{"kind": "invalidating_finding", "summary": "one line, required",
+         "detail": "optional", "evidence": "optional path"}}
+
+   Yours to raise: `invalidating_finding` (the tooling answered and the answer
+   is wrong or cannot be trusted), `default_change_proposed` (a default should
+   move and you measured why), `blocked_substrate` (nothing can proceed). The
+   Driver promotes them into escalations at your close. Verdict kinds are not
+   yours -- a unit does not pronounce on its own cost or its own doneness --
+   and a refused kind is reported rather than dropped, so a wrong `kind` is
+   noise, never silence.
+
+   This channel exists because it did not. Fifteen tool defects accumulated as
+   prose in a state file no tooling reads, including one that matters to you
+   directly: `coverage/line_coverage.json` stores only NON-ZERO hit counts, so
+   "never ran" and "never instrumented" are the same empty dict -- and
+   declaring a mutant `unreachable` on that evidence fails the unit outright.
+
 Steps 1 and 5 are one rule seen from both ends: commit before the window opens,
 and commit again once it has closed. Inside it, you cannot.
 

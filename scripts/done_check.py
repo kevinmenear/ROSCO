@@ -83,8 +83,11 @@ def main() -> int:
               f"-- the commit before {touching[0][:7]} touched {unit.translation}")
 
     cfg = DoneConfig(
-        state_files=("STATUS.md", "DECISIONS.md", "plan.json"),
-        status_file="STATUS.md",
+        # STATUS.md deleted 2026-08-20: a state file that had become a log.
+        # P7 (a state commit exists) and P8 (the unit is named in one) both
+        # resolve through DECISIONS.md and plan.json, which every close
+        # commits -- so neither predicate weakens.
+        state_files=("DECISIONS.md", "plan.json"),
         gate_result_glob="gate/{name}.json",
         redtest_result_glob="gate/{name}.redtest.json",
         harness_result_glob="harness/{name}.postintegration.json",
