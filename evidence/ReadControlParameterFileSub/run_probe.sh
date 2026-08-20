@@ -25,6 +25,7 @@ CPP="translations/ReadSetParameters/readcontrolparameterfilesub.cpp"
 SEDX=""
 LABEL="baseline"
 OUT=""
+POST=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --red-test) SEDX="${2:?--red-test needs a sed -E expression}"
@@ -36,6 +37,12 @@ while [ $# -gt 0 ]; do
         # loop_rev and vit_rev by the campaign's own _harness_stamp.py rather
         # than by a second reading of the same two repositories.
         --out)      OUT="${2:?--out needs a path}"; shift ;;
+        # --post marks the artifact as a POST-INTEGRATION run. It changes no
+        # part of the run: after `vit integrate --apply` the Fortran entry
+        # point IS the wrapper, so the same command compares the wrapper's
+        # marshalling instead of the reference's arithmetic. It changes what
+        # the artifact SAYS it measured, which is the whole of E4.5.
+        --post)     POST="post" ;;
         *) echo "run_probe: unknown argument $1" >&2; exit 2 ;;
     esac
     shift
@@ -115,7 +122,7 @@ echo "run_probe: $LABEL"
 
 if [ -n "$OUT" ]; then
     python3 "$ROOT/evidence/ReadControlParameterFileSub/probe_artifact.py" \
-        "$RUNLOG" "$OUT" "$LABEL" "$SEDX"
+        "$RUNLOG" "$OUT" "$LABEL" "$SEDX" $POST
     if [ -n "$SEDX" ]; then
         python3 "$ROOT/scripts/_harness_stamp.py" "$OUT" --pre \
             --red-test "$LABEL: $SEDX"

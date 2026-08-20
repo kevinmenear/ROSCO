@@ -1,0 +1,16 @@
+{
+ "unit": "ReadControlParameterFileSub",
+ "against": "integrated",
+ "instrument": "standalone differential probe -- NOT the campaign's generated harness, which REFUSED this unit (evidence/ReadControlParameterFileSub/harness.plan-dump.the-file-is-neither-supplied-nor-compared.txt). One Fortran program calls the reference and the translation on the SAME real DISCON.IN and compares all 213 components of TYPE(ControlParameters) -- the comparison generated from the type definition itself -- plus ErrVar%aviFAIL and ErrVar%ErrMsg. The C++ side reaches its Fortran type through vit_view_in_controlparameters, the copy-back routine `vit integrate` never emits a call to.",
+ "cases": 63,
+ "fields_per_case": 215,
+ "checked": 13545,
+ "failed": 0,
+ "failed_counts": "differing FIELD reports, not cases",
+ "copyback_unallocated_vs_empty": 0,
+ "echo_bytes_identical": 149,
+ "cannot_see": "THE CORPUS VARIES NOTHING. 37 real DISCON.IN files are 37 points, not a corpus: no R2 flag ladder, no R5 shape pair, no R6 literal corpus and no R11 admissible state shapes them. RT2 measures what that costs -- a*(x*x) and (a*x)*x are indistinguishable over all 37, so the parenthesisation in VS_MinOMTq/VS_MaxOMTq is transcribed and untested. AND IT CANNOT BE MUTATION-SCORED: vit_mutate.py drives the generated harness's case file and its ./test, neither of which exists here, so P12 has no number for this unit. The echo comparison is 149 bytes and not 149 of ~15,000, because the ~193 per-parameter records belong to the Parse*_Opt callees and those five units are integrated and emit none.",
+ "loop_rev": "8e04515",
+ "vit_rev": "29c2b71",
+ "measures": "THE INTEGRATION WRAPPER'S MARSHALLING ONLY. After integration the Fortran body IS the translation, so both sides of this comparison run the same arithmetic and a difference means the wrapper corrupted an argument or threw an output away on the way through. That is not a weaker check here than it is for any other unit -- it is the ONE this unit needed. ~50 of its outputs are ALLOCATABLE components of a view-typed INOUT argument, and no `vit integrate` mode carried one back until `--copy-arrays`; the reference side of this run is the first wrapper that calls vit_view_in_controlparameters, so every field it compares is a field the integration could have dropped and did not. The arithmetic is covered by the pre-integration probe and by the mutation score taken over it."
+}

@@ -286,6 +286,10 @@ translations:
     status: integrated
     cpp_file: translations/Controllers/pitchcontrol.cpp
     verification: simulation
+  ReadControlParameterFileSub:
+    status: integrated
+    cpp_file: translations/ReadSetParameters/readcontrolparameterfilesub.cpp
+    verification: simulation
 types:
   ControlParameters:
     strategy: view

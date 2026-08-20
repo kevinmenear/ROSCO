@@ -67,11 +67,27 @@ CANNOT_SEE = (
 )
 
 
+POST_MEASURES = (
+    "THE INTEGRATION WRAPPER'S MARSHALLING ONLY. After integration the Fortran "
+    "body IS the translation, so both sides of this comparison run the same "
+    "arithmetic and a difference means the wrapper corrupted an argument or "
+    "threw an output away on the way through. That is not a weaker check here "
+    "than it is for any other unit -- it is the ONE this unit needed. ~50 of "
+    "its outputs are ALLOCATABLE components of a view-typed INOUT argument, "
+    "and no `vit integrate` mode carried one back until `--copy-arrays`; the "
+    "reference side of this run is the first wrapper that calls "
+    "vit_view_in_controlparameters, so every field it compares is a field the "
+    "integration could have dropped and did not. The arithmetic is covered by "
+    "the pre-integration probe and by the mutation score taken over it."
+)
+
+
 def main(argv):
-    if len(argv) != 5:
+    if len(argv) not in (5, 6):
         print(__doc__.strip().split('\n')[2], file=sys.stderr)
         return 2
     log, out, label, sedx = argv[1:5]
+    post = len(argv) == 6 and argv[5] == 'post' 
     text = open(log).read()
     m = re.search(r'^cases (\d+)\s+FIELD \(translation\) (\d+)\s+COPYBK[^0-9]*(\d+)',
                   text, re.M)
@@ -87,7 +103,10 @@ def main(argv):
     echo = re.search(r'IDENTICAL over all (\d+) bytes', text)
     doc = {
         "unit": "ReadControlParameterFileSub",
-        "against": "the clean Fortran reference, in the same process",
+        # The done-condition reads this key and requires the exact string
+        # `integrated` for a post-integration re-run (loop/done.py P11).
+        "against": "integrated" if post else
+                   "the clean Fortran reference, in the same process",
         "instrument": INSTRUMENT,
         "cases": cases,
         "fields_per_case": FIELDS_PER_CASE,
@@ -106,6 +125,8 @@ def main(argv):
         "loop_rev": _rev(REPOS / 'translation-loop'),
         "vit_rev": _rev(REPOS / 'vit'),
     }
+    if post:
+        doc["measures"] = POST_MEASURES
     if sedx:
         doc["red_test"] = sedx
         doc["red_test_label"] = label
