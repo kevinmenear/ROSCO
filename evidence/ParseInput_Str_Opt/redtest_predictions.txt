@@ -1,0 +1,77 @@
+ParseInput_Str_Opt -- the four harness stub predictions, WRITTEN BEFORE THE RUNS
+================================================================================
+
+Read off `harness_partition.txt`, which classifies all 14,116 cases of
+`parseinput_str_opt_cases.bin` by the arm the REFERENCE took. Every number below
+is a POINT prediction, not a bracket, and the reason it can be is structural:
+this unit's `read-failed` arm is DEAD, so no cell of the partition holds two
+arms at once and nothing has to be split by an identity. Unit #57 needed
+`A + B = 901` for exactly the cell this unit does not have.
+
+The partition, for reference:
+
+    arm                        cases   scalar-changed   record   Variable moved
+    default-warned             10595                0    10595            10595
+    not-allowed                 2123             2123        0                0
+    read-ok                     1117                0        0             1057
+    pre-failed                   190                0        0                0
+    not-allowed, msg refused      91               91        0                0
+    read-failed                    0                -        -                -
+    TOTAL                      14116             2214    10595            11652
+
+PREDICTIONS
+-----------
+
+  noop                 13866 FAIL, 250 PASS
+                       = 10595 (the record and Variable) + 2214 (aviFAIL)
+                         + 1057 (Variable in the read-ok arm)
+                       The 250 that PASS are the 190 `pre-failed` cases, whose
+                       reference does nothing either, plus the 60 `read-ok`
+                       cases whose record happens to equal the value the case
+                       arrived with.
+
+  no-print             10595 FAIL
+                       Exactly `record_nonempty` in harness/ParseInput_Str_Opt
+                       .json, reached from a different code path. The stub
+                       deletes the PRINT and NOTHING else -- `Variable =
+                       'unused'` on the line above is untouched -- so the only
+                       output it can move is the record, which is the cell
+                       `vit_record = { compare_record = ... }` gave the harness
+                       an oracle in. Without that entry this stub moves ZERO.
+
+  no-allowdefault-arm   2214 FAIL
+                       = 2123 + 91, the two `not-allowed` rows. The split
+                       between them is whether R13's staging buffer accepted the
+                       message; both write `aviFAIL = -1` and both are the same
+                       arm, which is why they sum rather than needing an
+                       identity to separate.
+
+  no-read               1057 FAIL
+                       The `read-ok` row's `Variable moved` count, NOT its case
+                       count. 60 of the 1117 cases that reach the READ arrive
+                       holding exactly what the READ would store; the stub
+                       leaves `Variable` alone, so those 60 still agree.
+
+THE ARITHMETIC CONTROL
+----------------------
+
+    10595 + 2214 + 1057 = 13866 = the noop's own count
+
+The three arm-scoped stubs partition the noop's failing set exactly, because
+the arms are disjoint and each stub deletes one of them. A sum that missed
+would mean either an arm the classifier merged or an output two stubs both
+move -- and it is checked against numbers taken from three separate runs, not
+from one.
+
+WHAT A REFUTATION WOULD MEAN
+----------------------------
+
+  noop < 13866                the harness cannot see some output the reference
+                              writes -- an R4 gap, which is what this stub is
+                              for.
+  no-print != 10595           the record comparison is not reaching every case
+                              that writes one.
+  no-read > 1057              the stub moved something outside the READ.
+  no-read < 1057              the corpus's read-ok cases are not discriminating
+                              -- more of them arrive holding the answer than
+                              the partition says.
