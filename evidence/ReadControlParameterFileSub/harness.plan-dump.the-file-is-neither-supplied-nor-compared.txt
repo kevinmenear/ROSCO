@@ -1,0 +1,107 @@
+run_if_time_remains: 13839s remain, 120s needed -- starting
+ReadControlParameterFileSub: 471 C parameter(s), 99 extent(s), 445 output(s)
+  UNOBSERVABLE [character-arg] accINFILE: crosses as char* but build_c_params emitted no len_accINFILE, so nothing states how many bytes either side may read; neither supplied nor compared
+  UNOBSERVABLE [character-arg] RootName: crosses as char* but build_c_params emitted no len_RootName, so nothing states how many bytes either side may read; neither supplied nor compared
+  note: CntrPar: expanded 286 param(s) from 213 field(s)
+  note: LocalVar_ACC_INFILE: CHARACTER ARRAY field -- element width and element count are two extents where char[] has one; UNMEASURED, so refused rather than flattened into one long string
+  note: LocalVar_AWC_complexangle: unmapped type COMPLEX(DbKi)
+  note: LocalVar: expanded 179 param(s) from 167 field(s)
+  note: ErrVar: expanded 5 param(s) from 4 field(s)
+  note: CntrPar_Ind_R_Pitch: indexes CntrPar_OL_Channels (read from the reference)
+
+ReadControlParameterFileSub: 291 parameter(s) varied, 180 held at an inert value
+  CntrPar: reads 211 field(s): AWC_CntrGains, AWC_Mode, AWC_NumModes, AWC_amp, AWC_clockangle, AWC_freq, AWC_harmonic, AWC_n, AWC_phaseoffset, CC_ActTau, CC_GroupIndex, CC_Group_N, CC_Mode, DLL_FileName, DLL_InFile, DLL_ProcName, DT_Out, Echo, Ext_Interface, Ext_Mode, FA_HPFCornerFreq, FA_IntSat, FA_KI, FL_Mode, F_FlCornerFreq, F_FlHighPassFreq, F_FlpCornerFreq, F_GenSpdNotch_Ind, F_GenSpdNotch_N, F_LPFCornerFreq, F_LPFDamping, F_LPFType, F_NotchBetaDen, F_NotchBetaNum, F_NotchFreqs, F_NumNotchFilts, F_SSCornerFreq, F_TwrTopNotch_Ind, F_TwrTopNotch_N, F_VSRefSpdCornerFreq, F_WECornerFreq, F_YawErr, Fl_Kp, Fl_U, Fl_n, Flp_Angle, Flp_Ki, Flp_Kp, Flp_MaxPit, Flp_Mode, IPC_ControlMode, IPC_CornerFreqAct, IPC_IntSat, IPC_KI, IPC_KP, IPC_SatMode, IPC_Vramp, IPC_aziOffset, Ind_Azimuth, Ind_BldPitch, Ind_Breakpoint, Ind_CableControl, Ind_GenTq, Ind_R_Pitch, Ind_R_Speed, Ind_R_Torque, Ind_StructControl, Ind_YawRate, LoggingLevel, OL_Azimuth, OL_BP_FiltFreq, OL_BP_Mode, OL_BldPitch1, OL_BldPitch2, OL_BldPitch3, OL_Breakpoints, OL_CableControl, OL_Channels, OL_Filename, OL_GenTq, OL_Mode, OL_R_Pitch, OL_R_Speed, OL_R_Torque, OL_StructControl, OL_YawRate, PA_CornerFreq, PA_Damping, PA_Mode, PC_ControlMode, PC_FinePit, PC_GS_KD, PC_GS_KI, PC_GS_KP, PC_GS_TF, PC_GS_angles, PC_GS_n, PC_MaxPit, PC_MaxRat, PC_MinPit, PC_MinRat, PC_RefSpd, PC_RtTq99, PC_Switch, PF_Mode, PF_Offsets, PF_TimeStuck, PRC_Comm, PRC_GenSpeeds, PRC_LPF_Freq, PRC_Mode, PRC_Pitch_Table, PRC_R_Pitch, PRC_R_Speed, PRC_R_Table, PRC_R_Torque, PRC_Table_n, PRC_WindSpeeds, PRC_n, PS_BldPitchMin, PS_BldPitchMin_N, PS_Mode, PS_WindSpeeds, PerfFileName, PerfTableSize, RP_Gains, SD_EnableGenSpeed, SD_EnablePitch, SD_EnableTime, SD_EnableYawError, SD_GenSpdCornerFreq, SD_MaxGenSpd, SD_MaxPit, SD_MaxPitchRate, SD_MaxTorqueRate, SD_MaxYawError, SD_Method, SD_Mode, SD_PitchCornerFreq, SD_StagePitch, SD_StageTime, SD_Stage_N, SD_Time, SD_TimeActivate, SD_YawErrorCornerFreq, SS_Mode, SS_PCGain, SS_VSGain, SU_FW_MinDuration, SU_LoadHoldDuration, SU_LoadRampDuration, SU_LoadStages, SU_LoadStages_N, SU_Mode, SU_RotorSpeedCornerFreq, SU_RotorSpeedThresh, SU_StartTime, StC_GroupIndex, StC_Group_N, StC_Mode, TD_Mode, TRA_ExclBand, TRA_ExclSpeed, TRA_Mode, TRA_RateLimit, VS_ArSatTq, VS_ConstPower, VS_ControlMode, VS_FBP, VS_FBP_Omega, VS_FBP_Tau, VS_FBP_U, VS_FBP_n, VS_GenEff, VS_KI, VS_KP, VS_MaxOMTq, VS_MaxRat, VS_MaxTq, VS_MinOMSpd, VS_MinOMTq, VS_MinTq, VS_RefSpd, VS_Rgn2K, VS_RtPwr, VS_RtTq, VS_TSRopt, VS_n, WE_BladeRadius, WE_FOPoles, WE_FOPoles_N, WE_FOPoles_v, WE_Gamma, WE_GearboxRatio, WE_Jtot, WE_Mode, WE_RhoAir, Y_ControlMode, Y_ErrThresh, Y_IPC_IntSat, Y_IPC_KI, Y_IPC_KP, Y_MErrSet, Y_Rate, Y_uSwitch, ZMQ_CommAddress, ZMQ_ID, ZMQ_Mode, ZMQ_UpdatePeriod, n_DT_Out, n_DT_ZMQ
+  ErrVar: read WHOLE (passed to a callee) -- every field varied
+  LocalVar: reads 1 field(s): DT
+  RootName: read WHOLE (passed to a callee) -- every field varied
+  accINFILE: read WHOLE (passed to a callee) -- every field varied
+  accINFILE_size: reads 0 field(s): 
+  HELD, so untested by construction: 180 parameter(s). A defect confined to one of these is invisible to this harness.
+  UNCONSTRAINED: 134 varied parameter(s) on the +/-1e3 default: CntrPar_AWC_CntrGains, CntrPar_AWC_amp, CntrPar_AWC_clockangle, CntrPar_AWC_freq, CntrPar_AWC_phaseoffset, CntrPar_CC_ActTau, CntrPar_DT_Out, CntrPar_FA_HPFCornerFreq, CntrPar_FA_IntSat, CntrPar_FA_KI, CntrPar_F_FlCornerFreq, CntrPar_F_FlHighPassFreq, CntrPar_F_FlpCornerFreq, CntrPar_F_LPFCornerFreq, CntrPar_F_LPFDamping, CntrPar_F_NotchBetaDen, CntrPar_F_NotchBetaNum, CntrPar_F_NotchFreqs, CntrPar_F_SSCornerFreq, CntrPar_F_VSRefSpdCornerFreq, CntrPar_F_WECornerFreq, CntrPar_F_YawErr, CntrPar_Fl_Kp, CntrPar_Fl_U, CntrPar_Flp_Angle, CntrPar_Flp_Ki, CntrPar_Flp_Kp, CntrPar_Flp_MaxPit, CntrPar_IPC_CornerFreqAct, CntrPar_IPC_IntSat, CntrPar_IPC_KI, CntrPar_IPC_KP, CntrPar_IPC_Vramp, CntrPar_IPC_aziOffset, CntrPar_OL_Azimuth, CntrPar_OL_BP_FiltFreq, CntrPar_OL_BldPitch1, CntrPar_OL_BldPitch2, CntrPar_OL_BldPitch3, CntrPar_OL_Breakpoints, CntrPar_OL_CableControl, CntrPar_OL_Channels, CntrPar_OL_GenTq, CntrPar_OL_R_Pitch, CntrPar_OL_R_Speed, CntrPar_OL_R_Torque, CntrPar_OL_StructControl, CntrPar_OL_YawRate, CntrPar_PA_CornerFreq, CntrPar_PA_Damping, CntrPar_PC_FinePit, CntrPar_PC_GS_KD, CntrPar_PC_GS_KI, CntrPar_PC_GS_KP, CntrPar_PC_GS_TF, CntrPar_PC_GS_angles, CntrPar_PC_MaxPit, CntrPar_PC_MaxRat, CntrPar_PC_MinPit, CntrPar_PC_MinRat, CntrPar_PC_RefSpd, CntrPar_PC_RtTq99, CntrPar_PC_Switch, CntrPar_PF_Offsets, CntrPar_PF_TimeStuck, CntrPar_PRC_GenSpeeds, CntrPar_PRC_LPF_Freq, CntrPar_PRC_Pitch_Table, CntrPar_PRC_R_Pitch, CntrPar_PRC_R_Speed, CntrPar_PRC_R_Table, CntrPar_PRC_R_Torque, CntrPar_PRC_WindSpeeds, CntrPar_PS_BldPitchMin, CntrPar_PS_WindSpeeds, CntrPar_RP_Gains, CntrPar_SD_GenSpdCornerFreq, CntrPar_SD_MaxGenSpd, CntrPar_SD_MaxPit, CntrPar_SD_MaxPitchRate, CntrPar_SD_MaxTorqueRate, CntrPar_SD_MaxYawError, CntrPar_SD_PitchCornerFreq, CntrPar_SD_StagePitch, CntrPar_SD_StageTime, CntrPar_SD_Time, CntrPar_SD_TimeActivate, CntrPar_SD_YawErrorCornerFreq, CntrPar_SS_PCGain, CntrPar_SS_VSGain, CntrPar_SU_FW_MinDuration, CntrPar_SU_LoadHoldDuration, CntrPar_SU_LoadRampDuration, CntrPar_SU_LoadStages, CntrPar_SU_RotorSpeedCornerFreq, CntrPar_SU_RotorSpeedThresh, CntrPar_SU_StartTime, CntrPar_TRA_ExclBand, CntrPar_TRA_ExclSpeed, CntrPar_TRA_RateLimit, CntrPar_VS_ArSatTq, CntrPar_VS_FBP_Omega, CntrPar_VS_FBP_Tau, CntrPar_VS_FBP_U, CntrPar_VS_GenEff, CntrPar_VS_KI, CntrPar_VS_KP, CntrPar_VS_MaxOMTq, CntrPar_VS_MaxRat, CntrPar_VS_MaxTq, CntrPar_VS_MinOMSpd, CntrPar_VS_MinOMTq, CntrPar_VS_MinTq, CntrPar_VS_RefSpd, CntrPar_VS_Rgn2K, CntrPar_VS_RtPwr, CntrPar_VS_RtTq, CntrPar_VS_TSRopt, CntrPar_WE_BladeRadius, CntrPar_WE_FOPoles, CntrPar_WE_FOPoles_v, CntrPar_WE_Gamma, CntrPar_WE_GearboxRatio, CntrPar_WE_Jtot, CntrPar_WE_RhoAir, CntrPar_Y_ErrThresh, CntrPar_Y_IPC_IntSat, CntrPar_Y_IPC_KI, CntrPar_Y_IPC_KP, CntrPar_Y_MErrSet, CntrPar_Y_Rate, CntrPar_Y_uSwitch, CntrPar_ZMQ_UpdatePeriod, LocalVar_DT
+
+  PREDICATE KNOB: CntrPar_AWC_Mode at [-1.0, 0.0, 1.0, 2.0, 3.0, 4.0]
+
+  PREDICATE KNOB: CntrPar_CC_Mode at [-1.0, 0.0, 1.0, 2.0, 3.0]
+
+  PREDICATE KNOB: CntrPar_DT_Out at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_Echo at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_Ext_Mode at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_F_GenSpdNotch_N at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_F_LPFType at [0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_F_NumNotchFilts at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_F_TwrTopNotch_N at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_Fl_n at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_Flp_Mode at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_IPC_ControlMode at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_Ind_Azimuth at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_Ind_CableControl at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_Ind_GenTq at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_Ind_R_Pitch at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_Ind_R_Speed at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_Ind_R_Torque at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_Ind_StructControl at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_Ind_YawRate at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_OL_Mode at [-1.0, 0.0, 1.0, 2.0, 3.0]
+
+  PREDICATE KNOB: CntrPar_PA_Mode at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_PC_ControlMode at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_PF_Mode at [0.0, 1.0, 2.0, 3.0]
+
+  PREDICATE KNOB: CntrPar_PRC_Comm at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_PRC_Mode at [-1.0, 0.0, 1.0, 2.0, 3.0]
+
+  PREDICATE KNOB: CntrPar_PRC_R_Pitch at [0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_PS_Mode at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_SD_Method at [0.0, 1.0, 2.0, 3.0]
+
+  PREDICATE KNOB: CntrPar_SD_Mode at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_SS_Mode at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_SU_LoadStages_N at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_SU_Mode at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_StC_Mode at [-1.0, 0.0, 1.0, 2.0, 3.0]
+
+  PREDICATE KNOB: CntrPar_TD_Mode at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_TRA_Mode at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_VS_ControlMode at [0.0, 1.0, 2.0, 3.0]
+
+  PREDICATE KNOB: CntrPar_VS_FBP at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_WE_Mode at [-1.0, 0.0, 1.0, 2.0, 3.0]
+
+  PREDICATE KNOB: CntrPar_Y_ControlMode at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: CntrPar_ZMQ_Mode at [-1.0, 0.0, 1.0, 2.0]
+
+  PREDICATE KNOB: ErrVar_aviFAIL at [-1.0, 0.0, 1.0, 2.0]
+
+wrote plan to /tmp/rcpfs.plan.json: 291 varied, 180 held, 42 knob(s). NOT generated.
+run_if_time_remains: exit 0 after 1s (estimated 120s; 13838s now remain)

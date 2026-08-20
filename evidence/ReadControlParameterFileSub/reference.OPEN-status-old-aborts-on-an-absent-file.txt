@@ -1,0 +1,13 @@
+run_if_time_remains: 13820s remain, 60s needed -- starting
+ before OPEN
+At line 5 of file probe_open.f90 (unit = 77)
+Fortran runtime error: Cannot open file '/tmp/vit_no_such_file_9f3c.IN': No such file or directory
+
+Error termination. Backtrace:
+#0  0xf1a9afb8d44b in ???
+#1  0xf1a9afb8e277 in ???
+#2  0xf1a9afc9211b in ???
+#3  0xb36e40f50aa7 in MAIN__
+#4  0xb36e40f50b5b in main
+EXIT=2
+run_if_time_remains: exit 0 after 0s (estimated 60s; 13820s now remain)
