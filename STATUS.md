@@ -4,6 +4,117 @@
 `DECISIONS.md` is the append-only record of *why*; this file is *where things
 stand*. One copy of every count — do not duplicate them anywhere else.
 
+**As of 2026-08-20: unit #62 `ComputeVariablesSetpoints` is `deferred`. FIRST
+dispatch, and it does NOT close: mutation **0.7342** against a threshold of
+1.0, with 21 open survivors. Everything else is green and red-tested — a
+25,398-case differential harness at 0 failed both before and after
+integration, the 27-scenario gate at 5,252,000 values / 0 mismatched, four gate
+red tests including a NEGATIVE CONTROL and a REFUTED PREDICTION, and a
+post-integration copy-back red test that moved exactly the 25,398 predicted
+before it ran.**
+
+| layer | result |
+|---|---|
+| differential harness, clean tree | **25,398 checked, 0 failed, 0 inadmissible**; 480 out-parameters compared |
+| mutation, one sweep | **58 of 79 scoreable, 0.7342**; 2 equivalent, 0 unreachable, **21 OPEN** |
+| post-integration | **25,398 checked, 0 failed** (E4.5) |
+| gate, 27 scenarios | 5,252,000 values / 351 channels, **0 mismatched** |
+| gate red tests | **728,340 / 0 / 0 / 1,977,826** — and both zeros are explained |
+| wrapper copy-back red test | **25,398 of 25,398, PREDICTED 25,398** |
+
+**THREE INFRASTRUCTURE DEFECTS BLOCKED THE HARNESS AND TWO OF THEM ARE FIXED
+IN THE TOOL.** vit `426eef9`. (1) The generated callee bridge declared a
+`C_PTR` for its callee's `INTENT(IN)` view argument and never converted it,
+reaching for `vit_original_<t>` — a `POINTER, SAVE` only an integration wrapper
+sets — so a directly-called translation dereferenced NULL. `RefSpeedExclusion`
+is the campaign's first translated callee with a view type declared
+`INTENT(IN)` and unit #62 is the first unit to call it; 61 units never met the
+path. (2) `vit_view_in_controlparameters` was an unconditional `ERROR STOP`
+over three rank-2 ALLOCATABLE fields, whose shape IS recoverable
+(`n_<f>_rows`/`n_<f>_cols`, which the forward populator already writes from
+`SIZE(src%<f>, 1..2)`). The regeneration is ADDITIVE and that is checked rather
+than asserted: `vit_populate_controlparameters` and
+`vit_copy_scalars_to_controlparameters` come back BYTE-IDENTICAL, 636 and 165
+lines, so no integrated wrapper moves.
+
+**(3) THE THIRD IS THE REFERENCE WRITING PAST ITS OWN ARRAYS, AND THE SYMPTOM
+WAS THREE LAYERS AWAY.** `objInst%instLPF` and `%instRL` are 1-based subscripts
+into `DIMENSION(1024)` members of `FilterParameters` and `rlParams`; the ±1e3
+default put them outside.
+
+    PROBE pre-cpp  n_WE_CP a=3 b=3
+    PROBE post-cpp n_WE_CP a=3 b=2021761243     <- changed BY THE CALL
+    Error allocating 16174089944 bytes: Cannot allocate memory
+
+The absurd number is not a corpus draw; the C++ side read `WE_CP_n = 3` from
+the case file. Three probes — the case index in the harness loop, the extent
+inside the generated bridge, and the pair either side of the C++ call — located
+it to case 19, whose only callee is `LPFilter`.
+
+**THE ONE TRANSLATION DEFECT: `MAX` IS NOT `std::max`.** gfortran lowers the
+MAX intrinsic to `maxsd`, which returns the SECOND operand at a NaN and at a
+tie; `std::max(a, b)` is `(a < b) ? b : a` and returns the FIRST. 3,300 of
+25,398 cases, in exactly two shapes and nothing else:
+
+    case   3  LocalVar.VS_RefSpd  ref -1000.0  got  nan    MAX(NaN, VS_MinOmSpd)
+    case 132  LocalVar.VS_RefSpd  ref     0.0  got -0.0    MAX(-0.0, +0.0)
+
+Replaced by `fortran_max(a, b) = (a > b) ? a : b`, which the language decides;
+`std::fmax` agrees at the NaN and is only *recommended* to prefer `+0.0`.
+
+**A GATE PREDICTION WAS REFUTED, AND THE REFUTATION IS THE FINDING.** The ELSE
+arm of the `VS_ControlMode` chain is taken in SCENARIO 12 ONLY (15,999 calls),
+and perturbing it moved **0**. A fourth red test forcing `VS_RefSpd` by 1.0e5
+on the always-run path moved **1,977,826** across 22 of the 23 calling
+scenarios — every one EXCEPT 12. Scenario 12 is `VS_ControlMode = 1`, K·Ω²
+torque, where the generator torque is `Rgn2K·GenSpeedF²` and no speed reference
+is read: the one scenario that takes the arm is the one scenario in which this
+unit's principal output reaches no gate channel. Two zeros, two different
+causes — RT3's arm is never EXECUTED, RT2's runs 15,999 times and is
+ANNIHILATED — and only the pair (RT4, RT2) separates them.
+
+**WHY 0.7342, AND THE REPAIR EXISTS AND GOES RED.**
+`evidence/ComputeVariablesSetpoints/inputs_census.txt`, one `fprintf` over the
+scored corpus:
+
+    VS_Mode_Power_TSR arm    1,152 cases   VS_Rgn2K == 0.0 on ALL of them
+    VS_Mode_Torque_TSR arm   1,152 cases   GenTq == 0.0 AND VS_Rgn2K == 0.0 on ALL
+    VS_FBP saturate arm      1,154 cases   VS_MinOMSpd == 600.0 on ALL
+
+Both control laws computed a NaN or an Inf on every case that reached them, and
+the saturate arm's answer was lifted straight back by the unit's own final
+`MAX` — which is eleven of the 21 open survivors, exactly. Seven
+degenerate-range pins fix the corpus and it BUILDS (22,434 cases), and the
+harness then FAILS 577 of them on four outputs with `ref 122.90967 / got
+34.64286` on every recorded mismatch. Three probes narrowed that without
+settling it; the pins are committed commented out with the whole argument and
+the red artifact is kept. **Two `values`-list attempts before that were
+SIGKILLed by the generator's memory ceiling** — seven two-element lists made no
+case file at all, seven one-element lists reached 95,741 cases and died; a
+`values` list makes a parameter a FLAG and R6 re-runs a block under each
+declared value, while `{ lo = N, hi = N }` states the same value and creates no
+flag.
+
+**TWO EQUIVALENCES, WITH THE CONTROL INSIDE THE SWEEP.** `312f3565` and
+`f8e46a25` sit on the reference's own DEAD STORE
+(`LocalVar%VS_RefSpd = VS_RefSpd_TSR * PRC_R_Speed`, overwritten four lines
+later by an assignment that reads `VS_RefSpd_TSR`). The SAME product one screen
+down is `saturate`'s upper bound, it IS read, and its two mutants are NOT
+declared and stay open. **Two `0.0 -> 1.0` mutants are almost certainly
+equivalent and are deliberately NOT declared**: they are the `InitialValue`
+argument of the two `lpfilter_c` calls, which the bridge never reads because
+`has_InitialValue` is `0` beside it — but `vit_mutate.py`'s ids could not be
+reproduced from `cppmutate._mid`, this translation has four `0.0` literals and
+three of them survived, and declaring the wrong site is a false equivalence
+that P12 fails outright.
+
+**REVCHECK REPORTS ONE FINDING AND IT IS NOT A SPLIT.** All nine result
+artifacts name `41d383f`. The `DIRTY TREE` verdict is `translation-loop`
+carrying ONE untracked file, `scripts/make_harness_guide.py`, which zero
+modules import. Both repairs (commit it; move it aside) change the loop rev or
+displace another dispatch's work and would require re-taking all nine, so it is
+reported with its measurement and raised for the Driver.
+
 **As of 2026-08-20: unit #61 `WriteRestartFile` is `integrated`. FIRST
 dispatch, and it CLOSES: mutation **1.0000** with **ZERO OPEN SURVIVORS**, a
 195-file / 89,858,535-byte checkpoint oracle at 0 mismatched on the integrated

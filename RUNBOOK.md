@@ -9304,6 +9304,150 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   `touch` from inside the container before building -- and the retry fires on
   attempt 1 every run, which is how you tell a race from an accident.
 
+## A CALLEE'S `INTENT(IN)` VIEW ARGUMENT IS A DIFFERENT BRIDGE PATH FROM ITS
+## `INTENT(INOUT)` ONE, AND ONLY THE SECOND HAD EVER BEEN EXERCISED
+
+- **Unit #62, fixed in vit `426eef9`.** `vit test-validate` emits, for a callee
+  taking a view type:
+
+  ```
+  TYPE(C_PTR), VALUE :: CntrPar          <- declared, and NEVER converted
+  CALL RefSpeedExclusion(vit_original_localvariables,
+                         vit_original_controlparameters, ...)
+  ```
+
+  `vit_original_<t>` is a `POINTER, SAVE` that only an integration or kernel
+  WRAPPER assigns. The INOUT arguments have the `vit_direct_<t>` fallback for
+  exactly that; the INTENT(IN) one had none, so a differential harness — which
+  calls the translation directly — dereferenced NULL and the run printed
+  NOTHING (`harness produced no JSON`, because the JSON comes after the loop).
+
+  ```
+  PROBE refspeedexclusion_c: ASSOCIATED(vit_original_controlparameters) = F
+  Segmentation fault (core dumped)                          rc 139
+  ```
+
+- **The rule.** Unit #45 already says "ask the generated bridge what it assumes
+  before bisecting the call chain" and gives `grep -n 'POINTER, SAVE'` as the
+  five-second version. **Add: read the bridge's dummy list against its CALL,
+  and treat an argument that is declared and never mentioned again as the
+  finding.** The INTENT of the callee's dummy is what selects the path, so a
+  callee's read-only view argument is a different code path from its read-write
+  one, and 61 units exercised only the second.
+
+## AN `ERROR STOP` NAMING THREE FIELDS CAN BE A REFUSAL ABOUT A NUMBER THE
+## STRUCT ALREADY CARRIES, AND THE ADDITIVE CHECK IS PER ROUTINE
+
+- **Unit #62.** `vit_view_in_controlparameters` refused on `OL_CableControl`,
+  `OL_StructControl` and `OL_Channels`, rank-2 ALLOCATABLEs, on the stated
+  ground that "a higher-rank field's shape is not recoverable from [one extent]
+  without the per-dimension extents the struct spells differently per field".
+  The struct spells them uniformly — `n_<f>_rows`, `n_<f>_cols` — and the
+  FORWARD populator already writes them from `SIZE(src%<f>, 1..2)`.
+
+- **The check that it is additive is a PER-ROUTINE diff, not a line count.**
+
+  ```
+  vit_populate_controlparameters          IDENTICAL   636 lines
+  vit_copy_scalars_to_controlparameters   IDENTICAL   165 lines
+  vit_view_in_controlparameters           179 ->  783
+  vit_view_out_controlparameters          167 -> 1120
+  ```
+
+  The two that every integrated wrapper calls do not move, and the two that did
+  were unconditional `ERROR STOP`s — dead by construction. That is what
+  separates this regeneration from the one unit #61 REVERTED, where
+  `vit_copy_scalars_to_controlparameters` itself gained 1,498 lines. **Split
+  the regenerated module by `SUBROUTINE` and compare the routines the shipped
+  wrappers call; a `--stat` on the file cannot tell the two cases apart.**
+
+## A CORPUS CAN MAKE THE **REFERENCE** WRITE PAST ITS OWN ARRAY, AND THE PROBE
+## IS ONE FIELD EITHER SIDE OF THE CALL
+
+- **Unit #62, and it cost about forty minutes before it was even a
+  hypothesis.** `objInst%instLPF` and `%instRL` are 1-based subscripts into
+  `DIMENSION(1024)` members of `FilterParameters` and `rlParams`; nothing
+  bounds them, so the ±1e3 default put them outside and `LPFilter` wrote past
+  `FP%lpf1_*`. The symptom named a different argument entirely:
+
+  ```
+  In file 'computevariablessetpoints_bridge.f90', around line 1091:
+  Error allocating 16174089944 bytes: Cannot allocate memory
+  VIT bridge: LocalVar%ACC_INFILE came back with -1842632209 element(s)
+  ```
+
+  Two reading passes went into the corpus generator's extent-name collision
+  (`WE_CP_n` the FIELD against `n_WE_CP` the synthesised extent) on the theory
+  that 2×10⁹ was a decade-ladder draw. It was not.
+
+  ```
+  PROBE pre-cpp  n_WE_CP a=3 b=3
+  PROBE post-cpp n_WE_CP a=3 b=2021761243     <- changed BY THE CALL
+  ```
+
+- **The rule.** When a crash or a red implicates an input the corpus set, print
+  that input immediately before and immediately after the call **before**
+  reading the generator. If it changed, the question is not "what did the
+  generator draw" but "who wrote there", and the answer is a subscript. And
+  **pin every `objInst` counter for every unit that calls a filter, a PI
+  controller or a rate limiter** — `[RefSpeedExclusion]` and
+  `[ComputeVariablesSetpoints]` both do it by hand and nothing supplies it.
+
+## `{ lo = N, hi = N }` AND `values = [N]` COST DIFFERENT AMOUNTS OF MEMORY, AND
+## THE DIFFERENCE IS WHETHER THE PARAMETER BECOMES A FLAG
+
+- **Unit #62, three attempts at one repair.**
+
+  ```
+  seven { values = [a, b] }   SIGKILL at 75 s, case count never printed
+  seven { values = [a]    }   95,741 case(s), then SIGKILL
+  seven { lo = N, hi = N  }   22,434 case(s), generated
+  ```
+
+  A stated `values` list makes the parameter a FLAG and R6 re-runs a block
+  under each declared value of every flag; a degenerate range states the same
+  one value and creates no flag. The campaign's two warnings about
+  `{ lo = N, hi = N }` — it collapses R7's predicate knob (unit #59), it
+  deletes an ALLOCATABLE array from the comparison (unit #46) — are about kinds
+  of parameter, and neither applies to a free scalar real that is not a knob.
+  **Ask which kind the parameter is before reaching for `values`; on a plain
+  scalar the degenerate range is the cheap spelling and it says the same
+  thing.**
+
+## A CORPUS REPAIR THAT GOES RED IS NOT A FAILED REPAIR, AND THE COMMITTED
+## CORPUS IS THE ONE WITH A GREEN
+
+- **Unit #62.** Seven pins, justified from the 28 shipped `Examples/*.IN` and
+  measured against a census that showed both alternative torque-law arms
+  dividing by zero on all 1,152 cases that reach them. The corpus built and
+  the harness failed **577 of 22,434**, on four outputs, with
+  `ref 122.90967 / got 34.64286` on every recorded mismatch.
+
+- **What was done with it, and it is the shape to copy.** The pins are
+  committed COMMENTED OUT in `harness/ranges.toml` with the whole argument
+  intact, the red artifact is kept beside the evidence, and the unit closes on
+  the corpus that HAS a green. A mutation score taken against a corpus whose
+  own green nobody has is worse than a low score against one that does. **State
+  in the entry which of the two possibilities is unresolved** — a translation
+  defect the wider corpus cannot reach, or a reference path with no oracle —
+  rather than picking the flattering one.
+
+## TWO CORPORA WITH THE SAME `checked` COUNT CAN BE DIFFERENT FILES, AND THE
+## SCORE HAS TO NAME THE ONE ON DISK
+
+- **Unit #62.** Reverting the seven trial pins regenerated
+  25,398 cases / 260,684,571 bytes where the first sweep had scored
+  25,562 / 262,367,867. `checked` is 25,398 either way and the green is the
+  same number, so nothing in either artifact disagrees.
+
+- **Re-run the sweep anyway.** Unit #26's rule is that a red result and the
+  green it certifies must name the same corpus, and "the same count" is not
+  "the same corpus". The re-take cost 250 seconds. **The count the generator
+  PRINTS (`N case(s)`) and the count the harness CHECKS are different numbers
+  and both are worth reading** — this unit's first corpus printed 25,562 and
+  checked 25,398.
+
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's

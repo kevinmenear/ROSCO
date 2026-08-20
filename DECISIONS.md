@@ -2,6 +2,196 @@
 
 Append-only record of *why*. Never read end to end.
 
+## Unit #62 — ComputeVariablesSetpoints — 2026-08-20
+
+**Disposition `deferred`.** Translated, integrated, gate green at 5,252,000
+values with four red tests, differential harness green at 25,398 before AND
+after integration with a copy-back red test that moved exactly the predicted
+25,398 — and mutation **0.7342** against a threshold of 1.0, with 21 open
+survivors. It defers on P12 and on nothing else.
+
+### AN `INTENT(IN)` VIEW ARGUMENT IS A CALLEE-BRIDGE PATH NOBODY HAD TAKEN
+
+`RefSpeedExclusion` declares `TYPE(ControlParameters), INTENT(IN) :: CntrPar`.
+`vit test-validate` generated a bridge that declares a `C_PTR` for it, never
+converts it, and passes `vit_original_controlparameters` — a `POINTER, SAVE`
+that only an integration wrapper assigns — straight to the callee. The
+differential harness calls the translation DIRECTLY, so the pointer is NULL:
+
+    PROBE refspeedexclusion_c: ASSOCIATED(vit_original_controlparameters) = F
+    Segmentation fault (core dumped)
+
+and with no probe the run prints NOTHING, because the harness emits its JSON
+after the loop. `harness produced no JSON` reads as a build or emitter problem.
+That is unit #45's `interp2d` signature one INTENT over — there the NULL stash
+was the bridge's own INOUT view argument and the repair was the `vit_direct_<t>`
+fallback; here the argument the bridge should read was already in its dummy
+list and was simply dropped, which is unit #5's wrapper defect met in the
+callee-bridge generator.
+
+**Fixed in vit `426eef9`, and it is strictly additive**: with a wrapper present
+the emitted call is unchanged, and the INTENT(IN) branch adds a `C_F_POINTER`,
+an `ASSOCIATED` test, a `vit_view_in_<t>` and a post-call `NULLIFY` — the last
+because the stash is a `SAVE` and without it every case after the first would
+be computed against the first case's copy of the argument.
+
+**Sixty-one units never met this path** because their callees' derived-type
+dummies were INOUT (`ErrVar`) or not view types at all. `RefSpeedExclusion`
+(unit #59) is the campaign's first translated callee with an `INTENT(IN)` view
+dummy and unit #62 is the first unit to call it.
+
+### A REFUSAL THAT NAMED THREE FIELDS WAS A REFUSAL ABOUT A NUMBER THE STRUCT ALREADY CARRIED
+
+With the bridge repaired, `vit_view_in_controlparameters` was an unconditional
+`ERROR STOP` naming `OL_CableControl`, `OL_StructControl` and `OL_Channels` —
+rank-2 ALLOCATABLE arrays. The generator's own comment gives the reason: "a
+higher-rank field's shape is not recoverable from [one extent] without the
+per-dimension extents the struct spells differently per field."
+
+**The struct spells them uniformly, and the FORWARD populator already reads
+them back.** `n_<f>_rows` and `n_<f>_cols`, written from `SIZE(src%<f>, 1)` and
+`SIZE(src%<f>, 2)`, with the C view's own comment saying `// column-major` so
+no transposition is needed either. The rank-1 block one loop up, with two
+extents instead of one, is the whole of the change (vit `426eef9`).
+
+**The additive check is the one the RUNBOOK already names**, and it is a
+measurement rather than an argument: regenerate
+`vit_controlparameters_view.f90` and diff PER ROUTINE.
+
+    vit_populate_controlparameters          IDENTICAL   636 lines
+    vit_copy_scalars_to_controlparameters   IDENTICAL   165 lines
+    vit_view_in_controlparameters           179 -> 783 lines
+    vit_view_out_controlparameters          167 -> 1120 lines
+
+The two that every integrated wrapper calls do not move; the two that changed
+were unconditional `ERROR STOP`s, i.e. dead by construction. So no unit already
+closed is re-priced — which is exactly the question unit #61 raised when
+`--reverse-copy` rewrote the same file with +1498 lines of ALLOCATABLE
+copy-back and the answer was to revert.
+
+### A CORPUS CAN MAKE THE **REFERENCE** WRITE PAST ITS OWN ARRAY
+
+`objInst%instLPF` and `objInst%instRL` are 1-based subscripts into
+`DIMENSION(1024)` members of `FilterParameters` and `rlParams`. Nothing in the
+type bounds them and nothing in the harness did either, so the ±1e3 default put
+them outside and `LPFilter` wrote past `FP%lpf1_*`. The symptom was three
+layers away and looked like a corpus-generator defect:
+
+    In file 'computevariablessetpoints_bridge.f90', around line 1091:
+    Error allocating 16174089944 bytes: Cannot allocate memory
+    VIT bridge: LocalVar%ACC_INFILE came back with -1842632209 element(s)
+
+**The probe that named it is the cheapest one available and it should be the
+first move, not the last**: print one field either side of the C++ call.
+
+    PROBE pre-cpp  n_WE_CP a=3 b=3
+    PROBE post-cpp n_WE_CP a=3 b=2021761243
+
+A value the case file supplied, changed by the call. Before that, two full
+reading passes went into `emit.py`'s extent-name collision (`WE_CP_n` the field
+against `n_WE_CP` the synthesised extent) on the theory that the corpus had
+drawn 2×10⁹ — it had not; the C++ side read 3.
+
+**Generalised: when a red or a crash implicates an input the corpus set, check
+that the input still holds its value at the moment the reference reads it,
+before reading the generator at all.** `[RefSpeedExclusion]` already pins
+`objInst_instRL`; every unit that calls a filter, a PI controller or a rate
+limiter needs the same pin and there is no rule that supplies it.
+
+### `{ lo = N, hi = N }` AND `values = [N]` ARE NOT THE SAME PRICE
+
+Three attempts at the same seven-parameter corpus repair:
+
+    seven { values = [a, b] }   SIGKILL at 75 s, case count never printed
+    seven { values = [a]    }   95,741 case(s), then SIGKILL
+    seven { lo = N, hi = N  }   22,434 case(s), generated
+
+A stated `values` list makes the parameter a FLAG, and R6 re-runs a block of
+cases under each declared value of every flag; seven more flags multiply that
+block against a corpus already at 263 MB. A degenerate range states the same
+one value and creates no flag. The two documented warnings about
+`{ lo = N, hi = N }` — that it collapses R7's predicate knob, and that on an
+ALLOCATABLE EXTENT it deletes the array from the comparison — are both about
+kinds of parameter, and neither applies to a free scalar real that is not a
+knob. **Ask which of the two the parameter is before reaching for `values`.**
+
+### THE REPAIR WORKED AND THE HARNESS WENT RED, AND THAT IS NOT SETTLED
+
+On the 22,434-case pinned corpus the harness fails **577**, on four outputs and
+nothing else (`LocalVar.VS_RefSpd`, `.VS_SpdErr`, `.VS_SpdErrAr`,
+`DebugVar.VS_RefSpd`), with `ref 122.90967  got 34.64286` on every recorded
+mismatch. 122.90967 is exactly `CntrPar%VS_RefSpd`, which is what `LPFilter`
+returns on its RESET path; 34.64286 is exactly `CntrPar%VS_MinOMSpd`, which is
+what the unit's final `MAX` returns when its other operand is smaller or NaN.
+On case 9370 the C++ side's `LPFilter` returns NaN, the following `interp1d`
+returns 0.0, and `iStatus` is -300 with `restart` 0 — so neither side should be
+taking the reset path — while `LocalVar%PRC_WSE_F` and
+`LocalVar%PC_RefSpd_PRC`, the outputs of those SAME two callees one block
+earlier on the same case, agree exactly.
+
+**Whether that is a translation defect the wider corpus cannot reach or a
+reference path with no oracle was not settled inside this dispatch's clock, and
+it is recorded rather than closed over.** The pins are committed COMMENTED OUT
+in `harness/ranges.toml` with the whole argument, and the red artifact is kept
+at `evidence/ComputeVariablesSetpoints/harness.PINNED-CORPUS-RED.json`. The
+committed green (25,398 / 0) and the score it carries are the numbers the unit
+closes on, because a mutation score taken against a corpus whose own green
+nobody has would be worse than 0.7342.
+
+### RAISED FOR THE DRIVER
+
+1. **`vit_mutate.py`'s mutant ids cannot be reproduced from
+   `cppmutate._mid`.** `_mid('ComputeVariablesSetpoints', 'compare_op', '<',
+   '<=', k)` gives `b512bf09`, `b424866a`, `38d46d45` … for k = 0, 1, 2 while
+   the sweep's id is `f977278e`. Without the map, a `const_tweak` survivor
+   printed as `'0.0' -> '1.0'` cannot be attributed to a site, and this unit
+   therefore leaves TWO almost-certainly-equivalent mutants undeclared rather
+   than risk a false equivalence (which P12 fails outright). It is an
+   instrument fix that pays on every unit, not just this one. A workaround was
+   used here and it is worth writing down: zip the ordered
+   `[n/81] … SURVIVED` lines from the sweep's own stdout against the ordered
+   `SURVIVOR <id>` summary, after removing the declared-equivalent lines. That
+   recovers 12 of 21; it does not recover the `const_tweak` family, whose lines
+   print only the literal.
+
+2. **`translation-loop` has been carrying one untracked file,
+   `scripts/make_harness_guide.py`, since before this dispatch**, so every
+   result artifact this campaign now writes is stamped `<rev>-dirty`. Zero
+   modules import it, so it cannot have influenced any measurement, and all
+   nine of this unit's artifacts agree on `41d383f`. Both repairs — commit it,
+   or move it aside — change the loop rev or displace another dispatch's work,
+   and either would require re-taking all nine artifacts (~20 minutes). It is a
+   campaign-level call.
+
+3. **No rule bounds an `objInst` counter, and every unit that calls a filter or
+   a controller needs one.** `[RefSpeedExclusion]` pins `objInst_instRL` by
+   hand and `[ComputeVariablesSetpoints]` now pins `instLPF` and `instRL` by
+   hand. The bound is not a judgement: it is `DIMENSION(1024)` in
+   `ROSCO_Types.f90`, readable from the declaration. A generator rule that
+   bounds an integer parameter used as a subscript into a fixed-size member by
+   that member's declared extent would remove a whole class of silent
+   reference-side memory corruption, and it would have saved this dispatch
+   about forty minutes.
+
+### PROCEDURE
+
+Two reset windows, each closed with `restore_integrated.sh` before any commit,
+and the regenerated `vit_controlparameters_view.f90` re-applied by hand after
+each restore (the restore takes it back to HEAD, which the RUNBOOK records).
+Two mutation sweeps, both foreground under `mutate_guarded.sh` and both routed
+through `run_if_time_remains.sh`; both restored the translation to
+`9db124ea…` and cleared their markers. Twelve commits, one per expensive
+artifact, and the red-test predictions committed before their runs in both the
+gate and the post-integration cases.
+
+**One re-take was forced rather than chosen.** Reverting the seven trial pins
+regenerated a corpus of 25,398 cases / 260,684,571 bytes where the FIRST sweep
+had scored 25,562 / 262,367,867. The checked count is 25,398 either way and the
+green is the same number, but the case files are not the same bytes — so the
+sweep was re-run, and it is the re-taken artifact that is committed. The
+difference cost 250 seconds and it is the difference between a score about a
+corpus and a score about *a* corpus.
+
 ## Unit #61 — WriteRestartFile — 2026-08-20
 
 **Disposition `integrated`.** Translated, integrated, byte-identical to the

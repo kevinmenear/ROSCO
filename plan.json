@@ -3813,13 +3813,38 @@
         "DISCON"
       ],
       "dependency_depth": 3,
-      "verification": "kernel replay or direct-call harness; bit-identical",
+      "verification": "REVISED AT THE UNIT (C1). plan.json proposed 'kernel replay or direct-call harness; bit-identical'. The direct-call harness is what ran, and it took THREE infrastructure repairs before it could run at all -- a callee bridge that dereferenced a NULL module stash for its INTENT(IN) view argument (fixed in vit 426eef9), a vit_view_in_<t> that was an unconditional ERROR STOP over rank-2 ALLOCATABLE fields (same commit, and additive: the two routines every integrated wrapper calls regenerate byte-identical), and two objInst counters the corpus was drawing outside the DIMENSION(1024) arrays they subscript, so the REFERENCE wrote past its own storage. What ran: harness/ComputeVariablesSetpoints.json at 25,398 checked / 0 failed, re-run against the INTEGRATED build at the same count (E4.5), plus the 27-scenario gate at 5,252,000 values / 0 mismatched with four red tests, plus mutation/ComputeVariablesSetpoints.json. KERNEL REPLAY WAS NOT ATTEMPTED and is not needed: the differential harness reaches four statements the gate cannot (the two alternative torque-control laws and both Region-3 VS_FBP lookups have ZERO hits in all 27 scenarios), and the gate reaches the integrated build the harness cannot.",
       "why": "every input and output crosses the signature",
       "bridge_feasible": {
         "value": "unknown",
         "basis": "the matrix records 5 blocking feature(s) that no FEATURE_CELLS pattern can attribute to a declaration (c_alloc_out, c_fn_alloc_character, c_fn_array, c_unit_read, c_unit_write), so 'no blocker found' cannot be distinguished from 'no blocker detectable'"
       },
-      "observability": null
+      "observability": "THE GATE SEES 22 OF THE 23 SCENARIOS THAT CALL THIS UNIT, AND THE ONE IT DOES NOT IS THE ONLY ONE THAT TAKES AN ARM. Measured, not inferred: forcing VS_RefSpd by 1.0e5 on the always-run path moved 1,977,826 of 5,252,000 across scenarios {1,2,3,4,5,6,7,8,9,11,15,16,17,18,19,20,21,22,23,25,26,27} -- every calling scenario except 12 (gate/ComputeVariablesSetpoints.redtest.vs_refspd_forced.json). Scenario 12 is VS_ControlMode = 1, K*Omega^2 torque, where the generator torque is Rgn2K*GenSpeedF^2 and no speed reference is read; it is also the ONLY scenario coverage records for the ELSE arm of the VS_ControlMode chain (ControllerBlocks.f90:132, 15,999 calls). So perturbing that arm moves 0, and the prediction that it would move was REFUTED by its own run. FOUR MORE STATEMENTS ARE OUTSIDE THE GATE ENTIRELY: :126, :129, :139 and :142 -- the VS_Mode_Power_TSR and VS_Mode_Torque_TSR control laws and both Region-3 VS_FBP lookups -- have NO ENTRY in coverage/line_coverage.json, i.e. zero hits in all 27 scenarios. Only the differential harness reaches them, and the mutation census (evidence/ComputeVariablesSetpoints/inputs_census.txt) shows it reaches them on a corpus that divides by zero on every one of the 1,152 cases, which is why eleven mutants there survive. THIS UNIT CURRENTLY HAS NO INSTRUMENT THAT DISCRIMINATES THOSE FOUR STATEMENTS.",
+      "disposition": "deferred",
+      "deferred_because": "P12: mutation score 0.7342 against the campaign threshold of 1.0. 58 killed of 79 scoreable, 2 declared equivalent (the reference's own dead store, with the control being the SAME product one screen down which is read and is NOT declared), 21 open. Eleven of the 21 have a MEASURED cause -- both alternative torque-control laws divide by zero on every case that reaches them and the saturate arm's answer is annihilated by the unit's own final MAX -- and the repair for them was BUILT and went RED: seven degenerate-range pins produce a 22,434-case corpus on which the harness fails 577, on four outputs, with ref 122.90967 / got 34.64286 on every recorded mismatch. Whether that red is a translation defect the wider corpus cannot reach or a reference path with no oracle was NOT settled here; three probes narrowed it and the artifact is kept at evidence/ComputeVariablesSetpoints/harness.PINNED-CORPUS-RED.json. Enabling those seven pins and explaining the 577 is the whole of what stands between this unit and `integrated`. Two further mutants are almost certainly equivalent (the InitialValue argument of both lpfilter_c calls, which the bridge never reads because has_InitialValue is 0 beside it) and are NOT declared, because vit_mutate.py's mutant ids could not be reproduced from cppmutate._mid and declaring the wrong site would be a false equivalence, which P12 fails outright.",
+      "evidence": [
+        "evidence/ComputeVariablesSetpoints/README.md",
+        "evidence/ComputeVariablesSetpoints/callee_bridge_null_stash.txt",
+        "evidence/ComputeVariablesSetpoints/callees.as-generated.f90",
+        "evidence/ComputeVariablesSetpoints/inputs_census.txt",
+        "evidence/ComputeVariablesSetpoints/mutation_survivors.txt",
+        "evidence/ComputeVariablesSetpoints/harness.PINNED-CORPUS-RED.json",
+        "evidence/ComputeVariablesSetpoints/gate.redtest_predictions.txt",
+        "evidence/ComputeVariablesSetpoints/wrapper_redtest_prediction.txt",
+        "evidence/ComputeVariablesSetpoints/revcheck.txt",
+        "evidence/ComputeVariablesSetpoints/done_check.txt",
+        "harness/ComputeVariablesSetpoints.json",
+        "harness/ComputeVariablesSetpoints.postintegration.json",
+        "harness/ComputeVariablesSetpoints.postintegration.copyback-redtest.json",
+        "mutation/ComputeVariablesSetpoints.json",
+        "mutation/ComputeVariablesSetpoints.equivalences.json",
+        "gate/ComputeVariablesSetpoints.json",
+        "gate/ComputeVariablesSetpoints.redtest.pc_spderr.json",
+        "gate/ComputeVariablesSetpoints.redtest.else_arm.json",
+        "gate/ComputeVariablesSetpoints.redtest.dead_power_tsr.json",
+        "gate/ComputeVariablesSetpoints.redtest.vs_refspd_forced.json",
+        "translations/ControllerBlocks/computevariablessetpoints.cpp"
+      ]
     },
     {
       "order": 63,
