@@ -334,3 +334,33 @@ unit whose artifacts name two instruments is a split whatever each one says
 (RUNBOOK, "re-taking a unit across an instrument move is priced by one hash" --
 there is no partial move that leaves the evidence coherent). A gate result that
 reproduces to the value is the cheapest possible price for that.
+
+    MEASURED, loop b3ad414, all four with `--no-generate` on the 12,367-case corpus
+
+    stub                    predicted            measured   verdict
+    noop                    12,140 exactly         12,140   EXACT
+    no-print                 9,143 exactly          9,143   EXACT
+    no-allowdefault-arm     1,935 (in [1,843, 2,744])  1,935   EXACT  =>  A =  92
+    no-read                 1,062 (in [  253, 1,154])  1,062   EXACT  =>  B = 809
+
+    CONTROL   A + B = 92 + 809 = 901                        EXACT
+
+FOUR EXACT PREDICTIONS, AND TWO OF THEM WERE POINT PREDICTIONS THAT DID NOT
+HAVE TO BE. `A = 92` now holds on FOUR corpora of four different sizes:
+
+    corpus            cases     READ reached         A     B
+    11,863            11,863      853  (7.2%)       92   669
+    12,059            12,059      951  (7.9%)       92   711
+    12,199            12,199    1,021  (8.4%)       92   753
+    12,367            12,367    1,105  (8.9%)       92   809
+
+`A` is the `.NOT. AllowDefault_` cases inside the cell R13's short-capacity
+block refuses a message on, and it has not moved by one case while the corpus
+grew by 504 and `B` grew by 140. That is now strong enough to state as a
+property rather than a coincidence: R13's capacity ladder is a fixed block of
+cases at the base draw of every other input, so the arm it lands in is fixed
+too, and every record a corpus ADDS lands in the READ arm because a record is
+what the READ reads. It was worth predicting because it could have been wrong.
+
+`no-print` equals `record_nonempty` (9,143) for the fourth time, from a
+different code path, and the partition's `record` column agrees with both.
