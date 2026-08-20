@@ -1,0 +1,21 @@
+{
+  "a": "pre",
+  "b": "handoff",
+  "bytes_compared": 89858535,
+  "bytes_mismatched": 0,
+  "campaign_rev": "a9b067ce-dirty",
+  "files_compared": 195,
+  "files_mismatched": 0,
+  "loop_rev": "41d383f",
+  "mismatches": [],
+  "only_in_a": [],
+  "only_in_b": [],
+  "stdout_bytes_compared": 131291,
+  "stdout_only_in_a": [],
+  "stdout_only_in_b": [],
+  "stdout_records_compared": 511,
+  "stdout_records_mismatched": 0,
+  "stdout_scenarios_compared": 6,
+  "verdict": "IDENTICAL",
+  "vit_rev": "f21ec92"
+}

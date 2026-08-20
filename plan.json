@@ -3793,7 +3793,8 @@
         "evidence/WriteRestartFile/done_check.txt",
         "evidence/WriteRestartFile/semantics_probe.txt",
         "evidence/WriteRestartFile/semantics_probe.f90",
-        "evidence/WriteRestartFile/semantics_probe.cpp"
+        "evidence/WriteRestartFile/semantics_probe.cpp",
+        "evidence/WriteRestartFile/chkp.handoff.json"
       ]
     },
     {
