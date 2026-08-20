@@ -64,3 +64,111 @@ unit hands to `PIController` and `ratelimit` is invisible here; `instpi` and
 
 THREE HAND STUBS. EVERY `EXPECT` BELOW WAS WRITTEN AND COMMITTED BEFORE ITS
 `RESULT` WAS RUN.
+==================================================================
+STUB      the no-op -- the whole body deleted
+ASKS      does the kernel notice this unit doing NOTHING?
+EXPECT    60 of 60 FAIL. instpi alone settles it: VS_ControlMode == 1 in all 60 cases, so the reference issues two PIController calls per case and each post-increments the counter.
+RESULT:
+    ✗ VERIFICATION FAILED: 0/60 passed
+      FAILED: Verification FAILED withVariableSpeedControl.0.0.1
+      FAILED: Verification FAILED withVariableSpeedControl.0.0.2
+      FAILED: Verification FAILED withVariableSpeedControl.0.0.3
+      FAILED: Verification FAILED withVariableSpeedControl.0.0.4
+      FAILED: Verification FAILED withVariableSpeedControl.0.0.5
+      FAILED: Verification FAILED withVariableSpeedControl.0.0.6
+      FAILED: Verification FAILED withVariableSpeedControl.0.0.7
+    kernel.exe: Total number of verification cases  :    60
+    kernel.exe: Number of verification-passed cases :     0
+
+==================================================================
+STUB      the avrSWAP(47) write deleted
+ASKS      can the kernel see the one value this procedure exists to produce?
+EXPECT    60 of 60 PASS, UNMOVED. avrswap is not among the 419 compared field names; KGen skips it as assumed-size. Third instance of the blindness, after units #43 and #44.
+RESULT:
+    ✓ VERIFICATION PASSED: 60/60 passed
+    ✗ VariableSpeedControl: NON_DISCRIMINATING — 60 case(s) compared IDENTICAL, and the kernel did not report a mismatch when the translation was deliberately changed. The pass is not evidence.
+    kernel.exe: Total number of verification cases  :    60
+    kernel.exe: Number of verification-passed cases :    60
+
+==================================================================
+STUB      the K*Omega^2 Region-2 arm doubled
+ASKS      does the kernel's power follow the reference's own arm partition?
+EXPECT    EXACTLY 48 of 60 FAIL and the 12 that pass are EXACTLY invocations 3..14 -- the vs_state == 1 cases in the kernel's own field log, which are the same 12 gcov records at Controllers.f90:279 across all 27 scenarios.
+RESULT:
+    ✗ VERIFICATION FAILED: 12/60 passed
+      FAILED: Verification FAILED withVariableSpeedControl.0.0.1
+      FAILED: Verification FAILED withVariableSpeedControl.0.0.2
+      FAILED: Verification FAILED withVariableSpeedControl.0.0.15
+      FAILED: Verification FAILED withVariableSpeedControl.0.0.16
+      FAILED: Verification FAILED withVariableSpeedControl.0.0.17
+      FAILED: Verification FAILED withVariableSpeedControl.0.0.18
+      FAILED: Verification FAILED withVariableSpeedControl.0.0.19
+    kernel.exe: Total number of verification cases  :    60
+    kernel.exe: Number of verification-passed cases :    12
+
+
+================================================================================
+ALL THREE PREDICTIONS HELD, AND TWO OF THEM TO THE CASE
+================================================================================
+
+    stub                              EXPECT              MEASURED
+    ------------------------------------------------------------------
+    the no-op                         60 of 60 FAIL       0/60 passed
+    the avrSWAP(47) write deleted     60 of 60 PASS      60/60 passed
+    the K*Omega^2 Region-2 arm x2     48 FAIL, 12 PASS   12/60 passed,
+                                      the 12 = invocations 3..14
+                                                          first failures:
+                                                          1, 2, 15, 16, 17, ...
+
+STUB 1 measures the layer's floor: the kernel notices this unit doing nothing,
+on every case. It is not a strong statement on its own -- unit #44's no-op moved
+all 104 of ITS cases too, and that kernel was still blind to the unit's only
+output -- which is why stub 2 exists.
+
+STUB 2 IS THE BLIND SPOT, MEASURED RATHER THAN INHERITED. Deleting
+`avrSWAP(47) = MAX(0.0_DbKi, LocalVar%VS_LastGenTrq)` -- the demanded generator
+torque, the entire point of the procedure -- leaves the kernel's green EXACTLY
+where it was, 60 of 60. `vit verify` even prints its own NON_DISCRIMINATING
+verdict over the stub, which is the tool saying the same thing. This is the
+third instance of the KGen assumed-size blindness in this campaign (unit #43 on
+its avrSWAP copy loop, unit #44 on the commanded yaw rate) and the first where
+the deleted write is the whole of the unit's output.
+
+**It is not a hole in this unit's evidence, because the OTHER layer is aimed
+exactly there.** `gate/VariableSpeedControl.redtest.return_path.json` perturbs
+the same statement and moves 1,552,676 of 5,252,000 values across 23 scenarios.
+Two instruments, opposite blind spots, and the pair is why both were taken:
+
+    perturbation                    kernel            gate
+    ----------------------------------------------------------------
+    avrSWAP(47) write               60/60 PASS        1,552,676 moved
+    Region-2 arm                    48 of 60 FAIL        49,659 moved
+    piP / rlP contents              not compared      not a channel   <- OPEN
+
+STUB 3 IS THE ONE WORTH COPYING. Its prediction is not "it goes red": it is a
+number and a SET, both taken from the kernel's own field log before the run.
+`vs_state` is a compared field, so the reference's arm selection is recorded per
+case -- 12 at state 1, 48 at state 2, the 12 contiguous at invocations 3..14 --
+and doubling the state-2 answer must fail exactly the complement. It did: 12
+passed, and the first failures printed are 1, 2, 15, 16, 17, which is the
+complement's leading edge.
+
+That 12 is also, independently, the number of hits gcov records at
+`Controllers.f90:279` across all 27 scenarios. gcov counted it over a 16,000-step
+simulation; the kernel counted it from 60 captured invocations; the capture
+window was chosen before either was read. Neither instrument was designed to
+check the other.
+
+WHAT THE KERNEL LAYER DOES NOT COVER
+--------------------------------------------------------------------------------
+* `avrswap` -- stub 2, measured above.
+* the nested `piP` and `rlP` parameter blocks, which appear under no field name
+  in the 419. `instpi` and `instrl` (the counters that INDEX them) are compared,
+  so a mis-sequenced call is visible; a wrong value written INTO a slot is not.
+* every arm scenario 12 does not take. All 60 cases have `VS_ControlMode == 1`,
+  `VS_FBP == 0`, `VS_ConstPower == 1` and `SD_Trigger == 0`, so this layer sees
+  the K*Omega^2 law and NOTHING ELSE: not the tip-speed-ratio PI arm the other 22
+  scenarios take, not the shutdown ramp (scenario 9), not the open-loop block,
+  and not Regions 2.5, 3-constant-torque, 3-constant-power or 3-FBP.
+* the differential harness is the layer that would have reached those, and it
+  could not be built -- `corpus_wall.txt`.
