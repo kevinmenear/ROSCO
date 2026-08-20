@@ -188,49 +188,49 @@
   {
    "id": "bd37f11a",
    "operator": "compare_op",
-   "reason": "parseinput_int_opt.cpp:300 is NEVER EXECUTED by any of the 12,199 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_int_opt.cpp:300 is NEVER EXECUTED by any of the 12,367 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Int_Opt/line_coverage.txt"
   },
   {
    "id": "16c1de04",
    "operator": "compare_op",
-   "reason": "parseinput_int_opt.cpp:311 is NEVER EXECUTED by any of the 12,199 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '!=' to '==' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_int_opt.cpp:311 is NEVER EXECUTED by any of the 12,367 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '!=' to '==' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Int_Opt/line_coverage.txt"
   },
   {
    "id": "d65a5424",
    "operator": "compare_op",
-   "reason": "parseinput_int_opt.cpp:316 is NEVER EXECUTED by any of the 12,199 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_int_opt.cpp:316 is NEVER EXECUTED by any of the 12,367 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '<' to '<=' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Int_Opt/line_coverage.txt"
   },
   {
    "id": "dc1aa80d",
    "operator": "index_offset",
-   "reason": "parseinput_int_opt.cpp:300 is NEVER EXECUTED by any of the 12,199 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_int_opt.cpp:300 is NEVER EXECUTED by any of the 12,367 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Int_Opt/line_coverage.txt"
   },
   {
    "id": "516d7765",
    "operator": "index_offset",
-   "reason": "parseinput_int_opt.cpp:300 is NEVER EXECUTED by any of the 12,199 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_int_opt.cpp:300 is NEVER EXECUTED by any of the 12,367 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Int_Opt/line_coverage.txt"
   },
   {
    "id": "305dbe05",
    "operator": "index_offset",
-   "reason": "parseinput_int_opt.cpp:316 is NEVER EXECUTED by any of the 12,199 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_int_opt.cpp:316 is NEVER EXECUTED by any of the 12,367 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Int_Opt/line_coverage.txt"
   },
   {
    "id": "9c013be2",
    "operator": "index_offset",
-   "reason": "parseinput_int_opt.cpp:316 is NEVER EXECUTED by any of the 12,199 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_int_opt.cpp:316 is NEVER EXECUTED by any of the 12,367 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Int_Opt/line_coverage.txt"
   },
   {
    "id": "2c7e84d1",
    "operator": "negate_cond",
-   "reason": "parseinput_int_opt.cpp:311 is NEVER EXECUTED by any of the 12,199 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (first_item || sep != Sep::Blank)' to 'if (!(first_item || sep != Sep::Blank))' on a line no case runs, so no case can distinguish it.",
+   "reason": "parseinput_int_opt.cpp:311 is NEVER EXECUTED by any of the 12,367 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (first_item || sep != Sep::Blank)' to 'if (!(first_item || sep != Sep::Blank))' on a line no case runs, so no case can distinguish it.",
    "evidence": "evidence/ParseInput_Int_Opt/line_coverage.txt"
   }
  ],
@@ -245,27 +245,14 @@
  "nocompile_ratio": 0.0069,
  "nocompile_refused": false,
  "total": 144,
- "killed": 96,
- "survived": 2,
+ "killed": 98,
+ "survived": 0,
  "equivalent": 37,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.9796,
- "loop_rev": "8f9d72f-nogit",
- "gen_rev": "gen-31f67a2b87dc",
+ "score": 1.0,
+ "loop_rev": "b3ad414-nogit",
+ "gen_rev": "gen-abcc33e68d7c",
  "vit_rev": "d6759d9-nogit",
- "survivors": [
-  {
-   "id": "4f89b00b",
-   "operator": "compare_op",
-   "before": ">=",
-   "after": ">"
-  },
-  {
-   "id": "e8cf2d25",
-   "operator": "index_offset",
-   "before": "[p]",
-   "after": "[p + 1]"
-  }
- ]
+ "survivors": []
 }
