@@ -1,0 +1,66 @@
+NEGATIVE-ZERO COINCIDENCE CENSUS -- the 22,397-case corpus the score was taken on
+
+cases at each site: 22397 22397
+
+f977278e   IF (SS_DelOmegaF < 0)  ->  <= 0
+  the two arms differ ONLY at SS_DelOmegaF == -0.0 AND PC_RefSpd_PRC == -0.0
+  SS_DelOmegaF == +0.0 : 2372
+  SS_DelOmegaF == -0.0 : 2
+      that case: PC_RefSpd_PRC = -480.0  signbit 1
+      that case: PC_RefSpd_PRC = -480.0  signbit 1
+  PC_RefSpd_PRC == -0.0 anywhere in the corpus: 2
+  BOTH at -0.0 in the SAME case: 0
+
+f647c7b4   IF (SS_DelOmegaF > 0)  ->  >= 0
+  the two arms differ ONLY at SS_DelOmegaF == -0.0 AND VS_RefSpd == -0.0
+  SS_DelOmegaF == -0.0 : 2
+      that case: VS_RefSpd = -0.0  signbit 1
+      that case: VS_RefSpd = -600.0  signbit 1
+  VS_RefSpd == -0.0 anywhere in the corpus: 7852
+  BOTH at -0.0 in the SAME case: 1
+
+c3c9ad10 / b1377f87   LocalVar->restart ? 1 : 0  ->  ? 1 : 1
+  LPFilter reset guard is  IF ((iStatus == 0) .OR. reset)
+  iStatus over the whole corpus: [(0, 22397)]
+
+===============================================================================
+WHAT EACH LINE DECIDES, AND ONE OF THE THREE ANSWERS IS NOT THE ONE THAT WAS
+EXPECTED.
+
+f977278e -- UNREACHABLE, and the count is 0.
+    The corpus puts SS_DelOmegaF at -0.0 in 2 cases and PC_RefSpd_PRC at -0.0
+    in 2 cases, and they are NOT the same cases: 0 of 22,397 have both. That is
+    not an accident of this corpus, it is `generate.py`'s rule -- R6's own
+    detail line says "40 scalar real(s) at NEGATIVE ZERO", one scalar per case,
+    every other parameter at its base draw. A mutant whose only discriminating
+    input is TWO independent parameters at negative zero simultaneously is
+    outside what the generator can construct.
+
+f647c7b4 -- UNREACHABLE, AND THE PREDICTION THAT SAID SO WAS WRONG ABOUT WHY.
+    The coincidence this one needs DOES occur: 1 case of 22,397 has both
+    SS_DelOmegaF and VS_RefSpd at -0.0. The mutant survives it anyway, and the
+    reason is the unit's own last statement.
+
+        original  -0.0 > 0 false  -> VS_RefSpd stays -0.0
+        mutant    -0.0 >= 0 TRUE  -> VS_RefSpd = -0.0 - (-0.0) = +0.0
+        both then MAX(VS_RefSpd, VS_MinOMSpd) with VS_MinOMSpd pinned at 0.0
+        MAX(-0.0, +0.0) = +0.0  and  MAX(+0.0, +0.0) = +0.0     IDENTICAL
+
+    So the difference is ERASED rather than unreached, and it is erased by a
+    PIN THIS UNIT CHOSE: `CntrPar_VS_MinOMSpd = { lo = 0.0, hi = 0.0 }` is what
+    killed 1c85d6d7, 09894fe5, be35d649 and 0c23917a. A NEGATIVE VS_MinOMSpd
+    would separate the two (`MAX(-0.0, -5.0)` is -0.0 and `MAX(+0.0, -5.0)` is
+    +0.0), and a negative minimum operating SPEED is inside the dummy's
+    declared type and outside anything the reference's own documentation
+    admits. Four mutants for one, stated rather than quietly taken.
+
+c3c9ad10 / b1377f87 -- UNREACHABLE, and the mechanism is the OTHER pin.
+    `LocalVar->restart ? 1 : 0` becoming `? 1 : 1` forces LPFilter's `reset`
+    true. Its guard is `IF ((iStatus == 0) .OR. reset)`, and `iStatus` is 0 on
+    all 22,397 cases, so the left operand is already true and `reset` never
+    decides anything. `LocalVar_iStatus = { lo = 0, hi = 0 }` is not an
+    optional narrowing: without it the reference has NO ANSWER on this unit's
+    `PRC_Mode == 1` path -- `interp1d` never assigns its own result at a NaN
+    abscissa -- and the harness fails 577 of 22,434
+    (harness.PINNED-CORPUS-RED.json). So the only inputs that discriminate
+    these two mutants are inputs on which the reference is undefined.

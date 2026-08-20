@@ -6,7 +6,7 @@
  "comparison_verdict": "FAIL",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "41d383f-dirty",
+ "loop_rev": "41d383f",
  "mismatched": 728340,
  "mismatched_channels": [
   "scenario_3:bld_pitch 7610/16000",
@@ -94,7 +94,8 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "RT1, the always-run path: PC_SpdErr shifted by an ADDITIVE 1.0e-3. The statement runs on all 407,976 calls the coverage file records and PC_SpdErr is the pitch controller error term. Predicted NON-ZERO and LARGE, scenario set a SUBSET of the 23 that call the unit and EXACTLY DISJOINT from {10,13,14,24}. Prediction committed at f8fdece7 before the run."
+  "RT1, the always-run path: PC_SpdErr shifted by an ADDITIVE 1.0e-3. The statement runs on all 407,976 calls the coverage file records and PC_SpdErr is the pitch controller error term. Predicted NON-ZERO and LARGE, scenario set a SUBSET of the 23 that call the unit and EXACTLY DISJOINT from {10,13,14,24}. Prediction committed at f8fdece7 before the run.",
+  "RE-TAKEN at loop 41d383f with the instrument tree clean; the first take of this artifact recorded 728340 of 5252000 and is reproduced by this run."
  ],
  "perturbation": {
   "file": "rosco/controller/src/computevariablessetpoints.cpp",

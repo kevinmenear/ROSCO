@@ -3557,8 +3557,9 @@ CntrPar_VS_Rgn2K = { lo = 2.31055, hi = 2.31055 }
 CntrPar_VS_GenEff = { lo = 94.4, hi = 94.4 }
 LocalVar_VS_GenPwr = { lo = 0.5, hi = 0.5 }
 LocalVar_GenTq = { lo = 0.5, hi = 0.5 }
-CntrPar_VS_MinOMSpd = { lo = 34.64286, hi = 34.64286 }
+CntrPar_VS_MinOMSpd = { lo = 0.0, hi = 0.0 }
 # CntrPar_VS_RefSpd = { lo = 122.90967, hi = 122.90967 }   <- NOT pinned; see above
 LocalVar_PRC_R_Speed = { lo = 0.8, hi = 0.8 }
 LocalVar_iStatus = { lo = 0, hi = 0 }
+LocalVar_WE_Vw = { lo = 3.0, hi = 25.0 }
 

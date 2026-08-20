@@ -6,13 +6,14 @@
  "comparison_verdict": "PASS",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "41d383f-dirty",
+ "loop_rev": "41d383f",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "RT3, the NEGATIVE CONTROL: the exponent of the VS_Mode_Power_TSR control law. coverage/line_coverage.json has NO ENTRY for ControllerBlocks.f90:126 -- zero hits in all 27 scenarios. Predicted EXACTLY 0 of 5,252,000 with perturbation_broke_scenarios empty. Prediction committed at f8fdece7 before the run. Its contrast is RT1 on the same build in the same run at 728,340."
+  "RT3, the NEGATIVE CONTROL: the exponent of the VS_Mode_Power_TSR control law. coverage/line_coverage.json has NO ENTRY for ControllerBlocks.f90:126 -- zero hits in all 27 scenarios. Predicted EXACTLY 0 of 5,252,000 with perturbation_broke_scenarios empty. Prediction committed at f8fdece7 before the run. Its contrast is RT1 on the same build in the same run at 728,340.",
+  "RE-TAKEN at loop 41d383f with the instrument tree clean; the first take of this artifact recorded 0 of 5252000 and is reproduced by this run."
  ],
  "perturbation": {
   "file": "rosco/controller/src/computevariablessetpoints.cpp",

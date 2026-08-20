@@ -1,0 +1,18 @@
+{
+  "f977278e": {
+    "reason": "IF (SS_DelOmegaF < 0) -> <= 0. The two arms compute PC_RefSpd_PRC - SS_DelOmegaF and PC_RefSpd_PRC, which are equal for every finite value AND for a NaN because x - 0.0 == x including the sign of the zero. The ONLY discriminating input is SS_DelOmegaF == -0.0 together with PC_RefSpd_PRC == -0.0, where the mutated arm computes -0.0 - (-0.0) = +0.0. MEASURED on the scored 22,397-case corpus: SS_DelOmegaF is -0.0 in 2 cases, PC_RefSpd_PRC is -0.0 in 2 cases, and BOTH are -0.0 in 0 cases. That is generate.py's own rule rather than an accident -- R6 sets 40 scalar reals to negative zero ONE PER CASE, every other parameter at its base draw -- so two independent parameters at negative zero in one case is outside what this generator constructs.",
+    "evidence": "evidence/ComputeVariablesSetpoints/negzero_census.txt"
+  },
+  "f647c7b4": {
+    "reason": "IF (SS_DelOmegaF > 0) -> >= 0. This one's discriminating input IS in the corpus -- 1 case of 22,397 has SS_DelOmegaF and VS_RefSpd both at -0.0 -- and the difference is ERASED by the unit's own last statement rather than unreached. Original leaves VS_RefSpd at -0.0; the mutant computes -0.0 - (-0.0) = +0.0; both then pass through MAX(VS_RefSpd, VS_MinOMSpd) with VS_MinOMSpd pinned at 0.0, and MAX(-0.0, +0.0) and MAX(+0.0, +0.0) are both +0.0. A NEGATIVE VS_MinOMSpd would separate them, and that pin is what killed four other mutants (1c85d6d7, 09894fe5, be35d649, 0c23917a). The trade is stated in harness/ranges.toml rather than taken quietly.",
+    "evidence": "evidence/ComputeVariablesSetpoints/negzero_census.txt"
+  },
+  "c3c9ad10": {
+    "reason": "The first lpfilter_c call's 'LocalVar->restart ? 1 : 0' -> '? 1 : 1', which forces LPFilter's reset argument true. LPFilter's guard is IF ((iStatus == 0) .OR. reset), and iStatus is 0 on ALL 22,397 cases of the scored corpus, so the left operand is already true and reset never decides. iStatus is pinned because without it the reference has NO ANSWER on this unit's PRC_Mode == 1 path: interp1d never assigns its own result when xq is a NaN, and the harness fails 577 of 22,434. So the only inputs that discriminate this mutant are inputs on which the reference is undefined.",
+    "evidence": "evidence/ComputeVariablesSetpoints/negzero_census.txt"
+  },
+  "b1377f87": {
+    "reason": "The second lpfilter_c call's 'LocalVar->restart ? 1 : 0' -> '? 1 : 1'. Identical argument to c3c9ad10, one call site over: iStatus is 0 on all 22,397 cases so LPFilter's reset argument never decides its guard, and the only inputs that would make it decide are the ones on which interp1d's result is undefined (harness.PINNED-CORPUS-RED.json, 577 of 22,434).",
+    "evidence": "evidence/ComputeVariablesSetpoints/negzero_census.txt"
+  }
+}

@@ -6,7 +6,7 @@
  "comparison_verdict": "FAIL",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "41d383f-dirty",
+ "loop_rev": "41d383f",
  "mismatched": 1977826,
  "mismatched_channels": [
   "scenario_3:bld_pitch 15278/16000",
@@ -148,7 +148,8 @@
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "RT4, added AFTER RT2 returned 0 and to explain it. This is unit #48s probe: force the value the ELSE arm feeds, on the always-run path, by 1.0e5 -- so a scenario that does not appear here cannot observe VS_RefSpd AT ALL, whatever the size of the perturbation. RT2 perturbed the ELSE arm (scenario 12 only, 15,999 calls) and moved 0; scenario 12 sets VS_ControlMode = 1, K*Omega^2 torque, where the generator torque is Rgn2K*GenSpeedF^2 and no speed reference is read. If scenario 12 is absent from this artifacts mismatched_channels too, RT2s zero is a fact about the CORPUS and not about the perturbation."
+  "RT4, added AFTER RT2 returned 0 and to explain it. This is unit #48s probe: force the value the ELSE arm feeds, on the always-run path, by 1.0e5 -- so a scenario that does not appear here cannot observe VS_RefSpd AT ALL, whatever the size of the perturbation. RT2 perturbed the ELSE arm (scenario 12 only, 15,999 calls) and moved 0; scenario 12 sets VS_ControlMode = 1, K*Omega^2 torque, where the generator torque is Rgn2K*GenSpeedF^2 and no speed reference is read. If scenario 12 is absent from this artifacts mismatched_channels too, RT2s zero is a fact about the CORPUS and not about the perturbation.",
+  "RE-TAKEN at loop 41d383f with the instrument tree clean; the first take of this artifact recorded 1977826 of 5252000 and is reproduced by this run."
  ],
  "perturbation": {
   "file": "rosco/controller/src/computevariablessetpoints.cpp",

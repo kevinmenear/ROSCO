@@ -5,7 +5,7 @@
  "compared": 5252000,
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "41d383f-dirty",
+ "loop_rev": "41d383f",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],

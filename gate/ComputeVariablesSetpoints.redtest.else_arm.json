@@ -6,13 +6,14 @@
  "comparison_verdict": "PASS",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "41d383f-dirty",
+ "loop_rev": "41d383f",
  "mismatched": 0,
  "mismatched_channels": [],
  "missing_channels": [],
  "missing_scenarios": [],
  "notes": [
-  "RT2, the ELSE arm of the VS_ControlMode chain (constant speed reference). Coverage records ControllerBlocks.f90:132 in SCENARIO 12 ONLY, 15,999 calls. Predicted NON-ZERO with mismatched_channels naming scenario 12 and no other. Prediction committed at f8fdece7 before the run."
+  "RT2, the ELSE arm of the VS_ControlMode chain (constant speed reference). Coverage records ControllerBlocks.f90:132 in SCENARIO 12 ONLY, 15,999 calls. Predicted NON-ZERO with mismatched_channels naming scenario 12 and no other. Prediction committed at f8fdece7 before the run.",
+  "RE-TAKEN at loop 41d383f with the instrument tree clean; the first take of this artifact recorded 0 of 5252000 and is reproduced by this run."
  ],
  "perturbation": {
   "file": "rosco/controller/src/computevariablessetpoints.cpp",
