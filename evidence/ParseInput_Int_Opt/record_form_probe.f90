@@ -35,11 +35,13 @@
 PROGRAM record_form_probe
     IMPLICIT NONE
     INTEGER, PARAMETER :: MaxParamLength = 200
-    INTEGER, PARAMETER :: NFORM = 41
+    INTEGER, PARAMETER :: NFORM = 47
     CHARACTER(MaxParamLength) :: Words(2)
     CHARACTER(16)  :: label
     CHARACTER(260) :: lead
     CHARACTER(8)   :: nb
+    CHARACTER(1), PARAMETER :: LF = CHAR(10)
+    CHARACTER(1), PARAMETER :: CR = CHAR(13)
     INTEGER(4) :: Variable
     INTEGER :: ios, i, n
 
@@ -164,6 +166,27 @@ CONTAINS
         !     must also be a LEGAL count, which leading zeros give for free.
         CASE (41); lab = 'digstar';  txt = REPEAT('0', 199)//'1'
                    neigh = '*7'; ln = 200
+        ! --- THE END-OF-LINE BYTES, added at this unit's SECOND dispatch for
+        !     the two survivors it was re-dispatched for. `is_eol` accepts CR
+        !     and LF; no corpus this campaign has generated has ever held
+        !     either, so both disjuncts of every scan have only ever been
+        !     evaluated on one side. Neither byte is in `GetWords`' separator
+        !     set (' ,!;''"'//Tab, ROSCO_Helpers.f90:145), so a run containing
+        !     one is copied into Words(1) WHOLE and every form here is a word
+        !     the unit can be handed.
+        !
+        !     `eolfull` is the only form in this file whose LEADING scan
+        !     reaches the record's last byte: 200 bytes that are all
+        !     end-of-line. Its neighbour is a '/' because that is the byte a
+        !     translation reading ONE past the record would then find, and it
+        !     is the one byte that turns the reference's END into a SUCCESS.
+        CASE (42); lab = 'eolhead';  txt = CR//'7';        neigh = 'Aa'; ln = 2
+        CASE (43); lab = 'lfhead';   txt = LF//'7';        neigh = 'Aa'; ln = 2
+        CASE (44); lab = 'eoltail';  txt = '7'//CR;        neigh = 'Aa'; ln = 2
+        CASE (45); lab = 'eolmid';   txt = '7'//CR//'8';   neigh = 'Aa'; ln = 3
+        CASE (46); lab = 'eolfull';  txt = REPEAT(CR, 200)
+                   neigh = '/7'; ln = 200
+        CASE (47); lab = 'eolslash'; txt = CR//'/';        neigh = 'Aa'; ln = 2
         END SELECT
     END SUBROUTINE form
 

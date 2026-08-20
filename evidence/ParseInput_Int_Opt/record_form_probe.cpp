@@ -105,6 +105,30 @@ int main() {
         // lookahead's digit scan reaches the record's last byte, paired with a
         // star NEIGHBOUR.
         {"digstar", zeros(199) + "1", "*7"},
+        // THE END-OF-LINE BYTES, added for unit #57's SECOND dispatch and the
+        // two survivors it was re-dispatched for. `is_eol` accepts CR and LF
+        // and no corpus this campaign has generated has ever contained either,
+        // so the two disjuncts of every scan have only ever been evaluated on
+        // one side. Each form below is a WORD -- neither byte is in
+        // `GetWords`' separator set (`' ,!;''"'//Tab`,
+        // ROSCO_Helpers.f90:145), so a run containing one is copied into
+        // `Words(1)` whole.
+        //
+        //   eolhead   a CR then a digit: the LEADING scan crosses it
+        //   lfhead    the same with LF, which is the other disjunct
+        //   eoltail   a digit then a CR: the value TERMINATOR crosses it
+        //   eolmid    a CR between two digits, one item read
+        //   eolfull   a 200-byte word of CRs: the leading scan runs to the
+        //             record's LAST byte, which no other form here reaches,
+        //             paired with a `/` neighbour -- the byte a mutant that
+        //             reads one past the end then finds
+        //   eolslash  a CR then the terminator: success with nothing stored
+        {"eolhead", std::string("\r") + "7", "Aa"},
+        {"lfhead", std::string("\n") + "7", "Aa"},
+        {"eoltail", std::string("7") + "\r", "Aa"},
+        {"eolmid", std::string("7") + "\r" + "8", "Aa"},
+        {"eolfull", std::string(200, '\r'), "/7"},
+        {"eolslash", std::string("\r") + "/", "Aa"},
     };
     for (const Form& f : forms) {
         // `CHARACTER(MaxParamLength) :: Words(2)` -- ONE 400-byte object. The

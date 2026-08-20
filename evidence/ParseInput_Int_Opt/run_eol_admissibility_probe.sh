@@ -1,0 +1,100 @@
+#!/bin/bash
+# Measure which end-of-line bytes can reach `FileLines` through the SHIPPED
+# caller's own OPEN/READ, and write the answer where it can be disputed.
+#
+#   bash evidence/ParseInput_Int_Opt/run_eol_admissibility_probe.sh
+#
+# BUILD AND RUN ARE SEPARATE STEPS and each status is classified on its own --
+# unit #55's C12 finding about a copied runner that collapsed "did not build"
+# into "found nothing".
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$ROOT"
+OUT=evidence/ParseInput_Int_Opt/eol_admissibility_probe.txt
+D=/workspace/ROSCO-r2/evidence/ParseInput_Int_Opt
+
+docker exec vit-dev bash -lc "
+    set -e
+    cd /tmp
+    gfortran -O0 $D/eol_admissibility_probe.f90 -o eol_adm
+" || { echo "eol_admissibility_probe: BUILD FAILED -- nothing measured"; exit 1; }
+
+docker exec vit-dev bash -lc "cd /tmp && ./eol_adm" > /tmp/eol_adm.txt
+
+{
+cat <<'HDR'
+ParseInput_Int_Opt -- can a CR or an LF byte reach `FileLines` through the
+SHIPPED caller, measured on the same gfortran runtime the reference is
+compiled against.
+
+THE CALLER, and it is the only one: `grep -c 'CALL ParseInput('` over
+rosco/controller/src is 140 and every one of them passes the same array.
+
+    ReadSetParameters.f90:269   OPEN (unit=..., file=accINFILE(1),
+                                      status='old', action='read')
+    ReadSetParameters.f90:283   READ (u,'(A)',IOSTAT=IOS) FileLines(I_LINE)
+
+A default-formatted SEQUENTIAL read of a user-supplied text file. The OPEN
+names no ACCESS, no FORM and no ENCODING, so the only question is which
+bytes libgfortran treats as a RECORD TERMINATOR rather than as data.
+
+FIVE RECORDS WRITTEN THROUGH STREAM ACCESS, each with a unique leading
+digit so the mapping from written to read is read off the output rather
+than assumed:
+
+    1  '1 plainA'  LF                a Unix line
+    2  '2' CR 'crMID' LF             a bare CR inside a line
+    3  '3 dosB' CR LF                a DOS line ending
+    4  CR '4 crLEAD' LF              a bare CR first
+    5  '5 tail' CR LF                a DOS line ending again
+
+MEASURED
+HDR
+sed 's/^/  /' /tmp/eol_adm.txt
+cat <<'FTR'
+
+WHAT IT SAYS.
+
+  * A bare CR IS A RECORD TERMINATOR. Written record 2 came back as TWO
+    records, '2' and 'crMID'; written record 4 came back as an EMPTY record
+    followed by '4 crLEAD'. Five lines written, SEVEN read.
+  * A CR that immediately precedes the LF is STRIPPED. Records 3 and 5 came
+    back without it.
+
+So no CR and no LF byte can appear inside `FileLines(I)` on any path where
+the READ succeeds. Both are terminators, and a terminator is not data.
+
+WHY THIS IS RECORDED RATHER THAN USED AS AN EXCLUSION. It bounds the
+SHIPPED caller, not the unit's domain: `FileLines` is
+`CHARACTER(*), INTENT(IN), DIMENSION(:)` and CHAR(13) is a value that dummy
+holds. The corpus's admissibility bar in this campaign is "a record
+`GetWords` can produce from an element of the array the unit is handed" --
+which is what makes a 200-digit word or `nan(aaa...)` a legal corpus record
+though no DISCON.IN contains one either. CR clears that bar: it is not in
+`GetWords`' separator set (' ,!;''"'//Tab, ROSCO_Helpers.f90:145), so a run
+containing one is copied into `Words(1)` whole.
+
+AND ONE SHIPPED PATH THAT IS NOT BOUNDED BY THE ABOVE, stated because it is
+the honest edge of the claim. `ReadControlParameterFileSub` counts lines by
+reading until IOSTAT goes non-zero, so `NumLines` is one MORE than the file
+has; it then ALLOCATEs that many and reads that many, and the last READ
+fails. `FileLines(NumLines)` is therefore never assigned, and `FindLine`
+loops over `1, SIZE(FileLines)` -- including it. What that element holds is
+undefined, and undefined is not "blank".
+
+THE CORRECTION THIS MAKES TO THIS UNIT'S FIRST DISPATCH. That dispatch
+recorded `is_eol` as "right and REACHABLE in unit #55, whose record is the
+2048-byte Line, and unreachable here, whose record is a GetWords word", and
+raised the difference as a P4 copy inheriting its source's reachability.
+The difference does not exist: unit #55's `Line` also comes from
+`FileLines`, and this probe bounds both the same way. `is_eol` is in the
+reader because gfortran's INTERNAL list-directed READ treats CR and LF as
+separators -- measured over four records by unit #55
+(evidence/ParseInAry_Opt/parser_conformance.f90:73-75,148) and over six
+more by this unit (record_form_probe.txt, forms `eolhead` .. `eolslash`) --
+which is a property of the RUNTIME both units transcribe, not of where
+their bytes came from. There was never a reachability asymmetry to inherit.
+FTR
+} > "$ROOT/$OUT"
+
+cat "$ROOT/$OUT"
