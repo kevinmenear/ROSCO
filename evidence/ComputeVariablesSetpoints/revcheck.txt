@@ -1,0 +1,54 @@
+REVCHECK -- ONE FINDING, REPORTED RATHER THAN FIXED, AND THE CAUSE IS EXACT.
+
+    $ python3 scripts/revcheck.py --unit ComputeVariablesSetpoints
+    revcheck ComputeVariablesSetpoints: examined 1 unit, scanned 9 result artifact(s)
+        41d383f-dirty      gate/ComputeVariablesSetpoints.json
+        41d383f-dirty      gate/ComputeVariablesSetpoints.redtest.dead_power_tsr.json
+        41d383f-dirty      gate/ComputeVariablesSetpoints.redtest.else_arm.json
+        41d383f-dirty      gate/ComputeVariablesSetpoints.redtest.pc_spderr.json
+        41d383f-dirty      gate/ComputeVariablesSetpoints.redtest.vs_refspd_forced.json
+        41d383f-nogit      harness/ComputeVariablesSetpoints.json
+        41d383f-dirty      harness/ComputeVariablesSetpoints.postintegration.copyback-redtest.json
+        41d383f-dirty      harness/ComputeVariablesSetpoints.postintegration.json
+        41d383f-nogit      mutation/ComputeVariablesSetpoints.json
+      FINDING: DIRTY TREE
+      1 finding(s)
+
+WHAT IT IS NOT. It is not a SPLIT and it is not a MISSING loop_rev: all nine
+artifacts name the SAME instrument revision, 41d383f, which is
+`translation-loop` HEAD ("budget: the counter counts DISPATCHES...",
+2026-08-20 07:42:41 -0400). The `-nogit` suffix on two of them is the
+container, which carries no `git`; the `-dirty` suffix on the other seven is
+the host seeing a non-empty `git status --porcelain`.
+
+WHAT THE DIRT IS, measured rather than assumed:
+
+    $ git -C translation-loop status --short
+    ?? scripts/make_harness_guide.py
+
+ONE UNTRACKED FILE, and NOTHING IMPORTS IT:
+
+    $ grep -rln 'make_harness_guide' --include=*.py .  (excluding itself)
+    importers: 0
+
+It is a documentation generator (its own docstring says it produces
+`HARNESS_AND_JUDGING.md` from a study of 61 unit sessions), it was already
+present when this dispatch began, and it is on no code path that
+`gate.py`, `vit_harness.py` or `vit_mutate.py` executes. So no artifact above
+can have been influenced by it, and the instrument identity of all nine is
+41d383f.
+
+WHY IT WAS NOT FIXED HERE, stated so the next dispatch does not re-derive it.
+Two repairs exist and both are campaign-level rather than this unit's:
+
+  * COMMIT IT. That changes `translation-loop` HEAD, so any artifact re-taken
+    afterwards would carry a different rev from the nine above -- a SPLIT,
+    which is the finding revcheck actually cares about. It would have to be
+    followed by re-taking all nine, priced by the RUNBOOK at ~25 minutes for
+    twenty artifacts.
+  * MOVE IT ASIDE and re-take the nine at a clean 41d383f. Same re-take cost,
+    and it displaces work another dispatch left there.
+
+Neither is a decision this unit should take on its own, and this unit closes
+`deferred` on P12 regardless, so the re-take would not change its disposition.
+Raised in DECISIONS.md for the Driver.
