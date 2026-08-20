@@ -121,9 +121,13 @@ differential harness is still the missing layer.
 needed — there was no corpus to sweep, and the reason is stated rather than left
 to be inferred. Nothing was backgrounded and nothing was polled; every long
 command went through `run_if_time_remains.sh` with an estimate and an explicit
-Bash `timeout`. Three reset windows, the extraction one opened and closed inside
-ONE command, every commit taken outside them. Twelve commits, one per expensive
-artifact.
+Bash `timeout`. TWO reset windows -- one for the harness attempt, one for the
+extraction, the latter opened and closed inside ONE command so a kill could not
+leave the campaign de-integrated -- and every commit taken outside them.
+Fourteen commits, one per expensive artifact. The last act before the hand-off
+was to re-run the gate on the tree being handed over: it rewrote
+`gate/VariableSpeedControl.json` BYTE-IDENTICALLY, so the committed artifact is
+reproducible from this tree.
 
 ---
 

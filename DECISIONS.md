@@ -211,10 +211,10 @@ No mutation sweep was started, so `mutate_guarded.sh` was never needed — and t
 reason is stated rather than left to be inferred: there was no corpus to sweep.
 Nothing was backgrounded and nothing was polled; every long command went through
 `scripts/run_if_time_remains.sh` with an estimate and an explicit Bash
-`timeout`. Three reset windows; the extraction one -- reset, edit `vit.yaml`,
-`vit extract`, revert `vit.yaml`, restore -- was opened and closed inside ONE
-command, so a kill could not leave the campaign de-integrated. Every commit was
-taken outside a window. Each `vit verify` is ~231 s and each was run as its own
+`timeout`. TWO reset windows -- one for the harness attempt and one for the
+extraction. The second -- reset, edit `vit.yaml`, `vit extract`, revert
+`vit.yaml`, restore -- was opened and closed inside ONE command, so a kill could
+not leave the campaign de-integrated. Every commit was taken outside a window. Each `vit verify` is ~231 s and each was run as its own
 foreground command, which is unit #40's rule: it lost a stub to the 600-second
 tool ceiling by putting four in one.
 
