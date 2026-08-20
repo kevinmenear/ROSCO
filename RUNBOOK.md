@@ -9258,6 +9258,52 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   Reverting is not working around a tool bug (X2): the tool is presumably right
   and the question is X3's, about changing a shared routine mid-run.
 
+## WHEN A SURVIVOR'S UNREACHABILITY IS A FACT ABOUT FORTRAN RATHER THAN ABOUT
+## THE SIMULATION, PRICE A STANDALONE PROBE BEFORE PRICING A CORPUS
+
+- **Unit #61, twenty minutes against sixty-plus.** Three of sixteen
+  `unreachable` declarations were semantics questions with no dependence on
+  runtime state: the byte pattern of a default `LOGICAL` `.TRUE.`, what
+  `WRITE(s,'(I0.0)') 0` produces, and what `CHARACTER(128)` does to a longer
+  concatenation. P12 is satisfied by the declaration; the translation's CLAIM at
+  each site is not tested by it.
+
+  ```
+  1   0   0   0   0   0   0   0   1   0   0   0    <- three default LOGICALs
+  BIN IDENTICAL  12 bytes      TXT IDENTICAL  16 records
+  red tests: 2 of 12 bytes / 1 of 16 records / 5 of 16 records, all predicted
+  ```
+
+  `evidence/Debug/fmt_probe.*` is the shape and it transfers unchanged: a
+  Fortran program, a C++ program that `#include`s the shipped `.cpp` so the code
+  under test is the code that ships, and a `cmp`. A corpus wide enough to reach
+  the same three costs a new scenario, a de-integration window, `pre`
+  re-captured, every sweep part re-run and every red test with them.
+
+  **THE DECLARATION STILL STANDS AFTERWARDS, and that is the distinction worth
+  keeping.** `unreachable` is a claim about the CORPUS; the probe is a claim
+  about the PROGRAM. The probe does not remove a declaration, it removes a
+  SILENCE -- and here the silence sat over the only place in the unit where a
+  wrong answer would have survived every layer.
+
+## `sed -i.bak` IS A BIND-MOUNT WRITE TOO, AND THE FAILURE IS A MISSING FILE
+## RATHER THAN A STALE ONE
+
+- **Unit #61.** The RUNBOOK already records the write/read race for `cp` (units
+  #23, #30). `sed -i.bak` unlinks and recreates, so the container can read the
+  gap:
+
+  ```
+  semantics_probe.cpp:10:10: fatal error: writerestartfile.cpp:
+      No such file or directory
+  ```
+
+  on two of three red tests, with the file on the host restored and hashing
+  correctly. The `cp` shape gives a STALE read; this one gives NO file, which
+  reads as a broken script rather than as a race. Same fix -- `md5sum` and
+  `touch` from inside the container before building -- and the retry fires on
+  attempt 1 every run, which is how you tell a race from an accident.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's

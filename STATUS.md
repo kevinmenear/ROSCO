@@ -91,8 +91,28 @@ counts the reference checkpoints in which the two fields differ — 0 of 195 on
 all ten, and it refuses on any pair that differs. Two of the ten sit on fields
 the census calls `VARIES`. The other six are hand-written and COUNTED as such.
 
+**THREE OF THE NAMED GAPS ARE NOW ANSWERED BY A STANDALONE PROBE, AND THE
+DECLARATIONS STILL STAND.** `evidence/WriteRestartFile/semantics_probe.*` is
+`Debug`'s `fmt_probe` one unit over: a Fortran program and a C++ one that
+INCLUDES the shipped `.cpp`, over the three questions the corpus cannot ask.
+
+    the bytes gfortran wrote for .TRUE. / .FALSE. / .TRUE.
+        1   0   0   0   0   0   0   0   1   0   0   0
+    BIN IDENTICAL  12 bytes        TXT IDENTICAL  16 records
+
+Twelve bytes for three default `LOGICAL`s is **four each**, and `.TRUE.` is the
+int32 **1** — which is what `wr_log` writes and what the corpus never checks.
+Red-tested three ways against three stated predictions, three exact: `wr_log`
+writing 2 for `.TRUE.` moves 2 of 12 bytes and no text; `i0d0`'s zero case
+removed moves exactly 1 of 16 records; `INFILE_LEN` 128 → 129 moves exactly 5
+(root 120–124 compose 129–133 characters; root 119 composes exactly 128 and is
+cut by neither width). **The probe and the declaration are about different
+things** — the declaration says the sweep cannot discriminate, the probe says
+the discrimination would go the right way — so `7cb6d9d1`, `818543b1` and
+`f3829a51` remain declared.
+
 **NAMED GAPS, each against the mutant that measures it.** The `.TRUE.`
-representation of a default `LOGICAL` is compared **zero** times — both logicals
+representation of a default `LOGICAL` is compared **zero** times by the corpus — both logicals
 this unit writes are `.FALSE.` in all 195 checkpoints, so the `.FALSE.` half is
 compared 390 times and the `.TRUE.` half not at all; the translation writes 1
 and gfortran writes 1, and nothing here tests that agreement. A checkpoint index

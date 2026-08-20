@@ -135,6 +135,54 @@ every layer that reads the corpus. Same shape as the checkpoint index of 0 or 1
 (the only input that separates `I0.0` from `%d`) and a RootName long enough to
 reach `CHARACTER(128)`'s truncation.
 
+### A DECLARATION SAYS THE SWEEP CANNOT DISCRIMINATE; IT DOES NOT SAY THE
+### TRANSLATION IS RIGHT -- AND THE DIFFERENCE COST TWENTY MINUTES
+
+Three of the sixteen `unreachable` declarations are pure FORTRAN-SEMANTICS
+questions with no dependence on runtime state:
+
+    7cb6d9d1  what does gfortran write for a default LOGICAL .TRUE.?
+    818543b1  what does `WRITE(s,'(I0.0)') 0` produce?
+    f3829a51  what does CHARACTER(128) do to a longer concatenation?
+
+The corpus cannot reach any of them, and P12 is satisfied by saying so. But the
+translation makes a CLAIM at each one -- 4 bytes and the value 1; blanks rather
+than "0"; truncate then TRIM -- and a declaration leaves all three untested.
+`evidence/Debug/fmt_probe.*` is the shape that answers them, and it works here
+unchanged in principle: a Fortran program, a C++ program that INCLUDES the
+shipped `.cpp`, and a `cmp`.
+
+    1   0   0   0   0   0   0   0   1   0   0   0     <- three default LOGICALs
+    BIN IDENTICAL  12 bytes       TXT IDENTICAL  16 records
+
+Red-tested three ways at exactly 2 bytes, 1 record and 5 records, all three
+predicted first. **THE DECLARATIONS STILL STAND** and that is the point worth
+generalising: `unreachable` is a claim about the CORPUS and the probe is a claim
+about the PROGRAM, so one does not replace the other. What the probe removes is
+not a declaration, it is a SILENCE -- and the silence was over the only place in
+this unit where a wrong answer would have survived every layer.
+
+**Cost: about twenty minutes, against the sixty-plus a corpus wide enough to
+reach the same three would have cost** (a new scenario, a de-integration window,
+`pre` re-captured, all six sweep parts re-run, the merge re-taken and every red
+test with them). Raised as a proposed method amendment: when a survivor's
+unreachability is a fact about FORTRAN rather than about the simulation, price a
+standalone probe before pricing a corpus.
+
+### A BIND-MOUNT RACE THROUGH `sed` RATHER THAN `cp`
+
+The probe's red-test runner edits the shipped `.cpp` with `sed -i.bak`, which
+unlinks and recreates the file. Two of the three red tests then died with
+
+    semantics_probe.cpp:10:10: fatal error: writerestartfile.cpp:
+        No such file or directory
+
+while the file sat on the host, restored and hashing correctly. It is the
+RUNBOOK's units #23/#30 rule -- prove the content from INSIDE the container
+before building -- arriving through a different command. The retry fires on
+attempt 1 on every run, which is what makes it a measurement rather than a
+one-off.
+
 ### AN OBSERVATION ABOUT THE INSTRUMENT TREE, NOT ABOUT THIS UNIT
 
 `vit/vit/view_populator.py` was modified at 08:44 on 2026-08-20, DURING this
