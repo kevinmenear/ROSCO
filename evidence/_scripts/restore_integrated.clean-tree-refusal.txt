@@ -1,0 +1,51 @@
+# scripts/restore_integrated.sh REFUSES ON A CLEAN TREE -- captured before the fix (C12)
+#
+# Found at the close of unit #56, running the script on an already-integrated,
+# fully committed tree. It exits 1, prints NOTHING, and never reaches its
+# rebuild-and-install.
+
+$ git status --porcelain
+?? evidence/_scripts/
+  (empty -- the tree is clean)
+
+$ bash scripts/restore_integrated.sh ; echo rc=$?
+rc=1
+
+THE LINE, scripts/restore_integrated.sh:33 as it stood:
+
+dirty=$(git status --porcelain rosco/controller/src | grep -v '^?? ' | wc -l | tr -d ' ')
+
+Under `set -euo pipefail`, `grep -v` exits 1 when it emits NO lines. On a clean
+tree `git status --porcelain rosco/controller/src` emits nothing, so grep emits
+nothing, exits 1, `pipefail` propagates it, and the command substitution fails
+the assignment -- which `set -e` turns into an exit before any message is
+printed.
+
+THE SIBLING SCRIPT ALREADY KNOWS THIS RULE. `scripts/reset_to_clean.sh` carries
+`|| true` at every `grep -c`/`grep -v` in a substitution, and at line 191 a
+comment saying why:
+
+    "cd $WORKDIR/rosco/controller/build && cmake --build . -j4 >/dev/null 2>&1 && \
+     cp libdiscon.so $WORKDIR/rosco/lib/libdiscon.so"
+
+# `|| true` goes INSIDE the container command: `grep -c` exits 1 on a count of
+# zero, and an outer `|| echo "?"` appended a second line to a correct "0" --
+# the check then cried wolf on a clean library. Wrong in the safe direction, but
+# a verification that misreports is not a verification.
+sym=$(docker exec "$CONTAINER" bash -lc \
+      "nm -D $WORKDIR/rosco/lib/libdiscon.so 2>/dev/null | grep -ci kgen || true")
+
+WHAT IT DID NOT AFFECT, checked rather than assumed. Every restore run in unit
+#56's dispatch followed a `reset_to_clean.sh`, which modifies 9 tracked sources
+-- so `dirty >= 1`, grep emitted lines, and the script ran to completion. Each
+one either printed its WARNING block or its "85 file(s) restored" line, both of
+which are past the failing statement, and the one that was redirected to
+/dev/null ran under `bash -c 'set -e'` with a following `echo RESTORED` that
+printed. The E1.4 round-trip check in the same dispatch reported
+bit-identical.
+
+So the defect is reachable only when the tree is ALREADY clean, which is
+exactly the state a dispatch ends in -- and in that state the script's own work
+is a no-op apart from the rebuild-and-install. The hazard is a caller that
+discards the exit code: it would believe the library had been rebuilt from HEAD
+when nothing ran.
