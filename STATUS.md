@@ -66,6 +66,7 @@ nobody made.
 | translation (`translations/Controllers/variablespeedcontrol.cpp`) | transcribed statement for statement; `vit check` 15 checks, no known-shape defects | — |
 | integration (`--reverse-copy`) | the wrapper was READ before it was believed: three copy-backs, the `localvariables` one carries this unit's thirteen scalar writes; `avrSWAP` crosses directly as `REAL(4)` assumed-size | the gate below is taken against this build |
 | gate, 27 scenarios (`gate/VariableSpeedControl.json`) | **5,252,000 values / 351 channels, 0 mismatched** | **three, one a NEGATIVE CONTROL**: the return path **1,552,676** across EXACTLY the predicted 23 scenarios; the K\*Omega² Region-2 arm **49,659** across EXACTLY `{12}`; a 1.0e30 write on a zero-coverage arm **0**, predicted exactly. All three revert-verified at 0 |
+| kernel replay, scenario 12 (`evidence/VariableSpeedControl/kernel.verify_fields.csv`) | **60/60 passed, 26,040 field rows over 419 field names, every row IDENTICAL** | `vit verify` printed NON_DISCRIMINATING for the SIXTH unit running, so **three hand stubs and ALL THREE PREDICTIONS EXACT**: the no-op **0/60**, the `avrSWAP(47)` write deleted **60/60 PASS**, the Region-2 arm doubled **12/60** with the 12 at invocations 3..14 |
 | differential harness | **NOT TAKEN** | — |
 | mutation score | **NOT TAKEN** — needs the corpus | — |
 | post-integration harness | **NOT TAKEN** — needs the corpus | — |
@@ -78,6 +79,30 @@ unit to stay at zero — and its three `gen_*` counts (15,990 / 15,991 / 15,998 
 16,000) sit against the arm's own 15,987 coverage hits. RT3 moved 0 with a
 1.0e30 write one statement away.
 
+**THE SECOND LAYER IS THE ONE THAT NEEDED NO CORPUS, AND ITS BLIND SPOT IS THE
+GATE'S STRENGTH.** The KGen kernel replays captured runtime state, so nothing the
+generator could not build was in its way, and it compares 419 FIELDS where the
+gate compares 13 simulation channels — `genartq`, `genbrtq`, `gentq_sd`,
+`vs_maxtq`, `vs_komega2_gentq`, `vs_constpwr_gentq`, `vs_lastgenpwr`, `instpi`
+and `instrl` are outputs no gate channel reads. It is also blind to
+`avrSWAP(47)`, this unit's whole output, and that is MEASURED rather than
+inherited:
+
+    perturbation                    kernel            gate
+    ----------------------------------------------------------------
+    avrSWAP(47) write deleted       60/60 PASS        1,552,676 moved
+    Region-2 arm                    48 of 60 FAIL        49,659 moved
+    piP / rlP contents              not compared      not a channel   <- OPEN
+
+**AND STUB 3's PREDICTION WAS A NUMBER AND A SET, BOTH READ OUT OF THE KERNEL'S
+OWN FIELD LOG BEFORE THE RUN.** `vs_state` is a compared field, so the
+reference's arm selection is recorded per case: 12 at state 1 (invocations
+3..14, contiguous) and 48 at state 2. Doubling the state-2 answer had to fail
+exactly the complement, and it did — 12 passed, first failures 1, 2, 15, 16, 17.
+Those 12 are independently the 12 hits gcov records at `Controllers.f90:279`
+across all 27 scenarios, counted over a 16,000-step simulation, and the capture
+window was chosen before either number was looked at.
+
 **WHAT IS NOT COVERED, AS A LIST OF LINES RATHER THAN A HEDGE.** Ten arms are
 dead in all 27 scenarios: `Controllers.f90:245`, `:249`, `:268`, `:283`, `:285`,
 `:287`, `:288-296`, `:300`, `:324-347`, `:362`. Three guards are tested on every
@@ -87,10 +112,18 @@ callees are never reached by any instrument this unit has**.
 `integrated_unexercised` was considered and rejected: this campaign reserves that
 word for units NO SCENARIO REACHES, and 23 of 27 call this one 407,976 times.
 
+All 60 kernel cases carry `VS_ControlMode == 1`, `VS_FBP == 0`,
+`VS_ConstPower == 1` and `SD_Trigger == 0`, so the kernel DEEPENS the comparison
+over the arms scenario 12 takes; it does not widen the reachable set. The
+differential harness is still the missing layer.
+
 **Procedure.** No mutation sweep was started, so `mutate_guarded.sh` was never
-needed; nothing was backgrounded and nothing was polled. Two reset windows, each
-opened and closed inside a short sequence, every commit taken outside them.
-Seven commits, one per expensive artifact.
+needed — there was no corpus to sweep, and the reason is stated rather than left
+to be inferred. Nothing was backgrounded and nothing was polled; every long
+command went through `run_if_time_remains.sh` with an estimate and an explicit
+Bash `timeout`. Three reset windows, the extraction one opened and closed inside
+ONE command, every commit taken outside them. Twelve commits, one per expensive
+artifact.
 
 ---
 

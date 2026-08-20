@@ -131,14 +131,92 @@ All three revert-verified by `gate.py` itself: restored, rebuilt, re-run, 0 of
 perturbation moves something; for a negative control that string is the result,
 which is the same reading unit #59 recorded.
 
+### WHEN THE LAYER THAT NEEDS A CORPUS IS GONE, TAKE THE ONE THAT DOES NOT
+
+The KGen kernel replays CAPTURED runtime state, so the generator's ceiling is
+not in its way at all. `vit extract` at `DISCON.F90:117` on scenario 12 — the
+only one of the 27 that sets `VS_ControlMode = 1`, and therefore the only one
+that enters the K\*Omega² law — window `0:0:1-20,0:0:7995-8014,0:0:15980-15999`,
+60 cases, then `vit verify`: **60/60 passed, 26,040 field rows over 419 field
+names, every row IDENTICAL**.
+
+It is not a substitute for the differential harness and it is not claimed as
+one. All 60 cases carry `VS_ControlMode == 1`, `VS_FBP == 0`, `VS_ConstPower ==
+1` and `SD_Trigger == 0`, so the kernel DEEPENS the comparison over the arms
+scenario 12 already takes rather than widening the set. What it buys is depth:
+419 fields against the gate's 13 channels, nine of which are outputs no gate
+channel reads (`genartq`, `genbrtq`, `gentq_sd`, `vs_maxtq`,
+`vs_komega2_gentq`, `vs_constpwr_gentq`, `vs_lastgenpwr`, `instpi`, `instrl`).
+
+### `vit verify` REFUSED TO SCORE ITS OWN POWER FOR THE SIXTH UNIT RUNNING
+
+    Red test: NOT CONSTRUCTED -- no by-value floating-point parameter and no
+    floating-point result: every input arrives behind a pointer or inside a
+    derived type ...
+    NON_DISCRIMINATING -- ... The pass is not evidence.
+
+Right, and the reason the three hand stubs exist. Every `EXPECT` was committed
+(`93f5b2c6`) before any `RESULT` was run (`09497834`).
+
+    stub                              EXPECT              MEASURED
+    ------------------------------------------------------------------
+    the no-op                         60 of 60 FAIL       0/60 passed
+    the avrSWAP(47) write deleted     60 of 60 PASS      60/60 passed
+    the K*Omega^2 Region-2 arm x2     48 FAIL / 12 PASS  12/60 passed,
+                                      at invocations      first failures
+                                      3..14               1, 2, 15, 16, 17
+
+### THE TWO LAYERS HAVE OPPOSITE BLIND SPOTS, AND ONE STATEMENT SHOWS IT
+
+    perturbation                    kernel            gate
+    ----------------------------------------------------------------
+    avrSWAP(47) write deleted       60/60 PASS        1,552,676 moved
+    Region-2 arm                    48 of 60 FAIL        49,659 moved
+    piP / rlP contents              not compared      not a channel   <- OPEN
+
+`avrswap` is not among the kernel's 419 field names — VIT's own comment in the
+generated `DISCON.F90` says `skipped avrSWAP verification (assumed-size
+incompatible with KGen comparator)` — so deleting the one line this procedure
+exists for leaves the green exactly where it was, and `vit verify` prints its own
+NON_DISCRIMINATING over the stub. Third instance in this campaign after units
+#43 and #44, and the first where the deleted write IS the unit's whole output.
+It is not a hole in this unit's evidence, because the gate red test perturbs the
+same statement; it would have been one had the kernel been taken alone.
+
+**What NEITHER layer compares is the contents of the nested `piP` and `rlP`
+blocks.** They appear under no field name in the 419 and are not a gate channel.
+`instpi` and `instrl`, the counters that INDEX them, ARE compared, so a
+mis-sequenced call is visible and a wrong value written into a slot is not. Left
+open and named rather than argued away.
+
+### A PREDICTION READ OUT OF THE INSTRUMENT'S OWN OUTPUT BEATS ONE ESTIMATED
+
+Stub 3's `EXPECT` is not "it goes red". `vs_state` is one of the 419 compared
+fields, so the kernel's field log already partitions its own 60 cases by the
+reference's arm: 12 at state 1 (invocations 3..14, contiguous) and 48 at state
+2. Doubling the state-2 answer therefore had to fail exactly the complement, and
+it did.
+
+And the 12 is, independently, the number of hits gcov records at
+`Controllers.f90:279` across all 27 scenarios. gcov counted it over a 16,000-step
+simulation; the kernel counted it from 60 captured invocations; the capture
+window was chosen before either number was looked at. Neither instrument was
+built to check the other, and the agreement also says the window caught the WHOLE
+arm rather than part of it — which is the question unit #46 says a window can
+answer and a stub cannot, met from the other side.
+
 ### PROCEDURE
 
 No mutation sweep was started, so `mutate_guarded.sh` was never needed — and the
 reason is stated rather than left to be inferred: there was no corpus to sweep.
 Nothing was backgrounded and nothing was polled; every long command went through
 `scripts/run_if_time_remains.sh` with an estimate and an explicit Bash
-`timeout`. Two reset windows, each opened and closed inside a short sequence,
-every commit taken outside them.
+`timeout`. Three reset windows; the extraction one -- reset, edit `vit.yaml`,
+`vit extract`, revert `vit.yaml`, restore -- was opened and closed inside ONE
+command, so a kill could not leave the campaign de-integrated. Every commit was
+taken outside a window. Each `vit verify` is ~231 s and each was run as its own
+foreground command, which is unit #40's rule: it lost a stub to the 600-second
+tool ceiling by putting four in one.
 
 ## Unit #59 — RefSpeedExclusion — 2026-08-20
 
