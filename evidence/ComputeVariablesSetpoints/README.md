@@ -16,14 +16,17 @@ inlined: `LPFilter` (#12, ×2, both post-incrementing `objInst%instLPF`),
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness (`harness/ComputeVariablesSetpoints.json`) | **25,398 checked, 0 failed, 0 inadmissible**. R4 compares the return value plus 480 out-parameters | it went red first: `std::max` at three sites moved **3,300 of 25,398** in exactly two shapes, and that is this unit's one translation defect |
-| mutation (`mutation/ComputeVariablesSetpoints.json`) | **58 killed of 79 scoreable, 2 equivalent, 0 nocompile, 0 unreachable — 0.7342.** 21 OPEN | `declared_but_killed` and `unreachable_but_killed` both EMPTY |
-| post-integration (`harness/ComputeVariablesSetpoints.postintegration.json`) | **25,398 checked, 0 failed** (E4.5) | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **25,398 of 25,398, PREDICTED 25,398 before the run**; reverted, rebuilt, green re-taken at 0 |
+| differential harness (`harness/ComputeVariablesSetpoints.json`) | **22,776 checked, 0 failed, 0 inadmissible**. R4 compares the return value plus 480 out-parameters | it went red twice, and both reds are findings: `std::max` at three sites moved **3,300 of 25,398** (the translation defect), and the corpus repair moved **577 of 22,434** (a reference path with no answer) |
+| mutation (`mutation/ComputeVariablesSetpoints.json`) | **66 killed of 79 scoreable, 2 equivalent, 0 nocompile, 0 unreachable — 0.8354.** 13 OPEN | `declared_but_killed` and `unreachable_but_killed` both EMPTY; four sweeps, 0.7161 → 0.7342 → 0.7973 → 0.8354 |
+| post-integration (`harness/ComputeVariablesSetpoints.postintegration.json`) | **22,776 checked, 0 failed** (E4.5) | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **22,776 of 22,776, EVERY case, as predicted before the first run**; reverted, rebuilt, green re-taken at 0 |
 | gate, 27 scenarios (`gate/ComputeVariablesSetpoints.json`) | 5,252,000 values / 351 channels, 0 mismatched | **four, one of them a NEGATIVE CONTROL and one of them a REFUTED PREDICTION** — 728,340 / 0 / 0 / 1,977,826 |
 
-**The number that defers it is 0.7342 against a threshold of 1.0.** Every one
-of the 21 open survivors has an answer in `mutation_survivors.txt`; eleven of
-them have a MEASURED cause, and none of them is a defect claim.
+**The number that defers it is 0.8354 against a threshold of 1.0.** Every one
+of the 13 open survivors has an answer in `mutation_survivors.txt`, in three
+groups — `saturate`'s bound annihilated by the unit's own last statement, three
+arm boundaries that need an exact IEEE tie, and eight `const_tweak`s of which
+two are provably equivalent and undeclarable because the tool's mutant ids
+cannot be mapped to sites. None is a defect claim.
 
 ## THREE INFRASTRUCTURE DEFECTS HAD TO BE REPAIRED BEFORE ANY LAYER COULD RUN
 
@@ -80,6 +83,39 @@ takes the arm is the one scenario in which this unit's principal output reaches
 no gate channel at all.** Two zeros (RT2, RT3) with two different causes, and
 only the pair (RT4, RT2) separates them.
 
+## THE SECOND RED IS A REFERENCE PATH WITH NO ANSWER, TWO FUNCTIONS DEEP
+
+Seven degenerate-range pins fixed the corpus the census had condemned, and the
+harness then failed **577 of 22,434**, on four outputs, with
+`ref 122.90967  got 34.64286` on every recorded mismatch. The cause:
+
+    Filters.f90  LPFilter, non-reset arm: coefficients come from FP%lpf1_a1(inst),
+        which the harness supplies ZEROED and does not vary, so the result is
+        1.0/0.0 * 0.0 = NaN on every such call.
+    Functions.f90  interp1d receives that NaN as xq, and ALL THREE of its
+        branches test it with <= or >=. Every comparison is FALSE for a NaN, the
+        loop runs to completion, and THE FUNCTION RESULT IS NEVER ASSIGNED.
+
+What comes back is whatever the result slot held: on the Fortran side
+122.90967, which is exactly the `CntrPar%VS_RefSpd` the caller left there;
+through the generated bridge, a different slot, 0.0.
+
+`LocalVar_iStatus = { lo = 0, hi = 0 }` is the repair and it is a DOMAIN claim
+rather than a measurement design: `iStatus == 0` is the reference's own name
+for "first call", a zeroed `FilterParameters` IS the first-call state, and a
+case that says otherwise while handing the filter that state is not a program
+state ROSCO can reach.
+
+    seven pins, iStatus free    22,434 cases   HARNESS FAIL 577
+    seven pins + iStatus = 0    22,352 cases   HARNESS PASS   0
+    ... and VS_RefSpd unpinned  22,776 cases   HARNESS PASS   0   <- committed
+
+**IT ALSO SAYS SOMETHING ABOUT THE FIRST CORPUS'S GREEN.** The NaN reaches
+`interp1d` on every `PRC_Mode == 1` case that does not take LPFilter's reset
+arm, in EITHER corpus — so the first green passed those cases by coincidence,
+two undefined slots agreeing. The repair removes the class rather than
+excluding it.
+
 ## Files
 
 | file | what it is |
@@ -88,7 +124,7 @@ only the pair (RT4, RT2) separates them.
 | `callees.as-generated.f90` | the artifact it names |
 | `inputs_census.txt` | the scored corpus's own inputs on three arms, and the divide-by-zero that explains eleven survivors |
 | `mutation_survivors.txt` | one answer per survivor, the two equivalences and their control, and what 0.7342 does not cover |
-| `harness.PINNED-CORPUS-RED.json` | the corpus repair that WORKS and goes RED — 577 of 22,434, kept because it is the next dispatch's starting point |
+| `harness.PINNED-CORPUS-RED.json` | the corpus repair BEFORE the eighth pin — 577 of 22,434, kept because it is the artifact that exposed `interp1d`'s undefined result at a NaN abscissa |
 | `gate.redtest_predictions.txt` | four perturbations, predicted before the runs, with the refutation and the probe that explains it |
 | `wrapper_redtest_prediction.txt` | the copy-back prediction, 25,398, written before the run |
 | `revcheck.txt` | revcheck's one finding and its exact cause |

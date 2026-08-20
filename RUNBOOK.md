@@ -9414,23 +9414,83 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   scalar the degenerate range is the cheap spelling and it says the same
   thing.**
 
-## A CORPUS REPAIR THAT GOES RED IS NOT A FAILED REPAIR, AND THE COMMITTED
-## CORPUS IS THE ONE WITH A GREEN
+## A REFERENCE THAT NEVER ASSIGNS ITS OWN RESULT LOOKS LIKE A TRANSLATION
+## DEFECT, AND THE TELL IS THAT THE WRONG VALUE IS A VALUE THE CALLER OWNS
+
+- **Unit #62.** A corpus repair moved cases onto a path where `interp1d`
+  returns nothing at all:
+
+  ```
+  IF     (xq <= MINVAL(xData))  interp1d = yData(1)
+  ELSEIF (xq >= MAXVAL(xData))  interp1d = yData(SIZE(xData))
+  ELSE   DO I ... IF (xq <= xData(I)) interp1d = ... ; EXIT
+  ```
+
+  Every comparison is FALSE for a NaN, so at `xq = NaN` the loop runs to
+  completion and the function result is left at whatever the slot held.
+
+  ```
+  577 of 22,434   ref 122.90967   got 34.64286
+  122.90967 == CntrPar%VS_RefSpd exactly, on every recorded mismatch
+  ```
+
+  **A "wrong" value that is EXACTLY one of the caller's own inputs, bit for
+  bit, is the signature of an unassigned function result**, not of arithmetic.
+  Four probes went into narrowing it and the source read is what settled it —
+  the read was two functions down (`LPFilter` returned the NaN, because its
+  non-reset arm divides by a coefficient the harness zeroes).
+
+- **The repair is a DOMAIN pin, not a `no_oracle`.** `iStatus == 0` is the
+  reference's own name for "first call", the harness supplies a ZEROED
+  `FilterParameters` unconditionally, and a zeroed filter IS the first-call
+  state. Pinning it removes the undefined class instead of excusing the
+  outputs, so they stay compared.
+
+- **AND IT INDICTS THE EARLIER GREEN.** The same NaN reached `interp1d` in the
+  ORIGINAL corpus too, on every `PRC_Mode == 1` case off the reset arm — so
+  that green passed those cases by coincidence, two undefined slots agreeing,
+  and nothing in the artifact says so. **A green over a reference that has no
+  answer is indistinguishable from a green.** When a narrowing that should only
+  REMOVE cases turns a green red, suspect an undefined reference path in the
+  cases that remain before suspecting the translation.
+
+## PINNING ONE SIDE OF A RELATIONAL PAIR DELETES THE BLOCK THAT REACHES AN ARM
+
+- **Unit #62, measured one pin apart on the same corpus.**
+
+  ```
+  CntrPar_VS_RefSpd pinned to the shipped 122.90967   0.7973, both VS_FBP arms LOST
+  CntrPar_VS_RefSpd free                              0.8354, both VS_FBP arms KILLED
+  ```
+
+  R6's RELATIONAL PAIR block — "one predicate the reference writes between TWO
+  VARIED QUANTITIES, each with one side set FROM the other, at equality" — was
+  3,458 of this unit's cases and the only thing that put `VS_RefSpd_TSR` above
+  `CntrPar%VS_RefSpd`. It needs BOTH sides varied and disappears when either is
+  pinned, taking both Region-3 lookups with it.
+
+- **`--dump-plan` prints the relational pairs and it costs one second. Read it
+  before pinning anything.** The trade here was two mutants on `saturate`'s
+  bound against two whole ARMS, and the arms win. The alternative repair for
+  the bound was priced too — flip `PRC_R_Speed` to -0.8 so the bound clears the
+  unit's own final `MAX` — and measured IDENTICAL, so the physical value is
+  what is committed and the probe is what is recorded.
+
+## A CORPUS REPAIR THAT GOES RED IS NOT A FAILED REPAIR, AND THE RED IS USUALLY
+## THE MORE INTERESTING HALF
 
 - **Unit #62.** Seven pins, justified from the 28 shipped `Examples/*.IN` and
   measured against a census that showed both alternative torque-law arms
-  dividing by zero on all 1,152 cases that reach them. The corpus built and
-  the harness failed **577 of 22,434**, on four outputs, with
-  `ref 122.90967 / got 34.64286` on every recorded mismatch.
+  dividing by zero on all 1,152 cases that reach them. The corpus built and the
+  harness failed **577 of 22,434**. Chasing that red is what found the
+  undefined `interp1d` result above, and the eighth pin that came out of it
+  took the score from 0.7342 to 0.8354.
 
-- **What was done with it, and it is the shape to copy.** The pins are
-  committed COMMENTED OUT in `harness/ranges.toml` with the whole argument
-  intact, the red artifact is kept beside the evidence, and the unit closes on
-  the corpus that HAS a green. A mutation score taken against a corpus whose
-  own green nobody has is worse than a low score against one that does. **State
-  in the entry which of the two possibilities is unresolved** — a translation
-  defect the wider corpus cannot reach, or a reference path with no oracle —
-  rather than picking the flattering one.
+- **The order that works.** Census the corpus, pin, expect the red, and treat
+  it as a measurement rather than as a reason to revert. **What must not happen
+  is closing on a corpus whose own green nobody has** — if the red cannot be
+  explained inside the clock, commit the pins COMMENTED OUT with the whole
+  argument, keep the red artifact, and close on the corpus that has a green.
 
 ## TWO CORPORA WITH THE SAME `checked` COUNT CAN BE DIFFERENT FILES, AND THE
 ## SCORE HAS TO NAME THE ONE ON DISK

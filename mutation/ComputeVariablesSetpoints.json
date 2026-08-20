@@ -131,16 +131,22 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 81,
- "killed": 58,
- "survived": 21,
+ "killed": 66,
+ "survived": 13,
  "equivalent": 2,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.7342,
+ "score": 0.8354,
  "loop_rev": "41d383f-nogit",
  "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "426eef9-nogit",
  "survivors": [
+  {
+   "id": "1c85d6d7",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
   {
    "id": "f977278e",
    "operator": "compare_op",
@@ -160,46 +166,10 @@
    "after": "CntrPar->VS_RefSpd"
   },
   {
-   "id": "d17318eb",
-   "operator": "arith_op",
-   "before": "CntrPar->VS_GenEff / 100.0",
-   "after": "CntrPar->VS_GenEff * 100.0"
-  },
-  {
-   "id": "3941a7ef",
-   "operator": "arith_op",
-   "before": "1. / 3.",
-   "after": "1. * 3."
-  },
-  {
-   "id": "288700cf",
-   "operator": "arith_op",
-   "before": "1. / 2.",
-   "after": "1. * 2."
-  },
-  {
    "id": "be35d649",
    "operator": "arith_op",
    "before": "CntrPar->VS_RefSpd * LocalVar->PRC_R_Speed",
    "after": "CntrPar->VS_RefSpd / LocalVar->PRC_R_Speed"
-  },
-  {
-   "id": "63464abe",
-   "operator": "swap_operands",
-   "before": "CntrPar->VS_GenEff / 100.0",
-   "after": "100.0 / CntrPar->VS_GenEff"
-  },
-  {
-   "id": "43311afe",
-   "operator": "swap_operands",
-   "before": "1. / 3.",
-   "after": "3. / 1."
-  },
-  {
-   "id": "a61a0d36",
-   "operator": "swap_operands",
-   "before": "1. / 2.",
-   "after": "2. / 1."
   },
   {
    "id": "0c23917a",
@@ -214,6 +184,12 @@
    "after": "2"
   },
   {
+   "id": "c3c9ad10",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
    "id": "860bdd9e",
    "operator": "const_tweak",
    "before": "0",
@@ -226,46 +202,22 @@
    "after": "1.0"
   },
   {
-   "id": "87986316",
-   "operator": "const_tweak",
-   "before": "0.0",
-   "after": "1.0"
-  },
-  {
-   "id": "8723e9ee",
-   "operator": "const_tweak",
-   "before": "100.0",
-   "after": "101.0"
-  },
-  {
    "id": "30056504",
    "operator": "const_tweak",
    "before": "1",
    "after": "2"
   },
   {
+   "id": "b1377f87",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
    "id": "642f565d",
    "operator": "const_tweak",
    "before": "0.0",
    "after": "1.0"
-  },
-  {
-   "id": "bf394e2f",
-   "operator": "drop_call",
-   "before": "std::pow(fortran_max(LocalVar->VS_GenPwr, 0.0) / (CntrPar->VS_GenEff / 100.0) /\n                         CntrPar->VS_Rgn2K,\n                     1. / 3.)",
-   "after": "fortran_max(LocalVar->VS_GenPwr, 0.0) / (CntrPar->VS_GenEff / 100.0) /\n                         CntrPar->VS_Rgn2K"
-  },
-  {
-   "id": "16ed209f",
-   "operator": "drop_call",
-   "before": "std::pow(fortran_max(LocalVar->GenTq, 0.0) / CntrPar->VS_Rgn2K, 1. / 2.)",
-   "after": "fortran_max(LocalVar->GenTq, 0.0) / CntrPar->VS_Rgn2K"
-  },
-  {
-   "id": "35d6a957",
-   "operator": "swap_call_args",
-   "before": "fortran_max(LocalVar->GenTq, 0.0) / CntrPar->VS_Rgn2K, 1. / 2.",
-   "after": "1. / 2., fortran_max(LocalVar->GenTq, 0.0) / CntrPar->VS_Rgn2K"
   }
  ]
 }

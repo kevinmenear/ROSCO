@@ -5,10 +5,10 @@ Append-only record of *why*. Never read end to end.
 ## Unit #62 — ComputeVariablesSetpoints — 2026-08-20
 
 **Disposition `deferred`.** Translated, integrated, gate green at 5,252,000
-values with four red tests, differential harness green at 25,398 before AND
-after integration with a copy-back red test that moved exactly the predicted
-25,398 — and mutation **0.7342** against a threshold of 1.0, with 21 open
-survivors. It defers on P12 and on nothing else.
+values with four red tests, differential harness green at 22,776 before AND
+after integration with a copy-back red test that moved every case — and
+mutation **0.8354** against a threshold of 1.0, with 13 open survivors. It
+defers on P12 and on nothing else.
 
 ### AN `INTENT(IN)` VIEW ARGUMENT IS A CALLEE-BRIDGE PATH NOBODY HAD TAKEN
 
@@ -115,28 +115,78 @@ ALLOCATABLE EXTENT it deletes the array from the comparison — are both about
 kinds of parameter, and neither applies to a free scalar real that is not a
 knob. **Ask which of the two the parameter is before reaching for `values`.**
 
-### THE REPAIR WORKED AND THE HARNESS WENT RED, AND THAT IS NOT SETTLED
+### `interp1d` HAS NO ANSWER AT A NaN ABSCISSA, AND THE CORPUS REPAIR IS WHAT REACHED IT
 
-On the 22,434-case pinned corpus the harness fails **577**, on four outputs and
-nothing else (`LocalVar.VS_RefSpd`, `.VS_SpdErr`, `.VS_SpdErrAr`,
-`DebugVar.VS_RefSpd`), with `ref 122.90967  got 34.64286` on every recorded
-mismatch. 122.90967 is exactly `CntrPar%VS_RefSpd`, which is what `LPFilter`
-returns on its RESET path; 34.64286 is exactly `CntrPar%VS_MinOMSpd`, which is
-what the unit's final `MAX` returns when its other operand is smaller or NaN.
-On case 9370 the C++ side's `LPFilter` returns NaN, the following `interp1d`
-returns 0.0, and `iStatus` is -300 with `restart` 0 — so neither side should be
-taking the reset path — while `LocalVar%PRC_WSE_F` and
-`LocalVar%PC_RefSpd_PRC`, the outputs of those SAME two callees one block
-earlier on the same case, agree exactly.
+Seven degenerate-range pins fixed the three arms the census had condemned, and
+the harness then failed **577 of 22,434**, on four outputs and nothing else,
+with `ref 122.90967  got 34.64286` on every recorded mismatch. Four probes —
+the case index, the extent inside the bridge, the pair either side of the C++
+call, and a three-point trace through the translation — put the divergence
+between `VS_RefSpd_TSR` (equal on both sides) and the final clamp, and the
+reference source settles it:
 
-**Whether that is a translation defect the wider corpus cannot reach or a
-reference path with no oracle was not settled inside this dispatch's clock, and
-it is recorded rather than closed over.** The pins are committed COMMENTED OUT
-in `harness/ranges.toml` with the whole argument, and the red artifact is kept
-at `evidence/ComputeVariablesSetpoints/harness.PINNED-CORPUS-RED.json`. The
-committed green (25,398 / 0) and the score it carries are the numbers the unit
-closes on, because a mutation score taken against a corpus whose own green
-nobody has would be worse than 0.7342.
+    Filters.f90   LPFilter's NON-reset arm reads its coefficients out of
+        FP%lpf1_a1(inst). The harness supplies LocalVar%FP ZEROED and does not
+        vary it -- it reports it as UNOBSERVABLE -- so a1 = 0 and the result is
+        1.0/0.0 * 0.0 = NaN, on EVERY call that takes that arm.
+
+    Functions.f90 interp1d then receives that NaN as xq, and ALL THREE of its
+        branches test it with <= or >=:
+
+            IF     (xq <= MINVAL(xData))  interp1d = yData(1)
+            ELSEIF (xq >= MAXVAL(xData))  interp1d = yData(SIZE(xData))
+            ELSE   DO I ... IF (xq <= xData(I)) interp1d = ... ; EXIT
+
+        Every comparison is FALSE for a NaN, the loop runs to completion, and
+        THE FUNCTION RESULT IS NEVER ASSIGNED.
+
+What comes back is whatever the result slot held. On the Fortran side that was
+122.90967 — exactly the `CntrPar%VS_RefSpd` the caller had put there a few
+frames earlier; through the generated bridge, a different slot, 0.0. Then
+`MAX(NaN-free 0.0, VS_MinOMSpd)` gives 34.64286 on the C++ side and
+`MAX(122.90967, 34.64286)` gives 122.90967 on the reference. Four outputs, and
+they are exactly the four that descend from `VS_RefSpd`.
+
+**THE REPAIR IS A DOMAIN CLAIM AND NOT A MEASUREMENT DESIGN.**
+`LocalVar_iStatus = { lo = 0, hi = 0 }`. LPFilter's guard is
+`IF ((iStatus == 0) .OR. reset)`, and `iStatus == 0` is the reference's own name
+for "this is the first call". A zeroed `FilterParameters` IS the first-call
+state; a case that says "not the first call" while handing the filter that
+state is not a program state ROSCO can reach.
+
+    seven pins, iStatus free    22,434 cases   HARNESS FAIL 577
+    seven pins + iStatus = 0    22,352 cases   HARNESS PASS   0
+
+**AND IT SAYS SOMETHING UNCOMFORTABLE ABOUT THE FIRST CORPUS'S GREEN.** The
+NaN reaches `interp1d` on every `PRC_Mode == 1` case that does not take
+LPFilter's reset arm, in EITHER corpus. The first green — 25,398 of 25,398 —
+therefore passed those cases by COINCIDENCE, two undefined slots agreeing,
+and nothing in the artifact says so. **A green over a reference that has no
+answer is indistinguishable from a green, which is P10's shape one layer down:
+the set was not empty, it was undefined.** The repair removes the class rather
+than excusing it with `no_oracle`, which is the better of the two because the
+outputs stay compared.
+
+### PINNING ONE SIDE OF A RELATIONAL PAIR DELETES THE BLOCK THAT REACHES AN ARM
+
+Measured, on the same corpus, one pin apart:
+
+    CntrPar_VS_RefSpd pinned to 122.90967    0.7973, both VS_FBP arms LOST
+    CntrPar_VS_RefSpd free                   0.8354, both VS_FBP arms KILLED
+
+R6's RELATIONAL PAIR block — "one predicate the reference writes between TWO
+VARIED QUANTITIES, each with one side set FROM the other, at equality" — is
+3,458 of this unit's cases and is the ONLY thing that puts `VS_RefSpd_TSR`
+above `CntrPar%VS_RefSpd`. It requires both sides varied and disappears when
+either is pinned, taking the Region-3 `VS_FBP_WSE_Ref` and `VS_FBP_Torque_Ref`
+lookups with it. **Before pinning a parameter, check whether the plan names it
+in a RELATIONAL PAIR**; `--dump-plan` prints them and it costs one second.
+
+The two mutants the pin buys are on `saturate`'s upper bound, and the
+alternative repair was priced too: `PRC_R_Speed` at -0.8 instead of +0.8, so
+the bound is positive at the base draw and clears the unit's final `MAX`. Same
+0.8354, IDENTICAL survivor set. It bought nothing, so the physical +0.8 is what
+is committed and the probe is recorded rather than the sign.
 
 ### RAISED FOR THE DRIVER
 
@@ -175,22 +225,24 @@ nobody has would be worse than 0.7342.
 
 ### PROCEDURE
 
-Two reset windows, each closed with `restore_integrated.sh` before any commit,
+Three reset windows, each closed with `restore_integrated.sh` before any commit,
 and the regenerated `vit_controlparameters_view.f90` re-applied by hand after
 each restore (the restore takes it back to HEAD, which the RUNBOOK records).
-Two mutation sweeps, both foreground under `mutate_guarded.sh` and both routed
-through `run_if_time_remains.sh`; both restored the translation to
-`9db124ea…` and cleared their markers. Twelve commits, one per expensive
+Four scored mutation sweeps, every one foreground under `mutate_guarded.sh` and
+routed through `run_if_time_remains.sh`; every one restored the translation to
+`9db124ea…` and cleared its marker. Sixteen commits, one per expensive
 artifact, and the red-test predictions committed before their runs in both the
 gate and the post-integration cases.
 
-**One re-take was forced rather than chosen.** Reverting the seven trial pins
-regenerated a corpus of 25,398 cases / 260,684,571 bytes where the FIRST sweep
-had scored 25,562 / 262,367,867. The checked count is 25,398 either way and the
-green is the same number, but the case files are not the same bytes — so the
-sweep was re-run, and it is the re-taken artifact that is committed. The
-difference cost 250 seconds and it is the difference between a score about a
-corpus and a score about *a* corpus.
+**Four mutation sweeps and one forced re-take.** Reverting the seven trial pins
+once regenerated a corpus of 25,398 cases / 260,684,571 bytes where an earlier
+sweep had scored 25,562 / 262,367,867. The checked count is 25,398 either way
+and the green is the same number, but the case files are not the same bytes —
+so the sweep was re-run. Unit #26's rule is that a red result and the green it
+certifies must name the same corpus, and "the same count" is not "the same
+corpus". Every result artifact this unit ships was re-taken on the final
+22,776-case corpus, including the post-integration green and its copy-back red
+test; the four gate artifacts do not read the corpus and were not re-taken.
 
 ## Unit #61 — WriteRestartFile — 2026-08-20
 

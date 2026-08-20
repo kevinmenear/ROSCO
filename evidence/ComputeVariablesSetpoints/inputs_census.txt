@@ -47,8 +47,26 @@ unit's LAST statement is `MAX(VS_RefSpd, VS_MinOMSpd)` with VS_MinOMSpd at
 lifted straight back. `negate_cond` on that arm's own `if` moved only 35 of
 25,398 cases, which is the same fact counted from the other side.
 
-WHAT WAS DONE WITH IT: harness/ranges.toml, seven `values` pins, with the
-physical half counted from the 28 shipped Examples/*.IN and the instrumental
-half (0.8 rather than 1.0; 0.5 rather than a shipped-scale value) stated as a
-measurement design. The CONTROL for the repair is the SURVIVOR SET either
-side, not the case count.
+WHAT WAS DONE WITH IT: harness/ranges.toml, seven degenerate-range pins, with
+the physical half counted from the 28 shipped Examples/*.IN and the
+instrumental half (0.5 rather than a shipped-scale value, chosen so that both
+mutant families on `MAX(x, 0.0)` are observable at once) stated as a
+measurement design.
+
+AND AN EIGHTH PIN THE CENSUS DID NOT PREDICT. The seven alone made the corpus
+RED -- 577 of 22,434 -- because they moved cases onto a REFERENCE PATH WITH NO
+ANSWER: `LPFilter`'s non-reset arm divides by a coefficient the harness zeroes,
+returning NaN, and `interp1d` then never assigns its own result, because all
+three of its branches test `xq` with `<=` or `>=` and every comparison is false
+for a NaN. `LocalVar_iStatus = { lo = 0, hi = 0 }` is the repair and it is a
+domain claim: a zeroed `FilterParameters` IS the first-call state, and
+`iStatus == 0` is the reference's own name for it.
+
+    seven pins, iStatus free    22,434 cases   HARNESS FAIL 577
+    seven pins + iStatus = 0    22,352 cases   HARNESS PASS   0
+    ... and VS_RefSpd unpinned  22,776 cases   HARNESS PASS   0   <- committed
+
+THE CONTROL FOR THE REPAIR IS THE SURVIVOR SET EITHER SIDE, not the case count:
+
+    before    58 of 79 = 0.7342   21 open, eleven of them on these three arms
+    after     66 of 79 = 0.8354   13 open, NINE of the eleven dead

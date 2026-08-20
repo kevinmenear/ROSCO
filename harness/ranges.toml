@@ -3494,7 +3494,7 @@ CntrPar_VS_FBP_Tau_n = { same_as = "CntrPar_VS_FBP_U_n" }
 #
 #     seven two-element `values` lists    killed at 75 s, case count never printed
 #     seven one-element `values` lists    95,741 case(s), then killed
-#     seven { lo = N, hi = N }            (below)
+#     seven { lo = N, hi = N }            22,434 case(s), generated
 #
 # A stated `values` list makes the parameter a FLAG, and R6 re-runs a block of
 # cases under each declared value of every flag; seven more flags multiply that
@@ -3504,34 +3504,61 @@ CntrPar_VS_FBP_Tau_n = { same_as = "CntrPar_VS_FBP_U_n" }
 # SS_DelOmegaF), so the warning that `{ lo = N, hi = N }` collapses R7's knob
 # does not bite -- and none of the seven is an ALLOCATABLE EXTENT, so the
 # warning that it deletes an array from the comparison does not bite either.
-# CntrPar_VS_Rgn2K = { lo = 2.31055, hi = 2.31055 }
-# CntrPar_VS_GenEff = { lo = 94.4, hi = 94.4 }
-# LocalVar_VS_GenPwr = { lo = 0.5, hi = 0.5 }
-# LocalVar_GenTq = { lo = 0.5, hi = 0.5 }
-# CntrPar_VS_MinOMSpd = { lo = 34.64286, hi = 34.64286 }
-# CntrPar_VS_RefSpd = { lo = 122.90967, hi = 122.90967 }
-# LocalVar_PRC_R_Speed = { lo = 0.8, hi = 0.8 }
 #
-# *** THE SEVEN ARE COMMENTED OUT, AND THAT IS A MEASUREMENT AND NOT A RETREAT.
-# *** The repair WORKS on the corpus (22,434 cases, generated, no OOM) and the
-# *** harness went RED on it: 577 of 22,434 failed, on four outputs only --
-# *** LocalVar.VS_RefSpd, .VS_SpdErr, .VS_SpdErrAr and DebugVar.VS_RefSpd --
-# *** with `ref 122.90967  got 34.64286` on every recorded one. The artifact is
-# *** kept at evidence/ComputeVariablesSetpoints/harness.PINNED-CORPUS-RED.json.
-# ***
-# *** A red on a NARROWED corpus is either a translation defect the wider
-# *** corpus could not reach or a reference path with no oracle, and this
-# *** dispatch could not tell which inside its remaining clock. Three probes
-# *** narrowed it and none settled it: on case 9370 the C++ side's LPFilter
-# *** returns NaN, the following interp1d returns 0.0 and the final MAX gives
-# *** 34.64286 = VS_MinOMSpd, while the reference gives 122.90967 = exactly
-# *** CntrPar%VS_RefSpd, which is the value LPFilter returns on its RESET path
-# *** -- and `iStatus` is -300 and `restart` is 0 on that case, so neither side
-# *** should be taking it. `LocalVar%PRC_WSE_F` and `LocalVar%PC_RefSpd_PRC`,
-# *** the outputs of the SAME two callees one block earlier, agree exactly.
-# ***
-# *** Enabling them is the first thing the next dispatch should do. Until the
-# *** red is explained, the committed green (25,398 / 0) and the mutation score
-# *** it carries are the numbers this unit closes on, and the eleven survivors
-# *** the census explains stay OPEN rather than being scored against a corpus
-# *** whose own green nobody has.
+# THE EIGHTH PIN IS `LocalVar_iStatus`, AND IT IS THE ONE THAT MADE THE OTHER
+# SEVEN USABLE. With the seven alone the corpus generated and the HARNESS WENT
+# RED -- 577 of 22,434, on four outputs, `ref 122.90967  got 34.64286` on every
+# recorded mismatch. The cause is a REFERENCE PATH WITH NO ANSWER, and it is
+# two functions deep:
+#
+#   Filters.f90  LPFilter, the NON-reset arm, reads its coefficients out of
+#       `FP%lpf1_a1(inst)` etc. The harness supplies `LocalVar%FP` ZEROED and
+#       does not vary it (it reports it as UNOBSERVABLE), so on that arm
+#       `a1 = 0` and the result is `1.0/0.0 * 0.0` = NaN, on EVERY case.
+#   Functions.f90  interp1d then receives that NaN as `xq`, and ALL THREE of
+#       its branches test it with `<=` or `>=`:
+#
+#           IF   (xq <= MINVAL(xData))  interp1d = yData(1)
+#           ELSEIF (xq >= MAXVAL(xData)) interp1d = yData(SIZE(xData))
+#           ELSE  DO I ...  IF (xq <= xData(I)) interp1d = ...
+#
+#       Every comparison is FALSE for a NaN, the loop runs to completion, and
+#       THE FUNCTION RESULT IS NEVER ASSIGNED. What comes back is whatever the
+#       result slot held -- on the Fortran side 122.90967, which is exactly the
+#       `CntrPar%VS_RefSpd` the caller put there a few frames earlier; through
+#       the generated bridge, a different slot, 0.0.
+#
+# `iStatus == 0` IS THE ONLY VALUE CONSISTENT WITH THE `FP` THE HARNESS HANDS
+# OVER. LPFilter's guard is `IF ((iStatus == 0) .OR. reset)`, and iStatus == 0
+# is the reference's own name for "this is the first call". A zeroed
+# FilterParameters IS the first-call state; a case that says "not the first
+# call" while handing the filter a first-call state is not a program state
+# ROSCO can reach. So this is a domain claim, not a measurement design.
+#
+#     seven pins, iStatus free    22,434 cases, HARNESS FAIL 577
+#     seven pins + iStatus = 0    22,352 cases, HARNESS PASS 0
+#
+# WHAT IT COSTS: LPFilter's non-reset arm is no longer reached from this unit.
+# It was never reached MEANINGFULLY -- with FP zeroed it returned NaN on every
+# call -- so what leaves is a path on which the reference had no answer.
+#
+# AND `CntrPar_VS_RefSpd` IS DELIBERATELY *NOT* PINNED, which is a measurement
+# and not an omission. Pinning it to the shipped 122.90967 scores 0.797 and
+# LOSES both Region-3 `VS_FBP` lookups, because R6's RELATIONAL PAIR block
+# (`LocalVar_VS_RefSpd_TSR` against `CntrPar_VS_RefSpd`, one side set FROM the
+# other at equality) requires BOTH sides varied and disappears when either is
+# pinned. Leaving it free scores 0.835 and kills both. The two survivors that
+# buys are `09894fe5` and `be35d649` on `saturate`'s upper bound, and one more
+# probe priced the alternative: `PRC_R_Speed` at -0.8 instead of +0.8, so that
+# the bound `VS_RefSpd * PRC_R_Speed` is POSITIVE at the base draw and clears
+# the final `MAX`, scores 0.835 with the IDENTICAL survivor set. It bought
+# nothing, so the physical +0.8 is what is committed.
+CntrPar_VS_Rgn2K = { lo = 2.31055, hi = 2.31055 }
+CntrPar_VS_GenEff = { lo = 94.4, hi = 94.4 }
+LocalVar_VS_GenPwr = { lo = 0.5, hi = 0.5 }
+LocalVar_GenTq = { lo = 0.5, hi = 0.5 }
+CntrPar_VS_MinOMSpd = { lo = 34.64286, hi = 34.64286 }
+# CntrPar_VS_RefSpd = { lo = 122.90967, hi = 122.90967 }   <- NOT pinned; see above
+LocalVar_PRC_R_Speed = { lo = 0.8, hi = 0.8 }
+LocalVar_iStatus = { lo = 0, hi = 0 }
+
