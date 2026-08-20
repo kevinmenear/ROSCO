@@ -73,7 +73,31 @@ def main() -> int:
               file=sys.stderr)
         return 2
 
-    zero = {int(m.group(1)) for m in re.finditer(r"^  L\s*(\d+)\s", text, re.M)}
+    # ONLY THE LINES UNDER THE "LINES NEVER EXECUTED" HEADING, AND THAT IS A
+    # REPAIR RATHER THAN A REFINEMENT (C12).
+    #
+    # The inherited version matched `^  L\s*(\d+)\s` over the WHOLE file, and
+    # the file's own CONTROL line has that shape:
+    #
+    #     CONTROL: the entry line's count must equal the case count.
+    #       L445  count=12059  void ParseInput_Int_Opt(char* FileLines, ...
+    #
+    # so the unit's ENTRY LINE -- the one line that provably runs on every case
+    # -- was in the never-executed set. It cost nothing on this unit and on the
+    # sibling because `cppmutate` offers no mutant on either entry line, so the
+    # set was never asked about it. That is luck, not design: a signature with a
+    # literal in it (a default argument, an array bound) would have had the
+    # campaign declare a mutant on the entry line UNREACHABLE, with the coverage
+    # file's own control as the evidence for it.
+    #
+    # The heading is where the list starts, so the split is on the heading.
+    body = text.split("LINES NEVER EXECUTED:", 1)
+    if len(body) != 2:
+        print("REFUSING: the coverage file has no 'LINES NEVER EXECUTED:' "
+              "heading -- its format changed and this parser is guessing",
+              file=sys.stderr)
+        return 2
+    zero = {int(m.group(1)) for m in re.finditer(r"^  L\s*(\d+)\s", body[1], re.M)}
     if not zero:
         print("REFUSING: no never-executed line was parsed out of the coverage "
               "file; a declaration set of zero is not a measurement", file=sys.stderr)
