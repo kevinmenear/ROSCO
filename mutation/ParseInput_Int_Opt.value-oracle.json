@@ -245,14 +245,14 @@
  "nocompile_ratio": 0.0069,
  "nocompile_refused": false,
  "total": 144,
- "killed": 95,
- "survived": 3,
+ "killed": 96,
+ "survived": 2,
  "equivalent": 37,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.9694,
- "loop_rev": "581925d-nogit",
- "gen_rev": "gen-22e97e07a97e",
+ "score": 0.9796,
+ "loop_rev": "8f9d72f-nogit",
+ "gen_rev": "gen-31f67a2b87dc",
  "vit_rev": "d6759d9-nogit",
  "survivors": [
   {
@@ -260,12 +260,6 @@
    "operator": "compare_op",
    "before": ">=",
    "after": ">"
-  },
-  {
-   "id": "ab7420d6",
-   "operator": "compare_op",
-   "before": "<",
-   "after": "<="
   },
   {
    "id": "e8cf2d25",
