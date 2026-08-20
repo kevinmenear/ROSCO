@@ -1,0 +1,28 @@
+ParseInput_Dbl_Opt -- every record form the generator is about to plant,
+read by gfortran's own list-directed READ and by the SHIPPED translation's
+`list_read_reals`, out of the same 400-byte `CHARACTER(200) :: Words(2)`.
+
+The item is pre-set to -987.654 on both sides, so a stored 0.0 is
+distinguishable from an untouched slot -- which is the whole difference for
+three of this unit's surviving mutants.
+
+17 of 18 form(s) agree on (IOSTAT, bits).
+
+  dig        ref iostat=0      bits=3FF0000000000000   got iostat=0      bits=3FF0000000000000   SAME
+  frac       ref iostat=0      bits=3FF0000000000000   got iostat=0      bits=3FF0000000000000   SAME
+  expl       ref iostat=0      bits=3FF0000000000000   got iostat=0      bits=3FF0000000000000   SAME
+  expq       ref iostat=0      bits=3FF0000000000000   got iostat=0      bits=3FF0000000000000   SAME
+  sign       ref iostat=0      bits=3FF0000000000000   got iostat=0      bits=3FF0000000000000   SAME
+  neg        ref iostat=0      bits=3FF0000000000000   got iostat=0      bits=3FF0000000000000   SAME
+  point      ref iostat=0      bits=3FF0000000000000   got iostat=0      bits=3FF0000000000000   SAME
+  fracE      ref iostat=0      bits=3FF0000000000000   got iostat=0      bits=3FF0000000000000   SAME
+  rep        ref iostat=0      bits=401C000000000000   got iostat=0      bits=401C000000000000   SAME
+  repbad     ref iostat=5010   bits=C08EDD3B645A1CAC   got iostat=5010   bits=C08EDD3B645A1CAC   SAME
+  expsign    ref iostat=0      bits=4062C00000000000   got iostat=0      bits=4062C00000000000   SAME
+  expneg     ref iostat=0      bits=3F8EB851EB851EB8   got iostat=0      bits=3F8EB851EB851EB8   SAME
+  bare       ref iostat=0      bits=4062C00000000000   got iostat=0      bits=4062C00000000000   SAME
+  baren      ref iostat=0      bits=3F8EB851EB851EB8   got iostat=0      bits=3F8EB851EB851EB8   SAME
+  dot        ref iostat=5010   bits=0000000000000000   got iostat=5010   bits=0000000000000000   SAME
+  dotdot     ref iostat=5010   bits=C08EDD3B645A1CAC   got iostat=5010   bits=C08EDD3B645A1CAC   SAME
+  dote       ref iostat=5010   bits=C08EDD3B645A1CAC   got iostat=5010   bits=C08EDD3B645A1CAC   SAME
+  nanpay     ref iostat=0      bits=7FF8000000000000   got iostat=5010   bits=C08EDD3B645A1CAC   DIFFERS  <-- DO NOT PLANT
