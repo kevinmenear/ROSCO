@@ -3844,7 +3844,10 @@
         "gate/ComputeVariablesSetpoints.redtest.dead_power_tsr.json",
         "gate/ComputeVariablesSetpoints.redtest.vs_refspd_forced.json",
         "translations/ControllerBlocks/computevariablessetpoints.cpp"
-      ]
+      ],
+      "source_file": "rosco/controller/src/ControllerBlocks.f90",
+      "translation": "translations/ControllerBlocks/computevariablessetpoints.cpp",
+      "harness_required": true
     },
     {
       "order": 63,
