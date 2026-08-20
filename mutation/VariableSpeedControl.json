@@ -99,7 +99,7 @@
  "equivalent": 6,
  "declared_but_killed": [],
  "score": 0.7943,
- "loop_rev": "078f4ff-nogit",
+ "loop_rev": "6731f14-nogit",
  "vit_rev": "d3a1e12-nogit",
  "merged_from": [
   {
@@ -139,9 +139,9 @@
    "total": 50,
    "mutants": 50,
    "nocompile": 0,
-   "killed": 41,
-   "survived": 9,
-   "score": 0.82
+   "killed": 40,
+   "survived": 10,
+   "score": 0.8
   },
   {
    "part": "mutation/VariableSpeedControl.clean.arith.json",
@@ -176,14 +176,20 @@
    "total": 40,
    "mutants": 40,
    "nocompile": 0,
-   "killed": 25,
-   "survived": 10,
-   "score": 0.7143
+   "killed": 26,
+   "survived": 9,
+   "score": 0.7429
   }
  ],
  "merged_why": "153 mutants over a 46,836-case corpus is about twelve minutes in one process and the dispatch's foreground ceiling is 600 s; four operator-filtered parts, each foreground under mutate_guarded.sh, each carrying the same equivalence and unreachable declarations",
  "merged_by": "scripts/_mutation_merge.py",
  "survivors": [
+  {
+   "id": "e22d436f",
+   "operator": "drop_factor",
+   "before": "LocalVar->SD_MaxTorqueRate * LocalVar->DT",
+   "after": "LocalVar->SD_MaxTorqueRate"
+  },
   {
    "id": "9419da38",
    "operator": "drop_call",
@@ -201,12 +207,6 @@
    "operator": "swap_call_args",
    "before": "LocalVar->VS_ConstPwr_GenTq, CntrPar->VS_MaxTq",
    "after": "CntrPar->VS_MaxTq, LocalVar->VS_ConstPwr_GenTq"
-  },
-  {
-   "id": "d289aa77",
-   "operator": "swap_call_args",
-   "before": "LocalVar->VS_ConstPwr_GenTq, LocalVar->GenTq",
-   "after": "LocalVar->GenTq, LocalVar->VS_ConstPwr_GenTq"
   },
   {
    "id": "6cbad479",
@@ -228,6 +228,12 @@
   },
   {
    "id": "1136a412",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "95e7abc4",
    "operator": "compare_op",
    "before": ">",
    "after": ">="
@@ -303,12 +309,6 @@
    "operator": "const_tweak",
    "before": "1",
    "after": "2"
-  },
-  {
-   "id": "7e152743",
-   "operator": "const_tweak",
-   "before": "2",
-   "after": "3"
   },
   {
    "id": "f3d163e2",

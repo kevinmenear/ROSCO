@@ -89,13 +89,13 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 40,
- "killed": 25,
- "survived": 10,
+ "killed": 26,
+ "survived": 9,
  "equivalent": 5,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.7143,
- "loop_rev": "078f4ff-nogit",
+ "score": 0.7429,
+ "loop_rev": "6731f14-nogit",
  "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "d3a1e12-nogit",
  "survivors": [
@@ -104,12 +104,6 @@
    "operator": "const_tweak",
    "before": "1",
    "after": "2"
-  },
-  {
-   "id": "7e152743",
-   "operator": "const_tweak",
-   "before": "2",
-   "after": "3"
   },
   {
    "id": "f3d163e2",

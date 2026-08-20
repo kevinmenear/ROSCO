@@ -101,18 +101,24 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 50,
- "killed": 41,
- "survived": 9,
+ "killed": 40,
+ "survived": 10,
  "equivalent": 0,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.82,
- "loop_rev": "078f4ff-nogit",
+ "score": 0.8,
+ "loop_rev": "6731f14-nogit",
  "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "d3a1e12-nogit",
  "survivors": [
   {
    "id": "1136a412",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "95e7abc4",
    "operator": "compare_op",
    "before": ">",
    "after": ">="

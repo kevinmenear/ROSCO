@@ -119,10 +119,16 @@
  "declared_but_killed": [],
  "unreachable_but_killed": [],
  "score": 0.7407,
- "loop_rev": "078f4ff-nogit",
+ "loop_rev": "6731f14-nogit",
  "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "d3a1e12-nogit",
  "survivors": [
+  {
+   "id": "e22d436f",
+   "operator": "drop_factor",
+   "before": "LocalVar->SD_MaxTorqueRate * LocalVar->DT",
+   "after": "LocalVar->SD_MaxTorqueRate"
+  },
   {
    "id": "9419da38",
    "operator": "drop_call",
@@ -140,12 +146,6 @@
    "operator": "swap_call_args",
    "before": "LocalVar->VS_ConstPwr_GenTq, CntrPar->VS_MaxTq",
    "after": "CntrPar->VS_MaxTq, LocalVar->VS_ConstPwr_GenTq"
-  },
-  {
-   "id": "d289aa77",
-   "operator": "swap_call_args",
-   "before": "LocalVar->VS_ConstPwr_GenTq, LocalVar->GenTq",
-   "after": "LocalVar->GenTq, LocalVar->VS_ConstPwr_GenTq"
   },
   {
    "id": "6cbad479",
