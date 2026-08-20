@@ -1,0 +1,17 @@
+# The four mutants of translations/ROSCO_Helpers/parseinput_dbl_opt.cpp that
+# do not COMPILE, measured 2026-08-19 by syntax-checking all 181 mutants
+# against the generated callee header:
+#
+#   for f in .syn/*.hpp; do
+#     printf '#include "parseinput_dbl_opt_callees.h"\n#include "'$f'"\n' > tu.cpp
+#     g++ -std=c++17 -fsyntax-only -I. tu.cpp || echo NOCOMPILE $id
+#   done
+#
+# THE CONTROL is that the count matches the sweep's own `nocompile: 4` in
+# mutation/ParseInput_Dbl_Opt.json, which was produced by a different code
+# path (vit_mutate.py's own build) on the same 181 mutants.
+
+1d7e7c3a
+21bc215a
+4577325a
+e3437dc1

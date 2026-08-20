@@ -1,0 +1,51 @@
+ParseInput_Dbl_Opt -- line coverage of the SHIPPED translation under the
+11,562-case differential harness corpus, measured by gcov over the
+generated test's own object (the test #includes parseinput_dbl_opt.hpp).
+
+  executable lines RUN      200
+  executable lines NOT RUN  38
+  non-code lines            361
+
+CONTROL: the entry line's count must equal the case count.
+  L455  count=11562  void ParseInput_Dbl_Opt(char* FileLines, int n_FileLines, int len_File
+
+LINES NEVER EXECUTED:
+
+  L  84  std::fprintf(stderr,
+  L  87  static_cast<int>(s.size()));
+  L  88  return;
+  L 157  return false;
+  L 204  return RealParse::BadNoStore;
+  L 233  has_exp = true;
+  L 238  ++p;
+  L 245  return RealParse::BadNoStore;
+  L 291  ++p;
+  L 292  ++i;
+  L 293  continue;
+  L 299  return 5010;
+  L 307  repeat = std::strtol(std::string(rec + p, static_cast<std::size_t>(q - p)).c_str(),
+  L 309  if (repeat <= 0) {
+  L 310  return 5010;
+  L 312  p = q + 1;
+  L 314  if (p >= len || is_separator(rec[p])) {
+  L 315  for (long k = 0; k < repeat && i < n; ++k) {
+  L 316  ++i;
+  L 318  while (p < len && is_blank(rec[p])) { ++p; }
+  L 319  if (p < len && rec[p] == ',') { ++p; }
+  L 320  continue;
+  L 321  }
+  L 335  return 5010;
+  L 387  return std::string(static_cast<std::size_t>(w), '*');
+  L 397  out = std::signbit(v) ? "-Infinity" : "Infinity";
+  L 398  return true;
+  L 407  return field(text, 26);
+  L 421  text += '.';
+  L 426  const std::string mant = s.substr(0, epos);
+  L 427  const char esign = s[epos + 1];
+  L 428  std::string edig = s.substr(epos + 2);
+  L 429  while (edig.size() > 1 && edig[0] == '0') {
+  L 430  edig.erase(0, 1);
+  L 432  if (edig.size() > 3) {
+  L 433  return field(std::string(27, '*'), 26);
+  L 435  edig.insert(0, 3 - edig.size(), '0');
+  L 436  return field(mant + "E" + esign + edig, 26);

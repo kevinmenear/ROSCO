@@ -53,10 +53,11 @@ s = s.replace(snap,
 anchor = "        int bad = 0;\n"
 assert s.count(anchor) == 1, f"anchor appears {s.count(anchor)} times"
 probe = (
-    '        fprintf(stderr, "PART %d %d %d %d %d %d %d %.200s\\n", c,\n'
+    '        fprintf(stderr, "PART %d %d %d %d %d %d %d %d %.200s\\n", c,\n'
     '                vit_sup_avi, (int)ErrVar_b.aviFAIL, (int)ErrVar_b.ErrStat,\n'
     '                (int)ErrVar_b.size_avcMSG, (int)(vit_rec_b.empty() ? 0 : 1),\n'
     '                (int)(Variable_b == vit_sup_var ? 0 : 1),\n'
+    '                (int)(vit_sup_var == 0.0 ? 0 : 1),\n'
     '                ErrVar_ErrMsg_b.data());\n')
 p.write_text(s.replace(anchor, probe + anchor))
 print("probe inserted")
@@ -73,10 +74,10 @@ rows = []
 for line in pathlib.Path(sys.argv[1]).read_text(errors="replace").splitlines():
     if not line.startswith("PART "):
         continue
-    f = line.split(" ", 8)
-    c, sup, avi, est, sz, rec, varmoved = (int(x) for x in f[1:8])
-    msg = f[8] if len(f) > 8 else ""
-    rows.append((c, sup, avi, est, sz, rec, varmoved, msg))
+    f = line.split(" ", 9)
+    c, sup, avi, est, sz, rec, varmoved, varin = (int(x) for x in f[1:9])
+    msg = f[9] if len(f) > 9 else ""
+    rows.append((c, sup, avi, est, sz, rec, varmoved, varin, msg))
 
 NOTALLOWED = "ParseInput_Dbl_Opt:Missing or default values are not allowed for "
 READFAIL   = " >> A fatal error occurred when parsing data from \""
@@ -106,13 +107,15 @@ cnt = collections.Counter()
 avi_changed = collections.Counter()
 rec_written = collections.Counter()
 var_moved = collections.Counter()
-for c, sup, avi, est, sz, rec, vm, msg in rows:
+var_in_nonzero = collections.Counter()
+for c, sup, avi, est, sz, rec, vm, vin, msg in rows:
     a = arm(sup, avi, rec, msg)
     cnt[a] += 1
     if avi != sup or est != 0 or sz != 0:
         avi_changed[a] += 1
     rec_written[a] += rec
     var_moved[a] += vm
+    var_in_nonzero[a] += vin
 
 out = []
 out.append(f"harness partition -- {len(rows)} case(s), "
@@ -120,12 +123,13 @@ out.append(f"harness partition -- {len(rows)} case(s), "
            f"parseinput_dbl_opt_cases.bin")
 out.append("")
 out.append(f"{'arm':28s} {'cases':>7s} {'scalar-changed':>15s} {'record':>8s} "
-           f"{'Variable moved':>15s}")
+           f"{'Variable moved':>15s} {'Variable IN /= 0':>17s}")
 for a in sorted(cnt, key=lambda k: -cnt[k]):
     out.append(f"{a:28s} {cnt[a]:7d} {avi_changed[a]:15d} {rec_written[a]:8d} "
-               f"{var_moved[a]:15d}")
+               f"{var_moved[a]:15d} {var_in_nonzero[a]:17d}")
 out.append(f"{'TOTAL':28s} {sum(cnt.values()):7d} {sum(avi_changed.values()):15d} "
-           f"{sum(rec_written.values()):8d} {sum(var_moved.values()):15d}")
+           f"{sum(rec_written.values()):8d} {sum(var_moved.values()):15d} "
+           f"{sum(var_in_nonzero.values()):17d}")
 out.append("")
 out.append("PREDICTIONS READ OFF THIS TABLE, each stated before its run:")
 out.append(f"  post-integration wrapper red test (the reverse copy deleted):")
@@ -135,6 +139,14 @@ out.append(f"  the PRINT deleted:  the `record` column summed = "
            f"{sum(rec_written.values())} must FAIL")
 out.append(f"  the READ deleted:   read-failed cases move a scalar and a message;"
            f" read-ok cases move Variable")
+out.append("")
+out.append("AND THE COLUMN THAT IS NOT A PREDICTION BUT A CORPUS MEASUREMENT:")
+out.append("  `Variable IN /= 0` counts the cases that enter with a NONZERO")
+out.append("  Variable. Every mutant whose only effect is 'store 0.0 or do not")
+out.append("  store it' is invisible on a case that arrived at 0.0, and the")
+out.append("  generator's base draw for an unconstrained real is")
+out.append("  lo + (hi - lo) * 0.5 = 0.0 on the +/-1e3 default")
+out.append("  (translation-loop harness/generate.py::_base).")
 pathlib.Path(sys.argv[2]).write_text("\n".join(out) + "\n")
 print("\n".join(out))
 PY
