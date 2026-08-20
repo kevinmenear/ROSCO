@@ -1,127 +1,132 @@
-ParseInput_Int_Opt -- one answer per OPEN survivor, and what is still not seen
+ParseInput_Int_Opt -- one answer per survivor, and what is still not seen
 ================================================================================
 
     mutation/ParseInput_Int_Opt.json
 
     144 offered, 1 nocompile, 143 behavioural
-     96 KILLED   37 EQUIVALENT   8 UNREACHABLE   2 OPEN
-     96 / (143 - 37 - 8) = 96 / 98 = 0.9796   against a threshold of 1.0
+     98 KILLED   37 EQUIVALENT   8 UNREACHABLE   0 OPEN
+     98 / (143 - 37 - 8) = 98 / 98 = 1.0000   against a threshold of 1.0
 
 `declared_but_killed` and `unreachable_but_killed` are both EMPTY. The value
 oracle (`mutation/ParseInput_Int_Opt.value-oracle.json`, the same sweep with
-`--sanitize` off) gives the identical score AND the identical survivor SET, so
-the number does not rest on the sanitiser; its `killed_by_sanitizer: 3` are
-killed by value as well.
+`--sanitize` off) gives the identical score AND the identical (empty) survivor
+set, so the number does not rest on the sanitiser; its `killed_by_sanitizer: 3`
+are killed by value as well.
 
 The 37 equivalences are argued per family in
 `mutation/ParseInput_Int_Opt.equivalences.md`. The 8 `unreachable` declarations
 are DERIVED by `make_unreachable.py` from `line_coverage.txt`, which the script
-refuses to read if it does not name the current 12,199-case corpus.
+refuses to read if it does not name the current 12,367-case corpus.
 
-The number every row below is read against: **1,021 of 12,199 cases (8.4%) reach
-the list-directed READ**, measured -- 268 read-ok plus 753 read-failed, the
+The number every row below is read against: **1,105 of 12,367 cases (8.9%) reach
+the list-directed READ**, measured -- 296 read-ok plus 809 read-failed, the
 second resolved by the bracket identity in `redtest_predictions.txt`. Most of
 this translation's lines are behind that gate.
 
-**THE FIRST SWEEP HAD 54 SURVIVORS AND THIS ONE HAS TWO, AND NONE OF THE
-DIFFERENCE IS AN ARGUMENT ABOUT A NUMBER.** Five of the fifty-four were named by
-the record search as corpus gaps with an ADMISSIBLE record; three R14 entries
-over two rounds closed them, in the order and with the arithmetic §B records.
-The rest were declared, with a named not-declared sibling on the same site that
-the corpus killed.
 
-
-§A. THE TWO OPEN SURVIVORS
+§A. THE TWO THAT WERE OPEN, AND THE ONE BYTE THEY BOTH TURNED ON
 ================================================================================
 
-Each is (a) a corpus gap with a NAMED record, (b) an argument that does not
-quite close, or (c) the search's own negative control. None is left as "no
-record distinguishes it".
+The first dispatch closed at 96 / 98 = 0.9796 with two survivors, and recorded
+them as ONE gap with three options none of which was a unit's to take. The gap
+was real. The reading of it was wrong in a way that is worth writing down,
+because the wrong reading is what made it look like somebody else's decision.
+
+    4f89b00b   `list_read_ints:288`   `p >= len` -> `p > len`
+    e8cf2d25   `list_read_ints:261`   `is_eol(rec[p])` -> `is_eol(rec[p + 1])`
+
+BOTH ARE KILLED. `mutation/ParseInput_Int_Opt.json` survivors: [].
+
+WHAT THEY NEEDED, at the level of the one character that does the work
+--------------------------------------------------------------------------------
+
+`e8cf2d25` sits on the SECOND disjunct of the leading scan,
+`while (p < len && (is_blank(rec[p]) || is_eol(rec[p])))`. `||` short-circuits,
+so the mutated operand is evaluated only where `is_blank(rec[p])` is false --
+at the character the scan STOPS on. Every record in every corpus this campaign
+had generated begins with a digit, a sign or a letter and is followed by
+another such, so both spellings read "not an end-of-line" and agreed.
+
+  R14 `("eollead", "\r7")` -- a CR then a digit. The original crosses the CR and
+  reads 7 with status 0; the mutant, testing the DIGIT for end-of-line, does not
+  enter the scan at all, meets the CR in the item loop, and `parse_int` finds no
+  digits: 5010, `aviFAIL = -1` and a message. The unit sees all three.
+
+`4f89b00b` sits at the top of the item loop. `p == len` there happens only when
+the leading scan consumed all 200 bytes -- every byte a blank or an end-of-line.
+A record of all blanks is NOT A WORD, so no word splitter produces one; that is
+why no corpus and no record search had ever reached the line.
+
+  R14 `("eolfull", lambda n: "\r" * n, "/7")` -- 200 bytes of CR, with `/7` as
+  word two so record byte 201 is a `/`. The original returns END (-1); the
+  mutant reads byte 200 and finds the list-directed terminator, returning 0 with
+  the item untouched. THE NEIGHBOUR IS THE DESIGN: with any other byte there
+  both spellings end non-zero and a caller that reads only `IOSTAT /= 0` cannot
+  tell them apart -- the same shape as round 2's `repzeroslash`.
+
+CR and LF both, for the reason `_NUMERIC_LEADS` carries `6E1`, `7D1` and `8Q1`
+rather than one of them: `is_eol` is a disjunction, and a mutant that drops only
+one disjunct needs the other byte in the corpus to die.
+
+WHAT THE FIRST DISPATCH GOT WRONG, and it was not the arithmetic
+--------------------------------------------------------------------------------
+
+It recorded `is_eol` as "right and REACHABLE in unit #55, whose record is the
+2048-byte `Line`, and unreachable here, whose record is a `GetWords` word", and
+raised the general shape as **a P4 copy inheriting its source's REACHABILITY as
+well as its bytes** -- the first time the copy relationship had BLOCKED a repair.
+On that reading the only repairs were to widen R6's character corpus for the
+whole campaign, to invent a new judgement kind, or to split the shared reader.
+
+THE ASYMMETRY DOES NOT EXIST. Unit #55's `Line` comes from the same
+`FileLines` this unit's `Words` comes from, and
+`evidence/ParseInput_Int_Opt/eol_admissibility_probe.txt` bounds both the same
+way: libgfortran treats a bare CR as a RECORD TERMINATOR and strips a CR that
+precedes the LF, so five written lines come back as SEVEN records and no
+end-of-line byte can enter `FileLines` through
+`ReadControlParameterFileSub`'s `READ (u,'(A)')` at all.
+
+So `is_eol` is not in the reader because unit #55's record could hold a line
+terminator. It is there because **gfortran's INTERNAL list-directed READ treats
+CR and LF as separators** -- measured over four records by unit #55
+(`evidence/ParseInAry_Opt/parser_conformance.f90:73-75,148`) and over six more
+by this unit (`record_form_probe.txt`, forms `eolhead` .. `eolslash`, 47 of 47
+agreeing on (IOSTAT, value)). That is a property of the RUNTIME both units
+transcribe, not of where their bytes came from, and it is why the repair is an
+ordinary corpus widening rather than a decision about the shared reader.
+
+AND THE BOUNDARY THAT REMAINS, stated rather than buried
+--------------------------------------------------------------------------------
+
+The record is admissible to the UNIT and not producible by its shipped FILE
+READER, and those are two different questions:
+
+  * `FileLines` is `CHARACTER(*), INTENT(IN), DIMENSION(:)` and CHAR(13) is a
+    value that dummy holds; `GetWords` splits on `' ,!;''"'//Tab`
+    (ROSCO_Helpers.f90:145) and neither byte is in that set, so a run containing
+    one is copied into `Words(1)` whole. That is the campaign's admissibility
+    bar -- the same bar that makes a 200-digit word or `nan(aaa...)` a legal
+    corpus record though no `DISCON.IN` contains one either.
+  * No `DISCON.IN` can deliver one through the READ. Measured.
+
+There is ONE shipped path the second bullet does not bound, and it is named
+because it is the honest edge: `ReadControlParameterFileSub` counts lines by
+reading until IOSTAT goes non-zero, so `NumLines` is one MORE than the file has;
+it ALLOCATEs that many and reads that many, and the last READ fails.
+`FileLines(NumLines)` is therefore never assigned, and `FindLine` loops over
+`1, SIZE(FileLines)` including it. What that element holds is undefined, and
+undefined is not "blank". It is not offered as the justification -- the
+dummy-argument domain is -- but a claim that no shipped input can contain the
+byte would be false, and this is why.
 
 
-1. `4f89b00b`   `list_read_ints:288`   `p >= len` -> `p > len`
-   (b) AN ARGUMENT THAT DOES NOT QUITE CLOSE, and the hole is named.
-
-   `p == len` at the top of the item loop happens only on the first iteration
-   and only when the leading scan consumed all 200 bytes, i.e. every byte of
-   `Words(1)` is a blank or an end-of-line character.
-
-   IF THEY ARE ALL BLANKS the mutant is equivalent: `GetWords` fills words in
-   order, so a blank `Words(1)` means the line had NO words at all and
-   `Words(2)` is blank too, hence `rec[200]` is a blank; the mutant then falls
-   through to `parse_int` at `p == len`, finds no digits, and returns 5010 where
-   the original returns -1. The reference reads only `/= 0`.
-
-   THE HOLE: `is_eol` is also accepted by that scan. A `Words(1)` made entirely
-   of CR or LF bytes is a WORD (neither is in `GetWords`' separator set), so
-   `Words(2)` may then be a real key -- and if that key begins with `'/'` the
-   mutant returns 0 where the original returns -1, which the unit sees.
-
-   That record needs a CR or LF byte inside `FileLines`, and R6's character
-   corpus is "the reference's own character literals and their collating
-   neighbours", which contains none. So it is not declarable and not currently
-   reachable.
-
-
-2. `e8cf2d25`   `list_read_ints:261`   `is_eol(rec[p])` -> `is_eol(rec[p + 1])`
-   (a) CORPUS GAP with the SAME cause as 1, and they are ONE gap rather than
-   two.
-
-   The edit is on the SECOND disjunct of the leading scan,
-   `while (p < len && (is_blank(rec[p]) || is_eol(rec[p])))`. `||` short-circuits,
-   so the mutated operand is evaluated only where `is_blank(rec[p])` is FALSE --
-   that is, at the character the scan STOPS on. It differs only if some
-   `rec[p + 1]` at that stopping character is a CR or an LF.
-
-   No byte of any record in any corpus this campaign has generated is a CR or an
-   LF, so the two programs cannot be told apart.
-
-   (The RUNBOOK's own `||`-short-circuits rule, one operand over: unit #55
-   measured five record forms killing every `is_blank(rec[p + 1])` and leaving
-   every `is_eol(rec[p + 1])` alive, for exactly this reason.)
-
-
-   BOTH OF THEM, AND THE DECISION THEY NEED
-   ----------------------------------------
-
-   `list_read_ints` accepts CR and LF as blanks. That is RIGHT and REACHABLE in
-   unit #55, whose record is the 2048-byte `Line` and can hold a line
-   terminator. It is unreachable here, whose record is a `GetWords` word.
-
-   The campaign's usual answer to a branch no input can take is to DELETE it and
-   write the proof (unit #32's `LEN_TRIM`, unit #43's `cols > 0` guard, unit
-   #55's `negate_cond 9381bdef`). **That answer is not available**, because the
-   reader is a byte-for-byte P4 copy of unit #55's -- `check_p4_blocks.py`
-   hash-verifies 3,855 bytes of it -- and deleting the branch would dissolve the
-   shared measurement the two units' readers rest on (113 records through
-   gfortran's own READ, which is what makes either of them checkable).
-
-   THREE OPTIONS, and the choice belongs to the Driver rather than to this unit:
-
-     * add `CHAR(10)` / `CHAR(13)` to R6's character corpus -- which touches
-       every CHARACTER-input unit in the campaign and would re-price a lot more
-       than these two mutants;
-     * accept them as a permanent property of the shared reader and declare them
-       with that reason -- which needs a judgement kind this campaign does not
-       have, because it is neither "the programs agree" nor "the corpus never
-       runs the line";
-     * split the reader so each unit carries only the separator set its record
-       can contain -- at the cost of the P4 relationship that makes the two
-       units checkable against one another.
-
-   Raised in DECISIONS.md with its general form: **a P4 copy inherits its
-   source's REACHABILITY as well as its bytes**, and this is the first time in
-   this campaign that the copy relationship has BLOCKED a repair rather than
-   transmitted a defect.
-
-
-§B. WHY THE SEVEN THAT DIED, DIED -- the control on three corpus changes
+§B. WHY EACH KILL HAPPENED -- the control on four corpus rounds
 ================================================================================
 
 The first sweep, on the 11,863-case corpus, killed 89 of 143 with 54 survivors.
 The record search named FIVE of them as corpus gaps with an ADMISSIBLE record.
-Three R14 entries over two rounds closed them, and the arithmetic at every step
-is a prediction rather than an explanation afterwards:
+Four rounds of R14 entries closed every one, and the arithmetic at every step is
+a PREDICTION rather than an explanation afterwards.
 
   ROUND 1, loop 343f843, seven `_NEIGHBOUR_VALUES` entries (the INTEGER type's
   limits as SINGLE WORDS, a null repeat at count one and at count three, and a
@@ -159,11 +164,37 @@ is a prediction rather than an explanation afterwards:
 
     ab7420d6  KILLED.   MEASURED 95 -> 96, and nothing else moved.
 
-Three predictions, two exact and one refuted, and the refuted one produced a
-rule about record design that neither the earlier units nor this one's first
-attempt had: it is now in the RUNBOOK and in `generate.py`'s own comment.
+  ROUND 4, loop 8fa5440 (plus the `_cesc` repair in b3ad414), four entries --
+  `("eolfull", "\r"*n, "/7")`, `("lffull", "\n"*n, "/7")` in
+  `_NEIGHBOUR_TAILS` and `("eollead", "\r7")`, `("lflead", "\n7")` in
+  `_NEIGHBOUR_VALUES`:
 
-§C. WHAT 0.9796 DOES NOT COVER
+    4f89b00b  :288  `p >= len` -> `p > len`               KILLED
+    e8cf2d25  :261  `is_eol(rec[p])` -> `is_eol(rec[p+1])` KILLED
+
+    PREDICTED two kills, nothing else moved, `declared_but_killed` empty and
+    `unreachable_but_killed` empty, in `corpus_round4_predictions.txt`, written
+    and committed before `harness.sh` regenerated anything.
+    MEASURED 96 -> 98, survivors [], and both `_but_killed` lists empty.
+
+  THE CONTROL THAT HAD SOMETHING AT STAKE IN ROUND 4. `26bfb57b` (`:261`,
+  `p < len` -> `p <= len`) is DECLARED EQUIVALENT in family 7 on the argument
+  "reaching `p == len` requires all 200 bytes blank or end-of-line; the only
+  consumer is `if (p >= len) return -1` and 200 and 201 both satisfy it". Until
+  round 4 NO record reached that premise. `eolfull` does. It was predicted to
+  stay equivalent -- byte 201 is a `/`, so the mutant's scan stops where the
+  original's does -- and it did. Had it been killed, P12 would have failed
+  outright and the finding would have been that family 7's argument was
+  corpus-bound.
+
+  AND FOUR ROUNDS OF STUB RED TESTS, all sixteen numbers predicted first and all
+  sixteen exact, with the arm-attribution identity `A + B = <refused cell>`
+  holding on every corpus (`redtest_predictions.txt`). At round 4 the two
+  bracket predictions were replaced by POINT predictions -- `A = 92`, which had
+  measured 92 on three previous corpora -- and both landed.
+
+
+§C. WHAT 1.0000 DOES NOT COVER
 ================================================================================
 
 1. **The mutants the operator cap never enumerated.** `cppmutate` offers 40 per
@@ -180,12 +211,7 @@ attempt had: it is now in the RUNBOOK and in `generate.py`'s own comment.
    change. Unit #54's family decision; this is the FOURTH of the five units
    carrying the identical statement.
 
-3. **`is_eol` in the copied reader.** Reachable in unit #55, where the record is
-   the 2048-byte `Line`; not reachable here, where the record is a `GetWords`
-   word. Two open survivors live there (§A.3 and §A.4) and the honest repair is
-   a decision about the shared reader rather than about this unit.
-
-4. **The comma and semicolon branches of the reader**: 22 never-executed lines
+3. **The comma and semicolon branches of the reader**: 22 never-executed lines
    carrying all 8 `unreachable` declarations, at three sites --
 
        :300  x3   the blank scan inside the `rec[p] == ','` null-value branch
@@ -205,7 +231,26 @@ attempt had: it is now in the RUNBOOK and in `generate.py`'s own comment.
    survives a corpus that later reaches the line and `make_unreachable.py` skips
    any mutant that already carries one.
 
-   The `is_eol` lines inside the same region (`:272` and its `crossed_eol`
-   consumers) carry no surviving mutant, but they are never executed for the
-   OTHER reason -- the corpus has no CR or LF byte -- and that is the same gap
-   as item 3.
+   **THIS ITEM WAS THREE ITEMS AT THE FIRST DISPATCH AND IS NOW ONE.** The
+   `is_eol` lines inside the same region (`:272` and its `crossed_eol`
+   consumers) were listed beside it as a second, different gap. They are no
+   longer a gap: the corpus contains CR and LF records and the two mutants that
+   lived there are killed. The lines that remain uncovered are the comma and
+   semicolon ones alone, and their cause is the program.
+
+4. **The 37 equivalences are claims, and the space they are measured over is
+   now stated with its own limit rather than with a silent one.**
+   `survivor_record_search.txt` drives 59,108 records through `list_read_ints`
+   -- 51,590 at the first dispatch plus 7,518 in the appended EOLADM block --
+   and 16 of 52 non-PRINT survivors are distinguished by one. Two of the four
+   NEW rows are declared-equivalent mutants (`972ae933` and `27b68fda`, both
+   `:289`), and that is a strengthening rather than a problem: their site had
+   NEVER been executed by the old space, and the difference the new record
+   exposes is one non-zero IOSTAT against another, which is exactly what family
+   1 claims and what `ErrStatLcl /= 0` cannot see.
+
+   What the space still does not contain: a NUL, and a `Words(2)` other than the
+   one `VIT_WORDS2` names (the search is run at the default `PC_KP`; the
+   neighbour is a parameter of the question, and `4f89b00b`'s row exists only
+   because the EOLADM block carries the record whose `p == len` makes the
+   neighbour irrelevant to the ORIGINAL and decisive for the MUTANT).
