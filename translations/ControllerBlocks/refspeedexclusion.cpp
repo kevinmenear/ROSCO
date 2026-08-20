@@ -1,0 +1,182 @@
+// VIT Translation Scaffold
+// Function: RefSpeedExclusion
+// Source: ControllerBlocks.f90
+// Module: ControllerBlocks
+// Fortran: SUBROUTINE RefSpeedExclusion(LocalVar, CntrPar, objInst, DebugVar)
+// Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+// Source MD5: dcf2ff0de407
+// VIT: 0.1.0
+// Status: unverified
+// Generated: 2026-08-20T06:28:16Z
+//
+// Unit #59. `ControllerBlocks.f90:763-818` in the clean source (54dd134).
+//
+// Tower-resonance avoidance for the torque controller's speed reference: hold
+// the reference outside a user-named speed band, then rate-limit it.
+//
+// FIVE COMPARED OUTPUTS, ALL SCALARS OF `LocalVar`, and one of them is also an
+// INPUT: `VS_RefSpd` is read on the first line and written on the last. So the
+// unit is not idempotent and the order of the two accesses is load-bearing.
+//
+//   VS_RefSpd        read first, written last
+//   FA_Hist          the hysteresis state, INTEGER
+//   TRA_LastRefSpd   written up to twice per call
+//   VS_RefSpd_TRA
+//   VS_RefSpd_RL
+//
+// plus `rlP%LastSignal(instRL)` and `objInst%instRL`, both written by the
+// callee.
+//
+// `DebugVar` IS AN INTENT(INOUT) DUMMY THIS BODY NEVER TOUCHES. It is in the
+// signature and nowhere in the reference's 45 lines; it is carried here so the
+// C entry point matches. It is NAMED rather than left anonymous, because VIT
+// derives the generated bridge's dummy list from this parameter list and an
+// unnamed parameter is one more thing for that to get wrong; the cost is a
+// possible `-Wunused-parameter`, which this build does not enable.
+//
+// `LocalVar%rlP` is a nested derived type held BY VALUE inside the view struct,
+// so its address is taken here and the wrapper must copy it back; together with
+// the five scalars above this unit integrates with `--reverse-copy`. Same shape
+// as units #38 and #40.
+
+#include "vit_types.h"
+
+void RefSpeedExclusion(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, debugvariables_t* DebugVar) {
+    // REAL(DbKi) :: VS_RefSpeed_LSS
+    //
+    // ! Get LSS Ref speed
+    // VS_RefSpeed_LSS = LocalVar%VS_RefSpd/CntrPar%WE_GearboxRatio
+    //
+    // The generator-side reference divided down to the low-speed shaft. Read
+    // ONCE into a local, exactly as the reference does: the same quotient is
+    // used in the band test, in the restart arm and as the pass-through value,
+    // and re-deriving it at any of those sites would be a second rounding of
+    // the same division.
+    double VS_RefSpeed_LSS = LocalVar->VS_RefSpd / CntrPar->WE_GearboxRatio;
+
+    // IF ((VS_RefSpeed_LSS > CntrPar%TRA_ExclSpeed - CntrPar%TRA_ExclBand / 2) .AND. &
+    //     (VS_RefSpeed_LSS < CntrPar%TRA_ExclSpeed + CntrPar%TRA_ExclBand / 2)) THEN
+    //
+    // `TRA_ExclBand` is REAL(DbKi) and `2` is an INTEGER literal, so this is a
+    // real division by 2.0 in the reference and the same here -- NOT an integer
+    // division, and not a multiply by 0.5. The half-band is formed FIRST and
+    // then added to / subtracted from the centre, which is the order written;
+    // `(ExclSpeed*2 - ExclBand)/2` would be the same algebra and a different
+    // rounding.
+    //
+    // Both comparisons are STRICT. On the two edges the band is open, and the
+    // ELSE arm below is the one that runs.
+    if ((VS_RefSpeed_LSS > CntrPar->TRA_ExclSpeed - CntrPar->TRA_ExclBand / 2) &&
+        (VS_RefSpeed_LSS < CntrPar->TRA_ExclSpeed + CntrPar->TRA_ExclBand / 2)) {
+        // ! In hysteresis zone, hold reference speed
+        // LocalVar%FA_Hist = 1 ! Set negative hysteris if ref < exclusion band
+        LocalVar->FA_Hist = 1;
+    } else {
+        // LocalVar%FA_Hist = 0
+        LocalVar->FA_Hist = 0;
+    }
+
+    // ! Initialize last reference speed state
+    // IF (LocalVar%restart) THEN
+    //
+    // `LocalVar%restart` is LOGICAL in the reference and crosses the view
+    // boundary as `LOGICAL(C_BOOL)` -- one byte, written by the populator as
+    // `LOGICAL(src%restart, C_BOOL)`, so it is 0 or 1 and never a trap
+    // representation. `!= 0` is the Fortran truth test, spelled out rather than
+    // relying on the C++ conversion.
+    if (LocalVar->restart != 0) {
+        // ! If starting in hist band
+        // IF (LocalVar%FA_Hist > 0) THEN
+        //
+        // `> 0`, not `== 1` and not a truth test. `FA_Hist` was assigned 0 or 1
+        // eleven lines above and cannot be anything else on this path -- but
+        // the reference asks `> 0` and that is what is transcribed. The same
+        // predicate is asked a second time below, and the two are separate
+        // sites in the reference, so they are separate sites here.
+        if (LocalVar->FA_Hist > 0) {
+            // IF (VS_RefSpeed_LSS > CntrPar%TRA_ExclSpeed) THEN
+            //     LocalVar%TRA_LastRefSpd = CntrPar%TRA_ExclSpeed + CntrPar%TRA_ExclBand / 2
+            // ELSE
+            //     LocalVar%TRA_LastRefSpd = CntrPar%TRA_ExclSpeed - CntrPar%TRA_ExclBand / 2
+            // ENDIF
+            //
+            // Snap to whichever EDGE of the exclusion band the reference is
+            // nearer, so the very first commanded speed is already outside the
+            // band. The comparison is against the band CENTRE, not against
+            // either edge.
+            //
+            // These two statements have ZERO COVERAGE in all 27 gate scenarios
+            // (`ControllerBlocks.f90:793` and `:795`, absent from
+            // `coverage/line_coverage.json`): the one restart call of scenario 9
+            // arrives with `FA_Hist == 0` and takes the ELSE arm below. The
+            // differential harness is the only instrument that reaches them.
+            if (VS_RefSpeed_LSS > CntrPar->TRA_ExclSpeed) {
+                LocalVar->TRA_LastRefSpd = CntrPar->TRA_ExclSpeed + CntrPar->TRA_ExclBand / 2;
+            } else {
+                LocalVar->TRA_LastRefSpd = CntrPar->TRA_ExclSpeed - CntrPar->TRA_ExclBand / 2;
+            }
+        } else {
+            // LocalVar%TRA_LastRefSpd = VS_RefSpeed_LSS
+            LocalVar->TRA_LastRefSpd = VS_RefSpeed_LSS;
+        }
+    }
+
+    // IF (LocalVar%FA_Hist > 0) THEN
+    //     LocalVar%VS_RefSpd_TRA = LocalVar%TRA_LastRefSpd
+    // ELSE
+    //     LocalVar%VS_RefSpd_TRA = VS_RefSpeed_LSS
+    // END IF
+    //
+    // In the band, HOLD: the reference is whatever was last commanded, which is
+    // the state the previous call left in `TRA_LastRefSpd`. Outside it, follow.
+    // This is the read of `TRA_LastRefSpd` that makes the field an INPUT as well
+    // as an output on every call where `restart` is false.
+    if (LocalVar->FA_Hist > 0) {
+        LocalVar->VS_RefSpd_TRA = LocalVar->TRA_LastRefSpd;
+    } else {
+        LocalVar->VS_RefSpd_TRA = VS_RefSpeed_LSS;
+    }
+
+    // ! Save last reference speed
+    // LocalVar%TRA_LastRefSpd = LocalVar%VS_RefSpd_TRA
+    //
+    // UNCONDITIONAL, and it overwrites what the restart block may have just
+    // written. On a restart call in the band the snap-to-edge value is stored,
+    // read back one statement later and stored again; on a restart call outside
+    // it the two writes agree by construction. Transcribed as its own statement
+    // because the reference has it as its own statement -- folding it into the
+    // arms above would make the branch that reads `TRA_LastRefSpd` and the
+    // branch that writes it the same site.
+    LocalVar->TRA_LastRefSpd = LocalVar->VS_RefSpd_TRA;
+
+    // ! Rate limit reference speed
+    // LocalVar%VS_RefSpd_RL = ratelimit(LocalVar%VS_RefSpd_TRA, -CntrPar%TRA_RateLimit, &
+    //                                   CntrPar%TRA_RateLimit, LocalVar%DT, LocalVar%restart, &
+    //                                   LocalVar%rlP, objInst%instRL)
+    //
+    // CALLED, not inlined (X1). `ratelimit` is this campaign's unit #43 and
+    // `ratelimit_c` is its C entry point; it owns the `rlP%LastSignal(instRL)`
+    // state write and the `instRL` increment, and duplicating either here would
+    // put two implementations of the rate limiter in the program.
+    //
+    // The rate bounds are SYMMETRIC about zero and the lower one is a unary
+    // negation of the upper -- so at `TRA_RateLimit == 0.0` the lower bound is
+    // negative zero, which is what the reference computes and what `saturate`
+    // inside the callee then sees. `0.0 - x` would give a positive zero there
+    // and is not the same expression.
+    //
+    // `ResetValue` is OPTIONAL in the reference and is NOT passed at this call
+    // site, so the bridge's presence flag is 0 and its value slot is unread.
+    LocalVar->VS_RefSpd_RL =
+        ratelimit_c(LocalVar->VS_RefSpd_TRA, -CntrPar->TRA_RateLimit, CntrPar->TRA_RateLimit,
+                    LocalVar->DT, LocalVar->restart ? 1 : 0, &LocalVar->rlP, &objInst->instRL,
+                    0, 0.0);
+
+    // LocalVar%VS_RefSpd = LocalVar%VS_RefSpd_RL * CntrPar%WE_GearboxRatio
+    //
+    // Back to the generator side, closing the division on the first line. The
+    // round trip is NOT the identity -- `(x/g)*g` differs from `x` in the last
+    // place for most `x` -- so this write changes `VS_RefSpd` even on the
+    // pass-through path where nothing was excluded and nothing was limited.
+    LocalVar->VS_RefSpd = LocalVar->VS_RefSpd_RL * CntrPar->WE_GearboxRatio;
+}
