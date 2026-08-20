@@ -1,0 +1,194 @@
+ParseInput_Dbl_Opt -- the 23 OPEN survivors, one answer each
+============================================================
+
+mutation/ParseInput_Dbl_Opt.json: 110 killed of 177 behavioural, 25 declared
+equivalent, 19 declared unreachable, 23 OPEN.  110 / 133 = 0.8271.
+
+The bar this file exists for is not "kill every mutant", it is EXPLAIN every
+mutant. A survivor is one of three things -- equivalent, unreached by the
+corpus, or a blind spot -- and the sweep's answer for all three is the same
+word. Every row below says which, and 16 of the 23 say it with a RECORD
+(`evidence/ParseInput_Dbl_Opt/survivor_record_search.txt`, 131,312 records)
+rather than with an argument.
+
+WHERE THEY ALL ARE. 22 of 23 are inside `list_read_reals` / `parse_real` /
+`match_word` -- the list-directed READ -- and one is the constant the READ's
+record length is taken from. NONE is in the body of the unit, NONE is in the
+PRINT record, and NONE is in the error messages. Those three regions are
+killed outright by the 11,562-case differential harness.
+
+THE ONE NUMBER THAT EXPLAINS THE WHOLE FILE, measured in
+`evidence/ParseInput_Dbl_Opt/harness_partition.txt`:
+
+    293 of 11,562 cases (2.5%) reach the list-directed READ at all.
+
+`FoundLine` requires `FindLine` to match the SECOND word of some line of
+`FileLines` against `VarName`, and only R14's planted-word cases do that. The
+READ is 60% of this translation's lines and it is exercised by 2.5% of the
+corpus. That is the corpus gap, it is one gap and not twenty-three, and
+DECISIONS.md prices the two levers that would close it.
+
+
+A. DISTINGUISHED BY A NAMED RECORD -- 16
+----------------------------------------
+Not equivalent, and not an argument: the record is in the file. Each row gives
+the FIRST record on which the mutant's (iostat, value bits) pair differs from
+the shipped translation's, and how many of the 131,312 differ. A corpus that
+contained the record would kill the mutant.
+
+  4cbc3c66  index_offset  L290  rec[p] -> rec[p+1]     6391 records
+            HEAD|,|0|<sentinel>   vs   HEAD|,|5010|<sentinel>
+            The null-value test. A record that is a bare comma is a null item
+            in the reference and a syntax error in the mutant.
+
+  6a6668b2  negate_cond   L334  the BadStoreZero terminator test negated
+                                                       2130 records
+            HEAD|.|5010|0.0   vs   HEAD|.|5010|<sentinel>
+            Both return 5010; they differ in whether the transferred 0.0 is
+            STORED. Invisible on every case that arrived with Variable == 0.0,
+            which is all 293 of them -- see D below.
+
+  8d81269b  index_offset  L298  rec[p] -> rec[p+1]      924 records
+            HEAD|0;|0|0.0   vs   HEAD|0;|5010|<sentinel>
+            The semicolon test, which is this parser's own rule.
+
+  32baae1c  index_offset  L306  rec[q] -> rec[q+1]      587 records
+  5cb7425d  index_offset  L305  rec[q] -> rec[q+1]      507 records
+            HEAD|1*|0|<sentinel>   vs   HEAD|1*|5010|<sentinel>
+            The repeat-count scan. No record in the 11,562-case corpus
+            contains a `*` in the first word of a matched line, which is why
+            lines 307-321 are `#####` and 13 of the 19 unreachable
+            declarations live there.
+
+  d7f942e4  const_tweak   L211  int digits = 0 -> 1     546 records
+  c06ced0a  const_tweak   L240  int edigits = 0 -> 1    152 records
+            HEAD|.|5010|0.0   vs   HEAD|.|5010|<sentinel>
+            The two counters that decide `BadStoreZero` from `BadNoStore` --
+            the point-without-digits rule unit #54 measured against gfortran.
+            Both differ only in whether 0.0 is stored: D again.
+
+  5fed96af  index_offset  L334  rec[p] -> rec[p+1]      520 records
+            HEAD|..|5010|<sentinel>   vs   HEAD|..|5010|0.0
+            The other half of 6a6668b2's site.
+
+  72653030  index_offset  L232  rec[p] -> rec[p+1]      310 records
+  c28ed6fb  index_offset  L232  rec[p] -> rec[p+1]      308 records
+  9e00d730  index_offset  L237  rec[p] -> rec[p+1]      221 records
+  b8766137  index_offset  L237  rec[p] -> rec[p+1]      220 records
+            HEAD|0+0|0|0.0   vs   HEAD|0+0|5010|<sentinel>
+            gfortran's LETTERLESS exponent -- `1.5+2` is 150.0 -- which is the
+            one spelling of a real that has no C counterpart. R14 plants
+            `+2` as a numeric lead, so the corpus has the FORM; what it does
+            not have is a matched line whose first word carries it.
+
+  b03a94c5  index_offset  L198  buf[n] -> buf[n+1]       36 records
+            HEAD|nan|0|NaN   vs   HEAD|nan|5010|<sentinel>
+            The NUL that terminates the IEEE word before `strtod` sees it.
+            Moving it one byte leaves `buf[n]` uninitialised stack.
+
+  71dee475  compare_op    L195  q < len -> q <= len      19 records
+            TAIL|nan|0|NaN   vs   TAIL|nan|5010|<sentinel>
+            The IEEE-word copy loop run one byte past the record. The record
+            that kills it is `nan` ending at column 200, so the loop reaches
+            `Words(2)(1:1)` -- see the note under B.
+
+  4c451ef0  const_tweak   L195  n < 62 -> n < 63          1 record
+  97c42adb  compare_op    L195  n < 62 -> n <= 62         1 record
+            FULL|full:nan63|5010|<sentinel>   vs   FULL|full:nan63|0|NaN
+            A 63-character `nan(...)` payload, and one record in 131,312
+            distinguishes each. This is the thinnest margin in the file and it
+            is worth stating: a search one rung narrower reports both as
+            equivalences.
+
+
+B. NOT DISTINGUISHED BY ANY OF THE 131,312 RECORDS -- 6
+-------------------------------------------------------
+Evidence toward equivalence, BOUNDED BY THE SPACE, and not a declaration.
+None of these is declared: `--equivalences` is a claim that the two programs
+agree on every admissible input, and "the search found nothing" is not that.
+
+  f13a04da  compare_op    L213  p < len -> p <= len
+  4198da25  compare_op    L214  p < len -> p <= len
+  26cb52f1  compare_op    L217  p < len -> p <= len
+  209527b9  compare_op    L227  p < len -> p <= len
+  eba1c07e  compare_op    L237  p < len -> p <= len
+
+  THE REASON IS READABLE IN THE SEARCH RATHER THAN ARGUED. At `p == len` these
+  five read `rec[200]`, which is not past any allocation: `Words` is
+  `CHARACTER(MaxParamLength) :: Words(2)`, one contiguous 400-byte object, and
+  byte 201 IS `Words(2)(1:1)` -- the first character of the parameter name
+  `FindLine` just matched. The search puts `PC_KP` there, a real name from
+  `Examples/DISCON.IN`. 'P' is not a digit, not a '.', not a '+' or '-' and
+  not an e/d/q, so all five guards take the same branch either way.
+
+  A Fortran parameter NAME cannot begin with a digit, so in the SHIPPED
+  program these five may well be equivalent. In the harness corpus `VarName`
+  is an arbitrary string and can, so they are reachable there -- which makes
+  them a corpus gap and not an equivalence, and is why they are left open.
+
+  This is also the reason `--sanitize` bought 5 kills on this unit against 41
+  on `ParseInAry_Opt`: there the record is a 2048-byte `std::vector<char>` and
+  the same edit reads one byte PAST it, which AddressSanitizer sees. Here it
+  reads a letter.
+
+  8e796788  const_tweak   L159  for (k = 0; ...) -> k = 1  in match_word
+            Skips the comparison of the IEEE word's FIRST character, so a
+            record beginning `xnf` would match `inf`. The search contains
+            `xnf`, `0an` and every other length-3 triple over its alphabet and
+            none distinguishes the two, because a word the mutant accepts and
+            the reference does not still fails `strtod` on the leading
+            character and both return 5010 with nothing stored. To
+            distinguish it a record needs a field whose FIRST character makes
+            a valid number AND whose remainder spells `nf` / `an` / `nfinity`,
+            and no such string exists over this parser's grammar. NOT
+            declared: that is an argument this file cannot finish.
+
+
+C. UNREACHED BY THE SEARCH BY CONSTRUCTION -- 1 (the negative control)
+---------------------------------------------------------------------
+  479d0b11  const_tweak   L49   MaxParamLength 200 -> 201
+
+  The search passes its record length as a LITERAL 200 precisely so that this
+  mutant is out of its reach, and it duly came back NONE. That is the
+  instrument's negative control and it is the reason to trust the sixteen
+  DIFFERS above.
+
+  Its own answer is separate and is a corpus gap. The constant is used
+  CONSISTENTLY -- the `Words` vector, `GetWords`'s element width, the READ's
+  record length and `TRIM(Words(2))` all move together -- so the mutant is a
+  renaming of the buffer width and differs from the reference only where a
+  word is 200 or 201 characters long, because the reference's `GetWords`
+  truncates at `LEN(Words) = 200`. R14 builds leads to EXACTLY the record
+  width (`2:tail:*@200`), so the corpus has that shape; what it does not have
+  is such a shape on a line `FindLine` matches.
+
+
+D. THE ONE CORPUS FACT THAT COVERS THREE OF THEM, MEASURED
+----------------------------------------------------------
+`6a6668b2`, `d7f942e4` and `c06ced0a` differ from the shipped translation ONLY
+in whether the transferred `0.0` is stored into `Variable`.
+
+    evidence/ParseInput_Dbl_Opt/harness_partition.txt
+      arm        cases   Variable IN /= 0
+      read-ok      174                  0
+      msg refused  211                  0
+
+ALL 293 cases that reach the READ enter with `Variable == 0.0` EXACTLY, so
+storing 0.0 over 0.0 is invisible on every one of them. That is not a
+coincidence: `harness/generate.py::_base` draws an unconstrained real at
+`lo + (hi - lo) * 0.5`, which on the +/-1e3 default is exactly 0.0.
+DECISIONS.md prices the fix and says why it was refused at this dispatch.
+
+
+E. WHAT WOULD MOVE THE SCORE, IN ORDER OF WHAT IT BUYS
+------------------------------------------------------
+1. A corpus in which more than 2.5% of cases reach the READ. 22 of the 23
+   are behind that one gate.
+2. `Variable`'s base draw off exactly 0.0. Three of the 23, and the cost is
+   R6's 33-magnitude real ladder -- DECISIONS.md.
+3. A matched line whose FIRST word is 200 characters long, or contains a `*`,
+   or a `;`, or a letterless exponent. Those are the records section A names,
+   one per mutant.
+
+None of the three is taken here, and each is named with its price rather than
+left as "the corpus is narrow".
