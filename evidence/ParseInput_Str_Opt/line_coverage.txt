@@ -2,37 +2,37 @@ ParseInput_Str_Opt -- line coverage of the SHIPPED translation under the
 14,116-case differential harness corpus, measured by gcov over the
 generated test's own object (the test #includes parseinput_str_opt.hpp).
 
-  executable lines RUN      64
+  executable lines RUN      61
   executable lines NOT RUN  25
-  non-code lines            331
+  non-code lines            359
 
 CONTROL: the entry line's count must equal the case count.
-  L262  count=14116  void ParseInput_Str_Opt(char* FileLines, int n_FileLines, int len_File
+  L287  count=14116  void ParseInput_Str_Opt(char* FileLines, int n_FileLines, int len_File
 
 LINES NEVER EXECUTED:
 
-  L 146  std::fprintf(stderr,
-  L 149  static_cast<int>(s.size()));
-  L 150  return;
-  L 168  std::string int2lstr_trimmed(int Num) {
-  L 170  int2lstr_c(Num, buf);
-  L 171  return std::string(ftrim(buf, Int2LStrLen));
-  L 371  ErrVar->aviFAIL = -1;
-  L 372  std::string msg(1, NewLine);
-  L 373  msg += " >> A fatal error occurred when parsing data from \"";
-  L 374  msg.append(ftrim(FileName, len_FileName));
-  L 375  msg += "\".";
-  L 376  msg += NewLine;
-  L 377  msg += " >> The variable \"";
-  L 378  msg.append(ftrim(Words2, MaxParamLength));
-  L 379  msg += "\" was not assigned valid INTEGER value on line #";
-  L 380  msg += int2lstr_trimmed(CurLine);
-  L 381  msg += ".";
-  L 382  msg += NewLine;
-  L 383  msg += " >> The text being parsed was :";
-  L 384  msg += NewLine;
-  L 385  msg += "    \"";
-  L 386  msg.append(ftrim(Line.data(), MaxLineLength));
-  L 387  msg += "\"";
-  L 388  assign_errmsg(ErrVar, msg);
-  L 389  }
+  L 145  std::fprintf(stderr,
+  L 148  static_cast<int>(s.size()));
+  L 149  return;
+  L 167  std::string int2lstr_trimmed(int Num) {
+  L 169  int2lstr_c(Num, buf);
+  L 170  return std::string(ftrim(buf, Int2LStrLen));
+  L 396  ErrVar->aviFAIL = -1;
+  L 397  std::string msg(1, NewLine);
+  L 398  msg += " >> A fatal error occurred when parsing data from \"";
+  L 399  msg.append(ftrim(FileName, len_FileName));
+  L 400  msg += "\".";
+  L 401  msg += NewLine;
+  L 402  msg += " >> The variable \"";
+  L 403  msg.append(ftrim(Words2, MaxParamLength));
+  L 404  msg += "\" was not assigned valid INTEGER value on line #";
+  L 405  msg += int2lstr_trimmed(CurLine);
+  L 406  msg += ".";
+  L 407  msg += NewLine;
+  L 408  msg += " >> The text being parsed was :";
+  L 409  msg += NewLine;
+  L 410  msg += "    \"";
+  L 411  msg.append(ftrim(Line.data(), MaxLineLength));
+  L 412  msg += "\"";
+  L 413  assign_errmsg(ErrVar, msg);
+  L 414  }

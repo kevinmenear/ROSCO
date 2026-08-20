@@ -1,0 +1,62 @@
+ParseInput_Str_Opt -- the two width mutants measured at their site.
+
+  4d525138   constexpr int MaxLineLength  = 2048  ->  2049
+  739190c8   constexpr int MaxParamLength =  200  ->   201
+
+13,926 rows, NOT the corpus's 14,116. The probe block sits after the real
+`getwords_c`, which is after `IF (ErrVar%aviFAIL >= 0)`, so the 190
+`pre-failed` cases never reach it -- 14,116 - 190 = 13,926, and those 190 are
+cases in which the reference does nothing either. The row count is stated
+because a probe that silently measures a subset is a probe whose zero means
+less than it looks.
+
+Each constant reaches exactly one LIVE consumer, `getwords_c`; the others are
+a buffer size (both mutants allocate MORE, never less) and a `ftrim` inside
+the READ-error arm, which is dead in the program. So the probe calls the
+callee twice more per case -- once with the line one byte longer, once with
+the elements one byte wider -- and asks whether the words come back different.
+
+MaxLineLength 2048 -> 2049
+  cases where Words(1) differs        0 of 13926
+  cases where Words(2) differs        0 of 13926
+  Line's LAST byte, by value          {0: 12809, 10: 14, 13: 14, 32: 851, 45: 14, 48: 14, 49: 112, 50: 28, 53: 42, 55: 14, 110: 14}
+
+  THE MECHANISM IS TRUNCATION, NOT THE SCAN STOPPING, and the distribution
+  above is what says so: byte 2048 is a blank (32) on only 851 of
+  13926 cases. It is NUL on 12809 -- those are the cases where
+  `FindLine` found nothing and never assigned `Line`, so the C++ vector's own
+  zero fill is what is there -- and something else on the rest.
+
+  `GetWords` writes each word into a `CHARACTER(MaxParamLength)` element and
+  TRUNCATES at 200. A word that ends at byte 2048 and started at or before
+  1849 is at least 200 characters long, so its 2049th byte is cut off in both
+  spellings. The mutant can only be seen by a word that ends at 2048 and is
+  SHORTER than 200 -- one that starts at 1850 or later, with a separator in
+  front of it. No case of this corpus has one, and the two zeros above are
+  that measured rather than argued.
+
+MaxParamLength 200 -> 201
+  cases where Words(1)'s first 200 bytes differ   0 of 13926
+  the 201st byte of Words(1), by value            {32: 13898, 48: 14, 49: 14}
+  LEN(Variable) over the corpus                   {1: 194, 2: 614, 6: 12503, 7: 1, 11: 614}
+
+  ONE CAUSE, AND IT IS THE CORPUS'S `LEN(Variable)` LADDER. The 201st byte of
+  Words(1) is NON-BLANK on 28 cases, so the corpus DOES
+  carry first words of 201 characters or more -- the obvious second reason a
+  reader would reach for is refuted by its own column.
+
+  What is left is arithmetic. `char_assign(Variable, len_Variable, Words1,
+  len_src)` runs `i = 1 .. len_Variable` and uses `len_src` only in the test
+  `i <= len_src`; with len_src 200 or 201 the two spellings can differ only at
+  i = 201, which needs LEN(Variable) >= 201. The ladder above tops out at 11,
+  because `generate.py` builds a free string extent's lengths as
+  sorted({1, 2, ex0, ex0 + 5}) and ex0 is 6 here.
+
+  THAT IS A CLAIM ABOUT THE CORPUS AND NOT ABOUT THE PROGRAM, and the
+  difference is worth stating because it is large: every shipped caller passes
+  LEN(Variable) of 1024 or 256 (`CntrPar%PerfFileName`, `OL_Filename`,
+  `DLL_FileName`, `DLL_InFile`, `DLL_ProcName` at 1024, `ZMQ_CommAddress` at
+  256). A corpus that drew the length from the shipped range would kill this
+  mutant on the records it already has. Closing it needs `generate.py` to
+  widen a string extent ladder, which re-prices every unit already scored, so
+  it is declared here and raised in DECISIONS.md rather than taken silently.

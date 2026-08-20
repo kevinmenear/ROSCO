@@ -132,37 +132,97 @@ def main() -> int:
     NOCOMPILE = set(json.loads(
         (ROOT / "evidence/ParseInput_Str_Opt/nocompile_ids.json").read_text()))
 
-    # NO HAND-NAMED CONTINUATION LINE ANY MORE, AND THE REASON IS THE ONE
-    # THIS SCRIPT EXISTS FOR, ONE LEVEL UP (C12).
+    # FOUR MUTANTS THAT SIT OUTSIDE THE `#####` SET AND ARE STILL UNREACHABLE,
+    # AND THEY ARE KEYED BY SITE RATHER THAN BY MUTANT ID.
     #
-    # There used to be one: gcov attributes a multi-line statement to its FIRST
-    # line and marks the rest `-`, so the `10` in `std::strtol(..., nullptr, 10)`
-    # sat on a `-` line under a `#####` statement and the coverage rule below
-    # could not see it. It was named by MUTANT ID.
+    # The inherited version of this script carried a hand exception keyed by
+    # mutant id, and the RUNBOOK records what that cost: a repair moved the
+    # occurrence index, `4a9b3707` re-pointed onto a line the corpus runs 1,120
+    # times, and the sweep refuted a declaration nobody had re-derived. A mutant
+    # id is an OCCURRENCE INDEX. So the key here is
+    # `(operator, before, after, source line)` -- the tuple the RUNBOOK
+    # prescribes -- and a key that no longer matches simply produces no
+    # declaration, which fails LOUDLY as an open survivor rather than quietly as
+    # a false one.
     #
-    # THAT IS THE SAME MISTAKE THE FILE'S OWN DOCSTRING WARNS ABOUT, in the one
-    # place the docstring did not reach. A mutant id is an OCCURRENCE INDEX: the
-    # repair that gave `list_read_reals` its repeat-count ceiling DELETED the
-    # `strtol` call, `4a9b3707` re-pointed onto `count = count * 10 + ...` -- a
-    # line the corpus runs 1,120 times -- and the hand-named exception declared
-    # a LIVE mutant unreachable. The sweep refuted it:
+    # WHY THESE FOUR NEED AN EXCEPTION AT ALL. The coverage rule below declares a
+    # mutant when gcov reports `#####` for ITS OWN line. All four of these edit a
+    # line gcov marks `-` (a `constexpr` definition, or a stack declaration
+    # inside a function that is never entered), so the rule cannot see them --
+    # and yet the sites are as unreachable as the `#####` block itself.
     #
-    #   REFUTED: 1 mutant(s) declared UNREACHABLE were killed on this run:
-    #   4a9b3707. The corpus reaches them. P12 fails on this.
+    #   `:98`, `:104`  MEASURED AT THE SITE, not argued:
+    #                  evidence/ParseInput_Str_Opt/boundary_probe.txt runs
+    #                  `GetWords` a second and a third time per case, with the
+    #                  line one byte longer and with the elements one byte wider,
+    #                  and reports 0 of 13,926 cases in which either answer
+    #                  differs. Each constant has exactly one live consumer.
     #
-    # The rule-derived half of this script was right throughout; only the hand
-    # exception was wrong, and it was wrong because it was keyed by a name
-    # rather than by a site. The site it named no longer exists -- there is no
-    # `strtol` in the translation -- so the exception is DELETED rather than
-    # re-keyed. If a continuation line is ever needed again it must be keyed by
-    # `(operator, before, after, the source line)`, the way
-    # `evidence/ParseInput_Str_Opt/remap_declarations.py` keys a declaration.
+    #   `:108`, `:168` BOTH LIVE INSIDE `int2lstr_trimmed`, whose body lines
+    #                  (`:167`, `:169`, `:170`) are `#####` over the whole
+    #                  corpus, because its only call site is in the READ-error
+    #                  arm at `:396-414` -- also `#####`. That arm is dead in the
+    #                  PROGRAM, not merely unexercised: an `A` edit descriptor
+    #                  with no field width takes `w = LEN(item)` and a short
+    #                  internal record is blank-padded, so IOSTAT is 0 on every
+    #                  input (evidence/ParseInput_Str_Opt/record_form_probe.txt,
+    #                  144 of 144).
+    SITE_UNREACHABLE: dict[tuple, str] = {
+        ("const_tweak", "2048", "2049", 98): (
+            "parseinput_str_opt.cpp:98 defines MaxLineLength, whose only LIVE "
+            "consumer is `getwords_c(Line.data(), MaxLineLength, ...)` -- the "
+            "other two uses are a std::vector size (the mutant allocates MORE, "
+            "never less) and a `ftrim` inside the READ-error arm, which no case "
+            "runs. MEASURED at the site over the corpus: calling GetWords again "
+            "with the line one byte longer changes Words(1) on 0 of 13,926 "
+            "cases and Words(2) on 0 of 13,926. The mechanism is truncation -- "
+            "GetWords writes each word into a 200-byte element, so a word "
+            "running to byte 2048 is already cut off; only a word ENDING at "
+            "2048 and shorter than 200 could tell the widths apart, and no case "
+            "of this corpus has one."),
+        ("const_tweak", "200", "201", 104): (
+            "parseinput_str_opt.cpp:104 defines MaxParamLength, which reaches "
+            "`char_assign(Variable, len_Variable, Words1, len_src)` as `len_src` "
+            "and is used there only in the test `i <= len_src` over "
+            "`i = 1 .. len_Variable`. 200 and 201 can differ only at i = 201, "
+            "which needs LEN(Variable) >= 201; the corpus's LEN(Variable) "
+            "ladder is {1, 2, 6, 7, 11}. MEASURED at the site: Words(1)'s first "
+            "200 bytes differ on 0 of 13,926 cases. The 201st byte of Words(1) "
+            "IS non-blank on 28 cases, so the corpus does carry long enough "
+            "words -- the length ladder is the whole cause, and it is a claim "
+            "about the CORPUS: every shipped caller passes 1024 or 256."),
+        ("const_tweak", "11", "12", 108): (
+            "parseinput_str_opt.cpp:108 defines Int2LStrLen, whose only "
+            "consumers are `char buf[Int2LStrLen]` and `ftrim(buf, "
+            "Int2LStrLen)` inside `int2lstr_trimmed` -- a function whose body "
+            "lines :167, :169 and :170 are ##### over all 14,116 cases, because "
+            "its only call site is in the READ-error arm at :396-414, also "
+            "#####. No case runs the function, so no case can distinguish an "
+            "11-byte buffer from a 12-byte one."),
+        ("index_offset", "[Int2LStrLen]", "[Int2LStrLen + 1]", 168): (
+            "parseinput_str_opt.cpp:168 is `char buf[Int2LStrLen]` inside "
+            "`int2lstr_trimmed`, whose body lines :167, :169 and :170 are ##### "
+            "over all 14,116 cases. The function is never entered, so the "
+            "twelfth byte is written by nothing and read by nothing on every "
+            "case."),
+    }
     CONTINUATION: dict[str, str] = {}
 
     src = CPP.read_text()
     out: dict[str, dict[str, str]] = {}
     skipped_equiv, skipped_nocompile = [], []
+    site_hits = 0
     for m in mutants("parseinput_str_opt", src):
+        key = (m.operator, m.before, m.after, m.line)
+        if key in SITE_UNREACHABLE and m.mid not in equiv:
+            out[m.mid] = {
+                "reason": SITE_UNREACHABLE[key],
+                "evidence": ("evidence/ParseInput_Str_Opt/boundary_probe.txt"
+                             if m.line in (98, 104)
+                             else "evidence/ParseInput_Str_Opt/line_coverage.txt"),
+            }
+            site_hits += 1
+            continue
         if m.mid in CONTINUATION and m.mid not in equiv:
             out[m.mid] = {"reason": CONTINUATION[m.mid],
                           "evidence": "evidence/ParseInput_Str_Opt/line_coverage.txt"}
@@ -187,6 +247,14 @@ def main() -> int:
     OUT.write_text(json.dumps(out, indent=2, sort_keys=True) + "\n")
     print(f"{len(out)} declaration(s) over {len(zero)} never-executed line(s), "
           f"corpus {checked:,} -> {OUT.relative_to(ROOT)}")
+    # A SITE KEY THAT NO LONGER MATCHES IS A SILENT LOSS, so it is counted and
+    # refused rather than left to show up as a survivor nobody expected.
+    if site_hits != len(SITE_UNREACHABLE):
+        print(f"REFUSING: {len(SITE_UNREACHABLE)} site-keyed declaration(s) are "
+              f"written and only {site_hits} matched a mutant. A key is keyed by "
+              f"(operator, before, after, line); one of them no longer names a "
+              f"site in the translation.", file=sys.stderr)
+        return 2
     if skipped_nocompile:
         print(f"  {len(skipped_nocompile)} on a never-executed line that does "
               f"not COMPILE, left undeclared: {', '.join(sorted(skipped_nocompile))}")

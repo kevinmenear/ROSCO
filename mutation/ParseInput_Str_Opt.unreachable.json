@@ -1,0 +1,26 @@
+{
+  "19587b49": {
+    "evidence": "evidence/ParseInput_Str_Opt/line_coverage.txt",
+    "reason": "parseinput_str_opt.cpp:396 is NEVER EXECUTED by any of the 14,116 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it."
+  },
+  "4d525138": {
+    "evidence": "evidence/ParseInput_Str_Opt/boundary_probe.txt",
+    "reason": "parseinput_str_opt.cpp:98 defines MaxLineLength, whose only LIVE consumer is `getwords_c(Line.data(), MaxLineLength, ...)` -- the other two uses are a std::vector size (the mutant allocates MORE, never less) and a `ftrim` inside the READ-error arm, which no case runs. MEASURED at the site over the corpus: calling GetWords again with the line one byte longer changes Words(1) on 0 of 13,926 cases and Words(2) on 0 of 13,926. The mechanism is truncation -- GetWords writes each word into a 200-byte element, so a word running to byte 2048 is already cut off; only a word ENDING at 2048 and shorter than 200 could tell the widths apart, and no case of this corpus has one."
+  },
+  "739190c8": {
+    "evidence": "evidence/ParseInput_Str_Opt/boundary_probe.txt",
+    "reason": "parseinput_str_opt.cpp:104 defines MaxParamLength, which reaches `char_assign(Variable, len_Variable, Words1, len_src)` as `len_src` and is used there only in the test `i <= len_src` over `i = 1 .. len_Variable`. 200 and 201 can differ only at i = 201, which needs LEN(Variable) >= 201; the corpus's LEN(Variable) ladder is {1, 2, 6, 7, 11}. MEASURED at the site: Words(1)'s first 200 bytes differ on 0 of 13,926 cases. The 201st byte of Words(1) IS non-blank on 28 cases, so the corpus does carry long enough words -- the length ladder is the whole cause, and it is a claim about the CORPUS: every shipped caller passes 1024 or 256."
+  },
+  "7c36d46e": {
+    "evidence": "evidence/ParseInput_Str_Opt/line_coverage.txt",
+    "reason": "parseinput_str_opt.cpp:108 defines Int2LStrLen, whose only consumers are `char buf[Int2LStrLen]` and `ftrim(buf, Int2LStrLen)` inside `int2lstr_trimmed` -- a function whose body lines :167, :169 and :170 are ##### over all 14,116 cases, because its only call site is in the READ-error arm at :396-414, also #####. No case runs the function, so no case can distinguish an 11-byte buffer from a 12-byte one."
+  },
+  "9baf5d1c": {
+    "evidence": "evidence/ParseInput_Str_Opt/line_coverage.txt",
+    "reason": "parseinput_str_opt.cpp:397 is NEVER EXECUTED by any of the 14,116 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it."
+  },
+  "a2b9964b": {
+    "evidence": "evidence/ParseInput_Str_Opt/line_coverage.txt",
+    "reason": "parseinput_str_opt.cpp:168 is `char buf[Int2LStrLen]` inside `int2lstr_trimmed`, whose body lines :167, :169 and :170 are ##### over all 14,116 cases. The function is never entered, so the twelfth byte is written by nothing and read by nothing on every case."
+  }
+}
