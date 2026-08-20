@@ -1,0 +1,47 @@
+PREDICTION, written before the run: the value-oracle sweep must kill 105 of
+177, because the sanitised run killed 110 and its own killed_by_sanitizer field
+says 5 of those died of an AddressSanitizer/UBSan report rather than of a value
+disagreement. Same corpus, same declarations, so the equivalent (25) and
+unreachable (19) sets are unchanged and the score must be 105/133 = 0.7895.
+A different number means killed_by_sanitizer is not what it says.
+
+--------------------------------------------------------------------------
+MEASURED, mutation/ParseInput_Dbl_Opt.value-oracle.json:
+
+  killed 110 of 177, score 0.8271 -- THE SAME NUMBER, not 105.
+
+THE PREDICTION IS WRONG AND THE FIELD IT RESTS ON DOES NOT MEAN WHAT IT WAS
+READ TO MEAN. `killed_by_sanitizer` counts the mutants whose kill the
+sanitiser REPORTED; it does not count the mutants only the sanitiser could
+kill. Four of the five die of a value disagreement too.
+
+AND THE TWO RUNS DO NOT AGREE ABOUT WHICH MUTANTS THOSE ARE. Comparing the
+SURVIVOR SETS rather than the counts -- unit #48's rule -- the two disagree
+by exactly one each way, which is why the totals match:
+
+  5a8abaea   list_read_reals:337   v[i] -> v[i+1]
+             KILLED sanitised, SURVIVED the value oracle.
+             The caller passes `&value`, ONE double, so `v[1]` is a write one
+             past the object -- into the caller's own stack frame. Nothing a
+             value comparison of the OUTPUTS can see, and exactly the class
+             `--sanitize` exists for. This one really is sanitiser-only.
+
+  b03a94c5   parse_real:198        buf[n] -> buf[n+1]
+             SURVIVED sanitised, KILLED by the value oracle.
+             The edit leaves `buf[n]` UNINITIALISED, so the string handed to
+             `strtod` ends wherever the stack garbage happens to hold a zero.
+             The plain build's garbage differs from the correct string and the
+             AddressSanitizer build's does not. ITS KILL IS A PROPERTY OF THE
+             BUILD, NOT OF THE PROGRAM, and neither run is wrong.
+
+THE UNION IS 111 of 133 = 0.8346 AND NO ARTIFACT CAN CARRY IT.
+`vit_mutate.py` scores one instrument per run and has no union; RUNBOOK
+records that gap. The SCORED artifact stays the sanitised one --
+`mutation/ParseInput_Dbl_Opt.json`, 110/133 = 0.8271 -- because that is what
+both siblings score and changing a verification default mid-run is X3. The
+union is stated here and in STATUS.md rather than written into a file that
+would then claim a tool computed it.
+
+WHAT THIS CONTROL WAS WORTH. It was run to confirm a number that was already
+in the artifact, and it refuted the reading of that number instead. A
+score-only comparison would have reported the two runs as identical.
