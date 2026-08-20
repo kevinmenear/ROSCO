@@ -1,0 +1,64 @@
+ParseInput_Int_Opt -- the two gate red tests, PREDICTED BEFORE THEY RUN
+================================================================================
+
+The RUNBOOK records that this family's gate answer is set by the FAILURE CLASS
+and not by the site: three units, four runs, two numbers.
+
+    every parsed value is one greater
+      gate/ParseInAry_Opt.redtest.parsed-value.json      1,857,893 / 5,252,000  147 ch
+      gate/ParseInput_Dbl_Opt.redtest.parsed-value.json  1,857,893 / 5,252,000  147 ch
+
+    the parse FAILS, so ErrVar%aviFAIL = -1
+      gate/ParseDbAry_Opt.redtest.survivor-2a9e1695.json 1,583,216 / 4,732,000  131 ch
+      gate/ParseInput_Dbl_Opt.survivor.9e00d730.json     1,583,216 / 4,732,000  131 ch
+
+So a red test on this unit can be predicted TO THE VALUE, and a red test whose
+count can be predicted exactly is one that can be WRONG -- which is what makes
+it evidence about the instrument rather than a formality.
+
+
+1. parsed-value -- every value this unit reads out of the input file is one
+   greater than the file says.
+
+       rosco/controller/src/parseinput_int_opt.cpp
+       from:  *Variable = static_cast<int>(value);
+       to:    *Variable = static_cast<int>(value) + 1;
+
+   PREDICTED EXACTLY 1,857,893 of 5,252,000 across 147 of 351 channels,
+   scenarios all 27 alive.
+
+   The prediction rests on the failure class being identical to the two runs
+   above -- every parsed control parameter is wrong by a fixed amount from
+   timestep zero -- and NOT on the item type. If this unit's integers moved a
+   DIFFERENT number of values from the sibling's reals, that is the finding: it
+   would say the count is set by which parameters a unit reads rather than by
+   when each scenario first diverges, and the family rule in the RUNBOOK would
+   need the item type added to it.
+
+   A count of ZERO would mean the gate cannot see this unit at all. The unit is
+   called 1,680 times across the 27 scenarios (coverage/line_coverage.json,
+   ROSCO_Helpers.f90:115), so a zero would be a finding about the gate.
+
+
+2. default-arm -- the value substituted when the input file does not supply the
+   parameter.
+
+       from:  *Variable = 0;
+       to:    *Variable = 12345;
+
+   PREDICTED EXACTLY 0 of 5,252,000.
+
+   Predicted from coverage rather than hoped for: `ROSCO_Helpers.f90:154`
+   (`IF (.NOT. FoundLine)`) has 1,680 hits and `:155`-`:162`, the whole
+   not-found arm, has NO COUNTER AT ALL. Every `Examples/DISCON*.IN` supplies
+   every INTEGER parameter this unit asks for, so `FoundLine` is TRUE at all
+   1,680 calls and the gate cannot reach the arm. The differential harness
+   reaches it on 9,011 of 12,059 cases, which is the layer that covers it.
+
+   The zero is only worth something NEXT TO the non-zero on the same build, so
+   the two are run as a PAIR.
+
+
+   MEASURED
+   --------
+   (filled in after the runs)
