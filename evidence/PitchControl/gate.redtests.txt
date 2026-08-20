@@ -1,0 +1,106 @@
+PitchControl -- THE GATE RED TESTS, MEASURED, AGAINST THEIR WRITTEN PREDICTIONS
+================================================================================
+
+The predictions are in evidence/PitchControl/gate.redtest_predictions.txt,
+committed at 1f1ab3d0..a69a4421 BEFORE any of these runs. Two were confirmed,
+two were REFUTED, and the refutations are the part worth reading. Nothing below
+is a description of a run written after it.
+
+  RT   perturbation                       predicted        measured
+  --   --------------------------------   --------------   ----------------------
+  1    avrSWAP[41] *= 1.000001            RED, 23 scen.    RED 1,300,588 / 5,252,000
+                                                            22 scenarios  <- REFUTED
+  2    PA_Damping *= 1.000001             RED, {20,27}     RED 36,430    {20,27}
+                                                            CONFIRMED, exactly
+  3    IPC_SatMode == 1  ->  != 1         EXACTLY 0        177,425       <- REFUTED
+  4    OL_Mode > 0  ->  > -1000000        EXACTLY 0        0 of 468,000, 23 scenarios
+                                                            KILLED         <- VACUOUS
+  5    IPC_SatMode == 1 -> false && ...   (not predicted)  0 / 5,252,000, 0 broken
+       the corrected negative control                       THE REAL CONTROL
+
+Every one reverted to 0 of 5,252,000.
+
+RT1 -- REFUTED ON ONE SCENARIO, WHICH IS WHAT THE PREDICTION ASKED FOR
+-----------------------------------------------------------------------
+The prediction named the SCENARIO LIST as the claim and the count as incidental,
+and said: "WHAT WOULD REFUTE IT: any calling scenario ABSENT from the list."
+
+  predicted  {1,2,3,4,5,6,7,8,9,11,12,15,16,17,18,19,20,21,22,23,25,26,27}   23
+  measured   {1,2,3,4,5,6,7,8,9,11,12,15,16,17,18,19,20,21,22,   25,26,27}   22
+  absent     scenario 23
+
+SCENARIO 23 IS NOT A SCENARIO THAT FAILS TO CALL THE UNIT, and RT4 is what
+proves it: forcing the open-loop block on KILLED scenario 23 along with 22
+others, so scenario 23 executes this routine. It calls PitchControl and a
+1e-6 relative perturbation of the published blade-1 pitch demand moves NONE of
+its channels. That is unit #48's shape -- a call site the gate reaches and a
+perturbation that is annihilated downstream -- and it is NOT diagnosed here.
+What it would cost to settle: one probe forcing avrSWAP[41] to a constant far
+outside its range, ~70 s, which separates "annihilated by a zero gain" from
+"this scenario's channels do not depend on blade pitch". Named, not guessed.
+
+RT3 -- THE PREDICTION WAS WRONG ABOUT THE PROGRAM, NOT ABOUT THE INSTRUMENT
+---------------------------------------------------------------------------
+The prediction said a non-zero here "would mean the coverage data is wrong
+about this line, which is a finding about the instrument". IT WOULD NOT, and
+recording that is the point of this entry.
+
+Inverting `IPC_SatMode == 1` to `!= 1` does not leave a dead block dead. It
+makes the block run on every call in which IPC_SatMode is not 1 -- which is
+every call in all 27 scenarios. So 177,425 moved values say the block is now
+LIVE, and say nothing whatever about whether it was reachable before.
+
+The prediction's own words were "on the corpus the gate drives this block is
+dead in BOTH directions", and that clause is simply false. A guard inversion is
+not a negative control for a dead arm; it is the strongest possible POSITIVE
+perturbation of one.
+
+RT5 -- THE CONTROL THAT ACTUALLY CONTROLS: PERTURB TOWARD ABSENCE
+------------------------------------------------------------------
+    if (false && CntrPar->IPC_SatMode == 1) {
+
+    0 of 5,252,000 moved, 0 scenarios broken, revert 0
+
+This is RUNBOOK's `if (false && ...)` instrument, recorded there for Conv2UC as
+a way to perturb toward ABSENCE rather than toward a different answer. It is
+the right shape for a dead arm because it is a no-op exactly when the arm never
+runs, and it removes an effect otherwise. Zero, with all 27 scenarios alive and
+5,252,000 values compared, says the IPC saturation block executes in no
+scenario -- which is what RT3 was supposed to establish and could not.
+
+RT4 -- A NEGATIVE CONTROL THAT WOULD HAVE BEEN "CONFIRMED" BY A NUMBER THAT
+MEASURED NOTHING, AND THE GATE IS WHAT CAUGHT IT
+----------------------------------------------------------------------------
+Predicted EXACTLY 0. Measured 0. AND THE PREDICTION IS STILL REFUTED, because
+the zero is over 468,000 values and not 5,252,000:
+
+    NOT 'the gate cannot see it': the perturbation STOPPED 23 of 27
+    scenario(s) from running at all, and those scenarios ran on the revert.
+
+Forcing `OL_Mode > -1000000` turns the open-loop override on in every scenario,
+and the three interp1d calls then read open-loop tables no scenario allocated.
+The scenarios die. A dead scenario produces no values, `mismatched` counts
+VALUES, and 0 of 468,000 renders identically to 0 of 5,252,000 in any reader
+that looks only at `mismatched`.
+
+The prediction contains the contradiction in plain sight -- it says the
+perturbation "FORCES the open-loop override ON in every scenario" and then that
+"if OL_Mode really is <= 0 in all 27 scenarios the count is 0". Both cannot
+hold: forcing an override on is what makes the count large. It was written as
+the STRONGER of the two controls and it is the weaker.
+
+`scripts/gate.py`'s `perturbation_broke_scenarios` is the only thing between
+that and a recorded green. It is worth more than the red test it invalidated.
+
+WHAT THE FIVE RUNS ESTABLISH, TOGETHER
+---------------------------------------
+  * The gate SEES this unit:               RT1, 1,300,588 values, 22 scenarios
+  * The gate SEPARATES one arm from the
+    rest:                                  RT2, exactly {20, 27}
+  * The gate is not merely red under any
+    edit -- an arm no scenario reaches
+    moves nothing, with every scenario
+    alive:                                 RT5, 0 of 5,252,000
+
+  * ONE calling scenario (23) is invisible to a perturbation of this unit's
+    principal published output, and that is an open question, not a result.
