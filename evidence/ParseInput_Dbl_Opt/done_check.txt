@@ -1,6 +1,6 @@
-# done_check.py ParseInput_Dbl_Opt -- captured 2026-08-20T02:30:36Z by scripts/capture_done_check.sh
+# done_check.py ParseInput_Dbl_Opt -- captured 2026-08-20T02:31:20Z by scripts/capture_done_check.sh
 
-Run against the committed state at 92b22622 ("ParseInput_Dbl_Opt: disposition integrated, 144/144 = 1.000, evidence current"), with a CLEAN tree, with stdout
+Run against the committed state at ac9163a2 ("STATUS: standing escalation -- the same n<62 IEEE-word truncation is live in unit #54's translation, verified by grep, worse there"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
