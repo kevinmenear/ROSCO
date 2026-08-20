@@ -9577,3 +9577,110 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   the file. **Run `git status --porcelain` after staging an evidence directory**,
   and treat a name containing `local`, `test`, `build` or `Makefile` in this tree
   as ignored until shown otherwise.
+
+## `--dump-plan`'s `N parameter(s) varied` IS THE PRICE OF THE HARNESS, AND IT
+## COSTS ZERO SECONDS
+
+- **Unit #60, and it is the number that decided the unit's disposition.** The
+  generating run was SIGKILLed at 68 seconds with no count, no traceback and no
+  artifact. The answer had been available before it started:
+
+  ```
+  vit_harness.py <U> ... --no-build --dump-plan /tmp/plan.json     0 seconds
+    VariableSpeedControl  224 parameter(s) varied, 257 held, 10 knob(s)
+    FlapControl            21 varied      CableControl  31 varied
+    IPC                    55 varied      <- the campaign's previous largest
+    LocalVar: read WHOLE (passed to a callee) -- every field varied
+  ```
+
+  `harness/statevary.py::read_set` marks an argument read WHOLE when the body
+  hands it to a callee as a BARE WORD, deliberately — its own docstring says
+  over-approximating costs cases and under-approximating costs coverage
+  silently. So a single `CALL Foo(..., LocalVar)` puts all 179 of that type's C
+  parameters into the varied set, and R6's three largest sub-counts (real
+  magnitudes, isolating re-runs, unpinned re-runs) iterate the DEFAULTED subset
+  of it. Here that was 143,261 cases at 188 KB each — 27 GB against a 7.7 GiB
+  VM — for a body of 100 lines that reads 22 `CntrPar` fields, and the call that
+  did it sits in a block DEAD in all 27 scenarios.
+
+  **Read that line before generating, for any unit that passes a whole derived
+  type to a callee.** `grep -c '(\w*)\?\s*\bLocalVar\s*[,)]'` over the unit body
+  is the same question asked of the source.
+
+## AN OOM-KILLED GENERATOR REPORTS NOTHING, AND `ulimit -v` IS WHAT TURNS THAT
+## INTO A MEASUREMENT
+
+- **Unit #60.** `exit 137` is all the kernel's OOM killer leaves — no count, no
+  traceback, no partial artifact, and nothing that distinguishes "too big" from
+  "hung" from "crashed".
+
+  ```
+  docker exec vit-dev bash -lc "... && ulimit -v 5500000 && python3 <the probe>"
+
+    cases  2000  maxrss   398 MB          <- 14 points, a FLAT slope
+    cases 28000  maxrss  5294 MB
+    MemoryError after 28296 _case_impl calls
+      File "harness/generate.py", line 2150, in generate
+  ```
+
+  An address-space cap makes Python raise instead of the kernel killing, so the
+  run reports how far it got and where. The SLOPE is the per-case cost —
+  (5294 − 398) MB / 26,000 = 188 KB — which a single ratio at the end could not
+  have given, because the intercept is 21 MB of interpreter.
+
+  The COUNT needs a second probe, and the trick is to keep the rng stream:
+  monkeypatch `harness.generate._case_impl` to collapse each array value AFTER
+  the real fill has run. The rule sequence and the draw order are then exactly a
+  real run's and the retained memory is ~200 bytes per case instead of 188 KB.
+  `_case` inside `generate` is a LOCAL closure — patch `_case_impl`, which is
+  module-level. Both probes are committed at
+  `evidence/VariableSpeedControl/probe_corpus_{size,count}.py`.
+
+## A KERNEL RED TEST'S PREDICTION CAN BE A *SET* READ OUT OF THE KERNEL'S OWN
+## FIELD LOG, AND THAT IS STRONGER THAN A COUNT
+
+- **Unit #60, and `vit verify` printed NON_DISCRIMINATING for the sixth unit
+  running.** `kernel/<U>/verify_fields.csv` carries the REFERENCE value of every
+  compared field for every case — including, here, the arm selector itself:
+
+  ```
+  vs_state == 1 (Region 1.5)   12 of 60   invocations 3..14, contiguous
+  vs_state == 2 (Region 2)     48 of 60
+  ```
+
+  So the stub that doubles the Region-2 answer has a prediction that is a number
+  AND a set — 48 fail, and the 12 that pass are exactly 3..14 — both taken from
+  the instrument's own output before the run. Measured: `12/60 passed`, first
+  failures `1, 2, 15, 16, 17`.
+
+  **And the 12 is independently the hit count gcov records at that arm's line
+  across all 27 scenarios.** Two instruments, one number, neither designed to
+  check the other — and the agreement also answers the question unit #46 says a
+  window cannot: it says the window caught the WHOLE arm rather than part of it.
+
+  The corollary is the cheap census: before writing any kernel stub, group
+  `verify_fields.csv` by case and read the reference values of the unit's own
+  predicate fields. It is four lines of `csv.DictReader` and it turns every
+  arm-scoped stub's EXPECT from an estimate into an arithmetic.
+
+## `avrSWAP` IS ABSENT FROM THE KERNEL'S COMPARED FIELDS, AND THE GATE RED TEST
+## ON THE SAME STATEMENT IS WHAT MAKES THAT SURVIVABLE
+
+- **Unit #60, third instance after units #43 and #44, and the first where the
+  deleted write IS the unit's whole output.**
+
+  ```
+  the avrSWAP(47) write DELETED    kernel  60/60 PASS, and vit verify prints
+                                           its own NON_DISCRIMINATING over it
+                                   gate    1,552,676 of 5,252,000 moved
+  the Region-2 arm perturbed       kernel  48 of 60 FAIL
+                                   gate       49,659 of 5,252,000 moved
+  ```
+
+  KGen skips assumed-size arrays — VIT's own comment in the generated
+  `DISCON.F90` says so — so `avrswap` is in no row of `verify_fields.csv`. A
+  kernel taken ALONE on a unit whose output is an `avrSWAP` slot certifies
+  nothing about that output. **Grep the field log for the output's name before
+  reading the kernel's green**, and pair the layer with a gate red test aimed at
+  the same statement. The two layers' blind spots here are exact complements,
+  which is the argument for taking both rather than the cheaper one.
