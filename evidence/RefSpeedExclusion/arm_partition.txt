@@ -1,0 +1,74 @@
+RefSpeedExclusion -- the corpus partitioned by the reference's own arms
+=======================================================================
+
+Unit #59. Measured 2026-08-20 on the SCORED corpus
+(`translations/ControllerBlocks/refspeedexclusion_test/refspeedexclusion_cases.bin`,
+3,967 cases, the file `harness/RefSpeedExclusion.json`'s green was taken on)
+by patching ONE `fprintf` into the generated `refspeedexclusion_test.cpp`
+immediately before the call, running with `harness.sh --no-generate` so the
+corpus was kept byte for byte, and stripping the `fprintf` afterwards.
+
+The probe reads only the INPUTS, so which tree it links against changes the
+answers and not the questions -- the RUNBOOK's unit #47 recipe.
+
+WHY THIS EXISTS. Every stub red test below is priced as a POINT before it is
+run. A prediction that is a bracket is a prediction nobody can be wrong about.
+
+THE PROBE
+---------
+
+    double lss  = LocalVar_a.VS_RefSpd / CntrPar_a.WE_GearboxRatio;
+    bool inband = (lss > CntrPar_a.TRA_ExclSpeed - CntrPar_a.TRA_ExclBand / 2) &&
+                  (lss < CntrPar_a.TRA_ExclSpeed + CntrPar_a.TRA_ExclBand / 2);
+    bool rst    = LocalVar_a.restart != 0;
+    bool upper  = lss > CntrPar_a.TRA_ExclSpeed;
+
+`make test` MUST be re-run before `./test`. The first attempt ran the stale
+binary from the generating run and reported 0 probe lines -- which reads
+exactly like a probe that was never compiled in, because it is one.
+
+THE PARTITION -- 3,967 cases, all five classes non-empty
+--------------------------------------------------------
+
+    class              cases   restart   FA_Hist   what the unit does
+    ----------------------------------------------------------------------
+    follow_norestart    1958      no        0       VS_RefSpd_TRA = LSS
+    restart_follow      1954      yes       0       TRA_LastRefSpd = LSS first
+    hold_norestart        26      no        1       VS_RefSpd_TRA = TRA_LastRefSpd
+    restart_snap_up       16      yes       1       TRA_LastRefSpd = Excl + Band/2
+    restart_snap_dn       13      yes       1       TRA_LastRefSpd = Excl - Band/2
+    ----------------------------------------------------------------------
+    total               3967
+
+    in the exclusion band (FA_Hist = 1)        55  =  26 + 16 + 13
+    outside it          (FA_Hist = 0)        3912  = 1958 + 1954
+    restart true                             1983  = 1954 + 16 + 13
+
+THE BAND ARM IS 55 CASES OF 3,967 -- 1.4%, AND IT IS THE THIN ONE. It is thin
+for a reason that is not fixable by a pin: the band is an OPEN interval of width
+`TRA_ExclBand` around `TRA_ExclSpeed`, and `VS_RefSpd`, `WE_GearboxRatio`,
+`TRA_ExclSpeed` and `TRA_ExclBand` are four independent draws on the +/-1e3
+default. Widening the band by pinning `TRA_ExclBand` large would DELETE the
+3,912-case arm rather than add to the 55. Stated here so that a mutation
+survivor landing in the band arm is read against a known 55 rather than against
+an assumption.
+
+WHAT THE GATE SEES OF THE SAME ARMS -- and it is less
+-----------------------------------------------------
+
+`coverage/line_coverage.json`, clean baseline 54dd134, ControllerBlocks.f90:
+
+    763  SUBROUTINE RefSpeedExclusion       11,999   scenario 9 ONLY
+    783      FA_Hist = 1                     3,625   scenario 9
+    785      FA_Hist = 0                     8,374   scenario 9
+    789  IF (LocalVar%restart)              11,999   scenario 9
+    791      IF (FA_Hist > 0)                    1   scenario 9
+    793          TRA_LastRefSpd = Excl+B/2       -   NO HIT IN ANY SCENARIO
+    795          TRA_LastRefSpd = Excl-B/2       -   NO HIT IN ANY SCENARIO
+    798          TRA_LastRefSpd = LSS            1   scenario 9
+
+So in the shipped program the restart block runs ONCE, with `FA_Hist == 0`, and
+the two snap-to-edge statements are DEAD -- 0 of 11,999 calls across all 27
+scenarios. The differential harness is the only instrument in this campaign that
+reaches them, at 16 and 13 cases. That asymmetry is the reason the stub
+predictions below are stated per arm.

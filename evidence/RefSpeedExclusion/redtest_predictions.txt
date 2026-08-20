@@ -1,0 +1,112 @@
+RefSpeedExclusion -- the five harness stub predictions, WRITTEN BEFORE THE RUNS
+===============================================================================
+
+Read off `arm_partition.txt`, which classifies all 3,967 cases of
+`refspeedexclusion_cases.bin` by the arm the REFERENCE took. Every number below
+is a POINT prediction, not a bracket.
+
+The partition, for reference:
+
+    class              cases   restart   FA_Hist
+    ---------------------------------------------
+    follow_norestart    1958      no        0
+    restart_follow      1954      yes       0
+    hold_norestart        26      no        1
+    restart_snap_up       16      yes       1
+    restart_snap_dn       13      yes       1
+    ---------------------------------------------
+    total               3967
+
+PREDICTIONS
+-----------
+
+  noop                  3967 FAIL, 0 PASS.
+                        Not a coincidence of the arithmetic: `objInst%instRL` is
+                        an INTENT(INOUT) counter the callee advances on EVERY
+                        call, on every path, and R4 compares it. A stub that
+                        does not call `ratelimit` leaves it one short in every
+                        case. So this stub cannot pass a single case even where
+                        every REAL output happens to agree, and its count is a
+                        statement about the harness's reach rather than about
+                        this unit's arithmetic.
+
+  no-band-arm             55 FAIL = 26 + 16 + 13.
+                        `FA_Hist = 1` becomes `FA_Hist = 0`. `FA_Hist` is
+                        itself a compared output, so every in-band case fails on
+                        that field alone whatever happens downstream -- again a
+                        point rather than a bracket, and for the same reason.
+                        The 3,912 out-of-band cases already write 0 and are
+                        untouched.
+
+  no-restart-init         29 FAIL = 16 + 13.
+                        THE INTERESTING ONE. Deleting the whole `IF
+                        (LocalVar%restart)` block moves NOTHING on the 1,954
+                        `restart_follow` cases, because on that path the block
+                        writes `TRA_LastRefSpd = VS_RefSpeed_LSS` and the two
+                        statements below it write exactly the same value again:
+                        `FA_Hist == 0` so `VS_RefSpd_TRA = VS_RefSpeed_LSS`, and
+                        the unconditional save then stores it. The block is
+                        observable ONLY where `FA_Hist > 0`, which is the 29
+                        snap cases. This is unit #46's shape -- an
+                        initialisation arm whose two branches compute the same
+                        answer -- met on 1,954 cases rather than on 3.
+
+  snap-down-only          16 FAIL.
+                        `IF (VS_RefSpeed_LSS > TRA_ExclSpeed)` forced FALSE, so
+                        `restart_snap_up` gets the lower edge. The two edges
+                        differ by `TRA_ExclBand`, and a case can only be in the
+                        band if `TRA_ExclBand > 0` (the interval is open and
+                        would be empty otherwise), so the difference is never
+                        zero and every one of the 16 fails. `restart_snap_dn`'s
+                        13 already take that branch and are untouched.
+
+  no-save               1958 FAIL.
+                        Deleting `LocalVar%TRA_LastRefSpd = LocalVar%VS_RefSpd_TRA`
+                        moves `TRA_LastRefSpd` only where nothing else wrote it
+                        on this call AND the value it would have written differs
+                        from what the case carried in:
+                          restart_follow (1954)  the restart block wrote LSS and
+                                                 the save rewrites LSS -- same.
+                          hold_norestart   (26)  VS_RefSpd_TRA IS TRA_LastRefSpd
+                                                 -- the save is the identity.
+                          restart_snap     (29)  the block wrote the snap value
+                                                 and VS_RefSpd_TRA is that value
+                                                 -- same.
+                          follow_norestart (1958) nothing else wrote it; the save
+                                                 stores LSS over the case's own
+                                                 input.
+                        So 1958, less any case whose input `TRA_LastRefSpd`
+                        already equals its own `VS_RefSpd/WE_GearboxRatio`.
+
+THE ARITHMETIC CONTROL
+----------------------
+
+    1958 + 1954 + 26 + 29 = 3967 = the noop's own count
+
+and, on the two nested pairs:
+
+    no-band-arm (55) - no-restart-init (29) = 26 = hold_norestart
+    snap-down-only (16) + 13 = 29 = no-restart-init
+
+Three of the five stubs partition the case set exactly; the other two are the
+two halves of one of those cells. Every identity is checked across separate
+runs, not inside one.
+
+WHAT A REFUTATION WOULD MEAN
+----------------------------
+
+  noop < 3967             `objInst%instRL` is not being compared, or the callee
+                          is not being reached -- an R4 or a bridge gap, which
+                          is the whole reason this stub is first.
+  no-band-arm != 55       the classifier's band predicate is not the reference's.
+  no-restart-init > 29    the restart block moves something on the follow path,
+                          i.e. the "writes the same value twice" reading above is
+                          wrong.
+  no-restart-init < 29    a snap case arrives already holding its own snap value,
+                          which would make the corpus thinner than 29 there.
+  snap-down-only < 16     some in-band restart case has TRA_ExclBand == 0, which
+                          the open-interval argument says is impossible.
+  no-save < 1958          the corpus carries `TRA_LastRefSpd` already equal to
+                          `VS_RefSpd/WE_GearboxRatio` on some follow case -- a
+                          real narrowing of what that statement is tested by, and
+                          the count is the size of it.
