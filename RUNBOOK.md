@@ -8798,6 +8798,38 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   the record space has no record ENDING at -- a gap in the SHAPES, which is a
   different repair and is named as such.
 
+## `restore_integrated.sh` REFUSED ON A CLEAN TREE, SILENTLY, AND THE STATE
+## THAT REACHES IT IS THE ONE A DISPATCH ENDS IN
+
+- **Unit #56, found at the close, fixed at `scripts/restore_integrated.sh:33`.**
+
+  ```
+  dirty=$(git status --porcelain rosco/controller/src | grep -v '^?? ' | wc -l | ...)
+  ```
+
+  `grep -v` exits 1 when it emits NO lines. On a clean tree the `git status` is
+  empty, so grep emits nothing, `pipefail` propagates the 1 out of the command
+  substitution, and `set -e` ends the script **at that line: exit 1, no
+  message, and the rebuild-and-install at the bottom never runs.**
+
+  It is invisible to every call that follows `reset_to_clean.sh`, because that
+  leaves nine tracked sources modified. It is reachable exactly when the tree
+  is ALREADY integrated and committed — the state a dispatch ends in and the
+  state the next one starts in. **The hazard is a caller that discards the exit
+  code**: it believes `rosco/lib/libdiscon.so` was rebuilt from HEAD when
+  nothing ran.
+
+  `reset_to_clean.sh` already carries `|| true` at every `grep -c`/`grep -v` in
+  a substitution, with a comment saying why, which is what makes this a slip
+  rather than a design. **Grep in a `set -euo pipefail` substitution needs the
+  guard even where "no matches" is the normal answer** — especially there.
+
+  Fixed with `| { grep -v '^?? ' || true; } |`, red-tested three ways: clean
+  tree now rc 0 and rebuilds; dirty tree still prints the WARNING block at 9
+  files and still restores; reset→restore still round-trips bit-identically.
+  The behaviour before the fix is kept at
+  `evidence/_scripts/restore_integrated.clean-tree-refusal.txt` (C12).
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
