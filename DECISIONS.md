@@ -14047,3 +14047,210 @@ chain wrote moments earlier (unit #47).
 It is LOUD — no artifact is written and the runner exits 1 — so the cost is one
 retry, and the batch in this unit's evidence simply runs the first stub twice.
 Written down rather than left for a fourth dispatch to rediscover.
+
+## Unit #57 — ParseInput_Int_Opt — second dispatch — 2026-08-20
+
+**Disposition `integrated`. 98 / (143 − 37 − 8) = 1.0000, ZERO open survivors,
+on both the sanitised sweep and the value oracle.** The two the first dispatch
+deferred on are KILLED, not declared. Every one of the nine result artifacts is
+at loop `b3ad414`; `revcheck --unit` clean.
+
+### THE DECISION THE FIRST DISPATCH RAISED IS WITHDRAWN, AND THE REASON IS ONE PROBE
+
+That dispatch closed at 0.9796 with two survivors, recorded them as one gap, and
+raised it as a choice belonging to the Driver:
+
+> in unit #55 that is right and REACHABLE — its record is the 2048-byte `Line`,
+> which can hold a line terminator; in this unit it is unreachable — the record
+> is `Words(1)`, a `GetWords` word
+
+with the general shape **a P4 copy inherits its source's REACHABILITY as well as
+its bytes**, and three options: widen R6's character corpus for the whole
+campaign, invent a judgement kind for "a permanent property of a shared reader",
+or split the reader and lose the P4 relationship.
+
+**THE ASYMMETRY THE WHOLE ARGUMENT RESTS ON DOES NOT EXIST.** Unit #55's `Line`
+is `FindLine`'s `INTENT(OUT)` copy of an element of the same `FileLines` this
+unit's `Words` is split from. One probe bounds both,
+`evidence/ParseInput_Int_Opt/eol_admissibility_probe.{f90,txt}`: write five
+records through STREAM access, each with a unique leading digit so the
+written-to-read mapping is read off the output rather than assumed, then read
+them back exactly as `ReadControlParameterFileSub` does
+(`READ (u,'(A)',IOSTAT=IOS)` on a default-formatted sequential unit).
+
+    5 lines written  ->  7 records read
+    '2' CR 'crMID' LF   came back as TWO records, '2' and 'crMID'
+    CR '4 crLEAD' LF    came back as an EMPTY record and '4 crLEAD'
+    '3 dosB' CR LF      came back as '3 dosB', the CR stripped
+
+libgfortran treats a bare CR as a RECORD TERMINATOR and strips a CR that
+precedes the LF. **No end-of-line byte can enter `FileLines` through the shipped
+caller at all, in either unit.** So `is_eol` is not in the reader because unit
+#55's record can hold a line terminator; it is there because **gfortran's
+INTERNAL list-directed READ treats CR and LF as separators**, which is a property
+of the RUNTIME that both units transcribe and which unit #55 measured over four
+records (`evidence/ParseInAry_Opt/parser_conformance.f90:73-75,148`) and this
+unit over six more.
+
+There was never a reachability difference to inherit, so no new judgement kind is
+needed, no shared reader is split, and the repair is an ordinary corpus widening
+that belongs to the unit.
+
+**THE RULE THAT SURVIVES, and it is narrower and more useful than the one
+raised:** *a claim that a copied block's branch is unreachable HERE and
+reachable THERE is a claim about two CALLERS, and it is one probe. Take the
+probe before raising the copy relationship as the obstacle — the P4 link is what
+makes the shared measurement checkable, and it had nothing to do with this.*
+
+### AND THE BOUNDARY THAT IS REAL, WHICH THE FIRST DISPATCH DID NOT HAVE A NAME FOR
+
+The four records added here are admissible to the unit's DUMMY and are not
+producible by its shipped FILE READER, and the campaign had never had to say
+which of those two its corpus is built to.
+
+* `FileLines` is `CHARACTER(*), INTENT(IN), DIMENSION(:)`; CHAR(13) is a value
+  it holds; `GetWords` splits on `' ,!;''"'//Tab` (ROSCO_Helpers.f90:145) and
+  neither byte is in that set, so a run containing one is copied into `Words(1)`
+  whole. **That is the bar the corpus is built to** — the same bar under a
+  200-digit word, `nan(aaa…)` and `200000001*7`, none of which any shipped
+  `DISCON.IN` contains either.
+* The shipped reader cannot deliver one. Measured, above.
+
+Recorded rather than resolved, because the honest edge is narrower than either
+statement: `ReadControlParameterFileSub` counts lines by reading until IOSTAT
+goes non-zero, so `NumLines` is one MORE than the file has; it ALLOCATEs that
+many and reads that many, and the last READ FAILS. `FileLines(NumLines)` is
+never assigned, `FindLine` loops over `1, SIZE(FileLines)` including it, and
+what it holds is undefined. A claim that no shipped input can contain the byte
+would be false. The justification offered for the records is the dummy's domain,
+not that path.
+
+### THE ROUND, PREDICTED BEFORE IT RAN
+
+`evidence/ParseInput_Int_Opt/corpus_round4_predictions.txt`, committed before
+`harness.sh` regenerated anything. Four entries in loop `8fa5440`:
+
+    _NEIGHBOUR_TAILS   ("eolfull", lambda n: "\r" * n, "/7")   ("lffull", …)
+    _NEIGHBOUR_VALUES  ("eollead", "\r7")                      ("lflead", …)
+
+`eollead` separates `is_eol(rec[p])` from `is_eol(rec[p + 1])` in ONE character:
+`||` short-circuits, so the mutated operand is evaluated only at the character
+the scan stops on, and every record in every previous corpus stopped it at a
+digit, a sign or a letter with another such behind it.
+
+`eolfull` is the only record either block can produce whose LEADING scan reaches
+the record's last byte. Getting `p == len` there needs every byte to be a blank
+or an end-of-line, and **a record of all blanks is not a WORD** — which is
+exactly why no corpus and no record search had ever executed `:288`'s
+`return -1`. **The `/` neighbour is the design, not a decoration**: with any
+other byte the mutant's extra read also ends non-zero, and a caller that reads
+only `IOSTAT /= 0` cannot tell 5010 from −1. Same shape as round 2's
+`repzeroslash`.
+
+CR and LF both, for the reason `_NUMERIC_LEADS` carries `6E1`, `7D1` and `8Q1`
+rather than one of them.
+
+    PREDICTED  96 -> 98, survivors [], both _but_killed lists empty
+    MEASURED   96 -> 98, survivors [], both _but_killed lists empty
+
+**The control with something at stake** was `26bfb57b` (`:261`,
+`p < len` -> `p <= len`), declared EQUIVALENT in family 7 on an argument whose
+premise — a record whose every byte is a blank or an end-of-line — NO record had
+ever reached. `eolfull` reaches it. Predicted to survive (byte 201 is a `/`, so
+the mutant's scan stops where the original's does) and it did. A kill there
+would have made `declared_but_killed` non-empty and failed P12 outright.
+
+### A TOOL DEFECT THE FIRST RECORD BYTE FOUND, WITH ITS WRONG BEHAVIOUR (C12)
+
+`harness/emit.py::_cesc` returns the BODY of a C string literal that `printf`
+writes straight into the artifact's JSON, and it escaped `\` and `"` and nothing
+else. Sufficient for exactly as long as every string reaching it was printable
+ASCII — which nothing said and nothing checked. R14's coverage detail names
+every value it plants, so the new entries put a raw newline inside a `"…"` in
+the generated test and the compiler said:
+
+    parseinput_int_opt_test.cpp:247:4: error: 'which' was not declared in this scope
+
+— in a generated file, hundreds of lines from the tuple entry that caused it,
+with no mention of a record, of R14, or of a corpus. **A record byte is DATA and
+it reaches a source file.** Fixed forward in loop `b3ad414` (X2, not worked
+around by renaming the entries): `\n`, `\r`, `\t` get their short spellings and
+other C0 controls go out as `\uXXXX`, which is JSON's escape rather than C's.
+The one case still wrong — a literal backslash, which leaves ONE backslash in
+the JSON and is invalid there — is named in the docstring and deliberately NOT
+changed, because no coverage detail contains one and X3 says a verification
+default does not move mid-run.
+
+### A RECORD SPACE THAT COULD NOT CONTAIN THE BYTE ITS OWN CONCLUSION TURNED ON
+
+`survivor_record_search` is the measurement all 37 declared equivalences rest
+on, and the first dispatch closed by saying — accurately — that its alphabet had
+no CR or LF either. That made every one of those 37 a claim over a space that
+could not contain the one character the two open survivors distinguished.
+
+An `EOLADM` block was **APPENDED** after every existing block rather than merged
+into the alphabet (P5): the runner reports the FIRST record on which a mutant
+differs, so inserting records anywhere earlier would move rows that
+`equivalences.md` quotes. 51,590 → **59,108 records**, every existing row
+byte-identical, 12 → **16 of 52** distinguished.
+
+Two of the four new rows are the killed survivors. **The other two are the
+result worth keeping**: `972ae933` and `27b68fda`, both declared EQUIVALENT at
+`:289`, a site the old space could never execute.
+
+    972ae933  :289  EOLADM|full:allcr|-1|-987654  vs  …|1|-987654
+    27b68fda  :289  EOLADM|full:allcr|-1|-987654  vs  …|-2|-987654
+
+Both differences are one NON-ZERO status against another, which is exactly what
+family 1 claims and exactly what the reference's `ErrStatLcl /= 0` cannot see.
+An equivalence whose site had never run was an argument; it is now an argument
+with its site executed and its difference measured. **The general form: when a
+corpus round adds the record class that closes a survivor, ask which DECLARED
+mutants that class reaches — the answer is free and it is the difference between
+an equivalence and an assumption.**
+
+### FOUR EXACT STUB PREDICTIONS, AND TWO OF THEM DID NOT HAVE TO BE POINTS
+
+    noop                  12,140   PREDICTED 12,140 exactly     EXACT
+    no-print               9,143   PREDICTED  9,143 exactly     EXACT
+    no-allowdefault-arm    1,935   PREDICTED  1,935             EXACT  => A =  92
+    no-read                1,062   PREDICTED  1,062             EXACT  => B = 809
+    CONTROL               A + B = 901                            EXACT
+
+`A` is the `.NOT. AllowDefault_` cases inside the cell R13's short-capacity block
+refuses a message on, and the previous three dispatches could only bracket it.
+It has now measured **92 on four corpora of four different sizes** while `B`
+moved 669 → 711 → 753 → 809. So it was stated as a POINT prediction — a number
+that could be wrong — with the bracket kept beside it so a refutation would still
+leave the split decided. **The reason it holds: R13's capacity ladder is a fixed
+block of cases at every other input's base draw, so the arm it lands in is fixed,
+and every record a corpus ADDS lands in the READ arm because a record is what the
+READ reads.**
+
+### RE-TAKING A UNIT ACROSS AN INSTRUMENT MOVE, PRICED
+
+The RUNBOOK's rule from unit #53 applies here for the first time in the other
+direction: the loop repository moved (`8f9d72f` → `8fa5440` → `b3ad414`), so the
+GATE had to be re-taken even though it never reads the case file and neither the
+translation nor the wrapper moved. `revcheck` accepts no partial move. All three
+gate runs reproduced the first dispatch's numbers exactly — 5,252,000 / 351 / 27
+with 0 mismatched, 370,646 of 728,000, and 0 of 5,252,000 — which is the
+cheapest possible price for one revision across nine artifacts, and the exact
+reproduction is itself a control that nothing about the shipped library moved.
+
+One thing lost and restored: the default-arm red test's three `--note` lines were
+dropped on the first re-run (one `--note` replaced three), and the artifact came
+back saying less than the one it replaced. Caught by diffing the new artifact's
+`notes` against `git show HEAD:`'s, and re-run. **A re-take is only a re-take if
+what it writes says at least what the artifact it overwrites said.**
+
+### PROCEDURE
+
+Two mutation sweeps, both foreground under `mutate_guarded.sh` and both routed
+through `run_if_time_remains.sh` with an explicit `timeout: 600000`; nothing
+backgrounded, nothing polled, no orphan. Five reset windows, each opened and
+closed inside ONE command so a kill cannot leave the tree de-integrated, every
+commit taken outside them. Sixteen commits, one per expensive artifact. The
+`no JSON from ./test` transient the first dispatch recorded as a pattern did not
+recur — the first stub of the batch was simply run twice and discarded, which is
+what that entry recommends.
