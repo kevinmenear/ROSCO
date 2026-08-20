@@ -1,0 +1,69 @@
+GATE RED TESTS FOR ComputeVariablesSetpoints -- THE PREDICTIONS, WRITTEN AND
+COMMITTED BEFORE ANY OF THE THREE RUNS.
+
+The predictions are read out of coverage/line_coverage.json against the CLEAN
+source (54dd134) line numbers, not inferred from the arm structure. What the
+file says, per line, as a scenario set:
+
+  the unit is CALLED in 23 of the 27 scenarios
+      {1,2,3,4,5,6,7,8,9,11,12,15,16,17,18,19,20,21,22,23,25,26,27}
+      absent from {10, 13, 14, 24} -- upstream of this unit, the same four
+      units #26/#29/#60 measured (SetParameters RETURNs early over the absent
+      OL_Mode2_Input.dat on 10/14/24; 13 is not traced here)
+
+  :123  VS_Mode_WSE_TSR arm        22 scenarios -- all 23 EXCEPT 12
+  :132  the ELSE, constant ref     SCENARIO 12 ONLY, 15,999 calls
+  :126  VS_Mode_Power_TSR arm      NO ENTRY -- zero hits in all 27
+  :129  VS_Mode_Torque_TSR arm     NO ENTRY -- zero hits in all 27
+  :139  VS_FBP_WSE_Ref lookup      NO ENTRY -- zero hits in all 27
+  :142  VS_FBP_Torque_Ref lookup   NO ENTRY -- zero hits in all 27
+  :157  CALL RefSpeedExclusion     SCENARIO 9 ONLY, 11,999 calls
+
+-------------------------------------------------------------------------------
+RT1  pc_spderr -- THE ALWAYS-RUN PATH.  ADDITIVE, on purpose.
+
+    LocalVar->PC_SpdErr = LocalVar->PC_RefSpd - LocalVar->GenSpeedF;
+ -> LocalVar->PC_SpdErr = LocalVar->PC_RefSpd - LocalVar->GenSpeedF + 1.0e-3;
+
+  The statement runs on every one of the 407,976 calls the coverage file
+  records, and `PC_SpdErr` is the pitch controller's error term, so it reaches
+  `bld_pitch` through PitchControl.
+
+  PREDICTED: NON-ZERO, and LARGE.
+  PREDICTED scenario set: a SUBSET of the 23 that call the unit, and EXACTLY
+  DISJOINT from {10, 13, 14, 24}. It is a subset and not the whole 23 because
+  a scenario with PC_ControlMode = 0 computes the error and does not act on
+  it; which scenarios those are is NOT predicted here, and the artifact's
+  `mismatched_channels` is what will say.
+  Additive rather than multiplicative deliberately (RUNBOOK, units #40/#47):
+  a scale through an exact zero moves nothing and would be indistinguishable
+  from an unobservable statement.
+
+-------------------------------------------------------------------------------
+RT2  else_arm -- ONE SCENARIO, NAMED IN ADVANCE.
+
+    LocalVar->VS_RefSpd_TSR = CntrPar->VS_RefSpd;
+ -> LocalVar->VS_RefSpd_TSR = CntrPar->VS_RefSpd + 1.0e-3;
+
+  PREDICTED: NON-ZERO, and `mismatched_channels` names SCENARIO 12 AND NO
+  OTHER. This is the sharper half of the pair: RT1 says the instrument can
+  see the unit at all, RT2 says it can see one arm that 22 of the 23 calling
+  scenarios never take.
+
+-------------------------------------------------------------------------------
+RT3  dead_power_tsr -- THE NEGATIVE CONTROL.
+
+    1. / 3.
+ -> 1. / 4.
+
+  The exponent of the VS_Mode_Power_TSR control law, which is `:126` above:
+  zero hits in all 27 scenarios.
+
+  PREDICTED: EXACTLY 0 of 5,252,000, and `perturbation_broke_scenarios` EMPTY.
+
+  The pair (RT2, RT3) is what makes the zero mean something. Both are a
+  one-token edit to a single arm of the same IF/ELSEIF chain, on the same
+  build, in the same run; one moves and one does not, and the difference is
+  the CORPUS of scenarios rather than anything about the two statements.
+  A zero on its own is indistinguishable from a red test that failed to build
+  or a perturbation that was annihilated downstream.
