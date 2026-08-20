@@ -239,8 +239,15 @@ than from what the corpus contains.
 | `75fadd11` | `:329` | `q < len` → `q <= len` | the repeat-count lookahead's digit scan. At `q == len` the mutant may advance to `q == len + 1`; the very next line tests `q < len`, which is false for both 200 and 201, so the repeat block is skipped either way and `q` is not read again |
 
 **THE SIBLING NOT DECLARED**, and it is on the same line as the last one:
-`ab7420d6` (`:332`, `q < len` → `q <= len`) is **OPEN**, not declared. It reads
-`rec[q]` at `q == len`, so unlike `75fadd11` its extra byte is USED — and
-`evidence/ParseInput_Int_Opt/mutation_survivors.txt` names the record that would
-distinguish it. Two `q < len` → `q <= len` mutants, one line apart, and only one
-of them is equivalent.
+`ab7420d6` (`:332`, `q < len` → `q <= len`) is **KILLED**. It reads `rec[q]` at
+`q == len`, so unlike `75fadd11` its extra byte is USED — and the record that
+uses it had to be built on purpose: a full-width lead with NO star in it (a
+lookahead that scans for a token stops at that token) whose digit run is a legal
+count, paired with a `'*'` neighbour. R14's `("digstar", …, "*7")`, loop
+`8f9d72f`.
+
+Two `q < len` → `q <= len` mutants, three lines apart, one declared equivalent
+and one killed by a record designed for it. That is the strongest form this
+family's proof can take: the discriminator is not the spelling of the edit, it
+is whether anything downstream READS the extra byte, and the corpus settles it
+rather than the argument.
