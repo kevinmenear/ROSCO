@@ -1,0 +1,94 @@
+ParseInput_Str_Opt -- the gate red tests, PREDICTED BEFORE THE RUNS
+===================================================================
+
+Two perturbations, run as a PAIR: one that must move a large number of values
+and one that must move exactly zero. The pair is the point -- a red test that
+cannot be wrong is not evidence about the instrument (unit #57's rule, and the
+first prediction that campaign wrote down was falsified by its own run).
+
+THE THING THAT MAKES THIS UNIT DIFFERENT FROM ITS THREE SIBLINGS
+----------------------------------------------------------------
+
+#55, #56 and #57 parse NUMBERS into control parameters, so "every parsed value
++ 1" is a perturbation the simulation survives and the 13 gate channels record.
+This unit parses SIX CHARACTER PARAMETERS and every one of them is a FILE NAME
+or a socket address:
+
+    PerfFileName      the rotor performance table ReadCpFile OPENs
+    OL_Filename       the open-loop timeseries
+    DLL_FileName      the external controller library
+    DLL_InFile        its input file
+    DLL_ProcName      its entry point
+    ZMQ_CommAddress   the ZeroMQ endpoint
+
+Read off all 22 `Examples/DISCON*.IN`: `WE_Mode` is 2 in every one, so
+`PerfFileName` is opened in every scenario; `Ext_Mode` and `ZMQ_Mode` are 0 in
+every one, so the four DLL/ZMQ values are parsed and never used; `OL_Mode` is 0
+in 19 files, 1 in two and 2 in one.
+
+So the OBVIOUS perturbation -- corrupt the parsed value -- does not produce a
+different answer, it produces NO answer: `ReadCpFile` fails to open its table
+and the scenario dies in the Fortran runtime. That is unit #24's
+`PathIsRelative` shape, which is why `gate.py` carries
+`perturbation_broke_scenarios` at all -- and it would leave `mismatched` at 0,
+which `loop/done.py`'s P12 reads as "the gate cannot see this unit".
+
+THE PERTURBATION IS THEREFORE A VALID SUBSTITUTE FILE, NOT A CORRUPTION.
+`Examples/Test_Cases/BAR_10/Cp_Ct_Cq.BAR_10.txt` has the SAME GRID as the
+NREL-5MW table the scenarios use -- 36 pitch entries, 26 TSR entries, one wind
+speed -- and different numbers in every cell. It loads, so nothing dies; it is a
+different rotor, so every controller output moves.
+
+RED TEST A -- the parsed value redirected to a valid substitute table
+---------------------------------------------------------------------
+
+  file  rosco/controller/src/parseinput_str_opt.cpp
+  the READ's transferred value is rewritten, in this unit ONLY, so that
+  `NREL-5MW/Cp_Ct_Cq.NREL5MW.txt` becomes `BAR_10/Cp_Ct_Cq.BAR_10.txt`
+
+  PREDICTED  a LARGE non-zero mismatch, across ALL 27 scenarios and essentially
+             every channel that depends on rotor aerodynamics -- gen_torque,
+             gen_speed, gen_power and bld_pitch at minimum, in every scenario.
+             The prediction is deliberately not a number: nothing in this
+             campaign has measured what a different rotor table does to these
+             channels, and inventing a figure to be "exact" about would be a
+             prediction with no basis. What IS predicted, and is falsifiable:
+
+               mismatched                > 1,000,000
+               scenarios that MISMATCH   27 of 27
+               perturbation_broke_scenarios  EMPTY -- the substitute table
+                                             loads, so no scenario dies
+               revert_verified           true, at 0 mismatched
+
+             A non-empty `perturbation_broke_scenarios` would REFUTE the claim
+             that the BAR_10 grid is interchangeable, and would be the finding.
+
+RED TEST B -- the default arm's value
+--------------------------------------
+
+  file  rosco/controller/src/parseinput_str_opt.cpp
+  `constexpr std::string_view DefaultValue = "unused";`  ->  `= "XXXXXX";`
+
+  PREDICTED  EXACTLY 0 of the same compared count.
+
+  The basis is coverage, not hope. `coverage/line_coverage.json` records
+  `ROSCO_Helpers.f90:317` (`IF (.NOT. FoundLine)`) at 168 hits across the 27
+  scenarios, and lines :318-:330 -- the whole not-found arm, including
+  `Variable = 'unused'` at :324 and the PRINT at :325 -- carry NO COUNTER AT
+  ALL. All six parameters are present in all 22 shipped `DISCON*.IN`, so
+  `FindLine` finds every one of them and the arm is never entered.
+
+  `OL_Filename` is literally the string `"unused"` in 19 of the 22 files, which
+  is the trap this test is aimed at: that value comes from the FILE, through the
+  READ, and not from this constant. If the gate moved here, the two paths would
+  have been confused.
+
+WHAT THE PAIR ESTABLISHES
+-------------------------
+
+  A non-zero: the gate can see this unit's transferred value.
+  A zero, predicted from a counter that does not exist: the gate's silence on
+  the default arm is the arm not running, not the instrument being blind.
+
+Both artifacts carry their prediction in a `--note`, so a reader does not have
+to find this file to know what was expected.

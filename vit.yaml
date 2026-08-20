@@ -258,6 +258,10 @@ translations:
     status: integrated
     cpp_file: translations/ROSCO_Helpers/parseinput_int_opt.cpp
     verification: simulation
+  ParseInput_Str_Opt:
+    status: integrated
+    cpp_file: translations/ROSCO_Helpers/parseinput_str_opt.cpp
+    verification: simulation
 types:
   ControlParameters:
     strategy: view

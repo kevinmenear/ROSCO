@@ -142,6 +142,7 @@ set(SOURCES
     src/parseinary_opt.cpp
     src/parseinput_dbl_opt.cpp
     src/parseinput_int_opt.cpp
+    src/parseinput_str_opt.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
