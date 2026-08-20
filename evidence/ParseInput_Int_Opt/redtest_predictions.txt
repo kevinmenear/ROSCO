@@ -202,3 +202,56 @@ chain wrote moments earlier (unit #47, `vit_integration_shim.o` with no
 symbols). The failure is LOUD -- no artifact is written -- so the cost is one
 retry, and it is written down rather than left for the next dispatch to
 rediscover.
+
+
+================================================================================
+RE-TAKEN TWICE MORE, loop 581925d then 8f9d72f, 12,199 cases
+================================================================================
+
+Three further R14 entries were added to close three of the five open mutation
+survivors, so every corpus-reading layer was re-taken twice more. The corpus
+size did not change between the two (the second round REPLACED a form rather
+than adding one), so one table covers both:
+
+    arm                          cases   scalar-changed   record   Var moved
+    default-warned                9071                0     9071         273
+    not-allowed                   1831             1831        0           0
+    error, msg refused             845              845        0           0
+    read-ok                        268                0        0         225
+    pre-failed                     184                0        0           0
+    TOTAL                       12,199             2676     9071         498
+
+    stub                    predicted            measured   verdict
+    noop                    11,972 exactly         11,972   EXACT
+                            (12,199 - 184 pre-failed - 43 read-ok that
+                             moved nothing)
+    no-print                 9,071 exactly          9,071   EXACT
+    no-allowdefault-arm     [1,831, 2,676]          1,923   =>  A =  92
+    no-read                 [  225, 1,070]            978   =>  B = 753
+
+    CONTROL   A + B = 92 + 753 = 845                        EXACT
+
+The identity now holds on THREE corpora, and `A` has been 92 on every one of
+them while `B` moved 669 -> 711 -> 753 as the corpus gained records that reach
+the READ. That is the only column a record-adding change should move, and it is
+the only one that did.
+
+    corpus            cases     READ reached         A     B
+    11,863            11,863    853  (7.2%)         92   669
+    12,059            12,059    951  (7.9%)         92   711
+    12,199            12,199    1,021 (8.4%)        92   753
+
+
+AND THE TRANSIENT IS NOW A PATTERN, NOT A ONE-OFF.
+
+`run_harness_stub.sh` returned `no JSON from ./test -- artifact NOT written` on
+the FIRST stub of a batch on all THREE occasions it was run as a batch, and
+never on any later stub in the same batch, and never when re-run alone. The
+runner builds through `harness.sh` and then re-runs `./test` in a SECOND
+`docker exec` to capture the JSON payload; the campaign already records a
+bind-mount write/read race on objects a `docker exec` chain wrote moments
+earlier (unit #47, `vit_integration_shim.o` with no symbols).
+
+It is LOUD -- no artifact is written and the runner exits 1 -- so the cost is
+one retry, and the batch above simply runs the first stub twice. Written down
+rather than left for the next dispatch to rediscover a fourth time.

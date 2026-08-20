@@ -3,16 +3,27 @@ from the SHIPPED translation, searched rather than argued.
 
 THE LIST IT IS RUN OVER IS THE UNDECLARED SWEEP'S -- all 54 survivors of
 evidence/ParseInput_Int_Opt/sweep_probe0.json, before any equivalence or
-unreachable declaration was made -- and NOT the five that are still open in
+unreachable declaration was made -- and NOT the two that are still open in
 mutation/ParseInput_Int_Opt.json. That is deliberate: 37 of those 54 are now
 DECLARED EQUIVALENT, and the rows below are the measurement each of those
 declarations rests on. A declaration whose evidence file did not cover it
 would be an argument with nothing under it.
 
-Four of the 54 -- 08ce3b56, 17de888e, 9e4b76b0, cb35366f -- are KILLED in
-the scored artifact. Their rows are the reason: each named an ADMISSIBLE
-record the corpus did not contain, R14 gained it, and the sweep then killed
-exactly those four and nothing else.
+SEVEN of the 54 are KILLED in the scored artifact, in two rounds, and their
+rows below are the reason: each named an ADMISSIBLE record the corpus did
+not contain, R14 gained it, and the sweep then killed it.
+
+  round 1, loop 343f843   08ce3b56  17de888e  9e4b76b0  cb35366f
+           four named, four killed, and nothing else moved: 89 -> 93
+  round 2, loop 581925d   3545d5d7  5002a20d  (ab7420d6 named and NOT
+           killed -- the form written for it could not reach the bound it
+           was aimed at, see mutation_survivors.txt) : 93 -> 95
+  round 3, loop 8f9d72f   ab7420d6, on the corrected form         : 95 -> 96
+
+The two still open, 4f89b00b and e8cf2d25, are ONE gap: `is_eol` accepts CR
+and LF, and no record in any corpus this campaign generates contains either
+byte. Neither is a NONE this search failed to explain -- the search's own
+alphabet has no CR or LF either, and that is stated rather than hidden.
 Built with -fsanitize=address,undefined; the BASELINE ran clean under
 those flags. The sanitiser is a GUARD here rather than the instrument:
 byte 201 of Words is Words(2)(1:1), so a read one past the record is
