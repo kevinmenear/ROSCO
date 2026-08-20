@@ -15673,3 +15673,87 @@ The first version of this paragraph said the three did not exist at all, because
 `subroutine` in lower case. P10 again, and the campaign's own rule about it:
 a claim about what the source contains is a measurement and needs a command
 behind it, run case-insensitively.
+
+## ReadControlParameterFileSub, second dispatch: the two blockers were the tool, and the tool is ours
+
+The previous dispatch closed `blocked` on two substrate refusals and four failing
+predicates (P9, P11, P12, P13). Three of the four are now green, and the fourth —
+P13 — is green *through* P12. Nothing here worked around a tool: one tool was
+extended, and the other's gap is reported rather than routed around.
+
+### The integration blocker was one missing call, and the flag has to name its argument
+
+`vit integrate` gains `--copy-arrays ARG[,ARG...]` (vit@`29c2b71`). It emits
+`CALL vit_view_in_<type>(<arg>_view, <arg>)` after the C call for each NAMED
+view-typed argument. `vit_view_in_<type>` was already generated into every view
+module, was already correct, and was called by nothing.
+
+**It names its arguments rather than taking every view-typed INOUT one, and that
+is not caution — it is a use-after-free.** The routine opens each component with
+`IF (ALLOCATED(dest%X)) DEALLOCATE(dest%X)`. For a component the C side replaced,
+the view points at C-owned storage and the deallocate is right. For one the unit
+never touched, the view still holds `C_LOC(dest%X)` from the populate step, so the
+deallocate frees exactly the memory the next `C_F_POINTER` reads. Emitted for all
+three of this unit's view args it would do that to `LocalVar` and `ErrVar`.
+
+Opt-in, not folded into `--reverse-copy`: every unit already integrated was
+verified against a wrapper without it (X3).
+
+### A post-integration harness's green is a claim about the wrapper, so red-test the wrapper
+
+After integration both sides of this unit's probe run the same C++, so the probe
+measures marshalling only — which is exactly what E4.5 asks. The green means
+something because the red test deletes the `vit_view_in_controlparameters` call
+and rebuilds, which is precisely the integrated state `--reverse-copy` alone
+produces. **Predicted before the run: 3,248 = 68 ALLOCATABLE components × 63 cases
+less the 1,036 (case, field) pairs unallocated on both sides. Measured: 3,248.**
+
+A second reading agrees and was not designed for: post-integration `COPYBK` is 0
+where every pre-integration run reports 1,036, because the copy-back turns an
+unallocated component into an allocated-empty one. The count going to zero is the
+copy-back's own fingerprint.
+
+### A mutation score exists for a unit whose harness refused, and the driver is the unit's own probe
+
+`vit_mutate.py` drives the generated harness's case file and `./test`; neither
+exists here. `scripts/rcpfsmutate.py` drives the probe instead — the same move
+`dbgmutate.py` and `chkpmutate.py` made for two file-output units, and copied from
+the second (P4). A mutant costs ~3.5 s, so the whole 213-mutant population fits in
+three foreground calls.
+
+**Its first run scored 207 of 207 = 1.000 on the wall clock (C12).** The ECHO
+channel digested `<Root>.RO.echo` whole, and line 2 of that file is `Generated on
+20-Aug-2026 at 18:10:17` — this unit's own `CurDate`/`CurTime` bridges. Two
+unmutated runs one second apart digest differently; 96 of 207 mutants named `echo`
+as their only channel. The wrong artifact is committed at
+`evidence/ReadControlParameterFileSub/mutation.the-echo-channel-was-a-clock.json`.
+`dbgcheck.py` has carried a regex for the same header since it was written, and
+`WriteRestartFile`'s `.RO.chkp` has no header at all — so both existing file
+oracles are safe by two separate accidents rather than by a shared guard. Raised
+as an `invalidating_finding` with a helper proposed.
+
+The control that catches it is one line of protocol: **two unmutated runs across a
+second boundary, compared in every channel.** A green baseline cannot catch it,
+because the baseline is taken inside the same run as the mutants.
+
+### The corpus was the answer to 37 of the 91 survivors, and the predictions were stated first
+
+116/207 → 140 (round 4, 18 files) → 153 (round 5, 8 files) → 155 (sanitised
+re-take of the survivors). Round 5's eight files each named the mutant ids they
+were for: **twelve predictions, twelve confirmed.** The most useful one is the
+shape nobody would guess from the source: the record-splitting boundary is
+evaluated 15,546 times and strips a CR 247 times, and a mutant that pops the last
+character of *every* record still survives — because every record in every real
+DISCON.IN ends inside a trailing comment. One file with a parameter name at the
+end of a line kills it.
+
+### `unreachable` is a claim about the corpus, so it is measured per site
+
+`site_census.py` builds the translation with a counter on each surviving site and
+runs the 63-case corpus, reporting EVALUATIONS and TRUE outcomes separately — so
+*no case reaches this* and *every case holds it constant* are different findings
+rather than the same empty dict the campaign's coverage file gives. It settles 25
+of the 35 declarations directly (assign_errmsg: 0 evaluations; `establish()`'s
+already-allocated arm: 3,183 evaluations, 0 true). `corpus_facts.py` measures the
+four claims that are about the .IN files, and each one names the file that would
+refute it.
