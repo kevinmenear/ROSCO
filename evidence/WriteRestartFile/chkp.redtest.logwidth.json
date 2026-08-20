@@ -1,0 +1,382 @@
+{
+  "a": "pre",
+  "b": "logwidth",
+  "bytes_compared": 89858535,
+  "bytes_mismatched": 467542,
+  "campaign_rev": "5cd5470e-dirty",
+  "files_compared": 195,
+  "files_mismatched": 195,
+  "loop_rev": "41d383f",
+  "mismatches": [
+    {
+      "a": "00000064000000000000000000000000",
+      "a_len": 460813,
+      "b": "64000000000000000000000000000000",
+      "b_len": 460807,
+      "bytes_differing": 1771,
+      "file": "vit_chkp36100.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "000000e8030000000000000000000000",
+      "a_len": 460813,
+      "b": "e8030000000000000000000000000040",
+      "b_len": 460807,
+      "bytes_differing": 2048,
+      "file": "vit_chkp361000.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "0000001a040000000000000000000000",
+      "a_len": 460813,
+      "b": "1a0400000000000000000000000000c0",
+      "b_len": 460807,
+      "bytes_differing": 2038,
+      "file": "vit_chkp361050.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "0000004c040000000000000000000000",
+      "a_len": 460813,
+      "b": "4c040000000000000000000000000080",
+      "b_len": 460807,
+      "bytes_differing": 2049,
+      "file": "vit_chkp361100.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "0000007e040000000000000000000000",
+      "a_len": 460813,
+      "b": "7e040000000000000000000000000020",
+      "b_len": 460807,
+      "bytes_differing": 2043,
+      "file": "vit_chkp361150.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "000000b0040000000000000000000000",
+      "a_len": 460813,
+      "b": "b0040000000000000000000000000060",
+      "b_len": 460807,
+      "bytes_differing": 2048,
+      "file": "vit_chkp361200.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "000000e2040000000000000000000000",
+      "a_len": 460813,
+      "b": "e2040000000000000000000000000040",
+      "b_len": 460807,
+      "bytes_differing": 2047,
+      "file": "vit_chkp361250.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000014050000000000000000000000",
+      "a_len": 460813,
+      "b": "140500000000000000000000000000e0",
+      "b_len": 460807,
+      "bytes_differing": 2051,
+      "file": "vit_chkp361300.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000046050000000000000000000000",
+      "a_len": 460813,
+      "b": "46050000000000000000000000000020",
+      "b_len": 460807,
+      "bytes_differing": 2043,
+      "file": "vit_chkp361350.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000078050000000000000000000000",
+      "a_len": 460813,
+      "b": "78050000000000000000000000000060",
+      "b_len": 460807,
+      "bytes_differing": 2044,
+      "file": "vit_chkp361400.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "000000aa050000000000000000000000",
+      "a_len": 460813,
+      "b": "aa050000000000000000000000000060",
+      "b_len": 460807,
+      "bytes_differing": 2044,
+      "file": "vit_chkp361450.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000096000000000000000000000000",
+      "a_len": 460813,
+      "b": "96000000000000000000000000000000",
+      "b_len": 460807,
+      "bytes_differing": 1751,
+      "file": "vit_chkp36150.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "000000dc050000000000000000000000",
+      "a_len": 460813,
+      "b": "dc050000000000000000000000000000",
+      "b_len": 460807,
+      "bytes_differing": 2047,
+      "file": "vit_chkp361500.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "0000000e060000000000000000000000",
+      "a_len": 460813,
+      "b": "0e0600000000000000000000000000c0",
+      "b_len": 460807,
+      "bytes_differing": 2043,
+      "file": "vit_chkp361550.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000040060000000000000000000000",
+      "a_len": 460813,
+      "b": "40060000000000000000000000000040",
+      "b_len": 460807,
+      "bytes_differing": 2035,
+      "file": "vit_chkp361600.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000072060000000000000000000000",
+      "a_len": 460813,
+      "b": "72060000000000000000000000000000",
+      "b_len": 460807,
+      "bytes_differing": 2043,
+      "file": "vit_chkp361650.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "000000a4060000000000000000000000",
+      "a_len": 460813,
+      "b": "a40600000000000000000000000000e0",
+      "b_len": 460807,
+      "bytes_differing": 2052,
+      "file": "vit_chkp361700.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "000000d6060000000000000000000000",
+      "a_len": 460813,
+      "b": "d6060000000000000000000000000080",
+      "b_len": 460807,
+      "bytes_differing": 2044,
+      "file": "vit_chkp361750.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000008070000000000000000000000",
+      "a_len": 460813,
+      "b": "080700000000000000000000000000c0",
+      "b_len": 460807,
+      "bytes_differing": 2040,
+      "file": "vit_chkp361800.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "0000003a070000000000000000000000",
+      "a_len": 460813,
+      "b": "3a0700000000000000000000000000c0",
+      "b_len": 460807,
+      "bytes_differing": 2045,
+      "file": "vit_chkp361850.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "0000006c070000000000000000000000",
+      "a_len": 460813,
+      "b": "6c070000000000000000000000000040",
+      "b_len": 460807,
+      "bytes_differing": 2050,
+      "file": "vit_chkp361900.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "0000009e070000000000000000000000",
+      "a_len": 460813,
+      "b": "9e070000000000000000000000000020",
+      "b_len": 460807,
+      "bytes_differing": 2049,
+      "file": "vit_chkp361950.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "000000c8000000000000000000000000",
+      "a_len": 460813,
+      "b": "c8000000000000000000000000000000",
+      "b_len": 460807,
+      "bytes_differing": 1783,
+      "file": "vit_chkp36200.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "000000fa000000000000000000000000",
+      "a_len": 460813,
+      "b": "fa000000000000000000000000000000",
+      "b_len": 460807,
+      "bytes_differing": 1782,
+      "file": "vit_chkp36250.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "0000002c010000000000000000000000",
+      "a_len": 460813,
+      "b": "2c010000000000000000000000000000",
+      "b_len": 460807,
+      "bytes_differing": 1781,
+      "file": "vit_chkp36300.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "0000005e010000000000000000000000",
+      "a_len": 460813,
+      "b": "5e010000000000000000000000000000",
+      "b_len": 460807,
+      "bytes_differing": 1784,
+      "file": "vit_chkp36350.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000090010000000000000000000000",
+      "a_len": 460813,
+      "b": "90010000000000000000000000000000",
+      "b_len": 460807,
+      "bytes_differing": 1785,
+      "file": "vit_chkp36400.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "000000c2010000000000000000000000",
+      "a_len": 460813,
+      "b": "c2010000000000000000000000000000",
+      "b_len": 460807,
+      "bytes_differing": 1781,
+      "file": "vit_chkp36450.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000032000000000000000000000000",
+      "a_len": 460813,
+      "b": "32000000000000000000000000000000",
+      "b_len": 460807,
+      "bytes_differing": 1998,
+      "file": "vit_chkp3650.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "000000f4010000000000000000000000",
+      "a_len": 460813,
+      "b": "f4010000000000000000000000000000",
+      "b_len": 460807,
+      "bytes_differing": 1785,
+      "file": "vit_chkp36500.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000026020000000000000000000000",
+      "a_len": 460813,
+      "b": "26020000000000000000000000000020",
+      "b_len": 460807,
+      "bytes_differing": 2046,
+      "file": "vit_chkp36550.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000058020000000000000000000000",
+      "a_len": 460813,
+      "b": "58020000000000000000000000000060",
+      "b_len": 460807,
+      "bytes_differing": 2044,
+      "file": "vit_chkp36600.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "0000008a020000000000000000000000",
+      "a_len": 460813,
+      "b": "8a0200000000000000000000000000a0",
+      "b_len": 460807,
+      "bytes_differing": 2049,
+      "file": "vit_chkp36650.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "000000bc020000000000000000000000",
+      "a_len": 460813,
+      "b": "bc020000000000000000000000000040",
+      "b_len": 460807,
+      "bytes_differing": 2050,
+      "file": "vit_chkp36700.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "000000ee020000000000000000000000",
+      "a_len": 460813,
+      "b": "ee0200000000000000000000000000e0",
+      "b_len": 460807,
+      "bytes_differing": 2047,
+      "file": "vit_chkp36750.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000020030000000000000000000000",
+      "a_len": 460813,
+      "b": "20030000000000000000000000000060",
+      "b_len": 460807,
+      "bytes_differing": 2046,
+      "file": "vit_chkp36800.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000052030000000000000000000000",
+      "a_len": 460813,
+      "b": "52030000000000000000000000000020",
+      "b_len": 460807,
+      "bytes_differing": 2047,
+      "file": "vit_chkp36850.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000084030000000000000000000000",
+      "a_len": 460813,
+      "b": "84030000000000000000000000000080",
+      "b_len": 460807,
+      "bytes_differing": 2046,
+      "file": "vit_chkp36900.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "000000b6030000000000000000000000",
+      "a_len": 460813,
+      "b": "b6030000000000000000000000000080",
+      "b_len": 460807,
+      "bytes_differing": 2042,
+      "file": "vit_chkp36950.RO.chkp",
+      "first_diff_offset": 29
+    },
+    {
+      "a": "00000064000000000000000000000000",
+      "a_len": 460813,
+      "b": "64000000000000000000000000000000",
+      "b_len": 460807,
+      "bytes_differing": 2446,
+      "file": "vit_chkp37100.RO.chkp",
+      "first_diff_offset": 29
+    }
+  ],
+  "only_in_a": [],
+  "only_in_b": [],
+  "stdout_bytes_compared": 131291,
+  "stdout_only_in_a": [],
+  "stdout_only_in_b": [],
+  "stdout_records_compared": 511,
+  "stdout_records_mismatched": 0,
+  "stdout_scenarios_compared": 6,
+  "verdict": "MISMATCH",
+  "vit_rev": "d3a1e12"
+}

@@ -1,0 +1,71 @@
+PREDICTIONS, STATED BEFORE THE RUNS (RUNBOOK: a red test whose perturbation is a
+no-op reports the instrument as broken, and the cheap defence is a predicted
+delta). All four are taken over exactly the corpus the green was taken over:
+195 checkpoint files / 89,858,535 bytes and 6 stdout streams / 511 records.
+
+RT1  logwidth   wr_log writes ONE byte instead of four.
+     PREDICT  files 195 of 195 differ, each 460,807 bytes against 460,813
+              (two default LOGICALs x 3 bytes), first difference at offset 29,
+              which is the byte after LocalVar%WriteThisStep.
+     PREDICT  stdout 0 of 511 records -- ErrVar is untouched.
+
+RT2  moop      LocalVar->rootMOOP[0] -> [1], the index_offset shape on a
+               field the census calls VARIES.
+     PREDICT  files 195 of 195. Counted, not guessed: rootMOOP(1) differs from
+              rootMOOP(2) in 195 of the 195 reference checkpoints, at offsets
+              116 and 124.
+     PREDICT  stdout 0 of 511 records.
+
+RT3  zmqpit    LocalVar->ZMQ_PitOffset[0] -> [1]. THE NEGATIVE CONTROL, and it
+               is a MEASUREMENT of the corpus rather than of the translation.
+     PREDICT  files 0, bytes 0, stdout 0. Counted: ZMQ_PitOffset(1) equals
+              ZMQ_PitOffset(2) in 195 of 195 -- both are zero in every
+              checkpoint, because no scenario runs a ZeroMQ server.
+
+RT4  avifail   the Cannot-open arm sets aviFAIL = 2 instead of 1. THE SECOND
+               STREAM'S OWN RED TEST.
+     PREDICT  files 0 -- scenario 41 writes no checkpoint either way.
+     PREDICT  stdout exactly 9 records, all in scenario 41, which has 9
+              checkpoint steps; the other five scenarios never take the arm.
+
+--------------------------------------------------------------------------
+RESULTS. Four for four, and the two offsets were predicted as well as the
+counts.
+
+  label     verdict     files   bytes    stdout   first diff   lengths
+  --------------------------------------------------------------------
+  logwidth  MISMATCH    195     467,542       0   offset    29  460,813 -> 460,807
+  moop      MISMATCH    195         891       0   offset   119  460,813 -> 460,813
+  zmqpit    IDENTICAL     0           0       0   --           --
+  avifail   MISMATCH      0           0       9   record    25  --
+
+  logwidth  PREDICTED 195 files, a six-byte shortening and a first difference
+            at offset 29. GOT exactly that: 460,807 against 460,813, and 29 is
+            the byte after LocalVar%WriteThisStep, whose four-byte default
+            LOGICAL the perturbation writes in one.
+  moop      PREDICTED 195, by COUNTING the reference checkpoints in which
+            rootMOOP(1) differs from rootMOOP(2) -- 195 of 195. GOT 195. The
+            first difference is at 119, inside rootMOOP(1)'s 116..123, and 891
+            differing bytes over 195 files is 4.6 of the 8 per file, which is
+            what two unrelated doubles share.
+  zmqpit    PREDICTED 0, by COUNTING: ZMQ_PitOffset(1) equals ZMQ_PitOffset(2)
+            in 195 of 195, both zero, because no scenario runs a ZeroMQ server.
+            GOT 0. THIS IS THE NEGATIVE CONTROL and it is a statement about the
+            CORPUS: the same index shift one field over, on rootMOOP, moves 195
+            files on the same build. `evidence/WriteRestartFile/layout.txt`
+            names 96 items in this shape and they are the population every
+            `unreachable` declaration in mutation/WriteRestartFile.json is
+            drawn from.
+  avifail   PREDICTED 0 files and exactly 9 stdout records, all in scenario 41,
+            which has 9 checkpoint steps against the other five scenarios'
+            39 each. GOT exactly 9, first at record 25 of stdout.41.txt.
+            THE SECOND STREAM'S OWN RED TEST: the file stream moved ZERO, so
+            without it this perturbation is invisible.
+
+WHAT THE PAIR (zmqpit, moop) ESTABLISHES. They are the same edit -- an index
+shifted by one on a three-wide REAL(DbKi) field -- on the same build, in the
+same run, one field apart in kind. 195 and 0. The zero is the corpus, not the
+instrument.
+
+Each red test reverts and rebuilds; all four ran under scripts/mutate_guarded.sh
+and it reported the translation restored to 67be3eb8.

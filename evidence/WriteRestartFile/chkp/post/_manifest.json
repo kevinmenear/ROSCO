@@ -1,5 +1,5 @@
 {
-  "campaign_rev": "8de59313-dirty",
+  "campaign_rev": "5cd5470e-dirty",
   "files": {
     "vit_chkp36100.RO.chkp": {
       "bytes": 460813,
@@ -783,13 +783,14 @@
     }
   },
   "label": "post",
-  "loop_rev": "6731f14-dirty",
+  "loop_rev": "41d383f",
   "ran_scenarios": [
     36,
     37,
     38,
     39,
-    40
+    40,
+    41
   ],
   "scenarios_failed": [],
   "vit_rev": "d3a1e12"

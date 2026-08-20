@@ -1,0 +1,85 @@
+{
+  "a": "pre",
+  "b": "avifail",
+  "bytes_compared": 89858535,
+  "bytes_mismatched": 0,
+  "campaign_rev": "5cd5470e-dirty",
+  "files_compared": 195,
+  "files_mismatched": 0,
+  "loop_rev": "41d383f",
+  "mismatches": [
+    {
+      "a": "  chkp i=40 aviFAIL=1 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp4140.RO.chkp for writing                                          ",
+      "b": "  chkp i=40 aviFAIL=2 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp4140.RO.chkp for writing                                          ",
+      "file": "stdout.41.txt",
+      "record": 25,
+      "stream": "stdout"
+    },
+    {
+      "a": "  chkp i=80 aviFAIL=1 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp4180.RO.chkp for writing                                          ",
+      "b": "  chkp i=80 aviFAIL=2 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp4180.RO.chkp for writing                                          ",
+      "file": "stdout.41.txt",
+      "record": 26,
+      "stream": "stdout"
+    },
+    {
+      "a": "  chkp i=120 aviFAIL=1 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp41120.RO.chkp for writing                                        ",
+      "b": "  chkp i=120 aviFAIL=2 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp41120.RO.chkp for writing                                        ",
+      "file": "stdout.41.txt",
+      "record": 27,
+      "stream": "stdout"
+    },
+    {
+      "a": "  chkp i=160 aviFAIL=1 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp41160.RO.chkp for writing                                        ",
+      "b": "  chkp i=160 aviFAIL=2 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp41160.RO.chkp for writing                                        ",
+      "file": "stdout.41.txt",
+      "record": 28,
+      "stream": "stdout"
+    },
+    {
+      "a": "  chkp i=200 aviFAIL=1 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp41200.RO.chkp for writing                                        ",
+      "b": "  chkp i=200 aviFAIL=2 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp41200.RO.chkp for writing                                        ",
+      "file": "stdout.41.txt",
+      "record": 29,
+      "stream": "stdout"
+    },
+    {
+      "a": "  chkp i=240 aviFAIL=1 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp41240.RO.chkp for writing                                        ",
+      "b": "  chkp i=240 aviFAIL=2 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp41240.RO.chkp for writing                                        ",
+      "file": "stdout.41.txt",
+      "record": 30,
+      "stream": "stdout"
+    },
+    {
+      "a": "  chkp i=280 aviFAIL=1 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp41280.RO.chkp for writing                                        ",
+      "b": "  chkp i=280 aviFAIL=2 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp41280.RO.chkp for writing                                        ",
+      "file": "stdout.41.txt",
+      "record": 31,
+      "stream": "stdout"
+    },
+    {
+      "a": "  chkp i=320 aviFAIL=1 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp41320.RO.chkp for writing                                        ",
+      "b": "  chkp i=320 aviFAIL=2 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp41320.RO.chkp for writing                                        ",
+      "file": "stdout.41.txt",
+      "record": 32,
+      "stream": "stdout"
+    },
+    {
+      "a": "  chkp i=360 aviFAIL=1 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp41360.RO.chkp for writing                                        ",
+      "b": "  chkp i=360 aviFAIL=2 avcMSG=b'ROSCO_IO: Cannot open checkpoint file vit_chkp41_nodir/vit_chkp41360.RO.chkp for writing                                        ",
+      "file": "stdout.41.txt",
+      "record": 33,
+      "stream": "stdout"
+    }
+  ],
+  "only_in_a": [],
+  "only_in_b": [],
+  "stdout_bytes_compared": 131291,
+  "stdout_only_in_a": [],
+  "stdout_only_in_b": [],
+  "stdout_records_compared": 511,
+  "stdout_records_mismatched": 9,
+  "stdout_scenarios_compared": 6,
+  "verdict": "MISMATCH",
+  "vit_rev": "d3a1e12"
+}

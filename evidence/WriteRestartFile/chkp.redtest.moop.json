@@ -1,0 +1,382 @@
+{
+  "a": "pre",
+  "b": "moop",
+  "bytes_compared": 89858535,
+  "bytes_mismatched": 891,
+  "campaign_rev": "5cd5470e-dirty",
+  "files_compared": 195,
+  "files_mismatched": 195,
+  "loop_rev": "41d383f",
+  "mismatches": [
+    {
+      "a": "2072c58d40000000c0f3a26ac0000000",
+      "a_len": 460813,
+      "b": "c0f3a26ac0000000c0f3a26ac0000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp36100.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "a098ff8ec00000006024ed8240000000",
+      "a_len": 460813,
+      "b": "6024ed82400000006024ed8240000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp361000.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "c0f36b72c00000008068778e40000000",
+      "a_len": 460813,
+      "b": "8068778e400000008068778e40000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp361050.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "a00033864000000040e9ca6f40000000",
+      "a_len": 460813,
+      "b": "40e9ca6f4000000040e9ca6f40000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp361100.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "e31d8e40000000e0c74786c000000000",
+      "a_len": 460813,
+      "b": "c74786c0000000e0c74786c000000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp361150.RO.chkp",
+      "first_diff_offset": 120
+    },
+    {
+      "a": "4cd67040000000a0a4458ec000000060",
+      "a_len": 460813,
+      "b": "a4458ec0000000a0a4458ec000000060",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp361200.RO.chkp",
+      "first_diff_offset": 120
+    },
+    {
+      "a": "201c3185c0000000e06e9672c0000000",
+      "a_len": 460813,
+      "b": "e06e9672c0000000e06e9672c0000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp361250.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "e0e5aa8ec000000020d2888440000000",
+      "a_len": 460813,
+      "b": "20d288844000000020d2888440000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp361300.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "60bb5675c00000000093c58e40000000",
+      "a_len": 460813,
+      "b": "0093c58e400000000093c58e40000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp361350.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "47168440000000606060754000000080",
+      "a_len": 460813,
+      "b": "60607540000000606060754000000080",
+      "b_len": 460813,
+      "bytes_differing": 3,
+      "file": "vit_chkp361400.RO.chkp",
+      "first_diff_offset": 120
+    },
+    {
+      "a": "20f6a48e4000000040d89f84c0000000",
+      "a_len": 460813,
+      "b": "40d89f84c000000040d89f84c0000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp361450.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "4004108b40000000c063108bc0000000",
+      "a_len": 460813,
+      "b": "c063108bc0000000c063108bc0000000",
+      "b_len": 460813,
+      "bytes_differing": 3,
+      "file": "vit_chkp36150.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "790f714000000040f64c8ec0000000a0",
+      "a_len": 460813,
+      "b": "f64c8ec000000040f64c8ec0000000a0",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp361500.RO.chkp",
+      "first_diff_offset": 120
+    },
+    {
+      "a": "805b7b87c000000000e17668c0000000",
+      "a_len": 460813,
+      "b": "00e17668c000000000e17668c0000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp361550.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "00be518cc000000080319a8940000000",
+      "a_len": 460813,
+      "b": "80319a894000000080319a8940000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp361600.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "c0b8864a40000000803c328a40000000",
+      "a_len": 460813,
+      "b": "803c328a40000000803c328a40000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp361650.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "40b6d78d40000000806d906bc0000000",
+      "a_len": 460813,
+      "b": "806d906bc0000000806d906bc0000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp361700.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "20405c8240000000e06f148fc0000000",
+      "a_len": 460813,
+      "b": "e06f148fc0000000e06f148fc0000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp361750.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "e09ab482c0000000a04ba778c0000000",
+      "a_len": 460813,
+      "b": "a04ba778c0000000a04ba778c0000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp361800.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "e0ca338dc0000000808d3c8840000000",
+      "a_len": 460813,
+      "b": "808d3c8840000000808d3c8840000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp361850.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "80c6b25a40000000c0683d8940000000",
+      "a_len": 460813,
+      "b": "c0683d8940000000c0683d8940000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp361900.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "201efa8e4000000080a2d677c0000000",
+      "a_len": 460813,
+      "b": "80a2d677c000000080a2d677c0000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp361950.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "a0f31d454000000020f5b28bc0000000",
+      "a_len": 460813,
+      "b": "20f5b28bc000000020f5b28bc0000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp36200.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "7eba8cc00000008053b65d4000000000",
+      "a_len": 460813,
+      "b": "53b65d400000008053b65d4000000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp36250.RO.chkp",
+      "first_diff_offset": 120
+    },
+    {
+      "a": "4067cf7fc0000000a0913f8f40000000",
+      "a_len": 460813,
+      "b": "a0913f8f40000000a0913f8f40000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp36300.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "a052528c400000008055c755c0000000",
+      "a_len": 460813,
+      "b": "8055c755c00000008055c755c0000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp36350.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "a06de8624000000080891d8dc0000000",
+      "a_len": 460813,
+      "b": "80891d8dc000000080891d8dc0000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp36400.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "0073f78dc000000040d5a88640000000",
+      "a_len": 460813,
+      "b": "40d5a8864000000040d5a88640000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp36450.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "60acf180400000002015897c40000000",
+      "a_len": 460813,
+      "b": "2015897c400000002015897c40000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp3650.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "20c0b68740000000a018136740000000",
+      "a_len": 460813,
+      "b": "a018136740000000a018136740000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp36500.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "2001c5634000000080a1318dc0000000",
+      "a_len": 460813,
+      "b": "80a1318dc000000080a1318dc0000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp36550.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "608a748ec0000000a0d64a8540000000",
+      "a_len": 460813,
+      "b": "a0d64a8540000000a0d64a8540000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp36600.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "2035d77e400000004056a87f40000000",
+      "a_len": 460813,
+      "b": "4056a87f400000004056a87f40000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp36650.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "a01a0287400000000056d18dc0000000",
+      "a_len": 460813,
+      "b": "0056d18dc00000000056d18dc0000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp36700.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "604d6788c0000000a0edcf62c0000000",
+      "a_len": 460813,
+      "b": "a0edcf62c0000000a0edcf62c0000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp36750.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "006d1482c0000000202a1d8f40000000",
+      "a_len": 460813,
+      "b": "202a1d8f40000000202a1d8f40000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp36800.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "c06c8c884000000000aee36140000000",
+      "a_len": 460813,
+      "b": "00aee3614000000000aee36140000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp36850.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "a0df0187400000002070d18dc0000000",
+      "a_len": 460813,
+      "b": "2070d18dc00000002070d18dc0000000",
+      "b_len": 460813,
+      "bytes_differing": 5,
+      "file": "vit_chkp36900.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "a0b4dc7cc0000000000dca80c0000000",
+      "a_len": 460813,
+      "b": "000dca80c0000000000dca80c0000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp36950.RO.chkp",
+      "first_diff_offset": 119
+    },
+    {
+      "a": "a0158b814000000080d83f7b40000000",
+      "a_len": 460813,
+      "b": "80d83f7b4000000080d83f7b40000000",
+      "b_len": 460813,
+      "bytes_differing": 4,
+      "file": "vit_chkp37100.RO.chkp",
+      "first_diff_offset": 119
+    }
+  ],
+  "only_in_a": [],
+  "only_in_b": [],
+  "stdout_bytes_compared": 131291,
+  "stdout_only_in_a": [],
+  "stdout_only_in_b": [],
+  "stdout_records_compared": 511,
+  "stdout_records_mismatched": 0,
+  "stdout_scenarios_compared": 6,
+  "verdict": "MISMATCH",
+  "vit_rev": "d3a1e12"
+}
