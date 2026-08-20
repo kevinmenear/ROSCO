@@ -3789,7 +3789,8 @@
         "mutation/WriteRestartFile.unreachable.json",
         "gate/WriteRestartFile.json",
         "gate/WriteRestartFile.redtest.json",
-        "gate/WriteRestartFile.control-variablespeedcontrol.json"
+        "gate/WriteRestartFile.control-variablespeedcontrol.json",
+        "evidence/WriteRestartFile/done_check.txt"
       ]
     },
     {
