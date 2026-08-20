@@ -1,6 +1,6 @@
-# done_check.py ParseInput_Dbl_Opt -- captured 2026-08-20T00:57:30Z by scripts/capture_done_check.sh
+# done_check.py ParseInput_Dbl_Opt -- captured 2026-08-20T01:01:36Z by scripts/capture_done_check.sh
 
-Run against the committed state at 10be7123 ("ParseInput_Dbl_Opt: two open survivors run through the OTHER instrument, as a pair with a negative control"), with a CLEAN tree, with stdout
+Run against the committed state at 80d7f7ec ("ParseInput_Dbl_Opt: the value-oracle control folded into README, STATUS, DECISIONS and plan.json"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
