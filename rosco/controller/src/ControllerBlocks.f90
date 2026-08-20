@@ -94,6 +94,18 @@ IMPLICIT NONE
         END SUBROUTINE startup_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of RefSpeedExclusion
+    INTERFACE
+        SUBROUTINE refspeedexclusion_c(LocalVar, CntrPar, objInst, DebugVar) BIND(C, NAME='refspeedexclusion_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: objInst
+            TYPE(C_PTR), VALUE :: DebugVar
+        END SUBROUTINE refspeedexclusion_c
+    END INTERFACE
+
 CONTAINS
 
     SUBROUTINE PowerControlSetpoints(CntrPar, LocalVar, objInst, DebugVar, ErrVar)
@@ -567,61 +579,24 @@ CONTAINS
     END SUBROUTINE Shutdown
 !-------------------------------------------------------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------------------------------------------------------
-    SUBROUTINE RefSpeedExclusion(LocalVar, CntrPar, objInst, DebugVar) 
-    ! Reference speed exclusion:
-    !   Changes torque controllerr reference speed to avoid specified frequencies by a prescribed bandwidth
+    SUBROUTINE RefSpeedExclusion(LocalVar, CntrPar, objInst, DebugVar)
+        USE ISO_C_BINDING
         USE ROSCO_Types, ONLY : LocalVariables, ControlParameters, DebugVariables, ObjectInstances
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
         IMPLICIT NONE
-        ! Inputs
-        TYPE(ControlParameters),    INTENT(IN   )       :: CntrPar
-        TYPE(LocalVariables),       INTENT(INOUT)       :: LocalVar 
-        TYPE(DebugVariables),      INTENT(INOUT)        :: DebugVar
-        TYPE(ObjectInstances),      INTENT(INOUT)       :: objInst
-
-        
-        REAL(DbKi)                             :: VS_RefSpeed_LSS
-        
-        ! Get LSS Ref speed
-        VS_RefSpeed_LSS = LocalVar%VS_RefSpd/CntrPar%WE_GearboxRatio
-
-        IF ((VS_RefSpeed_LSS > CntrPar%TRA_ExclSpeed - CntrPar%TRA_ExclBand / 2) .AND. &
-            (VS_RefSpeed_LSS < CntrPar%TRA_ExclSpeed + CntrPar%TRA_ExclBand / 2)) THEN
-            ! In hysteresis zone, hold reference speed
-            LocalVar%FA_Hist = 1 ! Set negative hysteris if ref < exclusion band
-        ELSE
-            LocalVar%FA_Hist = 0
-        END IF
-
-        ! Initialize last reference speed state
-        IF (LocalVar%restart) THEN
-            ! If starting in hist band
-            IF (LocalVar%FA_Hist > 0) THEN
-                IF (VS_RefSpeed_LSS > CntrPar%TRA_ExclSpeed) THEN
-                    LocalVar%TRA_LastRefSpd = CntrPar%TRA_ExclSpeed + CntrPar%TRA_ExclBand / 2
-                ELSE
-                    LocalVar%TRA_LastRefSpd = CntrPar%TRA_ExclSpeed - CntrPar%TRA_ExclBand / 2
-                ENDIF
-            ELSE
-                LocalVar%TRA_LastRefSpd = VS_RefSpeed_LSS
-            END IF
-        END IF 
-
-
-        IF (LocalVar%FA_Hist > 0) THEN
-            LocalVar%VS_RefSpd_TRA = LocalVar%TRA_LastRefSpd
-        ELSE
-            LocalVar%VS_RefSpd_TRA = VS_RefSpeed_LSS
-        END IF
-
-        ! Save last reference speed       
-        LocalVar%TRA_LastRefSpd = LocalVar%VS_RefSpd_TRA
-
-        ! Rate limit reference speed
-        LocalVar%VS_RefSpd_RL = ratelimit(LocalVar%VS_RefSpd_TRA, -CntrPar%TRA_RateLimit, CntrPar%TRA_RateLimit, LocalVar%DT, LocalVar%restart, LocalVar%rlP,objInst%instRL)
-        LocalVar%VS_RefSpd = LocalVar%VS_RefSpd_RL * CntrPar%WE_GearboxRatio
-
-
-        
+        TYPE(LOCALVARIABLES), INTENT(INOUT), TARGET :: LocalVar
+        TYPE(CONTROLPARAMETERS), INTENT(IN), TARGET :: CntrPar
+        TYPE(OBJECTINSTANCES), INTENT(INOUT), TARGET :: objInst
+        TYPE(DEBUGVARIABLES), INTENT(INOUT), TARGET :: DebugVar
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL refspeedexclusion_c(C_LOC(LocalVar_view), C_LOC(CntrPar_view), C_LOC(objInst), C_LOC(DebugVar))
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
     END SUBROUTINE RefSpeedExclusion
 !-------------------------------------------------------------------------------------------------------------------------------
 END MODULE ControllerBlocks

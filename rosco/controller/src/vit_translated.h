@@ -87,6 +87,7 @@ void parseinary_opt_c(char* FileLines, int n_FileLines, int len_FileLines, char*
 void parseinput_dbl_opt_c(char* FileLines, int n_FileLines, int len_FileLines, char* VarName, int len_VarName, double* Variable, char* FileName, int len_FileName, errorvariables_view_t* ErrVar, int has_AllowDefault, int32_t AllowDefault, int has_UnEc, int UnEc);
 void parseinput_int_opt_c(char* FileLines, int n_FileLines, int len_FileLines, char* VarName, int len_VarName, int* Variable, char* FileName, int len_FileName, errorvariables_view_t* ErrVar, int has_AllowDefault, int32_t AllowDefault, int has_UnEc, int UnEc);
 void parseinput_str_opt_c(char* FileLines, int n_FileLines, int len_FileLines, char* VarName, int len_VarName, char* Variable, int len_Variable, char* FileName, int len_FileName, errorvariables_view_t* ErrVar, int has_AllowDefault, int32_t AllowDefault, int has_UnEc, int UnEc);
+void refspeedexclusion_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, debugvariables_t* DebugVar);
 
 #ifdef __cplusplus
 }
