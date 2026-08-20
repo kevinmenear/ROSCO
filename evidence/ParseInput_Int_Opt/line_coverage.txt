@@ -1,0 +1,41 @@
+ParseInput_Int_Opt -- line coverage of the SHIPPED translation under the
+11,863-case differential harness corpus, measured by gcov over the
+generated test's own object (the test #includes parseinput_int_opt.hpp).
+
+  executable lines RUN      158
+  executable lines NOT RUN  28
+  non-code lines            407
+
+CONTROL: the entry line's count must equal the case count.
+  L445  count=11863  void ParseInput_Int_Opt(char* FileLines, int n_FileLines, int len_File
+
+LINES NEVER EXECUTED:
+
+  L 115  std::fprintf(stderr,
+  L 118  static_cast<int>(s.size()));
+  L 119  return;
+  L 272  crossed_eol = true;
+  L 277  ++p;
+  L 278  while (p < len && (is_blank(rec[p]) || is_eol(rec[p]))) {
+  L 279  ++p;
+  L 281  sep = Sep::Comma;
+  L 297  ++p;
+  L 298  ++i;
+  L 299  first_item = false;
+  L 300  while (p < len && (is_blank(rec[p]) || is_eol(rec[p]))) {
+  L 301  ++p;
+  L 303  sep = Sep::Comma;
+  L 304  continue;
+  L 311  if (first_item || sep != Sep::Blank) {
+  L 312  return 5010;
+  L 314  ++p;
+  L 315  ++i;
+  L 316  while (p < len && (is_blank(rec[p]) || is_eol(rec[p]))) {
+  L 317  ++p;
+  L 319  sep = Sep::Comma;                   // '1 ;;2' is 5010
+  L 320  continue;
+  L 351  for (long k = 0; k < repeat && i < n; ++k) {
+  L 352  ++i;
+  L 354  eat_separator();
+  L 355  continue;
+  L 356  }
