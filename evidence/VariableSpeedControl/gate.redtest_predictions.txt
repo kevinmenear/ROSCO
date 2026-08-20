@@ -92,3 +92,71 @@ rebuilds, re-runs, and records `revert_verified` / `revert_mismatched`. A red
 that does not come back green is a tree that was left dirty, not a measurement.
 
 RESULTS ARE APPENDED BELOW AFTER EACH RUN.
+
+================================================================================
+RESULTS -- run at ee831e63, in the order written above
+================================================================================
+
+RT1  return path, +1.0 on avrSWAP(47)
+     gate/VariableSpeedControl.redtest.return_path.json
+       moved      1,552,676 of 5,252,000   123 channels
+       scenarios  1-9, 11, 12, 15-23, 25, 26, 27           <- 23, EXACTLY the
+                  predicted set; NOTHING in 10, 13, 14, 24
+       revert     rebuilt and re-run: 0 of 5,252,000, revert_verified true
+     PREDICTION HELD on the checkable half. The value count was deliberately not
+     predicted to a number and is not claimed as one.
+     The channels are gen_torque, gen_speed, gen_power and all three bld_pitch --
+     e.g. scenario_3: gen_torque 15,998/16,000, bld_pitch 10,274/16,000. The
+     pitch channels move because the demanded torque feeds the drivetrain and
+     the pitch controller reads the speed back.
+
+RT2  the K*Omega^2 Region-2 arm, x2.0
+     gate/VariableSpeedControl.redtest.komega_region2.json
+       moved      49,659 of 5,252,000   6 channels
+       scenarios  {12}                                     <- EXACTLY as
+                  predicted, and the other 22 scenarios that CALL this unit
+                  stayed at zero, which is the half of the prediction that could
+                  have failed
+       revert     0 of 5,252,000, revert_verified true
+       channels   scenario_12: gen_power 15,991/16,000, gen_speed 15,998/16,000,
+                  gen_torque 15,990/16,000, bld_pitch{,_2,_3} 560/16,000
+     The three gen_* counts sit just under the arm's own 15,987 hits, which is
+     the arithmetic control that the moved samples ARE that arm's calls.
+
+RT3  NEGATIVE CONTROL, the Region 3 constant-torque arm -> 1.0e30
+     gate/VariableSpeedControl.redtest.dead_arm_control.json
+       moved      0 of 5,252,000   0 channels
+       revert     0 of 5,252,000, revert_verified true
+       verdict    RED_TEST_FAIL, went_red false
+     PREDICTED EXACTLY 0, AND MEASURED EXACTLY 0. `gate.py`'s verdict field says
+     RED_TEST_FAIL because the tool's contract is "a perturbation must move
+     something"; for a negative control that string is the RESULT, not a
+     failure. The same shape is recorded at unit #59
+     (evidence/RefSpeedExclusion/gate.redtests.txt: a 1.0e30 write on a
+     zero-coverage line moved 0, predicted exactly).
+
+WHAT THE THREE TOGETHER SAY, AND WHAT THEY DO NOT
+--------------------------------------------------------------------------------
+RT1 and RT2 show the gate can see this unit, at two different depths, and RT2
+pins the arm attribution to one scenario. RT3 shows it is seeing the UNIT and
+not the EDIT: the same instrument, the same build, one statement over, moves
+nothing.
+
+WHAT NO GATE PERTURBATION HERE CAN REACH, from the same coverage file:
+    Controllers.f90:245  VS_MaxTq = VS_RtTq * PRC_R_Torque        0 hits / 27
+    Controllers.f90:249  VS_MaxTq = CntrPar%VS_MaxTq              0 hits / 27
+    Controllers.f90:268  the VS_FBP_Power_Overspeed min           0 hits / 27
+                         (:267 is TESTED 391,977 times and never true)
+    Controllers.f90:283  Region 2.5                               0 hits / 27
+    Controllers.f90:285  Region 3 constant torque    <- RT3       0 hits / 27
+    Controllers.f90:287  Region 3 constant power                  0 hits / 27
+    Controllers.f90:288-296  Region 3 fixed blade pitch, both arms 0 hits / 27
+    Controllers.f90:300  the VS_ControlMode == 0 ELSE             0 hits / 27
+    Controllers.f90:324-347  the WHOLE open-loop block            0 hits / 27
+                         (:322 is TESTED 407,976 times and never true)
+    Controllers.f90:362  the ErrMsg prefix                        0 hits / 27
+                         (:361 is TESTED 407,976 times and never true)
+
+That is the region the differential harness exists to cover, and this dispatch
+could not build one -- see `corpus_wall.txt`. It is why this unit is `deferred`
+and not `integrated`.
