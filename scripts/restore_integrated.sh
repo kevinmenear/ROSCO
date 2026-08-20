@@ -30,7 +30,19 @@ cd "$ROOT"
 CONTAINER="${VIT_CONTAINER:-vit-dev}"
 WORKDIR="/workspace/$(basename "$ROOT")"
 
-dirty=$(git status --porcelain rosco/controller/src | grep -v '^?? ' | wc -l | tr -d ' ')
+# `|| true` INSIDE the pipeline, for `reset_to_clean.sh`'s reason one script
+# over: `grep -v` exits 1 when it emits NO lines, which on a CLEAN tree is the
+# normal case here. Under `set -euo pipefail` that failed the assignment and
+# ended the script at this line -- exit 1, no message, and the
+# rebuild-and-install at the bottom never reached. Captured before the fix in
+# `evidence/_scripts/restore_integrated.clean-tree-refusal.txt` (C12), found at
+# the close of rosco-r2 unit #56 by running this script on a tree that was
+# already integrated and fully committed, which is exactly the state a dispatch
+# ENDS in. Harmless to every run that follows a `reset_to_clean.sh`, because
+# that leaves nine tracked sources modified; the hazard is a caller that
+# discards the exit code and believes the library was rebuilt from HEAD.
+dirty=$(git status --porcelain rosco/controller/src \
+        | { grep -v '^?? ' || true; } | wc -l | tr -d ' ')
 if [ "$dirty" != "0" ]; then
     echo "restore_integrated: WARNING -- $dirty tracked file(s) under src/ are modified" >&2
     echo "  and will be overwritten from HEAD. If a unit is integrated but not yet" >&2
