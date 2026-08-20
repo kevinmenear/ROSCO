@@ -1,0 +1,48 @@
+                                                                               
+------------------------------------------------------------------------------
+Running ROSCO-2.10.1
+A wind turbine controller framework for public use in the scientific field    
+Developed in collaboration: National Renewable Energy Laboratory              
+                            Delft University of Technology, The Netherlands   
+------------------------------------------------------------------------------
+ 
+***************************************************************************************************************************************
+ROSCO Warning: The wind speed estimator is used, but an input (pitch, rotor speed, or torque) has left the bounds of normal operation.
+The filtered hub-height wind speed will be used instead. This warning will not persist even though the condition may.
+Check WE_Op in the ROSCO .dbg file to see if the WSE is enabled (1) or disabled (0).
+***************************************************************************************************************************************
+Generator speed:    9.5 RPM, Pitch angle:   0.0 deg, Power:     0.0 kW, Est. wind Speed:  10.0 m/s
+Generator speed:  842.4 RPM, Pitch angle:   0.0 deg, Power:     0.0 kW, Est. wind Speed:   9.0 m/s
+Generator speed: 1134.8 RPM, Pitch angle:   0.0 deg, Power:  2324.2 kW, Est. wind Speed:   9.0 m/s
+Generator speed: 1061.5 RPM, Pitch angle:   0.0 deg, Power:  2956.1 kW, Est. wind Speed:   9.0 m/s
+Generator speed:  993.1 RPM, Pitch angle:   0.0 deg, Power:  2595.9 kW, Est. wind Speed:   9.0 m/s
+Loading FAST model: NREL-5MW.fst 
+Loading rotor performace data from text file: /workspace/ROSCO-r2/Examples/Test_Cases/NREL-5MW/Cp_Ct_Cq.NREL5MW.txt
+Loading rotor performace data from text file: /workspace/ROSCO-r2/Examples/Tune_Cases/../Test_Cases/NREL-5MW/Cp_Ct_Cq.NREL5MW.txt
+-----------------------------------------------------------------------------
+   Tuning a reference wind turbine controller using NREL's ROSCO toolbox    
+-----------------------------------------------------------------------------
+============================================================
+Scenario 36: checkpoint drive below rated (iStatus = -8)
+============================================================
+Writing new controller parameter file parameter file: /workspace/ROSCO-r2/Examples/DISCON_chkp36.IN.
+Shutting down /workspace/ROSCO-r2/rosco/lib/libdiscon.so
+  checkpoints requested: 39
+  scenario_36 bld_pitch: md5=c4f400b81fa8a396b005ee1d43febf3b n=2000
+  scenario_36 bld_pitch_2: md5=c4f400b81fa8a396b005ee1d43febf3b n=2000
+  scenario_36 bld_pitch_3: md5=c4f400b81fa8a396b005ee1d43febf3b n=2000
+  scenario_36 cc_actuated_dl: md5=1ee0193671609c7d63cfe89b920ad313 n=2000
+  scenario_36 cc_actuated_l: md5=1ee0193671609c7d63cfe89b920ad313 n=2000
+  scenario_36 flp_angle_1: md5=1ee0193671609c7d63cfe89b920ad313 n=2000
+  scenario_36 flp_angle_2: md5=1ee0193671609c7d63cfe89b920ad313 n=2000
+  scenario_36 flp_angle_3: md5=1ee0193671609c7d63cfe89b920ad313 n=2000
+  scenario_36 gen_power: md5=631bbe76b3fa0348d046ebe37ad96f79 n=2000
+  scenario_36 gen_speed: md5=f12b56feff9f3bb4b81ed94cff2de8d1 n=2000
+  scenario_36 gen_torque: md5=be5b48a4b9721c107c53481464736a4e n=2000
+  scenario_36 nac_yaw: md5=0dbd7b35ec9f2268c4acafc3cc470cf5 n=2000
+  scenario_36 stc_input: md5=1ee0193671609c7d63cfe89b920ad313 n=2000
+Scenario 36: PASSED (checkpoint drive below rated)
+
+============================================================
+All scenarios complete.
+============================================================

@@ -24,347 +24,52 @@ IMPLICIT NONE
         END SUBROUTINE debug_c
     END INTERFACE
 
+
+    ! Auto-generated interface for C++ implementation of WriteRestartFile
+    INTERFACE
+        SUBROUTINE writerestartfile_c(LocalVar, CntrPar, ErrVar, objInst, RootName, size_avcOUTNAME) BIND(C, NAME='writerestartfile_c')
+            USE ISO_C_BINDING
+            TYPE(C_PTR), VALUE :: LocalVar
+            TYPE(C_PTR), VALUE :: CntrPar
+            TYPE(C_PTR), VALUE :: ErrVar
+            TYPE(C_PTR), VALUE :: objInst
+            CHARACTER(KIND=C_CHAR), INTENT(IN) :: RootName(*)
+            INTEGER(C_INT), VALUE :: size_avcOUTNAME
+        END SUBROUTINE writerestartfile_c
+    END INTERFACE
+
 CONTAINS
 
-SUBROUTINE WriteRestartFile(LocalVar, CntrPar, ErrVar, objInst, RootName, size_avcOUTNAME)
-    TYPE(LocalVariables), INTENT(IN)                :: LocalVar
-    TYPE(ControlParameters), INTENT(INOUT)          :: CntrPar
-    TYPE(ObjectInstances), INTENT(INOUT)            :: objInst
-    TYPE(ErrorVariables), INTENT(INOUT)             :: ErrVar
-    INTEGER(IntKi), INTENT(IN)                      :: size_avcOUTNAME
-    CHARACTER(size_avcOUTNAME), INTENT(IN)        :: RootName 
-    
-    INTEGER(IntKi)               :: Un                  ! I/O unit for pack/unpack (checkpoint & restart)
-    INTEGER(IntKi)               :: I                   ! Generic index.
-    CHARACTER(128)               :: InFile              ! Input checkpoint file
-    INTEGER(IntKi)               :: ErrStat
-    CHARACTER(128)               :: ErrMsg              
-    CHARACTER(128)               :: n_t_global          ! timestep number as a string
-
-    WRITE(n_t_global, '(I0.0)' ) NINT(LocalVar%Time/LocalVar%DT)
-    InFile = TRIM(RootName)//TRIM( n_t_global )//'.RO.chkp'
-    CALL GetNewUnit(Un, ErrVar)
-    OPEN(unit=Un, FILE=TRIM(InFile), STATUS='UNKNOWN', FORM='UNFORMATTED' , ACCESS='STREAM', IOSTAT=ErrStat, ACTION='WRITE' )
-
-    IF ( ErrStat /= 0 ) THEN
-        ErrVar%aviFAIL = 1
-        ErrVar%ErrMsg  = 'ROSCO_IO: Cannot open checkpoint file '//TRIM(InFile)//' for writing'
-
-    ELSE
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%iStatus
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%AlreadyInitialized
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%RestartWSE
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%Time
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%DT
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WriteThisStep
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%n_DT
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%Time_Last
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_GenPwr
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%GenSpeed
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%RotSpeed
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%NacHeading
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%NacVane
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%NacVaneF
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WindDir
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%HorWindV
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%HorWindV_F
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%rootMOOP(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%rootMOOP(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%rootMOOP(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%rootMOOPF(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%rootMOOPF(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%rootMOOPF(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%BlPitch(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%BlPitch(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%BlPitch(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%BlPitchCMeas
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%Azimuth
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%OL_Azimuth
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%AzUnwrapped
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%AzError
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%GenTqAz
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%AzBuffer(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%AzBuffer(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%NumBl
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FA_Acc_TT
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%SS_Acc_TT
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FA_Acc_Nac
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%NacIMU_FA_RAcc
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FA_AccHPF
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FA_AccHPFI
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FA_PitCom(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FA_PitCom(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FA_PitCom(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_RefSpd
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_RefSpd_TSR
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_RefSpd_TRA
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_RefSpd_RL
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_RefSpd
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_RefSpd_SS
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_RefSpd_PRC
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%RotSpeedF
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%GenSpeedF
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%GenTq
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%GenTqMeas
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%GenArTq
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%GenBrTq
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_KOmega2_GenTq
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_ConstPwr_GenTq
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%IPC_PitComF(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%IPC_PitComF(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%IPC_PitComF(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_KP
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_KI
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_KD
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_TF
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_MaxPit
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_MinPit
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_PitComT
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_PitComT_Last
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%BlPitchCMeasF
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_PitComT_IPC(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_PitComT_IPC(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_PitComT_IPC(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_PwrErr
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_SpdErr
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%IPC_AxisTilt_1P
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%IPC_AxisYaw_1P
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%IPC_AxisTilt_2P
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%IPC_AxisYaw_2P
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%axisTilt_1P
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%axisYaw_1P
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%axisYawF_1P
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%axisTilt_2P
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%axisYaw_2P
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%axisYawF_2P
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%IPC_KI(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%IPC_KI(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%IPC_KP(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%IPC_KP(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%IPC_IntSat
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PC_State
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PitCom(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PitCom(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PitCom(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PitCom_SD(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PitCom_SD(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PitCom_SD(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PitComAct(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PitComAct(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PitComAct(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%SS_DelOmegaF
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%TestType
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%Kp_Float
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_MaxTq
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_LastGenTrq
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_LastGenPwr
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_MechGenPwr
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_SpdErrAr
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_SpdErrBr
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_SpdErr
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_State
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_Rgn3Pitch
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WE_Vw
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WE_Vw_F
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WE_VwI
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WE_VwIdot
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WE_Op
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WE_Op_Last
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_LastGenTrqF
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PRC_WSE_F
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PRC_R_Speed
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PRC_R_Torque
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PRC_R_Pitch
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PRC_R_Total
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PRC_Min_Pitch
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PS_Min_Pitch
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%OL_Index
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%SU_Stage
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%SU_LoadStageStartTime
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%SU_RotSpeedF
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%SD_Trigger
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%SD_BlPitchF
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%SD_NacVaneF
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%SD_GenSpeedF
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%SD_Stage
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%SD_StageStartTime
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%SD_MaxPitchRate
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%SD_MaxTorqueRate
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%GenTq_SD
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%Fl_PitCom
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%NACIMU_FA_AccF
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FA_AccF
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FA_Hist
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%TRA_LastRefSpd
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%VS_RefSpeed
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmTDX
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmTDY
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmTDZ
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmRDX
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmRDY
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmRDZ
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmTVX
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmTVY
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmTVZ
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmRVX
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmRVY
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmRVZ
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmTAX
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmTAY
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmTAZ
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmRAX
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmRAY
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%PtfmRAZ
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_DesiredL(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_DesiredL(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_DesiredL(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_DesiredL(4)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_DesiredL(5)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_DesiredL(6)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_DesiredL(7)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_DesiredL(8)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_DesiredL(9)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_DesiredL(10)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_DesiredL(11)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_DesiredL(12)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedL(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedL(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedL(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedL(4)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedL(5)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedL(6)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedL(7)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedL(8)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedL(9)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedL(10)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedL(11)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedL(12)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedDL(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedDL(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedDL(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedDL(4)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedDL(5)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedDL(6)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedDL(7)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedDL(8)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedDL(9)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedDL(10)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedDL(11)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%CC_ActuatedDL(12)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%StC_Input(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%StC_Input(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%StC_Input(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%StC_Input(4)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%StC_Input(5)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%StC_Input(6)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%StC_Input(7)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%StC_Input(8)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%StC_Input(9)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%StC_Input(10)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%StC_Input(11)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%StC_Input(12)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%Flp_Angle(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%Flp_Angle(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%Flp_Angle(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%RootMyb_Last(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%RootMyb_Last(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%RootMyb_Last(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%ACC_INFILE_SIZE
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%ACC_INFILE
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%restart
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%AWC_complexangle(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%TiltMean
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%YawMean
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%ZMQ_ID
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%ZMQ_YawOffset
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%ZMQ_TorqueOffset
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%ZMQ_PitOffset(1)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%ZMQ_PitOffset(2)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%ZMQ_PitOffset(3)
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%ZMQ_R_Speed
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%ZMQ_R_Torque
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%ZMQ_R_Pitch
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WE%om_r
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WE%v_t
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WE%v_m
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WE%v_h
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WE%P
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WE%xh
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%WE%K
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf1_a1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf1_a0
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf1_b1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf1_b0
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf1_InputSignalLast
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf1_OutputSignalLast
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf2_a2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf2_a1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf2_a0
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf2_b2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf2_b1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf2_b0
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf2_InputSignalLast2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf2_OutputSignalLast2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf2_InputSignalLast1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpf2_OutputSignalLast1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpfV_a2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpfV_a1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpfV_a0
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpfV_b2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpfV_b1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpfV_b0
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpfV_InputSignalLast2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpfV_OutputSignalLast2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpfV_InputSignalLast1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%lpfV_OutputSignalLast1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%hpf_InputSignalLast
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%hpf_OutputSignalLast
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nfs_OutputSignalLast1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nfs_OutputSignalLast2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nfs_InputSignalLast1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nfs_InputSignalLast2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nfs_b2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nfs_b0
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nfs_a2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nfs_a1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nfs_a0
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nf_OutputSignalLast1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nf_OutputSignalLast2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nf_InputSignalLast1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nf_InputSignalLast2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nf_b2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nf_b1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nf_b0
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nf_a1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%FP%nf_a0
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%piP%ITerm
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%piP%ITermLast
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%piP%ITerm2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%piP%ITermLast2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%piP%ELast
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%resP%res_OutputSignalLast1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%resP%res_OutputSignalLast2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%resP%res_InputSignalLast1
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%resP%res_InputSignalLast2
-        WRITE( Un, IOSTAT=ErrStat) LocalVar%rlP%LastSignal
-        WRITE( Un, IOSTAT=ErrStat) objInst%instLPF
-        WRITE( Un, IOSTAT=ErrStat) objInst%instSecLPF
-        WRITE( Un, IOSTAT=ErrStat) objInst%instSecLPFV
-        WRITE( Un, IOSTAT=ErrStat) objInst%instHPF
-        WRITE( Un, IOSTAT=ErrStat) objInst%instNotchSlopes
-        WRITE( Un, IOSTAT=ErrStat) objInst%instNotch
-        WRITE( Un, IOSTAT=ErrStat) objInst%instPI
-        WRITE( Un, IOSTAT=ErrStat) objInst%instRes
-        WRITE( Un, IOSTAT=ErrStat) objInst%instRL
-        Close ( Un )
-        IF ( ErrStat /= 0 ) THEN
-            ErrVar%aviFAIL = 1
-            ErrVar%ErrMsg  = 'ROSCO_IO: Error writing checkpoint file.'
-        ENDIF
-    ENDIF
-END SUBROUTINE WriteRestartFile
+    SUBROUTINE WriteRestartFile(LocalVar, CntrPar, ErrVar, objInst, RootName, size_avcOUTNAME)
+        USE ISO_C_BINDING
+        USE vit_localvariables_view, ONLY: localvariables_view_t, vit_populate_localvariables, vit_copy_scalars_to_localvariables
+        USE vit_controlparameters_view, ONLY: controlparameters_view_t, vit_populate_controlparameters, vit_copy_scalars_to_controlparameters
+        USE vit_errorvariables_view, ONLY: errorvariables_view_t, vit_populate_errorvariables, vit_copy_scalars_to_errorvariables
+        IMPLICIT NONE
+        TYPE(LOCALVARIABLES), INTENT(IN), TARGET :: LocalVar
+        TYPE(CONTROLPARAMETERS), INTENT(INOUT), TARGET :: CntrPar
+        TYPE(ERRORVARIABLES), INTENT(INOUT), TARGET :: ErrVar
+        TYPE(OBJECTINSTANCES), INTENT(INOUT), TARGET :: objInst
+        INTEGER(4), INTENT(IN) :: size_avcOUTNAME
+        CHARACTER(SIZE_AVCOUTNAME), INTENT(IN) :: RootName
+        CHARACTER(KIND=C_CHAR) :: RootName_c(size_avcOUTNAME)
+        INTEGER :: vit_i_RootName
+        TYPE(localvariables_view_t), TARGET :: LocalVar_view
+        TYPE(controlparameters_view_t), TARGET :: CntrPar_view
+        TYPE(errorvariables_view_t), TARGET :: ErrVar_view
+        ! Populate view structs from Fortran types
+        CALL vit_populate_localvariables(LocalVar, LocalVar_view)
+        CALL vit_populate_controlparameters(CntrPar, CntrPar_view)
+        CALL vit_populate_errorvariables(ErrVar, ErrVar_view)
+        ! Convert CHARACTER args to C_CHAR arrays
+        DO vit_i_RootName = 1, size_avcOUTNAME
+            RootName_c(vit_i_RootName) = RootName(vit_i_RootName:vit_i_RootName)
+        END DO
+        CALL writerestartfile_c(C_LOC(LocalVar_view), C_LOC(CntrPar_view), C_LOC(ErrVar_view), C_LOC(objInst), RootName_c, size_avcOUTNAME)
+        ! Copy modified scalars back from view to Fortran type
+        CALL vit_copy_scalars_to_controlparameters(CntrPar_view, CntrPar)
+        CALL vit_copy_scalars_to_errorvariables(ErrVar_view, ErrVar)
+    END SUBROUTINE WriteRestartFile
 
  
 SUBROUTINE ReadRestartFile(avrSWAP, LocalVar, CntrPar, objInst, PerfData, RootName, size_avcOUTNAME, ErrVar)

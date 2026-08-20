@@ -89,6 +89,7 @@ void parseinput_int_opt_c(char* FileLines, int n_FileLines, int len_FileLines, c
 void parseinput_str_opt_c(char* FileLines, int n_FileLines, int len_FileLines, char* VarName, int len_VarName, char* Variable, int len_Variable, char* FileName, int len_FileName, errorvariables_view_t* ErrVar, int has_AllowDefault, int32_t AllowDefault, int has_UnEc, int UnEc);
 void refspeedexclusion_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, debugvariables_t* DebugVar);
 void variablespeedcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst, errorvariables_view_t* ErrVar);
+void writerestartfile_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, errorvariables_view_t* ErrVar, objectinstances_t* objInst, char* RootName, int size_avcOUTNAME);
 
 #ifdef __cplusplus
 }

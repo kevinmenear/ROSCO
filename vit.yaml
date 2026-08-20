@@ -274,6 +274,10 @@ translations:
       \ a derived type, and perturbing one of those could change what BOTH implementations\
       \ compute. The kernel's discriminating power is therefore UNMEASURED for this\
       \ function"
+  WriteRestartFile:
+    status: integrated
+    cpp_file: translations/ROSCO_IO/writerestartfile.cpp
+    verification: simulation
 types:
   ControlParameters:
     strategy: view
