@@ -32,7 +32,7 @@ PROGRAM record_form_probe
     INTEGER :: ios, i, n
     INTEGER(8) :: bits
 
-    DO i = 1, 18
+    DO i = 1, 25
         CALL form(i, label, lead, nb, n)
         Words(1) = lead(1:n)
         Words(2) = nb
@@ -76,6 +76,28 @@ CONTAINS
         CASE (17); lab = 'dote';    txt = '.e';      neigh = 'Aa'; ln = 2
         CASE (18); lab = 'nanpay';  txt = 'nan('//REPEAT('a', 58)//')'
                    neigh = 'Aa'; ln = 63
+        ! A repeat count so wide that the value it repeats starts at byte 198.
+        ! `match_word`'s own bound is `p + LEN(word) > len`, and two mutants of
+        ! it are declared equivalent on the premise that `p` is always 0 or 1.
+        CASE (19); lab = 'repwide';  txt = REPEAT('9', 196)//'*nan'
+                   neigh = 'Aa'; ln = 200
+        CASE (20); lab = 'repwide2'; txt = REPEAT('9', 195)//'*nan '
+                   neigh = 'Aa'; ln = 199
+        CASE (21); lab = 'repbig';   txt = REPEAT('9', 21)//'*7'
+                   neigh = 'Aa'; ln = 23
+        ! libgfortran's repeat-count ceiling, at the boundary. Unit #55
+        ! measured it for an INTEGER item; a repeat count is record GRAMMAR
+        ! rather than item TYPE, so it should carry -- and that is the claim
+        ! being checked here rather than assumed.
+        CASE (22); lab = 'repceil0'; txt = '199999999*7'; neigh = 'Aa'; ln = 11
+        CASE (23); lab = 'repceil';  txt = '200000000*7'; neigh = 'Aa'; ln = 11
+        CASE (24); lab = 'repover';  txt = '200000001*7'; neigh = 'Aa'; ln = 11
+        ! A count of 3 behind 195 leading zeros: the count is small and legal,
+        ! and the VALUE it repeats starts at byte 198 -- which is the only way
+        ! `match_word`'s `p + LEN(word) > len` bound is reached with both sides
+        ! live once the ceiling above rejects a wide count.
+        CASE (25); lab = 'repzeros'; txt = REPEAT('0', 195)//'3*nan'
+                   neigh = 'Aa'; ln = 200
         END SELECT
     END SUBROUTINE form
 

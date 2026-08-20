@@ -6,7 +6,7 @@ The item is pre-set to -987.654 on both sides, so a stored 0.0 is
 distinguishable from an untouched slot -- which is the whole difference for
 three of this unit's surviving mutants.
 
-18 of 18 form(s) agree on (IOSTAT, bits).
+25 of 25 form(s) agree on (IOSTAT, bits).
 
   dig        ref iostat=0      bits=3FF0000000000000   got iostat=0      bits=3FF0000000000000   SAME
   frac       ref iostat=0      bits=3FF0000000000000   got iostat=0      bits=3FF0000000000000   SAME
@@ -26,3 +26,10 @@ three of this unit's surviving mutants.
   dotdot     ref iostat=5010   bits=C08EDD3B645A1CAC   got iostat=5010   bits=C08EDD3B645A1CAC   SAME
   dote       ref iostat=5010   bits=C08EDD3B645A1CAC   got iostat=5010   bits=C08EDD3B645A1CAC   SAME
   nanpay     ref iostat=0      bits=7FF8000000000000   got iostat=0      bits=7FF8000000000000   SAME
+  repwide    ref iostat=5010   bits=C08EDD3B645A1CAC   got iostat=5010   bits=C08EDD3B645A1CAC   SAME
+  repwide2   ref iostat=5010   bits=C08EDD3B645A1CAC   got iostat=5010   bits=C08EDD3B645A1CAC   SAME
+  repbig     ref iostat=5010   bits=C08EDD3B645A1CAC   got iostat=5010   bits=C08EDD3B645A1CAC   SAME
+  repceil0   ref iostat=0      bits=401C000000000000   got iostat=0      bits=401C000000000000   SAME
+  repceil    ref iostat=0      bits=401C000000000000   got iostat=0      bits=401C000000000000   SAME
+  repover    ref iostat=5010   bits=C08EDD3B645A1CAC   got iostat=5010   bits=C08EDD3B645A1CAC   SAME
+  repzeros   ref iostat=0      bits=7FF8000000000000   got iostat=0      bits=7FF8000000000000   SAME

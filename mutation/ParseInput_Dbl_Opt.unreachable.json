@@ -1,78 +1,38 @@
 {
-  "2450ec18": {
-    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:309 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (repeat <= 0)' to 'if (!(repeat <= 0))' on a line no case runs, so no case can distinguish it."
-  },
   "276cc90e": {
     "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:428 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'epos + 2' to 'epos - 2' on a line no case runs, so no case can distinguish it."
-  },
-  "2cd50aab": {
-    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:312 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '1' to '2' on a line no case runs, so no case can distinguish it."
-  },
-  "367cea0c": {
-    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:314 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (p >= len || is_separator(rec[p]))' to 'if (!(p >= len || is_separator(rec[p])))' on a line no case runs, so no case can distinguish it."
+    "reason": "parseinput_dbl_opt.cpp:479 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'epos + 2' to 'epos - 2' on a line no case runs, so no case can distinguish it."
   },
   "4608a22a": {
     "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:429 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[0]' to '[0 + 1]' on a line no case runs, so no case can distinguish it."
-  },
-  "4a9b3707": {
-    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:308 is the CONTINUATION of the statement that begins at line 307 -- `repeat = std::strtol(...)` -- and gcov reports ##### for 307 over the whole 11,562-case corpus at -O0. gcov marks 308 itself `-`, no code. The mutant edits strtol's BASE from 10 to 11 in a call no case makes."
+    "reason": "parseinput_dbl_opt.cpp:480 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[0]' to '[0 + 1]' on a line no case runs, so no case can distinguish it."
   },
   "4ed6f308": {
     "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:318 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it."
+    "reason": "parseinput_dbl_opt.cpp:369 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it."
   },
   "57e5b976": {
     "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:432 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (edig.size() > 3)' to 'if (!(edig.size() > 3))' on a line no case runs, so no case can distinguish it."
-  },
-  "6c0a14b6": {
-    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:312 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'q + 1' to 'q - 1' on a line no case runs, so no case can distinguish it."
+    "reason": "parseinput_dbl_opt.cpp:483 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'if (edig.size() > 3)' to 'if (!(edig.size() > 3))' on a line no case runs, so no case can distinguish it."
   },
   "720a57c6": {
     "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:435 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '3 - edig.size' to '3 + edig.size' on a line no case runs, so no case can distinguish it."
+    "reason": "parseinput_dbl_opt.cpp:486 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '3 - edig.size' to '3 + edig.size' on a line no case runs, so no case can distinguish it."
   },
   "a868c389": {
     "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:319 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it."
+    "reason": "parseinput_dbl_opt.cpp:370 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it."
   },
   "b3600517": {
     "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:427 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'epos + 1' to 'epos - 1' on a line no case runs, so no case can distinguish it."
-  },
-  "b4813e56": {
-    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:307 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'rec + p' to 'rec - p' on a line no case runs, so no case can distinguish it."
-  },
-  "c3e3bb3c": {
-    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:307 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'q - p' to 'q + p' on a line no case runs, so no case can distinguish it."
+    "reason": "parseinput_dbl_opt.cpp:478 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'epos + 1' to 'epos - 1' on a line no case runs, so no case can distinguish it."
   },
   "d2da3b55": {
     "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:319 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits \"if (p < len && rec[p] == ',')\" to \"if (!(p < len && rec[p] == ','))\" on a line no case runs, so no case can distinguish it."
-  },
-  "e6323aa7": {
-    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:307 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits 'q - p' to 'p - q' on a line no case runs, so no case can distinguish it."
-  },
-  "e742c375": {
-    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:314 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '[p]' to '[p + 1]' on a line no case runs, so no case can distinguish it."
-  },
-  "ea396111": {
-    "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:309 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it."
+    "reason": "parseinput_dbl_opt.cpp:370 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits \"if (p < len && rec[p] == ',')\" to \"if (!(p < len && rec[p] == ','))\" on a line no case runs, so no case can distinguish it."
   },
   "f6e6c8b4": {
     "evidence": "evidence/ParseInput_Dbl_Opt/line_coverage.txt",
-    "reason": "parseinput_dbl_opt.cpp:315 is NEVER EXECUTED by any of the 11,562 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it."
+    "reason": "parseinput_dbl_opt.cpp:366 is NEVER EXECUTED by any of the 13,298 cases -- gcov reports ##### for that line over the whole corpus, at -O0. The mutant edits '0' to '1' on a line no case runs, so no case can distinguish it."
   }
 }

@@ -293,6 +293,12 @@ RealParse parse_real(const char* rec, int len, int& p, double& out) {
                                             : RealParse::BadNoStore;
 }
 
+// libgfortran's repeat-count ceiling, MEASURED at the boundary rather than
+// recalled from its source, and measured HERE for a REAL item rather than
+// carried over: '199999999*7' and '200000000*7' both give 7, '200000001*7'
+// gives 5010. Same constant as the sibling's, which is the finding.
+constexpr long MaxRepeat = 200000000;
+
 // The transfer itself. `v` holds the items on entry and every item this returns
 // without assigning keeps the value it arrived with -- which is the reference's
 // behaviour and is what makes `Variable` an output on the failure path too.
@@ -316,16 +322,44 @@ int list_read_reals(const char* rec, int len, double* v, int n) {
             return 5010;
         }
 
-        // An optional repeat count `r*`, r a positive integer.
+        // An optional repeat count `r*`, r a positive integer no greater than
+        // `MaxRepeat`. `02*7` is 7 7, so leading zeros are part of the count.
+        //
+        // THE CEILING WAS MISSING HERE and the sibling has it. `std::strtol`
+        // SATURATES at `LONG_MAX` on overflow, so `999999999999999999999*7`
+        // came back as a positive repeat and the item was stored; the reference
+        // rejects it. Measured at the boundary for a REAL item, which is the
+        // half unit #55 could not answer -- it measured an INTEGER one --
+        // `evidence/ParseInput_Dbl_Opt/record_form_probe.txt`:
+        //
+        //   199999999*7   ref 0     got 0      the rung below
+        //   200000000*7   ref 0     got 0      the ceiling itself
+        //   200000001*7   ref 5010  got 0      <- the divergence
+        //   999999...9*7  ref 5010  got 0      <- and its wide form
+        //
+        // A repeat count is record GRAMMAR rather than item TYPE, so the
+        // sibling's constant carries and the three rows above are the check
+        // rather than the assumption (RUNBOOK: item type against record
+        // grammar). The accumulation is copied from
+        // `translations/ROSCO_Helpers/parseinary_opt.cpp` (P4) so the overflow
+        // is detected during the accumulation rather than after it.
         long repeat = 1;
         int q = p;
         while (q < len && is_digit(rec[q])) { ++q; }
         if (q > p && q < len && rec[q] == '*') {
-            repeat = std::strtol(std::string(rec + p, static_cast<std::size_t>(q - p)).c_str(),
-                                 nullptr, 10);
-            if (repeat <= 0) {
-                return 5010;
+            long count = 0;
+            bool count_over = false;
+            for (int k = p; k < q; ++k) {
+                count = count * 10 + (rec[k] - '0');
+                if (count > MaxRepeat) {
+                    count_over = true;
+                    count = MaxRepeat + 1;
+                }
             }
+            if (count <= 0 || count_over || count > MaxRepeat) {
+                return 5010;                    // '0*1 2' and '200000001*7'
+            }
+            repeat = count;
             p = q + 1;
             // `r*` with nothing after it is r NULL values.
             if (p >= len || is_separator(rec[p])) {

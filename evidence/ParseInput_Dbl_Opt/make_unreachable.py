@@ -106,22 +106,32 @@ def main() -> int:
     # would be a second implementation of the compiler.
     NOCOMPILE = {"1d7e7c3a", "21bc215a", "4577325a", "e3437dc1"}
 
-    # ONE CONTINUATION LINE, ADDED BY HAND AND NOT BY THE RULE BELOW. gcov
-    # attributes a multi-line statement to its FIRST line and marks the rest `-`
-    # (no code), so `4a9b3707` -- the `10` in `std::strtol(..., nullptr, 10)` --
-    # sits at line 308, which gcov marks `-`, while the statement it belongs to
-    # begins at line 307, which is `#####`. The rule below keys on `#####` and
-    # cannot see that. Loosening the rule to "or a `-` line under a `#####`
-    # statement" would be a second parser for gcov's output; naming the one
-    # mutant is smaller and checkable.
-    CONTINUATION = {
-        "4a9b3707": (
-            "parseinput_dbl_opt.cpp:308 is the CONTINUATION of the statement "
-            "that begins at line 307 -- `repeat = std::strtol(...)` -- and gcov "
-            "reports ##### for 307 over the whole 11,562-case corpus at -O0. "
-            "gcov marks 308 itself `-`, no code. The mutant edits strtol's BASE "
-            "from 10 to 11 in a call no case makes."),
-    }
+    # NO HAND-NAMED CONTINUATION LINE ANY MORE, AND THE REASON IS THE ONE
+    # THIS SCRIPT EXISTS FOR, ONE LEVEL UP (C12).
+    #
+    # There used to be one: gcov attributes a multi-line statement to its FIRST
+    # line and marks the rest `-`, so the `10` in `std::strtol(..., nullptr, 10)`
+    # sat on a `-` line under a `#####` statement and the coverage rule below
+    # could not see it. It was named by MUTANT ID.
+    #
+    # THAT IS THE SAME MISTAKE THE FILE'S OWN DOCSTRING WARNS ABOUT, in the one
+    # place the docstring did not reach. A mutant id is an OCCURRENCE INDEX: the
+    # repair that gave `list_read_reals` its repeat-count ceiling DELETED the
+    # `strtol` call, `4a9b3707` re-pointed onto `count = count * 10 + ...` -- a
+    # line the corpus runs 1,120 times -- and the hand-named exception declared
+    # a LIVE mutant unreachable. The sweep refuted it:
+    #
+    #   REFUTED: 1 mutant(s) declared UNREACHABLE were killed on this run:
+    #   4a9b3707. The corpus reaches them. P12 fails on this.
+    #
+    # The rule-derived half of this script was right throughout; only the hand
+    # exception was wrong, and it was wrong because it was keyed by a name
+    # rather than by a site. The site it named no longer exists -- there is no
+    # `strtol` in the translation -- so the exception is DELETED rather than
+    # re-keyed. If a continuation line is ever needed again it must be keyed by
+    # `(operator, before, after, the source line)`, the way
+    # `evidence/ParseInput_Dbl_Opt/remap_declarations.py` keys a declaration.
+    CONTINUATION: dict[str, str] = {}
 
     src = CPP.read_text()
     out: dict[str, dict[str, str]] = {}

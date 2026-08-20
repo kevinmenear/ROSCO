@@ -65,6 +65,18 @@ int main() {
         {"dot", ".", "Aa"},           {"dotdot", "..", "Aa"},
         {"dote", ".e", "Aa"},
         {"nanpay", "nan(" + std::string(58, 'a') + ")", "Aa"},
+        // A repeat count wide enough to start the value at byte 198, which is
+        // where `match_word`'s `p + LEN(word) > len` bound finally has two
+        // sides. Two mutants of that bound are declared equivalent on the
+        // premise that `p` is 0 or 1, and the premise is the corpus's, not the
+        // program's.
+        {"repwide", std::string(196, '9') + "*nan", "Aa"},
+        {"repwide2", std::string(195, '9') + "*nan", "Aa"},
+        {"repbig", std::string(21, '9') + "*7", "Aa"},
+        {"repceil0", "199999999*7", "Aa"},
+        {"repceil", "200000000*7", "Aa"},
+        {"repover", "200000001*7", "Aa"},
+        {"repzeros", std::string(195, '0') + "3*nan", "Aa"},
     };
     for (const Form& f : forms) {
         // `CHARACTER(MaxParamLength) :: Words(2)` -- ONE 400-byte object. The
