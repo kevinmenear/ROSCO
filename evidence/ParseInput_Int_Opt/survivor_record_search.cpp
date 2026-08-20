@@ -99,6 +99,13 @@ const int BUF = 400;    // the whole object: Words(1) and Words(2)
 // The ADMISSIBLE alphabet: every character the parser's own predicates test,
 // minus the seven `GetWords` splits on. `x` is in none of the predicates, so a
 // "matches nothing" case exists.
+//
+// CR AND LF ARE NOT IN IT, ON PURPOSE, AND THEY ARE NOT MISSING EITHER. Both
+// are admissible characters -- neither is a `GetWords` separator -- but adding
+// them here would renumber the whole enumeration and move the FIRST-differing
+// record of rows that `mutation/*.equivalences.md` quotes. They are searched in
+// the EOLADM block at the end of `main`, which is appended rather than
+// inserted, so every existing row is byte-identical (P5).
 const char ALPHABET[] = "0123456789+-.eEdDqQnNaAiIfFtTyYxX/*";
 
 // The characters a word can NEVER contain, searched separately and tagged
@@ -299,6 +306,82 @@ int main() {
         std::string rec = r.second;
         rec.resize(static_cast<std::size_t>(REC), ' ');
         report("FUNCONLY", r.first, rec);
+    }
+
+    // ---- ADMISSIBLE: records carrying an END-OF-LINE byte -----------------
+    //
+    // ADDED AT THE SECOND DISPATCH, AND APPENDED LAST RATHER THAN GROUPED WITH
+    // THE OTHER ADMISSIBLE BLOCKS. That is P5, not untidiness: the runner
+    // reports the FIRST record on which a mutant differs, so inserting records
+    // anywhere earlier would move rows that `mutation/*.equivalences.md`
+    // already quotes. Appended, every existing row is byte-identical and only a
+    // mutant that NOTHING else distinguishes gets a row from here.
+    //
+    // WHY IT EXISTS. The first dispatch left two survivors open and said of
+    // them: "Neither is a NONE this search failed to explain -- the search's own
+    // alphabet has no CR or LF either." True, and it made every one of the 37
+    // declared equivalences a claim over a space that could not contain the one
+    // byte the two survivors turned on. The corpus has since gained CR and LF
+    // records and killed both survivors; this block asks the same question of
+    // the OTHER 52, over a space three thousand records wider rather than over
+    // the handful of cases the corpus carries.
+    //
+    // EVERY RECORD HERE IS ADMISSIBLE. Neither byte is in `GetWords`' separator
+    // set (`' ,!;''"'//Tab`, ROSCO_Helpers.f90:145), so a run containing one is
+    // copied into `Words(1)` whole -- which is what makes this an ADMISSIBLE
+    // block and not a FUNCONLY one, whatever its position in the file.
+    //
+    // THE LABEL IS PRINTABLE AND THE RECORD IS NOT. The token is spelled `cr`
+    // or `lf` where the record holds the byte, so the row format is unchanged
+    // and no reader has to un-escape anything.
+    {
+        const char EOLB[2] = {'\r', '\n'};
+        const char* EOLN[2] = {"cr", "lf"};
+        for (int e = 0; e < 2; ++e) {
+            const char c = EOLB[e];
+            const std::string n = EOLN[e];
+            // one alphabet character, the end-of-line before it and after it
+            for (std::size_t i = 0; i < A; ++i) {
+                const std::string t(1, ALPHABET[i]);
+                report("EOLADM", n + "+" + t, head(std::string(1, c) + t));
+                report("EOLADM", t + "+" + n, head(t + std::string(1, c)));
+            }
+            // two alphabet characters, the end-of-line in each of three places
+            for (std::size_t i = 0; i < A; ++i)
+                for (std::size_t j = 0; j < A; ++j) {
+                    std::string t;
+                    t += ALPHABET[i];
+                    t += ALPHABET[j];
+                    report("EOLADM", n + "+" + t,
+                           head(std::string(1, c) + t));
+                    report("EOLADM", t.substr(0, 1) + "+" + n + "+" + t.substr(1),
+                           head(t.substr(0, 1) + std::string(1, c) + t.substr(1)));
+                    report("EOLADM", t + "+" + n,
+                           head(t + std::string(1, c)));
+                }
+            // the record that is ALL end-of-line, at the width that makes the
+            // LEADING scan reach the record's last byte -- the one shape no
+            // other block here can produce, because a record of all blanks is
+            // not a word
+            report("EOLADM", "full:all" + n, rep(c, REC));
+            report("EOLADM", "full:" + n + "then1", rep(c, REC - 1) + "1");
+            report("EOLADM", "full:1then" + n, "1" + rep(c, REC - 1));
+            report("EOLADM", "full:" + n + "slash", rep(c, REC - 1) + "/");
+            report("EOLADM", "full:" + n + "star", rep(c, REC - 1) + "*");
+            report("EOLADM", "full:" + n + "val", fullw("3*7") .substr(0, REC - 1) + std::string(1, c));
+            report("EOLADM", "head:" + n + "only", head(std::string(1, c)));
+            report("EOLADM", "head:" + n + "slash", head(std::string(1, c) + "/"));
+            report("EOLADM", "head:" + n + "rep", head(std::string(1, c) + "3*7"));
+            report("EOLADM", "head:rep" + n, head("3*" + std::string(1, c)));
+            report("EOLADM", "head:" + n + "sign", head(std::string(1, c) + "-7"));
+            report("EOLADM", "head:val" + n + "val", head("7" + std::string(1, c) + "8"));
+        }
+        // the two bytes TOGETHER, which is what a DOS line ending would be and
+        // is the one shape a single-byte loop cannot make
+        report("EOLADM", "full:crlf", rep('\r', REC / 2) + rep('\n', REC - REC / 2));
+        report("EOLADM", "head:crlf", head("\r\n7"));
+        report("EOLADM", "head:lfcr", head("\n\r7"));
+        report("EOLADM", "head:7crlf", head("7\r\n"));
     }
     return 0;
 }

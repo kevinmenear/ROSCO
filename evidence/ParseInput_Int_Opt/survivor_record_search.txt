@@ -20,16 +20,22 @@ not contain, R14 gained it, and the sweep then killed it.
            was aimed at, see mutation_survivors.txt) : 93 -> 95
   round 3, loop 8f9d72f   ab7420d6, on the corrected form         : 95 -> 96
 
-The two still open, 4f89b00b and e8cf2d25, are ONE gap: `is_eol` accepts CR
-and LF, and no record in any corpus this campaign generates contains either
-byte. Neither is a NONE this search failed to explain -- the search's own
-alphabet has no CR or LF either, and that is stated rather than hidden.
+  round 4, loop b3ad414   4f89b00b and e8cf2d25, the last two, on the four
+           end-of-line entries -- 96 -> 98, and the score is 1.000
+
+THE SEARCH SPACE GAINED THE BYTE THOSE TWO TURNED ON. The first dispatch
+closed saying `the search's own alphabet has no CR or LF either, and that is
+stated rather than hidden`, which made all 37 declared equivalences claims
+over a space that could not contain the one character the two open survivors
+distinguished. The EOLADM block closes it: it is APPENDED after every
+existing block, so every row above is byte-identical and only a mutant that
+NOTHING else distinguishes can take a row from it.
 Built with -fsanitize=address,undefined; the BASELINE ran clean under
 those flags. The sanitiser is a GUARD here rather than the instrument:
 byte 201 of Words is Words(2)(1:1), so a read one past the record is
 inside the allocation and the difference it makes is a VALUE.
 
-RECORD SPACE: 51590 records, IN TWO PARTS, and the split is the
+RECORD SPACE: 59108 records, IN THREE PARTS, and the split is the
 point rather than a decoration -- unit #56 twice read a `differs` on a
 record `GetWords` cannot produce as a corpus lever.
 
@@ -46,6 +52,18 @@ record `GetWords` cannot produce as a corpus lever.
   about `list_read_ints` and NOT a corpus lever, because no input to
   ParseInput_Int_Opt can put such a record in Words(1).
 
+  ADMISSIBLE, CARRYING AN END-OF-LINE (tag EOLADM). Added at the second
+  dispatch and APPENDED after both blocks above, so no existing row
+  moves. CR and LF are not GetWords separators, so a run containing one
+  is copied into Words(1) whole and every record here is admissible
+  whatever its position in the file. One and two alphabet characters
+  with the byte before, between and after; the record that is ALL
+  end-of-line, which is the one shape that makes the LEADING scan reach
+  the record's last byte and which no block above can produce (a record
+  of all blanks is not a word); and the two bytes together, a DOS line
+  ending. The token is spelled `cr` or `lf` where the record holds the
+  byte, so the row format is unchanged.
+
 ONE element is read -- the reference transfers one -- pre-set to the
 -987654 sentinel and printed as a decimal, so an UNTOUCHED slot is
 distinguishable from a stored value. That matters more here than on the
@@ -59,10 +77,10 @@ that record is the corpus lever and the mutant is NOT equivalent. `none`
 means no record IN THIS SPACE distinguishes it, which is evidence toward
 equivalence bounded by the space and is not a declaration.
 
-12 of 52 non-PRINT survivors are distinguished by some record in this space (12 by a VALUE, 0 by an ADDRESS -- the sanitiser aborting on a read the shipped translation does not make).
+16 of 52 non-PRINT survivors are distinguished by some record in this space (16 by a VALUE, 0 by an ADDRESS -- the sanitiser aborting on a read the shipped translation does not make).
 
 08ce3b56  const_tweak    L 351  '0' -> '1'
-    DIFFERS on 2 record(s). First:
+    DIFFERS on 6 record(s). First:
       HEAD|1*|0|-987654   vs   HEAD|1*|-1|-987654
 0902d9ce  index_offset   L 276  '[p]' -> '[p + 1]'
     NONE -- no record in this space distinguishes it
@@ -71,7 +89,7 @@ equivalence bounded by the space and is not a declaration.
 16c1de04  compare_op     L 311  '!=' -> '=='
     NONE -- no record in this space distinguishes it
 17de888e  index_offset   L 363  '[p]' -> '[p + 1]'
-    DIFFERS on 4972 record(s). First:
+    DIFFERS on 6574 record(s). First:
       HEAD|0+|5010|-987654   vs   HEAD|0+|0|0
 22d97f58  const_tweak    L 477  '0' -> '1'
     NONE -- no record in this space distinguishes it
@@ -81,7 +99,8 @@ equivalence bounded by the space and is not a declaration.
     DIFFERS on 1 record(s). First:
       FUNCONLY|full:repsemi|0|-987654   vs   FUNCONLY|full:repsemi|5010|-987654
 27b68fda  const_tweak    L 289  '1' -> '2'
-    NONE -- no record in this space distinguishes it
+    DIFFERS on 5 record(s). First:
+      EOLADM|full:allcr|-1|-987654   vs   EOLADM|full:allcr|-2|-987654
 2c7e84d1  negate_cond    L 311  'if (first_item || sep != Sep::Blank)' -> 'if (!(first_item || sep != Sep::Blank))'
     DIFFERS on 1 record(s). First:
       FUNCONLY|head:semifirst|5010|-987654   vs   FUNCONLY|head:semifirst|0|-987654
@@ -90,17 +109,18 @@ equivalence bounded by the space and is not a declaration.
 31376350  compare_op     L 215  '<' -> '<='
     NONE -- no record in this space distinguishes it
 33e905e4  const_tweak    L 364  '5010' -> '5011'
-    DIFFERS on 11770 record(s). First:
+    DIFFERS on 12690 record(s). First:
       HEAD|0+|5010|-987654   vs   HEAD|0+|5011|-987654
 3545d5d7  compare_op     L 342  '<=' -> '<'
-    DIFFERS on 16 record(s). First:
+    DIFFERS on 20 record(s). First:
       HEAD|0*|5010|-987654   vs   HEAD|0*|-1|-987654
 400277bd  index_offset   L 307  '[p]' -> '[p + 1]'
     NONE -- no record in this space distinguishes it
 461972fc  index_offset   L 270  '[p]' -> '[p + 1]'
     NONE -- no record in this space distinguishes it
 4f89b00b  compare_op     L 288  '>=' -> '>'
-    NONE -- no record in this space distinguishes it
+    DIFFERS on 5 record(s). First:
+      EOLADM|full:allcr|-1|-987654   vs   EOLADM|full:allcr|5010|-987654
 5002a20d  const_tweak    L  81  '200' -> '201'
     NONE -- no record in this space distinguishes it
 516d7765  index_offset   L 300  '[p]' -> '[p + 1]'
@@ -128,11 +148,12 @@ equivalence bounded by the space and is not a declaration.
 965f5b6e  index_offset   L 138  '[Int2LStrLen]' -> '[Int2LStrLen + 1]'
     NONE -- no record in this space distinguishes it
 972ae933  arith_op       L 289  'return -1' -> 'return + 1'
-    NONE -- no record in this space distinguishes it
+    DIFFERS on 5 record(s). First:
+      EOLADM|full:allcr|-1|-987654   vs   EOLADM|full:allcr|1|-987654
 9a30c578  negate_cond    L 525  'if (DEBUG_PARSING)' -> 'if (!(DEBUG_PARSING))'
     NONE -- no record in this space distinguishes it
 9b309eac  const_tweak    L 343  '5010' -> '5011'
-    DIFFERS on 43 record(s). First:
+    DIFFERS on 47 record(s). First:
       HEAD|0*|5010|-987654   vs   HEAD|0*|5011|-987654
 9c013be2  index_offset   L 316  '[p]' -> '[p + 1]'
     NONE -- no record in this space distinguishes it
@@ -150,7 +171,7 @@ ad55bdab  const_tweak    L 339  '1' -> '2'
 bd37f11a  compare_op     L 300  '<' -> '<='
     NONE -- no record in this space distinguishes it
 c7d7da2a  const_tweak    L 361  '5010' -> '5011'
-    DIFFERS on 34837 record(s). First:
+    DIFFERS on 39895 record(s). First:
       HEAD|+|5010|-987654   vs   HEAD|+|5011|-987654
 cb35366f  compare_op     L 240  '>' -> '>='
     DIFFERS on 2 record(s). First:
@@ -164,7 +185,8 @@ dc1aa80d  index_offset   L 300  '[p]' -> '[p + 1]'
 e589ae82  const_tweak    L 327  '1' -> '2'
     NONE -- no record in this space distinguishes it
 e8cf2d25  index_offset   L 261  '[p]' -> '[p + 1]'
-    NONE -- no record in this space distinguishes it
+    DIFFERS on 1184 record(s). First:
+      EOLADM|cr+0|0|0   vs   EOLADM|cr+0|5010|-987654
 ed5b251a  index_offset   L 278  '[p]' -> '[p + 1]'
     NONE -- no record in this space distinguishes it
 ef24c75c  arith_op       L 339  'MaxRepeat + 1' -> 'MaxRepeat - 1'
