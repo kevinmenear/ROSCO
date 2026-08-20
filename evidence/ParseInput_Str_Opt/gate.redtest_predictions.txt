@@ -92,3 +92,57 @@ WHAT THE PAIR ESTABLISHES
 
 Both artifacts carry their prediction in a `--note`, so a reader does not have
 to find this file to know what was expected.
+
+
+================================================================================
+MEASURED, AFTER THE RUNS
+================================================================================
+
+RED TEST A -- gate/ParseInput_Str_Opt.redtest.json
+
+    mismatched                    1,447,771 of 5,252,000    PREDICTED > 1,000,000
+    channels mismatched                 117 of 351
+    scenarios mismatching                22 of 27           PREDICTED 27 of 27
+    perturbation_broke_scenarios      EMPTY                 PREDICTED empty
+    revert_verified                    true, 0 of 5,252,000 PREDICTED true
+    verdict                    RED_TEST_PASS
+
+  THE SCENARIO HALF OF THE PREDICTION IS REFUTED, and that is the finding of
+  this pair. 22 of 27, not 27 of 27. The five that did not move are 10, 13, 14,
+  17 and 24, and none of them is a dead scenario -- `gen_torque` and `gen_speed`
+  vary in all five baselines, and scenario 17 has five varying channels.
+
+  What the five have in common is that the rotor performance table does not
+  reach a compared channel:
+
+    10, 14, 24   run DISCON_ol_mode2.IN, DISCON_ol_mode1.IN and
+                 DISCON_ol_cc_stc.IN -- OL_Mode 1 or 2, so pitch and torque come
+                 from a prescribed open-loop timeseries rather than from
+                 anything the table feeds.
+    17           `Examples/vit_sim.py` patches `WE_Mode: 1` -- the I&I wind
+                 speed estimator, which does not read the Cp surface. WE_Mode 2,
+                 the EKF, is what every other scenario runs and is the table's
+                 only runtime consumer among these channels.
+    13           patches `VS_FBP: 1`, `PC_ControlMode: 0`, `VS_ControlMode: 1`:
+                 blade pitch is fixed and torque comes from the FBP lookup
+                 tables in DISCON.IN. THIS ONE IS NOT PINNED DOWN TO A
+                 STATEMENT by this dispatch -- the reading above is consistent
+                 with the measurement and is not proved by it, and saying so is
+                 cheaper than a sentence a later unit would copy.
+
+  So the honest general form is: **this unit's parsed value reaches the gate's
+  13 channels through ONE consumer, the WE_Mode = 2 extended Kalman filter's
+  rotor-performance surface, and only in scenarios whose outputs are not
+  prescribed.** That is a smaller channel than the hit count suggests, and it is
+  why the prediction was wrong in the direction it was.
+
+RED TEST B -- gate/ParseInput_Str_Opt.default-arm.redtest.json
+
+    mismatched                            0 of 5,252,000    PREDICTED EXACTLY 0
+    revert_mismatched                     0 of 5,252,000
+    verdict                    RED_TEST_FAIL
+
+  Exact. `RED_TEST_FAIL` is `gate.py` being right -- a red test that does not go
+  red is a failure -- and this run is the NEGATIVE control of the pair, filed
+  under its own name so that `gate/ParseInput_Str_Opt.redtest.json`, the one
+  `loop/done.py` P12 reads, is the positive one.

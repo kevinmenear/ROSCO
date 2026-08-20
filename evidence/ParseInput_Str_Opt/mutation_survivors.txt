@@ -1,0 +1,150 @@
+ParseInput_Str_Opt -- ONE ANSWER PER SURVIVOR, and what 1.000 does not cover
+============================================================================
+
+    52 mutants, 38 killed, 14 survivors   sweep_probe0.json, nothing declared,
+                                          the FIRST draft of char_assign
+    50 mutants, 39 killed, 11 survivors   sweep_probe1.json, nothing declared,
+                                          after the char_assign repair
+    50 mutants, 39 killed,  0 open        mutation/ParseInput_Str_Opt.json
+                                          5 equivalent + 6 unreachable
+    39 / (50 - 5 - 6) = 39 / 39 = 1.0000
+
+Both scored runs are committed: the sanitised one and
+`mutation/ParseInput_Str_Opt.value-oracle.json`, taken with `--sanitize` OFF.
+Same score, same (empty) survivor SET, so the score does not rest on the
+sanitiser -- the control is the SET and not the count.
+`declared_but_killed` and `unreachable_but_killed` are EMPTY in both.
+No operator was capped: `capped_operators` is `[]`, so unlike units #55-#57
+there is no population this sweep never enumerated.
+
+A. THE THREE THAT WERE DELETED RATHER THAN DECLARED (probe0 -> probe1)
+----------------------------------------------------------------------
+
+    8b83f1b6  min(len_dst, len_src) -> min(len_src, len_dst)
+    dac6e85c  'if (n > 0)'          -> 'if (n >= 0)'
+    1db4dd8f  'if (len_dst > n)'    -> 'if (len_dst >= n)'
+
+All three sat in `char_assign` as this unit first wrote it -- the obvious
+`std::min` + `memcpy` + `memset` form -- and all three are behaviour-preserving:
+`min` is commutative and a zero-length `memcpy`/`memset` is a no-op. They could
+have been three equivalence declarations. They are not, because unit #32's
+`findline.cpp` ALREADY CARRIES A COMMENT NAMING EXACTLY THESE THREE at
+`GetWords`' version of the same expression, together with the repair: one loop
+bounded by the destination. `char_assign` was replaced with that block, byte for
+byte (`p4_blocks.txt`), the three sites no longer exist, and the loop's own
+predicate `i <= len_src` changes an ANSWER at the truncation boundary --
+`Variable = 'unused'` truncates on the 808 cases with `LEN(Variable) < 6` and
+pads on the other 13,308.
+
+This is unit #7's rule (delete the site that admits an undeclarable mutant) and
+it is the campaign's preference over an argument. The cost of finding it was one
+sweep; the cost of NOT finding it would have been three declarations that read
+as reasonable and hid a form unit #32 had already measured as worse.
+
+B. THE FIVE DECLARED EQUIVALENT
+--------------------------------
+
+Arguments in `mutation/ParseInput_Str_Opt.equivalences.md`, each with a NAMED
+SIBLING on the same site or line that is NOT declared and that the corpus
+KILLED. In short:
+
+    5247dc31  int32_t FoundLine_l = 0 -> 1   FindLine assigns FoundLine
+                                             unconditionally (:1109 clean)
+    9c1c4ec7  int CurLine = 0 -> 1           and LineNum on the next line
+    920580ba  the SECOND 0 of the findline_c call -> 1 -- that is `AryLen`,
+              which the bridge reads only under `has_AryLen /= 0`
+              SIBLING KILLED: af4a0269, the FIRST 0 (has_AryLen itself)
+    1a28cd30  Words allocated 3 * 200 instead of 2 * 200 -- 200 bytes written
+              by nothing and read by nothing
+              SIBLING KILLED: 3c51517a, the NumWords argument two lines down
+    ef22930a  `if (DEBUG_PARSING)` negated -- the block is empty
+
+C. THE SIX DECLARED UNREACHABLE, AND THEY ARE TWO CAUSES
+---------------------------------------------------------
+
+`mutation/ParseInput_Str_Opt.unreachable.json`, re-derived every run by
+`make_unreachable.py`, which REFUSES if the coverage file does not name the
+current corpus and now also refuses if a site-keyed declaration stops matching.
+
+CAUSE 1 -- the READ-error arm, which is dead IN THE PROGRAM (4)
+
+    19587b49  :396  `ErrVar->aviFAIL = -1`   -> -2      gcov #####
+    9baf5d1c  :397  `std::string msg(1, ...)` -> 2      gcov #####
+    7c36d46e  :108  `Int2LStrLen = 11` -> 12            feeds :167-:170 only
+    a2b9964b  :168  `char buf[Int2LStrLen]` -> +1       inside :167-:170
+
+`READ (Words(1),'(A)',IOSTAT=ErrStatLcl) Variable` is one `A` edit descriptor
+with no field width over an internal record that is blank-padded when short, so
+`w = LEN(item)`, the transfer always happens and IOSTAT is always 0. Measured
+two ways rather than argued: `record_form_probe.txt` reports 144 of 144
+(form, length) pairs at IOSTAT 0 against gfortran's own runtime, and
+`harness_partition.txt` reports 0 cases in the `read-failed` arm over 14,116.
+So `IF (ErrStatLcl /= 0)` and everything it guards -- including the only call
+site of `int2lstr_trimmed`, and therefore the only consumer of `Int2LStrLen` --
+cannot be entered by ANY input.
+
+That is stronger than `unreachable` requires: no corpus change empties this
+group, which is the same shape as unit #57's comma and semicolon branches.
+It is filed as `unreachable` rather than as an equivalence because the campaign
+already has the mechanism -- a derivation from the coverage file, re-run every
+sweep, with the sweep itself refuting it if a case ever reaches the line.
+
+CAUSE 2 -- a width whose extra byte the corpus cannot reach (2)
+
+    4d525138  :98   MaxLineLength  2048 -> 2049
+    739190c8  :104  MaxParamLength  200 ->  201
+
+MEASURED AT THE SITE, `boundary_probe.txt`: the probe calls `GetWords` a second
+and a third time per case -- once with the line one byte longer, once with the
+elements one byte wider -- and reports 0 of 13,926 cases in which either answer
+differs. (13,926 and not 14,116: the probe sits after the `aviFAIL >= 0` guard,
+so the 190 `pre-failed` cases never reach it. The row count is in the file.)
+
+THE PROBE REFUTED TWO SENTENCES WRITTEN INTO IT BEFORE IT RAN, and both
+corrections are in the file rather than smoothed away:
+
+  * `Line`'s byte 2048 is a blank on only 851 of 13,926 cases, not on all of
+    them, so the mechanism is not "the scan stops at a separator". It is
+    TRUNCATION: `GetWords` writes each word into a 200-byte element, so a word
+    that runs to byte 2048 is already cut off. Only a word ENDING at 2048 and
+    SHORTER than 200 could tell the widths apart, and no case has one.
+  * the 201st byte of `Words(1)` is non-blank on 28 cases, so the corpus DOES
+    carry first words of 201 characters or more. The second reason a reader
+    would reach for is refuted by its own column, and ONE cause is left.
+
+That one cause is the corpus's `LEN(Variable)` ladder: `{1, 2, 6, 7, 11}`.
+`generate.py` builds a free string extent's lengths as
+`sorted({1, 2, ex0, ex0 + 5})`, and `char_assign` can only differ at `i = 201`.
+**It is a claim about the CORPUS and not about the PROGRAM**, and the distance
+is large: every shipped caller passes 1024 or 256. A corpus drawing the length
+from the shipped range would kill `739190c8` on records it already has. Closing
+it needs a `generate.py` change, which re-prices every unit already scored, so
+it is declared here and raised in DECISIONS.md rather than taken silently.
+
+D. WHAT 1.0000 DOES NOT COVER
+------------------------------
+
+1. **The `IF (UnEc > 0) WRITE (UnEc,*) ...` echo record.** Not translated,
+   because `UnEc` is a Fortran UNIT NUMBER and C++ cannot reach the Fortran
+   runtime's unit table. Unit #54's family decision, and this is the FIFTH and
+   LAST of the five units carrying the identical statement. Measured dead on
+   this unit's own lines: `ROSCO_Helpers.f90:348` runs 168 times over the 27
+   scenarios and `:349` is evaluated 168 times and true none of them -- the
+   strongest reading of the five, because `UnEc` is PRESENT at every single
+   call. Closing it needs a Fortran shim that owns the unit, not a corpus
+   change.
+
+2. **The `LEN(Variable)` gap above.** It is the one declaration in this unit
+   that a wider corpus would overturn, and the number that would justify the
+   generator change is in DECISIONS.md.
+
+3. **The three mutants deleted in §A are gone from the population**, so the
+   50-mutant denominator is not comparable to the 52 of `sweep_probe0.json`.
+   Both artifacts are committed; the diff is the three ids and nothing else,
+   which is the control that the repair removed sites rather than behaviour.
+
+4. **The gate cannot see this unit by VALUE at all on five of the 27
+   scenarios.** Red test A moved 1,447,771 of 5,252,000 across 117 channels and
+   22 scenarios; scenarios 10, 13, 14, 17 and 24 did not move. Named in
+   `gate.redtest_predictions.txt` -- and the prediction there said 27 of 27, so
+   this is a refutation and not a footnote.
