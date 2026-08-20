@@ -117,7 +117,7 @@
  "limit_per_operator": 40,
  "capped_operators": [],
  "mutants": 81,
- "equivalent_declared": 2,
+ "equivalent_declared": 6,
  "unreachable_declared": 0,
  "unreachable": [],
  "nocompile": 0,
@@ -132,11 +132,11 @@
  "nocompile_refused": false,
  "total": 81,
  "killed": 66,
- "survived": 13,
- "equivalent": 2,
+ "survived": 9,
+ "equivalent": 6,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.8354,
+ "score": 0.88,
  "loop_rev": "41d383f-nogit",
  "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "426eef9-nogit",
@@ -178,12 +178,6 @@
    "after": "1"
   },
   {
-   "id": "9b32d4a5",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
    "id": "c3c9ad10",
    "operator": "const_tweak",
    "before": "0",
@@ -196,28 +190,10 @@
    "after": "1"
   },
   {
-   "id": "c303585e",
-   "operator": "const_tweak",
-   "before": "0.0",
-   "after": "1.0"
-  },
-  {
-   "id": "30056504",
-   "operator": "const_tweak",
-   "before": "1",
-   "after": "2"
-  },
-  {
    "id": "b1377f87",
    "operator": "const_tweak",
    "before": "0",
    "after": "1"
-  },
-  {
-   "id": "642f565d",
-   "operator": "const_tweak",
-   "before": "0.0",
-   "after": "1.0"
   }
  ]
 }
