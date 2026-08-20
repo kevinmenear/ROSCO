@@ -1,0 +1,39 @@
+# done_check.py ReadControlParameterFileSub -- captured 2026-08-20T21:52:46Z by scripts/capture_done_check.sh
+
+Run against the committed state at e185fd4c ("ReadControlParameterFileSub: the probe becomes a RESULT ARTIFACT, so revcheck has something to check"), with a CLEAN tree, with stdout
+going to a file outside the repository. The run is reproduced below verbatim.
+
+ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
+target before the subprocess runs, so
+
+    python3 scripts/done_check.py ReadControlParameterFileSub > evidence/ReadControlParameterFileSub/done_check.txt
+
+always sees a modified tracked file and reports `P2 clean tree: dirty_tree`,
+one predicate worse than the truth. That is why this file is captured out of
+tree and moved in, and why it is written by a script rather than by hand: the
+header was added once at 48b9ae3 and a plain re-capture at 73d3521 removed it.
+Reproduce the reading below with no redirection:
+
+    python3 scripts/done_check.py ReadControlParameterFileSub
+
+done_check exited 1 (0 only when COMPLETE).
+
+baseline (inferred): 4b3fa21  -- the commit before cf25af8 touched translations/ReadSetParameters/readcontrolparameterfilesub.cpp
+
+ReadControlParameterFileSub: Verdict.INCOMPLETE  (9/14 PASS)
+
+[  ok  ] P1   commits exist                      
+[  ok  ] P2   clean tree                         
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[  ok  ] P5   evidence resolves                  
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[ FAIL ] P9   gate compared and matched          gate_unproven:no gate/ReadControlParameterFileSub.json
+[ FAIL ] P12  mutation score for this unit       mutation_missing:no mutation/ReadControlParameterFileSub.json
+[ FAIL ] P11  post-integration harness re-run    harness_not_rerun:no harness/ReadControlParameterFileSub.postintegration.json
+[ FAIL ] P13  evidence matches the contract      respecify_unscored:mutation_missing:no mutation/ReadControlParameterFileSub.json -- a reimplementation closes on a mutation score, not on the gate
+[  ok  ] P10  evidence reproducible              
+[ n/e  ] P14  artifact revisions agree           no configured artifact was readable at this commit
+
