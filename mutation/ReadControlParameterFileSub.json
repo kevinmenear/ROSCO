@@ -1,0 +1,3997 @@
+{
+  "baseline": {
+    "cases": 37,
+    "copyback": 586,
+    "echo": [
+      "ECHO [../evidence/ReadControlParameterFileSub/corpus/echo_CPP.RO.echo] 149 8b90607473f54ba68877c3c7d3a28290  -",
+      "ECHO [../evidence/ReadControlParameterFileSub/corpus/echo_REF.RO.echo] 149 8b90607473f54ba68877c3c7d3a28290  -"
+    ],
+    "exit": 0,
+    "field": 0
+  },
+  "campaign_rev": "afa69493",
+  "capped_operators": [
+    "arith_op",
+    "compare_op",
+    "const_tweak",
+    "negate_cond"
+  ],
+  "channels_compared": [
+    "field",
+    "copyback",
+    "stdout",
+    "echo"
+  ],
+  "compared_against": "fortran_reference_in_process",
+  "corpus_cases": 37,
+  "equivalent_but_killed": [],
+  "equivalent_declared": 0,
+  "killed": 116,
+  "limit_per_operator": 40,
+  "loop_rev": "fa4d468-dirty",
+  "mutants": 207,
+  "mutants_not_enumerated": 1298,
+  "nocompile": 6,
+  "nocompile_ratio": 0.028169014084507043,
+  "nocompile_refused": false,
+  "operator_population": {
+    "arith_op": 40,
+    "assoc_reorder": 2,
+    "compare_op": 40,
+    "const_tweak": 40,
+    "drop_factor": 8,
+    "index_offset": 26,
+    "negate_cond": 40,
+    "swap_operands": 17
+  },
+  "operator_population_uncapped": {
+    "arith_op": 43,
+    "assoc_reorder": 2,
+    "compare_op": 261,
+    "const_tweak": 1068,
+    "drop_factor": 8,
+    "index_offset": 26,
+    "negate_cond": 86,
+    "swap_operands": 17
+  },
+  "operators": [
+    "arith_op",
+    "assoc_reorder",
+    "compare_op",
+    "const_tweak",
+    "drop_factor",
+    "index_offset",
+    "negate_cond",
+    "swap_operands"
+  ],
+  "operators_filter": null,
+  "operators_filter_unmatched": [],
+  "oracle": "the standalone differential probe: one Fortran program calls the FORTRAN reference and the C++ translation on the same DISCON.IN and compares 213 components of TYPE(ControlParameters) plus ErrVar%aviFAIL and ErrVar%ErrMsg, over 37 files. Four channels: FIELD, COPYBK, the program's whole stdout, and the bytes of the Echo=1 arm's .RO.echo.",
+  "results": [
+    {
+      "after": "(CntrPar->VS_Rgn2K * CntrPar->VS_MinOMSpd) * CntrPar->VS_MinOMSpd",
+      "before": "CntrPar->VS_Rgn2K * (CntrPar->VS_MinOMSpd * CntrPar->VS_MinOMSpd)",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 755,
+      "mid": "3d3993c5",
+      "operator": "assoc_reorder",
+      "outcome": "ok"
+    },
+    {
+      "after": "(CntrPar->VS_Rgn2K * CntrPar->VS_RefSpd) * CntrPar->VS_RefSpd",
+      "before": "CntrPar->VS_Rgn2K * (CntrPar->VS_RefSpd * CntrPar->VS_RefSpd)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 36,
+      "killed": true,
+      "line": 757,
+      "mid": "85011459",
+      "operator": "assoc_reorder",
+      "outcome": "ok"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 119,
+      "mid": "977ffe3c",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [
+        "field",
+        "copyback",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 2,
+      "field": null,
+      "killed": true,
+      "line": 119,
+      "mid": "96356162",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 126,
+      "mid": "9e2c7da0",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 128,
+      "mid": "f61b02eb",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 129,
+      "mid": "492b8a91",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 136,
+      "mid": "bac58b04",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 143,
+      "mid": "0f63c6b3",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 153,
+      "mid": "a516ae11",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 163,
+      "mid": "9a3771b3",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "<",
+      "before": "<=",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 163,
+      "mid": "bb4c75b6",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3,
+      "killed": true,
+      "line": 172,
+      "mid": "c6404c1f",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 173,
+      "mid": "3d422d85",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "channels": [
+        "copyback",
+        "stdout"
+      ],
+      "copyback": 580,
+      "exit": 0,
+      "field": 0,
+      "killed": true,
+      "line": 174,
+      "mid": "166481a9",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "==",
+      "before": "!=",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 198,
+      "mid": "d1ff17ab",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "==",
+      "before": "!=",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1924,
+      "killed": true,
+      "line": 210,
+      "mid": "9e71e778",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [
+        "field",
+        "copyback",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 2,
+      "field": null,
+      "killed": true,
+      "line": 256,
+      "mid": "84c5addc",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "==",
+      "before": "!=",
+      "channels": [
+        "field",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 5273,
+      "killed": true,
+      "line": 279,
+      "mid": "405c6ec0",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [
+        "field",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 5273,
+      "killed": true,
+      "line": 281,
+      "mid": "8cfe1e54",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 284,
+      "mid": "3dc20a1c",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 294,
+      "mid": "0e3f9c71",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "channels": [
+        "field",
+        "copyback",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 139,
+      "field": null,
+      "killed": true,
+      "line": 306,
+      "mid": "220c57dc",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "channels": [
+        "field",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 5210,
+      "killed": true,
+      "line": 366,
+      "mid": "27340602",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "channels": [
+        "echo"
+      ],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": true,
+      "line": 380,
+      "mid": "4dbd6807",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [
+        "field",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 2,
+      "killed": true,
+      "line": 391,
+      "mid": "1b1dc78f",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 5136,
+      "killed": true,
+      "line": 429,
+      "mid": "acb94732",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 4749,
+      "killed": true,
+      "line": 457,
+      "mid": "4b6a0a9b",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 461,
+      "mid": "77489bfc",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1980,
+      "killed": true,
+      "line": 463,
+      "mid": "193d7741",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1964,
+      "killed": true,
+      "line": 464,
+      "mid": "514c1ae5",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1948,
+      "killed": true,
+      "line": 465,
+      "mid": "c892c330",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 466,
+      "mid": "5b62aabc",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 467,
+      "mid": "e886b554",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 468,
+      "mid": "37a5865c",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 470,
+      "mid": "abf84d25",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 471,
+      "mid": "f92f04ff",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 472,
+      "mid": "a1c8bc9c",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 473,
+      "mid": "cc3dc61c",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 474,
+      "mid": "fdfd4622",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "channels": [
+        "field",
+        "copyback",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 570,
+      "exit": 1,
+      "field": 16,
+      "killed": true,
+      "line": 477,
+      "mid": "d62b686f",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 478,
+      "mid": "8a8c4e4d",
+      "operator": "compare_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "AryRef",
+      "before": "AryRef* a",
+      "channels": [
+        "nocompile"
+      ],
+      "copyback": null,
+      "exit": null,
+      "field": null,
+      "killed": true,
+      "line": 195,
+      "mid": "947e6fde",
+      "operator": "drop_factor",
+      "outcome": "nocompile"
+    },
+    {
+      "after": "AryRef",
+      "before": "AryRef* a",
+      "channels": [
+        "nocompile"
+      ],
+      "copyback": null,
+      "exit": null,
+      "field": null,
+      "killed": true,
+      "line": 207,
+      "mid": "80e06935",
+      "operator": "drop_factor",
+      "outcome": "nocompile"
+    },
+    {
+      "after": "CntrPar->Y_Rate",
+      "before": "CntrPar->Y_Rate * R2D",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 36,
+      "killed": true,
+      "line": 749,
+      "mid": "fbf9b576",
+      "operator": "drop_factor",
+      "outcome": "ok"
+    },
+    {
+      "after": "CntrPar->VS_RtTq",
+      "before": "CntrPar->VS_RtTq * 0.99",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 36,
+      "killed": true,
+      "line": 751,
+      "mid": "d8954599",
+      "operator": "drop_factor",
+      "outcome": "ok"
+    },
+    {
+      "after": "CntrPar->VS_MinOMSpd",
+      "before": "CntrPar->VS_MinOMSpd * CntrPar->VS_MinOMSpd",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 36,
+      "killed": true,
+      "line": 755,
+      "mid": "82a71e99",
+      "operator": "drop_factor",
+      "outcome": "ok"
+    },
+    {
+      "after": "CntrPar->VS_RefSpd",
+      "before": "CntrPar->VS_RefSpd * CntrPar->VS_RefSpd",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 36,
+      "killed": true,
+      "line": 757,
+      "mid": "e73268d2",
+      "operator": "drop_factor",
+      "outcome": "ok"
+    },
+    {
+      "after": "ol_rows",
+      "before": "ol_rows * sizeof",
+      "channels": [
+        "nocompile"
+      ],
+      "copyback": null,
+      "exit": null,
+      "field": null,
+      "killed": true,
+      "line": 982,
+      "mid": "3b6445e9",
+      "operator": "drop_factor",
+      "outcome": "nocompile"
+    },
+    {
+      "after": "ol_rows",
+      "before": "ol_rows * sizeof",
+      "channels": [
+        "nocompile"
+      ],
+      "copyback": null,
+      "exit": null,
+      "field": null,
+      "killed": true,
+      "line": 1000,
+      "mid": "1c7b08f3",
+      "operator": "drop_factor",
+      "outcome": "nocompile"
+    },
+    {
+      "after": "n + 1",
+      "before": "n - 1",
+      "channels": [
+        "field",
+        "copyback",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 2,
+      "field": null,
+      "killed": true,
+      "line": 119,
+      "mid": "e9f33829",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "dst - n",
+      "before": "dst + n",
+      "channels": [
+        "field",
+        "copyback",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 134,
+      "field": null,
+      "killed": true,
+      "line": 129,
+      "mid": "9896fade",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "width + n",
+      "before": "width - n",
+      "channels": [
+        "field",
+        "copyback",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 134,
+      "field": null,
+      "killed": true,
+      "line": 129,
+      "mid": "4e230979",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "ErrVar->ErrMsg - s.size",
+      "before": "ErrVar->ErrMsg + s.size",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 154,
+      "mid": "0d556ac9",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "AryRef / a",
+      "before": "AryRef* a",
+      "channels": [
+        "nocompile"
+      ],
+      "copyback": null,
+      "exit": null,
+      "field": null,
+      "killed": true,
+      "line": 195,
+      "mid": "eb24e4f4",
+      "operator": "arith_op",
+      "outcome": "nocompile"
+    },
+    {
+      "after": "AryRef / a",
+      "before": "AryRef* a",
+      "channels": [
+        "nocompile"
+      ],
+      "copyback": null,
+      "exit": null,
+      "field": null,
+      "killed": true,
+      "line": 207,
+      "mid": "31733c60",
+      "operator": "arith_op",
+      "outcome": "nocompile"
+    },
+    {
+      "after": "CntrPar->DT_Out * LocalVar->DT",
+      "before": "CntrPar->DT_Out / LocalVar->DT",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 36,
+      "killed": true,
+      "line": 725,
+      "mid": "e405946b",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "CntrPar->ZMQ_UpdatePeriod * LocalVar->DT",
+      "before": "CntrPar->ZMQ_UpdatePeriod / LocalVar->DT",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 36,
+      "killed": true,
+      "line": 727,
+      "mid": "6d57a060",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "CntrPar->Y_Rate / R2D",
+      "before": "CntrPar->Y_Rate * R2D",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 36,
+      "killed": true,
+      "line": 749,
+      "mid": "de2f3308",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "CntrPar->VS_RtTq / 0.99",
+      "before": "CntrPar->VS_RtTq * 0.99",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 36,
+      "killed": true,
+      "line": 751,
+      "mid": "d852a00c",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "CntrPar->VS_MinOMSpd / CntrPar->VS_MinOMSpd",
+      "before": "CntrPar->VS_MinOMSpd * CntrPar->VS_MinOMSpd",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 36,
+      "killed": true,
+      "line": 755,
+      "mid": "a11827e3",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "CntrPar->VS_RefSpd / CntrPar->VS_RefSpd",
+      "before": "CntrPar->VS_RefSpd * CntrPar->VS_RefSpd",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 36,
+      "killed": true,
+      "line": 757,
+      "mid": "32043444",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "OL_Count - 1",
+      "before": "OL_Count + 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 12,
+      "killed": true,
+      "line": 782,
+      "mid": "40a86ce5",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "OL_Count - 1",
+      "before": "OL_Count + 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3,
+      "killed": true,
+      "line": 791,
+      "mid": "5f256375",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "OL_Count - 1",
+      "before": "OL_Count + 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3,
+      "killed": true,
+      "line": 800,
+      "mid": "f0944700",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "OL_Count - 1",
+      "before": "OL_Count + 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 6,
+      "killed": true,
+      "line": 806,
+      "mid": "40d0f7cd",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "OL_Count - 1",
+      "before": "OL_Count + 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3,
+      "killed": true,
+      "line": 811,
+      "mid": "75addfde",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "OL_Count - 1",
+      "before": "OL_Count + 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3,
+      "killed": true,
+      "line": 817,
+      "mid": "8ec4b991",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "OL_Count - 1",
+      "before": "OL_Count + 1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 824,
+      "mid": "892f54f6",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "OL_Count - 1",
+      "before": "OL_Count + 1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 831,
+      "mid": "79924765",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "OL_Count - 1",
+      "before": "OL_Count + 1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 838,
+      "mid": "1278433e",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "I + 1",
+      "before": "I - 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3,
+      "killed": true,
+      "line": 845,
+      "mid": "45820e0c",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "OL_Count - 1",
+      "before": "OL_Count + 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3,
+      "killed": true,
+      "line": 852,
+      "mid": "dd165c95",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "N_OL_Cables - 1",
+      "before": "N_OL_Cables + 1",
+      "channels": [
+        "field",
+        "copyback",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 139,
+      "field": null,
+      "killed": true,
+      "line": 853,
+      "mid": "877457e9",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "I + 1",
+      "before": "I - 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 2,
+      "killed": true,
+      "line": 861,
+      "mid": "075a616a",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "OL_Count - 1",
+      "before": "OL_Count + 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3,
+      "killed": true,
+      "line": 868,
+      "mid": "e7c2c022",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "N_OL_StCs - 1",
+      "before": "N_OL_StCs + 1",
+      "channels": [
+        "field",
+        "copyback",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 139,
+      "field": null,
+      "killed": true,
+      "line": 869,
+      "mid": "bbba3caa",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "OL_Channels - static_cast",
+      "before": "OL_Channels + static_cast",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 18,
+      "killed": true,
+      "line": 910,
+      "mid": "3c455bdc",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "j + 1",
+      "before": "j - 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 22,
+      "killed": true,
+      "line": 910,
+      "mid": "233d95d7",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "ol_rows / sizeof",
+      "before": "ol_rows * sizeof",
+      "channels": [
+        "field",
+        "copyback",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 134,
+      "field": null,
+      "killed": true,
+      "line": 982,
+      "mid": "174c4810",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "I + 1",
+      "before": "I - 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1,
+      "killed": true,
+      "line": 988,
+      "mid": "59387b73",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "I + 1",
+      "before": "I - 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1,
+      "killed": true,
+      "line": 989,
+      "mid": "a9be8d26",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "k + 1",
+      "before": "k - 1",
+      "channels": [
+        "field",
+        "copyback",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 134,
+      "field": null,
+      "killed": true,
+      "line": 991,
+      "mid": "bd49978a",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "I_OL + 1",
+      "before": "I_OL - 1",
+      "channels": [
+        "field",
+        "copyback",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 134,
+      "field": null,
+      "killed": true,
+      "line": 991,
+      "mid": "cbe17271",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "k + 1",
+      "before": "k - 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1,
+      "killed": true,
+      "line": 992,
+      "mid": "191b70e5",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "I_OL - 1",
+      "before": "I_OL + 1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 993,
+      "mid": "b0d2e3cf",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "ol_rows / sizeof",
+      "before": "ol_rows * sizeof",
+      "channels": [
+        "field",
+        "copyback",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 134,
+      "field": null,
+      "killed": true,
+      "line": 1000,
+      "mid": "0c473bc0",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "I + 1",
+      "before": "I - 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1,
+      "killed": true,
+      "line": 1006,
+      "mid": "2309866d",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "I + 1",
+      "before": "I - 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1,
+      "killed": true,
+      "line": 1007,
+      "mid": "614dbe6e",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "k + 1",
+      "before": "k - 1",
+      "channels": [
+        "field",
+        "copyback",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 134,
+      "field": null,
+      "killed": true,
+      "line": 1009,
+      "mid": "da34082c",
+      "operator": "arith_op",
+      "outcome": "ok"
+    },
+    {
+      "after": "1 - n",
+      "before": "n - 1",
+      "channels": [
+        "field",
+        "copyback",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 2,
+      "field": null,
+      "killed": true,
+      "line": 119,
+      "mid": "817d2fb5",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "n - width",
+      "before": "width - n",
+      "channels": [
+        "field",
+        "copyback",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 139,
+      "field": null,
+      "killed": true,
+      "line": 129,
+      "mid": "935623ba",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "LocalVar->DT / CntrPar->DT_Out",
+      "before": "CntrPar->DT_Out / LocalVar->DT",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1,
+      "killed": true,
+      "line": 725,
+      "mid": "249983b5",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "LocalVar->DT / CntrPar->ZMQ_UpdatePeriod",
+      "before": "CntrPar->ZMQ_UpdatePeriod / LocalVar->DT",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 36,
+      "killed": true,
+      "line": 727,
+      "mid": "2b6bf711",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "1 - I",
+      "before": "I - 1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 845,
+      "mid": "0c32eb12",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "1 - I",
+      "before": "I - 1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 861,
+      "mid": "d46f2836",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "1 - j",
+      "before": "j - 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 18,
+      "killed": true,
+      "line": 910,
+      "mid": "c4c281e7",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "1 - I",
+      "before": "I - 1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 988,
+      "mid": "ca8f37a1",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "1 - I",
+      "before": "I - 1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 989,
+      "mid": "4e6eece5",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "1 - k",
+      "before": "k - 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 2,
+      "killed": true,
+      "line": 991,
+      "mid": "6406b6d4",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "1 - I_OL",
+      "before": "I_OL - 1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 991,
+      "mid": "6a33c2b0",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "1 - k",
+      "before": "k - 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1,
+      "killed": true,
+      "line": 992,
+      "mid": "fc5c541f",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "1 - I",
+      "before": "I - 1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 1006,
+      "mid": "25628691",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "1 - I",
+      "before": "I - 1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 1007,
+      "mid": "630b03d5",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "1 - k",
+      "before": "k - 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 2,
+      "killed": true,
+      "line": 1009,
+      "mid": "d2205930",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "1 - I_OL",
+      "before": "I_OL - 1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 1009,
+      "mid": "4b3422c5",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "1 - k",
+      "before": "k - 1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1,
+      "killed": true,
+      "line": 1010,
+      "mid": "a014e148",
+      "operator": "swap_operands",
+      "outcome": "ok"
+    },
+    {
+      "after": "[i + 1]",
+      "before": "[i]",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3,
+      "killed": true,
+      "line": 174,
+      "mid": "4098bc02",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 201,
+      "mid": "b5f3c0b1",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 202,
+      "mid": "805abaed",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 203,
+      "mid": "49a0fabd",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "channels": [
+        "field",
+        "copyback",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 139,
+      "field": null,
+      "killed": true,
+      "line": 210,
+      "mid": "0da9addc",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[11 + 1]",
+      "before": "[11]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 400,
+      "mid": "b9007d3d",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[8 + 1]",
+      "before": "[8]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 400,
+      "mid": "4736a555",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 780,
+      "mid": "364ef8ff",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[1 + 1]",
+      "before": "[1]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 786,
+      "mid": "36908c5e",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[1 + 1]",
+      "before": "[1]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 789,
+      "mid": "5080dda5",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 2,
+      "killed": true,
+      "line": 789,
+      "mid": "617286bb",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[1 + 1]",
+      "before": "[1]",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 2,
+      "killed": true,
+      "line": 790,
+      "mid": "da6d3b50",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[2 + 1]",
+      "before": "[2]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 790,
+      "mid": "18b81638",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[2 + 1]",
+      "before": "[2]",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 2,
+      "killed": true,
+      "line": 796,
+      "mid": "1e3cefa0",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[2 + 1]",
+      "before": "[2]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 798,
+      "mid": "99a9ea8c",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 798,
+      "mid": "1056fee9",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[2 + 1]",
+      "before": "[2]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 799,
+      "mid": "92f30d73",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[1 + 1]",
+      "before": "[1]",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 2,
+      "killed": true,
+      "line": 799,
+      "mid": "9845c879",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[11 + 1]",
+      "before": "[11]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 846,
+      "mid": "0a761c52",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[11 + 1]",
+      "before": "[11]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 862,
+      "mid": "6162a812",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 929,
+      "mid": "03b8a2fd",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1,
+      "killed": true,
+      "line": 931,
+      "mid": "c40b43ea",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[1 + 1]",
+      "before": "[1]",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 934,
+      "mid": "4d5b1a2c",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[1 + 1]",
+      "before": "[1]",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1,
+      "killed": true,
+      "line": 936,
+      "mid": "7b180bed",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[2 + 1]",
+      "before": "[2]",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 4,
+      "killed": true,
+      "line": 939,
+      "mid": "831e293c",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "[2 + 1]",
+      "before": "[2]",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 4,
+      "killed": true,
+      "line": 941,
+      "mid": "b46b57ed",
+      "operator": "index_offset",
+      "outcome": "ok"
+    },
+    {
+      "after": "2049",
+      "before": "2048",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 101,
+      "mid": "95fe8ae1",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "58.295779513",
+      "before": "57.2957795130",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 36,
+      "killed": true,
+      "line": 103,
+      "mid": "089a63ea",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 105,
+      "mid": "7acde368",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 106,
+      "mid": "e5da15f8",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1025",
+      "before": "1024",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 112,
+      "mid": "8d2cf1af",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "129",
+      "before": "128",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 113,
+      "mid": "731a6a07",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1025",
+      "before": "1024",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 114,
+      "mid": "90f86b06",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 119,
+      "mid": "92bdcceb",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "channels": [
+        "field",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 29,
+      "killed": true,
+      "line": 119,
+      "mid": "994846fa",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 128,
+      "mid": "26c265e9",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 154,
+      "mid": "2ee34a73",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 163,
+      "mid": "8c902400",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 165,
+      "mid": "86dc7559",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 165,
+      "mid": "4b9987ce",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3,
+      "killed": true,
+      "line": 173,
+      "mid": "4d898980",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 192,
+      "mid": "dd1c697f",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 4753,
+      "killed": true,
+      "line": 197,
+      "mid": "a7cffa8a",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 201,
+      "mid": "695d8151",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 201,
+      "mid": "764bfb17",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 202,
+      "mid": "8005d02f",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 203,
+      "mid": "c15d4328",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [
+        "field",
+        "copyback",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 1,
+      "field": null,
+      "killed": true,
+      "line": 210,
+      "mid": "30c59373",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 210,
+      "mid": "8f70e409",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "channels": [
+        "echo",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": true,
+      "line": 221,
+      "mid": "fd4640b3",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "3",
+      "before": "2",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 261,
+      "mid": "cad91b36",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 300,
+      "mid": "47d1c4b8",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 306,
+      "mid": "aac8f93d",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 365,
+      "mid": "bf876a89",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 365,
+      "mid": "7f31af91",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 365,
+      "mid": "4b852d50",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 365,
+      "mid": "11a7f5a3",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [
+        "field",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 5210,
+      "killed": true,
+      "line": 366,
+      "mid": "a74517f7",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 377,
+      "mid": "dd68b590",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "channels": [
+        "echo"
+      ],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": true,
+      "line": 380,
+      "mid": "4684fd4a",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "11",
+      "before": "10",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 388,
+      "mid": "e185a05b",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 398,
+      "mid": "d3ed5ecb",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "12",
+      "before": "11",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 400,
+      "mid": "4e6bad47",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "9",
+      "before": "8",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 400,
+      "mid": "832c8c42",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "12",
+      "before": "11",
+      "channels": [
+        "echo"
+      ],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": true,
+      "line": 406,
+      "mid": "2e143aca",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "9",
+      "before": "8",
+      "channels": [
+        "echo"
+      ],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": true,
+      "line": 408,
+      "mid": "9a289756",
+      "operator": "const_tweak",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(n > 0))",
+      "before": "if (n > 0)",
+      "channels": [
+        "field",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 5273,
+      "killed": true,
+      "line": 128,
+      "mid": "1c231bc8",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(n < width))",
+      "before": "if (n < width)",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 129,
+      "mid": "305ab529",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->ErrMsg == nullptr))",
+      "before": "if (ErrVar->ErrMsg == nullptr)",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 136,
+      "mid": "053fd9c4",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(static_cast<int32_t>(s.size()) > ErrVar->n_ErrMsg_cap))",
+      "before": "if (static_cast<int32_t>(s.size()) > ErrVar->n_ErrMsg_cap)",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 143,
+      "mid": "dbc3dfcc",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->n_ErrMsg_cap > static_cast<int32_t>(s.size())))",
+      "before": "if (ErrVar->n_ErrMsg_cap > static_cast<int32_t>(s.size()))",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 153,
+      "mid": "f7aa6c27",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->ErrMsg == nullptr || n <= 0))",
+      "before": "if (ErrVar->ErrMsg == nullptr || n <= 0)",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 163,
+      "mid": "38f4adf2",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(a == nullptr))",
+      "before": "if (a == nullptr)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3,
+      "killed": true,
+      "line": 172,
+      "mid": "60432310",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(a[i] > v))",
+      "before": "if (a[i] > v)",
+      "channels": [
+        "field",
+        "copyback",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 580,
+      "exit": 1,
+      "field": 3,
+      "killed": true,
+      "line": 174,
+      "mid": "bdbe971b",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(base != nullptr))",
+      "before": "if (base != nullptr)",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 198,
+      "mid": "4555590d",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(f == nullptr))",
+      "before": "if (f == nullptr)",
+      "channels": [
+        "field",
+        "copyback",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 2,
+      "field": null,
+      "killed": true,
+      "line": 256,
+      "mid": "7810c96c",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(c == '\\n'))",
+      "before": "if (c == '\\n')",
+      "channels": [
+        "field",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 5273,
+      "killed": true,
+      "line": 281,
+      "mid": "42e24351",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(!cur.empty() && cur.back() == '\\r'))",
+      "before": "if (!cur.empty() && cur.back() == '\\r')",
+      "channels": [
+        "field",
+        "copyback",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": null,
+      "exit": 134,
+      "field": null,
+      "killed": true,
+      "line": 284,
+      "mid": "ba773db8",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(any))",
+      "before": "if (any)",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 293,
+      "mid": "0fb080e8",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(!cur.empty() && cur.back() == '\\r'))",
+      "before": "if (!cur.empty() && cur.back() == '\\r')",
+      "channels": [],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": false,
+      "line": 294,
+      "mid": "7f43e1ea",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 5210,
+      "killed": true,
+      "line": 366,
+      "mid": "a00f967d",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(CntrPar->Echo > 0))",
+      "before": "if (CntrPar->Echo > 0)",
+      "channels": [
+        "echo"
+      ],
+      "copyback": 586,
+      "exit": 0,
+      "field": 0,
+      "killed": true,
+      "line": 380,
+      "mid": "2bb8636c",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ec == nullptr))",
+      "before": "if (ec == nullptr)",
+      "channels": [
+        "field",
+        "echo",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 2,
+      "killed": true,
+      "line": 391,
+      "mid": "ae0fa491",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 5136,
+      "killed": true,
+      "line": 429,
+      "mid": "a146efe1",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 4749,
+      "killed": true,
+      "line": 457,
+      "mid": "cce39699",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(CntrPar->F_GenSpdNotch_N > 0))",
+      "before": "if (CntrPar->F_GenSpdNotch_N > 0)",
+      "channels": [
+        "field",
+        "copyback",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 570,
+      "exit": 1,
+      "field": 37,
+      "killed": true,
+      "line": 477,
+      "mid": "9a54ce5e",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(CntrPar->F_TwrTopNotch_N > 0))",
+      "before": "if (CntrPar->F_TwrTopNotch_N > 0)",
+      "channels": [
+        "field",
+        "copyback",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 550,
+      "exit": 1,
+      "field": 37,
+      "killed": true,
+      "line": 480,
+      "mid": "6461b370",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 4277,
+      "killed": true,
+      "line": 484,
+      "mid": "3551aeab",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3873,
+      "killed": true,
+      "line": 500,
+      "mid": "40ec54d9",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3657,
+      "killed": true,
+      "line": 510,
+      "mid": "e8d1e9b3",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3189,
+      "killed": true,
+      "line": 527,
+      "mid": "58979ec3",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 3045,
+      "killed": true,
+      "line": 534,
+      "mid": "36ca147f",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 2973,
+      "killed": true,
+      "line": 539,
+      "mid": "baf409d0",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 2289,
+      "killed": true,
+      "line": 565,
+      "mid": "9d5a912a",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 2252,
+      "killed": true,
+      "line": 579,
+      "mid": "ae7f1db5",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 2249,
+      "killed": true,
+      "line": 588,
+      "mid": "e7dd6646",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 2141,
+      "killed": true,
+      "line": 594,
+      "mid": "58b60fc2",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1384,
+      "killed": true,
+      "line": 625,
+      "mid": "6071e22e",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(CntrPar->Fl_n == 0))",
+      "before": "if (CntrPar->Fl_n == 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 37,
+      "killed": true,
+      "line": 629,
+      "mid": "8b131fa8",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1276,
+      "killed": true,
+      "line": 632,
+      "mid": "3730161c",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1236,
+      "killed": true,
+      "line": 639,
+      "mid": "fc5ead7f",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1140,
+      "killed": true,
+      "line": 655,
+      "mid": "1a910831",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 1068,
+      "killed": true,
+      "line": 660,
+      "mid": "3cd43a9b",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 996,
+      "killed": true,
+      "line": 665,
+      "mid": "f19b6a61",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 744,
+      "killed": true,
+      "line": 676,
+      "mid": "935a4970",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    },
+    {
+      "after": "if (!(ErrVar->aviFAIL < 0))",
+      "before": "if (ErrVar->aviFAIL < 0)",
+      "channels": [
+        "field",
+        "exit",
+        "stdout"
+      ],
+      "copyback": 586,
+      "exit": 1,
+      "field": 636,
+      "killed": true,
+      "line": 682,
+      "mid": "ee85ae07",
+      "operator": "negate_cond",
+      "outcome": "ok"
+    }
+  ],
+  "score": 0.5603864734299517,
+  "slice": null,
+  "survived": 91,
+  "survivors": [
+    {
+      "after": "(CntrPar->VS_Rgn2K * CntrPar->VS_MinOMSpd) * CntrPar->VS_MinOMSpd",
+      "before": "CntrPar->VS_Rgn2K * (CntrPar->VS_MinOMSpd * CntrPar->VS_MinOMSpd)",
+      "id": "3d3993c5",
+      "line": 755,
+      "operator": "assoc_reorder"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "977ffe3c",
+      "line": 119,
+      "operator": "compare_op"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "id": "9e2c7da0",
+      "line": 126,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "f61b02eb",
+      "line": 128,
+      "operator": "compare_op"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "id": "492b8a91",
+      "line": 129,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "bac58b04",
+      "line": 136,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "0f63c6b3",
+      "line": 143,
+      "operator": "compare_op"
+    },
+    {
+      "after": ">=",
+      "before": ">",
+      "id": "a516ae11",
+      "line": 153,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "9a3771b3",
+      "line": 163,
+      "operator": "compare_op"
+    },
+    {
+      "after": "<",
+      "before": "<=",
+      "id": "bb4c75b6",
+      "line": 163,
+      "operator": "compare_op"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "id": "3d422d85",
+      "line": 173,
+      "operator": "compare_op"
+    },
+    {
+      "after": "==",
+      "before": "!=",
+      "id": "d1ff17ab",
+      "line": 198,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "3dc20a1c",
+      "line": 284,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "0e3f9c71",
+      "line": 294,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "77489bfc",
+      "line": 461,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "5b62aabc",
+      "line": 466,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "e886b554",
+      "line": 467,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "37a5865c",
+      "line": 468,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "abf84d25",
+      "line": 470,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "f92f04ff",
+      "line": 471,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "a1c8bc9c",
+      "line": 472,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "cc3dc61c",
+      "line": 473,
+      "operator": "compare_op"
+    },
+    {
+      "after": "<=",
+      "before": "<",
+      "id": "fdfd4622",
+      "line": 474,
+      "operator": "compare_op"
+    },
+    {
+      "after": "!=",
+      "before": "==",
+      "id": "8a8c4e4d",
+      "line": 478,
+      "operator": "compare_op"
+    },
+    {
+      "after": "ErrVar->ErrMsg - s.size",
+      "before": "ErrVar->ErrMsg + s.size",
+      "id": "0d556ac9",
+      "line": 154,
+      "operator": "arith_op"
+    },
+    {
+      "after": "OL_Count - 1",
+      "before": "OL_Count + 1",
+      "id": "892f54f6",
+      "line": 824,
+      "operator": "arith_op"
+    },
+    {
+      "after": "OL_Count - 1",
+      "before": "OL_Count + 1",
+      "id": "79924765",
+      "line": 831,
+      "operator": "arith_op"
+    },
+    {
+      "after": "OL_Count - 1",
+      "before": "OL_Count + 1",
+      "id": "1278433e",
+      "line": 838,
+      "operator": "arith_op"
+    },
+    {
+      "after": "I_OL - 1",
+      "before": "I_OL + 1",
+      "id": "b0d2e3cf",
+      "line": 993,
+      "operator": "arith_op"
+    },
+    {
+      "after": "1 - I",
+      "before": "I - 1",
+      "id": "0c32eb12",
+      "line": 845,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "1 - I",
+      "before": "I - 1",
+      "id": "d46f2836",
+      "line": 861,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "1 - I",
+      "before": "I - 1",
+      "id": "ca8f37a1",
+      "line": 988,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "1 - I",
+      "before": "I - 1",
+      "id": "4e6eece5",
+      "line": 989,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "1 - I_OL",
+      "before": "I_OL - 1",
+      "id": "6a33c2b0",
+      "line": 991,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "1 - I",
+      "before": "I - 1",
+      "id": "25628691",
+      "line": 1006,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "1 - I",
+      "before": "I - 1",
+      "id": "630b03d5",
+      "line": 1007,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "1 - I_OL",
+      "before": "I_OL - 1",
+      "id": "4b3422c5",
+      "line": 1009,
+      "operator": "swap_operands"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "id": "b5f3c0b1",
+      "line": 201,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "id": "805abaed",
+      "line": 202,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "id": "49a0fabd",
+      "line": 203,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[11 + 1]",
+      "before": "[11]",
+      "id": "b9007d3d",
+      "line": 400,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[8 + 1]",
+      "before": "[8]",
+      "id": "4736a555",
+      "line": 400,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "id": "364ef8ff",
+      "line": 780,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[1 + 1]",
+      "before": "[1]",
+      "id": "36908c5e",
+      "line": 786,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[1 + 1]",
+      "before": "[1]",
+      "id": "5080dda5",
+      "line": 789,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[2 + 1]",
+      "before": "[2]",
+      "id": "18b81638",
+      "line": 790,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[2 + 1]",
+      "before": "[2]",
+      "id": "99a9ea8c",
+      "line": 798,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "id": "1056fee9",
+      "line": 798,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[2 + 1]",
+      "before": "[2]",
+      "id": "92f30d73",
+      "line": 799,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[11 + 1]",
+      "before": "[11]",
+      "id": "0a761c52",
+      "line": 846,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[11 + 1]",
+      "before": "[11]",
+      "id": "6162a812",
+      "line": 862,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[0 + 1]",
+      "before": "[0]",
+      "id": "03b8a2fd",
+      "line": 929,
+      "operator": "index_offset"
+    },
+    {
+      "after": "[1 + 1]",
+      "before": "[1]",
+      "id": "4d5b1a2c",
+      "line": 934,
+      "operator": "index_offset"
+    },
+    {
+      "after": "2049",
+      "before": "2048",
+      "id": "95fe8ae1",
+      "line": 101,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "7acde368",
+      "line": 105,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "e5da15f8",
+      "line": 106,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1025",
+      "before": "1024",
+      "id": "8d2cf1af",
+      "line": 112,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "129",
+      "before": "128",
+      "id": "731a6a07",
+      "line": 113,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1025",
+      "before": "1024",
+      "id": "90f86b06",
+      "line": 114,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "92bdcceb",
+      "line": 119,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "26c265e9",
+      "line": 128,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "2ee34a73",
+      "line": 154,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "8c902400",
+      "line": 163,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "86dc7559",
+      "line": 165,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "4b9987ce",
+      "line": 165,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "dd1c697f",
+      "line": 192,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "695d8151",
+      "line": 201,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "764bfb17",
+      "line": 201,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "8005d02f",
+      "line": 202,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "c15d4328",
+      "line": 203,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "8f70e409",
+      "line": 210,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "3",
+      "before": "2",
+      "id": "cad91b36",
+      "line": 261,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "47d1c4b8",
+      "line": 300,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "aac8f93d",
+      "line": 306,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "bf876a89",
+      "line": 365,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "7f31af91",
+      "line": 365,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "4b852d50",
+      "line": 365,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "11a7f5a3",
+      "line": 365,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "1",
+      "before": "0",
+      "id": "dd68b590",
+      "line": 377,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "11",
+      "before": "10",
+      "id": "e185a05b",
+      "line": 388,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "2",
+      "before": "1",
+      "id": "d3ed5ecb",
+      "line": 398,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "12",
+      "before": "11",
+      "id": "4e6bad47",
+      "line": 400,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "9",
+      "before": "8",
+      "id": "832c8c42",
+      "line": 400,
+      "operator": "const_tweak"
+    },
+    {
+      "after": "if (!(n < width))",
+      "before": "if (n < width)",
+      "id": "305ab529",
+      "line": 129,
+      "operator": "negate_cond"
+    },
+    {
+      "after": "if (!(ErrVar->ErrMsg == nullptr))",
+      "before": "if (ErrVar->ErrMsg == nullptr)",
+      "id": "053fd9c4",
+      "line": 136,
+      "operator": "negate_cond"
+    },
+    {
+      "after": "if (!(static_cast<int32_t>(s.size()) > ErrVar->n_ErrMsg_cap))",
+      "before": "if (static_cast<int32_t>(s.size()) > ErrVar->n_ErrMsg_cap)",
+      "id": "dbc3dfcc",
+      "line": 143,
+      "operator": "negate_cond"
+    },
+    {
+      "after": "if (!(ErrVar->n_ErrMsg_cap > static_cast<int32_t>(s.size())))",
+      "before": "if (ErrVar->n_ErrMsg_cap > static_cast<int32_t>(s.size()))",
+      "id": "f7aa6c27",
+      "line": 153,
+      "operator": "negate_cond"
+    },
+    {
+      "after": "if (!(ErrVar->ErrMsg == nullptr || n <= 0))",
+      "before": "if (ErrVar->ErrMsg == nullptr || n <= 0)",
+      "id": "38f4adf2",
+      "line": 163,
+      "operator": "negate_cond"
+    },
+    {
+      "after": "if (!(base != nullptr))",
+      "before": "if (base != nullptr)",
+      "id": "4555590d",
+      "line": 198,
+      "operator": "negate_cond"
+    },
+    {
+      "after": "if (!(any))",
+      "before": "if (any)",
+      "id": "0fb080e8",
+      "line": 293,
+      "operator": "negate_cond"
+    },
+    {
+      "after": "if (!(!cur.empty() && cur.back() == '\\r'))",
+      "before": "if (!cur.empty() && cur.back() == '\\r')",
+      "id": "7f43e1ea",
+      "line": 294,
+      "operator": "negate_cond"
+    }
+  ],
+  "total": 213,
+  "unit": "ReadControlParameterFileSub",
+  "unreachable": [],
+  "unreachable_but_killed": [],
+  "unreachable_declared": 0,
+  "vit_rev": "426eef9"
+}
