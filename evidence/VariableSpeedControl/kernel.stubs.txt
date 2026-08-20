@@ -1,0 +1,66 @@
+VariableSpeedControl -- THE KERNEL LAYER, AND ITS DISCRIMINATING POWER MEASURED
+BY HAND
+================================================================================
+Unit #60. `vit extract VariableSpeedControl -f rosco/controller/src/DISCON.F90
+-l 117` on the CLEAN tree (54dd134), scenario 12, capture window
+`0:0:1-20,0:0:7995-8014,0:0:15980-15999`.
+
+THE GREEN
+    vit verify ... --kernel-dir kernel/VariableSpeedControl
+      VERIFICATION PASSED: 60/60 passed
+      Field log: 26,040 entries over 419 distinct field names, all IDENTICAL
+      (evidence/VariableSpeedControl/kernel.verify_fields.csv)
+
+AND `vit verify` REFUSED TO SCORE ITS OWN POWER, for the SIXTH unit running:
+
+    Red test: NOT CONSTRUCTED -- no by-value floating-point parameter and no
+    floating-point result: every input arrives behind a pointer or inside a
+    derived type, and perturbing one of those could change what BOTH
+    implementations compute.
+    NON_DISCRIMINATING -- ... The pass is not evidence.
+
+That verdict is right and it is the reason the three hand stubs below exist.
+
+WHY SCENARIO 12, AND WHAT THE WINDOW IS AIMED AT
+--------------------------------------------------------------------------------
+Scenario 12 is the ONLY one of the 27 that sets `VS_ControlMode = 1`, so it is
+the only scenario that enters the K*Omega^2 law at all (Controllers.f90:272,
+15,999 hits, scenario 12 only). Every other scenario that reaches this unit takes
+the tip-speed-ratio PI arm, which the gate already exercises 391,977 times across
+22 scenarios. Three windows: the first 20 invocations (the Region 1.5 start-up
+edge), 20 mid-run and 20 at the end.
+
+THE ARM PARTITION IS READ OUT OF THE KERNEL'S OWN FIELD LOG, NOT ASSERTED
+--------------------------------------------------------------------------------
+`vs_state` is one of the 419 compared fields, so the reference's own arm
+selection is recorded per case:
+
+    vs_state == 1 (Region 1.5)   12 of 60   invocations 3..14, contiguous
+    vs_state == 2 (Region 2)     48 of 60   invocations 1, 2 and 15..15999
+    vs_controlmode == 1          60 of 60
+    vs_fbp == 0                  60 of 60
+    vs_constpower == 1           60 of 60
+
+**A CROSS-INSTRUMENT IDENTITY NOBODY DESIGNED.** Those 12 are EXACTLY the 12
+hits `coverage/line_coverage.json` records at `Controllers.f90:279` -- the
+Region 1.5 assignment -- across ALL 27 SCENARIOS. gcov counted them over a whole
+16,000-step simulation; the kernel counted them from the captured in-state of 60
+invocations; and the capture window was chosen before either number was looked
+at. It also says the window caught the WHOLE arm rather than part of it.
+
+WHAT THE KERNEL COMPARES, AND WHAT IT DOES NOT
+--------------------------------------------------------------------------------
+419 field names, 26,040 rows. `gentq`, `genartq`, `genbrtq`, `gentq_sd`,
+`vs_maxtq`, `vs_komega2_gentq`, `vs_constpwr_gentq`, `vs_lastgentrq`,
+`vs_lastgenpwr`, `instpi`, `instrl`, `avifail` and `vs_state` are all in it --
+and NINE of those are outputs no gate channel reads directly, which is the whole
+reason this layer was taken after the gate.
+
+NOT in it: `avrswap` (assumed-size, skipped by KGen's comparator -- stub 2 below
+measures exactly that), and the nested `piP` / `rlP` parameter blocks, which
+appear under no field name at all. So a defect confined to the callee state this
+unit hands to `PIController` and `ratelimit` is invisible here; `instpi` and
+`instrl`, the counters that INDEX those blocks, are visible.
+
+THREE HAND STUBS. EVERY `EXPECT` BELOW WAS WRITTEN AND COMMITTED BEFORE ITS
+`RESULT` WAS RUN.
