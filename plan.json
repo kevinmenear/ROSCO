@@ -3552,7 +3552,10 @@
         "harness/ParseInput_Int_Opt.postintegration.revert-verified.json",
         "evidence/ParseInput_Int_Opt/done_check.txt"
       ],
-      "disposition_note": "Integrated and gated: gate 5,252,000 values / 351 channels / 27 scenarios, 0 mismatched, with two revert-verified red tests; differential harness 12,059 / 0 pre- and post-integration, four stub red tests, two predicted exactly and two as brackets whose excesses sum to 803 exactly. DEFERRED on P12 alone: the mutation score is 93 / (143 - 37 - 8) = 0.949 against a threshold of 1.0, with five open survivors. Each is answered in evidence/ParseInput_Int_Opt/mutation_survivors.txt -- two are corpus gaps with a named record and the exact generator entry that closes each, two are one `is_eol` gap seen twice whose repair is a decision about the reader shared with unit #55, and one is the record search's own negative control."
+      "disposition_note": "Integrated and gated: gate 5,252,000 values / 351 channels / 27 scenarios, 0 mismatched, with two revert-verified red tests; differential harness 12,059 / 0 pre- and post-integration, four stub red tests, two predicted exactly and two as brackets whose excesses sum to 803 exactly. DEFERRED on P12 alone: the mutation score is 93 / (143 - 37 - 8) = 0.949 against a threshold of 1.0, with five open survivors. Each is answered in evidence/ParseInput_Int_Opt/mutation_survivors.txt -- two are corpus gaps with a named record and the exact generator entry that closes each, two are one `is_eol` gap seen twice whose repair is a decision about the reader shared with unit #55, and one is the record search's own negative control.",
+      "source_file": "rosco/controller/src/ROSCO_Helpers.f90",
+      "translation": "translations/ROSCO_Helpers/parseinput_int_opt.cpp",
+      "harness_required": true
     },
     {
       "order": 58,
