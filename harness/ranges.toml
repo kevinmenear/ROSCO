@@ -3014,3 +3014,39 @@ UnEc = { lo = 0, hi = 0, values = [0] }
 has_AllowDefault = { values = [1, 0] }
 AllowDefault = { values = [0, 1] }
 vit_record = { compare_record = "ROSCO_Helpers.f90:325 (clean baseline 54dd134) PRINTs a warning record naming the variable and the default value it substituted -- `PRINT *, \"ROSCO Warning: Did not find \"//TRIM(VarName)//\" in input file.  Using default value of \", TRIM(Variable)`. It is the only thing that tells a ROSCO user their input file did not supply the value, and it crosses no dummy argument, so R4 never named it and no no_oracle could have excluded it: the exclusion was structural rather than a judgement anybody made. Unit #55 measured what that costs -- five of its six surviving mutants edited its own record and nothing else -- and units #56, #57 and this one take the comparison at their first dispatch instead of at a sixth. The record is TWO ADJACENT CHARACTER ITEMS, a layout no unit in this family has had: #55 writes CHARACTER, an array of integers, then a CHARACTER; #56 writes CHARACTER then one REAL; #57 writes CHARACTER then one INTEGER. So it turns on the one libgfortran rule none of them exercised -- a CHARACTER item following a CHARACTER item takes NO separator when DELIM=NONE, which is the default -- and that rule was derived from libgfortran's own list_formatted_write_scalar and then priced against gfortran's record before the corpus was generated: evidence/ParseInput_Str_Opt/print_record_probe.{f90,cpp,txt}, 9 of 9 byte-identical across item lengths 0, 1, 5, 6, 7, 256 and 1024, which straddle the truncation of the six-byte default." }
+
+# ---------------------------------------------------------------------------
+# RefSpeedExclusion
+#
+# ONE PIN, AND IT IS THIS FILE'S OLDEST JUDGEMENT MET AGAIN -- for the first
+# time on the RATE LIMITER's counter rather than the low-pass filter's.
+#
+# `ratelimit` (unit #43) subscripts `rlP%LastSignal`, `REAL(DbKi),
+# DIMENSION(1024)`, with `inst` and advances it:
+#
+#     rlP%LastSignal(inst) = ...          ROSCO_Types.f90:287-289
+#     inst = inst + 1
+#
+# and it does NOT bounds-check, deliberately -- the reference does not, and unit
+# #43's translation records why adding a guard would be a site no admissible
+# input can reach. So an unbounded `objInst%instRL` makes the REFERENCE read and
+# write outside its own object, exactly as it did for `objInst%instLPF` at units
+# #40, #41, #44, #45 and #46.
+#
+# THE BOUND IS ARITHMETIC, NOT A ROUND NUMBER: this unit calls `ratelimit`
+# exactly ONCE per call, so 1024 - 1 = 1023 is the largest subscript that stays
+# inside the array. 1000 is the number the other five units already carry and it
+# leaves 23 slots of margin, so it is taken here for commensurability rather
+# than invented.
+#
+# THE COST, STATED. `instRL` leaves R6's integer ladder, so the decade
+# boundaries and the two 32-bit extremes are gone from it -- every one of them a
+# value at which the REFERENCE has no defined behaviour. What is genuinely lost
+# is the LAST SLOT: the corpus cannot put the counter at 1024, so a translation
+# that subscripted `LastSignal[inst]` instead of `[inst-1]` there would have
+# nothing here to disagree with. That defect would be in `ratelimit`, which is
+# CALLED rather than inlined, so both sides of this comparison reach one
+# implementation of it and this harness never constrained it.
+[RefSpeedExclusion]
+
+objInst_instRL = { lo = 1, hi = 1000 }
