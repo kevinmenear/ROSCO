@@ -1,6 +1,6 @@
-# done_check.py ComputeVariablesSetpoints -- captured 2026-08-20T14:19:56Z by scripts/capture_done_check.sh
+# done_check.py ComputeVariablesSetpoints -- captured 2026-08-20T14:49:43Z by scripts/capture_done_check.sh
 
-Run against the committed state at d7d98e50 ("ComputeVariablesSetpoints: done_check captured -- 12 of 14, Verdict.INCOMPLETE"), with a CLEAN tree, with stdout
+Run against the committed state at 63738315 ("ComputeVariablesSetpoints: 0.8354, and the 577-case red is EXPLAINED and REPAIRED"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -31,8 +31,8 @@ ComputeVariablesSetpoints: Verdict.INCOMPLETE  (12/14 PASS)
 [  ok  ] P7   state brought current              
 [  ok  ] P8   unit named in state                
 [  ok  ] P9   gate compared and matched          
-[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/ComputeVariablesSetpoints.json 58/79 = 0.734 < 1.0 -- survivors: compare_op[f977278e], compare_op[f647c7b4], drop_factor[09894fe5], arith_op[d17318eb], arith_op[3941a7ef], arith_op[288700cf]
-[  ok  ] P11  post-integration harness re-run    25398 check(s) against the integrated build
+[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/ComputeVariablesSetpoints.json 66/79 = 0.835 < 1.0 -- survivors: compare_op[1c85d6d7], compare_op[f977278e], compare_op[f647c7b4], drop_factor[09894fe5], arith_op[be35d649], const_tweak[0c23917a]
+[  ok  ] P11  post-integration harness re-run    22776 check(s) against the integrated build
 [  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
 [  ok  ] P10  evidence reproducible              
 [ FAIL ] P14  artifact revisions agree           dirty_rev:gate/ComputeVariablesSetpoints.json=41d383f-dirty, harness/ComputeVariablesSetpoints.postintegration.json=41d383f-dirty -- the recorded SHA does not name the code that ran
