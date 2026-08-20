@@ -6,7 +6,7 @@
  "comparison_verdict": "FAIL",
  "generated_by": "scripts/gate.py",
  "inputs_restored": [],
- "loop_rev": "18fd7f2",
+ "loop_rev": "cc32476",
  "mismatched": 1857893,
  "mismatched_channels": [
   "scenario_3:bld_pitch 10334/16000",
