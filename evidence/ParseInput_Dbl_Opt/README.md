@@ -21,7 +21,7 @@ the seventh, mutation, is below the campaign's threshold of 1.0 at
 | mutation (`mutation/ParseInput_Dbl_Opt.json`) | **181 mutants, 4 nocompile, 177 behavioural: 110 KILLED, 27 EQUIVALENT, 19 UNREACHABLE, 21 SURVIVED, 110/131 = 0.8397.** SANITISED, green baseline, clean tree, `--workers 8`, 121 s. `declared_but_killed` and `unreachable_but_killed` both EMPTY | — the score IS the red test (E4.6). All 21 survivors are answered in `mutation_survivors.txt`, **14 of them by a named record** |
 | line coverage of the translation (`line_coverage.txt`) | **200 executable lines run, 38 never** over the 11,562 cases, at `-O0`. The measurement all 19 `unreachable` declarations are DERIVED from, by `make_unreachable.py` | **three controls**: the entry line's gcov count is 11,562 = the case count; NON-survivors on never-run lines that are not nocompile number **0**; and the four nocompile ids were measured independently and the count matches the sweep's own `nocompile: 4` |
 | survivor record search (`survivor_record_search.txt`) | **16 of the then-23 open survivors distinguished over 131,312 records — all by a VALUE, 0 by an ADDRESS. Two of the 16 were then found to be equivalent AT THE UNIT (§5c) and are no longer open, so 14 of the 21 stand.** Nothing folded into the score | the **negative control is built into the shape**: the search takes the record length as a literal `200`, so `479d0b11` — the mutant of the constant `MaxParamLength` itself — cannot be reached and must come back `NONE`. It does |
-| mutation, VALUE ORACLE (`mutation/ParseInput_Dbl_Opt.value-oracle.json`) | **110 of 177, 0.8271 — the same number**, and the same corpus and declarations. Run as a control on `killed_by_sanitizer: 5`, and it REFUTED the reading of that field | the control is the SURVIVOR SET, not the count: the two runs disagree by exactly one mutant each way, which is why the totals match. §5b |
+| mutation, VALUE ORACLE (`mutation/ParseInput_Dbl_Opt.value-oracle.json`) | **110 of 177, 0.8397 — the same number**, and the same corpus and declarations. Run as a control on `killed_by_sanitizer: 5`, and it REFUTED the reading of that field | the control is the SURVIVOR SET, not the count: the two runs disagree by exactly one mutant each way, which is why the totals match. §5b |
 | post-integration (`harness/ParseInput_Dbl_Opt.postintegration.json`) | 11,562 checked, **0 failed** | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **2,056 of 11,562**, PREDICTED 2,056 from the partition before the run; reverted, rebuilt, green re-taken at 0 |
 | gate, 27 scenarios (`gate/ParseInput_Dbl_Opt.json`) | 5,252,000 values / 351 channels, **0 mismatched**, 28 s | **TWO, both predicted**: every parsed value + 1.0 moves **1,857,893** across 147 channels, revert-verified at 0; the default arm moves **0**, and the artifact carries the argument (§6) |
 
@@ -318,7 +318,7 @@ totals match and why a score-only comparison would have called them identical
 | `5a8abaea` | `list_read_reals:337`, `v[i]` → `v[i+1]` | KILLED | survived | the caller passes `&value`, ONE double, so `v[1]` writes one past the object into the caller's stack frame. Nothing a comparison of the OUTPUTS can see — genuinely sanitiser-only |
 | `b03a94c5` | `parse_real:198`, `buf[n]` → `buf[n+1]` | survived | KILLED | the edit leaves `buf[n]` UNINITIALISED, so the string handed to `strtod` ends wherever the stack garbage holds a zero. The plain build's garbage differs from the correct string and the ASan build's does not. **Its kill is a property of the BUILD, not of the program**, and neither run is wrong |
 
-**The union is 111 of 133 = 0.8346 and no artifact can carry it.**
+**The union is 111 of 131 = 0.8473 and no artifact can carry it.**
 `vit_mutate.py` scores one instrument per run and has no union; the RUNBOOK
 already records that gap. The scored artifact stays the sanitised one, because
 that is what both siblings score and changing a verification default mid-run is
@@ -390,7 +390,8 @@ supplies every parameter this unit asks for, so `FoundLine` is TRUE at all 73
 calls and the gate cannot see the default arm. The differential harness reaches
 it on 9,148 cases.
 
-**AND THE 1,857,893 IS A CROSS-UNIT CONTROL NOBODY DESIGNED.**
+**TWO CROSS-UNIT CONTROLS NOBODY DESIGNED, and the second is sharper than the
+first.**
 `ParseInAry_Opt`'s parsed-value red test moved **1,857,893 of 5,252,000 across
 147 of 351 channels**; this one — a different unit, a different type, a
 different site — moved **1,857,893 across 147**. That is not a copied number.
@@ -399,6 +400,29 @@ WHEN each scenario first diverges and by which scenarios run long enough to be
 compared, not by which parameter moved. Two independent runs agreeing to the
 value is a control on the gate's own determinism that neither unit could have
 produced alone.
+
+**AND THE SECOND ONE IS EXACT DOWN TO WHICH SCENARIOS DIE.** The survivor run
+in §5 moved
+
+    1,583,216 of 4,732,000 compared, 131 of 351 channels, scenarios 19 and 27 broke
+
+and `gate/ParseDbAry_Opt.redtest.survivor-2a9e1695.json` — unit #54, a
+DIFFERENT file, a different statement (`while (p < len && is_digit(rec[p]))` in
+the fractional-digit loop, not the exponent's sign) — recorded
+**1,583,216 of 4,732,000, 131 channels, scenarios 19 and 27**. Byte for byte
+the same outcome.
+
+Put beside the 1,857,893 pair, the regularity is readable: **the gate's answer
+is set by the FAILURE CLASS, not by the site.**
+
+    every parsed value is wrong   1,857,893 of 5,252,000   147 channels
+    the parse FAILS, aviFAIL = -1 1,583,216 of 4,732,000   131 channels,
+                                                           scenarios 19, 27 dead
+
+That makes a gate red test on this family PREDICTABLE TO THE VALUE before it is
+run, which is worth more than any single number in this file: a red test whose
+count can be predicted exactly is a red test that can be WRONG, and a red test
+that cannot be wrong is not evidence about the instrument.
 
 ## 6b. E4.5 — the post-integration harness
 

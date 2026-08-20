@@ -8729,6 +8729,41 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   #47's rule that two arm-scoped counts summing to a shared one is an
   arithmetic control, run in the other direction.
 
+## THE GATE'S ANSWER TO A PERTURBATION IS SET BY THE FAILURE CLASS AND NOT BY
+## THE SITE, AND THREE UNITS NOW SHOW IT TO THE VALUE
+
+- **Units #54, #55 and #56, four runs, two numbers.** None of these was
+  designed as a control; the agreement was noticed after the fact and is
+  checkable in the committed artifacts.
+
+  ```
+  every parsed value is one greater
+    gate/ParseInAry_Opt.redtest.parsed-value.json     1,857,893 / 5,252,000  147 ch
+    gate/ParseInput_Dbl_Opt.redtest.parsed-value.json 1,857,893 / 5,252,000  147 ch
+
+  the parse FAILS, so ErrVar%aviFAIL = -1
+    gate/ParseDbAry_Opt.redtest.survivor-2a9e1695.json 1,583,216 / 4,732,000  131 ch
+                                                       scenarios 19 and 27 broke
+    gate/ParseInput_Dbl_Opt.survivor.9e00d730.json     1,583,216 / 4,732,000  131 ch
+                                                       scenarios 19 and 27 broke
+  ```
+
+  Different units, different files, different statements, different item types.
+  What is shared is WHAT GOES WRONG downstream: a wrong value diverges each
+  scenario at the timestep it first matters, and a parse failure kills the two
+  scenarios that cannot start and shifts the rest.
+
+  **So a gate red test on the `Parse*` family can be predicted TO THE VALUE
+  before it runs**, and that is worth more than any individual count: a red
+  test whose number can be predicted exactly is one that can be WRONG, and a
+  red test that cannot be wrong is not evidence about the instrument. State the
+  expected pair -- `(mismatched, compared, channels)` and the broken-scenario
+  list -- in the `--note`, then run it.
+
+  The reading to resist is that a repeated number means a copied number. Check
+  the `perturbation` block in each artifact: the four `from`/`to` strings are
+  four different statements in three different files.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's

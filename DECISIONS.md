@@ -13511,3 +13511,58 @@ And a mutant whose only difference is in UNINITIALISED memory is a third kind
 of survivor that neither `equivalent` nor `unreachable` fits: its verdict is not
 a property of the corpus or of the programs, but of the build, and the only
 honest treatment is to report both runs.
+
+### TWO MORE EQUIVALENCES, FOUND BY WRITING DOWN A PREDICTION
+
+`4cbc3c66` and `8d81269b` -- the comma test and the semicolon test in
+`list_read_reals` -- were filed as corpus levers by
+`evidence/ParseInput_Dbl_Opt/mutation_survivors.txt`, on the strength of the
+131,312-record search distinguishing them on 6,391 and 924 records. **That was
+wrong, and the thing that exposed it was writing a prediction for a gate run.**
+
+`8d81269b` was chosen as the NEGATIVE CONTROL for the cross-instrument pair,
+and the prediction had to say why the gate would not see it. Writing "every
+value this unit parses begins with a digit, a '-' or a '.'" immediately raised
+the sharper question -- why can `rec[p+1]` never be a semicolon EITHER? -- and
+the answer is not about the shipped input file at all:
+
+    GetWords:  NextWhite = SCAN( Line(Ch+1:) , ' ,!;''"'//Tab )
+               Words(IW) = Line(Ch+1:Ch+NextWhite-1)
+
+A word contains none of space, comma, `!`, semicolon, `'`, `"` or tab;
+`GetWords` blank-fills every element it is given; the translation hands it the
+whole 400-byte buffer. **No byte of `rec[0..399]` is ever a comma or a
+semicolon**, so both mutants take the same branch on every admissible input to
+the UNIT. 0.8271 -> 0.8397.
+
+**THE GENERAL POINT, AND IT IS ABOUT THE SECOND INSTRUMENT RATHER THAN ABOUT
+THESE TWO MUTANTS.** A search that drives an internal function DIRECTLY has a
+wider input space than the unit does. `survivor_record_search.cpp` hands
+`list_read_reals` records containing commas and semicolons, which are perfectly
+good inputs to that FUNCTION and cannot be inputs to `ParseInput_Dbl_Opt`,
+because a callee stands between the unit's arguments and that buffer. **Before
+reading a search's `differs` as a corpus lever, ask what the callee can
+produce.** The search is not wrong -- it answers the question it was asked --
+but the question is one step narrower than the one the score is about.
+
+The disputable half of the claim is a KILL rather than an absence, which is the
+strongest form available: each of the two lines carries a `negate_cond` sibling
+(`96b773cb`, `139ff398`) and both were KILLED, so the line is executed and the
+branch is observable.
+
+### A SECOND CROSS-UNIT GATE CONTROL, AND WHAT THE PAIR IS WORTH
+
+`gate/ParseInput_Dbl_Opt.survivor.9e00d730.json` moved 1,583,216 of 4,732,000
+across 131 of 351 channels with scenarios 19 and 27 dead.
+`gate/ParseDbAry_Opt.redtest.survivor-2a9e1695.json` -- unit #54, a different
+file, a different statement, a different parser region -- recorded the same
+four numbers. Beside the 1,857,893/147 pair the regularity is readable:
+
+    every parsed value is wrong    1,857,893 of 5,252,000   147 channels
+    the parse FAILS, aviFAIL = -1  1,583,216 of 4,732,000   131 channels,
+                                                            scenarios 19, 27 dead
+
+**The gate's answer is set by the FAILURE CLASS, not by the site.** Recorded in
+the RUNBOOK target layer, because it makes this family's gate red tests
+predictable to the value before they run -- and a red test whose count can be
+predicted exactly is one that can be WRONG, which is the whole reason to run it.

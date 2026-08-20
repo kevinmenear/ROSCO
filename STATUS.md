@@ -21,7 +21,7 @@ the parser are copied byte for byte from `parsedbary_opt.cpp` and hash-verified,
 | mutation (`mutation/ParseInput_Dbl_Opt.json`) | **181 mutants, 4 nocompile, 177 behavioural: 110 killed, 27 equivalent, 19 unreachable, 21 open. 110/131 = 0.8397.** Sanitised, green baseline, `--workers 8`, **121 s**. `declared_but_killed` and `unreachable_but_killed` both EMPTY | the score IS the red test (E4.6) |
 | line coverage of the translation (`evidence/.../line_coverage.txt`) | 200 executable lines run, 38 never, at -O0. All 19 `unreachable` declarations derive from it | **three controls**: entry-line count 11,562 = case count; non-survivors on never-run lines that are not nocompile = 0; the nocompile ids measured independently and the count matching the sweep's own 4 |
 | survivor record search (`evidence/.../survivor_record_search.txt`) | **16 of the then-23 distinguished over 131,312 records, all by a VALUE; 14 of the 21 stand after two were found equivalent at the unit** | the negative control is built into the shape: the search takes the record length as a literal 200, so the mutant OF that constant cannot be reached and must come back NONE. It does |
-| mutation, VALUE ORACLE (`mutation/ParseInput_Dbl_Opt.value-oracle.json`) | **110 of 177, 0.8271 -- the same number** | the control is the SURVIVOR SET, not the count: the two runs disagree by exactly one mutant each way. Union 111/131 = 0.8473, which no artifact can carry |
+| mutation, VALUE ORACLE (`mutation/ParseInput_Dbl_Opt.value-oracle.json`) | **110 of 177, 0.8397 -- the same number** | the control is the SURVIVOR SET, not the count: the two runs disagree by exactly one mutant each way. Union 111/131 = 0.8473, which no artifact can carry |
 | post-integration (`harness/ParseInput_Dbl_Opt.postintegration.json`) | 11,562 checked, 0 failed | the reverse copy deleted from this unit's own wrapper: **2,056**, PREDICTED 2,056 exactly; reverted, rebuilt, green re-taken at 0 |
 | gate, 27 scenarios (`gate/ParseInput_Dbl_Opt.json`) | 5,252,000 values / 351 channels, 0 mismatched, 28 s | **two**: every parsed value + 1.0 moves **1,857,893** across 147 channels, revert-verified 0; the default arm moves **0**, predicted from coverage before the run |
 
@@ -65,12 +65,22 @@ magnitudes** from this unit's only scalar real, to buy three mutants. Refused,
 escalated in DECISIONS.md as a generator change (the base draw and the ladder
 membership are decided by one field and are two judgements).
 
-**THE 1,857,893 IS A CROSS-UNIT CONTROL NOBODY DESIGNED.** `ParseInAry_Opt`'s
-parsed-value gate red test moved 1,857,893 of 5,252,000 across 147 of 351
-channels; this one, a different unit perturbing a different type at a different
-site, moved 1,857,893 across 147. The gate's count for *any parsed control
-parameter is wrong* is set by when each scenario first diverges, not by which
-parameter moved.
+**TWO CROSS-UNIT GATE CONTROLS NOBODY DESIGNED, and together they make this
+family's red tests predictable to the value.** `ParseInAry_Opt`'s parsed-value
+red test moved 1,857,893 of 5,252,000 across 147 of 351 channels; this unit's,
+a different type at a different site, moved 1,857,893 across 147. And this
+unit's survivor run moved 1,583,216 of 4,732,000 across 131 channels with
+scenarios 19 and 27 dead -- which is byte for byte what
+`gate/ParseDbAry_Opt.redtest.survivor-2a9e1695.json` recorded for unit #54 at a
+different statement in a different file.
+
+    every parsed value is wrong    1,857,893 of 5,252,000   147 channels
+    the parse FAILS, aviFAIL = -1  1,583,216 of 4,732,000   131 channels,
+                                                            scenarios 19, 27 dead
+
+**The gate's answer is set by the FAILURE CLASS, not by the site.** A red test
+whose count can be predicted exactly is one that can be WRONG, which is what
+makes it evidence about the instrument.
 
 **Procedure.** Two mutation sweeps, both foreground under `mutate_guarded.sh`
 and routed through the clock; nothing backgrounded, nothing polled. Four reset
