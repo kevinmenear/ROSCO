@@ -1,0 +1,46 @@
+POST-INTEGRATION COPY-BACK RED TEST -- THE PREDICTION, WRITTEN BEFORE THE RUN.
+
+The perturbation deletes ONE line from THIS unit's own wrapper in
+rosco/controller/src/Controllers.f90:
+
+    CALL vit_copy_scalars_to_localvariables(LocalVar_view, LocalVar)
+
+and nothing else. The other copy-backs this unit's wrapper carries
+(`controlparameters`, `errorvariables`) stay, and so does every other unit's
+wrapper.
+
+WHAT IT TESTS: the post-integration green is taken THROUGH the wrapper, so it
+is a statement about the wrapper as much as about the translation. If the
+copy-back were absent the C++ answers would never reach the Fortran
+`LocalVar`, and a green that survives that is a green that was not measuring
+the integration at all.
+
+PREDICTED: 37,167 of 37,167 -- EVERY case.
+
+THE REASONING IS A PROPERTY OF THE UNIT AND NOT OF THE CORPUS. Six
+`LocalVar%...` SCALARS are assigned on EVERY path through this routine, with
+no arm able to skip any of them:
+
+    PC_MaxPit        one of the two arms of the first IF, both of which assign
+    PC_MinPit        one of the two arms of the PS_Mode IF, both of which assign
+    PC_KP, PC_KI, PC_KD, PC_TF   the four unconditional interp1d results
+    PC_PitComT       the PIController result, then saturated, then rate-limited
+    PC_PitComT_Last  assigned from it, unconditionally
+
+All eight are in R4's compared out-parameter list. For a case to PASS with the
+copy-back deleted, the incoming case value would have to coincide with the
+computed one on ALL of them simultaneously.
+
+THE ARRAYS ARE NOT WHAT THIS TESTS, and that is worth saying because they are
+this unit's principal outputs. `LocalVar%PitCom`, `%PitCom_SD` and
+`%PitComAct` are FIXED-SIZE `DIMENSION(3)` members of the view struct, not
+ALLOCATABLE ones, so whether they cross back through
+`vit_copy_scalars_to_localvariables` or through the struct itself is a
+property of the generated view module rather than of this prediction. If the
+failing count comes in BELOW 37,167 the first thing to read is which outputs
+the survivors differ on -- a count short of the whole corpus would name cases
+whose eight scalar writes are all fixed points, which is a fact about the
+corpus and would be reported as such rather than explained away.
+
+`DebugVar` and `objInst` cross by `C_LOC` with no view and are NOT affected by
+this deletion.

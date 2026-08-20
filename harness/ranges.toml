@@ -3724,4 +3724,67 @@ objInst_instRes = { lo = 1, hi = 1000 }
 # observable is lost. The other cost is TIME: a flag with four values re-runs
 # R6's blocks under each, which is the corpus-size multiplier unit #47 priced at
 # ~35 -> ~50 minutes on a sweep.
-LocalVar_NumBl = { values = [3, 0, 1, 2] }
+LocalVar_NumBl = { lo = 0, hi = 3 }
+#
+# AND IT IS A RANGE AFTER ALL, BECAUSE THE `values` LIST DID NOT FIT IN MEMORY.
+# Stated as a measurement rather than left as the judgement above, which was
+# written first and is kept because the reasoning still holds -- what refuted it
+# is the generator's ceiling, not the argument:
+#
+#     LocalVar_NumBl = { values = [3, 0, 1, 2] }   2 flags   SIGKILL exit 137 at 54 s
+#     LocalVar_NumBl = { values = [3] }            2 flags   54,675 cases, SIGKILL at 51 s
+#     LocalVar_NumBl = { lo = 0, hi = 3 }          1 flag    37,244 cases, GENERATED
+#
+# R6 re-runs its whole 10,048-value block "under every declared value of N
+# flag(s)", so a `values` list on ANY parameter multiplies the corpus by the
+# flag count -- and a one-element list is still a flag. The container has
+# 7.7 GiB and unit #60 measured the generation at ~188 KB per case. All three
+# runs are the same 165 varied parameters, reached with
+# `--transitive-read-set` over ControllerBlocks.f90, Filters.f90 and
+# Functions.f90 (507 -> 165 varied, `avrSWAP` HELD as write-only); without it
+# the generator was killed at 37 s before printing a case count at all.
+#
+# WHAT IT COSTS, AND IT IS THE COST unit #49 MEASURED: a bounds pin drops NumBl
+# out of R6's ladder and leaves it at its base draw, so most of the corpus runs
+# ONE blade. What is left reaching 2 and 3 is R7's predicate knob, which reads
+# the reference's own predicates and offers [0, 1, 2] -- so **NO CASE IN THIS
+# CORPUS RUNS THREE BLADES**, and the three unconditional `avrSWAP(42..44)`
+# reads are compared against a third element no loop in the case wrote. That is
+# a real blindness, it is this unit's principal one, and it is named here rather
+# than in prose: the instrument that would remove it is a corpus the generator
+# cannot currently hold.
+#
+# --- 5. THE R13 STAGING-CAPACITY WINDOW, PREDICTED FROM A PROBE AND STATED
+# WITH ITS SIZE BEFORE THE RUN.
+#
+# The first corpus went RED: `HARNESS FAIL: checked 37244  failed 77`, every
+# one of them on `ErrVar.ErrMsg` and `ErrVar.n_ErrMsg` and nothing else. The
+# 77 cases are CONTIGUOUS -- 36997..37073, which is k = 9..85 of R13's
+# 256-case ladder -- and `evidence/PitchControl/r13_window_probe.txt` is the
+# per-case dump that says so, taken by raising the test harness's own
+# `diffs.size() < 16` cap to 400 and re-running with `--no-generate` so the
+# scored corpus was not disturbed.
+#
+# IT IS unit #48's COMPOSITION WINDOW, AT THE LARGEST SCALE IN THIS CAMPAIGN.
+# The reference chain is Fortran throughout with ONE capacity gate, in the
+# generated bridge, on the FINAL composed value. The translation chain gates at
+# every C boundary -- once inside each of the four `interp1d` bridges, once in
+# `IPC`'s and its four `sigma` calls, and once in this unit's own
+# `assign_errmsg`. With the ladder's base extent at 29 bytes:
+#
+#     cap  <  38   both refuse                 ref 29  got  29   PASS
+#     38 <= cap <= 114
+#                  the bridges write as far as they fit, the final
+#                  assignment refuses, the reference refuses everything
+#                                              ref 29  got 38..102  FAIL   <- 77
+#     cap >= 115   both write the whole chain  ref 115 got 115   PASS
+#
+# 115 is the composed length and 114 is the last capacity at which the
+# translation gets 102 bytes down and cannot fit this unit's own 13-byte
+# `'PitchControl:'` on top of them.
+#
+# THE PREDICTION, WRITTEN BEFORE THE RUN THAT TESTS IT: excluding [38, 114]
+# drops exactly 77 of the 256 ladder cases, takes the corpus from 37,244 to
+# 37,167, and takes the harness to 0 failed. If it drops a different number,
+# the window is not what this arithmetic says it is.
+ErrVar_ErrMsg = { staging_capacity_excludes = [38, 114], reason = "PitchControl composes the deferred-length ErrMsg through up to eleven staged assignments -- four interp1d bridges, IPC and its four sigma calls, and its own 13-byte 'PitchControl:' prefix -- where the reference chain is Fortran throughout and gates the staging buffer ONCE, in the generated bridge, on the final 115-byte value. Inside [38, 115) the reference holds the 29-byte entry value and the translation holds a partial composition of 38 to 102 bytes, and the reference's own 115-byte answer is a value neither side can carry: the case has no oracle. Measured at cases 36997..37073, k = 9..85 of the ladder, 77 cases, in evidence/PitchControl/r13_window_probe.txt." }

@@ -1,0 +1,78 @@
+case   k   cap  ref_len got_len  got prefix chain
+36997   9   38     29      38  interp1d:8@ABYZ[^_`abyz{9:; !/01
+36998  10   39     29      38  interp1d:8@ABYZ[^_`abyz{9:; !/01
+36999  11   40     29      38  interp1d:8@ABYZ[^_`abyz{9:; !/01
+37000  12   41     29      38  interp1d:8@ABYZ[^_`abyz{9:; !/01
+37001  13   42     29      38  interp1d:8@ABYZ[^_`abyz{9:; !/01
+37002  14   43     29      38  interp1d:8@ABYZ[^_`abyz{9:; !/01
+37003  15   44     29      38  interp1d:8@ABYZ[^_`abyz{9:; !/01
+37004  16   45     29      38  interp1d:8@ABYZ[^_`abyz{9:; !/01
+37005  17   46     29      38  interp1d:8@ABYZ[^_`abyz{9:; !/01
+37006  18   47     29      47  interp1d:interp1d:8@ABYZ[^_`abyz
+37007  19   48     29      47  interp1d:interp1d:8@ABYZ[^_`abyz
+37008  20   49     29      47  interp1d:interp1d:8@ABYZ[^_`abyz
+37009  21   50     29      47  interp1d:interp1d:8@ABYZ[^_`abyz
+37010  22   51     29      47  interp1d:interp1d:8@ABYZ[^_`abyz
+37011  23   52     29      47  interp1d:interp1d:8@ABYZ[^_`abyz
+37012  24   53     29      47  interp1d:interp1d:8@ABYZ[^_`abyz
+37013  25   54     29      47  interp1d:interp1d:8@ABYZ[^_`abyz
+37014  26   55     29      47  interp1d:interp1d:8@ABYZ[^_`abyz
+37015  27   56     29      56  interp1d:interp1d:interp1d:8@ABY
+37016  28   57     29      56  interp1d:interp1d:interp1d:8@ABY
+37017  29   58     29      56  interp1d:interp1d:interp1d:8@ABY
+37018  30   59     29      56  interp1d:interp1d:interp1d:8@ABY
+37019  31   60     29      56  interp1d:interp1d:interp1d:8@ABY
+37020  32   61     29      56  interp1d:interp1d:interp1d:8@ABY
+37021  33   62     29      56  interp1d:interp1d:interp1d:8@ABY
+37022  34   63     29      56  interp1d:interp1d:interp1d:8@ABY
+37023  35   64     29      56  interp1d:interp1d:interp1d:8@ABY
+37024  36   65     29      65  interp1d:interp1d:interp1d:inter
+37025  37   66     29      65  interp1d:interp1d:interp1d:inter
+37026  38   67     29      65  interp1d:interp1d:interp1d:inter
+37027  39   68     29      65  interp1d:interp1d:interp1d:inter
+37028  40   69     29      65  interp1d:interp1d:interp1d:inter
+37029  41   70     29      65  interp1d:interp1d:interp1d:inter
+37030  42   71     29      65  interp1d:interp1d:interp1d:inter
+37031  43   72     29      65  interp1d:interp1d:interp1d:inter
+37032  44   73     29      65  interp1d:interp1d:interp1d:inter
+37033  45   74     29      74  interp1d:interp1d:interp1d:inter
+37034  46   75     29      74  interp1d:interp1d:interp1d:inter
+37035  47   76     29      74  interp1d:interp1d:interp1d:inter
+37036  48   77     29      74  interp1d:interp1d:interp1d:inter
+37037  49   78     29      74  interp1d:interp1d:interp1d:inter
+37038  50   79     29      74  interp1d:interp1d:interp1d:inter
+37039  51   80     29      74  interp1d:interp1d:interp1d:inter
+37040  52   81     29      74  interp1d:interp1d:interp1d:inter
+37041  53   82     29      74  interp1d:interp1d:interp1d:inter
+37042  54   83     29      74  interp1d:interp1d:interp1d:inter
+37043  55   84     29      74  interp1d:interp1d:interp1d:inter
+37044  56   85     29      74  interp1d:interp1d:interp1d:inter
+37045  57   86     29      74  interp1d:interp1d:interp1d:inter
+37046  58   87     29      87  PitchControl:interp1d:interp1d:i
+37047  59   88     29      87  PitchControl:interp1d:interp1d:i
+37048  60   89     29      87  PitchControl:interp1d:interp1d:i
+37049  61   90     29      87  PitchControl:interp1d:interp1d:i
+37050  62   91     29      87  PitchControl:interp1d:interp1d:i
+37051  63   92     29      87  PitchControl:interp1d:interp1d:i
+37052  64   93     29      93  IPC:sigma:sigma:sigma:sigma:inte
+37053  65   94     29      93  IPC:sigma:sigma:sigma:sigma:inte
+37054  66   95     29      93  IPC:sigma:sigma:sigma:sigma:inte
+37055  67   96     29      93  IPC:sigma:sigma:sigma:sigma:inte
+37056  68   97     29      93  IPC:sigma:sigma:sigma:sigma:inte
+37057  69   98     29      93  IPC:sigma:sigma:sigma:sigma:inte
+37058  70   99     29      93  IPC:sigma:sigma:sigma:sigma:inte
+37059  71  100     29      93  IPC:sigma:sigma:sigma:sigma:inte
+37060  72  101     29      93  IPC:sigma:sigma:sigma:sigma:inte
+37061  73  102     29     102  interp1d:IPC:sigma:sigma:sigma:s
+37062  74  103     29     102  interp1d:IPC:sigma:sigma:sigma:s
+37063  75  104     29     102  interp1d:IPC:sigma:sigma:sigma:s
+37064  76  105     29     102  interp1d:IPC:sigma:sigma:sigma:s
+37065  77  106     29     102  interp1d:IPC:sigma:sigma:sigma:s
+37066  78  107     29     102  interp1d:IPC:sigma:sigma:sigma:s
+37067  79  108     29     102  interp1d:IPC:sigma:sigma:sigma:s
+37068  80  109     29     102  interp1d:IPC:sigma:sigma:sigma:s
+37069  81  110     29     102  interp1d:IPC:sigma:sigma:sigma:s
+37070  82  111     29     102  interp1d:IPC:sigma:sigma:sigma:s
+37071  83  112     29     102  interp1d:IPC:sigma:sigma:sigma:s
+37072  84  113     29     102  interp1d:IPC:sigma:sigma:sigma:s
+37073  85  114     29     102  interp1d:IPC:sigma:sigma:sigma:s

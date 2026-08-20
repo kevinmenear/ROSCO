@@ -1,0 +1,77 @@
+PitchControl -- THE CORPUS THIS UNIT COULD BE GIVEN, AND THE ONE IT WANTED
+==========================================================================
+
+Measured 2026-08-20 on the clean tree (54dd134), container `vit-dev`, 7.7 GiB.
+
+WHAT THE GENERATOR DID WITH THE DEFAULT READ SET
+------------------------------------------------
+PitchControl hands all six of its arguments to at least one callee, so
+`statevary.read_set` marks every one of them WHOLE and every field of every
+one is varied:
+
+    507 parameter(s) varied, 0 held at an inert value
+    CntrPar, DebugVar, ErrVar, LocalVar, avrSWAP, objInst -- all "read WHOLE"
+
+    run 1   default read set          SIGKILL exit 137 at 37 s, no case count
+
+`exit 137` is the kernel's OOM killer and it leaves nothing -- unit #60's entry
+in RUNBOOK says so and it is what happened here. The generator did not reach
+the line that prints the case count.
+
+WHAT `--transitive-read-set` BOUGHT
+-----------------------------------
+    --transitive-read-set rosco/controller/src/ControllerBlocks.f90
+    --transitive-read-set rosco/controller/src/Filters.f90
+    --transitive-read-set rosco/controller/src/Functions.f90
+
+    507 -> 165 varied, 342 held, all 17 predicate knobs kept
+
+and the single largest item in that is `avrSWAP`, which becomes HELD: the
+detector `statevary.write_only` sees that every executable mention of it in
+this unit is the subscripted target of an assignment (`avrSWAP(42..45) = ...`,
+four of them, nothing else), so it is an input nobody reads. A varied
+`avrSWAP` is 3,000 distinct Python floats in every generated case; held it is
+3,000 references to one 0.0. It still crosses at full extent and is still
+COMPARED as an output -- it is the first out-parameter in R4's list.
+
+THE FLAG CEILING, AND IT IS WHAT DECIDED `LocalVar_NumBl`
+----------------------------------------------------------
+R6 re-runs its entire 10,048-value block "under every declared value of N
+flag(s)", and a stated `values` list in `harness/ranges.toml` IS a flag --
+including a one-element list.
+
+    LocalVar_NumBl = { values = [3, 0, 1, 2] }   2 flags   SIGKILL at 54 s
+    LocalVar_NumBl = { values = [3] }            2 flags   54,675 cases, SIGKILL at 51 s
+    LocalVar_NumBl = { lo = 0, hi = 3 }          1 flag    37,244 cases, GENERATED
+
+All three are the same 165 varied parameters and the same 99 extents. The
+difference is one flag, and one flag is the difference between a corpus that
+exists and one that does not.
+
+THE BLINDNESS THAT LEAVES, NAMED RATHER THAN LEFT TO BE FOUND
+--------------------------------------------------------------
+`LocalVar%NumBl` is the loop bound of all five `DO K = 1,LocalVar%NumBl` loops
+in this unit. With a bounds pin it drops out of R6's ladder and sits at its
+base draw; R7's predicate knob then offers it at [0.0, 1.0, 2.0], read from
+the reference's own predicates. **3 is not among them.** So:
+
+  * no case in the scored corpus runs three blades;
+  * `LocalVar%PitCom(3)`, `%PitComAct(3)` and `%FA_PitCom(3)` are compared as
+    outputs on every case, and on every case they hold whatever the case
+    supplied rather than anything a loop wrote;
+  * `avrSWAP(44) = LocalVar%PitComAct(3)` -- an unconditional read of the
+    third element -- is therefore compared against an unwritten slot in 100%
+    of the corpus.
+
+THE OTHER INSTRUMENT DOES COVER IT, WHICH IS WHY THIS IS A GAP AND NOT A HOLE.
+All 27 gate scenarios run `NumBl == 3` (`LocalVar%NumBl` comes from
+`avrSWAP(61)` and every shipped Examples/*.IN is a three-bladed rotor), and
+the gate compares 5,252,000 values with this unit integrated. So the
+per-blade distribution is exercised by the gate and not by the harness, and
+the mutation score -- which is taken over the HARNESS corpus -- is the number
+that this gap belongs to.
+
+WHAT WOULD CLOSE IT: memory. The `{ values = [3, 0, 1, 2] }` corpus is the
+right instrument and the container cannot hold it. That is a substrate
+observation, not a judgement about this unit, and it is raised as one in
+`.loop-run/findings.jsonl`.
