@@ -1,6 +1,6 @@
-# done_check.py ComputeVariablesSetpoints -- captured 2026-08-20T14:18:42Z by scripts/capture_done_check.sh
+# done_check.py ComputeVariablesSetpoints -- captured 2026-08-20T14:19:15Z by scripts/capture_done_check.sh
 
-Run against the committed state at 287587a1 ("ComputeVariablesSetpoints: state current -- disposition `deferred`, and the evidence it rests on"), with a CLEAN tree, with stdout
+Run against the committed state at 93c1ea0e ("ComputeVariablesSetpoints: plan.json gains the three keys done_check reads"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -18,19 +18,22 @@ Reproduce the reading below with no redirection:
 
 done_check exited 1 (0 only when COMPLETE).
 
-Traceback (most recent call last):
-  File "/Users/kmenear/Artifacts/vit_translation/ROSCO-r2/scripts/done_check.py", line 116, in <module>
-    raise SystemExit(main())
-                     ~~~~^^
-  File "/Users/kmenear/Artifacts/vit_translation/ROSCO-r2/scripts/done_check.py", line 76, in main
-    touching = git("log", "--format=%H", "--reverse", "--", unit.translation or "").split()
-               ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/kmenear/Artifacts/vit_translation/ROSCO-r2/scripts/done_check.py", line 44, in git
-    return subprocess.run(["git", "-C", str(ROOT), *args],
-           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                          capture_output=True, text=True, check=True).stdout.strip()
-                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/kmenear/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 578, in run
-    raise CalledProcessError(retcode, process.args,
-                             output=stdout, stderr=stderr)
-subprocess.CalledProcessError: Command '['git', '-C', '/Users/kmenear/Artifacts/vit_translation/ROSCO-r2', 'log', '--format=%H', '--reverse', '--', '']' returned non-zero exit status 128.
+baseline (inferred): 8cb967f  -- the commit before 49a71fb touched translations/ControllerBlocks/computevariablessetpoints.cpp
+
+ComputeVariablesSetpoints: Verdict.INCOMPLETE  (12/14 PASS)
+
+[  ok  ] P1   commits exist                      
+[  ok  ] P2   clean tree                         
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[  ok  ] P5   evidence resolves                  
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[  ok  ] P9   gate compared and matched          
+[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/ComputeVariablesSetpoints.json 58/79 = 0.734 < 1.0 -- survivors: compare_op[f977278e], compare_op[f647c7b4], drop_factor[09894fe5], arith_op[d17318eb], arith_op[3941a7ef], arith_op[288700cf]
+[  ok  ] P11  post-integration harness re-run    25398 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible              
+[ FAIL ] P14  artifact revisions agree           dirty_rev:gate/ComputeVariablesSetpoints.json=41d383f-dirty, harness/ComputeVariablesSetpoints.postintegration.json=41d383f-dirty -- the recorded SHA does not name the code that ran
+

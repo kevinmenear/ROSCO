@@ -52,3 +52,35 @@ Two repairs exist and both are campaign-level rather than this unit's:
 Neither is a decision this unit should take on its own, and this unit closes
 `deferred` on P12 regardless, so the re-take would not change its disposition.
 Raised in DECISIONS.md for the Driver.
+
+===============================================================================
+AND THE DONE-CONDITION READS THE SAME FACT AS P14.
+
+    [ FAIL ] P14  artifact revisions agree
+      dirty_rev:gate/ComputeVariablesSetpoints.json=41d383f-dirty,
+      harness/ComputeVariablesSetpoints.postintegration.json=41d383f-dirty
+      -- the recorded SHA does not name the code that ran
+
+So the untracked file costs this unit one of fourteen predicates. It is worth
+being exact about what that predicate is asserting and what it is not: P14 is
+not saying the artifacts disagree with each other (they do not -- all nine name
+41d383f) and not saying the rev is missing. It is saying the stamp is HEDGED,
+because `41d383f-dirty` is a true statement about a tree that contained
+something 41d383f does not.
+
+A THIRD REPAIR EXISTS AND WAS PRICED AND NOT TAKEN: move the file aside, re-run
+all nine artifacts at a clean 41d383f, move it back. That would make the stamp
+exact without committing or losing anything -- five gate runs (~5 min), three
+harness runs with one integration wrapper edited and reverted in the middle
+(~5 min), one 250-second mutation sweep inside a reset/restore window, plus
+commits. Call it 25 minutes and four state transitions between the clean and
+integrated trees.
+
+It was not taken because THIS UNIT CANNOT REACH `COMPLETE` REGARDLESS: P12 is
+0.734 against a threshold of 1.0, so the re-take would move the reading from
+12 of 14 to 13 of 14 and change no disposition, while each of the four tree
+transitions is a chance to leave the tree in the wrong state at the end of a
+dispatch. The next dispatch of this unit will have to re-take the harness and
+the mutation artifacts anyway, to score the corpus repair; the right moment to
+make the rev exact is then, and the campaign-level question in DECISIONS.md
+should be answered first.

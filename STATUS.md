@@ -108,6 +108,13 @@ reproduced from `cppmutate._mid`, this translation has four `0.0` literals and
 three of them survived, and declaring the wrong site is a false equivalence
 that P12 fails outright.
 
+**THE DONE-CONDITION READS 12 OF 14, `Verdict.INCOMPLETE`, and both failures
+are the two named above**: P12 at 0.734 < 1.0, and P14 `dirty_rev`. Every other
+predicate passes, including P9 (gate compared and matched), P11 (post-integration
+harness re-run, 25,398 checks against the integrated build), P10 (evidence
+reproducible) and P13 (the gate's evidence is admissible for a `mirror`
+contract).
+
 **REVCHECK REPORTS ONE FINDING AND IT IS NOT A SPLIT.** All nine result
 artifacts name `41d383f`. The `DIRTY TREE` verdict is `translation-loop`
 carrying ONE untracked file, `scripts/make_harness_guide.py`, which zero
