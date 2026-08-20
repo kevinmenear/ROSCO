@@ -1,0 +1,47 @@
+TWO DECLARED-EQUIVALENT MUTANTS PUT THROUGH THE GATE, BOTH PREDICTED BEFORE
+THEIR RUNS.
+
+WHAT THIS REPLACES. The previous dispatch ran two open mutation SURVIVORS
+through the gate, on the argument that a survivor is beyond the instrument that
+scored it rather than beyond this campaign's reach. There are no survivors now,
+so that instrument has no subject: `gate/ParseInput_Dbl_Opt.survivor.*.json` are
+retired to this directory with their own headers.
+
+The question worth a gate run has moved with the score. Six mutants are now
+DECLARED EQUIVALENT on arguments written in
+`mutation/ParseInput_Dbl_Opt.equivalences.md`, and an equivalence is a claim
+about the PROGRAMS -- so a second instrument that reaches the site and moves
+ZERO is evidence for it, while a non-zero REFUTES it outright. The two chosen
+are the two whose arguments are the longest chains, which is to say the two most
+worth attacking.
+
+THE POSITIVE CONTROL IS ON THE SAME BUILD AND IS ALREADY IN THE TREE. A zero on
+its own cannot be told from a gate that does not reach the unit;
+`gate/ParseInput_Dbl_Opt.redtest.parsed-value.json` perturbs the value this same
+function parses, on this same build, and moves 1,857,893 of 5,252,000. So the
+gate demonstrably observes this unit's output.
+
+1. 8e796788   match_word   `for (std::size_t k = 0; ...)` -> `k = 1`
+
+   Skips the comparison of the IEEE word's FIRST character, so `match_word`
+   accepts a strict SUPERSET: any field whose 2nd and 3rd characters spell
+   `nf` or `an` (or 2nd..8th `nfinity`) matches even when the first is not
+   `i`/`n`.
+
+   PREDICTED: EXACTLY 0 of 5,252,000. Every first word of `Examples/DISCON.IN`
+   read by this unit is an ordinary decimal literal -- `4.30935e+04`,
+   `0.00000e+00` and the like -- and none has `nf`/`an` at characters 2-3.
+
+2. 575c6151   match_word   `p + static_cast<int>(word.size())` -> `p - ...`
+
+   Removes the bound that stops `match_word` reading past the record. It can
+   only differ where a value begins within `LEN(word)` bytes of the record's
+   last byte -- byte 193 or later of a 200-byte `Words(1)`.
+
+   PREDICTED: EXACTLY 0 of 5,252,000. `GetWords` LEFT-JUSTIFIES every word into
+   `Words(1)`, so the value begins at byte 0 (or byte 1 after a sign); the only
+   way it starts near byte 200 is behind a ~190-digit repeat count, which no
+   line of `Examples/DISCON.IN` carries.
+
+A non-zero on either would refute a declaration this dispatch made, and that is
+the outcome the runs are for.

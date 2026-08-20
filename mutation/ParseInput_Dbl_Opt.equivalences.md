@@ -1,14 +1,15 @@
 # `ParseInput_Dbl_Opt` — declared equivalences, with the argument for each
 
-Twenty-seven mutants of `translations/ROSCO_Helpers/parseinput_dbl_opt.cpp` are
+Twenty-six mutants of `translations/ROSCO_Helpers/parseinput_dbl_opt.cpp` are
 declared `equivalent` in `mutation/ParseInput_Dbl_Opt.equivalences.json`. An
 equivalence is a claim about the **programs** — that they agree on every
 admissible input — and not about the corpus, so each one is written out here
 where it can be disputed rather than left as an id in a list.
 
-Six families. Five of them turn on a fact about **this unit's single call site
-into the parser**, and those facts are stated first; the sixth (§6, added after
-the first sweep) turns on what `GetWords` can put in the buffer at all.
+Seven families. The first five turn on a fact about **this unit's single call
+site into the parser**; the sixth turns on what `GetWords` can put in the buffer
+at all, and the seventh (§7) on the repeat-count ceiling added at the fourth
+dispatch.
 
     ParseInput_Dbl_Opt calls   list_read_reals(Words1, MaxParamLength, &value, 1)
 
@@ -16,11 +17,32 @@ the first sweep) turns on what `GetWords` can put in the buffer at all.
     where both siblings read `SIZE(Ary)`.
   * `len == 200`, always. `MaxParamLength` is a Fortran PARAMETER and this is
     the only call.
-  * `p == 0` whenever `parse_real` is entered. `Words1` is `GetWords`'s output,
-    and `GetWords` assigns `Words(IW) = Line(Ch+1:Ch+NextWhite-1)` into a
-    `CHARACTER(200)` — left-justified, blank-padded. `list_read_reals` skips
-    leading blanks and returns `-1` if the record is all blank, so the only
-    position at which it can reach `parse_real` is 0.
+  * ~~`p == 0` whenever `parse_real` is entered.~~ **WITHDRAWN AT THE FOURTH
+    DISPATCH, AND IT IS THE MOST IMPORTANT CORRECTION IN THIS FILE (C12).** The
+    argument was: `Words1` is `GetWords`'s output, and `GetWords` assigns
+    `Words(IW) = Line(Ch+1:Ch+NextWhite-1)` into a `CHARACTER(200)` —
+    left-justified, blank-padded — so `list_read_reals`, which skips leading
+    blanks, can only reach `parse_real` at position 0.
+
+    The left-justification half is true and is used all over this file. The
+    conclusion is FALSE, because `list_read_reals` reaches `parse_real` from
+    **two** places: the top of the item loop, where `p` is indeed 0 or 1, and
+    the fall-through from the **repeat count**, where `p == q + 1` and `q` is
+    wherever the `*` sat. `3*7` enters `parse_real` at `p == 2`; a count behind
+    leading zeros enters it near the record's last byte.
+
+    The corpus that carried the premise had no `*` in any record a search key
+    matched, so nothing contradicted it for three dispatches. The corpus that
+    has one **killed two mutants this file had declared equivalent on it**
+    (`ec2c7596`, `2a6d08a0`), and `vit_mutate.py` named them in
+    `declared_but_killed`. Two more (`575c6151`, `52112be9`) rested on the same
+    premise and were withdrawn in the same edit; the corpus then killed
+    `52112be9` too, and `575c6151` is re-declared in §3 on an argument that does
+    not use the premise.
+
+    **A fact about where a corpus enters a function is not a fact about the
+    function.** This entry is left struck through rather than deleted because
+    the four ids above are what it cost.
   * `*Variable == +0.0` at the PRINT. `Variable = 0` is the statement
     IMMEDIATELY above it and is unconditional.
 
@@ -105,31 +127,84 @@ every path that reaches the store; and with `n == 1` the store loop stops on
 own induction variable — is NOT declared: `k = 1` would skip the store
 entirely and change `Variable`.
 
-## 3. The `p == 0` family — 5 mutants
+## 3. The `match_word` family — 3 mutants, re-argued from scratch
 
-`parse_real` is entered at `p == 0` on every call (see the facts above), so
-`start == 0`, and `match_word` is called at `p ∈ {0, 1}` against words of
-length 3 or 8 with `len == 200`.
+**This section replaces the `p == 0` family, whose premise is withdrawn above.**
+Two of its five members were killed by the corpus, one more was killed after its
+declaration was withdrawn, and the two that remain are re-argued here without
+using `p == 0` at all.
+
+```cpp
+bool match_word(const char* rec, int len, int p, std::string_view word) {
+    if (p + static_cast<int>(word.size()) > len) { return false; }   // the bound
+    for (std::size_t k = 0; k < word.size(); ++k) {                  // the loop
+        if (lower(rec[p + k]) != word[k]) { return false; }
+    }
+    return true;
+}
+```
+
+It is called from exactly one place, with `word` one of `"infinity"`, `"inf"`,
+`"nan"`, and only to decide whether to enter the IEEE-word branch. That branch
+copies the field up to the next separator, prefixes the sign, and calls
+`strtod`; if `strtod` does not consume the whole field it returns `BadNoStore`,
+and the caller then returns `5010` **with the item unassigned**.
 
 | id | line | edit | why the two agree |
 |---|---|---|---|
-| `8475def2` | 184 | `p < len` → `p <= len` | `p == 0`, `len == 200`; both true |
-| `575c6151` | 156 | `p + size` → `p - size` | `1 - 8 > 200` and `1 + 8 > 200` are both false |
-| `52112be9` | 156 | `>` → `>=` | `9 >= 200` is false, as `9 > 200` is |
-| `ec2c7596` | 263 | `rec + start` → `rec - start` | `start == 0` |
-| `2a6d08a0` | 263 | `exp_start - start` → `exp_start + start` | `start == 0` |
+| `575c6151` | 156 | `p + size > len` → `p - size > len` | the mutant's guard is never true (`p <= len` and `size > 0`), so it accepts a strict SUPERSET. The only extra acceptances are where the word would run PAST the record — and there the copy loop stops at `len`, so `strtod` is handed a TRUNCATED `inf`/`nan`, rejects it, and returns `BadNoStore`. The original, on the same record, sees `rec[p] ∈ {i,n}`, which is not a digit and not a `.`, so its scan gives `digits == 0 && !saw_point` and returns `BadNoStore` too. Both reach `return 5010` with nothing stored |
+| `8e796788` | 159 | `k = 0` → `k = 1` | skipping `k = 0` again accepts a strict SUPERSET: fields whose characters 2..n spell `nf` / `an` / `nfinity` but whose FIRST character is not `i`/`n`. For such a field `strtod` must consume the whole string for `Ok`, and the only tokens `strtod` accepts containing an `n` are the IEEE words, which begin with `i`/`n` after the sign — excluded by construction. So the mutant's extra acceptances all end in `BadNoStore`. The original on those same records reaches `BadNoStore` (first character not a digit, sign or point), or `BadStoreZero` at a leading `.` whose terminator test then fails, or `Ok` on a leading digit whose terminator test then fails — every one of which is `return 5010` with the item unassigned |
 
-The gcov measurement is a second, independent witness for the two at line 156:
-`return false` at line 157 is `#####` over all 11,562 cases, so the guard is
-false on every call, which is what both mutants preserve.
+**The disputable half, and it is a KILL on the same two lines.** `52112be9`
+(`>` → `>=` at 156) is NOT declared: it makes the guard REJECT where the
+original accepts, at `p + size == len` exactly, and the record
+`0…03*nan` — a legal count of 3 behind 195 leading zeros, so the value starts at
+byte 197 — distinguishes it. It is **killed** on the 13,802-case corpus. So line
+156 is executed at the boundary, the branch is observable there, and these two
+declarations are claims about the VALUE at that site rather than about
+reachability. The `compare_op` mutants of the loop bound at 159 are killed too.
 
-**The disputable half.** The `p < len` guards at 213, 214, 217, 227 and 237 are
-NOT declared even though they are the same operator on the same variable — by
-then `p` has been advanced past digits and can equal `len`, and `rec[200]` is
-the first byte of `Words(2)`, which is usually not a blank. Those five are
-reported as open survivors below.
+**And the second instrument was asked.** Both were run through the 27-scenario
+gate, character for character out of the mutation artifact, each predicted
+before its run in `evidence/ParseInput_Dbl_Opt/gate.equivalence_predictions.txt`:
+**0 of 5,252,000 each**
+(`gate/ParseInput_Dbl_Opt.equivalence.{8e796788,575c6151}.json`), against a
+perturbation of the parsed value on the same build that moves 1,857,893. A
+non-zero would have refuted the declaration.
 
-## 4. The buffer-size family — 4 mutants
+## 3b. The two sign tests — 2 mutants, and they are the same edit twice
+
+`parse_real` tests for a sign in exactly two places, and the SAME mutation of
+`p < len` is behaviourally different at each. Both are declared, for two
+different reasons, and neither reason is `p == 0`.
+
+```cpp
+RealParse parse_real(const char* rec, int len, int& p, double& out) {
+    const int start = p;
+    if (p < len && (rec[p] == '+' || rec[p] == '-')) { ++p; }   // 184  8475def2
+    ...
+    if (has_exp) {
+        if (p < len && (rec[p] == '+' || rec[p] == '-')) { ++p; }   // 254  209527b9
+        int edigits = 0;
+        while (p < len && is_digit(rec[p])) { ++p; ++edigits; }
+        if (edigits == 0) { return RealParse::BadNoStore; }
+    }
+```
+
+| id | line | edit | why the two agree |
+|---|---|---|---|
+| `8475def2` | 184 | `p < len` → `p <= len` | `p < len` is an INVARIANT at entry, so the two guards are the same guard. `list_read_reals` reaches `parse_real` from two places and both establish it: the item loop `return -1`s when `p >= len` after the blank scan, and the repeat-count fall-through `continue`s when `p >= len`. There is no third caller — the function is `static` in an anonymous namespace |
+| `209527b9` | 254 | `p < len` → `p <= len` | at `p == len` the mutant may consume a sign the original does not, making `p == len + 1`. Both then run `while (p < len && ...)`, which is false either way, so `edigits == 0` and BOTH return `BadNoStore` — and on `BadNoStore` the caller returns `5010` immediately without reading `p`, so the one value the mutant changed is dead. `edigits` cannot be non-zero here: its own scan requires `p < len` |
+
+**The disputable half.** Every other `p < len` → `p <= len` in `parse_real` — the
+integer scan, the point test, the fraction scan, the exponent-letter test, the
+exponent-digit scan — is NOT declared, and **all five are killed** on the
+13,802-case corpus by the `ntail` records whose byte one past the record is the
+character that scan tests. The declaration here is not "the guard is
+unreachable at `p == len`"; it is that at `p == len` these two particular sites
+compute the same answer.
+
+## 4. The buffer-size family — 2 mutants
 
 A local buffer made one byte LARGER, where the writes into it are bounded by
 something else.
@@ -137,14 +212,18 @@ something else.
 | id | line | edit | the bound |
 |---|---|---|---|
 | `c09407e0` | 107 | `char buf[Int2LStrLen]` → `[12]` | `int2lstr_c` writes exactly 11 and `ftrim(buf, 11)` reads exactly 11 |
-| `44f8fb11` | 192 | `char buf[64]` → `[65]` | the copy loop stops at `n < 62`, so at most `buf[62]` is written |
-| `85dacdff` | 192 | `64` → `65` | same site, same bound |
 | `965d4416` | 410 | `char tmp[512]` → `[513]` | `snprintf(tmp, sizeof tmp, ...)`; `sizeof tmp` grows with it, and the longest output of `%.16E` or of `%.*f` with `d <= 17` on a `double` is under 340 bytes |
 
-**The disputable half.** `62` → `63` at line 195 (`4c451ef0`) is NOT declared:
-it changes how many characters of an IEEE word are copied, which is a real
-behavioural difference at a 62-character field. It is an open survivor, not an
-equivalence.
+**TWO ROWS WERE DELETED FROM THIS FAMILY AT THE FOURTH DISPATCH, AND THE REASON
+IS THE POINT.** `44f8fb11` and `85dacdff` declared the `char buf[64]` of the
+IEEE-word branch equivalent at 65 bytes, "because the copy loop stops at
+`n < 62`". Both arguments were sound; the CODE was not. `n < 62` truncated any
+IEEE word of 63 characters or more, so `nan(<58 chars>)` — which gfortran reads
+as a NaN — was handed to `strtod` without its closing parenthesis and rejected.
+The buffer and its bound are gone; the word is now bounded by the record. The
+open survivor `4c451ef0` (`62` → `63`) went with them: it was a mutant that made
+the translation LESS wrong, which is exactly why no corpus had killed it.
+See `evidence/ParseInput_Dbl_Opt/record_form_probe.FIRST.txt`.
 
 ## 5. The dead-value family — 4 mutants
 
@@ -215,6 +294,35 @@ an internal function directly has a WIDER input space than the unit does, and
 for a survivor whose site sits behind a callee that filter is the whole answer.
 Ask what the callee can produce before reading a search's `differs` as a corpus
 lever.
+
+---
+
+## 7. The repeat-count ceiling — 3 mutants, on code this dispatch ADDED
+
+```cpp
+long count = 0;
+bool count_over = false;
+for (int k = p; k < q; ++k) {
+    count = count * 10 + (rec[k] - '0');
+    if (count > MaxRepeat) { count_over = true; count = MaxRepeat + 1; }
+}
+if (count <= 0 || count_over || count > MaxRepeat) { return 5010; }
+```
+
+The clamp exists so that a 200-digit count cannot overflow a `long` during the
+accumulation; `count_over` is what the guard actually reads, and it is
+monotone — once set, nothing clears it.
+
+| id | line | edit | why the two agree |
+|---|---|---|---|
+| `9c669e12` | 356 | `MaxRepeat + 1` → `MaxRepeat - 1` | the clamp VALUE. `count_over` is already `true` at this point, so the guard below returns `5010` whatever `count` holds, and `count` is dead after the guard. The only other reader is the next iteration's `count * 10 + digit`, which re-clamps: both `MaxRepeat ± 1` keep the accumulation bounded well inside a 64-bit `long` for a 200-digit record |
+| `2cd50aab` | 356 | `MaxRepeat + 1` → `MaxRepeat + 2` | the same site, the same argument |
+| `c62206c9` | 360 | `return 5010` → `5011` | the IOSTAT family (§1) one site over: `ErrStatLcl` is read once, as `ErrStatLcl /= 0`, and is not an output of the unit |
+
+**The disputable half.** `ea396111` at 359 — `count <= 0` → `count <= 1` — is
+NOT declared even though it sits in the same expression: it rejects `1*7`, which
+is a legal record and a real behavioural difference. It is **killed** by the
+`repone` entry the same dispatch added to the generator.
 
 ---
 

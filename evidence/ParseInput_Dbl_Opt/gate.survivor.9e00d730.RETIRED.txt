@@ -1,3 +1,25 @@
+RETIRED, AND KEPT RATHER THAN DELETED.
+
+This artifact was produced at loop `10afabe` and its SUBJECT NO LONGER EXISTS.
+It ran one open mutation survivor through the 27-scenario gate, on the argument
+that a survivor is beyond the instrument that scored it rather than beyond this
+campaign's reach. On the 13,802-case corpus there are no survivors: the mutant
+it names was either killed by the corpus or has ceased to be enumerated at that
+site at all, because a mutant id is an OCCURRENCE INDEX and two repairs to the
+translation renumbered them.
+
+It is moved out of `gate/` because `scripts/revcheck.py` reads every
+`gate/<Unit>*.json` and would report -- correctly -- a BASE-SHA SPLIT between a
+10afabe artifact and the eight taken at cc32476. Leaving it there would have
+made a true statement about evidence look like a broken instrument.
+
+What replaced it: `gate/ParseInput_Dbl_Opt.equivalence.*.json`, which asks the
+gate the question that is now live -- whether the OTHER instrument can refute a
+declared equivalence. Predictions in `gate.equivalence_predictions.txt`.
+
+The original bytes follow unedited.
+========================================================================
+
 {
  "baseline": "baseline_arrays",
  "channels_compared": 325,

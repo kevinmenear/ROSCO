@@ -1,276 +1,187 @@
-ParseInput_Dbl_Opt -- the 21 OPEN survivors, one answer each
-============================================================
+ParseInput_Dbl_Opt -- THERE ARE NO OPEN SURVIVORS, and this file exists to say
+what that does and does not mean
+==============================================================================
 
-mutation/ParseInput_Dbl_Opt.json: 110 killed of 177 behavioural, 27 declared
-equivalent, 19 declared unreachable, 21 OPEN.  110 / 131 = 0.8397.
+mutation/ParseInput_Dbl_Opt.json: 183 mutants, 4 nocompile, 179 behavioural:
+144 KILLED, 26 declared EQUIVALENT, 9 declared UNREACHABLE, 0 SURVIVED.
+144 / 144 = 1.000.  `declared_but_killed` and `unreachable_but_killed` are both
+EMPTY, and that pair is the control on the two declaration sets.
 
-CORRECTION, AND IT IS RECORDED RATHER THAN APPLIED SILENTLY (C12). The first
-version of this file listed 23 open survivors and said of every row in section
-A that "a corpus that contained the record would kill the mutant". For TWO of
-them -- `4cbc3c66` (the comma test) and `8d81269b` (the semicolon test) -- that
-sentence is FALSE: `GetWords` splits on ' ,!;''"' and tab, so no byte of the
-400-byte `Words` object is ever a comma or a semicolon and NO CORPUS CAN
-CONTAIN THE RECORD. They are equivalences at the UNIT, they are now declared,
-and the argument is in mutation/ParseInput_Dbl_Opt.equivalences.md section 6.
-The record search reports them differing on 6,391 and 924 records because it
-drives `list_read_reals` DIRECTLY: its records are admissible to the FUNCTION
-and not to the UNIT. That distinction is the finding; the two ids are the
-price of not having made it the first time.
-
-The bar this file exists for is not "kill every mutant", it is EXPLAIN every
-mutant. A survivor is one of three things -- equivalent, unreached by the
-corpus, or a blind spot -- and the sweep's answer for all three is the same
-word. Every row below says which, and 16 of the 21 say it with a RECORD
-(`evidence/ParseInput_Dbl_Opt/survivor_record_search.txt`, 131,312 records, and
-`words2_probe.txt`, the same space with a different `Words(2)`) rather than
-with an argument.
-
-WHERE THEY ALL ARE. 20 of 21 are inside `list_read_reals` / `parse_real` /
-`match_word` -- the list-directed READ -- and one is the constant the READ's
-record length is taken from. NONE is in the body of the unit, NONE is in the
-PRINT record, and NONE is in the error messages. Those three regions are
-killed outright by the 11,562-case differential harness.
-
-THE ONE NUMBER THAT EXPLAINS THE WHOLE FILE, measured in
-`evidence/ParseInput_Dbl_Opt/harness_partition.txt`:
-
-    293 of 11,562 cases (2.5%) reach the list-directed READ at all.
-
-`FoundLine` requires `FindLine` to match the SECOND word of some line of
-`FileLines` against `VarName`, and only R14's planted-word cases do that. The
-READ is 60% of this translation's lines and it is exercised by 2.5% of the
-corpus. That is the corpus gap, it is one gap and not twenty-one, and
-DECISIONS.md prices the two levers that would close it.
+The previous dispatch scored 110 / 131 = 0.8397 with 21 open survivors. This
+file used to answer them one at a time. What closed them was not twenty-one
+arguments: it was TWO REPAIRS TO THE TRANSLATION and ONE GENERATOR RULE, and
+the twenty-one were symptoms of those three things.
 
 
-A. DISTINGUISHED BY A NAMED RECORD -- 14
-----------------------------------------
-Not equivalent, and not an argument: the record is in the file. Each row gives
-the FIRST record on which the mutant's (iostat, value bits) pair differs from
-the shipped translation's, and how many of the 131,312 differ. A corpus that
-contained the record would kill the mutant.
+A. THE TWO DEFECTS, WHICH THE SURVIVORS WERE POINTING AT ALL ALONG
+------------------------------------------------------------------
+Both were found by PRICING a record against the reference before planting it --
+the runbook's rule -- rather than by reading the translation. Both are recorded
+with their wrong artifact before the fix (C12):
+`evidence/ParseInput_Dbl_Opt/record_form_probe.FIRST.txt`.
 
-  6a6668b2  negate_cond   L334  the BadStoreZero terminator test negated
-                                                       2130 records
-            HEAD|.|5010|0.0   vs   HEAD|.|5010|<sentinel>
-            Both return 5010; they differ in whether the transferred 0.0 is
-            STORED. Invisible on every case that arrived with Variable == 0.0,
-            which is all 293 of them -- see D below.
+1. `parse_real` copied the IEEE word into `char buf[64]` under `n < 62`.
 
-  32baae1c  index_offset  L306  rec[q] -> rec[q+1]      587 records
-  5cb7425d  index_offset  L305  rec[q] -> rec[q+1]      507 records
-            HEAD|1*|0|<sentinel>   vs   HEAD|1*|5010|<sentinel>
-            The repeat-count scan. No record in the 11,562-case corpus
-            contains a `*` in the first word of a matched line, which is why
-            lines 307-321 are `#####` and 13 of the 19 unreachable
-            declarations live there.
+       nan(<58 a's>)   63 characters
+       gfortran        iostat=0     bits=7FF8000000000000    a NaN
+       the C++         iostat=5010  bits=<the item untouched>
 
-  d7f942e4  const_tweak   L211  int digits = 0 -> 1     546 records
-  c06ced0a  const_tweak   L240  int edigits = 0 -> 1    152 records
-            HEAD|.|5010|0.0   vs   HEAD|.|5010|<sentinel>
-            The two counters that decide `BadStoreZero` from `BadNoStore` --
-            the point-without-digits rule unit #54 measured against gfortran.
-            Both differ only in whether 0.0 is stored: D again.
+   Measured over every payload length a 200-byte record can carry
+   (`nan_payload_probe.{f90,cpp}`): the two sides agree for word lengths up to
+   62, DISAGREE for 63..200, and agree again at 201 where `Words(1)` truncates.
+   138 lengths of 197.
 
-  5fed96af  index_offset  L334  rec[p] -> rec[p+1]      520 records
-            HEAD|..|5010|<sentinel>   vs   HEAD|..|5010|0.0
-            The other half of 6a6668b2's site.
+   TWO OF THE THEN-SURVIVORS WERE MUTANTS OF THAT CONSTANT -- `97c42adb`
+   (`n < 62` -> `n <= 62`) and `4c451ef0` (`n < 62` -> `n < 63`). Both make the
+   translation LESS wrong. That is why no corpus killed them, and it is the
+   sharpest thing in this dispatch: **a surviving mutant of a constant is worth
+   asking whether the constant is right.**
 
-  72653030  index_offset  L232  rec[p] -> rec[p+1]      310 records
-  c28ed6fb  index_offset  L232  rec[p] -> rec[p+1]      308 records
-            HEAD|0+0|0|0.0   vs   HEAD|0+0|5010|<sentinel>
-            The DETECTION of gfortran's LETTERLESS exponent -- `1.5+2` is
-            150.0 -- which is the one spelling of a real that has no C
-            counterpart. R14 plants `+2` as a numeric lead, so the corpus has
-            the FORM; what it does not have is a matched line whose first word
-            carries it.
+2. `list_read_reals` had no repeat-count ceiling. `std::strtol` SATURATES at
+   `LONG_MAX`, so an overflowing count came back positive and the item was
+   stored.
 
-  9e00d730  index_offset  L237  rec[p] -> rec[p+1]      221 records
-  b8766137  index_offset  L237  rec[p] -> rec[p+1]      220 records
-            HEAD|0+0|0|0.0   vs   HEAD|0+0|5010|<sentinel>
-            The CONSUMPTION of the exponent's sign, which both spellings reach:
-            `1.5e+2` gets here through the letter branch and `1.5+2` through
-            the letterless one. These two are the pair section A2 runs through
-            the gate, and the gate kills them -- `Examples/DISCON.IN` gives
-            `VS_ArSatTq` as `4.30935e+04`.
+       200000000*7   ref 0     got 0      the ceiling itself
+       200000001*7   ref 5010  got 0      <- the divergence
+       999...9*7     ref 5010  got 0      <- and its wide form
 
-  b03a94c5  index_offset  L198  buf[n] -> buf[n+1]       36 records
-            HEAD|nan|0|NaN   vs   HEAD|nan|5010|<sentinel>
-            The NUL that terminates the IEEE word before `strtod` sees it.
-            Moving it one byte leaves `buf[n]` uninitialised stack.
+   The sibling `parseinary_opt.cpp` has the ceiling, measured for an INTEGER
+   item. A repeat count is record GRAMMAR rather than item TYPE, so it carries
+   -- and the three rows above are the check rather than the assumption.
 
-  71dee475  compare_op    L195  q < len -> q <= len      19 records
-            TAIL|nan|0|NaN   vs   TAIL|nan|5010|<sentinel>
-            The IEEE-word copy loop run one byte past the record. The record
-            that kills it is `nan` ending at column 200, so the loop reaches
-            `Words(2)(1:1)` -- see the note under B.
-
-  4c451ef0  const_tweak   L195  n < 62 -> n < 63          1 record
-  97c42adb  compare_op    L195  n < 62 -> n <= 62         1 record
-            FULL|full:nan63|5010|<sentinel>   vs   FULL|full:nan63|0|NaN
-            A 63-character `nan(...)` payload, and one record in 131,312
-            distinguishes each. This is the thinnest margin in the file and it
-            is worth stating: a search one rung narrower reports both as
-            equivalences.
+Both repairs were priced BEFORE the sweep by diffing `(id -> site)` rather than
+ids (RUNBOOK, unit #55). The first moved 25 ids onto different sites while the
+id SET barely changed, and two declared equivalences were dropped because their
+sites had ceased to exist. The second dropped one more to the 40-per-operator
+cap. Nothing was carried across by name.
 
 
-A2. AND TWO OF THEM ARE KILLED BY THE OTHER INSTRUMENT -- THE GATE
+B. THE CORPUS GAP, WHICH WAS ONE GAP AND NOT TWENTY-ONE
+--------------------------------------------------------
+`_RECORD_TAILS` (loop `59aa876`) already built records that END at the buffer's
+last byte, and this unit's corpus already had them: `2:tail:digits@200` was in
+the harness artifact's `Reached` list at the previous dispatch. So the boundary
+was reached and the guards still survived.
+
+THE MISSING HALF IS WHAT THE MUTANT READS AT THAT BOUNDARY. The record is
+`Words(1)`, one element of `CHARACTER(MaxParamLength) :: Words(2)` -- ONE
+contiguous 400-byte object -- so byte 201 is `Words(2)(1:1)`, the first
+character of the SECOND word of the matched line, which for this unit is the
+search key. R14 has always planted that key as `'Aa'`. **`'A'` is not a digit,
+not a `.`, not a sign and not an exponent letter**, so every value-scanner guard
+took the same branch either way.
+
+`_NEIGHBOUR_TAILS` (this dispatch) pairs each full-width lead with a neighbour
+whose first character IS what the scan at that boundary tests. Eight forms, and
+a ninth class that the first eight cannot reach:
+
+    dig / frac       digits or a fraction to the last byte, a DIGIT after it
+    expl / expq      digits to the last byte, an `e` / `q` after it
+    sign / neg       digits to the last byte, a `+` / `-` after it
+    point            digits to the last byte, a `.` after it
+    fracE            a fraction to the last byte, an `e` after it
+    repword          a legal count behind leading zeros, so the VALUE starts
+                     near the record's end -- the only way `match_word`'s own
+                     `p + LEN(word) > len` bound has two live sides
+    fracsig/expsig   the same trick to make the last digits SIGNIFICANT. A
+                     200-digit fraction cannot: digit 201 is a hundred and
+                     eighty places past what a binary64 holds, so a mutant that
+                     reads one more digit computes the SAME double. This is why
+                     `frac` killed the integer scan's guard and left the
+                     FRACTION scan's alive.
+    pointend         a field that reaches the record's end having transferred
+                     nothing but a sign
+    over             a lead built to N + 1, the only shape in which the buffer
+                     WIDTH constant `MaxParamLength` is observable at all
+
+plus single-word values for a unit whose key is at word TWO -- `3*7`, `1*7`,
+`0*7`, `1.5E+2`, `1.5E-2`, `1.5+2`, `1.5-2`, `.`, `..`, `.e`, the ceiling pair,
+and `nan(...)`. The k = 3 families (`_TAIL_VALUES`, `_BLANK_TAILS`) put the key
+at word 3 or later, and `FindLine` is called here WITHOUT `AryLen`, so it
+matches on word 2 and nothing else: sixty `Reached` labels, of which the k = 3
+ones never matched a line.
+
+AND ONE THING THAT IS NOT A RECORD AT ALL. Three mutants differed from the
+shipped translation ONLY in whether a transferred `0.0` was stored, and all 293
+cases that reached the READ arrived with `Variable == 0.0` exactly -- because
+`generate.py::_base` draws an unconstrained real at the midpoint of ±1e3, which
+IS 0.0. `_PLANT_REAL_SENTINEL` gives the free `INTENT(INOUT)` scalar real a
+second variant at -987.654 in the neighbour block. Measured, in
+`harness_partition.txt`, on the two arms that reach the READ:
+
+    Variable IN /= 0      before        after
+    read-ok                    0          280
+    error, msg refused         0          280
+
+ALL 30 PLANTED RECORD FORMS WERE PRICED AGAINST THE REFERENCE FIRST, out of the
+same two-element storage, and all 30 agree on (IOSTAT, bits):
+`record_form_probe.txt`. That is the runbook's rule and it is what turned this
+dispatch from a corpus change into two bug fixes.
+
+
+C. THE FOUR EQUIVALENCE DECLARATIONS THIS DISPATCH WITHDREW, AND WHY
+--------------------------------------------------------------------
+The premise "`p == 0` whenever `parse_real` is entered" was stated in
+`mutation/ParseInput_Dbl_Opt.equivalences.md` and carried five declarations.
+**It is false.** `list_read_reals` reaches `parse_real` from two places, and the
+second is the repeat-count fall-through, where `p == q + 1`. The corpus that
+had no `*` in any matched line could not contradict it; the corpus that has one
+killed two of the five outright (`ec2c7596`, `2a6d08a0`) and `vit_mutate.py`
+named them in `declared_but_killed`.
+
+Two more resting on the same premise were withdrawn in the same edit. One
+(`52112be9`) the corpus then KILLED, which is the confirmation that withdrawing
+it was right. The other (`575c6151`) is re-declared on an argument that does not
+use the premise at all.
+
+**A fact about where a corpus enters a function is not a fact about the
+function**, and an equivalence written on one is a corpus gap wearing a
+declaration's name.
+
+
+D. WHAT NO LAYER STILL SEES -- and 1.000 does not shorten this list
 -------------------------------------------------------------------
-A survivor is beyond the reach of the instrument that SCORED it, which is not
-the same as beyond this campaign's reach. Two of section A's mutants were run
-through the 27-scenario gate, character for character out of the mutation
-artifact, as a PAIR -- one predicted to move it and one predicted not to,
-because a zero on its own cannot be told from a gate that does not reach the
-unit. Predictions in `gate.survivor_predictions.txt`, written before the runs.
+1. THE ECHO RECORD on unit `UnEc`. `IF (UnEc > 0) WRITE (UnEc,*) ...` is not
+   translated: a Fortran unit number cannot cross the boundary. Measured dead
+   rather than assumed -- `ROSCO_Helpers.f90:268` runs 73 times per scenario and
+   the WRITE never fires -- but "dead in the gate's 27 scenarios" is not "dead".
+   Closing it needs a Fortran shim that owns the unit.
 
-  9e00d730 / b8766137   parse_real:247   rec[p] -> rec[p+1]
-      gate/ParseInput_Dbl_Opt.survivor.9e00d730.json
-      1,583,216 of 4,732,000 compared, 131 of 351 channels, and scenarios 19
-      and 27 BROKE OUTRIGHT -- which is why the compared count is 4,732,000
-      rather than 5,252,000. Predicted: "a large mismatch or broken scenarios,
-      because a parse failure sets aviFAIL = -1".
-      The site is the exponent's SIGN. `Examples/DISCON.IN` gives VS_ArSatTq as
-      `4.30935e+04`, and four such scalars are read by this unit; not consuming
-      the '+' leaves `edigits` at 0 and the parse fails.
+2. THE 95 MUTANTS `cppmutate` NEVER ENUMERATED, at its 40-per-operator cap.
+   Re-measured this dispatch with `scripts/mutation_cap_audit.py`, because the
+   two repairs changed the population:
 
-  8d81269b              list_read_reals:308   rec[p] -> rec[p+1]   THE CONTROL
-      gate/ParseInput_Dbl_Opt.survivor.8d81269b.json
-      0 of 5,252,000. Predicted EXACTLY 0: every value this unit parses in the
-      shipped configuration begins with a digit, a '-' or a '.', so neither
-      `rec[p]` nor `rec[p+1]` is ever a semicolon.
+       offered 183   uncapped 278   never enumerated 95
+       compare_op 88   const_tweak 81   negate_cond 46   (uncapped counts)
 
-      THIS MUTANT IS NOW DECLARED EQUIVALENT, and the gate run is what started
-      that. Writing the prediction forced the question "why can rec[p+1] never
-      be a semicolon", and the answer -- GetWords' separator set -- turned out
-      to be about the WHOLE 400-byte buffer rather than about the shipped input
-      file. The zero was the first evidence for a claim that is now argued in
-      mutation/ParseInput_Dbl_Opt.equivalences.md section 6.
+   Their survival is UNKNOWN, not none, and `scripts/_mutation_merge.py` cannot
+   express a sweep of them because it asks for the population at the default
+   cap. **1.000 is a ratio over what was offered, and what was offered is 66%
+   of what exists.** This is now the largest single unmeasured thing about this
+   unit, and it was the largest before the score moved -- a score that goes
+   from 0.84 to 1.00 without touching this number has not touched it.
 
-NEITHER IS FOLDED INTO THE SCORE. What the pair buys is that `9e00d730` and
-`b8766137` are no longer "survived": they are mutants THIS CAMPAIGN'S OWN GATE
-kills, on the shipped input file, and the differential corpus is the only
-instrument that misses them. That is a statement about the corpus, made by an
-instrument that does not read it.
+3. `list_directed_real`'s E-FORM and its non-finite words are dead in the
+   PROGRAM rather than in the corpus: `Variable = 0` is the statement
+   immediately above the PRINT, so the only value the record can carry is +0.0.
+   Nine mutants are declared `unreachable` there, re-derived from
+   `line_coverage.txt` on every run by `make_unreachable.py`.
 
+4. TWO HELD PARAMETERS. 15 of 17 are varied; a defect confined to one of the
+   two held ones is invisible by construction.
 
-A3. DISTINGUISHED ONLY AFTER THE SEARCH'S OWN BLIND SPOT WAS FIXED -- 2
-------------------------------------------------------------------------
-The first search reported six survivors as `NONE`, and five of the six are
-`p < len` -> `p <= len`. At `p == len` those read `rec[200]`, which is not past
-any allocation: `Words` is `CHARACTER(MaxParamLength) :: Words(2)`, one
-contiguous 400-byte object, and byte 201 IS `Words(2)(1:1)` -- the first
-character of the parameter name `FindLine` matched. **The search put `PC_KP`
-there**, a real name from `Examples/DISCON.IN`, and 'P' is not a digit, not a
-'.', not a sign and not an e/d/q -- so all five guards took the same branch
-either way and the search was blind to them BY ITS OWN CHOICE OF THAT NAME.
+5. THE NINE `unreachable` DECLARATIONS ARE A DEBT, not a credit. The sibling
+   paid nineteen of them back in one dispatch by asking WHY a region had no
+   coverage. These nine share one cause -- the E-form is unreachable in the
+   program -- which is the answer that makes them defensible rather than owed;
+   but the rule stands, and `make_unreachable.py` re-derives them from the
+   coverage file every run so that a widened corpus cannot leave a stale one
+   behind.
 
-`Words(2)` is not a constant of the program: it is whatever `VarName` was, and
-in this unit's corpus `VarName` is an arbitrary CHARACTER(*). A Fortran
-parameter name cannot begin with a digit; a harness `VarName` can.
-`run_words2_probe.sh` re-runs exactly the six `NONE` ids over the same 131,312
-records with `Words(2) = "7E+9"` -- one character for each of the five guards.
-
-  f13a04da  compare_op    L213  p < len -> p <= len     1587 records
-            TAIL|0|0|0.0   vs   TAIL|0|0|7.0
-            The integer-digit scan run one byte past the record: the '7' of
-            `Words(2)` is appended to the value.
-  26cb52f1  compare_op    L217  p < len -> p <= len      397 records
-            TAIL|.|5010|0.0   vs   TAIL|.|0|0.7
-            The fractional-digit scan, the same way.
-
-**These two are corpus gaps and must NOT be declared equivalent**, and finding
-that out cost one 74-second probe. The three that remain `NONE` are in B.
-
-
-B. NOT DISTINGUISHED BY ANY RECORD, UNDER EITHER `Words(2)` -- 4
-----------------------------------------------------------------
-Evidence toward equivalence, BOUNDED BY THE SPACE, and not a declaration.
-None of these is declared: `--equivalences` is a claim that the two programs
-agree on every admissible input, and "the search found nothing" is not that.
-
-  4198da25  compare_op    L214  p < len -> p <= len
-  209527b9  compare_op    L227  p < len -> p <= len
-  eba1c07e  compare_op    L237  p < len -> p <= len
-
-  The same site class as A3 and the same reading of `rec[200]`, but at
-  positions the record space does not put a discriminating character at:
-  L214 tests for '.', L227 for an exponent letter or a sign, L237 for a sign,
-  and reaching them with `p == len` needs a record that ends exactly where
-  those tests are made. `7E+9` supplies all four characters and still moves
-  none of the three, so the gap is in the RECORD shapes rather than in
-  `Words(2)`. A record space with more full-width forms would settle them;
-  §E names it.
-
-  The whole `rec[200]` class is also why `--sanitize` bought 5 kills on this
-  unit against 41 on `ParseInAry_Opt`: there the record is a 2048-byte
-  `std::vector<char>` and the same edit reads one byte PAST it, which
-  AddressSanitizer sees. Here it reads a letter.
-
-  8e796788  const_tweak   L159  for (k = 0; ...) -> k = 1  in match_word
-            Skips the comparison of the IEEE word's FIRST character, so a
-            record beginning `xnf` would match `inf`. The search contains
-            `xnf`, `0an` and every other length-3 triple over its alphabet and
-            none distinguishes the two, because a word the mutant accepts and
-            the reference does not still fails `strtod` on the leading
-            character and both return 5010 with nothing stored. To
-            distinguish it a record needs a field whose FIRST character makes
-            a valid number AND whose remainder spells `nf` / `an` / `nfinity`,
-            and no such string exists over this parser's grammar. NOT
-            declared: that is an argument this file cannot finish.
-
-
-C. UNREACHED BY THE SEARCH BY CONSTRUCTION -- 1 (the negative control)
----------------------------------------------------------------------
-  479d0b11  const_tweak   L49   MaxParamLength 200 -> 201
-
-  The search passes its record length as a LITERAL 200 precisely so that this
-  mutant is out of its reach, and it duly came back NONE. That is the
-  instrument's negative control and it is the reason to trust the sixteen
-  DIFFERS above.
-
-  Its own answer is separate and is a corpus gap. The constant is used
-  CONSISTENTLY -- the `Words` vector, `GetWords`'s element width, the READ's
-  record length and `TRIM(Words(2))` all move together -- so the mutant is a
-  renaming of the buffer width and differs from the reference only where a
-  word is 200 or 201 characters long, because the reference's `GetWords`
-  truncates at `LEN(Words) = 200`. R14 builds leads to EXACTLY the record
-  width (`2:tail:*@200`), so the corpus has that shape; what it does not have
-  is such a shape on a line `FindLine` matches.
-
-
-D. THE ONE CORPUS FACT THAT COVERS THREE OF THEM, MEASURED
-----------------------------------------------------------
-`6a6668b2`, `d7f942e4` and `c06ced0a` differ from the shipped translation ONLY
-in whether the transferred `0.0` is stored into `Variable`.
-
-    evidence/ParseInput_Dbl_Opt/harness_partition.txt
-      arm        cases   Variable IN /= 0
-      read-ok      174                  0
-      msg refused  211                  0
-
-ALL 293 cases that reach the READ enter with `Variable == 0.0` EXACTLY, so
-storing 0.0 over 0.0 is invisible on every one of them. That is not a
-coincidence: `harness/generate.py::_base` draws an unconstrained real at
-`lo + (hi - lo) * 0.5`, which on the +/-1e3 default is exactly 0.0.
-DECISIONS.md prices the fix and says why it was refused at this dispatch.
-
-
-E. WHAT WOULD MOVE THE SCORE, IN ORDER OF WHAT IT BUYS
-------------------------------------------------------
-1. A corpus in which more than 2.5% of cases reach the READ. 20 of the 21
-   are behind that one gate.
-2. `Variable`'s base draw off exactly 0.0. Three of the 21, and the cost is
-   R6's 33-magnitude real ladder -- DECISIONS.md.
-3. A matched line whose FIRST word is 200 characters long, or contains a `*`,
-   or a letterless exponent, or ends exactly where a predicate is made. Those
-   are the records sections A and A3 name, one per mutant. (A `;` is NOT on
-   that list any more: GetWords cannot put one in the buffer, which is what
-   moved two mutants into the equivalence set.)
-
-4. A record space with more FULL-WIDTH forms. The three in section B are the
-   same operator as the two in A3 and differ only in which predicate they sit
-   at; `7E+9` supplies every character they test and moves none of them,
-   because the space has no record that ENDS at those positions.
-
-None of the four is taken here, and each is named with its price rather than
-left as "the corpus is narrow".
+6. AND ONE THING THIS DISPATCH BROKE AND FIXED IN `make_unreachable.py` ITSELF.
+   Its rule-derived half reads the coverage file every time; its ONE hand-named
+   exception was keyed by mutant ID, the repair re-pointed that id onto a live
+   line, and the exception then declared a LIVE mutant unreachable. The sweep
+   refuted it -- `unreachable_but_killed: ['4a9b3707']` -- and the exception is
+   deleted rather than re-keyed, because the site it named no longer exists.
+   A script that re-derives a set is not proof against a constant beside it.
