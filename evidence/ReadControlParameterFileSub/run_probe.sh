@@ -34,13 +34,26 @@ fi
 python3 "$ROOT/evidence/ReadControlParameterFileSub/gen_probe.py" \
     > "$ROOT/evidence/ReadControlParameterFileSub/vit_rcpfs_probe.f90"
 
+# THE EXPRESSION NEVER GOES THROUGH THE SHELL STRING. Every useful red test on
+# this unit matches a C++ character literal and therefore contains a SINGLE
+# QUOTE; interpolated into the double-quoted `docker exec bash -lc "..."` below
+# it closes the quoting early, the perturbation block is skipped, and the run
+# reports the BASELINE under the red test's name. Measured -- see the C12 block
+# in probe.redtests.txt. It goes in over stdin, to a file, and `sed -E -f`
+# reads it.
+docker exec "$CONTAINER" bash -lc 'mkdir -p /tmp/probe && rm -f /tmp/probe/red.sed'
+if [ -n "$SEDX" ]; then
+    printf '%s\n' "$SEDX" | docker exec -i "$CONTAINER" \
+        bash -lc 'cat > /tmp/probe/red.sed'
+fi
+
 docker exec "$CONTAINER" bash -lc "
 set -e
 cd $WORK
 mkdir -p /tmp/probe
 cp $CPP /tmp/probe/unit.cpp
-if [ -n '$SEDX' ]; then
-    sed -E -i '$SEDX' /tmp/probe/unit.cpp
+if [ -s /tmp/probe/red.sed ]; then
+    sed -E -i -f /tmp/probe/red.sed /tmp/probe/unit.cpp
     if cmp -s $CPP /tmp/probe/unit.cpp; then
         echo 'run_probe: the --red-test expression changed NOTHING; refusing' >&2
         exit 3
@@ -59,7 +72,30 @@ gfortran -fdefault-real-8 -fdefault-double-8 -ffp-contract=off \\
     -o /tmp/probe/vit_rcpfs_probe evidence/ReadControlParameterFileSub/vit_rcpfs_probe.f90 \\
     /tmp/probe/rcpfs.o /tmp/probe/shim.o -L rosco/controller/build -ldiscon -lstdc++
 cd Examples
-LD_LIBRARY_PATH=$WORK/rosco/controller/build /tmp/probe/vit_rcpfs_probe DISCON*.IN \\
+LD_LIBRARY_PATH=$WORK/rosco/controller/build /tmp/probe/vit_rcpfs_probe \\
+    DISCON*.IN ../evidence/ReadControlParameterFileSub/corpus/*.IN \\
     2>&1 | grep -v 'ROSCO Warning' | grep -v '^        COPYBK' || true
+# echo1.IN sets Echo=1, so BOTH sides OPEN <RootName>.RO.echo -- and its
+# EXISTENCE is the only evidence that arm ran at all, so report it before
+# removing it. The file is a by-product and not an artifact: left behind it
+# dirties the tree, and capture_done_check.sh refuses on a dirty tree.
+#
+# NO BACKTICKS IN THIS BLOCK. It is inside a double-quoted string the HOST
+# shell expands before docker sees it, so a backtick here is a host command
+# substitution -- which is what the first version of this comment did, running
+# 'echo1.IN' and 'capture_done_check.sh' as host commands. The campaign already
+# has this lesson under --note; it reaches any double-quoted docker exec.
+C=../evidence/ReadControlParameterFileSub/corpus
+for e in \$C/*_REF.RO.echo; do
+    [ -f \"\$e\" ] || continue
+    p=\$(echo \$e | sed s/_REF/_CPP/)
+    echo \"  echo   ref \$(wc -c < \$e) bytes   cpp \$(wc -c < \$p) bytes\"
+    echo \"  echo   first difference: \$(cmp \$e \$p 2>&1 | head -1)\"
+    echo \"  echo   the CPP file, in full, against the reference prefix:\"
+    head -c \$(wc -c < \$p) \$e | cmp - \$p > /dev/null 2>&1 \\
+        && echo \"  echo   IDENTICAL over all \$(wc -c < \$p) bytes the translation wrote\" \\
+        || echo \"  echo   DIFFERS inside the translation-written prefix\"
+done
+rm -f \$C/*.RO.echo
 "
 echo "run_probe: $LABEL"

@@ -79,3 +79,113 @@ it is:
   it cannot be mutation-scored `vit_mutate.py` drives the harness's case file
                                and its ./test, neither of which exists here.
                                P12 has no number for this unit.
+
+
+C12 -- THE INSTRUMENT FAILED A LAYER IT SHOULD HAVE FAILED, AND THE WRONG
+RESULT IS RECORDED HERE BEFORE THE FIX
+========================================================================
+
+RT5 and RT6 were run and both came back GREEN:
+
+  RT5  drop the leading blank from ld_write   ->  echo IDENTICAL over 149 bytes
+  RT6  RoutineName prefix ':'  ->  ';'        ->  cases 33  FIELD 0
+
+Both are wrong, and each was PREDICTED to be red. What actually happened:
+
+  $ bash .../run_probe.sh --red-test "s/msg \+= ':';/msg += ';';/" RT6
+  bash: line 6: [: missing `]'
+  bash: line 6: ;/: No such file or directory
+    ok    DISCON.IN   213 of 213 fields identical, 16 unallocated-vs-empty
+    ...
+  cases 33   FIELD (translation) 0   COPYBK 548
+
+`run_probe.sh` embedded the expression as `sed -E -i '$SEDX'` inside a
+DOUBLE-QUOTED string handed to `docker exec bash -lc`. Both expressions contain
+SINGLE QUOTES -- they have to, because they match C++ character literals -- so
+the quoting closed early, `if [ -n '...' ]` lost its bracket, the whole
+perturbation block was skipped, and the run proceeded on the UNPERTURBED
+translation. A skipped perturbation reports the baseline, and a baseline
+reported under a red test's name is indistinguishable from a confirmed green.
+
+THE PREDICTED DELTA IS THE ONLY THING THAT CAUGHT IT. RT1 predicted 28 and got
+28; RT4 predicted a difference and got one at char 13. RT5 and RT6 predicted
+red and got green, which is why they were looked at. A red test run without a
+committed prediction would have entered the record as "the echo formatting and
+the RoutineName prefix are covered and green".
+
+This is the campaign's `--note` lesson (backticks inside double quotes run)
+arriving through a second door, and the repair is the same one the campaign
+already reaches for elsewhere: STOP PUTTING THE ARGUMENT IN THE SHELL STRING.
+The expression now goes to the container through stdin, into a file, and `sed
+-E -f` reads it -- no quoting on the path at all. The `refusing` guard is
+unchanged and was never the problem: it never ran.
+
+RESULTS AFTER THE FIX
+=====================
+  RT5  drop the leading blank from `ld_write`
+       PREDICT  the two echo files DIFFER at char 1, and the C++ file is 5
+                bytes shorter -- one blank per record, five records.
+  RT6  the final `RoutineName//':'//TRIM(ErrMsg)` prefix: ':' -> ';'
+       PREDICT  FIELD 1 on missing_required.IN, ErrVar%ErrMsg.
+
+CORPUS ROUND 2 added five files (evidence/.../corpus, derive_corpus.py), and a
+third round added four more once the probe's own ERR print showed that the
+three SHIPPED open-loop files all fail on an OL_Filename that does not exist in
+this workspace -- so the ~80 lines after `Read_OL_Input` had never run at all.
+
+  RT7  OL_BldPitch2 assigned from Ind_BldPitch[0] instead of Ind_BldPitch[1]
+       PREDICT  FIELD 1, on ol_distinct.IN ONLY (Ind_BldPitch 2 3 4), field
+                OL_BldPitch2. ol_dup.IN is 2 2 2, so the two indices are equal
+                there and the perturbation is the identity; the three shipped
+                OL files return before this line.
+  RT8  the strided-row source index `src[k - 1]` -> `src[k]` in BOTH the cable
+       and the structural-control fills
+       PREDICT  FIELD 2, on ol_cc_stc.IN ONLY, OL_CableControl and
+                OL_StructControl. No other case has a non-zero
+                Ind_CableControl or Ind_StructControl.
+
+  BASELINE (37 cases)  FIELD  0   COPYBK 586   echo IDENTICAL over 149 bytes
+  RT5                  echo DIFFERS at char 1, cpp 144 bytes vs ref 149
+                       <- PREDICTED char 1 and 5 bytes shorter. CONFIRMED.
+  RT6                  FIELD  0   -- PREDICTED 1. REFUTED, and the reason is
+                       in the reference rather than in the instrument: see
+                       below.
+  RT7                  FIELD  1   ol_distinct.IN  OL_BldPitch2
+                       <- PREDICTED exactly that. CONFIRMED.
+  RT8                  FIELD  2   ol_cc_stc.IN  OL_CableControl, OL_StructControl
+                       <- PREDICTED exactly those. CONFIRMED.
+
+RT6 IS A FINDING ABOUT THE REFERENCE, NOT A GAP IN THE PROBE. The perturbation
+applied (the diff is in the run's output) and moved nothing, so the final
+
+    IF (ErrVar%aviFAIL < 0) ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
+
+never executes on any of the 37 cases. The probe's own ERR print says why:
+
+    ERR  missing_required.IN  aviFAIL -1
+         ParseInput_Dbl_Opt:Missing or default values are not allowed for PC_MaxPit...
+
+the message still carries the CALLEE's RoutineName. Every way this unit sets
+aviFAIL negative is followed, within a few lines, by one of its own
+`IF (ErrVar%aviFAIL < 0) RETURN` statements, and those RETURN before the
+housekeeping block. The only route that could reach it is `Unwrap` failing
+inside the open-loop block, which no admissible input here produces. So that
+statement is transcribed and UNTESTED, and probably close to unreachable in the
+reference too. Recorded rather than chased: it is one assignment, and the
+argument that it is dead belongs beside it.
+
+THE ECHO COMPARISON IS 149 BYTES AND NOT 149 OF ~15,000, AND THE REASON MATTERS.
+The reference's echo file is byte-identical to the translation's -- and it is
+also only 149 bytes, i.e. the header alone. On a CLEAN tree the reference would
+write ~193 more records, one per parameter, through the Parse*_Opt callees.
+Those five units are integrated, and their translations deliberately emit
+nothing to `UnEc` (a Fortran unit number cannot cross the boundary). Measured,
+not assumed:
+
+    $ git show <first parse-translation commit>~1:.../ROSCO_Helpers.f90 \
+          | grep -c 'WRITE *( *UnEc'          ->  4
+    $ grep -c 'WRITE *( *UnEc' .../ROSCO_Helpers.f90  ->  1  (a comment)
+
+So "IDENTICAL over all 149 bytes" is a real byte-level check of this unit's own
+list-directed formatting -- RT5 and RT4 both move it -- and it says NOTHING
+about the ~193 records that are missing from BOTH sides on this tree.

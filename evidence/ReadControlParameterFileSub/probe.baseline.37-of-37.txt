@@ -1,0 +1,73 @@
+run_if_time_remains: 11901s remain, 300s needed -- starting
+! 213 field(s) compared
+  ok    DISCON.IN   213 of 213 fields identical, 16 unallocated-vs-empty
+  ok    DISCON_awc.IN   213 of 213 fields identical, 16 unallocated-vs-empty
+  ok    DISCON_ccoff.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_chkp36.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_chkp37.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_chkp38.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_chkp39.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_chkp40.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_chkp41.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_filters.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_flap26.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_flp.IN   213 of 213 fields identical, 16 unallocated-vs-empty
+  ok    DISCON_group2.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_ipc.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_ipc_awc.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_loglevel0.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_loglevel2.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_loglevel3.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+ ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3 GenTq YawRate Cable1 StC1
+ ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3 GenTq YawRate Cable1 StC1
+        ERR    DISCON_ol_cc_stc.IN  aviFAIL -1  ref ErrMsg:
+               Read_OL_Input:/workspace/ROSCO-r2/Examples/example_inputs/OL_Mode1_CC_StC_Input.dat does n
+  ok    DISCON_ol_cc_stc.IN   213 of 213 fields identical, 16 unallocated-vs-empty
+ ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3 GenTq YawRate
+ ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3 GenTq YawRate
+        ERR    DISCON_ol_mode1.IN  aviFAIL -1  ref ErrMsg:
+               Read_OL_Input:/workspace/ROSCO-r2/Examples/example_inputs/OL_Mode1_Input.dat does not exis
+  ok    DISCON_ol_mode1.IN   213 of 213 fields identical, 16 unallocated-vs-empty
+ ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3 GenTq Azimuth
+ ROSCO: OL_Mode = 2 will change generator torque control for Azimuth tracking
+ ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3 GenTq Azimuth
+ ROSCO: OL_Mode = 2 will change generator torque control for Azimuth tracking
+        ERR    DISCON_ol_mode2.IN  aviFAIL -1  ref ErrMsg:
+               Read_OL_Input:/workspace/ROSCO-r2/Examples/example_inputs/OL_Mode2_Input.dat does not exis
+  ok    DISCON_ol_mode2.IN   213 of 213 fields identical, 16 unallocated-vs-empty
+  ok    DISCON_stress27.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_su_sd_tra.IN   213 of 213 fields identical, 16 unallocated-vs-empty
+  ok    DISCON_synth.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_synth3.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_synth3hi.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_twoinit.IN   213 of 213 fields identical, 15 unallocated-vs-empty
+  ok    DISCON_yaw.IN   213 of 213 fields identical, 16 unallocated-vs-empty
+  ok    ../evidence/ReadControlParameterFileSub/corpus/dt_out.IN   213 of 213 fields identical, 16 unallocated-vs-empty
+  ok    ../evidence/ReadControlParameterFileSub/corpus/echo1.IN   213 of 213 fields identical, 16 unallocated-vs-empty
+  ok    ../evidence/ReadControlParameterFileSub/corpus/fl_n0.IN   213 of 213 fields identical, 16 unallocated-vs-empty
+        ERR    ../evidence/ReadControlParameterFileSub/corpus/missing_required.IN  aviFAIL -1  ref ErrMsg:
+               ParseInput_Dbl_Opt:Missing or default values are not allowed for PC_MaxPit. Please check c
+  ok    ../evidence/ReadControlParameterFileSub/corpus/missing_required.IN   213 of 213 fields identical, 58 unallocated-vs-empty
+  ok    ../evidence/ReadControlParameterFileSub/corpus/notch2.IN   213 of 213 fields identical, 14 unallocated-vs-empty
+ ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3 GenTq Azimuth
+ ROSCO: OL_Mode = 2 will change generator torque control for Azimuth tracking
+ ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3 GenTq Azimuth
+ ROSCO: OL_Mode = 2 will change generator torque control for Azimuth tracking
+  ok    ../evidence/ReadControlParameterFileSub/corpus/ol_azimuth.IN   213 of 213 fields identical, 9 unallocated-vs-empty
+ ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3 Cable1 StC1
+ ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3 Cable1 StC1
+  ok    ../evidence/ReadControlParameterFileSub/corpus/ol_cc_stc.IN   213 of 213 fields identical, 9 unallocated-vs-empty
+ ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3
+ ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3
+  ok    ../evidence/ReadControlParameterFileSub/corpus/ol_distinct.IN   213 of 213 fields identical, 11 unallocated-vs-empty
+ ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3 GenTq YawRate
+ ROSCO: Implementing open loop control for BldPitch1 BldPitch2 BldPitch3 GenTq YawRate
+  ok    ../evidence/ReadControlParameterFileSub/corpus/ol_dup.IN   213 of 213 fields identical, 9 unallocated-vs-empty
+
+cases 37   FIELD (translation) 0   COPYBK (the view cannot express unallocated) 586
+  echo   ref 149 bytes   cpp 149 bytes
+  echo   first difference: 
+  echo   the CPP file, in full, against the reference prefix:
+  echo   IDENTICAL over all 149 bytes the translation wrote
+run_probe: baseline
+run_if_time_remains: exit 0 after 2s (estimated 300s; 11899s now remain)

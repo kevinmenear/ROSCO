@@ -47,7 +47,17 @@ PROGRAM vit_rcpfs_probe
     TYPE(ControlParameters), SAVE :: blank
     CHARACTER(1024) :: path
     CHARACTER(:), ALLOCATABLE :: acc(:)
-    CHARACTER(:), ALLOCATABLE :: root
+    ! TWO RootNames, ONE per side, and they differ ON PURPOSE.
+    !
+    ! RootName's ONLY use in the reference is `EchoFilename = TRIM(RootName)//
+    ! '.RO.echo'`, so it reaches no field of ControlParameters and giving the
+    ! two sides different values cannot move the comparison below. What it buys
+    ! is that both echo files SURVIVE: with one RootName the C++ opens the same
+    ! path with 'w' after the reference has closed it and the reference's
+    ! records are gone, so the only hand-written formatting in the translation
+    ! -- gfortran list-directed output -- has nothing to be compared against.
+    ! Same length as the original, so accINFILE_size is unchanged.
+    CHARACTER(:), ALLOCATABLE :: root_r, root_p
     CHARACTER(KIND=C_CHAR), ALLOCATABLE :: acc_c(:), root_c(:)
     CHARACTER(256) :: current
 
@@ -74,14 +84,20 @@ PROGRAM vit_rcpfs_probe
             acc(i) = ' '
         END DO
         acc(1) = path(1:n)
-        ALLOCATE(CHARACTER(n) :: root)
-        root = path(1:n)
+        ALLOCATE(CHARACTER(n) :: root_r, root_p)
+        IF (n >= 4) THEN
+            root_r = path(1:n-4)//'_REF'
+            root_p = path(1:n-4)//'_CPP'
+        ELSE
+            root_r = path(1:n)
+            root_p = path(1:n)
+        END IF
 
         ! ---- the REFERENCE -------------------------------------------------
         CALL init_local(lv_ref)
         CALL init_err(ev_ref)
         CALL wipe(ref)
-        CALL ReadControlParameterFileSub(ref, lv_ref, acc, n, root, ev_ref)
+        CALL ReadControlParameterFileSub(ref, lv_ref, acc, n, root_r, ev_ref)
 
         ! ---- the TRANSLATION -----------------------------------------------
         CALL init_local(lv_cpp)
@@ -96,7 +112,7 @@ PROGRAM vit_rcpfs_probe
         END DO
         DO i = 1, n
             acc_c(i) = path(i:i)
-            root_c(i) = path(i:i)
+            root_c(i) = root_p(i:i)
         END DO
         CALL readcontrolparameterfilesub_c(C_LOC(cv), C_LOC(lvv), acc_c, n, root_c, C_LOC(evv))
         CALL vit_view_in_controlparameters(cv, cpp)
@@ -109,6 +125,17 @@ PROGRAM vit_rcpfs_probe
             CALL bad("ErrVar%ErrMsg", "ALLOCATED differs")
         ELSE IF (ALLOCATED(ev_ref%ErrMsg)) THEN
             IF (ev_ref%ErrMsg /= ev_cpp%ErrMsg) CALL bad("ErrVar%ErrMsg", "value differs")
+        END IF
+        ! PRINT THE ERROR, DO NOT ONLY COMPARE IT. A case that reaches an error
+        ! path is rare enough here -- 1 of 33 -- that WHICH error it reached is
+        ! worth having beside the verdict, and it is what says whether the final
+        ! `RoutineName//':'//TRIM(ErrMsg)` prefix ran or an early RETURN skipped
+        ! it. Two identical wrong messages compare equal.
+        IF (ev_ref%aviFAIL /= 0) THEN
+            WRITE(*,'(A,A,A,I0,A)') '        ERR    ', TRIM(current), &
+                '  aviFAIL ', ev_ref%aviFAIL, '  ref ErrMsg:'
+            WRITE(*,'(A,A)')        '               ', &
+                ev_ref%ErrMsg(1:MIN(90, LEN(ev_ref%ErrMsg)))
         END IF
 
     IF (ref%ZMQ_ID /= cpp%ZMQ_ID) CALL bad("ZMQ_ID", "value differs")
@@ -1151,7 +1178,7 @@ PROGRAM vit_rcpfs_probe
             WRITE(*,'(A,A,A,I0,A,I0,A)') '  FAIL  ', TRIM(current), '   ', nbad, &
                 ' field(s) differ, ', nart, ' unallocated-vs-empty'
         END IF
-        DEALLOCATE(acc, root)
+        DEALLOCATE(acc, root_r, root_p)
     END DO
 
     WRITE(*,'(A)') ''
