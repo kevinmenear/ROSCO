@@ -13991,3 +13991,59 @@ re-runs `./test` in a SECOND `docker exec` to capture the JSON payload, and the
 campaign already records a bind-mount write/read race on objects a `docker exec`
 chain wrote moments earlier. It is LOUD — no artifact — so the cost is one
 retry.
+
+### THE THREE CORPUS ROUNDS, AND THE ONE THAT FAILED
+
+The entry above closes at 0.949 with five open survivors. Two further rounds of
+R14 entries took it to **96 / 98 = 0.9796 with two**, and the round that FAILED
+is the one worth keeping.
+
+    round 1, loop 343f843   four named, four killed, nothing else   89 -> 93
+    round 2, loop 581925d   three named, TWO killed                 93 -> 95
+    round 3, loop 8f9d72f   the third, on a corrected form          95 -> 96
+
+Round 2's third entry was a `_NEIGHBOUR_TAILS` form written for `ab7420d6`
+(`q < len` -> `q <= len` in the repeat-count lookahead): a full-width lead
+`"0"*189 + "3*123456789"` paired with a `'*'` neighbour, on the reasoning that
+the mutant reads `rec[len]` and the neighbour should therefore be the character
+the lookahead tests. It was priced against gfortran, it was planted, and the
+mutant survived.
+
+**A lookahead that scans for a token STOPS AT that token.** The `*` the record
+carried is exactly what kept the digit scan from running to the record's last
+byte, so the boundary the form was aimed at was never evaluated. The scan
+reaches `len` only on a record with NO star in it — and the mutant that reads
+one past the end then finds its star in the NEIGHBOUR. The digit run must ALSO
+be a legal repeat count, which leading zeros give for free:
+`("digstar", lambda n: "0"*(n-1) + "1", "*7")`, and it killed the mutant on the
+first sweep after it.
+
+**The rule, which is about record design rather than about ROSCO: a boundary
+inside a lookahead is reached by a record that does NOT contain the token the
+lookahead is looking for.** It is now in `generate.py`'s own comment beside the
+entry, in the RUNBOOK, and in this unit's `mutation_survivors.txt` §B.
+
+The reason it is worth this much text: it is the second stated prediction this
+dispatch refuted, and both refutations produced a rule. The gate one settled
+"failure class versus item type"; this one settled how to build a record for a
+lookahead's boundary. Neither would exist if the number had not been written
+down first.
+
+### WHAT IS LEFT, AND IT IS ONE THING
+
+`4f89b00b` and `e8cf2d25` are the SAME gap and are described under "THE DECISION
+THIS DISPATCH RAISES RATHER THAN TAKES" above. Nothing else is open.
+
+### AND A TRANSIENT THAT IS NOW A PATTERN
+
+`evidence/<Unit>/run_harness_stub.sh` returned
+`no JSON from ./test -- artifact NOT written` on the FIRST stub of a batch on
+all THREE occasions it was run as a batch, never on a later stub in the same
+batch, and never when re-run alone. The runner builds through `harness.sh` and
+then re-runs `./test` in a SECOND `docker exec` to capture the JSON payload; the
+campaign already records a bind-mount write/read race on objects a `docker exec`
+chain wrote moments earlier (unit #47).
+
+It is LOUD — no artifact is written and the runner exits 1 — so the cost is one
+retry, and the batch in this unit's evidence simply runs the first stub twice.
+Written down rather than left for a fourth dispatch to rediscover.

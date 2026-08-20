@@ -9093,6 +9093,63 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   should be anchored to that file's structure, not to a line shape** -- the
   shape is shared with the header, and the header is where the controls live.
 
+## A BOUNDARY INSIDE A LOOKAHEAD IS REACHED BY A RECORD THAT DOES NOT CONTAIN
+## THE TOKEN THE LOOKAHEAD IS LOOKING FOR
+
+- **Unit #57, and it cost one corpus round and one refuted prediction.**
+
+  ```
+  int q = p;
+  while (q < len && is_digit(rec[q])) ++q;          <- the mutated bound
+  if (q > p && q < len && rec[q] == '*') { ... }    <- what it is scanning FOR
+  ```
+
+  The form written for `q < len` -> `q <= len` was a full-width lead carrying a
+  repeat count of its own, `"0"*(n-11) + "3*123456789"`, paired with a `'*'`
+  neighbour -- the character the lookahead tests, which is what
+  `_NEIGHBOUR_TAILS` exists to put one byte past the record. It was priced
+  against gfortran, planted, and **the mutant survived**.
+
+  The star the record carried is exactly what kept the scan from reaching the
+  record's last byte: the digit loop stops AT the star, at index 190 of 200.
+  A scan that is looking for a token cannot run past a record that contains one.
+
+  ```
+  "0"*189 + "3*123456789"   digit scan stops at q = 190      NOT the boundary
+  "0"*199 + "1"             digit scan runs to q = 200       the boundary
+  neighbour '*'             the mutant's rec[200] IS the token         KILLED
+  ```
+
+  Two further conditions, and both are easy to miss: the digit run must also be
+  a LEGAL value for whatever the token introduces (here a repeat count, and
+  leading zeros give that for free), and the neighbour must carry the token,
+  because the record cannot.
+
+  **Ask what the scan STOPS on before choosing the lead.** A `_NEIGHBOUR_TAILS`
+  entry aimed at a value scanner and one aimed at a lookahead are built to
+  opposite rules, and the first will silently fail to reach the second's bound.
+
+## THE FIRST `run_harness_stub.sh` OF A BATCH RETURNS NO JSON, THREE FOR THREE
+
+- **Unit #57.** The runner builds through `harness.sh` and then re-runs `./test`
+  in a SECOND `docker exec` to capture the JSON payload:
+
+  ```
+  batch of four stubs   run 1: no JSON from ./test -- artifact NOT written
+                        runs 2-4: fine
+  the same stub alone   fine, and at the predicted number
+  ```
+
+  Three batches, three first-stub failures, no later-stub failure and no
+  re-run failure. Same shape as unit #47's `vit_integration_shim.o` with no
+  symbols: a bind-mount write/read race on something a `docker exec` chain wrote
+  moments earlier.
+
+  It is LOUD -- the runner exits 1 and writes nothing -- so the cost is one
+  retry. **Run the first stub of a batch twice** rather than discovering this a
+  fourth time; the second run overwrites the first's artifact with the same
+  numbers.
+
 ## Finishing a unit
 
 0. Before extracting: query `coverage/line_coverage.json` for the call site's
