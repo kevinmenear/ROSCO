@@ -2862,3 +2862,75 @@ UnEc = { lo = 0, hi = 0, values = [0] }
 has_AllowDefault = { values = [1, 0] }
 AllowDefault = { values = [0, 1] }
 vit_record = { compare_record = "ROSCO_Helpers.f90:243 (clean) PRINTs a warning record naming the variable and the default value it substituted -- `PRINT *, \"ROSCO Warning: Did not find \"//TRIM(VarName)//\" in input file.  Using default value of \", Variable`. It is the only thing that tells a ROSCO user their input file did not supply the value, and it crosses no dummy argument, so R4 never named it and no no_oracle could have excluded it: the exclusion was structural rather than a judgement anybody made. Unit #55 measured what that costs -- five of its six surviving mutants edited its own record and nothing else -- and this unit takes the comparison at its first dispatch instead of at its sixth. The record is two items, a CHARACTER expression and one REAL(8), so it also exercises the CHARACTER-then-REAL separator rule that no array record can reach." }
+
+
+# ---------------------------------------------------------------------------
+# ParseInput_Int_Opt                                                 unit #57
+#
+# THE INTEGER MEMBER OF THE SAME GENERIC INTERFACE as `[ParseInput_Dbl_Opt]`
+# above, and the clean bodies differ in the declaration of `Variable`, the word
+# INTEGER/REAL in one message, the routine name and whitespace -- nothing else.
+# The three entries below are that block's word for word, and the reasoning is
+# not restated. What IS restated is the part that had to be re-measured on THIS
+# unit, because a reason copied without its measurement is the shape unit #54
+# recorded as dangerous and unit #55 then paid for.
+#
+# `UnEc = { lo = 0, hi = 0, values = [0] }` -- the echo WRITE is NOT TRANSLATED,
+# because `UnEc` is a Fortran UNIT NUMBER and C++ cannot reach the Fortran
+# runtime's unit table; the only record this side could write is one to
+# `fort.<UnEc>`, a different file. Unit #54's family decision, in DECISIONS.md,
+# and this is the FOURTH of the five units carrying the identical statement.
+# `values = [0]` sits BESIDE the bounds and not instead of them, for unit #55's
+# reason: a parameter that states `values` is excluded from R14's `plant_ints`,
+# so the pin no longer deletes two thirds of that rule, while R6's integer
+# ladder and R7's knobs continue to see a pinned quantity.
+#
+# AND THIS UNIT'S OWN MEASUREMENT OF THE ARM, on this unit's own lines rather
+# than the sibling's. `coverage/line_coverage.json` records ROSCO_Helpers.f90
+# :186 (`IF (PRESENT(UnEc))`) 1,680 times across the 27 scenarios and :187
+# (`IF (UnEc > 0) WRITE`) 1,624 -- so `UnEc` is PRESENT at 1,624 of the 1,680
+# calls and greater than zero at NONE of them. The guard is not merely dead, it
+# is evaluated 1,624 times and false every time.
+#
+# `has_AllowDefault = { values = [1, 0] }` WITH `AllowDefault = { values =
+# [0, 1] }` -- one entry in two lines, present and false. Unit #55's base-draw
+# correction, taken up front as unit #56 took it: `flag_variants` rotates a
+# flag's values by the case index, so this moves only the BASE DRAW -- the cases
+# R13, R6 and R14 take with everything else at rest -- and removes nothing from
+# the crossed population. Without it the base draw lands on the arm that assigns
+# NO `ErrVar%ErrMsg` at all, and R13's staging-capacity ladder, the only rule
+# that can tell `s.size() > cap` from `s.size() >= cap`, would be taken on cases
+# that write no message.
+#
+# `vit_record` -- the stream this unit WRITES is an output of the call. Same
+# statement units #55 and #56 carry, and the same argument: the record crosses
+# no dummy argument, so R4 never named it and no `no_oracle` could have excluded
+# it; the exclusion was STRUCTURAL. Taken here at the FIRST dispatch.
+#
+# NO `no_oracle` ENTRY, for the same one declaration unit #56 records: `Variable`
+# is a scalar `INTEGER(IntKi), INTENT(INOUT)`, so it is DEFINED on entry on every
+# path, and the three ways gfortran's list-directed READ leaves an item
+# untransferred -- an END condition, a null value, a `/` terminator -- leave it
+# holding the CALLER's value rather than the recycled heap that forced
+# `Ary = { no_oracle_when = ... }` on both `Parse*Ary_Opt` siblings. Every one of
+# this unit's outputs has an oracle on every case. AND THE INTEGER READER IS ONE
+# NOTCH STRONGER THAN THE REAL ONE HERE: it has no store-then-fail path at all
+# (measured, `evidence/ParseInput_Int_Opt/record_form_probe.txt` -- every one of
+# the fourteen 5010 rows leaves the item at its -987654 sentinel), so there is no
+# case in which a failing READ writes anything.
+#
+# NO PIN ON `Variable`, and the price is stated rather than left to be found.
+# Unit #56 measured that all 293 of its cases reaching the READ entered with
+# `Variable == 0.0` exactly, priced a range for it, and REFUSED: a pin is global
+# to the unit and would move `Variable` out of `Signature.defaulted`, deleting
+# R6's 33-magnitude ladder from the unit's only free scalar. The same refusal
+# applies here and the arithmetic is re-measured rather than inherited --
+# `evidence/ParseInput_Int_Opt/harness_partition.txt` carries the `Variable IN`
+# column this unit actually got.
+# ---------------------------------------------------------------------------
+[ParseInput_Int_Opt]
+
+UnEc = { lo = 0, hi = 0, values = [0] }
+has_AllowDefault = { values = [1, 0] }
+AllowDefault = { values = [0, 1] }
+vit_record = { compare_record = "ROSCO_Helpers.f90:162 (clean baseline 54dd134) PRINTs a warning record naming the variable and the default value it substituted -- `PRINT *, \"ROSCO Warning: Did not find \"//TRIM(VarName)//\" in input file.  Using default value of \", Variable`. It is the only thing that tells a ROSCO user their input file did not supply the value, and it crosses no dummy argument, so R4 never named it and no no_oracle could have excluded it: the exclusion was structural rather than a judgement anybody made. Unit #55 measured what that costs -- five of its six surviving mutants edited its own record and nothing else -- and units #56 and #57 take the comparison at their first dispatch instead of at a sixth. The record is two items, a CHARACTER expression and ONE INTEGER(4) with nothing after it, which is a layout neither sibling has: unit #55 writes CHARACTER, an array of integers, then a CHARACTER, and unit #56 writes CHARACTER then one REAL. It was derived from unit #55's measured grammar rules and priced against gfortran's own record before the corpus was generated -- evidence/ParseInput_Int_Opt/print_record_probe.{f90,cpp,txt}, 6 of 6 byte-identical including the widest value of the type." }
