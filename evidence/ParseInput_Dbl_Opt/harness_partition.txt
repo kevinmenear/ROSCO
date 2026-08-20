@@ -1,0 +1,16 @@
+harness partition -- 11562 case(s), corpus translations/ROSCO_Helpers/parseinput_dbl_opt_test/parseinput_dbl_opt_cases.bin
+
+arm                            cases  scalar-changed   record  Variable moved
+default-warned                  9148               0     9148             962
+not-allowed                     1845            1845        0               0
+error, msg refused               211             211        0               0
+pre-failed                       184               0        0               0
+read-ok                          174               0        0             159
+TOTAL                          11562            2056     9148            1121
+
+PREDICTIONS READ OFF THIS TABLE, each stated before its run:
+  post-integration wrapper red test (the reverse copy deleted):
+      the `scalar-changed` column summed = 2056 must FAIL
+      the rest, 9506, write no scalar and must PASS
+  the PRINT deleted:  the `record` column summed = 9148 must FAIL
+  the READ deleted:   read-failed cases move a scalar and a message; read-ok cases move Variable

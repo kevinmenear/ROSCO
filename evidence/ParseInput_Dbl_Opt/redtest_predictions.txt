@@ -1,0 +1,67 @@
+# Predictions for the four differential-harness red tests, WRITTEN BEFORE THE
+# RUNS, read off evidence/ParseInput_Dbl_Opt/harness_partition.txt.
+#
+#   arm                 cases   scalar-changed   record   Variable moved
+#   default-warned       9148                0     9148              962
+#   not-allowed          1845             1845        0                0
+#   error, msg refused    211              211        0                0
+#   pre-failed            184                0        0                0
+#   read-ok               174                0        0              159
+#   TOTAL              11,562             2056     9148             1121
+#
+# The `error, msg refused` cell is the ONE thing this table cannot split: those
+# 211 cases returned aviFAIL = -1 with the message they arrived with, because
+# R13 sized the staging buffer below what the arm wanted to write, and both the
+# `.NOT. AllowDefault_` arm and the READ-error arm land there. Call the split
+# (A, B) with A + B = 211.
+
+noop                  11,363 must FAIL,   199 must PASS
+                      = 9148 (record) + 1845 (scalar) + 211 (scalar) + 159
+                        (Variable moved on the read-ok cases).
+                      The 199 that must PASS are 184 pre-failed -- the body is
+                      skipped, so a deleted body is the same program -- plus
+                      the 15 read-ok cases whose parsed value equals the one
+                      they arrived with.
+
+no-print               9,148 must FAIL, exactly the `record` column, and
+                      exactly the cell `vit_record = { compare_record = ... }`
+                      is the only oracle for. Nothing else moves: `Variable = 0`
+                      on the line above is untouched.
+
+no-allowdefault-arm   1845 + A must FAIL, so the answer is in [1845, 2056].
+
+no-read                159 + B must FAIL, so the answer is in [159, 370].
+
+ARITHMETIC CONTROL: the two brackets share the 211. If the two measured
+numbers are N3 and N4, then (N3 - 1845) + (N4 - 159) must equal 211 exactly.
+A pair that does not sum is an arm attribution this table got wrong, not a
+rounding.
+
+--------------------------------------------------------------------------
+MEASURED, 2026-08-19, all four on the clean tree with --no-generate (the same
+11,562-case file the green in harness/ParseInput_Dbl_Opt.json was taken on):
+
+  noop                  11,363   PREDICTED 11,363   exact
+  no-print               9,148   PREDICTED  9,148   exact
+  no-allowdefault-arm    1,937   PREDICTED [1845, 2056]   =>  A =  92
+  no-read                  278   PREDICTED [ 159,  370]   =>  B = 119
+
+  ARITHMETIC CONTROL     A + B = 92 + 119 = 211           exact
+
+So the 211-case `error, msg refused` cell splits 92 / 119, and the partition
+is now complete without a further probe:
+
+  arm                          cases   scalar-changed   record   Var moved
+  default-warned                9148                0     9148         962
+  not-allowed                   1845             1845        0           0
+  not-allowed, msg refused        92               92        0           0
+  read-failed, msg refused       119              119        0           0
+  pre-failed                     184                0        0           0
+  read-ok                        174                0        0         159
+  TOTAL                       11,562             2056     9148        1121
+
+WHAT THAT SAYS ABOUT THE CORPUS, and it is the number to read before any
+mutation survivor is explained: only 293 cases of 11,562 -- 2.5% -- reach the
+list-directed READ at all, because `FindLine` has to match the SECOND word of
+some line for `FoundLine` to be true, and only R14's planted-word cases do
+that. 174 of the 293 succeed and 119 fail.
