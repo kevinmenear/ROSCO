@@ -18,9 +18,9 @@ the seventh, mutation, is below the campaign's threshold of 1.0 at
 | layer | result | red-tested |
 |---|---|---|
 | differential harness (`harness/ParseInput_Dbl_Opt.json`) | **11,562 checked, 0 failed, 0 inadmissible**, against the CLEAN Fortran with all three callee bridges kept. R4 compares the return value plus 6 out-parameters — `Variable`, `ErrVar_size_avcMSG`, `ErrVar_aviFAIL`, `ErrVar_ErrStat`, `ErrVar_ErrMsg_n`, `ErrVar_ErrMsg` — **plus the stdout RECORD, on 9,148 cases**. 15 parameters varied, 2 held. **No `no_oracle` entry**: §4 | **four stubs, two predicted EXACTLY and two as brackets whose excesses had to sum**: no-op **11,363** ✓ exact; the PRINT **9,148** ✓ exact; the `.NOT. AllowDefault_` arm **1,937** in a predicted [1845, 2056]; the READ **278** in a predicted [159, 370]; and (1937−1845) + (278−159) = **211**, exact |
-| mutation (`mutation/ParseInput_Dbl_Opt.json`) | **181 mutants, 4 nocompile, 177 behavioural: 110 KILLED, 27 EQUIVALENT, 19 UNREACHABLE, 21 SURVIVED, 110/131 = 0.8397.** SANITISED, green baseline, clean tree, `--workers 8`, 121 s. `declared_but_killed` and `unreachable_but_killed` both EMPTY | — the score IS the red test (E4.6). All 21 survivors are answered in `mutation_survivors.txt`, **14 of them by a named record** |
+| mutation (`mutation/ParseInput_Dbl_Opt.json`) | **181 mutants, 4 nocompile, 177 behavioural: 110 KILLED, 27 EQUIVALENT, 19 UNREACHABLE, 21 SURVIVED, 110/131 = 0.8397.** SANITISED, green baseline, clean tree, `--workers 8`, 121 s. `declared_but_killed` and `unreachable_but_killed` both EMPTY | — the score IS the red test (E4.6). All 21 survivors are answered in `mutation_survivors.txt`, **16 of them by a named record** |
 | line coverage of the translation (`line_coverage.txt`) | **200 executable lines run, 38 never** over the 11,562 cases, at `-O0`. The measurement all 19 `unreachable` declarations are DERIVED from, by `make_unreachable.py` | **three controls**: the entry line's gcov count is 11,562 = the case count; NON-survivors on never-run lines that are not nocompile number **0**; and the four nocompile ids were measured independently and the count matches the sweep's own `nocompile: 4` |
-| survivor record search (`survivor_record_search.txt`) | **16 of the then-23 open survivors distinguished over 131,312 records — all by a VALUE, 0 by an ADDRESS. Two of the 16 were then found to be equivalent AT THE UNIT (§5c) and are no longer open, so 14 of the 21 stand.** Nothing folded into the score | the **negative control is built into the shape**: the search takes the record length as a literal `200`, so `479d0b11` — the mutant of the constant `MaxParamLength` itself — cannot be reached and must come back `NONE`. It does |
+| survivor record search (`survivor_record_search.txt`, `words2_probe.txt`) | **16 of the 21 open survivors distinguished over 131,312 records, all by a VALUE and none by an ADDRESS.** 16 of the then-23 at the default `Words(2)`; two of those were afterwards found equivalent AT THE UNIT (§5c), and two more were found by re-running the six `NONE`s with a digit-leading `Words(2)` — the search's own blind spot.** Nothing folded into the score | the **negative control is built into the shape**: the search takes the record length as a literal `200`, so `479d0b11` — the mutant of the constant `MaxParamLength` itself — cannot be reached and must come back `NONE`. It does |
 | mutation, VALUE ORACLE (`mutation/ParseInput_Dbl_Opt.value-oracle.json`) | **110 of 177, 0.8397 — the same number**, and the same corpus and declarations. Run as a control on `killed_by_sanitizer: 5`, and it REFUTED the reading of that field | the control is the SURVIVOR SET, not the count: the two runs disagree by exactly one mutant each way, which is why the totals match. §5b |
 | post-integration (`harness/ParseInput_Dbl_Opt.postintegration.json`) | 11,562 checked, **0 failed** | this unit's own `vit_copy_scalars_to_errorvariables` deleted from its own wrapper: **2,056 of 11,562**, PREDICTED 2,056 from the partition before the run; reverted, rebuilt, green re-taken at 0 |
 | gate, 27 scenarios (`gate/ParseInput_Dbl_Opt.json`) | 5,252,000 values / 351 channels, **0 mismatched**, 28 s | **TWO, both predicted**: every parsed value + 1.0 moves **1,857,893** across 147 channels, revert-verified at 0; the default arm moves **0**, and the artifact carries the argument (§6) |
@@ -280,10 +280,27 @@ proof that the family is a family and not a bucket:
 | buffer | 4 | a local buffer one byte larger than a bound it never reaches | `62` → `63` at :195, which moves a real bound |
 | dead value | 4 | including the two in `list_directed_real` that turn on `Variable` being `+0.0` at the PRINT | `isnan` at :395 |
 
-**All 21 open survivors are answered** in `mutation_survivors.txt`: 14 by a
-named record from the 131,312-record search, 6 as bounded-by-the-space NONEs
-left undeclared on purpose, and 1 the search's own negative control. 20 of the
-21 are behind the single 2.5% gate above.
+**All 21 open survivors are answered** in `mutation_survivors.txt`: **16 by a
+named record**, 4 as bounded-by-the-space NONEs left undeclared on purpose, and
+1 the search's own negative control. 20 of the 21 are behind the single 2.5%
+gate above.
+
+**Two of the sixteen were found only after the SEARCH'S OWN blind spot was
+fixed, and that is worth as much as the two mutants.** Five of the first
+search's six `NONE`s are `p < len` → `p <= len`, which at `p == len` read
+`rec[200]` = `Words(2)(1:1)` — the first character of the matched parameter
+name. The search put `PC_KP` there, and 'P' is not a digit, not a '.', not a
+sign and not an e/d/q, so all five guards took the same branch **by the
+search's own choice of that name**. `Words(2)` is not a constant of the
+program: it is whatever `VarName` was, and a harness `VarName` may begin with a
+digit where a Fortran parameter name may not. `run_words2_probe.sh` re-runs the
+six over the same 131,312 records with `Words(2) = "7E+9"`:
+
+    f13a04da  L213  p < len -> p <= len   1587 records   TAIL|0|0|0.0 vs 7.0
+    26cb52f1  L217  p < len -> p <= len    397 records   TAIL|.|5010|0.0 vs 0.7
+
+so those two are corpus gaps and must NOT be declared equivalent. 74 seconds,
+and without it a later dispatch had a plausible argument for declaring five.
 
 **AND TWO OF THEM ARE KILLED BY THE OTHER INSTRUMENT.** `9e00d730` and
 `b8766137` (`parse_real:247`, the exponent's sign) were run through the
@@ -489,6 +506,7 @@ Four things, and each is named with what would close it.
 | `make_unreachable.py` | derives the 19 `unreachable` declarations from that file |
 | `nocompile_ids.txt` | the four nocompile mutants, measured, with the control |
 | `survivor_record_search.{cpp,txt}` | the 131,312-record search and its result |
+| `run_words2_probe.sh`, `words2_probe.txt` | the same space with a digit-leading `Words(2)`, for the six the first run could not separate |
 | `run_survivor_record_search.sh` | builds it against the shipped .cpp and each survivor |
 | `mutation_survivors.txt` | one answer per open survivor |
 | `run_wrapper_redtest.sh` | plants a defect in the shipped wrapper, measures, reverts, re-takes the green |

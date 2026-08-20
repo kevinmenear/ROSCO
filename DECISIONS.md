@@ -13566,3 +13566,36 @@ four numbers. Beside the 1,857,893/147 pair the regularity is readable:
 the RUNBOOK target layer, because it makes this family's gate red tests
 predictable to the value before they run -- and a red test whose count can be
 predicted exactly is one that can be WRONG, which is the whole reason to run it.
+
+### A SECOND INSTRUMENT HAS ITS OWN BLIND SPOT, AND IT IS IN THE PARAMETER YOU
+### CHOSE RATHER THAN IN THE SPACE YOU ENUMERATED
+
+`survivor_record_search.cpp` enumerates 131,312 records and reported six
+survivors as `NONE`. Five of those six are `p < len` -> `p <= len`, which at
+`p == len` read `rec[200]` -- which is `Words(2)(1:1)`, the first character of
+the parameter name `FindLine` matched. **The search put `PC_KP` there**, and
+'P' is not a digit, not a '.', not a sign and not an e/d/q, so all five guards
+took the same branch **because of the name the instrument chose**, not because
+of anything about the record space.
+
+`Words(2)` is not a constant of the program: it is whatever `VarName` was, and
+in this unit's corpus `VarName` is an arbitrary CHARACTER(*). A Fortran
+parameter name cannot begin with a digit; a harness `VarName` can. Re-running
+the six ids over the SAME 131,312 records with `Words(2) = "7E+9"` separated
+two of them:
+
+    f13a04da  L213  p < len -> p <= len   1587 records
+    26cb52f1  L217  p < len -> p <= len    397 records
+
+**74 seconds, and without it a later dispatch had a plausible argument for
+declaring five mutants equivalent that are not.** The three that stayed `NONE`
+are the same operator at predicates the record space has no record ENDING at;
+that is a gap in the shapes, not in the name, and it is named in
+`mutation_survivors.txt` section E.
+
+**The general rule, and it is the sharper form of "a green must be able to go
+red".** An enumerated space is only half of a search: the other half is every
+constant the harness around it fixes. Before reading a `NONE` as evidence
+toward equivalence, list what the instrument HELD and ask, for each one,
+whether the unit's own corpus varies it. Here the held constant was a string
+literal five characters long, and it was worth two mutants.

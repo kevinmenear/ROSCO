@@ -1,0 +1,27 @@
+ParseInput_Dbl_Opt -- the six `NONE` survivors re-run with a
+DIFFERENT Words(2): VIT_WORDS2 = '7E+9' instead of the default 'PC_KP'.
+
+Words(2) is the parameter name FindLine matched, and it is the byte a
+`p <= len` guard reads at p == len. A Fortran parameter name cannot begin
+with a digit; a harness VarName can, and this unit's corpus varies it
+freely. Nothing here is folded into the score and nothing is a declaration.
+
+RECORD SPACE: 131312 records, the same space as
+survivor_record_search.txt.
+
+209527b9  compare_op     L 227  '<' -> '<='
+    STILL NONE under this Words(2) either
+26cb52f1  compare_op     L 217  '<' -> '<='
+    DIFFERS on 397 record(s). First:
+      TAIL|.|5010|0000000000000000   vs   TAIL|.|0|3fe6666666666666
+4198da25  compare_op     L 214  '<' -> '<='
+    STILL NONE under this Words(2) either
+479d0b11  const_tweak    L  49  '200' -> '201'
+    STILL NONE under this Words(2) either
+8e796788  const_tweak    L 159  '0' -> '1'
+    STILL NONE under this Words(2) either
+eba1c07e  compare_op     L 237  '<' -> '<='
+    STILL NONE under this Words(2) either
+f13a04da  compare_op     L 213  '<' -> '<='
+    DIFFERS on 1587 record(s). First:
+      TAIL|0|0|0000000000000000   vs   TAIL|0|0|401c000000000000

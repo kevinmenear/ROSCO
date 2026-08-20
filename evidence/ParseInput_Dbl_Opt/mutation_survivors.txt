@@ -20,9 +20,10 @@ price of not having made it the first time.
 The bar this file exists for is not "kill every mutant", it is EXPLAIN every
 mutant. A survivor is one of three things -- equivalent, unreached by the
 corpus, or a blind spot -- and the sweep's answer for all three is the same
-word. Every row below says which, and 14 of the 21 say it with a RECORD
-(`evidence/ParseInput_Dbl_Opt/survivor_record_search.txt`, 131,312 records)
-rather than with an argument.
+word. Every row below says which, and 16 of the 21 say it with a RECORD
+(`evidence/ParseInput_Dbl_Opt/survivor_record_search.txt`, 131,312 records, and
+`words2_probe.txt`, the same space with a different `Words(2)`) rather than
+with an argument.
 
 WHERE THEY ALL ARE. 20 of 21 are inside `list_read_reals` / `parse_real` /
 `match_word` -- the list-directed READ -- and one is the constant the READ's
@@ -152,35 +153,58 @@ instrument that misses them. That is a statement about the corpus, made by an
 instrument that does not read it.
 
 
-B. NOT DISTINGUISHED BY ANY OF THE 131,312 RECORDS -- 6
--------------------------------------------------------
+A3. DISTINGUISHED ONLY AFTER THE SEARCH'S OWN BLIND SPOT WAS FIXED -- 2
+------------------------------------------------------------------------
+The first search reported six survivors as `NONE`, and five of the six are
+`p < len` -> `p <= len`. At `p == len` those read `rec[200]`, which is not past
+any allocation: `Words` is `CHARACTER(MaxParamLength) :: Words(2)`, one
+contiguous 400-byte object, and byte 201 IS `Words(2)(1:1)` -- the first
+character of the parameter name `FindLine` matched. **The search put `PC_KP`
+there**, a real name from `Examples/DISCON.IN`, and 'P' is not a digit, not a
+'.', not a sign and not an e/d/q -- so all five guards took the same branch
+either way and the search was blind to them BY ITS OWN CHOICE OF THAT NAME.
+
+`Words(2)` is not a constant of the program: it is whatever `VarName` was, and
+in this unit's corpus `VarName` is an arbitrary CHARACTER(*). A Fortran
+parameter name cannot begin with a digit; a harness `VarName` can.
+`run_words2_probe.sh` re-runs exactly the six `NONE` ids over the same 131,312
+records with `Words(2) = "7E+9"` -- one character for each of the five guards.
+
+  f13a04da  compare_op    L213  p < len -> p <= len     1587 records
+            TAIL|0|0|0.0   vs   TAIL|0|0|7.0
+            The integer-digit scan run one byte past the record: the '7' of
+            `Words(2)` is appended to the value.
+  26cb52f1  compare_op    L217  p < len -> p <= len      397 records
+            TAIL|.|5010|0.0   vs   TAIL|.|0|0.7
+            The fractional-digit scan, the same way.
+
+**These two are corpus gaps and must NOT be declared equivalent**, and finding
+that out cost one 74-second probe. The three that remain `NONE` are in B.
+
+
+B. NOT DISTINGUISHED BY ANY RECORD, UNDER EITHER `Words(2)` -- 4
+----------------------------------------------------------------
 Evidence toward equivalence, BOUNDED BY THE SPACE, and not a declaration.
 None of these is declared: `--equivalences` is a claim that the two programs
 agree on every admissible input, and "the search found nothing" is not that.
 
-  f13a04da  compare_op    L213  p < len -> p <= len
   4198da25  compare_op    L214  p < len -> p <= len
-  26cb52f1  compare_op    L217  p < len -> p <= len
   209527b9  compare_op    L227  p < len -> p <= len
   eba1c07e  compare_op    L237  p < len -> p <= len
 
-  THE REASON IS READABLE IN THE SEARCH RATHER THAN ARGUED. At `p == len` these
-  five read `rec[200]`, which is not past any allocation: `Words` is
-  `CHARACTER(MaxParamLength) :: Words(2)`, one contiguous 400-byte object, and
-  byte 201 IS `Words(2)(1:1)` -- the first character of the parameter name
-  `FindLine` just matched. The search puts `PC_KP` there, a real name from
-  `Examples/DISCON.IN`. 'P' is not a digit, not a '.', not a '+' or '-' and
-  not an e/d/q, so all five guards take the same branch either way.
+  The same site class as A3 and the same reading of `rec[200]`, but at
+  positions the record space does not put a discriminating character at:
+  L214 tests for '.', L227 for an exponent letter or a sign, L237 for a sign,
+  and reaching them with `p == len` needs a record that ends exactly where
+  those tests are made. `7E+9` supplies all four characters and still moves
+  none of the three, so the gap is in the RECORD shapes rather than in
+  `Words(2)`. A record space with more full-width forms would settle them;
+  §E names it.
 
-  A Fortran parameter NAME cannot begin with a digit, so in the SHIPPED
-  program these five may well be equivalent. In the harness corpus `VarName`
-  is an arbitrary string and can, so they are reachable there -- which makes
-  them a corpus gap and not an equivalence, and is why they are left open.
-
-  This is also the reason `--sanitize` bought 5 kills on this unit against 41
-  on `ParseInAry_Opt`: there the record is a 2048-byte `std::vector<char>` and
-  the same edit reads one byte PAST it, which AddressSanitizer sees. Here it
-  reads a letter.
+  The whole `rec[200]` class is also why `--sanitize` bought 5 kills on this
+  unit against 41 on `ParseInAry_Opt`: there the record is a 2048-byte
+  `std::vector<char>` and the same edit reads one byte PAST it, which
+  AddressSanitizer sees. Here it reads a letter.
 
   8e796788  const_tweak   L159  for (k = 0; ...) -> k = 1  in match_word
             Skips the comparison of the IEEE word's FIRST character, so a
@@ -235,11 +259,18 @@ E. WHAT WOULD MOVE THE SCORE, IN ORDER OF WHAT IT BUYS
 ------------------------------------------------------
 1. A corpus in which more than 2.5% of cases reach the READ. 20 of the 21
    are behind that one gate.
-2. `Variable`'s base draw off exactly 0.0. Three of the 23, and the cost is
+2. `Variable`'s base draw off exactly 0.0. Three of the 21, and the cost is
    R6's 33-magnitude real ladder -- DECISIONS.md.
 3. A matched line whose FIRST word is 200 characters long, or contains a `*`,
-   or a `;`, or a letterless exponent. Those are the records section A names,
-   one per mutant.
+   or a letterless exponent, or ends exactly where a predicate is made. Those
+   are the records sections A and A3 name, one per mutant. (A `;` is NOT on
+   that list any more: GetWords cannot put one in the buffer, which is what
+   moved two mutants into the equivalence set.)
 
-None of the three is taken here, and each is named with its price rather than
+4. A record space with more FULL-WIDTH forms. The three in section B are the
+   same operator as the two in A3 and differ only in which predicate they sit
+   at; `7E+9` supplies every character they test and moves none of them,
+   because the space has no record that ENDS at those positions.
+
+None of the four is taken here, and each is named with its price rather than
 left as "the corpus is narrow".

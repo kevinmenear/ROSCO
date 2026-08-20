@@ -122,8 +122,22 @@ const int BUF = 400;    // the whole object: Words(1) and Words(2)
 const char ALPHABET[] = "0123456789+-.eEdDqQnNaAiIfFtTyYxX ,;/*()";
 
 // What `GetWords` leaves in `Words(2)`: the parameter name `FindLine` matched,
-// left-justified and blank-padded. A real name from `Examples/DISCON.IN`.
-const char WORDS2[] = "PC_KP";
+// left-justified and blank-padded. The DEFAULT is a real name from
+// `Examples/DISCON.IN`, and `survivor_record_search.txt` is the run at that
+// default -- overriding it does not change that artifact.
+//
+// IT IS OVERRIDABLE BECAUSE IT IS A PARAMETER OF THE QUESTION, not a constant
+// of the program. `Words(2)` is whatever `VarName` was, and in this unit's
+// corpus `VarName` is an arbitrary CHARACTER(*) -- it can begin with a digit,
+// which no Fortran parameter name does. Six survivors came back `NONE` at the
+// default and five of them are `p < len` -> `p <= len`, which read exactly this
+// byte at `p == len`; `run_words2_probe.sh` re-runs those six with a
+// digit-leading name and reports whether the class is reachable or not, which
+// is the difference between a corpus gap and an equivalence.
+#ifndef VIT_WORDS2
+#define VIT_WORDS2 "PC_KP"
+#endif
+const char WORDS2[] = VIT_WORDS2;
 
 // The sentinel is what an item the transfer never reached looks like, printed
 // as a bit pattern so a stored `0.0` is distinguishable from an untouched slot.
