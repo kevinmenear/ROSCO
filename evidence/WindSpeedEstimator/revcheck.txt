@@ -1,0 +1,27 @@
+# revcheck.py --unit WindSpeedEstimator -- captured 2026-08-21T02:53:07Z
+
+Run against the committed state at $(git log -1 --format=%h). The three questions
+revcheck asks -- one loop_rev per unit, no missing loop_rev, no dirty rev -- are the
+same three P14 asks, and both read clean here. The `-nogit` suffix on the artifacts
+written from inside the container is the same revision seen without a git binary on
+PATH, not a second instrument.
+
+run_if_time_remains: 4268s remain, 120s needed -- starting
+revcheck WindSpeedEstimator: examined 1 unit, scanned 15 result artifact(s)
+    8e04515            gate/WindSpeedEstimator.json
+    8e04515            gate/WindSpeedEstimator.redtest.ti.json
+    8e04515            gate/WindSpeedEstimator.redtest.we_gamma.json
+    8e04515            gate/WindSpeedEstimator.redtest.we_op.json
+    8e04515-nogit      harness/WindSpeedEstimator.json
+    8e04515            harness/WindSpeedEstimator.postintegration.json
+    8e04515            harness/WindSpeedEstimator.postintegration.redtest.json
+    8e04515-nogit      harness/WindSpeedEstimator.redtest.json
+    8e04515-nogit      mutation/WindSpeedEstimator.clean.arith.json
+    8e04515-nogit      mutation/WindSpeedEstimator.clean.compare.json
+    8e04515-nogit      mutation/WindSpeedEstimator.clean.const.json
+    8e04515-nogit      mutation/WindSpeedEstimator.clean.dropfactor.json
+    8e04515-nogit      mutation/WindSpeedEstimator.clean.indexoffset.json
+    8e04515-nogit      mutation/WindSpeedEstimator.clean.rest.json
+    8e04515-nogit      mutation/WindSpeedEstimator.json
+  clean
+run_if_time_remains: exit 0 after 10s (estimated 120s; 4258s now remain)

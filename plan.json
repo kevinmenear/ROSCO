@@ -4041,6 +4041,7 @@
     "evidence/WindSpeedEstimator/run_mutation_part.sh",
     "evidence/WindSpeedEstimator/run_postintegration_redtest.sh",
     "evidence/WindSpeedEstimator/windspeedestimator.noop-harness-stub.cpp",
+    "evidence/WindSpeedEstimator/revcheck.txt",
     "evidence/WindSpeedEstimator/done_check.txt",
     "harness/WindSpeedEstimator.json",
     "harness/WindSpeedEstimator.redtest.json",
