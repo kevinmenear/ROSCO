@@ -1,0 +1,73 @@
+GATE RED TESTS -- unit #65 WindSpeedEstimator
+
+THE PREDICTIONS, WRITTEN BEFORE THE RUNS THAT TEST THEM.
+
+RED TEST 1. `WE_Gamma/WE_Jtot` -> `WE_Gamma/WE_Jtot*1.000001`, the I&I arm's
+gain. Clean ControllerBlocks.f90:391, reached by SCENARIO 17 AND BY NOTHING
+ELSE (15,062 hits, coverage/line_coverage.json). Unit #48 measured this exact
+arm as ANNIHILATED: `Examples/DISCON.IN:123` sets `WE_Gamma = 0.0`, and two
+separate perturbations of AeroDynTorque's return value moved 0 of 208,000 values
+in scenario 17. So the PREDICTION IS ZERO -- and it is run anyway, because unit
+#48's measurement was of a perturbation UPSTREAM of the gain and this one is a
+perturbation OF the gain, which is the one place the annihilation argument could
+break. `WE_Gamma * 0.0 * 1.000001` is still 0.0, so it should not.
+
+RED TEST 2. `Ti = 0.18` -> `Ti = 0.180001`, the EKF's turbulence intensity. It
+enters through `Q(2,2) = (PI * v_m**3.0 * Ti**2.0) / L` and nowhere else, so it
+moves the process-noise covariance's second diagonal, hence P, hence K, hence
+the state estimate, hence WE_Vw. Every scenario but 17 runs `WE_Mode = 2`, and
+the gate's own first take showed that a 2-ULP difference in this chain reaches
+`bld_pitch` after a few hundred timesteps. PREDICTION: this moves a LARGE number
+of values -- hundreds of thousands, across most of the 26 EKF scenarios and most
+of the 13 channels -- and it is the test that says the gate can see this unit's
+EKF at all.
+
+RED TEST 3. `LocalVar->WE_Op = 1` -> `LocalVar->WE_Op = 0` in the final ELSE of
+the operational-range ladder. This is the PREDICATE, not the arithmetic: with
+`WE_Op` never 1, both estimators are switched off and every scenario falls
+through to `WE_Vw = HorWindV_F`. PREDICTION: it moves MORE than red test 2 --
+it is the whole estimator rather than a coefficient inside it -- and it is the
+control that separates "the gate sees the EKF's numbers" from "the gate sees
+whether the EKF ran".
+
+RESULTS BELOW, filled in from the artifacts after each run.
+
+RESULTS -- all three run, all three matched their stated prediction.
+
+  1 WE_Gamma gain (I&I arm)
+      moved 0 of 5,252,000 across 0 channel(s)
+      scenarios: none
+      artifact verdict: RED_TEST_FAIL   (revert re-take: 0 of 5,252,000)
+
+  2 Ti = 0.18 -> 0.180001
+      moved 1,084,204 of 5,252,000 across 107 channel(s)
+      scenarios: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15, 16, 18, 19, 21, 22, 23, 25, 26, 27]
+      artifact verdict: RED_TEST_PASS   (revert re-take: 0 of 5,252,000)
+
+  3 WE_Op = 1 -> 0
+      moved 1,486,321 of 5,252,000 across 120 channel(s)
+      scenarios: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27]
+      artifact verdict: RED_TEST_PASS   (revert re-take: 0 of 5,252,000)
+
+RED TEST 1 IS THE ONE THAT MATTERS MOST AND IT MOVED NOTHING, EXACTLY AS
+PREDICTED. `gate.py` reports it as `RED TEST FAIL` and prints unit #11's warning
+about attempt 1, which is the right default and is not what happened here: the
+prediction was written down as ZERO before the run, on unit #48's measurement
+that `Examples/DISCON.IN:123` sets `WE_Gamma = 0.0`. Perturbing a factor that
+multiplies an exact zero cannot move anything, and the reason to run it anyway
+was that unit #48's two probes perturbed AeroDynTorque's return value -- upstream
+of the gain -- while this one perturbs the gain itself, which is the one place
+that argument could have broken. It did not.
+
+  WHAT THIS COSTS, STATED. The entire `WE_Mode == 1` arm -- four statements,
+  clean :389 to :393, 15,062 hits in scenario 17 and none anywhere else -- has
+  NO GATE ORACLE. Any mutation survivor whose site is in that arm is a gate
+  blind spot as well as a corpus question, and the differential harness (8,299
+  cases through that arm at corpus 6) is the only instrument that reaches it.
+
+RED TESTS 2 AND 3 ARE A PAIR, AND THE ORDER OF THEIR COUNTS IS THE POINT.
+Perturbing a COEFFICIENT inside the EKF moved 1,084,204; switching the whole
+estimator OFF moved 1,486,321. The second is the larger, which is what a control
+should show: the gate sees both that the EKF ran and what its numbers were, and
+the difference between the two counts is the part of the output that depends on
+the estimator's VALUE rather than on its PRESENCE.
