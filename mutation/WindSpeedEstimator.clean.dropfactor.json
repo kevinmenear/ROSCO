@@ -45,13 +45,13 @@
   "cc6cbddf",
   "ea3793c7",
   "bebda2f6",
-  "a795e429",
+  "ef3374f6",
   "e4caa7c4",
   "4c154297",
   "983bf91d",
   "d04192e4",
   "929f8756",
-  "4e052c72",
+  "f6dc04a2",
   "10797776",
   "1187b92f",
   "8431ca07",
@@ -93,12 +93,12 @@
  "nocompile_ratio": 0.025,
  "nocompile_refused": false,
  "total": 40,
- "killed": 24,
- "survived": 15,
+ "killed": 22,
+ "survived": 17,
  "equivalent": 0,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.6154,
+ "score": 0.5641,
  "loop_rev": "8e04515-nogit",
  "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "6a71314-nogit",
@@ -140,6 +140,12 @@
    "after": "CntrPar->WE_BladeRadius"
   },
   {
+   "id": "ef3374f6",
+   "operator": "drop_factor",
+   "before": "LocalVar->WE.om_r * 3.0",
+   "after": "LocalVar->WE.om_r"
+  },
+  {
    "id": "e4caa7c4",
    "operator": "drop_factor",
    "before": "LocalVar->WE.v_h * LocalVar->WE.v_h",
@@ -168,6 +174,12 @@
    "operator": "drop_factor",
    "before": "CntrPar->WE_BladeRadius * CntrPar->WE_BladeRadius",
    "after": "CntrPar->WE_BladeRadius"
+  },
+  {
+   "id": "f6dc04a2",
+   "operator": "drop_factor",
+   "before": "LocalVar->WE.om_r * 3.0",
+   "after": "LocalVar->WE.om_r"
   },
   {
    "id": "10797776",

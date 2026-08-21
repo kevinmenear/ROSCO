@@ -65,11 +65,11 @@
  "nocompile_ratio": 0.0036,
  "nocompile_refused": false,
  "total": 278,
- "killed": 206,
- "survived": 71,
+ "killed": 204,
+ "survived": 73,
  "equivalent": 0,
  "declared_but_killed": [],
- "score": 0.7437,
+ "score": 0.7365,
  "loop_rev": "8e04515-nogit",
  "vit_rev": "6a71314-nogit",
  "merged_from": [
@@ -141,9 +141,9 @@
    "total": 40,
    "mutants": 39,
    "nocompile": 1,
-   "killed": 24,
-   "survived": 15,
-   "score": 0.6154
+   "killed": 22,
+   "survived": 17,
+   "score": 0.5641
   },
   {
    "part": "mutation/WindSpeedEstimator.clean.indexoffset.json",
@@ -402,6 +402,12 @@
    "after": "CntrPar->WE_BladeRadius"
   },
   {
+   "id": "ef3374f6",
+   "operator": "drop_factor",
+   "before": "LocalVar->WE.om_r * 3.0",
+   "after": "LocalVar->WE.om_r"
+  },
+  {
    "id": "e4caa7c4",
    "operator": "drop_factor",
    "before": "LocalVar->WE.v_h * LocalVar->WE.v_h",
@@ -430,6 +436,12 @@
    "operator": "drop_factor",
    "before": "CntrPar->WE_BladeRadius * CntrPar->WE_BladeRadius",
    "after": "CntrPar->WE_BladeRadius"
+  },
+  {
+   "id": "f6dc04a2",
+   "operator": "drop_factor",
+   "before": "LocalVar->WE.om_r * 3.0",
+   "after": "LocalVar->WE.om_r"
   },
   {
    "id": "10797776",
