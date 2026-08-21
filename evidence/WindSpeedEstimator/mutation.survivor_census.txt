@@ -1,0 +1,130 @@
+SURVIVOR CENSUS BY SITE -- unit #65 WindSpeedEstimator
+
+60 standing survivors of 278 mutants (13 declared equivalent with executed
+proofs, 1 no-compile, 204 killed, score 0.7727). Each is LOCATED by diffing the
+mutant's own source against the translation, so the line number is the
+mutator's and not a reading of mine.
+
+WHY THE ARM DECIDES MORE THAN THE OPERATOR DOES. Two measurements, both this
+unit's, fix what a survivor at a given site can mean:
+
+  * arm C has NO GATE ORACLE AT ALL. `Examples/DISCON.IN:123` sets
+    `WE_Gamma = 0.0`, and perturbing the gain moved 0 of 5,252,000 with every
+    scenario alive (gate.redtests.txt). A survivor there has ONE instrument.
+  * arm F is entered by 1,173 of 63,020 cases (corpus_arm_census.txt), so a
+    survivor there survived 1,173 comparisons and not 63,020.
+
+PER-ARM COUNTS
+    5  A  file-scope helpers (assign_errmsg, errmsg_trim)
+   15  B  preamble: the three saturations, WE_Op, RestartWSE, the PRINT, LPFilter
+    3  D  WE_Mode == 2, the constants and the F/Q zero fill
+    1  E  WE_Mode == 2, the RESTART arm  (11,316 of 63,020 cases)
+   36  F  WE_Mode == 2, the EKF UPDATE arm  (1,173 of 63,020 cases)
+
+PER SURVIVOR, in source order
+
+--- A  file-scope helpers (assign_errmsg, errmsg_trim)
+  :135  db628c91  const_tweak      57.2957795130 -> 58.295779513
+  :156  0ac1df5b  compare_op       > -> >=
+  :176  5f847ebc  const_tweak      0 -> 1
+  :176  a1db7de8  compare_op       > -> >=
+  :176  afc34d68  const_tweak      0 -> 1
+--- B  preamble: the three saturations, WE_Op, RestartWSE, the PRINT, LPFilter
+  :195  0d7f3f68  const_tweak      9 -> 10
+  :195  e3b71c74  index_offset     [9] -> [9 + 1]
+  :197  4305aa33  const_tweak      3 -> 4
+  :197  d0bb2797  index_offset     [3] -> [3 + 1]
+  :199  73df48ea  const_tweak      3 -> 4
+  :199  f4a2fc4f  index_offset     [3] -> [3 + 1]
+  :201  09ec01aa  index_offset     [9] -> [9 + 1]
+  :201  f46204aa  const_tweak      9 -> 10
+  :203  4dbb085d  const_tweak      1 -> 2
+  :203  e9035603  index_offset     [1] -> [1 + 1]
+  :240  a6ec503c  const_tweak      1 -> 2
+  :272  068d3be3  drop_call        std::fabs(WE_Inp_Torque - LocalVar->VS_LastGenTrqF) -> WE_Inp_Torque - LocalVar->VS_LastGenTrqF
+  :274  cd428761  drop_call        std::fabs(WE_Inp_Speed - LocalVar->RotSpeedF) -> WE_Inp_Speed - LocalVar->RotSpeedF
+  :348  71a48358  const_tweak      1 -> 2
+  :349  f22014d2  const_tweak      1 -> 2
+--- D  WE_Mode == 2, the constants and the F/Q zero fill
+  :407  24169b19  compare_op       < -> <=
+  :408  c5512404  index_offset     [k] -> [k + 1]
+  :409  3aaf5b59  index_offset     [k] -> [k + 1]
+--- E  WE_Mode == 2, the RESTART arm  (11,316 of 63,020 cases)
+  :430  d3f2e7f0  arith_op         LocalVar->WE.v_m + LocalVar->WE.v_t -> LocalVar->WE.v_m - LocalVar->WE.v_t
+--- F  WE_Mode == 2, the EKF UPDATE arm  (1,173 of 63,020 cases)
+  :485  34b4353f  arith_op         WE_Inp_Pitch * R2D -> WE_Inp_Pitch / R2D
+  :485  f209eb70  drop_factor      WE_Inp_Pitch * R2D -> WE_Inp_Pitch
+  :487  426e7e7e  drop_call        std::fmax(0.0, Cp_op) -> 0.0
+  :507  04c08561  assoc_reorder    PI *                            (CntrPar->WE_BladeRadius -> (PI * CntrPar->WE_BladeRadius) * CntrPar->WE_B
+  :507  b51d08a2  drop_factor      1 * 3 -> 1
+  :507  c18630ea  collapse_stride  [1 * 3 + 0] -> [1]
+  :507  cc6cbddf  drop_factor      2.0 * CntrPar->WE_Jtot -> 2.0
+  :507  ea3793c7  drop_factor      CntrPar->WE_RhoAir * PI -> CntrPar->WE_RhoAir
+  :507  febd3310  arith_op         CntrPar->WE_RhoAir * PI -> CntrPar->WE_RhoAir / PI
+  :508  bebda2f6  drop_factor      CntrPar->WE_BladeRadius * CntrPar->WE_BladeRadius -> CntrPar->WE_BladeRadius
+  :509  1b6f8996  assoc_reorder    Cp_op *                            (LocalVar->WE.v_h * L -> (Cp_op * LocalVar->WE.v_h) * LocalVar->WE.v_h
+  :509  ef3374f6  drop_factor      LocalVar->WE.om_r * 3.0 -> LocalVar->WE.om_r
+  :510  a5d53495  arith_op         LocalVar->WE.v_h * LocalVar->WE.v_h -> LocalVar->WE.v_h / LocalVar->WE.v_h
+  :510  e4caa7c4  drop_factor      LocalVar->WE.v_h * LocalVar->WE.v_h -> LocalVar->WE.v_h
+  :512  4c154297  drop_factor      2 * 3 -> 2
+  :512  502b2386  collapse_stride  [2 * 3 + 0] -> [2]
+  :512  983bf91d  drop_factor      2.0 * CntrPar->WE_Jtot -> 2.0
+  :512  a5b002db  arith_op         CntrPar->WE_RhoAir * PI -> CntrPar->WE_RhoAir / PI
+  :512  c58d597a  assoc_reorder    PI *                            (CntrPar->WE_BladeRadius -> (PI * CntrPar->WE_BladeRadius) * CntrPar->WE_B
+  :512  d04192e4  drop_factor      CntrPar->WE_RhoAir * PI -> CntrPar->WE_RhoAir
+  :513  929f8756  drop_factor      CntrPar->WE_BladeRadius * CntrPar->WE_BladeRadius -> CntrPar->WE_BladeRadius
+  :514  b3f0e72e  assoc_reorder    Cp_op *                            (LocalVar->WE.v_h * L -> (Cp_op * LocalVar->WE.v_h) * LocalVar->WE.v_h
+  :514  f6dc04a2  drop_factor      LocalVar->WE.om_r * 3.0 -> LocalVar->WE.om_r
+  :515  10797776  drop_factor      LocalVar->WE.v_h * LocalVar->WE.v_h -> LocalVar->WE.v_h
+  :515  aaf2924c  arith_op         LocalVar->WE.v_h * LocalVar->WE.v_h -> LocalVar->WE.v_h / LocalVar->WE.v_h
+  :549  90f08184  drop_factor      2.0 * L -> 2.0
+  :549  bf0a0370  drop_factor      PI * LocalVar->WE.v_m -> PI
+  :584  757eb260  compare_op       < -> <=
+  :594  64e7846a  compare_op       < -> <=
+  :617  cd58ea01  collapse_stride  [j * 3 + i] -> [j]
+  :634  c9db9e1f  compare_op       < -> <=
+  :643  e9f65097  compare_op       < -> <=
+  :652  fa3e7f34  compare_op       < -> <=
+  :664  c713c761  compare_op       < -> <=
+  :679  688ce089  compare_op       < -> <=
+  :680  34bdd5c4  compare_op       < -> <=
+
+WHAT THIS CENSUS SAYS, and none of it is "the translation is wrong"
+
+1. 36 OF THE 60 ARE IN ARM F, which the corpus enters 1,173 times. That arm went
+   from 0 cases to 1,173 during this dispatch, on six `ranges.toml` entries and
+   `--persist-nested`; the next factor of five is the same kind of work, and it
+   is priced rather than done. The binding condition is now `RestartWSE != 0`,
+   which needs `iStatus != 0` AND neither `WE_Op` transition to fire -- and the
+   second is a relation between a DRAWN flag and a COMPUTED one, which is the
+   shape `ranges.toml` has no key for.
+
+2. 11 ARE `compare_op`, AND MOST SIT ON LOOP BOUNDS THE TRANSLATION WROTE ITSELF
+   (`i < 3`, `k < 9`, `k < 3`). Widening one by a rung reads or writes past the
+   end of a 3- or 9-element automatic array: the difference is at addresses the
+   program does not own, and a VALUE comparison cannot see that class at all --
+   three identical runs over one such mutant scored 0.983, 1.000, 0.983 in this
+   campaign, and the 1.000 is the run that measured least.
+   **`vit_mutate.py --sanitize` is the instrument for these and it was NOT run.**
+   That is the single largest remaining item and it is one sweep.
+
+3. 10 ARE `index_offset` OR `collapse_stride` AND 15 ARE `drop_factor`, largely on the
+   Jacobian's own flat index arithmetic (`F[1 * 3 + 0]`, `[k]`, `[9]`). Same
+   address class as (2). The flat-array spelling was chosen over `double F[3][3]`
+   so the column-major arithmetic stays visible to a reader and to the sweep; it
+   also created these sites, and that trade is stated here rather than defended.
+
+4. 4 ARE `assoc_reorder` ON GROUPINGS THE REFERENCE ITSELF WROTE --
+   `PI * (R*R)` -> `(PI*R)*R` and `Cp_op * (v_h*v_h)` -> `(Cp_op*v_h)*v_h`.
+   Unit #48 KILLED the first of these one function over, 52 cases of 1,131, so
+   the shape is killable and this corpus's magnitudes simply do not separate
+   them. Cheapest of the four to attack: the operands are `WE_BladeRadius`,
+   `Cp_op` and `v_h`, and the first is already pinned in `ranges.toml`.
+
+5. ARM C HAS ZERO SURVIVORS, WHICH IS THE ONE PLEASANT SURPRISE HERE. The I&I
+   filter is the arm the gate cannot observe at all -- `WE_Gamma = 0.0`
+   annihilates it, 0 of 5,252,000 -- so a survivor there would have had one
+   instrument. Every mutant in it was killed by the differential harness's 8,299
+   cases through that arm. The blind spot is real and it cost nothing in this
+   sweep; both halves of that are worth saying, because the arm is four
+   statements and the next translation with a dead gain may not be.
