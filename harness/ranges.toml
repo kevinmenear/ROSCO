@@ -3834,3 +3834,63 @@ LocalVar_NumBl = { lo = 0, hi = 3 }
 # harnesses to 0 failed. If the post-integration run fails anywhere other than
 # these five rungs, the floor is not what this arithmetic says it is.
 ErrVar_ErrMsg = { staging_capacity_excludes = [33, 114], reason = "PitchControl composes the deferred-length ErrMsg through up to eleven staged assignments -- four interp1d bridges, IPC and its four sigma calls, and its own 13-byte 'PitchControl:' prefix -- where the reference chain is Fortran throughout and gates the staging buffer ONCE, in the generated bridge, on the final 115-byte value. Inside [38, 115) the reference holds the 29-byte entry value and the translation holds a partial composition of 38 to 102 bytes, and the reference's own 115-byte answer is a value neither side can carry: the case has no oracle. Measured at cases 36997..37073, k = 9..85 of the ladder, 77 cases, in evidence/PitchControl/r13_window_probe.txt. THE FLOOR WAS THEN CORRECTED 38 -> 33 by the post-integration harness: the integrated chain gates inside each translated callee rather than in the generated bridges, so the shortest write that fits is 'IPC:' + 29 = 33 and not 'interp1d:' + 29 = 38. See section 6 of the comment above; the pre-integration arithmetic is kept because it is correct about the chain it measured." }
+
+# ---------------------------------------------------------------------------
+# WindSpeedEstimator
+#
+# THREE PINS, ALL THREE EXTENT RELATIONS, AND ALL THREE ARE ALREADY IN THIS
+# FILE ONE CALLEE OVER. Unit #65 makes interp2d's call through TWO paths --
+# `AeroDynTorque` and its own `Cp_op` lookup -- and interp1d's directly, so
+# the relations those two units pinned for themselves are the relations this
+# one needs, verbatim (P4: copied, not re-derived).
+#
+#   PerfData_Cp_mat_cols = PerfData_Beta_vec_n     unit #48's, word for word
+#   PerfData_Cp_mat_rows = PerfData_TSR_vec_n      unit #48's, word for word
+#
+# `Beta_vec` is interp2d's `xData` and `TSR_vec` is its `yData`, so `Cp_mat` is
+# indexed (TSR, Beta). Unpinned, the generator draws three independent extents
+# and every rectangular case makes the REFERENCE subscript its own table out of
+# bounds -- a SIGSEGV in the oracle, which is what unit #37's `CheckInputs`
+# entry above calls "not more coverage".
+#
+#   CntrPar_WE_FOPoles_N = CntrPar_WE_FOPoles_v_n
+#
+# is interp1d's own `n_yData = { same_as = "n_xData" }` (unit #23), reached
+# here through a derived-type field pair rather than through two dummies.
+# interp1d REPORTS a size mismatch -- `aviFAIL = -1`, "are not the same" -- and
+# then interpolates anyway:
+#
+#     Functions.f90 (clean)   IF (SIZE(xData) .NE. SIZE(yData)) THEN ... END IF
+#                             ...
+#                             ELSEIF (xq >= MAXVAL(xData)) THEN
+#                                 interp1d = yData(SIZE(xData))
+#
+# so a `yData` shorter than `xData` is read past its end on the very next
+# statement, on BOTH sides of the comparison, at whatever the two heaps happen
+# to hold. The reference has no defined answer there, so the case is not one
+# this comparison can adjudicate (P7) -- the same argument unit #37 makes for
+# `AWC_NumModes` and unit #48 for the Cp table.
+#
+# WHAT IS NOT PINNED, STATED SO IT IS NOT MISTAKEN FOR ABSENT. `WE_FOPoles_v`,
+# `Beta_vec` and `TSR_vec` all reach a search that can subscript backwards off
+# an UNSORTED axis (`yData(I-1)` at `I = 1` in interp1d, `zData(i, 0)` in
+# interp2d). Unit #48 wrote `nondecreasing_only` for two of these and THE TOOL
+# REFUSED THEM, correctly: that key acts on the ORDER LADDER, which is derived
+# from the body of the unit UNDER TEST, and this unit never compares two
+# elements of any of the three. The ramp filler cannot produce an inverted
+# axis; the random stratum can. Whether any case reaches the read is a
+# MEASUREMENT and it is taken rather than assumed -- see
+# evidence/WindSpeedEstimator/.
+#
+# THE PREDICTION, WRITTEN BEFORE THE RUN THAT TESTS IT: these three relations
+# remove no branch of this unit's own body. `Cp_mat`'s shape and
+# `WE_FOPoles`'s length are read only by the two callees, and neither extent
+# appears in any predicate WindSpeedEstimator evaluates. So the corpus should
+# lose extent COMBINATIONS and no arm, and the harness should be able to reach
+# 0 failed on the three pins alone. If it is red anywhere other than
+# `ErrVar.ErrMsg`, the pins are not what this argument says they are.
+[WindSpeedEstimator]
+
+PerfData_Cp_mat_cols = { same_as = "PerfData_Beta_vec_n" }
+PerfData_Cp_mat_rows = { same_as = "PerfData_TSR_vec_n" }
+CntrPar_WE_FOPoles_N = { same_as = "CntrPar_WE_FOPoles_v_n" }
