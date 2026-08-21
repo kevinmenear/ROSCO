@@ -5,10 +5,20 @@ TRANSLATION (C12)
                mismatched 2
       MISMATCH scenario_8:bld_pitch_3 2/16000
 
-Recorded with the wrong artifact before the fix: `gate.first_take.json` is that
-run, and `gate.first_take.rerun.json` is the identical command repeated, because
-2 values in 5.25 million is exactly the size at which "is it reproducible" has
-to be asked before anything else. It reproduced to the value.
+Recorded with the wrong artifact before the fix (C12): `gate.first_take.json`
+is the REPRODUCIBILITY RE-RUN of that command, kept because 2 values in 5.25
+million is exactly the size at which "is it reproducible" has to be asked before
+anything else. It reproduced to the value.
+
+THE FIRST OF THE TWO RED ARTIFACTS WAS LOST, and saying so is cheaper than
+leaving a reader to notice. `gate.py` writes `gate/<Unit>.json` by default, so
+the first red run wrote that path and the green run overwrote it; only the
+re-run, which was written to `--out gate/<Unit>.rerun.json`, survived. The two
+carried the same count and the same channel. A red artifact that a later green
+can overwrite in place is a general hazard of the default `--out`, and the way
+to avoid it is to give the red run its own `--out` from the start -- which is
+what every gate RED TEST in this campaign already does and what a red PRIMARY
+run has no convention for.
 
 THE TWO VALUES, AND WHY ONLY TWO
 
