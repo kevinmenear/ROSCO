@@ -4054,7 +4054,10 @@
     "gate/WindSpeedEstimator.redtest.we_op.json",
     "gate/WindSpeedEstimator.redtest.we_gamma.json",
     "translations/ControllerBlocks/windspeedestimator.cpp"
-   ]
+   ],
+   "source_file": "rosco/controller/src/ControllerBlocks.f90",
+   "translation": "translations/ControllerBlocks/windspeedestimator.cpp",
+   "harness_required": true
   },
   {
    "order": 66,
