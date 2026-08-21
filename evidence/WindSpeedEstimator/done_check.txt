@@ -1,6 +1,6 @@
-# done_check.py WindSpeedEstimator -- captured 2026-08-21T02:51:51Z by scripts/capture_done_check.sh
+# done_check.py WindSpeedEstimator -- captured 2026-08-21T02:52:30Z by scripts/capture_done_check.sh
 
-Run against the committed state at 1b1c58fc ("WindSpeedEstimator: state current -- disposition `integrated`, on four layers and five red tests"), with a CLEAN tree, with stdout
+Run against the committed state at d270e79b ("WindSpeedEstimator: done_check's FIRST capture, kept -- it crashed rather than reporting"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
@@ -18,19 +18,22 @@ Reproduce the reading below with no redirection:
 
 done_check exited 1 (0 only when COMPLETE).
 
-Traceback (most recent call last):
-  File "/Users/kmenear/Artifacts/vit_translation/ROSCO-r2/scripts/done_check.py", line 119, in <module>
-    raise SystemExit(main())
-                     ~~~~^^
-  File "/Users/kmenear/Artifacts/vit_translation/ROSCO-r2/scripts/done_check.py", line 76, in main
-    touching = git("log", "--format=%H", "--reverse", "--", unit.translation or "").split()
-               ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/kmenear/Artifacts/vit_translation/ROSCO-r2/scripts/done_check.py", line 44, in git
-    return subprocess.run(["git", "-C", str(ROOT), *args],
-           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                          capture_output=True, text=True, check=True).stdout.strip()
-                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/kmenear/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 578, in run
-    raise CalledProcessError(retcode, process.args,
-                             output=stdout, stderr=stderr)
-subprocess.CalledProcessError: Command '['git', '-C', '/Users/kmenear/Artifacts/vit_translation/ROSCO-r2', 'log', '--format=%H', '--reverse', '--', '']' returned non-zero exit status 128.
+baseline (inferred): 74fe16d  -- the commit before 0b46e30 touched translations/ControllerBlocks/windspeedestimator.cpp
+
+WindSpeedEstimator: Verdict.INCOMPLETE  (13/14 PASS)
+
+[  ok  ] P1   commits exist                      
+[  ok  ] P2   clean tree                         
+[  ok  ] P3   disposition recorded               
+[  ok  ] P4   evidence recorded                  
+[  ok  ] P5   evidence resolves                  
+[  ok  ] P6   functional commit                  
+[  ok  ] P7   state brought current              
+[  ok  ] P8   unit named in state                
+[  ok  ] P9   gate compared and matched          
+[ FAIL ] P12  mutation score for this unit       mutation_below_threshold:mutation/WindSpeedEstimator.json 204/264 = 0.773 < 1.0 -- survivors: arith_op[d3f2e7f0], arith_op[34b4353f], arith_op[febd3310], arith_op[a5d53495], arith_op[a5b002db], arith_op[aaf2924c]
+[  ok  ] P11  post-integration harness re-run    63020 check(s) against the integrated build
+[  ok  ] P13  evidence matches the contract      mirror: the gate's evidence is admissible for a procedure-for-procedure translation
+[  ok  ] P10  evidence reproducible              
+[  ok  ] P14  artifact revisions agree           3 artifact(s) at 8e04515
+
