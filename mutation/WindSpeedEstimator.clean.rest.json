@@ -129,7 +129,7 @@
   "index_offset"
  ],
  "mutants": 78,
- "equivalent_declared": 0,
+ "equivalent_declared": 10,
  "unreachable_declared": 0,
  "unreachable": [],
  "nocompile": 0,
@@ -144,11 +144,11 @@
  "nocompile_refused": false,
  "total": 78,
  "killed": 58,
- "survived": 20,
- "equivalent": 0,
+ "survived": 10,
+ "equivalent": 10,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.7436,
+ "score": 0.8529,
  "loop_rev": "8e04515-nogit",
  "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "6a71314-nogit",
@@ -178,12 +178,6 @@
    "after": "(Cp_op * LocalVar->WE.v_h) * LocalVar->WE.v_h"
   },
   {
-   "id": "c95a7470",
-   "operator": "collapse_stride",
-   "before": "[0 * 3 + 0]",
-   "after": "[0]"
-  },
-  {
    "id": "c18630ea",
    "operator": "collapse_stride",
    "before": "[1 * 3 + 0]",
@@ -196,34 +190,10 @@
    "after": "[2]"
   },
   {
-   "id": "d58eaa09",
-   "operator": "collapse_stride",
-   "before": "[0 * 3 + 0]",
-   "after": "[0]"
-  },
-  {
    "id": "cd58ea01",
    "operator": "collapse_stride",
    "before": "[j * 3 + i]",
    "after": "[j]"
-  },
-  {
-   "id": "ef5224a0",
-   "operator": "swap_operands",
-   "before": "WE_Inp_Pitch - LocalVar->BlPitchCMeas",
-   "after": "LocalVar->BlPitchCMeas - WE_Inp_Pitch"
-  },
-  {
-   "id": "b31be2ec",
-   "operator": "swap_operands",
-   "before": "WE_Inp_Torque - LocalVar->VS_LastGenTrqF",
-   "after": "LocalVar->VS_LastGenTrqF - WE_Inp_Torque"
-  },
-  {
-   "id": "5abe61d7",
-   "operator": "swap_operands",
-   "before": "WE_Inp_Speed - LocalVar->RotSpeedF",
-   "after": "LocalVar->RotSpeedF - WE_Inp_Speed"
   },
   {
    "id": "068d3be3",
@@ -242,36 +212,6 @@
    "operator": "drop_call",
    "before": "std::fmax(0.0, Cp_op)",
    "after": "0.0"
-  },
-  {
-   "id": "bf0aa697",
-   "operator": "swap_call_args",
-   "before": "LocalVar->HorWindV_F, 3.0",
-   "after": "3.0, LocalVar->HorWindV_F"
-  },
-  {
-   "id": "e41afb0e",
-   "operator": "swap_call_args",
-   "before": "LocalVar->HorWindV_F, 3.0",
-   "after": "3.0, LocalVar->HorWindV_F"
-  },
-  {
-   "id": "34aaf49e",
-   "operator": "swap_call_args",
-   "before": "WE_Inp_Speed, DBL_EPSILON",
-   "after": "DBL_EPSILON, WE_Inp_Speed"
-  },
-  {
-   "id": "20cc8068",
-   "operator": "swap_call_args",
-   "before": "0.0, Cp_op",
-   "after": "Cp_op, 0.0"
-  },
-  {
-   "id": "22a29bd8",
-   "operator": "swap_call_args",
-   "before": "LocalVar->WE.xh[0][0], DBL_EPSILON",
-   "after": "DBL_EPSILON, LocalVar->WE.xh[0][0]"
   }
  ]
 }

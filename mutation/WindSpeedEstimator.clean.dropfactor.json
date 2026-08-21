@@ -79,7 +79,7 @@
   "index_offset"
  ],
  "mutants": 39,
- "equivalent_declared": 0,
+ "equivalent_declared": 2,
  "unreachable_declared": 0,
  "unreachable": [],
  "nocompile": 1,
@@ -94,11 +94,11 @@
  "nocompile_refused": false,
  "total": 40,
  "killed": 22,
- "survived": 17,
- "equivalent": 0,
+ "survived": 15,
+ "equivalent": 2,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.5641,
+ "score": 0.5946,
  "loop_rev": "8e04515-nogit",
  "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "6a71314-nogit",
@@ -108,12 +108,6 @@
    "operator": "drop_factor",
    "before": "WE_Inp_Pitch * R2D",
    "after": "WE_Inp_Pitch"
-  },
-  {
-   "id": "24574509",
-   "operator": "drop_factor",
-   "before": "0 * 3",
-   "after": "0"
   },
   {
    "id": "b51d08a2",
@@ -186,12 +180,6 @@
    "operator": "drop_factor",
    "before": "LocalVar->WE.v_h * LocalVar->WE.v_h",
    "after": "LocalVar->WE.v_h"
-  },
-  {
-   "id": "af6d160a",
-   "operator": "drop_factor",
-   "before": "0 * 3",
-   "after": "0"
   },
   {
    "id": "bf0a0370",

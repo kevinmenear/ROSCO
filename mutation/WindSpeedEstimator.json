@@ -55,7 +55,7 @@
  "killed_by_sanitizer": 0,
  "killed_by_sanitizer_ids": [],
  "mutants": 277,
- "equivalent_declared": 0,
+ "equivalent_declared": 13,
  "unreachable_declared": 0,
  "unreachable": [],
  "unreachable_but_killed": [],
@@ -66,10 +66,10 @@
  "nocompile_refused": false,
  "total": 278,
  "killed": 204,
- "survived": 73,
- "equivalent": 0,
+ "survived": 60,
+ "equivalent": 13,
  "declared_but_killed": [],
- "score": 0.7365,
+ "score": 0.7727,
  "loop_rev": "8e04515-nogit",
  "vit_rev": "6a71314-nogit",
  "merged_from": [
@@ -88,8 +88,8 @@
    "mutants": 40,
    "nocompile": 0,
    "killed": 33,
-   "survived": 7,
-   "score": 0.825
+   "survived": 6,
+   "score": 0.8462
   },
   {
    "part": "mutation/WindSpeedEstimator.clean.compare.json",
@@ -142,8 +142,8 @@
    "mutants": 39,
    "nocompile": 1,
    "killed": 22,
-   "survived": 17,
-   "score": 0.5641
+   "survived": 15,
+   "score": 0.5946
   },
   {
    "part": "mutation/WindSpeedEstimator.clean.indexoffset.json",
@@ -184,8 +184,8 @@
    "mutants": 78,
    "nocompile": 0,
    "killed": 58,
-   "survived": 20,
-   "score": 0.7436
+   "survived": 10,
+   "score": 0.8529
   }
  ],
  "merged_why": "278 mutants -- the campaign's largest population, five operators at cppmutate's 40-per-operator cap -- over a 63,020-case corpus; one foreground call cannot hold it",
@@ -202,12 +202,6 @@
    "operator": "arith_op",
    "before": "WE_Inp_Pitch * R2D",
    "after": "WE_Inp_Pitch / R2D"
-  },
-  {
-   "id": "95b1fd2b",
-   "operator": "arith_op",
-   "before": "0 * 3",
-   "after": "0 / 3"
   },
   {
    "id": "febd3310",
@@ -372,12 +366,6 @@
    "after": "WE_Inp_Pitch"
   },
   {
-   "id": "24574509",
-   "operator": "drop_factor",
-   "before": "0 * 3",
-   "after": "0"
-  },
-  {
    "id": "b51d08a2",
    "operator": "drop_factor",
    "before": "1 * 3",
@@ -448,12 +436,6 @@
    "operator": "drop_factor",
    "before": "LocalVar->WE.v_h * LocalVar->WE.v_h",
    "after": "LocalVar->WE.v_h"
-  },
-  {
-   "id": "af6d160a",
-   "operator": "drop_factor",
-   "before": "0 * 3",
-   "after": "0"
   },
   {
    "id": "bf0a0370",
@@ -534,12 +516,6 @@
    "after": "(Cp_op * LocalVar->WE.v_h) * LocalVar->WE.v_h"
   },
   {
-   "id": "c95a7470",
-   "operator": "collapse_stride",
-   "before": "[0 * 3 + 0]",
-   "after": "[0]"
-  },
-  {
    "id": "c18630ea",
    "operator": "collapse_stride",
    "before": "[1 * 3 + 0]",
@@ -552,34 +528,10 @@
    "after": "[2]"
   },
   {
-   "id": "d58eaa09",
-   "operator": "collapse_stride",
-   "before": "[0 * 3 + 0]",
-   "after": "[0]"
-  },
-  {
    "id": "cd58ea01",
    "operator": "collapse_stride",
    "before": "[j * 3 + i]",
    "after": "[j]"
-  },
-  {
-   "id": "ef5224a0",
-   "operator": "swap_operands",
-   "before": "WE_Inp_Pitch - LocalVar->BlPitchCMeas",
-   "after": "LocalVar->BlPitchCMeas - WE_Inp_Pitch"
-  },
-  {
-   "id": "b31be2ec",
-   "operator": "swap_operands",
-   "before": "WE_Inp_Torque - LocalVar->VS_LastGenTrqF",
-   "after": "LocalVar->VS_LastGenTrqF - WE_Inp_Torque"
-  },
-  {
-   "id": "5abe61d7",
-   "operator": "swap_operands",
-   "before": "WE_Inp_Speed - LocalVar->RotSpeedF",
-   "after": "LocalVar->RotSpeedF - WE_Inp_Speed"
   },
   {
    "id": "068d3be3",
@@ -598,36 +550,6 @@
    "operator": "drop_call",
    "before": "std::fmax(0.0, Cp_op)",
    "after": "0.0"
-  },
-  {
-   "id": "bf0aa697",
-   "operator": "swap_call_args",
-   "before": "LocalVar->HorWindV_F, 3.0",
-   "after": "3.0, LocalVar->HorWindV_F"
-  },
-  {
-   "id": "e41afb0e",
-   "operator": "swap_call_args",
-   "before": "LocalVar->HorWindV_F, 3.0",
-   "after": "3.0, LocalVar->HorWindV_F"
-  },
-  {
-   "id": "34aaf49e",
-   "operator": "swap_call_args",
-   "before": "WE_Inp_Speed, DBL_EPSILON",
-   "after": "DBL_EPSILON, WE_Inp_Speed"
-  },
-  {
-   "id": "20cc8068",
-   "operator": "swap_call_args",
-   "before": "0.0, Cp_op",
-   "after": "Cp_op, 0.0"
-  },
-  {
-   "id": "22a29bd8",
-   "operator": "swap_call_args",
-   "before": "LocalVar->WE.xh[0][0], DBL_EPSILON",
-   "after": "DBL_EPSILON, LocalVar->WE.xh[0][0]"
   }
  ]
 }
