@@ -1,0 +1,15 @@
+kernel callee bridge (Fortran, what the sweep links)
+    value tests on the flags (must be 0): 0
+    non-zero tests on the flags (must be > 0): 3
+        IF (has_InitialValue /= 0) THEN
+        bridge_result = REAL(LPFilter(InputSignal, DT, CornerFreq, FP_f, iStatus, (reset /= 0), inst, InitialValue), C_DOUBLE)
+        bridge_result = REAL(LPFilter(InputSignal, DT, CornerFreq, FP_f, iStatus, (reset /= 0), inst), C_DOUBLE)
+integrated translation (C++, what the gate links)
+    value tests on the flags (must be 0): 0
+    non-zero tests on the flags (must be > 0): 2
+        if (has_InitialValue) InitialValue_ = InitialValue;
+        if ((iStatus == 0) || (reset != 0)) {
+CONTROL  synthetic source comparing the flags against 1: 2 value test(s) found (must be 2)
+        IF (has_InitialValue == 1) THEN
+        if (reset == 1) { }
+ALL FOUR CHECKS HOLD -- `1` at these two arguments is a TRUTH

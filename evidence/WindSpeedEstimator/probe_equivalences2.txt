@@ -1,0 +1,8 @@
+G1 torque  fabs(d)>0 vs d>0, 4489 pairs: 0 disagreements  (d != 0 in 1975)
+G2 speed   fabs(d)>0 vs d>0, 17956 triples: 0 disagreements  (d != 0 in 8601)
+G' CONTROL pitch  fabs(d)>0 vs d>0, 13467 triples: 3149 DISAGREEMENTS (must be > 0)  (d != 0 in 8615)
+H  fmax(x,3.0) + 0.0  vs  - 0.0, 67 values: 0 disagreements   (fmax(x,3.0) == -0.0 in 0)
+H' CONTROL  x + 0.0 vs x - 0.0, unconstrained x, 67 values: 1 DISAGREEMENTS (must be > 0)
+I  (n>0 ? n : 0) vs (n>=0 ? n : 0), n in [-8,8]: 0 disagreements
+I' CONTROL (n>0 ? n : 0) vs (n>1 ? n : 0): 1 DISAGREEMENTS (must be > 0)
+ALL FOUR DECLARED FAMILIES AGREE AND ALL THREE CONTROLS FAILED
