@@ -93,93 +93,21 @@
  "nocompile_ratio": 0.025,
  "nocompile_refused": false,
  "total": 40,
- "killed": 22,
- "survived": 15,
+ "killed": 34,
+ "survived": 3,
  "equivalent": 2,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.5946,
+ "score": 0.9189,
  "loop_rev": "8e04515-nogit",
  "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "6a71314-nogit",
  "survivors": [
   {
-   "id": "f209eb70",
-   "operator": "drop_factor",
-   "before": "WE_Inp_Pitch * R2D",
-   "after": "WE_Inp_Pitch"
-  },
-  {
    "id": "b51d08a2",
    "operator": "drop_factor",
    "before": "1 * 3",
    "after": "1"
-  },
-  {
-   "id": "cc6cbddf",
-   "operator": "drop_factor",
-   "before": "2.0 * CntrPar->WE_Jtot",
-   "after": "2.0"
-  },
-  {
-   "id": "ea3793c7",
-   "operator": "drop_factor",
-   "before": "CntrPar->WE_RhoAir * PI",
-   "after": "CntrPar->WE_RhoAir"
-  },
-  {
-   "id": "bebda2f6",
-   "operator": "drop_factor",
-   "before": "CntrPar->WE_BladeRadius * CntrPar->WE_BladeRadius",
-   "after": "CntrPar->WE_BladeRadius"
-  },
-  {
-   "id": "ef3374f6",
-   "operator": "drop_factor",
-   "before": "LocalVar->WE.om_r * 3.0",
-   "after": "LocalVar->WE.om_r"
-  },
-  {
-   "id": "e4caa7c4",
-   "operator": "drop_factor",
-   "before": "LocalVar->WE.v_h * LocalVar->WE.v_h",
-   "after": "LocalVar->WE.v_h"
-  },
-  {
-   "id": "4c154297",
-   "operator": "drop_factor",
-   "before": "2 * 3",
-   "after": "2"
-  },
-  {
-   "id": "983bf91d",
-   "operator": "drop_factor",
-   "before": "2.0 * CntrPar->WE_Jtot",
-   "after": "2.0"
-  },
-  {
-   "id": "d04192e4",
-   "operator": "drop_factor",
-   "before": "CntrPar->WE_RhoAir * PI",
-   "after": "CntrPar->WE_RhoAir"
-  },
-  {
-   "id": "929f8756",
-   "operator": "drop_factor",
-   "before": "CntrPar->WE_BladeRadius * CntrPar->WE_BladeRadius",
-   "after": "CntrPar->WE_BladeRadius"
-  },
-  {
-   "id": "f6dc04a2",
-   "operator": "drop_factor",
-   "before": "LocalVar->WE.om_r * 3.0",
-   "after": "LocalVar->WE.om_r"
-  },
-  {
-   "id": "10797776",
-   "operator": "drop_factor",
-   "before": "LocalVar->WE.v_h * LocalVar->WE.v_h",
-   "after": "LocalVar->WE.v_h"
   },
   {
    "id": "bf0a0370",

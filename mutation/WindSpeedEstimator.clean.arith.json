@@ -79,7 +79,7 @@
   "index_offset"
  ],
  "mutants": 40,
- "equivalent_declared": 1,
+ "equivalent_declared": 2,
  "unreachable_declared": 0,
  "unreachable": [],
  "nocompile": 0,
@@ -93,51 +93,14 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 40,
- "killed": 33,
- "survived": 6,
- "equivalent": 1,
+ "killed": 38,
+ "survived": 0,
+ "equivalent": 2,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.8462,
+ "score": 1.0,
  "loop_rev": "8e04515-nogit",
  "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "6a71314-nogit",
- "survivors": [
-  {
-   "id": "d3f2e7f0",
-   "operator": "arith_op",
-   "before": "LocalVar->WE.v_m + LocalVar->WE.v_t",
-   "after": "LocalVar->WE.v_m - LocalVar->WE.v_t"
-  },
-  {
-   "id": "34b4353f",
-   "operator": "arith_op",
-   "before": "WE_Inp_Pitch * R2D",
-   "after": "WE_Inp_Pitch / R2D"
-  },
-  {
-   "id": "febd3310",
-   "operator": "arith_op",
-   "before": "CntrPar->WE_RhoAir * PI",
-   "after": "CntrPar->WE_RhoAir / PI"
-  },
-  {
-   "id": "a5d53495",
-   "operator": "arith_op",
-   "before": "LocalVar->WE.v_h * LocalVar->WE.v_h",
-   "after": "LocalVar->WE.v_h / LocalVar->WE.v_h"
-  },
-  {
-   "id": "a5b002db",
-   "operator": "arith_op",
-   "before": "CntrPar->WE_RhoAir * PI",
-   "after": "CntrPar->WE_RhoAir / PI"
-  },
-  {
-   "id": "aaf2924c",
-   "operator": "arith_op",
-   "before": "LocalVar->WE.v_h * LocalVar->WE.v_h",
-   "after": "LocalVar->WE.v_h / LocalVar->WE.v_h"
-  }
- ]
+ "survivors": []
 }

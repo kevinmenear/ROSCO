@@ -4027,7 +4027,7 @@ objInst_instLPF = { lo = 1, hi = 1024 }
 CntrPar_WE_Mode = { values = [0, 1, 2, 3] }
 LocalVar_BlPitchCMeas = { lo = -0.1, hi = 0.5 }
 CntrPar_PC_MinPit = { lo = -0.2, hi = -0.1 }
-PerfData_Beta_vec = { lo = 0.0, hi = 90.0 }
+PerfData_Beta_vec = { lo = 0.0, hi = 30.0 }   # was 90.0; see the seventh entry below
 
 # A FIFTH DESIGN ENTRY, AND IT IS THE SECOND HALF OF THE SAME MEASUREMENT.
 # With the four above the corpus reaches BOTH estimators -- `mode1=8453`,
@@ -4129,3 +4129,136 @@ LocalVar_WE_Op = { values = [0, 1] }
 # THE PREDICTION, WRITTEN BEFORE THE RUN THAT TESTS IT: the corpus goes to
 # roughly 50,000 cases, and `ekf` goes from 0 to about (mode2) x 1/2 x 2/3 --
 # two thousand or so. `warn`, the other transition, should rise with it.
+
+# A SEVENTH ENTRY, AND IT IS THE ONE THE MUTATION SURVIVORS ASKED FOR. The
+# corpus reaches the EKF update arm 1,173 times and `Cp_op` is ZERO in all
+# 1,173 of them, which is why most of that arm's arithmetic has no oracle.
+#
+# THE MEASUREMENT THAT FORCED IT, over the 63,020-case corpus, taken with the
+# shipped translation carrying a sign census
+# (evidence/WindSpeedEstimator/windspeedestimator.subscript-census.cpp):
+#
+#     CPCENSUS ekf=1173  cp_raw_pos=0  cp_zero=1173  cp_neg=0  cp_nan=0
+#     CPRANGE  cp_raw=[-935.47824179921167, -387.1384827236763]
+#              lambda=[-inf, 1.0000000000000001e+302]
+#              beta=[12.862329470486017, 78.813025524727479]
+#              tsr=[-666.65489183420846, 709.99557317581866]
+#              cpmat=[-935.47824179921167, 943.86307337606854]
+#
+# `Cp_op = max(0.0, interp2d(...))` and the lookup returns a value between -935
+# and -387 on EVERY case, so the clamp returns +0.0 on every case. THE QUESTION
+# WAS ASKED BY A SURVIVOR AND NOT BY A READING: `drop_call std::fmax(0.0,
+# Cp_op) -> 0.0` survived the sweep, which is only possible if the clamp is the
+# constant 0. The census then said it is.
+#
+# WHAT THAT COSTS, and it is most of the standing survivor list. `Cp_op`
+# multiplies the whole of `F(1,2)` and `F(1,3)`:
+#
+#     F(1,2) = 1.0/(2.0*WE_Jtot) * WE_RhoAir * PI * WE_BladeRadius**2.0
+#              * 1/WE%om_r * 3.0 * Cp_op * WE%v_h**2.0
+#
+# so with `Cp_op == 0` every factor in that product is multiplied by zero and
+# NO mutation of any of them is observable. `WE_RhoAir * PI -> WE_RhoAir / PI`,
+# `v_h * v_h -> v_h / v_h`, `2.0 * WE_Jtot -> 2.0`, `om_r * 3.0 -> om_r`, the
+# two `assoc_reorder`s on the reference's own groupings, and the `R2D` constant
+# that positions the lookup -- twenty-odd survivors, one cause. (Ten cases have
+# a NON-zero F(1,2) because `om_r == 0` makes `1/om_r` infinite and `0 * inf`
+# is NaN; a NaN is not an oracle either, it is the same answer on both sides of
+# every one of those mutants.)
+#
+# WHY THE LOOKUP IS ALWAYS NEGATIVE. `Cp_mat` is filled from R6's real
+# magnitude ladder, which spans [-935, +944] here, and `lambda` reaches 1e302,
+# so interp2d CLAMPS to the table's last row on essentially every case. Which
+# corner it clamps to is not a choice this corpus makes.
+#
+#   PHYSICAL: `Cp_mat` is a power coefficient surface. It is bounded above by
+#   the Betz limit, 16/27 = 0.5926, and ROSCO's own shipped `Cp_Ct_Cq.txt`
+#   tables run from about -0.5 (deep stall / negative torque) to about +0.49.
+#   `{ lo = -0.1, hi = 0.5 }` is inside the physical range at both ends. A
+#   value of -935 is not a power coefficient of anything.
+#   INSTRUMENTAL: the CHOICE of a band that straddles zero rather than one that
+#   is wholly positive. A wholly positive band would make `max(0.0, Cp_op)` the
+#   identity on every case and delete the clamp's other arm -- the same mistake
+#   in the opposite direction. With `lo = -0.1` the generator's monotone ramp
+#   puts the low corner below zero and the rest above it, so BOTH arms of the
+#   clamp are live.
+#   WHAT LEAVES: `Cp_mat` leaves R6's real-magnitude ladder -- subnormal,
+#   flush-to-zero, overflow and negative zero go from it. `Beta_vec` was
+#   already pinned for the same reason four entries up; `TSR_vec` is
+#   deliberately still NOT pinned, so one interp2d axis keeps the magnitudes,
+#   and `Cp_mat`'s EXTENTS are untouched (they are pinned by `same_as` to the
+#   two axis lengths and that is a different key).
+#
+# THE PREDICTION, WRITTEN BEFORE THE RUN THAT TESTS IT. The case COUNT does not
+# move: `lo`/`hi` is not `values`, so nothing becomes a flag and 63,020 stays
+# 63,020. `cp_raw_pos` goes from 0 to most of the 1,173, `cp_zero` falls to the
+# few that clamp at the ramp's negative corner, and `F12_nonzero` goes from 10
+# to roughly `cp_raw_pos`. If `cp_raw_pos` is still 0 afterwards, the lookup is
+# not clamping where this argument says it is and the entry should be reverted
+# rather than widened.
+
+# THAT PREDICTION WAS REFUTED BY ITS OWN RUN, IN THE SAME DIRECTION AS THE
+# `iStatus`/`WE_Op` pair two entries up: it moved, and it moved by one case.
+#
+#     predicted   cp_raw_pos 0 -> most of 1,173
+#     measured    cp_raw_pos 0 -> 1,  cp_zero 1,172
+#                 cp_raw=[-0.080643472539763505, 0.083858455182897071]
+#                 cpmat  =[-0.080643472539763505, 0.48315892201282062]
+#
+# Stated here rather than quietly repaired. The band was right and the SIDE of
+# it was wrong. `lambda` reaches -inf and 1e302, so interp2d clamps to a corner
+# on essentially every case, and the corner it clamps to is the FIRST row --
+# `generate._fill_array` ramps monotonically from `lo`, so row 1 is the bottom
+# of the band. A band that straddles zero therefore puts the whole corpus just
+# BELOW zero, which is the same annihilation one hundredth the size.
+#
+# THE SECOND TAKE, AND WHAT IT GIVES UP. The band moves wholly above zero.
+#   PHYSICAL: unchanged in kind -- [0.02, 0.5] is inside the Cp range of every
+#   Cp_Ct_Cq.txt ROSCO ships, and 0.5 is under the Betz limit 0.5926.
+#   INSTRUMENTAL: the choice to give up the clamp's zero arm. `Cp_op =
+#   max(0.0, Cp_op)` becomes the IDENTITY on every EKF case. That is a real
+#   loss and it is taken deliberately, because the survivor it costs is one --
+#   a mutant that replaced `max(0.0, Cp_op)` by the constant `0.0`, which this
+#   band KILLS instead -- and the survivors it buys are the twenty-odd factors
+#   downstream that `Cp_op == 0` annihilates. If a later dispatch wants the
+#   zero arm back it needs `lambda` inside `TSR_vec`, not a wider Cp band.
+#   WHAT LEAVES: as before, `Cp_mat` off R6's real-magnitude ladder; and now
+#   also every negative Cp.
+#
+# AND A SECOND CHANGE IN THE SAME BREATH, TO AN ENTRY THAT IS ALREADY HERE.
+# `PerfData_Beta_vec` was `{ lo = 0.0, hi = 90.0 }`, chosen four entries up so
+# that `WE_Inp_Pitch*R2D` lands inside `Beta_vec`'s span. It does -- but
+# `BlPitchCMeas` is pinned to [-0.1, 0.5] RADIANS, so `WE_Inp_Pitch*R2D` is
+# [-5.7, 28.6] DEGREES and the top four fifths of a 0..90 axis is never
+# reached. Two survivors live in that gap:
+#
+#     :240  const_tweak  Beta_vec[n_Beta_vec - 1] -> [n_Beta_vec - 2]
+#     :135  const_tweak  R2D 57.2957795130 -> 58.295779513
+#
+# The first is `Max_Op_Pitch`, the pitch clamp's upper bound: at hi = 90 the
+# bound is 1.57 rad and the element below it is 1.26 rad, both far above
+# `BlPitchCMeas`'s 0.5 ceiling, so moving the subscript moves nothing. At
+# hi = 30 the two are about 0.52 and 0.44 rad, and the top eighth of
+# `BlPitchCMeas`'s range falls between them -- which is where the mutant clamps
+# and the reference does not.
+#   PHYSICAL: `Beta_vec` is the Cp surface's pitch axis in degrees. ROSCO's
+#   shipped tables run 0..90 for the NREL-5MW and 0..30 for several of the
+#   others; 30 is a shipped axis, not an invented one.
+#   INSTRUMENTAL: 30 rather than 25 or 40 is chosen so that `Beta_vec(n)*D2R`
+#   stays ABOVE `BlPitchCMeas`'s 0.5 ceiling. If it fell below, the pitch clamp
+#   would stop being a no-op, `WE_Op` would go to 0, and BOTH estimator arms
+#   would empty -- which is the condition four entries up exists to avoid.
+#   WHAT LEAVES: the 30..90 degree region of the Beta axis. Nothing in this
+#   unit reads it: `WE_Inp_Pitch` is `saturate(BlPitchCMeas, ...)` and
+#   `BlPitchCMeas` cannot exceed 0.5 rad = 28.6 deg.
+#
+# THE PREDICTION, WRITTEN BEFORE THE RUN THAT TESTS IT. The case count stays
+# 63,020 -- neither key is a `values` list. `cp_raw_pos` goes to 1,173 of 1,173
+# and `cp_zero` to 0; `F12_nonzero` goes from 11 to near 1,173. `ok_pitch` does
+# NOT collapse -- if it does, `Beta_vec(n)*D2R` has fallen under
+# `BlPitchCMeas` and hi = 30 is too low. The harness stays green at 63,020 of
+# 63,020; if it is red anywhere, one of these two bands has reached a place
+# where the reference has no defined answer, and that is a reason to revert
+# rather than to widen.
+
+PerfData_Cp_mat = { lo = 0.02, hi = 0.5 }

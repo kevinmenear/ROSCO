@@ -78,3 +78,91 @@ WHAT IS STILL NOT REACHED, stated rather than left to be found: `ekf` is 1,173
 of 63,020, so the Jacobian and the two covariance MATMUL blocks are exercised on
 under 2% of the corpus, and `isnan` is 12. Every mutation survivor whose site is
 inside that arm is a survivor over 1,173 cases, not over 63,020.
+
+===========================================================================
+CORPUS 7, TAKEN AT THE P12 RE-TAKE, AND IT IS A DIFFERENT QUESTION FROM THE
+FIRST SIX
+===========================================================================
+
+Corpora 1-6 above asked WHICH ARM the corpus reaches. Corpus 7 asks what the
+arm it does reach is worth, and the answer was that most of it was being
+multiplied by zero.
+
+THE QUESTION WAS ASKED BY A SURVIVOR AND NOT BY A READING.
+
+    426e7e7e  drop_call  std::fmax(0.0, Cp_op) -> 0.0      SURVIVED
+
+That mutant replaces the Cp clamp with the constant `0.0`. It can only survive
+if the clamp already returns `0.0` on every case that evaluates it. So the
+translation was re-run with a sign census
+(`windspeedestimator.subscript-census.cpp`):
+
+    corpus 6   ekf=1173  cp_raw_pos=0     cp_zero=1173   F12_nonzero=10
+               cp_raw = [-935.47824179921167, -387.1384827236763]
+               cpmat  = [-935.47824179921167,  943.86307337606854]
+
+`Cp_op` was ZERO in all 1,173 EKF-update cases, and `F(1,2)`/`F(1,3)` --
+which `Cp_op` multiplies entire -- were zero in 1,163 of them. (The other ten
+are `om_r == 0`, where `1/om_r` is infinite and `0 * inf` is NaN. A NaN is not
+an oracle either: it is the same answer on both sides of every mutant in that
+product.) That one fact was the standing explanation for twenty-odd of the
+sixty survivors: the whole of the Jacobian's wind-speed column had no oracle,
+because every mutation of every factor in it was multiplied by zero.
+
+TWO TAKES, AND THE FIRST WAS REFUTED BY ITS OWN RUN.
+
+    corpus 7a  PerfData_Cp_mat = { lo = -0.1, hi = 0.5 }
+               predicted  cp_raw_pos 0 -> most of 1,173
+               measured   cp_raw_pos 0 -> 1,  cp_zero 1,172
+               cp_raw = [-0.080643472539763505, 0.083858455182897071]
+
+The band was right and the SIDE of it was wrong. `lambda` reaches -inf and
+1e302, so interp2d clamps to a corner on essentially every case, and
+`generate._fill_array` ramps monotonically from `lo` -- so the corner it clamps
+to is the BOTTOM of the band. A band straddling zero puts the whole corpus just
+below zero: the same annihilation, one hundredth the size.
+
+    corpus 7b  PerfData_Cp_mat = { lo = 0.02, hi = 0.5 }
+               PerfData_Beta_vec 0..90 -> 0..30   (a SECOND entry, see below)
+               predicted  cp_raw_pos -> 1,173 of 1,173, cp_zero -> 0,
+                          F12_nonzero -> near 1,173, ok_pitch does NOT
+                          collapse, harness stays green at 63,020
+               measured   ekf=1173  cp_raw_pos=1173  cp_pos=1173  cp_zero=0
+                          F12_nonzero=1169  nan_cases=12
+                          cp_raw = [0.0354852219681892, 0.32372090792854047]
+                          beta   = [4.2874431568286724, 26.271008508242495]
+                          HARNESS PASS: checked 63020 failed 0 inadmissible 0
+                          red test (the unit as a no-op): 63,020 of 63,020
+
+CONFIRMED, including the part that could have failed: `ekf` is still 1,173, so
+narrowing the Beta axis did not collapse the pitch saturation and empty the
+estimator arms -- which is the failure mode the four entries at corpus 4 exist
+to avoid, and the reason `hi = 30` rather than `hi = 25`.
+
+THE SECOND ENTRY, and it is a different lever from the first. `Beta_vec` was
+pinned to 0..90 degrees at corpus 4 so that `WE_Inp_Pitch*R2D` lands inside the
+axis. It does -- but `BlPitchCMeas` is pinned to [-0.1, 0.5] RADIANS, i.e.
+[-5.7, 28.6] degrees, so the top two thirds of a 0..90 axis was unreachable and
+two survivors lived in the gap: `Max_Op_Pitch = Beta_vec(n)*D2R` (whose
+`n-1 -> n-2` mutant moves a bound from 1.57 rad to 1.26 rad, both far above
+anything `BlPitchCMeas` can be) and the `R2D` constant that positions the
+lookup.
+
+THE SUBSCRIPT CENSUS, taken in the same run, and it is what the ten declaration
+equivalences rest on:
+
+    SUBCENSUS F    extent=9 min=0 max=8 uses=182763
+    SUBCENSUS H    extent=3 min=0 max=2 uses=72651
+    SUBCENSUS dxh  extent=3 min=0 max=2 uses=7038
+    SUBCENSUS Q    extent=9 min=0 max=8 uses=126459
+    SUBCENSUS S    extent=1 min=0 max=0 uses=4692
+
+Every one of the five function-level arrays is accessed only at
+`0 .. extent-1`, over the whole corpus. That is COMPLETE and not sampled:
+every subscript site in this unit is inside the EKF arm and unconditional
+within it, so a single case that enters the arm exercises every site with its
+full index range, and 1,173 do.
+
+WHAT IS STILL NOT REACHED, restated for corpus 7: `ekf` is 1,173 of 63,020
+and `isnan` is 12, unchanged. What changed is not how often the arm is entered
+but whether what it computes there can be observed.

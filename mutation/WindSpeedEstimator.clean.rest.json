@@ -129,7 +129,7 @@
   "index_offset"
  ],
  "mutants": 78,
- "equivalent_declared": 10,
+ "equivalent_declared": 12,
  "unreachable_declared": 0,
  "unreachable": [],
  "nocompile": 0,
@@ -143,40 +143,16 @@
  "nocompile_ratio": 0.0,
  "nocompile_refused": false,
  "total": 78,
- "killed": 58,
- "survived": 10,
- "equivalent": 10,
+ "killed": 64,
+ "survived": 2,
+ "equivalent": 12,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.8529,
+ "score": 0.9697,
  "loop_rev": "8e04515-nogit",
  "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "6a71314-nogit",
  "survivors": [
-  {
-   "id": "04c08561",
-   "operator": "assoc_reorder",
-   "before": "PI *\n                           (CntrPar->WE_BladeRadius * CntrPar->WE_BladeRadius)",
-   "after": "(PI * CntrPar->WE_BladeRadius) * CntrPar->WE_BladeRadius"
-  },
-  {
-   "id": "1b6f8996",
-   "operator": "assoc_reorder",
-   "before": "Cp_op *\n                           (LocalVar->WE.v_h * LocalVar->WE.v_h)",
-   "after": "(Cp_op * LocalVar->WE.v_h) * LocalVar->WE.v_h"
-  },
-  {
-   "id": "c58d597a",
-   "operator": "assoc_reorder",
-   "before": "PI *\n                           (CntrPar->WE_BladeRadius * CntrPar->WE_BladeRadius)",
-   "after": "(PI * CntrPar->WE_BladeRadius) * CntrPar->WE_BladeRadius"
-  },
-  {
-   "id": "b3f0e72e",
-   "operator": "assoc_reorder",
-   "before": "Cp_op *\n                           (LocalVar->WE.v_h * LocalVar->WE.v_h)",
-   "after": "(Cp_op * LocalVar->WE.v_h) * LocalVar->WE.v_h"
-  },
   {
    "id": "c18630ea",
    "operator": "collapse_stride",
@@ -184,34 +160,10 @@
    "after": "[1]"
   },
   {
-   "id": "502b2386",
-   "operator": "collapse_stride",
-   "before": "[2 * 3 + 0]",
-   "after": "[2]"
-  },
-  {
    "id": "cd58ea01",
    "operator": "collapse_stride",
    "before": "[j * 3 + i]",
    "after": "[j]"
-  },
-  {
-   "id": "068d3be3",
-   "operator": "drop_call",
-   "before": "std::fabs(WE_Inp_Torque - LocalVar->VS_LastGenTrqF)",
-   "after": "WE_Inp_Torque - LocalVar->VS_LastGenTrqF"
-  },
-  {
-   "id": "cd428761",
-   "operator": "drop_call",
-   "before": "std::fabs(WE_Inp_Speed - LocalVar->RotSpeedF)",
-   "after": "WE_Inp_Speed - LocalVar->RotSpeedF"
-  },
-  {
-   "id": "426e7e7e",
-   "operator": "drop_call",
-   "before": "std::fmax(0.0, Cp_op)",
-   "after": "0.0"
   }
  ]
 }

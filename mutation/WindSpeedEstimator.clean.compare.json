@@ -79,7 +79,7 @@
   "index_offset"
  ],
  "mutants": 40,
- "equivalent_declared": 0,
+ "equivalent_declared": 1,
  "unreachable_declared": 0,
  "unreachable": [],
  "nocompile": 0,
@@ -94,23 +94,17 @@
  "nocompile_refused": false,
  "total": 40,
  "killed": 29,
- "survived": 11,
- "equivalent": 0,
+ "survived": 10,
+ "equivalent": 1,
  "declared_but_killed": [],
  "unreachable_but_killed": [],
- "score": 0.725,
+ "score": 0.7436,
  "loop_rev": "8e04515-nogit",
  "gen_rev": "gen-9e9b6297bc69",
  "vit_rev": "6a71314-nogit",
  "survivors": [
   {
    "id": "0ac1df5b",
-   "operator": "compare_op",
-   "before": ">",
-   "after": ">="
-  },
-  {
-   "id": "a1db7de8",
    "operator": "compare_op",
    "before": ">",
    "after": ">="
