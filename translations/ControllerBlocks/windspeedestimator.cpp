@@ -56,12 +56,35 @@
 // DIVISOR two statements later. The accumulator is initialised to `0.0` and
 // added into, which is the reference's own shape.
 //
-// LAYOUT. `we_t` is column-major with the generator's own stated mapping,
-// `Fortran P(i,j) -> C P[j-1][i-1]`, so the FIRST C subscript is the COLUMN.
-// `xh` and `K` are (3,1), so their column subscript is always 0 and the row
-// runs 0..2. The locals `F`, `Q`, `H`, `dxh` are flat with the same convention
-// spelled out at each declaration -- flat rather than `[3][3]` so that the
-// index arithmetic is visible to the reader and to the mutation sweep.
+// LAYOUT, AND THE GENERATED HEADER'S STATED MAPPING IS RIGHT FOR `P` AND OUT
+// OF BOUNDS FOR `xh` AND `K`.
+//
+// `vit_types.h` says `Fortran P(i,j) maps to C P[j-1][i-1]` -- the first C
+// subscript is the COLUMN -- and emits the Fortran dims verbatim:
+//
+//     REAL(DbKi), DIMENSION(3,3) :: P     ->  double P[3][3]
+//     REAL(DbKi), DIMENSION(3,1) :: xh    ->  double xh[3][1]
+//     REAL(DbKi), DIMENSION(3,1) :: K     ->  double K[3][1]
+//
+// For `P` the two agree, because 3 == 3. For `xh` and `K` they do not:
+// `xh[j-1][i-1]` with j == 1 is `xh[0][i-1]`, and `xh[0]` is a `double[1]`, so
+// `i` = 2 and `i` = 3 are past the end of the inner array. The ADDRESS is
+// still right -- `0*1 + (i-1)` is `i-1` -- which is why the first version of
+// this file computed the correct answers, and gcc said so anyway:
+//
+//     windspeedestimator.hpp:652: iteration 1 invokes undefined behavior
+//       [-Waggressive-loop-optimizations]     s + LocalVar->WE.K[0][i] * H[j]
+//
+// The in-bounds spelling of the SAME address for an (n,1) member is
+// `xh[i-1][0]`: `(i-1)*1 + 0`. That is what this file uses, and it is why the
+// two members are subscripted the other way round from `P`. The general
+// defect -- Fortran dims emitted verbatim under a transposed access rule, which
+// gives the wrong ADDRESS as soon as a 2-D member is rectangular with both
+// extents above 1 -- is reported in `.loop-run/findings.jsonl`.
+//
+// The locals `F`, `Q`, `H`, `dxh` are flat with the mapping spelled out at each
+// declaration -- flat rather than `[3][3]` so that the index arithmetic is
+// visible to the reader and to the mutation sweep.
 //
 // ------------------------------------------------------------------------
 // THE `PRINT` IS A REGION NO LAYER OF THIS CAMPAIGN COMPARES, and it is
@@ -412,8 +435,8 @@ void WindSpeedEstimator(localvariables_view_t* LocalVar, controlparameters_view_
             lambda = WE_Inp_Speed * CntrPar->WE_BladeRadius / LocalVar->WE.v_h;
             // LocalVar%WE%xh = RESHAPE((/om_r, v_t, v_m/),(/3,1/))
             LocalVar->WE.xh[0][0] = LocalVar->WE.om_r;
-            LocalVar->WE.xh[0][1] = LocalVar->WE.v_t;
-            LocalVar->WE.xh[0][2] = LocalVar->WE.v_m;
+            LocalVar->WE.xh[1][0] = LocalVar->WE.v_t;
+            LocalVar->WE.xh[2][0] = LocalVar->WE.v_m;
             // LocalVar%WE%P = RESHAPE((/0.01,0.0,0.0, 0.0,0.01,0.0, 0.0,0.0,1.0/),(/3,3/))
             //
             // RESHAPE fills column-major, so the source vector's first three
@@ -432,8 +455,8 @@ void WindSpeedEstimator(localvariables_view_t* LocalVar, controlparameters_view_
             LocalVar->WE.P[2][2] = 1.0;
             // LocalVar%WE%K = RESHAPE((/0.0,0.0,0.0/),(/3,1/))
             LocalVar->WE.K[0][0] = 0.0;
-            LocalVar->WE.K[0][1] = 0.0;
-            LocalVar->WE.K[0][2] = 0.0;
+            LocalVar->WE.K[1][0] = 0.0;
+            LocalVar->WE.K[2][0] = 0.0;
             // Cp_op = 0.25  ! initialize so debug output doesn't give *****
             Cp_op = 0.25;
 
@@ -530,7 +553,7 @@ void WindSpeedEstimator(localvariables_view_t* LocalVar, controlparameters_view_
             // right-hand side before writing, and no element of `xh` appears on
             // the right of a different element, so an in-place loop is exact.
             for (int i = 0; i < 3; ++i) {
-                LocalVar->WE.xh[0][i] = LocalVar->WE.xh[0][i] + LocalVar->DT * dxh[i];
+                LocalVar->WE.xh[i][0] = LocalVar->WE.xh[i][0] + LocalVar->DT * dxh[i];
             }
 
             // LocalVar%WE%P = LocalVar%WE%P + LocalVar%DT*(MATMUL(F,LocalVar%WE%P)
@@ -574,7 +597,7 @@ void WindSpeedEstimator(localvariables_view_t* LocalVar, controlparameters_view_
                     for (int i = 0; i < 3; ++i) {
                         // (K(i,1)*R_m) * TRANSPOSE(K)(1,j+1) = (K(i,1)*R_m) * K(j+1,1)
                         double s = 0.0;
-                        s = s + LocalVar->WE.K[0][i] * R_m * LocalVar->WE.K[0][j];
+                        s = s + LocalVar->WE.K[i][0] * R_m * LocalVar->WE.K[j][0];
                         KKt[j * 3 + i] = s;
                     }
                 }
@@ -626,14 +649,14 @@ void WindSpeedEstimator(localvariables_view_t* LocalVar, controlparameters_view_
                     PHt[i] = s;
                 }
                 for (int i = 0; i < 3; ++i) {
-                    LocalVar->WE.K[0][i] = PHt[i] / S[0];
+                    LocalVar->WE.K[i][0] = PHt[i] / S[0];
                 }
             }
             // LocalVar%WE%xh = LocalVar%WE%xh + LocalVar%WE%K*(WE_Inp_Speed - LocalVar%WE%om_r)
             for (int i = 0; i < 3; ++i) {
-                LocalVar->WE.xh[0][i] =
-                    LocalVar->WE.xh[0][i] +
-                    LocalVar->WE.K[0][i] * (WE_Inp_Speed - LocalVar->WE.om_r);
+                LocalVar->WE.xh[i][0] =
+                    LocalVar->WE.xh[i][0] +
+                    LocalVar->WE.K[i][0] * (WE_Inp_Speed - LocalVar->WE.om_r);
             }
             // LocalVar%WE%P = MATMUL(identity(3) - MATMUL(LocalVar%WE%K,H),LocalVar%WE%P)
             //
@@ -649,7 +672,7 @@ void WindSpeedEstimator(localvariables_view_t* LocalVar, controlparameters_view_
                     for (int i = 0; i < 3; ++i) {
                         // K(i,1) * H(1,j+1) -- a one-term sum
                         double s = 0.0;
-                        s = s + LocalVar->WE.K[0][i] * H[j];
+                        s = s + LocalVar->WE.K[i][0] * H[j];
                         KH[j * 3 + i] = s;
                     }
                 }
@@ -679,9 +702,9 @@ void WindSpeedEstimator(localvariables_view_t* LocalVar, controlparameters_view_
             // LocalVar%WE%om_r = max(LocalVar%WE%xh(1,1), EPSILON(1.0_DbKi))
             LocalVar->WE.om_r = std::fmax(LocalVar->WE.xh[0][0], DBL_EPSILON);
             // LocalVar%WE%v_t = LocalVar%WE%xh(2,1)
-            LocalVar->WE.v_t = LocalVar->WE.xh[0][1];
+            LocalVar->WE.v_t = LocalVar->WE.xh[1][0];
             // LocalVar%WE%v_m = LocalVar%WE%xh(3,1)
-            LocalVar->WE.v_m = LocalVar->WE.xh[0][2];
+            LocalVar->WE.v_m = LocalVar->WE.xh[2][0];
             // LocalVar%WE%v_h = LocalVar%WE%v_t + LocalVar%WE%v_m
             LocalVar->WE.v_h = LocalVar->WE.v_t + LocalVar->WE.v_m;
             // LocalVar%WE_Vw = LocalVar%WE%v_m + LocalVar%WE%v_t

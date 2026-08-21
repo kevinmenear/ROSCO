@@ -3889,8 +3889,54 @@ ErrVar_ErrMsg = { staging_capacity_excludes = [33, 114], reason = "PitchControl 
 # lose extent COMBINATIONS and no arm, and the harness should be able to reach
 # 0 failed on the three pins alone. If it is red anywhere other than
 # `ErrVar.ErrMsg`, the pins are not what this argument says they are.
+# A FOURTH PIN, ADDED AFTER THE FIRST GENERATION SEGFAULTED THE REFERENCE, AND
+# IT IS UNIT #34's WORD FOR WORD.
+#
+# The first run reported `harness produced no JSON`, which is what unit #45's
+# entry above warns reads as a build problem and is not: `./test` died at
+# SIGSEGV inside `windspeedestimator_f90`, and `vit_harness.py` prints its
+# payload after the loop. Two stderr writes named the case
+# (evidence/WindSpeedEstimator/probe_case_trace.py):
+#
+#     CASE 8206 CPP
+#     CASE 8206 F90          <- the REFERENCE side
+#     (nothing after)
+#     IN 8206 WE_Mode=0 instLPF=-9999 restart=0 iStatus=0 DT=600 ...
+#
+# `WE_Mode = 0` is the arm that calls neither interp1d nor interp2d nor
+# AeroDynTorque, so `LPFilter` is the only callee that subscripts anything, and
+# `objInst%instLPF` is its `inst`:
+#
+#     LocalVar%HorWindV_F = cos(...) * LPFilter(..., objInst%instLPF, ...)
+#     FP%lpf1_a1(inst) = 2 + CornerFreq*DT        Filters.f90, LPFilter
+#
+# `FP%lpf1_*` are `DIMENSION(1024)` fields of `LocalVar%FP`, a NESTED type the
+# generator does not expand into parameters, so there is no compared
+# out-parameter for R5 to attach an index role to and `instLPF` stays an
+# ordinary defaulted integer with R6's decade ladder on it. Unit #34
+# (`PIDController`) MEASURED the reference's behaviour one value per process
+# across fourteen processes -- `evidence/PIDController/instlpf_probe.{f90,sh,txt}`
+# -- and both 32-bit extremes and the large negatives SIGSEGV. That measurement
+# is copied rather than repeated (P4); what is measured HERE is that this unit
+# reaches the same crash, at `instLPF = -9999`, case 8206 of 13,950.
+#
+# 1..1024 is the whole DECLARED domain and not a margin, and the returning rows
+# of unit #34's table are the reason it is not "whatever does not crash": every
+# value outside 1..1024 that returns has read and written six doubles outside
+# the declared extent, and the two sides of this comparison do not hold that
+# memory in the same place -- the C++ gets one `localvariables_view_t`, the
+# Fortran bridge gets 167 decomposed scalars plus a pointer to `FP` alone.
+# Agreement out there would be an accident of layout.
+#
+# THE COST, STATED: `instLPF` leaves R6's integer ladder, so the decade
+# boundaries and the two 32-bit extremes go -- every one of them a value at
+# which the reference either dies or answers out of bounds. It also moves the
+# 8,160 cases the first generation put at `instLPF = 0`, which is likewise
+# outside the declared domain, INTO it.
+#
 [WindSpeedEstimator]
 
 PerfData_Cp_mat_cols = { same_as = "PerfData_Beta_vec_n" }
 PerfData_Cp_mat_rows = { same_as = "PerfData_TSR_vec_n" }
 CntrPar_WE_FOPoles_N = { same_as = "CntrPar_WE_FOPoles_v_n" }
+objInst_instLPF = { lo = 1, hi = 1024 }
