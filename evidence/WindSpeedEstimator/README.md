@@ -2,14 +2,23 @@
 
 `rosco/controller/src/ControllerBlocks.f90:267-488` (clean, at `54dd134`).
 Disposition **integrated**. Four layers, all four red-tested, and one honest
-failing number: the mutation score is **0.7727** against a threshold of 1.000.
+failing number: the mutation score is **0.9234** against a threshold of 1.000.
+
+**Second dispatch (P12 re-take).** Corpus 6 was replaced by corpus 7 -- two
+`ranges.toml` entries, same 63,020 cases -- and every layer that depends on the
+corpus was re-taken on it. 60 survivors became 19; 204 of 264 became 229 of
+248; `arith_op` went from 34 of 40 to **38 of 38, score 1.000**, which is the
+whole of the set the driver named. What is left is in
+`mutation.survivor_census.corpus7.txt`, in three classes with three
+dispositions, and twelve of the nineteen are blocked on an instrument defect
+that is localised in `mutation.sanitize_refusal.nan_sign.txt` and escalated.
 
 | layer | result | red-tested |
 |---|---|---|
-| differential harness (`harness/WindSpeedEstimator.json`) | **63,020 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran — this unit's primary evidence | the unit as a no-op: **63,020 of 63,020**, same corpus count, predicted before the run |
+| differential harness (`harness/WindSpeedEstimator.json`) | **63,020 checked, 0 failed, 0 inadmissible** against the CLEAN Fortran, on corpus 7 (md5 `44290973357db22784b138278ae781e7`) — this unit's primary evidence | the unit as a no-op: **63,020 of 63,020**, same corpus count, predicted before the run |
 | gate, 27 scenarios (`gate/WindSpeedEstimator.json`) | 5,252,000 values / 351 channels, 0 mismatched | three perturbations, three predictions, three confirmations — see below |
 | post-integration (`harness/WindSpeedEstimator.postintegration.json`) | 63,020 checked, 0 failed | this unit's own `vit_copy_scalars_to_localvariables` deleted from its own wrapper: **63,020 of 63,020** |
-| mutation (`mutation/WindSpeedEstimator.json`) | **204 of 264 scoreable, 0.7727**, 13 declared equivalent, 1 no-compile, 12 operators, **60 survivors standing** | the score *is* the red test, 204 times |
+| mutation (`mutation/WindSpeedEstimator.json`) | **229 of 248 scoreable, 0.9234**, 29 declared equivalent, 1 no-compile, 12 operators, **19 survivors standing** | the score *is* the red test, 229 times |
 
 **No kernel.** The plan allowed "kernel replay **or** direct-call harness". The
 direct-call harness is the layer taken, as for units #45–#48 and #62–#63.
@@ -51,6 +60,58 @@ reached. Six `ranges.toml` entries and `--persist-nested` moved it; the full
 per-corpus, per-arm table and **two refuted predictions** are in
 `corpus_arm_census.txt`.
 
+
+## The second finding: the survivors were the corpus multiplying by zero
+
+`drop_call std::fmax(0.0, Cp_op) -> 0.0` **survived**. That mutant can only
+survive if the clamp already returns `0.0` on every case, so the translation was
+re-run with a sign census:
+
+```
+corpus 6   ekf=1173  cp_raw_pos=0  cp_zero=1173  F12_nonzero=10
+           cp_raw = [-935.478, -387.138]
+corpus 7   ekf=1173  cp_raw_pos=1173  cp_zero=0  F12_nonzero=1169
+           cp_raw = [0.0355, 0.3237]
+```
+
+`Cp_op` multiplies the whole of `F(1,2)` and `F(1,3)`, so with `Cp_op == 0`
+every mutation of every factor in the Jacobian's wind-speed column was
+multiplied by zero. Twenty-odd survivors, one cause, and **the first corpus
+repair was refuted by its own run** — a Cp band straddling zero puts the whole
+corpus just *below* zero, because `lambda` is out of the TSR axis so interp2d
+clamps to a corner and `_fill_array` ramps from `lo`. Both takes, with their
+PHYSICAL / INSTRUMENTAL / WHAT LEAVES statements, are in `harness/ranges.toml`;
+the per-corpus table is in `corpus_arm_census.txt`.
+
+## The third finding: the harness adjudicates a NaN's sign bit
+
+The sanitised sweep — the only instrument that reaches twelve of the nineteen
+remaining survivors — is blocked by a baseline that fails at one case of
+63,020 with an **empty sanitiser stderr**. Widening the generated hex dump to
+256 bytes for one run named it: `LocalVar%WE` case 42053 holds fifteen quiet
+NaNs, and **fourteen of them differ between the reference and a perturbed build
+in exactly one bit, the sign**. Both sides are NaN. IEEE-754 does not say which.
+`memcmp` on a nested type is therefore deciding a bit the source program does
+not determine, and the shipped translation is green only because its codegen
+happens to agree with gfortran's.
+
+Full nineteen-double record in `mutation.sanitize_refusal.nan_sign.txt`.
+Raised as an `invalidating_finding`, with the 32-byte truncation that hid it
+for a whole dispatch as a `default_change_proposed`.
+
+## The fourth finding: every EKF update in this corpus is the FIRST update
+
+```
+upd=1173  vt_zero=1173  k_zero=1173  p_offdiag_zero=1173  p11_eq_p22=1173
+```
+
+Read at the top of the update arm before anything writes: on all 1,173 cases
+`LocalVar%WE` is exactly what the RESTART arm leaves — `v_t = 0`, `K = 0`,
+`P = diag(0.01, 0.01, 1.0)`, the last compared as bit patterns. Four of the
+nineteen survivors follow from that one fact, two of them by an exact
+algebraic identity rather than a coincidence: moving `F(1,2)` to `F(2,1)` is
+invisible on any `P` with `P(1,1) == P(2,2)`.
+
 ## The gate red tests
 
 ```
@@ -87,7 +148,13 @@ switching the estimator off.
 | `probe_pow.{f90,cpp}` | `x**3.0` vs `std::pow` — identical, and the probe can fail |
 | `probe_matmul.{f90,cpp}` | 123 values across all six MATMUL expressions — identical |
 | `probe_wrapper_trace.py` | the per-invocation nine-field bit-pattern trace that named invocation 544 |
-| `probe_equivalences.{cpp,txt}` | the thirteen equivalences EXECUTED, with a control that can fail — and its own refuted first model kept at the counter that refuted it |
+| `probe_equivalences.{cpp,txt}` | the first thirteen equivalences EXECUTED, with a control that can fail — and its own refuted first model kept at the counter that refuted it |
+| `probe_equivalences2.{cpp,txt}` | families F–H (the two one-sided `ABS` tests, `v_m ± v_t`, `n > 0` vs `n >= 0`), three controls, all three failed |
+| `probe_flag_predicate.{py,txt}` | family I: both LPFilter implementations read `1` as a TRUTH, and the detector is shown to find a `== 1` when one exists |
+| `windspeedestimator.subscript-census.cpp` | the shipped translation with a bounds-recording array wrapper and the `Cp_op` / state counters; it produced every number in the two findings below |
+| `corpus7_census.txt` | that probe's output on corpus 7, one line |
+| `mutation.survivor_census.corpus7.txt` | the nineteen standing survivors, three classes, one measured reason each |
+| `mutation.sanitize_refusal.nan_sign.txt` | the sanitised baseline's failing case localised to fourteen NaN sign bits |
 | `run_harness_redtest.sh`, `windspeedestimator.noop-harness-stub.cpp` | the no-op red test and its runner |
 | `run_mutation_part.sh` | one guarded, operator-filtered part |
 | `run_postintegration_redtest.sh` | the wrapper copy-back red test |
@@ -96,6 +163,17 @@ switching the estimator off.
 
 ## The findings worth carrying
 
+0. **A mutation survivor is the only instrument that asks whether the arm the
+   corpus DOES reach is being multiplied by zero.** `fmax(0.0, Cp_op) -> 0.0`
+   surviving is a statement about `Cp_op`, and no green count anywhere says it.
+   Two `ranges.toml` entries later, `arith_op` is 38 of 38.
+0b. **A comparison that uses `memcmp` on a nested type adjudicates NaN sign
+   bits**, which no source program determines — so a green can be codegen luck
+   and a sanitised baseline can refuse for a reason that is not the
+   translation's. Widen the diagnostic before believing "cannot be localised".
+0c. **Ask the corpus what STATE it enters an arm from, not only how often.**
+   Here the answer was "always the initial one, 1,173 of 1,173", and it
+   explains four survivors exactly, one of them by an identity in P.
 1. **A harness green over a corpus that reaches one arm is a statement about
    that arm, and the harness cannot say so.** Only the mutation survivors did.
 2. **`values` makes a parameter a FLAG and `lo`/`hi` does not.** Two predictions
