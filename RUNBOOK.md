@@ -10795,3 +10795,51 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   here: `vit_populate_performancedata` (50 lines) and
   `vit_copy_scalars_to_performancedata` (7) IDENTICAL, and only the two
   `ERROR STOP`s grew.
+
+## `--sanitize` CAN BE BLOCKED BY A BASELINE THAT REPORTS **NOTHING**, AND THAT
+## IS NOT THE REFUSAL THE OPTION DOCUMENTS
+
+- **Unit #65.** The runbook and the dispatch prompt both say: if your survivors
+  are out-of-bounds reads or writes, re-run with `--sanitize`, and if the
+  sanitised baseline REPORTS, that is a finding rather than an obstacle. This
+  unit hit a third case.
+
+  ```
+  baseline is not green (ok); refusing to score
+  checked 63020   failed 1   LocalVar.WE
+  stderr: 0 bytes
+  ```
+
+  `outcome` is `ok`, not `sanitizer`: **no ASan trap and no UBSan diagnostic.**
+  What fails is the ordinary VALUE comparison, at one case of 63,020, on a
+  nested type compared bytewise. The same test source, corpus and case file
+  built without `-fsanitize` is 63,020 of 63,020 green, and `CXX_FLAGS`
+  (`-O2 -fPIC -ffp-contract=off`) are identical in both builds because
+  `vit_mutate.py` overrides `CXX` and not `CXX_FLAGS`. So it is a value the
+  sanitised codegen alone produces -- a NaN or a signed zero spelled differently
+  under different inlining is the shape -- and `vit_mutate.py` refusing is right.
+
+  **The consequence is worth pricing before reaching for the option:
+  `--sanitize` is unavailable to any unit whose compared set includes a bytewise
+  nested type that can hold a NaN.** `LocalVar` alone carries five (`WE`, `FP`,
+  `piP`, `resP`, `rlP`), and 35 of this unit's 60 standing survivors are in the
+  index/bound class only `--sanitize` reaches.
+
+## A BYTEWISE MISMATCH ON A NESTED TYPE CANNOT BE LOCALISED FROM THE ARTIFACT
+
+- **Unit #65, and it is what stopped the paragraph above from going further.**
+
+  ```
+  {"case": 42053, "output": "LocalVar.WE",
+   "ref": "0000000000c07240000000000000000000000000000000000000000000000000...",
+   "got": "0000000000c07240000000000000000000000000000000000000000000000000..."}
+  ```
+
+  `we_t` is nineteen doubles -- `om_r`, `v_t`, `v_m`, `v_h`, `P(3,3)`,
+  `xh(3,1)`, `K(3,1)` -- and the record shows the first four and an ellipsis,
+  IDENTICAL on both sides. The artifact says a difference exists and cannot say
+  where. Every UNOBSERVABLE-but-compared nested type in this campaign has this,
+  which is five on `LocalVar` alone. **Emit the first DIFFERING window rather
+  than the first 32 bytes** -- one line in the emitter, no corpus change, and it
+  is raised in `.loop-run/findings.jsonl` rather than taken here, because
+  changing the emitter re-prices every artifact that quotes a mismatch (X3).
