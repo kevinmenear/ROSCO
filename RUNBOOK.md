@@ -10650,3 +10650,148 @@ cannot arise. Keep the guard: it still covers `--workers 1`.
   FILES and, for each, **names the file that would refute it** — an unreachable
   set with one common cause is a corpus gap wearing a declaration's name, and
   the way to tell them apart is to say what would close it.
+
+## A DIRECT-CALL HARNESS CANNOT SEE A DEFECT WHOSE SIGNAL NEEDS A SECOND CALL,
+## AND WIDENING THE CORPUS IS NOT THE FIX
+
+- **Unit #65.** The differential harness was **63,020 of 63,020 GREEN** on a
+  translation that was wrong, over a corpus that reaches the defective arm
+  1,173 times. The gate caught it at **2 values of 5,252,000**.
+
+  ```
+  Fortran  ... * WE_BladeRadius**2.0 * 1/WE%om_r * 3.0 * ...
+  was      ... * (R * R) * (1.0 / om_r) * 3.0 * ...      <- reciprocal, then multiply
+  is       ... * (R * R) * 1 / om_r * 3.0 * ...          <- multiply by 1, then DIVIDE
+  ```
+
+  The whole observable signal is 2 ULP in one element of a 3x3 covariance
+  matrix, and `WE_Vw = v_m + v_t` with `v_t` at 1.7e-08 against a `v_m` of 9.3,
+  so the addition ABSORBS it. It cannot reach any of the 213 compared
+  out-parameters **within a single call**; it needs the EKF's own feedback
+  across 544 timesteps.
+
+  **The rule: for a unit whose state recurses -- a `SAVE` local, a type-carried
+  accumulator, a filter history -- the harness's blind spot is the NUMBER OF
+  CALLS and not the width of the corpus.** No `ranges.toml` entry closes it. The
+  gate is the only instrument in this campaign that composes a unit with itself,
+  and `--persist-nested` makes the harness's state non-degenerate without making
+  it recurse. Raised in DECISIONS.md: the four canonical instruments do not
+  include one that calls a unit twice.
+
+  **AND THE BISECTION IS TWO BUILDS, NOT A HUNT.** The recipe that found it, in
+  order and each committed as a runnable probe under
+  `evidence/WindSpeedEstimator/`: (1) de-integrate THIS unit alone, rebuild,
+  gate -- PASS, so the difference is the unit's; (2) probe each construct the
+  translation had to guess at, in both languages at the campaign's flags, with a
+  spelling that DOES differ as the control (`x**3.0` vs `pow` vs `x*x*x`;
+  gfortran `MATMUL` vs the translation's loops, 123 values); (3) write nine
+  fields as hex bit patterns from the integrated wrapper AND from the clean
+  Fortran body, same scenario, and `diff`. Step 3 named invocation 544 and the
+  field, and cost two builds.
+
+## `values` MAKES A PARAMETER A FLAG AND `lo`/`hi` DOES NOT, WHICH IS WORTH TWO
+## REFUTED PREDICTIONS TO LEARN
+
+- **Unit #65, and both refutations are left standing in `harness/ranges.toml`
+  beside their corrections.**
+
+  ```
+  LocalVar_iStatus = { lo = -1, hi = 1 }    EKF-update arm  61 -> 1
+  LocalVar_WE_Op   = { lo =  0, hi = 1 }    EKF-update arm   1 -> 0
+  LocalVar_iStatus = { values = [0, 1] }
+  LocalVar_WE_Op   = { values = [0, 1] }    EKF-update arm   0 -> 1,173
+  ```
+
+  `generate.py:2091` selects flags as *any live input with `values` and kind !=
+  char[]*, and every R6 and R_ladder value is then re-run under EVERY declared
+  value of every flag -- additively, the sum of the arities. A `lo`/`hi` range is
+  a DRAW the filler makes, and two separate ranges each moved their arm by less
+  than one part in a thousand. **A flag is a guarantee; a range is a draw**, and
+  the two read as the same kind of statement in `ranges.toml`.
+
+  The price is stated rather than absorbed: each further flag value cost about a
+  sixth of this unit's corpus (arities 2 -> 6 -> 8 -> 10 took 13,868 -> 37,656
+  -> 50,482 -> 63,020), and this unit's generator had already been SIGKILLed
+  once.
+
+## THE FIRST MUTATION PART IS A CHEAPER ARM CENSUS THAN THE CENSUS IS
+
+- **Unit #65.** The corpus was green over 13,868 cases and every one of them
+  took the SAME arm: `mode1=0`, `mode2=0`, both estimators -- most of the
+  procedure -- never entered. Nothing in `checked 13868 failed 0` says so, and
+  nothing in the harness's rule coverage does either.
+
+  ```
+  first part, 11 mutants   0 killed
+                           all eleven on the five std::fmax calls, and every
+                           one of those is inside `WE_Mode == n .AND. WE_Op > 0`
+  ```
+
+  **A part that scores 0 of 11 with every mutant in one region is an arm census
+  for the price of one part.** The runbook already says to census before the
+  sweep; what this unit adds is that the cheapest ORDER is a small part FIRST --
+  pick the operators with the fewest mutants -- and read where its survivors
+  sit. The full census is then confirmation rather than discovery, and the
+  reusable form is committed: the shipped translation with one counter per arm,
+  built through `harness.sh --no-generate` so the corpus is byte-identical to
+  the scored one.
+
+  **AND `WE_Op` IS WHY A KNOB COULD NOT HAVE FOUND IT.** Both arms are guarded
+  on a value the unit COMPUTES nine lines earlier, 1 only when all three input
+  saturations were no-ops. R7's knob is on the drawn `WE_Op`, which is
+  overwritten before it is read. The lever is unit #59's -- choose the CONSTANTS
+  so the coincidence exists -- and the census says which of the three
+  saturations to spend it on (`ok_pitch` 1,092 against `ok_torque` 12,535 and
+  `ok_speed` 12,972).
+
+## A RED PRIMARY GATE RUN HAS NO `--out` CONVENTION AND ITS OWN GREEN OVERWRITES IT
+
+- **Unit #65.** `gate.py` writes `gate/<Unit>.json` by default. The first red
+  run wrote that path, the fix's green overwrote it, and the only red artifact
+  that survived to be committed as the C12 record was the REPRODUCIBILITY
+  RE-RUN, which had been given `--out gate/<Unit>.rerun.json` for an unrelated
+  reason. Every gate RED TEST in this campaign passes `--out` because it is a
+  different kind of run; a red PRIMARY run is the same file as its own green.
+  **Give a red primary gate run its own `--out` the moment it comes back red,
+  before anything else touches the tree.**
+
+## `cmake --build . | tail -1` PUTS THE COMPILER'S EXIT STATUS BEHIND A PIPE
+
+- **Unit #65.** One gate run reported `GATE PASS: 5,252,000 ... 0 mismatched`
+  off a library whose build had FAILED, because the `&&` chain saw `tail`'s exit
+  status and the `cp` and the gate both ran against the previous `libdiscon.so`.
+  A green that measured the wrong library reads exactly like a green that
+  measured the right one. Test `${PIPESTATUS[0]}`, or drop the pipe.
+
+## EXECUTE AN EQUIVALENCE **AND** GIVE THE PROBE A CONTROL THAT CAN FAIL
+
+- **Unit #65, where the control refuted the model it was defending.** Five
+  `swap_call_args` mutants swap `fmax`'s two arguments. The argument was
+  "symmetric except possibly at a (+0, -0) pair", which would have left
+  `MAX(0.0, Cp_op)` standing as a killable survivor -- `DebugVar%WE_Cp` is
+  compared bitwise. The counter written to demonstrate that asymmetry returned
+  **0 disagreements**: glibc's `fmax` returns `+0` for both orders. So the fifth
+  site is equivalent too, and the line that was going to be the control could
+  not fail and was therefore not one (P10).
+
+  The control that works is the same comparison machinery over an operator that
+  is *not* symmetric with the one under test -- `fmax(a,3.0)` against
+  `fmin(3.0,a)`, 62 disagreements of 65. **The wrong model is kept in the
+  probe's own source, at the counter that refuted it**, because it is what the
+  next reader would otherwise re-derive.
+
+## `restore_integrated.sh` SILENTLY REVERTS A REGENERATED VIEW POPULATOR
+
+- **Unit #65, and the runbook already warns about it one section over.**
+  `vit_view_in_performancedata` was an unconditional `ERROR STOP 'an unmeasured
+  field kind'` -- unit #62's `vit_view_in_controlparameters` one type over -- so
+  the first corpus that actually reached `AeroDynTorque` died in the view
+  populator with `harness produced no JSON`. It was regenerated, the harness
+  went green, and the next `restore_integrated.sh` put HEAD's `ERROR STOP`
+  version back without a word.
+
+  **Commit a regenerated view module BEFORE the next restore, not at the end of
+  the unit.** The additivity check is unit #62's PER-ROUTINE diff and it held
+  here: `vit_populate_performancedata` (50 lines) and
+  `vit_copy_scalars_to_performancedata` (7) IDENTICAL, and only the two
+  `ERROR STOP`s grew.
