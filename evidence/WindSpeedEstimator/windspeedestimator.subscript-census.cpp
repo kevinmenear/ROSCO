@@ -1,37 +1,64 @@
-// SUBSCRIPT-AND-Cp_op CENSUS PROBE for unit #65 -- the shipped translation with
-// a bounds-recording array wrapper on the five function-level arrays and a
-// sign census on `Cp_op`.
+// STATE-AND-SUBSCRIPT CENSUS PROBE for unit #65 -- the shipped translation with
+// a bounds-recording array wrapper on the five function-level arrays and
+// counters on the state the EKF update arm is entered from.
 //
-// TWO QUESTIONS, both raised by the standing survivor list:
+// THIS FILE PRODUCED EVERY NUMBER IN corpus7_census.txt, and it is the version
+// that did: an earlier take of it carried only the subscript and Cp_op halves,
+// and committing that one would have left the artifact unable to reproduce its
+// own line. Run it and diff against corpus7_census.txt.
 //
-//  1. TEN of the sixty survivors enlarge one of the five automatic array
-//     DECLARATIONS by one element (`double F[9]` -> `F[10]`, `[9]` -> `[9+1]`,
-//     and the same for H, dxh, Q and S). That is behaviour-preserving iff no
-//     access ever reaches the original last index + 1. Every subscript site in
-//     this unit is a literal or a loop counter bounded by a literal, and every
-//     site is INSIDE the EKF arm and unconditional within it -- so one case
-//     that enters the arm exercises every site with its full index range, and
-//     the maxima below are COMPLETE rather than sampled.
+// FOUR QUESTIONS, all raised by the standing survivor list:
+//
+//  1. TEN survivors ENLARGE one of the five automatic array DECLARATIONS by one
+//     element (`double F[9]` -> `F[10]`, `[9]` -> `[9+1]`, and the same for H,
+//     dxh, Q and S). Behaviour-preserving iff no access ever reaches the
+//     original last index + 1. Every subscript site in this unit is a literal
+//     or a loop counter bounded by a literal, and every site is INSIDE the EKF
+//     arm and unconditional within it -- so one case that enters the arm
+//     exercises every site with its full index range, and the maxima below are
+//     COMPLETE rather than sampled.
 //
 //  2. `drop_call std::fmax(0.0, Cp_op) -> 0.0` SURVIVED, which can only be
-//     true if `Cp_op` is <= 0 or NaN on every EKF-update case in the corpus.
-//     If it is, that one fact explains most of the arm-F arithmetic survivors
-//     at once -- every one of them sits on a factor that `Cp_op` multiplies to
-//     zero.
+//     true if `Cp_op` is <= 0 or NaN on every EKF-update case. If it is, that
+//     one fact explains most of the arm-F arithmetic survivors at once --
+//     every one of them sits on a factor that `Cp_op` multiplies to zero.
+//     (It was. cp_raw_pos was 0 of 1,173 on corpus 6; two ranges.toml entries
+//     later it is 1,173 of 1,173.)
+//
+//  3. WHAT STATE is the update arm entered FROM? `LocalVar%WE` is carried
+//     across cases by --persist-nested, which makes it non-degenerate; it does
+//     not make it varied. `vt_zero`, `k_zero`, `p_offdiag_zero` and
+//     `p11_eq_p22` answer it, the last as a comparison of BIT PATTERNS.
+//
+//  4. Is the `aviFAIL < 0` arm reached, and if so which VALUES are missing?
+//     `errmsg_arm` counts the arm; `cap_eq`, `n_eq_1` and `n_le_0` count the
+//     three coincidences the three arm-A survivors each need.
 //
 //   cp evidence/WindSpeedEstimator/windspeedestimator.subscript-census.cpp \
 //      translations/ControllerBlocks/windspeedestimator.cpp
-//   bash scripts/harness.sh ... --no-generate
-//   docker exec vit-dev bash -lc "cd <test dir> && ./test <stem>_cases.bin 2>&1 >/dev/null | tail -2"
-//   git checkout -- translations/ControllerBlocks/windspeedestimator.cpp
+//   bash scripts/harness.sh ... --no-generate      # on a CLEAN tree
+//   docker exec vit-dev bash -lc "cd <test dir> && make test && \
+//       ./test <stem>_cases.bin 2>&1 >/dev/null | grep -E 'SUBCENSUS|CPCENSUS'"
+//   cp <the shipped translation back>              # ALWAYS, and check the md5
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <string>
 namespace vitcensus {
 struct Sub { const char* name; int n; int lo; int hi; long uses; };
 static Sub subs[5] = {{"F",9,1<<30,-(1<<30),0}, {"H",3,1<<30,-(1<<30),0},
                       {"dxh",3,1<<30,-(1<<30),0}, {"Q",9,1<<30,-(1<<30),0},
                       {"S",1,1<<30,-(1<<30),0}};
 static long cp_pos = 0, cp_zero = 0, cp_neg = 0, cp_nan = 0, cp_raw_pos = 0, ekf = 0;
+static double cp_raw_min = 1e308, cp_raw_max = -1e308;
+static double lam_min = 1e308, lam_max = -1e308;
+static double beta_lo = 1e308, beta_hi = -1e308, tsr_lo = 1e308, tsr_hi = -1e308;
+static double cpmat_lo = 1e308, cpmat_hi = -1e308;
+static long calls = 0, nan_cases = 0, p11_eq_p22 = 0, p_offdiag_zero = 0, upd = 0;
+static long errmsg_arm = 0, errmsg_cap_eq = 0, errmsg_n_pos1 = 0, errmsg_n_le0 = 0;
+static long vt_zero = 0, k_zero = 0, xh_eq_state = 0, dt_zero = 0;
+
 static long vh_zero = 0, vh_nonfinite = 0, omr_zero = 0, F12_nonzero = 0;
 template <int N, int SLOT>
 struct Arr {
@@ -51,9 +78,20 @@ struct Dump {
                          s.name, s.n, s.uses ? s.lo : 0, s.uses ? s.hi : -1, s.uses);
         std::fprintf(stderr,
             "CPCENSUS ekf=%ld cp_raw_pos=%ld cp_pos=%ld cp_zero=%ld cp_neg=%ld cp_nan=%ld "
-            "vh_zero=%ld vh_nonfinite=%ld omr_zero=%ld F12_nonzero=%ld\n",
+            "vh_zero=%ld vh_nonfinite=%ld omr_zero=%ld F12_nonzero=%ld "
+            "| upd=%ld p11_eq_p22=%ld p_offdiag_zero=%ld "
+            "| errmsg_arm=%ld cap_eq=%ld n_eq_1=%ld n_le_0=%ld "
+            "| vt_zero=%ld k_zero=%ld dt_zero=%ld\n",
             ekf, cp_raw_pos, cp_pos, cp_zero, cp_neg, cp_nan,
-            vh_zero, vh_nonfinite, omr_zero, F12_nonzero);
+            vh_zero, vh_nonfinite, omr_zero, F12_nonzero,
+            upd, p11_eq_p22, p_offdiag_zero,
+            errmsg_arm, errmsg_cap_eq, errmsg_n_pos1, errmsg_n_le0,
+            vt_zero, k_zero, dt_zero);
+        std::fprintf(stderr,
+            "CPRANGE cp_raw=[%.17g,%.17g] lambda=[%.17g,%.17g] beta=[%.17g,%.17g] "
+            "tsr=[%.17g,%.17g] cpmat=[%.17g,%.17g] nan_cases=%ld\n",
+            cp_raw_min, cp_raw_max, lam_min, lam_max, beta_lo, beta_hi,
+            tsr_lo, tsr_hi, cpmat_lo, cpmat_hi, nan_cases);
     }
 };
 static Dump dump;
@@ -242,6 +280,7 @@ std::string errmsg_trim(const errorvariables_view_t* ErrVar) {
 void WindSpeedEstimator(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar,
                         objectinstances_t* objInst, performancedata_view_t* PerfData,
                         debugvariables_t* DebugVar, errorvariables_view_t* ErrVar) {
+    const long vit_ord = ++vitcensus::calls;
     // ---- locals, in the reference's own declaration order ----
     double L;      // Turbulent length scale parameter [m]
     double Ti;     // Turbulent intensity [-]
@@ -545,7 +584,42 @@ void WindSpeedEstimator(localvariables_view_t* LocalVar, controlparameters_view_
                                PerfData->n_Cp_mat_cols, WE_Inp_Pitch * R2D, lambda, ErrVar);
             // Cp_op = max(0.0,Cp_op)
             ++vitcensus::ekf;
+            {   // P AS THE UPDATE ARM FINDS IT, before anything writes it.
+                // b51d08a2 / c18630ea move F(1,2) to F(2,1); on a P with
+                // P(1,1) == P(2,2) that swap is invisible, because
+                // F P + P F' picks up e*P(2,2) one way and e*P(1,1) the other.
+                unsigned long long a, b;
+                std::memcpy(&a, &LocalVar->WE.P[0][0], 8);
+                std::memcpy(&b, &LocalVar->WE.P[1][1], 8);
+                ++vitcensus::upd;
+                if (LocalVar->WE.v_t == 0.0) ++vitcensus::vt_zero;
+                if (LocalVar->DT == 0.0) ++vitcensus::dt_zero;
+                { bool kz = true;
+                  for (int r = 0; r < 3; ++r) if (LocalVar->WE.K[r][0] != 0.0) kz = false;
+                  if (kz) ++vitcensus::k_zero; }
+                if (a == b) ++vitcensus::p11_eq_p22;
+                bool od = true;
+                for (int r = 0; r < 3; ++r) for (int c2 = 0; c2 < 3; ++c2)
+                    if (r != c2 && LocalVar->WE.P[c2][r] != 0.0) od = false;
+                if (od) ++vitcensus::p_offdiag_zero;
+            }
             if (Cp_op > 0.0) ++vitcensus::cp_raw_pos;
+            if (Cp_op < vitcensus::cp_raw_min) vitcensus::cp_raw_min = Cp_op;
+            if (Cp_op > vitcensus::cp_raw_max) vitcensus::cp_raw_max = Cp_op;
+            if (lambda < vitcensus::lam_min) vitcensus::lam_min = lambda;
+            if (lambda > vitcensus::lam_max) vitcensus::lam_max = lambda;
+            for (int q = 0; q < PerfData->n_Beta_vec; ++q) {
+                if (PerfData->Beta_vec[q] < vitcensus::beta_lo) vitcensus::beta_lo = PerfData->Beta_vec[q];
+                if (PerfData->Beta_vec[q] > vitcensus::beta_hi) vitcensus::beta_hi = PerfData->Beta_vec[q];
+            }
+            for (int q = 0; q < PerfData->n_TSR_vec; ++q) {
+                if (PerfData->TSR_vec[q] < vitcensus::tsr_lo) vitcensus::tsr_lo = PerfData->TSR_vec[q];
+                if (PerfData->TSR_vec[q] > vitcensus::tsr_hi) vitcensus::tsr_hi = PerfData->TSR_vec[q];
+            }
+            for (int q = 0; q < PerfData->n_Cp_mat_rows * PerfData->n_Cp_mat_cols; ++q) {
+                if (PerfData->Cp_mat[q] < vitcensus::cpmat_lo) vitcensus::cpmat_lo = PerfData->Cp_mat[q];
+                if (PerfData->Cp_mat[q] > vitcensus::cpmat_hi) vitcensus::cpmat_hi = PerfData->Cp_mat[q];
+            }
             Cp_op = std::fmax(0.0, Cp_op);
             if (std::isnan(Cp_op)) ++vitcensus::cp_nan;
             else if (Cp_op > 0.0) ++vitcensus::cp_pos;
@@ -837,8 +911,37 @@ void WindSpeedEstimator(localvariables_view_t* LocalVar, controlparameters_view_
     // ! Add RoutineName to error message
     // IF (ErrVar%aviFAIL < 0) THEN
     if (ErrVar->aviFAIL < 0) {
+        ++vitcensus::errmsg_arm;
+        if (ErrVar->n_ErrMsg == 1) ++vitcensus::errmsg_n_pos1;
+        if (ErrVar->n_ErrMsg <= 0) ++vitcensus::errmsg_n_le0;
+        {
+            const std::string probe = std::string(RoutineName) + ':' + errmsg_trim(ErrVar);
+            if (static_cast<int>(probe.size()) == ErrVar->n_ErrMsg_cap) ++vitcensus::errmsg_cap_eq;
+        }
         // ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
         assign_errmsg(ErrVar, std::string(RoutineName) + ':' + errmsg_trim(ErrVar));
+    }
+
+    {   // CENSUS: dump the whole 19-double Kalman state whenever any of it is
+        // not a number. `LocalVar%WE` is compared BYTEWISE by the harness, and
+        // a NaN's payload is not fixed by IEEE-754 -- so a case that leaves a
+        // NaN in this state is a case whose comparison is about a bit pattern
+        // and not about a value.
+        const double* w = &LocalVar->WE.om_r;
+        bool anynan = false;
+        for (int q = 0; q < 19; ++q) if (std::isnan(w[q])) anynan = true;
+        if (anynan) {
+            ++vitcensus::nan_cases;
+            if (vitcensus::nan_cases <= 8) {
+                std::fprintf(stderr, "WENAN ord=%ld", vit_ord);
+                for (int q = 0; q < 19; ++q) {
+                    unsigned long long u;
+                    std::memcpy(&u, &w[q], 8);
+                    std::fprintf(stderr, " %016llx", u);
+                }
+                std::fprintf(stderr, "\n");
+            }
+        }
     }
     // ENDIF
 }
