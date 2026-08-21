@@ -15757,3 +15757,62 @@ of the 35 declarations directly (assign_errmsg: 0 evaluations; `establish()`'s
 already-allocated arm: 3,183 evaluations, 0 true). `corpus_facts.py` measures the
 four claims that are about the .IN files, and each one names the file that would
 refute it.
+
+## Unit #65 `WindSpeedEstimator` — the gate found what the harness could not, and a corpus that reached one arm
+
+**A DIFFERENTIAL HARNESS GREEN OVER 63,020 CASES CERTIFIED A WRONG
+TRANSLATION.** The defect is one character —
+`... * WE_BladeRadius**2.0 * 1/WE%om_r * 3.0 * ...` transcribed as
+`* (1.0 / om_r) *` instead of `* 1 / om_r *`, a reciprocal-then-multiply where
+the reference divides — and its whole observable signal is 2 ULP in one element
+of a 3×3 covariance matrix. That cannot reach any of the 213 compared
+out-parameters **within a single call**; it needs the EKF's own feedback across
+544 timesteps. The gate saw it at 2 values of 5,252,000.
+
+**The general statement, and it is a claim about the METHOD rather than about
+this unit:** a per-call differential harness and a whole-simulation gate are not
+two strengths of the same instrument. For a unit whose state recurses, the
+harness's blind spot is not narrowness of corpus — 63,020 cases reaching the
+arm 1,173 times did not help — it is the *number of calls*, which is one. Every
+unit in this campaign whose only value evidence is a direct-call harness has
+that blind spot, and the ones with a `SAVE`-carrying or type-carried recurrence
+are where it bites. Raised here rather than absorbed: the campaign's four
+canonical instruments do not include one that composes a unit with itself.
+
+**`values` MAKES A PARAMETER A FLAG; `lo`/`hi` DOES NOT — AND `ranges.toml`
+DOES NOT SAY SO.** Two predictions were refuted here by writing a domain as a
+range: `LocalVar_iStatus = { lo = -1, hi = 1 }` moved the EKF-update arm from 61
+cases to 1, and `LocalVar_WE_Op = { lo = 0, hi = 1 }` moved it from 1 to 0. The
+same two domains as `values` lists moved it to 1,173. `generate.py:2091` selects
+flags as *any live input with `values`*, and every base point is then re-run
+under every declared value; a range is a draw the filler makes. The two spellings
+read as the same kind of statement in `ranges.toml` and are not. **A candidate
+addition, not taken here:** have `--dump-plan` print, per pinned parameter,
+whether the pin made it a FLAG and with what arity — it already prints
+`bounds_source`, and this is the field next to it.
+
+**A COVERAGE COUNT IS THE ONLY THING THAT SEPARATES "THE CORPUS DOES NOT REACH
+THE ARM" FROM "THE MUTANT IS EQUIVALENT", AND THE SWEEP IS WHAT ASKS FOR IT.**
+The first corpus here was green on 13,868 cases, every one of which took the
+same arm; both estimators — most of the procedure — were never entered. Nothing
+in `checked 13868 failed 0` says so, and nothing in the harness's own rule
+coverage does either. What said so was the first mutation part scoring **0 of
+11** with all eleven mutants inside the unreached arms. **The census belongs
+BEFORE the sweep** (the runbook already says so) and the reusable form is the
+one committed here: the shipped translation with a counter per arm, run through
+`harness.sh --no-generate` so the corpus is byte-identical to the scored one.
+
+**A RED PRIMARY GATE RUN HAS NO `--out` CONVENTION, AND THE GREEN OVERWRITES
+IT.** `gate.py` writes `gate/<Unit>.json` by default. This unit's first red run
+wrote that path; the fix's green overwrote it; only the reproducibility re-run,
+which had been given its own `--out`, survived to be committed as the C12
+artifact. Every gate RED TEST in the campaign passes `--out` because it is a
+different kind of run; a red PRIMARY run is the same file as its own green.
+Cheap fix, not taken here because it is a change to a shared script mid-run
+(X3): have `gate.py` refuse to overwrite a `FAIL` artifact, or stamp the verdict
+into the filename.
+
+**`cmake --build . | tail -1` PUTS THE COMPILER'S EXIT STATUS BEHIND A PIPE**,
+and one run of this unit's gate reported `GATE PASS` off a library whose build
+had failed — measuring the previous library. Loud only in hindsight. The
+rebuilds here test `${PIPESTATUS[0]}`.
