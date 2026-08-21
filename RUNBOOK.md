@@ -1,6 +1,6 @@
 ---
 spec_version: 1
-invariant_hash: sha256:e4e6b553a5588907
+invariant_hash: sha256:48bfff3c6e76d198
 instantiated: 2026-08-10
 campaign: rosco-r2
 ---
