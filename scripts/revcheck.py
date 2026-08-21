@@ -74,8 +74,17 @@ def base(rev: str) -> str:
     return rev.split("-", 1)[0]
 
 
-def artifacts(names: list[str], core_only: bool) -> dict[str, dict[str, str | None]]:
-    """{unit: {path: loop_rev-or-None}} over RESULT artifacts only."""
+def artifacts(names: list[str], core_only: bool,
+              key: str = "loop_rev") -> dict[str, dict[str, str | None]]:
+    """{unit: {path: <key>-or-None}} over RESULT artifacts only.
+
+    `key` exists because THE FRONT END IS ALSO AN INSTRUMENT and this script
+    read only the corpus generator. rosco-r2's ReadControlParameterFileSub
+    closed COMPLETE with its gate at vit 29c2b71 and its mutation artifact at
+    426eef9 -- revisions that differ by `--copy-arrays`, the fix for that unit's
+    own blocking finding -- and revcheck printed `clean`, because every
+    `loop_rev` agreed. `unwrap` has the same shape at 6cd3c75 vs ab75fa0.
+    """
     out: dict[str, dict[str, str | None]] = collections.defaultdict(dict)
     if core_only:
         for n in names:
@@ -83,7 +92,7 @@ def artifacts(names: list[str], core_only: bool) -> dict[str, dict[str, str | No
                 p = fam.format(n=n)
                 if (ROOT / p).is_file():
                     try:
-                        out[n][p] = json.loads((ROOT / p).read_text()).get("loop_rev")
+                        out[n][p] = json.loads((ROOT / p).read_text()).get(key)
                     except Exception:
                         out[n][p] = None
         return out
@@ -98,12 +107,33 @@ def artifacts(names: list[str], core_only: bool) -> dict[str, dict[str, str | No
                     except Exception:
                         break
                     if isinstance(doc, dict) and (RESULT_KEYS & set(doc)):
-                        out[n][os.path.relpath(p, ROOT)] = doc.get("loop_rev")
+                        out[n][os.path.relpath(p, ROOT)] = doc.get(key)
                     break
     return out
 
 
 SPLIT, ABSENT, DIRTY = "BASE-SHA SPLIT", "NO loop_rev", "DIRTY TREE"
+VIT_SPLIT = "VIT SPLIT"
+
+
+def vit_findings(arts: dict[str, str | None]) -> list[tuple[str, str]]:
+    """A split on `vit_rev` alone, with `loop_rev` agreeing -- the case the
+    loop_rev checks above pass by construction.
+
+    ABSENCE IS NOT REPORTED AS A FINDING HERE. 17 of 65 closed units carry no
+    `vit_rev` on some artifact, so calling that a finding would flag a third of
+    the campaign for a field that did not exist when those runs were taken. The
+    per-unit listing prints `(no vit_rev)` so the gap is visible without being
+    adjudicated.
+    """
+    bases: dict[str, list[str]] = {}
+    for path, rev in arts.items():
+        if rev:
+            bases.setdefault(base(rev), []).append(path)
+    if len(bases) > 1:
+        return [(VIT_SPLIT, "  vs  ".join(
+            f"{b} ({', '.join(sorted(v))})" for b, v in sorted(bases.items())))]
+    return []
 NOREAD, RETRO = "NO RECORDED READING", "RETROACTIVE READING"
 
 
@@ -244,6 +274,7 @@ def main() -> int:
     names = [u["name"] for u in plan]
     disp = {u["name"]: u.get("disposition") for u in plan}
     found = artifacts(names, a.core)
+    found_vit = artifacts(names, a.core, key="vit_rev")
     reads = readings(disp)
 
     if a.unit:
@@ -256,13 +287,15 @@ def main() -> int:
         if not arts:
             print("  NOT_EVALUABLE -- no result artifact carries a revision to check.")
             return 3
-        fs = findings(arts)
+        fs = findings(arts) + vit_findings(found_vit.get(a.unit, {}))
         if reads is None:
             print("  READING CHECK UNAVAILABLE -- git history unreadable; not a pass")
         elif a.unit in reads:
             fs = fs + [reads[a.unit]]
+        vits = found_vit.get(a.unit, {})
         for p, r in sorted(arts.items()):
-            print(f"    {r or '(no loop_rev)':18} {p}")
+            print(f"    {r or '(no loop_rev)':18} "
+                  f"{vits.get(p) or '(no vit_rev)':18} {p}")
         for code, detail in fs:
             print(f"  FINDING: {code}: {detail}")
         print("  clean" if not fs else f"  {len(fs)} finding(s)")
