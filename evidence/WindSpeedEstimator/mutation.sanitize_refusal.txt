@@ -1,0 +1,60 @@
+THE SANITISED SWEEP WAS RUN AND `vit_mutate.py` REFUSED TO SCORE IT, AND THE
+REFUSAL IS THE RESULT
+
+    bash evidence/WindSpeedEstimator/run_mutation_part.sh \
+         san_indexoffset index_offset --equivalences --sanitize
+    baseline is not green (ok); refusing to score
+
+`--sanitize` is the instrument this unit's survivor census names as the largest
+remaining item: 11 of the 60 standing survivors are `compare_op` on loop bounds
+the translation wrote itself and 24 more are `index_offset` /
+`collapse_stride` / `drop_factor` on flat index arithmetic, and a mutant whose
+only difference is at an address the program does not own is invisible to a
+VALUE comparison. It was run. It cannot be scored, and the reason is worth more
+than the score would have been.
+
+WHAT THE BASELINE ACTUALLY DOES, reproduced by hand with the tool's own command:
+
+    make test CXX='g++ -fsanitize=address,undefined -g -fno-omit-frame-pointer'
+    ./test windspeedestimator_cases.bin
+
+    "checked": 63020
+    "failed": 1
+    {"case": 42053, "output": "LocalVar.WE", "ref": "0000000000c07240...",
+                                             "got": "0000000000c07240..."}
+    stderr: 0 bytes
+
+**THE SANITISER REPORTS NOTHING.** stderr is empty -- no ASan trap, no UBSan
+diagnostic -- so this is NOT the case `vit_mutate.py` documents at its
+`outcome == "sanitizer"` branch, where the unmutated translation's own defect
+would kill every mutant. `outcome` is `ok`; what fails is the VALUE comparison,
+at exactly one case of 63,020, on `LocalVar%WE` -- this unit's Kalman state,
+compared bytewise as a nested type.
+
+The same test source, the same corpus and the same case file, built WITHOUT
+`-fsanitize`, is 63,020 of 63,020 green (`harness/WindSpeedEstimator.json`).
+The Makefile's `CXX_FLAGS` are unchanged by the override -- `-O2 -fPIC
+-ffp-contract=off` are still on both builds -- so this is not the campaign's
+E1.2 flag being dropped. What changes is inlining and stack layout, and the one
+case that moves is inside the arm where the census counts 12 `ieee_is_nan`
+hits: the likeliest reading is a NaN or a signed zero whose bit pattern the two
+codegens spell differently, which a bytewise comparison of a 152-byte nested
+type is entitled to call a difference.
+
+**THAT READING IS A HYPOTHESIS AND IT IS NOT TESTED HERE**, because the artifact
+cannot carry the evidence:
+
+  THE EMITTED MISMATCH RECORD TRUNCATES AT 32 BYTES. `we_t` is nineteen
+  doubles -- om_r, v_t, v_m, v_h, P(3,3), xh(3,1), K(3,1) -- and the record
+  shows the first four and an ellipsis, identical on both sides. So a bytewise
+  mismatch on a NESTED TYPE cannot be localised to a FIELD from the artifact at
+  all, which is a gap in the instrument rather than in this unit: every
+  UNOBSERVABLE-but-compared nested type in this campaign has it, and there are
+  five on `LocalVar` alone. Raised in .loop-run/findings.jsonl.
+
+WHAT IS NOT DONE, STATED PLAINLY. The sanitised sweep is the single largest
+remaining item for this unit's mutation score and it is UNTAKEN. It is blocked
+on one case of 63,020, and the two ways forward are both cheap: widen the
+emitted hex so the differing field can be named, or exclude case 42053 from the
+sanitised baseline with a reason -- which is a corpus judgement and needs the
+field first.
