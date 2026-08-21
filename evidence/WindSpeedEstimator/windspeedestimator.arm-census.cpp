@@ -1,0 +1,820 @@
+// ARM CENSUS PROBE for unit #65 -- the shipped translation with counters.
+//
+// Answers "how many of the 13,868 cases reach each arm", which is the question
+// the FIRST mutation part raised: 0 of 11 killed, and all eleven mutants sit on
+// the five `std::fmax` calls, every one of them inside `WE_Mode == 2 .AND.
+// WE_Op > 0`. A survivor there is either a corpus gap or an equivalence, and a
+// COUNT is what separates them (RUNBOOK: census the corpus before the sweep).
+//
+// `WE_Op` is not an input: it is COMPUTED, and it is 1 only when all three
+// input saturations were no-ops. No `values` list on a knob can state that, so
+// the reach has to be measured.
+//
+//   cp evidence/WindSpeedEstimator/windspeedestimator.arm-census.cpp \
+//      translations/ControllerBlocks/windspeedestimator.cpp
+//   bash scripts/harness.sh ... --no-generate
+//   docker exec vit-dev bash -lc "cd <test dir> && ./test <stem>_cases.bin 2>&1 >/dev/null | tail -1"
+//   git checkout -- translations/ControllerBlocks/windspeedestimator.cpp
+
+#include <cstdio>
+#include <cstdlib>
+namespace vitcensus {
+struct C {
+    long calls = 0, speed_floor = 0, mode_gt0 = 0, we_op1 = 0;
+    long mode1_arm = 0, mode2_arm = 0, else_arm = 0;
+    long restart0 = 0, ekf_update = 0, isnan_arm = 0, warn = 0, errmsg = 0;
+    long ok_pitch = 0, ok_torque = 0, ok_speed = 0;
+    ~C() {
+        std::fprintf(stderr,
+            "ARMCENSUS calls=%ld speed_floor=%ld mode_gt0=%ld we_op1=%ld "
+            "mode1=%ld mode2=%ld else=%ld restart0=%ld ekf=%ld isnan=%ld "
+            "warn=%ld errmsg=%ld ok_pitch=%ld ok_torque=%ld ok_speed=%ld\n",
+            calls, speed_floor, mode_gt0, we_op1, mode1_arm, mode2_arm,
+            else_arm, restart0, ekf_update, isnan_arm, warn, errmsg,
+            ok_pitch, ok_torque, ok_speed);
+    }
+};
+static C c;
+}  // namespace vitcensus
+
+// VIT Translation Scaffold
+// Function: WindSpeedEstimator
+// Source: ControllerBlocks.f90
+// Module: ControllerBlocks
+// Fortran: SUBROUTINE WindSpeedEstimator(LocalVar, CntrPar, objInst, PerfData, DebugVar, ErrVar)
+// Reference built with: -fdefault-real-8 -fdefault-double-8 -ffp-contract=off
+// Source MD5: 8ae4aa8734bb
+// VIT: 0.1.0
+// Status: unverified
+// Generated: 2026-08-21T00:06:55Z
+//
+// Unit #65. Clean source `ControllerBlocks.f90:267-488` at 54dd134.
+//
+// CONTRACT: mirror (plan.json). Every input and every output crosses the
+// signature. Six callees, all already integrated, all CALLED through their `_c`
+// bridges (X1): saturate, LPFilter, AeroDynTorque, interp1d, interp2d,
+// identity.
+//
+// WHAT THIS UNIT IS. Three wind-speed estimators behind one `WE_Mode` switch:
+//   0  the low-pass-filtered hub-height wind speed straight from ServoDyn
+//   1  Ortega's inversion-and-invariance filter, one integrator
+//   2  a three-state extended Kalman filter over (om_r, v_t, v_m)
+// plus an input-saturation preamble that decides `WE_Op`, and a restart flag
+// that both 1 and 2 read.
+//
+// ------------------------------------------------------------------------
+// EXPONENTS: `**2.0` IS A REAL EXPONENT AND IS STILL REPEATED MULTIPLICATION;
+// `**3.0` IS NOT.
+//
+// The check registry's rule, measured rather than read: gfortran expands
+// `x**N` by repeated multiplication for an INTEGER exponent AND for the real
+// literal `2.0`, and emits a libm `pow` call for a REAL exponent of 3.0 or
+// more. This unit has both, four lines apart:
+//
+//   CntrPar%WE_BladeRadius**2.0   ->  (R * R)
+//   LocalVar%WE%v_h**2.0          ->  (v_h * v_h)
+//   Ti**2.0                       ->  (Ti * Ti)
+//   LocalVar%WE%v_m**3.0          ->  std::pow(v_m, 3.0)     <- NOT v_m*v_m*v_m
+//   (2.0**2.0)/600.0              ->  constant, folded to 4.0/600.0
+//
+// and `**` binds tighter than `*`, so `PI *R**2.0` is `PI * (R*R)` and never
+// `(PI*R) * R` (`exponent-grouping`; 1-3 ULP if got wrong, and unit #48
+// measured the same shape one function over at 52 of 1131 cases).
+//
+// ------------------------------------------------------------------------
+// MATMUL: THE ACCUMULATION ORDER IS ASCENDING k, STARTING FROM AN EXPLICIT
+// ZERO, AND THAT IS WHY THESE ARE LOOPS RATHER THAN UNROLLED EXPRESSIONS.
+//
+// `MATMUL(A,B)(i,j)` is `SUM(A(i,:)*B(:,j))` and the summation order is
+// processor-dependent. gfortran -- both its inline expansion and
+// `_gfortran_matmul_r8` -- zeroes the result and then accumulates over k
+// ascending, so the value is `((0 + a1*b1) + a2*b2) + a3*b3`. Writing
+// `a1*b1 + a2*b2 + a3*b3` in C++ gives the same result for every finite
+// operand and differs at a signed zero: `0.0 + (-0.0)` is `+0.0` while
+// `-0.0` alone is `-0.0`, and a signed zero survives into `S(1,1)` as a
+// DIVISOR two statements later. The accumulator is initialised to `0.0` and
+// added into, which is the reference's own shape.
+//
+// LAYOUT, AND THE GENERATED HEADER'S STATED MAPPING IS RIGHT FOR `P` AND OUT
+// OF BOUNDS FOR `xh` AND `K`.
+//
+// `vit_types.h` says `Fortran P(i,j) maps to C P[j-1][i-1]` -- the first C
+// subscript is the COLUMN -- and emits the Fortran dims verbatim:
+//
+//     REAL(DbKi), DIMENSION(3,3) :: P     ->  double P[3][3]
+//     REAL(DbKi), DIMENSION(3,1) :: xh    ->  double xh[3][1]
+//     REAL(DbKi), DIMENSION(3,1) :: K     ->  double K[3][1]
+//
+// For `P` the two agree, because 3 == 3. For `xh` and `K` they do not:
+// `xh[j-1][i-1]` with j == 1 is `xh[0][i-1]`, and `xh[0]` is a `double[1]`, so
+// `i` = 2 and `i` = 3 are past the end of the inner array. The ADDRESS is
+// still right -- `0*1 + (i-1)` is `i-1` -- which is why the first version of
+// this file computed the correct answers, and gcc said so anyway:
+//
+//     windspeedestimator.hpp:652: iteration 1 invokes undefined behavior
+//       [-Waggressive-loop-optimizations]     s + LocalVar->WE.K[0][i] * H[j]
+//
+// The in-bounds spelling of the SAME address for an (n,1) member is
+// `xh[i-1][0]`: `(i-1)*1 + 0`. That is what this file uses, and it is why the
+// two members are subscripted the other way round from `P`. The general
+// defect -- Fortran dims emitted verbatim under a transposed access rule, which
+// gives the wrong ADDRESS as soon as a 2-D member is rectangular with both
+// extents above 1 -- is reported in `.loop-run/findings.jsonl`.
+//
+// The locals `F`, `Q`, `H`, `dxh` are flat with the mapping spelled out at each
+// declaration -- flat rather than `[3][3]` so that the index arithmetic is
+// visible to the reader and to the mutation sweep.
+//
+// ------------------------------------------------------------------------
+// THE `PRINT` IS A REGION NO LAYER OF THIS CAMPAIGN COMPARES, and it is
+// transcribed exactly for that reason rather than in spite of it. Unit #55's
+// finding: the differential harness compares out-parameters, the gate compares
+// output channels, and `vit_mutate.py` reads its JSON payload out of stdout
+// PRECISELY BECAUSE the reference may PRINT. `WarningMessage` is
+// `CHARACTER(1024)` and the concatenation is 610 bytes, so it does NOT
+// truncate; `TRIM` then strips the 414 blanks the assignment padded with, and
+// list-directed output writes one leading blank before the value. Both stars
+// runs are 135 characters. Counted, not eyeballed.
+//
+// ------------------------------------------------------------------------
+// ARMS WITH ZERO HITS IN ALL 27 SCENARIOS (coverage/line_coverage.json, clean
+// line numbers). Only the differential harness can reach these:
+//
+//   :319  the rotor-speed floor       `RotSpeedF < 0.25*VS_MinOMSpd/GBR`
+//   :329  `Max_Op_Pitch = 0.0`        the whole `WE_Mode == 0` arm
+//   :349  `WE_Op = 0` on speed        the third ELSEIF
+//   :465-:469  the `ieee_is_nan` repair
+//   :485  the RoutineName prefix      `aviFAIL < 0` at a WSE call
+//
+// and the `WE_Mode == 1` arm (:389-:393) is reached by SCENARIO 17 AND BY
+// NOTHING ELSE, 15,062 hits -- with `WE_Gamma = 0.0` in `Examples/DISCON.IN`,
+// which unit #48 measured as annihilating everything that arm computes before
+// it reaches a channel. Recorded here so that a survivor at either site is
+// read as an instrument blind spot rather than as an unkillable one.
+
+#include "vit_types.h"
+
+#include <cfloat>
+#include <cmath>
+#include <cstdio>
+#include <cstring>
+#include <string>
+#include <string_view>
+
+namespace {
+
+// CHARACTER(*), PARAMETER :: RoutineName = 'WindSpeedEstimator'
+constexpr std::string_view RoutineName = "WindSpeedEstimator";
+
+// Constants.f90:22, :23, :24, as the reference's own decimal literals. NOT
+// `M_PI` and NOT `PI/180`: `PI` here is 3.14159265359, twelve significant
+// digits, which is not the nearest double to pi -- unit #47's gate red test
+// moved 97,118 of 5,252,000 values on exactly that difference.
+constexpr double PI = 3.14159265359;
+constexpr double R2D = 57.2957795130;
+constexpr double D2R = 0.01745329251;
+
+// SysGnuLinux.f90:37 -- `CHARACTER(*), PARAMETER :: NewLine = ACHAR(10)`.
+constexpr char NewLine = '\n';
+
+// `ErrVar%ErrMsg = <expr>` on a `CHARACTER(:), ALLOCATABLE` field is a
+// REALLOCATING assignment: the field's new LEN is the right-hand side's. The
+// view carries a finite staging buffer, so an assignment that does not fit is
+// REFUSED and reported rather than truncated -- a shortened message is the one
+// wrong answer a byte comparison cannot tell from a right one. Copied verbatim
+// from `aerodyntorque.cpp` (unit #48), which copied it from interp1d (#23) and
+// interp2d (#45). P4: copied, not re-derived.
+void assign_errmsg(errorvariables_view_t* ErrVar, std::string_view s) {
+    if (ErrVar->ErrMsg == nullptr) {
+        std::fprintf(stderr,
+                     "VIT: WindSpeedEstimator: ErrVar%%ErrMsg has no staging buffer; "
+                     "the assignment of %d bytes is refused\n",
+                     static_cast<int>(s.size()));
+        return;
+    }
+    if (static_cast<int>(s.size()) > ErrVar->n_ErrMsg_cap) {
+        std::fprintf(stderr,
+                     "VIT: WindSpeedEstimator: ErrVar%%ErrMsg needs %d bytes, the staging "
+                     "buffer holds %d; the assignment is refused\n",
+                     static_cast<int>(s.size()), static_cast<int>(ErrVar->n_ErrMsg_cap));
+        return;
+    }
+    std::memcpy(ErrVar->ErrMsg, s.data(), s.size());
+    ErrVar->n_ErrMsg = static_cast<int32_t>(s.size());
+}
+
+// TRIM(ErrVar%ErrMsg): trailing blanks only, off the field's CURRENT length.
+// `find_last_not_of` rather than a hand-written backward scan, for unit #15's
+// and unit #17's reason: a loop written `while (n > 0 && s[n-1] == ' ')` offers
+// a `> 0` -> `>= 0` mutant that reads the byte BEFORE the buffer, which is
+// undefined behaviour rather than a wrong answer. A NEGATIVE length is the
+// view's NOT-ALLOCATED convention and collapses to the same empty string a zero
+// length gives, which is correct for both.
+std::string errmsg_trim(const errorvariables_view_t* ErrVar) {
+    const int n = ErrVar->n_ErrMsg;
+    const std::string_view v(ErrVar->ErrMsg, n > 0 ? static_cast<size_t>(n) : 0);
+    return std::string(v.substr(0, v.find_last_not_of(' ') + 1));
+}
+
+}  // namespace
+
+void WindSpeedEstimator(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar,
+                        objectinstances_t* objInst, performancedata_view_t* PerfData,
+                        debugvariables_t* DebugVar, errorvariables_view_t* ErrVar) {
+    ++vitcensus::c.calls;
+    // ---- locals, in the reference's own declaration order ----
+    double L;      // Turbulent length scale parameter [m]
+    double Ti;     // Turbulent intensity [-]
+    double A_op;   // Estimated operational system pole
+    double Cp_op;  // Estimated operational Cp [-]
+    double Tau_r;  // Estimated rotor torque [Nm]
+    double a;      // wind variance
+    double lambda; // tip-speed ratio [rad]
+
+    // REAL(DbKi), DIMENSION(3,3) :: F   -- F(i,j) is F[(j-1)*3 + (i-1)]
+    double F[9];
+    // REAL(DbKi), DIMENSION(1,3) :: H   -- H(1,j) is H[(j-1)*1 + 0] = H[j-1]
+    double H[3];
+    // REAL(DbKi), DIMENSION(3,1) :: dxh -- dxh(i,1) is dxh[i-1]
+    double dxh[3];
+    // REAL(DbKi), DIMENSION(3,3) :: Q   -- Q(i,j) is Q[(j-1)*3 + (i-1)]
+    double Q[9];
+    // REAL(DbKi), DIMENSION(1,1) :: S   -- S(1,1) is S[0]
+    double S[1];
+    double R_m;  // Measurement noise covariance [(rad/s)^2]
+
+    double WE_Inp_Pitch;
+    double WE_Inp_Torque;
+    double WE_Inp_Speed;
+    double Max_Op_Pitch;
+
+    // ! Saturate inputs to WSE:
+    // ! Rotor speed
+    // IF (LocalVar%RotSpeedF < 0.25 * CntrPar%VS_MinOMSpd / CntrPar%WE_GearboxRatio) THEN
+    //
+    // `*` and `/` have EQUAL precedence and associate left to right, so this is
+    // `(0.25 * VS_MinOMSpd) / WE_GearboxRatio` -- one multiply then one divide,
+    // which rounds differently from `0.25 * (VS_MinOMSpd/GBR)`. The bound is
+    // spelled out twice in the reference and is transcribed twice here rather
+    // than hoisted into a local: hoisting is an algebraic identity in exact
+    // arithmetic and is also a change to what the mutation sweep can see.
+    if (LocalVar->RotSpeedF < 0.25 * CntrPar->VS_MinOMSpd / CntrPar->WE_GearboxRatio) {
+        // WE_Inp_Speed = 0.25 * CntrPar%VS_MinOMSpd / CntrPar%WE_GearboxRatio + EPSILON(1.0_DbKi)
+        //
+        // EPSILON(1.0_DbKi) is the double's machine epsilon -- the spacing
+        // above 1.0, 2.220446049250313e-16 -- which is exactly `DBL_EPSILON`.
+        // It is NOT TINY (the smallest normal, 2.2e-308).
+        ++vitcensus::c.speed_floor;
+        WE_Inp_Speed = 0.25 * CntrPar->VS_MinOMSpd / CntrPar->WE_GearboxRatio + DBL_EPSILON;
+    } else {
+        // WE_Inp_Speed = LocalVar%RotSpeedF
+        WE_Inp_Speed = LocalVar->RotSpeedF;
+    }
+
+    // ! Blade pitch
+    // IF (CntrPar%WE_Mode > 0) THEN ! PerfData is only loaded if WE_Mode > 0
+    if (CntrPar->WE_Mode > 0) {
+        // Max_Op_Pitch = PerfData%Beta_vec(SIZE(PerfData%Beta_vec)) * D2R
+        //
+        // The LAST element of the axis, one-based, so `[n-1]`. `SIZE` of an
+        // ALLOCATABLE crosses as the view's own extent field.
+        ++vitcensus::c.mode_gt0;
+        Max_Op_Pitch = PerfData->Beta_vec[PerfData->n_Beta_vec - 1] * D2R;
+    } else {
+        // Max_Op_Pitch = 0.0_DbKi
+        Max_Op_Pitch = 0.0;
+    }
+
+    // WE_Inp_Pitch = saturate(LocalVar%BlPitchCMeas, CntrPar%PC_MinPit, Max_Op_Pitch)
+    WE_Inp_Pitch = saturate_c(LocalVar->BlPitchCMeas, CntrPar->PC_MinPit, Max_Op_Pitch);
+
+    // ! Gen torque
+    // IF (LocalVar%VS_LastGenTrqF < 0.0001 * CntrPar%VS_RtTq) THEN
+    if (LocalVar->VS_LastGenTrqF < 0.0001 * CntrPar->VS_RtTq) {
+        // WE_Inp_Torque = 0.0001 * CntrPar%VS_RtTq
+        WE_Inp_Torque = 0.0001 * CntrPar->VS_RtTq;
+    } else {
+        // WE_Inp_Torque = LocalVar%VS_LastGenTrqF
+        WE_Inp_Torque = LocalVar->VS_LastGenTrqF;
+    }
+
+    // ! Check to see if in operational range
+    // LocalVar%WE_Op_Last = LocalVar%WE_Op
+    LocalVar->WE_Op_Last = LocalVar->WE_Op;
+    // IF (ABS(WE_Inp_Pitch - LocalVar%BlPitchCMeas) > 0) THEN
+    //
+    // `> 0` on a REAL is `> 0.0`, and `ABS` is `std::fabs` -- the sign-bit
+    // clear, which is the only spelling that agrees with Fortran at a negative
+    // zero (|-0.0| = +0.0, so the comparison is false, as it must be for two
+    // equal inputs). The three tests ask the same question three ways: did any
+    // one of the three saturations above actually MOVE its input.
+    if (!(std::fabs(WE_Inp_Pitch - LocalVar->BlPitchCMeas) > 0)) ++vitcensus::c.ok_pitch;
+    if (!(std::fabs(WE_Inp_Torque - LocalVar->VS_LastGenTrqF) > 0)) ++vitcensus::c.ok_torque;
+    if (!(std::fabs(WE_Inp_Speed - LocalVar->RotSpeedF) > 0)) ++vitcensus::c.ok_speed;
+    if (std::fabs(WE_Inp_Pitch - LocalVar->BlPitchCMeas) > 0) {
+        // LocalVar%WE_Op = 0
+        LocalVar->WE_Op = 0;
+    } else if (std::fabs(WE_Inp_Torque - LocalVar->VS_LastGenTrqF) > 0) {
+        LocalVar->WE_Op = 0;
+    } else if (std::fabs(WE_Inp_Speed - LocalVar->RotSpeedF) > 0) {
+        LocalVar->WE_Op = 0;
+    } else {
+        // LocalVar%WE_Op = 1
+        ++vitcensus::c.we_op1;
+        LocalVar->WE_Op = 1;
+    }
+
+    // ! Restart flag for WSE
+    // LocalVar%RestartWSE = LocalVar%iStatus      ! Same as iStatus by default
+    LocalVar->RestartWSE = LocalVar->iStatus;
+
+    // IF (CntrPar%WE_Mode > 0) THEN
+    if (CntrPar->WE_Mode > 0) {
+        // IF (LocalVar%WE_Op == 0 .AND. LocalVar%WE_Op_Last == 1) THEN
+        if (LocalVar->WE_Op == 0 && LocalVar->WE_Op_Last == 1) {
+            // WarningMessage = NewLine//'***...'//NewLine//'ROSCO Warning: ...'//NewLine// ...
+            // PRINT *, TRIM(WarningMessage)
+            //
+            // `CHARACTER(1024)` holding 610 bytes: the assignment blank-fills
+            // to 1024 and `TRIM` strips exactly those 414 blanks back off, so
+            // the printed value is the concatenation itself. List-directed
+            // output writes ONE leading blank before a character value and then
+            // the record terminator. Both rules of asterisks are 135 long.
+        ++vitcensus::c.warn;
+            std::string WarningMessage;
+            WarningMessage += NewLine;
+            WarningMessage += "*******************************************************************"
+                              "********************************************************************";
+            WarningMessage += NewLine;
+            WarningMessage += "ROSCO Warning: The wind speed estimator is used, but an input "
+                              "(pitch, rotor speed, or torque) has left the bounds of normal "
+                              "operation.";
+            WarningMessage += NewLine;
+            WarningMessage += "The filtered hub-height wind speed will be used instead. This "
+                              "warning will not persist even though the condition may.";
+            WarningMessage += NewLine;
+            WarningMessage += "Check WE_Op in the ROSCO .dbg file to see if the WSE is enabled (1) "
+                              "or disabled (0).";
+            WarningMessage += NewLine;
+            WarningMessage += "*******************************************************************"
+                              "********************************************************************";
+            std::printf(" %s\n", WarningMessage.c_str());
+
+            // LocalVar%RestartWSE = 0 ! Restart
+            LocalVar->RestartWSE = 0;
+        }
+
+        // IF (LocalVar%WE_Op == 1 .AND. LocalVar%WE_Op_Last == 0) THEN
+        if (LocalVar->WE_Op == 1 && LocalVar->WE_Op_Last == 0) {
+            // LocalVar%RestartWSE = 0  ! Restart
+            LocalVar->RestartWSE = 0;
+        }
+    }
+
+    // ! Filter the wind speed at hub height regardless, only use if WE_Mode = 0 or WE_Op = 0
+    // LocalVar%HorWindV_F = cos(LocalVar%NacVaneF*D2R) * LPFilter(LocalVar%HorWindV,
+    //     LocalVar%DT, CntrPar%F_WECornerFreq/10, LocalVar%FP, LocalVar%RestartWSE,
+    //     LocalVar%restart, objInst%instLPF, LocalVar%WE_Vw)
+    //
+    // EIGHT actual arguments, so LPFilter's OPTIONAL `InitialValue` IS supplied
+    // and the bridge's `has_InitialValue` is 1, carrying `LocalVar%WE_Vw`.
+    // Every other LPFilter call in this campaign passes seven.
+    //
+    // AND THE FIFTH ARGUMENT IS `RestartWSE`, NOT `iStatus`. LPFilter's fifth
+    // dummy is named `iStatus` and every other call site in the tree hands it
+    // `LocalVar%iStatus`; this one hands it the restart flag computed nine
+    // lines above, which is what makes the filter re-initialise on an
+    // operational-range transition. `? 1 : 0` on `restart` is the campaign's
+    // standing spelling for a Fortran LOGICAL crossing into `int32_t`.
+    //
+    // `CntrPar%F_WECornerFreq/10` divides a REAL by the INTEGER literal 10,
+    // which is a real division by 10.0.
+    LocalVar->HorWindV_F =
+        std::cos(LocalVar->NacVaneF * D2R) *
+        lpfilter_c(LocalVar->HorWindV, LocalVar->DT, CntrPar->F_WECornerFreq / 10,
+                   &LocalVar->FP, LocalVar->RestartWSE, LocalVar->restart ? 1 : 0,
+                   &objInst->instLPF, 1, LocalVar->WE_Vw);
+
+    // ! ---- Debug Inputs ------
+    // DebugVar%WE_b = WE_Inp_Pitch
+    DebugVar->WE_b = WE_Inp_Pitch;
+    // DebugVar%WE_w = WE_Inp_Speed
+    DebugVar->WE_w = WE_Inp_Speed;
+    // DebugVar%WE_t = WE_Inp_Torque
+    DebugVar->WE_t = WE_Inp_Torque;
+
+    // ! ---- Define wind speed estimate ----
+    // ! Inversion and Invariance Filter implementation
+    // IF (CntrPar%WE_Mode == 1 .AND. LocalVar%WE_Op > 0) THEN
+    if (CntrPar->WE_Mode == 1 && LocalVar->WE_Op > 0) {
+        // Tau_r = AeroDynTorque(LocalVar%RotSpeedF, LocalVar%BlPitchCMeas, LocalVar,
+        //                       CntrPar, PerfData, ErrVar)
+        //
+        // THE RAW `RotSpeedF` AND `BlPitchCMeas`, not the saturated
+        // `WE_Inp_Speed`/`WE_Inp_Pitch` -- the EKF arm forty lines down calls
+        // the same function with the saturated pair. The difference is only
+        // observable when a saturation moved something, and this arm is guarded
+        // on `WE_Op > 0`, which is exactly the case where none of them did; it
+        // is transcribed as written rather than unified.
+        ++vitcensus::c.mode1_arm;
+        Tau_r = aerodyntorque_c(LocalVar->RotSpeedF, LocalVar->BlPitchCMeas, LocalVar, CntrPar,
+                                PerfData, ErrVar);
+
+        // LocalVar%WE_VwIdot = CntrPar%WE_Gamma/CntrPar%WE_Jtot*(LocalVar%VS_LastGenTrq*CntrPar%WE_GearboxRatio - Tau_r)
+        //
+        // Left to right through equal-precedence `/` and `*`:
+        // `(WE_Gamma/WE_Jtot) * (...)`, one divide then one multiply.
+        LocalVar->WE_VwIdot =
+            CntrPar->WE_Gamma / CntrPar->WE_Jtot *
+            (LocalVar->VS_LastGenTrq * CntrPar->WE_GearboxRatio - Tau_r);
+        // LocalVar%WE_VwI = LocalVar%WE_VwI + LocalVar%WE_VwIdot*LocalVar%DT
+        LocalVar->WE_VwI = LocalVar->WE_VwI + LocalVar->WE_VwIdot * LocalVar->DT;
+        // LocalVar%WE_Vw = LocalVar%WE_VwI + CntrPar%WE_Gamma*LocalVar%RotSpeedF
+        LocalVar->WE_Vw = LocalVar->WE_VwI + CntrPar->WE_Gamma * LocalVar->RotSpeedF;
+
+        // ! Extended Kalman Filter (EKF) implementation
+        // ELSEIF (CntrPar%WE_Mode == 2 .AND. LocalVar%WE_Op > 0) THEN
+    } else if (CntrPar->WE_Mode == 2 && LocalVar->WE_Op > 0) {
+        // ! Define contant values
+        // L = 6.0 * CntrPar%WE_BladeRadius
+        ++vitcensus::c.mode2_arm;
+        L = 6.0 * CntrPar->WE_BladeRadius;
+        // Ti = 0.18
+        Ti = 0.18;
+        // R_m = 0.02
+        R_m = 0.02;
+        // H = RESHAPE((/1.0 , 0.0 , 0.0/),(/1,3/))
+        //
+        // A (1,3) row: element k of the source vector lands at H(1,k+1), which
+        // in column-major flat order is H[k].
+        H[0] = 1.0;
+        H[1] = 0.0;
+        H[2] = 0.0;
+        // ! Define matrices to be filled
+        // F = RESHAPE((/0.0 x 9/),(/3,3/))
+        // Q = RESHAPE((/0.0 x 9/),(/3,3/))
+        for (int k = 0; k < 9; ++k) {
+            F[k] = 0.0;
+            Q[k] = 0.0;
+        }
+
+        // IF (LocalVar%RestartWSE == 0) THEN
+        if (LocalVar->RestartWSE == 0) {
+            // ! Initialize recurring values
+            // LocalVar%WE%om_r = WE_Inp_Speed
+        ++vitcensus::c.restart0;
+            LocalVar->WE.om_r = WE_Inp_Speed;
+            // LocalVar%WE%v_t = 0.0
+            LocalVar->WE.v_t = 0.0;
+            // LocalVar%WE%v_m = max(LocalVar%HorWindV_F, 3.0_DbKi)
+            //
+            // MAX is `fmax`, NOT a ternary: unit #24 ran gfortran's own
+            // MIN(MAX(...)) at this campaign's flags over 12,167 triples and
+            // both branch spellings differ at a signed zero and at a NaN
+            // (evidence/saturate/saturate_expr_sweep.*). The intrinsic IS
+            // fmax, and the argument ORDER is the reference's.
+            LocalVar->WE.v_m = std::fmax(LocalVar->HorWindV_F, 3.0);
+            // LocalVar%WE%v_h = max(LocalVar%HorWindV_F, 3.0_DbKi)
+            LocalVar->WE.v_h = std::fmax(LocalVar->HorWindV_F, 3.0);
+            // LocalVar%WE_Vw = LocalVar%WE%v_m + LocalVar%WE%v_t
+            LocalVar->WE_Vw = LocalVar->WE.v_m + LocalVar->WE.v_t;
+            // lambda = WE_Inp_Speed * CntrPar%WE_BladeRadius/LocalVar%WE%v_h
+            //
+            // NO `max` on the speed here, unlike the ELSE arm's otherwise
+            // identical line. Transcribed as written.
+            lambda = WE_Inp_Speed * CntrPar->WE_BladeRadius / LocalVar->WE.v_h;
+            // LocalVar%WE%xh = RESHAPE((/om_r, v_t, v_m/),(/3,1/))
+            LocalVar->WE.xh[0][0] = LocalVar->WE.om_r;
+            LocalVar->WE.xh[1][0] = LocalVar->WE.v_t;
+            LocalVar->WE.xh[2][0] = LocalVar->WE.v_m;
+            // LocalVar%WE%P = RESHAPE((/0.01,0.0,0.0, 0.0,0.01,0.0, 0.0,0.0,1.0/),(/3,3/))
+            //
+            // RESHAPE fills column-major, so the source vector's first three
+            // elements are column 1. `P[c][r]` -- first C subscript is the
+            // column -- so the vector lays straight down `P[0][*]`, `P[1][*]`,
+            // `P[2][*]`. The matrix is diagonal, so an accidental transpose
+            // here is invisible; it is written out in source order anyway.
+            LocalVar->WE.P[0][0] = 0.01;
+            LocalVar->WE.P[0][1] = 0.0;
+            LocalVar->WE.P[0][2] = 0.0;
+            LocalVar->WE.P[1][0] = 0.0;
+            LocalVar->WE.P[1][1] = 0.01;
+            LocalVar->WE.P[1][2] = 0.0;
+            LocalVar->WE.P[2][0] = 0.0;
+            LocalVar->WE.P[2][1] = 0.0;
+            LocalVar->WE.P[2][2] = 1.0;
+            // LocalVar%WE%K = RESHAPE((/0.0,0.0,0.0/),(/3,1/))
+            LocalVar->WE.K[0][0] = 0.0;
+            LocalVar->WE.K[1][0] = 0.0;
+            LocalVar->WE.K[2][0] = 0.0;
+            // Cp_op = 0.25  ! initialize so debug output doesn't give *****
+            Cp_op = 0.25;
+
+            // ELSE
+        } else {
+            // ! Find estimated operating Cp and system pole
+            // A_op = interp1d(CntrPar%WE_FOPoles_v, CntrPar%WE_FOPoles, LocalVar%WE%v_h, ErrVar)
+        ++vitcensus::c.ekf_update;
+            A_op = interp1d_c(CntrPar->WE_FOPoles_v, CntrPar->n_WE_FOPoles_v, CntrPar->WE_FOPoles,
+                              CntrPar->n_WE_FOPoles, LocalVar->WE.v_h, ErrVar);
+
+            // lambda = max(WE_Inp_Speed, EPSILON(1.0_DbKi)) * CntrPar%WE_BladeRadius/LocalVar%WE%v_h
+            lambda = std::fmax(WE_Inp_Speed, DBL_EPSILON) * CntrPar->WE_BladeRadius /
+                     LocalVar->WE.v_h;
+            // Cp_op = interp2d(PerfData%Beta_vec, PerfData%TSR_vec, PerfData%Cp_mat,
+            //                  WE_Inp_Pitch*R2D, lambda, ErrVar)
+            //
+            // THE TABLE AXES IN THE REFERENCE'S ORDER, which is not the order
+            // the field names suggest: `Beta_vec` is interp2d's `xData` and
+            // `TSR_vec` is its `yData`, so `Cp_mat` is indexed (TSR, Beta) --
+            // rows are TSR, columns are Beta. `n_Cp_mat_rows` is the count
+            // interp2d checks against `SIZE(yData)` and `n_Cp_mat_cols`
+            // against `SIZE(xData)`. Copied from `aerodyntorque.cpp`, which
+            // makes the identical call (P4).
+            Cp_op = interp2d_c(PerfData->Beta_vec, PerfData->n_Beta_vec, PerfData->TSR_vec,
+                               PerfData->n_TSR_vec, PerfData->Cp_mat, PerfData->n_Cp_mat_rows,
+                               PerfData->n_Cp_mat_cols, WE_Inp_Pitch * R2D, lambda, ErrVar);
+            // Cp_op = max(0.0,Cp_op)
+            Cp_op = std::fmax(0.0, Cp_op);
+
+            // ! Update Jacobian
+            // F(1,1) = A_op
+            F[0 * 3 + 0] = A_op;
+            // F(1,2) = 1.0/(2.0*CntrPar%WE_Jtot) * CntrPar%WE_RhoAir * PI
+            //          *CntrPar%WE_BladeRadius**2.0 * 1/LocalVar%WE%om_r * 3.0 * Cp_op
+            //          * LocalVar%WE%v_h**2.0
+            //
+            // Eight left-associated factors. `**` binds tighter than `*`, so
+            // `PI *R**2.0` is `PI * (R*R)`; `1/om_r` is an INTEGER 1 over a
+            // REAL, which is real division.
+            F[1 * 3 + 0] = 1.0 / (2.0 * CntrPar->WE_Jtot) * CntrPar->WE_RhoAir * PI *
+                           (CntrPar->WE_BladeRadius * CntrPar->WE_BladeRadius) *
+                           (1.0 / LocalVar->WE.om_r) * 3.0 * Cp_op *
+                           (LocalVar->WE.v_h * LocalVar->WE.v_h);
+            // F(1,3) = <the same expression, character for character>
+            F[2 * 3 + 0] = 1.0 / (2.0 * CntrPar->WE_Jtot) * CntrPar->WE_RhoAir * PI *
+                           (CntrPar->WE_BladeRadius * CntrPar->WE_BladeRadius) *
+                           (1.0 / LocalVar->WE.om_r) * 3.0 * Cp_op *
+                           (LocalVar->WE.v_h * LocalVar->WE.v_h);
+            // F(2,2) = - PI * LocalVar%WE%v_m/(2.0*L)
+            //
+            // Fortran's unary minus binds LOOSER than `*` and `/`, so this is
+            // `-((PI * v_m)/(2.0*L))` and not `(-PI) * v_m / (2.0*L)`. The two
+            // agree bit for bit in IEEE (negation is exact and rounding is
+            // sign-symmetric), and the shape is transcribed anyway.
+            F[1 * 3 + 1] = -(PI * LocalVar->WE.v_m / (2.0 * L));
+            // F(2,3) = - PI * LocalVar%WE%v_t/(2.0*L)
+            F[2 * 3 + 1] = -(PI * LocalVar->WE.v_t / (2.0 * L));
+
+            // ! Update process noise covariance
+            // Q(1,1) = 0.00001
+            Q[0 * 3 + 0] = 0.00001;
+            // Q(2,2) =(PI * (LocalVar%WE%v_m**3.0) * (Ti**2.0)) / L
+            //
+            // `v_m**3.0` is a REAL exponent of 3.0: gfortran emits a libm
+            // `pow` call, which differs from `v_m*v_m*v_m` by 1 ULP. `Ti**2.0`
+            // is the one real exponent gfortran still expands by
+            // multiplication.
+            Q[1 * 3 + 1] = (PI * std::pow(LocalVar->WE.v_m, 3.0) * (Ti * Ti)) / L;
+            // Q(3,3) = (2.0**2.0)/600.0
+            //
+            // A constant expression: gfortran folds `2.0**2.0` to exactly 4.0.
+            Q[2 * 3 + 2] = (2.0 * 2.0) / 600.0;
+
+            // ! Prediction update
+            // Tau_r = AeroDynTorque(WE_Inp_Speed, WE_Inp_Pitch, LocalVar, CntrPar, PerfData, ErrVar)
+            //
+            // THE SATURATED PAIR here, where the WE_Mode == 1 arm passes the raw
+            // `RotSpeedF`/`BlPitchCMeas`.
+            Tau_r = aerodyntorque_c(WE_Inp_Speed, WE_Inp_Pitch, LocalVar, CntrPar, PerfData,
+                                    ErrVar);
+            // a = PI * LocalVar%WE%v_m/(2.0*L)
+            a = PI * LocalVar->WE.v_m / (2.0 * L);
+            // dxh(1,1) = 1.0/CntrPar%WE_Jtot * (Tau_r - CntrPar%WE_GearboxRatio * WE_Inp_Torque)
+            dxh[0] = 1.0 / CntrPar->WE_Jtot *
+                     (Tau_r - CntrPar->WE_GearboxRatio * WE_Inp_Torque);
+            // dxh(2,1) = -a*LocalVar%WE%v_t
+            dxh[1] = -(a * LocalVar->WE.v_t);
+            // dxh(3,1) = 0.0
+            dxh[2] = 0.0;
+
+            // LocalVar%WE%xh = LocalVar%WE%xh + LocalVar%DT * dxh ! state update
+            //
+            // Elementwise over the (3,1). The whole-array assignment reads the
+            // right-hand side before writing, and no element of `xh` appears on
+            // the right of a different element, so an in-place loop is exact.
+            for (int i = 0; i < 3; ++i) {
+                LocalVar->WE.xh[i][0] = LocalVar->WE.xh[i][0] + LocalVar->DT * dxh[i];
+            }
+
+            // LocalVar%WE%P = LocalVar%WE%P + LocalVar%DT*(MATMUL(F,LocalVar%WE%P)
+            //                 + MATMUL(LocalVar%WE%P,TRANSPOSE(F)) + Q
+            //                 - MATMUL(LocalVar%WE%K * R_m, TRANSPOSE(LocalVar%WE%K)))
+            //
+            // FOUR (3,3) terms. `P` appears on BOTH sides and inside two of the
+            // products, so the right-hand side is evaluated in full before any
+            // element of `P` is written -- that is what the Fortran whole-array
+            // assignment means, and an in-place loop here would feed a
+            // half-updated `P` back into the later products.
+            //
+            // `MATMUL(K * R_m, TRANSPOSE(K))` is a (3,1) times a (1,3): the
+            // sum over k has ONE term, so no accumulation order is at stake in
+            // that one. The other two sum over three.
+            {
+                double FP_[9];   // MATMUL(F, P)
+                double PFt[9];   // MATMUL(P, TRANSPOSE(F))
+                double KKt[9];   // MATMUL(K * R_m, TRANSPOSE(K))
+                for (int j = 0; j < 3; ++j) {
+                    for (int i = 0; i < 3; ++i) {
+                        double s = 0.0;
+                        for (int k = 0; k < 3; ++k) {
+                            // F(i,k+1) * P(k+1,j+1)
+                            s = s + F[k * 3 + i] * LocalVar->WE.P[j][k];
+                        }
+                        FP_[j * 3 + i] = s;
+                    }
+                }
+                for (int j = 0; j < 3; ++j) {
+                    for (int i = 0; i < 3; ++i) {
+                        double s = 0.0;
+                        for (int k = 0; k < 3; ++k) {
+                            // P(i,k+1) * TRANSPOSE(F)(k+1,j+1) = P(i,k+1) * F(j+1,k+1)
+                            s = s + LocalVar->WE.P[k][i] * F[k * 3 + j];
+                        }
+                        PFt[j * 3 + i] = s;
+                    }
+                }
+                for (int j = 0; j < 3; ++j) {
+                    for (int i = 0; i < 3; ++i) {
+                        // (K(i,1)*R_m) * TRANSPOSE(K)(1,j+1) = (K(i,1)*R_m) * K(j+1,1)
+                        double s = 0.0;
+                        s = s + LocalVar->WE.K[i][0] * R_m * LocalVar->WE.K[j][0];
+                        KKt[j * 3 + i] = s;
+                    }
+                }
+                for (int j = 0; j < 3; ++j) {
+                    for (int i = 0; i < 3; ++i) {
+                        LocalVar->WE.P[j][i] =
+                            LocalVar->WE.P[j][i] +
+                            LocalVar->DT * (FP_[j * 3 + i] + PFt[j * 3 + i] + Q[j * 3 + i] -
+                                            KKt[j * 3 + i]);
+                    }
+                }
+            }
+
+            // ! Measurement update
+            // S = MATMUL(H,MATMUL(LocalVar%WE%P,TRANSPOSE(H))) + R_m
+            //
+            // `TRANSPOSE(H)` is (3,1); `MATMUL(P, TRANSPOSE(H))` is (3,1);
+            // `MATMUL(H, that)` is (1,1). The inner product is computed first
+            // and is REUSED two lines down -- the reference recomputes it, and
+            // the recomputation is bit-identical because nothing between the
+            // two statements writes `P` or `H`. It is written out twice here
+            // for the same reason the reference writes it twice: so that a
+            // mutant in one is not silently a mutant in both.
+            {
+                double PHt[3];
+                for (int i = 0; i < 3; ++i) {
+                    double s = 0.0;
+                    for (int k = 0; k < 3; ++k) {
+                        // P(i,k+1) * TRANSPOSE(H)(k+1,1) = P(i,k+1) * H(1,k+1)
+                        s = s + LocalVar->WE.P[k][i] * H[k];
+                    }
+                    PHt[i] = s;
+                }
+                double s = 0.0;
+                for (int k = 0; k < 3; ++k) {
+                    // H(1,k+1) * PHt(k+1,1)
+                    s = s + H[k] * PHt[k];
+                }
+                S[0] = s + R_m;
+            }
+            // LocalVar%WE%K = MATMUL(LocalVar%WE%P,TRANSPOSE(H))/S(1,1)
+            {
+                double PHt[3];
+                for (int i = 0; i < 3; ++i) {
+                    double s = 0.0;
+                    for (int k = 0; k < 3; ++k) {
+                        s = s + LocalVar->WE.P[k][i] * H[k];
+                    }
+                    PHt[i] = s;
+                }
+                for (int i = 0; i < 3; ++i) {
+                    LocalVar->WE.K[i][0] = PHt[i] / S[0];
+                }
+            }
+            // LocalVar%WE%xh = LocalVar%WE%xh + LocalVar%WE%K*(WE_Inp_Speed - LocalVar%WE%om_r)
+            for (int i = 0; i < 3; ++i) {
+                LocalVar->WE.xh[i][0] =
+                    LocalVar->WE.xh[i][0] +
+                    LocalVar->WE.K[i][0] * (WE_Inp_Speed - LocalVar->WE.om_r);
+            }
+            // LocalVar%WE%P = MATMUL(identity(3) - MATMUL(LocalVar%WE%K,H),LocalVar%WE%P)
+            //
+            // `identity(3)` is the translated `identity_c`, CALLED rather than
+            // written out (X1) -- it is this unit's declared dependency and it
+            // fills column-major, which is the layout the subtraction below
+            // reads it in.
+            {
+                double I3[9];
+                identity_c(3, I3);
+                double KH[9];
+                for (int j = 0; j < 3; ++j) {
+                    for (int i = 0; i < 3; ++i) {
+                        // K(i,1) * H(1,j+1) -- a one-term sum
+                        double s = 0.0;
+                        s = s + LocalVar->WE.K[i][0] * H[j];
+                        KH[j * 3 + i] = s;
+                    }
+                }
+                double M[9];
+                for (int k = 0; k < 9; ++k) {
+                    M[k] = I3[k] - KH[k];
+                }
+                double newP[9];
+                for (int j = 0; j < 3; ++j) {
+                    for (int i = 0; i < 3; ++i) {
+                        double s = 0.0;
+                        for (int k = 0; k < 3; ++k) {
+                            // M(i,k+1) * P(k+1,j+1)
+                            s = s + M[k * 3 + i] * LocalVar->WE.P[j][k];
+                        }
+                        newP[j * 3 + i] = s;
+                    }
+                }
+                for (int j = 0; j < 3; ++j) {
+                    for (int i = 0; i < 3; ++i) {
+                        LocalVar->WE.P[j][i] = newP[j * 3 + i];
+                    }
+                }
+            }
+
+            // ! Wind Speed Estimate
+            // LocalVar%WE%om_r = max(LocalVar%WE%xh(1,1), EPSILON(1.0_DbKi))
+            LocalVar->WE.om_r = std::fmax(LocalVar->WE.xh[0][0], DBL_EPSILON);
+            // LocalVar%WE%v_t = LocalVar%WE%xh(2,1)
+            LocalVar->WE.v_t = LocalVar->WE.xh[1][0];
+            // LocalVar%WE%v_m = LocalVar%WE%xh(3,1)
+            LocalVar->WE.v_m = LocalVar->WE.xh[2][0];
+            // LocalVar%WE%v_h = LocalVar%WE%v_t + LocalVar%WE%v_m
+            LocalVar->WE.v_h = LocalVar->WE.v_t + LocalVar->WE.v_m;
+            // LocalVar%WE_Vw = LocalVar%WE%v_m + LocalVar%WE%v_t
+            //
+            // `v_m + v_t`, the OTHER order from the line above it. Addition is
+            // commutative in IEEE for every operand pair including NaN
+            // payloads, so the two are the same value; the order is kept.
+            LocalVar->WE_Vw = LocalVar->WE.v_m + LocalVar->WE.v_t;
+
+            // IF (ieee_is_nan(LocalVar%WE%v_h)) THEN
+            //
+            // `ieee_is_nan` is `std::isnan`. This repair arm has ZERO hits in
+            // all 27 gate scenarios; only the differential harness reaches it.
+            if (std::isnan(LocalVar->WE.v_h)) {
+                // LocalVar%WE%om_r = WE_Inp_Speed
+        ++vitcensus::c.isnan_arm;
+                LocalVar->WE.om_r = WE_Inp_Speed;
+                // LocalVar%WE%v_t = 0.0
+                LocalVar->WE.v_t = 0.0;
+                // LocalVar%WE%v_m = LocalVar%HorWindV
+                //
+                // The RAW `HorWindV`, not the filtered `HorWindV_F` the restart
+                // arm uses, and with no `max(.., 3.0)` floor.
+                LocalVar->WE.v_m = LocalVar->HorWindV;
+                // LocalVar%WE%v_h = LocalVar%HorWindV
+                LocalVar->WE.v_h = LocalVar->HorWindV;
+                // LocalVar%WE_Vw = LocalVar%WE%v_m + LocalVar%WE%v_t
+                LocalVar->WE_Vw = LocalVar->WE.v_m + LocalVar->WE.v_t;
+            }
+            // ENDIF
+        }
+        // ! Debug Outputs
+        // DebugVar%WE_Cp = Cp_op
+        DebugVar->WE_Cp = Cp_op;
+        // DebugVar%WE_Vm = LocalVar%WE%v_m
+        DebugVar->WE_Vm = LocalVar->WE.v_m;
+        // DebugVar%WE_Vt = LocalVar%WE%v_t
+        DebugVar->WE_Vt = LocalVar->WE.v_t;
+        // DebugVar%WE_lambda = lambda
+        DebugVar->WE_lambda = lambda;
+
+        // ELSE
+    } else {
+        // ! Use filtered hub-height
+        // LocalVar%WE_Vw = LocalVar%HorWindV_F
+        ++vitcensus::c.else_arm;
+        LocalVar->WE_Vw = LocalVar->HorWindV_F;
+    }
+    // ENDIF
+
+    // DebugVar%WE_Vw = LocalVar%WE_Vw
+    DebugVar->WE_Vw = LocalVar->WE_Vw;
+
+    // ! Add RoutineName to error message
+    // IF (ErrVar%aviFAIL < 0) THEN
+    if (ErrVar->aviFAIL < 0) {
+        // ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
+        ++vitcensus::c.errmsg;
+        assign_errmsg(ErrVar, std::string(RoutineName) + ':' + errmsg_trim(ErrVar));
+    }
+    // ENDIF
+}

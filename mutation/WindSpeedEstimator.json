@@ -1,0 +1,621 @@
+{
+ "unit": "WindSpeedEstimator",
+ "operators": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "operator_population": {
+  "assoc_reorder": 4,
+  "collapse_stride": 21,
+  "compare_op": 40,
+  "drop_factor": 40,
+  "arith_op": 40,
+  "swap_operands": 16,
+  "index_offset": 40,
+  "const_tweak": 40,
+  "negate_cond": 16,
+  "drop_call": 10,
+  "swap_call_args": 6,
+  "swap_callee": 5
+ },
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "drop_factor",
+  "index_offset"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "sanitize": false,
+ "killed_by_sanitizer": 0,
+ "killed_by_sanitizer_ids": [],
+ "mutants": 277,
+ "equivalent_declared": 0,
+ "unreachable_declared": 0,
+ "unreachable": [],
+ "unreachable_but_killed": [],
+ "nocompile": 1,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "nocompile_ratio": 0.0036,
+ "nocompile_refused": false,
+ "total": 278,
+ "killed": 206,
+ "survived": 71,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "score": 0.7437,
+ "loop_rev": "8e04515-nogit",
+ "vit_rev": "6a71314-nogit",
+ "merged_from": [
+  {
+   "part": "mutation/WindSpeedEstimator.clean.arith.json",
+   "operators_filter": [
+    "arith_op"
+   ],
+   "mutant_slice": {
+    "offset": 0,
+    "limit": 0,
+    "scored": 40,
+    "of": 40
+   },
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 33,
+   "survived": 7,
+   "score": 0.825
+  },
+  {
+   "part": "mutation/WindSpeedEstimator.clean.compare.json",
+   "operators_filter": [
+    "compare_op"
+   ],
+   "mutant_slice": {
+    "offset": 0,
+    "limit": 0,
+    "scored": 40,
+    "of": 40
+   },
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 29,
+   "survived": 11,
+   "score": 0.725
+  },
+  {
+   "part": "mutation/WindSpeedEstimator.clean.const.json",
+   "operators_filter": [
+    "const_tweak"
+   ],
+   "mutant_slice": {
+    "offset": 0,
+    "limit": 0,
+    "scored": 40,
+    "of": 40
+   },
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 29,
+   "survived": 11,
+   "score": 0.725
+  },
+  {
+   "part": "mutation/WindSpeedEstimator.clean.dropfactor.json",
+   "operators_filter": [
+    "drop_factor"
+   ],
+   "mutant_slice": {
+    "offset": 0,
+    "limit": 0,
+    "scored": 40,
+    "of": 40
+   },
+   "total": 40,
+   "mutants": 39,
+   "nocompile": 1,
+   "killed": 24,
+   "survived": 15,
+   "score": 0.6154
+  },
+  {
+   "part": "mutation/WindSpeedEstimator.clean.indexoffset.json",
+   "operators_filter": [
+    "index_offset"
+   ],
+   "mutant_slice": {
+    "offset": 0,
+    "limit": 0,
+    "scored": 40,
+    "of": 40
+   },
+   "total": 40,
+   "mutants": 40,
+   "nocompile": 0,
+   "killed": 33,
+   "survived": 7,
+   "score": 0.825
+  },
+  {
+   "part": "mutation/WindSpeedEstimator.clean.rest.json",
+   "operators_filter": [
+    "assoc_reorder",
+    "collapse_stride",
+    "drop_call",
+    "negate_cond",
+    "swap_call_args",
+    "swap_callee",
+    "swap_operands"
+   ],
+   "mutant_slice": {
+    "offset": 0,
+    "limit": 0,
+    "scored": 78,
+    "of": 78
+   },
+   "total": 78,
+   "mutants": 78,
+   "nocompile": 0,
+   "killed": 58,
+   "survived": 20,
+   "score": 0.7436
+  }
+ ],
+ "merged_why": "278 mutants -- the campaign's largest population, five operators at cppmutate's 40-per-operator cap -- over a 63,020-case corpus; one foreground call cannot hold it",
+ "merged_by": "scripts/_mutation_merge.py",
+ "survivors": [
+  {
+   "id": "d3f2e7f0",
+   "operator": "arith_op",
+   "before": "LocalVar->WE.v_m + LocalVar->WE.v_t",
+   "after": "LocalVar->WE.v_m - LocalVar->WE.v_t"
+  },
+  {
+   "id": "34b4353f",
+   "operator": "arith_op",
+   "before": "WE_Inp_Pitch * R2D",
+   "after": "WE_Inp_Pitch / R2D"
+  },
+  {
+   "id": "95b1fd2b",
+   "operator": "arith_op",
+   "before": "0 * 3",
+   "after": "0 / 3"
+  },
+  {
+   "id": "febd3310",
+   "operator": "arith_op",
+   "before": "CntrPar->WE_RhoAir * PI",
+   "after": "CntrPar->WE_RhoAir / PI"
+  },
+  {
+   "id": "a5d53495",
+   "operator": "arith_op",
+   "before": "LocalVar->WE.v_h * LocalVar->WE.v_h",
+   "after": "LocalVar->WE.v_h / LocalVar->WE.v_h"
+  },
+  {
+   "id": "a5b002db",
+   "operator": "arith_op",
+   "before": "CntrPar->WE_RhoAir * PI",
+   "after": "CntrPar->WE_RhoAir / PI"
+  },
+  {
+   "id": "aaf2924c",
+   "operator": "arith_op",
+   "before": "LocalVar->WE.v_h * LocalVar->WE.v_h",
+   "after": "LocalVar->WE.v_h / LocalVar->WE.v_h"
+  },
+  {
+   "id": "0ac1df5b",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "a1db7de8",
+   "operator": "compare_op",
+   "before": ">",
+   "after": ">="
+  },
+  {
+   "id": "24169b19",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "757eb260",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "64e7846a",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "c9db9e1f",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "e9f65097",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "fa3e7f34",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "c713c761",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "688ce089",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "34bdd5c4",
+   "operator": "compare_op",
+   "before": "<",
+   "after": "<="
+  },
+  {
+   "id": "db628c91",
+   "operator": "const_tweak",
+   "before": "57.2957795130",
+   "after": "58.295779513"
+  },
+  {
+   "id": "afc34d68",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "5f847ebc",
+   "operator": "const_tweak",
+   "before": "0",
+   "after": "1"
+  },
+  {
+   "id": "0d7f3f68",
+   "operator": "const_tweak",
+   "before": "9",
+   "after": "10"
+  },
+  {
+   "id": "4305aa33",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "73df48ea",
+   "operator": "const_tweak",
+   "before": "3",
+   "after": "4"
+  },
+  {
+   "id": "f46204aa",
+   "operator": "const_tweak",
+   "before": "9",
+   "after": "10"
+  },
+  {
+   "id": "4dbb085d",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "a6ec503c",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "71a48358",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "f22014d2",
+   "operator": "const_tweak",
+   "before": "1",
+   "after": "2"
+  },
+  {
+   "id": "f209eb70",
+   "operator": "drop_factor",
+   "before": "WE_Inp_Pitch * R2D",
+   "after": "WE_Inp_Pitch"
+  },
+  {
+   "id": "24574509",
+   "operator": "drop_factor",
+   "before": "0 * 3",
+   "after": "0"
+  },
+  {
+   "id": "b51d08a2",
+   "operator": "drop_factor",
+   "before": "1 * 3",
+   "after": "1"
+  },
+  {
+   "id": "cc6cbddf",
+   "operator": "drop_factor",
+   "before": "2.0 * CntrPar->WE_Jtot",
+   "after": "2.0"
+  },
+  {
+   "id": "ea3793c7",
+   "operator": "drop_factor",
+   "before": "CntrPar->WE_RhoAir * PI",
+   "after": "CntrPar->WE_RhoAir"
+  },
+  {
+   "id": "bebda2f6",
+   "operator": "drop_factor",
+   "before": "CntrPar->WE_BladeRadius * CntrPar->WE_BladeRadius",
+   "after": "CntrPar->WE_BladeRadius"
+  },
+  {
+   "id": "e4caa7c4",
+   "operator": "drop_factor",
+   "before": "LocalVar->WE.v_h * LocalVar->WE.v_h",
+   "after": "LocalVar->WE.v_h"
+  },
+  {
+   "id": "4c154297",
+   "operator": "drop_factor",
+   "before": "2 * 3",
+   "after": "2"
+  },
+  {
+   "id": "983bf91d",
+   "operator": "drop_factor",
+   "before": "2.0 * CntrPar->WE_Jtot",
+   "after": "2.0"
+  },
+  {
+   "id": "d04192e4",
+   "operator": "drop_factor",
+   "before": "CntrPar->WE_RhoAir * PI",
+   "after": "CntrPar->WE_RhoAir"
+  },
+  {
+   "id": "929f8756",
+   "operator": "drop_factor",
+   "before": "CntrPar->WE_BladeRadius * CntrPar->WE_BladeRadius",
+   "after": "CntrPar->WE_BladeRadius"
+  },
+  {
+   "id": "10797776",
+   "operator": "drop_factor",
+   "before": "LocalVar->WE.v_h * LocalVar->WE.v_h",
+   "after": "LocalVar->WE.v_h"
+  },
+  {
+   "id": "af6d160a",
+   "operator": "drop_factor",
+   "before": "0 * 3",
+   "after": "0"
+  },
+  {
+   "id": "bf0a0370",
+   "operator": "drop_factor",
+   "before": "PI * LocalVar->WE.v_m",
+   "after": "PI"
+  },
+  {
+   "id": "90f08184",
+   "operator": "drop_factor",
+   "before": "2.0 * L",
+   "after": "2.0"
+  },
+  {
+   "id": "e3b71c74",
+   "operator": "index_offset",
+   "before": "[9]",
+   "after": "[9 + 1]"
+  },
+  {
+   "id": "d0bb2797",
+   "operator": "index_offset",
+   "before": "[3]",
+   "after": "[3 + 1]"
+  },
+  {
+   "id": "f4a2fc4f",
+   "operator": "index_offset",
+   "before": "[3]",
+   "after": "[3 + 1]"
+  },
+  {
+   "id": "09ec01aa",
+   "operator": "index_offset",
+   "before": "[9]",
+   "after": "[9 + 1]"
+  },
+  {
+   "id": "e9035603",
+   "operator": "index_offset",
+   "before": "[1]",
+   "after": "[1 + 1]"
+  },
+  {
+   "id": "c5512404",
+   "operator": "index_offset",
+   "before": "[k]",
+   "after": "[k + 1]"
+  },
+  {
+   "id": "3aaf5b59",
+   "operator": "index_offset",
+   "before": "[k]",
+   "after": "[k + 1]"
+  },
+  {
+   "id": "04c08561",
+   "operator": "assoc_reorder",
+   "before": "PI *\n                           (CntrPar->WE_BladeRadius * CntrPar->WE_BladeRadius)",
+   "after": "(PI * CntrPar->WE_BladeRadius) * CntrPar->WE_BladeRadius"
+  },
+  {
+   "id": "1b6f8996",
+   "operator": "assoc_reorder",
+   "before": "Cp_op *\n                           (LocalVar->WE.v_h * LocalVar->WE.v_h)",
+   "after": "(Cp_op * LocalVar->WE.v_h) * LocalVar->WE.v_h"
+  },
+  {
+   "id": "c58d597a",
+   "operator": "assoc_reorder",
+   "before": "PI *\n                           (CntrPar->WE_BladeRadius * CntrPar->WE_BladeRadius)",
+   "after": "(PI * CntrPar->WE_BladeRadius) * CntrPar->WE_BladeRadius"
+  },
+  {
+   "id": "b3f0e72e",
+   "operator": "assoc_reorder",
+   "before": "Cp_op *\n                           (LocalVar->WE.v_h * LocalVar->WE.v_h)",
+   "after": "(Cp_op * LocalVar->WE.v_h) * LocalVar->WE.v_h"
+  },
+  {
+   "id": "c95a7470",
+   "operator": "collapse_stride",
+   "before": "[0 * 3 + 0]",
+   "after": "[0]"
+  },
+  {
+   "id": "c18630ea",
+   "operator": "collapse_stride",
+   "before": "[1 * 3 + 0]",
+   "after": "[1]"
+  },
+  {
+   "id": "502b2386",
+   "operator": "collapse_stride",
+   "before": "[2 * 3 + 0]",
+   "after": "[2]"
+  },
+  {
+   "id": "d58eaa09",
+   "operator": "collapse_stride",
+   "before": "[0 * 3 + 0]",
+   "after": "[0]"
+  },
+  {
+   "id": "cd58ea01",
+   "operator": "collapse_stride",
+   "before": "[j * 3 + i]",
+   "after": "[j]"
+  },
+  {
+   "id": "ef5224a0",
+   "operator": "swap_operands",
+   "before": "WE_Inp_Pitch - LocalVar->BlPitchCMeas",
+   "after": "LocalVar->BlPitchCMeas - WE_Inp_Pitch"
+  },
+  {
+   "id": "b31be2ec",
+   "operator": "swap_operands",
+   "before": "WE_Inp_Torque - LocalVar->VS_LastGenTrqF",
+   "after": "LocalVar->VS_LastGenTrqF - WE_Inp_Torque"
+  },
+  {
+   "id": "5abe61d7",
+   "operator": "swap_operands",
+   "before": "WE_Inp_Speed - LocalVar->RotSpeedF",
+   "after": "LocalVar->RotSpeedF - WE_Inp_Speed"
+  },
+  {
+   "id": "068d3be3",
+   "operator": "drop_call",
+   "before": "std::fabs(WE_Inp_Torque - LocalVar->VS_LastGenTrqF)",
+   "after": "WE_Inp_Torque - LocalVar->VS_LastGenTrqF"
+  },
+  {
+   "id": "cd428761",
+   "operator": "drop_call",
+   "before": "std::fabs(WE_Inp_Speed - LocalVar->RotSpeedF)",
+   "after": "WE_Inp_Speed - LocalVar->RotSpeedF"
+  },
+  {
+   "id": "426e7e7e",
+   "operator": "drop_call",
+   "before": "std::fmax(0.0, Cp_op)",
+   "after": "0.0"
+  },
+  {
+   "id": "bf0aa697",
+   "operator": "swap_call_args",
+   "before": "LocalVar->HorWindV_F, 3.0",
+   "after": "3.0, LocalVar->HorWindV_F"
+  },
+  {
+   "id": "e41afb0e",
+   "operator": "swap_call_args",
+   "before": "LocalVar->HorWindV_F, 3.0",
+   "after": "3.0, LocalVar->HorWindV_F"
+  },
+  {
+   "id": "34aaf49e",
+   "operator": "swap_call_args",
+   "before": "WE_Inp_Speed, DBL_EPSILON",
+   "after": "DBL_EPSILON, WE_Inp_Speed"
+  },
+  {
+   "id": "20cc8068",
+   "operator": "swap_call_args",
+   "before": "0.0, Cp_op",
+   "after": "Cp_op, 0.0"
+  },
+  {
+   "id": "22a29bd8",
+   "operator": "swap_call_args",
+   "before": "LocalVar->WE.xh[0][0], DBL_EPSILON",
+   "after": "DBL_EPSILON, LocalVar->WE.xh[0][0]"
+  }
+ ]
+}

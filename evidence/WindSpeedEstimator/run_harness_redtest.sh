@@ -8,8 +8,8 @@
 # `vit_mutate.py`'s in-place edit has left a mutant behind three times in this
 # campaign when it was killed, and a red test is the same shape.
 #
-# `--against translation` and both `--transitive-read-set` sources are repeated
-# verbatim from the green run. They have to be: the flags decide the corpus, and
+# `--against translation`, both `--transitive-read-set` sources and both
+# `--persist-nested` members are repeated verbatim from the green run. They have to be: the flags decide the corpus, and
 # unit #26's finding is that a red result and the green it certifies must name
 # the same case count.
 set -euo pipefail
@@ -32,4 +32,6 @@ bash scripts/harness.sh WindSpeedEstimator ControllerBlocks windspeedestimator \
     --red-test "the unit as a NO-OP: every argument taken, nothing written" \
     --transitive-read-set rosco/controller/src/Functions.f90 \
     --transitive-read-set rosco/controller/src/Filters.f90 \
+    --persist-nested LocalVar.WE \
+    --persist-nested LocalVar.FP \
     2>&1 | grep -E "^HARNESS|no JSON|case\(s\)$|red_test" || true

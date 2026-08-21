@@ -3,7 +3,7 @@
 // The unit as a NO-OP: every argument taken, nothing written. If the harness
 // cannot tell this from the translation, its green says nothing.
 //
-// THE PREDICTION, WRITTEN BEFORE THE RUN THAT TESTS IT: 13,868 of 13,868.
+// THE PREDICTION, WRITTEN BEFORE THE RUN THAT TESTS IT: 63,020 of 63,020.
 // Four outputs are assigned on EVERY path through this subroutine, with no
 // enclosing IF --
 //

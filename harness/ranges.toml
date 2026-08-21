@@ -3940,3 +3940,192 @@ PerfData_Cp_mat_cols = { same_as = "PerfData_Beta_vec_n" }
 PerfData_Cp_mat_rows = { same_as = "PerfData_TSR_vec_n" }
 CntrPar_WE_FOPoles_N = { same_as = "CntrPar_WE_FOPoles_v_n" }
 objInst_instLPF = { lo = 1, hi = 1024 }
+
+# FOUR MORE ENTRIES, AND THEY ARE THE OPPOSITE KIND OF JUDGEMENT FROM THE FOUR
+# ABOVE. Those four narrow a domain because the REFERENCE has no answer on the
+# rest of it. These four are unit #59's lever -- CHOOSING THE CONSTANTS so that
+# a coincidence the generator cannot state EXISTS -- and they are here because
+# the corpus reached NEITHER estimator.
+#
+# THE MEASUREMENT THAT FORCED THEM, over the 13,868-case corpus, taken with the
+# shipped translation carrying twelve counters
+# (evidence/WindSpeedEstimator/windspeedestimator.arm-census.cpp):
+#
+#     calls=13868  mode_gt0=191  we_op1=527
+#     mode1=0  mode2=0  else=13868          <- BOTH estimators, zero cases
+#     ok_pitch=1092  ok_torque=12535  ok_speed=12972
+#
+# Every one of the 13,868 cases took `WE_Vw = HorWindV_F`. The unit's two
+# estimator arms -- the inversion-and-invariance filter and the whole
+# three-state EKF, which is most of the procedure -- were never entered, so the
+# first mutation part scored 0 of 11 with all eleven mutants sitting on the five
+# `std::fmax` calls inside them. A green over a corpus that reaches one arm is a
+# statement about that arm.
+#
+# WHY THE INTERSECTION WAS EMPTY. Both arms are guarded on
+# `WE_Mode == n .AND. LocalVar%WE_Op > 0`, and `WE_Op` IS NOT AN INPUT: it is
+# computed nine lines earlier, and it is 1 only when all THREE input
+# saturations were no-ops. `WE_Mode != 0` held in 1.4% of cases and `WE_Op == 1`
+# in 3.8%, independently drawn; 13,868 x 0.014 x 0.038 is 7 expected and 0
+# observed. No `lo`/`hi` on `WE_Op` can help -- the drawn value is overwritten
+# before it is read.
+#
+# 1. `CntrPar_WE_Mode` BECOMES A FLAG, WHICH IS WHAT `values` MEANS.
+#    `generate.py:2091` selects flags as `[p for p in live(sig.inputs) if
+#    p.values and p.kind != "char[]"]`, and every R6 and R_ladder value is then
+#    re-run under EVERY declared value of every flag -- additively, the sum of
+#    the arities and not the product. As a KNOB, `WE_Mode` entered only R6's
+#    all-pairs block, 314 combinations of seven quantities, which is why it was
+#    off zero in 191 cases of 13,868.
+#      PHYSICAL: ROSCO documents WE_Mode as 0 (filtered hub-height), 1 (I&I) and
+#      2 (EKF), and all 22 shipped Examples/DISCON*.IN use one of the three.
+#      INSTRUMENTAL: the fourth value, 3. It is not a configuration anybody
+#      ships; it is the only value that makes `WE_Mode > 0` true while both
+#      `== 1` and `== 2` are false, which is the arm where the preamble's
+#      restart block runs and the final ELSE still takes the filtered wind
+#      speed. Losing it would delete a reachable combination of two arms.
+#      WHAT LEAVES: `WE_Mode` had R7's knob at [-1, 0, 1, 2, 3]; -1 goes. It is
+#      a duplicate of 0 for every predicate this unit evaluates (`> 0`, `== 1`,
+#      `== 2` all answer the same on both), so nothing observable goes with it.
+#
+# 2..4. THE THREE CONSTANTS THAT MAKE THE PITCH SATURATION A NO-OP, and the
+#    census says which one to spend them on: `ok_pitch` is 1,092 against
+#    `ok_torque` 12,535 and `ok_speed` 12,972, so the pitch clamp is the binding
+#    condition and the other two are left free.
+#
+#        WE_Inp_Pitch = saturate(LocalVar%BlPitchCMeas, CntrPar%PC_MinPit, Max_Op_Pitch)
+#        Max_Op_Pitch = PerfData%Beta_vec(SIZE(PerfData%Beta_vec)) * D2R
+#
+#    so `WE_Op == 1` needs `PC_MinPit <= BlPitchCMeas <= Beta_vec(n)*D2R`, a
+#    relation between three independently filled reals. `harness/ranges.toml`
+#    has no relation over the reals; choosing the constants is what substitutes.
+#      PHYSICAL, and all three halves are the reference's own units:
+#      `BlPitchCMeas` is a collective blade pitch in RADIANS (ROSCO's shipped
+#      PC_MinPit/PC_MaxPit span about -0.087 to 1.57); `PC_MinPit` is the
+#      minimum pitch setpoint, at or just below fine pitch; `Beta_vec` is the Cp
+#      surface's pitch axis in DEGREES -- the reference converts with `*R2D`
+#      before the interp2d lookup -- and runs 0..90 in every ROSCO Cp file.
+#      INSTRUMENTAL: the CHOICE of [-0.1, 0.5], [-0.2, -0.1] and [0, 90], which
+#      is what makes the three brackets nest so that the clamp is a no-op rather
+#      than sometimes a no-op. It also puts `WE_Inp_Pitch*R2D` inside
+#      `Beta_vec`'s own span, so interp2d INTERPOLATES instead of clamping to a
+#      corner on every case -- a second thing the corpus could not previously do.
+#      WHAT LEAVES, and it is not small: all three leave R6's real-magnitude
+#      ladder -- subnormal, flush-to-zero, overflow and negative zero go from
+#      each of them. `PerfData_TSR_vec` is deliberately NOT pinned, so the other
+#      interp2d axis still carries the magnitudes, and `LocalVar%HorWindV`,
+#      `WE_Vw` and the whole of `CntrPar` are untouched.
+#
+# THE PREDICTION, WRITTEN BEFORE THE RUN THAT TESTS IT. `mode1` and `mode2` go
+# from 0 to non-zero -- that is the claim, and it is the one that can fail. The
+# corpus grows by roughly the ratio of the flag arities, 2 -> 6, so somewhere
+# near 35,000-45,000 cases; if it OOMs, the fourth WE_Mode value is the first
+# thing to give up and the loss is stated above. `ok_pitch` should go from 1,092
+# to most of the corpus. If `mode2` is still 0 afterwards, the binding condition
+# is not the one the census named.
+
+CntrPar_WE_Mode = { values = [0, 1, 2, 3] }
+LocalVar_BlPitchCMeas = { lo = -0.1, hi = 0.5 }
+CntrPar_PC_MinPit = { lo = -0.2, hi = -0.1 }
+PerfData_Beta_vec = { lo = 0.0, hi = 90.0 }
+
+# A FIFTH DESIGN ENTRY, AND IT IS THE SECOND HALF OF THE SAME MEASUREMENT.
+# With the four above the corpus reaches BOTH estimators -- `mode1=8453`,
+# `mode2=7923` against 0 and 0 -- and the EKF's own UPDATE arm was still 61
+# cases of 38,436, with the initialisation arm taking 7,862 of the other 7,923:
+#
+#     restart0=7862  ekf=61      <- the Jacobian, both MATMUL blocks, the
+#                                   interp1d pole lookup and the interp2d Cp
+#                                   lookup: most of the procedure, 0.16%
+#
+# `LocalVar%RestartWSE` is not a lever -- the drawn value is overwritten by
+# `RestartWSE = iStatus` before anything reads it -- so the arm is selected by
+# `LocalVar%iStatus`, an ordinary defaulted INTEGER whose R6 ladder leaves it at
+# 0 in almost every case.
+#   PHYSICAL: ROSCO's `iStatus` is the ServoDyn call status and takes exactly
+#   three values -- 0 on the first call, 1 during simulation, -1 on the last --
+#   which is the whole of `{ lo = -1, hi = 1 }`. Nothing in the domain is given
+#   up.
+#   INSTRUMENTAL: nothing. This is the one entry here that is a domain claim
+#   rather than a measurement design.
+#   WHAT LEAVES: `iStatus` leaves R6's integer ladder, so the decade boundaries
+#   and the two 32-bit extremes go. This unit does not compare `iStatus` against
+#   anything -- it assigns it to `RestartWSE`, which is then tested `== 0` -- so
+#   the ladder was buying one bit of information and costing the arm.
+#
+# THE PREDICTION, WRITTEN BEFORE THE RUN THAT TESTS IT: `ekf` goes from 61 to
+# roughly two thirds of the `mode2` cases, so 4,000-6,000, and `restart0` falls
+# to roughly one third of them. The corpus count does NOT move -- `lo`/`hi` is
+# not `values`, so `iStatus` does not become a flag.
+
+LocalVar_iStatus = { values = [0, 1] }
+
+# `values` HERE FOR THE SAME REASON AS `LocalVar_WE_Op` BELOW, AND THE SECOND
+# REFUTATION IS WHAT ESTABLISHED IT. With `{ lo = -1, hi = 1 }` on `iStatus`
+# AND `values = [0, 1]` on `WE_Op`, `restart0` was 11,157 of `mode2` 11,159 --
+# so `RestartWSE` was zero on essentially every mode-2 case even though the
+# transition block was demonstrably NOT always firing (`warn` had risen to
+# 3,410, which is the OTHER transition). The remaining explanation is that an
+# integer `{ lo, hi }` does not distribute over its range the way a `values`
+# list distributes over its list: two separate pins written as ranges, on
+# `WE_Op` and on `iStatus`, each moved their arm's count by less than one part
+# in a thousand. A flag is a guarantee; a range is a draw.
+#   The domain claim is unchanged and is still the whole of it, minus one:
+#   ROSCO's `iStatus` is 0 on the first call, 1 during simulation and -1 on the
+#   last. -1 is dropped because this unit tests only `RestartWSE == 0` and -1
+#   answers it exactly as 1 does, and because each further declared flag value
+#   costs about a sixth of the corpus.
+
+# THE PREDICTION ABOVE WAS REFUTED BY ITS OWN RUN, AND THE SIXTH ENTRY IS WHAT
+# THE REFUTATION NAMED.
+#
+#     predicted   ekf 61 -> 4,000-6,000, restart0 -> one third of mode2
+#     measured    ekf 61 -> 1,   restart0 8,354 of mode2 8,355
+#
+# Stated here rather than quietly repaired: `iStatus` was the wrong lever and
+# the corpus said so in one run. `RestartWSE` is assigned from `iStatus` and
+# then zeroed AGAIN, by the transition block:
+#
+#     IF (WE_Op == 1 .AND. WE_Op_Last == 0) THEN
+#         LocalVar%RestartWSE = 0
+#
+# `WE_Op_Last` is `LocalVar%WE_Op`'s DRAWN value, copied one line earlier, and
+# an ordinary defaulted integer sits at 0. The four entries above raised
+# `WE_Op == 1` to 24,616 of 38,190 -- so they made the TRANSITION fire, and
+# every mode-2 case that reached the estimator restarted it. The `iStatus`
+# entry is kept: it is a true domain claim and it is what makes `RestartWSE`
+# non-zero at all, which is a precondition for this one to matter.
+#   PHYSICAL: `LocalVar%WE_Op` is written by this procedure and by nothing else
+#   in ROSCO, and it is assigned only the literals 0 and 1. `{ lo = 0, hi = 1 }`
+#   is the whole set of values the shipped program can present at entry.
+#   INSTRUMENTAL: nothing.
+#   WHAT LEAVES: R7's knob at [-1, 0, 1, 2] and R6's integer ladder. -1 and 2
+#   are values the reference never produces, and the only predicates they reach
+#   are `WE_Op == 0` and `WE_Op == 1` in the transition block, both of which 0
+#   and 1 already answer both ways.
+#
+# THE PREDICTION, WRITTEN BEFORE THE RUN THAT TESTS IT: `ekf` goes from 1 to
+# roughly (mode2) x P(WE_Op_Last == 1) x P(iStatus != 0), so 2,000-4,000, and
+# `restart0` falls by about the same. If it moves less than that, the transition
+# is not the only thing zeroing `RestartWSE`.
+
+LocalVar_WE_Op = { values = [0, 1] }
+
+# AND THAT PREDICTION WAS REFUTED TOO, IN THE OTHER DIRECTION: `ekf` went 1 -> 0
+# and `restart0` was 8,277 of `mode2` 8,277 -- every mode-2 case restarting.
+# `{ lo = 0, hi = 1 }` did not put 1 into `WE_Op` often enough to matter; the
+# transition `WE_Op == 1 .AND. WE_Op_Last == 0` fired on essentially every case
+# in which the four pitch/torque/speed entries had made `WE_Op` compute to 1.
+# `values` rather than `lo`/`hi` is the difference, and it is the difference
+# `generate.py:2091` defines: a `values` list makes the parameter a FLAG, and
+# every base point is then re-run under EVERY declared value, so exactly half
+# the corpus carries `WE_Op_Last == 1` by construction rather than by draw.
+#
+# THE PRICE, and it is the reason `lo`/`hi` was tried first: the flag arities go
+# 2 + 4 -> 2 + 4 + 2, so the corpus grows by a third. The generator has already
+# been SIGKILLed once on this unit; if it is again, the fourth `WE_Mode` value
+# is what gives way.
+#
+# THE PREDICTION, WRITTEN BEFORE THE RUN THAT TESTS IT: the corpus goes to
+# roughly 50,000 cases, and `ekf` goes from 0 to about (mode2) x 1/2 x 2/3 --
+# two thousand or so. `warn`, the other transition, should rise with it.

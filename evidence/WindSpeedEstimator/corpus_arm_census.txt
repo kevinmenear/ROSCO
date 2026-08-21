@@ -1,0 +1,80 @@
+ARM CENSUS -- unit #65 WindSpeedEstimator, over the differential corpus
+
+Taken with the shipped translation carrying twelve counters
+(windspeedestimator.arm-census.cpp), swapped in, built with
+`harness.sh ... --no-generate` so the corpus is byte for byte the scored one,
+and swapped straight back out. It reads only the questions, not the answers, so
+it needs no clean tree beyond the one the harness already has.
+
+WHY IT EXISTS. The FIRST mutation part scored 0 of 11, and all eleven mutants
+sat on the five `std::fmax` calls -- every one of them inside
+`WE_Mode == n .AND. WE_Op > 0`. "The corpus does not reach the arm" and "the
+mutant is equivalent" are different findings and a survivor list cannot tell
+them apart. A count can.
+
+corpus     cases  speed_floor  mode_gt0  we_op1   mode1   mode2    else  restart0   ekf  isnan  warn  errmsg  ok_pitch  ok_torque  ok_speed
+---------------------------------------------------------------------------------------------------------------------------------------------
+1 (none)   13868         896       191     527       0       0   13868         0     0      0     6     544      1092      12535     12972
+2 (+4)     38436        2523     28595   24824    8453    7923   22060      7862    61     61    87    1614     28619      34578     35913
+3 (+WE)    38436        2523     28595   24824    8453    7923   22060      7862    61      0    87    1614     28619      34578     35913
+4 (+iSt)   38190        2528     28413   24616    7879    8355   21956      8354     1      0    89    1613     28436      34337     35662
+5 (WEop)   50482        3366     37632   32445   10145   11159   29178     11157     2      1  3410    2134     37651      45349     47116
+6 (final)  63020        4199     47033   40608   14070   12489   36461     11316  1173     12  2570    2668     47075      56615     58821
+
+  1  the three extent relations and the instLPF domain only
+  2  + WE_Mode as a 4-value flag, and the three constants that make the pitch
+     saturation a no-op (BlPitchCMeas, PC_MinPit, Beta_vec)
+  3  + `--persist-nested LocalVar.WE LocalVar.FP`
+  4  + `LocalVar_iStatus = { lo = -1, hi = 1 }`
+  5  + `LocalVar_WE_Op  = { values = [0, 1] }`   (iStatus still a range)
+  6  + `LocalVar_iStatus = { values = [0, 1] }`  (both are flags)
+
+WHAT EACH COLUMN COUNTS
+
+  speed_floor  the rotor-speed floor arm, clean ControllerBlocks.f90:319 --
+               ZERO hits in all 27 gate scenarios, so the harness is the only
+               instrument that reaches it at all
+  mode_gt0     `CntrPar%WE_Mode > 0`, the arm that loads Max_Op_Pitch from the
+               Cp surface
+  we_op1       `LocalVar%WE_Op = 1`, i.e. all three input saturations were
+               no-ops
+  mode1        the inversion-and-invariance filter, :389-:393
+  mode2        the EKF, :398 onwards
+  else         `WE_Vw = HorWindV_F`
+  restart0     the EKF INITIALISATION arm, `RestartWSE == 0`
+  ekf          the EKF UPDATE arm: interp1d, interp2d, the Jacobian, both
+               MATMUL blocks, the measurement update. Most of the procedure.
+  isnan        the `ieee_is_nan(v_h)` repair -- ZERO hits in all 27 scenarios
+  warn         the operational-to-non-operational transition and its PRINT
+  errmsg       the `aviFAIL < 0` RoutineName prefix -- ZERO hits in all 27
+               scenarios
+  ok_*         each of the three saturations taken separately, to say which one
+               binds
+
+THE THREE THINGS THIS MEASUREMENT DECIDED
+
+1. CORPUS 1's GREEN WAS A STATEMENT ABOUT ONE ARM. 13,868 of 13,868 passed and
+   every one of them took `WE_Vw = HorWindV_F`. Both estimators -- the bulk of
+   the unit -- were never entered. Nothing in the harness's own output says so:
+   `checked 13868 failed 0` reads identically either way.
+
+2. `isnan` 61 -> 0 IS `--persist-nested` DOING WHAT ITS DOCSTRING SAYS. At
+   corpus 2 every one of the 61 EKF-update cases ended in the NaN repair,
+   because `LocalVar%WE` is a nested type the generator zeroes, so `v_h` is 0
+   and `lambda = ... / v_h` is a division by zero on the FIRST statement of the
+   arm. Carrying WE across cases makes the recurrence run on the state the
+   previous case left, which is the only state the shipped program ever
+   presents after its first call.
+
+3. TWO PREDICTIONS WERE REFUTED BY THEIR OWN RUNS, and both refutations named
+   the next lever. `iStatus` as a RANGE moved `ekf` 61 -> 1, and `WE_Op` as a
+   range moved it 1 -> 0; the same two parameters as `values` FLAGS moved it
+   0 -> 1,173. A `values` list is a guarantee that every base point is re-run
+   under every declared value; a `lo`/`hi` range is a draw, and two separate
+   draws each moved their arm by less than one part in a thousand. That
+   difference is `generate.py:2091` and it is not obvious from `ranges.toml`.
+
+WHAT IS STILL NOT REACHED, stated rather than left to be found: `ekf` is 1,173
+of 63,020, so the Jacobian and the two covariance MATMUL blocks are exercised on
+under 2% of the corpus, and `isnan` is 12. Every mutation survivor whose site is
+inside that arm is a survivor over 1,173 cases, not over 63,020.

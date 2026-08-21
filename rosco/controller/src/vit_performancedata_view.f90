@@ -4,7 +4,8 @@
 
 MODULE vit_performancedata_view
     USE ISO_C_BINDING
-    USE ROSCO_Types, ONLY: PerformanceData
+    USE ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+    USE ROSCO_Types, ONLY: PerformanceData, DbKi
     IMPLICIT NONE
     PRIVATE
     PUBLIC :: performancedata_view_t, vit_populate_performancedata, vit_copy_scalars_to_performancedata, vit_original_performancedata
@@ -104,10 +105,58 @@ CONTAINS
         ! view -> Fortran TYPE, reading the CALLER'S buffers.
         TYPE(performancedata_view_t), INTENT(IN) :: view
         TYPE(PerformanceData), INTENT(INOUT) :: dest
+        REAL(DbKi), POINTER :: vit_ap_tsr_vec(:)
+        REAL(DbKi), POINTER :: vit_ap_beta_vec(:)
+        REAL(DbKi), POINTER :: vit_ap_cp_mat(:,:)
+        REAL(DbKi), POINTER :: vit_ap_ct_mat(:,:)
+        REAL(DbKi), POINTER :: vit_ap_cq_mat(:,:)
 
-        ! The direct-caller conversion is not measured on these field(s):
-        !  TSR_vec, Beta_vec, Cp_mat, Ct_mat, Cq_mat
-        ERROR STOP 'VIT: vit_view_in_performancedata: an unmeasured field kind; see the comment above'
+        IF (ALLOCATED(dest%TSR_vec)) DEALLOCATE(dest%TSR_vec)
+        IF (C_ASSOCIATED(view%TSR_vec) .AND. view%n_TSR_vec > 0) THEN
+            CALL C_F_POINTER(view%TSR_vec, vit_ap_tsr_vec, [INT(view%n_TSR_vec)])
+            ALLOCATE(dest%TSR_vec(view%n_TSR_vec))
+            dest%TSR_vec = vit_ap_tsr_vec
+        ELSE IF (view%n_TSR_vec == 0) THEN
+            ALLOCATE(dest%TSR_vec(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%Beta_vec)) DEALLOCATE(dest%Beta_vec)
+        IF (C_ASSOCIATED(view%Beta_vec) .AND. view%n_Beta_vec > 0) THEN
+            CALL C_F_POINTER(view%Beta_vec, vit_ap_beta_vec, [INT(view%n_Beta_vec)])
+            ALLOCATE(dest%Beta_vec(view%n_Beta_vec))
+            dest%Beta_vec = vit_ap_beta_vec
+        ELSE IF (view%n_Beta_vec == 0) THEN
+            ALLOCATE(dest%Beta_vec(0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%Cp_mat)) DEALLOCATE(dest%Cp_mat)
+        IF (C_ASSOCIATED(view%Cp_mat) .AND. view%n_Cp_mat_rows > 0 &
+                .AND. view%n_Cp_mat_cols > 0) THEN
+            CALL C_F_POINTER(view%Cp_mat, vit_ap_cp_mat, &
+                [INT(view%n_Cp_mat_rows), INT(view%n_Cp_mat_cols)])
+            ALLOCATE(dest%Cp_mat(view%n_Cp_mat_rows, view%n_Cp_mat_cols))
+            dest%Cp_mat = vit_ap_cp_mat
+        ELSE IF (view%n_Cp_mat_rows == 0 .AND. view%n_Cp_mat_cols == 0) THEN
+            ALLOCATE(dest%Cp_mat(0, 0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%Ct_mat)) DEALLOCATE(dest%Ct_mat)
+        IF (C_ASSOCIATED(view%Ct_mat) .AND. view%n_Ct_mat_rows > 0 &
+                .AND. view%n_Ct_mat_cols > 0) THEN
+            CALL C_F_POINTER(view%Ct_mat, vit_ap_ct_mat, &
+                [INT(view%n_Ct_mat_rows), INT(view%n_Ct_mat_cols)])
+            ALLOCATE(dest%Ct_mat(view%n_Ct_mat_rows, view%n_Ct_mat_cols))
+            dest%Ct_mat = vit_ap_ct_mat
+        ELSE IF (view%n_Ct_mat_rows == 0 .AND. view%n_Ct_mat_cols == 0) THEN
+            ALLOCATE(dest%Ct_mat(0, 0))   ! allocated-empty, distinct from unallocated
+        END IF
+        IF (ALLOCATED(dest%Cq_mat)) DEALLOCATE(dest%Cq_mat)
+        IF (C_ASSOCIATED(view%Cq_mat) .AND. view%n_Cq_mat_rows > 0 &
+                .AND. view%n_Cq_mat_cols > 0) THEN
+            CALL C_F_POINTER(view%Cq_mat, vit_ap_cq_mat, &
+                [INT(view%n_Cq_mat_rows), INT(view%n_Cq_mat_cols)])
+            ALLOCATE(dest%Cq_mat(view%n_Cq_mat_rows, view%n_Cq_mat_cols))
+            dest%Cq_mat = vit_ap_cq_mat
+        ELSE IF (view%n_Cq_mat_rows == 0 .AND. view%n_Cq_mat_cols == 0) THEN
+            ALLOCATE(dest%Cq_mat(0, 0))   ! allocated-empty, distinct from unallocated
+        END IF
 
     END SUBROUTINE vit_view_in_performancedata
 
@@ -116,10 +165,92 @@ CONTAINS
         ! leaving its pointer and capacity exactly as it supplied them.
         TYPE(PerformanceData), INTENT(IN) :: src
         TYPE(performancedata_view_t), INTENT(INOUT) :: view
+        REAL(DbKi), POINTER :: vit_ap_tsr_vec(:)
+        REAL(DbKi), POINTER :: vit_ap_beta_vec(:)
+        REAL(DbKi), POINTER :: vit_ap_cp_mat(:,:)
+        REAL(DbKi), POINTER :: vit_ap_ct_mat(:,:)
+        REAL(DbKi), POINTER :: vit_ap_cq_mat(:,:)
 
-        ! The direct-caller conversion is not measured on these field(s):
-        !  TSR_vec, Beta_vec, Cp_mat, Ct_mat, Cq_mat
-        ERROR STOP 'VIT: vit_view_out_performancedata: an unmeasured field kind; see the comment above'
+        IF (C_ASSOCIATED(view%TSR_vec) .AND. view%n_TSR_vec > 0) THEN
+            IF (ALLOCATED(src%TSR_vec)) THEN
+                IF (SIZE(src%TSR_vec) == view%n_TSR_vec) THEN
+                    CALL C_F_POINTER(view%TSR_vec, vit_ap_tsr_vec, [INT(view%n_TSR_vec)])
+                    vit_ap_tsr_vec = src%TSR_vec
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: PerformanceData%TSR_vec came back at ', SIZE(src%TSR_vec), &
+                        ' element(s) against the ', view%n_TSR_vec, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%Beta_vec) .AND. view%n_Beta_vec > 0) THEN
+            IF (ALLOCATED(src%Beta_vec)) THEN
+                IF (SIZE(src%Beta_vec) == view%n_Beta_vec) THEN
+                    CALL C_F_POINTER(view%Beta_vec, vit_ap_beta_vec, [INT(view%n_Beta_vec)])
+                    vit_ap_beta_vec = src%Beta_vec
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A)') &
+                        'VIT: PerformanceData%Beta_vec came back at ', SIZE(src%Beta_vec), &
+                        ' element(s) against the ', view%n_Beta_vec, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%Cp_mat) .AND. view%n_Cp_mat_rows > 0 &
+                .AND. view%n_Cp_mat_cols > 0) THEN
+            IF (ALLOCATED(src%Cp_mat)) THEN
+                IF (SIZE(src%Cp_mat, 1) == view%n_Cp_mat_rows .AND. &
+                    SIZE(src%Cp_mat, 2) == view%n_Cp_mat_cols) THEN
+                    CALL C_F_POINTER(view%Cp_mat, vit_ap_cp_mat, &
+                        [INT(view%n_Cp_mat_rows), INT(view%n_Cp_mat_cols)])
+                    vit_ap_cp_mat = src%Cp_mat
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A,I0,A,I0,A)') &
+                        'VIT: PerformanceData%Cp_mat came back at ', SIZE(src%Cp_mat, 1), &
+                        ' x ', SIZE(src%Cp_mat, 2), &
+                        ' against the ', view%n_Cp_mat_rows, &
+                        ' x ', view%n_Cp_mat_cols, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%Ct_mat) .AND. view%n_Ct_mat_rows > 0 &
+                .AND. view%n_Ct_mat_cols > 0) THEN
+            IF (ALLOCATED(src%Ct_mat)) THEN
+                IF (SIZE(src%Ct_mat, 1) == view%n_Ct_mat_rows .AND. &
+                    SIZE(src%Ct_mat, 2) == view%n_Ct_mat_cols) THEN
+                    CALL C_F_POINTER(view%Ct_mat, vit_ap_ct_mat, &
+                        [INT(view%n_Ct_mat_rows), INT(view%n_Ct_mat_cols)])
+                    vit_ap_ct_mat = src%Ct_mat
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A,I0,A,I0,A)') &
+                        'VIT: PerformanceData%Ct_mat came back at ', SIZE(src%Ct_mat, 1), &
+                        ' x ', SIZE(src%Ct_mat, 2), &
+                        ' against the ', view%n_Ct_mat_rows, &
+                        ' x ', view%n_Ct_mat_cols, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
+        IF (C_ASSOCIATED(view%Cq_mat) .AND. view%n_Cq_mat_rows > 0 &
+                .AND. view%n_Cq_mat_cols > 0) THEN
+            IF (ALLOCATED(src%Cq_mat)) THEN
+                IF (SIZE(src%Cq_mat, 1) == view%n_Cq_mat_rows .AND. &
+                    SIZE(src%Cq_mat, 2) == view%n_Cq_mat_cols) THEN
+                    CALL C_F_POINTER(view%Cq_mat, vit_ap_cq_mat, &
+                        [INT(view%n_Cq_mat_rows), INT(view%n_Cq_mat_cols)])
+                    vit_ap_cq_mat = src%Cq_mat
+                ELSE
+                    WRITE(ERROR_UNIT,'(A,I0,A,I0,A,I0,A,I0,A)') &
+                        'VIT: PerformanceData%Cq_mat came back at ', SIZE(src%Cq_mat, 1), &
+                        ' x ', SIZE(src%Cq_mat, 2), &
+                        ' against the ', view%n_Cq_mat_rows, &
+                        ' x ', view%n_Cq_mat_cols, &
+                        ' the caller supplied; left unchanged'
+                END IF
+            END IF
+        END IF
 
     END SUBROUTINE vit_view_out_performancedata
 

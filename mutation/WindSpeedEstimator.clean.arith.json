@@ -1,0 +1,149 @@
+{
+ "unit": "WindSpeedEstimator",
+ "operators": [
+  "arith_op"
+ ],
+ "operators_offered": [
+  "arith_op",
+  "assoc_reorder",
+  "collapse_stride",
+  "compare_op",
+  "const_tweak",
+  "drop_call",
+  "drop_factor",
+  "index_offset",
+  "negate_cond",
+  "swap_call_args",
+  "swap_callee",
+  "swap_operands"
+ ],
+ "compared_against": "fortran_reference_on_a_clean_tree",
+ "operators_filter": [
+  "arith_op"
+ ],
+ "operators_filter_unmatched": [],
+ "mutant_slice": {
+  "offset": 0,
+  "limit": 0,
+  "scored": 40,
+  "of": 40
+ },
+ "scored_ids": [
+  "d04a850e",
+  "1613c559",
+  "e97395e0",
+  "93fbaea9",
+  "84e6aaed",
+  "cde32d4e",
+  "6ff35510",
+  "eb5ef357",
+  "05189e9f",
+  "100cf4fc",
+  "56575d39",
+  "cdc9fbfd",
+  "dcb68d57",
+  "7f45167d",
+  "3ee4277e",
+  "66f8bc4c",
+  "d3f2e7f0",
+  "d8a97baa",
+  "d72e4a14",
+  "34b4353f",
+  "95b1fd2b",
+  "8c9f225c",
+  "50e5e864",
+  "febd3310",
+  "3509caeb",
+  "23260533",
+  "f4761288",
+  "a5d53495",
+  "8d006fd9",
+  "7f15cc07",
+  "a5b002db",
+  "db42bd79",
+  "b0dbb733",
+  "17c98789",
+  "aaf2924c",
+  "5181e838",
+  "4d9a0aec",
+  "d1cd29ce",
+  "88324e29",
+  "66c202f4"
+ ],
+ "limit_per_operator": 40,
+ "capped_operators": [
+  "arith_op",
+  "compare_op",
+  "const_tweak",
+  "drop_factor",
+  "index_offset"
+ ],
+ "mutants": 40,
+ "equivalent_declared": 0,
+ "unreachable_declared": 0,
+ "unreachable": [],
+ "nocompile": 0,
+ "killed_by_timeout": 0,
+ "killed_by_timeout_ids": [],
+ "sanitize": false,
+ "mutant_workers": 8,
+ "identity_verified": 40,
+ "killed_by_sanitizer": 0,
+ "killed_by_sanitizer_ids": [],
+ "nocompile_ratio": 0.0,
+ "nocompile_refused": false,
+ "total": 40,
+ "killed": 33,
+ "survived": 7,
+ "equivalent": 0,
+ "declared_but_killed": [],
+ "unreachable_but_killed": [],
+ "score": 0.825,
+ "loop_rev": "8e04515-nogit",
+ "gen_rev": "gen-9e9b6297bc69",
+ "vit_rev": "6a71314-nogit",
+ "survivors": [
+  {
+   "id": "d3f2e7f0",
+   "operator": "arith_op",
+   "before": "LocalVar->WE.v_m + LocalVar->WE.v_t",
+   "after": "LocalVar->WE.v_m - LocalVar->WE.v_t"
+  },
+  {
+   "id": "34b4353f",
+   "operator": "arith_op",
+   "before": "WE_Inp_Pitch * R2D",
+   "after": "WE_Inp_Pitch / R2D"
+  },
+  {
+   "id": "95b1fd2b",
+   "operator": "arith_op",
+   "before": "0 * 3",
+   "after": "0 / 3"
+  },
+  {
+   "id": "febd3310",
+   "operator": "arith_op",
+   "before": "CntrPar->WE_RhoAir * PI",
+   "after": "CntrPar->WE_RhoAir / PI"
+  },
+  {
+   "id": "a5d53495",
+   "operator": "arith_op",
+   "before": "LocalVar->WE.v_h * LocalVar->WE.v_h",
+   "after": "LocalVar->WE.v_h / LocalVar->WE.v_h"
+  },
+  {
+   "id": "a5b002db",
+   "operator": "arith_op",
+   "before": "CntrPar->WE_RhoAir * PI",
+   "after": "CntrPar->WE_RhoAir / PI"
+  },
+  {
+   "id": "aaf2924c",
+   "operator": "arith_op",
+   "before": "LocalVar->WE.v_h * LocalVar->WE.v_h",
+   "after": "LocalVar->WE.v_h / LocalVar->WE.v_h"
+  }
+ ]
+}
