@@ -15816,3 +15816,165 @@ into the filename.
 and one run of this unit's gate reported `GATE PASS` off a library whose build
 had failed — measuring the previous library. Loud only in hindsight. The
 rebuilds here test `${PIPESTATUS[0]}`.
+
+## Unit #65 `WindSpeedEstimator`, second dispatch — the survivors were the corpus multiplying by zero, and the sanitiser's refusal was a NaN's sign bit
+
+**2026-08-21.** P12 re-take. `0.7727 → 0.9234`; 60 standing survivors → 19;
+`arith_op` 34 of 40 → **38 of 38, score 1.000**, which is the whole of the set
+the driver named. Still below the 1.000 threshold, so the unit closes
+INCOMPLETE with an honest number and nineteen priced survivors.
+
+### The lever was a mutation survivor, not a coverage count
+
+The corpus-6 census had already established which ARMS the corpus reaches. It
+had not asked whether what those arms compute can be OBSERVED, and one survivor
+was the only thing in the campaign that could ask:
+
+```
+426e7e7e  drop_call  std::fmax(0.0, Cp_op) -> 0.0    SURVIVED
+```
+
+That mutant replaces the Cp clamp with the constant `0.0`. It cannot survive
+unless the clamp already returns `0.0` on every case. A sign census said it
+does — `cp_raw_pos=0` of 1,173, `cp_raw` in `[-935.5, -387.1]` — and `Cp_op`
+multiplies the WHOLE of `F(1,2)` and `F(1,3)`, so every mutation of every
+factor in the Jacobian's wind-speed column was being multiplied by zero.
+Twenty-odd survivors, one cause.
+
+**A green count cannot state this and neither can an arm census.** The arm was
+entered 1,173 times, every one of those cases passed, and the arithmetic in it
+had no oracle at all. The generalisation worth carrying: *coverage says a line
+ran; only a survivor says the line's value reached an output.*
+
+### The first repair was refuted by its own run, and the refutation named the fix
+
+```
+7a  Cp_mat = { lo = -0.1, hi = 0.5 }
+    predicted  cp_raw_pos 0 -> most of 1,173
+    measured   cp_raw_pos 0 -> 1
+```
+
+The band was right and the SIDE of it was wrong. `lambda` reaches `-inf` and
+`1e302`, so `interp2d` clamps to a corner on essentially every case, and
+`generate._fill_array` ramps monotonically from `lo` — so the corner it clamps
+to is the BOTTOM of the band. **A band that straddles zero puts the whole
+corpus just below zero: the same annihilation, one hundredth the size.**
+
+```
+7b  Cp_mat = { lo = 0.02, hi = 0.5 }   Beta_vec 0..90 -> 0..30
+    measured   cp_raw_pos=1173 of 1173   F12_nonzero=1169   ekf=1173
+               63,020 cases (unchanged)  HARNESS PASS 63,020 / 0 / 0
+```
+
+The second entry is a different lever and is worth stating separately:
+`Beta_vec` had been pinned to 0..90 degrees so the Cp lookup lands inside the
+axis — but `BlPitchCMeas` is pinned in RADIANS to [-0.1, 0.5], i.e. [-5.7,
+28.6] degrees, so two thirds of that axis was unreachable and two `const_tweak`
+survivors lived in the gap. **When two pins are in different units, check that
+their ranges actually overlap where the reference converts between them.**
+
+### The sanitiser baseline's one failing case is a NaN's SIGN BIT
+
+The previous dispatch recorded the refusal (`baseline is not green (ok);
+refusing to score`), stated the NaN hypothesis, and said honestly that it could
+not test it because the emitted mismatch record truncates a nested type at 32
+bytes. Widening `hexbytes()`'s cap to 256 **in the generated file only, for one
+run** settled it:
+
+```
+        ref (Fortran)     got (perturbed C++)
+  4..18 000000000000f8ff  000000000000f87f   <-- 14 of 15 differ
+  14    000000000000f8ff  000000000000f8ff       and one does not
+```
+
+Fifteen quiet NaNs on each side; fourteen differ in exactly one bit. Both are
+NaN; IEEE-754 does not specify the sign of a NaN from an invalid operation.
+`memcmp` on a nested type is therefore adjudicating a bit no source program
+determines, and the shipped translation is green only because its codegen
+happens to agree with gfortran's — add a counter, turn on `-fsanitize`, or
+mutate a line, and some flip.
+
+**Two consequences, and the second is the one that reaches artifacts already
+committed.** First, `--sanitize` is blocked by the comparison and not by the
+translation, which strands twelve of the nineteen survivors. Second, twelve of
+the 63,020 cases leave a NaN in `LocalVar%WE`, so on those cases an unsanitised
+mutation KILL may be a codegen artifact — and nothing in the artifact
+distinguishes it. Both raised in `.loop-run/findings.jsonl`
+(`invalidating_finding`), with the 32-byte truncation as a
+`default_change_proposed`: it is one integer and it cost a whole dispatch's
+"cannot be localised further".
+
+**The generalisation for the method, offered rather than assumed:** a bytewise
+oracle over floating point is comparing three things at once — the value, the
+signed zero, and the NaN payload. Two of those are what the campaign wants. The
+third is not determined by the program under test, and every unit with an
+UNOBSERVABLE-but-compared nested type is exposed to it. `LocalVar` alone
+carries five.
+
+### Ask what STATE an arm is entered from, not only how often
+
+```
+upd=1173  vt_zero=1173  k_zero=1173  p_offdiag_zero=1173  p11_eq_p22=1173
+```
+
+Read at the top of the EKF update arm before anything writes. On all 1,173
+cases `LocalVar%WE` is exactly what the RESTART arm leaves: `v_t = 0`, `K = 0`,
+`P = diag(0.01, 0.01, 1.0)` — the last compared as BIT PATTERNS. **Every update
+in this corpus is the first update.** `--persist-nested` makes the state
+non-degenerate, and it does not make it *varied*.
+
+Four survivors follow from that one fact, and two of them by an exact identity
+rather than a coincidence: `b51d08a2`/`c18630ea` move the `F(1,2)` assignment
+to `F(2,1)`, and for diagonal `P`, `(F P + P F')(1,2)` is `e*P(2,2)` one way
+and `e*P(1,1)` the other — equal because the restart arm writes
+`P(1,1) = P(2,2) = 0.01`. The other two perturb `a`, which is read once as
+`-a * v_t`, and `v_t` is zero. (The control is in the same sweep:
+`drop_factor a * v_t -> a` was KILLED at 1,420 cases.)
+
+### Sixteen more equivalences, and every one of the three controls failed
+
+13 declared → 29. Families in `mutation/WindSpeedEstimator.equivalences.md`.
+The one worth carrying is E: **ten mutants that ENLARGE an array declaration by
+one element**, discharged by a subscript census over the whole corpus (F max=8
+of 9, H max=2 of 3, dxh max=2 of 3, Q max=8 of 9, S max=0 of 1) — and the
+census is COMPLETE rather than sampled, because every subscript site in the
+unit is unconditional inside one arm and every index is a literal or a
+literal-bounded loop counter, so one case that enters the arm exercises every
+site with its full index range.
+
+That shape is likely to recur: `cppmutate` reaches DECLARATIONS, and a
+declaration mutant that only adds unused storage is equivalent whenever the
+maximum subscript is below the original extent. It is cheap to prove and the
+proof can fail — which is exactly what the three `index_offset` mutants on the
+same unit's zero fill do.
+
+### What was measured and then NOT done, with the reason
+
+* **`ErrVar_aviFAIL` as a flag.** Three survivors live in the error-message
+  helpers, and the obvious reading is that the `aviFAIL < 0` arm is never
+  reached. It is reached **2,668 times**. Measuring that cost 27 seconds and
+  saved a corpus-doubling `values` list that would have killed nothing. What
+  is actually missing is three VALUES — an assignment exactly the size of the
+  staging buffer (`cap_eq = 0`), `n_ErrMsg == 1` (`0`), `n_ErrMsg <= 0` (`0`).
+  **Before pinning an input to reach an arm, count the arm.**
+* **Consecutive EKF updates.** The four class-1 survivors need two update cases
+  in a row with no restart between. `RestartWSE = iStatus` and is then
+  re-zeroed by either `WE_Op` transition, so the condition is a relation
+  between a drawn flag, a computed flag and CASE ORDER. `ranges.toml` has a key
+  for none of the three. Priced, not done.
+* **The sanitised sweep.** Run, refused, localised, escalated. If it were
+  scoreable and all twelve of its class died, the score would be
+  241 of 248 = 0.9718 with seven corpus gaps standing. Stated that way because
+  nobody has run it.
+
+### One thing the artifacts cannot say, raised as a default change
+
+`harness/WindSpeedEstimator.json` is **byte-identical** before and after a
+`ranges.toml` change that replaced every one of its 63,020 cases — same
+`checked`/`failed`/`inadmissible`, same `gen_rev`, same `rule_coverage`. So a
+green on one corpus cannot be told from a green on another, and unit #26's rule
+(a red and the green it certifies must name the same corpus) is enforced by
+hand. The corpus md5 for this unit is
+`44290973357db22784b138278ae781e7`, and it is written into the commit message
+and the evidence README because there is nowhere in the artifact to put it.
+Raised as a `default_change_proposed`.
