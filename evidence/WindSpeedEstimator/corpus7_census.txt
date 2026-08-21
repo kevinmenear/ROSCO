@@ -1,0 +1,1 @@
+CPCENSUS ekf=1173 cp_raw_pos=1173 cp_pos=1173 cp_zero=0 cp_neg=0 cp_nan=0 vh_zero=0 vh_nonfinite=0 omr_zero=1 F12_nonzero=1169 | upd=1173 p11_eq_p22=1173 p_offdiag_zero=1173 | errmsg_arm=2668 cap_eq=0 n_eq_1=0 n_le_0=0 | vt_zero=1173 k_zero=1173 dt_zero=0

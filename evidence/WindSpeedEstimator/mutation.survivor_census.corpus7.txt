@@ -1,0 +1,169 @@
+SURVIVOR CENSUS AFTER THE CORPUS FIX -- unit #65, corpus 7
+
+19 standing survivors of 278 mutants (29 declared equivalent with executed
+proofs, 1 no-compile, 229 killed, score 0.9234). The corpus-6 census
+(`mutation.survivor_census.txt`) is kept beside this one and not edited: it is
+the measurement that produced the diagnosis, and 41 of its 60 rows are now
+dead.
+
+    corpus 6   204 killed / 264 scoreable = 0.7727   60 survivors
+    corpus 7   229 killed / 248 scoreable = 0.9234   19 survivors
+
+EVERY ONE OF THE NINETEEN HAS A MEASURED REASON, and they fall into three
+classes with three different dispositions. None of them is "the translation is
+wrong": the differential harness is 63,020 of 63,020 green pre- and
+post-integration and the gate is 0 of 5,252,000.
+
+===========================================================================
+CLASS 1 -- THE EKF UPDATE ARM IS ALWAYS ENTERED FROM THE STATE THE RESTART
+ARM JUST WROTE.  4 survivors.  A CORPUS GAP, PRICED BELOW.
+===========================================================================
+
+    b51d08a2  drop_factor       F[1 * 3 + 0] -> F[1 + 0]
+    c18630ea  collapse_stride   F[1 * 3 + 0] -> F[1]        (the same mutant)
+    bf0a0370  drop_factor       PI * LocalVar->WE.v_m -> PI
+    90f08184  drop_factor       2.0 * L -> 2.0
+
+THE MEASUREMENT, taken at the top of the update arm before anything writes,
+over the whole corpus (`windspeedestimator.subscript-census.cpp` plus four
+counters):
+
+    upd=1173  vt_zero=1173  k_zero=1173  p_offdiag_zero=1173  p11_eq_p22=1173
+    dt_zero=0
+
+Every one of the 1,173 update cases finds `LocalVar%WE` at exactly what the
+RESTART arm writes: `v_t = 0`, `K = 0`, `P = diag(0.01, 0.01, 1.0)`. Not
+approximately -- `p11_eq_p22` is a comparison of BIT PATTERNS and it is 1,173
+of 1,173. The corpus never runs two EKF updates in a row on one state, so every
+update is the FIRST update, and `DT` is non-zero throughout so that is not the
+explanation either.
+
+WHY THAT MAKES THESE FOUR INVISIBLE, and the arguments are exact rather than
+statistical:
+
+  * `bf0a0370` / `90f08184` both perturb `a = PI * v_m / (2.0*L)`, and `a` is
+    read at exactly one place: `dxh(2,1) = -a * LocalVar%WE%v_t`. With
+    `v_t == 0`, `a` is multiplied by zero. (The control is in the same sweep:
+    `drop_factor a * v_t -> a` was KILLED at 1,420 cases -- removing the zero
+    factor is visible, changing the factor it multiplies is not.)
+
+  * `b51d08a2` / `c18630ea` are the same edit reached by two operators: they
+    move the `F(1,2)` assignment to `F(2,1)`, so the mutant has
+    `F(1,2) = 0, F(2,1) = e` where the reference has `F(1,2) = e, F(2,1) = 0`.
+    The only consumer is `P + DT*(F P + P F' + Q - K R K')`, and for DIAGONAL
+    `P = diag(p1,p2,p3)`:
+
+        (F P + P F')(1,2) = F(1,2)*p2 + p1*F(2,1) = e*p2      reference
+        (F P + P F')(1,2) = F(1,2)*p2 + p1*F(2,1) = e*p1      mutant
+        (F P + P F')(2,1)   likewise e*p2  and  e*p1
+
+    and every other entry is untouched. So the two agree EXACTLY when
+    `p1 == p2` -- which is what `P(1,1) = P(2,2) = 0.01` in the restart arm
+    makes true on every case. This is an algebraic identity conditioned on the
+    state, not a rounding coincidence.
+
+WHAT WOULD KILL THEM: one case that enters the update arm twice without an
+intervening restart, so `P` is the non-diagonal `(I - K H) P` the previous
+update left and `v_t` is `xh(2,1)`. The binding condition is `RestartWSE != 0`
+on two CONSECUTIVE cases; `RestartWSE = iStatus` and is then re-zeroed by
+either `WE_Op` transition, so it is a relation between a drawn flag, a computed
+flag and CASE ORDER -- and `ranges.toml` has a key for none of the three. This
+is the same wall the corpus-6 census named and it is priced, not done.
+
+===========================================================================
+CLASS 2 -- THREE VALUES THE CORPUS NEVER PRESENTS TO THE TWO ERROR-MESSAGE
+HELPERS.  3 survivors.  A CORPUS GAP, AND IT IS NOT AN ARM GAP.
+===========================================================================
+
+    0ac1df5b  compare_op   assign_errmsg:  s.size() > cap   ->  >=
+    5f847ebc  const_tweak  errmsg_trim:    n > 0 ? n : 0    ->  n > 1 ? n : 0
+    afc34d68  const_tweak  errmsg_trim:    n > 0 ? n : 0    ->  n > 0 ? n : 1
+
+THE MEASUREMENT, over the whole corpus:
+
+    errmsg_arm=2668   cap_eq=0   n_eq_1=0   n_le_0=0
+
+The `ErrVar%aviFAIL < 0` arm is ENTERED 2,668 times, so this is not the
+"nothing reaches the helper" story the corpus-6 census left open -- it was
+worth checking, because the fix for that story (`ErrVar_aviFAIL` as a flag)
+would have doubled the corpus for nothing. What is missing is three VALUES:
+
+  * `0ac1df5b` differs from the reference only when the assignment is exactly
+    the size of the staging buffer. `cap_eq` counts that coincidence directly:
+    **0 of 2,668.** R13 sweeps the capacity 0..255 above what each case
+    SUPPLIES, and what is assigned here is `'WindSpeedEstimator:' + TRIM(...)`
+    -- nineteen bytes longer than the supplied string -- so the swept window
+    and the assigned length do not meet.
+  * `5f847ebc` differs only at `n_ErrMsg == 1`: **0 of 2,668.**
+  * `afc34d68` differs only when `n_ErrMsg <= 0`, the view's NOT-ALLOCATED
+    convention: **0 of 2,668.**
+
+WHAT WOULD KILL THEM: R13's capacity ladder taken about the length the unit
+ASSIGNS rather than the length the case supplies (which is the unit-#48
+composition rule one step further on), plus an `ErrVar_ErrMsg_n` that reaches
+1 and a case with the field unallocated. The first is a generator change and is
+raised as such; the other two are `ranges.toml` entries on an extent, which
+R5 currently owns.
+
+===========================================================================
+CLASS 3 -- THE ADDRESS CLASS, AND IT IS BLOCKED BY AN INSTRUMENT DEFECT.
+12 survivors.  NOT A CORPUS GAP AND NOT AN EQUIVALENCE.
+===========================================================================
+
+    24169b19  compare_op       k < 9 -> k <= 9      the F/Q zero fill
+    757eb260  compare_op       i < 3 -> i <= 3      MATMUL(F, P)
+    64e7846a  compare_op       i < 3 -> i <= 3      MATMUL(P, F')
+    c9db9e1f  compare_op       i < 3 -> i <= 3      the S inner product
+    e9f65097  compare_op       i < 3 -> i <= 3
+    fa3e7f34  compare_op       i < 3 -> i <= 3
+    c713c761  compare_op       i < 3 -> i <= 3
+    688ce089  compare_op       i < 3 -> i <= 3
+    34bdd5c4  compare_op       i < 3 -> i <= 3
+    c5512404  index_offset     F[k] -> F[k + 1]     the zero fill
+    3aaf5b59  index_offset     Q[k] -> Q[k + 1]     the zero fill
+    cd58ea01  collapse_stride  KKt[j * 3 + i] -> KKt[j]
+
+Eleven of the twelve read or write one element past the end of a 3- or
+9-element automatic array. The twelfth leaves six of `KKt`'s nine elements
+UNWRITTEN and then reads them. In both shapes the mutant's difference from the
+reference is at an address the program does not own, and a comparison of
+VALUES cannot see it: the campaign has measured three identical runs over one
+such mutant scoring 0.983, 1.000, 0.983, where the 1.000 is the run that
+measured least.
+
+`vit_mutate.py --sanitize` is the instrument for this class and IT WAS RUN AND
+CANNOT BE SCORED. The reason is now localised and it is not the translation:
+
+    bash evidence/WindSpeedEstimator/run_mutation_part.sh \
+         san_probe swap_callee --equivalences --sanitize
+    baseline is not green (ok); refusing to score
+
+The sanitised baseline fails at ONE case of 63,020, on `LocalVar%WE`, with an
+EMPTY sanitiser stderr -- and the differing bytes are FOURTEEN NaN SIGN BITS.
+Both sides are NaN; IEEE-754 does not say which sign. The harness compares
+nested types with `memcmp`, so it is adjudicating a bit the source program does
+not determine. Full record, all nineteen doubles side by side, in
+`mutation.sanitize_refusal.nan_sign.txt`; raised as an `invalidating_finding`.
+
+THIS IS THE CATEGORY THE RULES DO NOT COVER. It is not an equivalence -- the
+mutated programs are not equivalent, they are undefined, and they agree only
+because of where the compiler put things. It is not unreachable -- the corpus
+reaches every one of these lines 1,173 times. It is not a corpus gap either:
+no input can make a value oracle see a difference at an address the value
+oracle does not read. It is a mutant class whose only instrument is blocked by
+a defect in a DIFFERENT instrument, and that is what is escalated.
+
+===========================================================================
+WHAT THE THREE CLASSES ADD UP TO
+===========================================================================
+
+    4   class 1   corpus gap, priced, needs consecutive EKF updates
+    3   class 2   corpus gap, priced, needs three specific values
+   12   class 3   blocked on the NaN-sign comparison; escalated
+   ---
+   19
+
+If class 3 were scoreable and every one of its twelve died -- which is what a
+sanitised sweep over an unblocked baseline would decide -- the score would be
+241 of 248 = 0.9718 with seven corpus gaps standing. It is stated that way
+rather than claimed, because nobody has run it.
