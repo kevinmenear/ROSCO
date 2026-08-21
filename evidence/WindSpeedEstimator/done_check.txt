@@ -1,6 +1,6 @@
-# done_check.py WindSpeedEstimator -- captured 2026-08-21T02:52:30Z by scripts/capture_done_check.sh
+# done_check.py WindSpeedEstimator -- captured 2026-08-21T02:54:07Z by scripts/capture_done_check.sh
 
-Run against the committed state at d270e79b ("WindSpeedEstimator: done_check's FIRST capture, kept -- it crashed rather than reporting"), with a CLEAN tree, with stdout
+Run against the committed state at 7b67cd33 ("WindSpeedEstimator: seven target-layer entries earned by this unit"), with a CLEAN tree, with stdout
 going to a file outside the repository. The run is reproduced below verbatim.
 
 ON P2, WHICH IS SELF-REFERENTIAL IN ANY REDIRECTED CAPTURE. `>` truncates its
