@@ -1,0 +1,10 @@
+A  fabs(a-b) vs fabs(b-a), value AND predicate, 4225 pairs: 0 disagreements
+B1 fmax(a,3.0) vs fmax(3.0,a),        65 values: 0 disagreements
+B2 fmax(a,DBL_EPSILON) vs swapped,    65 values: 0 disagreements
+D  fmax(a,0.0) vs fmax(0.0,a): 0 disagreements -- glibc's fmax is
+     symmetric at +/-0 too, so the zero site is EQUIVALENT as well and
+     this line is NOT a control, because it cannot fail
+D' NEGATIVE CONTROL fmax(a,3.0) vs fmin(3.0,a): 62 DISAGREEMENTS (must be > 0)
+     the +/-0 pair, spelled out: fmax(0.0,-0.0)=0 signbit 0, fmax(-0.0,0.0)=0 signbit 0
+C  0*3+0 == 0 : yes   0*3 == 0 : yes   0/3 == 0 : yes
+E  NOT declared: 1*3 == 1 : NO   2*3 == 2 : NO   (both must be NO)
