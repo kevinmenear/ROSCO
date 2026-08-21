@@ -112,6 +112,25 @@ nineteen survivors follow from that one fact, two of them by an exact
 algebraic identity rather than a coincidence: moving `F(1,2)` to `F(2,1)` is
 invisible on any `P` with `P(1,1) == P(2,2)`.
 
+## The gate was RE-RUN at the final head of this dispatch
+
+The corpus changed, so the harness and mutation layers were re-taken. The gate
+does not read the corpus — it runs 27 simulations against committed baselines —
+so re-running it was not required. It was re-run anyway, on the integrated build
+left by the fourth `reset_to_clean` / `restore_integrated` round trip of this
+dispatch, because "the tree I am leaving is the tree the evidence describes" is
+a claim and not a deduction:
+
+```
+GATE PASS: compared 5252000 value(s) across 351 channel(s) / 27 scenario(s);
+           mismatched 0
+```
+
+`gate/WindSpeedEstimator.json` came back **byte-identical** to the committed
+one, so nothing in this dispatch — two `ranges.toml` entries, six mutation
+parts, four reset/restore cycles and five instrumented builds — moved the
+product.
+
 ## The gate red tests
 
 ```
