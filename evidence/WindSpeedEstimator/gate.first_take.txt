@@ -1,0 +1,98 @@
+THE GATE'S FIRST TAKE WAS RED AT 2 OF 5,252,000, AND THE DEFECT WAS IN THE
+TRANSLATION (C12)
+
+    GATE FAIL: compared 5252000 value(s) across 351 channel(s) / 27 scenario(s)
+               mismatched 2
+      MISMATCH scenario_8:bld_pitch_3 2/16000
+
+Recorded with the wrong artifact before the fix: `gate.first_take.json` is that
+run, and `gate.first_take.rerun.json` is the identical command repeated, because
+2 values in 5.25 million is exactly the size at which "is it reproducible" has
+to be asked before anything else. It reproduced to the value.
+
+THE TWO VALUES, AND WHY ONLY TWO
+
+    i = 3279    ref 3.9579783333465457e-05   got 3.957977969548665e-05
+    i = 13235   ref 0                        got 4.3368086899420177e-19
+
+The neighbourhood of 3279 steps down by a constant 0.0043625 per timestep --
+`PC_MaxRat * dt`, the pitch rate limiter, binding. At 3279 it stops binding and
+the COMMAND itself reaches the output. So the difference is not two isolated
+values: it is a small persistent difference in the pitch command that the rate
+limiter masks at every step where it saturates, and 2 of 16,000 is the count of
+steps where it does not. Scenario 8 is the IPC + AWC one, which is why only
+`bld_pitch_3` shows it -- the three blades carry different per-blade offsets and
+only the third straddled the boundary.
+
+THE CONTROL, RUN BEFORE ANY HYPOTHESIS: de-integrate this unit alone, rebuild,
+gate. GATE PASS, 0 of 5,252,000. So the difference is this unit's and not the
+tree's.
+
+TWO HYPOTHESES REFUTED BY DIRECT PROBES, AND BOTH ARE WORTH THE FIVE MINUTES
+
+  1. `LocalVar%WE%v_m**3.0` -- a REAL exponent of 3.0, where the check registry
+     says gfortran emits a libm `pow` and the campaign has been bitten by the
+     `x*x*x` spelling before. Compiled both languages at this campaign's flags
+     over eight values:
+
+         F90 x**3.0     = ... bits=401537BECCF3A7F2
+         CPP pow(x,3.0) = ... bits=401537BECCF3A7F2     <- IDENTICAL
+         F90 x*x*x      = ... bits=401537BECCF3A7F1     <- and DIFFERENT, so
+         CPP (x*x)*x    = ... bits=401537BECCF3A7F1        the probe can fail
+
+  2. MATMUL's accumulation order. The translation writes the three products as
+     loops with an accumulator initialised to 0.0, on the argument that
+     gfortran zeroes and accumulates over ascending k. 123 values -- all of
+     `MATMUL(F,P)`, `MATMUL(P,TRANSPOSE(F))`, `MATMUL(K*R_m,TRANSPOSE(K))`,
+     `S`, `K` and `MATMUL(identity(3)-MATMUL(K,H),P)` over three input sets --
+     BIT-IDENTICAL between gfortran and the translation's loops.
+
+WHAT FOUND IT: A PER-INVOCATION PROBE ON BOTH SIDES, WHICH IS THE CAMPAIGN'S
+OWN RECIPE AND COST TWO BUILDS
+
+Nine fields written as hex bit patterns to unit 97 at the end of the routine,
+once from the INTEGRATED wrapper and once from the CLEAN Fortran body, scenario
+8, 15,999 invocations each. First divergence:
+
+    invocation 544, column 4 = LocalVar%WE%v_t
+        integrated  BE56FCD6844BE86F
+        reference   BE56FCD6844BE871        <- 2 ULP
+
+and every other column at 544 -- WE_Vw, HorWindV_F, v_m, v_h, om_r, P(1,1),
+K(1,1), WE_Op -- identical. `WE_Vw = v_m + v_t` is identical because v_t is
+about 1.7e-08 against a v_m of 9.3 and the addition absorbs it; that absorption
+is why the unit's headline output looked right for 543 timesteps.
+
+THE DEFECT, one character wide:
+
+    Fortran   ... * CntrPar%WE_BladeRadius**2.0 * 1/LocalVar%WE%om_r * 3.0 * ...
+    was       ... * (R * R) * (1.0 / om_r) * 3.0 * ...
+    is        ... * (R * R) * 1 / om_r * 3.0 * ...
+
+`*` and `/` have EQUAL precedence and associate LEFT TO RIGHT, so the reference
+multiplies by 1 and then DIVIDES by `om_r`. The first version computed the
+RECIPROCAL and multiplied by it, which is the same real number and a different
+double. This is a rule the check registry already states -- "`1.0/a * b` is a
+reciprocal then a multiply, which rounds differently from `b/a`; transcribe the
+shape, not the algebra" -- and `vit check` reported no known-shape defects on
+the file that carried it, because the shape it detects is the reciprocal
+WRITTEN, not the reciprocal INTRODUCED.
+
+Two sites, `F(1,2)` and `F(1,3)`, which are the two identical entries of the
+Jacobian's first row. They reach the compared output through
+`MATMUL(P,TRANSPOSE(F))(2,1)`, hence `P(2,1)`, hence `K(2,1)`, hence
+`xh(2,1)` = `v_t`.
+
+AFTER THE FIX: GATE PASS, 5,252,000 values across 351 channels / 27 scenarios,
+0 mismatched, with `windspeedestimator_c` confirmed present in the installed
+`libdiscon.so` -- because the run BEFORE this one reported GATE PASS off a
+library whose build had failed, `cmake --build . | tail -1` having swallowed the
+exit status. That green measured the previous library and is not recorded as
+this unit's.
+
+WHAT NO OTHER LAYER SAW. The differential harness was 63,020 of 63,020 GREEN on
+the defective translation, over a corpus that reaches this exact arm in 1,173
+cases. A 2-ULP difference in one element of a covariance matrix does not survive
+into any of the 213 compared out-parameters within a SINGLE call; it needs the
+EKF's own feedback across 544 timesteps to grow into something a comparison can
+see. The gate is the only instrument in this campaign that has 544 timesteps.

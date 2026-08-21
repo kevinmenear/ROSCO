@@ -93,6 +93,7 @@ void writerestartfile_c(localvariables_view_t* LocalVar, controlparameters_view_
 void computevariablessetpoints_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_view_t* ErrVar);
 void pitchcontrol_c(float* avrSWAP, controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, objectinstances_t* objInst, debugvariables_t* DebugVar, errorvariables_view_t* ErrVar);
 void readcontrolparameterfilesub_c(controlparameters_view_t* CntrPar, localvariables_view_t* LocalVar, char* accINFILE, int accINFILE_size, char* RootName, errorvariables_view_t* ErrVar);
+void windspeedestimator_c(localvariables_view_t* LocalVar, controlparameters_view_t* CntrPar, objectinstances_t* objInst, performancedata_view_t* PerfData, debugvariables_t* DebugVar, errorvariables_view_t* ErrVar);
 
 #ifdef __cplusplus
 }

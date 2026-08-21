@@ -290,6 +290,10 @@ translations:
     status: integrated
     cpp_file: translations/ReadSetParameters/readcontrolparameterfilesub.cpp
     verification: simulation
+  WindSpeedEstimator:
+    status: integrated
+    cpp_file: translations/ControllerBlocks/windspeedestimator.cpp
+    verification: simulation
 types:
   ControlParameters:
     strategy: view

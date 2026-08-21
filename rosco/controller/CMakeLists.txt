@@ -149,6 +149,7 @@ set(SOURCES
     src/computevariablessetpoints.cpp
     src/pitchcontrol.cpp
     src/readcontrolparameterfilesub.cpp
+    src/windspeedestimator.cpp
 )
 
 if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
